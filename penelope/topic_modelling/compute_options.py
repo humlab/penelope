@@ -40,13 +40,13 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'update_every': 10,  # Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.
                 'alpha': 'auto',
                 'eta': 'auto',  # None
-                #'decay': 0.1, # 0.5
-                #'chunksize': int(kwargs.get('chunksize', 1)),
+                # 'decay': 0.1, # 0.5
+                # 'chunksize': int(kwargs.get('chunksize', 1)),
                 'per_word_topics': True,
-                #'random_state': 100
-                #'offset': 1.0,
-                #'dtype': np.float64
-                #'callbacks': [
+                # 'random_state': 100
+                # 'offset': 1.0,
+                # 'dtype': np.float64
+                # 'callbacks': [
                 #    gensim.models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
                 #    gensim.models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
                 # ]
@@ -70,13 +70,13 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 ),  # set workers directly to the number of your real cores (not hyperthreads) minus one
                 'eta': 'auto',  # A-priori belief on word probability
                 'per_word_topics': True,
-                #'random_state': 100                            # Either a randomState object or a seed to generate one. Useful for reproducibility.
-                #'decay': 0.5,                                  # Kappa from Matthew D. Hoffman, David M. Blei, Francis Bach:
-                #'chunksize': 2000,                             # chunksize (int, optional) – Number of documents to be used in each training chunk.
-                #'eval_every': 10                               # Log perplexity is estimated every that many updates. Setting this to one slows down training by ~2x.
-                #'offset': 1.0,                                 # Tau_0 from Matthew D. Hoffman, David M. Blei, Francis Bach
-                #'dtype': np.float64
-                #'callbacks': [
+                # 'random_state': 100                            # Either a randomState object or a seed to generate one. Useful for reproducibility.
+                # 'decay': 0.5,                                  # Kappa from Matthew D. Hoffman, David M. Blei, Francis Bach:
+                # 'chunksize': 2000,                             # chunksize (int, optional) – Number of documents to be used in each training chunk.
+                # 'eval_every': 10                               # Log perplexity is estimated every that many updates. Setting this to one slows down training by ~2x.
+                # 'offset': 1.0,                                 # Tau_0 from Matthew D. Hoffman, David M. Blei, Francis Bach
+                # 'dtype': np.float64
+                # 'callbacks': [
                 #    gensim.models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
                 #    gensim.models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
                 # ]
@@ -95,9 +95,9 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'corpus': corpus,
                 'T': kwargs.get('n_topics', 0),
                 'id2word': id2word,
-                #'iterations': kwargs.get('max_iter', 0),
-                #'passes': kwargs.get('passes', 20),
-                #'alpha': 'auto'
+                # 'iterations': kwargs.get('max_iter', 0),
+                # 'passes': kwargs.get('passes', 20),
+                # 'alpha': 'auto'
             },
         }
 
@@ -128,7 +128,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'default_mallet_home': '/usr/local/share/mallet-2.0.8/',  # MALLET_HOME
                 'num_topics': kwargs.get('n_topics', 100),  # Number of topics.
                 'iterations': kwargs.get('max_iter', 2000),  # Number of training iterations.
-                #'alpha': int(kwargs.get('passes', 20))                     # Alpha parameter of LDA.
+                # 'alpha': int(kwargs.get('passes', 20))                     # Alpha parameter of LDA.
                 'prefix': kwargs.get('prefix', TEMP_PATH),
                 'workers': int(kwargs.get('workers', 4)),  # Number of threads that will be used for training.
                 'optimize_interval': kwargs.get(
@@ -139,7 +139,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 ),  # Threshold of the probability above which we consider a topic.
                 'random_seed': kwargs.get(
                     'random_seed', 0
-                ),  #  Random seed to ensure consistent results, if 0 - use system clock.
+                ),  # Random seed to ensure consistent results, if 0 - use system clock.
             },
         }
 
@@ -156,7 +156,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'iterations': kwargs.get('max_iter', 2000),
                 'prefix': kwargs.get('prefix', TEMP_PATH),
                 'name': '{}_model'.format(sttm)
-                #'vectors', 'alpha'=0.1, 'beta'=0.01, 'twords'=20,sstep=0
+                # 'vectors', 'alpha'=0.1, 'beta'=0.01, 'twords'=20,sstep=0
             },
         }
 

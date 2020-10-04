@@ -133,9 +133,9 @@ class HyperspaceAnalogueToLanguageVectorizer:
     #     elif norm == 'sum':
     #         norm = float(np.sum(nw_xy))
 
-    #     #nw.resize(nw.shape[0], 1)
+    #     # nw.resize(nw.shape[0], 1)
 
-    #     self.cwr = sp.lil_matrix(nw_xy / (-nw_xy + nw + nw.T)) #nw.reshape(n,1).T))
+    #     self.cwr = sp.lil_matrix(nw_xy / (-nw_xy + nw + nw.T)) # nw.reshape(n,1).T))
 
     #     if norm != 1.0:
     #         self.cwr = self.cwr / norm
