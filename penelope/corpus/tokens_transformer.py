@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import inspect
+
 from typing import Any, List
 
 import textacy.preprocessing.remove as textacy_remove
@@ -23,6 +25,13 @@ DEFAULT_PROCESS_OPTS = dict(
     keep_numerals=True,
     keep_symbols=True
 )
+
+def transformer_defaults():
+    sig = inspect.signature(TokensTransformer.__init__)
+    return {
+        name: param.default for name, param
+            in sig.parameters.items() if param.name != 'self'
+    }
 
 class TokensTransformer():
     """Transforms applied on tokenized text"""

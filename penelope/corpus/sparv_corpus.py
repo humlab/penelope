@@ -3,7 +3,7 @@ from __future__ import annotations
 import penelope.corpus.readers as readers
 import penelope.corpus.tokenized_corpus as tokenized_corpus
 import penelope.utility.file_utility as file_utility
-from penelope.corpus.tokens_transformer import default_opts
+from penelope.corpus.tokens_transformer import transformer_defaults
 
 
 class SparvTokenizedCorpus(tokenized_corpus.TokenizedCorpus):
@@ -20,7 +20,10 @@ class SparvTokenizedCorpus(tokenized_corpus.TokenizedCorpus):
         **tokens_transform_opts
     ):
 
-        tokens_transform_opts = {k: v for k, v in tokens_transform_opts.items() if k in default_opts()}
+        tokens_transform_opts = {
+            k: v for k, v in tokens_transform_opts.items()
+                if k in transformer_defaults()
+        }
 
         tokenizer = readers.SparvXmlTokenizer(
             source,
