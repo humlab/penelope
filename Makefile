@@ -13,6 +13,9 @@ test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
 	-coveralls
 
+build:
+	@poetry build
+
 test:
 	@poetry run pytest -v --durations=0
 	# --failed-first --maxfail=1
@@ -44,4 +47,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint clean test test-coverage update
+.PHONY: init lint black clean test test-coverage update install_graphtool build
