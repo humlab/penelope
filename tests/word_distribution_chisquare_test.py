@@ -22,8 +22,7 @@ import unittest
 
 import pandas as pd
 import scipy
-from scipy.cluster.hierarchy import (  # pylint: disable=unused-import
-    linkage)
+from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 
 import penelope.corpus.tokenized_corpus as corpora
 from penelope.corpus import corpus_vectorizer
@@ -33,7 +32,6 @@ unittest.main(argv=['first-arg-is-ignored'], exit=False)
 
 
 class Test_ChiSquare(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -44,29 +42,36 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_corpus(self):
         reader = self.create_reader()
-        kwargs = dict(only_any_alphanumeric=True, to_lower=True, remove_accents=False, min_len=2, max_len=None, keep_numerals=False)
+        kwargs = dict(
+            only_any_alphanumeric=True,
+            to_lower=True,
+            remove_accents=False,
+            min_len=2,
+            max_len=None,
+            keep_numerals=False,
+        )
         corpus = corpora.TokenizedCorpus(reader, **kwargs)
         return corpus
 
     def skip_test_chisquare(self):
         corpus = self.create_corpus()
         vectorizer = corpus_vectorizer.CorpusVectorizer()
-        v_corpus = vectorizer\
-            .fit_transform(corpus)\
-            .group_by_year()\
-            .slice_by_n_count(0)
-        X2 = scipy.stats.chisquare(v_corpus.term_bag_matrix.todense(), f_exp=None, ddof=0, axis=0) # pylint: disable=unused-variable
-        _ = linkage(v_corpus.term_bag_matrix, 'ward') # pylint: disable=unused-variable
+        v_corpus = vectorizer.fit_transform(corpus).group_by_year().slice_by_n_count(0)
+        X2 = scipy.stats.chisquare(
+            v_corpus.term_bag_matrix.todense(), f_exp=None, ddof=0, axis=0
+        )  # pylint: disable=unused-variable
+        _ = linkage(v_corpus.term_bag_matrix, 'ward')  # pylint: disable=unused-variable
         results = None
         expected = None
         self.assertEqual(expected, results)
+
 
 def plot_dists(v_corpus):
     df = pd.DataFrame(v_corpus.bag_term_matrix.toarray(), columns=list(v_corpus.get_feature_names()))
     df['year'] = df.index + 45
     df = df.set_index('year')
-    df['year'] =  pd.Series(df.index).apply(lambda x: v_corpus.document_index[x][0])
-    df[['krig']].plot() #.loc[df["000"]==49]
+    df['year'] = pd.Series(df.index).apply(lambda x: v_corpus.document_index[x][0])
+    df[['krig']].plot()  # .loc[df["000"]==49]
 
 
 # unittest.main(argv=['first-arg-is-ignored'], exit=False)

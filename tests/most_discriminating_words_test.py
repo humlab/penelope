@@ -5,10 +5,10 @@ from textacy import ke
 
 import penelope.vendor.textacy.mdw_modified as mdw
 
-flatten = lambda l: [ x for ws in l for x in ws]
+flatten = lambda l: [x for ws in l for x in ws]
+
 
 class Test_MostDiscriminatinWords(unittest.TestCase):
-
     def test_most_discriminating_terms(self):
 
         text1 = """Friedman joined the London bureau of United Press International after completing his master's degree. He was dispatched a year later to Beirut, where he lived from June 1979 to May 1981 while covering the Lebanon Civil War. He was hired by The New York Times as a reporter in 1981 and re-dispatched to Beirut at the start of the 1982 Israeli invasion of Lebanon. His coverage of the war, particularly the Sabra and Shatila massacre, won him the Pulitzer Prize for International Reporting (shared with Loren Jenkins of The Washington Post). Alongside David K. Shipler he also won the George Polk Award for foreign reporting.
@@ -43,5 +43,7 @@ class Test_MostDiscriminatinWords(unittest.TestCase):
         bag_term_matrix = vectorizer.fit_transform(corpus)
         token2id = vectorizer.vocabulary_
         id2token = {v: k for k, v in token2id.items()}
-        mdw.most_discriminating_terms(bag_term_matrix, id2token, [True] * len(doc1) + [False] * len(doc2), top_n_terms=2)
+        mdw.most_discriminating_terms(
+            bag_term_matrix, id2token, [True] * len(doc1) + [False] * len(doc2), top_n_terms=2
+        )
         assert expected == observed

@@ -1,13 +1,15 @@
 import os
-import pytest # pylint: disable=unused-import
+import pytest  # pylint: disable=unused-import
 
 import penelope.ner.stagger_wrapper as stagger
 
 STAGGER_HOME = os.environ.get('STAGGER_HOME', './lib/stagger')
 
+
 def stagger_is_found():
 
     return os.path.isfile(os.path.join(STAGGER_HOME, "stagger.jar"))
+
 
 @pytest.mark.skipif(not stagger_is_found(), reason="requires stagger.jar not found")
 def test_create_wrapper_by_env():
@@ -19,6 +21,7 @@ def test_create_wrapper_by_env():
     assert wrapper is not None
     assert wrapper.stagger_jar_path == os.path.join(STAGGER_HOME, "stagger.jar")
     assert wrapper.stagger_model_path == os.path.join(STAGGER_HOME, "swedish.bin")
+
 
 @pytest.mark.skipif(not stagger_is_found(), reason="requires stagger.jar not found")
 def test_create_wrapper_by_args():
@@ -32,6 +35,7 @@ def test_create_wrapper_by_args():
     assert wrapper is not None
     assert wrapper.stagger_jar_path == os.path.join(STAGGER_HOME, "stagger.jar")
     assert wrapper.stagger_model_path == os.path.join(STAGGER_HOME, "swedish.bin")
+
 
 @pytest.mark.skipif(not stagger_is_found(), reason="requires stagger.jar not found")
 def test_build_command():

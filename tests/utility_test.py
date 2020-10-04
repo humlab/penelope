@@ -4,7 +4,6 @@ import penelope.utility as utility
 
 
 class test_Utility(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -38,7 +37,7 @@ class test_Utility(unittest.TestCase):
 
         text = ' absdef \n'
         result = utility.fix_whitespaces(text)
-        self.assertEqual( 'absdef', result)
+        self.assertEqual('absdef', result)
 
         text = 'abs  def'
         result = utility.fix_whitespaces(text)

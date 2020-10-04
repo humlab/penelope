@@ -11,10 +11,14 @@ SPARV_XML_EXPORT_FILENAME_SMALL = './penelope/tests/test_data/sparv_xml_export_s
 SPARV_ZIPPED_XML_EXPORT_FILENAME = './penelope/tests/test_data/sparv_zipped_xml_export.zip'
 SPARV3_ZIPPED_XML_EXPORT_FILENAME = './penelope/tests/test_data/sou_test_sparv3_xml.zip'
 
+
 def test_reader_store_result():
 
-    expected_documents = [ ['rödräv', 'hunddjur', 'utbredning', 'halvklot' ], [ 'fjällräv', 'fjällvärld', 'liv', 'fjällräv', 'vinter', 'men', 'variant', 'år' ] ]
-    expected_names = [ "document_001.txt", "document_002.txt"]
+    expected_documents = [
+        ['rödräv', 'hunddjur', 'utbredning', 'halvklot'],
+        ['fjällräv', 'fjällvärld', 'liv', 'fjällräv', 'vinter', 'men', 'variant', 'år'],
+    ]
+    expected_names = ["document_001.txt", "document_002.txt"]
 
     target_filename = './penelope/tests/output/sparv_extract_and_store.zip'
 
@@ -66,8 +70,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     sparv_corpus.sparv_extract_and_store(SPARV3_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
 
-    expected_document_start = \
-        "utredningar justitiedepartementet förslag utlänningslag angående om- händertagande förläggning års gere ide to lm \rstatens utredningar förteckning betänkande förslag utlänningslag lag omhändertagande utlänning anstalt förläggning tryckort tryckorten bokstäverna fetstil begynnelse- bokstäverna departement"
+    expected_document_start = "utredningar justitiedepartementet förslag utlänningslag angående om- händertagande förläggning års gere ide to lm \rstatens utredningar förteckning betänkande förslag utlänningslag lag omhändertagande utlänning anstalt förläggning tryckort tryckorten bokstäverna fetstil begynnelse- bokstäverna departement"
 
     test_filename = "sou_1945_1.txt"
 
