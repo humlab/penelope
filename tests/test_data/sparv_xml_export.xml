@@ -1,0 +1,566 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<document name="rävar">
+  <text date="2017-01-10" source="https://jarvzoo.se/djur/rodrav/" title="Rödräv">
+    <sentence id="845">
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|rödräv|" complemgram="|röd..av.1+räv..nn.1:1.783e-13|" compwf="|röd+räven|" lemgram="|rödräv..nn.1|">Rödräven</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="5" deprel="MS" ref="2" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="DT.NEU.SIN.IND" pos="DT" dephead_ref="4" deprel="DT" ref="3" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..al.1|">ett</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="2" deprel="SP" ref="4" baseform="|hunddjur|" complemgram="|hund..nn.1+djur..nn.1:1.670e-09|" compwf="|hund+djur|" lemgram="|hunddjur..nn.1|">hunddjur</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="5" deprel="+F" ref="6" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="AB" pos="AB" dephead_ref="10" deprel="CA" ref="7" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..ab.1|">en</token>
+      <token msd="PN.NEU.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="10" deprel="DT" ref="8" baseform="|mycken|" complemgram="|" compwf="|" lemgram="|mycken..pn.1|">mycket</token>
+      <token msd="JJ.POS.NEU.SIN.IND.NOM" pos="JJ" dephead_ref="10" deprel="AT" ref="9" baseform="|vidsträckt|" complemgram="|" compwf="|" lemgram="|vidsträckt..av.1|">vidsträckt</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="6" deprel="OO" ref="10" baseform="|utbredning|" complemgram="|" compwf="|" lemgram="|utbredning..nn.1|">utbredning</token>
+      <token msd="PP" pos="PP" dephead_ref="10" deprel="ET" ref="11" baseform="|över|" complemgram="|" compwf="|" lemgram="|över..pp.1|">över</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="13" deprel="DT" ref="12" baseform="|norra|" complemgram="|" compwf="|" lemgram="|norra..av.1|">norra</token>
+      <token msd="NN.NEU.SIN.DEF.NOM" pos="NN" dephead_ref="11" deprel="PA" ref="13" baseform="|halvklot|" complemgram="|halv..av.1+klot..nn.1:1.385e-12|halv..nn.1+klot..nn.1:2.126e-20|halva..nn.1+klot..nn.1:2.126e-20|" compwf="|halv+klotet|" lemgram="|halvklot..nn.1|">halvklotet</token>
+      <token msd="MAD" pos="MAD" dephead_ref="5" deprel="IP" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8a5">
+      <token msd="IN" pos="IN" dephead_ref="2" deprel="AT" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">I</token>
+      <token msd="PM.NOM" pos="PM" dephead_ref="3" deprel="TA" ref="2" baseform="|Sverige|" complemgram="|" compwf="|" lemgram="|Sverige..pm.1|">Sverige</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="3" baseform="|förekomma|" complemgram="|" compwf="|" lemgram="|förekomma..vb.1|">förekommer</token>
+      <token msd="PN.UTR.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="3" deprel="SS" ref="4" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">den</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="6" deprel="DT" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="14" deprel="AA" ref="6" baseform="|allt|" complemgram="|" compwf="|" lemgram="|allt..nn.1|">allt</token>
+      <token msd="PP" pos="PP" dephead_ref="6" deprel="ET" ref="7" baseform="|från|" complemgram="|" compwf="|" lemgram="|från..pp.1|">från</token>
+      <token msd="DT.UTR+NEU.PLU.DEF" pos="DT" dephead_ref="10" deprel="DT" ref="8" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..al.1|">de</token>
+      <token msd="JJ.SUV.UTR+NEU.SIN+PLU.DEF.NOM" pos="JJ" dephead_ref="10" deprel="AT" ref="9" baseform="|nordlig|" complemgram="|" compwf="|" lemgram="|nordlig..av.1|">nordligaste</token>
+      <token msd="NN.UTR.PLU.DEF.NOM" pos="NN" dephead_ref="7" deprel="PA" ref="10" baseform="|vildmark|" complemgram="|vild..av.1+mark..nn.1:1.506e-13|vilde..nn.1+mark..nn.1:2.335e-20|" compwf="|vild+markerna|" lemgram="|vildmark..nn.1|">vildmarkerna</token>
+      <token msd="PL" pos="PL" dephead_ref="12" deprel="DT" ref="11" baseform="|till|" complemgram="|" compwf="|" lemgram="|till..ab.1|">till</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="14" deprel="DT" ref="12" baseform="|" complemgram="|villa..nn.1+trädgård..nn.1:3.903e-11|villa..nn.1+träd..nn.1+gård..nn.1:5.958e-17|villa..nn.1+träd..nn.1+gård..nn.2:5.958e-17|villa..nn.1+träda..nn.1+gård..nn.1:5.958e-17|villa..nn.1+träda..nn.1+gård..nn.2:5.958e-17|villa..nn.1+trä..vb.1+gård..nn.1:1.357e-27|villa..nn.1+trä..vb.1+gård..nn.2:1.357e-27|villa..nn.1+träda..vb.1+gård..nn.1:1.357e-27|villa..nn.1+träda..vb.1+gård..nn.2:1.357e-27|villa..nn.1+träda..vb.2+gård..nn.1:1.357e-27|villa..nn.1+träda..vb.2+gård..nn.2:1.357e-27|" compwf="|villa+trädgården|villa+träd+gården|" lemgram="|">villaträdgården</token>
+      <token msd="PL" pos="PL" dephead_ref="14" deprel="DT" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="3" deprel="SP" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">söder</token>
+      <token msd="MAD" pos="MAD" dephead_ref="3" deprel="IP" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="878">
+      <token msd="DT.NEU.SIN.DEF" pos="DT" deprel="ROOT" ref="1" baseform="|denna|" complemgram="|" compwf="|" lemgram="|denna..pn.1|">Detta</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="1" deprel="VG" ref="2" baseform="|bero|" complemgram="|" compwf="|" lemgram="|bero..vb.1|">beror</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="2" deprel="MA" ref="3" baseform="|säker|" complemgram="|" compwf="|" lemgram="|säker..av.1|">säkert</token>
+      <token msd="AB" pos="AB" dephead_ref="2" deprel="AA" ref="4" baseform="|delvis|" complemgram="|" compwf="|" lemgram="|delvis..ab.1|">delvis</token>
+      <token msd="PP" pos="PP" dephead_ref="10" deprel="TA" ref="5" baseform="|på|" complemgram="|" compwf="|" lemgram="|på..pp.1|">på</token>
+      <token msd="PS.UTR+NEU.SIN+PLU.DEF" pos="PS" dephead_ref="8" deprel="DT" ref="6" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">dess</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="8" deprel="AT" ref="7" baseform="|stor|" complemgram="|" compwf="|" lemgram="|stor..av.1|">stora</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="5" deprel="PA" ref="8" baseform="|förmåga|" complemgram="|" compwf="|" lemgram="|förmåga..nn.1|">förmåga</token>
+      <token msd="IE" pos="IE" dephead_ref="8" deprel="ET" ref="9" baseform="|att|" complemgram="|" compwf="|" lemgram="|att..sn.1|">att</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="13" deprel="TA" ref="10" baseform="|utnyttja|" complemgram="|ut..ab.1+nyttja..vb.1:5.002e-10|" compwf="|ut+nyttja|" lemgram="|utnyttja..vb.1|">utnyttja</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="12" deprel="AT" ref="11" baseform="|olik|" complemgram="|" compwf="|" lemgram="|olik..av.1|">olika</token>
+      <token msd="NN.UTR.PLU.IND.GEN" pos="NN" dephead_ref="10" deprel="SS" ref="12" baseform="|sort|" complemgram="|" compwf="|" lemgram="|sort..nn.1|">sorters</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="2" deprel="TA" ref="13" baseform="|föda|" complemgram="|" compwf="|" lemgram="|föda..vb.1|">föda</token>
+      <token msd="MAD" pos="MAD" deprel="IP" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="86d">
+      <token msd="PAD" pos="PAD" dephead_ref="2" deprel="DT" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">”</token>
+      <token msd="JJ.POS.UTR.SIN.IND+DEF.NOM" pos="JJ" deprel="ROOT" ref="2" baseform="|slug|" complemgram="|" compwf="|" lemgram="|slug..av.1|">Slug</token>
+      <token msd="HA" pos="HA" dephead_ref="2" deprel="KA" ref="3" baseform="|som|som en räv|" complemgram="|" compwf="|" lemgram="|som..ab.1|som_en_räv..abm.1|">som</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="5" deprel="DT" ref="4" baseform="|en|som en räv:3|" complemgram="|" compwf="|" lemgram="|en..nl.1|som_en_räv..abm.1:3|">en</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="7" deprel="SS" ref="5" baseform="|räv|som en räv:3|" complemgram="|" compwf="|" lemgram="|räv..nn.1|som_en_räv..abm.1:3|">räv</token>
+      <token msd="PAD" pos="PAD" dephead_ref="5" deprel="JR" ref="6" baseform="|" complemgram="|" compwf="|" lemgram="|">”</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="3" deprel="UA" ref="7" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="RG.NEU.SIN.IND.NOM" pos="RG" dephead_ref="10" deprel="DT" ref="8" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">ett</token>
+      <token msd="PC.PRF.NEU.SIN.IND.NOM" pos="PC" dephead_ref="10" deprel="AT" ref="9" baseform="|känd|känna|" complemgram="|" compwf="|" lemgram="|känd..av.1|känna..vb.1|">känt</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="7" deprel="SP" ref="10" baseform="|ordspråk|" complemgram="|ord..nn.1+språk..nn.1:3.586e-09|" compwf="|ord+språk|" lemgram="|ordspråk..nn.1|">ordspråk</token>
+      <token msd="PL" pos="PL" dephead_ref="10" deprel="ET" ref="11" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="PM.NOM" pos="PM" dephead_ref="11" deprel="PA" ref="12" baseform="|Sverige|" complemgram="|" compwf="|" lemgram="|Sverige..pm.1|">Sverige</token>
+      <token msd="MAD" pos="MAD" dephead_ref="2" deprel="IP" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8b1">
+      <token msd="KN" pos="KN" deprel="ROOT" ref="1" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">Och</token>
+      <token msd="AB" pos="AB" dephead_ref="3" deprel="AA" ref="2" baseform="|viss|visst|" complemgram="|" compwf="|" lemgram="|viss..av.1|visst..ab.1|">visst</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="1" deprel="MS" ref="3" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="3" deprel="SP" ref="4" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">räven</token>
+      <token msd="PN.NEU.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="4" deprel="PA" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">ett</token>
+      <token msd="JJ.POS.NEU.SIN.IND.NOM" pos="JJ" dephead_ref="7" deprel="CJ" ref="6" baseform="|klok|" complemgram="|" compwf="|" lemgram="|klok..av.1|">klokt</token>
+      <token msd="KN" pos="KN" dephead_ref="5" deprel="PA" ref="7" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="AB" pos="AB" dephead_ref="9" deprel="CA" ref="8" baseform="|läraktig|" complemgram="|lära..vb.1+aktig..avh.1:3.990e-14|lära..nn.1+aktig..avh.1:5.855e-22|" compwf="|lär+aktigt|" lemgram="|läraktig..av.1|">läraktigt</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="7" deprel="CJ" ref="9" baseform="|hunddjur|" complemgram="|hund..nn.1+djur..nn.1:1.670e-09|" compwf="|hund+djur|" lemgram="|hunddjur..nn.1|">hunddjur</token>
+      <token msd="HP.-.-.-" pos="HP" dephead_ref="13" deprel="SS" ref="10" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="13" deprel="TA" ref="11" baseform="|relativ|relativt|" complemgram="|" compwf="|" lemgram="|relativ..av.1|relativt..ab.1|">relativt</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="13" deprel="AA" ref="12" baseform="|lätt|" complemgram="|" compwf="|" lemgram="|lätt..av.1|">lätt</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="9" deprel="ET" ref="13" baseform="|kunna|" complemgram="|" compwf="|" lemgram="|kunna..vb.1|">kan</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="13" deprel="VG" ref="14" baseform="|bli|" complemgram="|" compwf="|" lemgram="|bli..vb.1|">bli</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="14" deprel="SP" ref="15" baseform="|tam|" complemgram="|" compwf="|" lemgram="|tam..av.1|">tama</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="14" deprel="TA" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="DT.UTR.SIN.DEF" pos="DT" dephead_ref="18" deprel="DT" ref="17" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">den</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="14" deprel="SP" ref="18" baseform="|aspekt|" complemgram="|asp..nn.1+ek..nn.1+ten..nn.1:1.923e-19|asp..nn.1+eka..nn.1+ten..nn.1:1.923e-19|as..nn.1+peka..vb.1+ten..nn.1:3.054e-31|as..nn.2+peka..vb.1+ten..nn.1:3.054e-31|as..sxc.1+peka..vb.1+ten..nn.1:3.054e-31|" compwf="|asp+ek+ten|as+pek+ten|" lemgram="|aspekt..nn.1|">aspekten</token>
+      <token msd="SN" pos="SN" dephead_ref="14" deprel="KA" ref="19" baseform="|att|" complemgram="|" compwf="|" lemgram="|att..sn.1|">att</token>
+      <token msd="PN.NEU.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="22" deprel="SS" ref="20" baseform="|de|" complemgram="|" compwf="|" lemgram="|de..pn.1|">de</token>
+      <token msd="AB" pos="AB" dephead_ref="22" deprel="NA" ref="21" baseform="|inte|" complemgram="|" compwf="|" lemgram="|inte..ab.1|">inte</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="19" deprel="UA" ref="22" baseform="|visa|" complemgram="|" compwf="|" lemgram="|visa..vb.1|">visar</token>
+      <token msd="PN.UTR.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="22" deprel="IO" ref="23" baseform="|någon|" complemgram="|" compwf="|" lemgram="|någon..pn.1|">någon</token>
+      <token msd="JJ.KOM.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="JJ" dephead_ref="25" deprel="AT" ref="24" baseform="|stor|" complemgram="|" compwf="|" lemgram="|stor..av.1|">större</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="27" deprel="DT" ref="25" baseform="|rädsla|" complemgram="|" compwf="|" lemgram="|rädsla..nn.1|">rädsla</token>
+      <token msd="PL" pos="PL" dephead_ref="27" deprel="DT" ref="26" baseform="|för|" complemgram="|" compwf="|" lemgram="|för..ab.1|">för</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="22" deprel="OO" ref="27" baseform="|människa|" complemgram="|" compwf="|" lemgram="|människa..nn.1|">människor</token>
+      <token msd="MAD" pos="MAD" dephead_ref="3" deprel="IP" ref="28" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8e6">
+      <token msd="VB.PRT.AKT" pos="VB" deprel="ROOT" ref="1" baseform="|veta|" complemgram="|" compwf="|" lemgram="|veta..vb.1|">Visste</token>
+      <token msd="PN.UTR.SIN.DEF.SUB" pos="PN" dephead_ref="1" deprel="SS" ref="2" baseform="|du|" complemgram="|" compwf="|" lemgram="|du..pn.1|">du</token>
+      <token msd="IE" pos="IE" dephead_ref="1" deprel="OO" ref="3" baseform="|att|" complemgram="|" compwf="|" lemgram="|att..sn.1|">att</token>
+      <token msd="MAD" pos="MAD" dephead_ref="3" deprel="PA" ref="4" baseform="|" complemgram="|" compwf="|" lemgram="|">…</token>
+      <token msd="MAD" pos="MAD" dephead_ref="1" deprel="IQ" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">•</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="7" deprel="SS" ref="6" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">Rävar</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="1" deprel="MS" ref="7" baseform="|bli|" complemgram="|" compwf="|" lemgram="|bli..vb.1|">blir</token>
+      <token msd="AB" pos="AB" dephead_ref="9" deprel="AA" ref="8" baseform="|sällan|" complemgram="|" compwf="|" lemgram="|sällan..ab.1|">sällan</token>
+      <token msd="JJ.KOM.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="JJ" dephead_ref="7" deprel="SP" ref="9" baseform="|gammal|" complemgram="|" compwf="|" lemgram="|gammal..av.1|">äldre</token>
+      <token msd="SN" pos="SN" dephead_ref="15" deprel="DT" ref="10" baseform="|än|" complemgram="|" compwf="|" lemgram="|än..sn.1|">än</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="12" deprel="DT" ref="11" baseform="|" complemgram="|" compwf="|" lemgram="|">10</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="15" deprel="DT" ref="12" baseform="|år|" complemgram="|" compwf="|" lemgram="|år..nn.1|">år</token>
+      <token msd="PL" pos="PL" dephead_ref="15" deprel="DT" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="PN.NEU.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="15" deprel="DT" ref="14" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">det</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="7" deprel="SP" ref="15" baseform="|vild|" complemgram="|" compwf="|" lemgram="|vild..av.1|">vilda</token>
+      <token msd="MAD" pos="MAD" dephead_ref="1" deprel="IP" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="884">
+      <token msd="MAD" pos="MAD" dephead_ref="12" deprel="MS" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">•</token>
+      <token msd="SN" pos="SN" dephead_ref="1" deprel="PA" ref="2" baseform="|om|" complemgram="|" compwf="|" lemgram="|om..sn.1|">Om</token>
+      <token msd="PN.UTR.SIN.IND.SUB" pos="PN" dephead_ref="4" deprel="SS" ref="3" baseform="|man|" complemgram="|" compwf="|" lemgram="|man..pn.1|">man</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="MS" ref="4" baseform="|hitta|" complemgram="|hit..ab.1+ta..vb.1:4.565e-09|hit..nn.1+ta..vb.1:3.120e-12|" compwf="|hit+tar|" lemgram="|hitta..vb.1|">hittar</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="6" deprel="DT" ref="5" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="4" deprel="OO" ref="6" baseform="|fågel|" complemgram="|få..vb.1+gel..nn.1:4.345e-11|få..av.1+gel..nn.1:7.021e-12|" compwf="|få+gel|" lemgram="|fågel..nn.1|fågel..nn.2|">fågel</token>
+      <token msd="KN" pos="KN" dephead_ref="2" deprel="UA" ref="7" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="VB.SUP.SFO" pos="VB" dephead_ref="7" deprel="+F" ref="8" baseform="|ta|tas|" complemgram="|" compwf="|" lemgram="|ta..vb.1|tas..vb.1|">tagits</token>
+      <token msd="PP" pos="PP" dephead_ref="8" deprel="OA" ref="9" baseform="|av|" complemgram="|" compwf="|" lemgram="|av..pp.1|">av</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="11" deprel="DT" ref="10" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="9" deprel="PA" ref="11" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">räv</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="12" baseform="|så|" complemgram="|" compwf="|" lemgram="|så..kn.1|">så</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="12" deprel="+F" ref="13" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="NN.UTR.PLU.DEF.NOM" pos="NN" dephead_ref="13" deprel="SP" ref="14" baseform="|fjäder|" complemgram="|" compwf="|" lemgram="|fjäder..nn.1|">fjädrarna</token>
+      <token msd="PC.PRF.MAS.SIN.DEF.NOM" pos="PC" dephead_ref="14" deprel="PT" ref="15" baseform="|bita av|" complemgram="|av..ab.1+biten..av.1:2.063e-12|av..ab.1+bita..vb.1:2.791e-18|av..av.1+biten..av.1:3.613e-22|av..av.1+bita..vb.1:1.112e-27|" compwf="|av+bitna|" lemgram="|bita_av..vbm.1|">avbitna</token>
+      <token msd="MID" pos="MID" dephead_ref="15" deprel="IK" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="SN" pos="SN" dephead_ref="15" deprel="TA" ref="17" baseform="|medan|" complemgram="|" compwf="|" lemgram="|medan..sn.1|">medan</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="19" deprel="SS" ref="18" baseform="|rovfågel|" complemgram="|rov..nn.1+fågel..nn.1:4.923e-13|rova..nn.1+fågel..nn.1:4.923e-13|" compwf="|rov+fåglar|" lemgram="|rovfågel..nn.1|">rovfåglar</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="17" deprel="UA" ref="19" baseform="|slita|slita ut|" complemgram="|" compwf="|" lemgram="|slita..vb.1|slita_ut..vbm.1|">sliter</token>
+      <token msd="AB" pos="AB" dephead_ref="19" deprel="RA" ref="20" baseform="|ut|slita ut:19|" complemgram="|" compwf="|" lemgram="|ut..ab.1|slita_ut..vbm.1:19|">ut</token>
+      <token msd="NN.UTR.PLU.DEF.NOM" pos="NN" dephead_ref="20" deprel="HD" ref="21" baseform="|fjäder|" complemgram="|" compwf="|" lemgram="|fjäder..nn.1|">fjädrarna</token>
+      <token msd="MAD" pos="MAD" dephead_ref="12" deprel="IP" ref="22" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8ba">
+      <token msd="MAD" pos="MAD" deprel="ROOT" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">•</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="3" deprel="SS" ref="2" baseform="|" complemgram="|ung..av.1+dödlighet..nn.1:1.696e-13|ung..av.1+dödlighet..nn.2:1.696e-13|unge..nn.1+dödlighet..nn.1:3.585e-20|unge..nn.1+dödlighet..nn.2:3.585e-20|" compwf="|ung+dödligheten|" lemgram="|">Ungdödligheten</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="11" deprel="SS" ref="3" baseform="|variera|" complemgram="|" compwf="|" lemgram="|variera..vb.1|">variera</token>
+      <token msd="PP" pos="PP" dephead_ref="3" deprel="AA" ref="4" baseform="|mellan|" complemgram="|" compwf="|" lemgram="|mellan..pp.1|">mellan</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="6" deprel="DT" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">7-70</token>
+      <token msd="NN.AN" pos="NN" dephead_ref="7" deprel="DT" ref="6" baseform="|%|" complemgram="|" compwf="|" lemgram="|proc..nna.2|">%</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="4" deprel="PA" ref="7" baseform="|beroende|" complemgram="|" compwf="|" lemgram="|beroende..nn.1|beroende..nn.2|">beroende</token>
+      <token msd="PP" pos="PP" dephead_ref="7" deprel="ET" ref="8" baseform="|på|" complemgram="|" compwf="|" lemgram="|på..pp.1|">på</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="8" deprel="PA" ref="9" baseform="|tillgång|" complemgram="|till..ab.1+gång..nn.1:1.007e-08|till..ab.1+gång..nn.2:1.007e-08|till..ab.1+gång..nn.3:1.007e-08|" compwf="|till+gång|" lemgram="|tillgång..nn.1|">tillgång</token>
+      <token msd="PL" pos="PL" dephead_ref="3" deprel="PL" ref="10" baseform="|på|" complemgram="|" compwf="|" lemgram="|på..ab.1|">på</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="1" deprel="MS" ref="11" baseform="|föda|" complemgram="|" compwf="|" lemgram="|föda..vb.1|">föda</token>
+      <token msd="PAD" pos="PAD" dephead_ref="11" deprel="IR" ref="12" baseform="|" complemgram="|" compwf="|" lemgram="|">(</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="11" deprel="AN" ref="13" baseform="|sork|" complemgram="|" compwf="|" lemgram="|sork..nn.1|">sork</token>
+      <token msd="PAD" pos="PAD" dephead_ref="1" deprel="JR" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">)</token>
+      <token msd="MAD" pos="MAD" dephead_ref="1" deprel="IP" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+  </text>
+  <text date="2016-10-31" source="https://jarvzoo.se/djur/fjallrav/" title="Fjällräv">
+    <sentence id="894">
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|fjällräv|" complemgram="|fjäll..nn.1+räv..nn.1:2.201e-13|fjälla..nn.1+räv..nn.1:2.201e-13|" compwf="|fjäll+räven|" lemgram="|fjällräv..nn.1|">Fjällräven</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="MS" ref="2" baseform="|vara|vara med|" complemgram="|" compwf="|" lemgram="|vara..vb.1|vara_med..vbm.1|">är</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="4" deprel="AA" ref="3" baseform="|stark|" complemgram="|" compwf="|" lemgram="|stark..av.1|">starkt</token>
+      <token msd="PC.PRF.UTR.SIN.IND.NOM" pos="PC" dephead_ref="2" deprel="SP" ref="4" baseform="|förknippa|" complemgram="|" compwf="|" lemgram="|förknippa..vb.1|">förknippad</token>
+      <token msd="AB" pos="AB" dephead_ref="7" deprel="DT" ref="5" baseform="|med|vara med:2|" complemgram="|" compwf="|" lemgram="|med..ab.1|vara_med..vbm.1:2|">med</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="7" deprel="CJ" ref="6" baseform="|fjällvärld|" complemgram="|fjäll..nn.1+värld..nn.1:5.726e-11|fjälla..nn.1+värld..nn.1:5.726e-11|" compwf="|fjäll+världen|" lemgram="|fjällvärld..nn.1|">fjällvärlden</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="7" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="DT.UTR.SIN.DEF" pos="DT" dephead_ref="7" deprel="CJ" ref="8" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">den</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="8" deprel="VG" ref="9" baseform="|vara|vara till|" complemgram="|" compwf="|" lemgram="|vara..vb.1|vara_till..vbm.1|">är</token>
+      <token msd="AB" pos="AB" dephead_ref="11" deprel="AA" ref="10" baseform="|väl|" complemgram="|" compwf="|" lemgram="|väl..ab.1|väl_2..ab.1|">väl</token>
+      <token msd="PC.PRF.UTR.SIN.IND.NOM" pos="PC" dephead_ref="9" deprel="SP" ref="11" baseform="|anpassa|" complemgram="|an..ab.1+passa..vb.2:1.515e-19|" compwf="|an+passad|" lemgram="|anpassa..vb.1|">anpassad</token>
+      <token msd="PL" pos="PL" dephead_ref="9" deprel="PL" ref="12" baseform="|till|vara till:9|" complemgram="|" compwf="|" lemgram="|till..ab.1|vara_till..vbm.1:9|">till</token>
+      <token msd="RG.NEU.SIN.IND.NOM" pos="RG" dephead_ref="14" deprel="DT" ref="13" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">ett</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="9" deprel="XX" ref="14" baseform="|liv|" complemgram="|" compwf="|" lemgram="|liv..nn.1|">liv</token>
+      <token msd="PL" pos="PL" dephead_ref="16" deprel="SS" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="14" deprel="EF" ref="16" baseform="|kyla|" complemgram="|" compwf="|" lemgram="|kyla..vb.1|">kyla</token>
+      <token msd="MAD" pos="MAD" dephead_ref="7" deprel="IP" ref="17" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8c5">
+      <token msd="DT.UTR+NEU.PLU.DEF" pos="DT" dephead_ref="2" deprel="DT" ref="1" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..al.1|">De</token>
+      <token msd="JJ.SUV.UTR+NEU.PLU.DEF.NOM" pos="JJ" dephead_ref="3" deprel="SS" ref="2" baseform="|mången|" complemgram="|" compwf="|" lemgram="|mången..pn.1|">flesta</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="3" baseform="|tänka|tänka sig|" complemgram="|" compwf="|" lemgram="|tänka..vb.1|tänka_sig..vbm.1|">tänker</token>
+      <token msd="PN.UTR+NEU.SIN+PLU.DEF.OBJ" pos="PN" dephead_ref="3" deprel="IO" ref="4" baseform="|sig|tänka sig:3|" complemgram="|" compwf="|" lemgram="|sig..pn.1|tänka_sig..vbm.1:3|">sig</token>
+      <token msd="IE" pos="IE" dephead_ref="6" deprel="DT" ref="5" baseform="|att|" complemgram="|" compwf="|" lemgram="|att..sn.1|">att</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="7" deprel="SS" ref="6" baseform="|fjällräv|" complemgram="|fjäll..nn.1+räv..nn.1:4.435e-13|fjälla..nn.1+räv..nn.1:4.435e-13|" compwf="|fjäll+räven|" lemgram="|fjällräv..nn.1|">fjällräven</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="3" deprel="OO" ref="7" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="7" deprel="SP" ref="8" baseform="|vit|" complemgram="|" compwf="|" lemgram="|vit..av.1|">vit</token>
+      <token msd="MID" pos="MID" dephead_ref="7" deprel="IK" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="HD.NEU.SIN.IND" pos="HD" dephead_ref="12" deprel="SP" ref="10" baseform="|" complemgram="|" compwf="|" lemgram="|">vilket</token>
+      <token msd="PN.UTR+NEU.PLU.IND.SUB+OBJ" pos="PN" dephead_ref="12" deprel="SS" ref="11" baseform="|mången|" complemgram="|" compwf="|" lemgram="|mången..pn.1|">många</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="MS" ref="12" baseform="|vara|vara på|" complemgram="|" compwf="|" lemgram="|vara..vb.1|vara_på..vbm.1|">är</token>
+      <token msd="AB" pos="AB" dephead_ref="12" deprel="MA" ref="13" baseform="|på|vara på:12|" complemgram="|" compwf="|" lemgram="|på..ab.1|vara_på..vbm.1:12|">på</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="15" deprel="CJ" ref="14" baseform="|vinter|" complemgram="|vin..nn.1+tern..nn.1:7.574e-12|vin..nn.2+tern..nn.1:7.574e-12|vina..nn.1+tern..nn.1:7.574e-12|vina..vb.1+tern..nn.1:5.383e-22|vina..vb.2+tern..nn.1:5.383e-22|" compwf="|vin+tern|" lemgram="|vinter..nn.1|">vintern</token>
+      <token msd="MID" pos="MID" dephead_ref="13" deprel="PA" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="15" deprel="CJ" ref="16" baseform="|men|" complemgram="|" compwf="|" lemgram="|men..nn.1|men..nn.2|">men</token>
+      <token msd="DT.NEU.SIN.DEF" pos="DT" dephead_ref="12" deprel="OO" ref="17" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">det</token>
+      <token msd="VB.PRS.SFO" pos="VB" dephead_ref="22" deprel="MS" ref="18" baseform="|finna|finnas|" complemgram="|" compwf="|" lemgram="|finna..vb.1|finnas..vb.1|">finns</token>
+      <token msd="AB" pos="AB" dephead_ref="20" deprel="AA" ref="19" baseform="|också|" complemgram="|" compwf="|" lemgram="|också..ab.1|">också</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="21" deprel="DT" ref="20" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="18" deprel="OO" ref="21" baseform="|variant|" complemgram="|" compwf="|" lemgram="|variant..nn.1|">variant</token>
+      <token msd="KN" pos="KN" dephead_ref="17" deprel="ET" ref="22" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="22" deprel="+F" ref="23" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="25" deprel="AT" ref="24" baseform="|blågrå|" complemgram="|blå..av.1+grå..av.1:6.187e-12|" compwf="|blå+grå|" lemgram="|blågrå..av.1|">blågrå</token>
+      <token msd="NN.NEU.SIN.DEF.NOM" pos="NN" dephead_ref="23" deprel="SP" ref="25" baseform="|år|året om|" complemgram="|å..nn.2+r..nn.1:2.187e-12|" compwf="|å+ret|" lemgram="|år..nn.1|året_om..abm.1|">året</token>
+      <token msd="PL" pos="PL" dephead_ref="23" deprel="PL" ref="26" baseform="|om|året om:25|" complemgram="|" compwf="|" lemgram="|om..ab.1|året_om..abm.1:25|">om</token>
+      <token msd="MAD" pos="MAD" dephead_ref="3" deprel="IP" ref="27" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="84f">
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|fjällräv|" complemgram="|fjäll..nn.1+räv..nn.1:2.201e-13|fjälla..nn.1+räv..nn.1:2.201e-13|" compwf="|fjäll+räven|" lemgram="|fjällräv..nn.1|">Fjällräven</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="2" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="PL" pos="PL" dephead_ref="2" deprel="PL" ref="3" baseform="|i dag|" complemgram="|" compwf="|" lemgram="|i_dag..abm.1|">i</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="2" deprel="HD" ref="4" baseform="|dag|i dag:3|" complemgram="|" compwf="|" lemgram="|dag..nn.1|i_dag..abm.1:3|">dag</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="6" deprel="AA" ref="5" baseform="|stark|" complemgram="|" compwf="|" lemgram="|stark..av.1|">starkt</token>
+      <token msd="PC.PRF.UTR.SIN.IND.NOM" pos="PC" dephead_ref="2" deprel="SP" ref="6" baseform="|hota|" complemgram="|" compwf="|" lemgram="|hota..vb.1|">hotad</token>
+      <token msd="MAD" pos="MAD" dephead_ref="2" deprel="IP" ref="7" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="85d">
+      <token msd="VB.PRT.AKT" pos="VB" deprel="ROOT" ref="1" baseform="|veta|" complemgram="|" compwf="|" lemgram="|veta..vb.1|">Visste</token>
+      <token msd="PN.UTR.SIN.DEF.SUB" pos="PN" dephead_ref="1" deprel="SS" ref="2" baseform="|du|" complemgram="|" compwf="|" lemgram="|du..pn.1|">du</token>
+      <token msd="IE" pos="IE" dephead_ref="1" deprel="OO" ref="3" baseform="|att|" complemgram="|" compwf="|" lemgram="|att..sn.1|">att</token>
+      <token msd="MAD" pos="MAD" dephead_ref="3" deprel="PA" ref="4" baseform="|" complemgram="|" compwf="|" lemgram="|">…</token>
+      <token msd="MAD" pos="MAD" dephead_ref="1" deprel="IQ" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">•</token>
+      <token msd="DT.UTR+NEU.PLU.DEF" pos="DT" dephead_ref="9" deprel="DT" ref="6" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..al.1|">De</token>
+      <token msd="JJ.SUV.UTR+NEU.SIN+PLU.DEF.NOM" pos="JJ" dephead_ref="9" deprel="AT" ref="7" baseform="|gammal|" complemgram="|" compwf="|" lemgram="|gammal..av.1|">äldsta</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="9" deprel="AT" ref="8" baseform="|svensk|" complemgram="|" compwf="|" lemgram="|svensk..av.1|">svenska</token>
+      <token msd="NN.UTR.PLU.DEF.NOM" pos="NN" dephead_ref="12" deprel="DT" ref="9" baseform="|fjällräv|" complemgram="|fjäll..nn.1+räv..nn.1:8.397e-14|fjälla..nn.1+räv..nn.1:8.397e-14|" compwf="|fjäll+rävarna|" lemgram="|fjällräv..nn.1|">fjällrävarna</token>
+      <token msd="PL" pos="PL" dephead_ref="12" deprel="DT" ref="10" baseform="|med|" complemgram="|" compwf="|" lemgram="|med..ab.1|">med</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="12" deprel="AT" ref="11" baseform="|känd|" complemgram="|" compwf="|" lemgram="|känd..av.1|">känd</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="13" deprel="SS" ref="12" baseform="|ålder|" complemgram="|" compwf="|" lemgram="|ålder..nn.1|">ålder</token>
+      <token msd="VB.PRT.AKT" pos="VB" dephead_ref="1" deprel="MS" ref="13" baseform="|bli|" complemgram="|" compwf="|" lemgram="|bli..vb.1|">blev</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="15" deprel="DT" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">7-8</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="13" deprel="SP" ref="15" baseform="|år|" complemgram="|" compwf="|" lemgram="|år..nn.1|">år</token>
+      <token msd="MAD" pos="MAD" dephead_ref="1" deprel="IP" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8ec">
+      <token msd="MAD" pos="MAD" deprel="ROOT" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">•</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="4" deprel="DT" ref="2" baseform="|fjällräv|" complemgram="|fjäll..nn.1+räv..nn.1:2.201e-13|fjälla..nn.1+räv..nn.1:2.201e-13|" compwf="|fjäll+räven|" lemgram="|fjällräv..nn.1|">Fjällräven</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="4" deprel="AT" ref="3" baseform="|klar|" complemgram="|" compwf="|" lemgram="|klar..av.1|">klara</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="6" deprel="DT" ref="4" baseform="|kyla|" complemgram="|" compwf="|" lemgram="|kyla..nn.1|">kyla</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="6" deprel="CA" ref="5" baseform="|väldig|" complemgram="|" compwf="|" lemgram="|väldig..av.1|">väldigt</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="1" deprel="OP" ref="6" baseform="|väl|" complemgram="|" compwf="|" lemgram="|väl..nn.1|">väl</token>
+      <token msd="MAD" pos="MAD" dephead_ref="1" deprel="IP" ref="7" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="814">
+      <token msd="AB" pos="AB" dephead_ref="2" deprel="CA" ref="1" baseform="|först|" complemgram="|" compwf="|" lemgram="|först..ab.1|">Först</token>
+      <token msd="PP" pos="PP" dephead_ref="5" deprel="TA" ref="2" baseform="|vid|" complemgram="|" compwf="|" lemgram="|vid..pp.1|">vid</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="4" deprel="DT" ref="3" baseform="|" complemgram="|" compwf="|" lemgram="|">40</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="2" deprel="PA" ref="4" baseform="|minusgrad|" complemgram="|minus..nn.1+grad..nn.1:1.077e-10|" compwf="|minus+grader|" lemgram="|minusgrad..nn.1|">minusgrader</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="5" baseform="|börja|" complemgram="|" compwf="|" lemgram="|börja..vb.1|börja..vb.2|">börjar</token>
+      <token msd="PN.UTR.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="5" deprel="SS" ref="6" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">den</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="5" deprel="OO" ref="7" baseform="|producera|" complemgram="|" compwf="|" lemgram="|producera..vb.1|">producera</token>
+      <token msd="JJ.POS.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="JJ" dephead_ref="9" deprel="AT" ref="8" baseform="|extra|" complemgram="|" compwf="|" lemgram="|extra..av.1|">extra</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="10" deprel="DT" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">inre</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="7" deprel="OO" ref="10" baseform="|värme|" complemgram="|" compwf="|" lemgram="|värme..nn.1|värme..nn.2|">värme</token>
+      <token msd="MAD" pos="MAD" dephead_ref="5" deprel="IP" ref="11" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+  </text>
+  <text date="2019-11-26" source="https://sv.wikipedia.org/wiki/R%C3%A4var" title="Rävar">
+    <sentence id="8d7">
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">Rävar</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="5" deprel="MS" ref="2" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="RG.NEU.SIN.IND.NOM" pos="RG" dephead_ref="4" deprel="DT" ref="3" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">ett</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="2" deprel="SP" ref="4" baseform="|trivialnamn|" complemgram="|trivial..av.1+namn..nn.1:2.722e-12|tri..nn.1+vial..nn.1+namn..nn.1:1.132e-25|" compwf="|trivial+namn|tri+vial+namn|" lemgram="|trivialnamn..nn.1|">trivialnamn</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="VB.PRS.SFO" pos="VB" dephead_ref="5" deprel="+F" ref="6" baseform="|använda|" complemgram="|an..ab.1+vända..vb.1:1.980e-12|an..ab.1+vända..vb.2:1.980e-12|" compwf="|an+vänds|" lemgram="|använda..vb.1|">används</token>
+      <token msd="SN" pos="SN" dephead_ref="6" deprel="OO" ref="7" baseform="|om|" complemgram="|" compwf="|" lemgram="|om..sn.1|">om</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="9" deprel="DT" ref="8" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="10" deprel="DT" ref="9" baseform="|mängd|" complemgram="|" compwf="|" lemgram="|mängd..nn.1|">mängd</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="7" deprel="SS" ref="10" baseform="|art|" complemgram="|" compwf="|" lemgram="|art..nn.1|">arter</token>
+      <token msd="PP" pos="PP" dephead_ref="13" deprel="DT" ref="11" baseform="|inom|" complemgram="|" compwf="|" lemgram="|inom..pp.1|">inom</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="11" deprel="PA" ref="12" baseform="|familj|" complemgram="|" compwf="|" lemgram="|familj..nn.1|">familjen</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="10" deprel="ET" ref="13" baseform="|hunddjur|" complemgram="|hund..nn.1+djur..nn.1:1.670e-09|" compwf="|hund+djur|" lemgram="|hunddjur..nn.1|">hunddjur</token>
+      <token msd="PAD" pos="PAD" dephead_ref="13" deprel="IR" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">(</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="13" deprel="AN" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">Canidae</token>
+      <token msd="PAD" pos="PAD" dephead_ref="13" deprel="JR" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">)</token>
+      <token msd="MAD" pos="MAD" dephead_ref="5" deprel="IP" ref="17" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="887">
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">Rävar</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="MS" ref="2" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="AB" pos="AB" dephead_ref="2" deprel="+A" ref="3" baseform="|alltså|" complemgram="|" compwf="|" lemgram="|alltså..ab.1|">alltså</token>
+      <token msd="PN.UTR.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="6" deprel="DT" ref="4" baseform="|ingen|" complemgram="|" compwf="|" lemgram="|ingen..pn.1|">ingen</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="6" deprel="AT" ref="5" baseform="|systematisk|" complemgram="|" compwf="|" lemgram="|systematisk..av.1|">systematisk</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="2" deprel="SP" ref="6" baseform="|grupp|" complemgram="|" compwf="|" lemgram="|grupp..nn.1|">grupp</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="7" baseform="|utan|" complemgram="|" compwf="|" lemgram="|utan..kn.1|">utan</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="+F" ref="8" baseform="|omfatta|" complemgram="|om..ab.1+fatta..vb.1:1.704e-09|om..ab.1+fatta..vb.2:1.704e-09|omfatta..vb.1+ta..vb.1:5.258e-16|om..nn.1+fatta..vb.1:5.988e-20|om..nn.1+fatta..vb.2:5.988e-20|om..ab.1+fat..nn.1+ta..vb.1:3.248e-16|om..ab.1+fatt..av.1+ta..vb.1:1.983e-16|om..nn.1+fatt..av.1+ta..vb.1:2.233e-26|om..nn.1+fat..nn.1+ta..vb.1:1.372e-26|" compwf="|om+fattar|omfatt+tar|om+fat+tar|om+fatt+tar|" lemgram="|omfatta..vb.1|">omfattar</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="10" deprel="AT" ref="9" baseform="|likartad|" complemgram="|lik..av.1+artad..avh.1:6.417e-15|lik..nn.1+artad..avh.1:5.124e-15|like..nn.1+artad..avh.1:5.124e-15|" compwf="|lik+artade|" lemgram="|likartad..av.1|">likartade</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="8" deprel="OO" ref="10" baseform="|hunddjur|" complemgram="|hund..nn.1+djur..nn.1:1.670e-09|" compwf="|hund+djur|" lemgram="|hunddjur..nn.1|">hunddjur</token>
+      <token msd="HA" pos="HA" dephead_ref="8" deprel="KA" ref="11" baseform="|som|" complemgram="|" compwf="|" lemgram="|som..ab.1|">som</token>
+      <token msd="PN.UTR+NEU.PLU.IND.SUB+OBJ" pos="PN" dephead_ref="13" deprel="SS" ref="12" baseform="|all|" complemgram="|" compwf="|" lemgram="|all..pn.1|">alla</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="11" deprel="UA" ref="13" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="AB" pos="AB" dephead_ref="15" deprel="AA" ref="14" baseform="|förhållandevis|" complemgram="|" compwf="|" lemgram="|förhållandevis..ab.1|">förhållandevis</token>
+      <token msd="PC.PRF.UTR+NEU.SIN.DEF.NOM" pos="PC" dephead_ref="13" deprel="SP" ref="15" baseform="|kortbent|" complemgram="|kort..av.1+bent..avh.1:5.401e-14|kort..nn.1+bent..avh.1:1.388e-14|korta..vb.1+bent..avh.1:1.436e-24|" compwf="|kort+benta|" lemgram="|kortbent..av.1|">kortbenta</token>
+      <token msd="MID" pos="MID" dephead_ref="7" deprel="IK" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="+F" ref="17" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="RG.NEU.SIN.IND.NOM" pos="RG" dephead_ref="20" deprel="DT" ref="18" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">ett</token>
+      <token msd="AB.AN" pos="AB" dephead_ref="20" deprel="AT" ref="19" baseform="|tillplattad|" complemgram="|" compwf="|" lemgram="|tillplattad..av.1|">tillplattat</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="17" deprel="OO" ref="20" baseform="|ansikte|" complemgram="|an..ab.1+sikte..nn.1:1.286e-11|" compwf="|an+sikte|" lemgram="|ansikte..nn.1|">ansikte</token>
+      <token msd="MID" pos="MID" dephead_ref="20" deprel="IK" ref="21" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="PC.PRF.MAS.SIN.DEF.NOM" pos="PC" dephead_ref="24" deprel="AT" ref="22" baseform="|triangelformad|" complemgram="|triangel..nn.1+forma..vb.1:7.511e-15|tri..nn.1+angel..nn.1+forma..vb.1:5.060e-30|tri..nn.1+angla..vb.1+forma..vb.1:2.510e-40|" compwf="|triangel+formade|tri+angel+formade|" lemgram="|triangelformad..av.1|">triangelformade</token>
+      <token msd="JJ.POS.NEU.SIN.IND.NOM" pos="JJ" dephead_ref="24" deprel="AT" ref="23" baseform="|upprättstående|" complemgram="|upprätt..av.1+stående..av.1:6.953e-13|upp..ab.1+rätt..nn.3+stående..av.1:6.235e-15|upp..ab.1+rätt..ab.1+stående..av.1:8.780e-16|upp..ab.1+rätt..av.1+stående..av.1:8.780e-16|upprätt..av.1+stå..vb.1+enda..av.1:1.166e-19|" compwf="|upprätt+stående|upp+rätt+stående|upprätt+stå+ende|" lemgram="|upprättstående..av.1|">upprättstående</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="20" deprel="AN" ref="24" baseform="|öra|" complemgram="|ö..nn.2+ro..nn.1:3.669e-12|ö..nn.2+ro..nn.2:3.669e-12|ö..nn.2+ro..nn.3:3.669e-12|ör..nn.1+o..nn.1:1.084e-19|" compwf="|ö+ron|ör+on|" lemgram="|öra..nn.1|">öron</token>
+      <token msd="MID" pos="MID" dephead_ref="24" deprel="IK" ref="25" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="AB" pos="AB" dephead_ref="29" deprel="NA" ref="26" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..ab.1|">en</token>
+      <token msd="AB" pos="AB" dephead_ref="28" deprel="AA" ref="27" baseform="|ganska|" complemgram="|" compwf="|" lemgram="|ganska..ab.1|">ganska</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="29" deprel="AT" ref="28" baseform="|spetsig|" complemgram="|" compwf="|" lemgram="|spetsig..av.1|">spetsig</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="30" deprel="CJ" ref="29" baseform="|nos|" complemgram="|" compwf="|" lemgram="|nos..nn.1|">nos</token>
+      <token msd="KN" pos="KN" dephead_ref="24" deprel="PA" ref="30" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="33" deprel="DT" ref="31" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="33" deprel="AT" ref="32" baseform="|yvig|" complemgram="|" compwf="|" lemgram="|yvig..av.1|">yvig</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="30" deprel="CJ" ref="33" baseform="|svans|" complemgram="|" compwf="|" lemgram="|svans..nn.1|">svans</token>
+      <token msd="MAD" pos="MAD" dephead_ref="7" deprel="IP" ref="34" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="892">
+      <token msd="JJ.KOM.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="JJ" dephead_ref="2" deprel="DT" ref="1" baseform="|ytterlig|" complemgram="|" compwf="|" lemgram="|ytterlig..av.1|">Ytterligare</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="7" deprel="SP" ref="2" baseform="|förvirring|" complemgram="|förvirra..vb.1+ring..nn.1:2.423e-20|förvirra..vb.1+ring..nn.2:2.423e-20|föra..vb.1+vira..nn.2+ring..nn.1:1.221e-20|föra..vb.1+vira..nn.2+ring..nn.2:1.221e-20|föra..vb.1+vira..vb.1+ring..nn.1:7.362e-23|föra..vb.1+vira..vb.1+ring..nn.2:7.362e-23|föra..vb.1+virra..vb.1+ring..nn.1:1.619e-23|föra..vb.1+virra..vb.1+ring..nn.2:1.619e-23|för..nn.1+vira..nn.2+ring..nn.1:1.110e-23|för..nn.1+vira..nn.2+ring..nn.2:1.110e-23|för..nn.1+vira..vb.1+ring..nn.1:1.666e-26|för..nn.1+vira..vb.1+ring..nn.2:1.666e-26|för..nn.1+virra..vb.1+ring..nn.1:3.664e-27|för..nn.1+virra..vb.1+ring..nn.2:3.664e-27|" compwf="|förvirr+ring|för+vir+ring|för+virr+ring|" lemgram="|förvirring..nn.1|">förvirring</token>
+      <token msd="PP" pos="PP" dephead_ref="2" deprel="ET" ref="3" baseform="|kring|" complemgram="|" compwf="|" lemgram="|kring..pp.1|">kring</token>
+      <token msd="HD.UTR+NEU.PLU.IND" pos="HD" dephead_ref="5" deprel="DT" ref="4" baseform="|" complemgram="|" compwf="|" lemgram="|">vilka</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="3" deprel="PA" ref="5" baseform="|art|" complemgram="|" compwf="|" lemgram="|art..nn.1|">arter</token>
+      <token msd="KN" pos="KN" dephead_ref="7" deprel="SP" ref="6" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="7" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="PAD" pos="PAD" dephead_ref="7" deprel="IR" ref="8" baseform="|" complemgram="|" compwf="|" lemgram="|">"</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="11" deprel="SS" ref="9" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">rävar</token>
+      <token msd="PAD" pos="PAD" dephead_ref="9" deprel="JR" ref="10" baseform="|" complemgram="|" compwf="|" lemgram="|">"</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="MS" ref="11" baseform="|uppstå|" complemgram="|upp..ab.1+stå..vb.1:4.100e-08|" compwf="|upp+står|" lemgram="|uppstå..vb.1|">uppstår</token>
+      <token msd="AB" pos="AB" dephead_ref="11" deprel="TA" ref="12" baseform="|" complemgram="|" compwf="|" lemgram="|">mellan</token>
+      <token msd="AB" pos="AB" dephead_ref="11" deprel="TA" ref="13" baseform="|olika|" complemgram="|" compwf="|" lemgram="|olika..ab.1|">olika</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="13" deprel="HD" ref="14" baseform="|språk|" complemgram="|" compwf="|" lemgram="|språk..nn.1|">språk</token>
+      <token msd="MAD" pos="MAD" dephead_ref="7" deprel="IP" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="803">
+      <token msd="PN.NEU.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="3" deprel="SS" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">Ett</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="1" deprel="HD" ref="2" baseform="|exempel|" complemgram="|" compwf="|" lemgram="|exempel..nn.1|">exempel</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="9" deprel="SS" ref="3" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="5" deprel="DT" ref="4" baseform="|afrikansk|" complemgram="|" compwf="|" lemgram="|afrikansk..av.1|">afrikansk</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="8" deprel="DT" ref="5" baseform="|" complemgram="|öra..nn.1+hund..nn.1:3.559e-10|" compwf="|öron+hund|" lemgram="|">öronhund</token>
+      <token msd="HA" pos="HA" dephead_ref="8" deprel="DT" ref="6" baseform="|som|" complemgram="|" compwf="|" lemgram="|som..ab.1|">som</token>
+      <token msd="PP" pos="PP" dephead_ref="8" deprel="DT" ref="7" baseform="|på|" complemgram="|" compwf="|" lemgram="|på..pp.1|">på</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="3" deprel="SP" ref="8" baseform="|engelsk|" complemgram="|" compwf="|" lemgram="|engelsk..av.1|">engelska</token>
+      <token msd="VB.INF.SFO" pos="VB" deprel="ROOT" ref="9" baseform="|kalla|" complemgram="|kall..av.1+lägga..vb.1:2.144e-13|kal..av.1+lägga..vb.1:8.050e-15|kall..nn.1+lägga..vb.1:1.214e-21|kalla..nn.1+lägga..vb.1:1.214e-21|kalla..vb.1+lägga..vb.1:7.497e-23|" compwf="|kall+las|kal+las|" lemgram="|kalla..vb.1|">kallas</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="9" deprel="AA" ref="10" baseform="|" complemgram="|" compwf="|" lemgram="|">Bat</token>
+      <token msd="VB.PRT.AKT" pos="VB" dephead_ref="9" deprel="MA" ref="11" baseform="|" complemgram="|" compwf="|" lemgram="|">eared</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="11" deprel="SS" ref="12" baseform="|" complemgram="|" compwf="|" lemgram="|">fox</token>
+      <token msd="MID" pos="MID" dephead_ref="12" deprel="IK" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="DT.NEU.SIN.DEF" pos="DT" dephead_ref="9" deprel="PA" ref="14" baseform="|den|en|det vill säga|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|det_vill_säga..abm.1|">det</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="9" deprel="VG" ref="15" baseform="|vilja|det vill säga:14|" complemgram="|" compwf="|" lemgram="|vilja..vb.1|det_vill_säga..abm.1:14|">vill</token>
+      <token msd="VB.INF.AKT" pos="VB" dephead_ref="15" deprel="HD" ref="16" baseform="|säga|det vill säga:14|" complemgram="|" compwf="|" lemgram="|säga..vb.1|det_vill_säga..abm.1:14|">säga</token>
+      <token msd="PAD" pos="PAD" dephead_ref="15" deprel="IR" ref="17" baseform="|" complemgram="|" compwf="|" lemgram="|">"</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="19" deprel="DT" ref="18" baseform="|" complemgram="|fladdermus..nn.1+ö..nn.2+rad..nn.1:2.164e-17|fladdermus..nn.1+ö..nn.2+rad..nn.2:2.164e-17|fladder..nn.1+mus..nn.1+ö..nn.2+rad..nn.1:3.019e-24|fladder..nn.1+mus..nn.1+ö..nn.2+rad..nn.2:3.019e-24|fladder..nn.1+mus..nn.2+ö..nn.2+rad..nn.1:3.019e-24|fladder..nn.1+mus..nn.2+ö..nn.2+rad..nn.2:3.019e-24|fladdra..vb.1+mus..nn.1+ö..nn.2+rad..nn.1:1.248e-31|fladdra..vb.1+mus..nn.1+ö..nn.2+rad..nn.2:1.248e-31|fladdra..vb.1+mus..nn.2+ö..nn.2+rad..nn.1:1.248e-31|fladdra..vb.1+mus..nn.2+ö..nn.2+rad..nn.2:1.248e-31|" compwf="|fladdermus+ö+rad|fladder+mus+ö+rad|" lemgram="|">fladdermusörad</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="12" deprel="AN" ref="19" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">räv</token>
+      <token msd="PAD" pos="PAD" dephead_ref="19" deprel="JC" ref="20" baseform="|" complemgram="|" compwf="|" lemgram="|">"</token>
+      <token msd="MAD" pos="MAD" dephead_ref="9" deprel="IP" ref="21" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+  </text>
+  <text date="2020-06-16" source="https://sv.wikipedia.org/wiki/R%C3%B6dr%C3%A4v" title="Rödräv">
+    <sentence id="838">
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="6" deprel="SS" ref="1" baseform="|rödräv|" complemgram="|röd..av.1+räv..nn.1:2.714e-13|" compwf="|röd+räv|" lemgram="|rödräv..nn.1|">Rödräv</token>
+      <token msd="PAD" pos="PAD" dephead_ref="1" deprel="IR" ref="2" baseform="|" complemgram="|" compwf="|" lemgram="|">(</token>
+      <token msd="VB.INF.SFO" pos="VB" dephead_ref="1" deprel="MS" ref="3" baseform="|" complemgram="|" compwf="|" lemgram="|">Vulpes</token>
+      <token msd="NN.UTR.SIN.DEF.GEN" pos="NN" dephead_ref="3" deprel="OO" ref="4" baseform="|" complemgram="|" compwf="|" lemgram="|">vulpes</token>
+      <token msd="PAD" pos="PAD" dephead_ref="1" deprel="JR" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">)</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="6" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="DT.NEU.SIN.IND" pos="DT" dephead_ref="8" deprel="DT" ref="7" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..al.1|">ett</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="15" deprel="DT" ref="8" baseform="|hunddjur|" complemgram="|hund..nn.1+djur..nn.1:1.670e-09|" compwf="|hund+djur|" lemgram="|hunddjur..nn.1|">hunddjur</token>
+      <token msd="UO" pos="UO" dephead_ref="15" deprel="+A" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">och</token>
+      <token msd="PN.UTR.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="13" deprel="DT" ref="10" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">den</token>
+      <token msd="AB.SUV" pos="AB" dephead_ref="12" deprel="AA" ref="11" baseform="|mycket|" complemgram="|" compwf="|" lemgram="|mycket..ab.1|">mest</token>
+      <token msd="PC.PRS.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="PC" dephead_ref="13" deprel="AT" ref="12" baseform="|förekomma|förekommande|" complemgram="|" compwf="|" lemgram="|förekomma..vb.1|förekommande..av.1|">förekommande</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="15" deprel="DT" ref="13" baseform="|art|" complemgram="|ar..nn.1+ten..nn.1:1.631e-10|" compwf="|ar+ten|" lemgram="|art..nn.1|">arten</token>
+      <token msd="PL" pos="PL" dephead_ref="15" deprel="DT" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="NN.NEU.SIN.DEF.NOM" pos="NN" dephead_ref="6" deprel="SP" ref="15" baseform="|" complemgram="|räv..nn.1+släkte..nn.1:8.376e-11|" compwf="|räv+släktet|" lemgram="|">rävsläktet</token>
+      <token msd="PAD" pos="PAD" dephead_ref="6" deprel="IR" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">(</token>
+      <token msd="VB.PRS.SFO" pos="VB" dephead_ref="6" deprel="MS" ref="17" baseform="|" complemgram="|" compwf="|" lemgram="|">Vulpes</token>
+      <token msd="PAD" pos="PAD" dephead_ref="6" deprel="JR" ref="18" baseform="|" complemgram="|" compwf="|" lemgram="|">)</token>
+      <token msd="MAD" pos="MAD" dephead_ref="6" deprel="IP" ref="19" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="824">
+      <token msd="DT.UTR.SIN.DEF" pos="DT" dephead_ref="10" deprel="MS" ref="1" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">Den</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="1" deprel="VG" ref="2" baseform="|förekomma|" complemgram="|" compwf="|" lemgram="|förekomma..vb.1|">förekommer</token>
+      <token msd="PP" pos="PP" dephead_ref="2" deprel="RA" ref="3" baseform="|i|" complemgram="|" compwf="|" lemgram="|i..pp.1|">i</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="5" deprel="AT" ref="4" baseform="|stor|" complemgram="|" compwf="|" lemgram="|stor..av.1|">stora</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="3" deprel="PA" ref="5" baseform="|del|" complemgram="|" compwf="|" lemgram="|del..nn.1|">delar</token>
+      <token msd="PL" pos="PL" dephead_ref="2" deprel="PL" ref="6" baseform="|av|" complemgram="|" compwf="|" lemgram="|av..ab.1|">av</token>
+      <token msd="PM.GEN" pos="PM" dephead_ref="8" deprel="CJ" ref="7" baseform="|" complemgram="|" compwf="|" lemgram="|">Palearktis</token>
+      <token msd="KN" pos="KN" dephead_ref="2" deprel="OO" ref="8" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="PM.GEN" pos="PM" dephead_ref="8" deprel="CJ" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">Nearktis</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="10" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="PN.UTR+NEU.PLU.IND.SUB+OBJ" pos="PN" dephead_ref="10" deprel="+F" ref="11" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="PN.NEU.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="16" deprel="DT" ref="12" baseform="|mycken|" complemgram="|" compwf="|" lemgram="|mycken..pn.1|">mycket</token>
+      <token msd="UO" pos="UO" dephead_ref="16" deprel="AT" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">mindre</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="13" deprel="HD" ref="14" baseform="|utsträckning|" complemgram="|ut..ab.1+sträckning..nn.1:1.591e-10|" compwf="|ut+sträckning|" lemgram="|utsträckning..nn.1|">utsträckning</token>
+      <token msd="PL" pos="PL" dephead_ref="13" deprel="PL" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">i</token>
+      <token msd="PM.NOM" pos="PM" dephead_ref="11" deprel="AN" ref="16" baseform="|Afrika|" complemgram="|" compwf="|" lemgram="|Afrika..pm.1|">Afrika</token>
+      <token msd="MAD" pos="MAD" dephead_ref="10" deprel="IP" ref="17" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8af">
+      <token msd="IN" pos="IN" dephead_ref="3" deprel="DT" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">I</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="3" deprel="DT" ref="2" baseform="|modern|" complemgram="|" compwf="|" lemgram="|modern..av.1|">modern</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="4" deprel="TA" ref="3" baseform="|tid|" complemgram="|" compwf="|" lemgram="|tid..nn.1|">tid</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="4" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="DT.UTR.SIN.DEF" pos="DT" dephead_ref="7" deprel="SS" ref="5" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">den</token>
+      <token msd="AB" pos="AB" dephead_ref="5" deprel="+A" ref="6" baseform="|också|" complemgram="|" compwf="|" lemgram="|också..ab.1|">också</token>
+      <token msd="VB.SUP.SFO" pos="VB" dephead_ref="4" deprel="VG" ref="7" baseform="|sprida|" complemgram="|" compwf="|" lemgram="|sprida..vb.1|">spridits</token>
+      <token msd="PL" pos="PL" dephead_ref="7" deprel="PL" ref="8" baseform="|till|" complemgram="|" compwf="|" lemgram="|till..ab.1|">till</token>
+      <token msd="PM.NOM" pos="PM" dephead_ref="7" deprel="OO" ref="9" baseform="|Australien|" complemgram="|" compwf="|" lemgram="|Australien..pm.1|Australien..pm.2|">Australien</token>
+      <token msd="MAD" pos="MAD" dephead_ref="4" deprel="IP" ref="10" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8fa">
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|rödräv|" complemgram="|röd..av.1+räv..nn.1:1.783e-13|" compwf="|röd+räven|" lemgram="|rödräv..nn.1|">Rödräven</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="2" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="4" deprel="DT" ref="3" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="2" deprel="OO" ref="4" baseform="|kroppslängd|" complemgram="|kropp..nn.1+längd..nn.1:6.915e-12|" compwf="|kropps+längd|" lemgram="|kroppslängd..nn.1|">kroppslängd</token>
+      <token msd="AB" pos="AB" dephead_ref="7" deprel="AA" ref="5" baseform="|på|" complemgram="|" compwf="|" lemgram="|på..ab.1|">på</token>
+      <token msd="AB" pos="AB" dephead_ref="7" deprel="AA" ref="6" baseform="|ungefär|" complemgram="|" compwf="|" lemgram="|ungefär..ab.1|">ungefär</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="8" deprel="DT" ref="7" baseform="|" complemgram="|" compwf="|" lemgram="|">75</token>
+      <token msd="NN.AN" pos="NN" dephead_ref="2" deprel="TA" ref="8" baseform="|cm|" complemgram="|" compwf="|" lemgram="|cm..nna.1|">cm</token>
+      <token msd="MID" pos="MID" dephead_ref="8" deprel="IK" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="UO" pos="UO" dephead_ref="8" deprel="ET" ref="10" baseform="|" complemgram="|" compwf="|" lemgram="|">och</token>
+      <token msd="PL" pos="PL" dephead_ref="10" deprel="PL" ref="11" baseform="|till|" complemgram="|" compwf="|" lemgram="|till..ab.1|">till</token>
+      <token msd="PN.NEU.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="10" deprel="AN" ref="12" baseform="|denna|" complemgram="|" compwf="|" lemgram="|denna..pn.1|">detta</token>
+      <token msd="UO" pos="UO" dephead_ref="18" deprel="DT" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">kommer</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="16" deprel="DT" ref="14" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="16" deprel="DT" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">40</token>
+      <token msd="NN.AN" pos="NN" dephead_ref="17" deprel="AA" ref="16" baseform="|cm|" complemgram="|" compwf="|" lemgram="|cm..nna.1|">cm</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="18" deprel="AT" ref="17" baseform="|lång|" complemgram="|" compwf="|" lemgram="|lång..av.1|">lång</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="12" deprel="ET" ref="18" baseform="|svans|" complemgram="|" compwf="|" lemgram="|svans..nn.1|">svans</token>
+      <token msd="MAD" pos="MAD" dephead_ref="2" deprel="IP" ref="19" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="84b">
+      <token msd="PN.UTR.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="3" deprel="DT" ref="1" baseform="|man|" complemgram="|" compwf="|" lemgram="|man..pn.1|">En</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="3" deprel="AT" ref="2" baseform="|vuxen|" complemgram="|" compwf="|" lemgram="|vuxen..av.1|">vuxen</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="4" deprel="SS" ref="3" baseform="|hane|" complemgram="|" compwf="|" lemgram="|hane..nn.1|">hane</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="4" baseform="|väga|" complemgram="|" compwf="|" lemgram="|väga..vb.1|väga..vb.3|">väger</token>
+      <token msd="PL" pos="PL" dephead_ref="4" deprel="PL" ref="5" baseform="|omkring|" complemgram="|" compwf="|" lemgram="|omkring..ab.1|">omkring</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="7" deprel="DT" ref="6" baseform="|" complemgram="|" compwf="|" lemgram="|">8</token>
+      <token msd="NN.AN" pos="NN" dephead_ref="8" deprel="CJ" ref="7" baseform="|kg|" complemgram="|" compwf="|" lemgram="|kg..nna.1|">kg</token>
+      <token msd="KN" pos="KN" dephead_ref="4" deprel="OO" ref="8" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="11" deprel="DT" ref="9" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="11" deprel="AT" ref="10" baseform="|vuxen|" complemgram="|" compwf="|" lemgram="|vuxen..av.1|">vuxen</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="14" deprel="DT" ref="11" baseform="|hona|" complemgram="|" compwf="|" lemgram="|hona..nn.1|">hona</token>
+      <token msd="AB" pos="AB" dephead_ref="13" deprel="AA" ref="12" baseform="|cirka|" complemgram="|" compwf="|" lemgram="|cirka..ab.1|">cirka</token>
+      <token msd="RG.NOM" pos="RG" dephead_ref="14" deprel="DT" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">6,5</token>
+      <token msd="NN.AN" pos="NN" dephead_ref="8" deprel="CJ" ref="14" baseform="|kg|" complemgram="|" compwf="|" lemgram="|kg..nna.1|">kg</token>
+      <token msd="MAD" pos="MAD" dephead_ref="4" deprel="IP" ref="15" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="88f">
+      <token msd="DT.UTR.SIN.DEF" pos="DT" deprel="ROOT" ref="1" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">Den</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="1" deprel="VG" ref="2" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="PC.PRF.UTR.SIN.IND.NOM" pos="PC" dephead_ref="4" deprel="AT" ref="3" baseform="|rödfärgad|" complemgram="|röd..av.1+färgad..av.1:1.003e-12|röd..av.1+färga..vb.1:3.087e-18|" compwf="|röd+färgad|" lemgram="|rödfärgad..av.1|">rödfärgad</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="7" deprel="DT" ref="4" baseform="|rygg|" complemgram="|" compwf="|" lemgram="|rygg..nn.1|">rygg</token>
+      <token msd="UO" pos="UO" dephead_ref="7" deprel="DT" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">och</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="7" deprel="AT" ref="6" baseform="|vit|" complemgram="|" compwf="|" lemgram="|vit..av.1|">vit</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="2" deprel="OO" ref="7" baseform="|buk|" complemgram="|" compwf="|" lemgram="|buk..nn.1|">buk</token>
+      <token msd="MAD" pos="MAD" deprel="IP" ref="8" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8ff">
+      <token msd="NN.UTR.PLU.DEF.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|färg|" complemgram="|" compwf="|" lemgram="|färg..nn.1|">Färgerna</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="2" baseform="|variera|" complemgram="|" compwf="|" lemgram="|variera..vb.1|">varierar</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="4" deprel="CA" ref="3" baseform="|lite|" complemgram="|" compwf="|" lemgram="|lite..ab.1|">lite</token>
+      <token msd="PP" pos="PP" dephead_ref="2" deprel="TA" ref="4" baseform="|mellan|" complemgram="|" compwf="|" lemgram="|mellan..pp.1|">mellan</token>
+      <token msd="PC.PRF.NEU.SIN.IND.NOM" pos="PC" dephead_ref="4" deprel="PA" ref="5" baseform="|gulröd|" complemgram="|gul..av.1+röd..av.1:3.598e-12|gula..nn.1+röd..av.1:6.387e-20|" compwf="|gul+rött|" lemgram="|gulröd..av.1|">gulrött</token>
+      <token msd="UO" pos="UO" dephead_ref="5" deprel="SP" ref="6" baseform="|" complemgram="|" compwf="|" lemgram="|">och</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="8" deprel="AA" ref="7" baseform="|mörk|" complemgram="|" compwf="|" lemgram="|mörk..av.1|">mörkt</token>
+      <token msd="JJ.POS.NEU.SIN.IND.NOM" pos="JJ" dephead_ref="6" deprel="PT" ref="8" baseform="|rödbrun|" complemgram="|röd..av.1+brun..av.1:4.262e-12|" compwf="|röd+brunt|" lemgram="|rödbrun..av.1|">rödbrunt</token>
+      <token msd="AB" pos="AB" dephead_ref="10" deprel="CA" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">respektive</token>
+      <token msd="PP" pos="PP" dephead_ref="12" deprel="DT" ref="10" baseform="|mellan|" complemgram="|" compwf="|" lemgram="|mellan..pp.1|">mellan</token>
+      <token msd="NN.NEU.SIN.IND.NOM" pos="NN" dephead_ref="12" deprel="CJ" ref="11" baseform="|" complemgram="|" compwf="|" lemgram="|">vitt</token>
+      <token msd="KN" pos="KN" dephead_ref="8" deprel="ET" ref="12" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="AB.KOM" pos="AB" dephead_ref="12" deprel="AA" ref="13" baseform="|silvergrå|" complemgram="|silver..nn.1+grå..av.1:1.812e-12|silver..nn.2+grå..av.1:1.812e-12|silver..nn.3+grå..av.1:1.812e-12|" compwf="|silver+grått|" lemgram="|silvergrå..av.1|">silvergrått</token>
+      <token msd="MAD" pos="MAD" dephead_ref="2" deprel="IP" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8ad">
+      <token msd="NN.AN" pos="NN" dephead_ref="4" deprel="DT" ref="1" baseform="|I|i närheten|" complemgram="|" compwf="|" lemgram="|I..nna.1|i_närheten..abm.1|">I</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="1" deprel="HD" ref="2" baseform="|närhet|i närheten:1|" complemgram="|" compwf="|" lemgram="|närhet..nn.1|i_närheten..abm.1:1|">närheten</token>
+      <token msd="PL" pos="PL" dephead_ref="1" deprel="PL" ref="3" baseform="|av|" complemgram="|" compwf="|" lemgram="|av..ab.1|">av</token>
+      <token msd="NN.UTR.PLU.DEF.NOM" pos="NN" dephead_ref="5" deprel="SS" ref="4" baseform="|fot|" complemgram="|" compwf="|" lemgram="|fot..nn.1|">fötterna</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="5" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="7" deprel="DT" ref="6" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">räven</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="5" deprel="SP" ref="7" baseform="|svart|" complemgram="|" compwf="|" lemgram="|svart..av.1|">svart</token>
+      <token msd="MAD" pos="MAD" dephead_ref="5" deprel="IP" ref="8" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="82c">
+      <token msd="AB" pos="AB" dephead_ref="2" deprel="TA" ref="1" baseform="|vanligen|" complemgram="|" compwf="|" lemgram="|vanligen..ab.1|">Vanligen</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="2" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="PN.UTR.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="2" deprel="SS" ref="3" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">den</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="5" deprel="AT" ref="4" baseform="|yvig|" complemgram="|" compwf="|" lemgram="|yvig..av.1|">yviga</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="8" deprel="DT" ref="5" baseform="|svans|" complemgram="|svan..nn.1+s..nn.1:1.801e-20|" compwf="|svan+sen|" lemgram="|svans..nn.1|">svansen</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="8" deprel="DT" ref="6" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="JJ.POS.UTR.SIN.IND.NOM" pos="JJ" dephead_ref="8" deprel="AT" ref="7" baseform="|vit|" complemgram="|" compwf="|" lemgram="|vit..av.1|">vit</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="2" deprel="OO" ref="8" baseform="|spets|" complemgram="|" compwf="|" lemgram="|spets..nn.1|">spets</token>
+      <token msd="MAD" pos="MAD" dephead_ref="2" deprel="IP" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8ed">
+      <token msd="AB" pos="AB" dephead_ref="2" deprel="DT" ref="1" baseform="|" complemgram="|" compwf="|" lemgram="|">Under</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="3" deprel="SP" ref="2" baseform="|höst|" complemgram="|hö..nn.1+sten..nn.1:3.279e-11|hö..nn.1+sten..nn.2:3.279e-11|" compwf="|hö+sten|" lemgram="|höst..nn.1|">hösten</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="3" baseform="|bli|" complemgram="|" compwf="|" lemgram="|bli..vb.1|">blir</token>
+      <token msd="NN.UTR.SIN.DEF.GEN" pos="NN" dephead_ref="5" deprel="DT" ref="4" baseform="|rödräv|" complemgram="|röd..av.1+räv..nn.1:7.527e-14|" compwf="|röd+rävens|" lemgram="|rödräv..nn.1|">rödrävens</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="3" deprel="SS" ref="5" baseform="|päls|" complemgram="|" compwf="|" lemgram="|päls..nn.1|">päls</token>
+      <token msd="AB.KOM" pos="AB" dephead_ref="3" deprel="TA" ref="6" baseform="|länge|längre|lång|" complemgram="|" compwf="|" lemgram="|länge..ab.1|längre..ab.1|lång..av.1|">längre</token>
+      <token msd="MAD" pos="MAD" dephead_ref="3" deprel="IP" ref="7" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8d6">
+      <token msd="PN.UTR.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="4" deprel="DT" ref="1" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">Den</token>
+      <token msd="AB" pos="AB" dephead_ref="3" deprel="AA" ref="2" baseform="|så|så kallad|" complemgram="|" compwf="|" lemgram="|så..ab.1|så_kallad..avm.1|">så</token>
+      <token msd="PC.PRF.UTR+NEU.PLU.IND+DEF.NOM" pos="PC" dephead_ref="4" deprel="AT" ref="3" baseform="|kalla|så kallad:2|" complemgram="|" compwf="|" lemgram="|kalla..vb.1|så_kallad..avm.1:2|">kallade</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="5" deprel="SS" ref="4" baseform="|" complemgram="|vinter..nn.1+päls..nn.1:1.429e-11|vinter..nn.1+päla..vb.1+s..nn.1:1.670e-35|" compwf="|vinter+pälsen|vinter+päl+sen|" lemgram="|">vinterpälsen</token>
+      <token msd="VB.PRS.AKT" pos="VB" deprel="ROOT" ref="5" baseform="|hålla|" complemgram="|håll..nn.1+le..vb.1:1.366e-11|hål..nn.1+le..vb.1:6.026e-12|håla..nn.1+le..vb.1:6.026e-12|hålla..vb.1+le..vb.1:1.674e-13|håla..vb.1+le..vb.1:9.414e-22|" compwf="|håll+ler|hål+ler|" lemgram="|hålla..vb.1|">håller</token>
+      <token msd="NN.NEU.SIN.DEF.NOM" pos="NN" dephead_ref="5" deprel="OO" ref="6" baseform="|djur|" complemgram="|" compwf="|" lemgram="|djur..nn.1|">djuret</token>
+      <token msd="JJ.POS.NEU.SIN.IND.NOM" pos="JJ" dephead_ref="8" deprel="AT" ref="7" baseform="|varm|" complemgram="|" compwf="|" lemgram="|varm..av.1|">varmt</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="11" deprel="DT" ref="8" baseform="|under|" complemgram="|" compwf="|" lemgram="|under..nn.1|">under</token>
+      <token msd="PN.UTR.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="11" deprel="DT" ref="9" baseform="|den|" complemgram="|" compwf="|" lemgram="|den..pn.1|">den</token>
+      <token msd="JJ.KOM.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="JJ" dephead_ref="11" deprel="AT" ref="10" baseform="|kall|" complemgram="|" compwf="|" lemgram="|kall..av.1|">kallare</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="5" deprel="TA" ref="11" baseform="|årstid|" complemgram="|år..nn.1+tid..nn.1:2.466e-08|" compwf="|års+tiden|" lemgram="|årstid..nn.1|">årstiden</token>
+      <token msd="MAD" pos="MAD" dephead_ref="5" deprel="IP" ref="12" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8d2">
+      <token msd="NN.AN" pos="NN" dephead_ref="4" deprel="DT" ref="1" baseform="|I|" complemgram="|" compwf="|" lemgram="|I..nna.1|">I</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="1" deprel="HD" ref="2" baseform="|början|" complemgram="|böra..vb.1+ja..nn.1:1.519e-10|böra..vb.1+jan..nn.1:1.519e-10|" compwf="|bör+jan|" lemgram="|början..nn.1|">början</token>
+      <token msd="PL" pos="PL" dephead_ref="1" deprel="PL" ref="3" baseform="|av|" complemgram="|" compwf="|" lemgram="|av..ab.1|">av</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="5" deprel="SS" ref="4" baseform="|vår|" complemgram="|" compwf="|" lemgram="|vår..nn.1|">våren</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="MS" ref="5" baseform="|fälla|" complemgram="|fäll..nn.1+le..vb.1:1.525e-20|fälla..nn.1+le..vb.1:1.525e-20|fälla..vb.1+le..vb.1:9.414e-22|" compwf="|fäll+ler|" lemgram="|fälla..vb.1|">fäller</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="5" deprel="OO" ref="6" baseform="|räv|" complemgram="|" compwf="|" lemgram="|räv..nn.1|">räven</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="7" baseform="|och|" complemgram="|" compwf="|" lemgram="|och..kn.1|">och</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="7" deprel="+F" ref="8" baseform="|skifta|" complemgram="|" compwf="|" lemgram="|skifta..vb.1|skifta..vb.2|">skiftar</token>
+      <token msd="SN" pos="SN" dephead_ref="8" deprel="OO" ref="9" baseform="|" complemgram="|" compwf="|" lemgram="|">till</token>
+      <token msd="RG.UTR.SIN.IND.NOM" pos="RG" dephead_ref="12" deprel="DT" ref="10" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..nl.1|">en</token>
+      <token msd="JJ.KOM.UTR+NEU.SIN+PLU.IND+DEF.NOM" pos="JJ" dephead_ref="12" deprel="AT" ref="11" baseform="|kort|" complemgram="|" compwf="|" lemgram="|kort..av.1|">kortare</token>
+      <token msd="PM.GEN" pos="PM" dephead_ref="9" deprel="ROOT" ref="12" baseform="|" complemgram="|" compwf="|" lemgram="|">sommarpäls</token>
+      <token msd="MAD" pos="MAD" dephead_ref="12" deprel="IP" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+    <sentence id="8d8">
+      <token msd="DT.UTR.SIN.DEF" pos="DT" dephead_ref="11" deprel="IT" ref="1" baseform="|den|en|" complemgram="|" compwf="|" lemgram="|den..pn.1|en..al.1|">Den</token>
+      <token msd="VB.PRS.SFO" pos="VB" dephead_ref="11" deprel="MS" ref="2" baseform="|skilja|skiljas|" complemgram="|" compwf="|" lemgram="|skilja..vb.1|skiljas..vb.1|">skiljs</token>
+      <token msd="AB.POS" pos="AB" dephead_ref="2" deprel="AA" ref="3" baseform="|lätt|" complemgram="|" compwf="|" lemgram="|lätt..av.1|">lätt</token>
+      <token msd="PL" pos="PL" dephead_ref="2" deprel="PL" ref="4" baseform="|från|" complemgram="|" compwf="|" lemgram="|från..ab.1|">från</token>
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="2" deprel="OO" ref="5" baseform="|fjällräv|" complemgram="|fjäll..nn.1+räv..nn.1:4.435e-13|fjälla..nn.1+räv..nn.1:4.435e-13|" compwf="|fjäll+räven|" lemgram="|fjällräv..nn.1|">fjällräven</token>
+      <token msd="PP" pos="PP" dephead_ref="2" deprel="AA" ref="6" baseform="|genom|" complemgram="|" compwf="|" lemgram="|genom..pp.1|">genom</token>
+      <token msd="KN" pos="KN" dephead_ref="10" deprel="VA" ref="7" baseform="|både och|" complemgram="|" compwf="|" lemgram="|både_och..knm.1|">både</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="10" deprel="DT" ref="8" baseform="|färg|" complemgram="|" compwf="|" lemgram="|färg..nn.1|färg..nn.2|">färg</token>
+      <token msd="UO" pos="UO" dephead_ref="10" deprel="DT" ref="9" baseform="|både och:7|" complemgram="|" compwf="|" lemgram="|både_och..knm.1:7|">och</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="6" deprel="PA" ref="10" baseform="|storlek|" complemgram="|stor..av.1+lek..nn.1:2.266e-10|stor..nn.1+lek..nn.1:4.628e-19|" compwf="|stor+lek|" lemgram="|storlek..nn.1|">storlek</token>
+      <token msd="KN" pos="KN" dephead_ref="28" deprel="MS" ref="11" baseform="|men|" complemgram="|" compwf="|" lemgram="|men..kn.1|">men</token>
+      <token msd="AB" pos="AB" dephead_ref="18" deprel="+A" ref="12" baseform="|även|" complemgram="|" compwf="|" lemgram="|även..ab.1|">även</token>
+      <token msd="PL" pos="PL" dephead_ref="12" deprel="PL" ref="13" baseform="|" complemgram="|" compwf="|" lemgram="|">genom</token>
+      <token msd="PN.NEU.SIN.DEF.SUB+OBJ" pos="PN" dephead_ref="18" deprel="DT" ref="14" baseform="|de|" complemgram="|" compwf="|" lemgram="|de..pn.1|">de</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="18" deprel="AT" ref="15" baseform="|stor|" complemgram="|" compwf="|" lemgram="|stor..av.1|">stora</token>
+      <token msd="UO" pos="UO" dephead_ref="18" deprel="DT" ref="16" baseform="|" complemgram="|" compwf="|" lemgram="|">och</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="18" deprel="AT" ref="17" baseform="|spetsig|" complemgram="|" compwf="|" lemgram="|spetsig..av.1|">spetsiga</token>
+      <token msd="NN.NEU.PLU.DEF.NOM" pos="NN" dephead_ref="11" deprel="CJ" ref="18" baseform="|öra|" complemgram="|ö..nn.2+ro..nn.1+n..nn.1:8.170e-17|ö..nn.2+ro..nn.1+nen..nn.1:8.170e-17|ö..nn.2+ro..nn.2+n..nn.1:8.170e-17|ö..nn.2+ro..nn.2+nen..nn.1:8.170e-17|ö..nn.2+ro..nn.3+n..nn.1:8.170e-17|ö..nn.2+ro..nn.3+nen..nn.1:8.170e-17|ö..nn.2+ro..vb.1+n..nn.1:4.032e-20|ö..nn.2+ro..vb.1+nen..nn.1:4.032e-20|" compwf="|ö+ro+nen|" lemgram="|öra..nn.1|">öronen</token>
+      <token msd="MID" pos="MID" dephead_ref="18" deprel="IK" ref="19" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="KN" pos="KN" dephead_ref="18" deprel="ET" ref="20" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="AB" pos="AB" dephead_ref="22" deprel="AA" ref="21" baseform="|ungefär|" complemgram="|" compwf="|" lemgram="|ungefär..ab.1|">ungefär</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="20" deprel="UA" ref="22" baseform="|vara|vara av|vara på|" complemgram="|" compwf="|" lemgram="|vara..vb.1|vara_av..vbm.1|vara_på..vbm.1|">är</token>
+      <token msd="PL" pos="PL" dephead_ref="22" deprel="PL" ref="23" baseform="|av|vara av:22|" complemgram="|" compwf="|" lemgram="|av..ab.1|vara_av..vbm.1:22|">av</token>
+      <token msd="NN.NEU.SIN.DEF.GEN" pos="NN" dephead_ref="26" deprel="DT" ref="24" baseform="|huvud|" complemgram="|" compwf="|" lemgram="|huvud..nn.1|">huvudets</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="26" deprel="DT" ref="25" baseform="|halv|" complemgram="|" compwf="|" lemgram="|halv..av.1|">halva</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="22" deprel="SP" ref="26" baseform="|längd|" complemgram="|" compwf="|" lemgram="|längd..nn.1|">längd</token>
+      <token msd="MID" pos="MID" dephead_ref="11" deprel="IK" ref="27" baseform="|" complemgram="|" compwf="|" lemgram="|">,</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="28" baseform="|samt|" complemgram="|" compwf="|" lemgram="|samt..kn.1|">samt</token>
+      <token msd="PL" pos="PL" dephead_ref="28" deprel="+F" ref="29" baseform="|på|vara på:22|" complemgram="|" compwf="|" lemgram="|på..ab.1|vara_på..vbm.1:22|">på</token>
+      <token msd="NN.UTR.PLU.DEF.GEN" pos="NN" dephead_ref="32" deprel="DT" ref="30" baseform="|tå|" complemgram="|" compwf="|" lemgram="|tå..nn.1|">tårnas</token>
+      <token msd="JJ.POS.UTR+NEU.PLU.IND+DEF.NOM" pos="JJ" dephead_ref="32" deprel="AT" ref="31" baseform="|naken|" complemgram="|" compwf="|" lemgram="|naken..av.1|">nakna</token>
+      <token msd="NN.UTR.PLU.IND.NOM" pos="NN" dephead_ref="29" deprel="SS" ref="32" baseform="|trampdyna|" complemgram="|tramp..nn.1+dyna..nn.1:6.480e-14|trampa..nn.1+dyna..nn.1:6.480e-14|trampa..vb.1+dyna..nn.1:9.101e-22|tramp..nn.1+dy..nn.1+nor..nn.1:5.525e-28|trampa..nn.1+dy..nn.1+nor..nn.1:5.525e-28|trampa..vb.1+dy..nn.1+nor..nn.1:1.749e-35|" compwf="|tramp+dynor|tramp+dy+nor|" lemgram="|trampdyna..nn.1|">trampdynor</token>
+      <token msd="MAD" pos="MAD" dephead_ref="28" deprel="IP" ref="33" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+  </text>
+</document>

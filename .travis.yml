@@ -1,0 +1,29 @@
+language: python
+
+python:
+- '3.8.5'
+
+sudo: true
+
+env:
+    global:
+        - NLTK_DATA="$HOME/nltk_data"
+        - PIP_CACHE_DIR=$HOME/.cache/pip
+        - POETRY_CACHE_DIR=$HOME/.cache/poetry
+
+cache:
+  directories:
+    - $HOME/nltk_data
+    - $PIP_CACHE_DIR
+    - $POETRY_CACHE_DIR
+
+install:
+- pip install poetry
+- poetry install --dev
+- mkdir -p ./penelope/tests/output $HOME/nltk_data
+- travis_wait 30 poetry run python -m nltk.downloader stopwords -d $HOME/nltk_data
+- travis_wait 30 poetry run python -m nltk.downloader punkt -d $HOME/nltk_data
+
+script:
+- poetry run python -m pytest
+

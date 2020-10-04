@@ -1,0 +1,15 @@
+[paths]
+source =
+   penelope
+   scripts
+
+[run]
+omit =
+    tests/*
+
+branch = true
+parallel = true
+
+[report]
+show_missing = true
+precision = 2

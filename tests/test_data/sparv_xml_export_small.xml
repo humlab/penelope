@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<document name="rävar">
+  <text date="2017-01-10" source="https://jarvzoo.se/djur/rodrav/" title="Rödräv">
+    <sentence id="845">
+      <token msd="NN.UTR.SIN.DEF.NOM" pos="NN" dephead_ref="2" deprel="SS" ref="1" baseform="|rödräv|" complemgram="|röd..av.1+räv..nn.1:1.783e-13|" compwf="|röd+räven|" lemgram="|rödräv..nn.1|">Rödräven</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="5" deprel="MS" ref="2" baseform="|vara|" complemgram="|" compwf="|" lemgram="|vara..vb.1|">är</token>
+      <token msd="DT.NEU.SIN.IND" pos="DT" dephead_ref="4" deprel="DT" ref="3" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..al.1|">ett</token>
+      <token msd="NN.NEU.PLU.IND.NOM" pos="NN" dephead_ref="2" deprel="SP" ref="4" baseform="|hunddjur|" complemgram="|hund..nn.1+djur..nn.1:1.670e-09|" compwf="|hund+djur|" lemgram="|hunddjur..nn.1|">hunddjur</token>
+      <token msd="KN" pos="KN" deprel="ROOT" ref="5" baseform="|" complemgram="|" compwf="|" lemgram="|">som</token>
+      <token msd="VB.PRS.AKT" pos="VB" dephead_ref="5" deprel="+F" ref="6" baseform="|ha|" complemgram="|" compwf="|" lemgram="|ha..vb.1|">har</token>
+      <token msd="AB" pos="AB" dephead_ref="10" deprel="CA" ref="7" baseform="|en|" complemgram="|" compwf="|" lemgram="|en..ab.1|">en</token>
+      <token msd="PN.NEU.SIN.IND.SUB+OBJ" pos="PN" dephead_ref="10" deprel="DT" ref="8" baseform="|mycken|" complemgram="|" compwf="|" lemgram="|mycken..pn.1|">mycket</token>
+      <token msd="JJ.POS.NEU.SIN.IND.NOM" pos="JJ" dephead_ref="10" deprel="AT" ref="9" baseform="|vidsträckt|" complemgram="|" compwf="|" lemgram="|vidsträckt..av.1|">vidsträckt</token>
+      <token msd="NN.UTR.SIN.IND.NOM" pos="NN" dephead_ref="6" deprel="OO" ref="10" baseform="|utbredning|" complemgram="|" compwf="|" lemgram="|utbredning..nn.1|">utbredning</token>
+      <token msd="PP" pos="PP" dephead_ref="10" deprel="ET" ref="11" baseform="|över|" complemgram="|" compwf="|" lemgram="|över..pp.1|">över</token>
+      <token msd="JJ.POS.UTR+NEU.SIN.DEF.NOM" pos="JJ" dephead_ref="13" deprel="DT" ref="12" baseform="|norra|" complemgram="|" compwf="|" lemgram="|norra..av.1|">norra</token>
+      <token msd="NN.NEU.SIN.DEF.NOM" pos="NN" dephead_ref="11" deprel="PA" ref="13" baseform="|halvklot|" complemgram="|halv..av.1+klot..nn.1:1.385e-12|halv..nn.1+klot..nn.1:2.126e-20|halva..nn.1+klot..nn.1:2.126e-20|" compwf="|halv+klotet|" lemgram="|halvklot..nn.1|">halvklotet</token>
+      <token msd="MAD" pos="MAD" dephead_ref="5" deprel="IP" ref="14" baseform="|" complemgram="|" compwf="|" lemgram="|">.</token>
+    </sentence>
+  </text>
+</document>

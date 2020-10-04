@@ -1,0 +1,17 @@
+# These files are text and should be normalized (convert crlf =&gt; lf)
+*.sql     text
+*.psql    text
+*.bash    text
+*.sh      text
+*.py      text
+*.ipynb   text
+*.bat     text
+*.conf    text
+*.plan    text
+*.txt     text
+*.json    text
+
+# Images should be treated as binary  (binary is a macro for -text -diff)
+*.png     binary
+*.jpg     binary
+*.zip     binary
