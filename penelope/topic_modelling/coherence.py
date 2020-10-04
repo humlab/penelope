@@ -14,7 +14,7 @@ def compute_score(id2word, model, corpus):
             model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
         )
         coherence_score = coherence_model.get_coherence()
-    except Exception as ex: # pylint: disable=broad-except
+    except Exception as ex:  # pylint: disable=broad-except
         logger.error(ex)
         coherence_score = None
     return coherence_score
@@ -41,7 +41,7 @@ def compute_scores(method, id2word, corpus, start=10, stop=20, step=10, engine_a
             model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
         )
 
-        perplexity_score = 2**model.log_perplexity(corpus, len(corpus))
+        perplexity_score = 2 ** model.log_perplexity(corpus, len(corpus))
 
         metric = dict(num_topics=num_topics, coherence_score=coherence_score, perplexity_score=perplexity_score)
         metrics.append(metric)

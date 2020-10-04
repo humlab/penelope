@@ -8,32 +8,31 @@ from penelope.corpus.readers import streamify_text_source
 
 logger = logging.getLogger(__name__)
 
- # pylint: disable=abstract-method
+# pylint: disable=abstract-method
 class ExtTextCorpus(TextCorpus):
-
     def __init__(
         self,
-        stream: Iterable[Tuple[str,str]],
+        stream: Iterable[Tuple[str, str]],
         dictionary=None,
         metadata=False,
         character_filters=None,
         tokenizer=None,
         token_filters=None,
-        bigram_transform=False  # pylint: disable=unused-argument
+        bigram_transform=False,  # pylint: disable=unused-argument
     ):
         self.stream = stream
         self.filenames = None
         self.documents = None
         self.length = None
 
-        #if 'filenames' in content_iterator.__dict__:
+        # if 'filenames' in content_iterator.__dict__:
         #    self.filenames = content_iterator.filenames
         #    self.document_names = self._compile_documents()
         #    self.length = len(self.filenames)
 
         token_filters = self.default_token_filters() + (token_filters or [])
 
-        #if bigram_transform is True:
+        # if bigram_transform is True:
         #    train_corpus = GenericTextCorpus(content_iterator, token_filters=[ x.lower() for x in tokens ])
         #    phrases = gensim.models.phrases.Phrases(train_corpus)
         #    bigram = gensim.models.phrases.Phraser(phrases)
@@ -47,12 +46,14 @@ class ExtTextCorpus(TextCorpus):
             metadata=metadata,
             character_filters=character_filters,
             tokenizer=tokenizer,
-            token_filters=token_filters
+            token_filters=token_filters,
         )
 
     def default_token_filters(self):
-        return [(lambda tokens: [x.lower() for x in tokens]),
-                (lambda tokens: [x for x in tokens if any(map(lambda x: x.isalpha(), x))])]
+        return [
+            (lambda tokens: [x.lower() for x in tokens]),
+            (lambda tokens: [x for x in tokens if any(map(lambda x: x.isalpha(), x))]),
+        ]
 
     def getstream(self):
         """Generate documents from the underlying plain text collection (of one or more files).
@@ -75,9 +76,9 @@ class ExtTextCorpus(TextCorpus):
         self.filenames = list(self.documents.document_name.values)
 
     def get_texts(self):
-        '''
+        """
         This is mandatory method from gensim.corpora.TextCorpus. Returns stream of documents.
-        '''
+        """
         for document in self.getstream():
             yield self.preprocess_text(document)
 
@@ -118,11 +119,11 @@ class ExtTextCorpus(TextCorpus):
 
         return documents
 
-class SimpleExtTextCorpus(ExtTextCorpus):
-    """Reads content in stream and returns tokenized text. No other processing.
-    """
 
-    def __init__(self, source, lowercase: bool=False, filename_filter=None):
+class SimpleExtTextCorpus(ExtTextCorpus):
+    """Reads content in stream and returns tokenized text. No other processing."""
+
+    def __init__(self, source, lowercase: bool = False, filename_filter=None):
 
         self.reader = streamify_text_source(source, filename_filter=filename_filter)
         self.filenames = self.reader.filenames

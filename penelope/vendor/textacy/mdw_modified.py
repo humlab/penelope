@@ -144,8 +144,10 @@ def most_discriminating_terms(dtm, id2term, bool_array_grp1, *, max_n_terms=1000
 
 def get_top_likelihoods(terms_likelihoods, top_n_terms):
     top_terms = [
-        term for term, likelihood in sorted(terms_likelihoods.items(), key=operator.itemgetter(1), reverse=True)
-        [:top_n_terms]
+        term
+        for term, likelihood in sorted(terms_likelihoods.items(), key=operator.itemgetter(1), reverse=True)[
+            :top_n_terms
+        ]
     ]
     return top_terms
 
@@ -170,9 +172,9 @@ def F(n):
 def compute_likelihoods(term_ids, nr_RS, aRS, nr_SS, aSS, NRS, NSS, id2term):
     """
 
-                                   Γ(nr_RS + αRS) × Γ(nr_SS + αSS)       Γ(NRS − nr_RS + αRS) × Γ(NSS − nr_SS + αSS)
-     p(y1, ...yn|αRS, αSS, r)  ∝          -----------------          ×               -----------------
-                                    Γ(nr_RS + nr_SS + αRS + αSS)          Γ(NRS − nr_RS + NSS − nr_SS + αRS + αSS)
+                                  Γ(nr_RS + αRS) × Γ(nr_SS + αSS)       Γ(NRS − nr_RS + αRS) × Γ(NSS − nr_SS + αSS)
+    p(y1, ...yn|αRS, αSS, r)  ∝          -----------------          ×               -----------------
+                                   Γ(nr_RS + nr_SS + αRS + αSS)          Γ(NRS − nr_RS + NSS − nr_SS + αRS + αSS)
 
 
     """
@@ -181,12 +183,11 @@ def compute_likelihoods(term_ids, nr_RS, aRS, nr_SS, aSS, NRS, NSS, id2term):
 
     for idx, term_id in enumerate(term_ids):
         likelihood = (
-            F(nr_RS[idx] + aRS - 1) * F(nr_SS[idx] + aSS - 1) / \
-                F(nr_RS[idx] + nr_SS[idx] + aRS + aSS - 1)
-        ) * \
-        (
-            F(NRS - nr_RS[idx] + aRS - 1) * F(NSS - nr_SS[idx] + aSS - 1) / \
-                F(NRS + NSS - nr_RS[idx] - nr_SS[idx] + aRS + aSS - 1)
+            F(nr_RS[idx] + aRS - 1) * F(nr_SS[idx] + aSS - 1) / F(nr_RS[idx] + nr_SS[idx] + aRS + aSS - 1)
+        ) * (
+            F(NRS - nr_RS[idx] + aRS - 1)
+            * F(NSS - nr_SS[idx] + aSS - 1)
+            / F(NRS + NSS - nr_RS[idx] - nr_SS[idx] + aRS + aSS - 1)
         )
         terms_likelihoods[id2term[term_id]] = likelihood
     return terms_likelihoods

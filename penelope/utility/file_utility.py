@@ -15,6 +15,7 @@ import pandas as pd
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
+
 def strip_path_and_extension(filename):
 
     return os.path.splitext(os.path.basename(filename))[0]
@@ -112,8 +113,10 @@ def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile], filename_pattern:
         raise ValueError(f"Source '{folder_or_zip}' not found. Only folder or ZIP or file are valid arguments")
 
     return [
-        filename for filename in sorted(filenames) if filename_satisfied_by(filename, filename_filter) and
-        (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+        filename
+        for filename in sorted(filenames)
+        if filename_satisfied_by(filename, filename_filter)
+        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]
 
 
@@ -189,12 +192,13 @@ def read_textfile(filename, as_binary=False):
     with open(filename, **opts) as f:
         try:
             data = f.read()
-            content = data  #.decode('utf-8')
+            content = data  # .decode('utf-8')
         except UnicodeDecodeError as _:
             print('UnicodeDecodeError: {}'.format(filename))
-            #content = data.decode('cp1252')
+            # content = data.decode('cp1252')
             raise
         return content
+
 
 # def read_file(path, filename):
 #     if os.path.isdir(path):
@@ -207,8 +211,8 @@ def read_textfile(filename, as_binary=False):
 #     content = gensim.utils.to_unicode(content, 'utf8', errors='ignore')
 #     return content
 
-def filename_field_parser(meta_fields):
 
+def filename_field_parser(meta_fields):
     def extract_field(data):
 
         if len(data) == 1:  # regexp
@@ -269,9 +273,10 @@ def extract_filename_fields(filename, **kwargs):
 
     return data
 
+
 def find_parent_folder(name):
     path = pathlib.Path(os.getcwd())
-    folder = os.path.join(*path.parts[:path.parts.index(name)+1])
+    folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
     return folder
 
 
@@ -281,18 +286,22 @@ def read_excel(filename, sheet):
     with pd.ExcelFile(filename) as xls:
         return pd.read_excel(xls, sheet)
 
+
 def save_excel(data, filename):
-    with pd.ExcelWriter(filename) as writer: # pylint: disable=abstract-class-instantiated
+    with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
         for (df, name) in data:
             df.to_excel(writer, name, engine='xlsxwriter')
         writer.save()
 
+
 def ts_data_path(directory, filename):
     return os.path.join(directory, '{}_{}'.format(time.strftime("%Y%m%d%H%M"), filename))
+
 
 def data_path_ts(directory, path):
     name, extension = os.path.splitext(path)
     return os.path.join(directory, '{}_{}{}'.format(name, time.strftime("%Y%m%d%H%M"), extension))
+
 
 def compress_file(path):
     if not os.path.exists(path):

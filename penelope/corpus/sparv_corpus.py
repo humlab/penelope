@@ -7,7 +7,6 @@ from penelope.corpus.tokens_transformer import transformer_defaults
 
 
 class SparvTokenizedCorpus(tokenized_corpus.TokenizedCorpus):
-
     def __init__(
         self,
         source,
@@ -17,13 +16,10 @@ class SparvTokenizedCorpus(tokenized_corpus.TokenizedCorpus):
         pos_excludes="|MAD|MID|PAD|",
         lemmatize=True,
         chunk_size=None,
-        **tokens_transform_opts
+        **tokens_transform_opts,
     ):
 
-        tokens_transform_opts = {
-            k: v for k, v in tokens_transform_opts.items()
-                if k in transformer_defaults()
-        }
+        tokens_transform_opts = {k: v for k, v in tokens_transform_opts.items() if k in transformer_defaults()}
 
         tokenizer = readers.SparvXmlTokenizer(
             source,
@@ -34,7 +30,7 @@ class SparvTokenizedCorpus(tokenized_corpus.TokenizedCorpus):
             chunk_size=chunk_size,
             xslt_filename=None,
             append_pos="",
-            version=version
+            version=version,
         )
         super().__init__(tokenizer, **tokens_transform_opts)
 

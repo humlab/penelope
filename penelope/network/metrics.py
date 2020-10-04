@@ -2,7 +2,6 @@ import community  # python-louvain packages
 import networkx as nx
 
 DISTANCE_METRICS = {
-
     # 'Mahalanobis': 'mahalanobis',
     # 'Minkowski': 'minkowski',
     # 'Bray-Curtis': 'braycurtis',
@@ -15,7 +14,7 @@ DISTANCE_METRICS = {
     'Normalized Euclidean': 'seuclidean',
     'Squared Euclidean': 'sqeuclidean',
     'Kullback-Leibler': 'kullback–leibler',
-    'Kullback-Leibler (SciPy)': 'scipy.stats.entropy'
+    'Kullback-Leibler (SciPy)': 'scipy.stats.entropy',
 }
 
 
@@ -36,9 +35,28 @@ def compute_partition(network):
 def partition_colors(nodes_community, color_palette=None):
     if color_palette is None:
         color_palette = [
-            '#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#b3cde3', '#ccebc5',
-            '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#1b9e77', '#d95f02', '#7570b3', '#e7298a',
-            '#66a61e', '#e6ab02', '#a6761d', '#666666'
+            '#e41a1c',
+            '#377eb8',
+            '#4daf4a',
+            '#984ea3',
+            '#ff7f00',
+            '#ffff33',
+            '#a65628',
+            '#b3cde3',
+            '#ccebc5',
+            '#decbe4',
+            '#fed9a6',
+            '#ffffcc',
+            '#e5d8bd',
+            '#fddaec',
+            '#1b9e77',
+            '#d95f02',
+            '#7570b3',
+            '#e7298a',
+            '#66a61e',
+            '#e6ab02',
+            '#a6761d',
+            '#666666',
         ]
     community_colors = [color_palette[x % len(color_palette)] for x in nodes_community]
     return community_colors

@@ -11,7 +11,6 @@ logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=lo
 logger = logging.getLogger(__name__)
 
 
-
 class MalletTopicModel(models.wrappers.LdaMallet):
     """Python wrapper for LDA using `MALLET <http://mallet.cs.umass.edu/>`_.
     This is a derived file of gensim.models.wrappers.LdaMallet
@@ -46,14 +45,26 @@ class MalletTopicModel(models.wrappers.LdaMallet):
             Corpus in BoW format
         """
         self.convert_input(corpus, infer=False)
-        cmd = self.mallet_path + ' train-topics --input %s --num-topics %s  --alpha %s --optimize-interval %s '\
-            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --topic-word-weights-file %s '\
+        cmd = (
+            self.mallet_path + ' train-topics --input %s --num-topics %s  --alpha %s --optimize-interval %s '
+            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --topic-word-weights-file %s '
             '--num-iterations %s --inferencer-filename %s --doc-topics-threshold %s  --random-seed %s'
+        )
 
         cmd = cmd % (
-            self.fcorpusmallet(), self.num_topics, self.alpha, self.optimize_interval, self.workers, self.fstate(),
-            self.fdoctopics(), self.ftopickeys(), self.ftopicwordweights(), self.iterations, self.finferencer(),
-            self.topic_threshold, str(self.random_seed)
+            self.fcorpusmallet(),
+            self.num_topics,
+            self.alpha,
+            self.optimize_interval,
+            self.workers,
+            self.fstate(),
+            self.fdoctopics(),
+            self.ftopickeys(),
+            self.ftopicwordweights(),
+            self.iterations,
+            self.finferencer(),
+            self.topic_threshold,
+            str(self.random_seed),
         )
         # NOTE "--keep-sequence-bigrams" / "--use-ngrams true" poorer results + runs out of memory
         logger.info("training MALLET LDA with %s", cmd)
@@ -68,7 +79,7 @@ class MalletTopicModel(models.wrappers.LdaMallet):
 
         perplexity = None
         try:
-            #content = open(filename).read()
+            # content = open(filename).read()
             p = re.compile(r"<\d+> LL/token\: (-[\d\.]+)")
             matches = p.findall(content)
             if len(matches) > 0:

@@ -27,7 +27,7 @@ def compute_model(
     method: str = 'sklearn_lda',
     vectorizer_args=None,
     engine_args=None,
-    **args
+    **args,
 ):
 
     vectorizer_args = utility.extend({}, DEFAULT_VECTORIZE_PARAMS, vectorizer_args or {})
@@ -84,7 +84,7 @@ def compute_model(
         model = engine(**engine_options)
 
         if hasattr(model, 'log_perplexity'):
-            perplexity_score = 2**model.log_perplexity(corpus, len(corpus))
+            perplexity_score = 2 ** model.log_perplexity(corpus, len(corpus))
 
         coherence_score = coherence.compute_score(id2word, model, corpus)
 
@@ -101,9 +101,9 @@ def compute_model(
             method=method,
             vec_args=vectorizer_args,
             tm_args=engine_options,
-            **args
+            **args,
         ),
-        coherence_scores=None
+        coherence_scores=None,
     )
 
     return m_data, c_data

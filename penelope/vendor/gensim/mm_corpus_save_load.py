@@ -10,25 +10,26 @@ logger = logging.getLogger(__name__)
 
 jj = os.path.join
 
+
 def _mm_filename(source_folder, lang):
     return jj(source_folder, f'corpus_{lang}.mm')
+
 
 def _dict_filename(source_folder, lang):
     return jj(source_folder, f'corpus_{lang}.dict.gz')
 
+
 def _documents_filename(source_folder, lang):
     return jj(source_folder, f'corpus_{lang}_documents.csv')
 
+
 def store_as_mm_corpus(source_folder, lang, corpus):
 
-    gensim.corpora.MmCorpus.serialize(
-        _mm_filename(source_folder, lang),
-        corpus,
-        id2word=corpus.dictionary.id2token
-    )
+    gensim.corpora.MmCorpus.serialize(_mm_filename(source_folder, lang), corpus, id2word=corpus.dictionary.id2token)
 
     corpus.dictionary.save(_dict_filename(source_folder, lang))
     corpus.document_names.to_csv(_documents_filename(source_folder, lang), sep='\t')
+
 
 def load_mm_corpus(source_folder, lang, normalize_by_D=False):
 
@@ -41,7 +42,10 @@ def load_mm_corpus(source_folder, lang, normalize_by_D=False):
 
     return corpus
 
+
 def exists(source_folder, lang):
-    return os.path.isfile(_mm_filename(source_folder, lang)) and \
-        os.path.isfile(_dict_filename(source_folder, lang)) and \
-        os.path.isfile(_documents_filename(source_folder, lang))
+    return (
+        os.path.isfile(_mm_filename(source_folder, lang))
+        and os.path.isfile(_dict_filename(source_folder, lang))
+        and os.path.isfile(_documents_filename(source_folder, lang))
+    )

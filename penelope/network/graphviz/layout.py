@@ -28,8 +28,9 @@ layout_setups = [
         engine=engine,
         layout_network=layout_network,
         layout_function=nx.nx_pydot.pydot_layout,
-        layout_args=lambda **_: {}
-    ) for engine in engines
+        layout_args=lambda **_: {},
+    )
+    for engine in engines
 ]
 
 layout_setup_map = {x.key: x for x in layout_setups}

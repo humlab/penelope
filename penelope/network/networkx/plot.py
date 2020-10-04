@@ -33,7 +33,7 @@ STYLES = {
         'fontname': 'Courier',
         'fontsize': '12',
         'fontcolor': 'white',
-    }
+    },
 }
 
 

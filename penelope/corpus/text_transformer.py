@@ -15,12 +15,12 @@ TRANSFORMS = types.SimpleNamespace(
     fix_accents=textacy.preprocess.remove_accents,
     fix_contractions=textacy.preprocess.unpack_contraction,
     fix_currency_symbols=textacy.preprocess.replace_currency_symbols,
-    fix_ftfy_text=ftfy.fix_text
+    fix_ftfy_text=ftfy.fix_text,
 )
 
-class TextTransformer():
-    """Transforms applied on non-tokenized text
-    """
+
+class TextTransformer:
+    """Transforms applied on non-tokenized text"""
 
     def __init__(self, transforms: List[Callable] = None):
         self.transforms: List[Callable] = transforms or []

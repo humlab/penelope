@@ -13,11 +13,11 @@ if 'extend' not in globals():
     extend = lambda a, b: a.update(b) or a
 
 layout_algorithms = {
-    'Fruchterman-Reingold':         lambda x, **args: nx.spring_layout(x, **args),
-    'Eigenvectors of Laplacian':    lambda x, **args: nx.spectral_layout(x, **args),
-    'Circular':                     lambda x, **args: nx.circular_layout(x, **args),
-    'Shell':                        lambda x, **args: nx.shell_layout(x, **args),
-    'Kamada-Kawai':                 lambda x, **args: nx.kamada_kawai_layout(x, **args)
+    'Fruchterman-Reingold': lambda x, **args: nx.spring_layout(x, **args),
+    'Eigenvectors of Laplacian': lambda x, **args: nx.spectral_layout(x, **args),
+    'Circular': lambda x, **args: nx.circular_layout(x, **args),
+    'Shell': lambda x, **args: nx.shell_layout(x, **args),
+    'Kamada-Kawai': lambda x, **args: nx.kamada_kawai_layout(x, **args),
 }
 
 
@@ -28,7 +28,7 @@ def _layout_args(layout_algorithm, network, scale, weight_name='weight'):
             args = dict(nlist=[nodes, other_nodes])
 
     if layout_algorithm == 'Fruchterman-Reingold':
-        k = scale  #/ math.sqrt(network.number_of_nodes())
+        k = scale  # / math.sqrt(network.number_of_nodes())
         args = dict(dim=2, k=k, iterations=20, weight=weight_name, scale=0.5)
 
     if layout_algorithm == 'Kamada-Kawai':
@@ -73,7 +73,7 @@ def _plot_network(
     element_id='nx_id3',
     figsize=(900, 900),
     node_range=(20, 60),
-    edge_range=(1.0, 5.0)
+    edge_range=(1.0, 5.0),
 ):
     if threshold > 0:
 
@@ -83,8 +83,7 @@ def _plot_network(
         print('Max weigth: {}'.format(max_weight))
         print('Mean weigth: {}'.format(sum(values) / len(values)))
 
-        filter_edges = [(u, v) for u, v, d in network.edges(data=True) \
-                        if d[weight_name] >= (threshold * max_weight)]
+        filter_edges = [(u, v) for u, v, d in network.edges(data=True) if d[weight_name] >= (threshold * max_weight)]
 
         sub_network = network.edge_subgraph(filter_edges)
     else:
@@ -98,7 +97,7 @@ def _plot_network(
         weight=weight_name,
         scale=weight_scale,
         normalize=normalize_weights,
-        project_range=edge_range
+        project_range=edge_range,
     )
 
     nodes_source = utility.create_nodes_data_source(sub_network, layout)
@@ -125,8 +124,14 @@ def _plot_network(
     _ = p.multi_line('xs', 'ys', line_width='weights', level='underlay', source=lines_source, **line_opts)
     r_nodes = p.circle('x', 'y', size=nodes_size, source=nodes_source, **node_opts)
 
-    p.add_tools(bokeh.models.HoverTool(renderers=[r_nodes], tooltips=None, callback=widgets_helper.\
-        glyph_hover_callback2(nodes_source, 'node_id', text_ids=node_description.index, text=node_description, element_id=element_id))
+    p.add_tools(
+        bokeh.models.HoverTool(
+            renderers=[r_nodes],
+            tooltips=None,
+            callback=widgets_helper.glyph_hover_callback2(
+                nodes_source, 'node_id', text_ids=node_description.index, text=node_description, element_id=element_id
+            ),
+        )
     )
 
     text_opts = dict(x='x', y='y', text='name', level='overlay', x_offset=0, y_offset=0, text_font_size='12pt')
@@ -139,14 +144,18 @@ def _plot_network(
 
     return p
 
+
 def layout_args(layout_algorithm, network, scale):
     return _layout_args(layout_algorithm, network, scale)
+
 
 def get_layout_algorithm(layout_algorithm):
     return _get_layout_algorithm(layout_algorithm)
 
+
 def project_series_to_range(series, low, high):
     return _project_series_to_range(series, low, high)
+
 
 plot_network = _plot_network
 layout_args = _layout_args

@@ -6,8 +6,7 @@ from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 
 
 class DataFrameTextTokenizer:
-    """Text iterator that returns row-wise text documents from a Pandas DataFrame
-    """
+    """Text iterator that returns row-wise text documents from a Pandas DataFrame"""
 
     def __init__(self, df, **column_filters):
         """
@@ -37,10 +36,12 @@ class DataFrameTextTokenizer:
             print('Warn: {} n/a rows encountered'.format(len(self.df[self.df.txt.isna()])))
             self.df = self.df.dropna()
 
-        self.text_transformer = TextTransformer(transforms=[])\
-            .add(TRANSFORMS.fix_unicode)\
-            .add(TRANSFORMS.fix_whitespaces)\
+        self.text_transformer = (
+            TextTransformer(transforms=[])
+            .add(TRANSFORMS.fix_unicode)
+            .add(TRANSFORMS.fix_whitespaces)
             .add(TRANSFORMS.fix_hyphenation)
+        )
 
         self.iterator = None
         self.metadata = self._compile_metadata()
@@ -52,13 +53,14 @@ class DataFrameTextTokenizer:
         return (self._process(row['filename'], row['txt']) for _, row in self.df.iterrows())
 
     def _process(self, filename: str, text: str):
-        """Process the text and returns tokenized text
-        """
-        #text = self.preprocess(text)
+        """Process the text and returns tokenized text"""
+        # text = self.preprocess(text)
 
         text = self.text_transformer.transform(text)
 
-        tokens = self.tokenize(text, )
+        tokens = self.tokenize(
+            text,
+        )
 
         return filename, tokens
 

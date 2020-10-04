@@ -2,8 +2,7 @@ import gensim
 
 
 class ExtMmCorpus(gensim.corpora.MmCorpus):
-    """Extension of MmCorpus that allow TF normalization based on document length.
-    """
+    """Extension of MmCorpus that allow TF normalization based on document length."""
 
     @staticmethod
     def norm_tf_by_D(doc):

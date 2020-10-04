@@ -6,7 +6,7 @@ from numpy.polynomial.polynomial import polyval
 
 
 def gaussian(x, mean, amplitude, standard_deviation):
-    return amplitude * np.exp(-((x - mean) / standard_deviation)**2)
+    return amplitude * np.exp(-(((x - mean) / standard_deviation) ** 2))
 
 
 def linear(x, a, b):
@@ -31,11 +31,11 @@ def sigmoid(x, x0, k):
 
 
 def quadratic(x, a, b, c):
-    return a * x**2 + b * x + c
+    return a * x ** 2 + b * x + c
 
 
 def zipf_mandelbrot(x, a, b, c):
-    return c / (x + b)**a
+    return c / (x + b) ** a
 
 
 def inversed(x, a, b):
@@ -79,17 +79,16 @@ def fit_curve_ravel(fx, xs, Y, step=0.1):
 
 
 rolling_average_methods = {
-    'pandas': lambda xs, ys, n: (xs, pd.Series(ys).rolling(window=n).mean().iloc[n - 1:].values),
-    'fftconvolve': lambda xs, ys, n: (xs, scipy.signal.fftconvolve(ys, np.ones((n, )) / n, mode='valid')),
+    'pandas': lambda xs, ys, n: (xs, pd.Series(ys).rolling(window=n).mean().iloc[n - 1 :].values),
+    'fftconvolve': lambda xs, ys, n: (xs, scipy.signal.fftconvolve(ys, np.ones((n,)) / n, mode='valid')),
     'reflect': lambda xs, ys, n: (xs, scipy.ndimage.filters.uniform_filter1d(ys, size=n, mode='reflect')),
     'nearest': lambda xs, ys, n: (xs, scipy.ndimage.filters.uniform_filter1d(ys, size=n, mode='nearest')),
     'mirror': lambda xs, ys, n: (xs, scipy.ndimage.filters.uniform_filter1d(ys, size=n, mode='mirror')),
-    'constant': lambda xs, ys, n: (xs, scipy.ndimage.filters.uniform_filter1d(ys, size=n, mode='constant'))
+    'constant': lambda xs, ys, n: (xs, scipy.ndimage.filters.uniform_filter1d(ys, size=n, mode='constant')),
 }
 
 
 def rolling_average_smoother(key, window_size):
-
     def smoother(xs, ys):
         xs, ys = rolling_average_methods[key](xs, ys, window_size)
         ys = ys / ys.sum()

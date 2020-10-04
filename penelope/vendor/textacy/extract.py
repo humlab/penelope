@@ -6,7 +6,7 @@ logger = utility.getLogger('corpus_text_analysis')
 
 
 def extract_document_terms(doc, extract_args):
-    """ Extracts documents and terms from a corpus
+    """Extracts documents and terms from a corpus
 
     Parameters
     ----------
@@ -46,18 +46,22 @@ def extract_document_terms(doc, extract_args):
         return w
 
     terms = (
-        z for z in (
-            tranform_token(w, substitutions) for w in doc._.
-            to_terms_list(ngrams=ngrams, entities=named_entities, normalize=normalize, as_strings=as_strings, **kwargs)
+        z
+        for z in (
+            tranform_token(w, substitutions)
+            for w in doc._.to_terms_list(
+                ngrams=ngrams, entities=named_entities, normalize=normalize, as_strings=as_strings, **kwargs
+            )
             if len(w) >= min_length  # and w not in extra_stop_words
-        ) if z not in extra_stop_words
+        )
+        if z not in extra_stop_words
     )
 
     return terms
 
 
 def extract_corpus_terms(corpus, extract_args):
-    """ Extracts documents and terms from a corpus
+    """Extracts documents and terms from a corpus
 
     Parameters
     ----------
@@ -96,17 +100,15 @@ def extract_corpus_terms(corpus, extract_args):
     chunk_size = extract_args.get('chunk_size', None)
     min_length = extract_args.get('min_length', 2)
 
-    #mask_gpe = extract_args.get('mask_gpe', False)
-    #if mask_gpe is True:
+    # mask_gpe = extract_args.get('mask_gpe', False)
+    # if mask_gpe is True:
     #    gpe_names = { x: '_gpe_' for x in get_gpe_names(corpus) }
     #    substitutions = utility.extend(substitutions, gpe_names)
 
     min_freq = extract_args.get('min_freq', 1)
 
     if min_freq > 1:
-        words = infrequent_words(
-            corpus, normalize=normalize, weighting='count', threshold=min_freq, as_strings=True
-        )
+        words = infrequent_words(corpus, normalize=normalize, weighting='count', threshold=min_freq, as_strings=True)
         extra_stop_words = extra_stop_words.union(words)
         logger.info('Ignoring {} low-frequent words!'.format(len(words)))
 
@@ -125,7 +127,7 @@ def extract_corpus_terms(corpus, extract_args):
         'substitutions': substitutions,
         'extra_stop_words': extra_stop_words,
         'chunk_size': chunk_size,
-        'min_length':min_length
+        'min_length': min_length,
     }
 
     terms = (extract_document_terms(doc, extract_args) for doc in corpus)
@@ -139,7 +141,7 @@ def chunks(l, n):
         yield l
     else:
         for i in range(0, len(l), n):
-            yield l[i:i + n]
+            yield l[i : i + n]
 
 
 def extract_document_tokens(docs, **opts):
@@ -168,13 +170,13 @@ def extract_document_tokens(docs, **opts):
                 ngrams=opts['ngrams'],
                 named_entities=opts['named_entities'],
                 normalize=opts['normalize'],
-                as_strings=True
+                as_strings=True,
             ),
             kwargs=dict(
                 min_freq=opts['min_freq'],
                 include_pos=opts['include_pos'],
                 filter_stops=opts['filter_stops'],
-                filter_punct=opts['filter_punct']
+                filter_punct=opts['filter_punct'],
             ),
             extra_stop_words=extra_stop_words,
             substitutions=(term_substitutions if opts.get('substitute_terms', False) else None),

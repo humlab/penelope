@@ -27,9 +27,9 @@ from gensim.utils import check_output
 logger = logging.getLogger(__name__)
 
 
-class StaggerWrapper():
+class StaggerWrapper:
     """Wrapper for The Stockholm NER tagger(Stagger) NER tagger
-        <https://www.ling.su.se/english/nlp/tools/stagger>.
+    <https://www.ling.su.se/english/nlp/tools/stagger>.
     """
 
     def __init__(self, stagger_jar_path=None, stagger_model_path=None):
@@ -64,10 +64,20 @@ class StaggerWrapper():
         self.name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     def build_command(self, file_pattern, memory_size):
-        return ' '.join([
-            'java', '-Xmx{}'.format(memory_size), '-jar', self.stagger_jar_path, '-modelfile', self.stagger_model_path,
-            '-lang', 'sv', '-tag', file_pattern
-        ])
+        return ' '.join(
+            [
+                'java',
+                '-Xmx{}'.format(memory_size),
+                '-jar',
+                self.stagger_jar_path,
+                '-modelfile',
+                self.stagger_model_path,
+                '-lang',
+                'sv',
+                '-tag',
+                file_pattern,
+            ]
+        )
 
     def stagit(self, corpus_files, memory_size='4G'):
         """Tag corpus.

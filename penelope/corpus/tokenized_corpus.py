@@ -7,8 +7,7 @@ import pandas as pd
 from .tokens_transformer import DEFAULT_PROCESS_OPTS, TokensTransformer
 
 
-class TokenizedCorpus():
-
+class TokenizedCorpus:
     def __init__(self, reader: Any, **kwargs):
 
         if not hasattr(reader, 'metadata'):
@@ -75,8 +74,7 @@ class TokenizedCorpus():
             raise
 
 
-class ReIterableTerms():
-
+class ReIterableTerms:
     def __init__(self, corpus):
 
         self.corpus = corpus

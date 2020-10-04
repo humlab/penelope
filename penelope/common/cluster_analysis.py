@@ -9,8 +9,7 @@ import sklearn.cluster
 from scipy.cluster.hierarchy import linkage
 
 
-class CorpusClusters():
-
+class CorpusClusters:
     def __init__(self, corpus, tokens):
         self._token_clusters = None
         self.corpus = corpus
@@ -28,8 +27,8 @@ class CorpusClusters():
     @token_clusters.setter
     def token_clusters(self, value):
         self._token_clusters = value
-        self.cluster_labels = [] if self.token_clusters is None else sorted(
-            self.token_clusters.cluster.unique().tolist()
+        self.cluster_labels = (
+            [] if self.token_clusters is None else sorted(self.token_clusters.cluster.unique().tolist())
         )
 
     def cluster_token_ids(self, n_cluster):
@@ -42,23 +41,22 @@ class CorpusClusters():
 
     def cluster_means(self):
 
-        cluster_means = np.array([
-            self.corpus.data[:, token_ids].mean(axis=1) for _, token_ids in self.clusters_token_ids()
-        ])
+        cluster_means = np.array(
+            [self.corpus.data[:, token_ids].mean(axis=1) for _, token_ids in self.clusters_token_ids()]
+        )
 
         return cluster_means
 
     def cluster_medians(self):
 
-        cluster_medians = np.array([
-            np.median(self.corpus.data[:, token_ids], axis=1) for _, token_ids in self.clusters_token_ids()
-        ])
+        cluster_medians = np.array(
+            [np.median(self.corpus.data[:, token_ids], axis=1) for _, token_ids in self.clusters_token_ids()]
+        )
 
         return cluster_medians
 
 
 class HCACorpusClusters(CorpusClusters):
-
     def __init__(self, corpus, tokens, linkage_matrix, threshold=0.5):
 
         super().__init__(corpus, tokens)
@@ -83,14 +81,15 @@ class HCACorpusClusters(CorpusClusters):
 
         N = len(self.tokens)
 
-        df = pd.DataFrame(data=linkage_matrix, columns=['a_id', 'b_id', 'distance', 'n_obs'])\
-                .astype({'a_id': np.int64, 'b_id': np.int64, 'n_obs': np.int64 })
+        df = pd.DataFrame(data=linkage_matrix, columns=['a_id', 'b_id', 'distance', 'n_obs']).astype(
+            {'a_id': np.int64, 'b_id': np.int64, 'n_obs': np.int64}
+        )
 
         df['a_cluster'] = df.a_id.apply(lambda i: self.tokens[i] if i < N else '#{}#'.format(i))
         df['b_cluster'] = df.b_id.apply(lambda i: self.tokens[i] if i < N else '#{}#'.format(i))
         df['cluster'] = ['#{}#'.format(N + i) for i in df.index]
 
-        df = df[['a_cluster', 'b_cluster', 'distance', 'cluster']]  #, 'a_id', 'b_id', 'n_obs']]
+        df = df[['a_cluster', 'b_cluster', 'distance', 'cluster']]  # , 'a_id', 'b_id', 'n_obs']]
         return df
 
     def _reduce_to_threshold(self, threshold):
@@ -113,7 +112,6 @@ class HCACorpusClusters(CorpusClusters):
 
 
 class KMeansCorpusClusters(CorpusClusters):
-
     def __init__(self, corpus, tokens, compute_result):
 
         super().__init__(corpus, tokens)
@@ -140,7 +138,7 @@ class KMeansCorpusClusters(CorpusClusters):
 
 def compute_kmeans(x_corpus, tokens=None, n_clusters=8, **kwargs):
 
-    data = (x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)])
+    data = x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)]
 
     compute_result = sklearn.cluster.KMeans(n_clusters=n_clusters, **kwargs).fit(data.T)
 
@@ -149,7 +147,7 @@ def compute_kmeans(x_corpus, tokens=None, n_clusters=8, **kwargs):
 
 def compute_kmeans2(x_corpus, tokens=None, n_clusters=8, **kwargs):
 
-    data = (x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)])
+    data = x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)]
 
     centroids, labels = scipy.cluster.vq.kmeans2(data.T, n_clusters, **kwargs)
 
@@ -170,13 +168,13 @@ LINKAGE_METRICS = {
     'mahalanobis': 'Mahalanobis distance.',
     'minkowski': 'Minkowski distance.',
     'seuclidean': 'Normalized Euclidean distance.',
-    'sqeuclidean': 'Squared Euclidean distance.'
+    'sqeuclidean': 'Squared Euclidean distance.',
 }
 
 
 def compute_hca(x_corpus, tokens, linkage_method='ward', linkage_metric='euclidean'):
 
-    data = (x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)])
+    data = x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)]
 
     linkage_matrix = linkage(data.T, method=linkage_method, metric=linkage_metric)
     """ from documentation

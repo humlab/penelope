@@ -10,8 +10,7 @@ from penelope.corpus import tokenized_corpus, vectorized_corpus
 logger = logging.getLogger("corpus_vectorizer")
 
 
-class CorpusVectorizer():
-
+class CorpusVectorizer:
     def __init__(self, **kwargs):
         self.vectorizer = None
         self.kwargs = kwargs
@@ -21,7 +20,7 @@ class CorpusVectorizer():
 
         texts = (' '.join(tokens) for _, tokens in corpus)
 
-        #https://github.com/scikit-learn/scikit-learn/blob/1495f6924/sklearn/feature_extraction/text.py#L1147
+        # https://github.com/scikit-learn/scikit-learn/blob/1495f6924/sklearn/feature_extraction/text.py#L1147
         self.vectorizer = CountVectorizer(tokenizer=self.tokenizer, **self.kwargs)
 
         bag_term_matrix = self.vectorizer.fit_transform(texts)
@@ -33,8 +32,7 @@ class CorpusVectorizer():
         return v_corpus
 
     def _document_index(self, corpus):
-        """ Groups matrix by vales in column summing up all values in each category
-        """
+        """Groups matrix by vales in column summing up all values in each category"""
         metadata = corpus.metadata
         df = pd.DataFrame([x.__dict__ for x in metadata], columns=metadata[0].__dict__.keys())
         df['document_id'] = list(df.index)
@@ -68,7 +66,7 @@ def generate_corpus(filename, output_folder, **kwargs):
         as_binary=False,
         fix_whitespaces=True,
         fix_hyphenation=True,
-        filename_fields=kwargs.get("filename_fields")
+        filename_fields=kwargs.get("filename_fields"),
     )
     corpus = tokenized_corpus.TokenizedCorpus(reader, **kwargs)
 

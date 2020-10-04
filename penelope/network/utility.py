@@ -15,7 +15,7 @@ DISTANCE_METRICS = {
     'Normalized Euclidean': 'seuclidean',
     'Squared Euclidean': 'sqeuclidean',
     'Kullback-Leibler': 'kullback–leibler',
-    'Kullback-Leibler (SciPy)': 'scipy.stats.entropy'
+    'Kullback-Leibler (SciPy)': 'scipy.stats.entropy',
 }
 
 
@@ -36,9 +36,28 @@ def compute_partition(network):
 def partition_colors(nodes_community, color_palette=None):
     if color_palette is None:
         color_palette = [
-            '#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#b3cde3', '#ccebc5',
-            '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#1b9e77', '#d95f02', '#7570b3', '#e7298a',
-            '#66a61e', '#e6ab02', '#a6761d', '#666666'
+            '#e41a1c',
+            '#377eb8',
+            '#4daf4a',
+            '#984ea3',
+            '#ff7f00',
+            '#ffff33',
+            '#a65628',
+            '#b3cde3',
+            '#ccebc5',
+            '#decbe4',
+            '#fed9a6',
+            '#ffffcc',
+            '#e5d8bd',
+            '#fddaec',
+            '#1b9e77',
+            '#d95f02',
+            '#7570b3',
+            '#e7298a',
+            '#66a61e',
+            '#e6ab02',
+            '#a6761d',
+            '#666666',
         ]
     community_colors = [color_palette[x % len(color_palette)] for x in nodes_community]
     return community_colors
@@ -52,8 +71,10 @@ def compute_alpha_vector(value_vector):
 
 def get_edge_layout_data(network, layout, weight='weight'):
 
-    data = [(u, v, d[weight], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
-            for u, v, d in network.edges(data=True)]
+    data = [
+        (u, v, d[weight], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
+        for u, v, d in network.edges(data=True)
+    ]
 
     return zip(*data)
 
@@ -118,8 +139,7 @@ def create_bipartite_network(df, source_field='source', target_field='target', w
     G = nx.Graph()
     G.add_nodes_from(set(df[source_field].values), bipartite=0)
     G.add_nodes_from(set(df[target_field].values), bipartite=1)
-    edges = list(zip(df[source_field].values,df[target_field].values,df[weight]\
-                     .apply(lambda x: dict(weight=x))))
+    edges = list(zip(df[source_field].values, df[target_field].values, df[weight].apply(lambda x: dict(weight=x))))
     G.add_edges_from(edges)
     return G
 

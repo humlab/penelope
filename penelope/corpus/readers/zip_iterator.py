@@ -7,16 +7,15 @@ import penelope.utility.file_utility as file_utility
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
-class ZipTextIterator():
-    """Iterator that returns filename and content for each matching file in archive.
-    """
+class ZipTextIterator:
+    """Iterator that returns filename and content for each matching file in archive."""
 
     def __init__(
         self,
         source_path: str,
         filename_pattern: str,
         filename_filter: Union[List[str], Callable] = None,
-        as_binary: bool = False
+        as_binary: bool = False,
     ):
         """
         Parameters

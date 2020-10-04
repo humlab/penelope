@@ -13,8 +13,7 @@ XSLT_FILENAME_V3 = os.path.join(script_path, 'sparv_xml_extract.v3.xslt')
 # pylint: disable=too-many-instance-attributes
 
 
-class SparvXml2Text():
-
+class SparvXml2Text:
     def __init__(
         self,
         xslt_filename=None,
@@ -22,7 +21,7 @@ class SparvXml2Text():
         lemmatize=True,
         delimiter=" ",
         append_pos="",
-        pos_excludes="|MAD|MID|PAD|"
+        pos_excludes="|MAD|MID|PAD|",
     ):
 
         self.xslt_filename = xslt_filename or XSLT_FILENAME
@@ -55,6 +54,6 @@ class SparvXml2Text():
             delimiter=self.delimiter,
             target=self.target,
             append_pos=self.append_pos,
-            pos_excludes=self.pos_excludes
+            pos_excludes=self.pos_excludes,
         )
         return str(text)

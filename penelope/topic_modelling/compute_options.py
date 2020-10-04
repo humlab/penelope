@@ -8,17 +8,10 @@ TEMP_PATH = './tmp/'
 DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 
 default_options = {
-    'LSI': {
-        'engine': gensim.models.LsiModel,
-        'options': {
-            'corpus': None,
-            'num_topics': 20,
-            'id2word': None
-        }
-    }
+    'LSI': {'engine': gensim.models.LsiModel, 'options': {'corpus': None, 'num_topics': 20, 'id2word': None}}
 }
 
- # pylint: disable=too-many-return-statements, inconsistent-return-statements
+# pylint: disable=too-many-return-statements, inconsistent-return-statements
 def engine_options(algorithm: str, corpus, id2word, kwargs):
 
     if algorithm == 'LSI':
@@ -29,8 +22,8 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'num_topics': kwargs.get('n_topics', 0),
                 'id2word': id2word,
                 'power_iters': 2,
-                'onepass': True
-            }
+                'onepass': True,
+            },
         }
 
     if algorithm == 'LDA':
@@ -44,8 +37,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'iterations': kwargs.get('max_iter', 1000),
                 'passes': int(kwargs.get('passes', 1)),
                 'eval_every': 2,
-                'update_every':
-                10,  # Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.
+                'update_every': 10,  # Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.
                 'alpha': 'auto',
                 'eta': 'auto',  # None
                 #'decay': 0.1, # 0.5
@@ -57,8 +49,8 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 #'callbacks': [
                 #    gensim.models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
                 #    gensim.models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
-                #]
-            }
+                # ]
+            },
         }
 
     if algorithm == 'LDA-MULTICORE':
@@ -73,12 +65,11 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                     'max_iter', 1000
                 ),  # Maximum number of iterations through the corpus when inferring the topic distribution of a corpus
                 'passes': int(kwargs.get('passes', 1)),  # Number of passes through the corpus during training.
-                'workers':
-                kwargs.get('workers',
-                           2),  # set workers directly to the number of your real cores (not hyperthreads) minus one
+                'workers': kwargs.get(
+                    'workers', 2
+                ),  # set workers directly to the number of your real cores (not hyperthreads) minus one
                 'eta': 'auto',  # A-priori belief on word probability
                 'per_word_topics': True,
-
                 #'random_state': 100                            # Either a randomState object or a seed to generate one. Useful for reproducibility.
                 #'decay': 0.5,                                  # Kappa from Matthew D. Hoffman, David M. Blei, Francis Bach:
                 #'chunksize': 2000,                             # chunksize (int, optional) – Number of documents to be used in each training chunk.
@@ -88,14 +79,13 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 #'callbacks': [
                 #    gensim.models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
                 #    gensim.models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
-                #]
-
+                # ]
                 # gamma_threshold                               # Minimum change in the value of the gamma parameters to continue iterating.
                 # minimum_probability                           # Topics with a probability lower than this threshold will be filtered out.
                 # minimum_phi_value                             # if per_word_topics is True, this represents a lower bound on the term probabilities.
                 # per_word_topics                               # If True, the model also computes a list of topics, sorted in descending order of most likely topics
                 # dtype                                         # Data-type to use during calculations inside model.
-            }
+            },
         }
 
     if algorithm == 'HDP':
@@ -108,7 +98,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 #'iterations': kwargs.get('max_iter', 0),
                 #'passes': kwargs.get('passes', 20),
                 #'alpha': 'auto'
-            }
+            },
         }
 
     if algorithm == 'DTM':
@@ -120,13 +110,12 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'num_topics': kwargs.get('n_topics', 0),
                 'id2word': id2word,
                 # 'time_slice': textacy_utility.count_documents_in_index_by_pivot(document_index, year_column),
-
                 # 'initialize': 'gensim/own/ldamodel',
                 # 'lda_model': model # if initialize='gensim'
                 # 'lda_inference_max_iter': kwargs.get('max_iter', 0),
                 # 'passes': kwargs.get('passes', 20),
                 # 'alpha': 'auto'
-            }
+            },
         }
 
     if algorithm == 'MALLET-LDA':
@@ -142,13 +131,16 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 #'alpha': int(kwargs.get('passes', 20))                     # Alpha parameter of LDA.
                 'prefix': kwargs.get('prefix', TEMP_PATH),
                 'workers': int(kwargs.get('workers', 4)),  # Number of threads that will be used for training.
-                'optimize_interval': kwargs.get('optimize_interval',
-                                                10),  # Optimize hyperparameters every optimize_interval iterations
-                'topic_threshold': kwargs.get('topic_threshold',
-                                              0.0),  # Threshold of the probability above which we consider a topic.
-                'random_seed': kwargs.get('random_seed',
-                                          0)  #  Random seed to ensure consistent results, if 0 - use system clock.
-            }
+                'optimize_interval': kwargs.get(
+                    'optimize_interval', 10
+                ),  # Optimize hyperparameters every optimize_interval iterations
+                'topic_threshold': kwargs.get(
+                    'topic_threshold', 0.0
+                ),  # Threshold of the probability above which we consider a topic.
+                'random_seed': kwargs.get(
+                    'random_seed', 0
+                ),  #  Random seed to ensure consistent results, if 0 - use system clock.
+            },
         }
 
     if algorithm.startswith('STTM-'):
@@ -165,7 +157,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'prefix': kwargs.get('prefix', TEMP_PATH),
                 'name': '{}_model'.format(sttm)
                 #'vectors', 'alpha'=0.1, 'beta'=0.01, 'twords'=20,sstep=0
-            }
+            },
         }
 
     raise ValueError('Unknown model!')

@@ -2,8 +2,7 @@ from types import SimpleNamespace as bunch
 
 import networkx as nx
 
-from penelope.network.networkx.utility import \
-    get_bipartite_node_set
+from penelope.network.networkx.utility import get_bipartite_node_set
 from penelope.utility import extend_single
 
 
@@ -44,5 +43,5 @@ layout_setups = [
     bunch(key='nx_spectral_layout', package='nx', name='nx_spectral', layout_network=nx_spectral_layout),
     bunch(key='nx_circular_layout', package='nx', name='nx_circular', layout_network=nx_circular_layout),
     bunch(key='nx_shell_layout', package='nx', name='nx_shell', layout_network=nx_shell_layout),
-    bunch(key='nx_kamada_kawai_layout', package='nx', name='nx_kamada_kawai', layout_network=nx_kamada_kawai_layout)
+    bunch(key='nx_kamada_kawai_layout', package='nx', name='nx_kamada_kawai', layout_network=nx_kamada_kawai_layout),
 ]

@@ -7,8 +7,7 @@ from penelope.utility import normalize_array
 
 
 def compute_topic_metrics(ldamodel, dictionary, n_words=1000):
-    """Returns weights for top n_words words in all topics
-    """
+    """Returns weights for top n_words words in all topics"""
     if n_words is None:
         # Set to 0.1 % of total number of terms
         n_words = len(dictionary.items()) // 100
@@ -44,14 +43,16 @@ def compute_term_info(ldamodel, dictionary, corpus):
         probs = normalize_array(probs)
         distinctiveness = compute_KL_divergence(probs, topic_marginal)
         saliency = frequency * distinctiveness
-        term_info.append({
-            'term': term,
-            'saliency': saliency,
-            'frequency': frequency,
-            'distinctiveness': distinctiveness,
-            'rank': None,
-            'visibility': 'default'
-        })
+        term_info.append(
+            {
+                'term': term,
+                'saliency': saliency,
+                'frequency': frequency,
+                'distinctiveness': distinctiveness,
+                'rank': None,
+                'visibility': 'default',
+            }
+        )
     return term_info
 
 

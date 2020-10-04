@@ -29,7 +29,7 @@ DFLT_LABEL_OPTS = dict(
     render_mode='canvas',
     text_font="Tahoma",
     text_font_size="9pt",
-    text_color='black'
+    text_color='black',
 )
 
 
@@ -65,10 +65,11 @@ def adjust_node_label_offset(nodes, node_size, default_y_offset=5):
         ]
     return label_x_offset, label_y_offset
 
+
 def plot(  # pylint: disable=W0102
     network,
     layout,
-    scale=1.0, # pylint: disable=unused-argument
+    scale=1.0,  # pylint: disable=unused-argument
     threshold=0.0,
     node_description=None,
     node_size=5,
@@ -81,8 +82,8 @@ def plot(  # pylint: disable=W0102
     element_id='nx_id3',
     figsize=(900, 900),
     tools=None,
-    palette=DFLT_PALETTE, # pylint: disable=unused-argument
-    **figkwargs
+    palette=DFLT_PALETTE,  # pylint: disable=unused-argument
+    **figkwargs,
 ):
     if threshold > 0:
         network = networkx_utility.get_sub_network(network, threshold)
@@ -96,11 +97,11 @@ def plot(  # pylint: disable=W0102
     if weight_scale != 1.0 and 'weight' in edges.keys():
         edges['weight'] = [weight_scale * float(x) for x in edges['weight']]
 
-    #edges = dict(source=u, target=v, xs=xs, ys=ys, weights=weights)
+    # edges = dict(source=u, target=v, xs=xs, ys=ys, weights=weights)
 
     nodes = networkx_utility.get_positioned_nodes(network, layout)
 
-    #node_size = setup_node_size(nodes, node_size, node_size_range)
+    # node_size = setup_node_size(nodes, node_size, node_size_range)
     if node_size in nodes.keys() and node_size_range is not None:
         nodes['clamped_size'] = utility.clamp_values(nodes[node_size], node_size_range)
         node_size = 'clamped_size'
@@ -123,8 +124,12 @@ def plot(  # pylint: disable=W0102
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
 
-    _ = p.multi_line('xs', 'ys', line_width='weights', source=edges_source, **line_opts)  # pylint: disable=too-many-function-args
-    r_nodes = p.circle('x', 'y', size=node_size, source=nodes_source, **node_opts)  # pylint: disable=too-many-function-args
+    _ = p.multi_line(
+        'xs', 'ys', line_width='weights', source=edges_source, **line_opts
+    )  # pylint: disable=too-many-function-args
+    r_nodes = p.circle(
+        'x', 'y', size=node_size, source=nodes_source, **node_opts
+    )  # pylint: disable=too-many-function-args
 
     if 'fill_color' in nodes.keys():
         r_nodes.glyph.fill_color = 'fill_color'
@@ -137,14 +142,14 @@ def plot(  # pylint: disable=W0102
                 tooltips=None,
                 callback=widgets_config.glyph_hover_callback(
                     nodes_source, 'node_id', text_source, element_id=element_id
-                )
+                ),
             )
         )
 
     label_opts = {
         **DFLT_TEXT_OPTS,
         **dict(y_offset=label_y_offset, text_color='black', text_baseline='bottom'),
-        **(text_opts or {})
+        **(text_opts or {}),
     }
 
     p.add_layout(bokeh.models.LabelSet(source=nodes_source, **label_opts))
@@ -171,8 +176,12 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
     if 'line_color' in edges.keys():
         line_opts = utility.extend(line_opts, {'line_color': 'line_color', 'alpha': 1.0})
 
-    _ = p.multi_line('xs', 'ys', line_width='weight', source=edges_source, **line_opts)  # pylint: disable=too-many-function-args
-    r_nodes = p.circle('x', 'y', size=node_size, source=nodes_source, **node_opts)  # pylint: disable=too-many-function-args
+    _ = p.multi_line(
+        'xs', 'ys', line_width='weight', source=edges_source, **line_opts
+    )  # pylint: disable=too-many-function-args
+    r_nodes = p.circle(
+        'x', 'y', size=node_size, source=nodes_source, **node_opts
+    )  # pylint: disable=too-many-function-args
 
     if 'fill_color' in nodes.keys():
         r_nodes.glyph.fill_color = 'fill_color'
@@ -187,24 +196,18 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
                 tooltips=None,
                 callback=widgets_config.glyph_hover_callback(
                     nodes_source, 'node_id', text_source=text_source, element_id=element_id
-                )
+                ),
             )
         )
 
     node_label = plot_opts.get('node_label', None)
     if node_label is not None and node_label in nodes.keys():
-        label_opts = {
-            **DFLT_LABEL_OPTS,
-            **plot_opts.get('node_label_opts', {})
-        }
+        label_opts = {**DFLT_LABEL_OPTS, **plot_opts.get('node_label_opts', {})}
         p.add_layout(bokeh.models.LabelSet(source=nodes_source, x='x', y='y', text=node_label, **label_opts))
 
     edge_label = plot_opts.get('edge_label', None)
     if edge_label is not None and edge_label in edges.keys():
-        label_opts = {
-            **DFLT_LABEL_OPTS,
-            **plot_opts.get('edge_label_opts', {})
-        }
+        label_opts = {**DFLT_LABEL_OPTS, **plot_opts.get('edge_label_opts', {})}
         p.add_layout(bokeh.models.LabelSet(source=edges_source, x='m_x', y='m_y', text=edge_label, **label_opts))
 
     handle = bokeh.plotting.show(p, notebook_handle=True)
@@ -214,7 +217,7 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
 
 def plot_df(df, source='source', target='target', weight='weight', layout_opts=None, plot_opts=None, fig_opts=None):
 
-    #print([ x.key for x in network_layout.layout_setups])
+    # print([ x.key for x in network_layout.layout_setups])
 
     g = networkx_utility.df_to_nx(df, source=source, target=target, bipartite=False, weight=weight)
 

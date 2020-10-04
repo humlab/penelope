@@ -2,9 +2,9 @@ class TopicModelException(Exception):
     pass
 
 
-class TopicModelContainer():
-    """Class for current (last) computed or loaded model
-    """
+class TopicModelContainer:
+    """Class for current (last) computed or loaded model"""
+
     _singleton = None
 
     def __init__(self):

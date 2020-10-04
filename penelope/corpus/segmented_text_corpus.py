@@ -14,8 +14,7 @@ def compress(filename):
             shutil.copyfileobj(f_in, f_out)
 
 
-class SentenceSegmenter():
-
+class SentenceSegmenter:
     def __init__(self, content):
         self.content = content
 
@@ -26,8 +25,7 @@ class SentenceSegmenter():
                 yield tokens
 
 
-class DocumentSegmenter():
-
+class DocumentSegmenter:
     def __init__(self, content):
         self.content = content
 
@@ -37,8 +35,7 @@ class DocumentSegmenter():
             yield tokens
 
 
-class ChunkSegmenter():
-
+class ChunkSegmenter:
     def __init__(self, content, chunk_size=500):
 
         assert chunk_size > 0
@@ -49,14 +46,14 @@ class ChunkSegmenter():
     def __iter__(self):
         tokens = word_tokenize(self.content)
         for i in range(0, len(tokens), self.chunk_size):
-            yield tokens[i:i + self.chunk_size]
+            yield tokens[i : i + self.chunk_size]
 
 
-class SegmentedTextCorpus():
-    '''
+class SegmentedTextCorpus:
+    """
     This is a tokenized corpus in the format [ (doc_1, tokens_1), ....(doc_n, tokens_n)]
     where tokens_x is a sequence of strings. The token order is preserved i.e. it is not a BOW
-    '''
+    """
 
     def __init__(self, reader, segment_strategy='sentence', segment_size=0, transformers=None):
 
@@ -72,7 +69,7 @@ class SegmentedTextCorpus():
         self.strategies = {
             'sentence': lambda x, _: SentenceSegmenter(x),
             'chunk': ChunkSegmenter,
-            'document': lambda x, _: DocumentSegmenter(x)
+            'document': lambda x, _: DocumentSegmenter(x),
         }
         self.transforms = [
             (lambda tokens: [x.lower() for x in tokens]),

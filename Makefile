@@ -24,7 +24,7 @@ format:
 	poetry run yapf --in-place --recursive penelope
 
 black:
-	poetry run black --line-length 120 --target-version py38 --skip-string-normalization --diff penelope
+	poetry run black --line-length 120 --target-version py38 --skip-string-normalization penelope
 
 clean:
 	@rm -rf .pytest_cache

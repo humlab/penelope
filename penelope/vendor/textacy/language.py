@@ -9,7 +9,10 @@ logger = utility.getLogger('corpus_text_analysis')
 
 LANGUAGE_MODEL_MAP = {'en': 'en_core_web_sm', 'fr': 'fr_core_news_sm', 'it': 'it_core_web_sm', 'de': 'de_core_web_sm'}
 
-_load_spacy = textacy.load_spacy_lang if hasattr(textacy, 'load_spacy_lang') else textacy.load_spacy  # pylint: disable=no-member
+_load_spacy = (
+    textacy.load_spacy_lang if hasattr(textacy, 'load_spacy_lang') else textacy.load_spacy
+)  # pylint: disable=no-member
+
 
 def keep_hyphen_tokenizer(nlp):
     infix_re = re.compile(r'''[.\,\?\:\;\...\‘\’\`\“\”\"\'~]''')
@@ -21,8 +24,9 @@ def keep_hyphen_tokenizer(nlp):
         prefix_search=prefix_re.search,
         suffix_search=suffix_re.search,
         infix_finditer=infix_re.finditer,
-        token_match=None
+        token_match=None,
     )
+
 
 @utility.timecall
 def create_nlp(language, **nlp_args):
@@ -38,7 +42,7 @@ def create_nlp(language, **nlp_args):
 
     Language.factories['remove_whitespace_entities'] = lambda _nlp, **_cfg: remove_whitespace_entities
     model_name = LANGUAGE_MODEL_MAP[language]
-    #if not model_name.endswith('lg'):
+    # if not model_name.endswith('lg'):
     #    logger.warning('Selected model is not the largest availiable.')
 
     nlp = _load_spacy(model_name, **nlp_args)

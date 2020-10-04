@@ -18,9 +18,9 @@ import numpy as np
 
 
 def setup_logger(logger=None, to_file=False, filename=None, level=logging.DEBUG):
-    '''
+    """
     Setup logging of import messages to both file and console
-    '''
+    """
     if logger is None:
         logger = logging.getLogger("")
 
@@ -43,11 +43,13 @@ def setup_logger(logger=None, to_file=False, filename=None, level=logging.DEBUG)
     logger.addHandler(ch)
     return logger
 
+
 def getLogger(name='', level=logging.INFO):
     logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=level)
     _logger = logging.getLogger(name)
     _logger.setLevel(level)
     return _logger
+
 
 logger = getLogger(__name__)
 
@@ -78,7 +80,6 @@ def filter_dict(d, keys=None, filter_out=False):
 
 
 def timecall(f):
-
     @functools.wraps(f)
     def f_wrapper(*args, **kwargs):
         start_time = time.perf_counter()
@@ -160,8 +161,7 @@ def _get_signature(func):
 def get_func_args(func):
     sig = _get_signature(func)
     return [
-        arg_name for arg_name, param in sig.parameters.items()
-            if param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
+        arg_name for arg_name, param in sig.parameters.items() if param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
     ]
 
 
@@ -182,26 +182,20 @@ def filter_kwargs(f, args):
     """
 
     try:
-        return {
-            k: args[k] for k in args.keys()
-                if k in get_func_args(f)
-        }
+        return {k: args[k] for k in args.keys() if k in get_func_args(f)}
 
     except:  # pylint: disable=bare-except
         return args
 
 
 def inspect_filter_args(f, args):
-    return {
-        k: args[k] for k in args.keys()
-            if k in inspect.getfullargspec(f).args
-    }
+    return {k: args[k] for k in args.keys() if k in inspect.getfullargspec(f).args}
+
 
 def inspect_default_opts(f):
     sig = inspect.signature(f)
-    return {
-        name: param.default for name, param in sig.parameters.items() if param.name != 'self'
-    }
+    return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
+
 
 VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
 
@@ -289,7 +283,7 @@ def slim_title(x):
 
 
 def complete_value_range(values, typef=str):
-    """ Create a complete range from min/max range in case values are missing
+    """Create a complete range from min/max range in case values are missing
 
     Parameters
     ----------
@@ -313,7 +307,7 @@ def is_platform_architecture(xxbit):
     assert xxbit in ['32bit', '64bit']
     logger.info(platform.architecture()[0])
     return platform.architecture()[0] == xxbit
-    #return xxbit == ('64bit' if sys.maxsize > 2**32 else '32bit')
+    # return xxbit == ('64bit' if sys.maxsize > 2**32 else '32bit')
 
 
 def trunc_year_by(series, divisor):
@@ -359,7 +353,7 @@ def chunks(l, n):
         yield l
 
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i : i + n]
 
 
 # def get_document_id_by_field_filters(documents, filters):
@@ -389,9 +383,11 @@ def nth(iterable, n: int, default=None):
     "Returns the nth item or a default value"
     return next(itertools.islice(iterable, n, None), default)
 
+
 def read_json(path):
     with open(path) as fp:
         return json.load(fp)
+
 
 def now_timestamp():
     return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -424,6 +420,7 @@ def timestamp_filename(filename):
 def project_values_to_range(values, low, high):
     w_max = max(values)
     return [low + (high - low) * (x / w_max) for x in values]
+
 
 # HYPHEN_REGEXP = re.compile(r'\b(\w+)-\s*\r?\n\s*(\w+)\b', re.UNICODE)
 

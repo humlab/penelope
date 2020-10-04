@@ -11,6 +11,7 @@ import penelope.utility as utility
 
 logger = utility.getLogger()
 
+
 def generate_word_count_score(corpus, normalize, count):
     wc = corpus.word_counts(normalize=normalize, weighting='count', as_strings=True)
     d = {i: set([]) for i in range(1, count + 1)}
@@ -31,18 +32,18 @@ def generate_word_document_count_score(corpus, normalize, threshold=75):
 
 
 def count_documents_by_pivot(corpus, attribute):
-    ''' Return a list of document counts per group defined by attribute
+    """Return a list of document counts per group defined by attribute
     Assumes documents are sorted by attribute!
-    '''
+    """
     fx_key = lambda doc: doc._.meta[attribute]
     return [len(list(g)) for _, g in itertools.groupby(corpus, fx_key)]
 
 
 def count_documents_in_index_by_pivot(documents, attribute):
-    ''' Return a list of document counts per group defined by attribute
+    """Return a list of document counts per group defined by attribute
     Assumes documents are sorted by attribute!
     Same as count_documents_by_pivot but uses document index instead of (textacy) corpus
-    '''
+    """
     assert documents[attribute].is_monotonic_increasing, 'Documents *MUST* be sorted by TIME-SLICE attribute!'
     # TODO: Either sort documents (and corpus or term stream!) prior to this call - OR force sortorder by filename (i.e add year-prefix)
     return list(documents.groupby(attribute).size().values)
@@ -70,15 +71,17 @@ def infrequent_words(corpus, normalize='lemma', weighting='count', threshold=0, 
         return set([])
 
     token_counter = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=as_strings)
-    words = { w for w in token_counter if token_counter[w] < threshold }
+    words = {w for w in token_counter if token_counter[w] < threshold}
 
     return words
 
 
-def frequent_document_words(corpus, normalize='lemma', weighting='freq', dfs_threshold=80, as_strings=True):  # pylint: disable=unused-argument
+def frequent_document_words(
+    corpus, normalize='lemma', weighting='freq', dfs_threshold=80, as_strings=True
+):  # pylint: disable=unused-argument
     '''Returns set of words that occurrs freuently in many documents, candidate stopwords'''
     document_freqs = corpus.word_doc_counts(normalize=normalize, weighting=weighting, smooth_idf=True, as_strings=True)
-    result = { w for w, f in document_freqs.items() if int(round(f, 2) * 100) >= dfs_threshold }
+    result = {w for w, f in document_freqs.items() if int(round(f, 2) * 100) >= dfs_threshold}
     return result
 
 
@@ -136,7 +139,7 @@ POS_TO_COUNT = {
     'VERB': 0,
     'NUM': 0,
     'PRON': 0,
-    'PROPN': 0
+    'PROPN': 0,
 }
 
 POS_NAMES = list(sorted(POS_TO_COUNT.keys()))
@@ -170,7 +173,7 @@ def load_term_substitutions(filepath, default_term='_gpe_', delim=';', vocab=Non
     with open(filepath) as f:
         substitutions = {
             x[0].strip(): x[1].strip()
-            for x in (tuple(line.lower().split(delim)) + (default_term, ) for line in f.readlines())
+            for x in (tuple(line.lower().split(delim)) + (default_term,) for line in f.readlines())
             if x[0].strip() != ''
         }
 
@@ -200,16 +203,20 @@ def vectorize_terms(terms, vectorizer_args):
     id2word = vectorizer.id_to_term
     return doc_term_matrix, id2word
 
+
 def _doc_token_stream(doc):
-    return (dict(
+    return (
+        dict(
             i=t.i,
             token=t.lower_,
             lemma=t.lemma_,
             pos=t.pos_,
             year=doc._.meta['year'],
-            document_id=doc._.meta['document_id']
-        ) for t in doc
+            document_id=doc._.meta['document_id'],
+        )
+        for t in doc
     )
+
 
 def store_tokens(corpus, filename: str):
 

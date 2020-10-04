@@ -10,7 +10,7 @@ from numpy.polynomial.polynomial import Polynomial as polyfit
 
 
 def gof_by_l2_norm(matrix, axis=1, scale=True):
-    """ Computes L2 norm for rows (axis = 1) or columns (axis = 0).
+    """Computes L2 norm for rows (axis = 1) or columns (axis = 0).
 
     See stats.stackexchange.com/questions/25827/how-does-one-measure-the-non-uniformity-of-a-distribution
 
@@ -52,7 +52,7 @@ def fit_ordinary_least_square(ys, xs=None):
           and p is the p-value
     """
     if xs is None:
-        xs = np.arange(len(ys))  #0.0, len(ys), 1.0))
+        xs = np.arange(len(ys))  # 0.0, len(ys), 1.0))
 
     xs = sm.add_constant(xs)
 
@@ -86,7 +86,7 @@ def fit_polynomial(ys, xs=None, deg=1):
 
 def fit_polynomial_ravel(Y, xs):
 
-    #xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
+    # xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
 
     # Layout columns as a single y-vector using ravel. Repeat x-vector for each column
     xsr = np.repeat(xs, Y.shape[1])
@@ -141,11 +141,13 @@ def compute_goddness_of_fits_to_uniform(x_corpus):
 
     dtm = x_corpus.data
 
-    df = pd.DataFrame({
-        'token': [x_corpus.id2token[i] for i in range(0, dtm.shape[1])],
-        'word_count': [x_corpus.word_counts[x_corpus.id2token[i]] for i in range(0, dtm.shape[1])],
-        'l2_norm': gof_by_l2_norm(dtm, axis=0),
-    })
+    df = pd.DataFrame(
+        {
+            'token': [x_corpus.id2token[i] for i in range(0, dtm.shape[1])],
+            'word_count': [x_corpus.word_counts[x_corpus.id2token[i]] for i in range(0, dtm.shape[1])],
+            'l2_norm': gof_by_l2_norm(dtm, axis=0),
+        }
+    )
 
     chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
     ks, ms = list(zip(*[fit_polynomial(dtm[:, i], xs_years, 1) for i in range(0, dtm.shape[1])]))
@@ -181,22 +183,25 @@ def compute_goddness_of_fits_to_uniform(x_corpus):
 
 def get_most_deviating_words(df, metric, n_count=500, ascending=False, abs_value=False):
 
-    sx = df.reindex(df[metric].abs().sort_values(ascending=False).index) if abs_value \
-            else df.nlargest(n_count, columns=metric).sort_values(by=metric, ascending=ascending)
+    sx = (
+        df.reindex(df[metric].abs().sort_values(ascending=False).index)
+        if abs_value
+        else df.nlargest(n_count, columns=metric).sort_values(by=metric, ascending=ascending)
+    )
 
-    return sx\
-        .reset_index()[['token', metric]]\
-        .rename(columns={'token': metric + '_token'})
+    return sx.reset_index()[['token', metric]].rename(columns={'token': metric + '_token'})
 
 
 def compile_most_deviating_words(df, n_count=500):
 
-    xf =      get_most_deviating_words(df, 'l2_norm', n_count)\
-        .join(get_most_deviating_words(df, 'slope', n_count, abs_value=True))\
-        .join(get_most_deviating_words(df, 'chi2_stats', n_count))\
-        .join(get_most_deviating_words(df, 'earth_mover', n_count))\
-        .join(get_most_deviating_words(df, 'kld', n_count))\
+    xf = (
+        get_most_deviating_words(df, 'l2_norm', n_count)
+        .join(get_most_deviating_words(df, 'slope', n_count, abs_value=True))
+        .join(get_most_deviating_words(df, 'chi2_stats', n_count))
+        .join(get_most_deviating_words(df, 'earth_mover', n_count))
+        .join(get_most_deviating_words(df, 'kld', n_count))
         .join(get_most_deviating_words(df, 'entropy', n_count))
+    )
 
     return xf
 
@@ -214,22 +219,25 @@ def plot_metric_histogram(df_gof, metric='l2_norm', bins=100):
 
 
 def plot_metrics(df_gof, bins=100):
-    gp = bokeh.layouts.gridplot([[
-        plot_metric_histogram(df_gof, metric='l2_norm', bins=bins),
-        plot_metric_histogram(df_gof, metric='earth_mover', bins=bins),
-        plot_metric_histogram(df_gof, metric='entropy', bins=bins),
-    ],
-                                 [
-                                     plot_metric_histogram(df_gof, metric='kld', bins=bins),
-                                     plot_metric_histogram(df_gof, metric='slope', bins=bins),
-                                     plot_metric_histogram(df_gof, metric='chi2_stats', bins=bins)
-                                 ]])
+    gp = bokeh.layouts.gridplot(
+        [
+            [
+                plot_metric_histogram(df_gof, metric='l2_norm', bins=bins),
+                plot_metric_histogram(df_gof, metric='earth_mover', bins=bins),
+                plot_metric_histogram(df_gof, metric='entropy', bins=bins),
+            ],
+            [
+                plot_metric_histogram(df_gof, metric='kld', bins=bins),
+                plot_metric_histogram(df_gof, metric='slope', bins=bins),
+                plot_metric_histogram(df_gof, metric='chi2_stats', bins=bins),
+            ],
+        ]
+    )
 
     bokeh.plotting.show(gp)
 
 
 def plot_slopes(x_corpus, most_deviating, metric):
-
     def generate_slopes(x_corpus, most_deviating, metric):
 
         min_year = x_corpus.document_index.year.min()
@@ -260,23 +268,20 @@ def plot_slopes(x_corpus, most_deviating, metric):
         xs='xs',
         ys='ys',
         line_width=1,
-        line_color={
-            'field': 'k',
-            'transform': color_mapper
-        },
+        line_color={'field': 'k', 'transform': color_mapper},
         line_alpha=0.6,
         hover_line_alpha=1.0,
-        source=source
-    )  #, legend="token"
+        source=source,
+    )  # , legend="token"
 
     p.add_tools(
         bokeh.models.HoverTool(
             show_arrow=False,
             line_policy='next',
-            tooltips=[('Token', '@token'), ('Slope', '@k{1.1111}')]  #, ('P-value', '@p{1.1111}')]
+            tooltips=[('Token', '@token'), ('Slope', '@k{1.1111}')],  # , ('P-value', '@p{1.1111}')]
         )
     )
 
     bokeh.plotting.show(p)
 
-    #return p
+    # return p

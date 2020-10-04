@@ -2,7 +2,7 @@ from types import SimpleNamespace as bunch
 from penelope.network.graphtool.utility import nx2gt
 
 try:
-    import graph_tool.draw as gt_draw# pylint: disable=unused-argument
+    import graph_tool.draw as gt_draw  # pylint: disable=unused-argument
     import graph_tool.all as gt
 except ImportError as ex:
     gt_draw = None
@@ -49,32 +49,36 @@ def layout_network(G, **kwargs):
     return layout, (g_gt, layout_gt)
 
 
-layout_setups = [] if gt is None else [
-    bunch(
-        key='graphtool_arf',
-        package='graphtool',
-        name='graph-tool (arf)',
-        layout_network=layout_network,
-        layout_function=gt_draw.arf_layout,
-        layout_args=arf_args
-    ),
-    bunch(
-        key='graphtool_sfdp',
-        package='graphtool',
-        name='graph-tool (sfdp)',
-        layout_network=layout_network,
-        layout_function=gt_draw.sfdp_layout,
-        layout_args=sfdp_args
-    ),
-    bunch(
-        key='graphtool_fr',
-        package='graphtool',
-        name='graph-tool (FR)',
-        layout_network=layout_network,
-        layout_function=gt_draw.fruchterman_reingold_layout,
-        layout_args=fruchterman_reingold_args
-    )
-]
+layout_setups = (
+    []
+    if gt is None
+    else [
+        bunch(
+            key='graphtool_arf',
+            package='graphtool',
+            name='graph-tool (arf)',
+            layout_network=layout_network,
+            layout_function=gt_draw.arf_layout,
+            layout_args=arf_args,
+        ),
+        bunch(
+            key='graphtool_sfdp',
+            package='graphtool',
+            name='graph-tool (sfdp)',
+            layout_network=layout_network,
+            layout_function=gt_draw.sfdp_layout,
+            layout_args=sfdp_args,
+        ),
+        bunch(
+            key='graphtool_fr',
+            package='graphtool',
+            name='graph-tool (FR)',
+            layout_network=layout_network,
+            layout_function=gt_draw.fruchterman_reingold_layout,
+            layout_args=fruchterman_reingold_args,
+        ),
+    ]
+)
 
 layout_setup_map = {x.key: x for x in layout_setups}
 

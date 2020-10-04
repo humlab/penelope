@@ -7,8 +7,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-class MmCorpusStatisticsService():
-
+class MmCorpusStatisticsService:
     def __init__(self, corpus, dictionary, language):
         self.corpus = corpus
         self.dictionary = dictionary
@@ -24,9 +23,9 @@ class MmCorpusStatisticsService():
         return freqencies
 
     def get_document_token_frequencies(self):
-        '''
+        """
         Returns a DataFrame with per document token frequencies i.e. "melts" doc-term matrix
-        '''
+        """
         data = ((document_id, x[0], x[1]) for document_id, values in enumerate(self.corpus) for x in values)
         df = pd.DataFrame(list(zip(*data)), columns=['document_id', 'token_id', 'count'])
         df = df.merge(self.corpus.document_names, left_on='document_id', right_index=True)
@@ -40,12 +39,14 @@ class MmCorpusStatisticsService():
             for i, f in document:
                 term_freqencies[i] += f
         stopwords = set(self.stopwords).intersection(set(id2token.values()))
-        df = pd.DataFrame({
-            'token_id': list(id2token.keys()),
-            'token': list(id2token.values()),
-            'frequency': term_freqencies,
-            'dfs': list(self.dictionary.dfs.values())
-        })
+        df = pd.DataFrame(
+            {
+                'token_id': list(id2token.keys()),
+                'token': list(id2token.values()),
+                'frequency': term_freqencies,
+                'dfs': list(self.dictionary.dfs.values()),
+            }
+        )
         df['is_stopword'] = df.token.apply(lambda x: x in stopwords)
         if remove_stopwords is True:
             df = df.loc[(not df.is_stopword)]
@@ -56,16 +57,15 @@ class MmCorpusStatisticsService():
     def compute_document_stats(self):
         id2token = self.dictionary.id2token
         stopwords = set(self.stopwords).intersection(set(id2token.values()))
-        df = pd.DataFrame({
-            'document_id':
-            self.corpus.index,
-            'document_name':
-            self.corpus.document_names.document_name,
-            'treaty_id':
-            self.corpus.document_names.treaty_id,
-            'size': [sum(list(zip(*document))[1]) for document in self.corpus],
-            'stopwords': [sum([v for (i, v) in document if id2token[i] in stopwords]) for document in self.corpus],
-        }).set_index('document_name')
+        df = pd.DataFrame(
+            {
+                'document_id': self.corpus.index,
+                'document_name': self.corpus.document_names.document_name,
+                'treaty_id': self.corpus.document_names.treaty_id,
+                'size': [sum(list(zip(*document))[1]) for document in self.corpus],
+                'stopwords': [sum([v for (i, v) in document if id2token[i] in stopwords]) for document in self.corpus],
+            }
+        ).set_index('document_name')
         df[['size', 'stopwords']] = df[['size', 'stopwords']].astype('int')
         return df
 
@@ -79,7 +79,7 @@ class MmCorpusStatisticsService():
             'min': 'Min',
             'median': 'Median',
             'max': 'Max',
-            'sum': 'Sum words'
+            'sum': 'Sum words',
         }
         df_agg['index'] = df_agg['index'].apply(lambda x: legend_map[x]).astype('str')
         df_agg = df_agg.set_index('index')

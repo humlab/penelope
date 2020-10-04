@@ -32,10 +32,8 @@ def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_s
 
 
 def malletmodel2ldamodel(
-        mallet_model:gensim.models.wrappers.ldamallet.LdaMallet,
-        gamma_threshold: float=0.001,
-        iterations: int=50
-    ):
+    mallet_model: gensim.models.wrappers.ldamallet.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50
+):
     """Convert :class:`~gensim.models.wrappers.ldamallet.LdaMallet` to :class:`~gensim.models.ldamodel.LdaModel`.
     This works by copying the training model weights (alpha, beta...) from a trained mallet model into the gensim model.
     Parameters
@@ -58,7 +56,7 @@ def malletmodel2ldamodel(
         eta=0,
         iterations=iterations,
         gamma_threshold=gamma_threshold,
-        dtype=np.float64  # don't loose precision when converting from MALLET
+        dtype=np.float64,  # don't loose precision when converting from MALLET
     )
     model_gensim.state.sstats[...] = mallet_model.wordtopics
     model_gensim.sync_state()
@@ -68,12 +66,12 @@ def malletmodel2ldamodel(
 def find_models(path: str):
     """Returns subfolders containing a computed topic model in specified path"""
     folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "model_data.pickle"))]
-    models = [{
-        'folder': x,
-        'name': os.path.split(x)[1],
-        'options': utility.read_json(os.path.join(x, "model_options.json"))
-    } for x in folders]
+    models = [
+        {'folder': x, 'name': os.path.split(x)[1], 'options': utility.read_json(os.path.join(x, "model_options.json"))}
+        for x in folders
+    ]
     return models
+
 
 def display_termite_plot(model, id2term, doc_term_matrix):
 
@@ -87,23 +85,23 @@ def display_termite_plot(model, id2term, doc_term_matrix):
             n_terms=50,
             rank_terms_by='topic_weight',
             sort_terms_by='seriation',
-            save=False
+            save=False,
         )
 
 
-METHODS = [{
-    'key': 'max_weight',
-    'description': 'Max value',
-    'tooltip': 'Use maximum value over documents'
-}, {
-    'key': 'false_mean',
-    'description': 'Mean where topic is relevant',
-    'tooltip': 'Use mean value of all documents where topic is above certain treshold'
-}, {
-    'key': 'true_mean',
-    'description': 'Mean of all documents',
-    'tooltip': 'Use mean value of all documents even those where topic is zero'
-}]
+METHODS = [
+    {'key': 'max_weight', 'description': 'Max value', 'tooltip': 'Use maximum value over documents'},
+    {
+        'key': 'false_mean',
+        'description': 'Mean where topic is relevant',
+        'tooltip': 'Use mean value of all documents where topic is above certain treshold',
+    },
+    {
+        'key': 'true_mean',
+        'description': 'Mean of all documents',
+        'tooltip': 'Use mean value of all documents even those where topic is zero',
+    },
+]
 
 
 def plot_topic(df, x):

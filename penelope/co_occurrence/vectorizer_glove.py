@@ -9,8 +9,7 @@ logger = utility.getLogger('corpus_text_analysis')
 
 
 # See http://www.foldl.me/2014/glove-python/
-class GloveVectorizer():
-
+class GloveVectorizer:
     def __init__(self, corpus=None, token2id=None):
 
         self.token2id = token2id
@@ -39,8 +38,8 @@ class GloveVectorizer():
                 self._id2token = {v: k for k, v in self.token2id.items()}
         return self._id2token
 
-    #def fit(self, sentences, window=2, dictionary=None):
-    def fit(self, corpus=None, size=2):  #, distance_metric=0, zero_out_diag=False):
+    # def fit(self, sentences, window=2, dictionary=None):
+    def fit(self, corpus=None, size=2):  # , distance_metric=0, zero_out_diag=False):
 
         if corpus is not None:
             self.corpus = corpus
@@ -64,15 +63,17 @@ class GloveVectorizer():
             pass
         #    matrix.fill_diagonal(0)
 
-        coo_matrix = matrix  #.tocoo(copy=False)
+        coo_matrix = matrix  # .tocoo(copy=False)
 
-        df = pd.DataFrame({
-            'x_id': coo_matrix.row,
-            'y_id': coo_matrix.col,
-            'nw_xy': coo_matrix.data,
-            'nw_x': 0,
-            'nw_y': 0,
-        }).reset_index(drop=True)
+        df = pd.DataFrame(
+            {
+                'x_id': coo_matrix.row,
+                'y_id': coo_matrix.col,
+                'nw_xy': coo_matrix.data,
+                'nw_x': 0,
+                'nw_y': 0,
+            }
+        ).reset_index(drop=True)
 
         df = df.assign(
             x_term=df.x_id.apply(lambda x: self.id2token[x]), y_term=df.y_id.apply(lambda x: self.id2token[x])

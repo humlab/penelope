@@ -23,17 +23,16 @@ DEFAULT_PROCESS_OPTS = dict(
     extra_stopwords=None,
     language="swedish",
     keep_numerals=True,
-    keep_symbols=True
+    keep_symbols=True,
 )
+
 
 def transformer_defaults():
     sig = inspect.signature(TokensTransformer.__init__)
-    return {
-        name: param.default for name, param
-            in sig.parameters.items() if param.name != 'self'
-    }
+    return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
 
-class TokensTransformer():
+
+class TokensTransformer:
     """Transforms applied on tokenized text"""
 
     def __init__(
@@ -50,7 +49,7 @@ class TokensTransformer():
         extra_stopwords: List[str] = None,
         language: str = "swedish",
         keep_numerals: bool = True,
-        keep_symbols: bool = True
+        keep_symbols: bool = True,
     ):
         self.transforms = []
 

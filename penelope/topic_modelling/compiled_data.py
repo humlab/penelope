@@ -13,13 +13,16 @@ import penelope.utility as utility
 logger = utility.getLogger('corpus_text_analysis')
 
 
-class CompiledData():
-    """Aggregate container for a topic model applied to a corpus and stored as pandas DataFrames.
-    """
+class CompiledData:
+    """Aggregate container for a topic model applied to a corpus and stored as pandas DataFrames."""
 
     def __init__(
-        self, documents: pd.DataFrame, dictionary: Any, topic_token_weights: pd.DataFrame,
-        topic_token_overview: pd.DataFrame, document_topic_weights: pd.DataFrame
+        self,
+        documents: pd.DataFrame,
+        dictionary: Any,
+        topic_token_weights: pd.DataFrame,
+        topic_token_overview: pd.DataFrame,
+        document_topic_weights: pd.DataFrame,
     ):
         """
         Parameters
@@ -83,7 +86,7 @@ class CompiledData():
                 dictionary=self.dictionary,
                 topic_token_weights=self.topic_token_weights,
                 topic_token_overview=self.topic_token_overview,
-                document_topic_weights=self.document_topic_weights
+                document_topic_weights=self.document_topic_weights,
             )
             with open(filename, 'wb') as f:
                 pickle.dump(c_data, f, pickle.HIGHEST_PROTOCOL)
@@ -109,8 +112,11 @@ class CompiledData():
                 data = pickle.load(f)
 
             data = CompiledData(
-                data.documents, data.dictionary, data.topic_token_weights, data.topic_token_overview,
-                data.document_topic_weights
+                data.documents,
+                data.dictionary,
+                data.topic_token_weights,
+                data.topic_token_overview,
+                data.document_topic_weights,
             )
 
         else:
@@ -125,7 +131,7 @@ class CompiledData():
                 ),
                 pd.read_csv(
                     os.path.join(folder, 'document_topic_weights.zip'), '\t', header=0, index_col=0, na_filter=False
-                )
+                ),
             )
 
         return data
@@ -166,11 +172,9 @@ def id2word2dataframe(id2word: Dict) -> pd.DataFrame:
 
     token_ids, tokens = list(zip(*id2word.items()))
 
-    dictionary = pd.DataFrame({
-        'token_id': token_ids,
-        'token': tokens,
-        'dfs': dfs
-    }).set_index('token_id')[['token', 'dfs']]
+    dictionary = pd.DataFrame({'token_id': token_ids, 'token': tokens, 'dfs': dfs}).set_index('token_id')[
+        ['token', 'dfs']
+    ]
 
     return dictionary
 
@@ -210,9 +214,15 @@ def _compile_topic_token_weights(
     else:
         assert False, "Unknown model type"
 
-    df_topic_weights = pd.DataFrame([(topic_id, token, weight) for topic_id, tokens in topic_data
-                                     for token, weight in tokens if weight > minimum_probability],
-                                    columns=['topic_id', 'token', 'weight'])
+    df_topic_weights = pd.DataFrame(
+        [
+            (topic_id, token, weight)
+            for topic_id, tokens in topic_data
+            for token, weight in tokens
+            if weight > minimum_probability
+        ],
+        columns=['topic_id', 'token', 'weight'],
+    )
 
     df_topic_weights['topic_id'] = df_topic_weights.topic_id.astype(np.uint16)
 
@@ -231,9 +241,12 @@ def _compile_topic_token_overview(
     """
     logger.info('Compiling topic-tokens overview...')
 
-    df = topic_token_weights.groupby('topic_id')\
-        .apply(lambda x: sorted(list(zip(x["token"], x["weight"])), key=lambda z: z[1], reverse=True))\
-        .apply(lambda x: ' '.join([z[0] for z in x][:n_tokens])).reset_index()
+    df = (
+        topic_token_weights.groupby('topic_id')
+        .apply(lambda x: sorted(list(zip(x["token"], x["weight"])), key=lambda z: z[1], reverse=True))
+        .apply(lambda x: ' '.join([z[0] for z in x][:n_tokens]))
+        .reset_index()
+    )
     df.columns = ['topic_id', 'tokens']
     df['alpha'] = df.topic_id.apply(lambda topic_id: alpha[topic_id]) if alpha is not None else 0.0
 
@@ -241,11 +254,7 @@ def _compile_topic_token_overview(
 
 
 def _compile_document_topics(
-    model,
-    corpus: Any,
-    documents: pd.DataFrame = None,
-    doc_topic_matrix: Any = None,
-    minimum_probability: float = 0.001
+    model, corpus: Any, documents: pd.DataFrame = None, doc_topic_matrix: Any = None, minimum_probability: float = 0.001
 ) -> pd.DataFrame:
     """Compiles a document topic dataframe for `corpus`
 
@@ -290,8 +299,9 @@ def _compile_document_topics(
                 # assert False, 'compile_document_topics: Unknown topic model'
 
             for document_id, topic_weights in data_iter:
-                for (topic_id, weight) in ((topic_id, weight) for (topic_id, weight) in topic_weights
-                                           if weight >= minimum_probability):
+                for (topic_id, weight) in (
+                    (topic_id, weight) for (topic_id, weight) in topic_weights if weight >= minimum_probability
+                ):
                     yield (document_id, topic_id, weight)
 
         '''
@@ -409,13 +419,15 @@ def extend_with_document_column(df, column, documents):
 def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
     """Returns a DataFrame containing a string of `n_tokens` most probable words per topic"""
 
-    df_temp = topic_token_weights if topic_id is None else topic_token_weights[
-        (topic_token_weights.topic_id == topic_id)]
+    df_temp = (
+        topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
+    )
 
-    df = df_temp\
-            .sort_values('weight', ascending=False)\
-            .groupby('topic_id')\
-            .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
+    df = (
+        df_temp.sort_values('weight', ascending=False)
+        .groupby('topic_id')
+        .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
+    )
 
     return df
 
@@ -427,8 +439,9 @@ def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: 
 
 def get_topic_tokens(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
     """Returns most probable tokens for given topic sorted by probability descending"""
-    df_temp = topic_token_weights if topic_id is None else topic_token_weights[
-        (topic_token_weights.topic_id == topic_id)]
+    df_temp = (
+        topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
+    )
     df = df_temp.sort_values('weight', ascending=False)[:n_tokens]
     return df
 
@@ -449,7 +462,7 @@ def get_topics_unstacked(
     else:
         # Textacy/scikit-learn model
         def scikit_learn_show_topic(topic_id):
-            topic_words = list(model.top_topic_terms(id2term, topics=(topic_id, ), top_n=n_tokens, weights=True))
+            topic_words = list(model.top_topic_terms(id2term, topics=(topic_id,), top_n=n_tokens, weights=True))
             if len(topic_words) == 0:
                 return []
             return topic_words[0][1]
@@ -459,7 +472,6 @@ def get_topics_unstacked(
 
     topic_ids = topic_ids or range(n_topics)
 
-    return pd.DataFrame({
-        'Topic#{:02d}'.format(topic_id + 1): [word[0] for word in show_topic(topic_id)]
-        for topic_id in topic_ids
-    })
+    return pd.DataFrame(
+        {'Topic#{:02d}'.format(topic_id + 1): [word[0] for word in show_topic(topic_id)] for topic_id in topic_ids}
+    )

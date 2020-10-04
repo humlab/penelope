@@ -11,10 +11,9 @@ DEFAULT_LINE_PALETTE = Set1_8
 
 
 class ColorGradient:
-
     @staticmethod
     def hex_to_RGB(rgb):
-        return [int(rgb[i:i + 2], 16) for i in range(1, 6, 2)]
+        return [int(rgb[i : i + 2], 16) for i in range(1, 6, 2)]
 
     @staticmethod
     def RGB_to_hex(RGB):
@@ -26,13 +25,13 @@ class ColorGradient:
             "hex": [ColorGradient.RGB_to_hex(RGB) for RGB in gradient],
             "r": [RGB[0] for RGB in gradient],
             "g": [RGB[1] for RGB in gradient],
-            "b": [RGB[2] for RGB in gradient]
+            "b": [RGB[2] for RGB in gradient],
         }
 
     @staticmethod
     def linear_gradient(start_hex, finish_hex="#FFFFFF", n=10):
-        ''' returns a gradient list of (n) colors between two hex colors. start_hex and finish_hex should be the full
-        six-digit color string, including the number sign ("#FFFFFF") '''
+        """returns a gradient list of (n) colors between two hex colors. start_hex and finish_hex should be the full
+        six-digit color string, including the number sign ("#FFFFFF")"""
         # Starting and ending colors in RGB form
         s = ColorGradient.hex_to_RGB(start_hex)
         f = ColorGradient.hex_to_RGB(finish_hex)
@@ -51,17 +50,16 @@ class ColorGradient:
     def rand_hex_color(num=1):
         ''' Generate random hex colors, default is one, returning a string. If num is greater than 1, an array of strings is returned. '''
         colors = [
-            ColorGradient.RGB_to_hex([random.random() * 255,
-                                      random.random() * 255,
-                                      random.random() * 255]) for _ in range(num)
+            ColorGradient.RGB_to_hex([random.random() * 255, random.random() * 255, random.random() * 255])
+            for _ in range(num)
         ]
         return colors[0] if num == 1 else colors
 
     @staticmethod
     def polylinear_gradient(colors, n):
-        ''' returns a list of colors forming linear gradients between
-          all sequential pairs of colors. "n" specifies the total
-          number of desired output colors '''
+        """returns a list of colors forming linear gradients between
+        all sequential pairs of colors. "n" specifies the total
+        number of desired output colors"""
         # The number of colors per individual linear gradient
         n_out = int(float(n) / (len(colors) - 1))
         # returns dictionary defined by color_dict()
@@ -77,8 +75,7 @@ class ColorGradient:
         return gradient_dict
 
 
-class StaticColorMap():
-
+class StaticColorMap:
     def __init__(self, palette):
         self.color_map = {}
         self.palette = palette

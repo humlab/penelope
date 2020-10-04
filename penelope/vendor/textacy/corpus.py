@@ -1,5 +1,5 @@
 import os
-from typing import (List, Any, Dict, Iterable, Tuple)
+from typing import List, Any, Dict, Iterable, Tuple
 
 import textacy
 import pandas as pd
@@ -12,7 +12,8 @@ from .language import create_nlp
 
 logger = utility.getLogger('corpus_text_analysis')
 
- # pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
+
 
 def create_corpus(reader_with_meta, nlp, tick=utility.noop, n_chunk_threshold=100000):
 
@@ -37,6 +38,7 @@ def create_corpus(reader_with_meta, nlp, tick=utility.noop, n_chunk_threshold=10
 
     return corpus
 
+
 @utility.timecall
 def save_corpus(corpus, filename, lang=None, include_tensor=False):  # pylint: disable=unused-argument
     if not include_tensor:
@@ -46,9 +48,10 @@ def save_corpus(corpus, filename, lang=None, include_tensor=False):  # pylint: d
 
 
 @utility.timecall
-def load_corpus(filename: str, lang: str):   # pylint: disable=unused-argument
+def load_corpus(filename: str, lang: str):  # pylint: disable=unused-argument
     corpus = textacy.Corpus.load(lang, filename)
     return corpus
+
 
 def merge_named_entities(textacy_corpus):
     logger.info('Working: Merging named entities...')
@@ -60,39 +63,37 @@ def merge_named_entities(textacy_corpus):
         logger.error(ex)
         logger.info('NER merge failed')
 
+
 def generate_corpus_filename(
-        source_path: str,
-        language: str,
-        nlp_args=None,
-        preprocess_args=None,
-        compression='bz2',
-        extension='bin'
-    ):
+    source_path: str, language: str, nlp_args=None, preprocess_args=None, compression='bz2', extension='bin'
+):
     nlp_args = nlp_args or {}
     preprocess_args = preprocess_args or {}
     disabled_pipes = nlp_args.get('disable', ())
     suffix = '_{}_{}{}'.format(
-        language, '_'.join([k for k in preprocess_args if preprocess_args[k]]),
-        '_disable({})'.format(','.join(disabled_pipes)) if len(disabled_pipes) > 0 else '')
+        language,
+        '_'.join([k for k in preprocess_args if preprocess_args[k]]),
+        '_disable({})'.format(','.join(disabled_pipes)) if len(disabled_pipes) > 0 else '',
+    )
     filename = utility.path_add_suffix(source_path, suffix, new_extension='.' + extension)
     if (compression or '') != '':
-        filename += ('.' + compression)
+        filename += '.' + compression
     return filename
 
 
 def _get_document_metadata(
-        filename: str,
-        metadata: Dict[str,Any]=None,
-        documents:pd.DataFrame=None,
-        document_columns: List[str]=None,
-        filename_fields: Dict[str, Any]=None
-    ):
+    filename: str,
+    metadata: Dict[str, Any] = None,
+    documents: pd.DataFrame = None,
+    document_columns: List[str] = None,
+    filename_fields: Dict[str, Any] = None,
+):
     """Extract document metadata from filename and document index"""
-    metadata = metadata or { }
+    metadata = metadata or {}
 
     if filename_fields is not None:
 
-        metadata = {**metadata, **(file_utility.extract_filename_fields(filename, **filename_fields).__dict__) }
+        metadata = {**metadata, **(file_utility.extract_filename_fields(filename, **filename_fields).__dict__)}
 
     if documents is not None:
 
@@ -107,7 +108,7 @@ def _get_document_metadata(
         if len(document_row) == 0:
             raise ValueError(f"Name '{filename}' not found in index")
 
-        metadata = { **metadata, **(document_row.iloc[0].to_dict()) }
+        metadata = {**metadata, **(document_row.iloc[0].to_dict())}
 
         if 'document_id' not in metadata:
             metadata['document_id'] = document_row.index[0]
@@ -116,11 +117,11 @@ def _get_document_metadata(
 
 
 def _extend_stream_with_metadata(
-        tokenizer: text_tokenizer.TextTokenizer,
-        documents: pd.DataFrame=None,
-        document_columns: List[str]=None,
-        filename_fields: Dict[str,Any]=None
-    ) -> Iterable[Tuple[str, str, Dict]]:
+    tokenizer: text_tokenizer.TextTokenizer,
+    documents: pd.DataFrame = None,
+    document_columns: List[str] = None,
+    filename_fields: Dict[str, Any] = None,
+) -> Iterable[Tuple[str, str, Dict]]:
     """Extract and adds document meta data to stream
 
     Parameters
@@ -142,29 +143,30 @@ def _extend_stream_with_metadata(
     for filename, tokens in tokenizer:
 
         metadata = _get_document_metadata(
-             filename,
-             metadata=tokenizer.metadict['filename'],
-             documents=documents,
-             document_columns=document_columns,
-             filename_fields=filename_fields
+            filename,
+            metadata=tokenizer.metadict['filename'],
+            documents=documents,
+            document_columns=document_columns,
+            filename_fields=filename_fields,
         )
 
         yield filename, ' '.join(tokens), metadata
 
+
 # pylint: disable=import-outside-toplevel
 def load_or_create(
-        source_path: Any,
-        language:str,
-        documents: pd.DataFrame=None,  # data_frame or lambda corpus: corpus_index
-        merge_entities: bool=False,
-        overwrite: bool=False,
-        binary_format: bool=True,
-        use_compression: bool=True,
-        disabled_pipes: List[str]=None,
-        filename_fields: Dict[str, Any]=None,
-        document_columns: List[str]=None,
-        tick=utility.noop
-    ) -> Dict[str,Any]:
+    source_path: Any,
+    language: str,
+    documents: pd.DataFrame = None,  # data_frame or lambda corpus: corpus_index
+    merge_entities: bool = False,
+    overwrite: bool = False,
+    binary_format: bool = True,
+    use_compression: bool = True,
+    disabled_pipes: List[str] = None,
+    filename_fields: Dict[str, Any] = None,
+    document_columns: List[str] = None,
+    tick=utility.noop,
+) -> Dict[str, Any]:
     """Loads textaCy corpus from disk if it exists on disk with a name that satisfies the given arguments.
     Otherwise creates a new corpus and adds metadata to corpus documents as specified by `filename_fields` and/or document index.
 
@@ -209,7 +211,7 @@ def load_or_create(
         language,
         nlp_args=nlp_args,
         extension='bin' if binary_format else 'pkl',
-        compression='bz2' if use_compression else ''
+        compression='bz2' if use_compression else '',
     )
 
     nlp = create_nlp(language, **nlp_args)
@@ -226,16 +228,16 @@ def load_or_create(
                 text_tokenizer.TRANSFORMS.fix_whitespaces,
                 text_tokenizer.TRANSFORMS.fix_accents,
                 text_tokenizer.TRANSFORMS.fix_contractions,
-                text_tokenizer.TRANSFORMS.fix_ftfy_text
+                text_tokenizer.TRANSFORMS.fix_ftfy_text,
             ],
-            filename_fields=filename_fields
+            filename_fields=filename_fields,
         )
 
         reader = _extend_stream_with_metadata(
             tokens_streams,
             documents=documents,
             document_columns=document_columns,
-            filename_fields=None # n.b. fields extracted abve
+            filename_fields=None,  # n.b. fields extracted abve
         )
 
         logger.info('Stream created...')
@@ -266,5 +268,5 @@ def load_or_create(
         language=language,
         nlp=nlp,
         textacy_corpus=textacy_corpus,
-        textacy_corpus_path=textacy_corpus_path
+        textacy_corpus_path=textacy_corpus_path,
     )

@@ -22,7 +22,7 @@ def plot(G_gt, layout_gt, n_range, palette, **kwargs):  # pylint: disable=unused
 
     for v_i, v in enumerate(G_gt.vertices()):
         scolor = palette[v_blocks[v_i]]
-        plot_color[v] = tuple(int(scolor[i:i + 2], 16) for i in (1, 3, 5)) + (1, )
+        plot_color[v] = tuple(int(scolor[i : i + 2], 16) for i in (1, 3, 5)) + (1,)
 
     gt_draw.graph_draw(
         G_gt,
@@ -38,5 +38,5 @@ def plot(G_gt, layout_gt, n_range, palette, **kwargs):  # pylint: disable=unused
         vertex_font_family='helvetica',
         vertex_text_color='black',
         edge_pen_width=e_size_p,
-        inline=True
+        inline=True,
     )

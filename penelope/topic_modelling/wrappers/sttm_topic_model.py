@@ -35,11 +35,11 @@ logger = logging.getLogger(__name__)
 
 AVALIABLE_MODELS = "LDA BTM PTM SATM DMM WATM".split()
 
- # pylint: disable=too-many-instance-attributes, too-many-arguments
+# pylint: disable=too-many-instance-attributes, too-many-arguments
+
 
 class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
-    """Python wrapper for SSTM using `SSTM <https://github.com/qiang2100/STTM>`_.
-    """
+    """Python wrapper for SSTM using `SSTM <https://github.com/qiang2100/STTM>`_."""
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         prefix='results/',
         name='model',
         twords=20,
-        sstep=0
+        sstep=0,
     ):
         """
 
@@ -111,7 +111,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         self.beta = beta
 
         if prefix is None:
-            rand_prefix = hex(random.randint(0, 0xffffff))[2:] + '_'
+            rand_prefix = hex(random.randint(0, 0xFFFFFF))[2:] + '_'
             prefix = os.path.join(tempfile.gettempdir(), rand_prefix)
 
         self.prefix = prefix
@@ -236,8 +236,17 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         self.java_opts = '-Xmx1G'
         cmd = 'java {} -jar {} -model {} -corpus {} -ntopics {} -alpha {} -beta {} -niters {} -twords {} -name {} -sstep {}'
         cmd = cmd.format(
-            self.java_opts, self.sstm_jar_path, self.model, self.fcorpustxt(), self.num_topics, self.alpha[0],
-            self.beta, self.iterations, self.twords, self.name, self.sstep
+            self.java_opts,
+            self.sstm_jar_path,
+            self.model,
+            self.fcorpustxt(),
+            self.num_topics,
+            self.alpha[0],
+            self.beta,
+            self.iterations,
+            self.twords,
+            self.name,
+            self.sstep,
         )
 
         if self.vectors is not None:
@@ -262,9 +271,9 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         logger.info("loading assigned topics from %s", self.ftopickeys())
 
-        #with open(self.ftopickeys(), 'r') as f:
+        # with open(self.ftopickeys(), 'r') as f:
         #    text = f.read().replace(' \n', '\n')
-        #word_topics = np.loadtxt(io.StringIO(text), delimiter=' ', dtype=numpy.float64)
+        # word_topics = np.loadtxt(io.StringIO(text), delimiter=' ', dtype=numpy.float64)
 
         word_topics = numpy.loadtxt(
             self.ftopickeys(), delimiter=' ', usecols=range(0, self.num_terms), dtype=numpy.float64
@@ -328,7 +337,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
             # add a little random jitter, to randomize results around the same alpha
             sort_alpha = self.alpha + 0.0001 * numpy.random.rand(len(self.alpha))
             sorted_topics = list(matutils.argsort(sort_alpha))
-            chosen_topics = sorted_topics[:num_topics // 2] + sorted_topics[-num_topics // 2:]
+            chosen_topics = sorted_topics[: num_topics // 2] + sorted_topics[-num_topics // 2 :]
         shown = []
         for i in chosen_topics:
             if formatted:

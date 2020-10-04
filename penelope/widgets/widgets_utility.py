@@ -1,9 +1,10 @@
 # from __future__ import print_function
 import ipywidgets as widgets
 
-#from .widgets_config import years_widget
+# from .widgets_config import years_widget
 
 BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
+
 
 def button2(description, style=None, callback=None):
     style = style or dict(description_width='initial', button_color='lightgreen')
@@ -12,12 +13,13 @@ def button2(description, style=None, callback=None):
         button.on_click(callback)
     return button
 
+
 def text_widget(element_id=None, default_value=''):
     value = "<span class='{}'>{}</span>".format(element_id, default_value) if element_id is not None else ''
     return widgets.HTML(value=value, placeholder='', description='')
 
-def next_id_button(that, property_name, count):
 
+def next_id_button(that, property_name, count):
     def f(_):
         control = getattr(that, property_name, None)
         if control is not None:
@@ -25,14 +27,15 @@ def next_id_button(that, property_name, count):
 
     return button2(description=">>", callback=f)
 
-def prev_id_button(that, property_name, count):
 
+def prev_id_button(that, property_name, count):
     def f(_):
         control = getattr(that, property_name, None)
         if control is not None:
             control.value = (control.value - 1) % count
 
     return button2(description="<<", callback=f)
+
 
 # class WidgetUtility():
 
@@ -77,4 +80,4 @@ def prev_id_button(that, property_name, count):
 #             if layout_algorithms is not None else None
 
 
-#wf = WidgetUtility()
+# wf = WidgetUtility()

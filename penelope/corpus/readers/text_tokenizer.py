@@ -24,7 +24,7 @@ def strip_path_and_add_counter(filename, n_chunk):
     return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
 
 
-class TextTokenizer():
+class TextTokenizer:
     """Reads a text corpus from `source` and applies given transforms.
     Derived classes can override `preprocess` as an initial step before transforms are applied.
     The `preprocess` is applied on the entire document, and the transforms on each token.
@@ -42,7 +42,7 @@ class TextTokenizer():
         as_binary=False,
         fix_whitespaces: bool = False,
         fix_hyphenation: bool = False,
-        filename_fields=None
+        filename_fields=None,
     ):
         """
         Parameters
@@ -64,10 +64,12 @@ class TextTokenizer():
         self.chunk_size = chunk_size
         self.tokenize = tokenize or word_tokenize
 
-        self.text_transformer = TextTransformer(transforms=transforms)\
-            .add(TRANSFORMS.fix_unicode)\
-            .add(TRANSFORMS.fix_whitespaces, condition=fix_whitespaces)\
+        self.text_transformer = (
+            TextTransformer(transforms=transforms)
+            .add(TRANSFORMS.fix_unicode)
+            .add(TRANSFORMS.fix_whitespaces, condition=fix_whitespaces)
             .add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
+        )
 
         self.iterator = None
 
@@ -79,8 +81,11 @@ class TextTokenizer():
         self.metadict = {x.filename: x for x in (self.metadata or [])}
 
     def _create_iterator(self):
-        return ((os.path.basename(document_name), document) for (filename, content) in self.source
-                for document_name, document in self.process(filename, content))
+        return (
+            (os.path.basename(document_name), document)
+            for (filename, content) in self.source
+            for document_name, document in self.process(filename, content)
+        )
 
     def preprocess(self, content: str) -> str:
         """Process of source text that happens before any tokenization e.g. XML to text transform """
@@ -117,7 +122,7 @@ class TextTokenizer():
 
                 stored_name = '{}_{}.txt'.format(strip_path_and_extension(filename), str(n_chunk + 1).zfill(3))
 
-                yield stored_name, tokens[i:i + self.chunk_size]
+                yield stored_name, tokens[i : i + self.chunk_size]
 
     def __iter__(self):
         return self

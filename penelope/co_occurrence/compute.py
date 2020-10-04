@@ -9,6 +9,7 @@ from .vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
 
 logger = utility.getLogger('corpus_text_analysis')
 
+
 def compute(
     corpus,
     document_index,
@@ -17,7 +18,7 @@ def compute(
     normalize='size',
     method='HAL',
     zero_diagonal=True,
-    direction_sensitive=False
+    direction_sensitive=False,
 ):
 
     doc_terms = [[t.lower().strip('_') for t in terms if len(t) > 2] for terms in corpus.get_texts()]
@@ -38,8 +39,9 @@ def compute(
 
         if method == "HAL":
 
-            vectorizer = HyperspaceAnalogueToLanguageVectorizer(token2id=common_token2id)\
-                .fit(docs, size=window_size, distance_metric=distance_metric)
+            vectorizer = HyperspaceAnalogueToLanguageVectorizer(token2id=common_token2id).fit(
+                docs, size=window_size, distance_metric=distance_metric
+            )
 
             df = vectorizer.cooccurence(
                 direction_sensitive=direction_sensitive, normalize=normalize, zero_diagonal=zero_diagonal
@@ -47,17 +49,16 @@ def compute(
 
         else:
 
-            vectorizer = GloveVectorizer(token2id=common_token2id)\
-                .fit(docs, size=window_size)
+            vectorizer = GloveVectorizer(token2id=common_token2id).fit(docs, size=window_size)
 
             df = vectorizer.cooccurence(normalize=normalize, zero_diagonal=zero_diagonal)
 
         df['year'] = year
-        #df = df[df.cwr >= threshhold]
+        # df = df[df.cwr >= threshhold]
 
         dfs.append(df[['year', 'x_term', 'y_term', 'nw_xy', 'nw_x', 'nw_y', 'cwr']])
 
-        #if i == 5: break
+        # if i == 5: break
 
     df = pd.concat(dfs, ignore_index=True)
 

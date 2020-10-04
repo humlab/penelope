@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from penelope.corpus import readers
-from penelope.corpus.sparv.sparv_xml_to_text import (XSLT_FILENAME_V3, SparvXml2Text)
+from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 
 logger = logging.getLogger(__name__)
 
@@ -16,12 +16,11 @@ DEFAULT_OPTS = dict(
     xslt_filename=None,
     delimiter="|",
     append_pos="",
-    pos_excludes="|MAD|MID|PAD|"
+    pos_excludes="|MAD|MID|PAD|",
 )
 
 
 class SparvXmlTokenizer(readers.TextTokenizer):
-
     def __init__(
         self,
         source,
@@ -32,7 +31,7 @@ class SparvXmlTokenizer(readers.TextTokenizer):
         chunk_size: int = None,
         xslt_filename: str = None,
         append_pos: bool = "",
-        version: int = 4
+        version: int = 4,
     ):
 
         self.delimiter: str = ' '
@@ -51,7 +50,7 @@ class SparvXmlTokenizer(readers.TextTokenizer):
             pos_includes=self.pos_includes,
             lemmatize=self.lemmatize,
             append_pos=self.append_pos,
-            pos_excludes=self.pos_excludes
+            pos_excludes=self.pos_excludes,
         )
 
     def preprocess(self, content):
@@ -59,7 +58,6 @@ class SparvXmlTokenizer(readers.TextTokenizer):
 
 
 class Sparv3XmlTokenizer(SparvXmlTokenizer):
-
     def __init__(
         self,
         source,
@@ -68,7 +66,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
         pos_excludes: str = "|MAD|MID|PAD|",
         lemmatize: str = True,
         chunk_size: int = None,
-        append_pos: str = ""
+        append_pos: str = "",
     ):
 
         super().__init__(
@@ -79,5 +77,5 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
             chunk_size=chunk_size,
             xslt_filename=XSLT_FILENAME_V3,
             append_pos=append_pos,
-            pos_excludes=pos_excludes
+            pos_excludes=pos_excludes,
         )

@@ -1,9 +1,9 @@
 from . import utils
 
- # pylint: disable=too-many-instance-attributes
-class CorpusContainer():
-    """Singleton class for current (last) computed or loaded corpus
-    """
+# pylint: disable=too-many-instance-attributes
+class CorpusContainer:
+    """Singleton class for current (last) computed or loaded corpus"""
+
     corpus_container = None
 
     def __init__(self):
@@ -40,7 +40,6 @@ class CorpusContainer():
 
     @staticmethod
     def corpus():
-
         class CorpusNotLoaded(Exception):
             pass
 

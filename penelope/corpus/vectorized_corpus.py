@@ -20,8 +20,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("")
 
 
-class VectorizedCorpus():
-
+class VectorizedCorpus:
     def __init__(self, bag_term_matrix, token2id, document_index, word_counts=None):
         """Class that encapsulates a bag-of-word matrix.
 
@@ -263,7 +262,7 @@ class VectorizedCorpus():
 
         return Y, categories
 
-    #@jit
+    # @jit
     # CONSIDER: Refactor away function (make use of `collapse_by_category`)
     def group_by_year(self) -> VectorizedCorpus:
         """Returns a new corpus where documents have been grouped and summed up by year."""
@@ -312,7 +311,7 @@ class VectorizedCorpus():
                 else:
                     Y[i, :] = X[indices, :].sum(axis=0)
 
-                #Y[i,:] = self._group_aggregate_functions[aggregate_function](X[indices,:], axis=0)
+                # Y[i,:] = self._group_aggregate_functions[aggregate_function](X[indices,:], axis=0)
 
         years = list(range(min_value, max_value + 1))
 
@@ -344,7 +343,7 @@ class VectorizedCorpus():
 
         return v_corpus
 
-    #@jit
+    # @jit
     def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> VectorizedCorpus:
         """Scale BoW matrix's rows or columns individually to unit norm:
 
@@ -454,7 +453,7 @@ class VectorizedCorpus():
     #     return (self.bag_term_matrix[:, kept_indices], token2id)
 
     def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> VectorizedCorpus:
-        """ Creates a subset corpus where common/rare terms are filtered out.
+        """Creates a subset corpus where common/rare terms are filtered out.
 
         Textacy util function filter_terms_by_df is used for the filtering.
 
@@ -478,7 +477,7 @@ class VectorizedCorpus():
 
         return v_corpus
 
-    #@autojit
+    # @autojit
     def slice_by(self, px) -> VectorizedCorpus:
         """Create a subset corpus based on predicate `px`
 
@@ -515,7 +514,7 @@ class VectorizedCorpus():
             'bags': self.bag_term_matrix.shape[0],
             'vocabulay_size': self.bag_term_matrix.shape[1],
             'sum_over_bags': self.bag_term_matrix.sum(),
-            '10_top_tokens': ' '.join(self.n_top_tokens(10).keys())
+            '10_top_tokens': ' '.join(self.n_top_tokens(10).keys()),
         }
         for key in stats_data:
             logger.info('   {}: {}'.format(key, stats_data[key]))
@@ -624,8 +623,10 @@ class VectorizedCorpus():
         dtm = self.bag_term_matrix
         indicies = indicies or range(0, dtm.shape[0])
         id2token = self.id2token
-        return ((w for ws in (dtm[doc_id, i] * [id2token[i]] for i in dtm[doc_id, :].nonzero()[1]) for w in ws)
-                for doc_id in indicies)
+        return (
+            (w for ws in (dtm[doc_id, i] * [id2token[i]] for i in dtm[doc_id, :].nonzero()[1]) for w in ws)
+            for doc_id in indicies
+        )
 
     def get_top_n_words(self, n=1000, indices=None):
         """Returns a document token stream that
@@ -664,7 +665,7 @@ def load_corpus(
     n_count: int = 10000,
     n_top: int = 100000,
     axis: Optional[int] = 1,
-    keep_magnitude: bool = True
+    keep_magnitude: bool = True,
 ) -> VectorizedCorpus:
     """Loads a previously saved vectorized corpus from disk. Easaly the best loader ever.
 
@@ -688,9 +689,7 @@ def load_corpus(
     VectorizedCorpus
         The loaded corpus
     """
-    v_corpus = VectorizedCorpus\
-        .load(tag, folder=folder)\
-        .group_by_year()
+    v_corpus = VectorizedCorpus.load(tag, folder=folder).group_by_year()
 
     if n_count is not None:
         v_corpus = v_corpus.slice_by_n_count(n_count)
@@ -712,16 +711,14 @@ def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=1
 
     if not VectorizedCorpus.dump_exists(year_cache_tag, folder=folder):
         logger.info("Caching corpus grouped by year...")
-        v_corpus = VectorizedCorpus\
-            .load(tag, folder=folder)\
-            .group_by_year()\
-            .normalize(axis=1, keep_magnitude=keep_magnitude)\
+        v_corpus = (
+            VectorizedCorpus.load(tag, folder=folder)
+            .group_by_year()
+            .normalize(axis=1, keep_magnitude=keep_magnitude)
             .dump(year_cache_tag, folder)
+        )
 
     if v_corpus is None:
-        v_corpus = VectorizedCorpus\
-            .load(year_cache_tag, folder=folder)\
-            .slice_by_n_count(n_count)\
-            .slice_by_n_top(n_top)
+        v_corpus = VectorizedCorpus.load(year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
 
     return v_corpus
