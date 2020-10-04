@@ -16,22 +16,40 @@ test-coverage:
 build:
 	@poetry build
 
-test:
-	@poetry run pytest -v --durations=0
-	# --failed-first --maxfail=1
+test: clean
+	@poetry run pytest --verbose --durations=0 \
+		--cov=penelope \
+		--cov-report=term \
+		--cov-report=xml \
+		--cov-report=html \
+		tests
 
 lint:
-	-poetry run pylint penelope tests | sort | uniq | grep -v "************* Module" > pylint.log
+	@poetry run pylint penelope tests | sort | uniq | grep -v "************* Module" > pylint.log
+	@poetry run flake8 --version
+	@poetry run flake8
+	# @poetry run mypy --version
+	# @poetry run mypy .
 
-format:
-	poetry run yapf --in-place --recursive penelope
+format: clean black isort
 
-black:
-	poetry run black --line-length 120 --target-version py38 --skip-string-normalization penelope
+isort:
+	@poetry run isort penelope
+
+yapf: clean
+	@poetry run yapf --version
+	@poetry run yapf --in-place --recursive penelope
+
+black:clean
+	@poetry run black --version
+	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization penelope tests
 
 clean:
-	@rm -rf .pytest_cache
-	@find -name __pycache__ | xargs rm -r
+	@rm -rf .pytest_cache build dist .eggs *.egg-info
+	@rm -rf .coverage coverage.xml htmlcov report.xml .tox
+	@find . -type d -name '__pycache__' -exec rm -rf {} +
+	@find . -type d -name '*pytest_cache*' -exec rm -rf {} +
+	@find . -type d -name '.mypy_cache' -exec rm -rf {} +
 	@rm -rf penelope/test/output
 
 update:
@@ -47,4 +65,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint black clean test test-coverage update install_graphtool build
+.PHONY: init lint format yapf black clean test test-coverage update install_graphtool build isort
