@@ -1,5 +1,28 @@
 {
     "python.formatting.provider": "yapf",
     "python.linting.pylintEnabled": true,
-    "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-text-utils-_WPoS554-py3.8/bin/python"
+    "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-text-utils-_WPoS554-py3.8/bin/python",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#66874f",
+        "activityBar.activeBorder": "#afbcd0",
+        "activityBar.background": "#66874f",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#afbcd0",
+        "activityBarBadge.foreground": "#15202b",
+        "statusBar.background": "#4e673c",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#66874f",
+        "titleBar.activeBackground": "#4e673c",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#4e673c99",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.remoteColor": "#4e673c"
 }
