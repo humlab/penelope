@@ -50,7 +50,7 @@ clean:
 	@find . -type d -name '__pycache__' -exec rm -rf {} +
 	@find . -type d -name '*pytest_cache*' -exec rm -rf {} +
 	@find . -type d -name '.mypy_cache' -exec rm -rf {} +
-	@rm -rf penelope/test/output
+	@rm -rf tests/output
 
 update:
 	#@export PIPENV_VENV_IN_PROJECT=true
