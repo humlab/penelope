@@ -49,10 +49,10 @@ class StaggerWrapper:
         self.stagger_jar_path = stagger_jar_path
         self.stagger_model_path = stagger_model_path
 
-        if self.stagger_jar_path is None and not self.stagger_home is None:
+        if self.stagger_jar_path is None and self.stagger_home is not None:
             self.stagger_jar_path = os.path.join(self.stagger_home, "stagger.jar")
 
-        if self.stagger_model_path is None and not self.stagger_home is None:
+        if self.stagger_model_path is None and self.stagger_home is not None:
             self.stagger_model_path = os.path.join(self.stagger_home, 'swedish.bin')
 
         if not os.path.exists(self.stagger_jar_path or ""):

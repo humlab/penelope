@@ -22,7 +22,8 @@ def test_archive_filenames_when_filter_md_returns_md_files():
 
 
 def test_archive_filenames_when_filter_function_txt_returns_txt_files():
-    filename_filter = lambda x: x.endswith('txt')
+    def filename_filter(x):
+        return x.endswith('txt')
     reader = create_text_tokenizer(filename_filter=filename_filter)
     assert 5 == len(reader.filenames)
 

@@ -10,7 +10,8 @@ import penelope.corpus.tokenized_corpus as corpora
 from penelope.corpus import corpus_vectorizer, vectorized_corpus
 from tests.utils import create_text_tokenizer
 
-flatten = lambda l: [x for ws in l for x in ws]
+def flatten(l):
+    return [x for ws in l for x in ws]
 
 TEMP_OUTPUT_FOLDER = "./penelope/tests/output"
 

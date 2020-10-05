@@ -135,13 +135,13 @@ def extract_corpus_terms(corpus, extract_args):
     return terms
 
 
-def chunks(l, n):
+def chunks(lst, n):
     '''Returns list l in n-sized chunks'''
     if (n or 0) == 0:
-        yield l
+        yield lst
     else:
-        for i in range(0, len(l), n):
-            yield l[i : i + n]
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
 
 
 def extract_document_tokens(docs, **opts):

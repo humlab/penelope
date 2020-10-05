@@ -158,7 +158,7 @@ def project_series_to_range(series, low, high):
 
 
 plot_network = _plot_network
-layout_args = _layout_args
-get_layout_algorithm = _get_layout_algorithm
-project_series_to_range = _project_series_to_range
+# layout_args = _layout_args
+# get_layout_algorithm = _get_layout_algorithm
+# project_series_to_range = _project_series_to_range
 plot_network = _plot_network

@@ -130,10 +130,10 @@ def extend_single(target, source, name):
     return target
 
 
-def flatten(l):
+def flatten(lofl):
     """Returns a flat single list out of supplied list of lists."""
 
-    return [item for sublist in l for item in sublist]
+    return [item for sublist in lofl for item in sublist]
 
 
 def project_series_to_range(series, low, high):
@@ -347,13 +347,13 @@ def extract_counter_items_within_threshold(counter, low, high):
     return item_values
 
 
-def chunks(l, n):
+def chunks(lst, n):
 
     if (n or 0) == 0:
-        yield l
+        yield lst
 
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
+    for i in range(0, len(lst), n):
+        yield lst[i : i + n]
 
 
 # def get_document_id_by_field_filters(documents, filters):

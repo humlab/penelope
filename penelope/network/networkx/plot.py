@@ -48,5 +48,5 @@ def plot(G, **kwargs):  # pylint: disable=unused-argument
         return None
     Q = pydotplus.graph_from_dot_data(D)
 
-    I = Image(Q.create_png())
-    return I
+    image = Image(Q.create_png())
+    return image
