@@ -3,7 +3,7 @@ import unittest
 
 import pandas as pd
 
-from penelope.corpus.readers import dataframe_text_tokenizer
+import penelope.corpus.readers as readers
 
 
 class Test_DataFrameTextTokenizer(unittest.TestCase):
@@ -40,7 +40,7 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
 
     def test_reader_with_all_documents(self):
         df = self.create_test_dataframe()
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(df)
+        reader = readers.DataFrameTextTokenizer(df)
         result = [x for x in reader]
         expected = [
             ('0', 'A B C'.split()),
@@ -66,7 +66,7 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
 
     def test_reader_with_given_year(self):
         df = self.create_triple_meta_dataframe()
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(df, year=2003)
+        reader = readers.DataFrameTextTokenizer(df, year=2003)
         result = [x for x in reader]
         expected = [
             ('3', ['A', 'B', 'F']),

@@ -4,12 +4,12 @@ import pytest  # pylint: disable=unused-import
 
 import penelope.utility.file_utility as file_utility
 import penelope.corpus.sparv_corpus as sparv_corpus
-import penelope.corpus.readers.sparv_xml_tokenizer as sparv_reader
+import penelope.corpus.readers as readers
 
-SPARV_XML_EXPORT_FILENAME = './penelope/tests/test_data/sparv_xml_export.xml'
-SPARV_XML_EXPORT_FILENAME_SMALL = './penelope/tests/test_data/sparv_xml_export_small.xml'
-SPARV_ZIPPED_XML_EXPORT_FILENAME = './penelope/tests/test_data/sparv_zipped_xml_export.zip'
-SPARV3_ZIPPED_XML_EXPORT_FILENAME = './penelope/tests/test_data/sou_test_sparv3_xml.zip'
+SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
+SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
+SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_zipped_xml_export.zip'
+SPARV3_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sou_test_sparv3_xml.zip'
 
 
 def test_reader_store_result():
@@ -20,7 +20,7 @@ def test_reader_store_result():
     ]
     expected_names = ["document_001.txt", "document_002.txt"]
 
-    target_filename = './penelope/tests/output/sparv_extract_and_store.zip'
+    target_filename = './tests/output/sparv_extract_and_store.zip'
 
     opts = dict(
         version=4,
@@ -41,7 +41,7 @@ def test_reader_store_result():
 
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
-    os.makedirs('./penelope/tests/output', exist_ok=True)
+    os.makedirs('./tests/output', exist_ok=True)
 
     opts = {
         'pos_includes': '|NN|',
@@ -66,7 +66,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
         # keep_symbols: bool = True
     }
 
-    target_filename = './penelope/tests/output/sou_test_sparv3_extracted_txt.zip'
+    target_filename = './tests/output/sou_test_sparv3_extracted_txt.zip'
 
     sparv_corpus.sparv_extract_and_store(SPARV3_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
 
@@ -83,7 +83,7 @@ def test_corpus_when_source_is_sparv3_succeeds():
 
     opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
 
-    reader = sparv_reader.Sparv3XmlTokenizer(SPARV3_ZIPPED_XML_EXPORT_FILENAME, **opts)
+    reader = readers.Sparv3XmlTokenizer(SPARV3_ZIPPED_XML_EXPORT_FILENAME, **opts)
 
     for _, (_, tokens) in enumerate(reader):
 

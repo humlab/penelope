@@ -2,9 +2,10 @@
 import logging
 from typing import Callable, List
 
-from penelope.corpus import readers
 from penelope.corpus.sparv.sparv_xml_to_text import (XSLT_FILENAME_V3,
                                                      SparvXml2Text)
+
+from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ DEFAULT_OPTS = dict(
 )
 
 
-class SparvXmlTokenizer(readers.TextTokenizer):
+class SparvXmlTokenizer(TextTokenizer):
     def __init__(
         self,
         source,

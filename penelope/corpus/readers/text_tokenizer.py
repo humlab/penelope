@@ -6,8 +6,9 @@ from typing import Callable, Iterable, List, Tuple, Union
 from nltk.tokenize import word_tokenize
 
 import penelope.utility.file_utility as file_utility
-from penelope.corpus import readers
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
+
+from .streamify_text_source import streamify_text_source
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class TextTokenizer:
         tokenize : Func[], optional
             Text tokenize function, by default None
         """
-        self.source = readers.streamify_text_source(
+        self.source = streamify_text_source(
             source_path, filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
         )
         self.chunk_size = chunk_size

@@ -1,6 +1,6 @@
 import pytest
 
-from penelope.corpus.readers.streamify_text_source import streamify_text_source
+import penelope.corpus.readers as readers
 
 from tests.utils import TEST_CORPUS_FILENAME
 
@@ -9,14 +9,14 @@ from tests.utils import TEST_CORPUS_FILENAME
 
 def test_streamify_text_source_smoke_test():
 
-    stream = streamify_text_source(TEST_CORPUS_FILENAME)
+    stream = readers.streamify_text_source(TEST_CORPUS_FILENAME)
 
     assert stream is not None
 
 
 def test_next_of_streamified_zipped_source_returns_document_strem():
 
-    stream = streamify_text_source(TEST_CORPUS_FILENAME)
+    stream = readers.streamify_text_source(TEST_CORPUS_FILENAME)
 
     assert stream is not None
     assert next(stream) is not None

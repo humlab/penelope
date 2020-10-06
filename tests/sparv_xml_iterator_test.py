@@ -1,10 +1,10 @@
 import pytest  # pylint: disable=unused-import
 
-import penelope.corpus.readers.sparv_xml_tokenizer as sparv_reader
+import penelope.corpus.readers as readers
 
-SPARV_XML_EXPORT_FILENAME = './penelope/tests/test_data/sparv_xml_export.xml'
-SPARV_XML_EXPORT_FILENAME_SMALL = './penelope/tests/test_data/sparv_xml_export_small.xml'
-SPARV_ZIPPED_XML_EXPORT_FILENAME = './penelope/tests/test_data/sparv_zipped_xml_export.zip'
+SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
+SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
+SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_zipped_xml_export.zip'
 
 
 def sparv_xml_test_file():
@@ -45,7 +45,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
     opts = dict(pos_includes='', lemmatize=False, chunk_size=None, pos_excludes="")
 
-    reader = sparv_reader.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
 
     document_name, tokens = next(iter(reader))
 
@@ -75,7 +75,7 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
 
     opts = dict(pos_includes='', lemmatize=True, chunk_size=None, pos_excludes="")
 
-    reader = sparv_reader.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
 
     document_name, tokens = next(iter(reader))
 
@@ -104,7 +104,7 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
 
     opts = dict(pos_includes='', lemmatize=True, chunk_size=None, pos_excludes="|MAD|MID|PAD|")
 
-    reader = sparv_reader.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
 
     document_name, tokens = next(iter(reader))
 
@@ -119,7 +119,7 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
 
     opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
 
-    reader = sparv_reader.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
 
     document_name, tokens = next(iter(reader))
 
@@ -134,7 +134,7 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
 
     opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=2)
 
-    reader = sparv_reader.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
 
     for i, (document_name, tokens) in enumerate(reader):
 
@@ -152,7 +152,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 
     opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
 
-    reader = sparv_reader.SparvXmlTokenizer(SPARV_ZIPPED_XML_EXPORT_FILENAME, **opts)
+    reader = readers.SparvXmlTokenizer(SPARV_ZIPPED_XML_EXPORT_FILENAME, **opts)
 
     for i, (document_name, tokens) in enumerate(reader):
 
@@ -162,11 +162,11 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 
 def test_reader_when_source_is_sparv3_succeeds():
 
-    sparv_zipped_xml_export_v3_filename = './penelope/tests/test_data/sou_test_sparv3_xml.zip'
+    sparv_zipped_xml_export_v3_filename = './tests/test_data/sou_test_sparv3_xml.zip'
 
     opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)  # , xslt_filename=xslt_filename)
 
-    reader = sparv_reader.Sparv3XmlTokenizer(sparv_zipped_xml_export_v3_filename, **opts)
+    reader = readers.Sparv3XmlTokenizer(sparv_zipped_xml_export_v3_filename, **opts)
 
     for _, (_, tokens) in enumerate(reader):
 

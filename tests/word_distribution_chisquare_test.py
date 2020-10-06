@@ -1,23 +1,3 @@
-# -*- coding: utf-8 -*-
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py,md
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.4'
-#       jupytext_version: 1.2.4
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
-
-# +
-# %load_ext autoreload
-# %autoreload 2
-
 import unittest
 
 import pandas as pd
@@ -25,7 +5,7 @@ import scipy
 from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 
 import penelope.corpus.tokenized_corpus as corpora
-from penelope.corpus import corpus_vectorizer
+from penelope.corpus import vectorizer
 from tests.utils import create_text_tokenizer
 
 unittest.main(argv=['first-arg-is-ignored'], exit=False)
@@ -55,8 +35,8 @@ class Test_ChiSquare(unittest.TestCase):
 
     def skip_test_chisquare(self):
         corpus = self.create_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        v_corpus = vectorizer.fit_transform(corpus).group_by_year().slice_by_n_count(0)
+        v = vectorizer.CorpusVectorizer()
+        v_corpus = v.fit_transform(corpus).group_by_year().slice_by_n_count(0)
         _X2 = scipy.stats.chisquare(
             v_corpus.term_bag_matrix.todense(), f_exp=None, ddof=0, axis=0
         )  # pylint: disable=unused-variable

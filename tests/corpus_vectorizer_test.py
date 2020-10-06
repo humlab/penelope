@@ -1,9 +1,9 @@
 import types
 import unittest
 
-import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.corpus.tokenized_corpus as corpora
 import tests.utils as test_utils
+import penelope.corpus.readers as readers
 from penelope.corpus import vectorizer as corpus_vectorizer
 
 
@@ -91,7 +91,7 @@ class Test_CorpusVectorizer(unittest.TestCase):
 
     def test_create_text_tokenizer_smoke_test(self):
         kwargs = {}
-        reader = text_tokenizer.TextTokenizer(test_utils.TEST_CORPUS_FILENAME, **kwargs)
+        reader = readers.TextTokenizer(test_utils.TEST_CORPUS_FILENAME, **kwargs)
         assert reader is not None
         assert next(reader) is not None
 

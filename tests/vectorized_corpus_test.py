@@ -7,7 +7,7 @@ import scipy
 from sklearn.feature_extraction.text import CountVectorizer
 
 import penelope.corpus.tokenized_corpus as corpora
-from penelope.corpus import corpus_vectorizer, vectorized_corpus
+from penelope.corpus import vectorizer, vectorized_corpus
 from tests.utils import create_text_tokenizer
 
 
@@ -75,8 +75,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Arrange
         corpus = self.create_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        dumped_v_corpus = vectorizer.fit_transform(corpus)
+        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
 
         dumped_v_corpus.dump('dump_test', folder=TEMP_OUTPUT_FOLDER, compressed=False)
 
@@ -93,8 +92,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Arrange
         corpus = self.create_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        dumped_v_corpus = vectorizer.fit_transform(corpus)
+        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
 
         dumped_v_corpus.dump('dump_test', folder=TEMP_OUTPUT_FOLDER, compressed=True)
 

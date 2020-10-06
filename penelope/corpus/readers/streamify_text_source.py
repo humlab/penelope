@@ -4,8 +4,7 @@ import zipfile
 from typing import Callable, List, Union
 
 import penelope.utility.file_utility as file_utility
-from penelope.corpus import readers
-
+from .zip_iterator import ZipTextIterator
 
 def streamify_text_source(
     text_source: str,
@@ -37,7 +36,7 @@ def streamify_text_source(
     if os.path.isfile(text_source):
 
         if zipfile.is_zipfile(text_source):
-            return readers.ZipTextIterator(
+            return ZipTextIterator(
                 text_source, filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
             )
 

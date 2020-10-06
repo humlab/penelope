@@ -1,6 +1,6 @@
 import pytest
 
-from penelope.corpus.readers.zip_iterator import ZipTextIterator
+import penelope.corpus.readers as readers
 
 from tests.utils import TEST_CORPUS_FILENAME
 
@@ -9,7 +9,7 @@ from tests.utils import TEST_CORPUS_FILENAME
 
 def test_streamify_text_source_smoke_test():
 
-    stream = ZipTextIterator(TEST_CORPUS_FILENAME, filename_pattern="*.txt", filename_filter=None, as_binary=False)
+    stream = readers.ZipTextIterator(TEST_CORPUS_FILENAME, filename_pattern="*.txt", filename_filter=None, as_binary=False)
 
     document_name, text = next(stream)
 
@@ -23,7 +23,7 @@ def test_streamify_text_source_smoke_test():
 @pytest.mark.xfail
 def test_streamify_text_source_smoke_test_raises_exception():
 
-    stream = ZipTextIterator(TEST_CORPUS_FILENAME, filename_pattern="*.dat", filename_filter=None, as_binary=False)
+    stream = readers.ZipTextIterator(TEST_CORPUS_FILENAME, filename_pattern="*.dat", filename_filter=None, as_binary=False)
 
     with pytest.raises(StopIteration):
         _, _ = next(stream)

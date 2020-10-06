@@ -1,19 +1,3 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py,md
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.4'
-#       jupytext_version: 1.2.4
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
-
-# +
 import unittest
 import pandas as pd
 import numpy as np
@@ -21,7 +5,7 @@ import scipy
 
 from penelope.corpus import vectorizer as corpus_vectorizer
 import penelope.corpus.tokenized_corpus as corpora
-from penelope.corpus.readers import dataframe_text_tokenizer
+import penelope.corpus.readers as readers
 
 
 class Test_DataFrameVectorize(unittest.TestCase):
@@ -35,7 +19,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def create_corpus(self):
         df = self.create_test_dataframe()
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(df)
+        reader = readers.DataFrameTextTokenizer(df)
         kwargs = dict(
             only_any_alphanumeric=False,
             to_lower=False,
@@ -49,7 +33,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_corpus_token_stream(self):
         df = self.create_test_dataframe()
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(df)
+        reader = readers.DataFrameTextTokenizer(df)
         corpus = corpora.TokenizedCorpus(reader)
         result = [x for x in corpus]
         expected = [
@@ -64,7 +48,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_processed_corpus_token_stream(self):
         df = self.create_test_dataframe()
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(df)
+        reader = readers.DataFrameTextTokenizer(df)
         kwargs = dict(
             only_any_alphanumeric=False,
             to_lower=False,
@@ -91,7 +75,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
             (2000, 'Är det i denna mening en mening?'),
         ]
         df = pd.DataFrame(data, columns=['year', 'txt'])
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(df)
+        reader = readers.DataFrameTextTokenizer(df)
         corpus = corpora.TokenizedCorpus(reader, **kwargs)
         return corpus
 
@@ -172,7 +156,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_fit_transform_gives_document_term_matrix(self):
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(self.create_test_dataframe())
+        reader = readers.DataFrameTextTokenizer(self.create_test_dataframe())
         kwargs = dict(to_lower=False, remove_accents=False, min_len=1, max_len=None, keep_numerals=False)
         corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=False, **kwargs)
         vectorizer = corpus_vectorizer.CorpusVectorizer(lowercase=False)
@@ -195,7 +179,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     def test_AxAt_of_document_term_matrix_gives_term_term_matrix(self):
 
         # Arrange
-        reader = dataframe_text_tokenizer.DataFrameTextTokenizer(self.create_test_dataframe())
+        reader = readers.DataFrameTextTokenizer(self.create_test_dataframe())
         kwargs = dict(to_lower=False, remove_accents=False, min_len=1, max_len=None, keep_numerals=False)
         corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=False, **kwargs)
         vectorizer = corpus_vectorizer.CorpusVectorizer(lowercase=False)

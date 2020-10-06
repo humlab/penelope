@@ -1,9 +1,9 @@
 import os
 from typing import Callable
 
-import penelope.corpus.readers.text_tokenizer as text_tokenizer
+import penelope.corpus.readers as readers
 
-TEST_CORPUS_FILENAME = './penelope/tests/test_data/test_corpus.zip'
+TEST_CORPUS_FILENAME = './tests/test_data/test_corpus.zip'
 
 # pylint: disable=too-many-arguments
 
@@ -36,5 +36,5 @@ def create_text_tokenizer(
         tokenize=tokenize,
         filename_fields=filename_fields,
     )
-    reader = text_tokenizer.TextTokenizer(source_path, **kwargs)
+    reader = readers.TextTokenizer(source_path, **kwargs)
     return reader
