@@ -227,7 +227,6 @@ def load_or_create(
                 text_tokenizer.TRANSFORMS.fix_unicode,
                 text_tokenizer.TRANSFORMS.fix_whitespaces,
                 text_tokenizer.TRANSFORMS.fix_accents,
-                text_tokenizer.TRANSFORMS.fix_contractions,
                 text_tokenizer.TRANSFORMS.fix_ftfy_text,
             ],
             filename_fields=filename_fields,

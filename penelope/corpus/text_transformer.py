@@ -5,16 +5,18 @@ import types
 from typing import Callable, List
 
 import ftfy
-import textacy.preprocessing.normalize as normalize
-import textacy
+import textacy.preprocessing as preprocessing
+
+def unpack_contraction(s):
+    """Removed from textacy"""
+    return s
 
 TRANSFORMS = types.SimpleNamespace(
-    fix_hyphenation=normalize.normalize_hyphenated_words,
-    fix_unicode=normalize.normalize_unicode,
-    fix_whitespaces=normalize.normalize_whitespace,
-    fix_accents=textacy.preprocess.remove_accents,
-    fix_contractions=textacy.preprocess.unpack_contraction,
-    fix_currency_symbols=textacy.preprocess.replace_currency_symbols,
+    fix_hyphenation=preprocessing.normalize_hyphenated_words,
+    fix_unicode=preprocessing.normalize_unicode,
+    fix_whitespaces=preprocessing.normalize_whitespace,
+    fix_accents=preprocessing.remove_accents,
+    fix_currency_symbols=preprocessing.replace_currency_symbols,
     fix_ftfy_text=ftfy.fix_text,
 )
 
