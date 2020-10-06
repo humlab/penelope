@@ -1,5 +1,6 @@
 from . import utils
 
+
 # pylint: disable=too-many-instance-attributes
 class CorpusContainer:
     """Singleton class for current (last) computed or loaded corpus"""

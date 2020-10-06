@@ -1,11 +1,11 @@
 import os
-from typing import List, Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
-import textacy
 import pandas as pd
+import textacy
 
-import penelope.utility as utility
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
+import penelope.utility as utility
 import penelope.utility.file_utility as file_utility
 
 from .language import create_nlp

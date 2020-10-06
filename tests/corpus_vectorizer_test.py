@@ -6,6 +6,7 @@ import penelope.corpus.tokenized_corpus as corpora
 import tests.utils as test_utils
 from penelope.corpus import vectorizer as corpus_vectorizer
 
+
 def flatten(l):
     return [x for ws in l for x in ws]
 

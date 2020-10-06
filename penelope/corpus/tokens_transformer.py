@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-
 from typing import Any, List
 
 import textacy.preprocessing.remove as textacy_remove

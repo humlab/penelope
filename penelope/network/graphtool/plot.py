@@ -1,5 +1,5 @@
-import graph_tool.draw as gt_draw  # pylint: disable=import-error
 import graph_tool.all as gt  # pylint: disable=import-error
+import graph_tool.draw as gt_draw  # pylint: disable=import-error
 
 
 def plot(G_gt, layout_gt, n_range, palette, **kwargs):  # pylint: disable=unused-argument

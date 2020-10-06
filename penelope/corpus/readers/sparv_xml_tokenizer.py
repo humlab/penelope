@@ -3,7 +3,8 @@ import logging
 from typing import Callable, List
 
 from penelope.corpus import readers
-from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
+from penelope.corpus.sparv.sparv_xml_to_text import (XSLT_FILENAME_V3,
+                                                     SparvXml2Text)
 
 logger = logging.getLogger(__name__)
 

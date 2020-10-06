@@ -1,9 +1,10 @@
 from types import SimpleNamespace as bunch
+
 from penelope.network.graphtool.utility import nx2gt
 
 try:
-    import graph_tool.draw as gt_draw  # pylint: disable=unused-argument
     import graph_tool.all as gt
+    import graph_tool.draw as gt_draw  # pylint: disable=unused-argument
 except ImportError as ex:
     gt_draw = None
     gt = None

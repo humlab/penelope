@@ -1,6 +1,6 @@
 import penelope.utility as utility
 
-from .utils import infrequent_words, frequent_document_words
+from .utils import frequent_document_words, infrequent_words
 
 logger = utility.getLogger('corpus_text_analysis')
 

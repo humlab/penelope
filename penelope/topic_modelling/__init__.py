@@ -1,40 +1,12 @@
-from .compute import (
-    compute_model,
-    load_model,
-    store_model
-)
-from .coherence import (
-    compute_score,
-    compute_scores
-)
-from .compiled_data import (
-    CompiledData,
-    compile_data,
-    get_topics_unstacked,
-    get_topic_tokens,
-    get_topic_title,
-    get_topic_titles,
-    extend_with_document_column
-)
-from .compute_options import (
-    engine_options,
-    DEFAULT_VECTORIZE_PARAMS
-)
-
-from .saliency import (
-    compute_topic_metrics,
-    compute_term_info,
-    compute_term_frequency,
-    compute_KL_divergence
-)
-
-from .utility import (
-    compute_topic_proportions,
-    malletmodel2ldamodel,
-    find_models,
-    display_termite_plot,
-    METHODS,
-    plot_topic,
-    compute_means,
-    normalize_weights
-)
+from .coherence import compute_score, compute_scores
+from .compiled_data import (CompiledData, compile_data,
+                            extend_with_document_column, get_topic_title,
+                            get_topic_titles, get_topic_tokens,
+                            get_topics_unstacked)
+from .compute import compute_model, load_model, store_model
+from .compute_options import DEFAULT_VECTORIZE_PARAMS, engine_options
+from .saliency import (compute_KL_divergence, compute_term_frequency,
+                       compute_term_info, compute_topic_metrics)
+from .utility import (METHODS, compute_means, compute_topic_proportions,
+                      display_termite_plot, find_models, malletmodel2ldamodel,
+                      normalize_weights, plot_topic)

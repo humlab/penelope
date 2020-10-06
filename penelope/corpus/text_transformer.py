@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import types
-
 from typing import Callable, List
 
 import ftfy
 import textacy.preprocessing as preprocessing
-
 
 TRANSFORMS = types.SimpleNamespace(
     fix_hyphenation=preprocessing.normalize_hyphenated_words,
