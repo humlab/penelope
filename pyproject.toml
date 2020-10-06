@@ -2,7 +2,7 @@
 name = "penelope"
 version = "0.1.0"
 description = "Some text analysis utilities"
-authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
+authors = ["Roger Mähler <roger dot mahler at hotmail dot com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -43,3 +43,4 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:vectorize_text_corpus"
+compute_topic_model = "penelope.scripts.compute_topic_model:compute_topic_model"
