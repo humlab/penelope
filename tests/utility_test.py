@@ -1,6 +1,6 @@
 import unittest
 
-#import penelope.utility as utility
+# import penelope.utility as utility
 
 
 class test_Utility(unittest.TestCase):

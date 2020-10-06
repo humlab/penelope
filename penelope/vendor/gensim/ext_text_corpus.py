@@ -8,6 +8,7 @@ from penelope.corpus.readers import streamify_text_source
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=abstract-method
 class ExtTextCorpus(TextCorpus):
     def __init__(

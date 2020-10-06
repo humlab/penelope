@@ -37,7 +37,7 @@ class Test_ChiSquare(unittest.TestCase):
         corpus = self.create_corpus()
         v = vectorizer.CorpusVectorizer()
         v_corpus = v.fit_transform(corpus).group_by_year().slice_by_n_count(0)
-        _X2 = scipy.stats.chisquare(
+        _ = scipy.stats.chisquare(
             v_corpus.term_bag_matrix.todense(), f_exp=None, ddof=0, axis=0
         )  # pylint: disable=unused-variable
         _ = linkage(v_corpus.term_bag_matrix, 'ward')  # pylint: disable=unused-variable

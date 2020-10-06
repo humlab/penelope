@@ -1,6 +1,6 @@
 try:
     import graph_tool.all as gt
-except ImportError as ex:
+except ImportError:
     print('warning: graph_tool not installed!')
 
 

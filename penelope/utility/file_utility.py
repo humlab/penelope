@@ -193,7 +193,7 @@ def read_textfile(filename, as_binary=False):
         try:
             data = f.read()
             content = data  # .decode('utf-8')
-        except UnicodeDecodeError as _:
+        except UnicodeDecodeError:
             print('UnicodeDecodeError: {}'.format(filename))
             # content = data.decode('cp1252')
             raise

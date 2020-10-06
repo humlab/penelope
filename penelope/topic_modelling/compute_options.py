@@ -11,6 +11,7 @@ default_options = {
     'LSI': {'engine': gensim.models.LsiModel, 'options': {'corpus': None, 'num_topics': 20, 'id2word': None}}
 }
 
+
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
 def engine_options(algorithm: str, corpus, id2word, kwargs):
 

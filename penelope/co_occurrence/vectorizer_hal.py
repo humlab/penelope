@@ -9,6 +9,7 @@ import penelope.vendor.gensim as gensim_utility
 
 logger = utility.getLogger('corpus_text_analysis')
 
+
 # pylint: disable=too-many-instance-attributes
 class HyperspaceAnalogueToLanguageVectorizer:
     def __init__(self, corpus=None, token2id=None, tick=utility.noop):
@@ -96,7 +97,7 @@ class HyperspaceAnalogueToLanguageVectorizer:
                             continue
 
                     d = float(i)  # abs(n - i)
-                    if distance_metric == 0:  #  linear i.e. adjacent equals window size, then decreasing by one
+                    if distance_metric == 0:  # linear i.e. adjacent equals window size, then decreasing by one
                         w = size - d + 1  # / size
                     elif distance_metric == 1:  # f(d) = 1 / d
                         w = 1.0 / d

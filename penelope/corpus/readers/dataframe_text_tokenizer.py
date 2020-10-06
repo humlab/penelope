@@ -19,7 +19,7 @@ class DataFrameTextTokenizer:
 
         self.df = df
 
-        if not 'filename' in self.df.columns:
+        if 'filename' not in self.df.columns:
             self.df['filename'] = self.df.index.astype(str)
 
         for column, value in column_filters.items():
