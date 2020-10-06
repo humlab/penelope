@@ -25,9 +25,9 @@ test: clean
 		tests
 
 lint:
-	@poetry run pylint penelope tests | sort | uniq | grep -v "************* Module" > pylint.log
 	@poetry run flake8 --version
 	@poetry run flake8
+	# @poetry run pylint penelope tests
 	# @poetry run mypy --version
 	# @poetry run mypy .
 

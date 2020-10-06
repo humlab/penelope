@@ -25,7 +25,6 @@ statsmodels = "^0.12.0"
 glove-python-binary = "^0.2.0"
 textacy = "^0.10.1"
 community = "^1.0.0-beta.1"
-flake8 = "^3.8.3"
 pydotplus = "^2.0.2"
 
 [tool.poetry.dev-dependencies]
@@ -41,3 +40,6 @@ mypy = "^0.782"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+vectorize_corpus = "penelope.scripts.vectorize_corpus:vectorize_text_corpus"
