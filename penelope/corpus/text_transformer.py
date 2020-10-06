@@ -7,9 +7,6 @@ from typing import Callable, List
 import ftfy
 import textacy.preprocessing as preprocessing
 
-def unpack_contraction(s):
-    """Removed from textacy"""
-    return s
 
 TRANSFORMS = types.SimpleNamespace(
     fix_hyphenation=preprocessing.normalize_hyphenated_words,
