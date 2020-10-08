@@ -15,7 +15,7 @@ def flatten(lst):
     return [x for ws in lst for x in ws]
 
 
-TEMP_OUTPUT_FOLDER = "./penelope/tests/output"
+TEMP_OUTPUT_FOLDER = "./tests/output"
 
 # pylint: disable=too-many-public-methods
 
