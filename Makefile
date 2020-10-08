@@ -26,8 +26,9 @@ pylint:
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
+LINT_SKIPS='.ipynb_checkpoints'
 pylint2:
-	@find $(SOURCE_FOLDERS) -type f -name "*.py" | xargs pylint
+	@find $(SOURCE_FOLDERS) -type f -name "*.py" | grep -v .ipynb_checkpoints | xargs pylint --disable=W0511
 
 flake8:
 	@poetry run flake8 --version
