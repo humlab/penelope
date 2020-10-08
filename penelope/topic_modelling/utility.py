@@ -66,15 +66,26 @@ def malletmodel2ldamodel(
 def find_models(path: str):
     """Returns subfolders containing a computed topic model in specified path"""
     folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "model_data.pickle"))]
-    models = [
-        {'folder': x, 'name': os.path.split(x)[1], 'options': utility.read_json(os.path.join(x, "model_options.json"))}
-        for x in folders
-    ]
+    models = [{
+        'folder': x,
+        'name': os.path.split(x)[1],
+        'options': utility.read_json(os.path.join(x, "model_options.json"))
+    } for x in folders]
     return models
 
 
 def display_termite_plot(model, id2term, doc_term_matrix):
+    """[summary]
 
+    Parameters
+    ----------
+    model : [type]
+        [description]
+    id2term : [type]
+        [description]
+    doc_term_matrix : [type]
+        [description]
+    """
     if hasattr(model, 'termite_plot'):
         model.termite_plot(
             doc_term_matrix,
@@ -89,8 +100,12 @@ def display_termite_plot(model, id2term, doc_term_matrix):
         )
 
 
-METHODS = [
-    {'key': 'max_weight', 'description': 'Max value', 'tooltip': 'Use maximum value over documents'},
+YEARLY_MEAN_COMPUTE_METHODS = [
+    {
+        'key': 'max_weight',
+        'description': 'Max value',
+        'tooltip': 'Use maximum value over documents'
+    },
     {
         'key': 'false_mean',
         'description': 'Mean where topic is relevant',
@@ -109,16 +124,28 @@ def plot_topic(df, x):
     df[df.topic_id == x].set_index('year').drop('topic_id', axis=1).plot()
 
 
-def compute_means(df):
-    """ Initialize year/topic cross product data frame """
-    cross_iter = itertools.product(range(df.year.min(), df.year.max() + 1), range(0, df.topic_id.max() + 1))
+def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFrame:
+    """Returns yearly mean topic weight based on data in `document_topic_weight`
+
+    Parameters
+    ----------
+    document_topic_weight : pd.DataFrame
+        The DTM
+
+    Returns
+    ----------
+    pd.DataFrame
+        The yearly max, mean values for the topic weights, the latter is computed for all all documents.
+
+    """
+    cross_iter = itertools.product(range(document_topic_weight.year.min(), document_topic_weight.year.max() + 1), range(0, document_topic_weight.topic_id.max() + 1))
     dfs = pd.DataFrame(list(cross_iter), columns=['year', 'topic_id']).set_index(['year', 'topic_id'])
     """ Add the most basic stats """
-    dfs = dfs.join(df.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]), how='left').fillna(0)
+    dfs = dfs.join(document_topic_weight.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]), how='left').fillna(0)
     dfs.columns = ['max_weight', 'sum_weight', 'false_mean', 'n_topic_docs']
     dfs['n_topic_docs'] = dfs.n_topic_docs.astype(np.uint32)
 
-    doc_counts = df.groupby('year').document_id.nunique().rename('n_total_docs')
+    doc_counts = document_topic_weight.groupby('year').document_id.nunique().rename('n_total_docs')
     dfs = dfs.join(doc_counts, how='left').fillna(0)
     dfs['n_total_docs'] = dfs.n_total_docs.astype(np.uint32)
     dfs['true_mean'] = dfs.apply(lambda x: x['sum_weight'] / x['n_total_docs'], axis=1)
