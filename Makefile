@@ -1,17 +1,14 @@
 
 .DEFAULT_GOAL=lint
 
-# init:
-# 	@pip install --upgrade pip
-# ifeq (, $(PIPENV_PATH))
-# 	@pip install poetry --upgrade
-# endif
-# 	@export PIPENV_TIMEOUT=7200
-# 	@pipenv install --dev
+SOURCE_FOLDERS=penelope scripts tests
+
+init:
+ 	@pip install --upgrade pip poetry
 
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
-	-coveralls
+	-poetry run coveralls
 
 build:
 	@poetry build
@@ -24,12 +21,19 @@ test: clean
 		--cov-report=html \
 		tests
 
-lint:
-	@poetry run flake8 --version
-	@poetry run flake8
-	# @poetry run pylint penelope tests
+pylint:
+	@poetry run pylint $(SOURCE_FOLDERS)
 	# @poetry run mypy --version
 	# @poetry run mypy .
+
+pylint2:
+	@find $(SOURCE_FOLDERS) -type f -name "*.py" | xargs pylint
+
+flake8:
+	@poetry run flake8 --version
+	@poetry run flake8
+
+lint: flake8 pylint
 
 format: clean black isort
 
@@ -65,4 +69,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint format yapf black clean test test-coverage update install_graphtool build isort
+.PHONY: init lint flake8 pylint pylint2 format yapf black clean test test-coverage update install_graphtool build isort
