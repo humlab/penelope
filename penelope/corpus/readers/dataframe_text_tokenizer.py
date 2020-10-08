@@ -1,6 +1,7 @@
 import types
 
 from nltk.tokenize import word_tokenize
+import pandas as pd
 
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 
@@ -8,7 +9,7 @@ from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 class DataFrameTextTokenizer:
     """Text iterator that returns row-wise text documents from a Pandas DataFrame"""
 
-    def __init__(self, df, **column_filters):
+    def __init__(self, df: pd.DataFrame, **column_filters):
         """
         Parameters
         ----------
