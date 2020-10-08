@@ -1,5 +1,6 @@
 # from __future__ import print_function
 import collections
+from typing import Any
 
 import bokeh
 import ipywidgets as widgets
@@ -71,430 +72,6 @@ CHART_TYPES = [
 CHART_TYPE_MAP = {x.name: x for x in CHART_TYPES}
 CHART_TYPE_OPTIONS = {x.name: x.name for x in CHART_TYPES}
 CHART_TYPE_NAME_OPTIONS = [(x.description, x.name) for x in CHART_TYPES]
-
-FOX_STOPWORDS = [
-    'a',
-    'about',
-    'above',
-    'across',
-    'after',
-    'again',
-    'against',
-    'all',
-    'almost',
-    'alone',
-    'along',
-    'already',
-    'also',
-    'although',
-    'always',
-    'among',
-    'an',
-    'and',
-    'another',
-    'any',
-    'anybody',
-    'anyone',
-    'anything',
-    'anywhere',
-    'are',
-    'area',
-    'areas',
-    'around',
-    'as',
-    'ask',
-    'asked',
-    'asking',
-    'asks',
-    'at',
-    'away',
-    'b',
-    'back',
-    'backed',
-    'backing',
-    'backs',
-    'be',
-    'because',
-    'become',
-    'becomes',
-    'became',
-    'been',
-    'before',
-    'began',
-    'behind',
-    'being',
-    'beings',
-    'best',
-    'better',
-    'between',
-    'big',
-    'both',
-    'but',
-    'by',
-    'c',
-    'came',
-    'can',
-    'cannot',
-    'case',
-    'cases',
-    'certain',
-    'certainly',
-    'clear',
-    'clearly',
-    'come',
-    'could',
-    'd',
-    'did',
-    'differ',
-    'different',
-    'differently',
-    'do',
-    'does',
-    'done',
-    'down',
-    'downed',
-    'downing',
-    'downs',
-    'during',
-    'e',
-    'each',
-    'early',
-    'either',
-    'end',
-    'ended',
-    'ending',
-    'ends',
-    'enough',
-    'even',
-    'evenly',
-    'ever',
-    'every',
-    'everybody',
-    'everyone',
-    'everything',
-    'everywhere',
-    'f',
-    'face',
-    'faces',
-    'fact',
-    'facts',
-    'far',
-    'felt',
-    'few',
-    'find',
-    'finds',
-    'first',
-    'for',
-    'four',
-    'from',
-    'full',
-    'fully',
-    'further',
-    'furthered',
-    'furthering',
-    'furthers',
-    'g',
-    'gave',
-    'general',
-    'generally',
-    'get',
-    'gets',
-    'give',
-    'given',
-    'gives',
-    'go',
-    'going',
-    'good',
-    'goods',
-    'got',
-    'great',
-    'greater',
-    'greatest',
-    'group',
-    'grouped',
-    'grouping',
-    'groups',
-    'h',
-    'had',
-    'has',
-    'have',
-    'having',
-    'he',
-    'her',
-    'herself',
-    'here',
-    'high',
-    'higher',
-    'highest',
-    'him',
-    'himself',
-    'his',
-    'how',
-    'however',
-    'i',
-    'if',
-    'important',
-    'in',
-    'interest',
-    'interested',
-    'interesting',
-    'interests',
-    'into',
-    'is',
-    'it',
-    'its',
-    'itself',
-    'j',
-    'just',
-    'k',
-    'keep',
-    'keeps',
-    'kind',
-    'knew',
-    'know',
-    'known',
-    'knows',
-    'l',
-    'large',
-    'largely',
-    'last',
-    'later',
-    'latest',
-    'least',
-    'less',
-    'let',
-    'lets',
-    'like',
-    'likely',
-    'long',
-    'longer',
-    'longest',
-    'm',
-    'made',
-    'make',
-    'making',
-    'man',
-    'many',
-    'may',
-    'me',
-    'member',
-    'members',
-    'men',
-    'might',
-    'more',
-    'most',
-    'mostly',
-    'mr',
-    'mrs',
-    'much',
-    'must',
-    'my',
-    'myself',
-    'n',
-    'necessary',
-    'need',
-    'needed',
-    'needing',
-    'needs',
-    'never',
-    'new',
-    'newer',
-    'newest',
-    'next',
-    'no',
-    'non',
-    'not',
-    'nobody',
-    'noone',
-    'nothing',
-    'now',
-    'nowhere',
-    'number',
-    'numbers',
-    'o',
-    'of',
-    'off',
-    'often',
-    'old',
-    'older',
-    'oldest',
-    'on',
-    'once',
-    'one',
-    'only',
-    'open',
-    'opened',
-    'opening',
-    'opens',
-    'or',
-    'order',
-    'ordered',
-    'ordering',
-    'orders',
-    'other',
-    'others',
-    'our',
-    'out',
-    'over',
-    'p',
-    'part',
-    'parted',
-    'parting',
-    'parts',
-    'per',
-    'perhaps',
-    'place',
-    'places',
-    'point',
-    'pointed',
-    'pointing',
-    'points',
-    'possible',
-    'present',
-    'presented',
-    'presenting',
-    'presents',
-    'problem',
-    'problems',
-    'put',
-    'puts',
-    'q',
-    'quite',
-    'r',
-    'rather',
-    'really',
-    'right',
-    'room',
-    'rooms',
-    's',
-    'said',
-    'same',
-    'saw',
-    'say',
-    'says',
-    'second',
-    'seconds',
-    'see',
-    'sees',
-    'seem',
-    'seemed',
-    'seeming',
-    'seems',
-    'several',
-    'shall',
-    'she',
-    'should',
-    'show',
-    'showed',
-    'showing',
-    'shows',
-    'side',
-    'sides',
-    'since',
-    'small',
-    'smaller',
-    'smallest',
-    'so',
-    'some',
-    'somebody',
-    'someone',
-    'something',
-    'somewhere',
-    'state',
-    'states',
-    'still',
-    'such',
-    'sure',
-    't',
-    'take',
-    'taken',
-    'than',
-    'that',
-    'the',
-    'their',
-    'them',
-    'then',
-    'there',
-    'therefore',
-    'these',
-    'they',
-    'thing',
-    'things',
-    'think',
-    'thinks',
-    'this',
-    'those',
-    'though',
-    'thought',
-    'thoughts',
-    'three',
-    'through',
-    'thus',
-    'to',
-    'today',
-    'together',
-    'too',
-    'took',
-    'toward',
-    'turn',
-    'turned',
-    'turning',
-    'turns',
-    'two',
-    'u',
-    'under',
-    'until',
-    'up',
-    'upon',
-    'us',
-    'use',
-    'uses',
-    'used',
-    'v',
-    'very',
-    'w',
-    'want',
-    'wanted',
-    'wanting',
-    'wants',
-    'was',
-    'way',
-    'ways',
-    'we',
-    'well',
-    'wells',
-    'went',
-    'were',
-    'what',
-    'when',
-    'where',
-    'whether',
-    'which',
-    'while',
-    'who',
-    'whole',
-    'whose',
-    'why',
-    'will',
-    'with',
-    'within',
-    'without',
-    'work',
-    'worked',
-    'working',
-    'works',
-    'would',
-    'y',
-    'year',
-    'years',
-    'yet',
-    'you',
-    'young',
-    'younger',
-    'youngest',
-    'your',
-    'yours',
-]
 
 
 def kwargser(d):
@@ -594,11 +171,10 @@ def glyph_hover_js_code(element_id, id_name, text_name, glyph_name='glyph', glyp
     )
 
 
-def glyph_hover_callback2(glyph_source, glyph_id, text_ids, text, element_id):
-    source = bokeh.models.ColumnDataSource(dict(text_id=text_ids, text=text))
-    code = glyph_hover_js_code(element_id, glyph_id, 'text', glyph_name='glyph', glyph_data='glyph_data')
-    callback = bokeh.models.CustomJS(args={'glyph': glyph_source, 'glyph_data': source}, code=code)
-    return callback
+def glyph_hover_callback2(glyph_source, glyph_id: str, text_ids, text, element_id: str):
+    """Glyph hover callback that displays the text associated with glyph's id in text element `text_id`"""
+    text_source = bokeh.models.ColumnDataSource(dict(text_id=text_ids, text=text))
+    return glyph_hover_callback(glyph_source, glyph_id, text_source, element_id)
 
 
 def glyph_hover_callback(glyph_source, glyph_id, text_source, element_id):
@@ -676,3 +252,82 @@ def generate_field_filters(documents, opts):
         gf = extend(opt, widget=select_multiple(description, options, values=(), rows=rows))
         filters.append(gf)
     return filters
+
+BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
+
+
+def button_with_callback(description, style=None, callback=None):
+    style = style or BUTTON_STYLE
+    button = widgets.Button(description=description, style=style)
+    if callback is not None:
+        button.on_click(callback)
+    return button
+
+
+def text_widget(element_id=None, default_value=''):
+    value = "<span class='{}'>{}</span>".format(element_id, default_value) if element_id is not None else ''
+    return widgets.HTML(value=value, placeholder='', description='')
+
+
+def button_with_next_callback(that_with_property: Any, property_name:str, count:int):
+    def f(_):
+        control = getattr(that_with_property, property_name, None)
+        if control is not None:
+            control.value = (control.value + 1) % count
+
+    return button_with_callback(description=">>", callback=f)
+
+
+def button_with_previous_callback(that_with_property, property_name, count):
+    def f(_):
+        control = getattr(that_with_property, property_name, None)
+        if control is not None:
+            control.value = (control.value - 1) % count
+
+    return button_with_callback(description="<<", callback=f)
+
+
+class WidgetState():
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        # self.__dict__.update(kwargs)
+
+class TopicWidgetState(WidgetState):
+
+    def __init__(self, n_topics, years=None, word_count=None, text_id=None):
+
+        self.n_topics = n_topics
+        self.text_id = text_id
+        self.text = text_widget(text_id)
+        self.year = years_widget(options=years) if years is not None else None
+        self.topic_id = self.topic_id_slider(n_topics)
+        self.word_count = self.word_count_slider(1, 500) if word_count is not None else None
+        self.prev_topic_id = button_with_callback(description="<<", callback=self.prev_topic_id_clicked)
+        self.next_topic_id = button_with_callback(description=">>", callback=self.next_topic_id_clicked)
+
+    def next_topic_id_clicked(self, _):
+        self.topic_id.value = (self.topic_id.value + 1) % self.n_topics
+
+    def prev_topic_id_clicked(self, _):
+        self.topic_id.value = (self.topic_id.value - 1) % self.n_topics
+
+
+class TopTopicWidgets(WidgetState):
+
+    def __init__(self, n_topics=0, years=None, aggregates=None, text_id='text_id', layout_algorithms=None):
+
+        self.n_topics = n_topics
+        self.text_id = text_id
+        self.text = text_widget(text_id) if text_id is not None else None
+        self.year = years_widget(options=years) if years is not None else None
+
+        self.topics_count = self.topic_count_slider(n_topics) if n_topics > 0 else None
+
+        self.aggregate = self.select_aggregate_fn_widget(aggregates, default='mean') if aggregates is not None else None
+        self.layout_algorithm = self.layout_algorithm_widget(layout_algorithms, default='Fruchterman-Reingold') \
+            if layout_algorithms is not None else None
+
+
+# wf = WidgetUtility()
