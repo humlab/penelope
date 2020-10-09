@@ -1,4 +1,4 @@
-import community  # python-louvain packages
+import community as community_louvain
 import networkx as nx
 
 DISTANCE_METRICS = {
@@ -27,7 +27,7 @@ def compute_centrality(network):
 
 
 def compute_partition(network):
-    partition = community.best_partition(network)
+    partition = community_louvain.best_partition(network)
     _, nodes_community = zip(*sorted(partition.items()))
     return nodes_community
 

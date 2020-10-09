@@ -253,15 +253,16 @@ def generate_field_filters(documents, opts):
         filters.append(gf)
     return filters
 
+
 BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
 
 
 def button_with_callback(description, style=None, callback=None):
     style = style or BUTTON_STYLE
-    button = widgets.Button(description=description, style=style)
+    btn = widgets.Button(description=description, style=style)
     if callback is not None:
-        button.on_click(callback)
-    return button
+        btn.on_click(callback)
+    return btn
 
 
 def text_widget(element_id=None, default_value=''):
@@ -269,7 +270,7 @@ def text_widget(element_id=None, default_value=''):
     return widgets.HTML(value=value, placeholder='', description='')
 
 
-def button_with_next_callback(that_with_property: Any, property_name:str, count:int):
+def button_with_next_callback(that_with_property: Any, property_name: str, count: int):
     def f(_):
         control = getattr(that_with_property, property_name, None)
         if control is not None:
@@ -294,40 +295,32 @@ class WidgetState():
             setattr(self, key, value)
         # self.__dict__.update(kwargs)
 
-class TopicWidgetState(WidgetState):
 
-    def __init__(self, n_topics, years=None, word_count=None, text_id=None):
+# class TopicWidgetState(WidgetState):
 
-        self.n_topics = n_topics
-        self.text_id = text_id
-        self.text = text_widget(text_id)
-        self.year = years_widget(options=years) if years is not None else None
-        self.topic_id = self.topic_id_slider(n_topics)
-        self.word_count = self.word_count_slider(1, 500) if word_count is not None else None
-        self.prev_topic_id = button_with_callback(description="<<", callback=self.prev_topic_id_clicked)
-        self.next_topic_id = button_with_callback(description=">>", callback=self.next_topic_id_clicked)
+#     def __init__(self, n_topics, years=None, word_count=None, text_id=None):
 
-    def next_topic_id_clicked(self, _):
-        self.topic_id.value = (self.topic_id.value + 1) % self.n_topics
-
-    def prev_topic_id_clicked(self, _):
-        self.topic_id.value = (self.topic_id.value - 1) % self.n_topics
+#         self.n_topics = n_topics
+#         self.text_id = text_id
+#         self.text = text_widget(text_id)
+#         self.year = years_widget(options=years) if years is not None else None
+#         self.topic_id = self.topic_id_slider(n_topics)
+#         self.word_count = self.word_count_slider(1, 500) if word_count is not None else None
+#         self.prev_topic_id = button_with_previous_callback(self, property_name='topic_id', count=n_topics)
+#         self.next_topic_id = button_with_next_callback(self, property_name='topic_id', count=n_topics)
 
 
-class TopTopicWidgets(WidgetState):
+# class TopTopicWidgets(WidgetState):
 
-    def __init__(self, n_topics=0, years=None, aggregates=None, text_id='text_id', layout_algorithms=None):
+#     def __init__(self, n_topics=0, years=None, aggregates=None, text_id='text_id', layout_algorithms=None):
 
-        self.n_topics = n_topics
-        self.text_id = text_id
-        self.text = text_widget(text_id) if text_id is not None else None
-        self.year = years_widget(options=years) if years is not None else None
+#         self.n_topics = n_topics
+#         self.text_id = text_id
+#         self.text = text_widget(text_id) if text_id is not None else None
+#         self.year = years_widget(options=years) if years is not None else None
 
-        self.topics_count = self.topic_count_slider(n_topics) if n_topics > 0 else None
+#         self.topics_count = self.topic_count_slider(n_topics) if n_topics > 0 else None
 
-        self.aggregate = self.select_aggregate_fn_widget(aggregates, default='mean') if aggregates is not None else None
-        self.layout_algorithm = self.layout_algorithm_widget(layout_algorithms, default='Fruchterman-Reingold') \
-            if layout_algorithms is not None else None
-
-
-# wf = WidgetUtility()
+#         self.aggregate = self.select_aggregate_fn_widget(aggregates, default='mean') if aggregates is not None else None
+#         self.layout_algorithm = self.layout_algorithm_widget(layout_algorithms, default='Fruchterman-Reingold') \
+#             if layout_algorithms is not None else None

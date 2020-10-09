@@ -1,6 +1,7 @@
 import gensim
 
 import penelope.utility as utility
+import penelope.vendor.gensim as gensim_utility
 
 from . import compute_options as options
 
@@ -9,7 +10,7 @@ logger = utility.getLogger("")
 
 def compute_score(id2word, model, corpus):
     try:
-        dictionary = utility.create_dictionary(id2word)
+        dictionary = gensim_utility.create_dictionary(id2word)
         coherence_model = gensim.models.CoherenceModel(
             model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
         )
@@ -26,7 +27,7 @@ def compute_scores(method, id2word, corpus, start=10, stop=20, step=10, engine_a
 
     metrics = []
 
-    dictionary = utility.create_dictionary(id2word)
+    dictionary = gensim_utility.create_dictionary(id2word)
 
     for num_topics in range(start, stop, step):
 

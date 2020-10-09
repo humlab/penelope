@@ -1,5 +1,4 @@
 import logging
-from typing import Tuple
 import pandas as pd
 import penelope.vendor.textacy.mdw_modified as mdw
 

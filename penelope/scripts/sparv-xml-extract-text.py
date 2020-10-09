@@ -8,6 +8,7 @@ from penelope.utility import (replace_extension, suffix_filename,
                               timestamp_filename)
 
 
+# pylint: disable=too-many-arguments
 def store_options_to_json_file(input_filename, output_filename, tokens_transform_opts, sparv_extract_opts):
 
     store_options = {

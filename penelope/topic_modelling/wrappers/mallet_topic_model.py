@@ -85,7 +85,7 @@ class MalletTopicModel(models.wrappers.LdaMallet):
             if len(matches) > 0:
                 perplexity = float(matches[-1])
         finally:
-            return perplexity
+            return perplexity  # pylint: disable=lost-exception
 
     # def check_output(self, stdout=subprocess.PIPE, *popenargs, **kwargs):
     #     r"""Run OS command with the given arguments and return its output as a byte string.

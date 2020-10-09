@@ -1,6 +1,6 @@
-from . import utils
+import penelope.vendor.textacy as textacy_utility
 
-
+# FIXME:Remove textacy_utility from penelope
 # pylint: disable=too-many-instance-attributes
 class CorpusContainer:
     """Singleton class for current (last) computed or loaded corpus"""
@@ -22,14 +22,16 @@ class CorpusContainer:
         key = 'word_count_' + normalize
         self.word_count_scores = self.word_count_scores or {}
         if key not in self.word_count_scores:
-            self.word_count_scores[key] = utils.generate_word_count_score(self.textacy_corpus, normalize, 100)
+            self.word_count_scores[key] = textacy_utility.generate_word_count_score(self.textacy_corpus, normalize, 100)
         return self.word_count_scores[key]
 
     def get_word_document_count(self, normalize):
         key = 'word_document_count_' + normalize
         self.word_count_scores = self.word_count_scores or {}
         if key not in self.word_count_scores:
-            self.word_count_scores[key] = utils.generate_word_document_count_score(self.textacy_corpus, normalize, 75)
+            self.word_count_scores[key] = textacy_utility.generate_word_document_count_score(
+                self.textacy_corpus, normalize, 75
+            )
         return self.word_count_scores[key]
 
     @staticmethod
@@ -41,6 +43,7 @@ class CorpusContainer:
 
     @staticmethod
     def corpus():
+
         class CorpusNotLoaded(Exception):
             pass
 

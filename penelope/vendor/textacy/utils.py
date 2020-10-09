@@ -4,7 +4,7 @@ import os
 import re
 
 import pandas as pd
-import textacy
+from textacy.vsm import Vectorizer
 from spacy import attrs
 
 import penelope.utility as utility
@@ -78,7 +78,7 @@ def infrequent_words(corpus, normalize='lemma', weighting='count', threshold=0, 
 
 def frequent_document_words(
     corpus, normalize='lemma', weighting='freq', dfs_threshold=80, as_strings=True
-    ):  # pylint: disable=unused-argument
+):  # pylint: disable=unused-argument
     '''Returns set of words that occurrs freuently in many documents, candidate stopwords'''
     document_freqs = corpus.word_doc_counts(normalize=normalize, weighting=weighting, smooth_idf=True, as_strings=True)
     result = {w for w, f in document_freqs.items() if int(round(f, 2) * 100) >= dfs_threshold}
@@ -198,7 +198,7 @@ def term_substitutions(data_folder, filename='term_substitutions.txt', vocab=Non
 
 
 def vectorize_terms(terms, vectorizer_args):
-    vectorizer = textacy.Vectorizer(**vectorizer_args)
+    vectorizer = Vectorizer(**vectorizer_args)
     doc_term_matrix = vectorizer.fit_transform(terms)
     id2word = vectorizer.id_to_term
     return doc_term_matrix, id2word

@@ -5,9 +5,9 @@ import types
 
 import gensim
 import textacy
-
+import textacy.tm
 import penelope.utility as utility
-
+import penelope.vendor.textacy as textacy_utility
 from . import coherence, compiled_data
 from . import compute_options as options
 
@@ -45,9 +45,9 @@ def compute_model(
 
         if doc_term_matrix is None:
             assert terms is not None
-            doc_term_matrix, id2word = utility.vectorize_terms(terms, vectorizer_args)
+            doc_term_matrix, id2word = textacy_utility.vectorize_terms(terms, vectorizer_args)
 
-        model = textacy.TopicModel(method.split('_')[1], **engine_args)
+        model = textacy.tm.TopicModel(method.split('_')[1], **engine_args)
         model.fit(doc_term_matrix)
 
         doc_topic_matrix = model.transform(doc_term_matrix)

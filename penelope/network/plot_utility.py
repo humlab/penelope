@@ -4,7 +4,7 @@ import networkx as nx
 from bokeh.plotting import figure
 
 import penelope.network.utility as utility
-import penelope.widgets.widgets_config as widgets_helper
+import penelope.notebook.widgets_utils as widgets_utils
 
 # pylint: disable=too-many-arguments, unnecessary-lambda
 
@@ -128,7 +128,7 @@ def _plot_network(
         bokeh.models.HoverTool(
             renderers=[r_nodes],
             tooltips=None,
-            callback=widgets_helper.glyph_hover_callback2(
+            callback=widgets_utils.glyph_hover_callback2(
                 nodes_source, 'node_id', text_ids=node_description.index, text=node_description, element_id=element_id
             ),
         )

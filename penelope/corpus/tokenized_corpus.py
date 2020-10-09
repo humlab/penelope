@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict
 
 import pandas as pd
 
@@ -61,6 +61,12 @@ class TokenizedCorpus:
     @property
     def filenames(self):
         return self.reader.filenames
+
+    @property
+    def n_raw_tokens(self) -> Dict:
+        # FIXME: #1 Implement tokenized_corpus.n_raw_tokens
+        # raise NotImplementedError("n_raw_tokens not implemented")
+        return None
 
     def __iter__(self):
         return self

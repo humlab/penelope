@@ -17,7 +17,7 @@ import gensim.utils
 import numpy as np
 
 
-def setup_logger(logger=None, to_file=False, filename=None, level=logging.DEBUG):
+def setup_logger(logger=None, to_file=False, filename=None, level=logging.DEBUG):  # pylint: disable=redefined-outer-name
     """
     Setup logging of import messages to both file and console
     """

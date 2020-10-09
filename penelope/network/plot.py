@@ -5,9 +5,8 @@ from bokeh.plotting import figure
 
 import penelope.network.layout as network_layout
 import penelope.network.networkx.utility as networkx_utility
-import penelope.widgets.widgets_config as widgets_config
-
-from . import utility
+import penelope.notebook.widgets_utils as widgets_utils
+import penelope.utility as utility
 
 # pylint: disable=too-many-arguments
 
@@ -125,10 +124,10 @@ def plot(  # pylint: disable=W0102
     p.ygrid.grid_line_color = None
 
     _ = p.multi_line(
-        'xs', 'ys', line_width='weights', source=edges_source, **line_opts
+        xs='xs', ys='ys', line_width='weights', source=edges_source, **line_opts
     )  # pylint: disable=too-many-function-args
     r_nodes = p.circle(
-        'x', 'y', size=node_size, source=nodes_source, **node_opts
+        x='x', y='y', size=node_size, source=nodes_source, **node_opts
     )  # pylint: disable=too-many-function-args
 
     if 'fill_color' in nodes.keys():
@@ -140,7 +139,7 @@ def plot(  # pylint: disable=W0102
             bokeh.models.HoverTool(
                 renderers=[r_nodes],
                 tooltips=None,
-                callback=widgets_config.glyph_hover_callback(
+                callback=widgets_utils.glyph_hover_callback(
                     nodes_source, 'node_id', text_source, element_id=element_id
                 ),
             )
@@ -177,10 +176,10 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
         line_opts = utility.extend(line_opts, {'line_color': 'line_color', 'alpha': 1.0})
 
     _ = p.multi_line(
-        'xs', 'ys', line_width='weight', source=edges_source, **line_opts
+        xs='xs', ys='ys', line_width='weight', source=edges_source, **line_opts
     )  # pylint: disable=too-many-function-args
     r_nodes = p.circle(
-        'x', 'y', size=node_size, source=nodes_source, **node_opts
+        x='x', y='y', size=node_size, source=nodes_source, **node_opts
     )  # pylint: disable=too-many-function-args
 
     if 'fill_color' in nodes.keys():
@@ -194,7 +193,7 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
             bokeh.models.HoverTool(
                 renderers=[r_nodes],
                 tooltips=None,
-                callback=widgets_config.glyph_hover_callback(
+                callback=widgets_utils.glyph_hover_callback(
                     nodes_source, 'node_id', text_source=text_source, element_id=element_id
                 ),
             )

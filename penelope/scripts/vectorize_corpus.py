@@ -4,6 +4,7 @@ import penelope.corpus.vectorizer as corpus_vectorizer
 import penelope.utility as utility
 
 
+# pylint: disable=too-many-arguments
 def split_filename(filename, sep='_'):
     parts = filename.replace('.', sep).split(sep)
     return parts
