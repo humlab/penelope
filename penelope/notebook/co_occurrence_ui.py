@@ -10,12 +10,15 @@ logger = utility.getLogger('corpus_text_analysis')
 # pylint: disable=attribute-defined-outside-init
 
 
-class PreparedCorpusUI:
-    def __init__(self, data_folder):
+class CoccurrenceUI:
+
+    def __init__(self, data_folder, corpus_pattern='*.tokenized.zip'):
 
         self.data_folder = data_folder
+        self.corpus_pattern = corpus_pattern
 
     def build(self, compute_handler):
+
         def on_button_clicked(_):
 
             if self.filepath.value is None:
@@ -33,7 +36,7 @@ class PreparedCorpusUI:
                 )
                 self.button.disabled = False
 
-        corpus_files = sorted(glob.glob(os.path.join(self.data_folder, '*.tokenized.zip')))
+        corpus_files = sorted(glob.glob(os.path.join(self.data_folder, self.corpus_pattern)))
         distance_metric_options = [('linear', 0), ('inverse', 1), ('constant', 2)]
 
         self.filepath = ipywidgets.Dropdown(
@@ -60,20 +63,14 @@ class PreparedCorpusUI:
 
         self.button.on_click(on_button_clicked)
 
-        return ipywidgets.VBox(
-            [
-                ipywidgets.HBox(
-                    [
-                        ipywidgets.VBox([self.filepath, self.method]),
-                        ipywidgets.VBox([self.window_size, self.distance_metric]),
-                        ipywidgets.VBox(
-                            [
-                                # self.direction_sensitive,
-                                self.button
-                            ]
-                        ),
-                    ]
-                ),
-                self.out,
-            ]
-        )
+        return ipywidgets.VBox([
+            ipywidgets.HBox([
+                ipywidgets.VBox([self.filepath, self.method]),
+                ipywidgets.VBox([self.window_size, self.distance_metric]),
+                ipywidgets.VBox([
+                    # self.direction_sensitive,
+                    self.button
+                ]),
+            ]),
+            self.out,
+        ])
