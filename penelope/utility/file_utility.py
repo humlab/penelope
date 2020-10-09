@@ -274,10 +274,26 @@ def extract_filename_fields(filename, **kwargs):
     return data
 
 
+def export_excel_to_text(excel_file, text_file):
+    """Exports Excel to a tab-seperated text file"""
+    df = pd.read_excel('./data/year+text_window.xlsx')
+    df.to_csv('./data/year+text_window.txt', sep='\t')
+    return df
+
+
+def read_text_file(filename):
+    """Exports Excel to a tab-seperated text file"""
+    df = pd.read_csv(filename, sep='\t')  # [['year', 'txt']]
+    return df
+
 def find_parent_folder(name):
     path = pathlib.Path(os.getcwd())
     folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
     return folder
+
+
+def find_folder(folder, parent):
+    return os.path.join(folder.split(parent)[0], parent)
 
 
 def read_excel(filename, sheet):
