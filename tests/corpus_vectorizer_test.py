@@ -1,9 +1,9 @@
 import types
 import unittest
 
+import penelope.corpus.readers as readers
 import penelope.corpus.tokenized_corpus as corpora
 import tests.utils as test_utils
-import penelope.corpus.readers as readers
 from penelope.corpus import vectorizer as corpus_vectorizer
 
 
