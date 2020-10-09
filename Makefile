@@ -1,10 +1,10 @@
 
 .DEFAULT_GOAL=lint
 
-SOURCE_FOLDERS=penelope scripts tests
+SOURCE_FOLDERS=penelope tests
 
 init:
- 	@pip install --upgrade pip poetry
+	@pip install --upgrade pip poetry
 
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
@@ -26,9 +26,8 @@ pylint:
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
-LINT_SKIPS='.ipynb_checkpoints'
 pylint2:
-	@find $(SOURCE_FOLDERS) -type f -name "*.py" | grep -v .ipynb_checkpoints | xargs pylint --disable=W0511
+	@find $(SOURCE_FOLDERS) -type f -name "*.py" | grep -v .ipynb_checkpoints | xargs poetry run pylint --disable=W0511
 
 flake8:
 	@poetry run flake8 --version
@@ -58,8 +57,6 @@ clean:
 	@rm -rf tests/output
 
 update:
-	#@export PIPENV_VENV_IN_PROJECT=true
-	#@export PIPENV_TIMEOUT=7200
 	@poetry update
 
 install_graphtool:
