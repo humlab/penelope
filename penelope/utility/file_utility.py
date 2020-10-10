@@ -113,10 +113,8 @@ def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile], filename_pattern:
         raise ValueError(f"Source '{folder_or_zip}' not found. Only folder or ZIP or file are valid arguments")
 
     return [
-        filename
-        for filename in sorted(filenames)
-        if filename_satisfied_by(filename, filename_filter)
-        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+        filename for filename in sorted(filenames) if filename_satisfied_by(filename, filename_filter) and
+        (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]
 
 
@@ -213,6 +211,16 @@ def read_textfile(filename, as_binary=False):
 
 
 def filename_field_parser(meta_fields):
+    """Parses a list of meta-field expressions into a format (kwargs) suitable for `extract_filename_fields`
+    The meta-field expressions must either of:
+        `fieldname:regexp`
+        `fieldname:sep:position`
+
+    Parameters
+    ----------
+    meta_fields : [type]
+        [description]
+    """
     def extract_field(data):
 
         if len(data) == 1:  # regexp
@@ -286,10 +294,23 @@ def read_text_file(filename):
     df = pd.read_csv(filename, sep='\t')  # [['year', 'txt']]
     return df
 
+
 def find_parent_folder(name):
     path = pathlib.Path(os.getcwd())
-    folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
+    folder = os.path.join(*path.parts[:path.parts.index(name) + 1])
     return folder
+
+
+def find_parent_folder_with_child(folder, target):
+    path = pathlib.Path(folder).resolve
+    while path is not None:
+        name = os.path.join(path, target)
+        if os.path.is_file(name) or os.path.is_dir(name):
+            return path
+        if path in ('', '/'):
+            break
+        path = path.parent
+    return None
 
 
 def find_folder(folder, parent):
