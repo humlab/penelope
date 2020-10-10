@@ -21,7 +21,7 @@ logger = logging.getLogger("")
 
 
 class VectorizedCorpus:
-    def __init__(self, bag_term_matrix, token2id, document_index, word_counts=None):
+    def __init__(self, bag_term_matrix, token2id: Dict[str,int], document_index: pd.DataFrame, word_counts: Dict[str,int]=None):
         """Class that encapsulates a bag-of-word matrix.
 
         Parameters
@@ -96,6 +96,11 @@ class VectorizedCorpus:
     def n_terms(self) -> int:
         """Returns number of types (unique words) """
         return self.bag_term_matrix.shape[0]
+
+    @property
+    def documents(self) -> pd.DataFrame:
+        """Returns number document index (part of interface) """
+        return self.document_index
 
     def todense(self) -> VectorizedCorpus:
         """Returns dense BoW matrix"""
