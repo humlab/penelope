@@ -18,11 +18,11 @@ class ModelAgnosticDataContainer:
 
     def __init__(
         self,
-        documents: pd.DataFrame,                    # documents (training, shuould be predicted?)
-        dictionary: Any,                            # dictionary
-        topic_token_weights: pd.DataFrame,          # model data
-        topic_token_overview: pd.DataFrame,         # model data
-        document_topic_weights: pd.DataFrame,       # predicted data
+        documents: pd.DataFrame,  # documents (training, shuould be predicted?)
+        dictionary: Any,  # dictionary
+        topic_token_weights: pd.DataFrame,  # model data
+        topic_token_overview: pd.DataFrame,  # model data
+        document_topic_weights: pd.DataFrame,  # predicted data
     ):
         """A container for compiled data as generic pandas dataframes suitable for analysi and visualisation
         Parameters
