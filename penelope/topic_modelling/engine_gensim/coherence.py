@@ -3,7 +3,7 @@ import gensim
 import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
 
-from . import compute_options as options
+from . import options
 
 logger = utility.getLogger("")
 

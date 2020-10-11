@@ -3,13 +3,16 @@ import os
 import pickle
 import types
 
-import gensim
-import textacy
-import textacy.tm
+import penelope.topic_modelling.engine_gensim as engine_gensim
+import penelope.topic_modelling.engine_textacy as engine_textacy
 import penelope.utility as utility
-import penelope.vendor.textacy as textacy_utility
-from . import coherence, compiled_data
-from . import compute_options as options
+from penelope.topic_modelling.container import \
+    ModelAgnosticDataContainer
+from penelope.topic_modelling.extract import (extract_topic_token_overview,
+                                              extract_topic_token_weights)
+
+from .predict import predict_document_topics
+from .utility import document_n_terms, id2word2dataframe
 
 logger = utility.getLogger("")
 
@@ -17,6 +20,24 @@ TEMP_PATH = './tmp/'
 
 # OBS OBS! https://scikit-learn.org/stable/auto_examples/applications/plot_topics_extraction_with_nmf_lda.html
 DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
+
+engines = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
+
+
+def _find_engine(method):
+    for key in engines:
+        if method.startswith(key):
+            return engines[key]
+    raise ValueError(f"Unknown method {method}")
+
+
+# class ComputeCorpus:
+
+#     def __init__(self, terms=None, documents=None, doc_term_matrix=None, id2word=None):
+#         self.terms = terms
+#         self.doc_term_matrix = doc_term_matrix
+#         self.id2word = id2word
+#         self.documents = documents
 
 
 def compute_model(
@@ -30,77 +51,53 @@ def compute_model(
     **args,
 ):
 
-    vectorizer_args = utility.extend({}, DEFAULT_VECTORIZE_PARAMS, vectorizer_args or {})
-
-    perplexity_score = None
-    coherence_score = 0
-    doc_topic_matrix = None
-    engine_options = None
-    model = None
-    corpus = None
+    vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
 
     os.makedirs(TEMP_PATH, exist_ok=True)
 
-    if method.startswith('sklearn'):
+    engine = _find_engine(method)
 
-        if doc_term_matrix is None:
-            assert terms is not None
-            doc_term_matrix, id2word = textacy_utility.vectorize_terms(terms, vectorizer_args)
-
-        model = textacy.tm.TopicModel(method.split('_')[1], **engine_args)
-        model.fit(doc_term_matrix)
-
-        doc_topic_matrix = model.transform(doc_term_matrix)
-
-        corpus = gensim.matutils.Sparse2Corpus(doc_term_matrix, documents_columns=False)
-        # assert corpus.sparse.shape[0] == doc_term_matrix.shape[0]
-
-        perplexity_score = None
-        coherence_score = None
-
-    elif method.startswith('gensim_'):
-
-        vectorizer_args = None
-        algorithm_name = method.split('_')[1].upper()
-
-        if doc_term_matrix is None:
-            id2word = gensim.corpora.Dictionary(terms)
-            corpus = [id2word.doc2bow(tokens) for tokens in terms]
-        else:
-            assert id2word is not None
-            corpus = gensim.matutils.Sparse2Corpus(doc_term_matrix, documents_columns=False)
-            # assert corpus.sparse.shape[0] == doc_term_matrix.shape[0]
-
-        if args.get('tfidf_weiging', False):
-            # assert algorithm_name != 'MALLETLDA', 'MALLET training model cannot (currently) use TFIDF weighed corpus'
-            tfidf_model = gensim.models.tfidfmodel.TfidfModel(corpus)
-            corpus = [tfidf_model[d] for d in corpus]
-
-        algorithm = options.engine_options(algorithm_name, corpus, id2word, engine_args)
-
-        engine = algorithm['engine']
-        engine_options = algorithm['options']
-
-        model = engine(**engine_options)
-
-        if hasattr(model, 'log_perplexity'):
-            perplexity_score = 2 ** model.log_perplexity(corpus, len(corpus))
-
-        coherence_score = coherence.compute_score(id2word, model, corpus)
-
-    c_data = compiled_data.compile_data(
-        model, corpus, id2word, documents, doc_topic_matrix=doc_topic_matrix, n_tokens=200
+    result = engine.compute(
+        doc_term_matrix,
+        terms,
+        id2word,
+        vectorizer_args,
+        method,
+        engine_args,
+        tfidf_weiging=args.get('tfidf_weiging', False)
     )
 
+    """ Fix missing n_terms (only vectorized corps"""
+    if 'n_terms' not in documents.columns:
+        n_terms = document_n_terms(result.corpus)
+        if n_terms is not None:
+            documents['n_terms'] = n_terms
+
+    # FIXME: Seperate model data from generated and predicted data
+    # Generate model agnostic data
+    dictionary = id2word2dataframe(id2word)
+    topic_token_weights = extract_topic_token_weights(result.model, dictionary, n_tokens=200)
+    topic_token_overview = extract_topic_token_overview(result.model, topic_token_weights)
+
+    document_topic_weights = predict_document_topics(
+        result.model,
+        result.corpus,
+        documents=documents,
+        doc_topic_matrix=result.doc_topic_matrix,
+        minimum_probability=0.001
+    )
+
+    c_data = ModelAgnosticDataContainer(documents, dictionary, topic_token_weights, topic_token_overview, document_topic_weights)
+
     m_data = types.SimpleNamespace(
-        topic_model=model,
+        topic_model=result.model,
         id2term=id2word,
-        corpus=corpus,
+        corpus=result.corpus,  # FIXME: Remove (train) corpus from model data
+        metrics=dict(coherence_score=result.coherence_score, perplexity_score=result.perplexity_score),
         options=dict(
-            metrics=dict(coherence_score=coherence_score, perplexity_score=perplexity_score),
             method=method,
             vec_args=vectorizer_args,
-            tm_args=engine_options,
+            tm_args=result.engine_options,
             **args,
         ),
         coherence_scores=None,

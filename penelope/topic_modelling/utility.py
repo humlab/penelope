@@ -1,6 +1,7 @@
 import glob
 import itertools
 import os
+from typing import Dict, List
 
 import gensim
 import numpy as np
@@ -8,6 +9,8 @@ import pandas as pd
 import scipy
 
 import penelope.utility as utility
+
+logger = utility.getLogger('corpus_text_analysis')
 
 
 def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_series: np.ndarray):
@@ -138,10 +141,16 @@ def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFr
         The yearly max, mean values for the topic weights, the latter is computed for all all documents.
 
     """
-    cross_iter = itertools.product(range(document_topic_weight.year.min(), document_topic_weight.year.max() + 1), range(0, document_topic_weight.topic_id.max() + 1))
+    cross_iter = itertools.product(
+        range(document_topic_weight.year.min(),
+              document_topic_weight.year.max() + 1), range(0,
+                                                           document_topic_weight.topic_id.max() + 1)
+    )
     dfs = pd.DataFrame(list(cross_iter), columns=['year', 'topic_id']).set_index(['year', 'topic_id'])
     """ Add the most basic stats """
-    dfs = dfs.join(document_topic_weight.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]), how='left').fillna(0)
+    dfs = dfs.join(
+        document_topic_weight.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]), how='left'
+    ).fillna(0)
     dfs.columns = ['max_weight', 'sum_weight', 'false_mean', 'n_topic_docs']
     dfs['n_topic_docs'] = dfs.n_topic_docs.astype(np.uint32)
 
@@ -160,3 +169,141 @@ def normalize_weights(df):
     df['weight'] = df.apply(lambda x: x['weight'] / x['sum_weight'], axis=1)
     df = df.drop(['sum_weight'], axis=1)
     return df
+
+
+def document_n_terms(corpus):
+
+    n_terms = None
+
+    if hasattr(corpus, 'sparse'):
+        n_terms = corpus.sparse.sum(axis=0).A1
+
+    if isinstance(corpus, list):
+        n_terms = [sum((w[1] for w in d)) for d in corpus]
+
+    return n_terms
+
+
+def id2word2dataframe(id2word: Dict) -> pd.DataFrame:
+    """Returns token id to word mapping `id2word` as a pandas DataFrane, with DFS added
+
+    Parameters
+    ----------
+    id2word : Dict
+        Token ID to word mapping
+
+    Returns
+    -------
+    pd.DataFrame
+        dictionary as dataframe
+    """
+    logger.info('Compiling dictionary...')
+
+    assert id2word is not None, 'id2word is empty'
+
+    dfs = list(id2word.dfs.values()) or 0 if hasattr(id2word, 'dfs') else 0
+
+    token_ids, tokens = list(zip(*id2word.items()))
+
+    dictionary = pd.DataFrame({
+        'token_id': token_ids,
+        'token': tokens,
+        'dfs': dfs
+    }).set_index('token_id')[['token', 'dfs']]
+
+    return dictionary
+
+
+def add_document_metadata(df: pd.DataFrame, columns: List[str], documents: pd.DataFrame) -> pd.DataFrame:
+    """Add document `columns` to `df` if columns not already exists.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data of interest
+    columns : Union[str,List[str]]
+        Columns in `documents` that should be added to `df`
+    documents : pd.DataFrame
+        Corpus document index, by default None
+
+    Returns
+    -------
+    pd.DataFrame
+        `df` extended with `columns` data
+    """
+
+    if documents is None:
+        return df
+
+    if 'document_id' not in df.columns:
+        return df
+
+    if isinstance(columns, str):
+        columns = [columns]
+
+    columns = [c for c in columns if c not in df.columns and c in documents.columns]
+
+    df = df.merge(documents[columns], how='inner', left_on='document_id', right_index=True)
+
+    return df
+
+
+def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
+    """Returns a DataFrame containing a string of `n_tokens` most probable words per topic"""
+
+    df_temp = (
+        topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
+    )
+
+    df = (
+        df_temp.sort_values('weight', ascending=False
+                            ).groupby('topic_id').apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
+    )
+
+    return df
+
+
+def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 100) -> str:
+    """Returns a string of `n_tokens` most probable words per topic"""
+    return get_topic_titles(topic_token_weights, topic_id, n_tokens=n_tokens).iloc[0]
+
+
+def get_topic_tokens(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
+    """Returns most probable tokens for given topic sorted by probability descending"""
+    df_temp = (
+        topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
+    )
+    df = df_temp.sort_values('weight', ascending=False)[:n_tokens]
+    return df
+
+
+def get_topics_unstacked(
+    model, n_tokens: int = 20, id2term: Dict[int, str] = None, topic_ids: List[int] = None
+) -> pd.DataFrame:
+    """Returns the top `n_tokens` tokens for each topic. The token's column index is in ascending probability"""
+
+    if hasattr(model, 'num_topics'):
+        # Gensim LDA model
+        show_topic = lambda topic_id: model.show_topic(topic_id, topn=n_tokens)
+        n_topics = model.num_topics
+    elif hasattr(model, 'm_T'):
+        # Gensim HDP model
+        show_topic = lambda topic_id: model.show_topic(topic_id, topn=n_tokens)
+        n_topics = model.m_T
+    else:
+        # Textacy/scikit-learn model
+        def scikit_learn_show_topic(topic_id):
+            topic_words = list(model.top_topic_terms(id2term, topics=(topic_id, ), top_n=n_tokens, weights=True))
+            if len(topic_words) == 0:
+                return []
+            return topic_words[0][1]
+
+        show_topic = scikit_learn_show_topic
+        n_topics = model.n_topics
+
+    topic_ids = topic_ids or range(n_topics)
+
+    return pd.DataFrame({
+        'Topic#{:02d}'.format(topic_id + 1): [word[0] for word in show_topic(topic_id)]
+        for topic_id in topic_ids
+    })

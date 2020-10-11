@@ -284,8 +284,8 @@ def extract_filename_fields(filename, **kwargs):
 
 def export_excel_to_text(excel_file, text_file):
     """Exports Excel to a tab-seperated text file"""
-    df = pd.read_excel('./data/year+text_window.xlsx')
-    df.to_csv('./data/year+text_window.txt', sep='\t')
+    df = pd.read_excel(excel_file)
+    df.to_csv(text_file, sep='\t')
     return df
 
 
@@ -302,10 +302,10 @@ def find_parent_folder(name):
 
 
 def find_parent_folder_with_child(folder, target):
-    path = pathlib.Path(folder).resolve
+    path = pathlib.Path(folder).resolve()
     while path is not None:
         name = os.path.join(path, target)
-        if os.path.is_file(name) or os.path.is_dir(name):
+        if os.path.isfile(name) or os.path.isdir(name):
             return path
         if path in ('', '/'):
             break

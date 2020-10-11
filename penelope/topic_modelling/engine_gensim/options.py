@@ -1,15 +1,15 @@
 import gensim
 
-from .wrappers import mallet_topic_model, sttm_topic_model
+from penelope.topic_modelling.engine_gensim.wrappers import STTMTopicModel, MalletTopicModel
 
 TEMP_PATH = './tmp/'
 
 # OBS OBS! https://scikit-learn.org/stable/auto_examples/applications/plot_topics_extraction_with_nmf_lda.html
-DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
+# DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 
-default_options = {
-    'LSI': {'engine': gensim.models.LsiModel, 'options': {'corpus': None, 'num_topics': 20, 'id2word': None}}
-}
+# default_options = {
+#     'LSI': {'engine': gensim.models.LsiModel, 'options': {'corpus': None, 'num_topics': 20, 'id2word': None}}
+# }
 
 
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
@@ -122,7 +122,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
     if algorithm == 'MALLET-LDA':
         return {
             # num_topics=100, alpha=50, id2word=None, workers=4, prefix=None, optimize_interval=0, iterations=2000, topic_threshold=0.0, random_seed=0)¶
-            'engine': mallet_topic_model.MalletTopicModel,
+            'engine': MalletTopicModel,
             'options': {
                 'corpus': corpus,  # Collection of texts in BoW format.
                 'id2word': id2word,  # Dictionary
@@ -147,7 +147,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
     if algorithm.startswith('STTM-'):
         sttm = algorithm[5:]
         return {
-            'engine': sttm_topic_model.STTMTopicModel,
+            'engine': STTMTopicModel,
             'options': {
                 'sstm_jar_path': './lib/STTM.jar',
                 'model': sttm,
