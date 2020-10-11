@@ -69,11 +69,10 @@ def malletmodel2ldamodel(
 def find_models(path: str):
     """Returns subfolders containing a computed topic model in specified path"""
     folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "model_data.pickle"))]
-    models = [{
-        'folder': x,
-        'name': os.path.split(x)[1],
-        'options': utility.read_json(os.path.join(x, "model_options.json"))
-    } for x in folders]
+    models = [
+        {'folder': x, 'name': os.path.split(x)[1], 'options': utility.read_json(os.path.join(x, "model_options.json"))}
+        for x in folders
+    ]
     return models
 
 
@@ -104,11 +103,7 @@ def display_termite_plot(model, id2term, doc_term_matrix):
 
 
 YEARLY_MEAN_COMPUTE_METHODS = [
-    {
-        'key': 'max_weight',
-        'description': 'Max value',
-        'tooltip': 'Use maximum value over documents'
-    },
+    {'key': 'max_weight', 'description': 'Max value', 'tooltip': 'Use maximum value over documents'},
     {
         'key': 'false_mean',
         'description': 'Mean where topic is relevant',
@@ -142,9 +137,8 @@ def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFr
 
     """
     cross_iter = itertools.product(
-        range(document_topic_weight.year.min(),
-              document_topic_weight.year.max() + 1), range(0,
-                                                           document_topic_weight.topic_id.max() + 1)
+        range(document_topic_weight.year.min(), document_topic_weight.year.max() + 1),
+        range(0, document_topic_weight.topic_id.max() + 1),
     )
     dfs = pd.DataFrame(list(cross_iter), columns=['year', 'topic_id']).set_index(['year', 'topic_id'])
     """ Add the most basic stats """
@@ -184,7 +178,7 @@ def document_n_terms(corpus):
     return n_terms
 
 
-def id2word2dataframe(id2word: Dict) -> pd.DataFrame:
+def id2word_to_dataframe(id2word: Dict) -> pd.DataFrame:
     """Returns token id to word mapping `id2word` as a pandas DataFrane, with DFS added
 
     Parameters
@@ -205,11 +199,9 @@ def id2word2dataframe(id2word: Dict) -> pd.DataFrame:
 
     token_ids, tokens = list(zip(*id2word.items()))
 
-    dictionary = pd.DataFrame({
-        'token_id': token_ids,
-        'token': tokens,
-        'dfs': dfs
-    }).set_index('token_id')[['token', 'dfs']]
+    dictionary = pd.DataFrame({'token_id': token_ids, 'token': tokens, 'dfs': dfs}).set_index('token_id')[
+        ['token', 'dfs']
+    ]
 
     return dictionary
 
@@ -256,8 +248,9 @@ def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_
     )
 
     df = (
-        df_temp.sort_values('weight', ascending=False
-                            ).groupby('topic_id').apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
+        df_temp.sort_values('weight', ascending=False)
+        .groupby('topic_id')
+        .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
     )
 
     return df
@@ -293,7 +286,7 @@ def get_topics_unstacked(
     else:
         # Textacy/scikit-learn model
         def scikit_learn_show_topic(topic_id):
-            topic_words = list(model.top_topic_terms(id2term, topics=(topic_id, ), top_n=n_tokens, weights=True))
+            topic_words = list(model.top_topic_terms(id2term, topics=(topic_id,), top_n=n_tokens, weights=True))
             if len(topic_words) == 0:
                 return []
             return topic_words[0][1]
@@ -303,7 +296,6 @@ def get_topics_unstacked(
 
     topic_ids = topic_ids or range(n_topics)
 
-    return pd.DataFrame({
-        'Topic#{:02d}'.format(topic_id + 1): [word[0] for word in show_topic(topic_id)]
-        for topic_id in topic_ids
-    })
+    return pd.DataFrame(
+        {'Topic#{:02d}'.format(topic_id + 1): [word[0] for word in show_topic(topic_id)] for topic_id in topic_ids}
+    )

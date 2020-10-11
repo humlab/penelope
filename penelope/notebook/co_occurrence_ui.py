@@ -11,14 +11,12 @@ logger = utility.getLogger('corpus_text_analysis')
 
 
 class CoccurrenceUI:
-
     def __init__(self, data_folder, corpus_pattern='*.tokenized.zip'):
 
         self.data_folder = data_folder
         self.corpus_pattern = corpus_pattern
 
     def build(self, compute_handler):
-
         def on_button_clicked(_):
 
             if self.filepath.value is None:
@@ -63,14 +61,20 @@ class CoccurrenceUI:
 
         self.button.on_click(on_button_clicked)
 
-        return ipywidgets.VBox([
-            ipywidgets.HBox([
-                ipywidgets.VBox([self.filepath, self.method]),
-                ipywidgets.VBox([self.window_size, self.distance_metric]),
-                ipywidgets.VBox([
-                    # self.direction_sensitive,
-                    self.button
-                ]),
-            ]),
-            self.out,
-        ])
+        return ipywidgets.VBox(
+            [
+                ipywidgets.HBox(
+                    [
+                        ipywidgets.VBox([self.filepath, self.method]),
+                        ipywidgets.VBox([self.window_size, self.distance_metric]),
+                        ipywidgets.VBox(
+                            [
+                                # self.direction_sensitive,
+                                self.button
+                            ]
+                        ),
+                    ]
+                ),
+                self.out,
+            ]
+        )

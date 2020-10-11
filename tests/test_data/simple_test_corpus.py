@@ -2,11 +2,12 @@ import types
 from typing import List
 
 import pandas as pd
+
 import penelope.utility as utility
+from penelope.corpus.tokenized_corpus import ReIterableTerms
 
 
 class SimpleTestCorpus:
-
     def __init__(self, filename, meta_fields: List[str] = None):
 
         with open(filename, 'r') as f:
@@ -14,11 +15,9 @@ class SimpleTestCorpus:
 
         self.corpus_data = [
             types.SimpleNamespace(
-                filename=data[0],
-                title=data[1],
-                text=data[2],
-                tokens=[x.lower() for x in data[2].split() if len(x) > 0]
-            ) for data in [line.split(' # ') for line in lines]
+                filename=data[0], title=data[1], text=data[2], tokens=[x.lower() for x in data[2].split() if len(x) > 0]
+            )
+            for data in [line.split(' # ') for line in lines]
         ]
         self.filenames = [x.filename for x in self.corpus_data]
         self.iterator = None
@@ -36,6 +35,10 @@ class SimpleTestCorpus:
         self.documents = pd.DataFrame(data=meta_data)
         if 'document_id' not in self.documents.columns:
             self.documents['document_id'] = self.documents.index
+
+    @property
+    def terms(self):
+        return ReIterableTerms(self)
 
     def _create_iterator(self):
         return ((x.filename, x.tokens) for x in self.corpus_data)

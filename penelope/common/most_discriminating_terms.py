@@ -6,12 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def compute_most_discriminating_terms(
-    x_corpus,
-    x_documents: pd.DataFrame,
-    top_n_terms: int=25,
-    max_n_terms: int=1000,
-    period1=None,
-    period2=None
+    x_corpus, x_documents: pd.DataFrame, top_n_terms: int = 25, max_n_terms: int = 1000, period1=None, period2=None
 ):
 
     group1_indices = x_documents[x_documents.year.between(*period1)].index

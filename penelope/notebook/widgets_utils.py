@@ -288,8 +288,7 @@ def button_with_previous_callback(that_with_property, property_name, count):
     return button_with_callback(description="<<", callback=f)
 
 
-class WidgetState():
-
+class WidgetState:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)

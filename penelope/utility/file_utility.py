@@ -113,8 +113,10 @@ def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile], filename_pattern:
         raise ValueError(f"Source '{folder_or_zip}' not found. Only folder or ZIP or file are valid arguments")
 
     return [
-        filename for filename in sorted(filenames) if filename_satisfied_by(filename, filename_filter) and
-        (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+        filename
+        for filename in sorted(filenames)
+        if filename_satisfied_by(filename, filename_filter)
+        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]
 
 
@@ -221,6 +223,7 @@ def filename_field_parser(meta_fields):
     meta_fields : [type]
         [description]
     """
+
     def extract_field(data):
 
         if len(data) == 1:  # regexp
@@ -297,7 +300,7 @@ def read_text_file(filename):
 
 def find_parent_folder(name):
     path = pathlib.Path(os.getcwd())
-    folder = os.path.join(*path.parts[:path.parts.index(name) + 1])
+    folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
     return folder
 
 

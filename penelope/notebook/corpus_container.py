@@ -43,7 +43,6 @@ class CorpusContainer:
 
     @staticmethod
     def corpus():
-
         class CorpusNotLoaded(Exception):
             pass
 

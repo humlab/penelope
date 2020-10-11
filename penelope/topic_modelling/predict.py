@@ -10,12 +10,13 @@ from .utility import add_document_metadata
 
 logger = utility.getLogger('corpus_text_analysis')
 
+
 def predict_document_topics(
     model: Any,
     corpus: Any,
     documents: pd.DataFrame = None,
     doc_topic_matrix: Any = None,
-    minimum_probability: float = 0.001
+    minimum_probability: float = 0.001,
 ) -> pd.DataFrame:
     """Applies a the topic model on `corpus` and returns a document-topic dataframe
 
@@ -60,8 +61,9 @@ def predict_document_topics(
                 # assert False, 'compile_document_topics: Unknown topic model'
 
             for document_id, topic_weights in data_iter:
-                for (topic_id, weight) in ((topic_id, weight) for (topic_id, weight) in topic_weights
-                                           if weight >= minimum_probability):
+                for (topic_id, weight) in (
+                    (topic_id, weight) for (topic_id, weight) in topic_weights if weight >= minimum_probability
+                ):
                     yield (document_id, topic_id, weight)
 
         '''
@@ -89,4 +91,3 @@ def predict_document_topics(
     except Exception as ex:  # pylint: disable=broad-except
         logger.error(ex)
         return None
-        

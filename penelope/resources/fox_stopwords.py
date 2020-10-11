@@ -1,4 +1,3 @@
-
 FOX_STOPWORDS = [
     'a',
     'about',

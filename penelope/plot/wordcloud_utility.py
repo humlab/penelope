@@ -9,7 +9,7 @@ def plot_wordcloud(
     token: str = 'token',
     weight: str = 'weight',
     figsize: Tuple[float, float] = (14, 14 / 1.618),
-    **kwargs
+    **kwargs,
 ):
     """Plots a wordcloud using the `wordcloud` Python package
 
@@ -25,7 +25,9 @@ def plot_wordcloud(
         Fig. size, by default (14, 14 / 1.618)
     """
     token_weights = dict({tuple(x) for x in df[[token, weight]].values})
-    image = wordcloud.WordCloud(**kwargs, )
+    image = wordcloud.WordCloud(
+        **kwargs,
+    )
     image.fit_words(token_weights)
     plt.figure(figsize=figsize)  # , dpi=100)
     plt.imshow(image, interpolation='bilinear')

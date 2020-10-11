@@ -44,8 +44,12 @@ def extract_topic_token_weights(
         assert False, "Unknown model type"
 
     df_topic_weights = pd.DataFrame(
-        [(topic_id, token, weight) for topic_id, tokens in topic_data
-         for token, weight in tokens if weight > minimum_probability],
+        [
+            (topic_id, token, weight)
+            for topic_id, tokens in topic_data
+            for token, weight in tokens
+            if weight > minimum_probability
+        ],
         columns=['topic_id', 'token', 'weight'],
     )
 
@@ -67,9 +71,10 @@ def extract_topic_token_overview(model: Any, topic_token_weights: pd.DataFrame, 
     alpha: List[float] = model.alpha if 'alpha' in model.__dict__ else None
 
     df = (
-        topic_token_weights.groupby('topic_id').apply(
-            lambda x: sorted(list(zip(x["token"], x["weight"])), key=lambda z: z[1], reverse=True)
-        ).apply(lambda x: ' '.join([z[0] for z in x][:n_tokens])).reset_index()
+        topic_token_weights.groupby('topic_id')
+        .apply(lambda x: sorted(list(zip(x["token"], x["weight"])), key=lambda z: z[1], reverse=True))
+        .apply(lambda x: ' '.join([z[0] for z in x][:n_tokens]))
+        .reset_index()
     )
     df.columns = ['topic_id', 'tokens']
     df['alpha'] = df.topic_id.apply(lambda topic_id: alpha[topic_id]) if alpha is not None else 0.0

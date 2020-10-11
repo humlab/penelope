@@ -1,9 +1,7 @@
-
 from abc import ABCMeta, abstractmethod
 
 
 class ICorpus(metaclass=ABCMeta):
-
     @abstractmethod
     def __iter__(self):
         while False:

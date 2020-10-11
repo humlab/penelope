@@ -21,7 +21,13 @@ logger = logging.getLogger("")
 
 
 class VectorizedCorpus:
-    def __init__(self, bag_term_matrix, token2id: Dict[str,int], document_index: pd.DataFrame, word_counts: Dict[str,int]=None):
+    def __init__(
+        self,
+        bag_term_matrix,
+        token2id: Dict[str, int],
+        document_index: pd.DataFrame,
+        word_counts: Dict[str, int] = None,
+    ):
         """Class that encapsulates a bag-of-word matrix.
 
         Parameters

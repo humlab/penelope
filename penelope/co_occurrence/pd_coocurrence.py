@@ -9,6 +9,7 @@ from .coocurrence_matrix import compute_coocurrence_matrix
 
 # THIS FILE COMPUTES COUCCRRENCE FROM PREDEFINED WINDOWS READ FROM EXCEL FILE!
 
+
 def load_text_windows(filename: str):
     """Reads excel file "filename" and returns content as a Pandas DataFrame.
     The file is written to tsv the first time read for faster subsequent reads.
@@ -44,7 +45,7 @@ def load_text_windows(filename: str):
     return df
 
 
-def compute_for_column_group(df: pd.DataFrame, column_filters: Dict[str,Any], min_count: int, options) -> pd.DataFrame:
+def compute_for_column_group(df: pd.DataFrame, column_filters: Dict[str, Any], min_count: int, options) -> pd.DataFrame:
     """[summary]
 
     Parameters
@@ -72,13 +73,14 @@ def compute_for_column_group(df: pd.DataFrame, column_filters: Dict[str,Any], mi
 
     return df_y
 
+
 def partioned_co_occurrence(
     source_filename: str,
-    partition_filters: List[Dict[str,Any]],
+    partition_filters: List[Dict[str, Any]],
     target_filename: str,
     text_column='txt',
-    min_count: int=1,
-    **options
+    min_count: int = 1,
+    **options,
 ):
     """[summary]
 
@@ -100,7 +102,7 @@ def partioned_co_occurrence(
     partition_keys = list(partition_filters[0].keys())
     documents_frame = pd.read_csv(source_filename, sep='\t')[partition_keys + [text_column]]
 
-    if any([ x not in documents_frame.columns for x in partition_keys]):
+    if any([x not in documents_frame.columns for x in partition_keys]):
         raise ValueError("Partitions not specified")
 
     columns = partition_keys + ['w1', 'w2', 'value', 'value_n_d', 'value_n_t']

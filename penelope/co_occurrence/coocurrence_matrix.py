@@ -5,7 +5,7 @@ from penelope.corpus import tokenized_corpus
 from penelope.corpus import vectorizer as corpus_vectorizer
 
 
-def compute_coocurrence_matrix(reader, min_count: int=1, **kwargs) -> pd.DataFrame:
+def compute_coocurrence_matrix(reader, min_count: int = 1, **kwargs) -> pd.DataFrame:
     """Computes a term-term coocurrence matrix for documents in reader.
 
     Parameters
@@ -28,11 +28,11 @@ def compute_coocurrence_matrix(reader, min_count: int=1, **kwargs) -> pd.DataFra
     id2token = {i: t for t, i in v_corpus.token2id.items()}
 
     cdf = (
-        pd.DataFrame({
-            'w1_id': term_term_matrix.row,
-            'w2_id': term_term_matrix.col,
-            'value': term_term_matrix.data
-        })[['w1_id', 'w2_id', 'value']].sort_values(['w1_id', 'w2_id']).reset_index(drop=True)
+        pd.DataFrame({'w1_id': term_term_matrix.row, 'w2_id': term_term_matrix.col, 'value': term_term_matrix.data})[
+            ['w1_id', 'w2_id', 'value']
+        ]
+        .sort_values(['w1_id', 'w2_id'])
+        .reset_index(drop=True)
     )
 
     if min_count > 1:

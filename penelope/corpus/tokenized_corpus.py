@@ -8,7 +8,6 @@ from .tokens_transformer import DEFAULT_PROCESS_OPTS, TokensTransformer
 
 
 class TokenizedCorpus:
-
     def __init__(self, reader: Any, **kwargs):
 
         if not hasattr(reader, 'metadata'):
@@ -82,7 +81,6 @@ class TokenizedCorpus:
 
 
 class ReIterableTerms:
-
     def __init__(self, corpus):
 
         self.corpus = corpus

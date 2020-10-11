@@ -2,6 +2,7 @@ import pickle
 import types
 
 import click
+
 # import penelope.topic_modelling as topic_modelling
 
 # pylint: disable=too-many-arguments

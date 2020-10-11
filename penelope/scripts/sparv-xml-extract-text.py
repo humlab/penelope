@@ -4,8 +4,7 @@ import click
 import penelope.corpus.readers.sparv_xml_tokenizer as sparv_reader
 import penelope.corpus.sparv_corpus as sparv_corpus
 from penelope.corpus.tokens_transformer import TokensTransformer
-from penelope.utility import (replace_extension, suffix_filename,
-                              timestamp_filename)
+from penelope.utility import replace_extension, suffix_filename, timestamp_filename
 
 
 # pylint: disable=too-many-arguments

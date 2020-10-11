@@ -1,9 +1,7 @@
-
 from abc import ABCMeta, abstractmethod
 
 
 class ITextReader(metaclass=ABCMeta):
-
     @abstractmethod
     def __iter__(self):
         while False:

@@ -4,8 +4,10 @@ import networkx as nx
 
 def get_edge_layout_data(network, layout, weight='weight'):
 
-    data = [(u, v, d[weight], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
-            for u, v, d in network.edges(data=True)]
+    data = [
+        (u, v, d[weight], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
+        for u, v, d in network.edges(data=True)
+    ]
 
     return zip(*data)
 
