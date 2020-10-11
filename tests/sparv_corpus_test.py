@@ -1,10 +1,11 @@
 import os
+import uuid
 
 import pytest  # pylint: disable=unused-import
 
-import penelope.utility.file_utility as file_utility
-import penelope.corpus.sparv_corpus as sparv_corpus
 import penelope.corpus.readers as readers
+import penelope.corpus.sparv_corpus as sparv_corpus
+import penelope.utility.file_utility as file_utility
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
@@ -20,7 +21,7 @@ def test_reader_store_result():
     ]
     expected_names = ["document_001.txt", "document_002.txt"]
 
-    target_filename = './tests/output/sparv_extract_and_store.zip'
+    target_filename = f'./tests/output/{uuid.uuid1()}.zip'
 
     opts = dict(
         version=4,
@@ -38,6 +39,7 @@ def test_reader_store_result():
 
         assert ' '.join(expected_documents[i]) == content
 
+    os.remove(target_filename)
 
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
@@ -66,7 +68,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
         # keep_symbols: bool = True
     }
 
-    target_filename = './tests/output/sou_test_sparv3_extracted_txt.zip'
+    target_filename = f'./tests/output/{uuid.uuid1()}.zip'
 
     sparv_corpus.sparv_extract_and_store(SPARV3_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
 
@@ -78,6 +80,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     assert content.startswith(expected_document_start)
 
+    os.remove(target_filename)
 
 def test_corpus_when_source_is_sparv3_succeeds():
 

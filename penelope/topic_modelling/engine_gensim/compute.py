@@ -2,10 +2,8 @@ from typing import Any, Dict
 
 import gensim
 
-import penelope.topic_modelling.engine_gensim.coherence as coherence
-from penelope.topic_modelling.compute import InferredModel, TrainingCorpus
-
-from . import options
+from ..container import InferredModel, TrainingCorpus
+from . import coherence, options
 
 
 def compute(

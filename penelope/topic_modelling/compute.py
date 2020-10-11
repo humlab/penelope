@@ -2,15 +2,11 @@ import json
 import os
 import pickle
 
-import penelope.topic_modelling.engine_gensim as engine_gensim
-import penelope.topic_modelling.engine_textacy as engine_textacy
 import penelope.utility as utility
-from penelope.topic_modelling.container import (InferredModel,
-                                                InferredTopicsData,
-                                                TrainingCorpus)
-from penelope.topic_modelling.extract import (extract_topic_token_overview,
-                                              extract_topic_token_weights)
 
+from . import engine_gensim, engine_textacy
+from .container import InferredModel, InferredTopicsData, TrainingCorpus
+from .extract import extract_topic_token_overview, extract_topic_token_weights
 from .predict import predict_document_topics
 from .utility import id2word_to_dataframe
 

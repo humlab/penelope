@@ -1,7 +1,6 @@
 import penelope.vendor.textacy as textacy_utility
 
 
-# FIXME:Remove textacy_utility from penelope
 # pylint: disable=too-many-instance-attributes
 class CorpusContainer:
     """Singleton class for current (last) computed or loaded corpus"""
