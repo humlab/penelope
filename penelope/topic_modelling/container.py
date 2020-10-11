@@ -29,7 +29,10 @@ class TrainingCorpus:
         vectorizer_args: Dict[str, Any] = None,
     ):
         """A container for the corpus data used during learning/inference
-        The corpus can be wither represented as a sequence of list of tokens or a docuement-term-matrix
+
+        The corpus can be wither represented as a sequence of list of tokens or a docuement-term-matrix.
+
+        The corpus actually used in training is stored in `corpus` by the modelling engine
 
         Parameters
         ----------
@@ -49,7 +52,7 @@ class TrainingCorpus:
         self.id2word = id2word
         self.documents = documents
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
-
+        self.corpus = None
 
 class InferredModel:
     """A container for the inferred model (the distributions over topic and word mixtures) during based on training data """
@@ -108,8 +111,8 @@ class InferredTopicsData:
         """Returns unique topic ids """
         return list(self.document_topic_weights.topic_id.unique())
 
-    def store(self, data_folder, model_name, pickled=False):
-        """Stores aggregate in `data_folder` with filenames prefixed by `model_name`
+    def store(self, target_folder, pickled=False):
+        """Stores aggregate in `target_folder` as individual zipped files
 
         Parameters
         ----------
@@ -120,7 +123,6 @@ class InferredTopicsData:
         pickled : bool, optional
             if True then pickled (binary) format else  CSV, by default False
         """
-        target_folder = os.path.join(data_folder, model_name)
 
         if not os.path.isdir(target_folder):
             os.mkdir(target_folder)
