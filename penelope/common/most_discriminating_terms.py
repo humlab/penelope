@@ -1,5 +1,7 @@
 import logging
+
 import pandas as pd
+
 import penelope.vendor.textacy.mdw_modified as mdw
 
 logger = logging.getLogger(__name__)

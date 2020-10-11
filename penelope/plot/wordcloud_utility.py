@@ -1,4 +1,5 @@
 from typing import Tuple
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import wordcloud

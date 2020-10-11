@@ -5,6 +5,7 @@ from bokeh.plotting import figure
 
 import penelope.network.utility as utility
 import penelope.notebook.widgets_utils as widgets_utils
+
 from . import metrics
 
 # pylint: disable=too-many-arguments, unnecessary-lambda

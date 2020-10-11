@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy
+
 from penelope.corpus import tokenized_corpus
 from penelope.corpus import vectorizer as corpus_vectorizer
 

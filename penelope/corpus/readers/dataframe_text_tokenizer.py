@@ -1,7 +1,7 @@
 import types
 
-from nltk.tokenize import word_tokenize
 import pandas as pd
+from nltk.tokenize import word_tokenize
 
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 
