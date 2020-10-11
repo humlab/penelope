@@ -98,7 +98,9 @@ def run_model(
 
     topic_modelling.store_model(inferred_model, jj(corpus_folder, name))
 
-    inferred_topics = topic_modelling.compile_inferred_topics_data(inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.documents)
+    inferred_topics = topic_modelling.compile_inferred_topics_data(
+        inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.documents
+    )
     inferred_topics.store(corpus_folder, name)
 
 

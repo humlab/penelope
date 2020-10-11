@@ -177,7 +177,7 @@ def document_terms_count(corpus):
 
     try:
         n_terms = [len(d) for d in corpus]
-    except: # pylint:disable=bare-except
+    except:  # pylint:disable=bare-except
         pass
 
     return n_terms
@@ -189,6 +189,7 @@ def add_document_terms_count(documents, corpus):
         if n_terms is not None:
             documents['n_terms'] = n_terms
     return documents
+
 
 def id2word_to_dataframe(id2word: Dict) -> pd.DataFrame:
     """Returns token id to word mapping `id2word` as a pandas DataFrane, with DFS added

@@ -30,7 +30,10 @@ def compute_inferred_model():
     engine = "gensim_lda"
 
     corpus = TranströmerCorpus()
-    train_corpus = TrainingCorpus( terms=corpus.terms, documents=corpus.documents, )
+    train_corpus = TrainingCorpus(
+        terms=corpus.terms,
+        documents=corpus.documents,
+    )
 
     inferred_model = topic_modelling.infer_model(
         train_corpus=train_corpus,
@@ -38,6 +41,7 @@ def compute_inferred_model():
         engine_args=TOPIC_MODELING_OPTS,
     )
     return inferred_model
+
 
 def test_tranströmers_corpus():
 
@@ -62,6 +66,7 @@ def test_infer_model():
     assert 'n_terms' in inferred_model.train_corpus.documents.columns
     assert inferred_model.train_corpus.corpus is not None
 
+
 def test_store_inferred_model():
 
     # Arrange
@@ -76,6 +81,7 @@ def test_store_inferred_model():
     assert os.path.isfile(os.path.join(target_folder, "inferred_model.pickle"))
 
     shutil.rmtree(target_folder)
+
 
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus():
 
@@ -103,6 +109,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
 
     shutil.rmtree(target_folder)
 
+
 def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus():
 
     # Arrange
@@ -124,6 +131,7 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus()
 
     shutil.rmtree(target_folder)
 
+
 def test_infer_topics_data():
 
     # Arrange
@@ -136,7 +144,7 @@ def test_infer_topics_data():
         corpus=inferred_model.train_corpus.corpus,
         id2word=inferred_model.train_corpus.id2word,
         documents=inferred_model.train_corpus.documents,
-        n_tokens=5
+        n_tokens=5,
     )
 
     # Assert
@@ -153,6 +161,7 @@ def test_infer_topics_data():
     assert list(inferred_topics_data.topic_token_overview.index) == [0, 1, 2, 3]
     assert list(inferred_topics_data.document_topic_weights.topic_id.unique()) == [0, 1, 2, 3]
 
+
 def test_store_inferred_topics_data():
 
     # Arrange
@@ -163,7 +172,7 @@ def test_store_inferred_topics_data():
         corpus=inferred_model.train_corpus.corpus,
         id2word=inferred_model.train_corpus.id2word,
         documents=inferred_model.train_corpus.documents,
-        n_tokens=5
+        n_tokens=5,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
 
@@ -179,6 +188,7 @@ def test_store_inferred_topics_data():
 
     shutil.rmtree(target_folder)
 
+
 def test_load_inferred_topics_data():
 
     # Arrange
@@ -189,7 +199,7 @@ def test_load_inferred_topics_data():
         corpus=inferred_model.train_corpus.corpus,
         id2word=inferred_model.train_corpus.id2word,
         documents=inferred_model.train_corpus.documents,
-        n_tokens=5
+        n_tokens=5,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
     test_inferred_topics_data.store(target_folder)
@@ -201,10 +211,22 @@ def test_load_inferred_topics_data():
     assert inferred_topics_data is not None
     assert inferred_topics_data.dictionary.equals(test_inferred_topics_data.dictionary)
     assert inferred_topics_data.documents.equals(test_inferred_topics_data.documents)
-    assert inferred_topics_data.topic_token_overview.round(5).equals(test_inferred_topics_data.topic_token_overview.round(5))
+    assert inferred_topics_data.topic_token_overview.round(5).equals(
+        test_inferred_topics_data.topic_token_overview.round(5)
+    )
     # assert inferred_topics_data.document_topic_weights.round(5).equals(test_inferred_topics_data.document_topic_weights.round(5))
-    assert inferred_topics_data.topic_token_weights.round(5).eq(test_inferred_topics_data.topic_token_weights.round(5)).all().all()
+    assert (
+        inferred_topics_data.topic_token_weights.round(5)
+        .eq(test_inferred_topics_data.topic_token_weights.round(5))
+        .all()
+        .all()
+    )
     # assert inferred_topics_data.topic_token_weights.round(5).equals(test_inferred_topics_data.topic_token_weights.round(5))
-    assert inferred_topics_data.topic_token_weights.round(5).eq(test_inferred_topics_data.topic_token_weights.round(5)).all().all()
+    assert (
+        inferred_topics_data.topic_token_weights.round(5)
+        .eq(test_inferred_topics_data.topic_token_weights.round(5))
+        .all()
+        .all()
+    )
 
     shutil.rmtree(target_folder)

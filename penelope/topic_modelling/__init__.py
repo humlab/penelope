@@ -1,6 +1,6 @@
 from .compute import infer_model, load_model, store_model
 from .container import InferredModel, InferredTopicsData, TrainingCorpus
-from .predict import predict_document_topics, compile_inferred_topics_data
+from .predict import compile_inferred_topics_data, predict_document_topics
 from .saliency import (compute_KL_divergence, compute_term_frequency,
                        compute_term_info, compute_topic_metrics)
 from .utility import (YEARLY_MEAN_COMPUTE_METHODS, add_document_metadata,

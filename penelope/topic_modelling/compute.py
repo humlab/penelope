@@ -45,7 +45,7 @@ def infer_model(
     return inferred_model
 
 
-def store_model(inferred_model: InferredModel, folder: str, store_corpus: bool=False):
+def store_model(inferred_model: InferredModel, folder: str, store_corpus: bool = False):
     """Stores an inferred model in icled format. Train corpus is not stored."""
 
     os.makedirs(folder, exist_ok=True)

@@ -54,6 +54,7 @@ class TrainingCorpus:
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
         self.corpus = None
 
+
 class InferredModel:
     """A container for the inferred model (the distributions over topic and word mixtures) during based on training data """
 

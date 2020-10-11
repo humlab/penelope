@@ -10,7 +10,8 @@ from penelope.topic_modelling.container import InferredTopicsData
 from penelope.topic_modelling.extract import (extract_topic_token_overview,
                                               extract_topic_token_weights)
 
-from .utility import add_document_metadata, id2word_to_dataframe, add_document_terms_count
+from .utility import (add_document_metadata, add_document_terms_count,
+                      id2word_to_dataframe)
 
 logger = utility.getLogger('corpus_text_analysis')
 
@@ -41,6 +42,7 @@ def _infer_document_topics_iter(model, corpus, minimum_probability=0.0):
             (topic_id, weight) for (topic_id, weight) in topic_weights if weight >= minimum_probability
         ):
             yield (document_id, topic_id, weight)
+
 
 def predict_document_topics(
     model: Any,
@@ -122,13 +124,11 @@ def predict_document_topics(
         return None
 
 
-def compile_inferred_topics_data(topic_model:Any, corpus: Any, id2word: Any, documents: pd.DataFrame, n_tokens=200):
+def compile_inferred_topics_data(topic_model: Any, corpus: Any, id2word: Any, documents: pd.DataFrame, n_tokens=200):
 
     dictionary = id2word_to_dataframe(id2word)
     topic_token_weights = extract_topic_token_weights(topic_model, dictionary, n_tokens=n_tokens)
-    topic_token_overview = extract_topic_token_overview(
-        topic_model, topic_token_weights, n_tokens=n_tokens
-    )
+    topic_token_overview = extract_topic_token_overview(topic_model, topic_token_weights, n_tokens=n_tokens)
 
     documents = add_document_terms_count(documents, corpus)
 

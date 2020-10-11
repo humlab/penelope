@@ -41,6 +41,7 @@ def test_reader_store_result():
 
     os.remove(target_filename)
 
+
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
     os.makedirs('./tests/output', exist_ok=True)
@@ -81,6 +82,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
     assert content.startswith(expected_document_start)
 
     os.remove(target_filename)
+
 
 def test_corpus_when_source_is_sparv3_succeeds():
 
