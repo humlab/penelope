@@ -1,74 +1,61 @@
-import types
-from typing import Any, Dict, Iterable, Union
+from typing import Any, Dict
 
 import gensim
-import scipy
 import textacy
 
 import penelope.vendor.textacy as textacy_utility
+from penelope.topic_modelling.compute import InferredModel, TrainingCorpus
 
 
 def compute(
-    doc_term_matrix: scipy.sparse.csr_matrix,
-    terms: Iterable[Iterable[str]],
-    id2word: Union[gensim.corpora.Dictionary, Dict[int, str]],
-    vectorizer_args: Dict[str, Any],
+    train_corpus: TrainingCorpus,
     method: str,
     engine_args: Dict[str, Any],
-    tfidf_weiging: bool = False,  # pylint: disable=unused-argument
-):
+    **kwargs,  # pylint: disable=unused-argument
+) -> InferredModel:
     """Computes a topic model using Gensim as engine.
 
     Parameters
     ----------
-    doc_term_matrix : scipy.sparse.csr_matrix
-        A DTM matrix, optional
-    terms : Iterable[Iterable[str]]
-        A document token stream, mandatory if `doc_term_matrix` is None, otherwise optional
-    id2word : Union[gensim.corpora.Dictionary, Dict[int, str]]
-        A dictionary i.e. id-to-word mapping, mandatory if `doc_term_matrix` is not None, otherwise created
-    vectorizer_args : Dict[str, Any]
-        Arguments to use if vectorizing is needed i.e. if `doc_term_matrix` is None
+    train_corpus : TrainingCorpus
+        A container for the training corpus data (terms or DTM, id2word, documents)
     method : str
         The method to use (see `options` module for mappings)
     engine_args : Dict[str, Any]
         Generic topic modelling options that are translated to algorithm-specific options (see `options` module for translation)
-    tfidf_weiging : bool, optional
-        Flag if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
+    kwargs : Dict[str,Any], optional
+        Additional options:
+            `tfidf_weiging` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
 
     Returns
     -------
-    types.SimpleNamespace
-        corpus              Gensim corpus,
-        doc_term_matrix     The DTM
-        id2word             The Gensim Dictionary
+    InferredModel
+        train_corpus        Training corpus data (updated)
         model               The textaCy topic model
-        doc_topic_matrix    (None)
-        vectorizer_args     Used vectorizer args (if any)
         perplexity_score    Computed perplexity scores
         coherence_score     Computed coherence scores
-        engine_options      Used engine options (algorithm specific)
+        engine_ptions       Used engine options (algorithm specific)
+        extra_options       Any other compute option passed as a kwarg
     """
-    if doc_term_matrix is None:
-        assert terms is not None
-        doc_term_matrix, id2word = textacy_utility.vectorize_terms(terms, vectorizer_args)
+    if train_corpus.doc_term_matrix is None:
+        assert train_corpus.terms is not None
+        train_corpus.doc_term_matrix, train_corpus.id2word = textacy_utility.vectorize_terms(
+            train_corpus.terms, train_corpus.vectorizer_args
+        )
 
     model = textacy.tm.TopicModel(method.split('_')[1], **engine_args)
-    model.fit(doc_term_matrix)
 
-    doc_topic_matrix = model.transform(doc_term_matrix)
+    model.fit(train_corpus.doc_term_matrix)
 
     # We use gensim's corpus as common result format
-    corpus = gensim.matutils.Sparse2Corpus(doc_term_matrix, documents_columns=False)
+    train_corpus.corpus = gensim.matutils.Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)
 
-    return types.SimpleNamespace(
-        corpus=corpus,
-        doc_term_matrix=doc_term_matrix,
-        id2word=id2word,
-        model=model,
-        doc_topic_matrix=doc_topic_matrix,
-        vectorizer_args=vectorizer_args,
+    return InferredModel(
+        train_corpus=train_corpus,
+        topic_model=model,
+        method=method,
         perplexity_score=None,
         coherence_score=None,
         engine_options=engine_args,
+        extra_options=kwargs,
     )

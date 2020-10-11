@@ -1,87 +1,86 @@
-import types
-from typing import Any, Dict, Iterable, Union
+from typing import Any, Dict
 
 import gensim
-import scipy
+
 import penelope.topic_modelling.engine_gensim.coherence as coherence
+from penelope.topic_modelling.compute import InferredModel, TrainingCorpus
 
 from . import options
 
 
 def compute(
-    doc_term_matrix: scipy.sparse.csr_matrix,
-    terms: Iterable[Iterable[str]],
-    id2word: Union[gensim.corpora.Dictionary, Dict[int, str]],
-    vectorizer_args: Dict[str, Any],
+    train_corpus: TrainingCorpus,
     method: str,
     engine_args: Dict[str, Any],
-    tfidf_weiging: bool = False,
-):
+    **kwargs: Dict[str, Any],
+) -> InferredModel:
     """Computes a topic model using Gensim as engine.
 
     Parameters
     ----------
-    doc_term_matrix : scipy.sparse,csr_matrix
-        A DTM matrix, optional
-    terms : Iterable[Iterable[str]]
-        A document token stream, mandatory if `doc_term_matrix` is None, otherwise optional
-    id2word : Union[gensim.corpora.Dictionary, Dict[int, str]]
-        A dictionary i.e. id-to-word mapping, mandatory if `doc_term_matrix` is not None, otherwise created
+    train_corpus : TrainingCorpus
+        A container for the training corpus data (terms or DTM, id2word, documents)
     vectorizer_args : Dict[str, Any]
         Arguments to use if vectorizing is needed i.e. if `doc_term_matrix` is None
     method : str
         The method to use (see `options` module for mappings)
     engine_args : Dict[str, Any]
         Generic topic modelling options that are translated to algorithm-specific options (see `options` module for translation)
-    tfidf_weiging : bool, optional
-        Flag if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
+    kwargs : Dict[str,Any], optional
+        Additional options:
+            `tfidf_weiging` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
 
     Returns
     -------
-    types.SimpleNamespace
-        corpus              Gensim corpus,
-        doc_term_matrix     The DTM
-        id2word             The Gensim Dictionary
-        model               The Gensim topic Model
-        doc_topic_matrix    (None)
-        vectorizer_args     Used vectorizer args (if any)
+    InferredModel
+        train_corpus        Training corpus data (updated)
+        model               The textaCy topic model
         perplexity_score    Computed perplexity scores
         coherence_score     Computed coherence scores
-        engine_options      Used engine options (algorithm specific)
+        engine_ptions       Used engine options (algorithm specific)
+        extra_options       Any other compute option passed as a kwarg
     """
     algorithm_name = method.split('_')[1].upper()
 
-    if doc_term_matrix is None:
-        id2word = gensim.corpora.Dictionary(terms)
-        corpus = [id2word.doc2bow(tokens) for tokens in terms]
+    if train_corpus.doc_term_matrix is None:
+        train_corpus.id2word = gensim.corpora.Dictionary(train_corpus.terms)
+        train_corpus.corpus = [train_corpus.id2word.doc2bow(tokens) for tokens in train_corpus.terms]
     else:
-        assert id2word is not None
-        corpus = gensim.matutils.Sparse2Corpus(doc_term_matrix, documents_columns=False)
+        assert train_corpus.id2word is not None
+        train_corpus.corpus = gensim.matutils.Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)
 
-    if tfidf_weiging:
-        # assert algorithm_name != 'MALLETLDA', 'MALLET training model cannot (currently) use TFIDF weighed corpus'
-        tfidf_model = gensim.models.tfidfmodel.TfidfModel(corpus)
-        corpus = [tfidf_model[d] for d in corpus]
+    if kwargs.get('tfidf_weiging', False):
+        train_corpus.corpus = _tfi_idf_model(train_corpus.corpus)
 
-    algorithm = options.engine_options(algorithm_name, corpus, id2word, engine_args)
+    algorithm = options.engine_options(algorithm_name, train_corpus.corpus, train_corpus.id2word, engine_args)
 
     engine = algorithm['engine']
     engine_options = algorithm['options']
 
     model = engine(**engine_options)
 
-    perplexity_score = None if not hasattr(model, 'log_perplexity') else 2 ** model.log_perplexity(corpus, len(corpus))
+    # FIXME: These metrics must be computed on a held-out corpus - not the training corpus
+    perplexity_score = (
+        None
+        if not hasattr(model, 'log_perplexity')
+        else 2 ** model.log_perplexity(train_corpus.corpus, len(train_corpus.corpus))
+    )
 
-    coherence_score = coherence.compute_score(id2word, model, corpus)
+    coherence_score = coherence.compute_score(train_corpus.id2word, model, train_corpus.corpus)
 
-    return types.SimpleNamespace(
-        corpus=corpus,
-        doc_term_matrix=doc_term_matrix,
-        id2word=id2word,
-        model=model,
-        doc_topic_matrix=None,
-        vectorizer_args=vectorizer_args,
+    return InferredModel(
+        train_corpus=train_corpus,
+        topic_model=model,
+        method=method,
         perplexity_score=perplexity_score,
         coherence_score=coherence_score,
         engine_options=engine_options,
+        extra_options=kwargs,
     )
+
+
+def _tfi_idf_model(corpus):
+    # assert algorithm_name != 'MALLETLDA', 'MALLET training model cannot (currently) use TFIDF weighed corpus'
+    tfidf_model = gensim.models.tfidfmodel.TfidfModel(corpus)
+    corpus = [tfidf_model[d] for d in corpus]
+    return corpus

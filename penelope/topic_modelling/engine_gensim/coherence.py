@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import gensim
 
 import penelope.utility as utility
@@ -21,7 +23,15 @@ def compute_score(id2word, model, corpus):
     return coherence_score
 
 
-def compute_scores(method, id2word, corpus, start=10, stop=20, step=10, engine_args=None):
+def compute_scores(
+    method: str,
+    id2word: Dict[int, str],
+    corpus: Any,
+    start=10,
+    stop: int = 20,
+    step: int = 10,
+    engine_args: Dict[str, Any] = None,
+) -> Dict[str, Any]:
 
     algorithm_name = method.split('_')[1].upper()
 

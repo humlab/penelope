@@ -1,6 +1,7 @@
 import gensim
 
-from penelope.topic_modelling.engine_gensim.wrappers import STTMTopicModel, MalletTopicModel
+from penelope.topic_modelling.engine_gensim.wrappers import (MalletTopicModel,
+                                                             STTMTopicModel)
 
 TEMP_PATH = './tmp/'
 

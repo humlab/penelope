@@ -3,6 +3,7 @@ from typing import Any
 import gensim
 import numpy as np
 import pandas as pd
+from gensim.matutils import Sparse2Corpus
 
 import penelope.utility as utility
 
@@ -15,7 +16,6 @@ def predict_document_topics(
     model: Any,
     corpus: Any,
     documents: pd.DataFrame = None,
-    doc_topic_matrix: Any = None,
     minimum_probability: float = 0.001,
 ) -> pd.DataFrame:
     """Applies a the topic model on `corpus` and returns a document-topic dataframe
@@ -28,8 +28,6 @@ def predict_document_topics(
         The corpus
     documents : pd.DataFrame, optional
         The document index, by default None
-    doc_topic_matrix : Any, optional
-        The document-topic sparse matrix, by default None
     minimum_probability : float, optional
         Threshold, by default 0.001
 
@@ -50,11 +48,12 @@ def predict_document_topics(
                 data_iter = enumerate(model.get_document_topics(corpus, minimum_probability=minimum_probability))
             elif hasattr(model, 'load_document_topics'):
                 # Gensim MALLET wrapper
+                # FIXME: Must do topic inference on corpus!
                 data_iter = enumerate(model.load_document_topics())
             elif hasattr(model, 'top_doc_topics'):
-                # scikit-learn
-                assert doc_topic_matrix is not None, "doc_topic_matrix not supplied"
-                data_iter = model.top_doc_topics(doc_topic_matrix, docs=-1, top_n=1000, weights=True)
+                # scikit-learn, not that the corpus DTM is tored as a Gensim sparse corpus
+                assert isinstance(corpus, Sparse2Corpus), "Only Sparse2Corpus valid for inference!"
+                data_iter = model.top_doc_topics(corpus.sparse, docs=-1, top_n=1000, weights=True)
             else:
                 data_iter = ((document_id, model[corpus[document_id]]) for document_id in range(0, len(corpus)))
 

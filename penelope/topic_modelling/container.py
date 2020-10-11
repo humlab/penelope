@@ -2,9 +2,11 @@ import os
 import pickle
 import sys
 import types
-from typing import Any, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
+import gensim
 import pandas as pd
+import scipy
 
 import penelope.utility as utility
 
@@ -12,8 +14,54 @@ from .utility import add_document_metadata
 
 logger = utility.getLogger('corpus_text_analysis')
 
+DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 
-class ModelAgnosticDataContainer:
+
+class TrainingCorpus:
+    """A container for the corpus data used during learning/inference"""
+
+    def __init__(
+        self,
+        terms: Iterable[Iterable[str]] = None,
+        documents: pd.DataFrame = None,
+        doc_term_matrix: scipy.sparse.csr_matrix = None,
+        id2word: Union[gensim.corpora.Dictionary, Dict[int, str]] = None,
+        vectorizer_args: Dict[str, Any] = None,
+    ):
+        """A container for the corpus data used during learning/inference
+        The corpus can be wither represented as a sequence of list of tokens or a docuement-term-matrix
+
+        Parameters
+        ----------
+        terms : Iterable[Iterable[str]], optional
+            Document tokens stream, by default None
+        documents : pd.DataFrame, optional
+            Documents metadata, by default None
+        doc_term_matrix : scipy.sparse.csr_sparse, optional
+            DTM BoW, by default None
+        id2word : Union[gensim.corpora.Dictionary, Dict[int, str]], optional
+            ID to word mapping, by default None
+        vectorizer_args: Dict[str, Any]
+            Options to use when vectorizing `terms`, ony used if DTM is None,
+        """
+        self.terms = terms
+        self.doc_term_matrix = doc_term_matrix
+        self.id2word = id2word
+        self.documents = documents
+        self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
+
+
+class InferredModel:
+    """A container for the inferred model (the distributions over topic and word mixtures) during based on training data """
+
+    def __init__(self, topic_model: Any, train_corpus: TrainingCorpus, method: str, **options: Dict[str, Any]):
+        self.topic_model = topic_model
+        self.train_corpus = train_corpus
+        self.method = method
+        self.options = options
+
+
+class InferredTopicsData:
     """Container for a topic model as a generic set of pd.DataFrames. The content is common to all types model engines."""
 
     def __init__(
@@ -111,7 +159,7 @@ class ModelAgnosticDataContainer:
             with open(filename, 'rb') as f:
                 data = pickle.load(f)
 
-            data = ModelAgnosticDataContainer(
+            data = InferredTopicsData(
                 data.documents,
                 data.dictionary,
                 data.topic_token_weights,
@@ -120,7 +168,7 @@ class ModelAgnosticDataContainer:
             )
 
         else:
-            data = ModelAgnosticDataContainer(
+            data = InferredTopicsData(
                 pd.read_csv(os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False),
                 pd.read_csv(os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False),
                 pd.read_csv(
