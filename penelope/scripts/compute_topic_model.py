@@ -41,6 +41,11 @@ def run_model(
 
     call_arguments = dict(locals())
 
+    if corpus_folder is None:
+        corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
+
+    os.makedirs(jj(corpus_folder, name), exist_ok=True)
+
     topic_modeling_opts = {
         k: v
         for k, v in call_arguments.items()
@@ -82,44 +87,20 @@ def run_model(
         id2word=None,
         documents=corpus.documents,
     )
-    model_data, corpus_data = topic_modelling.infer_model(
+
+    inferred_model = topic_modelling.infer_model(
         train_corpus=train_corpus,
         method=engine,
         engine_args=topic_modeling_opts,
     )
 
-    if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
+    inferred_model.topic_model.save(jj(corpus_folder, name, 'gensim.model'))
 
-    os.makedirs(jj(corpus_folder, name), exist_ok=True)
+    topic_modelling.store_model(inferred_model, jj(corpus_folder, name))
 
-    model_data.topic_model.save(jj(corpus_folder, name, 'gensim.model'))
+    inferred_topics = topic_modelling.compile_inferred_topics_data(inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.documents)
+    inferred_topics.store(corpus_folder, name)
 
-    topic_modelling.store_model(model_data, jj(corpus_folder, name))
-
-    # corpus_data.document_topic_weights = corpus_data.extend_with_document_info(
-    #     corpus_data.document_topic_weights,
-    #     corpus.documents
-    # )
-
-    corpus_data.store(corpus_folder, name)
-
-
-# %%
-
-# run_model(
-#     name="SOU-KB-labb-corpus-1945-1989",
-#     n_topics=200,
-#     corpus_folder=None,
-#     corpus_filename="/data/westac/sou_kb_labb/SOU-KB-labb-corpus-1945-1989.sparv.xml_text_20200923195551.zip",
-#     engine="gensim_lda",
-#     random_seed=42,
-#     alpha="asymmetric",
-#     passes=None,
-#     workers=None,
-#     max_iter=None,
-#     prefix=None
-# )
 
 if __name__ == '__main__':
     compute_topic_model()  # pylint: disable=no-value-for-parameter

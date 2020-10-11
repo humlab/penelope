@@ -5,10 +5,8 @@ import pickle
 import penelope.utility as utility
 
 from . import engine_gensim, engine_textacy
-from .container import InferredModel, InferredTopicsData, TrainingCorpus
-from .extract import extract_topic_token_overview, extract_topic_token_weights
-from .predict import predict_document_topics
-from .utility import id2word_to_dataframe
+from .container import InferredModel, TrainingCorpus
+from .utility import add_document_terms_count
 
 logger = utility.getLogger("")
 
@@ -42,44 +40,20 @@ def infer_model(
         tfidf_weiging=kwargs.get('tfidf_weiging', False),
     )
 
-    # Generate model agnostic data
-    n_tokens = kwargs.get('n_tokens', 200)
-    dictionary = id2word_to_dataframe(train_corpus.id2word)
-    topic_token_weights = extract_topic_token_weights(inferred_model.topic_model, dictionary, n_tokens=n_tokens)
-    topic_token_overview = extract_topic_token_overview(
-        inferred_model.topic_model, topic_token_weights, n_tokens=n_tokens
-    )
+    train_corpus.documents = add_document_terms_count(train_corpus.documents, train_corpus.corpus)
 
-    # """ Fix missing n_terms (only vectorized corps"""
-    # if 'n_terms' not in train_corpus.documents.columns:
-    #     n_terms = document_n_terms(inferred_model.corpus)
-    #     if n_terms is not None:
-    #         train_corpus.documents['n_terms'] = n_terms
-
-    document_topic_weights = predict_document_topics(
-        inferred_model.topic_model,
-        train_corpus.corpus,
-        documents=train_corpus.documents,
-        minimum_probability=0.001,
-    )
-
-    inferred_topics_data = InferredTopicsData(
-        train_corpus.documents, dictionary, topic_token_weights, topic_token_overview, document_topic_weights
-    )
-
-    return inferred_model, inferred_topics_data
+    return inferred_model
 
 
-def store_model(inferred_model: InferredModel, folder: str):
+def store_model(inferred_model: InferredModel, folder: str, store_corpus: bool=False):
     """Stores an inferred model in icled format. Train corpus is not stored."""
+
     os.makedirs(folder, exist_ok=True)
 
-    inferred_model.train_corpus.doc_term_matrix = None
-    inferred_model.train_corpus.id2word = None
-    inferred_model.train_corpus.corpus = None
-    inferred_model.train_corpus.terms = None
+    if not store_corpus:
+        inferred_model.train_corpus = None
 
-    filename = os.path.join(folder, "model_data.pickle")
+    filename = os.path.join(folder, "inferred_model.pickle")
 
     with open(filename, 'wb') as fp:
         pickle.dump(inferred_model, fp, pickle.HIGHEST_PROTOCOL)
@@ -92,7 +66,7 @@ def store_model(inferred_model: InferredModel, folder: str):
 
 def load_model(folder: str) -> InferredModel:
     """Loads an inferred model from av previously pickled file."""
-    filename = os.path.join(folder, "model_data.pickle")
+    filename = os.path.join(folder, "inferred_model.pickle")
     with open(filename, 'rb') as f:
         inferred_model = pickle.load(f)
     return inferred_model
