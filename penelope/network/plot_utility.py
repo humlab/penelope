@@ -5,6 +5,7 @@ from bokeh.plotting import figure
 
 import penelope.network.utility as utility
 import penelope.notebook.widgets_utils as widgets_utils
+from . import metrics
 
 # pylint: disable=too-many-arguments, unnecessary-lambda
 
@@ -101,8 +102,8 @@ def _plot_network(
     )
 
     nodes_source = utility.create_nodes_data_source(sub_network, layout)
-    nodes_community = utility.compute_partition(sub_network)
-    community_colors = utility.partition_colors(nodes_community, bokeh.palettes.Category20[20])
+    nodes_community = metrics.compute_partition(sub_network)
+    community_colors = metrics.partition_colors(nodes_community, bokeh.palettes.Category20[20])
 
     nodes_source.add(nodes_community, 'community')
     nodes_source.add(community_colors, 'community_color')

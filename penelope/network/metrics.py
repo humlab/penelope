@@ -27,7 +27,7 @@ def compute_centrality(network):
 
 
 def compute_partition(network):
-    partition = community_louvain.best_partition(network)
+    partition = community_louvain.best_partition(network)  # pylint: disable=no-member
     _, nodes_community = zip(*sorted(partition.items()))
     return nodes_community
 
