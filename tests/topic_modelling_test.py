@@ -230,3 +230,33 @@ def test_load_inferred_topics_data():
     )
 
     shutil.rmtree(target_folder)
+
+
+def test_run_cli():
+
+    kwargs = {
+        'name': f"{uuid.uuid1()}",
+        'n_topics': 5,
+        'corpus_folder': './tests/output',
+        'corpus_filename': './tests/test_data/test_corpus.zip',
+        'engine': 'gensim_lda-multicore',
+        # 'passes': None,
+        # 'random_seed': None,
+        'alpha': 'asymmetric',
+        # 'workers': None,
+        # 'max_iter': None,
+        # 'prefix': None,
+        'meta_field': ('year:_:1', 'sequence_id:_:2'),
+    }
+
+    from penelope.scripts.compute_topic_model import run_model
+
+    run_model(**kwargs)
+
+    target_folder = jj(kwargs['corpus_folder'], kwargs['name'])
+
+    assert os.path.isdir(target_folder)
+    assert os.path.isfile(jj(target_folder, 'inferred_model.pickle'))
+    assert os.path.isfile(jj(target_folder, 'model_options.json'))
+
+    shutil.rmtree(target_folder)
