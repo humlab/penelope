@@ -18,8 +18,6 @@ def compute(
     ----------
     train_corpus : TrainingCorpus
         A container for the training corpus data (terms or DTM, id2word, documents)
-    vectorizer_args : Dict[str, Any]
-        Arguments to use if vectorizing is needed i.e. if `doc_term_matrix` is None
     method : str
         The method to use (see `options` module for mappings)
     engine_args : Dict[str, Any]
@@ -33,10 +31,11 @@ def compute(
     InferredModel
         train_corpus        Training corpus data (updated)
         model               The textaCy topic model
-        perplexity_score    Computed perplexity scores
-        coherence_score     Computed coherence scores
-        engine_ptions       Used engine options (algorithm specific)
-        extra_options       Any other compute option passed as a kwarg
+        options:
+            perplexity_score    Computed perplexity scores
+            coherence_score     Computed coherence scores
+            engine_ptions       Passed engine options (not the interpreted algorithm specific options)
+            extra_options       Any other compute option passed as a kwarg
     """
     algorithm_name = method.split('_')[1].upper()
 
@@ -72,7 +71,7 @@ def compute(
         method=method,
         perplexity_score=perplexity_score,
         coherence_score=coherence_score,
-        engine_options=engine_options,
+        engine_options=engine_args,
         extra_options=kwargs,
     )
 
