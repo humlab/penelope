@@ -9,19 +9,19 @@ from . import options
 
 
 def compute(
-    doc_term_matrix: scipy.sparse,
+    doc_term_matrix: scipy.sparse.csr_matrix,
     terms: Iterable[Iterable[str]],
     id2word: Union[gensim.corpora.Dictionary, Dict[int, str]],
     vectorizer_args: Dict[str, Any],
     method: str,
     engine_args: Dict[str, Any],
-    tfidf_weiging: bool = False
+    tfidf_weiging: bool = False,
 ):
     """Computes a topic model using Gensim as engine.
 
     Parameters
     ----------
-    doc_term_matrix : scipy.sparse
+    doc_term_matrix : scipy.sparse,csr_matrix
         A DTM matrix, optional
     terms : Iterable[Iterable[str]]
         A document token stream, mandatory if `doc_term_matrix` is None, otherwise optional
@@ -70,8 +70,7 @@ def compute(
 
     model = engine(**engine_options)
 
-    perplexity_score = None if not hasattr(model, 'log_perplexity') \
-        else 2 ** model.log_perplexity(corpus, len(corpus))
+    perplexity_score = None if not hasattr(model, 'log_perplexity') else 2 ** model.log_perplexity(corpus, len(corpus))
 
     coherence_score = coherence.compute_score(id2word, model, corpus)
 
@@ -84,5 +83,5 @@ def compute(
         vectorizer_args=vectorizer_args,
         perplexity_score=perplexity_score,
         coherence_score=coherence_score,
-        engine_options=engine_options
+        engine_options=engine_options,
     )

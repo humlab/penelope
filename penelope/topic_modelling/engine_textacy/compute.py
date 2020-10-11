@@ -8,21 +8,20 @@ import textacy
 import penelope.vendor.textacy as textacy_utility
 
 
-
 def compute(
-    doc_term_matrix: scipy.sparse,
+    doc_term_matrix: scipy.sparse.csr_matrix,
     terms: Iterable[Iterable[str]],
     id2word: Union[gensim.corpora.Dictionary, Dict[int, str]],
     vectorizer_args: Dict[str, Any],
     method: str,
     engine_args: Dict[str, Any],
-    tfidf_weiging: bool = False  # pylint: disable=unused-argument
+    tfidf_weiging: bool = False,  # pylint: disable=unused-argument
 ):
     """Computes a topic model using Gensim as engine.
 
     Parameters
     ----------
-    doc_term_matrix : scipy.sparse
+    doc_term_matrix : scipy.sparse.csr_matrix
         A DTM matrix, optional
     terms : Iterable[Iterable[str]]
         A document token stream, mandatory if `doc_term_matrix` is None, otherwise optional
@@ -71,5 +70,5 @@ def compute(
         vectorizer_args=vectorizer_args,
         perplexity_score=None,
         coherence_score=None,
-        engine_options=engine_args
+        engine_options=engine_args,
     )
