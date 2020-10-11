@@ -7,7 +7,7 @@ import penelope.utility as utility
 
 logger = utility.getLogger('corpus_text_analysis')
 
-# pylint: disable=attribute-defined-outside-init
+# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
 
 class CoccurrenceUI:
