@@ -1,17 +1,19 @@
 
 .DEFAULT_GOAL=lint
-
+SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
 
 init:
-	@pip install --upgrade pip poetry
+	@pip install --upgrade pip
+	@pip install poetry --upgrade
+	@poetry install
+
+build: requirements.txt
+	@poetry build
 
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
 	-poetry run coveralls
-
-build:
-	@poetry build
 
 test: clean
 	@poetry run pytest --verbose --durations=0 \
@@ -33,7 +35,7 @@ flake8:
 	@poetry run flake8 --version
 	@poetry run flake8
 
-lint: flake8 pylint
+lint: pylint flake8
 
 format: clean black isort
 
@@ -46,7 +48,7 @@ yapf: clean
 
 black:clean
 	@poetry run black --version
-	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization penelope tests
+	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
 
 clean:
 	@rm -rf .pytest_cache build dist .eggs *.egg-info
@@ -55,6 +57,9 @@ clean:
 	@find . -type d -name '*pytest_cache*' -exec rm -rf {} +
 	@find . -type d -name '.mypy_cache' -exec rm -rf {} +
 	@rm -rf tests/output
+
+clean_cache:
+	@poetry cache clear pypi --all
 
 update:
 	@poetry update
