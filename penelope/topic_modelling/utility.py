@@ -68,7 +68,7 @@ def malletmodel2ldamodel(
 
 def find_models(path: str):
     """Returns subfolders containing a computed topic model in specified path"""
-    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "model_data.pickle"))]
+    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "inferred_model.pickle"))]
     models = [
         {'folder': x, 'name': os.path.split(x)[1], 'options': utility.read_json(os.path.join(x, "model_options.json"))}
         for x in folders
@@ -165,7 +165,7 @@ def normalize_weights(df):
     return df
 
 
-def document_n_terms(corpus):
+def document_terms_count(corpus):
 
     n_terms = None
 
@@ -175,8 +175,20 @@ def document_n_terms(corpus):
     if isinstance(corpus, list):
         n_terms = [sum((w[1] for w in d)) for d in corpus]
 
+    try:
+        n_terms = [len(d) for d in corpus]
+    except: # pylint:disable=bare-except
+        pass
+
     return n_terms
 
+
+def add_document_terms_count(documents, corpus):
+    if 'n_terms' not in documents.columns:
+        n_terms = document_terms_count(corpus)
+        if n_terms is not None:
+            documents['n_terms'] = n_terms
+    return documents
 
 def id2word_to_dataframe(id2word: Dict) -> pd.DataFrame:
     """Returns token id to word mapping `id2word` as a pandas DataFrane, with DFS added
