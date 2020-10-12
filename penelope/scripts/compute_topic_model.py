@@ -28,6 +28,7 @@ import penelope.utility.file_utility as file_utility
 @click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
 @click.option('--prefix', default=None, help='Prefix.')
 @click.option('--meta-field', '-f', default=None, help='RegExp fields to extract from document name', multiple=True)
+@click.option('--store-corpus/--no-store-corpus', default=False, is_flag=True, help='')
 def compute_topic_model(
     name,
     n_topics,
@@ -41,6 +42,7 @@ def compute_topic_model(
     max_iter,
     prefix,
     meta_field,
+    store_corpus,
 ):
     run_model(
         name=name,
@@ -55,6 +57,7 @@ def compute_topic_model(
         max_iter=max_iter,
         prefix=prefix,
         meta_field=meta_field,
+        store_corpus=store_corpus,
     )
 
 
@@ -71,6 +74,7 @@ def run_model(
     max_iter=None,
     prefix=None,
     meta_field=None,
+    store_corpus=False
 ):
     """ runner """
 
@@ -138,7 +142,7 @@ def run_model(
 
     inferred_model.topic_model.save(jj(target_folder, 'gensim.model'))
 
-    topic_modelling.store_model(inferred_model, target_folder)
+    topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus)
 
     inferred_topics = topic_modelling.compile_inferred_topics_data(
         inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.documents
