@@ -16,7 +16,7 @@ class CorpusVectorizer:
         self.kwargs = kwargs
         self.tokenizer = lambda x: x.split()
 
-    def fit_transform(self, corpus: tokenized_corpus.TokenizedCorpus):
+    def fit_transform(self, corpus: tokenized_corpus.TokenizedCorpus) -> vectorized_corpus.VectorizedCorpus:
 
         texts = (' '.join(tokens) for _, tokens in corpus)
 
@@ -39,7 +39,7 @@ class CorpusVectorizer:
         return df
 
 
-def generate_corpus(filename, output_folder, **kwargs):
+def generate_corpus(filename: str, output_folder: str, **kwargs):
 
     if not os.path.isfile(filename):
         logger.error('no such file: {}'.format(filename))

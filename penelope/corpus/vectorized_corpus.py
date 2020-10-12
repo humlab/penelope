@@ -23,7 +23,7 @@ logger = logging.getLogger("")
 class VectorizedCorpus:
     def __init__(
         self,
-        bag_term_matrix,
+        bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: pd.DataFrame,
         word_counts: Dict[str, int] = None,
@@ -48,7 +48,7 @@ class VectorizedCorpus:
         elif not scipy.sparse.isspmatrix_csr(bag_term_matrix):
             bag_term_matrix = bag_term_matrix.tocsr()
 
-        self.bag_term_matrix = bag_term_matrix
+        self.bag_term_matrix: scipy.sparse.csr_matrix = bag_term_matrix
 
         assert scipy.sparse.issparse(self.bag_term_matrix), "only sparse data allowed"
 
@@ -79,17 +79,17 @@ class VectorizedCorpus:
         return self.id2token_
 
     @property
-    def T(self):
+    def T(self) -> scipy.sparse.csr_matrix:
         """Returns transpose of BoW matrix """
         return self.bag_term_matrix.T
 
     @property
-    def data(self):
+    def data(self) -> scipy.sparse.csr_matrix:
         """Returns BoW matrix """
         return self.bag_term_matrix
 
     @property
-    def term_bag_matrix(self):
+    def term_bag_matrix(self) -> scipy.sparse.csr_matrix:
         """Returns transpose of BoW matrix """
         return self.bag_term_matrix.T
 
@@ -157,7 +157,7 @@ class VectorizedCorpus:
         return self
 
     @staticmethod
-    def dump_exists(tag, folder='./output') -> bool:
+    def dump_exists(tag, folder: str='./output') -> bool:
         """Checks if corpus with tag `tag` exists in folder `folder`
 
         Parameters
@@ -170,7 +170,7 @@ class VectorizedCorpus:
         return os.path.isfile(VectorizedCorpus._data_filename(tag, folder))
 
     @staticmethod
-    def load(tag, folder='./output') -> VectorizedCorpus:
+    def load(tag, folder: str='./output') -> VectorizedCorpus:
         """Loads corpus with tag `tag` in folder `folder`
         Raises FileNotFoundError if files doesn't exist.
 
@@ -203,16 +203,16 @@ class VectorizedCorpus:
         return VectorizedCorpus(bag_term_matrix, token2id, document_index)
 
     @staticmethod
-    def _data_filename(tag, folder):
+    def _data_filename(tag, folder: str) -> str:
         """Returns pickled basename for given tag and folder"""
         return os.path.join(folder, "{}_vectorizer_data.pickle".format(tag))
 
     @staticmethod
-    def _matrix_filename(tag, folder):
+    def _matrix_filename(tag, folder: str) -> str:
         """Returns BoW matrix basename for given tag and folder"""
         return os.path.join(folder, "{}_vector_data".format(tag))
 
-    def get_word_vector(self, word):
+    def get_word_vector(self, word: str):
         """Extracts vector (i.e. BoW matrix column for word's id) for word `word`
 
         Parameters
@@ -227,7 +227,7 @@ class VectorizedCorpus:
         return self.bag_term_matrix[:, self.token2id[word]].todense().A1  # x.A1 == np.asarray(x).ravel()
 
     def collapse_by_category(
-        self, column, X=None, df=None, aggregate_function='sum', dtype=np.float
+        self, column, X=None, df: pd.DataFrame=None, aggregate_function: str='sum', dtype=np.float
     ):  # -> VectorizedCorpus:
         """Sums ups all rows in based on each row's index having same value in column `column`in data frame `df`
 
