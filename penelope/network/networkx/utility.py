@@ -1,16 +1,16 @@
-""" NetworkX utility functions """
 import networkx as nx
 
 from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
 
-# def create_nx_graph(df, source_field='source', target_field='target', weight='weight'):
-#    G = nx.Graph()
-#    nodes = list(set(list(df[source_field].values) + list(df[target_field].values)))
-#    edges = [ (x, y, { weight: z }) for x, y, z in [ tuple(x) for x in df[[source_field, target_field, weight]].values]]
-#    G.add_nodes_from(nodes)
-#    G.add_edges_from(edges)
-#    return G
 
+def get_edge_layout_data(network, layout, weight='weight'):
+
+    data = [
+        (u, v, d[weight], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
+        for u, v, d in network.edges(data=True)
+    ]
+
+    return zip(*data)
 
 def df_to_nx_edge_format(data, source_index=0, target_index=1):
     """Transform a dataframe's edge data into nx style i.e. as a list of (source, target, attributes) triplets
@@ -254,23 +254,6 @@ def get_positioned_edges2(network, layout, sort_attr=None):
     return dict_of_lists
 
 
-# def get_positioned_edges3(network, layout, scale=1.0, normalize=False):
-#
-#    edges = [ (u, v, d['weight'], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
-#             for u, v, d in network.edges(data=True) ]
-#
-#    _, _, weights, xs, ys = zip(*edges)
-#
-#    if normalize:
-#        weights = utility.normalize_values(weights, scale)
-#
-#    if scale != 1.0:
-#        weights = [ scale * x for x in  weights ]
-#
-#    layedout_edges = dict(xs=xs, ys=ys, weights=weights)
-#    return layedout_edges
-
-
 def get_positioned_nodes_as_dict(G, layout, node_size, node_size_range):
 
     nodes = get_positioned_nodes(G, layout)
@@ -288,6 +271,15 @@ def get_positioned_nodes_as_dict(G, layout, node_size, node_size_range):
     return nodes
 
 
+def create_network(df, source_field='source', target_field='target', weight='weight'):
+
+    G = nx.Graph()
+    nodes = list(set(list(df[source_field].values) + list(df[target_field].values)))
+    edges = [(x, y, {'weight': z}) for x, y, z in [tuple(x) for x in df[[source_field, target_field, weight]].values]]
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
+    return G
+
 def create_bipartite_network(df, source_field='source', target_field='target', weight='weight'):
     G = nx.Graph()
     G.add_nodes_from(set(df[source_field].values), bipartite=0)
@@ -303,7 +295,7 @@ def get_bipartite_node_set(network, bipartite=0):
     return list(nodes), list(others)
 
 
-def create_nx_graph_from_weighted_edges(values):
+def create_nx_graph_from_weighted_edges(values, threshold=0.0):  # pylint: disable=unused-argument
     """A simple wrapper for networkx factory function add_weighted_edges_from
 
     Parameters

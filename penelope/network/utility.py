@@ -1,15 +1,5 @@
 import bokeh.models as bm
-import networkx as nx
-
-
-def get_edge_layout_data(network, layout, weight='weight'):
-
-    data = [
-        (u, v, d[weight], [layout[u][0], layout[v][0]], [layout[u][1], layout[v][1]])
-        for u, v, d in network.edges(data=True)
-    ]
-
-    return zip(*data)
+from .networkx import utility as nx_utils
 
 
 # FIXA Merge these two methods, return dict instead (lose bokeh dependency)
@@ -56,34 +46,9 @@ def create_nodes_data_source(network, layout):  # pylint: disable=unused-argumen
     nodes_source = bm.ColumnDataSource(dict(x=nodes_xs, y=nodes_ys, name=nodes, node_id=nodes))
     return nodes_source
 
-
-def create_network(df, source_field='source', target_field='target', weight='weight'):
-
-    G = nx.Graph()
-    nodes = list(set(list(df[source_field].values) + list(df[target_field].values)))
-    edges = [(x, y, {'weight': z}) for x, y, z in [tuple(x) for x in df[[source_field, target_field, weight]].values]]
-    G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
-    return G
-
-
-def create_bipartite_network(df, source_field='source', target_field='target', weight='weight'):
-
-    G = nx.Graph()
-    G.add_nodes_from(set(df[source_field].values), bipartite=0)
-    G.add_nodes_from(set(df[target_field].values), bipartite=1)
-    edges = list(zip(df[source_field].values, df[target_field].values, df[weight].apply(lambda x: dict(weight=x))))
-    G.add_edges_from(edges)
-    return G
-
-
-def get_bipartite_node_set(network, bipartite=0):
-    nodes = set(n for n, d in network.nodes(data=True) if d['bipartite'] == bipartite)
-    others = set(network) - nodes
-    return list(nodes), list(others)
-
-
-def create_network_from_xyw_list(values, threshold=0.0):  # pylint: disable=unused-argument
-    G = nx.Graph()
-    G.add_weighted_edges_from(values)
-    return G
+# FIXME; #4 Consolidate network utility functions (utiity vs networkx.utility)
+create_bipartite_network = nx_utils.create_bipartite_network
+get_bipartite_node_set = nx_utils.get_bipartite_node_set
+create_network = nx_utils.create_network
+create_network_from_xyw_list = nx_utils.create_nx_graph_from_weighted_edges
+get_edge_layout_data = nx_utils.get_edge_layout_data
