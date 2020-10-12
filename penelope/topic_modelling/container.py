@@ -130,7 +130,7 @@ class InferredTopicsData:
 
         if pickled:
 
-            filename = os.path.join(target_folder, "compiled_data.pickle")
+            filename = os.path.join(target_folder, "inferred_topics.pickle")
 
             c_data = types.SimpleNamespace(
                 documents=self.documents,
@@ -157,30 +157,30 @@ class InferredTopicsData:
 
         if pickled:
 
-            filename = os.path.join(folder, "compiled_data.pickle")
+            filename = os.path.join(folder, "inferred_topics.pickle")
 
             with open(filename, 'rb') as f:
                 data = pickle.load(f)
 
             data = InferredTopicsData(
-                data.documents,
-                data.dictionary,
-                data.topic_token_weights,
-                data.topic_token_overview,
-                data.document_topic_weights,
+                documents=data.documents,
+                dictionary=data.dictionary,
+                topic_token_weights=data.topic_token_weights,
+                topic_token_overview=data.topic_token_overview,
+                document_topic_weights=data.document_topic_weights,
             )
 
         else:
             data = InferredTopicsData(
-                pd.read_csv(os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False),
-                pd.read_csv(os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False),
-                pd.read_csv(
+                documents=pd.read_csv(os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False),
+                dictionary=pd.read_csv(os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False),
+                topic_token_weights=pd.read_csv(
                     os.path.join(folder, 'topic_token_weights.zip'), '\t', header=0, index_col=0, na_filter=False
                 ),
-                pd.read_csv(
+                topic_token_overview=pd.read_csv(
                     os.path.join(folder, 'topic_token_overview.zip'), '\t', header=0, index_col=0, na_filter=False
                 ),
-                pd.read_csv(
+                document_topic_weights=pd.read_csv(
                     os.path.join(folder, 'document_topic_weights.zip'), '\t', header=0, index_col=0, na_filter=False
                 ),
             )
