@@ -70,7 +70,7 @@ def compute(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers
     # if prefix is not None:
     #     kwargs.update(dict(prefix=prefix))
 
-    # _, c_data = topic_modelling.compute_model(
+    # _, inferred_topics = topic_modelling.compute_model(
     #     doc_term_matrix=dtm, id2word=id2token, documents=documents, method=engine, engine_args=kwargs
     # )
 
