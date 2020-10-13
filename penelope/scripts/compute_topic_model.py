@@ -44,7 +44,7 @@ def compute_topic_model(
     prefix,
     meta_field,
     store_corpus,
-    compressed
+    compressed,
 ):
     run_model(
         name=name,
@@ -60,7 +60,7 @@ def compute_topic_model(
         prefix=prefix,
         meta_field=meta_field,
         store_corpus=store_corpus,
-        compressed=compressed
+        compressed=compressed,
     )
 
 
@@ -78,7 +78,7 @@ def run_model(
     prefix=None,
     meta_field=None,
     store_corpus=False,
-    compressed=True
+    compressed=True,
 ):
     """ runner """
 

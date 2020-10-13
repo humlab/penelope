@@ -157,7 +157,7 @@ class VectorizedCorpus:
         return self
 
     @staticmethod
-    def dump_exists(tag, folder: str='./output') -> bool:
+    def dump_exists(tag, folder: str = './output') -> bool:
         """Checks if corpus with tag `tag` exists in folder `folder`
 
         Parameters
@@ -170,7 +170,7 @@ class VectorizedCorpus:
         return os.path.isfile(VectorizedCorpus._data_filename(tag, folder))
 
     @staticmethod
-    def load(tag, folder: str='./output') -> VectorizedCorpus:
+    def load(tag, folder: str = './output') -> VectorizedCorpus:
         """Loads corpus with tag `tag` in folder `folder`
         Raises FileNotFoundError if files doesn't exist.
 
@@ -227,7 +227,7 @@ class VectorizedCorpus:
         return self.bag_term_matrix[:, self.token2id[word]].todense().A1  # x.A1 == np.asarray(x).ravel()
 
     def collapse_by_category(
-        self, column, X=None, df: pd.DataFrame=None, aggregate_function: str='sum', dtype=np.float
+        self, column, X=None, df: pd.DataFrame = None, aggregate_function: str = 'sum', dtype=np.float
     ):  # -> VectorizedCorpus:
         """Sums ups all rows in based on each row's index having same value in column `column`in data frame `df`
 

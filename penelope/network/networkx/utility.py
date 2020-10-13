@@ -1,6 +1,7 @@
 import networkx as nx
 
-from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
+from penelope.utility import (clamp_values, extend,
+                              list_of_dicts_to_dict_of_lists)
 
 
 def get_edge_layout_data(network, layout, weight='weight'):
@@ -11,6 +12,7 @@ def get_edge_layout_data(network, layout, weight='weight'):
     ]
 
     return zip(*data)
+
 
 def df_to_nx_edge_format(data, source_index=0, target_index=1):
     """Transform a dataframe's edge data into nx style i.e. as a list of (source, target, attributes) triplets
@@ -279,6 +281,7 @@ def create_network(df, source_field='source', target_field='target', weight='wei
     G.add_nodes_from(nodes)
     G.add_edges_from(edges)
     return G
+
 
 def create_bipartite_network(df, source_field='source', target_field='target', weight='weight'):
     G = nx.Graph()

@@ -1,4 +1,5 @@
 import bokeh.models as bm
+
 from .networkx import utility as nx_utils
 
 
@@ -45,6 +46,7 @@ def create_nodes_data_source(network, layout):  # pylint: disable=unused-argumen
     nodes_xs, nodes_ys = list(zip(*nodes_coordinates))
     nodes_source = bm.ColumnDataSource(dict(x=nodes_xs, y=nodes_ys, name=nodes, node_id=nodes))
     return nodes_source
+
 
 # FIXME; #4 Consolidate network utility functions (utiity vs networkx.utility)
 create_bipartite_network = nx_utils.create_bipartite_network

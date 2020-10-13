@@ -25,7 +25,7 @@ class TrainingCorpus:
         terms: Iterable[Iterable[str]] = None,
         documents: pd.DataFrame = None,
         doc_term_matrix: scipy.sparse.csr_matrix = None,
-        id2word: Mapping[int,str] = None,
+        id2word: Mapping[int, str] = None,
         vectorizer_args: Mapping[str, Any] = None,
         corpus: gensim.matutils.Sparse2Corpus = None,
     ):
@@ -173,8 +173,12 @@ class InferredTopicsData:
 
         else:
             data = InferredTopicsData(
-                documents=pd.read_csv(os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False),
-                dictionary=pd.read_csv(os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False),
+                documents=pd.read_csv(
+                    os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False
+                ),
+                dictionary=pd.read_csv(
+                    os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False
+                ),
                 topic_token_weights=pd.read_csv(
                     os.path.join(folder, 'topic_token_weights.zip'), '\t', header=0, index_col=0, na_filter=False
                 ),

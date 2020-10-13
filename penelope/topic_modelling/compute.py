@@ -47,18 +47,22 @@ def infer_model(
 
     return inferred_model
 
+
 class StoreCorpusOptions(Enum):
     NONE = 1
     PICKLED = 2
+
 
 def _compressed_pickle(filename: str, thing: Any):
     with bz2.BZ2File(filename, 'w') as f:
         pickle.dump(thing, f)
 
+
 def _compressed_unpickle(filename):
     with bz2.BZ2File(filename, 'rb') as f:
         data = pickle.load(f)
         return data
+
 
 def _pickle(filename: str, thing: Any):
     """Pickles a thing to disk """
@@ -67,6 +71,7 @@ def _pickle(filename: str, thing: Any):
     else:
         with open(filename, 'wb') as f:
             pickle.dump(thing, f, pickle.HIGHEST_PROTOCOL)
+
 
 def _unpickle(filename: str) -> Any:
     """Unpickles a thing from disk."""
@@ -77,15 +82,16 @@ def _unpickle(filename: str) -> Any:
             thing = pickle.load(f)
     return thing
 
-def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compressed: bool=True):
+
+def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compressed: bool = True):
 
     """Stores the corpus used in training. If not pickled, then stored as separate files
-        terms: Iterable[Iterable[str]]                               Never stored
-        documents: pd.DataFrame                                      TODO Stored as csv.zip
-        doc_term_matrix: scipy.sparse.csr_matrix                     Never stored
-        id2word: Union[gensim.corpora.Dictionary, Dict[int, str]]    TODO Stored compressed as gensim.Dictionar
-        vectorizer_args: Dict[str, Any]                              TODO Stored as json
-        corpus: ???                                                  Stored as SparseCorpus
+    terms: Iterable[Iterable[str]]                               Never stored
+    documents: pd.DataFrame                                      TODO Stored as csv.zip
+    doc_term_matrix: scipy.sparse.csr_matrix                     Never stored
+    id2word: Union[gensim.corpora.Dictionary, Dict[int, str]]    TODO Stored compressed as gensim.Dictionar
+    vectorizer_args: Dict[str, Any]                              TODO Stored as json
+    corpus: ???                                                  Stored as SparseCorpus
     """
     filename = os.path.join(folder, f"training_corpus.pickle{'.pbz2' if store_compressed else ''}")
 
@@ -95,9 +101,10 @@ def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compres
         corpus=train_corpus.corpus,
         documents=train_corpus.documents,
         id2word=train_corpus.id2word,
-        vectorizer_args=train_corpus.vectorizer_args
+        vectorizer_args=train_corpus.vectorizer_args,
     )
     _pickle(filename, _train_corpus)
+
 
 def _load_train_corpus(folder: str) -> TrainingCorpus:
     """Loads an train corpus from av previously pickled file."""
@@ -107,26 +114,30 @@ def _load_train_corpus(folder: str) -> TrainingCorpus:
     return _unpickle(os.path.join(folder, "training_corpus.pickle.pbz2"))
 
 
-def _store_topic_model(folder: str, topic_model: Any, store_compressed: bool=True):
+def _store_topic_model(folder: str, topic_model: Any, store_compressed: bool = True):
     """Stores topic model in pickled format """
     filename = os.path.join(folder, f"topic_model.pickle{'.pbz2' if store_compressed else ''}")
     _pickle(filename, topic_model)
+
 
 def _load_topic_model(folder: str) -> Any:
     """Loads an train corpus from av previously pickled file."""
     return _unpickle(os.path.join(folder, "topic_model.pickle.pbz2"))
 
+
 def _store_model_options(folder: str, method: str, options: Dict[str, Any]):
     filename = os.path.join(folder, "model_options.json")
-    options = { **dict(method=method), **options }
+    options = {**dict(method=method), **options}
     with open(filename, 'w') as fp:
         json.dump(options, fp, indent=4, default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>")
+
 
 def _load_model_options(folder: str) -> Dict[str, Any]:
     filename = os.path.join(folder, "model_options.json")
     with open(filename, 'r') as f:
         options = json.load(f)
     return options
+
 
 def store_model(inferred_model: InferredModel, folder: str, store_corpus=True, store_compressed=True):
     """Stores the inferred model on disk in folder `folder`
@@ -146,7 +157,6 @@ def store_model(inferred_model: InferredModel, folder: str, store_corpus=True, s
         Specifies if training corpus should be stored, by default False
     """
 
-
     os.makedirs(folder, exist_ok=True)
 
     _store_topic_model(folder, inferred_model.topic_model, store_compressed=store_compressed)
@@ -159,11 +169,7 @@ def store_model(inferred_model: InferredModel, folder: str, store_corpus=True, s
 
 def load_model(folder: str) -> InferredModel:
     """Loads inferred model data from previously pickled files."""
-    topic_model =_load_topic_model(folder)
-    train_corpus =_load_train_corpus(folder)
-    options =_load_model_options(folder)
-    return InferredModel(
-        topic_model=topic_model,
-        train_corpus=train_corpus,
-        **options
-    )
+    topic_model = _load_topic_model(folder)
+    train_corpus = _load_train_corpus(folder)
+    options = _load_model_options(folder)
+    return InferredModel(topic_model=topic_model, train_corpus=train_corpus, **options)

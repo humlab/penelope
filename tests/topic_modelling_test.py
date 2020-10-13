@@ -51,7 +51,6 @@ def test_tranströmers_corpus():
         assert len(tokens) > 0
 
 
-
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_infer_model(method):
 
@@ -103,6 +102,7 @@ def test_store_uncomressed_inferred_model():
 
     shutil.rmtree(target_folder)
 
+
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
 
@@ -120,7 +120,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
-    assert inferred_model.options['engine_options']  == TOPIC_MODELING_OPTS
+    assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
     assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.documents)
     assert len(inferred_model.train_corpus.documents) == 5

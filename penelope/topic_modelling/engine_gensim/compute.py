@@ -43,10 +43,7 @@ def compute(
         train_corpus.id2word = gensim.corpora.Dictionary(train_corpus.terms)
         bow_corpus = [train_corpus.id2word.doc2bow(tokens) for tokens in train_corpus.terms]
         csc_matrix = gensim.matutils.corpus2csc(
-            bow_corpus,
-            num_terms=len(train_corpus.id2word),
-            num_docs=len(bow_corpus),
-            num_nnz=sum(map(len, bow_corpus))
+            bow_corpus, num_terms=len(train_corpus.id2word), num_docs=len(bow_corpus), num_nnz=sum(map(len, bow_corpus))
         )
         train_corpus.corpus = gensim.matutils.Sparse2Corpus(csc_matrix, documents_columns=True)
     else:

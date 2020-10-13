@@ -5,19 +5,24 @@ import pandas as pd
 import penelope.utility as utility
 from penelope.corpus.tokenized_corpus import ReIterableTerms
 
+
 def list_of_dicts_to_dict_of_lists(ld):
     return {k: [dic[k] for dic in ld] for k in ld[0]}
 
+
 def dict_of_lists_to_list_of_dicts(dl):
-    return [dict(zip(dl,t)) for t in zip(*dl.values())]
+    return [dict(zip(dl, t)) for t in zip(*dl.values())]
+
 
 def tuple_of_lists_to_list_of_tuples(tl):
     return zip(*tl)
 
+
 class SimpleTextLinesCorpus:
 
     """Corpus that reads a file with documents on a single text-line seperated by `sep`character sequence"""
-    def __init__(self, filename: str, fields: Dict[str, int], meta_fields: List[str] = None, sep: str=' # '):
+
+    def __init__(self, filename: str, fields: Dict[str, int], meta_fields: List[str] = None, sep: str = ' # '):
 
         with open(filename, 'r') as f:
             lines = f.readlines()
@@ -25,19 +30,17 @@ class SimpleTextLinesCorpus:
         if 'filename' not in fields or 'text' not in fields:
             raise ValueError("Fields `filename` and `text` are not specified (required fields)")
 
-        corpus_data = list_of_dicts_to_dict_of_lists([ {
-                k: data[fields[k]] for k in fields
-            }
-            for data in [line.split(sep) for line in lines]
-        ])
+        corpus_data = list_of_dicts_to_dict_of_lists(
+            [{k: data[fields[k]] for k in fields} for data in [line.split(sep) for line in lines]]
+        )
 
         self.filenames = corpus_data['filename']
 
         self.iterator = None
 
-        self.tokens = [ [x.lower() for x in text.split() if len(x) > 0] for text in corpus_data['text'] ]
+        self.tokens = [[x.lower() for x in text.split() if len(x) > 0] for text in corpus_data['text']]
 
-        meta_data = { k: v for k,v in corpus_data.items()  if k not in ( 'text' ) }
+        meta_data = {k: v for k, v in corpus_data.items() if k not in ('text')}
 
         if meta_fields is not None:
 
