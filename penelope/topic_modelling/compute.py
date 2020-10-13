@@ -46,18 +46,56 @@ def infer_model(
 
 
 def store_model(inferred_model: InferredModel, folder: str, store_corpus: bool = False):
-    """Stores an inferred model in icled format. Train corpus is not stored."""
+    """Stores the inferred model on disk in folder `folder`
+
+    Parameters
+    ----------
+    inferred_model : InferredModel
+        Model to be stored
+    folder : str
+        Target folder
+    store_corpus : bool, optional
+        Specifies if training corpus should be stored, by default False
+    """
+
 
     os.makedirs(folder, exist_ok=True)
 
     if not store_corpus:
         inferred_model.train_corpus = None
 
+    _store_model_pickled(folder, inferred_model)
+    _store_model_options(folder, inferred_model)
+
+
+def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, pickled: bool=False):
+
+    """Stores the corpus used in training. If not pickled, then stored as separate files
+        terms: Iterable[Iterable[str]]                               Never stored
+        documents: pd.DataFrame                                      Stored as csv.zip
+        doc_term_matrix: scipy.sparse.csr_matrix                     Never stored
+        id2word: Union[gensim.corpora.Dictionary, Dict[int, str]]    Stored compressed as gensim.Diciionary
+        vectorizer_args: Dict[str, Any]                              Stored as json
+        corpus: ???                                                  Stored as SparseCorpus
+    """
+    raise NotImplementedError()
+
+
+def _store_model_pickled(folder, inferred_model):
+    """Stores inferred model in pickled format
+
+        topic_model: Gensim | MALLET | STTM     Always stored (as gensim or pickled if not gensim?)
+        train_corpus: TrainingCorpus            Stored separately (optionally)
+        method: str                             Stored in JSON infer.options.json: method
+        options: Dict[str, Any]                 Stored in JSON infer.options.json: engine_args
+    """
     filename = os.path.join(folder, "inferred_model.pickle")
 
     with open(filename, 'wb') as fp:
         pickle.dump(inferred_model, fp, pickle.HIGHEST_PROTOCOL)
 
+
+def _store_model_options(folder, inferred_model):
     filename = os.path.join(folder, "model_options.json")
     default = lambda o: f"<<non-serializable: {type(o).__qualname__}>>"
     with open(filename, 'w') as fp:
