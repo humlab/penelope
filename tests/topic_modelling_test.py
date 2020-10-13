@@ -2,15 +2,15 @@ import os
 import shutil
 import uuid
 
-import pytest  # pylint: disable=unused-import
 import gensim
 import pandas as pd
+import pytest  # pylint: disable=unused-import
 
 import penelope.topic_modelling as topic_modelling
-from penelope.topic_modelling.container import InferredTopicsData, TrainingCorpus
-from tests.test_data.tranströmer_corpus import TranströmerCorpus
-
 from penelope.scripts.compute_topic_model import run_model
+from penelope.topic_modelling.container import (InferredTopicsData,
+                                                TrainingCorpus)
+from tests.test_data.tranströmer_corpus import TranströmerCorpus
 
 jj = os.path.join
 

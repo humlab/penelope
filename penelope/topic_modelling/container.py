@@ -2,7 +2,7 @@ import os
 import pickle
 import sys
 import types
-from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import gensim
 import pandas as pd

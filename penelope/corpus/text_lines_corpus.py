@@ -40,7 +40,7 @@ class SimpleTextLinesCorpus:
 
         self.tokens = [[x.lower() for x in text.split() if len(x) > 0] for text in corpus_data['text']]
 
-        meta_data = {k: v for k, v in corpus_data.items() if k not in ('text')}
+        meta_data = {k: v for k, v in corpus_data.items() if k != 'text'}
 
         if meta_fields is not None:
 
