@@ -140,7 +140,7 @@ def run_model(
         engine_args=topic_modeling_opts,
     )
 
-    inferred_model.topic_model.save(jj(target_folder, 'gensim.model'))
+    inferred_model.topic_model.save(jj(target_folder, 'gensim.model.gz'))
 
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus)
 
