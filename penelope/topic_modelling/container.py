@@ -2,7 +2,7 @@ import os
 import pickle
 import sys
 import types
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union
 
 import gensim
 import pandas as pd
@@ -25,8 +25,9 @@ class TrainingCorpus:
         terms: Iterable[Iterable[str]] = None,
         documents: pd.DataFrame = None,
         doc_term_matrix: scipy.sparse.csr_matrix = None,
-        id2word: Union[gensim.corpora.Dictionary, Dict[int, str]] = None,
-        vectorizer_args: Dict[str, Any] = None,
+        id2word: Mapping[int,str] = None,
+        vectorizer_args: Mapping[str, Any] = None,
+        corpus: gensim.matutils.Sparse2Corpus = None,
     ):
         """A container for the corpus data used during learning/inference
 
@@ -52,7 +53,7 @@ class TrainingCorpus:
         self.id2word = id2word
         self.documents = documents
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
-        self.corpus = None
+        self.corpus = corpus
 
 
 class InferredModel:

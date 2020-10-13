@@ -10,6 +10,8 @@ import penelope.topic_modelling as topic_modelling
 from penelope.topic_modelling.container import InferredTopicsData, TrainingCorpus
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
 
+from penelope.scripts.compute_topic_model import run_model
+
 jj = os.path.join
 
 TOPIC_MODELING_OPTS = {
@@ -49,6 +51,7 @@ def test_tranströmers_corpus():
         assert len(tokens) > 0
 
 
+
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_infer_model(method):
 
@@ -65,7 +68,7 @@ def test_infer_model(method):
     assert inferred_model.train_corpus.corpus is not None
 
 
-def test_store_inferred_model():
+def test_store_compressed_inferred_model():
 
     # Arrange
     name = f"{uuid.uuid1()}"
@@ -73,13 +76,32 @@ def test_store_inferred_model():
     inferred_model = compute_inferred_model()
 
     # Act
-    topic_modelling.store_model(inferred_model, target_folder)
+    topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=True)
 
     # Assert
-    assert os.path.isfile(os.path.join(target_folder, "inferred_model.pickle"))
+    assert os.path.isfile(os.path.join(target_folder, "topic_model.pickle.pbz2"))
+    assert os.path.isfile(os.path.join(target_folder, "training_corpus.pickle.pbz2"))
+    assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
 
     shutil.rmtree(target_folder)
 
+
+def test_store_uncomressed_inferred_model():
+
+    # Arrange
+    name = f"{uuid.uuid1()}"
+    target_folder = os.path.join(OUTPUT_FOLDER, name)
+    inferred_model = compute_inferred_model()
+
+    # Act
+    topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=False)
+
+    # Assert
+    assert os.path.isfile(os.path.join(target_folder, "topic_model.pickle"))
+    assert os.path.isfile(os.path.join(target_folder, "training_corpus.pickle"))
+    assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
+
+    shutil.rmtree(target_folder)
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
@@ -88,7 +110,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
     test_inferred_model = compute_inferred_model(method)
-    topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=True)
+    topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=True, store_compressed=True)
 
     # Act
 
@@ -98,7 +120,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
-    assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
+    assert inferred_model.options['engine_options']  == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
     assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.documents)
     assert len(inferred_model.train_corpus.documents) == 5
@@ -126,7 +148,7 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
-    assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
+    assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert inferred_model.train_corpus is None
 
     shutil.rmtree(target_folder)
@@ -252,14 +274,33 @@ def test_run_cli():
         'meta_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
-    from penelope.scripts.compute_topic_model import run_model
-
     run_model(**kwargs)
 
     target_folder = jj(kwargs['corpus_folder'], kwargs['name'])
 
     assert os.path.isdir(target_folder)
-    assert os.path.isfile(jj(target_folder, 'inferred_model.pickle'))
+    assert os.path.isfile(jj(target_folder, 'topic_model.pickle.pbz2'))
     assert os.path.isfile(jj(target_folder, 'model_options.json'))
 
     shutil.rmtree(target_folder)
+
+
+def test_run_model_cli():
+
+    options = dict(
+        name="test_corpus.xyz",
+        n_topics=5,
+        # corpus_folder=None,
+        corpus_filename='./tests/test_data/test_corpus.zip',
+        engine="gensim_lda-multicore",
+        # passes=None,
+        # random_seed=None,
+        # alpha=None,
+        workers=2,
+        max_iter=2000,
+        # prefix=None,
+        # meta_field=None,
+        store_corpus=True,
+    )
+
+    run_model(**options)

@@ -28,7 +28,8 @@ import penelope.utility.file_utility as file_utility
 @click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
 @click.option('--prefix', default=None, help='Prefix.')
 @click.option('--meta-field', '-f', default=None, help='RegExp fields to extract from document name', multiple=True)
-@click.option('--store-corpus/--no-store-corpus', default=False, is_flag=True, help='')
+@click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
+@click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
 def compute_topic_model(
     name,
     n_topics,
@@ -43,6 +44,7 @@ def compute_topic_model(
     prefix,
     meta_field,
     store_corpus,
+    compressed
 ):
     run_model(
         name=name,
@@ -58,6 +60,7 @@ def compute_topic_model(
         prefix=prefix,
         meta_field=meta_field,
         store_corpus=store_corpus,
+        compressed=compressed
     )
 
 
@@ -74,7 +77,8 @@ def run_model(
     max_iter=None,
     prefix=None,
     meta_field=None,
-    store_corpus=False
+    store_corpus=False,
+    compressed=True
 ):
     """ runner """
 
@@ -142,7 +146,7 @@ def run_model(
 
     inferred_model.topic_model.save(jj(target_folder, 'gensim.model.gz'))
 
-    topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus)
+    topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus, store_compressed=compressed)
 
     inferred_topics = topic_modelling.compile_inferred_topics_data(
         inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.documents

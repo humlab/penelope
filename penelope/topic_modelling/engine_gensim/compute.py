@@ -41,7 +41,14 @@ def compute(
 
     if train_corpus.doc_term_matrix is None:
         train_corpus.id2word = gensim.corpora.Dictionary(train_corpus.terms)
-        train_corpus.corpus = [train_corpus.id2word.doc2bow(tokens) for tokens in train_corpus.terms]
+        bow_corpus = [train_corpus.id2word.doc2bow(tokens) for tokens in train_corpus.terms]
+        csc_matrix = gensim.matutils.corpus2csc(
+            bow_corpus,
+            num_terms=len(train_corpus.id2word),
+            num_docs=len(bow_corpus),
+            num_nnz=sum(map(len, bow_corpus))
+        )
+        train_corpus.corpus = gensim.matutils.Sparse2Corpus(csc_matrix, documents_columns=True)
     else:
         assert train_corpus.id2word is not None
         train_corpus.corpus = gensim.matutils.Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)

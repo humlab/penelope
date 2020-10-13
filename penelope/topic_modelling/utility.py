@@ -68,7 +68,7 @@ def malletmodel2ldamodel(
 
 def find_models(path: str):
     """Returns subfolders containing a computed topic model in specified path"""
-    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "inferred_model.pickle"))]
+    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "topic_model.pickle*"))]
     models = [
         {'folder': x, 'name': os.path.split(x)[1], 'options': utility.read_json(os.path.join(x, "model_options.json"))}
         for x in folders
