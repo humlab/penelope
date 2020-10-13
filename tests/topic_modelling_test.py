@@ -25,9 +25,7 @@ TOPIC_MODELING_OPTS = {
 OUTPUT_FOLDER = "./tests/output/"
 
 
-def compute_inferred_model():
-
-    engine = "gensim_lda"
+def compute_inferred_model(method="gensim_lda-multicore"):
 
     corpus = TranströmerCorpus()
     train_corpus = TrainingCorpus(
@@ -37,7 +35,7 @@ def compute_inferred_model():
 
     inferred_model = topic_modelling.infer_model(
         train_corpus=train_corpus,
-        method=engine,
+        method=method,
         engine_args=TOPIC_MODELING_OPTS,
     )
     return inferred_model
@@ -51,12 +49,12 @@ def test_tranströmers_corpus():
         assert len(tokens) > 0
 
 
-def test_infer_model():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_infer_model(method):
 
-    inferred_model = compute_inferred_model()
-
+    inferred_model = compute_inferred_model(method)
     assert inferred_model is not None
-    assert inferred_model.method == "gensim_lda"
+    assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
     assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
@@ -83,12 +81,13 @@ def test_store_inferred_model():
     shutil.rmtree(target_folder)
 
 
-def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
 
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
-    test_inferred_model = compute_inferred_model()
+    test_inferred_model = compute_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=True)
 
     # Act
@@ -97,7 +96,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
 
     # Assert
     assert inferred_model is not None
-    assert inferred_model.method == "gensim_lda"
+    assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
     assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
@@ -110,12 +109,13 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     shutil.rmtree(target_folder)
 
 
-def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(method):
 
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
-    test_inferred_model = compute_inferred_model()
+    test_inferred_model = compute_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
 
     # Act
@@ -124,7 +124,7 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus()
 
     # Assert
     assert inferred_model is not None
-    assert inferred_model.method == "gensim_lda"
+    assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
     assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
     assert inferred_model.train_corpus is None
@@ -132,10 +132,11 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus()
     shutil.rmtree(target_folder)
 
 
-def test_infer_topics_data():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_infer_topics_data(method):
 
     # Arrange
-    inferred_model = compute_inferred_model()
+    inferred_model = compute_inferred_model(method)
 
     # Act
 
@@ -162,10 +163,11 @@ def test_infer_topics_data():
     assert list(inferred_topics_data.document_topic_weights.topic_id.unique()) == [0, 1, 2, 3]
 
 
-def test_store_inferred_topics_data():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_store_inferred_topics_data(method):
 
     # Arrange
-    inferred_model = compute_inferred_model()
+    inferred_model = compute_inferred_model(method)
 
     inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
         topic_model=inferred_model.topic_model,
@@ -189,10 +191,11 @@ def test_store_inferred_topics_data():
     shutil.rmtree(target_folder)
 
 
-def test_load_inferred_topics_data():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_load_inferred_topics_data(method):
 
     # Arrange
-    inferred_model = compute_inferred_model()
+    inferred_model = compute_inferred_model(method)
 
     test_inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
         topic_model=inferred_model.topic_model,
