@@ -26,6 +26,7 @@ glove-python-binary = "^0.2.0"
 textacy = "^0.10.1"
 pydotplus = "^2.0.2"
 python-louvain = "^0.14"
+more_itertools = "^8.5.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.0"
