@@ -80,7 +80,7 @@ def prepare_train_corpus(
         },
     }
 
-    sparv_corpus.sparv_extract_and_store(
+    sparv_corpus.sparv_xml_extract_and_store(
         input_filename, output_filename, transforms=transformer.transforms, **sparv_extract_opts
     )
 

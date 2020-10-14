@@ -31,7 +31,7 @@ def test_reader_store_result():
         to_lower=True,
     )
 
-    sparv_corpus.sparv_extract_and_store(SPARV_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
+    sparv_corpus.sparv_xml_extract_and_store(SPARV_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
 
     for i in range(0, len(expected_names)):
 
@@ -71,7 +71,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     target_filename = f'./tests/output/{uuid.uuid1()}.zip'
 
-    sparv_corpus.sparv_extract_and_store(SPARV3_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
+    sparv_corpus.sparv_xml_extract_and_store(SPARV3_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
 
     expected_document_start = "utredningar justitiedepartementet förslag utlänningslag angående om- händertagande förläggning års gere ide to lm \rstatens utredningar förteckning betänkande förslag utlänningslag lag omhändertagande utlänning anstalt förläggning tryckort tryckorten bokstäverna fetstil begynnelse- bokstäverna departement"
 
@@ -83,16 +83,3 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     os.remove(target_filename)
 
-
-def test_corpus_when_source_is_sparv3_succeeds():
-
-    opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
-
-    reader = readers.Sparv3XmlTokenizer(SPARV3_ZIPPED_XML_EXPORT_FILENAME, **opts)
-
-    for _, (_, tokens) in enumerate(reader):
-
-        assert len(list(tokens)) > 0
-
-    # id2word = gensim.corpora.Dictionary(terms)
-    # corpus = [ id2word.doc2bow(tokens) for tokens in terms ]
