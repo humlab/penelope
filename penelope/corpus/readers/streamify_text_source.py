@@ -1,7 +1,7 @@
 import glob
 import os
 import zipfile
-from typing import Callable, List, Union
+from typing import Any, Callable, List, Union
 
 import penelope.utility.file_utility as file_utility
 
@@ -9,7 +9,7 @@ from .zip_iterator import ZipTextIterator
 
 
 def streamify_text_source(
-    text_source: str,
+    text_source: Any,
     filename_pattern: str = '*.txt',
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
@@ -34,6 +34,16 @@ def streamify_text_source(
     if not isinstance(text_source, str):
         if hasattr(text_source, '__iter__') and hasattr(text_source, '__next__'):
             return text_source
+
+    if isinstance(text_source, list):
+
+        if len(text_source) == 0:
+            return []
+
+        if isinstance(text_source[0], tuple):
+            return text_source
+
+        return ( (f'document_{i+1}.txt', d) for i, d in  enumerate(text_source) )
 
     if os.path.isfile(text_source):
 
