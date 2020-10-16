@@ -1,3 +1,4 @@
+from .interfaces import ICorpusReader
 from .dataframe_text_tokenizer import DataFrameTextTokenizer
 from .sparv_xml_tokenizer import (DEFAULT_OPTS, Sparv3XmlTokenizer,
                                   SparvXmlTokenizer)
