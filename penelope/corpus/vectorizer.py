@@ -1,26 +1,28 @@
 import logging
 import os
+from penelope.corpus.tokenized_corpus import TokenizedCorpus
 
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 
-import penelope.corpus.readers as readers
-from penelope.corpus import tokenized_corpus, vectorized_corpus
+from . import readers, tokenized_corpus, vectorized_corpus
 
 logger = logging.getLogger("corpus_vectorizer")
 
 
 class CorpusVectorizer:
+
     def __init__(self, **kwargs):
         self.vectorizer = None
         self.kwargs = kwargs
         self.tokenizer = lambda x: x.split()
 
+    # FIXME Allow for non-tokenized corpus to be passed in
     def fit_transform(self, corpus: tokenized_corpus.TokenizedCorpus) -> vectorized_corpus.VectorizedCorpus:
 
+        # if isinstance(corpus, TokenizedCorpus):
         texts = (' '.join(tokens) for _, tokens in corpus)
-
-        # https://github.com/scikit-learn/scikit-learn/blob/1495f6924/sklearn/feature_extraction/text.py#L1147
+        # elif isinstance()
         self.vectorizer = CountVectorizer(tokenizer=self.tokenizer, **self.kwargs)
 
         bag_term_matrix = self.vectorizer.fit_transform(texts)
@@ -31,7 +33,8 @@ class CorpusVectorizer:
 
         return v_corpus
 
-    def _document_index(self, corpus):
+
+    def _document_index(self, corpus: tokenized_corpus.TokenizedCorpus) -> pd.DataFrame:
         """Groups matrix by vales in column summing up all values in each category"""
         metadata = corpus.metadata
         df = pd.DataFrame([x.__dict__ for x in metadata], columns=metadata[0].__dict__.keys())
@@ -40,7 +43,15 @@ class CorpusVectorizer:
 
 
 def generate_corpus(filename: str, output_folder: str, **kwargs):
+    """[summary]
 
+    Parameters
+    ----------
+    filename : str
+        Source filename
+    output_folder : str
+        Target folder
+    """
     if not os.path.isfile(filename):
         logger.error('no such file: {}'.format(filename))
         return
