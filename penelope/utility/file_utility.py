@@ -43,7 +43,7 @@ def filename_satisfied_by(filename: Iterable[str], filename_filter: Union[List[s
 def basename(path):
     return os.path.splitext(os.path.basename(path))[0]
 
-
+# TODO: Merge with penelope.corpus.readers.streamify_text_source?
 def create_iterator(
     folder_or_zip: str, filenames: List[str] = None, filename_pattern: str = '*.txt', as_binary: bool = False
 ):
@@ -72,7 +72,7 @@ def create_iterator(
         raise FileNotFoundError(folder_or_zip)
 
 
-def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile], filename_pattern: str = "*.txt", filename_filter=None):
+def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile, List], filename_pattern: str = "*.txt", filename_filter=None):
     """Returns all filenames that matches `pattern` in archive
 
     Parameters
@@ -107,6 +107,16 @@ def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile], filename_pattern:
         elif os.path.isdir(folder_or_zip):
 
             filenames = glob.glob(os.path.join(folder_or_zip, filename_pattern))
+
+    elif isinstance(folder_or_zip, list):
+
+        if len(folder_or_zip) == 0:
+            filenames = []
+
+        if isinstance(folder_or_zip[0], tuple):
+            filenames = [ x[0] for x in folder_or_zip ]
+        else:
+            filenames = [ f'document_{i+1}.txt' for i in range(0,len(folder_or_zip))]
 
     if filenames is None:
 
