@@ -7,7 +7,7 @@ from .sparv_corpus import (SparvTokenizedCsvCorpus, SparvTokenizedXmlCorpus,
 from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
 from .text_transformer import TRANSFORMS, TextTransformer
-from .tokenized_corpus import ReIterableTerms, TokenizedCorpus
+from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
 from .transforms import (has_alpha_filter, lower_transform, max_chars_filter,
                          min_chars_filter, only_alphabetic_filter,
                          only_any_alphanumeric, remove_accents,

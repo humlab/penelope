@@ -1,4 +1,3 @@
 from .compute import compute
-from .coocurrence_matrix import compute_coocurrence_matrix
 from .vectorizer_glove import GloveVectorizer
 from .vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
