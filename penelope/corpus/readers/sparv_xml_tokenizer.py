@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Callable, List
 
 from penelope.corpus.sparv.sparv_xml_to_text import (XSLT_FILENAME_V3,
                                                      SparvXml2Text)
+from penelope.corpus.text_transformer import TextTransformer
 
+from .interfaces import FilenameOrFolderOrZipOrList
 from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)
@@ -25,22 +26,56 @@ DEFAULT_OPTS = dict(
 class SparvXmlTokenizer(TextTokenizer):
     def __init__(
         self,
-        source,
-        transforms: List[Callable] = None,
+        source: FilenameOrFolderOrZipOrList,
+        *,
         pos_includes: str = None,
         pos_excludes: str = "|MAD|MID|PAD|",
         lemmatize: bool = True,
-        chunk_size: int = None,
         xslt_filename: str = None,
         append_pos: bool = "",
         version: int = 4,
+        **tokenizer_opts,
     ):
+        """Sparv XML file reader
 
+        Parameters
+        ----------
+        source : FilenameOrFolderOrZipOrList
+            Source (filename, ZIP, tokenizer)
+        pos_includes : str, optional
+            POS to includde e.g. `|VB|NN|`, by default None
+        pos_excludes : str, optional
+            POS to exclude, by default "|MAD|MID|PAD|"
+        lemmatize : bool, optional
+            If True then return word baseform, by default True
+        xslt_filename : str, optional
+            XSLT filename, by default None
+        append_pos : bool, optional
+           If True them append POS to word, by default ""
+        version : int, optional
+            Sparv version, by default 4
+        tokenizer_opts : Dict[str, Any]
+            chunk_size : int
+                Optional chunking of text in chunk_size pieces
+            filename_pattern : str
+                Filename pattern
+            filename_filter: Union[Callable, List[str]]
+                Filename inclusion predicate filter, or list of filenames to include
+            filename_fields : Dict[str,Union[Callable,str]]
+                Document metadata fields to extract from filename
+        """
         self.delimiter: str = ' '
-        tokenize = lambda x: x.split(self.delimiter)
+        tokenizer_opts = {
+            **dict(
+                filename_pattern='*.xml',
+                tokenize=lambda x: x.split(self.delimiter),
+                as_binary=True,
+            ),
+            **tokenizer_opts,
+        }
+        super().__init__(source, **tokenizer_opts)
 
-        super().__init__(source, transforms, chunk_size, filename_pattern='*.xml', tokenize=tokenize, as_binary=True)
-
+        self.text_transformer = TextTransformer(transforms=[])
         self.lemmatize = lemmatize
         self.append_pos = append_pos
         self.pos_includes = pos_includes
@@ -62,22 +97,44 @@ class SparvXmlTokenizer(TextTokenizer):
 class Sparv3XmlTokenizer(SparvXmlTokenizer):
     def __init__(
         self,
-        source,
-        transforms: List[Callable] = None,
+        source: FilenameOrFolderOrZipOrList,
+        *,
         pos_includes: str = None,
         pos_excludes: str = "|MAD|MID|PAD|",
         lemmatize: str = True,
-        chunk_size: int = None,
         append_pos: str = "",
+        **tokenizer_opts,
     ):
+        """Sparv v3 XML file reader
 
+        Parameters
+        ----------
+        source : FilenameOrFolderOrZipOrList
+            Source (filename, folder, zip, list)
+        pos_includes : str, optional
+            POS to includde e.g. `|VB|NN|`, by default None
+        pos_excludes : str, optional
+            POS to exclude, by default "|MAD|MID|PAD|"
+        lemmatize : bool, optional
+            If True then return word baseform, by default True
+        append_pos : bool, optional
+           If True them append POS to word, by default ""
+        tokenizer_opts : Dict[str, Any]
+            chunk_size : int
+                Optional chunking of text in chunk_size pieces
+            filename_pattern : str
+                Filename pattern
+            filename_filter: Union[Callable, List[str]]
+                Filename inclusion predicate filter, or list of filenames to include
+            filename_fields : Dict[str,Union[Callable,str]]
+                Document metadata fields to extract from filename
+        """
         super().__init__(
             source,
-            transforms=transforms,
             pos_includes=pos_includes,
+            pos_excludes=pos_excludes,
             lemmatize=lemmatize,
-            chunk_size=chunk_size,
             xslt_filename=XSLT_FILENAME_V3,
             append_pos=append_pos,
-            pos_excludes=pos_excludes,
+            **tokenizer_opts,
         )

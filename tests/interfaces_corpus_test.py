@@ -39,7 +39,7 @@ def test_tokenized_corpus_interface():
 
     assert issubclass(TokenizedCorpus, ITokenizedCorpus)
 
-    source = readers.TextTokenizer(source_path=["a b c", "e f g"])
+    source = readers.TextTokenizer(source=["a b c", "e f g"])
     instance = TokenizedCorpus(source)
     assert isinstance(instance, ITokenizedCorpus)
 
@@ -50,7 +50,7 @@ def test_segmented_stokenized_corpus_interface():
 
     assert issubclass(SegmentedTextCorpus, ITokenizedCorpus)
 
-    source = readers.TextTokenizer(source_path=["a b c", "e f g"])
+    source = readers.TextTokenizer(source=["a b c", "e f g"])
     instance = SegmentedTextCorpus(source, segment_strategy="sentence")
     assert isinstance(instance, ITokenizedCorpus)
 

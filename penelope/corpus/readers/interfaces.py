@@ -1,5 +1,8 @@
 import abc
-from typing import Any, Dict, List
+import zipfile
+from typing import Any, Dict, List, Union
+
+FilenameOrFolderOrZipOrList = Union[str, zipfile.ZipFile, List]
 
 
 class ICorpusReader(abc.ABC):

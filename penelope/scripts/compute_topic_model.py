@@ -120,7 +120,7 @@ def run_model(
     filename_fields = None if len(meta_field or []) == 0 else file_utility.filename_field_parser(meta_field)
 
     tokenizer = text_tokenizer.TextTokenizer(
-        source_path=corpus_filename,
+        source=corpus_filename,
         chunk_size=None,
         filename_pattern="*.txt",
         filename_filter=None,

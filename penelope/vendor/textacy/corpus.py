@@ -230,7 +230,7 @@ def load_or_create(
         logger.info('Computing new corpus %s...', textacy_corpus_path)
 
         tokens_streams = text_tokenizer.TextTokenizer(
-            source_path=source_path,
+            source=source_path,
             transforms=[
                 text_tokenizer.TRANSFORMS.fix_hyphenation,
                 text_tokenizer.TRANSFORMS.fix_unicode,

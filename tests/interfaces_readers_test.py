@@ -12,7 +12,7 @@ def test_text_tokenizer_interface():
 
     assert issubclass(readers.TextTokenizer, ICorpusReader)
 
-    instance = readers.TextTokenizer(source_path=["a b c", "e f g"])
+    instance = readers.TextTokenizer(source=["a b c", "e f g"])
     assert isinstance(instance, ICorpusReader)
 
     # assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [ x for x in corpus ]

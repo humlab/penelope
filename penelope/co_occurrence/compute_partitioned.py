@@ -4,9 +4,11 @@ from typing import Any, Dict, List
 import pandas as pd
 
 import penelope.corpus.readers as readers
-from penelope.co_occurrence.coocurrence_matrix import corpus_to_coocurrence_matrix, reader_coocurrence_matrix
+from penelope.co_occurrence.coocurrence_matrix import (
+    corpus_to_coocurrence_matrix, reader_coocurrence_matrix)
 
 # THIS FILE COMPUTES COUCCRRENCE FROM PREDEFINED WINDOWS READ FROM EXCEL FILE!
+
 
 def load_text_windows(filename: str):
     """Reads excel file "filename" and returns content as a Pandas DataFrame.
@@ -133,4 +135,3 @@ def partioned_co_occurrence(
         df_r.to_csv(target_filename, sep='\t', compression=extension, index=False, header=True)
     else:
         df_r.to_csv(target_filename, sep='\t', index=False, header=True)
-

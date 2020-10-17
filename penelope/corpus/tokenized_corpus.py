@@ -1,6 +1,6 @@
 from __future__ import annotations
-from collections import defaultdict
 
+from collections import defaultdict
 from typing import Any, Dict, Iterator, List
 
 import pandas as pd
@@ -8,11 +8,11 @@ import pandas as pd
 from penelope.interfaces import ICorpusReader
 
 from .interfaces import ITokenizedCorpus
-from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer
+from .tokens_transformer import (DEFAULT_TOKENS_TRANSFORM_OPTIONS,
+                                 TokensTransformer)
 
 
 class TokenizedCorpus(ITokenizedCorpus):
-
     def __init__(self, reader: ICorpusReader, **tokens_transform_opts):
 
         if not hasattr(reader, 'metadata'):
@@ -109,7 +109,6 @@ class TokenizedCorpus(ITokenizedCorpus):
 
 
 class ReiterableTerms:
-
     def __init__(self, corpus):
 
         self.corpus = corpus

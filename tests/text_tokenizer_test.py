@@ -31,7 +31,7 @@ def test_archive_filenames_when_filter_function_txt_returns_txt_files():
 
 def test_tokenize_corpus_with_list_source():
 
-    source = readers.TextTokenizer(source_path=["a b c", "e f g"])
+    source = readers.TextTokenizer(source=["a b c", "e f g"])
 
     assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [x for x in source]
 

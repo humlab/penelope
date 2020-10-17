@@ -60,7 +60,7 @@ def generate_corpus(filename: str, output_folder: str, **kwargs):
     logger.info('Creating new corpus...')
 
     reader = readers.TextTokenizer(
-        source_path=None,
+        source=None,
         filename_pattern=kwargs.get("pattern", "*.txt"),
         tokenize=None,
         as_binary=False,

@@ -376,36 +376,61 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
     corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True)
     expected_windows = [
         [
-            'tran_2019_01_test.txt', 0,
-            ['*', '*', '*', '*', '*', 'kyrka', 'tränga', 'turist', 'halvmörker', 'valv', 'gapa']
+            'tran_2019_01_test.txt',
+            0,
+            ['*', '*', '*', '*', '*', 'kyrka', 'tränga', 'turist', 'halvmörker', 'valv', 'gapa'],
         ],
         [
-            'tran_2019_01_test.txt', 1,
+            'tran_2019_01_test.txt',
+            1,
             [
-                '*', 'kyrka', 'tränga', 'turist', 'halvmörker', 'valv', 'gapa', 'valv', 'överblick', 'ljuslåga',
-                'fladdra'
-            ]
+                '*',
+                'kyrka',
+                'tränga',
+                'turist',
+                'halvmörker',
+                'valv',
+                'gapa',
+                'valv',
+                'överblick',
+                'ljuslåga',
+                'fladdra',
+            ],
         ],
         [
-            'tran_2019_01_test.txt', 2,
+            'tran_2019_01_test.txt',
+            2,
             [
-                'tränga', 'turist', 'halvmörker', 'valv', 'gapa', 'valv', 'överblick', 'ljuslåga', 'fladdra', 'ängel',
-                'ansikte'
-            ]
+                'tränga',
+                'turist',
+                'halvmörker',
+                'valv',
+                'gapa',
+                'valv',
+                'överblick',
+                'ljuslåga',
+                'fladdra',
+                'ängel',
+                'ansikte',
+            ],
         ],
         [
-            'tran_2019_01_test.txt', 3,
-            ['kropp', 'skämmas', 'vara', 'människa', 'öppna', 'valv', 'valv', 'bli', 'vara', 'skola', 'tår']
+            'tran_2019_01_test.txt',
+            3,
+            ['kropp', 'skämmas', 'vara', 'människa', 'öppna', 'valv', 'valv', 'bli', 'vara', 'skola', 'tår'],
         ],
         [
-            'tran_2019_01_test.txt', 4,
-            ['skämmas', 'vara', 'människa', 'öppna', 'valv', 'valv', 'bli', 'vara', 'skola', 'tår', 'piazza']
+            'tran_2019_01_test.txt',
+            4,
+            ['skämmas', 'vara', 'människa', 'öppna', 'valv', 'valv', 'bli', 'vara', 'skola', 'tår', 'piazza'],
         ],
         [
-            'tran_2019_01_test.txt', 5,
-            ['valv', 'bli', 'vara', 'skola', 'tår', 'piazza', 'Mr', 'Mrs', 'herr', 'signora', 'öppna']
-        ], ['tran_2019_01_test.txt', 6, ['Mr', 'Mrs', 'herr', 'signora', 'öppna', 'valv', 'valv', '*', '*', '*', '*']],
-        ['tran_2019_01_test.txt', 7, ['Mrs', 'herr', 'signora', 'öppna', 'valv', 'valv', '*', '*', '*', '*', '*']]
+            'tran_2019_01_test.txt',
+            5,
+            ['valv', 'bli', 'vara', 'skola', 'tår', 'piazza', 'Mr', 'Mrs', 'herr', 'signora', 'öppna'],
+        ],
+        ['tran_2019_01_test.txt', 6, ['Mr', 'Mrs', 'herr', 'signora', 'öppna', 'valv', 'valv', '*', '*', '*', '*']],
+        ['tran_2019_01_test.txt', 7, ['Mrs', 'herr', 'signora', 'öppna', 'valv', 'valv', '*', '*', '*', '*', '*']],
     ]
 
     concept = {'piazza', 'kyrka', 'valv'}
@@ -417,22 +442,21 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
 def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
     corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-    expected_windows = [['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
-                        ['tran_2019_01_test.txt', 1, ['valv', 'blir', 'är', 'skall', 'tårar']],
-                        ['tran_2019_02_test.txt', 0, ['stiger', 'strålkastarskenet', 'är', 'vill', 'dricka']],
-                        ['tran_2019_02_test.txt', 1, ['skyltar', 'fordon', 'är', 'nu', 'ikläder']],
-                        ['tran_2019_02_test.txt', 2, ['allt', 'sömn', 'är', 'vilar', 'bommar']],
-                        ['tran_2019_03_test.txt', 0, ['gått', 'Gläntan', 'är', 'omsluten', 'skog']],
-                        ['tran_2019_03_test.txt', 1, ['sammanskruvade', 'träden', 'är', 'ända', 'topparna']],
-                        ['tran_2019_03_test.txt', 2, ['öppna', 'platsen', 'är', 'gräset', 'ligger']],
-                        ['tran_2019_03_test.txt', 3, ['arkiv', 'öppnar', 'är', 'arkiven', 'håller']],
-                        ['tran_2019_03_test.txt', 4, ['håller', 'traditionen', 'är', 'död', 'minnena']],
-                        ['tran_2019_03_test.txt', 5, ['sorlar', 'röster', 'är', 'världens', 'centrum']],
-                        ['tran_2019_03_test.txt', 6, ['blir', 'sfinx', 'är', 'grundstenarna', 'sätt']],
-                        [
-                            'tran_2019_03_test.txt', 7,
-                            ['gångstig', 'smyger', 'är', 'kommunikationsnätet', 'kraftledningsstolpen']
-                        ]]
+    expected_windows = [
+        ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
+        ['tran_2019_01_test.txt', 1, ['valv', 'blir', 'är', 'skall', 'tårar']],
+        ['tran_2019_02_test.txt', 0, ['stiger', 'strålkastarskenet', 'är', 'vill', 'dricka']],
+        ['tran_2019_02_test.txt', 1, ['skyltar', 'fordon', 'är', 'nu', 'ikläder']],
+        ['tran_2019_02_test.txt', 2, ['allt', 'sömn', 'är', 'vilar', 'bommar']],
+        ['tran_2019_03_test.txt', 0, ['gått', 'Gläntan', 'är', 'omsluten', 'skog']],
+        ['tran_2019_03_test.txt', 1, ['sammanskruvade', 'träden', 'är', 'ända', 'topparna']],
+        ['tran_2019_03_test.txt', 2, ['öppna', 'platsen', 'är', 'gräset', 'ligger']],
+        ['tran_2019_03_test.txt', 3, ['arkiv', 'öppnar', 'är', 'arkiven', 'håller']],
+        ['tran_2019_03_test.txt', 4, ['håller', 'traditionen', 'är', 'död', 'minnena']],
+        ['tran_2019_03_test.txt', 5, ['sorlar', 'röster', 'är', 'världens', 'centrum']],
+        ['tran_2019_03_test.txt', 6, ['blir', 'sfinx', 'är', 'grundstenarna', 'sätt']],
+        ['tran_2019_03_test.txt', 7, ['gångstig', 'smyger', 'är', 'kommunikationsnätet', 'kraftledningsstolpen']],
+    ]
 
     concept = {'är'}
     windows = [w for w in corpus_concept_windows(corpus, concept, 2, pad='*')]
@@ -451,7 +475,7 @@ def test_partition_documents():
     # from typing import Callable, Union
     # import pandas as pd
 
-    #tokenizer = readers.SparvCsvTokenizer( SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True )
+    # tokenizer = readers.SparvCsvTokenizer( SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True )
 
     documents = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,

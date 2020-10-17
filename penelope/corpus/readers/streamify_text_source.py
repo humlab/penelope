@@ -1,15 +1,17 @@
 import glob
 import os
 import zipfile
-from typing import Any, Callable, List, Union
+from typing import Callable, List, Union
 
 import penelope.utility.file_utility as file_utility
 
+from .interfaces import FilenameOrFolderOrZipOrList
 from .zip_iterator import ZipTextIterator
+
 
 # pylint: disable=too-many-return-statements
 def streamify_text_source(
-    text_source: Any,
+    text_source: FilenameOrFolderOrZipOrList,
     filename_pattern: str = '*.txt',
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,

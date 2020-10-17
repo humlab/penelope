@@ -8,7 +8,9 @@ from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 from .interfaces import ICorpusReader
 
 
-class DataFrameTextTokenizer(ICorpusReader):  # pylint: disable=too-many-instance-attributes, disable=too-many-return-statements
+class DataFrameTextTokenizer(
+    ICorpusReader
+):  # pylint: disable=too-many-instance-attributes, disable=too-many-return-statements
     """Text iterator that returns row-wise text documents from a Pandas DataFrame"""
 
     def __init__(self, data: pd.DataFrame, text_column='txt', **column_filters):

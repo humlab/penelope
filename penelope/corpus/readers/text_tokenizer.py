@@ -8,7 +8,7 @@ from nltk.tokenize import word_tokenize
 import penelope.utility.file_utility as file_utility
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 
-from .interfaces import ICorpusReader
+from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
 from .streamify_text_source import streamify_text_source
 
 logger = logging.getLogger(__name__)
@@ -36,33 +36,45 @@ class TextTokenizer(ICorpusReader):
 
     def __init__(
         self,
-        source_path=None,
-        transforms=None,
-        chunk_size=None,
-        filename_pattern=None,
+        source: FilenameOrFolderOrZipOrList,
+        *,
+        transforms: List[Callable] = None,
+        chunk_size: int = None,
+        filename_pattern: str = None,
         filename_filter: Union[Callable, List[str]] = None,
-        tokenize=None,
-        as_binary=False,
+        filename_fields=None,
+        tokenize: Callable = None,
         fix_whitespaces: bool = False,
         fix_hyphenation: bool = False,
-        filename_fields=None,
+        as_binary: bool = False,
     ):
-        """
+        """[summary]
+
         Parameters
         ----------
-        source : str
-            Source can be either a Zip archive, a single text file or a directory.
-        transforms : fn, optional
-            List of transforms that in sequence are applied to each token
+        source : FilenameOrFolderOrZipOrList
+            [description]
+        transforms : List[Callable], optional
+            [description], by default None
         chunk_size : int, optional
-            Optional chunking in equal sizes of each document, by default None
-        pattern : str, optional
-            Pattern of files to include in the reprocess, by default None
-        tokenize : Func[], optional
-            Text tokenize function, by default None
+            [description], by default None
+        filename_pattern : str, optional
+            [description], by default None
+        filename_filter : Union[Callable, List[str]], optional
+            [description], by default None
+        filename_fields : [type], optional
+            [description], by default None
+        tokenize : Callable, optional
+            [description], by default None
+        fix_whitespaces : bool, optional
+            [description], by default False
+        fix_hyphenation : bool, optional
+            [description], by default False
+        as_binary : bool, optional
+            [description], by default False
         """
         self.source = streamify_text_source(
-            source_path, filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
+            source, filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
         )
         self.chunk_size = chunk_size
         self.tokenize = tokenize or word_tokenize
@@ -77,7 +89,7 @@ class TextTokenizer(ICorpusReader):
         self.iterator = None
 
         self._filenames = file_utility.list_filenames(
-            source_path, filename_pattern=filename_pattern, filename_filter=filename_filter
+            source, filename_pattern=filename_pattern, filename_filter=filename_filter
         )
         self._basenames = [os.path.basename(filename) for filename in self._filenames]
         self._metadata = [
