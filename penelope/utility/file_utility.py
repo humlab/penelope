@@ -6,17 +6,17 @@ import pathlib
 import re
 import sys
 import time
-import types
 import zipfile
-from typing import Callable, Iterable, List, Tuple, Union
+from typing import Callable, Dict, Iterable, Iterator, List, Tuple, Union
 
 import gensim
 import pandas as pd
+from nltk.tree import Tree
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
-def strip_path_and_extension(filename):
+def strip_path_and_extension(filename: str) -> bool:
 
     return os.path.splitext(os.path.basename(filename))[0]
 
@@ -26,7 +26,7 @@ def strip_path_and_add_counter(filename, n_chunk):
     return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
 
 
-def filename_satisfied_by(filename: Iterable[str], filename_filter: Union[List[str], Callable]):
+def filename_satisfied_by(filename: Iterable[str], filename_filter: Union[List[str], Callable]) -> bool:
 
     if filename_filter is None:
         return True
@@ -43,10 +43,11 @@ def filename_satisfied_by(filename: Iterable[str], filename_filter: Union[List[s
 def basename(path):
     return os.path.splitext(os.path.basename(path))[0]
 
+
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
 def create_iterator(
     folder_or_zip: str, filenames: List[str] = None, filename_pattern: str = '*.txt', as_binary: bool = False
-):
+) -> Tuple[str, Iterator[str]]:
 
     filenames = filenames or list_filenames(folder_or_zip, filename_pattern=filename_pattern)
 
@@ -72,7 +73,9 @@ def create_iterator(
         raise FileNotFoundError(folder_or_zip)
 
 
-def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile, List], filename_pattern: str = "*.txt", filename_filter=None):
+def list_filenames(
+    text_source: Union[str, zipfile.ZipFile, List], filename_pattern: str = "*.txt", filename_filter=None
+) -> List[str]:
     """Returns all filenames that matches `pattern` in archive
 
     Parameters
@@ -88,39 +91,39 @@ def list_filenames(folder_or_zip: Union[str, zipfile.ZipFile, List], filename_pa
 
     filenames = None
 
-    if isinstance(folder_or_zip, zipfile.ZipFile):
+    if isinstance(text_source, zipfile.ZipFile):
 
-        filenames = folder_or_zip.namelist()
+        filenames = text_source.namelist()
 
-    elif isinstance(folder_or_zip, str):
+    elif isinstance(text_source, str):
 
-        if os.path.isfile(folder_or_zip):
+        if os.path.isfile(text_source):
 
-            if zipfile.is_zipfile(folder_or_zip):
+            if zipfile.is_zipfile(text_source):
 
-                with zipfile.ZipFile(folder_or_zip) as zf:
+                with zipfile.ZipFile(text_source) as zf:
                     filenames = zf.namelist()
 
             else:
-                filenames = [folder_or_zip]
+                filenames = [text_source]
 
-        elif os.path.isdir(folder_or_zip):
+        elif os.path.isdir(text_source):
 
-            filenames = glob.glob(os.path.join(folder_or_zip, filename_pattern))
+            filenames = glob.glob(os.path.join(text_source, filename_pattern))
 
-    elif isinstance(folder_or_zip, list):
+    elif isinstance(text_source, list):
 
-        if len(folder_or_zip) == 0:
+        if len(text_source) == 0:
             filenames = []
 
-        if isinstance(folder_or_zip[0], tuple):
-            filenames = [ x[0] for x in folder_or_zip ]
+        if isinstance(text_source[0], tuple):
+            filenames = [x[0] for x in text_source]
         else:
-            filenames = [ f'document_{i+1}.txt' for i in range(0,len(folder_or_zip))]
+            filenames = [f'document_{i+1}.txt' for i in range(0, len(text_source))]
 
     if filenames is None:
 
-        raise ValueError(f"Source '{folder_or_zip}' not found. Only folder or ZIP or file are valid arguments")
+        raise ValueError(f"Source '{text_source}' not found. Only folder or ZIP or file are valid arguments")
 
     return [
         filename
@@ -148,7 +151,7 @@ def store(archive_name: str, stream: Iterable[Tuple[str, Iterable[str]]]):
             out.writestr(filename, data, compresslevel=zipfile.ZIP_DEFLATED)
 
 
-def read(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=False):
+def read(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=False) -> str:
     """Returns content in file `filename` that exists in folder or zip `folder_or_zip`
 
     Parameters
@@ -196,7 +199,7 @@ def read(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=Fa
     raise IOError("File not found")
 
 
-def read_textfile(filename, as_binary=False):
+def read_textfile(filename: str, as_binary: bool = False) -> str:
 
     opts = {'mode': 'rb'} if as_binary else {'mode': 'r', 'encoding': 'utf-8'}
     with open(filename, **opts) as f:
@@ -257,64 +260,78 @@ def filename_field_parser(meta_fields):
         sys.exit(-1)
 
 
-def extract_filename_fields(filename, **kwargs):
+def extract_filename_fields(filename: str, **kwargs: Dict[str, Union[Callable, str]]) -> Dict[str, Union[int, str]]:
     """Extracts metadata from filename
+
+    The extractor in kwargs must be either a regular expression that extracts the single value
+    or a callable function that given the filename return corresponding value.
 
     Parameters
     ----------
     filename : str
         Filename (basename)
-    kwargs: key=extractor list
+    kwargs: Dict[str, Union[Callable, str]]
+        key=extractor list
 
     Returns
     -------
-    SimpleNamespace
-        Each key in kwargs is set as a property in the returned instance.
-        The extractor must be either a regular expression that extracts the single value
-        or a callable function that given the filename return corresponding value.
+    Dict[str,Union[int,str]]
+        Each key in kwargs is extacted and stored in the dict.
 
     """
-    kwargs = kwargs or {}
-    params = {x: None for x in kwargs}
-    data = types.SimpleNamespace(filename=filename, **params)
-    for k, r in kwargs.items():
 
-        if r is None:
-            continue
+    def astype_int_or_str(v):
 
-        if callable(r):
-            v = r(filename)
-            data.__setattr__(k, int(v) if v.isnumeric() else v)
+        return int(v) if v is not None and v.isnumeric() else v
 
-        if isinstance(r, str):  # typing.re.Pattern):
-            m = re.match(r, filename)
-            if m is not None:
-                v = m.groups()[0]
-                data.__setattr__(k, int(v) if v.isnumeric() else v)
+    def regexp_extract(compiled_regexp, filename: str) -> str:
+        try:
+            return compiled_regexp.match(filename).groups()[0]
+        except:  # pylint: disable=bare-except
+            return None
+
+    def fxify(fx_or_re) -> Callable:
+
+        if callable(fx_or_re):
+            return fx_or_re
+
+        try:
+            compiled_regexp = re.compile(fx_or_re)
+            return lambda filename: regexp_extract(compiled_regexp, filename)
+        except re.error:
+            pass
+
+        return lambda x: fx_or_re  # Return constant expression
+
+    key_fx = {key: fxify(fx_or_re) for key, fx_or_re in (kwargs or {}).items()}
+
+    data = {'filename': filename}
+    for key, fx in key_fx.items():
+        data[key] = astype_int_or_str(fx(filename))
 
     return data
 
 
-def export_excel_to_text(excel_file, text_file):
+def export_excel_to_text(excel_file: str, text_file: str) -> pd.DataFrame:
     """Exports Excel to a tab-seperated text file"""
     df = pd.read_excel(excel_file)
     df.to_csv(text_file, sep='\t')
     return df
 
 
-def read_text_file(filename):
+def read_text_file(filename: str) -> pd.DataFrame:
     """Exports Excel to a tab-seperated text file"""
     df = pd.read_csv(filename, sep='\t')  # [['year', 'txt']]
     return df
 
 
-def find_parent_folder(name):
+def find_parent_folder(name: str) -> str:
     path = pathlib.Path(os.getcwd())
     folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
     return folder
 
 
-def find_parent_folder_with_child(folder, target):
+def find_parent_folder_with_child(folder: str, target: str) -> pathlib.Path:
     path = pathlib.Path(folder).resolve()
     while path is not None:
         name = os.path.join(path, target)
@@ -326,34 +343,34 @@ def find_parent_folder_with_child(folder, target):
     return None
 
 
-def find_folder(folder, parent):
+def find_folder(folder: str, parent: str) -> str:
     return os.path.join(folder.split(parent)[0], parent)
 
 
-def read_excel(filename, sheet):
+def read_excel(filename: str, sheet: str) -> pd.DataFrame:
     if not os.path.isfile(filename):
         raise Exception("File {0} does not exist!".format(filename))
     with pd.ExcelFile(filename) as xls:
         return pd.read_excel(xls, sheet)
 
 
-def save_excel(data, filename):
+def save_excel(data: pd.DataFrame, filename: str):
     with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
         for (df, name) in data:
             df.to_excel(writer, name, engine='xlsxwriter')
         writer.save()
 
 
-def ts_data_path(directory, filename):
+def ts_data_path(directory: str, filename: str):
     return os.path.join(directory, '{}_{}'.format(time.strftime("%Y%m%d%H%M"), filename))
 
 
-def data_path_ts(directory, path):
+def data_path_ts(directory: str, path: str):
     name, extension = os.path.splitext(path)
     return os.path.join(directory, '{}_{}{}'.format(name, time.strftime("%Y%m%d%H%M"), extension))
 
 
-def compress_file(path):
+def compress_file(path: str):
     if not os.path.exists(path):
         # logger.error("ERROR: file not found (zip)")
         return
