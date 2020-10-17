@@ -1,41 +1,44 @@
-import types
+from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
 from nltk.tokenize import word_tokenize
 
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 
+from .interfaces import ICorpusReader
 
-class DataFrameTextTokenizer:
+
+class DataFrameTextTokenizer(ICorpusReader):
     """Text iterator that returns row-wise text documents from a Pandas DataFrame"""
 
-    def __init__(self, df: pd.DataFrame, **column_filters):
+    def __init__(self, data: pd.DataFrame, text_column='txt', **column_filters):
         """
         Parameters
         ----------
         df : DataFrame
-            Data frame having one document per row. Text must be in column 'txt' and filename/id in `filename`
+            Data frame having one document per row. Text must be in column `text_column` and filename/id in `filename`
         """
-        assert 'txt' in df.columns
+        assert text_column in data.columns
 
-        self.df = df
+        self.data = data
+        self.text_column = text_column
 
-        if 'filename' not in self.df.columns:
-            self.df['filename'] = self.df.index.astype(str)
+        if 'filename' not in self.data.columns:
+            self.data['filename'] = self.data.index.astype(str)
 
         for column, value in column_filters.items():
-            assert column in self.df.columns, column + ' is missing'
+            assert column in self.data.columns, column + ' is missing'
             if isinstance(value, tuple):
                 assert len(value) == 2
-                self.df = self.df[self.df[column].between(*value)]
+                self.data = self.data[self.data[column].between(*value)]
             elif isinstance(value, list):
-                self.df = self.df[self.df[column].isin(value)]
+                self.data = self.data[self.data[column].isin(value)]
             else:
-                self.df = self.df[self.df[column] == value]
+                self.data = self.data[self.data[column] == value]
 
-        if len(self.df[self.df.txt.isna()]) > 0:
-            print('Warn: {} n/a rows encountered'.format(len(self.df[self.df.txt.isna()])))
-            self.df = self.df.dropna()
+        if len(self.data[self.data[text_column].isna()]) > 0:
+            print('Warn: {} n/a rows encountered'.format(len(self.data[self.data[text_column].isna()])))
+            self.data = self.data.dropna()
 
         self.text_transformer = (
             TextTransformer(transforms=[])
@@ -45,15 +48,15 @@ class DataFrameTextTokenizer:
         )
 
         self.iterator = None
-        self.metadata = self._compile_metadata()
-        self.metadict = {x.filename: x for x in (self.metadata or [])}
-        self.filenames = [x.filename for x in self.metadata]
+        self._metadata = self.data.drop(self.text_column, axis=1).to_dict(orient='records')
+        self._documents = pd.DataFrame(self._metadata)
+        self._filenames = [x['filename'] for x in self._metadata]
         self.tokenize = word_tokenize
 
-    def _create_iterator(self):
-        return (self._process(row['filename'], row['txt']) for _, row in self.df.iterrows())
+    def _create_iterator(self) -> Iterator[Tuple[str, List[str]]]:
+        return (self._process(row['filename'], row[self.text_column]) for _, row in self.data.iterrows())
 
-    def _process(self, filename: str, text: str):
+    def _process(self, filename: str, text: str) -> Tuple[str, List[str]]:
         """Process the text and returns tokenized text"""
         # text = self.preprocess(text)
 
@@ -77,17 +80,14 @@ class DataFrameTextTokenizer:
             self.iterator = None
             raise
 
-    def _compile_metadata(self):
-        """Returns document metadata as a list of dicts
+    @property
+    def filenames(self) -> List[str]:
+        return self._filenames
 
-        Returns
-        -------
-        List[types.SimpleNamespace]
-            File meta data extracted from dataframe
-        """
-        assert 'filename' in self.df.columns
+    @property
+    def metadata(self) -> List[Dict[str, Any]]:
+        return self._metadata
 
-        df_m = self.df[[x for x in list(self.df.columns) if x != 'txt']]
-        metadata = [types.SimpleNamespace(**meta) for meta in df_m.to_dict(orient='records')]
-
-        return metadata
+    @property
+    def documents(self) -> pd.DataFrame:
+        return self._documents

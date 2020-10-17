@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Iterator, List
 
 import pandas as pd
 
+from penelope.interfaces import ICorpusReader
+
+from .interfaces import ITokenizedCorpus
 from .tokens_transformer import DEFAULT_PROCESS_OPTS, TokensTransformer
 
 
-class TokenizedCorpus:
-    def __init__(self, reader: Any, **kwargs):
+class TokenizedCorpus(ITokenizedCorpus):
+    def __init__(self, reader: ICorpusReader, **kwargs):
 
         if not hasattr(reader, 'metadata'):
             raise TypeError(f"Corpus reader {type(reader)} has no `metadata` property")
@@ -17,7 +20,10 @@ class TokenizedCorpus:
             raise TypeError(f"Corpus reader {type(reader)} has no `filenames` property")
 
         self.reader = reader
-        self.documents = pd.DataFrame([d.__dict__ for d in reader.metadata])
+        self._documents = pd.DataFrame(reader.metadata)
+
+        if 'document_id' not in self._documents:
+            self._documents['document_id'] = list(self._documents.index)
 
         opts = DEFAULT_PROCESS_OPTS
         opts = {**opts, **{k: v for k, v in kwargs.items() if k in opts}}
@@ -43,29 +49,27 @@ class TokenizedCorpus:
 
             yield dokument_name, tokens
 
-        self.documents['n_raw_tokens'] = n_raw_tokens
-        self.documents['n_tokens'] = n_tokens
+        self._documents['n_raw_tokens'] = n_raw_tokens
+        self._documents['n_tokens'] = n_tokens
 
     def _create_iterator(self):
         return self._create_document_tokens_stream()
 
     @property
-    def terms(self):
+    def terms(self) -> Iterator[Iterator[str]]:
         return ReIterableTerms(self)
 
     @property
-    def metadata(self):
+    def documents(self) -> pd.DataFrame:
+        return self._documents
+
+    @property
+    def metadata(self) -> List[Dict[str, Any]]:
         return self.reader.metadata
 
     @property
-    def filenames(self):
+    def filenames(self) -> List[str]:
         return self.reader.filenames
-
-    @property
-    def n_raw_tokens(self) -> Dict:
-        # FIXME: #1 Implement tokenized_corpus.n_raw_tokens
-        # raise NotImplementedError("n_raw_tokens not implemented")
-        return None
 
     def __iter__(self):
         return self

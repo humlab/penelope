@@ -8,6 +8,7 @@ from nltk.tokenize import word_tokenize
 import penelope.utility.file_utility as file_utility
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 
+from .interfaces import ICorpusReader
 from .streamify_text_source import streamify_text_source
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,8 @@ def strip_path_and_add_counter(filename, n_chunk):
     return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
 
 
-class TextTokenizer:
+# class TextTokenizer(collections.abc.Iterable[Tuple[str,List[str]]]):
+class TextTokenizer(ICorpusReader):
     """Reads a text corpus from `source` and applies given transforms.
     Derived classes can override `preprocess` as an initial step before transforms are applied.
     The `preprocess` is applied on the entire document, and the transforms on each token.
@@ -74,12 +76,13 @@ class TextTokenizer:
 
         self.iterator = None
 
-        self.filenames = file_utility.list_filenames(
+        self._filenames = file_utility.list_filenames(
             source_path, filename_pattern=filename_pattern, filename_filter=filename_filter
         )
-        self.basenames = [os.path.basename(filename) for filename in self.filenames]
-        self.metadata = [file_utility.extract_filename_fields(x, **(filename_fields or dict())) for x in self.basenames]
-        self.metadict = {x.filename: x for x in (self.metadata or [])}
+        self._basenames = [os.path.basename(filename) for filename in self._filenames]
+        self._metadata = [
+            file_utility.extract_filename_fields(x, **(filename_fields or dict())) for x in self._basenames
+        ]
 
     def _create_iterator(self):
         return (
@@ -87,6 +90,18 @@ class TextTokenizer:
             for (filename, content) in self.source
             for document_name, document in self.process(filename, content)
         )
+
+    @property
+    def filenames(self):
+        return self._filenames
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def metalookup(self):
+        return {x['filename']: x for x in (self._metadata or [])}
 
     def preprocess(self, content: str) -> str:
         """Process of source text that happens before any tokenization e.g. XML to text transform """
