@@ -77,7 +77,7 @@ def infrequent_words(
     normalize: str = 'lemma',
     weighting: str = 'count',
     threshold: int = 0,
-    as_strings: bool = False
+    as_strings: bool = False,
 ):
     '''Returns set of infrequent words i.e. words having total count less than given threshold'''
 
@@ -95,7 +95,7 @@ def frequent_document_words(
     normalize: str = 'lemma',
     weighting: str = 'freq',
     dfs_threshold: int = 80,
-    as_strings: bool = True
+    as_strings: bool = True,
 ):  # pylint: disable=unused-argument
     '''Returns set of words that occurrs freuently in many documents, candidate stopwords'''
     document_freqs = corpus.word_doc_counts(normalize=normalize, weighting=weighting, smooth_idf=True, as_strings=True)
@@ -108,7 +108,7 @@ def get_most_frequent_words(
     n_top: int,
     normalize: str = 'lemma',
     include_pos: Sequence[str] = None,
-    weighting: str = 'count'
+    weighting: str = 'count',
 ):
     include_pos = include_pos or ['VERB', 'NOUN', 'PROPN']
     include = lambda x: x.pos_ in include_pos
@@ -130,7 +130,7 @@ def doc_to_bow(
     weighting: str = 'count',
     as_strings: bool = False,
     include: Callable = None,
-    n_min_count: int = 2
+    n_min_count: int = 2,
 ):
 
     weighing_keys = {'count', 'freq'}
@@ -206,7 +206,7 @@ def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: s
     with open(filepath) as f:
         substitutions = {
             x[0].strip(): x[1].strip()
-            for x in (tuple(line.lower().split(delim)) + (default_term, ) for line in f.readlines())
+            for x in (tuple(line.lower().split(delim)) + (default_term,) for line in f.readlines())
             if x[0].strip() != ''
         }
 
@@ -246,7 +246,8 @@ def _doc_token_stream(doc: spacy.tokens.Doc) -> Iterable[Dict[str, Any]]:
             pos=t.pos_,
             year=doc._.meta['year'],
             document_id=doc._.meta['document_id'],
-        ) for t in doc
+        )
+        for t in doc
     )
 
 
