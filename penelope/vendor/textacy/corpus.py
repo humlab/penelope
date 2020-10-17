@@ -1,12 +1,15 @@
 import os
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Tuple
+from nltk import text
 
 import pandas as pd
+import spacy
 import textacy
 
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.utility as utility
 import penelope.utility.file_utility as file_utility
+from penelope.interfaces import ICorpusReader
 
 from .language import create_nlp
 
@@ -15,14 +18,14 @@ logger = utility.getLogger('corpus_text_analysis')
 # pylint: disable=too-many-arguments
 
 
-def create_corpus(reader_with_meta, nlp, tick=utility.noop, n_chunk_threshold=100000):
+def create_corpus(reader: ICorpusReader, nlp, tick: Callable=utility.noop, n_chunk_threshold: int=100000):
 
     corpus = textacy.Corpus(nlp)
     counter = 0
+    metalookup = reader.metadata
+    for filename, text in reader:
 
-    for filename, text, metadata in reader_with_meta:
-
-        metadata = {**metadata, **dict(filename=filename)}
+        metadata = {'filename': filename, **metalookup(filename)}
 
         if len(text) > n_chunk_threshold:
             doc = textacy.spacier.utils.make_doc_from_text_chunks(text, lang=nlp, chunk_size=n_chunk_threshold)
@@ -40,7 +43,7 @@ def create_corpus(reader_with_meta, nlp, tick=utility.noop, n_chunk_threshold=10
 
 
 @utility.timecall
-def save_corpus(corpus, filename, lang=None, include_tensor=False):  # pylint: disable=unused-argument
+def save_corpus(corpus: textacy.Corpus, filename: str, lang=None, include_tensor: bool=False):  # pylint: disable=unused-argument
     if not include_tensor:
         for doc in corpus:
             doc.tensor = None
@@ -53,10 +56,10 @@ def load_corpus(filename: str, lang: str):  # pylint: disable=unused-argument
     return corpus
 
 
-def merge_named_entities(textacy_corpus):
+def merge_named_entities(corpus: textacy.Corpus):
     logger.info('Working: Merging named entities...')
     try:
-        for doc in textacy_corpus:
+        for doc in corpus:
             named_entities = textacy.extract.entities(doc)
             textacy.spacier.utils.merge_spans(named_entities, doc)
     except TypeError as ex:
@@ -65,8 +68,8 @@ def merge_named_entities(textacy_corpus):
 
 
 def generate_corpus_filename(
-    source_path: str, language: str, nlp_args=None, preprocess_args=None, compression='bz2', extension='bin'
-):
+    source_path: str, language: str, nlp_args=None, preprocess_args=None, compression: str='bz2', extension: str='bin'
+) -> str:
     nlp_args = nlp_args or {}
     preprocess_args = preprocess_args or {}
     disabled_pipes = nlp_args.get('disable', ())
@@ -140,11 +143,12 @@ def _extend_stream_with_metadata(
     Iterable[Tuple[str, str, Dict]]
         Stream augumented with meta data.
     """
+    metalookup = { x['filename']: x for x in tokenizer.metadata }
     for filename, tokens in tokenizer:
 
         metadata = _get_document_metadata(
             filename,
-            metadata=tokenizer.metadict['filename'],
+            metadata=metalookup['filename'],
             documents=documents,
             document_columns=document_columns,
             filename_fields=filename_fields,
