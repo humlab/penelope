@@ -219,9 +219,17 @@ def dict_split(d, fn):
     return {k: d[k] for k in true_keys}, {k: d[k] for k in set(d.keys()) - true_keys}
 
 
-def list_of_dicts_to_dict_of_lists(list_of_dicts):
-    dict_of_lists = dict(zip(list_of_dicts[0], zip(*[d.values() for d in list_of_dicts])))
+def list_of_dicts_to_dict_of_lists(dl):
+    dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists
+
+
+def tuple_of_lists_to_list_of_tuples(tl):
+    return zip(*tl)
+
+
+def dict_of_lists_to_list_of_dicts(dl):
+    return [dict(zip(dl, t)) for t in zip(*dl.values())]
 
 
 def uniquify(sequence):
