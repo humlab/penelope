@@ -51,7 +51,6 @@ class SparvTokenizedXmlCorpus(tokenized_corpus.TokenizedCorpus):
         super().__init__(tokenizer, **tokens_transform_opts)
 
 
-
 class SparvTokenizedCsvCorpus(tokenized_corpus.TokenizedCorpus):
     """A tokenized Corpus for Sparv CSV files
 
@@ -60,15 +59,16 @@ class SparvTokenizedCsvCorpus(tokenized_corpus.TokenizedCorpus):
     tokenized_corpus : [type]
         [description]
     """
+
     def __init__(
         self,
         source,
         *,
-        pos_includes: str=None,
-        pos_excludes: str="|MAD|MID|PAD|",
-        lemmatize: bool=True,
-        chunk_size: int=None,
-        append_pos: bool=False,
+        pos_includes: str = None,
+        pos_excludes: str = "|MAD|MID|PAD|",
+        lemmatize: bool = True,
+        chunk_size: int = None,
+        append_pos: bool = False,
         **tokens_transform_opts,
     ):
         """[summary]
@@ -119,6 +119,7 @@ def sparv_xml_extract_and_store(source: str, target: str, version: int, **opts):
 
     file_utility.store(target, corpus)
 
+
 def sparv_csv_extract_and_store(source: str, target: str, **opts):
     """Extracts and stores text documents from a Sparv corpus in CSV format
 
@@ -134,4 +135,3 @@ def sparv_csv_extract_and_store(source: str, target: str, **opts):
     corpus = SparvTokenizedCsvCorpus(source, **opts)
 
     file_utility.store(target, corpus)
-

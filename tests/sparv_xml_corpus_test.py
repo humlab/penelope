@@ -82,4 +82,3 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
     assert content.startswith(expected_document_start)
 
     os.remove(target_filename)
-

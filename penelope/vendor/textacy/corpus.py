@@ -1,9 +1,7 @@
 import os
 from typing import Any, Callable, Dict, Iterable, List, Tuple
-from nltk import text
 
 import pandas as pd
-import spacy
 import textacy
 
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
@@ -18,7 +16,7 @@ logger = utility.getLogger('corpus_text_analysis')
 # pylint: disable=too-many-arguments
 
 
-def create_corpus(reader: ICorpusReader, nlp, tick: Callable=utility.noop, n_chunk_threshold: int=100000):
+def create_corpus(reader: ICorpusReader, nlp, tick: Callable = utility.noop, n_chunk_threshold: int = 100000):
 
     corpus = textacy.Corpus(nlp)
     counter = 0
@@ -43,7 +41,9 @@ def create_corpus(reader: ICorpusReader, nlp, tick: Callable=utility.noop, n_chu
 
 
 @utility.timecall
-def save_corpus(corpus: textacy.Corpus, filename: str, lang=None, include_tensor: bool=False):  # pylint: disable=unused-argument
+def save_corpus(
+    corpus: textacy.Corpus, filename: str, lang=None, include_tensor: bool = False
+):  # pylint: disable=unused-argument
     if not include_tensor:
         for doc in corpus:
             doc.tensor = None
@@ -68,7 +68,12 @@ def merge_named_entities(corpus: textacy.Corpus):
 
 
 def generate_corpus_filename(
-    source_path: str, language: str, nlp_args=None, preprocess_args=None, compression: str='bz2', extension: str='bin'
+    source_path: str,
+    language: str,
+    nlp_args=None,
+    preprocess_args=None,
+    compression: str = 'bz2',
+    extension: str = 'bin',
 ) -> str:
     nlp_args = nlp_args or {}
     preprocess_args = preprocess_args or {}
@@ -143,7 +148,7 @@ def _extend_stream_with_metadata(
     Iterable[Tuple[str, str, Dict]]
         Stream augumented with meta data.
     """
-    metalookup = { x['filename']: x for x in tokenizer.metadata }
+    metalookup = {x['filename']: x for x in tokenizer.metadata}
     for filename, tokens in tokenizer:
 
         metadata = _get_document_metadata(

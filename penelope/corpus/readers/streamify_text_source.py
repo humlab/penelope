@@ -43,7 +43,7 @@ def streamify_text_source(
         if isinstance(text_source[0], tuple):
             return text_source
 
-        return ( (f'document_{i+1}.txt', d) for i, d in  enumerate(text_source) )
+        return ((f'document_{i+1}.txt', d) for i, d in enumerate(text_source))
 
     if os.path.isfile(text_source):
 

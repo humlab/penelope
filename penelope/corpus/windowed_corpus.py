@@ -1,5 +1,5 @@
-import itertools
 import collections
+import itertools
 from typing import Dict, Iterable, Sequence, Set
 
 from penelope.corpus.tokenized_corpus import TokenizedCorpus
@@ -47,7 +47,7 @@ def concept_windows(tokens: Iterable[str], concept: Set[str], n_tokens: int, pad
             yield list(window)
 
 
-def corpus_concept_windows(corpus: TokenizedCorpus, concept: Set, n_tokens: int, pad: str="*"):
+def corpus_concept_windows(corpus: TokenizedCorpus, concept: Set, n_tokens: int, pad: str = "*"):
 
     for filename, tokens in corpus:
         for i, window in enumerate(concept_windows(tokens, concept, n_tokens, padding=pad)):
