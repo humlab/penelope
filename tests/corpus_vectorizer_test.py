@@ -1,42 +1,53 @@
 import types
 import unittest
 
+import pandas as pd
+
 import penelope.corpus.readers as readers
 import penelope.corpus.tokenized_corpus as corpora
 import tests.utils as test_utils
 from penelope.corpus import vectorizer as corpus_vectorizer
+from penelope.corpus.interfaces import ITokenizedCorpus
 
 
 def flatten(lst):
     return [x for ws in lst for x in ws]
 
 
-class MockedProcessedCorpus:
+class MockedProcessedCorpus(ITokenizedCorpus):
     def __init__(self, mock_data):
-        self.tokenized_documents = [(f, y, self.generate_document(ws)) for f, y, ws in mock_data]
+        self.data = [(f, self.generate_document(ws)) for f, ws in mock_data]
         self.token2id = self.create_token2id()
-        self.n_tokens = {f: len(d) for f, _, d in mock_data}
+        self.n_tokens = {f: len(d) for f, d in mock_data}
         self.iterator = None
+        self._metadata = [dict(filename=filename, year=filename.split('_')[1]) for filename, _ in self.data]
+        self._documents = pd.DataFrame(self._metadata)
+
+    @property
+    def terms(self):
+        return [tokens for _, tokens in self.data]
+
+    @property
+    def filenames(self):
+        return list(self.documents.filename)
 
     @property
     def metadata(self):
+        return self._metadata
 
-        return [types.SimpleNamespace(filename=x[0], year=x[1]) for x in self.tokenized_documents]
+    @property
+    def documents(self):
+        return self._documents
 
     def create_token2id(self):
-        return {w: i for i, w in enumerate(sorted(list(set(flatten([x[2] for x in self.tokenized_documents])))))}
-
-    def _create_iterator(self):
-
-        for filename, year, tokens in self.tokenized_documents:
-            yield types.SimpleNamespace(filename=filename, year=year), tokens
+        return {w: i for i, w in enumerate(sorted(list(set(flatten([x[1] for x in self.data])))))}
 
     def __iter__(self):
         return self
 
     def __next__(self):
         if self.iterator is None:
-            self.iterator = self._create_iterator()
+            self.iterator = ((x, y) for x, y in self.data)
         try:
             return next(self.iterator)
         except StopIteration:
@@ -45,8 +56,6 @@ class MockedProcessedCorpus:
 
     def generate_document(self, words):
         if isinstance(words, str):
-            # parts = re.findall(r"(\d*)\**(\w+)\S?", words)
-            # words = [ (1 if x[0] == '' else int(x[0]), x[1]) for x in parts ]
             document = words.split()
         else:
             document = flatten([n * w for n, w in words])
@@ -55,11 +64,11 @@ class MockedProcessedCorpus:
 
 def mock_corpus():
     mock_corpus_data = [
-        ('document_2013_1.txt', 2013, "a a b c c c c d"),
-        ('document_2013_2.txt', 2013, "a a b b c c c"),
-        ('document_2014_1.txt', 2014, "a a b b b c c"),
-        ('document_2014_2.txt', 2014, "a a b b b b c d"),
-        ('document_2014_2.txt', 2014, "a a c d"),
+        ('document_2013_1.txt', "a a b c c c c d"),
+        ('document_2013_2.txt', "a a b b c c c"),
+        ('document_2014_1.txt', "a a b b b c c"),
+        ('document_2014_2.txt', "a a b b b b c d"),
+        ('document_2014_2.txt', "a a c d"),
     ]
     corpus = MockedProcessedCorpus(mock_corpus_data)
     return corpus
