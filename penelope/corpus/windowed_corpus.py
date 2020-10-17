@@ -1,6 +1,6 @@
 import collections
 import itertools
-from typing import Dict, Iterable, Sequence, Set
+from typing import Iterable, Set
 
 from penelope.corpus.tokenized_corpus import TokenizedCorpus
 
