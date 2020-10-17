@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 import pandas as pd
 
 import penelope.corpus.readers as readers
-from penelope.co_occurrence.coocurrence_matrix import (
+from penelope.co_occurrence.compute_term_term_matrix import (
     corpus_to_coocurrence_matrix, reader_coocurrence_matrix)
 
 # THIS FILE COMPUTES COUCCRRENCE FROM PREDEFINED WINDOWS READ FROM EXCEL FILE!

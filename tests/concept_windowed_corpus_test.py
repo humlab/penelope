@@ -1,5 +1,4 @@
 import json
-from penelope.corpus import readers
 
 import pytest  # pylint: disable=unused-import
 
@@ -472,10 +471,11 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
 
 def test_partition_documents():
-    # from typing import Callable, Union
-    # import pandas as pd
 
-    # tokenizer = readers.SparvCsvTokenizer( SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True )
+    expected_groups = {
+        2019: ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv'],
+        2020: ['tran_2020_01_test.csv', 'tran_2020_02_test.csv']
+    }
 
     documents = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
@@ -484,7 +484,5 @@ def test_partition_documents():
 
     groups = documents.groupby('year')['filename'].aggregate(list).to_dict()
 
-    assert groups == []
-    # def partion_document(documents: pd.DataFrame, by: Union[str,Callable]):
-    #     raise NotImplementedError()
-    #     data = documents.groupby(by=by)
+    assert expected_groups == groups
+

@@ -10,10 +10,27 @@ from .tokenized_corpus import ReiterableTerms
 
 class SimpleTextLinesCorpus(ITokenizedCorpus):
 
-    """Corpus that reads a file with documents on a single text-line seperated by `sep`character sequence"""
+    """Corpus that reads a document-per-line text file """
 
     def __init__(self, filename: str, fields: Dict[str, int], meta_fields: List[str] = None, sep: str = ' # '):
+        """[summary]
 
+        Parameters
+        ----------
+        filename : str
+            [description]
+        fields : Dict[str, int]
+            [description]
+        meta_fields : List[str], optional
+            [description], by default None
+        sep : str, optional
+            [description], by default ' # '
+
+        Raises
+        ------
+        ValueError
+            [description]
+        """
         with open(filename, 'r') as f:
             lines = f.readlines()
 

@@ -50,6 +50,8 @@ black:clean
 	@poetry run black --version
 	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
 
+tidy: black isort
+
 clean:
 	@rm -rf .pytest_cache build dist .eggs *.egg-info
 	@rm -rf .coverage coverage.xml htmlcov report.xml .tox
@@ -72,4 +74,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint flake8 pylint pylint2 format yapf black clean test test-coverage update install_graphtool build isort
+.PHONY: init lint flake8 pylint pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy

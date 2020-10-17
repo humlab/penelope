@@ -10,7 +10,7 @@ from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)
 
-# pylint: disable=too-many-arguments, super-with-arguments
+# pylint: disable=too-many-arguments, super-with-arguments, too-many-instance-attributes
 
 DEFAULT_OPTS = dict(
     pos_includes='',

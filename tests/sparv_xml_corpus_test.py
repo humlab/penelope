@@ -22,15 +22,14 @@ def test_reader_store_result():
 
     target_filename = f'./tests/output/{uuid.uuid1()}.zip'
 
-    opts = dict(
+    sparv_corpus.sparv_xml_extract_and_store(
+        SPARV_ZIPPED_XML_EXPORT_FILENAME,
+        target_filename,
         version=4,
         pos_includes='|NN|',
         lemmatize=True,
-        chunk_size=None,
-        to_lower=True,
+        tokens_transform_opts=dict(to_lower=True),
     )
-
-    sparv_corpus.sparv_xml_extract_and_store(SPARV_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
 
     for i in range(0, len(expected_names)):
 
@@ -45,32 +44,33 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    opts = {
-        'pos_includes': '|NN|',
-        'lemmatize': False,
-        'chunk_size': None,
-        'version': 3,
-        'to_lower': True,
-        'min_len': 2,
-        'stopwords': ['<text>']
-        # only_alphabetic: bool=False,
-        # only_any_alphanumeric: bool=False,
-        # to_lower: bool = False,
-        # to_upper: bool = False,
-        # min_len: int = None,
-        # max_len: int = None,
-        # remove_accents: bool = False,
-        # remove_stopwords: bool = False,
-        # stopwords: Any = None,
-        # extra_stopwords: List[str] = None,
-        # language: str = "swedish",
-        # keep_numerals: bool = True,
-        # keep_symbols: bool = True
-    }
-
     target_filename = f'./tests/output/{uuid.uuid1()}.zip'
 
-    sparv_corpus.sparv_xml_extract_and_store(SPARV3_ZIPPED_XML_EXPORT_FILENAME, target_filename, **opts)
+    sparv_corpus.sparv_xml_extract_and_store(
+        SPARV3_ZIPPED_XML_EXPORT_FILENAME,
+        target_filename,
+        version=3,
+        pos_includes='|NN|',
+        lemmatize=False,
+        tokens_transform_opts={
+            'to_lower': True,
+            'min_len': 2,
+            'stopwords': ['<text>']
+            # only_alphabetic: bool=False,
+            # only_any_alphanumeric: bool=False,
+            # to_lower: bool = False,
+            # to_upper: bool = False,
+            # min_len: int = None,
+            # max_len: int = None,
+            # remove_accents: bool = False,
+            # remove_stopwords: bool = False,
+            # stopwords: Any = None,
+            # extra_stopwords: List[str] = None,
+            # language: str = "swedish",
+            # keep_numerals: bool = True,
+            # keep_symbols: bool = True
+        }
+    )
 
     expected_document_start = "utredningar justitiedepartementet förslag utlänningslag angående om- händertagande förläggning års gere ide to lm \rstatens utredningar förteckning betänkande förslag utlänningslag lag omhändertagande utlänning anstalt förläggning tryckort tryckorten bokstäverna fetstil begynnelse- bokstäverna departement"
 
