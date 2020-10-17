@@ -140,3 +140,4 @@ cython_debug/
 deprecated
 output
 *.pbz2
+terminal.py
