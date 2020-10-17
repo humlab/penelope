@@ -2,13 +2,16 @@ import pytest  # pylint: disable=unused-import
 
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
-SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/prot_197677__27.tsv'
+SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
+
 
 def sparv_csv_export_small_text():
     with open(SPARV_CSV_EXPORT_FILENAME_SMALL, "r") as fp:
         return fp.read()
 
+
 TEST_DATA = sparv_csv_export_small_text()
+
 
 def test_reader_when_no_transforms_returns_source_tokens():
 
@@ -52,6 +55,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
     result = reader.transform(TEST_DATA)
 
     assert expected == result
+
 
 def test_reader_when_lemmatized_nn_vb_pos_appendedreturns_lemmatized_nn_vb_pos():
 
