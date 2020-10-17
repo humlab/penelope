@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Callable, List
+from typing import Any, Callable, Dict, List
 
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
@@ -21,22 +21,36 @@ DEFAULT_OPTS = dict(
 )
 
 
+# source_path=None,
+# transforms=None,
+# chunk_size=None,
+# filename_pattern=None,
+# filename_filter: Union[Callable, List[str]] = None,
+# tokenize=None,
+# as_binary=False,
+# fix_whitespaces: bool = False,
+# fix_hyphenation: bool = False,
+# filename_fields=None,
 class SparvCsvTokenizer(TextTokenizer):
+
     def __init__(
         self,
         source,
-        transforms: List[Callable] = None,
         pos_includes: str = None,
         pos_excludes: str = "|MAD|MID|PAD|",
         lemmatize: bool = True,
-        chunk_size: int = None,
         append_pos: bool = "",
+        **tokenizer_opts
     ):
 
         self.delimiter: str = '\t'
-        tokenize = lambda x: x.split()
 
-        super().__init__(source, transforms, chunk_size, filename_pattern='*.csv', tokenize=tokenize)
+        super().__init__(
+            source, **{
+                **dict(tokenize=lambda x: x.split(), filename_pattern='*.csv', transforms=None),
+                **tokenizer_opts
+            }
+        )
 
         self.lemmatize = lemmatize
         self.append_pos = append_pos
