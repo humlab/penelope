@@ -1,9 +1,10 @@
 import logging
 import os
-from penelope.corpus.tokenized_corpus import TokenizedCorpus
 
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
+
+from penelope.corpus.tokenized_corpus import TokenizedCorpus
 
 from . import readers, tokenized_corpus, vectorized_corpus
 
@@ -11,7 +12,6 @@ logger = logging.getLogger("corpus_vectorizer")
 
 
 class CorpusVectorizer:
-
     def __init__(self, **kwargs):
         self.vectorizer = None
         self.kwargs = kwargs
@@ -27,19 +27,11 @@ class CorpusVectorizer:
 
         bag_term_matrix = self.vectorizer.fit_transform(texts)
         token2id = self.vectorizer.vocabulary_
-        document_index = self._document_index(corpus)
+        documents = corpus.documents
 
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, document_index)
+        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, documents)
 
         return v_corpus
-
-
-    def _document_index(self, corpus: tokenized_corpus.TokenizedCorpus) -> pd.DataFrame:
-        """Groups matrix by vales in column summing up all values in each category"""
-        metadata = corpus.metadata
-        df = pd.DataFrame([x.__dict__ for x in metadata], columns=metadata[0].__dict__.keys())
-        df['document_id'] = list(df.index)
-        return df
 
 
 def generate_corpus(filename: str, output_folder: str, **kwargs):
