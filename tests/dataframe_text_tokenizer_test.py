@@ -34,8 +34,7 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
         df = self.create_triple_meta_dataframe()
         df_m = df[[x for x in list(df.columns) if x != 'txt']]
         df_m['filename'] = df_m.index.astype(str)
-        metadata = [types.SimpleNamespace(**meta) for meta in df_m.to_dict(orient='records')]
-        print(metadata)
+        metadata = df_m.to_dict(orient='records')
         self.assertEqual(len(df), len(metadata))
 
     def test_reader_with_all_documents(self):
@@ -54,12 +53,12 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
         self.assertEqual(['0', '1', '2', '3', '4', '5'], reader.filenames)
         self.assertEqual(
             [
-                types.SimpleNamespace(filename='0', year=2000),
-                types.SimpleNamespace(filename='1', year=2000),
-                types.SimpleNamespace(filename='2', year=2001),
-                types.SimpleNamespace(filename='3', year=2003),
-                types.SimpleNamespace(filename='4', year=2003),
-                types.SimpleNamespace(filename='5', year=2003),
+                dict(filename='0', year=2000),
+                dict(filename='1', year=2000),
+                dict(filename='2', year=2001),
+                dict(filename='3', year=2003),
+                dict(filename='4', year=2003),
+                dict(filename='5', year=2003),
             ],
             reader.metadata,
         )
@@ -80,12 +79,12 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
         self.assertEqual(['3', '4', '5', '9', '10', '11'], reader.filenames)
         self.assertEqual(
             [
-                types.SimpleNamespace(filename='3', newspaper='AB', year=2003),
-                types.SimpleNamespace(filename='4', newspaper='AB', year=2003),
-                types.SimpleNamespace(filename='5', newspaper='AB', year=2003),
-                types.SimpleNamespace(filename='9', newspaper='EX', year=2003),
-                types.SimpleNamespace(filename='10', newspaper='EX', year=2003),
-                types.SimpleNamespace(filename='11', newspaper='EX', year=2003),
+                dict(filename='3', newspaper='AB', year=2003),
+                dict(filename='4', newspaper='AB', year=2003),
+                dict(filename='5', newspaper='AB', year=2003),
+                dict(filename='9', newspaper='EX', year=2003),
+                dict(filename='10', newspaper='EX', year=2003),
+                dict(filename='11', newspaper='EX', year=2003),
             ],
             reader.metadata,
         )

@@ -200,11 +200,11 @@ class Test_ProcessedCorpus(unittest.TestCase):
         corpus = corpora.TokenizedCorpus(reader)
         result = corpus.metadata
         expected = [
-            types.SimpleNamespace(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
-            types.SimpleNamespace(filename='dikt_2019_02_test.txt', serial_no=2, year=2019),
-            types.SimpleNamespace(filename='dikt_2019_03_test.txt', serial_no=3, year=2019),
-            types.SimpleNamespace(filename='dikt_2020_01_test.txt', serial_no=1, year=2020),
-            types.SimpleNamespace(filename='dikt_2020_02_test.txt', serial_no=2, year=2020),
+            dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
+            dict(filename='dikt_2019_02_test.txt', serial_no=2, year=2019),
+            dict(filename='dikt_2019_03_test.txt', serial_no=3, year=2019),
+            dict(filename='dikt_2020_01_test.txt', serial_no=1, year=2020),
+            dict(filename='dikt_2020_02_test.txt', serial_no=2, year=2020),
         ]
         self.assertEqual(len(expected), len(result))
         for i in range(0, len(expected)):

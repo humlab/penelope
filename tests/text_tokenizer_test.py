@@ -1,3 +1,4 @@
+from penelope.corpus import readers
 import types
 import pytest  # pylint: disable=unused-import
 
@@ -27,6 +28,13 @@ def test_archive_filenames_when_filter_function_txt_returns_txt_files():
 
     reader = create_text_tokenizer(filename_filter=filename_filter)
     assert 5 == len(reader.filenames)
+
+
+def test_tokenize_corpus_with_list_source():
+
+    source = readers.TextTokenizer(source_path=["a b c", "e f g"])
+
+    assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [x for x in source]
 
 
 def test_get_file_when_default_returns_unmodified_content():
@@ -84,7 +92,7 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
-    assert reader.metadata[0].year > 0
+    assert reader.metadata[0]['year'] > 0
 
 
 def test_get_index_when_extractor_passed_returns_metadata():
@@ -92,11 +100,11 @@ def test_get_index_when_extractor_passed_returns_metadata():
     reader = create_text_tokenizer(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
     result = reader.metadata
     expected = [
-        types.SimpleNamespace(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
-        types.SimpleNamespace(filename='dikt_2019_02_test.txt', serial_no=2, year=2019),
-        types.SimpleNamespace(filename='dikt_2019_03_test.txt', serial_no=3, year=2019),
-        types.SimpleNamespace(filename='dikt_2020_01_test.txt', serial_no=1, year=2020),
-        types.SimpleNamespace(filename='dikt_2020_02_test.txt', serial_no=2, year=2020),
+        dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
+        dict(filename='dikt_2019_02_test.txt', serial_no=2, year=2019),
+        dict(filename='dikt_2019_03_test.txt', serial_no=3, year=2019),
+        dict(filename='dikt_2020_01_test.txt', serial_no=1, year=2020),
+        dict(filename='dikt_2020_02_test.txt', serial_no=2, year=2020),
     ]
 
     assert len(expected) == len(result)

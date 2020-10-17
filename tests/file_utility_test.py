@@ -8,14 +8,14 @@ from tests.utils import TEST_CORPUS_FILENAME
 def test_extract_filename_fields_when_valid_regexp_returns_metadata_values():
     filename = 'SOU 1957_5 Namn.txt'
     meta = file_utility.extract_filename_fields(filename, year=r".{4}(\d{4})_.*", serial_no=r".{8}_(\d+).*")
-    assert 5 == meta.serial_no
-    assert 1957 == meta.year
+    assert 5 == meta['serial_no']
+    assert 1957 == meta['year']
 
 
 def test_extract_filename_fields_when_invalid_regexp_returns_none():
     filename = 'xyz.txt'
     meta = file_utility.extract_filename_fields(filename, value=r".{4}(\d{4})_.*")
-    assert meta.value is None
+    assert meta['value'] is None
 
 
 def test_extract_filename_fields():
