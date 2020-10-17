@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, List
+from typing import Any, Dict, List
 
 import textacy.preprocessing.remove as textacy_remove
 
@@ -9,7 +9,7 @@ from . import transforms
 
 # pylint: disable=too-many-arguments
 
-DEFAULT_PROCESS_OPTS = dict(
+DEFAULT_TOKENS_TRANSFORM_OPTIONS = dict(
     only_alphabetic=False,
     only_any_alphanumeric=False,
     to_lower=False,
@@ -29,6 +29,12 @@ DEFAULT_PROCESS_OPTS = dict(
 def transformer_defaults():
     sig = inspect.signature(TokensTransformer.__init__)
     return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
+
+
+def transformer_defaults_filter(opts: Dict[str, Any]):
+    if opts is None:
+        return {}
+    return {k: v for k, v in opts.items() if k in transformer_defaults()}
 
 
 class TokensTransformer:

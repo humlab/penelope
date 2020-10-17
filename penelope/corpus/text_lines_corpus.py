@@ -5,7 +5,7 @@ import pandas as pd
 import penelope.utility as utility
 
 from .interfaces import ITokenizedCorpus
-from .tokenized_corpus import ReIterableTerms
+from .tokenized_corpus import ReiterableTerms
 
 
 class SimpleTextLinesCorpus(ITokenizedCorpus):
@@ -57,7 +57,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
 
     @property
     def terms(self):
-        return ReIterableTerms(self)
+        return ReiterableTerms(self)
 
     def _create_iterator(self):
         return utility.tuple_of_lists_to_list_of_tuples((self._filenames, self.tokens))

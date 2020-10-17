@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 
 import penelope.utility as utility
-from penelope.corpus.tokenized_corpus import ReIterableTerms
+from penelope.corpus.tokenized_corpus import ReiterableTerms
 
 
 class SimpleTestCorpus:
@@ -37,7 +37,7 @@ class SimpleTestCorpus:
 
     @property
     def terms(self):
-        return ReIterableTerms(self)
+        return ReiterableTerms(self)
 
     def _create_iterator(self):
         return ((x['filename'], x['tokens']) for x in self.corpus_data)
