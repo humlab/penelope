@@ -101,7 +101,7 @@ def _get_document_metadata(
 
     if filename_fields is not None:
 
-        metadata = {**metadata, **(file_utility.extract_filename_fields(filename, **filename_fields).__dict__)}
+        metadata = {**metadata, **file_utility.extract_filename_fields(filename, **filename_fields)}
 
     if documents is not None:
 

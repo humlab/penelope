@@ -3,7 +3,6 @@ import uuid
 
 import pytest  # pylint: disable=unused-import
 
-import penelope.corpus.readers as readers
 import penelope.corpus.sparv_corpus as sparv_corpus
 import penelope.utility.file_utility as file_utility
 

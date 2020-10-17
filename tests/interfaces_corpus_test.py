@@ -1,4 +1,4 @@
-import pytest
+import pytest  # pylint: disable=unused-import
 
 import penelope.corpus.readers as readers
 from penelope.corpus import (

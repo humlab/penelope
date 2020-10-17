@@ -1,10 +1,7 @@
 import logging
 import os
 
-import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
-
-from penelope.corpus.tokenized_corpus import TokenizedCorpus
 
 from . import readers, tokenized_corpus, vectorized_corpus
 

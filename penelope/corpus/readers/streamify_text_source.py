@@ -7,7 +7,7 @@ import penelope.utility.file_utility as file_utility
 
 from .zip_iterator import ZipTextIterator
 
-
+# pylint: disable=too-many-return-statements
 def streamify_text_source(
     text_source: Any,
     filename_pattern: str = '*.txt',

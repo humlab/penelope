@@ -11,7 +11,6 @@ from typing import Callable, Dict, Iterable, Iterator, List, Tuple, Union
 
 import gensim
 import pandas as pd
-from nltk.tree import Tree
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 

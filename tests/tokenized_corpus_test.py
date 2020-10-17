@@ -1,4 +1,3 @@
-import types
 import unittest
 
 import penelope.corpus.tokenized_corpus as corpora

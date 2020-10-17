@@ -669,7 +669,7 @@ class VectorizedCorpus:
 
         return words_freq[:n]
 
-    def cooccurrence_matrix(self) -> scipy.sparce.spmatrix:
+    def cooccurrence_matrix(self) -> scipy.sparse.spmatrix:
         """Computes (document) cooccurence matrix
 
         Returns

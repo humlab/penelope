@@ -289,7 +289,7 @@ def test_run_model_cli():
     options = dict(
         name="test_corpus.xyz",
         n_topics=5,
-        corpus_folder='./tests/test_data/output',
+        corpus_folder='./tests/output',
         corpus_filename='./tests/test_data/test_corpus.zip',
         engine="gensim_lda-multicore",
         # passes=None,

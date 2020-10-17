@@ -1,7 +1,6 @@
-from penelope.corpus import readers
-import types
 import pytest  # pylint: disable=unused-import
 
+from penelope.corpus import readers
 from tests.utils import create_text_tokenizer
 
 
