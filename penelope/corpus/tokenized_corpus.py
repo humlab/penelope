@@ -14,7 +14,32 @@ from .tokens_transformer import (DEFAULT_TOKENS_TRANSFORM_OPTIONS,
 
 class TokenizedCorpus(ITokenizedCorpus):
     def __init__(self, reader: ICorpusReader, **tokens_transform_opts):
+        """[summary]
 
+        Parameters
+        ----------
+        reader : ICorpusReader
+            Corpus tokenizer/reader
+        tokens_transform_opts : kwargs
+            Passed to TokensTransformer and can be:
+                only_alphabetic: bool = False,
+                only_any_alphanumeric: bool = False,
+                to_lower: bool = False,
+                to_upper: bool = False,
+                min_len: int = None,
+                max_len: int = None,
+                remove_accents: bool = False,
+                remove_stopwords: bool = False,
+                stopwords: Any = None,
+                extra_stopwords: List[str] = None,
+                language: str = "swedish",
+                keep_numerals: bool = True,
+                keep_symbols: bool = True,
+        Raises
+        ------
+        TypeError
+            Readers does not conform to ICorpusReader
+        """
         if not hasattr(reader, 'metadata'):
             raise TypeError(f"Corpus reader {type(reader)} has no `metadata` property")
 
