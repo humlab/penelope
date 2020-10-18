@@ -1,4 +1,8 @@
 import json
+from typing import Any, Callable, Dict, List, Union
+
+import pandas as pd
+from penelope.corpus import readers
 
 import pytest  # pylint: disable=unused-import
 
@@ -479,9 +483,46 @@ def test_partition_documents():
 
     documents = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        tokenizer_opts=dict(filename_fields={'year': r"tran\_(\d{4}).*"}),
+        tokenizer_opts=dict(filename_fields="year:_:1", ),
     ).documents
 
     groups = documents.groupby('year')['filename'].aggregate(list).to_dict()
 
     assert expected_groups == groups
+
+
+def partition_documents(documents: pd.DataFrame, by: Union[str, List[str], Callable]) -> Dict[Any, List[str]]:
+
+    if 'filename' not in documents.columns:
+        raise ValueError("`filename` columns missing")
+
+    groups = documents.groupby(by=by)['filename'].aggregate(list).to_dict()
+
+    return groups
+
+class PartitionMixIn:
+
+    def partition_documents(self, by: Union[str, List[str], Callable]) -> Dict[Any, List[str]]:
+
+        if 'filename' not in self.documents.columns:
+            raise ValueError("`filename` columns missing")
+
+        groups = self.documents.groupby(by=by)['filename'].aggregate(list).to_dict()
+
+        return groups
+
+class SparvTokenizedCsvCorpus2(SparvTokenizedCsvCorpus, PartitionMixIn):
+    pass
+
+def test_partition_documents2():
+
+    expected_groups = {
+        2019: ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv'],
+    }
+
+    groups = SparvTokenizedCsvCorpus2(
+        SPARV_ZIPPED_CSV_EXPORT_FILENAME,
+        tokenizer_opts=dict(filename_fields="year:_:1", ),
+    ).partition_documents('year')
+
+    assert expected_groups[2019] == groups[2019]
