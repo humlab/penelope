@@ -7,7 +7,7 @@ from penelope.corpus.tokenized_corpus import ReiterableTerms
 
 
 class SimpleTestCorpus:
-    def __init__(self, filename: str, meta_fields: List[str] = None):
+    def __init__(self, filename: str, filename_fields: List[str] = None):
 
         with open(filename, 'r') as f:
             lines = f.readlines()
@@ -21,17 +21,14 @@ class SimpleTestCorpus:
         self.filenames = [x['filename'] for x in self.corpus_data]
         self.iterator = None
 
-        meta_data = {'filename': self.filenames, 'title': [x['title'] for x in self.corpus_data]}
+        metadata = {'filename': self.filenames, 'title': [x['title'] for x in self.corpus_data]}
 
-        if meta_fields is not None:
+        if filename_fields is not None:
 
-            filename_fields = utility.filename_field_parser(meta_fields)
-            filename_data = [
-                utility.extract_filename_fields(filename, **filename_fields) for filename in self.filenames
-            ]
-            meta_data = {**meta_data, **utility.list_of_dicts_to_dict_of_lists(filename_data)}
+            filename_data = [utility.extract_filename_fields(filename, filename_fields) for filename in self.filenames]
+            metadata = {**metadata, **utility.list_of_dicts_to_dict_of_lists(filename_data)}
 
-        self.documents = pd.DataFrame(data=meta_data)
+        self.documents = pd.DataFrame(data=metadata)
         if 'document_id' not in self.documents.columns:
             self.documents['document_id'] = self.documents.index
 

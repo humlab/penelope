@@ -86,6 +86,6 @@ def test_text_lines_corpus_interface():
     instance = SimpleTextLinesCorpus(
         filename='./tests/test_data/tranströmer.txt',
         fields={'filename': 0, 'title': 1, 'text': 2},
-        meta_fields=["year:_:1", "year_serial_id:_:2"],
+        filename_fields=["year:_:1", "year_serial_id:_:2"],
     )
     assert isinstance(instance, ITokenizedCorpus)

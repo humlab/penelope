@@ -1,18 +1,24 @@
-from typing import Dict, List
+from typing import Dict
 
 import pandas as pd
 
 import penelope.utility as utility
+from penelope.utility.file_utility import IndexOfSplitOrCallableOrRegExp
 
 from .interfaces import ITokenizedCorpus
 from .tokenized_corpus import ReiterableTerms
 
 
 class SimpleTextLinesCorpus(ITokenizedCorpus):
-
     """Corpus that reads a document-per-line text file """
 
-    def __init__(self, filename: str, fields: Dict[str, int], meta_fields: List[str] = None, sep: str = ' # '):
+    def __init__(
+        self,
+        filename: str,
+        fields: Dict[str, int],
+        filename_fields: IndexOfSplitOrCallableOrRegExp = None,
+        sep: str = ' # ',
+    ):
         """[summary]
 
         Parameters
@@ -47,12 +53,9 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
 
         fields_data = {k: v for k, v in data.items() if k != 'text'}
 
-        if meta_fields is not None:
+        if filename_fields is not None:
 
-            filename_fields = utility.filename_field_parser(meta_fields)
-            filename_data = [
-                utility.extract_filename_fields(filename, **filename_fields) for filename in self._filenames
-            ]
+            filename_data = [utility.extract_filename_fields(filename, filename_fields) for filename in self._filenames]
             fields_data = {**fields_data, **utility.list_of_dicts_to_dict_of_lists(filename_data)}
 
         self._documents = pd.DataFrame(data=fields_data)

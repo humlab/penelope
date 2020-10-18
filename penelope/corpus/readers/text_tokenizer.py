@@ -92,9 +92,7 @@ class TextTokenizer(ICorpusReader):
             source, filename_pattern=filename_pattern, filename_filter=filename_filter
         )
         self._basenames = [os.path.basename(filename) for filename in self._filenames]
-        self._metadata = [
-            file_utility.extract_filename_fields(x, **(filename_fields or dict())) for x in self._basenames
-        ]
+        self._metadata = [file_utility.extract_filename_fields(x, filename_fields) for x in self._basenames]
 
     def _create_iterator(self):
         return (

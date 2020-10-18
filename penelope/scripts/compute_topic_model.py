@@ -7,7 +7,6 @@ import click
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.corpus.tokenized_corpus as tokenized_corpus
 import penelope.topic_modelling as topic_modelling
-import penelope.utility.file_utility as file_utility
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -27,7 +26,7 @@ import penelope.utility.file_utility as file_utility
 @click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
 @click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
 @click.option('--prefix', default=None, help='Prefix.')
-@click.option('--meta-field', '-f', default=None, help='RegExp fields to extract from document name', multiple=True)
+@click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
 def compute_topic_model(
@@ -42,7 +41,7 @@ def compute_topic_model(
     workers,
     max_iter,
     prefix,
-    meta_field,
+    filename_field,
     store_corpus,
     compressed,
 ):
@@ -58,7 +57,7 @@ def compute_topic_model(
         workers=workers,
         max_iter=max_iter,
         prefix=prefix,
-        meta_field=meta_field,
+        filename_field=filename_field,
         store_corpus=store_corpus,
         compressed=compressed,
     )
@@ -76,7 +75,7 @@ def run_model(
     workers=None,
     max_iter=None,
     prefix=None,
-    meta_field=None,
+    filename_field=None,
     store_corpus=False,
     compressed=True,
 ):
@@ -85,6 +84,9 @@ def run_model(
     if corpus_filename is None and corpus_folder is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")
         sys.exit(1)
+
+    if len(filename_field or []) == 0:
+        click.echo("warning: no filename metadata fields specified (use option --filename-field")
 
     call_arguments = dict(locals())
 
@@ -117,7 +119,6 @@ def run_model(
     )
 
     # if SparvTokenizer opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
-    filename_fields = None if len(meta_field or []) == 0 else file_utility.filename_field_parser(meta_field)
 
     tokenizer = text_tokenizer.TextTokenizer(
         source=corpus_filename,
@@ -126,7 +127,7 @@ def run_model(
         filename_filter=None,
         fix_hyphenation=True,
         fix_whitespaces=False,
-        filename_fields=filename_fields,
+        filename_fields=filename_field,
     )
 
     corpus = tokenized_corpus.TokenizedCorpus(reader=tokenizer, **transformer_opts)

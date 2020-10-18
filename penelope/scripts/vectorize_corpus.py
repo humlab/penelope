@@ -1,7 +1,6 @@
 import click
 
 import penelope.corpus.vectorizer as corpus_vectorizer
-import penelope.utility as utility
 
 
 # pylint: disable=too-many-arguments
@@ -25,7 +24,7 @@ def split_filename(filename, sep='_'):
 @click.option('--only-alphanumeric', default=False, is_flag=True, help='TBD.')
 @click.option('--only-alphabetic', default=False, is_flag=True, help='')
 @click.option('--file-pattern', default='*.txt', help='')
-@click.option('--meta-field', '-f', help='RegExp fields to extract from document name', multiple=True)
+@click.option('--filename-field', '-f', help='RegExp fields to extract from document name', multiple=True)
 def vectorize_text_corpus(
     filename=None,
     output_folder=None,
@@ -39,7 +38,7 @@ def vectorize_text_corpus(
     only_alphanumeric=True,
     only_alphabetic=True,
     file_pattern='*.txt',
-    meta_field=None,
+    filename_field=None,
 ):
 
     kwargs = dict(
@@ -53,7 +52,7 @@ def vectorize_text_corpus(
         only_any_alphanumeric=only_alphanumeric,
         only_alphabetic=only_alphabetic,
         pattern=file_pattern,
-        filename_fields=utility.filename_field_parser(meta_field),
+        filename_fields=filename_field,
     )
 
     corpus_vectorizer.generate_corpus(filename, output_folder=output_folder, **kwargs)

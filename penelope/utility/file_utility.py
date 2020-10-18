@@ -224,7 +224,7 @@ def read_textfile(filename: str, as_binary: bool = False) -> str:
 #     return content
 
 
-def filename_field_parser(meta_fields):
+def filename_field_indexed_split_parser(filename_fields: List[str]):
     """Parses a list of meta-field expressions into a format (kwargs) suitable for `extract_filename_fields`
     The meta-field expressions must either of:
         `fieldname:regexp`
@@ -250,7 +250,7 @@ def filename_field_parser(meta_fields):
 
     try:
 
-        filename_fields = {x[0]: extract_field(x[1:]) for x in [y.split(':') for y in meta_fields]}
+        filename_fields = {x[0]: extract_field(x[1:]) for x in [y.split(':') for y in filename_fields]}
 
         return filename_fields
 
@@ -259,7 +259,12 @@ def filename_field_parser(meta_fields):
         sys.exit(-1)
 
 
-def extract_filename_fields(filename: str, **kwargs: Dict[str, Union[Callable, str]]) -> Dict[str, Union[int, str]]:
+IndexOfSplitOrCallableOrRegExp = Union[List[str], Dict[str, Union[Callable, str]]]
+
+
+def extract_filename_fields(
+    filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp
+) -> Dict[str, Union[int, str]]:
     """Extracts metadata from filename
 
     The extractor in kwargs must be either a regular expression that extracts the single value
@@ -302,7 +307,18 @@ def extract_filename_fields(filename: str, **kwargs: Dict[str, Union[Callable, s
 
         return lambda x: fx_or_re  # Return constant expression
 
-    key_fx = {key: fxify(fx_or_re) for key, fx_or_re in (kwargs or {}).items()}
+    if filename_fields is None:
+        return {}
+
+    if isinstance(filename_fields, list):
+        # List of `key:sep:index`
+        filename_fields = filename_field_indexed_split_parser(filename_fields)
+
+    if isinstance(filename_fields, str):
+        # List of `key:sep:index`
+        filename_fields = filename_field_indexed_split_parser(filename_fields.split('#'))
+
+    key_fx = {key: fxify(fx_or_re) for key, fx_or_re in filename_fields.items()}
 
     data = {'filename': filename}
     for key, fx in key_fx.items():
