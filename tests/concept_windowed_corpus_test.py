@@ -474,7 +474,7 @@ def test_partition_documents():
 
     expected_groups = {
         2019: ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv'],
-        2020: ['tran_2020_01_test.csv', 'tran_2020_02_test.csv']
+        2020: ['tran_2020_01_test.csv', 'tran_2020_02_test.csv'],
     }
 
     documents = SparvTokenizedCsvCorpus(
@@ -485,4 +485,3 @@ def test_partition_documents():
     groups = documents.groupby('year')['filename'].aggregate(list).to_dict()
 
     assert expected_groups == groups
-

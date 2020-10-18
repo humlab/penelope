@@ -9,7 +9,6 @@ from penelope.corpus.tokens_transformer import transformer_defaults_filter
 
 
 class SparvTokenizedXmlCorpus(tokenized_corpus.TokenizedCorpus):
-
     def __init__(
         self,
         source,
@@ -47,10 +46,7 @@ class SparvTokenizedXmlCorpus(tokenized_corpus.TokenizedCorpus):
                 xslt_filename=None,
                 append_pos="",
                 version=version,
-                **{
-                    'lemmatize': lemmatize,
-                    **(tokenizer_opts or {})
-                },
+                **{'lemmatize': lemmatize, **(tokenizer_opts or {})},
             )
 
         super().__init__(tokenizer, **transformer_defaults_filter(tokens_transform_opts))
@@ -102,10 +98,7 @@ class SparvTokenizedCsvCorpus(tokenized_corpus.TokenizedCorpus):
                 pos_includes=pos_includes,
                 pos_excludes=pos_excludes,
                 append_pos=append_pos,
-                **{
-                    'lemmatize': lemmatize,
-                    **(tokenizer_opts or {})
-                },
+                **{'lemmatize': lemmatize, **(tokenizer_opts or {})},
             )
         super().__init__(tokenizer, **transformer_defaults_filter(tokens_transform_opts))
 
@@ -140,7 +133,7 @@ def sparv_xml_extract_and_store(
         lemmatize=lemmatize,
         # append_pos=append_pos, FIXA
         tokenizer_opts=tokenizer_opts,
-        tokens_transform_opts=tokens_transform_opts
+        tokens_transform_opts=tokens_transform_opts,
     )
 
     file_utility.store(target, corpus)
