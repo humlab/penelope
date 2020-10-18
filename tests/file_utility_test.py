@@ -41,8 +41,15 @@ def test_strip_path_and_add_counter():
 
 
 def test_filename_satisfied_by():
-    # file_utility.filename_satisfied_by(filename, filename_filter)
-    pass
+
+    assert file_utility.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern=None)
+    assert file_utility.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern="*.txt")
+    assert not file_utility.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern="*.csv")
+    assert file_utility.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern="*.*")
+    assert file_utility.filename_satisfied_by("abc.txt", filename_filter=["abc.txt"], filename_pattern=None)
+    assert not file_utility.filename_satisfied_by("abc.txt", filename_filter=["abc.csv"], filename_pattern=None)
+    assert file_utility.filename_satisfied_by("abc.txt", filename_filter=lambda x: x in ["abc.txt"], filename_pattern=None)
+    assert not file_utility.filename_satisfied_by("abc.txt", filename_filter=lambda x: x not in ["abc.txt"], filename_pattern=None)
 
 
 def test_basename():
