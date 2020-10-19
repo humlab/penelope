@@ -1,18 +1,24 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Dict, Iterator, List
+from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
+from penelope import utility
 
-from penelope.interfaces import ICorpusReader
+from penelope.corpus.corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
+from .readers.interfaces import ICorpusReader
 
 from .interfaces import ITokenizedCorpus
-from .tokens_transformer import (DEFAULT_TOKENS_TRANSFORM_OPTIONS,
-                                 TokensTransformer)
+from .tokens_transformer import (DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer)
+
+import penelope.utility as utility
+
+logger = utility.getLogger("__penelope__")
 
 
-class TokenizedCorpus(ITokenizedCorpus):
+class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
+
     def __init__(self, reader: ICorpusReader, **tokens_transform_opts):
         """[summary]
 
@@ -46,8 +52,8 @@ class TokenizedCorpus(ITokenizedCorpus):
         if not hasattr(reader, 'filenames'):
             raise TypeError(f"Corpus reader {type(reader)} has no `filenames` property")
 
-        self.reader = reader
-        self._documents = pd.DataFrame(reader.metadata)
+        self.reader: ICorpusReader = reader
+        self._documents: pd.DataFrame = pd.DataFrame(reader.metadata)
 
         if 'document_id' not in self._documents:
             self._documents['document_id'] = list(self._documents.index)
@@ -61,24 +67,21 @@ class TokenizedCorpus(ITokenizedCorpus):
 
     def _create_document_tokens_stream(self):
 
-        n_raw_tokens = []
-        n_tokens = []
-        for dokument_name, tokens in self.reader:
+        doc_token_counts = []
+
+        for filename, tokens in self.reader:
 
             tokens = [x for x in tokens]
+            n_raw_tokens = len(tokens)
 
-            n_raw_tokens.append(len(tokens))
+            tokens = [x for x in self.transformer.transform(tokens)]
+            n_tokens = len(tokens)
 
-            tokens = self.transformer.transform(tokens)
+            doc_token_counts.append((filename, n_raw_tokens, n_tokens))
 
-            tokens = [x for x in tokens]
+            yield filename, tokens
 
-            n_tokens.append(len(tokens))
-
-            yield dokument_name, tokens
-
-        self._documents['n_raw_tokens'] = n_raw_tokens
-        self._documents['n_tokens'] = n_tokens
+        self._documents = self.update_token_counts(doc_token_counts)
 
     def _create_iterator(self):
         return self._create_document_tokens_stream()
@@ -99,6 +102,11 @@ class TokenizedCorpus(ITokenizedCorpus):
     def filenames(self) -> List[str]:
         return self.reader.filenames
 
+    def apply_filter(self, filename_filter: Union[str, Callable, Sequence]):
+        if not hasattr(self.reader, 'apply_filter'):
+            raise TypeError("apply_filter only valid for ICorpusReader")
+        self.reader.apply_filter(filename_filter)
+
     def __iter__(self):
         return self
 
@@ -112,11 +120,14 @@ class TokenizedCorpus(ITokenizedCorpus):
             raise
 
     def _generate_token2id(self):
+        logger.info("generating vocabulary...")
         token2id = defaultdict()
         token2id.default_factory = token2id.__len__
+        # FIXME: what happens if filtered is applied?
         for tokens in self.terms:
             for token in tokens:
                 _ = token2id[token]  # returns token_id
+        logger.info("vocabulary generated with %s tokens...", len(token2id))
         return dict(token2id)
 
     @property
@@ -124,6 +135,10 @@ class TokenizedCorpus(ITokenizedCorpus):
         if self._token2id is None:
             self._token2id = self._generate_token2id()
         return self._token2id
+
+    @property
+    def id2token(self):
+        return {v: k for k, v in self.token2id.items()}
 
     @property
     def id_terms(self) -> Iterator[Iterator[int]]:
@@ -134,6 +149,7 @@ class TokenizedCorpus(ITokenizedCorpus):
 
 
 class ReiterableTerms:
+
     def __init__(self, corpus):
 
         self.corpus = corpus

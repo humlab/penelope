@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 import logging
 import os
-from typing import Callable, Iterable, List, Tuple, Union
+from typing import Callable, Iterable, List, Sequence, Tuple, Union
 
 from nltk.tokenize import word_tokenize
 
@@ -25,6 +24,7 @@ def strip_path_and_add_counter(filename, n_chunk):
 
     return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
 
+FilenameCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
 # class TextTokenizer(collections.abc.Iterable[Tuple[str,List[str]]]):
 class TextTokenizer(ICorpusReader):
@@ -41,7 +41,7 @@ class TextTokenizer(ICorpusReader):
         transforms: List[Callable] = None,
         chunk_size: int = None,
         filename_pattern: str = None,
-        filename_filter: Union[Callable, List[str]] = None,
+        filename_filter: FilenameCallableOrSequenceFilter = None,
         filename_fields=None,
         tokenize: Callable = None,
         fix_whitespaces: bool = False,
@@ -73,49 +73,85 @@ class TextTokenizer(ICorpusReader):
         as_binary : bool, optional
             [description], by default False
         """
-        self.source = streamify_text_source(
-            source, filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
-        )
+        self._source = source
+        self._as_binary = as_binary
+        self._filename_filter = filename_filter
+        self._filename_fields = filename_fields
+        self._filename_pattern = filename_pattern
+        self._tokenize = tokenize or word_tokenize
         self.chunk_size = chunk_size
-        self.tokenize = tokenize or word_tokenize
 
         self.text_transformer = (
-            TextTransformer(transforms=transforms)
-            .add(TRANSFORMS.fix_unicode)
-            .add(TRANSFORMS.fix_whitespaces, condition=fix_whitespaces)
-            .add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
+            TextTransformer(transforms=transforms).add(
+                TRANSFORMS.fix_unicode
+            ).add(TRANSFORMS.fix_whitespaces,
+                  condition=fix_whitespaces).add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
         )
 
-        self.iterator = None
+        self._iterator = None
 
-        self._filenames = file_utility.list_filenames(
-            source, filename_pattern=filename_pattern, filename_filter=filename_filter
+        self._all_filenames = file_utility.list_filenames(
+            source, filename_pattern=filename_pattern, filename_filter=None
         )
-        self._basenames = [os.path.basename(filename) for filename in self._filenames]
-        self._metadata = [file_utility.extract_filename_fields(x, filename_fields) for x in self._basenames]
+
+        self._all_metadata = self._create_all_metadata()
+
+    def _get_texts(self):
+        return streamify_text_source(
+            self._source,
+            filename_pattern=self._filename_pattern,
+            filename_filter=self._filename_filter,
+            as_binary=self._as_binary
+        )
 
     def _create_iterator(self):
-        return (
-            (os.path.basename(document_name), document)
-            for (filename, content) in self.source
-            for document_name, document in self.process(filename, content)
-        )
+        return ((os.path.basename(filename), document) for (filename, content) in self._get_texts()
+                for filename, document in self.process(filename, content))
+
+    def _create_all_metadata(self):
+        return [
+            {
+                'filename': filename,
+                **file_utility.extract_filename_fields(filename, self._filename_fields)
+            }
+            for filename in file_utility.basenames(self._all_filenames)
+        ]
+
+    def _get_filenames(self):
+
+        if self._filename_filter is None:
+            return self._all_filenames
+
+        return [
+            filename for filename in self._all_filenames if
+            file_utility.filename_satisfied_by(filename, filename_pattern=None, filename_filter=self._filename_filter)
+        ]
+
+    def _get_metadata(self, basenames):
+
+        if self._filename_filter is None:
+            return self._all_metadata
+
+        return [metadata for metadata in self._all_metadata if metadata['filename'] in basenames]
 
     @property
     def filenames(self):
-        return self._filenames
+        return self._get_filenames()
 
     @property
     def metadata(self):
-        return self._metadata
+        return self._get_metadata(file_utility.basenames(self._get_filenames()))
 
     @property
     def metalookup(self):
-        return {x['filename']: x for x in (self._metadata or [])}
+        return {x['filename']: x for x in self.metadata}
 
     def preprocess(self, content: str) -> str:
         """Process of source text that happens before any tokenization e.g. XML to text transform """
         return content
+
+    def apply_filter(self, filename_filter: FilenameCallableOrSequenceFilter):
+        self._filename_filter = filename_filter
 
     def process(self, filename: str, content: str) -> Iterable[Tuple[str, List[str]]]:
         """Process a document and returns tokenized text, and optionally splits text in equal length chunks
@@ -132,7 +168,7 @@ class TextTokenizer(ICorpusReader):
         """
         text = self.preprocess(content)
         text = self.text_transformer.transform(text)
-        tokens = self.tokenize(text)
+        tokens = self._tokenize(text)
 
         if self.chunk_size is None:
 
@@ -148,16 +184,16 @@ class TextTokenizer(ICorpusReader):
 
                 stored_name = '{}_{}.txt'.format(strip_path_and_extension(filename), str(n_chunk + 1).zfill(3))
 
-                yield stored_name, tokens[i : i + self.chunk_size]
+                yield stored_name, tokens[i:i + self.chunk_size]
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        if self.iterator is None:
-            self.iterator = self._create_iterator()
+        if self._iterator is None:
+            self._iterator = self._create_iterator()
         try:
-            return next(self.iterator)
+            return next(self._iterator)
         except StopIteration:
-            self.iterator = None
+            self._iterator = None
             raise
