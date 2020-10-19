@@ -1,4 +1,12 @@
 [[package]]
+category = "main"
+description = "A new kind of Progress Bar, with real-time throughput, eta and very cool animations!"
+name = "alive-progress"
+optional = false
+python-versions = ">=2.7, <4"
+version = "1.6.1"
+
+[[package]]
 category = "dev"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 name = "appdirs"
@@ -9,7 +17,7 @@ version = "1.4.4"
 [[package]]
 category = "main"
 description = "Disable App Nap on OS X 10.9"
-marker = "python_version >= \"3.3\" and sys_platform == \"darwin\" or platform_system == \"Darwin\""
+marker = "sys_platform == \"darwin\" or platform_system == \"Darwin\" or python_version >= \"3.3\" and sys_platform == \"darwin\""
 name = "appnope"
 optional = false
 python-versions = "*"
@@ -79,7 +87,6 @@ tests_no_zope = ["coverage (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0
 [[package]]
 category = "main"
 description = "Specifications for callback functions passed in to an API"
-marker = "python_version >= \"3.3\""
 name = "backcall"
 optional = false
 python-versions = "*"
@@ -471,7 +478,6 @@ requirements_deprecated_finder = ["pipreqs", "pip-api"]
 [[package]]
 category = "main"
 description = "An autocompletion tool for Python that can be used for text editors."
-marker = "python_version >= \"3.3\""
 name = "jedi"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -897,7 +903,6 @@ version = "1.4.2"
 [[package]]
 category = "main"
 description = "A Python Parser"
-marker = "python_version >= \"3.3\""
 name = "parso"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -929,7 +934,7 @@ six = "*"
 [[package]]
 category = "main"
 description = "Pexpect allows easy control of interactive console applications."
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\""
+marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\""
 name = "pexpect"
 optional = false
 python-versions = "*"
@@ -941,7 +946,6 @@ ptyprocess = ">=0.5"
 [[package]]
 category = "main"
 description = "Tiny 'shelve'-like database with concurrency support"
-marker = "python_version >= \"3.3\""
 name = "pickleshare"
 optional = false
 python-versions = "*"
@@ -1000,7 +1004,6 @@ twisted = ["twisted"]
 [[package]]
 category = "main"
 description = "Library for building powerful interactive command lines in Python"
-marker = "python_version >= \"3.3\""
 name = "prompt-toolkit"
 optional = false
 python-versions = ">=3.6.1"
@@ -1012,7 +1015,7 @@ wcwidth = "*"
 [[package]]
 category = "main"
 description = "Run a subprocess in a pseudo terminal"
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or os_name != \"nt\""
+marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\" or os_name != \"nt\" or python_version >= \"3.3\" and sys_platform != \"win32\" and (python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\")"
 name = "ptyprocess"
 optional = false
 python-versions = "*"
@@ -1624,11 +1627,15 @@ python-versions = "*"
 version = "0.30.0"
 
 [metadata]
-content-hash = "2ce8964f54b75461e1376c85f0e6b392e74a0ab4aacc077118327e5bfaca684d"
+content-hash = "c43c8030716c4dc972bc2f6683272aaa32fc24bab6e3465ace4d43f45c6637ab"
 lock-version = "1.0"
 python-versions = "^3.8"
 
 [metadata.files]
+alive-progress = [
+    {file = "alive-progress-1.6.1.tar.gz", hash = "sha256:2a0d7516ec0f596d5ce53755c0913a909eb1c91854e1d782e511ef5e1dd53218"},
+    {file = "alive_progress-1.6.1-py3-none-any.whl", hash = "sha256:9a0fae6b94fb4e4bcd9fb51760506d29a33358ebbfef2c6516dce3e359a661b5"},
+]
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
