@@ -7,7 +7,7 @@ import textacy
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.utility as utility
 import penelope.utility.file_utility as file_utility
-from penelope.interfaces import ICorpusReader
+from penelope.corpus.readers.interfaces import ICorpusReader
 
 from .language import create_nlp
 
