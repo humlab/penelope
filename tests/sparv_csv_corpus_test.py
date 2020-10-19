@@ -287,7 +287,7 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
             chunk_size=None,
         ),
         tokens_transform_opts=dict(
-            to_upper=True,
+            to_lower=True,
         ),
         lemmatize=True,
     )
