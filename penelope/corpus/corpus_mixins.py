@@ -1,8 +1,9 @@
+import logging
 import os
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import pandas as pd
-import logging
+
 
 class PartitionMixIn:
 
@@ -15,12 +16,14 @@ class PartitionMixIn:
 
         return groups
 
+
 def stripext(filename):
     return os.path.splitext(filename)[0]
 
+
 class UpdateTokenCountsMixIn:
 
-    def update_token_counts(self, doc_token_counts: List[Tuple[str,int,int]]) -> pd.DataFrame:
+    def update_token_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> pd.DataFrame:
 
         _documents = self._documents
 
@@ -30,7 +33,6 @@ class UpdateTokenCountsMixIn:
             df_counts['_basename'] = df_counts.filename.apply(stripext)
             df_counts = df_counts.set_index('_basename')\
                 .drop('filename', axis=1)
-
 
             if '_basename' not in _documents.columns:
                 _documents['_basename'] = _documents.filename.apply(stripext)
