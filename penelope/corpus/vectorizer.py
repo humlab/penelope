@@ -1,5 +1,8 @@
+from collections import defaultdict
 import logging
 import os
+from penelope.corpus.interfaces import ITokenizedCorpus
+from typing import Callable, Mapping
 
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -8,23 +11,72 @@ from . import readers, tokenized_corpus, vectorized_corpus
 logger = logging.getLogger("corpus_vectorizer")
 
 
+def _default_tokenizer(lowercase=True):
+
+    def _lowerccase_tokenize(tokens):
+        return [x.lower() for x in tokens]
+
+    def _no_tokenize(tokens):
+        return tokens
+
+    if lowercase:
+        return lambda tokens: [ x.lower() for x in tokens]
+
+    return _lowerccase_tokenize if lowercase else _no_tokenize
+
 class CorpusVectorizer:
-    def __init__(self, **kwargs):
+
+    def __init__(self):
         self.vectorizer = None
-        self.kwargs = kwargs
-        self.tokenizer = lambda x: x.split()
+        self.vectorizer_opts = {}
 
-    # FIXME Allow for non-tokenized corpus to be passed in
-    def fit_transform(self, corpus: tokenized_corpus.TokenizedCorpus) -> vectorized_corpus.VectorizedCorpus:
+    def fit_transform(
+        self,
+        corpus: tokenized_corpus.TokenizedCorpus,
+        *,
+        vocabulary: Mapping[str, int] = None,
+        tokenizer: Callable = None,
+        lowercase: bool = False,
+        stop_words: str = None,
+        max_df: float = 1.0,
+        min_df: int = 1,
+    ) -> vectorized_corpus.VectorizedCorpus:
+        """Returns a vectorized corpus from of `corpus`
 
-        # if isinstance(corpus, TokenizedCorpus):
-        texts = (' '.join(tokens) for _, tokens in corpus)
-        # elif isinstance()
-        self.vectorizer = CountVectorizer(tokenizer=self.tokenizer, **self.kwargs)
+        Note:
+          -  Input texts are already tokenized, so tokenizer is an identity function
 
-        bag_term_matrix = self.vectorizer.fit_transform(texts)
+        Parameters
+        ----------
+        corpus : tokenized_corpus.TokenizedCorpus
+            [description]
+
+        Returns
+        -------
+        vectorized_corpus.VectorizedCorpus
+            [description]
+        """
+
+        if isinstance(corpus, ITokenizedCorpus):
+            lowercase = False
+
+        vectorizer_opts = dict(
+            tokenizer=tokenizer or _default_tokenizer(lowercase=lowercase),
+            lowercase=lowercase,
+            stop_words=stop_words,
+            max_df=max_df,
+            min_df=min_df,
+            vocabulary=vocabulary
+        )
+
+        self.vectorizer = CountVectorizer(**vectorizer_opts)
+        self.vectorizer_opts = vectorizer_opts
+
+        bag_term_matrix = self.vectorizer.fit_transform(corpus.terms)
         token2id = self.vectorizer.vocabulary_
         documents = corpus.documents
+
+        # ignored_words = self.vectorizer.stop_words_
 
         v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, documents)
 
