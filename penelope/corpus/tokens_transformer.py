@@ -64,7 +64,7 @@ class TokensTransformer:
             self.to_lower()
 
         if to_upper:
-            self.to_lower()
+            self.to_upper()
 
         if max_len is not None:
             self.max_chars_filter(max_len)
