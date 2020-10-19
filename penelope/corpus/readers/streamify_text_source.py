@@ -56,12 +56,14 @@ def streamify_text_source(
             )
 
         text = file_utility.read_textfile(text_source, as_binary=as_binary)
-        return ((text_source, text), )
+        return ((text_source, text),)
 
     if os.path.isdir(text_source):
 
-        return ((os.path.basename(filename), file_utility.read_textfile(filename, as_binary=as_binary))
-                for filename in glob.glob(os.path.join(text_source, filename_pattern))
-                if file_utility.filename_satisfied_by(os.path.basename(filename), filename_filter))
+        return (
+            (os.path.basename(filename), file_utility.read_textfile(filename, as_binary=as_binary))
+            for filename in glob.glob(os.path.join(text_source, filename_pattern))
+            if file_utility.filename_satisfied_by(os.path.basename(filename), filename_filter)
+        )
 
     return (('document', x) for x in [text_source])

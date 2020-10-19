@@ -12,7 +12,6 @@ logger = logging.getLogger("corpus_vectorizer")
 
 
 def _default_tokenizer(lowercase=True):
-
     def _lowerccase_tokenize(tokens):
         return [x.lower() for x in tokens]
 
@@ -26,7 +25,6 @@ def _default_tokenizer(lowercase=True):
 
 
 class CorpusVectorizer:
-
     def __init__(self):
         self.vectorizer = None
         self.vectorizer_opts = {}
@@ -67,7 +65,7 @@ class CorpusVectorizer:
             stop_words=stop_words,
             max_df=max_df,
             min_df=min_df,
-            vocabulary=vocabulary
+            vocabulary=vocabulary,
         )
 
         self.vectorizer = CountVectorizer(**vectorizer_opts)

@@ -60,11 +60,11 @@ def to_dataframe(
         [description]
     """
     coo_df = (
-        pd.DataFrame({
-            'w1_id': term_term_matrix.row,
-            'w2_id': term_term_matrix.col,
-            'value': term_term_matrix.data
-        })[['w1_id', 'w2_id', 'value']].sort_values(['w1_id', 'w2_id']).reset_index(drop=True)
+        pd.DataFrame({'w1_id': term_term_matrix.row, 'w2_id': term_term_matrix.col, 'value': term_term_matrix.data})[
+            ['w1_id', 'w2_id', 'value']
+        ]
+        .sort_values(['w1_id', 'w2_id'])
+        .reset_index(drop=True)
     )
 
     if min_count > 1:

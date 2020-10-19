@@ -1,6 +1,6 @@
-from penelope.corpus.readers.text_tokenizer import TextTokenizer
 import pytest  # pylint: disable=unused-import
 
+from penelope.corpus.readers.text_tokenizer import TextTokenizer
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
@@ -10,7 +10,9 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
     )
 
     return corpus
@@ -68,36 +70,155 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
     }
 
     expected_tokens = {
-        2019: [[
-            'kyrka', 'turist', 'halvmörker', 'valv', 'valv', 'överblick', 'ljuslåga', 'ängel', 'ansikte', 'kropp',
-            'människa', 'valv', 'valv', 'tår', 'piazza', 'mr', 'mrs', 'herr', 'signora', 'valv', 'valv'
+        2019: [
+            [
+                'kyrka',
+                'turist',
+                'halvmörker',
+                'valv',
+                'valv',
+                'överblick',
+                'ljuslåga',
+                'ängel',
+                'ansikte',
+                'kropp',
+                'människa',
+                'valv',
+                'valv',
+                'tår',
+                'piazza',
+                'mr',
+                'mrs',
+                'herr',
+                'signora',
+                'valv',
+                'valv',
+            ],
+            [
+                'kör',
+                'natt',
+                'hus',
+                'strålkastarsken',
+                'hus',
+                'lada',
+                'fordon',
+                'nu',
+                'liv',
+                'människa',
+                'del',
+                'anletsdrag',
+                'träning',
+                'evighet',
+                'allt',
+                'sömn',
+                'bom',
+                'mysterium',
+            ],
+            [
+                'skog',
+                'glänta',
+                'glänta',
+                'omslut',
+                'skog',
+                'själv',
+                'stam',
+                'lav',
+                'skäggstubb',
+                'träd',
+                'topp',
+                'kvist',
+                'ljus',
+                'skugga',
+                'skugga',
+                'kärr',
+                'plats',
+                'gräs',
+                'sten',
+                'vara',
+                'grundsten',
+                'hus',
+                'här',
+                'upplysning',
+                'namn',
+                'arkiv',
+                'arkiv',
+                'tradition',
+                'död',
+                'minne',
+                'zigenarstammen',
+                'men',
+                'torp',
+                'röst',
+                'värld',
+                'centrum',
+                'invånare',
+                'krönika',
+                'öde',
+                'år',
+                'torp',
+                'sfinx',
+                'grundsten',
+                'sätt',
+                'måste',
+                'nu',
+                'snår',
+                'sida',
+                'steg',
+                'gångstig',
+                'kommunikationsnät',
+                'kraftledningsstolpen',
+                'skalbagge',
+                'sol',
+                'sköld',
+                'flygvingarna',
+                'fallskärm',
+                'expert',
+            ],
         ],
-               [
-                   'kör', 'natt', 'hus', 'strålkastarsken', 'hus', 'lada', 'fordon', 'nu', 'liv', 'människa', 'del',
-                   'anletsdrag', 'träning', 'evighet', 'allt', 'sömn', 'bom', 'mysterium'
-               ],
-               [
-                   'skog', 'glänta', 'glänta', 'omslut', 'skog', 'själv', 'stam', 'lav', 'skäggstubb', 'träd', 'topp',
-                   'kvist', 'ljus', 'skugga', 'skugga', 'kärr', 'plats', 'gräs', 'sten', 'vara', 'grundsten', 'hus',
-                   'här', 'upplysning', 'namn', 'arkiv', 'arkiv', 'tradition', 'död', 'minne', 'zigenarstammen', 'men',
-                   'torp', 'röst', 'värld', 'centrum', 'invånare', 'krönika', 'öde', 'år', 'torp', 'sfinx', 'grundsten',
-                   'sätt', 'måste', 'nu', 'snår', 'sida', 'steg', 'gångstig', 'kommunikationsnät',
-                   'kraftledningsstolpen', 'skalbagge', 'sol', 'sköld', 'flygvingarna', 'fallskärm', 'expert'
-               ]],
-        2020: [[
-            'vrak', 'kretsande', 'punkt', 'stillhet', 'hav', 'ljus', 'betsel', 'tång', 'strand', 'jord', 'mörker',
-            'fladdermus', 'vrak', 'stjärna'
+        2020: [
+            [
+                'vrak',
+                'kretsande',
+                'punkt',
+                'stillhet',
+                'hav',
+                'ljus',
+                'betsel',
+                'tång',
+                'strand',
+                'jord',
+                'mörker',
+                'fladdermus',
+                'vrak',
+                'stjärna',
+            ],
+            [
+                'år',
+                'stövel',
+                'sol',
+                'träd',
+                'vind',
+                'frihet',
+                'berg',
+                'fot',
+                'barrskogsbränningen',
+                'men',
+                'sommar',
+                'dyning',
+                'träd',
+                'topp',
+                'ögonblick',
+                'kust',
+            ],
         ],
-               [
-                   'år', 'stövel', 'sol', 'träd', 'vind', 'frihet', 'berg', 'fot', 'barrskogsbränningen', 'men',
-                   'sommar', 'dyning', 'träd', 'topp', 'ögonblick', 'kust'
-               ]],
     }
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
         pos_includes='|NN|',
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
         tokens_transform_opts=dict(
             min_len=2,
             to_upper=True,

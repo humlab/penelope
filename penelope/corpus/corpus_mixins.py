@@ -6,7 +6,6 @@ import pandas as pd
 
 
 class PartitionMixIn:
-
     def partition_documents(self, by: Union[str, List[str], Callable]) -> Dict[Any, List[str]]:
 
         if 'filename' not in self.documents.columns:
@@ -22,7 +21,6 @@ def stripext(filename):
 
 
 class UpdateTokenCountsMixIn:
-
     def update_token_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> pd.DataFrame:
 
         _documents = self._documents
@@ -31,8 +29,7 @@ class UpdateTokenCountsMixIn:
 
             df_counts = pd.DataFrame(data=doc_token_counts, columns=['filename', 'x_raw_tokens', 'x_tokens'])
             df_counts['_basename'] = df_counts.filename.apply(stripext)
-            df_counts = df_counts.set_index('_basename')\
-                .drop('filename', axis=1)
+            df_counts = df_counts.set_index('_basename').drop('filename', axis=1)
 
             if '_basename' not in _documents.columns:
                 _documents['_basename'] = _documents.filename.apply(stripext)

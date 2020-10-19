@@ -18,7 +18,6 @@ logger = utility.getLogger("__penelope__")
 
 
 class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
-
     def __init__(self, reader: ICorpusReader, **tokens_transform_opts):
         """[summary]
 
@@ -149,7 +148,6 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
 
 
 class ReiterableTerms:
-
     def __init__(self, corpus):
 
         self.corpus = corpus

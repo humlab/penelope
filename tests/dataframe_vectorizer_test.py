@@ -159,7 +159,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         reader = readers.DataFrameTextTokenizer(self.create_test_dataframe())
         kwargs = dict(to_lower=False, remove_accents=False, min_len=1, max_len=None, keep_numerals=False)
         corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=False, **kwargs)
-        vectorizer = corpus_vectorizer.CorpusVectorizer(lowercase=False)
+        vectorizer = corpus_vectorizer.CorpusVectorizer()
         v_corpus = vectorizer.fit_transform(corpus)
         expected = np.asarray(
             [
@@ -182,7 +182,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         reader = readers.DataFrameTextTokenizer(self.create_test_dataframe())
         kwargs = dict(to_lower=False, remove_accents=False, min_len=1, max_len=None, keep_numerals=False)
         corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=False, **kwargs)
-        vectorizer = corpus_vectorizer.CorpusVectorizer(lowercase=False)
+        vectorizer = corpus_vectorizer.CorpusVectorizer()
         v_corpus = vectorizer.fit_transform(corpus)
 
         # Act

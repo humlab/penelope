@@ -54,10 +54,7 @@ def basenames(filenames: List[str]) -> List[str]:
 
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
 def create_iterator(
-    folder_or_zip: str,
-    filenames: List[str] = None,
-    filename_pattern: str = '*.txt',
-    as_binary: bool = False
+    folder_or_zip: str, filenames: List[str] = None, filename_pattern: str = '*.txt', as_binary: bool = False
 ) -> Tuple[str, Iterator[str]]:
 
     filenames = filenames or list_filenames(folder_or_zip, filename_pattern=filename_pattern)
@@ -137,8 +134,10 @@ def list_filenames(
         raise ValueError(f"Source '{text_source}' not found. Only folder or ZIP or file are valid arguments")
 
     return [
-        filename for filename in sorted(filenames) if filename_satisfied_by(filename, filename_filter) and
-        (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+        filename
+        for filename in sorted(filenames)
+        if filename_satisfied_by(filename, filename_filter)
+        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]
 
 
@@ -272,8 +271,8 @@ def filename_field_indexed_split_parser(filename_fields: List[str]):
 IndexOfSplitOrCallableOrRegExp = Union[List[str], Dict[str, Union[Callable, str]]]
 FilenameFields = Dict[str, Union[int, str]]
 
-def extract_filename_fields(filename: str,
-                            filename_fields: IndexOfSplitOrCallableOrRegExp) -> FilenameFields:
+
+def extract_filename_fields(filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp) -> FilenameFields:
     """Extracts metadata from filename
 
     The extractor in kwargs must be either a regular expression that extracts the single value
@@ -337,9 +336,11 @@ def extract_filename_fields(filename: str,
 
     return data
 
+
 # def extract_filename_fields_list(filenames: List[str], filename_fields: IndexOfSplitOrCallableOrRegExp) -> List[FilenameFields]:
 
 #     return [extract_filename_fields(x, filename_fields) for x in filenames]
+
 
 def export_excel_to_text(excel_file: str, text_file: str) -> pd.DataFrame:
     """Exports Excel to a tab-seperated text file"""
@@ -356,7 +357,7 @@ def read_text_file(filename: str) -> pd.DataFrame:
 
 def find_parent_folder(name: str) -> str:
     path = pathlib.Path(os.getcwd())
-    folder = os.path.join(*path.parts[:path.parts.index(name) + 1])
+    folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
     return folder
 
 

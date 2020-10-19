@@ -275,14 +275,12 @@ class Test_ProcessedCorpus(unittest.TestCase):
         expected = [18, 14, 24, 42, 18]
         self.assertEqual(expected, n_tokens)
 
-
     def test_corpus_can_be_reiterated(self):
 
         reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
 
         corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=True)
-        for i in range(0,4):
+        for i in range(0, 4):
             n_tokens = [len(x) for x in corpus.terms]
             expected = [18, 14, 24, 42, 18]
             self.assertEqual(expected, n_tokens, f"iteration{i}")
-

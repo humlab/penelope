@@ -48,8 +48,12 @@ def test_filename_satisfied_by():
     assert file_utility.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern="*.*")
     assert file_utility.filename_satisfied_by("abc.txt", filename_filter=["abc.txt"], filename_pattern=None)
     assert not file_utility.filename_satisfied_by("abc.txt", filename_filter=["abc.csv"], filename_pattern=None)
-    assert file_utility.filename_satisfied_by("abc.txt", filename_filter=lambda x: x in ["abc.txt"], filename_pattern=None)
-    assert not file_utility.filename_satisfied_by("abc.txt", filename_filter=lambda x: x not in ["abc.txt"], filename_pattern=None)
+    assert file_utility.filename_satisfied_by(
+        "abc.txt", filename_filter=lambda x: x in ["abc.txt"], filename_pattern=None
+    )
+    assert not file_utility.filename_satisfied_by(
+        "abc.txt", filename_filter=lambda x: x not in ["abc.txt"], filename_pattern=None
+    )
 
 
 def test_basename():

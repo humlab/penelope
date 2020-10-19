@@ -1,4 +1,3 @@
-
 import penelope.corpus.readers as readers
 from penelope.corpus import CorpusVectorizer
 from penelope.corpus import TokenizedCorpus
@@ -254,10 +253,10 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
         'rönnbärsklasar': 3,
         'stjärnbilderna': 4,
         'ordentligt': 2,
-        'verkligheten': 5
+        'verkligheten': 5,
     }
 
-    expected_vocabulary_reversed = { k: abs(v-5) for k,v in expected_vocabulary.items() }
+    expected_vocabulary_reversed = {k: abs(v - 5) for k, v in expected_vocabulary.items()}
 
     corpus = TokenizedCorpus(
         reader=create_reader(),

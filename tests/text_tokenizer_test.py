@@ -23,7 +23,6 @@ def test_archive_filenames_when_filter_md_returns_md_files():
 
 
 def test_archive_filenames_when_filter_function_txt_returns_txt_files():
-
     def filename_filter(x):
         return x.endswith('txt')
 
@@ -43,8 +42,10 @@ def test_get_file_when_default_returns_unmodified_content():
     reader = create_text_tokenizer(fix_whitespaces=False, fix_hyphenation=True, filename_filter=[document_name])
     result = next(reader)
     expected = (
-        "Tre svarta ekar ur snön . " + "Så grova , men fingerfärdiga . " + "Ur deras väldiga flaskor " +
-        "ska grönskan skumma i vår ."
+        "Tre svarta ekar ur snön . "
+        + "Så grova , men fingerfärdiga . "
+        + "Ur deras väldiga flaskor "
+        + "ska grönskan skumma i vår ."
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -65,8 +66,10 @@ def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
     reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name])
     result = next(reader)
     expected = (
-        "Tre svarta ekar ur snön . " + "Så grova , men fingerfärdiga . " + "Ur deras väldiga flaskor " +
-        "ska grönskan skumma i vår ."
+        "Tre svarta ekar ur snön . "
+        + "Så grova , men fingerfärdiga . "
+        + "Ur deras väldiga flaskor "
+        + "ska grönskan skumma i vår ."
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -77,8 +80,9 @@ def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
     reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name])
     result = next(reader)
     expected = (
-        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man " +
-        "stjärnbilderna stampa i sina spiltor " + "högt över trädet"
+        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
+        + "stjärnbilderna stampa i sina spiltor "
+        + "högt över trädet"
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -92,8 +96,9 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
     )
     result = next(reader)
     expected = (
-        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man " +
-        "stjärnbilderna stampa i sina spiltor " + "högt över trädet"
+        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
+        + "stjärnbilderna stampa i sina spiltor "
+        + "högt över trädet"
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -153,9 +158,7 @@ def test_reader_can_be_reiterated():
     reader: TextTokenizer = create_text_tokenizer(
         filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True
     )
-    for _ in range(0,4):
+    for _ in range(0, 4):
         n_tokens = [len(x) for _, x in reader]
         expected = [22, 16, 26, 45, 21]
-        assert expected ==  n_tokens
-
-
+        assert expected == n_tokens
