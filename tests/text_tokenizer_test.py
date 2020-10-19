@@ -1,6 +1,7 @@
 import pytest  # pylint: disable=unused-import
 
 from penelope.corpus import readers
+from penelope.corpus.readers.text_tokenizer import TextTokenizer
 from tests.utils import create_text_tokenizer
 
 
@@ -22,6 +23,7 @@ def test_archive_filenames_when_filter_md_returns_md_files():
 
 
 def test_archive_filenames_when_filter_function_txt_returns_txt_files():
+
     def filename_filter(x):
         return x.endswith('txt')
 
@@ -41,13 +43,21 @@ def test_get_file_when_default_returns_unmodified_content():
     reader = create_text_tokenizer(fix_whitespaces=False, fix_hyphenation=True, filename_filter=[document_name])
     result = next(reader)
     expected = (
-        "Tre svarta ekar ur snön . "
-        + "Så grova , men fingerfärdiga . "
-        + "Ur deras väldiga flaskor "
-        + "ska grönskan skumma i vår ."
+        "Tre svarta ekar ur snön . " + "Så grova , men fingerfärdiga . " + "Ur deras väldiga flaskor " +
+        "ska grönskan skumma i vår ."
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
+
+
+def test_metadata_has_filena():
+    tokenizer = create_text_tokenizer()
+    assert tokenizer is not None
+    assert tokenizer.filenames is not None
+    assert len(tokenizer.filenames) > 0
+    assert len(tokenizer.metadata) > 0
+    assert len(tokenizer.metadata[0].keys()) > 0
+    assert 'filename' in tokenizer.metadata[0]
 
 
 def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
@@ -55,10 +65,8 @@ def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
     reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name])
     result = next(reader)
     expected = (
-        "Tre svarta ekar ur snön . "
-        + "Så grova , men fingerfärdiga . "
-        + "Ur deras väldiga flaskor "
-        + "ska grönskan skumma i vår ."
+        "Tre svarta ekar ur snön . " + "Så grova , men fingerfärdiga . " + "Ur deras väldiga flaskor " +
+        "ska grönskan skumma i vår ."
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -69,9 +77,8 @@ def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
     reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name])
     result = next(reader)
     expected = (
-        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
-        + "stjärnbilderna stampa i sina spiltor "
-        + "högt över trädet"
+        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man " +
+        "stjärnbilderna stampa i sina spiltor " + "högt över trädet"
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -85,9 +92,8 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
     )
     result = next(reader)
     expected = (
-        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
-        + "stjärnbilderna stampa i sina spiltor "
-        + "högt över trädet"
+        "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man " +
+        "stjärnbilderna stampa i sina spiltor " + "högt över trädet"
     )
     assert document_name == result[0]
     assert expected == ' '.join(result[1])
@@ -109,3 +115,47 @@ def test_get_index_when_extractor_passed_returns_metadata():
     assert len(expected) == len(result)
     for i in range(0, len(expected)):
         assert expected[i] == result[i]
+
+
+def test_get_index_when_extractor_passed_returns_metadata2():
+    filename_fields = "year:_:1#serial_no:_:2"
+    reader: TextTokenizer = create_text_tokenizer(
+        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
+    )
+    result = reader.metadata
+    expected = [
+        dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
+        dict(filename='dikt_2019_02_test.txt', serial_no=2, year=2019),
+        dict(filename='dikt_2019_03_test.txt', serial_no=3, year=2019),
+        dict(filename='dikt_2020_01_test.txt', serial_no=1, year=2020),
+        dict(filename='dikt_2020_02_test.txt', serial_no=2, year=2020),
+    ]
+
+    assert len(expected) == len(result)
+    for i in range(0, len(expected)):
+        assert expected[i] == result[i]
+
+    reader.apply_filter(['dikt_2019_01_test.txt', 'dikt_2019_02_test.txt'])
+
+    result = reader.metadata
+    expected = [
+        dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
+        dict(filename='dikt_2019_02_test.txt', serial_no=2, year=2019),
+    ]
+
+    assert len(expected) == len(result)
+    for i in range(0, len(expected)):
+        assert expected[i] == result[i]
+
+
+def test_reader_can_be_reiterated():
+
+    reader: TextTokenizer = create_text_tokenizer(
+        filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True
+    )
+    for _ in range(0,4):
+        n_tokens = [len(x) for _, x in reader]
+        expected = [22, 16, 26, 45, 21]
+        assert expected ==  n_tokens
+
+

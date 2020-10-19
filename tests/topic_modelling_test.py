@@ -270,7 +270,7 @@ def test_run_cli():
         # 'workers': None,
         # 'max_iter': None,
         # 'prefix': None,
-        'meta_field': ('year:_:1', 'sequence_id:_:2'),
+        'filename_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
     run_model(**kwargs)

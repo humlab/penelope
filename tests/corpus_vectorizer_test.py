@@ -1,64 +1,9 @@
-import unittest
-
-import pandas as pd
 
 import penelope.corpus.readers as readers
-import penelope.corpus.tokenized_corpus as corpora
-import tests.utils as test_utils
-from penelope.corpus import vectorizer as corpus_vectorizer
-from penelope.corpus.interfaces import ITokenizedCorpus
+from penelope.corpus import CorpusVectorizer
+from penelope.corpus import TokenizedCorpus
 
-
-def flatten(lst):
-    return [x for ws in lst for x in ws]
-
-
-class MockedProcessedCorpus(ITokenizedCorpus):
-    def __init__(self, mock_data):
-        self.data = [(f, self.generate_document(ws)) for f, ws in mock_data]
-        self.token2id = self.create_token2id()
-        self.n_tokens = {f: len(d) for f, d in mock_data}
-        self.iterator = None
-        self._metadata = [dict(filename=filename, year=filename.split('_')[1]) for filename, _ in self.data]
-        self._documents = pd.DataFrame(self._metadata)
-
-    @property
-    def terms(self):
-        return [tokens for _, tokens in self.data]
-
-    @property
-    def filenames(self):
-        return list(self.documents.filename)
-
-    @property
-    def metadata(self):
-        return self._metadata
-
-    @property
-    def documents(self):
-        return self._documents
-
-    def create_token2id(self):
-        return {w: i for i, w in enumerate(sorted(list(set(flatten([x[1] for x in self.data])))))}
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.iterator is None:
-            self.iterator = ((x, y) for x, y in self.data)
-        try:
-            return next(self.iterator)
-        except StopIteration:
-            self.iterator = None
-            raise
-
-    def generate_document(self, words):
-        if isinstance(words, str):
-            document = words.split()
-        else:
-            document = flatten([n * w for n, w in words])
-        return document
+from . import utils as test_utils
 
 
 def mock_corpus():
@@ -69,241 +14,261 @@ def mock_corpus():
         ('document_2014_2.txt', "a a b b b b c d"),
         ('document_2014_2.txt', "a a c d"),
     ]
-    corpus = MockedProcessedCorpus(mock_corpus_data)
+    corpus = test_utils.MockedProcessedCorpus(mock_corpus_data)
     return corpus
 
 
-class Test_CorpusVectorizer(unittest.TestCase):
-    def setUp(self):
-        pass
+def create_reader():
+    filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
+    reader = test_utils.create_text_tokenizer(
+        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
+    )
+    return reader
 
-    def create_reader(self):
-        filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = test_utils.create_text_tokenizer(
-            filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
-        )
-        return reader
 
-    def create_corpus(self):
-        reader = self.create_reader()
-        kwargs = dict(
-            only_any_alphanumeric=True,
-            to_lower=True,
-            remove_accents=False,
-            min_len=2,
-            max_len=None,
-            keep_numerals=False,
-        )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
-        return corpus
+def create_corpus():
+    reader = create_reader()
+    kwargs = dict(
+        only_any_alphanumeric=True,
+        to_lower=True,
+        remove_accents=False,
+        min_len=2,
+        max_len=None,
+        keep_numerals=False,
+    )
+    corpus = TokenizedCorpus(reader, **kwargs)
+    return corpus
 
-    def test_create_text_tokenizer_smoke_test(self):
-        kwargs = {}
-        reader = readers.TextTokenizer(test_utils.TEST_CORPUS_FILENAME, **kwargs)
-        assert reader is not None
-        assert next(reader) is not None
 
-    def test_create_corpus_smoke_test(self):
-        pass
+def test_create_text_tokenizer_smoke_test():
+    kwargs = {}
+    reader = readers.TextTokenizer(test_utils.TEST_CORPUS_FILENAME, **kwargs)
+    assert reader is not None
+    assert next(reader) is not None
 
-    def mock_vectorizer(self):
-        corpus = mock_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        vectorizer.fit_transform(corpus)
-        return vectorizer
 
-    def test_fit_transform_creates_a_vocabulary_with_unique_tokens_with_an_id_sequence(self):
-        corpus = self.create_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        v_corpus = vectorizer.fit_transform(corpus)
-        results = v_corpus.token2id
-        expected = {
-            'tre': 69,
-            'svarta': 62,
-            'ekar': 9,
-            'ur': 72,
-            'snön': 54,
-            'så': 65,
-            'grova': 17,
-            'men': 32,
-            'fingerfärdiga': 13,
-            'deras': 6,
-            'väldiga': 78,
-            'flaskor': 14,
-            'ska': 50,
-            'grönskan': 19,
-            'skumma': 53,
-            'vår': 79,
-            'på': 44,
-            'väg': 77,
-            'det': 7,
-            'långa': 29,
-            'mörkret': 36,
-            'envist': 11,
-            'skimrar': 51,
-            'mitt': 33,
-            'armbandsur': 2,
-            'med': 31,
-            'tidens': 67,
-            'fångna': 16,
-            'insekt': 25,
-            'nordlig': 38,
-            'storm': 61,
-            'är': 81,
-            'den': 5,
-            'tid': 66,
-            'när': 39,
-            'rönnbärsklasar': 45,
-            'mognar': 34,
-            'vaken': 74,
-            'hör': 24,
-            'man': 30,
-            'stjärnbilderna': 59,
-            'stampa': 58,
-            'sina': 48,
-            'spiltor': 57,
-            'högt': 23,
-            'över': 82,
-            'trädet': 70,
-            'jag': 26,
-            'ligger': 28,
-            'sängen': 64,
-            'armarna': 1,
-            'utbredda': 73,
-            'ett': 12,
-            'ankare': 0,
-            'som': 55,
-            'grävt': 18,
-            'ner': 37,
-            'sig': 47,
-            'ordentligt': 42,
-            'och': 40,
-            'håller': 22,
-            'kvar': 27,
-            'skuggan': 52,
-            'flyter': 15,
-            'där': 8,
-            'ovan': 43,
-            'stora': 60,
-            'okända': 41,
-            'en': 10,
-            'del': 4,
-            'av': 3,
-            'säkert': 63,
-            'viktigare': 76,
-            'än': 80,
-            'har': 20,
-            'sett': 46,
-            'mycket': 35,
-            'verkligheten': 75,
-            'tärt': 71,
-            'här': 21,
-            'sommaren': 56,
-            'till': 68,
-            'sist': 49,
-        }
-        self.assertEqual(expected, results)
+def test_fit_transform_creates_a_vocabulary_with_unique_tokens_with_an_id_sequence():
+    corpus = create_corpus()
+    vectorizer = CorpusVectorizer()
+    v_corpus = vectorizer.fit_transform(corpus)
+    results = v_corpus.token2id
+    expected = {
+        'tre': 69,
+        'svarta': 62,
+        'ekar': 9,
+        'ur': 72,
+        'snön': 54,
+        'så': 65,
+        'grova': 17,
+        'men': 32,
+        'fingerfärdiga': 13,
+        'deras': 6,
+        'väldiga': 78,
+        'flaskor': 14,
+        'ska': 50,
+        'grönskan': 19,
+        'skumma': 53,
+        'vår': 79,
+        'på': 44,
+        'väg': 77,
+        'det': 7,
+        'långa': 29,
+        'mörkret': 36,
+        'envist': 11,
+        'skimrar': 51,
+        'mitt': 33,
+        'armbandsur': 2,
+        'med': 31,
+        'tidens': 67,
+        'fångna': 16,
+        'insekt': 25,
+        'nordlig': 38,
+        'storm': 61,
+        'är': 81,
+        'den': 5,
+        'tid': 66,
+        'när': 39,
+        'rönnbärsklasar': 45,
+        'mognar': 34,
+        'vaken': 74,
+        'hör': 24,
+        'man': 30,
+        'stjärnbilderna': 59,
+        'stampa': 58,
+        'sina': 48,
+        'spiltor': 57,
+        'högt': 23,
+        'över': 82,
+        'trädet': 70,
+        'jag': 26,
+        'ligger': 28,
+        'sängen': 64,
+        'armarna': 1,
+        'utbredda': 73,
+        'ett': 12,
+        'ankare': 0,
+        'som': 55,
+        'grävt': 18,
+        'ner': 37,
+        'sig': 47,
+        'ordentligt': 42,
+        'och': 40,
+        'håller': 22,
+        'kvar': 27,
+        'skuggan': 52,
+        'flyter': 15,
+        'där': 8,
+        'ovan': 43,
+        'stora': 60,
+        'okända': 41,
+        'en': 10,
+        'del': 4,
+        'av': 3,
+        'säkert': 63,
+        'viktigare': 76,
+        'än': 80,
+        'har': 20,
+        'sett': 46,
+        'mycket': 35,
+        'verkligheten': 75,
+        'tärt': 71,
+        'här': 21,
+        'sommaren': 56,
+        'till': 68,
+        'sist': 49,
+    }
+    assert expected == results
 
-    def test_fit_transform_creates_a_bag_of_word_bag_term_matrix(self):
-        corpus = mock_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        v_corpus = vectorizer.fit_transform(corpus)
-        expected_vocab = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-        expected_dtm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]]
-        expected_word_counts = {'a': 10, 'b': 10, 'c': 11, 'd': 3}
-        self.assertEqual(expected_vocab, v_corpus.token2id)
-        self.assertEqual(expected_word_counts, v_corpus.word_counts)
-        self.assertTrue((expected_dtm == v_corpus.bag_term_matrix.toarray()).all())
 
-    def test_word_counts_of_vectorized_corpus_are_absolute_word_of_entire_corpus(self):
+def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
+    corpus = mock_corpus()
+    vectorizer = CorpusVectorizer()
+    v_corpus = vectorizer.fit_transform(corpus)
+    expected_vocab = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
+    expected_dtm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]]
+    expected_word_counts = {'a': 10, 'b': 10, 'c': 11, 'd': 3}
+    assert expected_vocab, v_corpus.token2id
+    assert expected_word_counts, v_corpus.word_counts
+    assert (expected_dtm == v_corpus.bag_term_matrix.toarray()).all()
 
-        corpus = self.create_corpus()
-        vectorizer = corpus_vectorizer.CorpusVectorizer()
-        v_corpus = vectorizer.fit_transform(corpus)
-        results = v_corpus.word_counts
-        expected = {
-            'tre': 1,
-            'svarta': 1,
-            'ekar': 1,
-            'ur': 2,
-            'snön': 1,
-            'så': 3,
-            'grova': 1,
-            'men': 2,
-            'fingerfärdiga': 1,
-            'deras': 1,
-            'väldiga': 2,
-            'flaskor': 1,
-            'ska': 1,
-            'grönskan': 1,
-            'skumma': 1,
-            'vår': 1,
-            'på': 3,
-            'väg': 1,
-            'det': 3,
-            'långa': 1,
-            'mörkret': 2,
-            'envist': 1,
-            'skimrar': 1,
-            'mitt': 1,
-            'armbandsur': 1,
-            'med': 2,
-            'tidens': 1,
-            'fångna': 1,
-            'insekt': 1,
-            'nordlig': 1,
-            'storm': 1,
-            'är': 5,
-            'den': 3,
-            'tid': 1,
-            'när': 1,
-            'rönnbärsklasar': 1,
-            'mognar': 1,
-            'vaken': 1,
-            'hör': 1,
-            'man': 2,
-            'stjärnbilderna': 1,
-            'stampa': 1,
-            'sina': 1,
-            'spiltor': 1,
-            'högt': 1,
-            'över': 1,
-            'trädet': 1,
-            'jag': 4,
-            'ligger': 1,
-            'sängen': 1,
-            'armarna': 1,
-            'utbredda': 1,
-            'ett': 1,
-            'ankare': 1,
-            'som': 4,
-            'grävt': 1,
-            'ner': 1,
-            'sig': 1,
-            'ordentligt': 1,
-            'och': 2,
-            'håller': 1,
-            'kvar': 1,
-            'skuggan': 1,
-            'flyter': 1,
-            'där': 1,
-            'ovan': 1,
-            'stora': 1,
-            'okända': 1,
-            'en': 2,
-            'del': 1,
-            'av': 1,
-            'säkert': 1,
-            'viktigare': 1,
-            'än': 1,
-            'har': 2,
-            'sett': 1,
-            'mycket': 2,
-            'verkligheten': 1,
-            'tärt': 1,
-            'här': 1,
-            'sommaren': 1,
-            'till': 1,
-            'sist': 1,
-        }
-        self.assertEqual(expected, results)
+
+def test_word_counts_of_vectorized_corpus_are_absolute_word_of_entire_corpus():
+
+    corpus = create_corpus()
+    vectorizer = CorpusVectorizer()
+    v_corpus = vectorizer.fit_transform(corpus)
+    results = v_corpus.word_counts
+    expected = {
+        'tre': 1,
+        'svarta': 1,
+        'ekar': 1,
+        'ur': 2,
+        'snön': 1,
+        'så': 3,
+        'grova': 1,
+        'men': 2,
+        'fingerfärdiga': 1,
+        'deras': 1,
+        'väldiga': 2,
+        'flaskor': 1,
+        'ska': 1,
+        'grönskan': 1,
+        'skumma': 1,
+        'vår': 1,
+        'på': 3,
+        'väg': 1,
+        'det': 3,
+        'långa': 1,
+        'mörkret': 2,
+        'envist': 1,
+        'skimrar': 1,
+        'mitt': 1,
+        'armbandsur': 1,
+        'med': 2,
+        'tidens': 1,
+        'fångna': 1,
+        'insekt': 1,
+        'nordlig': 1,
+        'storm': 1,
+        'är': 5,
+        'den': 3,
+        'tid': 1,
+        'när': 1,
+        'rönnbärsklasar': 1,
+        'mognar': 1,
+        'vaken': 1,
+        'hör': 1,
+        'man': 2,
+        'stjärnbilderna': 1,
+        'stampa': 1,
+        'sina': 1,
+        'spiltor': 1,
+        'högt': 1,
+        'över': 1,
+        'trädet': 1,
+        'jag': 4,
+        'ligger': 1,
+        'sängen': 1,
+        'armarna': 1,
+        'utbredda': 1,
+        'ett': 1,
+        'ankare': 1,
+        'som': 4,
+        'grävt': 1,
+        'ner': 1,
+        'sig': 1,
+        'ordentligt': 1,
+        'och': 2,
+        'håller': 1,
+        'kvar': 1,
+        'skuggan': 1,
+        'flyter': 1,
+        'där': 1,
+        'ovan': 1,
+        'stora': 1,
+        'okända': 1,
+        'en': 2,
+        'del': 1,
+        'av': 1,
+        'säkert': 1,
+        'viktigare': 1,
+        'än': 1,
+        'har': 2,
+        'sett': 1,
+        'mycket': 2,
+        'verkligheten': 1,
+        'tärt': 1,
+        'här': 1,
+        'sommaren': 1,
+        'till': 1,
+        'sist': 1,
+    }
+    assert expected == results
+
+
+def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
+
+    expected_vocabulary = {
+        'fingerfärdiga': 1,
+        'armbandsur': 0,
+        'rönnbärsklasar': 3,
+        'stjärnbilderna': 4,
+        'ordentligt': 2,
+        'verkligheten': 5
+    }
+
+    expected_vocabulary_reversed = { k: abs(v-5) for k,v in expected_vocabulary.items() }
+
+    corpus = TokenizedCorpus(
+        reader=create_reader(),
+        to_lower=True,
+        min_len=10,
+    )
+
+    vocabulary = CorpusVectorizer().fit_transform(corpus).token2id
+
+    assert expected_vocabulary == vocabulary
+
+    vocabulary = CorpusVectorizer().fit_transform(corpus, vocabulary=expected_vocabulary_reversed).token2id
+
+    assert expected_vocabulary_reversed == vocabulary
