@@ -46,4 +46,5 @@ class UpdateTokenCountsMixIn:
 
         except Exception as ex:
             logging.error(ex)
-            return _documents
+
+        return _documents
