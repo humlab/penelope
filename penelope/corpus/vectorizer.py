@@ -1,10 +1,10 @@
-from collections import defaultdict
 import logging
 import os
-from penelope.corpus.interfaces import ITokenizedCorpus
 from typing import Callable, Mapping
 
 from sklearn.feature_extraction.text import CountVectorizer
+
+from penelope.corpus.interfaces import ITokenizedCorpus
 
 from . import readers, tokenized_corpus, vectorized_corpus
 
@@ -20,9 +20,10 @@ def _default_tokenizer(lowercase=True):
         return tokens
 
     if lowercase:
-        return lambda tokens: [ x.lower() for x in tokens]
+        return lambda tokens: [x.lower() for x in tokens]
 
     return _lowerccase_tokenize if lowercase else _no_tokenize
+
 
 class CorpusVectorizer:
 
