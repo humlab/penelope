@@ -75,7 +75,7 @@ def to_dataframe(
         coo_df['value_n_d'] = coo_df.value / float(len(documents))
 
         if 'n_tokens' in documents:
-            coo_df['value_n_t'] = coo_df.value / float(sum(documents.n_tokens.values()))
+            coo_df['value_n_t'] = coo_df.value / float(sum(documents.n_tokens.values))
 
     coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
     coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
