@@ -4,3 +4,7 @@ from .compute_hal_or_glove import compute
 from .term_term_matrix import to_coocurrence_matrix, to_dataframe
 from .vectorizer_glove import GloveVectorizer
 from .vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
+from .windows_cooccurrence import (cooccurrence_by_partition,
+                                   corpus_concept_windows,
+                                   tokens_concept_windows)
+from .windows_corpus import WindowsCorpus, WindowsStream

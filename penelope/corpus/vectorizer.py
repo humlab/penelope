@@ -1,10 +1,9 @@
 import logging
 import os
-from typing import Callable, Mapping
+from typing import Callable, Iterable, Mapping, Tuple, Union
 
+import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
-
-from penelope.corpus.interfaces import ITokenizedCorpus
 
 from . import readers, tokenized_corpus, vectorized_corpus
 
@@ -12,6 +11,7 @@ logger = logging.getLogger("corpus_vectorizer")
 
 
 def _default_tokenizer(lowercase=True):
+
     def _lowerccase_tokenize(tokens):
         return [x.lower() for x in tokens]
 
@@ -24,14 +24,22 @@ def _default_tokenizer(lowercase=True):
     return _lowerccase_tokenize if lowercase else _no_tokenize
 
 
+def _no_tokenize(tokens):
+    return tokens
+
+
+DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
+
+
 class CorpusVectorizer:
+
     def __init__(self):
         self.vectorizer = None
         self.vectorizer_opts = {}
 
     def fit_transform(
         self,
-        corpus: tokenized_corpus.TokenizedCorpus,
+        corpus: Union[tokenized_corpus.TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
         tokenizer: Callable = None,
@@ -56,11 +64,20 @@ class CorpusVectorizer:
             [description]
         """
 
-        if isinstance(corpus, ITokenizedCorpus):
+        if vocabulary is None:
+            if hasattr(corpus, 'vocabulary'):
+                vocabulary = corpus.vocabulary
+            elif hasattr(corpus, 'token2id'):
+                vocabulary = corpus.token2id
+
+        if tokenizer is None:  # Iterator[Tuple[str,Iterator[str]]]
+            tokenizer = _no_tokenize
+            if lowercase:
+                tokenizer = lambda tokens: [t.lower() for t in tokens]
             lowercase = False
 
         vectorizer_opts = dict(
-            tokenizer=tokenizer or _default_tokenizer(lowercase=lowercase),
+            tokenizer=tokenizer,
             lowercase=lowercase,
             stop_words=stop_words,
             max_df=max_df,
@@ -68,13 +85,28 @@ class CorpusVectorizer:
             vocabulary=vocabulary,
         )
 
+        if hasattr(corpus, 'terms'):
+            terms = corpus.terms
+        else:
+            terms = (x[1] for x in corpus)
+
         self.vectorizer = CountVectorizer(**vectorizer_opts)
         self.vectorizer_opts = vectorizer_opts
 
-        bag_term_matrix = self.vectorizer.fit_transform(corpus.terms)
+        bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
-        documents = corpus.documents
 
+        if hasattr(corpus, 'documents'):
+            documents = corpus.documents
+        else:
+            logger.warning("corpus has no `documents` property (generating a dummy index")
+            documents = pd.DataFrame(
+                data=[{
+                    'index': i,
+                    'filename': f'file_{i}.txt'
+                } for i in range(0, bag_term_matrix.shape[0])]
+            ).set_index('index')
+            documents['document_id'] = documents.index
         # ignored_words = self.vectorizer.stop_words_
 
         v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, documents)

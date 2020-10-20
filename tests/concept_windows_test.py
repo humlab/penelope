@@ -1,9 +1,8 @@
 import json
 
-import pytest  # pylint: disable=unused-import
-
+from penelope.cooccurrence import (WindowsCorpus, corpus_concept_windows)
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.corpus.windowed_corpus import corpus_concept_windows
+from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 
@@ -22,260 +21,6 @@ def load_corpus_windows_fixture(filename: str):
         return json.load(f)
 
 
-FIXED_CORPUS_NNVB_LEMMA = [
-    [
-        "tran_2019_01_test.txt",
-        [
-            "kyrka",
-            "tränga",
-            "turist",
-            "halvmörker",
-            "valv",
-            "gapa",
-            "valv",
-            "överblick",
-            "ljuslåga",
-            "fladdra",
-            "ängel",
-            "ansikte",
-            "omfamna",
-            "viska",
-            "kropp",
-            "skämmas",
-            "vara",
-            "människa",
-            "öppna",
-            "valv",
-            "valv",
-            "bli",
-            "vara",
-            "skola",
-            "tår",
-            "piazza",
-            "Mr",
-            "Mrs",
-            "herr",
-            "signora",
-            "öppna",
-            "valv",
-            "valv",
-        ],
-    ],
-    [
-        "tran_2019_02_test.txt",
-        [
-            "kör",
-            "natt",
-            "hus",
-            "stiga",
-            "strålkastarsken",
-            "vara",
-            "vilja",
-            "dricka",
-            "hus",
-            "lada",
-            "skylta",
-            "fordon",
-            "vara",
-            "nu",
-            "iklä",
-            "liv",
-            "människa",
-            "sova",
-            "del",
-            "kunna",
-            "sova",
-            "ha",
-            "anletsdrag",
-            "träning",
-            "föra",
-            "evighet",
-            "våga",
-            "släppa",
-            "allt",
-            "sömn",
-            "vara",
-            "vila",
-            "bom",
-            "mysterium",
-            "dra",
-        ],
-    ],
-    [
-        "tran_2019_03_test.txt",
-        [
-            "finna",
-            "skog",
-            "glänta",
-            "kunna",
-            "hitta",
-            "gå",
-            "glänta",
-            "vara",
-            "omslut",
-            "skog",
-            "kväva",
-            "själv",
-            "stam",
-            "lav",
-            "skäggstubb",
-            "sammanskruvade",
-            "träd",
-            "vara",
-            "ända",
-            "topp",
-            "kvist",
-            "vidröra",
-            "ljus",
-            "skugga",
-            "ruva",
-            "skugga",
-            "kärr",
-            "växa",
-            "öppna",
-            "plats",
-            "vara",
-            "gräs",
-            "ligga",
-            "sten",
-            "måste",
-            "vara",
-            "grundsten",
-            "hus",
-            "leva",
-            "här",
-            "kunna",
-            "ge",
-            "upplysning",
-            "namn",
-            "finna",
-            "arkiv",
-            "öppna",
-            "vara",
-            "arkiv",
-            "hålla",
-            "tradition",
-            "vara",
-            "död",
-            "minne",
-            "Zigenarstammen",
-            "minna",
-            "men",
-            "glömma",
-            "anteckna",
-            "glömma",
-            "torp",
-            "sorla",
-            "röst",
-            "vara",
-            "värld",
-            "centrum",
-            "invånare",
-            "dö",
-            "flytta",
-            "krönika",
-            "upphöra",
-            "stå",
-            "öde",
-            "år",
-            "torp",
-            "bli",
-            "sfinx",
-            "vara",
-            "grundsten",
-            "sätt",
-            "ha",
-            "vara",
-            "måste",
-            "gå",
-            "nu",
-            "dyka",
-            "snår",
-            "gå",
-            "tränga",
-            "stiga",
-            "sida",
-            "glesna",
-            "ljusna",
-            "steg",
-            "bli",
-            "gångstig",
-            "smyga",
-            "vara",
-            "kommunikationsnät",
-            "kraftledningsstolpen",
-            "sitta",
-            "skalbagge",
-            "sol",
-            "sköld",
-            "ligga",
-            "flygvingarna",
-            "hopvecklade",
-            "fallskärm",
-            "expert",
-        ],
-    ],
-    [
-        "tran_2020_01_test.txt",
-        [
-            "vrak",
-            "kretsande",
-            "punkt",
-            "stillhet",
-            "rulla",
-            "hav",
-            "ljus",
-            "tugga",
-            "betsel",
-            "tång",
-            "frusta",
-            "strand",
-            "jord",
-            "hölja",
-            "mörker",
-            "fladdermus",
-            "pejla",
-            "vrak",
-            "stanna",
-            "bli",
-            "stjärna",
-        ],
-    ],
-    [
-        "tran_2020_02_test.txt",
-        [
-            "år",
-            "sparka",
-            "stövel",
-            "sol",
-            "klänga",
-            "lövas",
-            "träd",
-            "fylla",
-            "vind",
-            "segla",
-            "frihet",
-            "berg",
-            "fot",
-            "stå",
-            "barrskogsbränningen",
-            "men",
-            "sommar",
-            "dyning",
-            "komma",
-            "dra",
-            "träd",
-            "topp",
-            "vila",
-            "ögonblick",
-            "sjunka",
-            "kust",
-            "stå",
-        ],
-    ],
-]
-
-
 def test_windowed_when_nn_vb_lemma_2_tokens():
 
     expected_windows = [
@@ -289,7 +34,7 @@ def test_windowed_when_nn_vb_lemma_2_tokens():
         ["tran_2019_01_test.txt", 7, ["öppna", "valv", "valv", "*", "*"]],
     ]
 
-    corpus = FIXED_CORPUS_NNVB_LEMMA
+    corpus = TRANSTRÖMMER_CORPUS_NNVB_LEMMA
     concept = {'piazza', 'kyrka', 'valv'}
 
     windows = [w for w in corpus_concept_windows(corpus, concept, 2, pad='*')]
@@ -301,66 +46,8 @@ def test_windowed_when_nn_vb_lemma_2_tokens():
 
 def test_windowed_when_nn_vb_lemma_5_tokens():
 
-    expected_windows = [
-        [
-            "tran_2019_01_test.txt",
-            0,
-            ["*", "*", "*", "*", "*", "kyrka", "tränga", "turist", "halvmörker", "valv", "gapa"],
-        ],
-        [
-            "tran_2019_01_test.txt",
-            1,
-            [
-                "*",
-                "kyrka",
-                "tränga",
-                "turist",
-                "halvmörker",
-                "valv",
-                "gapa",
-                "valv",
-                "överblick",
-                "ljuslåga",
-                "fladdra",
-            ],
-        ],
-        [
-            "tran_2019_01_test.txt",
-            2,
-            [
-                "tränga",
-                "turist",
-                "halvmörker",
-                "valv",
-                "gapa",
-                "valv",
-                "överblick",
-                "ljuslåga",
-                "fladdra",
-                "ängel",
-                "ansikte",
-            ],
-        ],
-        [
-            "tran_2019_01_test.txt",
-            3,
-            ["kropp", "skämmas", "vara", "människa", "öppna", "valv", "valv", "bli", "vara", "skola", "tår"],
-        ],
-        [
-            "tran_2019_01_test.txt",
-            4,
-            ["skämmas", "vara", "människa", "öppna", "valv", "valv", "bli", "vara", "skola", "tår", "piazza"],
-        ],
-        [
-            "tran_2019_01_test.txt",
-            5,
-            ["valv", "bli", "vara", "skola", "tår", "piazza", "Mr", "Mrs", "herr", "signora", "öppna"],
-        ],
-        ["tran_2019_01_test.txt", 6, ["Mr", "Mrs", "herr", "signora", "öppna", "valv", "valv", "*", "*", "*", "*"]],
-        ["tran_2019_01_test.txt", 7, ["Mrs", "herr", "signora", "öppna", "valv", "valv", "*", "*", "*", "*", "*"]],
-    ]
-
-    corpus = FIXED_CORPUS_NNVB_LEMMA
+    expected_windows = TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
+    corpus = TRANSTRÖMMER_CORPUS_NNVB_LEMMA
     concept = {'piazza', 'kyrka', 'valv'}
 
     windows = [w for w in corpus_concept_windows(corpus, concept, 5, pad='*')]
@@ -373,64 +60,7 @@ def test_windowed_when_nn_vb_lemma_5_tokens():
 def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
 
     corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True)
-    expected_windows = [
-        [
-            'tran_2019_01_test.txt',
-            0,
-            ['*', '*', '*', '*', '*', 'kyrka', 'tränga', 'turist', 'halvmörker', 'valv', 'gapa'],
-        ],
-        [
-            'tran_2019_01_test.txt',
-            1,
-            [
-                '*',
-                'kyrka',
-                'tränga',
-                'turist',
-                'halvmörker',
-                'valv',
-                'gapa',
-                'valv',
-                'överblick',
-                'ljuslåga',
-                'fladdra',
-            ],
-        ],
-        [
-            'tran_2019_01_test.txt',
-            2,
-            [
-                'tränga',
-                'turist',
-                'halvmörker',
-                'valv',
-                'gapa',
-                'valv',
-                'överblick',
-                'ljuslåga',
-                'fladdra',
-                'ängel',
-                'ansikte',
-            ],
-        ],
-        [
-            'tran_2019_01_test.txt',
-            3,
-            ['kropp', 'skämmas', 'vara', 'människa', 'öppna', 'valv', 'valv', 'bli', 'vara', 'skola', 'tår'],
-        ],
-        [
-            'tran_2019_01_test.txt',
-            4,
-            ['skämmas', 'vara', 'människa', 'öppna', 'valv', 'valv', 'bli', 'vara', 'skola', 'tår', 'piazza'],
-        ],
-        [
-            'tran_2019_01_test.txt',
-            5,
-            ['valv', 'bli', 'vara', 'skola', 'tår', 'piazza', 'Mr', 'Mrs', 'herr', 'signora', 'öppna'],
-        ],
-        ['tran_2019_01_test.txt', 6, ['Mr', 'Mrs', 'herr', 'signora', 'öppna', 'valv', 'valv', '*', '*', '*', '*']],
-        ['tran_2019_01_test.txt', 7, ['Mrs', 'herr', 'signora', 'öppna', 'valv', 'valv', '*', '*', '*', '*', '*']],
-    ]
+    expected_windows = TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
     concept = {'piazza', 'kyrka', 'valv'}
     windows = [w for w in corpus_concept_windows(corpus, concept, 5, pad='*')]
@@ -468,3 +98,34 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
     #     partitions = partioned_corpus(corpus.documents, partion_column='year')
     assert corpus.documents is not None
+
+
+def test_windows_iterator():
+
+    #corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
+    #concept = {'är'}
+    #windows = corpus_concept_windows(corpus, concept, 2, pad='*')
+
+    windows = [
+        ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
+        ['tran_2019_01_test.txt', 1, ['valv', 'blir', 'är', 'skall', 'tårar']],
+        ['tran_2019_02_test.txt', 0, ['stiger', 'strålkastarskenet', 'är', 'vill', 'dricka']],
+        ['tran_2019_02_test.txt', 1, ['skyltar', 'fordon', 'är', 'nu', 'ikläder']],
+        ['tran_2019_02_test.txt', 2, ['allt', 'sömn', 'är', 'vilar', 'bommar']],
+        ['tran_2019_03_test.txt', 0, ['gått', 'Gläntan', 'är', 'omsluten', 'skog']],
+        ['tran_2019_03_test.txt', 1, ['sammanskruvade', 'träden', 'är', 'ända', 'topparna']],
+        ['tran_2019_03_test.txt', 2, ['öppna', 'platsen', 'är', 'gräset', 'ligger']],
+        ['tran_2019_03_test.txt', 3, ['arkiv', 'öppnar', 'är', 'arkiven', 'håller']],
+        ['tran_2019_03_test.txt', 4, ['håller', 'traditionen', 'är', 'död', 'minnena']],
+        ['tran_2019_03_test.txt', 5, ['sorlar', 'röster', 'är', 'världens', 'centrum']],
+        ['tran_2019_03_test.txt', 6, ['blir', 'sfinx', 'är', 'grundstenarna', 'sätt']],
+        ['tran_2019_03_test.txt', 7, ['gångstig', 'smyger', 'är', 'kommunikationsnätet', 'kraftledningsstolpen']],
+    ]
+
+    windows_iter = WindowsCorpus(windows)
+    _ = [x for x in windows_iter]
+    documents = windows_iter.documents
+
+    assert int(documents[documents.filename=='tran_2019_01_test.txt']['n_windows']) ==  2
+    assert int(documents[documents.filename=='tran_2019_03_test.txt']['n_windows']) == 8
+    assert int(documents[documents.filename=='tran_2019_01_test.txt']['n_tokens']) ==  10

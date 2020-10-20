@@ -1,12 +1,12 @@
 import abc
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
 
 
 class ICorpus(abc.ABC):
     @abc.abstractmethod
-    def __next__(self):
+    def __next__(self) -> Tuple[str, Iterator[str]]:
         'Return the next item from the iterator. When exhausted, raise StopIteration'
         raise StopIteration
 

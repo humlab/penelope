@@ -18,4 +18,3 @@ from .vectorized_corpus import (VectorizedCorpus,
                                 load_corpus)
 from .vectorizer import CorpusVectorizer
 from .vectorizer import generate_corpus as vectorize_stored_corpus
-from .windowed_corpus import concept_windows, corpus_concept_windows
