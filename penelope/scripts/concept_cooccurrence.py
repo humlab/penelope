@@ -6,8 +6,7 @@ import click
 
 import penelope.cooccurrence as cooccurrence
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.utility import (replace_extension, suffix_filename,
-                              timestamp_filename)
+from penelope.utility import (replace_extension)
 
 # pylint: disable=too-many-arguments
 
