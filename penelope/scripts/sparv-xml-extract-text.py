@@ -2,11 +2,8 @@ import json
 
 import click
 
-import penelope.corpus.readers.sparv_xml_tokenizer as sparv_reader
 import penelope.corpus.sparv_corpus as sparv_corpus
-from penelope.corpus.tokens_transformer import TokensTransformer
-from penelope.utility import (replace_extension, suffix_filename,
-                              timestamp_filename)
+from penelope.utility import (replace_extension, suffix_filename, timestamp_filename)
 
 
 # pylint: disable=too-many-arguments
@@ -67,21 +64,21 @@ def prepare_train_corpus(
 
     output_filename = replace_extension(timestamp_filename(suffix_filename(input_filename, "text")), 'zip')
 
-    transformer = TokensTransformer(**tokens_transform_opts)
+    tokenizer_opts = {
+        'chunk_size': chunk_size,
+    }
 
     sparv_extract_opts = {
-        **sparv_reader.DEFAULT_OPTS,
-        **{
-            'pos_includes': pos_includes,
-            'pos_excludes': pos_excludes,
-            'chunk_size': chunk_size,
-            'lemmatize': lemmatize,
-            'version': version,
-        },
+        'pos_includes': pos_includes,
+        'pos_excludes': pos_excludes,
+        'lemmatize': lemmatize,
+        'version': version,
+        'tokenizer_opts': tokenizer_opts,
+        'tokens_transform_opts': tokens_transform_opts
     }
 
     sparv_corpus.sparv_xml_extract_and_store(
-        input_filename, output_filename, transforms=transformer.transforms, **sparv_extract_opts
+        source=input_filename, target=output_filename, **sparv_extract_opts
     )
 
     store_options_to_json_file(input_filename, output_filename, tokens_transform_opts, sparv_extract_opts)
