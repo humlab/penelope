@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "penelope"
-version = "0.2.5"
+name = "humlab-penelope"
+version = "0.2.7"
 description = "Some text analysis utilities"
-authors = ["Roger Mähler <roger dot mahler at hotmail dot com>"]
+authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
+packages = [
+    { include = "penelope" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -28,6 +31,7 @@ pydotplus = "^2.0.2"
 python-louvain = "^0.14"
 more_itertools = "^8.5.0"
 alive-progress = "^1.6.1"
+click = "^7.1.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.0"
@@ -42,7 +46,12 @@ mypy = "^0.782"
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:vectorize_text_corpus"
 compute_topic_model = "penelope.scripts.compute_topic_model:compute_topic_model"
+concept_cooccurrence = "penelope.scripts.concept_cooccurrence:run_cooccerrence"
+sparv-xml-extract-text = "penelope.scripts.sparv-xml-extract-text:prepare_train_corpus"
+
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
 
