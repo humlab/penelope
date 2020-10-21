@@ -23,7 +23,7 @@ class WindowsCorpus(ITokenizedCorpus):
         """
         self.statistics = defaultdict(lambda: {'n_windows': 0, 'n_tokens': 0})
         self.windows = iter(windows)
-        self._documents = []
+        self._documents: pd.DataFrame = None
         self._metadata = []
         self._vocabulary = vocabulary
 

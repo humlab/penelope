@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, Iterator, List, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Set, Tuple, Union
 
 import pandas as pd
 
@@ -38,3 +38,6 @@ class ITokenizedCorpus(ICorpus):
     @abc.abstractproperty
     def documents(self) -> pd.DataFrame:
         return None
+
+
+PartitionKeys = Union[str, List[str], Set[str], Callable]

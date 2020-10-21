@@ -1,6 +1,6 @@
 import json
 
-from penelope.cooccurrence import (WindowsCorpus, corpus_concept_windows)
+from penelope.cooccurrence import WindowsCorpus, corpus_concept_windows
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
@@ -102,9 +102,9 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
 def test_windows_iterator():
 
-    #corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-    #concept = {'är'}
-    #windows = corpus_concept_windows(corpus, concept, 2, pad='*')
+    # corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
+    # concept = {'är'}
+    # windows = corpus_concept_windows(corpus, concept, 2, pad='*')
 
     windows = [
         ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
@@ -126,6 +126,6 @@ def test_windows_iterator():
     _ = [x for x in windows_iter]
     documents = windows_iter.documents
 
-    assert int(documents[documents.filename=='tran_2019_01_test.txt']['n_windows']) ==  2
-    assert int(documents[documents.filename=='tran_2019_03_test.txt']['n_windows']) == 8
-    assert int(documents[documents.filename=='tran_2019_01_test.txt']['n_tokens']) ==  10
+    assert int(documents[documents.filename == 'tran_2019_01_test.txt']['n_windows']) == 2
+    assert int(documents[documents.filename == 'tran_2019_03_test.txt']['n_windows']) == 8
+    assert int(documents[documents.filename == 'tran_2019_01_test.txt']['n_tokens']) == 10

@@ -11,7 +11,6 @@ logger = logging.getLogger("corpus_vectorizer")
 
 
 def _default_tokenizer(lowercase=True):
-
     def _lowerccase_tokenize(tokens):
         return [x.lower() for x in tokens]
 
@@ -32,7 +31,6 @@ DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
 
 
 class CorpusVectorizer:
-
     def __init__(self):
         self.vectorizer = None
         self.vectorizer_opts = {}
@@ -101,10 +99,7 @@ class CorpusVectorizer:
         else:
             logger.warning("corpus has no `documents` property (generating a dummy index")
             documents = pd.DataFrame(
-                data=[{
-                    'index': i,
-                    'filename': f'file_{i}.txt'
-                } for i in range(0, bag_term_matrix.shape[0])]
+                data=[{'index': i, 'filename': f'file_{i}.txt'} for i in range(0, bag_term_matrix.shape[0])]
             ).set_index('index')
             documents['document_id'] = documents.index
         # ignored_words = self.vectorizer.stop_words_

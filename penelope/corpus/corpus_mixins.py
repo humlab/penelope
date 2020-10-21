@@ -1,12 +1,14 @@
 import logging
 import os
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 
+from .interfaces import PartitionKeys
+
 
 class PartitionMixIn:
-    def partition_documents(self, by: Union[str, List[str], Callable]) -> Dict[Any, List[str]]:
+    def partition_documents(self, by: PartitionKeys) -> Dict[Any, List[str]]:
 
         if 'filename' not in self.documents.columns:
             raise ValueError("`filename` columns missing")

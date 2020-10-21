@@ -1,4 +1,3 @@
-
 TRANSTRÖMMER_CORPUS_NNVB_LEMMA = [
     [
         "tran_2019_01_test.txt",
