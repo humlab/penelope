@@ -29,7 +29,7 @@ pylint:
 	# @poetry run mypy .
 
 pylint2:
-	@find $(SOURCE_FOLDERS) -type f -name "*.py" | grep -v .ipynb_checkpoints | xargs poetry run pylint --disable=W0511
+	@-find $(SOURCE_FOLDERS) -type f -name "*.py" | grep -v .ipynb_checkpoints | xargs poetry run pylint --disable=W0511 | sort | uniq
 
 flake8:
 	@poetry run flake8 --version
