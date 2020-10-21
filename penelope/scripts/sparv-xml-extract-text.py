@@ -3,7 +3,8 @@ import json
 import click
 
 import penelope.corpus.sparv_corpus as sparv_corpus
-from penelope.utility import (replace_extension, suffix_filename, timestamp_filename)
+from penelope.utility import (replace_extension, suffix_filename,
+                              timestamp_filename)
 
 
 # pylint: disable=too-many-arguments
@@ -74,12 +75,10 @@ def prepare_train_corpus(
         'lemmatize': lemmatize,
         'version': version,
         'tokenizer_opts': tokenizer_opts,
-        'tokens_transform_opts': tokens_transform_opts
+        'tokens_transform_opts': tokens_transform_opts,
     }
 
-    sparv_corpus.sparv_xml_extract_and_store(
-        source=input_filename, target=output_filename, **sparv_extract_opts
-    )
+    sparv_corpus.sparv_xml_extract_and_store(source=input_filename, target=output_filename, **sparv_extract_opts)
 
     store_options_to_json_file(input_filename, output_filename, tokens_transform_opts, sparv_extract_opts)
 

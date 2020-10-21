@@ -1,15 +1,26 @@
 
 .DEFAULT_GOAL=lint
+
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
+PENELOPE_VERSION:=v$(shell grep "version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
 
-init:
+init: tools
 	@pip install --upgrade pip
 	@pip install poetry --upgrade
 	@poetry install
 
-build: requirements.txt
+tools:
+	@pip install --upgrade pip
+	@pip install poetry --upgrade
+
+build: tools requirements.txt
 	@poetry build
+
+tag:
+	@echo $(PENELOPE_VERSION)
+	@git tag v0.2.8 -a
+	@git push origin --tags
 
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
@@ -74,4 +85,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint flake8 pylint pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy
+.PHONY: init lint flake8 pylint pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy tag tools

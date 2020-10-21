@@ -98,7 +98,6 @@ class SparvTokenizedCsvCorpus(tokenized_corpus.TokenizedCorpus):
         tokens_transform_opts: Dict[str, Any] = None,
         tokenizer_opts: Dict[str, Any] = None,
     ):
-        # TODO How use parents docstring?
         if isinstance(source, readers.SparvCsvTokenizer):
             tokenizer = source
         else:

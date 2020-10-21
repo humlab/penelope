@@ -90,6 +90,8 @@ def cooccurrence_by_partition(
     partitions = corpus.partition_documents(partition_keys)
     df_total = None
 
+    partition_column = partition_keys if isinstance(partition_keys, str) else ' '.join(partition_keys)
+
     for key in partitions:
 
         filenames = partitions[key]
@@ -105,7 +107,7 @@ def cooccurrence_by_partition(
         documents = corpus.documents[corpus.documents.filename.isin(filenames)]
 
         df_partition = to_dataframe(coo_matrix, id2token=id2token, documents=documents, min_count=1)
-        df_partition[partition_keys] = key
+        df_partition[partition_column] = key
 
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
 
@@ -123,8 +125,6 @@ def compute_and_store(
         Corpus
 
     """
-    coo_df = cooccurrence_by_partition(
-        corpus, concepts, n_context_width=n_context_width, partition_keys=set(partition_keys)
-    )
+    coo_df = cooccurrence_by_partition(corpus, concepts, n_context_width=n_context_width, partition_keys=partition_keys)
 
-    coo_df.to_csv(target_filename, sep='\t', header=True, compression='zip', decimalstr=',')
+    coo_df.to_csv(target_filename, sep='\t', header=True, compression='infer', decimal=',')

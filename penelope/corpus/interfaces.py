@@ -40,4 +40,4 @@ class ITokenizedCorpus(ICorpus):
         return None
 
 
-PartitionKeys = Union[str, List[str], Set[str], Callable]
+PartitionKeys = Union[str, List[str], Callable]

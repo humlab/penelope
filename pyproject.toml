@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.2.7"
+version = "0.2.9"
 description = "Some text analysis utilities"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -46,8 +46,7 @@ mypy = "^0.782"
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:vectorize_text_corpus"
 compute_topic_model = "penelope.scripts.compute_topic_model:compute_topic_model"
-concept_cooccurrence = "penelope.scripts.concept_cooccurrence:run_cooccerrence"
-sparv-xml-extract-text = "penelope.scripts.sparv-xml-extract-text:prepare_train_corpus"
+concept_cooccurrence = "penelope.scripts.concept_cooccurrence:main"
 
 
 [build-system]

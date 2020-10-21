@@ -167,7 +167,13 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
         min_len=10,
     )
 
-    vocabulary = CorpusVectorizer().fit_transform(corpus, ).token2id
+    vocabulary = (
+        CorpusVectorizer()
+        .fit_transform(
+            corpus,
+        )
+        .token2id
+    )
 
     assert corpus.token2id == vocabulary
 

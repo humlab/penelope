@@ -8,17 +8,11 @@ from penelope.cooccurrence.term_term_matrix import to_dataframe
 from penelope.corpus import vectorizer as corpus_vectorizer
 
 DEFAULT_TOKENS_TRANSFORM_OPTS = dict(
-    only_any_alphanumeric=False,
-    to_lower=False,
-    remove_accents=False,
-    min_len=1,
-    max_len=None,
-    keep_numerals=False
+    only_any_alphanumeric=False, to_lower=False, remove_accents=False, min_len=1, max_len=None, keep_numerals=False
 )
 
 
 class Test_DataFrameVectorize(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -151,9 +145,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_fit_transform_gives_document_term_matrix(self):
         # Arrange
-        reader = readers.DataFrameTextTokenizer(
-            self.create_test_dataframe()
-        )
+        reader = readers.DataFrameTextTokenizer(self.create_test_dataframe())
         corpus = corpora.TokenizedCorpus(
             reader,
             only_any_alphanumeric=False,
@@ -161,11 +153,9 @@ class Test_DataFrameVectorize(unittest.TestCase):
             remove_accents=False,
             min_len=1,
             max_len=None,
-            keep_numerals=False
+            keep_numerals=False,
         )
-        v_corpus = corpus_vectorizer\
-            .CorpusVectorizer()\
-            .fit_transform(corpus)
+        v_corpus = corpus_vectorizer.CorpusVectorizer().fit_transform(corpus)
 
         term_term_matrix = v_corpus.cooccurrence_matrix()
         token2id = v_corpus.token2id
@@ -176,9 +166,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     def test_to_dataframe_of_term_matrix_gives_expected_result(self):
 
         # Arrange
-        reader = readers.DataFrameTextTokenizer(
-            self.create_test_dataframe()
-        )
+        reader = readers.DataFrameTextTokenizer(self.create_test_dataframe())
         corpus = corpora.TokenizedCorpus(
             reader,
             only_any_alphanumeric=False,
@@ -186,13 +174,10 @@ class Test_DataFrameVectorize(unittest.TestCase):
             remove_accents=False,
             min_len=1,
             max_len=None,
-            keep_numerals=False
+            keep_numerals=False,
         )
 
-        term_term_matrix = corpus_vectorizer\
-            .CorpusVectorizer()\
-            .fit_transform(corpus)\
-            .cooccurrence_matrix()
+        term_term_matrix = corpus_vectorizer.CorpusVectorizer().fit_transform(corpus).cooccurrence_matrix()
 
         # Act
         coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.documents)

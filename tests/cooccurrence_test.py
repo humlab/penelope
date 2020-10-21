@@ -1,4 +1,7 @@
+import os
 import random
+
+from numpy.core.fromnumeric import partition
 
 from penelope.cooccurrence import (
     WindowsCorpus,
@@ -144,3 +147,32 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result2():
     coo_df = cooccurrence_by_partition(corpus, concept, n_lr_tokens)
 
     assert coo_df is not None
+
+
+def test_cooccurrence_using_cli_succeeds():
+
+    from penelope.scripts.concept_cooccurrence import compute_and_store_cooccerrence
+
+    output_filename = './tests/output/test_cooccurrence_using_cli_succeeds.csv'
+    options = dict(
+        input_filename=TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
+        output_filename=output_filename,
+        concept={'jag'},
+        context_width=2,
+        partition_keys=['year'],
+        pos_includes=None,
+        pos_excludes='|MAD|MID|PAD|',
+        lemmatize=True,
+        to_lowercase=True,
+        remove_stopwords=None,
+        min_word_length=1,
+        keep_symbols=True,
+        keep_numerals=True,
+        only_alphabetic=False,
+        only_any_alphanumeric=False,
+        filename_field=["year:_:1"],
+    )
+
+    compute_and_store_cooccerrence(**options)
+
+    assert os.path.isfile(output_filename)
