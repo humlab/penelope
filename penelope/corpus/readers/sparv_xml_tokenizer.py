@@ -12,16 +12,6 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments, super-with-arguments, too-many-instance-attributes
 
-DEFAULT_OPTS = dict(
-    pos_includes='',
-    lemmatize=True,
-    chunk_size=None,
-    xslt_filename=None,
-    delimiter="|",
-    append_pos="",
-    pos_excludes="|MAD|MID|PAD|",
-)
-
 
 class SparvXmlTokenizer(TextTokenizer):
     def __init__(
