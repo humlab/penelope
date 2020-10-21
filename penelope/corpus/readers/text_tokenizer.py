@@ -27,7 +27,7 @@ def strip_path_and_add_counter(filename, n_chunk):
 
 FilenameCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
-# class TextTokenizer(collections.abc.Iterable[Tuple[str,List[str]]]):
+
 class TextTokenizer(ICorpusReader):
     """Reads a text corpus from `source` and applies given transforms.
     Derived classes can override `preprocess` as an initial step before transforms are applied.
