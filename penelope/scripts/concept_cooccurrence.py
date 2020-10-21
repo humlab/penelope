@@ -1,10 +1,10 @@
 import json
+import sys
 from typing import Any, List
 
 import click
 
 import penelope.cooccurrence as cooccurrence
-import penelope.corpus.readers.sparv_xml_tokenizer as sparv_reader
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.utility import (replace_extension, suffix_filename,
                               timestamp_filename)
@@ -41,11 +41,8 @@ from penelope.utility import (replace_extension, suffix_filename,
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
-@click.option(
-    '-v', '--sparv-version', 'sparv_version', default=4, help='Sparv version i.e. 3 or 4', type=click.IntRange(3, 4)
-)
 @click.option('-f', '--filename-field', default=None, help='Fields to extract from document name', multiple=True)
-def prepare_train_corpus(
+def run_cooccerence(
     input_filename: str,
     concept: List[str],
     context_width: int,
@@ -59,9 +56,20 @@ def prepare_train_corpus(
     keep_numerals: bool,
     only_alphabetic: bool,
     only_any_alphanumeric: bool,
-    sparv_version: int,
     filename_field: Any,
 ):
+
+    if len(concept or []) == 0:
+        click.echo("please specify at least one concept (--concept)")
+        sys.exit(1)
+
+    if len(filename_field or []) == 0:
+        click.echo("please specify at least one filename field (--filename-field)")
+        sys.exit(1)
+
+    if context_width is None:
+        click.echo("please specify at width of context as max distance from cencept (--context-width)")
+        sys.exit(1)
 
     tokens_transform_opts = {
         'to_lower': to_lowercase,
@@ -82,13 +90,9 @@ def prepare_train_corpus(
     output_filename = replace_extension(timestamp_filename(suffix_filename(input_filename, "text")), 'zip')
 
     sparv_extract_opts = {
-        **sparv_reader.DEFAULT_OPTS,
-        **{
-            'pos_includes': pos_includes,
-            'pos_excludes': pos_excludes,
-            'lemmatize': lemmatize,
-            'version': sparv_version,
-        },
+        'pos_includes': pos_includes,
+        'pos_excludes': pos_excludes,
+        'lemmatize': lemmatize
     }
 
     tokenizer_opts = {'filename_pattern': '*.csv', 'filename_fields': filename_field, 'as_binary': False}
@@ -119,4 +123,4 @@ def prepare_train_corpus(
 
 
 if __name__ == '__main__':
-    prepare_train_corpus()  # pylint: disable=no-value-for-parameter
+    run_cooccerence()  # pylint: disable=no-value-for-parameter
