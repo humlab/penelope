@@ -6,7 +6,7 @@ import click
 
 import penelope.cooccurrence as cooccurrence
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.utility import (replace_extension)
+from penelope.utility import replace_extension
 
 # pylint: disable=too-many-arguments
 

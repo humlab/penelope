@@ -3,14 +3,17 @@ import random
 
 import pytest
 
-from penelope.cooccurrence import (WindowsCorpus, cooccurrence_by_partition,
-                                   corpus_concept_windows,
-                                   to_coocurrence_matrix, to_dataframe)
+from penelope.cooccurrence import (
+    WindowsCorpus,
+    cooccurrence_by_partition,
+    corpus_concept_windows,
+    to_coocurrence_matrix,
+    to_dataframe,
+)
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 from penelope.corpus.readers import InMemoryReader
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.scripts.concept_cooccurrence import \
-    compute_and_store_cooccerrence
+from penelope.scripts.concept_cooccurrence import compute_and_store_cooccerrence
 
 TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 
@@ -44,7 +47,6 @@ def very_simple_corpus(documents):
 
 
 def random_corpus(n_docs: int = 5, vocabulary: str = 'abcdefg', min_length=4, max_length=10, years=None):
-
     def random_tokens():
 
         return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
@@ -137,7 +139,9 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result2():
     n_lr_tokens = 2
     corpus = SparvTokenizedCsvCorpus(
         TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
@@ -172,6 +176,7 @@ def test_cooccurrence_using_cli_succeeds():
 
     assert os.path.isfile(output_filename)
 
+
 @pytest.mark.skip("long running, used for bug fixes")
 def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
 
@@ -179,7 +184,9 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
     n_lr_tokens = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
@@ -195,7 +202,9 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
     n_lr_tokens = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
