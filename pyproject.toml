@@ -44,8 +44,8 @@ flake8 = "^3.8.4"
 mypy = "^0.782"
 
 [tool.poetry.scripts]
-vectorize_corpus = "penelope.scripts.vectorize_corpus:vectorize_text_corpus"
-compute_topic_model = "penelope.scripts.compute_topic_model:compute_topic_model"
+vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
+compute_topic_model = "penelope.scripts.compute_topic_model:main"
 concept_cooccurrence = "penelope.scripts.concept_cooccurrence:main"
 
 
