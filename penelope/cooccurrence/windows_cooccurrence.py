@@ -1,5 +1,6 @@
 import collections
 import itertools
+from penelope.utility import file_utility
 from typing import Iterable, List, Set
 
 import pandas as pd
@@ -56,18 +57,17 @@ def tokens_concept_windows(tokens: Iterable[str], concept: Set[str], n_context_w
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, n_context_width: int, pad: str = "*"):
 
-    win_iter = (
-        [filename, i, window]
-        for filename, tokens in corpus
-        for i, window in enumerate(
-            tokens_concept_windows(tokens=tokens, concept=concept, n_context_width=n_context_width, padding=pad)
-        )
-    )
+    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
+        tokens_concept_windows(tokens=tokens, concept=concept, n_context_width=n_context_width, padding=pad)
+    ))
     return win_iter
 
 
 def cooccurrence_by_partition(
-    corpus: ITokenizedCorpus, concept: Set[str], n_context_width: int, partition_keys: PartitionKeys = 'year'
+    corpus: ITokenizedCorpus,
+    concept: Set[str],
+    n_context_width: int,
+    partition_keys: PartitionKeys = 'year'
 ) -> pd.DataFrame:
     """[summary]
 
@@ -130,4 +130,17 @@ def compute_and_store(
     """
     coo_df = cooccurrence_by_partition(corpus, concepts, n_context_width=n_context_width, partition_keys=partition_keys)
 
-    coo_df.to_csv(target_filename, sep='\t', header=True, compression='infer', decimal=',')
+    # FIXME: #5 CSV filename inside a ZIP-file is assigned '.zip' extension
+
+    _store_to_file(target_filename, coo_df)
+
+def _store_to_file(filename: str, df: pd.DataFrame):
+    """Store file to disk"""
+
+    if filename.endswith('zip'):
+        archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
+        compression = dict(method='zip', archive_name=archive_name)
+    else:
+        compression = 'infer'
+
+    df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
