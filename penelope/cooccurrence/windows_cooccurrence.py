@@ -130,8 +130,6 @@ def compute_and_store(
     """
     coo_df = cooccurrence_by_partition(corpus, concepts, n_context_width=n_context_width, partition_keys=partition_keys)
 
-    # FIXME: #5 CSV filename inside a ZIP-file is assigned '.zip' extension
-
     _store_to_file(target_filename, coo_df)
 
 def _store_to_file(filename: str, df: pd.DataFrame):
