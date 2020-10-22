@@ -3,7 +3,7 @@
 
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
-PENELOPE_VERSION:=v$(shell grep "version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
+PENELOPE_VERSION:=v$(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
 
 init: tools
 	@pip install --upgrade pip
