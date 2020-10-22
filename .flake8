@@ -13,3 +13,4 @@ exclude =
     __pycache__
     build
     dist
+    terminal.py

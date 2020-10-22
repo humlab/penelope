@@ -37,6 +37,10 @@ test: clean
 		tests
 	@rm -rf ./tests/output/*
 
+pytest:
+	@mkdir -p ./tests/output
+	@poetry run pytest --quiet tests
+
 pylint:
 	@poetry run pylint $(SOURCE_FOLDERS)
 	# @poetry run mypy --version
@@ -87,4 +91,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint flake8 pylint pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy tag tools
+.PHONY: init lint flake8 pylint pytest pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy tag tools

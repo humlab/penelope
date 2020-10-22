@@ -39,20 +39,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-poetry-
 
-      # Run install
-      - name: Install penelope
-        run: poetry install
+      - run: poetry install
       - run: poetry check
       - run: poetry debug
-
-      # Format.
-      # - name: Check Format
-      #   run: poetry run make black isort
-
-      # Lint.
       - run: poetry run make lint
-      - run: poetry run black --quiet --check ./penelope
+      - run: poetry run black --line-length 120 --target-version py38 --skip-string-normalization --check ./penelope/
       - run: poetry run flake8 ./penelope
+      - run: make pytest
       # - run: safety check --bare --file ./requirements.txt
 
       # Check.
@@ -69,13 +62,7 @@ jobs:
       #     name: docs
       #     path: docs/build/html/
 
-      # Test.
-      - name: Run the unit tests
-        run: poetry run invoke test
-
-      # Dist.
-      - name: Build packages
-        run: poetry build
+      - run: poetry build
       - name: Upload artifacts for release
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v2
