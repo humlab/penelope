@@ -52,14 +52,13 @@ lint: pylint flake8
 format: clean black isort
 
 isort:
-	@poetry run isort penelope
+	@poetry run isort --profile black --float-to-top --line-length 120 --py 38 penelope
 
 yapf: clean
 	@poetry run yapf --version
 	@poetry run yapf --in-place --recursive penelope
 
 black:clean
-	@poetry run black --version
 	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
 
 tidy: black isort
