@@ -141,3 +141,4 @@ deprecated
 output
 *.pbz2
 terminal.py
+tmp
