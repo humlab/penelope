@@ -28,12 +28,14 @@ test-coverage:
 	-poetry run coveralls
 
 test: clean
+	@mkdir -p ./tests/output
 	@poetry run pytest --verbose --durations=0 \
 		--cov=penelope \
 		--cov-report=term \
 		--cov-report=xml \
 		--cov-report=html \
 		tests
+	@rm -rf ./tests/output/*
 
 pylint:
 	@poetry run pylint $(SOURCE_FOLDERS)
@@ -69,7 +71,7 @@ clean:
 	@find . -type d -name '__pycache__' -exec rm -rf {} +
 	@find . -type d -name '*pytest_cache*' -exec rm -rf {} +
 	@find . -type d -name '.mypy_cache' -exec rm -rf {} +
-	@rm -rf tests/output
+	# @rm -rf tests/output
 
 clean_cache:
 	@poetry cache clear pypi --all

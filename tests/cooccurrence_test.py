@@ -15,6 +15,8 @@ from penelope.corpus.readers import InMemoryReader
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.scripts.concept_cooccurrence import compute_and_store_cooccerrence
 
+jj = os.path.join
+
 TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 
 # http://www.nltk.org/howto/collocations.html
@@ -150,9 +152,9 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result2():
     assert coo_df is not None
 
 
-def test_cooccurrence_using_cli_succeeds():
+def test_cooccurrence_using_cli_succeeds(tmpdir):
 
-    output_filename = './tests/output/test_cooccurrence_using_cli_succeeds.csv'
+    output_filename = jj(tmpdir, 'test_cooccurrence_using_cli_succeeds.csv')
     options = dict(
         input_filename=TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
         output_filename=output_filename,
@@ -214,14 +216,14 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
     assert len(coo_df) > 0
 
 
-def test_cooccurrence_bug_with_options_that_raises_an_exception():
+def test_cooccurrence_bug_with_options_that_raises_an_exception(tmpdir):
 
-    output_filename = './tests/output/test_cooccurrence_bug_with_options_that_raises_an_exception.csv'
+    output_filename = jj(tmpdir, 'test_cooccurrence_bug_with_options_that_raises_an_exception.csv')
     options = {
         'input_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
-        'output_filename': 'hej.zip',
+        'output_filename': output_filename,
         'concept': ('jag',),
-        'context_width': '2',
+        'context_width': 2,
         'partition_keys': ('year',),
         'pos_includes': None,
         'pos_excludes': '|MAD|MID|PAD|',

@@ -66,11 +66,10 @@ class VectorizedCorpus:
             self.word_counts = {w: Xsum[i] for w, i in self.token2id.items()}
             # self.id2token = { i: t for t,i in self.token2id.items()}
 
-        n_bags = self.bag_term_matrix.shape[0]
-        n_vocabulary = self.bag_term_matrix.shape[1]
-        n_tokens = sum(self.word_counts.values())
-
-        logger.info('#bags: {}, #vocab: {}, #tokens: {}'.format(n_bags, n_vocabulary, n_tokens))
+        # n_bags = self.bag_term_matrix.shape[0]
+        # n_vocabulary = self.bag_term_matrix.shape[1]
+        # n_tokens = sum(self.word_counts.values())
+        # logger.info('#bags: {}, #vocab: {}, #tokens: {}'.format(n_bags, n_vocabulary, n_tokens))
 
     @property
     def id2token(self):
