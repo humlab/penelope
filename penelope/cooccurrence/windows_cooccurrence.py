@@ -1,6 +1,5 @@
 import collections
 import itertools
-from penelope.utility import file_utility
 from typing import Iterable, List, Set
 
 import pandas as pd
@@ -8,6 +7,7 @@ from tqdm import tqdm
 
 from penelope.corpus.interfaces import ICorpus, ITokenizedCorpus, PartitionKeys
 from penelope.corpus.vectorizer import CorpusVectorizer
+from penelope.utility import file_utility
 
 from .term_term_matrix import to_dataframe
 from .windows_corpus import WindowsCorpus
@@ -57,17 +57,18 @@ def tokens_concept_windows(tokens: Iterable[str], concept: Set[str], n_context_w
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, n_context_width: int, pad: str = "*"):
 
-    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
-        tokens_concept_windows(tokens=tokens, concept=concept, n_context_width=n_context_width, padding=pad)
-    ))
+    win_iter = (
+        [filename, i, window]
+        for filename, tokens in corpus
+        for i, window in enumerate(
+            tokens_concept_windows(tokens=tokens, concept=concept, n_context_width=n_context_width, padding=pad)
+        )
+    )
     return win_iter
 
 
 def cooccurrence_by_partition(
-    corpus: ITokenizedCorpus,
-    concept: Set[str],
-    n_context_width: int,
-    partition_keys: PartitionKeys = 'year'
+    corpus: ITokenizedCorpus, concept: Set[str], n_context_width: int, partition_keys: PartitionKeys = 'year'
 ) -> pd.DataFrame:
     """[summary]
 
@@ -131,6 +132,7 @@ def compute_and_store(
     coo_df = cooccurrence_by_partition(corpus, concepts, n_context_width=n_context_width, partition_keys=partition_keys)
 
     _store_to_file(target_filename, coo_df)
+
 
 def _store_to_file(filename: str, df: pd.DataFrame):
     """Store file to disk"""
