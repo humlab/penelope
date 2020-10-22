@@ -177,7 +177,7 @@ def compute_and_store_cooccerrence(
         store_options = {
             'input': input_filename,
             'output': output_filename,
-            'concepts': concept,
+            'concepts': list(concept),
             'no_concept': no_concept,
             'n_context_width': context_width,
             'partition_keys': partition_keys,
