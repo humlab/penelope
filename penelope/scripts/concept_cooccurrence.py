@@ -10,11 +10,12 @@ from penelope.utility import replace_extension
 
 # pylint: disable=too-many-arguments
 
-
+# FIXME: #6 Add option for filtering out concept word
 @click.command()
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
+@click.option('--no-concept', default=False, is_flag=True, help='Filter out concept word')
 @click.option(
     '-w',
     '--context-width',
@@ -56,6 +57,7 @@ def main(
     input_filename: str,
     output_filename: str,
     concept: List[str],
+    no_concept: bool,
     context_width: int,
     partition_key: List[str],
     pos_includes: str,
@@ -75,6 +77,7 @@ def main(
         input_filename=input_filename,
         output_filename=output_filename,
         concept=concept,
+        no_concept=no_concept,
         context_width=context_width,
         partition_keys=partition_key,
         pos_includes=pos_includes,
@@ -101,6 +104,7 @@ def compute_and_store_cooccerrence(
     output_filename: str,
     *,
     concept: List[str] = None,
+    no_concept: bool = False,
     context_width: int = None,
     partition_keys: Tuple[str, List[str]],
     pos_includes: str = None,
@@ -164,6 +168,7 @@ def compute_and_store_cooccerrence(
     cooccurrence.compute_and_store(
         corpus=corpus,
         concepts=concept,
+        no_concept=no_concept,
         n_context_width=context_width,
         partition_keys=partition_keys,
         target_filename=output_filename,
@@ -172,6 +177,10 @@ def compute_and_store_cooccerrence(
         store_options = {
             'input': input_filename,
             'output': output_filename,
+            'concepts': concept,
+            'no_concept': no_concept,
+            'n_context_width': context_width,
+            'partition_keys': partition_keys,
             'tokenizer_opts': tokenizer_opts,
             'tokens_transform_opts': tokens_transform_opts,
             'sparv_extract_opts': sparv_extract_opts,

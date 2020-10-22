@@ -13,7 +13,9 @@ from .term_term_matrix import to_dataframe
 from .windows_corpus import WindowsCorpus
 
 
-def tokens_concept_windows(tokens: Iterable[str], concept: Set[str], n_context_width: int, padding='*'):
+def tokens_concept_windows(
+    tokens: Iterable[str], concept: Set[str], no_concept: bool, n_context_width: int, padding='*'
+):
     """Yields a sequence of windows centered on any of the concept's token stored in `concept`.
     `n_window` is the the number of tokens to either side of the docus word, i.e.
     the total size of the window is (n_window + 1 + n_window).
@@ -27,9 +29,11 @@ def tokens_concept_windows(tokens: Iterable[str], concept: Set[str], n_context_w
     tokens : Iterable[str]
         The sequence of tokens to be windowed
     concept : Sequence[str]
-        A set of concept words.
-    n_tokens : int
-        The number of tokens to either side of the concept token in focus.
+        The token(s) in focus.
+    no_concept: bool
+        If to then filter ut the foxus word.
+    n_context_width : int
+        The number of tokens to either side of the token in focus.
 
     Returns
     -------
@@ -47,46 +51,58 @@ def tokens_concept_windows(tokens: Iterable[str], concept: Set[str], n_context_w
     _tokens = itertools.chain([padding] * n_context_width, tokens, [padding] * n_context_width)
     # _tokens = iter(_tokens)
 
+    # FIXME: #7 Add test case for --no-concept option
     # Fill a full window minus 1
     window = collections.deque((next(_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
     for token in _tokens:
         window.append(token)
         if window[n_context_width] in concept:
-            yield list(window)
+            concept_window = list(window)
+            if no_concept:
+                _ = concept_window.pop(n_context_width)
+            yield concept_window
 
 
-def corpus_concept_windows(corpus: ICorpus, concept: Set, n_context_width: int, pad: str = "*"):
+def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
     win_iter = (
         [filename, i, window]
         for filename, tokens in corpus
         for i, window in enumerate(
-            tokens_concept_windows(tokens=tokens, concept=concept, n_context_width=n_context_width, padding=pad)
+            tokens_concept_windows(
+                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+            )
         )
     )
     return win_iter
 
 
 def cooccurrence_by_partition(
-    corpus: ITokenizedCorpus, concept: Set[str], n_context_width: int, partition_keys: PartitionKeys = 'year'
+    corpus: ITokenizedCorpus,
+    concept: Set[str],
+    no_concept: bool,
+    n_context_width: int,
+    partition_keys: PartitionKeys = 'year',
 ) -> pd.DataFrame:
     """[summary]
 
     Parameters
     ----------
     corpus : ITokenizedCorpus
-        [description]
+        The source corpus
     concept : Set[str]
-        [description]
-    n_lr_tokens : int
-        [description]
+        The word(s) in focus
+    no_concept: bool
+        If True then the focus word is filtered out
+    n_context_width : int
+        Number of tokens to either side of concept word
     partition_key : str, optional
-        [description], by default 'year'
+        Document field to use when partitioning the data, by default 'year'
 
     Returns
     -------
     pd.DataFrame
-        [description]
+        Cooccurrence matrix as a pd.DataFrame
     """
 
     vocabulary = corpus.token2id
@@ -102,7 +118,9 @@ def cooccurrence_by_partition(
 
         corpus.reader.apply_filter(filenames)
 
-        windows = corpus_concept_windows(corpus, concept=concept, n_context_width=n_context_width, pad='*')
+        windows = corpus_concept_windows(
+            corpus, concept=concept, no_concept=no_concept, n_context_width=n_context_width, pad='*'
+        )
         windows_corpus = WindowsCorpus(windows=windows, vocabulary=vocabulary)
         v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
 
@@ -119,7 +137,12 @@ def cooccurrence_by_partition(
 
 
 def compute_and_store(
-    corpus: ITokenizedCorpus, concepts: List[str], n_context_width: int, partition_keys: List[str], target_filename: str
+    corpus: ITokenizedCorpus,
+    concepts: List[str],
+    no_concept: bool,
+    n_context_width: int,
+    partition_keys: List[str],
+    target_filename: str,
 ):
     """Extracts and stores text documents from a Sparv corpus in CSV format
 
@@ -129,7 +152,9 @@ def compute_and_store(
         Corpus
 
     """
-    coo_df = cooccurrence_by_partition(corpus, concepts, n_context_width=n_context_width, partition_keys=partition_keys)
+    coo_df = cooccurrence_by_partition(
+        corpus, concepts, no_concept=no_concept, n_context_width=n_context_width, partition_keys=partition_keys
+    )
 
     _store_to_file(target_filename, coo_df)
 

@@ -37,7 +37,7 @@ def test_windowed_when_nn_vb_lemma_2_tokens():
     corpus = TRANSTRÖMMER_CORPUS_NNVB_LEMMA
     concept = {'piazza', 'kyrka', 'valv'}
 
-    windows = [w for w in corpus_concept_windows(corpus, concept, 2, pad='*')]
+    windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=2, pad='*')]
 
     assert expected_windows == windows
     # # log_corpus_windows_fixture('./tests/test_data/corpus_windows_2_nnvb_lemma.json', corpus, windows)
@@ -50,7 +50,7 @@ def test_windowed_when_nn_vb_lemma_5_tokens():
     corpus = TRANSTRÖMMER_CORPUS_NNVB_LEMMA
     concept = {'piazza', 'kyrka', 'valv'}
 
-    windows = [w for w in corpus_concept_windows(corpus, concept, 5, pad='*')]
+    windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=5, pad='*')]
 
     assert expected_windows == windows
     # # log_corpus_windows_fixture('./tests/test_data/corpus_windows_2_nnvb_lemma.json', corpus, windows)
@@ -63,7 +63,7 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
     expected_windows = TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
     concept = {'piazza', 'kyrka', 'valv'}
-    windows = [w for w in corpus_concept_windows(corpus, concept, 5, pad='*')]
+    windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=5, pad='*')]
 
     assert expected_windows == windows
 
@@ -88,7 +88,7 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
     ]
 
     concept = {'är'}
-    windows = [w for w in corpus_concept_windows(corpus, concept, 2, pad='*')]
+    windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=2, pad='*')]
 
     assert expected_windows == windows
 

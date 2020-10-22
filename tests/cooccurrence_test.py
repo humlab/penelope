@@ -117,7 +117,9 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result():
 
     vocabulary = {chr(ord('a') + i): i for i in range(0, ord('f') - ord('a') + 1)}
     concept = {'b'}
-    windows = [w for w in corpus_concept_windows(documents, concept, n_context_width=2, pad='*')]
+    windows = [
+        w for w in corpus_concept_windows(documents, concept=concept, no_concept=False, n_context_width=2, pad='*')
+    ]
 
     assert expected_windows == windows
 
@@ -138,7 +140,7 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result():
 def test_cooccurrence_of_windowed_corpus_returns_correct_result2():
 
     concept = {'är'}
-    n_lr_tokens = 2
+    n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
         tokenizer_opts=dict(
@@ -147,7 +149,7 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result2():
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
-    coo_df = cooccurrence_by_partition(corpus, concept, n_lr_tokens)
+    coo_df = cooccurrence_by_partition(corpus, concept=concept, no_concept=False, n_context_width=n_context_width)
 
     assert coo_df is not None
 
@@ -183,7 +185,7 @@ def test_cooccurrence_using_cli_succeeds(tmpdir):
 def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
 
     concept = {'jag'}
-    n_lr_tokens = 2
+    n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
         tokenizer_opts=dict(
@@ -192,7 +194,7 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
-    coo_df = cooccurrence_by_partition(corpus, concept, n_lr_tokens)
+    coo_df = cooccurrence_by_partition(corpus, concept=concept, no_concept=False, n_context_width=n_context_width)
 
     assert coo_df is not None
 
@@ -201,7 +203,7 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
 def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
 
     concept = {'jag'}
-    n_lr_tokens = 2
+    n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
         tokenizer_opts=dict(
@@ -210,7 +212,7 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
-    coo_df = cooccurrence_by_partition(corpus, concept, n_lr_tokens)
+    coo_df = cooccurrence_by_partition(corpus, concept=concept, no_concept=False, n_context_width=n_context_width)
 
     assert coo_df is not None
     assert len(coo_df) > 0
