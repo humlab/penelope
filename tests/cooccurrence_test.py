@@ -172,7 +172,7 @@ def test_cooccurrence_using_cli_succeeds():
 
     assert os.path.isfile(output_filename)
 
-@pytest.skip("long running, used for bug fixes")
+@pytest.mark.skip("long running, used for bug fixes")
 def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
 
     concept = {'jag'}
@@ -188,7 +188,7 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
     assert coo_df is not None
 
 
-@pytest.skip("long running, used for bug fixes")
+@pytest.mark.skip("long running, used for bug fixes")
 def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
 
     concept = {'jag'}
