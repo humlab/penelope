@@ -3,6 +3,7 @@ import itertools
 from typing import Iterable, List, Set
 
 import pandas as pd
+from tqdm import tqdm
 
 from penelope.corpus.interfaces import ICorpus, ITokenizedCorpus, PartitionKeys
 from penelope.corpus.vectorizer import CorpusVectorizer
@@ -58,7 +59,9 @@ def corpus_concept_windows(corpus: ICorpus, concept: Set, n_context_width: int, 
     win_iter = (
         [filename, i, window]
         for filename, tokens in corpus
-        for i, window in enumerate(tokens_concept_windows(tokens, concept, n_context_width, padding=pad))
+        for i, window in enumerate(
+            tokens_concept_windows(tokens=tokens, concept=concept, n_context_width=n_context_width, padding=pad)
+        )
     )
     return win_iter
 
@@ -90,15 +93,15 @@ def cooccurrence_by_partition(
     partitions = corpus.partition_documents(partition_keys)
     df_total = None
 
-    partition_column = partition_keys if isinstance(partition_keys, str) else ' '.join(partition_keys)
+    partition_column = partition_keys if isinstance(partition_keys, str) else '_'.join(partition_keys)
 
-    for key in partitions:
+    for partition in tqdm(partitions):
 
-        filenames = partitions[key]
+        filenames = partitions[partition]
 
         corpus.reader.apply_filter(filenames)
 
-        windows = corpus_concept_windows(corpus, concept, n_context_width=n_context_width, pad='*')
+        windows = corpus_concept_windows(corpus, concept=concept, n_context_width=n_context_width, pad='*')
         windows_corpus = WindowsCorpus(windows=windows, vocabulary=vocabulary)
         v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
 
@@ -107,7 +110,7 @@ def cooccurrence_by_partition(
         documents = corpus.documents[corpus.documents.filename.isin(filenames)]
 
         df_partition = to_dataframe(coo_matrix, id2token=id2token, documents=documents, min_count=1)
-        df_partition[partition_column] = key
+        df_partition[partition_column] = partition
 
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
 

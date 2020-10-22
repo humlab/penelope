@@ -212,3 +212,30 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
 
     assert coo_df is not None
     assert len(coo_df) > 0
+
+
+def test_cooccurrence_bug_with_options_that_raises_an_exception():
+
+    output_filename = './tests/output/test_cooccurrence_bug_with_options_that_raises_an_exception.csv'
+    options = {
+        'input_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
+        'output_filename': 'hej.zip',
+        'concept': ('jag',),
+        'context_width': '2',
+        'partition_keys': ('year',),
+        'pos_includes': None,
+        'pos_excludes': '|MAD|MID|PAD|',
+        'lemmatize': True,
+        'to_lowercase': True,
+        'remove_stopwords': None,
+        'min_word_length': 1,
+        'keep_symbols': True,
+        'keep_numerals': True,
+        'only_alphabetic': False,
+        'only_any_alphanumeric': False,
+        'filename_field': ('year:_:1',),
+    }
+
+    compute_and_store_cooccerrence(**options)
+
+    assert os.path.isfile(output_filename)

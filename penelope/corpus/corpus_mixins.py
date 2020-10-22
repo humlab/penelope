@@ -13,6 +13,9 @@ class PartitionMixIn:
         if 'filename' not in self.documents.columns:
             raise ValueError("`filename` columns missing")
 
+        if isinstance(by, (list, tuple)):
+            by = '_'.join(by)
+
         groups = self.documents.groupby(by=by)['filename'].aggregate(list).to_dict()
 
         return groups
