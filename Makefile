@@ -19,7 +19,8 @@ build: tools requirements.txt
 
 tag:
 	@echo $(PENELOPE_VERSION)
-	@git tag v0.2.8 -a
+	@git push
+	@git tag $(PENELOPE_VERSION) -a
 	@git push origin --tags
 
 test-coverage:
