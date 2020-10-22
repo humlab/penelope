@@ -31,11 +31,11 @@ class SparvCsvToText:
         self.fields = fields or {'token': 0, 'pos': 1, 'baseform': 2}
 
     def transform(self, content: str):
-        reader = csv.reader(content.splitlines(), delimiter=self.delimiter)
+        reader = csv.reader(content.splitlines(), delimiter=self.delimiter, quoting=csv.QUOTE_NONE)
         return self._transform(reader)
 
     def read_transform(self, filename: str):
-        reader = csv.reader(filename)
+        reader = csv.reader(filename, delimiter=self.delimiter, quoting=csv.QUOTE_NONE)
         return self._transform(reader)
 
     def _transform(self, reader: Any):  # Any = csv._reader
