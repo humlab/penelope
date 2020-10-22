@@ -26,18 +26,18 @@ jobs:
 
       # Install and setup Python and Poetry
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: Install Poetry
+        uses: Gr1N/setup-poetry@v4
       - name: Setup Poetry Caching
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v1
 
       # Run install
       - name: Install penelope
@@ -78,7 +78,7 @@ jobs:
         run: poetry build
       - name: Upload artifacts for release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: wheel
           path: dist/
@@ -96,22 +96,22 @@ jobs:
         shell: bash
       - name: Checkout the code
         uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - uses: Gr1N/setup-poetry@v4
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
       - run: poetry --version
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v2
         with:
           name: wheel
           path: dist/
-      # - uses: actions/download-artifact@v1
+      # - uses: actions/download-artifact@v2
       #   with:
       #     name: docs
       #     path: docs/build/html
