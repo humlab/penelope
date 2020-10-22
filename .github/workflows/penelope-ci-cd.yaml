@@ -19,6 +19,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      NLTK_DATA: ~/nltk_data
     steps:
 
       - name: Checkout the code
@@ -45,6 +47,7 @@ jobs:
       - run: poetry run make lint
       - run: poetry run black --line-length 120 --target-version py38 --skip-string-normalization --check ./penelope/
       - run: poetry run flake8 ./penelope
+      - run: poetry run python -m nltk.downloader -d $NLTK_DATA stopwords punkt sentiwordnet
       - run: make pytest
       # - run: safety check --bare --file ./requirements.txt
 
