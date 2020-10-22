@@ -2,8 +2,7 @@ from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 
-from penelope.utility.file_utility import (IndexOfSplitOrCallableOrRegExp,
-                                           basenames, extract_filename_fields)
+from penelope.utility.file_utility import IndexOfSplitOrCallableOrRegExp, basenames, extract_filename_fields
 
 from .interfaces import ICorpusReader
 

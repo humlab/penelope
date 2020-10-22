@@ -7,11 +7,9 @@ from gensim.matutils import Sparse2Corpus
 
 import penelope.utility as utility
 from penelope.topic_modelling.container import InferredTopicsData
-from penelope.topic_modelling.extract import (extract_topic_token_overview,
-                                              extract_topic_token_weights)
+from penelope.topic_modelling.extract import extract_topic_token_overview, extract_topic_token_weights
 
-from .utility import (add_document_metadata, add_document_terms_count,
-                      id2word_to_dataframe)
+from .utility import add_document_metadata, add_document_terms_count, id2word_to_dataframe
 
 logger = utility.getLogger('corpus_text_analysis')
 

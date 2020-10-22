@@ -29,7 +29,7 @@ import penelope.topic_modelling as topic_modelling
 @click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
-def compute_topic_model(
+def main(
     name,
     n_topics,
     corpus_folder,
@@ -156,4 +156,4 @@ def run_model(
 
 
 if __name__ == '__main__':
-    compute_topic_model()  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter

@@ -25,7 +25,7 @@ def split_filename(filename, sep='_'):
 @click.option('--only-alphabetic', default=False, is_flag=True, help='')
 @click.option('--file-pattern', default='*.txt', help='')
 @click.option('--filename-field', '-f', help='RegExp fields to extract from document name', multiple=True)
-def vectorize_text_corpus(
+def main(
     filename=None,
     output_folder=None,
     to_lower=True,
@@ -59,4 +59,4 @@ def vectorize_text_corpus(
 
 
 if __name__ == "__main__":
-    vectorize_text_corpus()
+    main()

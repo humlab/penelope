@@ -3,8 +3,8 @@ import random
 from itertools import cycle, islice
 
 import numpy as np
-from bokeh.palettes import (Category20_20,  # pylint: disable=no-name-in-module
-                            Set1_8, all_palettes)
+from bokeh.palettes import Category20_20  # pylint: disable=no-name-in-module
+from bokeh.palettes import Set1_8, all_palettes
 
 DEFAULT_ALL_PALETTES = all_palettes
 DEFAULT_PALETTE = Category20_20

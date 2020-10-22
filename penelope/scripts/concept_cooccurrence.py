@@ -3,6 +3,7 @@ import sys
 from typing import Any, List, Tuple
 
 import click
+from click.types import INT
 
 import penelope.cooccurrence as cooccurrence
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
@@ -12,20 +13,33 @@ from penelope.utility import replace_extension
 
 
 @click.command()
-@click.argument('input_filename')  # , help='Model name.')
-@click.argument('output_filename')  # , help='Model name.')
-@click.option('-c', '--concept', default=None, help='Concept', multiple=True)
+@click.argument('input_filename', type=click.STRING)  # , help='Model name.')
+@click.argument('output_filename', type=click.STRING)  # , help='Model name.')
+@click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
 @click.option(
     '-w',
     '--context-width',
     default=None,
     help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
+    type=click.INT,
 )
-@click.option('-p', '--partition-key', default=None, help='Pertition key(s)', multiple=True)
-@click.option('-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".')
-@click.option('-x', '--pos-excludes', default='|MAD|MID|PAD|', help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".')
-@click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='')
-@click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='')
+@click.option('-p', '--partition-key', default=None, help='Pertition key(s)', multiple=True, type=click.STRING)
+@click.option(
+    '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
+)
+@click.option(
+    '-x',
+    '--pos-excludes',
+    default='|MAD|MID|PAD|',
+    help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
+    type=click.STRING,
+)
+@click.option(
+    '-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms', type=click.BOOL
+)
+@click.option(
+    '-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words', type=click.BOOL
+)
 @click.option(
     '-r',
     '--remove-stopwords',
@@ -82,6 +96,11 @@ def main(
     )
 
 
+class SparvTokenizedCsvCorpusWithProgress(SparvTokenizedCsvCorpus):
+
+    pass
+
+
 def compute_and_store_cooccerrence(
     input_filename: str,
     output_filename: str,
@@ -101,7 +120,7 @@ def compute_and_store_cooccerrence(
     only_any_alphanumeric: bool = False,
     filename_field: Any = None,
 ):
-
+    print(locals())
     if len(concept or []) == 0:
         click.echo("please specify at least one concept (--concept e.g. --concept=information)")
         sys.exit(1)

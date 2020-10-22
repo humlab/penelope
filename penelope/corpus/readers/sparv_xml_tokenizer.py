@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from penelope.corpus.sparv.sparv_xml_to_text import (XSLT_FILENAME_V3,
-                                                     SparvXml2Text)
+from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 from penelope.corpus.text_transformer import TextTransformer
 
 from .interfaces import FilenameOrFolderOrZipOrList

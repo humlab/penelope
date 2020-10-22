@@ -3,8 +3,7 @@ import json
 import click
 
 import penelope.corpus.sparv_corpus as sparv_corpus
-from penelope.utility import (replace_extension, suffix_filename,
-                              timestamp_filename)
+from penelope.utility import replace_extension, suffix_filename, timestamp_filename
 
 
 # pylint: disable=too-many-arguments
