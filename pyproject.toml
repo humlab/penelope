@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.2.11"
+version = "0.2.12"
 description = "Some text analysis utilities"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -8,7 +8,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "==3.*,>=3.8.0"
 gensim = "^3.8.3"
 numpy = "^1.19.2"
 pandas = "^1.1.2"
@@ -34,19 +34,20 @@ alive-progress = "^1.6.1"
 click = "^7.1.2"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1.0"
-rope = "^0.17.0"
-pylint = "^2.6.0"
-yapf = "^0.30.0"
-black = "^20.8b1"
-isort = "^5.5.4"
-flake8 = "^3.8.4"
-mypy = "^0.782"
+pytest = "==6.*,>=6.1.0"
+rope = "==0.*,>=0.17.0"
+pylint = "==2.*,>=2.6.0"
+yapf = "==0.*,>=0.30.0"
+black = "==20.*,>=20.8.0.b1"
+isort = "==5.*,>=5.5.4"
+flake8 = "==3.*,>=3.8.4"
+mypy = "==0.*,>=0.782.0"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 concept_cooccurrence = "penelope.scripts.concept_cooccurrence:main"
+
 
 
 [build-system]
@@ -60,3 +61,7 @@ addopts = "-ra -q"
 testpaths = [
     "tests"
 ]
+
+[tool.dephell.main]
+from = {format = "poetry", path = "pyproject.toml"}
+to = {format = "poetry", path = "pyproject.toml"}

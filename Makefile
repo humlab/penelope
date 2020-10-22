@@ -10,6 +10,9 @@ init: tools
 	@pip install poetry --upgrade
 	@poetry install
 
+version:
+	@echo $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
+
 tools:
 	@pip install --upgrade pip
 	@pip install poetry --upgrade
@@ -17,11 +20,19 @@ tools:
 build: tools requirements.txt
 	@poetry build
 
-tag:
-	@echo $(PENELOPE_VERSION)
+release: bump.patch tag
+
+bump.patch:
+	@poetry run dephell project bump patch
+	@git add pyproject.toml
+	@git commit -m "Patch bump"
 	@git push
-	@git tag $(PENELOPE_VERSION) -a
+
+tag:
+	@git push
+	@git tag $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g") -a
 	@git push origin --tags
+
 
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
@@ -91,4 +102,4 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint flake8 pylint pytest pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy tag tools
+.PHONY: init lint release flake8 pylint pytest pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy tag tools bump.patch
