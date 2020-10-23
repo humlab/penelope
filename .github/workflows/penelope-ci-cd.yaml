@@ -8,7 +8,7 @@ on:
       - reopened
   push:
     branches:
-      - master
+      - main
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
 # on:
@@ -20,106 +20,101 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     env:
+      #POETRY_VIRTUALENVS_CREATE: false
       NLTK_DATA: ~/nltk_data
     steps:
 
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      # Install and setup Python and Poetry
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
-      - name: Setup Poetry Caching
-        uses: actions/cache@v2
-        with:
-          path: .venv
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - run: poetry install
-      - run: poetry check
-      - run: poetry debug
-      - run: poetry run make lint
-      - run: poetry run black --line-length 120 --target-version py38 --skip-string-normalization --check ./penelope/
-      - run: poetry run flake8 ./penelope
-      - run: poetry run python -m nltk.downloader -d $NLTK_DATA stopwords punkt sentiwordnet
-      - run: make pytest
-      # - run: safety check --bare --file ./requirements.txt
-
-      # Check.
-      # - name: Run static analysers
-      #   run: poetry run mypy
-
-      # Docs.
-      # - name: Build the documentation
-      #   run: poetry run invoke docs
-      # - name: Upload documentation for release
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: docs
-      #     path: docs/build/html/
-
-      - run: poetry build
-      - name: Upload artifacts for release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v2
-        with:
-          name: wheel
-          path: dist/
-
-  release:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    needs:
-      - ci
-    steps:
-      - name: Get version from tag
-        id: tag_name
-        run: |
-          echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
-        shell: bash
-      - name: Checkout the code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - uses: Gr1N/setup-poetry@v4
+      # - name: Install Poetry
+      #   run: |
+      #     curl -fsS -o get-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py
+      #     python get-poetry.py -y
+      #     echo "$HOME/.poetry/bin" >> $GITHUB_PATH
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
-      - run: poetry --version
-      - uses: actions/download-artifact@v2
+      - uses: Gr1N/setup-poetry@v4
+
+      - run: poetry install --no-interaction
+      - run: poetry check
+      - run: poetry debug
+      #- run: poetry run make lint
+      - run: poetry run black --line-length 120 --target-version py38 --skip-string-normalization --check ./penelope/
+      - run: poetry run flake8 ./penelope
+      - run: make nltk_data
+      - run: make pytest
+      # - run: safety check --bare --file ./requirements.txt
+      # - run: poetry run mypy
+
+      - run: poetry build
+
+      - name: Upload Release Artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v2
         with:
           name: wheel
           path: dist/
-      # - uses: actions/download-artifact@v2
-      #   with:
-      #     name: docs
-      #     path: docs/build/html
-      # - name: Get Changelog Entry
-      #   id: changelog_reader
-      #   uses: mindsers/changelog-reader-action@v1.1.0
-      # - name: Publish the release
-      #   uses: softprops/action-gh-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     body: ${{ steps.changelog_reader.outputs.log_entry }}
-      #     files: |
-      #       dist/*
-      # - name: Publish the documentation
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build/html
-      - name: publish the packages
+
+      - name: Publish to PyPI
+        if: startsWith(github.ref, 'refs/tags/')
         run: poetry publish -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+
+      # - name: Build Python package and publish to PyPI
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   run: poetry publish --build -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+
+  # release:
+  #   runs-on: ubuntu-latest
+  #   if: startsWith(github.ref, 'refs/tags/')
+  #   needs:
+  #     - ci
+  #   steps:
+  #     - name: Get version from tag
+  #       id: tag_name
+  #       run: |
+  #         echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
+  #       shell: bash
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.8
+  #     - uses: Gr1N/setup-poetry@v4
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: ~/.cache/pypoetry/virtualenvs
+  #         key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-poetry-
+  #     - run: poetry --version
+  #     - uses: actions/download-artifact@v2
+  #       with:
+  #         name: wheel
+  #         path: dist/
+  #     # - uses: actions/download-artifact@v2
+  #     #   with:
+  #     #     name: docs
+  #     #     path: docs/build/html
+  #     # - name: Get Changelog Entry
+  #     #   id: changelog_reader
+  #     #   uses: mindsers/changelog-reader-action@v1.1.0
+  #     # - name: Publish the release
+  #     #   uses: softprops/action-gh-release@v1
+  #     #   env:
+  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     #   with:
+  #     #     body: ${{ steps.changelog_reader.outputs.log_entry }}
+  #     #     files: |
+  #     #       dist/*
+  #     # - name: Publish the documentation
+  #     #   uses: peaceiris/actions-gh-pages@v3
+  #     #   with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         publish_dir: ./docs/build/html
+  #     - name: publish the packages
+  #       run: poetry publish -u __token__ -p ${{ secrets.PYPI_TOKEN }}

@@ -3,7 +3,6 @@
 
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
-PENELOPE_VERSION:=v$(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
 
 init: tools
 	@pip install --upgrade pip
@@ -25,7 +24,7 @@ release: bump.patch tag
 bump.patch:
 	@poetry run dephell project bump patch
 	@git add pyproject.toml
-	@git commit -m "Patch bump"
+	@git commit -m "Bump version patch"
 	@git push
 
 tag:
@@ -91,6 +90,12 @@ clean:
 clean_cache:
 	@poetry cache clear pypi --all
 
+penelope_data: nltk_data
+
+nltk_data:
+	@mkdir -p NLTK_DATA
+	@poetry run python -m nltk.downloader -d $(NLTK_DATA )stopwords punkt sentiwordnet
+
 update:
 	@poetry update
 
@@ -102,4 +107,5 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint release flake8 pylint pytest pylint2 format yapf black clean test test-coverage update install_graphtool build isort tidy tag tools bump.patch
+.PHONY: init lint release flake8 pylint pytest pylint2 format yapf black clean test test-coverage \
+	update install_graphtool build isort tidy tag tools bump.patch penelope_data nltk_data
