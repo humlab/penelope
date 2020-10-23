@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.2.15"
+version = "0.2.16"
 description = "Some text analysis utilities"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -47,6 +47,7 @@ mypy = "==0.*,>=0.782.0"
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 concept_cooccurrence = "penelope.scripts.concept_cooccurrence:main"
+
 
 
 
