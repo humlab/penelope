@@ -94,7 +94,7 @@ penelope_data: nltk_data
 
 nltk_data:
 	@mkdir -p $(NLTK_DATA)
-	@poetry run python -m nltk.downloader -d $(NLTK_DATA )stopwords punkt sentiwordnet
+	@poetry run python -m nltk.downloader -d $(NLTK_DATA) stopwords punkt sentiwordnet
 
 update:
 	@poetry update
