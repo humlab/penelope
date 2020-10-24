@@ -61,7 +61,7 @@ mypy = "==0.*,>=0.782.0"
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
-concept_cooccurrence = "penelope.scripts.concept_cooccurrence:main"
+concept_cooccurrence = "penelope.scripts.concept_co_occurrence:main"
 
 [build-system]
 requires = ["poetry>=0.12"]

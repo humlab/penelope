@@ -668,13 +668,13 @@ class VectorizedCorpus:
 
         return words_freq[:n]
 
-    def cooccurrence_matrix(self) -> scipy.sparse.spmatrix:
+    def co_occurrence_matrix(self) -> scipy.sparse.spmatrix:
         """Computes (document) cooccurence matrix
 
         Returns
         -------
         Tuple[scipy.sparce.spmatrix. Dict[int,str]]
-            The cooccurrence matrix
+            The co-occurrence matrix
         """
         term_term_matrix = np.dot(self.bag_term_matrix.T, self.bag_term_matrix)
         term_term_matrix = scipy.sparse.triu(term_term_matrix, 1)

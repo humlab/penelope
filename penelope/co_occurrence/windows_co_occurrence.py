@@ -65,21 +65,66 @@ def tokens_concept_windows(
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
-    win_iter = (
-        [filename, i, window]
-        for filename, tokens in corpus
-        for i, window in enumerate(
-            tokens_concept_windows(
-                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
-            )
+    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
+        tokens_concept_windows(
+            tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
         )
-    )
+    ))
     return win_iter
 
 
-def cooccurrence_by_partition(
+def corpus_concept_co_occurrence(
     corpus: ITokenizedCorpus,
-    concept: Set[str],
+    *,
+    concepts: Set[str],
+    no_concept: bool,
+    n_context_width: int,
+    filenames: List[str]=None,
+    count_threshold: int = 1,
+):
+    """Computes a concept co-occurrence dataframe for given arguments
+
+    Parameters
+    ----------
+    corpus : ITokenizedCorpus
+        Tokenized corpus
+    concept : Set[str]
+        The concept that the defines the context, always the middle word in the window
+    no_concept : bool
+        If True then filter out concept from result
+    n_context_width : int
+        Width of left/right context
+    filenames : List[str], optional
+        Corpus filename subset, by default None
+    count_threshold : int, optional
+        Co-occurrence count filter threshold to use, by default 1
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
+    windows = corpus_concept_windows(
+        corpus, concept=concepts, no_concept=no_concept, n_context_width=n_context_width, pad='*'
+    )
+
+    windows_corpus = WindowsCorpus(windows=windows, vocabulary=corpus.token2id)
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
+
+    coo_matrix = v_corpus.co_occurrence_matrix()
+
+    documents = corpus.documents if filenames is None else corpus.documents[corpus.documents.filename.isin(filenames)]
+
+    df_coo = to_dataframe(coo_matrix, id2token=corpus.id2token, documents=documents, min_count=count_threshold)
+
+    return df_coo
+
+
+def partitioned_corpus_concept_co_occurrence(
+    corpus: ITokenizedCorpus,
+    *,
+    concepts: Set[str],
     no_concept: bool,
     count_threshold: int,
     n_context_width: int,
@@ -95,6 +140,8 @@ def cooccurrence_by_partition(
         The word(s) in focus
     no_concept: bool
         If True then the focus word is filtered out
+    count_threshold : int
+        Min number of global co-occurrence count to include in the result
     n_context_width : int
         Number of tokens to either side of concept word
     partition_key : str, optional
@@ -103,11 +150,9 @@ def cooccurrence_by_partition(
     Returns
     -------
     pd.DataFrame
-        Cooccurrence matrix as a pd.DataFrame
+        Co-occurrence matrix as a pd.DataFrame
     """
 
-    vocabulary = corpus.token2id
-    id2token = corpus.id2token
     partitions = corpus.partition_documents(partition_keys)
     df_total = None
 
@@ -119,17 +164,12 @@ def cooccurrence_by_partition(
 
         corpus.reader.apply_filter(filenames)
 
-        windows = corpus_concept_windows(
-            corpus, concept=concept, no_concept=no_concept, n_context_width=n_context_width, pad='*'
+        df_partition = corpus_concept_co_occurrence(
+            corpus, concepts=concepts, no_concept=no_concept, n_context_width=n_context_width, filenames=filenames
         )
-        windows_corpus = WindowsCorpus(windows=windows, vocabulary=vocabulary)
-        v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
 
-        coo_matrix = v_corpus.cooccurrence_matrix()
-
-        documents = corpus.documents[corpus.documents.filename.isin(filenames)]
-        df_partition = to_dataframe(coo_matrix, id2token=id2token, documents=documents, min_count=1)
         df_partition[partition_column] = partition
+
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
 
     if isinstance(count_threshold, int) and count_threshold > 1:
@@ -156,9 +196,9 @@ def compute_and_store(
         Corpus
 
     """
-    coo_df = cooccurrence_by_partition(
+    coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
-        concepts,
+        concepts=concepts,
         no_concept=no_concept,
         count_threshold=count_threshold,
         n_context_width=n_context_width,

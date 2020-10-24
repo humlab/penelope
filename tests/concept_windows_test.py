@@ -1,6 +1,6 @@
 import json
 
-from penelope.cooccurrence import WindowsCorpus, corpus_concept_windows
+from penelope.co_occurrence import WindowsCorpus, corpus_concept_windows
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 

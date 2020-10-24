@@ -4,7 +4,7 @@ from typing import Any, List, Tuple
 
 import click
 
-import penelope.cooccurrence as cooccurrence
+import penelope.co_occurrence as co_occurrence
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.utility import replace_extension
 
@@ -17,7 +17,7 @@ from penelope.utility import replace_extension
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
 @click.option('--no-concept', default=False, is_flag=True, help='Filter out concept word')
-@click.option('--count-threshold', default=None, help='Filter out cooccurrences below threshold', type=click.INT)
+@click.option('--count-threshold', default=None, help='Filter out co_occurrences below threshold', type=click.INT)
 @click.option(
     '-w',
     '--context-width',
@@ -76,7 +76,7 @@ def main(
     filename_field: Any,
 ):
 
-    compute_and_store_cooccerrence(
+    cli_concept_co_occurrence(
         input_filename=input_filename,
         output_filename=output_filename,
         concept=concept,
@@ -103,7 +103,7 @@ class SparvTokenizedCsvCorpusWithProgress(SparvTokenizedCsvCorpus):
     pass
 
 
-def compute_and_store_cooccerrence(
+def cli_concept_co_occurrence(
     input_filename: str,
     output_filename: str,
     *,
@@ -170,7 +170,7 @@ def compute_and_store_cooccerrence(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    cooccurrence.compute_and_store(
+    co_occurrence.compute_and_store(
         corpus=corpus,
         concepts=concept,
         no_concept=no_concept,
