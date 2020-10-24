@@ -10,12 +10,14 @@ from penelope.utility import replace_extension
 
 # pylint: disable=too-many-arguments
 
+
 # FIXME: #6 Add option for filtering out concept word
 @click.command()
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
 @click.option('--no-concept', default=False, is_flag=True, help='Filter out concept word')
+@click.option('--count-threshold', default=None, help='Filter out cooccurrences below threshold', type=click.INT)
 @click.option(
     '-w',
     '--context-width',
@@ -58,6 +60,7 @@ def main(
     output_filename: str,
     concept: List[str],
     no_concept: bool,
+    count_threshold: int,
     context_width: int,
     partition_key: List[str],
     pos_includes: str,
@@ -78,6 +81,7 @@ def main(
         output_filename=output_filename,
         concept=concept,
         no_concept=no_concept,
+        count_threshold=count_threshold,
         context_width=context_width,
         partition_keys=partition_key,
         pos_includes=pos_includes,
@@ -105,6 +109,7 @@ def compute_and_store_cooccerrence(
     *,
     concept: List[str] = None,
     no_concept: bool = False,
+    count_threshold: int = None,
     context_width: int = None,
     partition_keys: Tuple[str, List[str]],
     pos_includes: str = None,
@@ -169,6 +174,7 @@ def compute_and_store_cooccerrence(
         corpus=corpus,
         concepts=concept,
         no_concept=no_concept,
+        count_threshold=count_threshold,
         n_context_width=context_width,
         partition_keys=partition_keys,
         target_filename=output_filename,
@@ -179,6 +185,7 @@ def compute_and_store_cooccerrence(
             'output': output_filename,
             'concepts': list(concept),
             'no_concept': no_concept,
+            'count_threshold': count_threshold,
             'n_context_width': context_width,
             'partition_keys': partition_keys,
             'tokenizer_opts': tokenizer_opts,

@@ -81,6 +81,7 @@ def cooccurrence_by_partition(
     corpus: ITokenizedCorpus,
     concept: Set[str],
     no_concept: bool,
+    count_threshold: int,
     n_context_width: int,
     partition_keys: PartitionKeys = 'year',
 ) -> pd.DataFrame:
@@ -127,11 +128,13 @@ def cooccurrence_by_partition(
         coo_matrix = v_corpus.cooccurrence_matrix()
 
         documents = corpus.documents[corpus.documents.filename.isin(filenames)]
-
         df_partition = to_dataframe(coo_matrix, id2token=id2token, documents=documents, min_count=1)
         df_partition[partition_column] = partition
-
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
+
+    if isinstance(count_threshold, int) and count_threshold > 1:
+        # FIXME: #9 Add unit test for `count_theshold` filter
+        df_total = df_total[df_total.groupby(["w1", "w2"]).transform('size') > count_threshold]
 
     return df_total
 
@@ -140,6 +143,7 @@ def compute_and_store(
     corpus: ITokenizedCorpus,
     concepts: List[str],
     no_concept: bool,
+    count_threshold: int,
     n_context_width: int,
     partition_keys: List[str],
     target_filename: str,
@@ -153,7 +157,12 @@ def compute_and_store(
 
     """
     coo_df = cooccurrence_by_partition(
-        corpus, concepts, no_concept=no_concept, n_context_width=n_context_width, partition_keys=partition_keys
+        corpus,
+        concepts,
+        no_concept=no_concept,
+        count_threshold=count_threshold,
+        n_context_width=n_context_width,
+        partition_keys=partition_keys,
     )
 
     _store_to_file(target_filename, coo_df)
