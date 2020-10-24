@@ -91,12 +91,6 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
     windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=2, pad='*')]
 
     assert expected_windows == windows
-
-    # def test_partioned_corpus():
-
-    #     corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-
-    #     partitions = partioned_corpus(corpus.documents, partion_column='year')
     assert corpus.documents is not None
 
 
