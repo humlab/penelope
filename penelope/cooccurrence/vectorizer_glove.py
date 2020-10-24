@@ -1,4 +1,8 @@
-import glove
+try:
+    import glove
+except ModuleNotFoundError:
+    glove = None
+
 import numpy as np
 import pandas as pd
 
@@ -11,6 +15,8 @@ logger = utility.getLogger('corpus_text_analysis')
 # See http://www.foldl.me/2014/glove-python/
 class GloveVectorizer:
     def __init__(self, corpus=None, token2id=None):
+
+        assert glove is not None, "Glove is not installed!"
 
         self.token2id = token2id
         self._id2token = None
