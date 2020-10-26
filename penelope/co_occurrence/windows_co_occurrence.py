@@ -65,15 +65,11 @@ def tokens_concept_windows(
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
-    win_iter = (
-        [filename, i, window]
-        for filename, tokens in corpus
-        for i, window in enumerate(
-            tokens_concept_windows(
-                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
-            )
+    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
+        tokens_concept_windows(
+            tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
         )
-    )
+    ))
     return win_iter
 
 
@@ -84,7 +80,7 @@ def corpus_concept_co_occurrence(
     no_concept: bool,
     n_context_width: int,
     filenames: List[str] = None,
-    count_threshold: int = 1,
+    n_count_threshold: int = 1,
 ):
     """Computes a concept co-occurrence dataframe for given arguments
 
@@ -100,7 +96,7 @@ def corpus_concept_co_occurrence(
         Width of left/right context
     filenames : List[str], optional
         Corpus filename subset, by default None
-    count_threshold : int, optional
+    n_count_threshold : int, optional
         Co-occurrence count filter threshold to use, by default 1
 
     Returns
@@ -120,7 +116,9 @@ def corpus_concept_co_occurrence(
 
     documents = corpus.documents if filenames is None else corpus.documents[corpus.documents.filename.isin(filenames)]
 
-    df_coo = to_dataframe(coo_matrix, id2token=corpus.id2token, documents=documents, min_count=count_threshold)
+    df_coo = to_dataframe(
+        coo_matrix, id2token=corpus.id2token, documents=documents, n_count_threshold=n_count_threshold
+    )
 
     return df_coo
 
@@ -130,7 +128,7 @@ def partitioned_corpus_concept_co_occurrence(
     *,
     concepts: Set[str],
     no_concept: bool,
-    count_threshold: int,
+    n_count_threshold: int,
     n_context_width: int,
     partition_keys: PartitionKeys = 'year',
 ) -> pd.DataFrame:
@@ -144,8 +142,8 @@ def partitioned_corpus_concept_co_occurrence(
         The word(s) in focus
     no_concept: bool
         If True then the focus word is filtered out
-    count_threshold : int
-        Min number of global co-occurrence count to include in the result
+    n_count_threshold : int
+        Min number of global co-occurrence count (i.e. sum over all partitions) to include in result
     n_context_width : int
         Number of tokens to either side of concept word
     partition_key : str, optional
@@ -156,6 +154,8 @@ def partitioned_corpus_concept_co_occurrence(
     pd.DataFrame
         Co-occurrence matrix as a pd.DataFrame
     """
+    if not isinstance(n_count_threshold, int) or n_count_threshold < 1:
+        n_count_threshold = 1
 
     partitions = corpus.partition_documents(partition_keys)
     df_total = None
@@ -169,16 +169,20 @@ def partitioned_corpus_concept_co_occurrence(
         corpus.reader.apply_filter(filenames)
 
         df_partition = corpus_concept_co_occurrence(
-            corpus, concepts=concepts, no_concept=no_concept, n_context_width=n_context_width, filenames=filenames
+            corpus,
+            concepts=concepts,
+            no_concept=no_concept,
+            n_count_threshold=1,  # no threshold for single partition
+            n_context_width=n_context_width,
+            filenames=filenames
         )
 
         df_partition[partition_column] = partition
 
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
 
-    if isinstance(count_threshold, int) and count_threshold > 1:
-        # FIXME: #9 Add unit test for `count_theshold` filter
-        df_total = df_total[df_total.groupby(["w1", "w2"]).transform('size') > count_threshold]
+    if n_count_threshold > 1 and len(df_total) > 0:
+        df_total = df_total[df_total.groupby(["w1", "w2"])['value'].transform('sum') > n_count_threshold]
 
     return df_total
 
@@ -186,8 +190,9 @@ def partitioned_corpus_concept_co_occurrence(
 def compute_and_store(
     corpus: ITokenizedCorpus,
     concepts: List[str],
+    *,
     no_concept: bool,
-    count_threshold: int,
+    n_count_threshold: int,
     n_context_width: int,
     partition_keys: List[str],
     target_filename: str,
@@ -204,7 +209,7 @@ def compute_and_store(
         corpus,
         concepts=concepts,
         no_concept=no_concept,
-        count_threshold=count_threshold,
+        n_count_threshold=n_count_threshold,
         n_context_width=n_context_width,
         partition_keys=partition_keys,
     )

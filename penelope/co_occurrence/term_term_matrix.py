@@ -42,7 +42,7 @@ def to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
     documents: pd.DataFrame = None,
-    min_count: int = 1,
+    n_count_threshold: int = 1,
 ):
     """Converts a TTM to a Pandas DataFrame
 
@@ -54,8 +54,8 @@ def to_dataframe(
         [description]
     documents : pd.DataFrame, optional
         [description], by default None
-    min_count : int, optional
-        [description], by default 1
+    n_count_threshold : int, optional
+        Min count (`value`) to include in result, by default 1
 
     Returns
     -------
@@ -70,8 +70,8 @@ def to_dataframe(
         .reset_index(drop=True)
     )
 
-    if min_count > 1:
-        coo_df = coo_df[coo_df.value >= min_count]
+    if n_count_threshold > 0:
+        coo_df = coo_df[coo_df.value >= n_count_threshold]
 
     if documents is not None:
 
