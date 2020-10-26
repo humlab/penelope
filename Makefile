@@ -5,11 +5,12 @@ SOURCE_FOLDERS=penelope tests
 init: tools
 	@poetry install
 
-.ONESHELL: doorl
-doorl:
-	@if [ -z $(shell git status -s) ]; then
-		echo "error: changes exists, please commit or stash them."
-		echo "$(shell git status -s)"
+.ONESHELL: guard_clean_working_repository
+guard_clean_working_repository:
+	@status="$$(git status --porcelain)"
+	@if [[ "$$status" != "" ]]; then
+		echo "error: changes exists, please commit or stash them: "
+		echo "$$status"
 		exit 65
 	fi
 
@@ -23,7 +24,7 @@ tools:
 build: tools requirements.txt
 	@poetry build
 
-release: bump.patch tag
+release: guard_clean_working_repository bump.patch tag
 
 bump.patch:
 	@poetry run dephell project bump patch
