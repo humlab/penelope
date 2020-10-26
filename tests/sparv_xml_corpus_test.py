@@ -20,7 +20,7 @@ def test_reader_store_result():
     ]
     expected_names = ["document_001.txt", "document_002.txt"]
 
-    target_filename = f'./tests/output/{uuid.uuid1()}.zip'
+    target_filename = './tests/output/test_reader_store_result.zip'
 
     sparv_corpus.sparv_xml_extract_and_store(
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
