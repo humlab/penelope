@@ -1,13 +1,12 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.2.17"
+version = "0.2.18"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
     { include = "penelope" }
 ]
 classifiers = [
-    'Intended Audience :: eNeLPers',
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
     'Topic :: Software Development',
