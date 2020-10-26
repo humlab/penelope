@@ -4,7 +4,7 @@ import pandas as pd
 
 import penelope.corpus.readers as readers
 import penelope.corpus.tokenized_corpus as corpora
-from penelope.cooccurrence.term_term_matrix import to_dataframe
+from penelope.co_occurrence.term_term_matrix import to_dataframe
 from penelope.corpus import vectorizer as corpus_vectorizer
 
 DEFAULT_TOKENS_TRANSFORM_OPTS = dict(
@@ -157,7 +157,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         v_corpus = corpus_vectorizer.CorpusVectorizer().fit_transform(corpus)
 
-        term_term_matrix = v_corpus.cooccurrence_matrix()
+        term_term_matrix = v_corpus.co_occurrence_matrix()
         token2id = v_corpus.token2id
 
         assert 2 == term_term_matrix.todense()[token2id['A'], token2id['B']]
@@ -177,7 +177,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
             keep_numerals=False,
         )
 
-        term_term_matrix = corpus_vectorizer.CorpusVectorizer().fit_transform(corpus).cooccurrence_matrix()
+        term_term_matrix = corpus_vectorizer.CorpusVectorizer().fit_transform(corpus).co_occurrence_matrix()
 
         # Act
         coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.documents)

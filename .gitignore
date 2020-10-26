@@ -142,3 +142,4 @@ output
 *.pbz2
 terminal.py
 tmp
+nlu_samples

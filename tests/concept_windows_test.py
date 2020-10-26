@@ -1,7 +1,8 @@
 import json
 
-from penelope.cooccurrence import WindowsCorpus, corpus_concept_windows
+from penelope.co_occurrence import WindowsCorpus, corpus_concept_windows
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
@@ -91,12 +92,6 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
     windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=2, pad='*')]
 
     assert expected_windows == windows
-
-    # def test_partioned_corpus():
-
-    #     corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-
-    #     partitions = partioned_corpus(corpus.documents, partion_column='year')
     assert corpus.documents is not None
 
 

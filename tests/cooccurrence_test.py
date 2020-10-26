@@ -1,19 +1,22 @@
 import os
 import random
+from collections import defaultdict
 
+import numpy as np
 import pytest
 
-from penelope.cooccurrence import (
+from penelope.co_occurrence import (
     WindowsCorpus,
-    cooccurrence_by_partition,
-    corpus_concept_windows,
-    to_coocurrence_matrix,
+    partitioned_corpus_concept_co_occurrence,
+    to_co_ocurrence_matrix,
     to_dataframe,
 )
+from penelope.co_occurrence.windows_co_occurrence import corpus_concept_co_occurrence
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 from penelope.corpus.readers import InMemoryReader
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.scripts.concept_cooccurrence import compute_and_store_cooccerrence
+from penelope.scripts.concept_co_occurrence import cli_concept_co_occurrence
+from penelope.utility.utils import dataframe_to_tuples
 
 jj = os.path.join
 
@@ -40,6 +43,21 @@ SIMPLE_CORPUS_ABCDEFG_7DOCS = [
     ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
 ]
 
+SIMPLE_CORPUS_ABCDEFG_3DOCS = [
+    ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
+    ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
+    ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
+]
+
+
+def generate_token2id(terms):
+    token2id = defaultdict()
+    token2id.default_factory = token2id.__len__
+    for tokens in terms:
+        for token in tokens:
+            _ = token2id[token]
+    return dict(token2id)
+
 
 def very_simple_corpus(documents):
 
@@ -56,24 +74,26 @@ def random_corpus(n_docs: int = 5, vocabulary: str = 'abcdefg', min_length=4, ma
     return [(f'rand_{random.choice(years or [0])}_{i}.txt', random_tokens()) for i in range(1, n_docs + 1)]
 
 
-def test_cooccurrence_matrix_of_corpus_returns_correct_result():
+def test_co_occurrence_matrix_of_corpus_returns_correct_result():
+
+    expected_token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}
+    expected_matrix = np.matrix([[0, 6, 4, 3, 3], [0, 0, 2, 1, 4], [0, 0, 0, 2, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]])
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    term_term_matrix = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).cooccurrence_matrix()
+    v_corpus = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id)
 
-    assert term_term_matrix is not None
-    assert term_term_matrix.shape == (len(corpus.token2id), len(corpus.token2id))
-    assert term_term_matrix.sum() == 25
-    assert term_term_matrix.todense()[corpus.token2id['a'], corpus.token2id['c']] == 4
-    assert term_term_matrix.todense()[corpus.token2id['b'], corpus.token2id['d']] == 1
+    term_term_matrix = v_corpus.co_occurrence_matrix()
+
+    assert (term_term_matrix.todense() == expected_matrix).all()
+    assert expected_token2id == v_corpus.token2id
 
 
 def test_to_dataframe_has_same_values_as_coocurrence_matrix():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    term_term_matrix = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).cooccurrence_matrix()
+    term_term_matrix = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).co_occurrence_matrix()
 
     df_coo = to_dataframe(
         term_term_matrix=term_term_matrix, id2token=corpus.id2token, documents=corpus.documents, min_count=1
@@ -88,20 +108,16 @@ def test_to_coocurrence_matrix_yields_same_values_as_coocurrence_matrix():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    term_term_matrix1 = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).cooccurrence_matrix()
+    term_term_matrix1 = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).co_occurrence_matrix()
 
-    term_term_matrix2 = to_coocurrence_matrix(corpus)
+    term_term_matrix2 = to_co_ocurrence_matrix(corpus)
 
     assert (term_term_matrix1 != term_term_matrix2).nnz == 0
 
 
-def test_cooccurrence_of_windowed_corpus_returns_correct_result():
+def test_co_occurrence_given_windows_and_vocabulary_succeeds():
 
-    # corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-    # vocabulary = corpus.token2id
-    documents = SIMPLE_CORPUS_ABCDEFG_7DOCS
-
-    expected_windows = [
+    windows_stream = [
         ['rand_1991_1.txt', 0, ['*', '*', 'b', 'd', 'a']],
         ['rand_1991_1.txt', 1, ['c', 'e', 'b', 'a', 'd']],
         ['rand_1991_1.txt', 2, ['a', 'd', 'b', '*', '*']],
@@ -114,49 +130,53 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result():
         ['rand_1991_5.txt', 0, ['*', 'c', 'b', 'c', 'e']],
         ['rand_1991_6.txt', 0, ['*', 'f', 'b', 'g', 'a']],
     ]
+    vocabulary = generate_token2id([x[2] for x in windows_stream])
 
-    vocabulary = {chr(ord('a') + i): i for i in range(0, ord('f') - ord('a') + 1)}
-    concept = {'b'}
-    windows = [
-        w for w in corpus_concept_windows(documents, concept=concept, no_concept=False, n_context_width=2, pad='*')
-    ]
+    windows_corpus = WindowsCorpus(windows_stream, vocabulary=vocabulary)
 
-    assert expected_windows == windows
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=vocabulary)
 
-    windows_corpus = WindowsCorpus(windows, vocabulary=vocabulary)
+    coo_matrix = v_corpus.co_occurrence_matrix()
 
-    v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
-
-    coo_matrix = v_corpus.cooccurrence_matrix()
-
-    assert coo_matrix is not None
-
-    # TODO Add more result asserts
-
-    assert 10 == coo_matrix.todense()[vocabulary['a'], vocabulary['b']]
-    assert 1 == coo_matrix.todense()[vocabulary['c'], vocabulary['d']]
+    assert 10 == coo_matrix.todense()[vocabulary['b'], vocabulary['a']]
+    assert 1 == coo_matrix.todense()[vocabulary['d'], vocabulary['c']]
 
 
-def test_cooccurrence_of_windowed_corpus_returns_correct_result2():
+def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
 
-    concept = {'är'}
-    n_context_width = 2
-    corpus = SparvTokenizedCsvCorpus(
-        TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
-        tokenizer_opts=dict(
-            filename_fields="year:_:1",
-        ),
-        pos_includes='|NN|VB|',
-        lemmatize=False,
+    corpus = very_simple_corpus(
+        [
+            ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
+            ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
+            ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
+        ]
     )
-    coo_df = cooccurrence_by_partition(corpus, concept=concept, no_concept=False, n_context_width=n_context_width)
+    expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
 
-    assert coo_df is not None
+    coo_df = corpus_concept_co_occurrence(
+        corpus, concepts={'b'}, no_concept=False, count_threshold=0, n_context_width=1
+    )
+    assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
 
 
-def test_cooccurrence_using_cli_succeeds(tmpdir):
+def test_concept_co_occurrence_with_no_concept_succeeds():
 
-    output_filename = jj(tmpdir, 'test_cooccurrence_using_cli_succeeds.csv')
+    corpus = very_simple_corpus(
+        [
+            ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
+            ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
+            ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
+        ]
+    )
+    expected_result = {('d', 'a', 1), ('b', 'a', 1)}
+
+    coo_df = corpus_concept_co_occurrence(corpus, concepts={'g'}, no_concept=True, count_threshold=1, n_context_width=1)
+    assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
+
+
+def test_co_occurrence_using_cli_succeeds(tmpdir):
+
+    output_filename = jj(tmpdir, 'test_co_occurrence_using_cli_succeeds.csv')
     options = dict(
         input_filename=TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
         output_filename=output_filename,
@@ -176,13 +196,13 @@ def test_cooccurrence_using_cli_succeeds(tmpdir):
         filename_field=["year:_:1"],
     )
 
-    compute_and_store_cooccerrence(**options)
+    cli_concept_co_occurrence(**options)
 
     assert os.path.isfile(output_filename)
 
 
 @pytest.mark.skip("long running, used for bug fixes")
-def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
+def test_co_occurrence_of_windowed_corpus_returns_correct_result3():
 
     concept = {'jag'}
     n_context_width = 2
@@ -194,13 +214,20 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result3():
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
-    coo_df = cooccurrence_by_partition(corpus, concept=concept, no_concept=False, n_context_width=n_context_width)
+    coo_df = partitioned_corpus_concept_co_occurrence(
+        corpus,
+        concepts=concept,
+        no_concept=False,
+        count_threshold=0,
+        n_context_width=n_context_width,
+        partition_keys='year',
+    )
 
     assert coo_df is not None
 
 
 @pytest.mark.skip("long running, used for bug fixes")
-def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
+def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
 
     concept = {'jag'}
     n_context_width = 2
@@ -212,15 +239,22 @@ def test_cooccurrence_of_windowed_corpus_returns_correct_result4():
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
-    coo_df = cooccurrence_by_partition(corpus, concept=concept, no_concept=False, n_context_width=n_context_width)
+    coo_df = partitioned_corpus_concept_co_occurrence(
+        corpus,
+        concepts=concept,
+        no_concept=False,
+        count_threshold=None,
+        n_context_width=n_context_width,
+        partition_keys='year',
+    )
 
     assert coo_df is not None
     assert len(coo_df) > 0
 
 
-def test_cooccurrence_bug_with_options_that_raises_an_exception(tmpdir):
+def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
 
-    output_filename = jj(tmpdir, 'test_cooccurrence_bug_with_options_that_raises_an_exception.csv')
+    output_filename = jj(tmpdir, 'test_co_occurrence_bug_with_options_that_raises_an_exception.csv')
     options = {
         'input_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
         'output_filename': output_filename,
@@ -240,6 +274,6 @@ def test_cooccurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'filename_field': ('year:_:1',),
     }
 
-    compute_and_store_cooccerrence(**options)
+    cli_concept_co_occurrence(**options)
 
     assert os.path.isfile(output_filename)

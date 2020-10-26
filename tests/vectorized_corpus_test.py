@@ -7,7 +7,7 @@ import scipy
 from sklearn.feature_extraction.text import CountVectorizer
 
 import penelope.corpus.tokenized_corpus as corpora
-from penelope.corpus import vectorizer, vectorized_corpus
+from penelope.corpus import vectorized_corpus, vectorizer
 from tests.utils import create_text_tokenizer
 
 

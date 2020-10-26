@@ -1,4 +1,5 @@
 import os
+
 import pytest  # pylint: disable=unused-import
 
 import penelope.corpus.readers as readers

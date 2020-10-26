@@ -25,7 +25,7 @@ def strip_path_and_add_counter(filename, n_chunk):
     return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
 
 
-FilenameCallableOrSequenceFilter = Union[Callable, Sequence[str]]
+FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
 
 class TextTokenizer(ICorpusReader):
@@ -42,7 +42,7 @@ class TextTokenizer(ICorpusReader):
         transforms: List[Callable] = None,
         chunk_size: int = None,
         filename_pattern: str = None,
-        filename_filter: FilenameCallableOrSequenceFilter = None,
+        filename_filter: FilenameOrCallableOrSequenceFilter = None,
         filename_fields=None,
         tokenize: Callable = None,
         fix_whitespaces: bool = False,
@@ -154,7 +154,7 @@ class TextTokenizer(ICorpusReader):
         """Process of source text that happens before any tokenization e.g. XML to text transform """
         return content
 
-    def apply_filter(self, filename_filter: FilenameCallableOrSequenceFilter):
+    def apply_filter(self, filename_filter: FilenameOrCallableOrSequenceFilter):
         self._filename_filter = filename_filter
 
     def process(self, filename: str, content: str) -> Iterable[Tuple[str, List[str]]]:

@@ -12,9 +12,11 @@ import re
 import string
 import time
 import zipfile
+from typing import List, Tuple
 
 import gensim.utils
 import numpy as np
+import pandas as pd
 
 
 def setup_logger(
@@ -389,6 +391,14 @@ def chunks(lst, n):
 #     return df_tagset.groupby(['POS'])['DESCRIPTION'].apply(list).apply(lambda x: ', '.join(x[:1])).to_dict()
 
 
+def dataframe_to_tuples(df: pd.DataFrame, columns: List[str] = None) -> List[Tuple]:
+    """Returns rows in dataframe as tuples"""
+    if columns is not None:
+        df = df[columns]
+    tuples = [tuple(x.values()) for x in df.to_dict(orient='index').values()]
+    return tuples
+
+
 def nth(iterable, n: int, default=None):
     "Returns the nth item or a default value"
     return next(itertools.islice(iterable, n, None), default)
@@ -437,7 +447,6 @@ def project_values_to_range(values, low, high):
 # def fix_hyphenation(text: str) -> str:
 #     result = re.sub(HYPHEN_REGEXP, r"\1\2\n", text)
 #     return result
-
 
 # def fix_whitespaces(text: str) -> str:
 #     result = re.sub(r'\s+', ' ', text).strip()

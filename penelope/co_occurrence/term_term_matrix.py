@@ -6,12 +6,15 @@ import scipy
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 from penelope.corpus.interfaces import ITokenizedCorpus
 from penelope.corpus.readers.interfaces import ICorpusReader
+from penelope.utility.utils import getLogger
+
+logger = getLogger()
 
 
-def to_coocurrence_matrix(
+def to_co_ocurrence_matrix(
     corpus_or_reader: Union[ICorpusReader, TokenizedCorpus], vocabulary: Mapping[str, int] = None
 ) -> scipy.sparse.spmatrix:
-    """Computes a term-term coocurrence matrix for documents in corpus/reader.
+    """Computes a term-term co-ocurrence matrix for documents in corpus/reader.
 
     Parameters
     ----------
@@ -30,7 +33,7 @@ def to_coocurrence_matrix(
     vocabulary = vocabulary or corpus_or_reader.token2id
     vectorizer = CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus_or_reader, vocabulary=vocabulary)
-    term_term_matrix = v_corpus.cooccurrence_matrix()
+    term_term_matrix = v_corpus.co_occurrence_matrix()
 
     return term_term_matrix
 
@@ -76,6 +79,8 @@ def to_dataframe(
 
         if 'n_tokens' in documents:
             coo_df['value_n_t'] = coo_df.value / float(sum(documents.n_tokens.values))
+        else:
+            logger.warning("value_n_t: cannot compute, n_tokens not in corpus document")
 
     coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
     coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
