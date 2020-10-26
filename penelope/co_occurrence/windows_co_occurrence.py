@@ -65,11 +65,15 @@ def tokens_concept_windows(
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
-    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
-        tokens_concept_windows(
-            tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+    win_iter = (
+        [filename, i, window]
+        for filename, tokens in corpus
+        for i, window in enumerate(
+            tokens_concept_windows(
+                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+            )
         )
-    ))
+    )
     return win_iter
 
 
@@ -174,7 +178,7 @@ def partitioned_corpus_concept_co_occurrence(
             no_concept=no_concept,
             n_count_threshold=1,  # no threshold for single partition
             n_context_width=n_context_width,
-            filenames=filenames
+            filenames=filenames,
         )
 
         df_partition[partition_column] = partition
