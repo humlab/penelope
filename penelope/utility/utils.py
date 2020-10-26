@@ -12,14 +12,14 @@ import re
 import string
 import time
 import zipfile
+from typing import List, Tuple
 
 import gensim.utils
 import numpy as np
+import pandas as pd
 
 
-def setup_logger(
-    logger=None, to_file=False, filename=None, level=logging.DEBUG
-):  # pylint: disable=redefined-outer-name
+def setup_logger(logger=None, to_file=False, filename=None, level=logging.DEBUG):  # pylint: disable=redefined-outer-name
     """
     Setup logging of import messages to both file and console
     """
@@ -82,6 +82,7 @@ def filter_dict(d, keys=None, filter_out=False):
 
 
 def timecall(f):
+
     @functools.wraps(f)
     def f_wrapper(*args, **kwargs):
         start_time = time.perf_counter()
@@ -363,7 +364,7 @@ def chunks(lst, n):
         yield lst
 
     for i in range(0, len(lst), n):
-        yield lst[i : i + n]
+        yield lst[i:i + n]
 
 
 # def get_document_id_by_field_filters(documents, filters):
@@ -387,6 +388,14 @@ def chunks(lst, n):
 # def pos_tags(data_folder, filename='tagset.csv'):
 #     df_tagset = pd.read_csv(os.path.join(data_folder, filename), sep='\t').fillna('')
 #     return df_tagset.groupby(['POS'])['DESCRIPTION'].apply(list).apply(lambda x: ', '.join(x[:1])).to_dict()
+
+
+def dataframe_to_tuples(df: pd.DataFrame, columns: List[str]=None) -> List[Tuple]:
+    """Returns rows in dataframe as tuples""" 
+    if columns is not None:
+        df = df[columns]
+    tuples = [tuple(x.values()) for x in df.to_dict(orient='index').values()]
+    return tuples
 
 
 def nth(iterable, n: int, default=None):
@@ -437,7 +446,6 @@ def project_values_to_range(values, low, high):
 # def fix_hyphenation(text: str) -> str:
 #     result = re.sub(HYPHEN_REGEXP, r"\1\2\n", text)
 #     return result
-
 
 # def fix_whitespaces(text: str) -> str:
 #     result = re.sub(r'\s+', ' ', text).strip()
