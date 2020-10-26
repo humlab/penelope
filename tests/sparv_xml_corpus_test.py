@@ -6,6 +6,8 @@ import pytest  # pylint: disable=unused-import
 import penelope.corpus.sparv_corpus as sparv_corpus
 import penelope.utility.file_utility as file_utility
 
+from .utils import OUTPUT_FOLDER
+
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
 SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_zipped_xml_export.zip'
@@ -14,13 +16,15 @@ SPARV3_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sou_test_sparv3_xml.zip'
 
 def test_reader_store_result():
 
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
     expected_documents = [
         ['rödräv', 'hunddjur', 'utbredning', 'halvklot'],
         ['fjällräv', 'fjällvärld', 'liv', 'fjällräv', 'vinter', 'men', 'variant', 'år'],
     ]
     expected_names = ["document_001.txt", "document_002.txt"]
 
-    target_filename = './tests/output/test_reader_store_result.zip'
+    target_filename = os.path.join(OUTPUT_FOLDER, 'test_reader_store_result.zip')
 
     sparv_corpus.sparv_xml_extract_and_store(
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
@@ -42,9 +46,9 @@ def test_reader_store_result():
 
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
-    os.makedirs('./tests/output', exist_ok=True)
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    target_filename = f'./tests/output/{uuid.uuid1()}.zip'
+    target_filename = os.path.join(OUTPUT_FOLDER, f'{uuid.uuid1()}.zip')
 
     sparv_corpus.sparv_xml_extract_and_store(
         SPARV3_ZIPPED_XML_EXPORT_FILENAME,

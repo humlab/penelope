@@ -8,21 +8,19 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 import penelope.corpus.tokenized_corpus as corpora
 from penelope.corpus import vectorized_corpus, vectorizer
-from tests.utils import create_text_tokenizer
+from tests.utils import OUTPUT_FOLDER, create_text_tokenizer
 
 
 def flatten(lst):
     return [x for ws in lst for x in ws]
 
 
-TEMP_OUTPUT_FOLDER = "./tests/output"
-
 # pylint: disable=too-many-public-methods
 
 
 class Test_VectorizedCorpus(unittest.TestCase):
     def setUp(self):
-        os.makedirs(TEMP_OUTPUT_FOLDER, exist_ok=True)
+        os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     def create_reader(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
@@ -77,10 +75,10 @@ class Test_VectorizedCorpus(unittest.TestCase):
         corpus = self.create_corpus()
         dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
 
-        dumped_v_corpus.dump('dump_test', folder=TEMP_OUTPUT_FOLDER, compressed=False)
+        dumped_v_corpus.dump('dump_test', folder=OUTPUT_FOLDER, compressed=False)
 
         # Act
-        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load('dump_test', folder=TEMP_OUTPUT_FOLDER)
+        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load('dump_test', folder=OUTPUT_FOLDER)
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
@@ -94,10 +92,10 @@ class Test_VectorizedCorpus(unittest.TestCase):
         corpus = self.create_corpus()
         dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
 
-        dumped_v_corpus.dump('dump_test', folder=TEMP_OUTPUT_FOLDER, compressed=True)
+        dumped_v_corpus.dump('dump_test', folder=OUTPUT_FOLDER, compressed=True)
 
         # Act
-        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load('dump_test', folder=TEMP_OUTPUT_FOLDER)
+        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load('dump_test', folder=OUTPUT_FOLDER)
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)

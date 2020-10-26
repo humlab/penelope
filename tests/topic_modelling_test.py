@@ -11,6 +11,8 @@ from penelope.scripts.compute_topic_model import run_model
 from penelope.topic_modelling.container import InferredTopicsData, TrainingCorpus
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
 
+from .utils import OUTPUT_FOLDER
+
 jj = os.path.join
 
 TOPIC_MODELING_OPTS = {
@@ -22,8 +24,6 @@ TOPIC_MODELING_OPTS = {
     'max_iter': 100,
     'prefix': '',
 }
-
-OUTPUT_FOLDER = "./tests/output/"
 
 
 def compute_inferred_model(method="gensim_lda-multicore"):
@@ -240,17 +240,13 @@ def test_load_inferred_topics_data(method):
     )
     # assert inferred_topics_data.document_topic_weights.round(5).equals(test_inferred_topics_data.document_topic_weights.round(5))
     assert (
-        inferred_topics_data.topic_token_weights.round(5)
-        .eq(test_inferred_topics_data.topic_token_weights.round(5))
-        .all()
-        .all()
+        inferred_topics_data.topic_token_weights.round(5).eq(test_inferred_topics_data.topic_token_weights.round(5)
+                                                             ).all().all()
     )
     # assert inferred_topics_data.topic_token_weights.round(5).equals(test_inferred_topics_data.topic_token_weights.round(5))
     assert (
-        inferred_topics_data.topic_token_weights.round(5)
-        .eq(test_inferred_topics_data.topic_token_weights.round(5))
-        .all()
-        .all()
+        inferred_topics_data.topic_token_weights.round(5).eq(test_inferred_topics_data.topic_token_weights.round(5)
+                                                             ).all().all()
     )
 
     shutil.rmtree(target_folder)
@@ -261,7 +257,7 @@ def test_run_cli():
     kwargs = {
         'name': f"{uuid.uuid1()}",
         'n_topics': 5,
-        'corpus_folder': './tests/output',
+        'corpus_folder': OUTPUT_FOLDER,
         'corpus_filename': './tests/test_data/test_corpus.zip',
         'engine': 'gensim_lda-multicore',
         # 'passes': None,
@@ -289,7 +285,7 @@ def test_run_model_cli():
     options = dict(
         name="test_corpus.xyz",
         n_topics=5,
-        corpus_folder='./tests/output',
+        corpus_folder=OUTPUT_FOLDER,
         corpus_filename='./tests/test_data/test_corpus.zip',
         engine="gensim_lda-multicore",
         # passes=None,
