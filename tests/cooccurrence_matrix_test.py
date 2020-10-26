@@ -3,10 +3,60 @@ from typing import Iterator
 import numpy as np
 import pandas as pd
 import scipy
+import scipy.sparse as sp
+from numpy.lib import utils
+from sklearn.feature_extraction.text import CountVectorizer
 
-from penelope.corpus import TokenizedCorpus
-from penelope.corpus.readers import InMemoryReader
+from penelope.utility.utils import flatten
+from tests.cooccurrence_test import very_simple_corpus
 
+
+def PPMI(C: scipy.sparse.csc_matrix) -> scipy.sparse.csc_matrix:
+    """Tranform a counts matrix to PPMI.
+        Source:
+    Args:
+      C: scipy.sparse.csc_matrix of counts C_ij
+
+    Returns:
+      (scipy.sparse.csc_matrix) PPMI(C) as defined above
+    """
+    # Total count.
+    Z = float(C.sum())
+
+    # Sum each row (along columns).
+    Zr = np.array(C.sum(axis=1), dtype=np.float64).flatten()
+
+    # Get indices of relevant elements.
+    ii, jj = C.nonzero()  # row, column indices
+    Cij = np.array(C[ii,jj], dtype=np.float64).flatten()
+
+    # PMI equation.
+    pmi = np.log(Cij * Z / (Zr[ii] * Zr[jj]))
+
+    # Truncate to positive only.
+    ppmi = np.maximum(0, pmi)  # take positive only
+
+    # Re-format as sparse matrix.
+    ret = scipy.sparse.csc_matrix((ppmi, (ii,jj)), shape=C.shape,
+                                  dtype=np.float64)
+    ret.eliminate_zeros()  # remove zeros
+    return ret
+
+def pretty_print_matrix(M, rows=None, cols=None, dtype=float, float_fmt="{0:.04f}"):
+    """Pretty-print a matrix using Pandas.
+
+    Args:
+      M : 2D numpy array
+      rows : list of row labels
+      cols : list of column labels
+      dtype : data type (float or int)
+      float_fmt : format specifier for floats
+    """
+    df = pd.DataFrame(M, index=rows, columns=cols, dtype=dtype)
+    old_fmt_fn = pd.get_option('float_format')
+    pd.set_option('float_format', float_fmt.format)
+    print(df)
+    pd.set_option('float_format', old_fmt_fn)  # reset Pandas formatting
 
 def co_occurrence_matrix(token_ids: Iterator[int], V: int, K: int = 2) -> scipy.sparse.spmatrix:
     """Computes a sparse co-occurrence matrix given a corpus
@@ -43,33 +93,41 @@ def co_occurrence_matrix(token_ids: Iterator[int], V: int, K: int = 2) -> scipy.
     print(f" {C.nnz} nonzero elements")
     return C
 
+def test_original():
+
+    # Build a toy corpus with the same shape as our corpus object.
+    toy_corpus = [ "* nlp class is awesome *".split(), "nlp is awesome fun *".split() ]
+
+    vocab = set(flatten(toy_corpus))
+    toy_tokens = flatten(toy_corpus)
+    id_to_word = dict(enumerate(vocab))
+    word_to_id = {v:k for k,v in id_to_word.items()}
+
+    print(toy_tokens)
+    toy_token_ids = [ word_to_id[w] for w in toy_tokens ]
+
+    print(toy_tokens)
+    V = len(vocab)
+
+    toy_C = co_occurrence_matrix(toy_token_ids, V=V, K=1)
+
+    ordered_vocab = [ id_to_word[i] for i in range(0,len(vocab))]
+    pretty_print_matrix(toy_C.toarray(), rows=ordered_vocab, cols=ordered_vocab, dtype=int)
 
 def test_this_co_occurrence():
 
-    SIMPLE_CORPUS_ABCDEFG_7DOCS = [
-        ('rand_1991_1.txt', ['b', 'd', 'a', 'c', 'e', 'b', 'a', 'd', 'b']),
-        ('rand_1992_2.txt', ['b', 'f', 'e', 'e', 'f', 'e', 'a', 'a', 'b']),
-        ('rand_1992_3.txt', ['a', 'e', 'f', 'b', 'e', 'a', 'b', 'f']),
-        ('rand_1992_4.txt', ['e', 'a', 'a', 'b', 'g', 'f', 'g', 'b', 'c']),
+    corpus = very_simple_corpus([
         ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
         ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
         ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
-    ]
+    ])
+    token2id = corpus.token2id
+    token_ids = flatten([ [ token2id[w] for w in d ] for d in corpus.terms ])
+    coo_matrix = co_occurrence_matrix(token_ids, V=len(token2id), K=2)
 
-    reader = InMemoryReader(SIMPLE_CORPUS_ABCDEFG_7DOCS, filename_fields="year:_:1")
-    corpus = TokenizedCorpus(reader=reader)
-
-    vocabulary = corpus.token2id
-
-    token_ids = [vocabulary[w] for w in SIMPLE_CORPUS_ABCDEFG_7DOCS[0][1]]
-    m = co_occurrence_matrix(token_ids=token_ids, V=len(vocabulary), K=2)
-
-    assert m is not None
-
+    assert coo_matrix is not None
 
 # https://gist.github.com/zyocum/2ba0457246a4d0075149aa7d607432c1
-
-# Refrence are teaken form
 # https://www.kaggle.com/ambarish/recommendation-system-donors-choose
 # https://github.com/roothd17/Donor-Choose-ML
 # https://github.com/harrismohammed?tab=repositories
@@ -106,3 +164,66 @@ def COmatrix(data, words, cw=5):
     cm = cm.div(2)
 
     return cm
+
+
+class Cooccurrence(CountVectorizer):
+    """Co-ocurrence matrix
+    Convert collection of raw documents to word-word co-ocurrence matrix
+    Parameters
+    ----------
+    encoding : string, 'utf-8' by default.
+        If bytes or files are given to analyze, this encoding is used to
+        decode.
+    ngram_range : tuple (min_n, max_n)
+        The lower and upper boundary of the range of n-values for different
+        n-grams to be extracted. All values of n such that min_n <= n <= max_n
+        will be used.
+    max_df: float in range [0, 1] or int, default=1.0
+    min_df: float in range [0, 1] or int, default=1
+    Example
+    -------
+    >> import Cooccurrence
+    >> docs = ['this book is good',
+               'this cat is good',
+               'cat is good shit']
+    >> model = Cooccurrence()
+    >> Xc = model.fit_transform(docs)
+    Check vocabulary by printing
+    >> model.vocabulary_
+    """
+
+    def __init__(self, ngram_range=(1, 1),
+                 max_df=1.0, min_df=1, max_features=None,
+                 stop_words=None, normalize=True, vocabulary=None):
+
+        super().__init__(
+            ngram_range=ngram_range,
+            max_df=max_df,
+            min_df=min_df,
+            max_features=max_features,
+            stop_words=stop_words,
+            vocabulary=vocabulary
+        )
+
+        self.normalize = normalize
+
+    def fit_transform(self, raw_documents):
+        """Fit cooccurrence matrix
+        Parameters
+        ----------
+        raw_documents : iterable
+            an iterable which yields either str, unicode or file objects
+        Returns
+        -------
+        Xc : Cooccurrence matrix
+        """
+        X = super().fit_transform(raw_documents)
+
+        Xc = (X.T * X)
+        if self.normalize:
+            g = sp.diags(1./Xc.diagonal())
+            Xc = g * Xc
+        else:
+            Xc.setdiag(0)
+
+        return Xc

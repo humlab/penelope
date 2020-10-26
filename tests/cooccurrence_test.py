@@ -1,21 +1,25 @@
 import os
-from penelope.co_occurrence.windows_co_occurrence import corpus_concept_co_occurrence
 import random
+from collections import defaultdict
+from typing import List, Tuple
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from penelope.co_occurrence import (
     WindowsCorpus,
-    partitioned_corpus_concept_co_occurrence,
     corpus_concept_windows,
+    partitioned_corpus_concept_co_occurrence,
     to_co_ocurrence_matrix,
     to_dataframe,
 )
+from penelope.co_occurrence.windows_co_occurrence import corpus_concept_co_occurrence
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 from penelope.corpus.readers import InMemoryReader
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.scripts.concept_co_occurrence import cli_concept_co_occurrence
+from penelope.utility.utils import dataframe_to_tuples
 
 jj = os.path.join
 
@@ -47,6 +51,15 @@ SIMPLE_CORPUS_ABCDEFG_3DOCS = [
     ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
     ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
 ]
+
+
+def generate_token2id(terms):
+    token2id = defaultdict()
+    token2id.default_factory = token2id.__len__
+    for tokens in terms:
+        for token in tokens:
+            _ = token2id[token]
+    return dict(token2id)
 
 
 def very_simple_corpus(documents):
@@ -106,13 +119,9 @@ def test_to_coocurrence_matrix_yields_same_values_as_coocurrence_matrix():
     assert (term_term_matrix1 != term_term_matrix2).nnz == 0
 
 
-def test_co_occurrence_of_windowed_corpus_returns_correct_result():
+def test_co_occurrence_given_windows_and_vocabulary_succeeds():
 
-    # corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-    # vocabulary = corpus.token2id
-    documents = SIMPLE_CORPUS_ABCDEFG_7DOCS
-
-    expected_windows = [
+    windows_stream = [
         ['rand_1991_1.txt', 0, ['*', '*', 'b', 'd', 'a']],
         ['rand_1991_1.txt', 1, ['c', 'e', 'b', 'a', 'd']],
         ['rand_1991_1.txt', 2, ['a', 'd', 'b', '*', '*']],
@@ -125,49 +134,45 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result():
         ['rand_1991_5.txt', 0, ['*', 'c', 'b', 'c', 'e']],
         ['rand_1991_6.txt', 0, ['*', 'f', 'b', 'g', 'a']],
     ]
+    vocabulary = generate_token2id([x[2] for x in windows_stream])
 
-    vocabulary = {chr(ord('a') + i): i for i in range(0, ord('f') - ord('a') + 1)}
-    concept = {'b'}
-    windows = [
-        w for w in corpus_concept_windows(documents, concept=concept, no_concept=False, n_context_width=2, pad='*')
-    ]
+    windows_corpus = WindowsCorpus(windows_stream, vocabulary=vocabulary)
 
-    assert expected_windows == windows
-
-    windows_corpus = WindowsCorpus(windows, vocabulary=vocabulary)
-
-    v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=vocabulary)
 
     coo_matrix = v_corpus.co_occurrence_matrix()
 
-    assert coo_matrix is not None
-
-    # TODO Add more result asserts
-
-    assert 10 == coo_matrix.todense()[vocabulary['a'], vocabulary['b']]
-    assert 1 == coo_matrix.todense()[vocabulary['c'], vocabulary['d']]
+    assert 10 == coo_matrix.todense()[vocabulary['b'], vocabulary['a']]
+    assert 1 == coo_matrix.todense()[vocabulary['d'], vocabulary['c']]
 
 
-def test_co_occurrence_of_windowed_corpus_returns_correct_result2():
+def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
 
-
-    simple_corpus_abcdefg_3docs = [
+    corpus = very_simple_corpus([
         ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
         ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
         ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
-    ]
-    concept = {'b'}
-    expected_token2id = {'c': 0, 'b': 1, 'e': 2, 'd': 3, 'g': 4, 'a': 5, 'f': 6}
+    ])
     expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
 
-    corpus = very_simple_corpus(simple_corpus_abcdefg_3docs)
-
     coo_df = corpus_concept_co_occurrence(
-        corpus, concepts=concept, no_concept=False, count_threshold=0, n_context_width=1
+        corpus, concepts={'b'}, no_concept=False, count_threshold=0, n_context_width=1
     )
-    coo_as_tuples = [ tuple(x.values()) for x in coo_df[['w1', 'w2', 'value']].to_dict(orient='index').values()]
-    assert corpus.token2id == expected_token2id
-    assert expected_result == coo_as_tuples
+    assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
+
+
+def test_concept_co_occurrence_with_no_concept_succeeds():
+
+    corpus = very_simple_corpus([
+        ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
+        ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
+        ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
+    ])
+    expected_result = {('d', 'a', 1), ('b', 'a', 1)}
+
+    coo_df = corpus_concept_co_occurrence(corpus, concepts={'g'}, no_concept=True, count_threshold=1, n_context_width=1)
+    assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
+
 
 def test_co_occurrence_using_cli_succeeds(tmpdir):
 
