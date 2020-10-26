@@ -1,12 +1,8 @@
-
 .DEFAULT_GOAL=lint
-
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
 
 init: tools
-	@pip install --upgrade pip
-	@pip install poetry --upgrade
 	@poetry install
 
 version:
@@ -31,7 +27,6 @@ tag:
 	@git push
 	@git tag $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g") -a
 	@git push origin --tags
-
 
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
@@ -68,13 +63,14 @@ lint: pylint flake8
 format: clean black isort
 
 isort:
-	@poetry run isort --profile black --float-to-top --line-length 120 --py 38 penelope
+	@poetry run isort --profile black --float-to-top --line-length 120 --py 38 $(SOURCE_FOLDERS)
 
 yapf: clean
 	@poetry run yapf --version
-	@poetry run yapf --in-place --recursive penelope
+	@poetry run yapf --in-place --recursive $(SOURCE_FOLDERS)
 
-black:clean
+black: clean
+	@poetry run black --version
 	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
 
 tidy: black isort
@@ -85,7 +81,7 @@ clean:
 	@find . -type d -name '__pycache__' -exec rm -rf {} +
 	@find . -type d -name '*pytest_cache*' -exec rm -rf {} +
 	@find . -type d -name '.mypy_cache' -exec rm -rf {} +
-	# @rm -rf tests/output
+	@rm -rf tests/output
 
 clean_cache:
 	@poetry cache clear pypi --all
