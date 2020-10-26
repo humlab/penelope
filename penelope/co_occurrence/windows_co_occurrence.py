@@ -65,11 +65,15 @@ def tokens_concept_windows(
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
-    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
-        tokens_concept_windows(
-            tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+    win_iter = (
+        [filename, i, window]
+        for filename, tokens in corpus
+        for i, window in enumerate(
+            tokens_concept_windows(
+                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+            )
         )
-    ))
+    )
     return win_iter
 
 
@@ -79,7 +83,7 @@ def corpus_concept_co_occurrence(
     concepts: Set[str],
     no_concept: bool,
     n_context_width: int,
-    filenames: List[str]=None,
+    filenames: List[str] = None,
     count_threshold: int = 1,
 ):
     """Computes a concept co-occurrence dataframe for given arguments

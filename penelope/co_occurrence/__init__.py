@@ -7,8 +7,8 @@ from .vectorizer_glove import GloveVectorizer
 from .vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
 from .windows_co_occurrence import (
     compute_and_store,
-    partitioned_corpus_concept_co_occurrence,
     corpus_concept_windows,
+    partitioned_corpus_concept_co_occurrence,
     tokens_concept_windows,
 )
 from .windows_corpus import WindowsCorpus, WindowsStream

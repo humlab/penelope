@@ -2,6 +2,7 @@ import json
 
 from penelope.co_occurrence import WindowsCorpus, corpus_concept_windows
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'

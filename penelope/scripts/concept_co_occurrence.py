@@ -98,11 +98,6 @@ def main(
     )
 
 
-class SparvTokenizedCsvCorpusWithProgress(SparvTokenizedCsvCorpus):
-
-    pass
-
-
 def cli_concept_co_occurrence(
     input_filename: str,
     output_filename: str,

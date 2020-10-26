@@ -5,6 +5,14 @@ SOURCE_FOLDERS=penelope tests
 init: tools
 	@poetry install
 
+.ONESHELL: doorl
+doorl:
+	@if [ -z $(shell git status -s) ]; then
+		echo "error: changes exists, please commit or stash them."
+		echo "$(shell git status -s)"
+		exit 65
+	fi
+
 version:
 	@echo $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
 

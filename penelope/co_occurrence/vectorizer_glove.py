@@ -1,13 +1,14 @@
-try:
-    import glove
-except ModuleNotFoundError:
-    glove = None
-
 import numpy as np
 import pandas as pd
 
 import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
+
+try:
+    import glove
+except ModuleNotFoundError:
+    glove = None
+
 
 logger = utility.getLogger('corpus_text_analysis')
 

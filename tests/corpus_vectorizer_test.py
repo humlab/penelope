@@ -1,6 +1,5 @@
 import penelope.corpus.readers as readers
-from penelope.corpus import CorpusVectorizer
-from penelope.corpus import TokenizedCorpus
+from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 
 from . import utils as test_utils
 

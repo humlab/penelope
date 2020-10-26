@@ -1,15 +1,12 @@
 import os
 import random
 from collections import defaultdict
-from typing import List, Tuple
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from penelope.co_occurrence import (
     WindowsCorpus,
-    corpus_concept_windows,
     partitioned_corpus_concept_co_occurrence,
     to_co_ocurrence_matrix,
     to_dataframe,
@@ -70,7 +67,6 @@ def very_simple_corpus(documents):
 
 
 def random_corpus(n_docs: int = 5, vocabulary: str = 'abcdefg', min_length=4, max_length=10, years=None):
-
     def random_tokens():
 
         return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
@@ -148,11 +144,13 @@ def test_co_occurrence_given_windows_and_vocabulary_succeeds():
 
 def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
 
-    corpus = very_simple_corpus([
-        ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
-        ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
-        ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
-    ])
+    corpus = very_simple_corpus(
+        [
+            ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
+            ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
+            ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
+        ]
+    )
     expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
 
     coo_df = corpus_concept_co_occurrence(
@@ -163,11 +161,13 @@ def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
 
 def test_concept_co_occurrence_with_no_concept_succeeds():
 
-    corpus = very_simple_corpus([
-        ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
-        ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
-        ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
-    ])
+    corpus = very_simple_corpus(
+        [
+            ('rand_1991_5.txt', ['c', 'b', 'c', 'e', 'd', 'g', 'a']),
+            ('rand_1991_6.txt', ['f', 'b', 'g', 'a', 'a']),
+            ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
+        ]
+    )
     expected_result = {('d', 'a', 1), ('b', 'a', 1)}
 
     coo_df = corpus_concept_co_occurrence(corpus, concepts={'g'}, no_concept=True, count_threshold=1, n_context_width=1)
@@ -208,7 +208,9 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result3():
     n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
@@ -218,7 +220,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result3():
         no_concept=False,
         count_threshold=0,
         n_context_width=n_context_width,
-        partition_keys='year'
+        partition_keys='year',
     )
 
     assert coo_df is not None
@@ -231,7 +233,9 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
     n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
-        tokenizer_opts=dict(filename_fields="year:_:1", ),
+        tokenizer_opts=dict(
+            filename_fields="year:_:1",
+        ),
         pos_includes='|NN|VB|',
         lemmatize=False,
     )
@@ -241,7 +245,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         no_concept=False,
         count_threshold=None,
         n_context_width=n_context_width,
-        partition_keys='year'
+        partition_keys='year',
     )
 
     assert coo_df is not None
@@ -254,9 +258,9 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     options = {
         'input_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
         'output_filename': output_filename,
-        'concept': ('jag', ),
+        'concept': ('jag',),
         'context_width': 2,
-        'partition_keys': ('year', ),
+        'partition_keys': ('year',),
         'pos_includes': None,
         'pos_excludes': '|MAD|MID|PAD|',
         'lemmatize': True,
@@ -267,7 +271,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'keep_numerals': True,
         'only_alphabetic': False,
         'only_any_alphanumeric': False,
-        'filename_field': ('year:_:1', ),
+        'filename_field': ('year:_:1',),
     }
 
     cli_concept_co_occurrence(**options)

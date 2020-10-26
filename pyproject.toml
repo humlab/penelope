@@ -95,7 +95,14 @@ line-length = 120
 target-version = ["py38"]
 skip-string-normalization = true
 # include = '\.pyi?$'
-exclude = [ '.git', '.pypy_cache', '.pytest_cache', 'deprecated' ]
+exclude = '''
+(
+  \.git
+  | \.pypy_cache
+  | \.pytest_cache
+  | deprecated
+)
+'''
 
 [tool.isort]
 # https://github.com/timothycrosley/isort/wiki/isort-Settings

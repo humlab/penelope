@@ -1,5 +1,5 @@
-import pytest  # pylint: disable=unused-import
 import lxml
+import pytest  # pylint: disable=unused-import
 
 import penelope.corpus.sparv.sparv_xml_to_text as sparv
 
