@@ -205,7 +205,7 @@ def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: s
     with open(filepath) as f:
         substitutions = {
             x[0].strip(): x[1].strip()
-            for x in (tuple(line.lower().split(delim)) + (default_term, ) for line in f.readlines())
+            for x in (tuple(line.lower().split(delim)) + (default_term,) for line in f.readlines())
             if x[0].strip() != ''
         }
 
@@ -245,7 +245,8 @@ def _doc_token_stream(doc: spacy.tokens.Doc) -> Iterable[Dict[str, Any]]:
             pos=t.pos_,
             year=doc._.meta['year'],
             document_id=doc._.meta['document_id'],
-        ) for t in doc
+        )
+        for t in doc
     )
 
 
