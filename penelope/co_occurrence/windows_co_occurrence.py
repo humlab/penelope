@@ -3,7 +3,7 @@ import itertools
 from typing import Iterable, List, Set
 
 import pandas as pd
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from penelope.corpus.interfaces import ICorpus, ITokenizedCorpus, PartitionKeys
 from penelope.corpus.vectorizer import CorpusVectorizer
