@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Sequence
 
 import pandas as pd
 
@@ -16,7 +16,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         self,
         filename: str,
         fields: Dict[str, int],
-        filename_fields: IndexOfSplitOrCallableOrRegExp = None,
+        filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
         sep: str = ' # ',
     ):
         """[summary]

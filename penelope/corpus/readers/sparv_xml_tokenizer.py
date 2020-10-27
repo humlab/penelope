@@ -50,7 +50,7 @@ class SparvXmlTokenizer(TextTokenizer):
                 Filename pattern
             filename_filter: Union[Callable, List[str]]
                 Filename inclusion predicate filter, or list of filenames to include
-            filename_fields : Dict[str,Union[Callable,str]]
+            filename_fields : Sequence[Sequence[IndexOfSplitOrCallableOrRegExp]]
                 Document metadata fields to extract from filename
         """
         self.delimiter: str = ' '
@@ -115,7 +115,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
                 Filename pattern
             filename_filter: Union[Callable, List[str]]
                 Filename inclusion predicate filter, or list of filenames to include
-            filename_fields : Dict[str,Union[Callable,str]]
+            filename_fields : Sequence[Sequence[IndexOfSplitOrCallableOrRegExp]]
                 Document metadata fields to extract from filename
         """
         super().__init__(
