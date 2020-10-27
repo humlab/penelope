@@ -27,7 +27,8 @@ disable=invalid-name,
         unnecessary-comprehension,
         misplaced-comparison-constant,
         too-many-branches,
-        too-many-locals
+        too-many-locals,
+        wrong-import-order
         # print-statement,
         # parameter-unpacking,
         # unpacking-in-except,
