@@ -22,7 +22,6 @@ if __file__ in globals():
 
 
 class MockedProcessedCorpus(ITokenizedCorpus):
-
     def __init__(self, mock_data):
         self.data = [(f, self.generate_document(ws)) for f, ws in mock_data]
         self.token2id = self.create_token2id()

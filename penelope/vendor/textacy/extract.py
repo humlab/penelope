@@ -1,3 +1,8 @@
+from typing import Any, Mapping
+
+from spacy.tokens import Doc as SpacyDoc
+from textacy import Corpus as TextacyCorpus
+
 import penelope.utility as utility
 
 from .utils import frequent_document_words, infrequent_words
@@ -5,7 +10,7 @@ from .utils import frequent_document_words, infrequent_words
 logger = utility.getLogger('corpus_text_analysis')
 
 
-def extract_document_terms(doc, extract_args):
+def extract_document_terms(doc: SpacyDoc, extract_args: Mapping[str, Any]):
     """Extracts documents and terms from a corpus
 
     Parameters
@@ -34,7 +39,7 @@ def extract_document_terms(doc, extract_args):
     min_length = extract_args.get('min_length', 2)
 
     ngrams = args.get('ngrams', None)
-    named_entities = args.get('named_entities', False)
+    named_entities = args.get('named_entities', None)
     normalize = args.get('normalize', 'lemma')
     as_strings = args.get('as_strings', True)
 
@@ -60,7 +65,7 @@ def extract_document_terms(doc, extract_args):
     return terms
 
 
-def extract_corpus_terms(corpus, extract_args):
+def extract_corpus_terms(corpus: TextacyCorpus, extract_args: Mapping[str, Any]):
     """Extracts documents and terms from a corpus
 
     Parameters
@@ -108,7 +113,13 @@ def extract_corpus_terms(corpus, extract_args):
     min_freq = extract_args.get('min_freq', 1)
 
     if min_freq > 1:
-        words = infrequent_words(corpus, normalize=normalize, weighting='count', threshold=min_freq, as_strings=True)
+        words = infrequent_words(
+            corpus,
+            normalize=normalize,
+            weighting='count',
+            threshold=min_freq,
+            as_strings=True,
+        )
         extra_stop_words = extra_stop_words.union(words)
         logger.info('Ignoring {} low-frequent words!'.format(len(words)))
 
@@ -116,7 +127,11 @@ def extract_corpus_terms(corpus, extract_args):
 
     if max_doc_freq < 100:
         words = frequent_document_words(
-            corpus, normalize=normalize, weighting='freq', dfs_threshold=max_doc_freq, as_strings=True
+            corpus,
+            normalize=normalize,
+            weighting='freq',
+            dfs_threshold=max_doc_freq,
+            as_strings=True,
         )
         extra_stop_words = extra_stop_words.union(words)
         logger.info('Ignoring {} high-frequent words!'.format(len(words)))

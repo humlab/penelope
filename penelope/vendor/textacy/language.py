@@ -30,7 +30,7 @@ def keep_hyphen_tokenizer(nlp):
 
 
 @utility.timecall
-def create_nlp(language, **nlp_args):
+def create_nlp(language, **nlp_args) -> Language:
 
     if len(nlp_args.get('disable', [])) == 0:
         nlp_args.pop('disable')

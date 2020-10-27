@@ -240,13 +240,17 @@ def test_load_inferred_topics_data(method):
     )
     # assert inferred_topics_data.document_topic_weights.round(5).equals(test_inferred_topics_data.document_topic_weights.round(5))
     assert (
-        inferred_topics_data.topic_token_weights.round(5).eq(test_inferred_topics_data.topic_token_weights.round(5)
-                                                             ).all().all()
+        inferred_topics_data.topic_token_weights.round(5)
+        .eq(test_inferred_topics_data.topic_token_weights.round(5))
+        .all()
+        .all()
     )
     # assert inferred_topics_data.topic_token_weights.round(5).equals(test_inferred_topics_data.topic_token_weights.round(5))
     assert (
-        inferred_topics_data.topic_token_weights.round(5).eq(test_inferred_topics_data.topic_token_weights.round(5)
-                                                             ).all().all()
+        inferred_topics_data.topic_token_weights.round(5)
+        .eq(test_inferred_topics_data.topic_token_weights.round(5))
+        .all()
+        .all()
     )
 
     shutil.rmtree(target_folder)
