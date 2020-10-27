@@ -1,8 +1,12 @@
 import os
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+import types
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import pandas as pd
 import textacy
+from spacy.language import Language as SpacyLanguage
+from spacy.tokens import Doc as SpacyDoc
+from textacy import Corpus as TextacyCorpus
 
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.utility as utility
@@ -16,17 +20,30 @@ logger = utility.getLogger('corpus_text_analysis')
 # pylint: disable=too-many-arguments
 
 
-def create_corpus(reader: ICorpusReader, nlp, tick: Callable = utility.noop, n_chunk_threshold: int = 100000):
+def create_corpus(
+    reader: ICorpusReader,
+    nlp: SpacyLanguage,
+    *,
+    extra_metadata: List[Dict[str, Any]] = None,
+    tick: Callable = utility.noop,
+    n_chunk_threshold: int = 100000,
+) -> TextacyCorpus:
 
-    corpus = textacy.Corpus(nlp)
+    corpus: TextacyCorpus = textacy.Corpus(nlp)
     counter = 0
-    metalookup = reader.metadata
+
+    metadata_lookup = {
+        x['filename']: x for x in utility.lists_of_dicts_merged_by_key(reader.metadata, extra_metadata, key='filename')
+    }
+
     for filename, text in reader:
 
-        metadata = {'filename': filename, **metalookup(filename)}
+        metadata = metadata_lookup[filename]
 
         if len(text) > n_chunk_threshold:
-            doc = textacy.spacier.utils.make_doc_from_text_chunks(text, lang=nlp, chunk_size=n_chunk_threshold)
+            doc: SpacyDoc = textacy.spacier.utils.make_doc_from_text_chunks(
+                text, lang=nlp, chunk_size=n_chunk_threshold
+            )
             corpus.add_doc(doc)
             doc._.meta = metadata
         else:
@@ -35,6 +52,7 @@ def create_corpus(reader: ICorpusReader, nlp, tick: Callable = utility.noop, n_c
         counter += 1
         if counter % 100 == 0:
             logger.info('%s documents added...', counter)
+
         tick(counter)
 
     return corpus
@@ -51,7 +69,7 @@ def save_corpus(
 
 
 @utility.timecall
-def load_corpus(filename: str, lang: str):  # pylint: disable=unused-argument
+def load_corpus(filename: str, lang: str) -> textacy.Corpus:  # pylint: disable=unused-argument
     corpus = textacy.Corpus.load(lang, filename)
     return corpus
 
@@ -94,8 +112,8 @@ def _get_document_metadata(
     metadata: Dict[str, Any] = None,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Dict[str, Any] = None,
-):
+    filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
+) -> Mapping[str, Any]:
     """Extract document metadata from filename and document index"""
     metadata = metadata or {}
 
@@ -128,7 +146,7 @@ def _extend_stream_with_metadata(
     tokenizer: text_tokenizer.TextTokenizer,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Dict[str, Any] = None,
+    filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Iterable[Tuple[str, str, Dict]]:
     """Extract and adds document meta data to stream
 
@@ -140,7 +158,7 @@ def _extend_stream_with_metadata(
         Document index, by default None
     document_columns : List[str], optional
         Columns in document index, by default None
-    filename_fields : Dict[str,Any], optional
+    filename_fields : Sequence[file_utility.IndexOfSplitOrCallableOrRegExp], optional
         Filename fields to extract, by default None
 
     Yields
@@ -148,12 +166,12 @@ def _extend_stream_with_metadata(
     Iterable[Tuple[str, str, Dict]]
         Stream augumented with meta data.
     """
-    metalookup = {x['filename']: x for x in tokenizer.metadata}
+    metadata_lookup = {x['filename']: x for x in tokenizer.metadata}
     for filename, tokens in tokenizer:
 
         metadata = _get_document_metadata(
             filename,
-            metadata=metalookup['filename'],
+            metadata=metadata_lookup['filename'],
             documents=documents,
             document_columns=document_columns,
             filename_fields=filename_fields,
@@ -162,17 +180,17 @@ def _extend_stream_with_metadata(
         yield filename, ' '.join(tokens), metadata
 
 
-# pylint: disable=import-outside-toplevel
 def load_or_create(
     source_path: Any,
     language: str,
+    *,
     documents: pd.DataFrame = None,  # data_frame or lambda corpus: corpus_index
     merge_entities: bool = False,
     overwrite: bool = False,
     binary_format: bool = True,
     use_compression: bool = True,
     disabled_pipes: List[str] = None,
-    filename_fields: Dict[str, Any] = None,
+    filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
     document_columns: List[str] = None,
     tick=utility.noop,
 ) -> Dict[str, Any]:
@@ -195,7 +213,7 @@ def load_or_create(
         Use compression, by default True
     disabled_pipes : List[str], optional
         SpaCy pipes that should be disabled, by default None
-    filename_fields : Dict[str, Any], optional
+    filename_fields : Sequence[file_utility.IndexOfSplitOrCallableOrRegExp], optional
         Specifies metadata that should be extracted from filename, by default None
     document_columns : List[str], optional
         Columns in `documents` to add to metadata, all columns will be added if None, by default None
@@ -253,7 +271,7 @@ def load_or_create(
         tick(0, len(tokens_streams.filenames))
 
         logger.info('Creating corpus (this might take some time)...')
-        textacy_corpus = create_corpus(reader, nlp, tick)
+        textacy_corpus = create_corpus(reader, nlp, tick=tick)
 
         logger.info('Storing corpus (this might take some time)...')
         save_corpus(textacy_corpus, textacy_corpus_path)
@@ -271,10 +289,10 @@ def load_or_create(
     tick(0)
     logger.info('Done!')
 
-    return dict(
+    return types.SimpleNamespace(
         source_path=source_path,
         language=language,
         nlp=nlp,
-        textacy_corpus=textacy_corpus,
-        textacy_corpus_path=textacy_corpus_path,
+        corpus=textacy_corpus,
+        corpus_path=textacy_corpus_path,
     )

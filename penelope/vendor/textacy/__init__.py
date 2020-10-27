@@ -2,13 +2,14 @@ from .corpus import create_corpus, generate_corpus_filename, load_corpus, load_o
 from .extract import chunks, extract_corpus_terms, extract_document_terms, extract_document_tokens
 from .language import create_nlp
 from .mdw_modified import compute_likelihoods, compute_most_discriminating_terms
+from .pipeline import CreateTask, ITask, LoadTask, PipelineError, PreprocessTask, SaveTask, TextacyCorpusPipeline
+from .stats import frequent_document_words, infrequent_words
 from .utils import (
     POS_NAMES,
     POS_TO_COUNT,
     count_documents_by_pivot,
     count_documents_in_index_by_pivot,
     doc_to_bow,
-    frequent_document_words,
     generate_word_count_score,
     generate_word_document_count_score,
     get_corpus_data,
@@ -16,7 +17,6 @@ from .utils import (
     get_document_by_id,
     get_most_frequent_words,
     get_pos_statistics,
-    infrequent_words,
     load_term_substitutions,
     store_tokens,
     term_substitutions,
