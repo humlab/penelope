@@ -26,5 +26,5 @@ class ICorpusReader(abc.ABC):
         return self
 
     @property
-    def metalookup(self):
+    def metadata_lookup(self):
         return {x['filename']: x for x in (self.metadata or [])}
