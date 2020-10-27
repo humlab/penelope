@@ -42,3 +42,9 @@ class TextTransformer:
 
     def fix_whitespaces(self) -> TextTransformer:
         return self.add(TRANSFORMS.fix_whitespace)
+
+    def fix_ftfy(self) -> TextTransformer:
+        return self.add(TRANSFORMS.fix_ftfy_text)
+
+    def fix_accents(self) -> TextTransformer:
+        return self.add(TRANSFORMS.fix_accents)
