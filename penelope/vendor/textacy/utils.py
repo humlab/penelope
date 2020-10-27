@@ -14,6 +14,24 @@ import penelope.utility as utility
 
 logger = utility.getLogger()
 
+POS_TO_COUNT = {
+    'SYM': 0,
+    'PART': 0,
+    'ADV': 0,
+    'NOUN': 0,
+    'CCONJ': 0,
+    'ADJ': 0,
+    'DET': 0,
+    'ADP': 0,
+    'INTJ': 0,
+    'VERB': 0,
+    'NUM': 0,
+    'PRON': 0,
+    'PROPN': 0,
+}
+
+POS_NAMES = list(sorted(POS_TO_COUNT.keys()))
+
 
 def generate_word_count_score(corpus: textacy.Corpus, normalize: str, count: int, weighting: str = 'count'):
     wc = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=True)
@@ -157,25 +175,6 @@ def doc_to_bow(
     return bow
 
 
-POS_TO_COUNT = {
-    'SYM': 0,
-    'PART': 0,
-    'ADV': 0,
-    'NOUN': 0,
-    'CCONJ': 0,
-    'ADJ': 0,
-    'DET': 0,
-    'ADP': 0,
-    'INTJ': 0,
-    'VERB': 0,
-    'NUM': 0,
-    'PRON': 0,
-    'PROPN': 0,
-}
-
-POS_NAMES = list(sorted(POS_TO_COUNT.keys()))
-
-
 def get_pos_statistics(doc: spacy.tokens.Doc):
     pos_iter = (x.pos_ for x in doc if x.pos_ not in ['NUM', 'PUNCT', 'SPACE'])
     pos_counts = dict(collections.Counter(pos_iter))
@@ -206,7 +205,7 @@ def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: s
     with open(filepath) as f:
         substitutions = {
             x[0].strip(): x[1].strip()
-            for x in (tuple(line.lower().split(delim)) + (default_term,) for line in f.readlines())
+            for x in (tuple(line.lower().split(delim)) + (default_term, ) for line in f.readlines())
             if x[0].strip() != ''
         }
 
@@ -246,8 +245,7 @@ def _doc_token_stream(doc: spacy.tokens.Doc) -> Iterable[Dict[str, Any]]:
             pos=t.pos_,
             year=doc._.meta['year'],
             document_id=doc._.meta['document_id'],
-        )
-        for t in doc
+        ) for t in doc
     )
 
 
