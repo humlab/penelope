@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Callable, List, Union
+from typing import Callable, List, Sequence, Union
 
 import penelope.utility.file_utility as file_utility
 from penelope.corpus.readers import ICorpusReader
@@ -14,18 +14,22 @@ class ZipTextIterator(ICorpusReader):
     def __init__(
         self,
         source_path: str,
+        *,
         filename_pattern: str = "*.txt",
         filename_filter: Union[List[str], Callable] = None,
+        filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
         as_binary: bool = False,
     ):
-        """
+        """Iterates a text corpus stored as textfiles in a zip archive
         Parameters
         ----------
-        source_path : sttr
+        source_path : str
             [description]
         filename_pattern : str
             [description]
         filename_filter : List[str], optional
+            [description], by default None
+        filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp],
             [description], by default None
         as_binary : bool, optional
             If true then files are opened as `rb` and no decoding, by default False
@@ -34,8 +38,13 @@ class ZipTextIterator(ICorpusReader):
         self._filenames = file_utility.list_filenames(
             source_path, filename_pattern=filename_pattern, filename_filter=filename_filter
         )
+        self.filename_fields = filename_fields
+        self._metadata = None
         self.as_binary = as_binary
         self.iterator = None
+
+    def _create_metadata(self):
+        return file_utility.extract_filenames_fields(filenames=self.filenames, filename_fields=self.filename_fields)
 
     def _create_iterator(self):
         return file_utility.create_iterator(self.source_path, filenames=self.filenames, as_binary=self.as_binary)
@@ -46,7 +55,9 @@ class ZipTextIterator(ICorpusReader):
 
     @property
     def metadata(self):
-        return [{'filename': x for x in self._filenames}]
+        if self._metadata is None:
+            self._metadata = self._create_metadata()
+        return self._metadata
 
     def __iter__(self):
         return self
