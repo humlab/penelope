@@ -7,7 +7,7 @@ import re
 import sys
 import time
 import zipfile
-from typing import Callable, Dict, Iterable, Iterator, List, Tuple, Union
+from typing import Callable, Dict, Iterable, Iterator, List, Sequence, Tuple, Union
 
 import gensim
 import pandas as pd
@@ -269,10 +269,10 @@ def filename_field_indexed_split_parser(filename_fields: List[str]):
 
 
 IndexOfSplitOrCallableOrRegExp = Union[List[str], Dict[str, Union[Callable, str]]]
-FilenameFields = Dict[str, Union[int, str]]
+ExtractedFilenameFields = Dict[str, Union[int, str]]
 
 
-def extract_filename_fields(filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp) -> FilenameFields:
+def extract_filename_fields(filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp) -> ExtractedFilenameFields:
     """Extracts metadata from filename
 
     The extractor in kwargs must be either a regular expression that extracts the single value
@@ -337,9 +337,13 @@ def extract_filename_fields(filename: str, filename_fields: IndexOfSplitOrCallab
     return data
 
 
-# def extract_filename_fields_list(filenames: List[str], filename_fields: IndexOfSplitOrCallableOrRegExp) -> List[FilenameFields]:
-
-#     return [extract_filename_fields(x, filename_fields) for x in filenames]
+def extract_filenames_fields(
+    *, filenames: str, filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp]
+) -> List[ExtractedFilenameFields]:
+    return [
+        {'filename': filename, **extract_filename_fields(filename, filename_fields)}
+        for filename in basenames(filenames)
+    ]
 
 
 def export_excel_to_text(excel_file: str, text_file: str) -> pd.DataFrame:
