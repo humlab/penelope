@@ -43,7 +43,7 @@ class TextTokenizer(ICorpusReader):
         chunk_size: int = None,
         filename_pattern: str = None,
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
-        filename_fields=None,
+        filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
         tokenize: Callable = None,
         fix_whitespaces: bool = False,
         fix_hyphenation: bool = False,
@@ -63,7 +63,7 @@ class TextTokenizer(ICorpusReader):
             [description], by default None
         filename_filter : Union[Callable, List[str]], optional
             [description], by default None
-        filename_fields : [type], optional
+        filename_fields : Sequence[IndexOfSplitOrCallableOrRegExp], optional
             [description], by default None
         tokenize : Callable, optional
             [description], by default None
@@ -113,10 +113,9 @@ class TextTokenizer(ICorpusReader):
         )
 
     def _create_all_metadata(self):
-        return [
-            {'filename': filename, **file_utility.extract_filename_fields(filename, self._filename_fields)}
-            for filename in file_utility.basenames(self._all_filenames)
-        ]
+        return file_utility.extract_filenames_fields(
+            filenames=self._all_filenames, filename_fields=self._filename_fields
+        )
 
     def _get_filenames(self):
 
@@ -147,7 +146,7 @@ class TextTokenizer(ICorpusReader):
         return self._get_metadata(file_utility.basenames(self._get_filenames()))
 
     @property
-    def metalookup(self):
+    def metadata_lookup(self):
         return {x['filename']: x for x in self.metadata}
 
     def preprocess(self, content: str) -> str:
