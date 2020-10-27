@@ -25,6 +25,7 @@ from .transforms import (
     remove_symbols,
     upper_transform,
 )
+from .utils import preprocess_text_corpus
 from .vectorized_corpus import VectorizedCorpus, load_cached_normalized_vectorized_corpus, load_corpus
 from .vectorizer import CorpusVectorizer
 from .vectorizer import generate_corpus as vectorize_stored_corpus
