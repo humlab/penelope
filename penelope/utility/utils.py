@@ -12,7 +12,7 @@ import re
 import string
 import time
 import zipfile
-from typing import List, Tuple
+from typing import Any, List, Mapping, Tuple
 
 import gensim.utils
 import numpy as np
@@ -232,6 +232,26 @@ def tuple_of_lists_to_list_of_tuples(tl):
 
 def dict_of_lists_to_list_of_dicts(dl):
     return [dict(zip(dl, t)) for t in zip(*dl.values())]
+
+
+ListOfDicts = List[Mapping[str, Any]]
+
+
+def lists_of_dicts_merged_by_key(lst1: ListOfDicts, lst2: ListOfDicts, key: str) -> ListOfDicts:
+    """Returns `lst1` where each items has been merged with corresponding item in `lst2` using common field `key`"""
+    if lst2 is None or len(lst2) == 0 or key not in lst2[0]:
+        return lst1 or []
+
+    if lst1 is None:
+        return None
+
+    if len(lst1) > 0 and key not in lst1[0]:
+        raise ValueError(f"Key `{key}` not in target list")
+
+    lookup = {item[key]: item for item in lst2}
+    merged_list = map(lambda x: {**x, **lookup.get(x[key], {})}, lst1)
+
+    return list(merged_list)
 
 
 def uniquify(sequence):
