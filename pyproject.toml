@@ -79,6 +79,7 @@ log_cli = "False"
 testpaths = [
     "tests",
 ]
+norecursedirs = ['penelope', '.git', 'data', 'output', 'deprecated', '__pycache__', 'tmp']
 python_files = "*_test.py"
 python_functions = "test_*"
 filterwarnings = [
