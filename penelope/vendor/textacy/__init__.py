@@ -1,5 +1,17 @@
 from .corpus import create_corpus, generate_corpus_filename, load_corpus, load_or_create, save_corpus
-from .extract import chunks, extract_corpus_terms, extract_document_terms, extract_document_tokens
+from .extract import (
+    AttributeFilter,
+    ExtractPipeline,
+    FrequentWordsFilter,
+    InfrequentWordsFilter,
+    MinCharactersFilter,
+    NamedEntityTask,
+    NGram,
+    PoSFilter,
+    PredicateFilter,
+    StopwordFilter,
+    chunks,
+)
 from .language import create_nlp
 from .mdw_modified import compute_likelihoods, compute_most_discriminating_terms
 from .pipeline import CreateTask, ITask, LoadTask, PipelineError, PreprocessTask, SaveTask, TextacyCorpusPipeline
