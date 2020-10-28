@@ -22,11 +22,11 @@ def test_extract_filename_fields_when_indexed_split_returns_metadata_values():
     'filename, unesco_id, year, city',
     [
         ('CONVENTION_0201_031038_2005_paris.txt', 31038, 2005, 'paris'),
-        ('CONVENTION_0201_031038_2005.txt', 31038, 2005, None)
+        ('CONVENTION_0201_031038_2005.txt', 31038, 2005, None),
     ],
 )
 def test_extract_filename_fields_of_unesco_filename(filename, unesco_id, year, city):
-    filename_fields = [ "unesco_id:_:2", "year:_:3", r'city:\w+\_\d+\_\d+\_\d+\_(.*)\.txt' ]
+    filename_fields = ["unesco_id:_:2", "year:_:3", r'city:\w+\_\d+\_\d+\_\d+\_(.*)\.txt']
     meta = file_utility.extract_filename_fields(filename, filename_fields=filename_fields)
     assert unesco_id == meta['unesco_id']
     assert year == meta['year']

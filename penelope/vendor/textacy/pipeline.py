@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import os
-from typing import Any, List, Sequence, Union
+from typing import List, Sequence, Union
 
 import pandas as pd
 import textacy
@@ -20,7 +20,6 @@ class PipelineError(Exception):
 
 
 class TextacyCorpusPipeline:
-
     def __init__(
         self,
         *,
@@ -68,14 +67,12 @@ class TextacyCorpusPipeline:
 
 
 class ITask(abc.ABC):
-
     @abc.abstractmethod
     def execute(self, pipeline: TextacyCorpusPipeline) -> TextacyCorpusPipeline:
         return None
 
 
 class CreateTask(ITask):
-
     def execute(self, pipeline: TextacyCorpusPipeline):
         stream = ZipTextIterator(
             pipeline.filename, filename_pattern=pipeline.filename_pattern, filename_fields=pipeline.filename_fields
@@ -86,7 +83,6 @@ class CreateTask(ITask):
 
 
 class PreprocessTask(ITask):
-
     def execute(self, pipeline: TextacyCorpusPipeline):
         prepped_source_path = utility.path_add_suffix(pipeline.filename, pipeline.suffix)
         if not os.path.isfile(prepped_source_path) or pipeline.force:
@@ -96,7 +92,6 @@ class PreprocessTask(ITask):
 
 
 class SaveTask(ITask):
-
     def execute(self, pipeline: TextacyCorpusPipeline):
         if pipeline.corpus is None:
             raise PipelineError("save when corpus is None")
@@ -107,7 +102,6 @@ class SaveTask(ITask):
 
 
 class LoadTask(ITask):
-
     def execute(self, pipeline: TextacyCorpusPipeline):
         if pipeline.corpus is None:
             textacy_corpus_path = textacy_utility.generate_corpus_filename(pipeline.filename, pipeline.lang)
