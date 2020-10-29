@@ -1,9 +1,16 @@
 import logging
 import os
-from typing import Callable, Iterable, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, Union
 
-import penelope.utility.file_utility as file_utility
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
+from penelope.utility import (
+    IndexOfSplitOrCallableOrRegExp,
+    extract_filenames_fields,
+    filename_satisfied_by,
+    list_filenames,
+    strip_path_and_extension,
+)
+from penelope.utility.file_utility import strip_paths
 from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
@@ -12,17 +19,6 @@ from .streamify_text_source import streamify_text_source
 logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
-
-
-def strip_path_and_extension(filename):
-
-    return os.path.splitext(os.path.basename(filename))[0]
-
-
-def strip_path_and_add_counter(filename, n_chunk):
-
-    return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
-
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
@@ -42,7 +38,7 @@ class TextTokenizer(ICorpusReader):
         chunk_size: int = None,
         filename_pattern: str = None,
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
-        filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
+        filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
         tokenize: Callable = None,
         fix_whitespaces: bool = False,
         fix_hyphenation: bool = False,
@@ -82,17 +78,15 @@ class TextTokenizer(ICorpusReader):
         self.chunk_size = chunk_size
 
         self.text_transformer = (
-            TextTransformer(transforms=transforms)
-            .add(TRANSFORMS.fix_unicode)
-            .add(TRANSFORMS.fix_whitespaces, condition=fix_whitespaces)
-            .add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
+            TextTransformer(transforms=transforms).add(
+                TRANSFORMS.fix_unicode
+            ).add(TRANSFORMS.fix_whitespaces,
+                  condition=fix_whitespaces).add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
         )
 
         self._iterator = None
 
-        self._all_filenames = file_utility.list_filenames(
-            source, filename_pattern=filename_pattern, filename_filter=None
-        )
+        self._all_filenames = list_filenames(source, filename_pattern=filename_pattern, filename_filter=None)
 
         self._all_metadata = self._create_all_metadata()
 
@@ -105,16 +99,11 @@ class TextTokenizer(ICorpusReader):
         )
 
     def _create_iterator(self):
-        return (
-            (os.path.basename(filename), document)
-            for (filename, content) in self._get_texts()
-            for filename, document in self.process(filename, content)
-        )
+        return ((os.path.basename(filename), document) for (filename, content) in self._get_texts()
+                for filename, document in self.process(filename, content))
 
-    def _create_all_metadata(self):
-        return file_utility.extract_filenames_fields(
-            filenames=self._all_filenames, filename_fields=self._filename_fields
-        )
+    def _create_all_metadata(self) -> Sequence[Dict[str, Any]]:
+        return extract_filenames_fields(filenames=self._all_filenames, filename_fields=self._filename_fields)
 
     def _get_filenames(self):
 
@@ -122,19 +111,16 @@ class TextTokenizer(ICorpusReader):
             return self._all_filenames
 
         return [
-            filename
-            for filename in self._all_filenames
-            if file_utility.filename_satisfied_by(
-                filename, filename_pattern=None, filename_filter=self._filename_filter
-            )
+            filename for filename in self._all_filenames
+            if filename_satisfied_by(filename, filename_pattern=None, filename_filter=self._filename_filter)
         ]
 
-    def _get_metadata(self, basenames):
+    def _get_metadata(self, filenames):
 
         if self._filename_filter is None:
             return self._all_metadata
 
-        return [metadata for metadata in self._all_metadata if metadata['filename'] in basenames]
+        return [metadata for metadata in self._all_metadata if metadata['filename'] in filenames]
 
     @property
     def filenames(self):
@@ -142,7 +128,7 @@ class TextTokenizer(ICorpusReader):
 
     @property
     def metadata(self):
-        return self._get_metadata(file_utility.basenames(self._get_filenames()))
+        return self._get_metadata(strip_paths(self._get_filenames()))
 
     @property
     def metadata_lookup(self):
@@ -186,7 +172,7 @@ class TextTokenizer(ICorpusReader):
 
                 stored_name = '{}_{}.txt'.format(strip_path_and_extension(filename), str(n_chunk + 1).zfill(3))
 
-                yield stored_name, tokens[i : i + self.chunk_size]
+                yield stored_name, tokens[i:i + self.chunk_size]
 
     def __iter__(self):
         return self
