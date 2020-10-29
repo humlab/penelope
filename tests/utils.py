@@ -1,10 +1,14 @@
 import os
+import random
+from collections import defaultdict
 from typing import Callable
 
 import pandas as pd
 
 import penelope.corpus.readers as readers
 from penelope.corpus.interfaces import ITokenizedCorpus
+from penelope.corpus.readers.in_memory_data_reader import InMemoryReader
+from penelope.corpus.tokenized_corpus import TokenizedCorpus
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -12,6 +16,7 @@ OUTPUT_FOLDER = './tests/output'
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 TEST_CORPUS_FILENAME = './tests/test_data/test_corpus.zip'
+TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 
 # pylint: disable=too-many-arguments
 
@@ -20,6 +25,31 @@ if __file__ in globals():
     this_path = os.path.abspath(this_file)
     TEST_CORPUS_FILENAME = os.path.join(this_path, TEST_CORPUS_FILENAME)
 
+# http://www.nltk.org/howto/collocations.html
+# PMI
+
+def generate_token2id(terms):
+    token2id = defaultdict()
+    token2id.default_factory = token2id.__len__
+    for tokens in terms:
+        for token in tokens:
+            _ = token2id[token]
+    return dict(token2id)
+
+
+def very_simple_corpus(documents):
+
+    reader = InMemoryReader(documents, filename_fields="year:_:1")
+    corpus = TokenizedCorpus(reader=reader)
+    return corpus
+
+
+def random_corpus(n_docs: int = 5, vocabulary: str = 'abcdefg', min_length=4, max_length=10, years=None):
+    def random_tokens():
+
+        return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
+
+    return [(f'rand_{random.choice(years or [0])}_{i}.txt', random_tokens()) for i in range(1, n_docs + 1)]
 
 class MockedProcessedCorpus(ITokenizedCorpus):
     def __init__(self, mock_data):
