@@ -19,7 +19,9 @@ import numpy as np
 import pandas as pd
 
 
-def setup_logger(logger=None, to_file=False, filename=None, level=logging.DEBUG):  # pylint: disable=redefined-outer-name
+def setup_logger(
+    logger=None, to_file=False, filename=None, level=logging.DEBUG
+):  # pylint: disable=redefined-outer-name
     """
     Setup logging of import messages to both file and console
     """
@@ -82,7 +84,6 @@ def filter_dict(d, keys=None, filter_out=False):
 
 
 def timecall(f):
-
     @functools.wraps(f)
     def f_wrapper(*args, **kwargs):
         start_time = time.perf_counter()
@@ -384,7 +385,7 @@ def chunks(lst, n):
         yield lst
 
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
 
 
 # def get_document_id_by_field_filters(documents, filters):

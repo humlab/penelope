@@ -95,8 +95,7 @@ class CorpusVectorizer:
         bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
 
-        documents = documents if documents is not None \
-            else (corpus.documents if hasattr(corpus, 'documents') else None)
+        documents = documents if documents is not None else (corpus.documents if hasattr(corpus, 'documents') else None)
 
         if documents is None:
             logger.warning("corpus has no `documents` property (generating a dummy index")
