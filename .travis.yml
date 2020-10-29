@@ -23,6 +23,7 @@ install:
 - mkdir -p ./tests/output $HOME/nltk_data
 - travis_wait 30 poetry run python -m nltk.downloader stopwords -d $HOME/nltk_data
 - travis_wait 30 poetry run python -m nltk.downloader punkt -d $HOME/nltk_data
+- travis_wait 30 poetry run python -m spacy download en
 
 script:
 - poetry run python -m pytest
