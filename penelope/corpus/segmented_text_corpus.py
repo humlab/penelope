@@ -2,7 +2,7 @@ import gzip
 import logging
 import shutil
 
-from nltk.tokenize import sent_tokenize, word_tokenize
+from penelope.vendor.nltk import sent_tokenize, word_tokenize
 
 from .readers.interfaces import ICorpusReader
 from .tokenized_corpus import TokenizedCorpus

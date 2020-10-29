@@ -1,8 +1,9 @@
 import logging
 
-import nltk
 import numpy as np
 import pandas as pd
+
+import penelope.vendor.nltk as nltk_utility
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ class MmCorpusStatisticsService:
     def __init__(self, corpus, dictionary, language):
         self.corpus = corpus
         self.dictionary = dictionary
-        self.stopwords = nltk.corpus.stopwords.words(language[1])
+        self.stopwords = nltk_utility.stopwords.words(language[1])
         _ = dictionary[0]
 
     def get_total_token_frequencies(self):

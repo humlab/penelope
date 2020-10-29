@@ -3,7 +3,7 @@ import logging
 import re
 import string
 
-import nltk
+import penelope.vendor.nltk as nltk_utility
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -41,7 +41,7 @@ def only_alphabetic_filter():
 
 def remove_stopwords(language_or_stopwords='swedish', extra_stopwords=None):
     if isinstance(language_or_stopwords, str):
-        stopwords = set(nltk.corpus.stopwords.words(language_or_stopwords))
+        stopwords = set(nltk_utility.stopwords.words(language_or_stopwords))
     else:
         stopwords = set(language_or_stopwords or {})
     stopwords = stopwords.union(set(extra_stopwords or {}))

@@ -1,9 +1,9 @@
 from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
-from nltk.tokenize import word_tokenize
 
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
+from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import ICorpusReader
 

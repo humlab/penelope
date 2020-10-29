@@ -2,10 +2,9 @@ import logging
 import os
 from typing import Callable, Iterable, List, Sequence, Tuple, Union
 
-from nltk.tokenize import word_tokenize
-
 import penelope.utility.file_utility as file_utility
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
+from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
 from .streamify_text_source import streamify_text_source
