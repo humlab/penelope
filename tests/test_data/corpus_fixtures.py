@@ -1,4 +1,3 @@
-
 SIMPLE_CORPUS_ABCDE_5DOCS = [
     ('tran_2019_01_test.txt', ['a', 'b', 'c', 'c']),
     ('tran_2019_02_test.txt', ['a', 'a', 'b', 'd']),
