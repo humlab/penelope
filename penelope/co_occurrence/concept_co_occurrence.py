@@ -218,10 +218,10 @@ def compute_and_store(
         partition_keys=partition_keys,
     )
 
-    _store_to_file(target_filename, coo_df)
+    store(target_filename, coo_df)
 
 
-def _store_to_file(filename: str, df: pd.DataFrame):
+def store(filename: str, df: pd.DataFrame):
     """Store file to disk"""
 
     if filename.endswith('zip'):
@@ -231,3 +231,14 @@ def _store_to_file(filename: str, df: pd.DataFrame):
         compression = 'infer'
 
     df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
+
+def load(filename: str) -> pd.DataFrame:
+    """Store file from disk"""
+    if filename.endswith('zip'):
+        archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
+        compression = dict(method='zip', archive_name=archive_name)
+    else:
+        compression = 'infer'
+    df = pd.read_csv(filename, sep='\t', header=0, compression=compression, decimal=',')
+
+    return df
