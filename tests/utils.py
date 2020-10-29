@@ -12,11 +12,12 @@ from penelope.corpus.tokenized_corpus import TokenizedCorpus
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
+TEST_DATA_FOLDER = './tests/test_data'
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-TEST_CORPUS_FILENAME = './tests/test_data/test_corpus.zip'
-TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
+TEST_CORPUS_FILENAME = os.path.join(TEST_DATA_FOLDER, 'test_corpus.zip')
+TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = os.path.join(TEST_DATA_FOLDER, 'tranströmer_corpus_export.csv.zip')
 
 # pylint: disable=too-many-arguments
 
