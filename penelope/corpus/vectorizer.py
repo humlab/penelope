@@ -40,6 +40,7 @@ class CorpusVectorizer:
         corpus: Union[tokenized_corpus.TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
+        documents: pd.DataFrame = None,
         tokenizer: Callable = None,
         lowercase: bool = False,
         stop_words: str = None,
@@ -94,14 +95,16 @@ class CorpusVectorizer:
         bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
 
-        if hasattr(corpus, 'documents'):
-            documents = corpus.documents
-        else:
+        documents = documents if documents is not None \
+            else (corpus.documents if hasattr(corpus, 'documents') else None)
+
+        if documents is None:
             logger.warning("corpus has no `documents` property (generating a dummy index")
             documents = pd.DataFrame(
                 data=[{'index': i, 'filename': f'file_{i}.txt'} for i in range(0, bag_term_matrix.shape[0])]
             ).set_index('index')
             documents['document_id'] = documents.index
+
         # ignored_words = self.vectorizer.stop_words_
 
         v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, documents)

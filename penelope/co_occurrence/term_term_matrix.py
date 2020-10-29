@@ -11,7 +11,7 @@ from penelope.utility.utils import getLogger
 logger = getLogger()
 
 
-def to_co_ocurrence_matrix(
+def to_co_occurrence_matrix(
     corpus_or_reader: Union[ICorpusReader, TokenizedCorpus], vocabulary: Mapping[str, int] = None
 ) -> scipy.sparse.spmatrix:
     """Computes a term-term co-ocurrence matrix for documents in corpus/reader.

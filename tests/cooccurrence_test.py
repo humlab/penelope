@@ -8,7 +8,7 @@ import pytest
 from penelope.co_occurrence import (
     WindowsCorpus,
     partitioned_corpus_concept_co_occurrence,
-    to_co_ocurrence_matrix,
+    to_co_occurrence_matrix,
     to_dataframe,
 )
 from penelope.co_occurrence.windows_co_occurrence import corpus_concept_co_occurrence
@@ -110,7 +110,7 @@ def test_to_coocurrence_matrix_yields_same_values_as_coocurrence_matrix():
 
     term_term_matrix1 = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).co_occurrence_matrix()
 
-    term_term_matrix2 = to_co_ocurrence_matrix(corpus)
+    term_term_matrix2 = to_co_occurrence_matrix(corpus)
 
     assert (term_term_matrix1 != term_term_matrix2).nnz == 0
 
