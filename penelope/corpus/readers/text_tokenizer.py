@@ -78,10 +78,10 @@ class TextTokenizer(ICorpusReader):
         self.chunk_size = chunk_size
 
         self.text_transformer = (
-            TextTransformer(transforms=transforms).add(
-                TRANSFORMS.fix_unicode
-            ).add(TRANSFORMS.fix_whitespaces,
-                  condition=fix_whitespaces).add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
+            TextTransformer(transforms=transforms)
+            .add(TRANSFORMS.fix_unicode)
+            .add(TRANSFORMS.fix_whitespaces, condition=fix_whitespaces)
+            .add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
         )
 
         self._iterator = None
@@ -99,8 +99,11 @@ class TextTokenizer(ICorpusReader):
         )
 
     def _create_iterator(self):
-        return ((os.path.basename(filename), document) for (filename, content) in self._get_texts()
-                for filename, document in self.process(filename, content))
+        return (
+            (os.path.basename(filename), document)
+            for (filename, content) in self._get_texts()
+            for filename, document in self.process(filename, content)
+        )
 
     def _create_all_metadata(self) -> Sequence[Dict[str, Any]]:
         return extract_filenames_fields(filenames=self._all_filenames, filename_fields=self._filename_fields)
@@ -111,7 +114,8 @@ class TextTokenizer(ICorpusReader):
             return self._all_filenames
 
         return [
-            filename for filename in self._all_filenames
+            filename
+            for filename in self._all_filenames
             if filename_satisfied_by(filename, filename_pattern=None, filename_filter=self._filename_filter)
         ]
 
@@ -172,7 +176,7 @@ class TextTokenizer(ICorpusReader):
 
                 stored_name = '{}_{}.txt'.format(strip_path_and_extension(filename), str(n_chunk + 1).zfill(3))
 
-                yield stored_name, tokens[i:i + self.chunk_size]
+                yield stored_name, tokens[i : i + self.chunk_size]
 
     def __iter__(self):
         return self

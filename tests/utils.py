@@ -29,6 +29,7 @@ if __file__ in globals():
 # http://www.nltk.org/howto/collocations.html
 # PMI
 
+
 def generate_token2id(terms):
     token2id = defaultdict()
     token2id.default_factory = token2id.__len__
@@ -51,6 +52,7 @@ def random_corpus(n_docs: int = 5, vocabulary: str = 'abcdefg', min_length=4, ma
         return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
 
     return [(f'rand_{random.choice(years or [0])}_{i}.txt', random_tokens()) for i in range(1, n_docs + 1)]
+
 
 class MockedProcessedCorpus(ITokenizedCorpus):
     def __init__(self, mock_data):

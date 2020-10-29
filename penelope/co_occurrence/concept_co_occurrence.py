@@ -66,11 +66,15 @@ def tokens_concept_windows(
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
-    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
-        tokens_concept_windows(
-            tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+    win_iter = (
+        [filename, i, window]
+        for filename, tokens in corpus
+        for i, window in enumerate(
+            tokens_concept_windows(
+                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
+            )
         )
-    ))
+    )
     return win_iter
 
 
@@ -244,9 +248,12 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
 
 def to_vectorized_corpus(source: Union[pd.DataFrame, str]) -> VectorizedCorpus:
 
-    assert isinstance(source, (
-        str,
-        pd.DataFrame,
-    ))
+    assert isinstance(
+        source,
+        (
+            str,
+            pd.DataFrame,
+        ),
+    )
 
     return None

@@ -72,7 +72,7 @@ class VectorizedCorpus:
         # logger.info('#bags: {}, #vocab: {}, #tokens: {}'.format(n_bags, n_vocabulary, n_tokens))
 
     @property
-    def id2token(self) -> Mapping[int,str]:
+    def id2token(self) -> Mapping[int, str]:
         if self.id2token_ is None and self.token2id is not None:
             self.id2token_ = {i: t for t, i in self.token2id.items()}
         return self.id2token_

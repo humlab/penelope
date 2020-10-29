@@ -1,13 +1,14 @@
 import os
-from penelope.corpus.readers.text_tokenizer import strip_path_and_add_counter
-from penelope.utility.file_utility import strip_paths
 from typing import Any, Dict, List, Sequence, Tuple
 
 import pandas as pd
 
+from penelope.corpus.readers.text_tokenizer import strip_path_and_add_counter
 from penelope.utility import IndexOfSplitOrCallableOrRegExp, extract_filenames_fields
+from penelope.utility.file_utility import strip_paths
 
 from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
+
 
 class InMemoryReader(ICorpusReader):
     """Text iterator that returns row-wise text documents from an inline List of (doc-text tuples"""
@@ -26,8 +27,7 @@ class InMemoryReader(ICorpusReader):
 
     def _create_iterator(self):
         _filenames = self._get_filenames()
-        return ((strip_paths(filename), document) for (filename, document) in self.data
-                if filename in _filenames)
+        return ((strip_paths(filename), document) for (filename, document) in self.data if filename in _filenames)
 
     def _create_all_metadata(self) -> Sequence[Dict[str, Any]]:
         return extract_filenames_fields(filenames=self._all_filenames, filename_fields=self._filename_fields)

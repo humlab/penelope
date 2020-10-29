@@ -15,6 +15,14 @@ import pandas as pd
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
+def strip_paths(filenames: Union[str, List[str]]) -> Union[str, List[str]]:
+
+    if isinstance(filenames, str):
+        return os.path.basename(filenames)
+
+    return [os.path.basename(filename) for filename in filenames]
+
+
 def strip_path_and_extension(filename: str) -> bool:
 
     return os.path.splitext(os.path.basename(filename))[0]
@@ -42,14 +50,6 @@ def filename_satisfied_by(
                 return False
 
     return True
-
-
-# def basename(path: str):
-#     return os.path.splitext(os.path.basename(path))[0]
-
-
-def basenames(filenames: List[str]) -> List[str]:
-    return [os.path.basename(filename) for filename in filenames]
 
 
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
@@ -342,7 +342,7 @@ def extract_filenames_fields(
 ) -> List[ExtractedFilenameFields]:
     return [
         {'filename': filename, **extract_filename_fields(filename, filename_fields)}
-        for filename in basenames(filenames)
+        for filename in strip_paths(filenames)
     ]
 
 

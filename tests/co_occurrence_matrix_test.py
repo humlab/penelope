@@ -8,6 +8,7 @@ from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 
 from penelope.utility.utils import flatten
+
 from .utils import very_simple_corpus
 
 
