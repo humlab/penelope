@@ -4,6 +4,7 @@ from .concept_co_occurrence import (
     corpus_concept_windows,
     load_co_occurrences,
     partitioned_corpus_concept_co_occurrence,
+    store_co_occurrences,
     tokens_concept_windows,
 )
 
