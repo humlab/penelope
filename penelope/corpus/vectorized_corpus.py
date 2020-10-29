@@ -5,7 +5,7 @@ import os
 import pickle
 import time
 from heapq import nlargest
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -72,7 +72,7 @@ class VectorizedCorpus:
         # logger.info('#bags: {}, #vocab: {}, #tokens: {}'.format(n_bags, n_vocabulary, n_tokens))
 
     @property
-    def id2token(self):
+    def id2token(self) -> Mapping[int,str]:
         if self.id2token_ is None and self.token2id is not None:
             self.id2token_ = {i: t for t, i in self.token2id.items()}
         return self.id2token_
@@ -127,6 +127,12 @@ class VectorizedCorpus:
         The file is stored as two files: one that contains the BoW matrix (.npy or .npz)
         and a pickled file that contains dictionary, word counts and the document index
 
+        The two files are stored in files with names based on the specified `tag`:
+
+            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `word_counts`
+            {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
+
+
         Parameters
         ----------
         tag : str, optional
@@ -169,9 +175,16 @@ class VectorizedCorpus:
         return os.path.isfile(VectorizedCorpus._data_filename(tag, folder))
 
     @staticmethod
-    def load(tag, folder: str = './output') -> VectorizedCorpus:
+    def load(tag: str, folder: str = './output') -> VectorizedCorpus:
         """Loads corpus with tag `tag` in folder `folder`
-        Raises FileNotFoundError if files doesn't exist.
+
+        Raises `FileNotFoundError` if any of the two files containing metadata and matrix doesn't exist.
+
+        Two files are loaded based on specified `tag`:
+
+            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `word_counts`
+            {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
+
 
         Parameters
         ----------
@@ -204,12 +217,12 @@ class VectorizedCorpus:
     @staticmethod
     def _data_filename(tag, folder: str) -> str:
         """Returns pickled basename for given tag and folder"""
-        return os.path.join(folder, "{}_vectorizer_data.pickle".format(tag))
+        return os.path.join(folder, f"{tag}_vectorizer_data.pickle")
 
     @staticmethod
     def _matrix_filename(tag, folder: str) -> str:
         """Returns BoW matrix basename for given tag and folder"""
-        return os.path.join(folder, "{}_vector_data".format(tag))
+        return os.path.join(folder, f"{tag}_vector_data")
 
     def get_word_vector(self, word: str):
         """Extracts vector (i.e. BoW matrix column for word's id) for word `word`
