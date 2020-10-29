@@ -84,6 +84,8 @@ black: clean
 
 tidy: black isort
 
+ready: tools format tidy test flake8 pylint2
+
 clean:
 	@rm -rf .pytest_cache build dist .eggs *.egg-info
 	@rm -rf .coverage coverage.xml htmlcov report.xml .tox
@@ -113,5 +115,5 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
-.PHONY: init lint release flake8 pylint pytest pylint2 format yapf black clean test test-coverage \
+.PHONY: init lint release flake8 pylint pytest pylint2 ready format yapf black clean test test-coverage \
 	update install_graphtool build isort tidy tag tools bump.patch penelope_data nltk_data
