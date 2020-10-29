@@ -1,10 +1,11 @@
 import collections
 import itertools
-from typing import Iterable, List, Set
+from typing import Iterable, List, Set, Union
 
 import pandas as pd
 from tqdm.auto import tqdm
 
+from penelope.corpus import VectorizedCorpus
 from penelope.corpus.interfaces import ICorpus, ITokenizedCorpus, PartitionKeys
 from penelope.corpus.vectorizer import CorpusVectorizer
 from penelope.utility import file_utility
@@ -65,15 +66,11 @@ def tokens_concept_windows(
 
 def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
 
-    win_iter = (
-        [filename, i, window]
-        for filename, tokens in corpus
-        for i, window in enumerate(
-            tokens_concept_windows(
-                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
-            )
+    win_iter = ([filename, i, window] for filename, tokens in corpus for i, window in enumerate(
+        tokens_concept_windows(
+            tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
         )
-    )
+    ))
     return win_iter
 
 
@@ -218,11 +215,11 @@ def compute_and_store(
         partition_keys=partition_keys,
     )
 
-    store(target_filename, coo_df)
+    _store_co_occurrences(target_filename, coo_df)
 
 
-def store(filename: str, df: pd.DataFrame):
-    """Store file to disk"""
+def _store_co_occurrences(filename: str, df: pd.DataFrame):
+    """Store co-occurrence result data to CSV-file"""
 
     if filename.endswith('zip'):
         archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
@@ -232,8 +229,9 @@ def store(filename: str, df: pd.DataFrame):
 
     df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
 
-def load(filename: str) -> pd.DataFrame:
-    """Store file from disk"""
+
+def load_co_occurrences(filename: str) -> pd.DataFrame:
+    """Load co-occurrences from CSV-file"""
     if filename.endswith('zip'):
         archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
         compression = dict(method='zip', archive_name=archive_name)
@@ -242,3 +240,13 @@ def load(filename: str) -> pd.DataFrame:
     df = pd.read_csv(filename, sep='\t', header=0, compression=compression, decimal=',')
 
     return df
+
+
+def to_vectorized_corpus(source: Union[pd.DataFrame, str]) -> VectorizedCorpus:
+
+    assert isinstance(source, (
+        str,
+        pd.DataFrame,
+    ))
+
+    return None

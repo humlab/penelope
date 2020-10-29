@@ -4,7 +4,7 @@ from typing import Any, List, Tuple
 
 import click
 
-import penelope.co_occurrence as co_occurrence
+import penelope.co_occurrence.concept_co_occurrence as concept_co_occurrence
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.utility import replace_extension
 
@@ -55,6 +55,7 @@ from penelope.utility import replace_extension
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
 @click.option('-f', '--filename-field', default=None, help='Fields to extract from document name', multiple=True)
+@click.option('-v', '--store-vectorized', default=True, is_flag=True, help='Stores token-pairs as vectorized corpus', multiple=True)
 def main(
     input_filename: str,
     output_filename: str,
@@ -74,6 +75,7 @@ def main(
     only_alphabetic: bool,
     only_any_alphanumeric: bool,
     filename_field: Any,
+    store_vectorized: bool
 ):
 
     cli_concept_co_occurrence(
@@ -95,6 +97,7 @@ def main(
         only_alphabetic=only_alphabetic,
         only_any_alphanumeric=only_any_alphanumeric,
         filename_field=filename_field,
+        store_vectorized=store_vectorized
     )
 
 
@@ -118,6 +121,7 @@ def cli_concept_co_occurrence(
     only_alphabetic: bool = False,
     only_any_alphanumeric: bool = False,
     filename_field: Any = None,
+    store_vectorized: bool=False
 ):
 
     if len(concept or []) == 0:
@@ -165,7 +169,7 @@ def cli_concept_co_occurrence(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    co_occurrence.compute_and_store(
+    concept_co_occurrence.compute_and_store(
         corpus=corpus,
         concepts=concept,
         no_concept=no_concept,
@@ -174,6 +178,10 @@ def cli_concept_co_occurrence(
         partition_keys=partition_keys,
         target_filename=output_filename,
     )
+
+    if store_vectorized:
+        _ = concept_co_occurrence.to_vectorized_corpus(source_name=output_filename)
+
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         store_options = {
             'input': input_filename,

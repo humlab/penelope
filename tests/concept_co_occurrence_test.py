@@ -6,10 +6,10 @@ import pytest
 from penelope.co_occurrence import (
     partitioned_corpus_concept_co_occurrence,
 )
-from penelope.co_occurrence.windows_co_occurrence import corpus_concept_co_occurrence
+from penelope.co_occurrence.concept_co_occurrence import corpus_concept_co_occurrence
 from penelope.corpus import SparvTokenizedCsvCorpus
 from penelope.scripts.concept_co_occurrence import cli_concept_co_occurrence
-from penelope.utility import dataframe_to_tuples, strip_path_and_extension
+from penelope.utility import dataframe_to_tuples
 
 from .utils import TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
 
@@ -155,6 +155,8 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     assert os.path.isfile(output_filename)
 
 
-# def test():
-# " strip_path_and_extension"
-#     vectorized_tag = strip_path_and_extension(output_filename)
+def test_load_co_occurrences_data():
+    pass
+
+def test_vectorize_co_occurrences_data():
+    pass

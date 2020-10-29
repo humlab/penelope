@@ -8,7 +8,7 @@ from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 
 from penelope.utility.utils import flatten
-from tests.cooccurrence_test import very_simple_corpus
+from .utils import very_simple_corpus
 
 
 def PPMI(C: scipy.sparse.csc_matrix) -> scipy.sparse.csc_matrix:

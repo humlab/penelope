@@ -1,6 +1,7 @@
 import typing
 
 import nltk
+from nltk.tokenize import casual_tokenize, sent_tokenize, word_tokenize
 
 from .extra_stopwords import EXTRA_STOPWORDS, EXTRA_SWEDISH_STOPWORDS
 
@@ -14,7 +15,6 @@ stopwords = nltk.corpus.stopwords
 
 
 def extended_stopwords(language: str = 'swedish', extra_stopwords: typing.Set[str] = None) -> typing.Set[str]:
+    """Returns NLTK stopwords for given lanuage extended with specified extra stopwords"""
     extra_stopwords = extra_stopwords or EXTRA_SWEDISH_STOPWORDS
-    return (set(stopwords.words(language)).union(set(extra_stopwords or [])))
-
-from nltk.tokenize import word_tokenize, sent_tokenize, casual_tokenize
+    return set(stopwords.words(language)).union(set(extra_stopwords or []))
