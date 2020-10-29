@@ -215,10 +215,10 @@ def compute_and_store(
         partition_keys=partition_keys,
     )
 
-    _store_co_occurrences(target_filename, coo_df)
+    store_co_occurrences(target_filename, coo_df)
 
 
-def _store_co_occurrences(filename: str, df: pd.DataFrame):
+def store_co_occurrences(filename: str, df: pd.DataFrame):
     """Store co-occurrence result data to CSV-file"""
 
     if filename.endswith('zip'):
@@ -232,12 +232,12 @@ def _store_co_occurrences(filename: str, df: pd.DataFrame):
 
 def load_co_occurrences(filename: str) -> pd.DataFrame:
     """Load co-occurrences from CSV-file"""
-    if filename.endswith('zip'):
-        archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
-        compression = dict(method='zip', archive_name=archive_name)
-    else:
-        compression = 'infer'
-    df = pd.read_csv(filename, sep='\t', header=0, compression=compression, decimal=',')
+    # if filename.endswith('zip'):
+    #     archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
+    #     compression = dict(method='zip', archive_name=archive_name)
+    # else:
+    #     compression = 'infer'
+    df = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
 
     return df
 
