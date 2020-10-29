@@ -105,6 +105,7 @@ update:
 	@poetry update
 
 install_graphtool:
+	@echo "source code repository: https://git.skewed.de/count0/graph-tool"
 	@sudo echo "deb [ arch=amd64 ] https://downloads.skewed.de/apt buster main" >> /etc/apt/sources.list
 	@sudo apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25
 	@sudo apt update && apt install python3-graph-tool
