@@ -1,5 +1,5 @@
 {
-    "python.formatting.provider": "yapf",
+    "python.formatting.provider": "black",
     "python.linting.pylintEnabled": true,
     "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-text-utils-_WPoS554-py3.8/bin/python",
     "python.testing.pytestArgs": [
