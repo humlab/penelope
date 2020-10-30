@@ -2,12 +2,12 @@ import zipfile
 
 import pandas as pd
 
-import penelope.utility as utility
+from penelope.utility import getLogger, path_add_sequence
 
-logger = utility.getLogger("")
+logger = getLogger("")
 
 
-# TODO: Check for duplicate store elsewhere
+# TODO: Check for duplicate store elsewhere, e.g. file_utility.store_to_archive
 def store_tokenized_corpus_as_archive(tokenized_docs, target_filename):
     """Stores a tokenized (string) corpus to a zip archive
 
@@ -33,7 +33,7 @@ def store_tokenized_corpus_as_archive(tokenized_docs, target_filename):
         for document_id, document_name, chunk_index, tokens in tokenized_docs:
 
             text = ' '.join([t.replace(' ', '_') for t in tokens])
-            store_name = utility.path_add_sequence(document_name, chunk_index, 4)
+            store_name = path_add_sequence(document_name, chunk_index, 4)
 
             zf.writestr(store_name, text, zipfile.ZIP_DEFLATED)
 

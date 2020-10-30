@@ -4,7 +4,7 @@ import uuid
 import pytest  # pylint: disable=unused-import
 
 import penelope.corpus.sparv_corpus as sparv_corpus
-import penelope.utility.file_utility as file_utility
+from penelope.utility import read_from_archive
 
 from .utils import OUTPUT_FOLDER
 
@@ -37,7 +37,7 @@ def test_reader_store_result():
 
     for i in range(0, len(expected_names)):
 
-        content = file_utility.read(target_filename, expected_names[i], as_binary=False)
+        content = read_from_archive(target_filename, expected_names[i], as_binary=False)
 
         assert ' '.join(expected_documents[i]) == content
 
@@ -80,7 +80,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     test_filename = "sou_1945_1.txt"
 
-    content = file_utility.read(target_filename, test_filename, as_binary=False)
+    content = read_from_archive(target_filename, test_filename, as_binary=False)
 
     assert content.startswith(expected_document_start)
 

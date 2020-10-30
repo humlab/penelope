@@ -2,8 +2,8 @@
 import logging
 from typing import Callable, List, Sequence, Union
 
-import penelope.utility.file_utility as file_utility
 from penelope.corpus.readers import ICorpusReader
+from penelope.utility import IndexOfSplitOrCallableOrRegExp, create_iterator, extract_filenames_fields, list_filenames
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -17,7 +17,7 @@ class ZipTextIterator(ICorpusReader):
         *,
         filename_pattern: str = "*.txt",
         filename_filter: Union[List[str], Callable] = None,
-        filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
+        filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
         as_binary: bool = False,
     ):
         """Iterates a text corpus stored as textfiles in a zip archive
@@ -35,7 +35,7 @@ class ZipTextIterator(ICorpusReader):
             If true then files are opened as `rb` and no decoding, by default False
         """
         self.source_path = source_path
-        self._filenames = file_utility.list_filenames(
+        self._filenames = list_filenames(
             source_path, filename_pattern=filename_pattern, filename_filter=filename_filter
         )
         self.filename_fields = filename_fields
@@ -44,10 +44,10 @@ class ZipTextIterator(ICorpusReader):
         self.iterator = None
 
     def _create_metadata(self):
-        return file_utility.extract_filenames_fields(filenames=self.filenames, filename_fields=self.filename_fields)
+        return extract_filenames_fields(filenames=self.filenames, filename_fields=self.filename_fields)
 
     def _create_iterator(self):
-        return file_utility.create_iterator(self.source_path, filenames=self.filenames, as_binary=self.as_binary)
+        return create_iterator(self.source_path, filenames=self.filenames, as_binary=self.as_binary)
 
     @property
     def filenames(self):
