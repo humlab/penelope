@@ -1,13 +1,10 @@
-import os
 from typing import Any, Dict, List, Sequence, Tuple
 
 import pandas as pd
 
-from penelope.corpus.readers.text_tokenizer import strip_path_and_add_counter
-from penelope.utility import IndexOfSplitOrCallableOrRegExp, extract_filenames_fields
-from penelope.utility.file_utility import strip_paths
+from penelope.utility import IndexOfSplitOrCallableOrRegExp, extract_filenames_fields, strip_paths
 
-from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
+from .interfaces import ICorpusReader
 
 
 class InMemoryReader(ICorpusReader):
@@ -23,7 +20,7 @@ class InMemoryReader(ICorpusReader):
 
         self._all_filenames = [x[0] for x in self.data]
         self._all_metadata = self._create_all_metadata()
-        self._documents: pd.DataFrame = pd.DataFrame(self._metadata)
+        self._documents: pd.DataFrame = pd.DataFrame(self._all_metadata)
 
     def _create_iterator(self):
         _filenames = self._get_filenames()
@@ -56,7 +53,11 @@ class InMemoryReader(ICorpusReader):
 
     @property
     def documents(self) -> pd.DataFrame:
-        return self._documents
+
+        if self._filename_filter is None:
+            return self._documents
+
+        return self._documents[self._documents.filename.isin(self._filename_filter)]
 
     def apply_filter(self, filename_filter: List[str]):
         self._filename_filter = filename_filter
