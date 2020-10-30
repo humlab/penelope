@@ -141,7 +141,7 @@ def list_filenames(
     ]
 
 
-def store(archive_name: str, stream: Iterable[Tuple[str, Iterable[str]]]):
+def store_to_archive(archive_name: str, stream: Iterable[Tuple[str, Iterable[str]]]):
     """Stores stream of text [(name, tokens), (name, tokens), ..., (name, tokens)] as text files in a new zip-file
 
     Parameters
@@ -159,7 +159,7 @@ def store(archive_name: str, stream: Iterable[Tuple[str, Iterable[str]]]):
             out.writestr(filename, data, compresslevel=zipfile.ZIP_DEFLATED)
 
 
-def read(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=False) -> str:
+def read_from_archive(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=False) -> str:
     """Returns content in file `filename` that exists in folder or zip `folder_or_zip`
 
     Parameters

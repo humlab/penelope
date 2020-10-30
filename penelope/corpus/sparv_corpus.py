@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-import penelope.corpus.readers as readers
-import penelope.corpus.tokenized_corpus as tokenized_corpus
-import penelope.utility.file_utility as file_utility
 from penelope.corpus.tokens_transformer import transformer_defaults_filter
+from penelope.utility import store_to_archive
+
+from . import readers
+from .tokenized_corpus import TokenizedCorpus
 
 
-class SparvTokenizedXmlCorpus(tokenized_corpus.TokenizedCorpus):
+class SparvTokenizedXmlCorpus(TokenizedCorpus):
     def __init__(
         self,
         source,
@@ -78,7 +79,7 @@ class SparvTokenizedXmlCorpus(tokenized_corpus.TokenizedCorpus):
         super().__init__(tokenizer, **transformer_defaults_filter(tokens_transform_opts))
 
 
-class SparvTokenizedCsvCorpus(tokenized_corpus.TokenizedCorpus):
+class SparvTokenizedCsvCorpus(TokenizedCorpus):
     """A tokenized Corpus for Sparv CSV files
 
     Parameters
@@ -176,7 +177,7 @@ def sparv_xml_extract_and_store(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    file_utility.store(target, corpus)
+    store_to_archive(target, corpus)
 
 
 def sparv_csv_extract_and_store(
@@ -240,4 +241,4 @@ def sparv_csv_extract_and_store(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    file_utility.store(target, corpus)
+    store_to_archive(target, corpus)
