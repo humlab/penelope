@@ -1,17 +1,19 @@
 import os
-from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
 import pytest
 
-from penelope.co_occurrence import (
-    partitioned_corpus_concept_co_occurrence,
+from penelope.co_occurrence import partitioned_corpus_concept_co_occurrence
+from penelope.co_occurrence.concept_co_occurrence import (
+    corpus_concept_co_occurrence,
+    load_co_occurrences,
+    store_co_occurrences, to_vectorized_corpus,
 )
-from penelope.co_occurrence.concept_co_occurrence import corpus_concept_co_occurrence
 from penelope.corpus import SparvTokenizedCsvCorpus
 from penelope.scripts.concept_co_occurrence import cli_concept_co_occurrence
-from penelope.utility import dataframe_to_tuples
+from penelope.utility import dataframe_to_tuples, pretty_print_matrix
+from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
-from .utils import TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
+from .utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
 
 jj = os.path.join
 
@@ -155,8 +157,69 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     assert os.path.isfile(output_filename)
 
 
-def test_load_co_occurrences_data():
-    pass
+@pytest.mark.parametrize('filename', ['concept_co_occurrences_data.csv', 'concept_co_occurrences_data.zip'])
+def test_store_when_co_occurrences_data_is_not_partitioned(filename):
+
+    expected_filename = jj(OUTPUT_FOLDER, filename)
+    corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
+    coo_df = corpus_concept_co_occurrence(
+        corpus, concepts={'g'}, no_concept=False, n_count_threshold=1, n_context_width=2
+    )
+
+    store_co_occurrences(expected_filename, coo_df)
+
+    assert os.path.isfile(expected_filename)
+
+    os.remove(expected_filename)
+
+
+@pytest.mark.parametrize('filename', ['concept_co_occurrences_data.csv', 'concept_co_occurrences_data.zip'])
+def test_load_when_co_occurrences_data_is_not_partitioned(filename):
+
+    filename = jj(TEST_DATA_FOLDER, filename)
+
+    df = load_co_occurrences(filename)
+
+    assert df is not None
+    assert 13 == len(df)
+    assert 18 == df.value.sum()
+    assert 3 == int(df[(df.w1 == 'g') & (df.w2 == 'a')]['value'])
+    assert (['w1', 'w2', 'value', 'value_n_d', 'value_n_t'] == df.columns).all()
+
+
+@pytest.mark.parametrize(
+    'filename', ['partitioned_concept_co_occurrences_data.csv', 'partitioned_concept_co_occurrences_data.zip']
+)
+def test_store_when_co_occurrences_data_is_partitioned(filename):
+
+    expected_filename = jj(OUTPUT_FOLDER, filename)
+    corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
+    coo_df = partitioned_corpus_concept_co_occurrence(
+        corpus, concepts={'g'}, no_concept=False, n_count_threshold=1, n_context_width=2, partition_keys='year'
+    )
+
+    store_co_occurrences(expected_filename, coo_df)
+
+    assert os.path.isfile(expected_filename)
+
+    os.remove(expected_filename)
+
 
 def test_vectorize_co_occurrences_data():
-    pass
+
+    value_column = 'value_n_t'
+    filename = jj(TEST_DATA_FOLDER, 'partitioned_concept_co_occurrences_data.zip')
+
+    co_occurrences = load_co_occurrences(filename)
+
+    v_corpus = to_vectorized_corpus(co_occurrences, value_column)
+
+    pretty_print_matrix(
+        v_corpus.data.todense(),
+        row_labels=[str(i) for i in v_corpus.documents.year],
+        column_labels=v_corpus.vocabulary,
+        dtype=float,
+        float_fmt="{0:.04f}",
+    )
+
+    assert v_corpus is not None
