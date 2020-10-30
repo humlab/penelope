@@ -7,7 +7,7 @@ import scipy.sparse as sp
 from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 
-from penelope.utility.utils import flatten
+from penelope.utility import flatten, pretty_print_matrix
 
 from .utils import very_simple_corpus
 
@@ -41,23 +41,6 @@ def PPMI(C: scipy.sparse.csc_matrix) -> scipy.sparse.csc_matrix:
     ret = scipy.sparse.csc_matrix((ppmi, (ii, jj)), shape=C.shape, dtype=np.float64)
     ret.eliminate_zeros()  # remove zeros
     return ret
-
-
-def pretty_print_matrix(M, rows=None, cols=None, dtype=float, float_fmt="{0:.04f}"):
-    """Pretty-print a matrix using Pandas.
-
-    Args:
-      M : 2D numpy array
-      rows : list of row labels
-      cols : list of column labels
-      dtype : data type (float or int)
-      float_fmt : format specifier for floats
-    """
-    df = pd.DataFrame(M, index=rows, columns=cols, dtype=dtype)
-    old_fmt_fn = pd.get_option('float_format')
-    pd.set_option('float_format', float_fmt.format)
-    print(df)
-    pd.set_option('float_format', old_fmt_fn)  # reset Pandas formatting
 
 
 def co_occurrence_matrix(token_ids: Iterator[int], V: int, K: int = 2) -> scipy.sparse.spmatrix:
@@ -115,7 +98,7 @@ def test_original():
     toy_C = co_occurrence_matrix(toy_token_ids, V=V, K=1)
 
     ordered_vocab = [id_to_word[i] for i in range(0, len(vocab))]
-    pretty_print_matrix(toy_C.toarray(), rows=ordered_vocab, cols=ordered_vocab, dtype=int)
+    pretty_print_matrix(toy_C.toarray(), row_labels=ordered_vocab, column_labels=ordered_vocab, dtype=int)
 
 
 def test_this_co_occurrence():
