@@ -79,7 +79,7 @@ class VectorizedCorpus:
 
     @property
     def vocabulary(self):
-        vocab = [ self.id2token[i] for i in range(0, self.data.shape[1])]
+        vocab = [self.id2token[i] for i in range(0, self.data.shape[1])]
         return vocab
 
     @property
@@ -761,6 +761,8 @@ def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=1
         )
 
     if v_corpus is None:
-        v_corpus = VectorizedCorpus.load(tag=year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
+        v_corpus = (
+            VectorizedCorpus.load(tag=year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
+        )
 
     return v_corpus

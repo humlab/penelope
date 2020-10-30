@@ -1,6 +1,5 @@
 import json
 import os
-from penelope.network import utility
 import sys
 from typing import Any, List, Tuple
 
@@ -8,6 +7,7 @@ import click
 
 import penelope.co_occurrence.concept_co_occurrence as concept_co_occurrence
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+from penelope.network import utility
 from penelope.utility import replace_extension
 
 # pylint: disable=too-many-arguments

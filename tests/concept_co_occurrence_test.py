@@ -6,7 +6,8 @@ from penelope.co_occurrence import partitioned_corpus_concept_co_occurrence
 from penelope.co_occurrence.concept_co_occurrence import (
     corpus_concept_co_occurrence,
     load_co_occurrences,
-    store_co_occurrences, to_vectorized_corpus,
+    store_co_occurrences,
+    to_vectorized_corpus,
 )
 from penelope.corpus import SparvTokenizedCsvCorpus
 from penelope.scripts.concept_co_occurrence import cli_concept_co_occurrence
