@@ -6,8 +6,8 @@ from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 import pandas as pd
 
 from penelope import utility
-from penelope.corpus.corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
 
+from .corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
 from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer

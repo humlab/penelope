@@ -2,8 +2,9 @@ import zipfile
 
 from tqdm.auto import tqdm
 
-from penelope.corpus.text_transformer import TextTransformer
-from penelope.utility.file_utility import create_iterator
+from penelope.utility import create_iterator
+
+from .text_transformer import TextTransformer
 
 
 def preprocess_text_corpus(source_filename: str, target_filename: str, filename_pattern: str = '*.txt', _tqdm=tqdm):

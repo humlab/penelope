@@ -9,8 +9,8 @@ from penelope.utility import (
     filename_satisfied_by,
     list_filenames,
     strip_path_and_extension,
+    strip_paths,
 )
-from penelope.utility.file_utility import strip_paths
 from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader

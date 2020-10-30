@@ -5,7 +5,9 @@ from typing import Callable, Iterable, Mapping, Tuple, Union
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 
-from . import readers, tokenized_corpus, vectorized_corpus
+from .readers import TextTokenizer
+from .tokenized_corpus import TokenizedCorpus
+from .vectorized_corpus import VectorizedCorpus
 
 logger = logging.getLogger("corpus_vectorizer")
 
@@ -37,7 +39,7 @@ class CorpusVectorizer:
 
     def fit_transform(
         self,
-        corpus: Union[tokenized_corpus.TokenizedCorpus, DocumentTermsStream],
+        corpus: Union[TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
         documents: pd.DataFrame = None,
@@ -46,7 +48,7 @@ class CorpusVectorizer:
         stop_words: str = None,
         max_df: float = 1.0,
         min_df: int = 1,
-    ) -> vectorized_corpus.VectorizedCorpus:
+    ) -> VectorizedCorpus:
         """Returns a vectorized corpus from of `corpus`
 
         Note:
@@ -106,7 +108,7 @@ class CorpusVectorizer:
 
         # ignored_words = self.vectorizer.stop_words_
 
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, documents)
+        v_corpus = VectorizedCorpus(bag_term_matrix, token2id, documents)
 
         return v_corpus
 
@@ -132,14 +134,14 @@ def generate_corpus(filename: str, output_folder: str, **kwargs):
         '-S' if kwargs.get('keep_symbols', False) else '+S',
     )
 
-    if vectorized_corpus.VectorizedCorpus.dump_exists(dump_tag):
+    if VectorizedCorpus.dump_exists(dump_tag):
         logger.info('removing existing result files...')
         os.remove(os.path.join(output_folder, '{}_vector_data.npy'.format(dump_tag)))
         os.remove(os.path.join(output_folder, '{}_vectorizer_data.pickle'.format(dump_tag)))
 
     logger.info('Creating new corpus...')
 
-    reader = readers.TextTokenizer(
+    reader = TextTokenizer(
         source=None,
         filename_pattern=kwargs.get("pattern", "*.txt"),
         tokenize=None,
@@ -148,7 +150,7 @@ def generate_corpus(filename: str, output_folder: str, **kwargs):
         fix_hyphenation=True,
         filename_fields=kwargs.get("filename_fields"),
     )
-    corpus = tokenized_corpus.TokenizedCorpus(reader, **kwargs)
+    corpus = TokenizedCorpus(reader, **kwargs)
 
     logger.info('Creating document-term matrix...')
     vectorizer = CorpusVectorizer()
