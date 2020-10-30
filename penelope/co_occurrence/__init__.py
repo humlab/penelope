@@ -1,11 +1,11 @@
 from .compute_hal_or_glove import compute
 from .concept_co_occurrence import (
-    compute_and_store,
     corpus_concept_windows,
     load_co_occurrences,
     partitioned_corpus_concept_co_occurrence,
     store_co_occurrences,
     tokens_concept_windows,
+    to_vectorized_corpus
 )
 
 # from .compute_partitioned import (compute_for_column_group, load_text_windows,
