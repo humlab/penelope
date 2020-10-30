@@ -731,7 +731,7 @@ def load_corpus(
     VectorizedCorpus
         The loaded corpus
     """
-    v_corpus = VectorizedCorpus.load(tag, folder=folder).group_by_year()
+    v_corpus = VectorizedCorpus.load(tag=tag, folder=folder).group_by_year()
 
     if n_count is not None:
         v_corpus = v_corpus.slice_by_n_count(n_count)

@@ -75,10 +75,10 @@ class Test_VectorizedCorpus(unittest.TestCase):
         corpus = self.create_corpus()
         dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
 
-        dumped_v_corpus.dump('dump_test', folder=OUTPUT_FOLDER, compressed=False)
+        dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
 
         # Act
-        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load('dump_test', folder=OUTPUT_FOLDER)
+        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
@@ -92,10 +92,10 @@ class Test_VectorizedCorpus(unittest.TestCase):
         corpus = self.create_corpus()
         dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
 
-        dumped_v_corpus.dump('dump_test', folder=OUTPUT_FOLDER, compressed=True)
+        dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=True)
 
         # Act
-        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load('dump_test', folder=OUTPUT_FOLDER)
+        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
