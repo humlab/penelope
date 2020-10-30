@@ -1,8 +1,9 @@
 import collections
 import itertools
-from typing import Iterable, List, Set, Union
+from typing import Iterable, List, Set
 
 import pandas as pd
+import scipy
 from tqdm.auto import tqdm
 
 from penelope.corpus import VectorizedCorpus
@@ -192,36 +193,6 @@ def partitioned_corpus_concept_co_occurrence(
     return df_total
 
 
-def compute_and_store(
-    corpus: ITokenizedCorpus,
-    concepts: List[str],
-    *,
-    no_concept: bool,
-    n_count_threshold: int,
-    n_context_width: int,
-    partition_keys: List[str],
-    target_filename: str,
-):
-    """Extracts and stores text documents from a Sparv corpus in CSV format
-
-    Parameters
-    ----------
-    corpus : ITokenizedCorpus
-        Corpus
-
-    """
-    coo_df = partitioned_corpus_concept_co_occurrence(
-        corpus,
-        concepts=concepts,
-        no_concept=no_concept,
-        n_count_threshold=n_count_threshold,
-        n_context_width=n_context_width,
-        partition_keys=partition_keys,
-    )
-
-    store_co_occurrences(target_filename, coo_df)
-
-
 def store_co_occurrences(filename: str, df: pd.DataFrame):
     """Store co-occurrence result data to CSV-file"""
 
@@ -246,14 +217,33 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
     return df
 
 
-def to_vectorized_corpus(source: Union[pd.DataFrame, str]) -> VectorizedCorpus:
+def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> VectorizedCorpus:
 
-    assert isinstance(
-        source,
-        (
-            str,
-            pd.DataFrame,
-        ),
+    # Create new tokens from the co-occurring pairs
+    tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
+
+    # Create a vocabulary
+    vocabulary = list(sorted([w for w in set(tokens)]))
+
+    # Create token2id mapping
+    token2id = {w: i for i, w in enumerate(vocabulary)}
+    year_min = co_occurrences.year.min()
+
+    df_yearly_weights = pd.DataFrame(
+        data={
+            'year_index': co_occurrences.year - year_min,
+            'token_id': tokens.apply(lambda x: token2id[x]),
+            'weight': co_occurrences[value_column],
+        }
     )
 
-    return None
+    coo_matrix = scipy.sparse.coo_matrix(
+        (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id))
+    )
+
+    years = list(range(co_occurrences.year.min(), co_occurrences.year.max() + 1))
+    documents = pd.DataFrame(data={'filename': [f'{y}.coo' for y in years], 'year': years})
+
+    v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, documents=documents)
+
+    return v_corpus

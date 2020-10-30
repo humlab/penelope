@@ -1,4 +1,6 @@
 import json
+import os
+from penelope.network import utility
 import sys
 from typing import Any, List, Tuple
 
@@ -176,18 +178,16 @@ def cli_concept_co_occurrence(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    concept_co_occurrence.compute_and_store(
-        corpus=corpus,
+    coo_df = concept_co_occurrence.partitioned_corpus_concept_co_occurrence(
+        corpus,
         concepts=concept,
         no_concept=no_concept,
         n_count_threshold=count_threshold,
         n_context_width=context_width,
-        partition_keys=partition_keys,
-        target_filename=output_filename,
+        partition_keys=partition_keys
     )
 
-    if store_vectorized:
-        v_corpus = concept_co_occurrence.to_vectorized_corpus(source_name=output_filename)
+    concept_co_occurrence.store_co_occurrences(output_filename, coo_df)
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         store_options = {
