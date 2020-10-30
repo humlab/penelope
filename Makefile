@@ -56,12 +56,16 @@ pytest:
 	@poetry run pytest --quiet tests
 
 pylint:
-	@poetry run pylint $(SOURCE_FOLDERS)
+	@time poetry run pylint $(SOURCE_FOLDERS)
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
 pylint2:
-	@-find $(SOURCE_FOLDERS) -type f -name "*.py" | grep -v .ipynb_checkpoints | xargs poetry run pylint --disable=W0511 | sort | uniq
+	@-find $(SOURCE_FOLDERS) -type f -name "*.py" | \
+		grep -v .ipynb_checkpoints | \
+			poetry run xargs -I @@ bash -c '{ echo "@@" ; pylint "@@" ; }'
+
+	# xargs poetry run pylint --disable=W0511 | sort | uniq
 
 flake8:
 	@poetry run flake8 --version
@@ -84,7 +88,7 @@ black: clean
 
 tidy: black isort
 
-ready: tools format tidy test flake8 pylint2
+ready: tools format tidy test flake8 pylint
 
 clean:
 	@rm -rf .pytest_cache build dist .eggs *.egg-info
