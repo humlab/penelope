@@ -18,8 +18,8 @@ version:
 	@echo $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
 
 tools:
-	@pip install --upgrade pip
-	@pip install poetry --upgrade
+	@pip install --upgrade pip --quiet
+	@pip install poetry --upgrade --quiet
 
 build: tools requirements.txt
 	@poetry build
