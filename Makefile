@@ -24,15 +24,16 @@ tools:
 build: tools requirements.txt
 	@poetry build
 
-release: guard_clean_working_repository build bump.patch tag
+release: guard_clean_working_repository tools bump.patch tag
 
-bump.patch:
+bump.patch: requirements.txt
 	@poetry run dephell project bump patch
-	@git add pyproject.toml
+	@git add pyproject.toml requirements.txt
 	@git commit -m "Bump version patch"
 	@git push
 
 tag:
+	@poetry build
 	@git push
 	@git tag $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g") -a
 	@git push origin --tags
