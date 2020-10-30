@@ -62,7 +62,7 @@ from penelope.utility import replace_extension
     '--store-vectorized',
     default=True,
     is_flag=True,
-    help='Stores token-pairs as vectorized corpus',
+    help='Stores co-occurrence token-pairs as a vectorized corpus normalized by yearly total token count',
     multiple=True,
 )
 def main(
@@ -184,10 +184,14 @@ def cli_concept_co_occurrence(
         no_concept=no_concept,
         n_count_threshold=count_threshold,
         n_context_width=context_width,
-        partition_keys=partition_keys
+        partition_keys=partition_keys,
     )
 
     concept_co_occurrence.store_co_occurrences(output_filename, coo_df)
+
+    if store_vectorized:
+        v_corpus = concept_co_occurrence.to_vectorized_corpus(co_occurrences=output_filename, value_column='value_n_t')
+        v_corpus.dump(tag=utility.strip_path_and_extension(output_filename), folder=os.path.split(output_filename)[0])
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         store_options = {
