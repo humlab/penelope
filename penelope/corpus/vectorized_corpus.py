@@ -78,6 +78,11 @@ class VectorizedCorpus:
         return self.id2token_
 
     @property
+    def vocabulary(self):
+        vocab = [ self.id2token[i] for i in range(0, self.data.shape[1])]
+        return vocab
+
+    @property
     def T(self) -> scipy.sparse.csr_matrix:
         """Returns transpose of BoW matrix """
         return self.bag_term_matrix.T
@@ -121,7 +126,7 @@ class VectorizedCorpus:
 
         return self
 
-    def dump(self, tag: str = None, folder: str = './output', compressed: bool = True) -> VectorizedCorpus:
+    def dump(self, *, tag: str, folder: str, compressed: bool = True) -> VectorizedCorpus:
         """Store corpus on disk.
 
         The file is stored as two files: one that contains the BoW matrix (.npy or .npz)
@@ -175,7 +180,7 @@ class VectorizedCorpus:
         return os.path.isfile(VectorizedCorpus._data_filename(tag, folder))
 
     @staticmethod
-    def load(tag: str, folder: str = './output') -> VectorizedCorpus:
+    def load(*, tag: str, folder: str) -> VectorizedCorpus:
         """Loads corpus with tag `tag` in folder `folder`
 
         Raises `FileNotFoundError` if any of the two files containing metadata and matrix doesn't exist.
@@ -696,6 +701,7 @@ class VectorizedCorpus:
 
 
 def load_corpus(
+    *,
     tag: str,
     folder: str,
     n_count: int = 10000,
@@ -748,13 +754,13 @@ def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=1
     if not VectorizedCorpus.dump_exists(year_cache_tag, folder=folder):
         logger.info("Caching corpus grouped by year...")
         v_corpus = (
-            VectorizedCorpus.load(tag, folder=folder)
+            VectorizedCorpus.load(tag=tag, folder=folder)
             .group_by_year()
             .normalize(axis=1, keep_magnitude=keep_magnitude)
-            .dump(year_cache_tag, folder)
+            .dump(tag=year_cache_tag, folder=folder)
         )
 
     if v_corpus is None:
-        v_corpus = VectorizedCorpus.load(year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
+        v_corpus = VectorizedCorpus.load(tag=year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
 
     return v_corpus
