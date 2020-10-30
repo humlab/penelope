@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 import functools
 import glob
@@ -12,11 +11,14 @@ import re
 import string
 import time
 import zipfile
-from typing import Any, List, Mapping, Tuple
+from numbers import Number
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple, TypeVar
 
 import gensim.utils
 import numpy as np
 import pandas as pd
+
+T = TypeVar('T')
 
 
 def setup_logger(
@@ -48,7 +50,7 @@ def setup_logger(
     return logger
 
 
-def getLogger(name='', level=logging.INFO):
+def getLogger(name: str = '', level=logging.INFO):
     logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=level)
     _logger = logging.getLogger(name)
     _logger.setLevel(level)
@@ -62,11 +64,11 @@ iter_windows = gensim.utils.iter_windows
 deprecated = gensim.utils.deprecated
 
 
-def remove_snake_case(snake_str):
+def remove_snake_case(snake_str: str) -> str:
     return ' '.join(x.title() for x in snake_str.split('_'))
 
 
-def noop(*args):  # pylint: disable=unused-argument
+def noop(*_):
     pass
 
 
@@ -78,7 +80,7 @@ def isint(s):
         return False
 
 
-def filter_dict(d, keys=None, filter_out=False):
+def filter_dict(d: Dict[str, Any], keys: Sequence[str] = None, filter_out: bool = False) -> Dict[str, Any]:
     keys = set(d.keys()) - set(keys or []) if filter_out else (keys or [])
     return {k: v for k, v in d.items() if k in keys}
 
@@ -134,24 +136,24 @@ def extend_single(target, source, name):
     return target
 
 
-def flatten(lofl):
+def flatten(lofl: List[List[T]]) -> List[T]:
     """Returns a flat single list out of supplied list of lists."""
 
     return [item for sublist in lofl for item in sublist]
 
 
-def project_series_to_range(series, low, high):
+def project_series_to_range(series: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
     """Project a sequence of elements to a range defined by (low, high)"""
     norm_series = series / series.max()
     return norm_series.apply(lambda x: low + (high - low) * x)
 
 
-def project_to_range(value, low, high):
+def project_to_range(value: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
     """Project a singlevalue to a range (low, high)"""
     return low + (high - low) * value
 
 
-def clamp_values(values, low_high):
+def clamp_values(values: Sequence[Number], low_high: Tuple[Number, Number]) -> Sequence[Number]:
     """Clamps value to supplied interval."""
     mw = max(values)
     return [project_to_range(w / mw, low_high[0], low_high[1]) for w in values]
@@ -388,29 +390,6 @@ def chunks(lst, n):
         yield lst[i : i + n]
 
 
-# def get_document_id_by_field_filters(documents, filters):
-#     df = documents
-#     for k, v in filters:
-#         if len(v or []) > 0:
-#             df = df[df[k].isin(v)]
-#     return list(df.index)
-
-# def get_documents_by_field_filters(corpus, documents, filters):
-#     ids = get_document_id_by_field_filters(documents, filters)
-#     docs = ( x for x in corpus if x._.meta['document_id'] in ids)
-#     return docs
-
-# def get_tagset(data_folder, filename='tagset.csv'):
-#     filepath = os.path.join(data_folder, filename)
-#     if os.path.isfile(filepath):
-#         return pd.read_csv(filepath, sep='\t').fillna('')
-#     return None
-
-# def pos_tags(data_folder, filename='tagset.csv'):
-#     df_tagset = pd.read_csv(os.path.join(data_folder, filename), sep='\t').fillna('')
-#     return df_tagset.groupby(['POS'])['DESCRIPTION'].apply(list).apply(lambda x: ', '.join(x[:1])).to_dict()
-
-
 def dataframe_to_tuples(df: pd.DataFrame, columns: List[str] = None) -> List[Tuple]:
     """Returns rows in dataframe as tuples"""
     if columns is not None:
@@ -419,64 +398,56 @@ def dataframe_to_tuples(df: pd.DataFrame, columns: List[str] = None) -> List[Tup
     return tuples
 
 
-def nth(iterable, n: int, default=None):
+def nth(iterable: Iterable[T], n: int, default: T = None) -> T:
     "Returns the nth item or a default value"
     return next(itertools.islice(iterable, n, None), default)
 
 
-def read_json(path):
+def read_json(path: str) -> Any:
     with open(path) as fp:
         return json.load(fp)
 
 
-def now_timestamp():
+def now_timestamp() -> str:
     return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 
-def timestamp(format_string=None):
+def timestamp(format_string: str = None) -> str:
     """ Add timestamp to string that must contain exacly one placeholder """
     tz = now_timestamp()
     return tz if format_string is None else format_string.format(tz)
 
 
-def suffix_filename(filename, suffix):
+def suffix_filename(filename: str, suffix: str) -> str:
     output_path, output_file = os.path.split(filename)
     output_base, output_ext = os.path.splitext(output_file)
     suffixed_filename = os.path.join(output_path, f"{output_base}_{suffix}{output_ext}")
     return suffixed_filename
 
 
-def replace_extension(filename, extension):
+def replace_extension(filename: str, extension: str) -> str:
     if filename.endswith(extension):
         return filename
     base, _ = os.path.splitext(filename)
     return f"{base}{'' if extension.startswith('.') else '.'}{extension}"
 
 
-def timestamp_filename(filename):
+def timestamp_filename(filename: str) -> str:
     return suffix_filename(filename, now_timestamp())
 
 
-def project_values_to_range(values, low, high):
+def project_values_to_range(values: List[Number], low: Number, high: Number) -> List[Number]:
     w_max = max(values)
     return [low + (high - low) * (x / w_max) for x in values]
 
 
-# HYPHEN_REGEXP = re.compile(r'\b(\w+)-\s*\r?\n\s*(\w+)\b', re.UNICODE)
-
-# def fix_hyphenation(text: str) -> str:
-#     result = re.sub(HYPHEN_REGEXP, r"\1\2\n", text)
-#     return result
-
-# def fix_whitespaces(text: str) -> str:
-#     result = re.sub(r'\s+', ' ', text).strip()
-#     return result
-
-
-def pretty_print_matrix(M, rows=None, cols=None, dtype=float, float_fmt="{0:.04f}"):
+def pretty_print_matrix(
+    M, row_labels: List[str], column_labels: List[str], dtype: type = np.float64, float_fmt: str = "{0:.04f}"
+):
     """Pretty-print a matrix using Pandas."""
-    df = pd.DataFrame(M, index=rows, columns=cols, dtype=dtype)
-    old_fmt_fn = pd.get_option('float_format')
-    pd.set_option('float_format', float_fmt.format)
-    print(df)
-    pd.set_option('float_format', old_fmt_fn)  # reset Pandas formatting
+    df = pd.DataFrame(M, index=row_labels, columns=column_labels, dtype=dtype)
+    if issubclass(np.float64, np.floating):
+        with pd.option_context('float_format', float_fmt.format):
+            print(df)
+    else:
+        print(df)
