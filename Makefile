@@ -24,7 +24,7 @@ tools:
 build: tools requirements.txt
 	@poetry build
 
-release: guard_clean_working_repository bump.patch tag
+release: guard_clean_working_repository build bump.patch tag
 
 bump.patch:
 	@poetry run dephell project bump patch
