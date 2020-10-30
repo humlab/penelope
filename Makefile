@@ -113,8 +113,7 @@ spacy_data:
 gh:
 	@sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
 	@sudo apt-add-repository https://cli.github.com/packages
-	@sudo apt update
-	@sudo apt install gh
+	@sudo apt update && sudo apt install gh
 
 update:
 	@poetry update
@@ -128,5 +127,9 @@ install_graphtool:
 requirements.txt: poetry.lock
 	@poetry export -f requirements.txt --output requirements.txt
 
+check-gh: gh-exists
+gh-exists: ; @which gh > /dev/null
+
+.PHONY: check gh-exists
 .PHONY: init lint release flake8 pylint pytest pylint2 ready format yapf black clean test test-coverage \
 	update install_graphtool gh build isort tidy tag tools bump.patch penelope_data nltk_data
