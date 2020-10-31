@@ -2,9 +2,10 @@ import types
 from typing import Iterable, List, Sequence
 
 import ipywidgets
-import penelope.plot.distribution_plot as plotter
 from bokeh.plotting import show
 from IPython.display import display
+
+import penelope.plot.distribution_plot as plotter
 from penelope.corpus import VectorizedCorpus
 
 
@@ -41,9 +42,7 @@ def display_gui(x_corpus: VectorizedCorpus, tokens: Iterable[str], n_columns: in
             button_style="Success",
             layout=ipywidgets.Layout(width="40px", color="green"),
         ),
-        split=ipywidgets.ToggleButton(
-            description="Split", layout=ipywidgets.Layout(width="80px", color="green")
-        ),
+        split=ipywidgets.ToggleButton(description="Split", layout=ipywidgets.Layout(width="80px", color="green")),
         output=ipywidgets.Output(layout=ipywidgets.Layout(width="99%")),
         wtokens=ipywidgets.SelectMultiple(options=tokens, value=[], rows=30),
     )
@@ -73,9 +72,7 @@ def display_gui(x_corpus: VectorizedCorpus, tokens: Iterable[str], n_columns: in
             current_index = max(current_index - gui.n_count.value, 0)
 
         if b.description == ">>":
-            current_index = min(
-                current_index + gui.n_count.value, len(tokens) - gui.n_count.value + 1
-            )
+            current_index = min(current_index + gui.n_count.value, len(tokens) - gui.n_count.value + 1)
 
         gui.wtokens.value = tokens[current_index : current_index + gui.n_count.value]
 

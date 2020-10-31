@@ -10,8 +10,8 @@ from penelope.co_occurrence.concept_co_occurrence import (
     to_vectorized_corpus,
 )
 from penelope.corpus import SparvTokenizedCsvCorpus
-from penelope.scripts.concept_co_occurrence import cli_concept_co_occurrence
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
+from penelope.workflows import execute_workflow_concept_co_occurrence
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
 from .utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
@@ -75,7 +75,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         filename_field=["year:_:1"],
     )
 
-    cli_concept_co_occurrence(**options)
+    execute_workflow_concept_co_occurrence(**options)
 
     assert os.path.isfile(output_filename)
 
@@ -153,7 +153,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'filename_field': ('year:_:1',),
     }
 
-    cli_concept_co_occurrence(**options)
+    execute_workflow_concept_co_occurrence(**options)
 
     assert os.path.isfile(output_filename)
 

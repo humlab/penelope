@@ -108,5 +108,6 @@ def main(
         click.echo(ex)
         sys.exit(1)
 
+
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter

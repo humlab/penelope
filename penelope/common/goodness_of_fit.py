@@ -1,7 +1,6 @@
 import collections
 import math
 from typing import Dict
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 import bokeh
 import numpy as np
@@ -9,6 +8,8 @@ import pandas as pd
 import scipy
 import statsmodels.api as sm
 from numpy.polynomial.polynomial import Polynomial as polyfit
+
+from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 
 def gof_by_l2_norm(matrix, axis=1, scale=True):
@@ -240,7 +241,6 @@ def plot_metrics(df_gof, bins=100):
 
 
 def plot_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str) -> Dict:
-
     def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
 
         min_year = x_corpus.documents.year.min()
