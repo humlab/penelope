@@ -1,5 +1,7 @@
 import collections
 import math
+from typing import Dict
+from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 import bokeh
 import numpy as np
@@ -237,11 +239,12 @@ def plot_metrics(df_gof, bins=100):
     bokeh.plotting.show(gp)
 
 
-def plot_slopes(x_corpus, most_deviating, metric):
-    def generate_slopes(x_corpus, most_deviating, metric):
+def plot_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str) -> Dict:
 
-        min_year = x_corpus.document_index.year.min()
-        max_year = x_corpus.document_index.year.max()
+    def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
+
+        min_year = x_corpus.documents.year.min()
+        max_year = x_corpus.documents.year.max()
         xs = np.arange(min_year, max_year + 1, 1)
         token_ids = [x_corpus.token2id[token] for token in most_deviating[metric + '_token']]
         data = collections.defaultdict(list)
