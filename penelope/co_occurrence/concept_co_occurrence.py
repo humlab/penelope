@@ -227,11 +227,12 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
 
     # Create token2id mapping
     token2id = {w: i for i, w in enumerate(vocabulary)}
-    year_min = co_occurrences.year.min()
+    years = list(sorted(co_occurrences.year.unique()))
+    year2index = {year: i for i, year in enumerate(years)}
 
     df_yearly_weights = pd.DataFrame(
         data={
-            'year_index': co_occurrences.year - year_min,
+            'year_index': co_occurrences.year.apply(lambda y: year2index[y]),
             'token_id': tokens.apply(lambda x: token2id[x]),
             'weight': co_occurrences[value_column],
         }
@@ -241,8 +242,9 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
         (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id))
     )
 
-    years = list(range(co_occurrences.year.min(), co_occurrences.year.max() + 1))
-    documents = pd.DataFrame(data={'filename': [f'{y}.coo' for y in years], 'year': years})
+    documents = pd.DataFrame(
+        data={'document_id': list(range(0, len(years))), 'filename': [f'{y}.coo' for y in years], 'year': years}
+    )
 
     v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, documents=documents)
 
