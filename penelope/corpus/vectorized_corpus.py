@@ -739,7 +739,7 @@ def load_corpus(
     if n_top is not None:
         v_corpus = v_corpus.slice_by_n_top(n_top)
 
-    if axis is not None:
+    if axis is not None and v_corpus.data.shape[1] > 0:
         v_corpus = v_corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
 
     return v_corpus
