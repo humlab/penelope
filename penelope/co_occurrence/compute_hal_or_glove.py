@@ -13,11 +13,11 @@ def compute(
     corpus,
     documents: pd.DataFrame,
     window_size: int,
-    distance_metric: int,   # 0, 1, 2
-    normalize: str='size',
-    method: str='HAL',
-    zero_diagonal: bool=True,
-    direction_sensitive: bool=False,
+    distance_metric: int,  # 0, 1, 2
+    normalize: str = 'size',
+    method: str = 'HAL',
+    zero_diagonal: bool = True,
+    direction_sensitive: bool = False,
 ):
 
     doc_terms = [[t.lower().strip('_') for t in terms if len(t) > 2] for terms in corpus.get_texts()]

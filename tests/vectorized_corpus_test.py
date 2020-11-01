@@ -177,9 +177,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         vec = CountVectorizer()
         bag_term_matrix = vec.fit_transform(corpus)
 
-        v_corpus = vectorized_corpus.VectorizedCorpus(
-            bag_term_matrix, token2id=vec.vocabulary_, documents=documents
-        )
+        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id=vec.vocabulary_, documents=documents)
 
         self.assertTrue(np.allclose(expected_bag_term_matrix, bag_term_matrix.todense()))
 
