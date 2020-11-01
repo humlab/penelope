@@ -103,14 +103,14 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
         }
 
     if algorithm == 'DTM':
-        # Note, mandatory: 'time_slice': textacy_utility.count_documents_in_index_by_pivot(document_index, year_column)
+        # Note, mandatory: 'time_slice': textacy_utility.count_documents_in_index_by_pivot(documents, year_column)
         return {
             'engine': gensim.models.LdaSeqModel,
             'options': {
                 'corpus': corpus,
                 'num_topics': kwargs.get('n_topics', 0),
                 'id2word': id2word,
-                # 'time_slice': textacy_utility.count_documents_in_index_by_pivot(document_index, year_column),
+                # 'time_slice': textacy_utility.count_documents_in_index_by_pivot(documents, year_column),
                 # 'initialize': 'gensim/own/ldamodel',
                 # 'lda_model': model # if initialize='gensim'
                 # 'lda_inference_max_iter': kwargs.get('max_iter', 0),

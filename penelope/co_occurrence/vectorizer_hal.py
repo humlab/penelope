@@ -57,7 +57,7 @@ class HyperspaceAnalogueToLanguageVectorizer:
             memory = memory[1:] + (x,)
             yield memory
 
-    def fit(self, corpus=None, size=2, distance_metric=0, zero_out_diag=False):
+    def fit(self, corpus=None, size: int=2, distance_metric: int=0, zero_out_diag: bool=False):
         '''Trains HAL for a document. Note that sentence borders (for now) are ignored'''
 
         if corpus is not None:

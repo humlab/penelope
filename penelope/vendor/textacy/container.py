@@ -15,7 +15,7 @@
 #         self.textacy_corpus = None
 #         self.nlp = None
 #         self.word_count_scores = None
-#         self.document_index = None
+#         self.documents = None
 #         self.word_count_scores = {}
 
 #     def get_word_count(self, normalize):

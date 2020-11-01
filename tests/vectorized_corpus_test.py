@@ -172,13 +172,13 @@ class Test_VectorizedCorpus(unittest.TestCase):
             ]
         )
 
-        document_index = pd.DataFrame({'year': [1, 1, 1, 2, 2]})
+        documents = pd.DataFrame({'year': [1, 1, 1, 2, 2]})
 
         vec = CountVectorizer()
         bag_term_matrix = vec.fit_transform(corpus)
 
         v_corpus = vectorized_corpus.VectorizedCorpus(
-            bag_term_matrix, token2id=vec.vocabulary_, documents=document_index
+            bag_term_matrix, token2id=vec.vocabulary_, documents=documents
         )
 
         self.assertTrue(np.allclose(expected_bag_term_matrix, bag_term_matrix.todense()))

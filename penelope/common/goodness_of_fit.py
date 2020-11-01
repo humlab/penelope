@@ -88,7 +88,7 @@ def fit_polynomial(ys, xs=None, deg=1):
 
 def fit_polynomial_ravel(Y, xs):
 
-    # xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
+    # xs = np.arange(x_corpus.documents.year.min(), x_corpus.documents.year.max() + 1, 1)
 
     # Layout columns as a single y-vector using ravel. Repeat x-vector for each column
     xsr = np.repeat(xs, Y.shape[1])

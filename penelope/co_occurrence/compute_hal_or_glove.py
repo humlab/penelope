@@ -11,13 +11,13 @@ logger = utility.getLogger('corpus_text_analysis')
 
 def compute(
     corpus,
-    document_index,
-    window_size,
-    distance_metric,
-    normalize='size',
-    method='HAL',
-    zero_diagonal=True,
-    direction_sensitive=False,
+    documents: pd.DataFrame,
+    window_size: int,
+    distance_metric: int,   # 0, 1, 2
+    normalize: str='size',
+    method: str='HAL',
+    zero_diagonal: bool=True,
+    direction_sensitive: bool=False,
 ):
 
     doc_terms = [[t.lower().strip('_') for t in terms if len(t) > 2] for terms in corpus.get_texts()]
@@ -25,12 +25,12 @@ def compute(
     common_token2id = gensim_utility.build_vocab(doc_terms)
 
     dfs = []
-    min_year, max_year = document_index.year.min(), document_index.year.max()
-    document_index['sequence_id'] = range(0, len(document_index))
+    min_year, max_year = documents.year.min(), documents.year.max()
+    documents['sequence_id'] = range(0, len(documents))
 
     for year in range(min_year, max_year + 1):
 
-        year_indexes = list(document_index.loc[document_index.year == year].sequence_id)
+        year_indexes = list(documents.loc[documents.year == year].documents)
 
         docs = [doc_terms[y] for y in year_indexes]
 

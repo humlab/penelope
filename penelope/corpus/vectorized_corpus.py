@@ -36,7 +36,7 @@ class VectorizedCorpus:
             The bag-of-word matrix
         token2id : dict(str, int)
             Token to token id translation i.e. translates token to column index
-        document_index : pd.DataFrame
+        documents : pd.DataFrame
             Corpus document metadata (bag-of-word row metadata)
         word_counts : dict(str,int), optional
             Total corpus word counts, by default None, computed if None
@@ -134,7 +134,7 @@ class VectorizedCorpus:
 
         The two files are stored in files with names based on the specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `word_counts`
+            {tag}_vectorizer_data.pickle         Metadata `token2id`, `documents` and `word_counts`
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
 
@@ -150,7 +150,7 @@ class VectorizedCorpus:
         """
         tag = tag or time.strftime("%Y%m%d_%H%M%S")
 
-        data = {'token2id': self.token2id, 'word_counts': self.word_counts, 'document_index': self.documents}
+        data = {'token2id': self.token2id, 'word_counts': self.word_counts, 'documents': self.documents}
         data_filename = VectorizedCorpus._data_filename(tag, folder)
 
         with open(data_filename, 'wb') as f:
@@ -187,7 +187,7 @@ class VectorizedCorpus:
 
         Two files are loaded based on specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `word_counts`
+            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `documents` and `word_counts`
             {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
 
 
@@ -207,8 +207,8 @@ class VectorizedCorpus:
         with open(data_filename, 'rb') as f:
             data = pickle.load(f)
 
-        token2id = data["token2id"]
-        document_index = data["document_index"]
+        token2id: Mapping = data["token2id"]
+        documents: pd.DataFrame = data["documents"]
 
         matrix_basename = VectorizedCorpus._matrix_filename(tag, folder)
 
@@ -217,15 +217,15 @@ class VectorizedCorpus:
         else:
             bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
 
-        return VectorizedCorpus(bag_term_matrix, token2id, document_index)
+        return VectorizedCorpus(bag_term_matrix, token2id=token2id, documents=documents)
 
     @staticmethod
-    def _data_filename(tag, folder: str) -> str:
+    def _data_filename(tag: str, folder: str) -> str:
         """Returns pickled basename for given tag and folder"""
         return os.path.join(folder, f"{tag}_vectorizer_data.pickle")
 
     @staticmethod
-    def _matrix_filename(tag, folder: str) -> str:
+    def _matrix_filename(tag: str, folder: str) -> str:
         """Returns BoW matrix basename for given tag and folder"""
         return os.path.join(folder, f"{tag}_vector_data")
 
@@ -310,9 +310,9 @@ class VectorizedCorpus:
                 Y[i, :] = X[indices, :].sum(axis=0)
 
         years = list(range(min_value, max_value + 1))
-        document_index = pd.DataFrame({'year': years, 'filename': map(str, years)})
+        documents = pd.DataFrame({'year': years, 'filename': map(str, years)})
 
-        v_corpus = VectorizedCorpus(Y, self.token2id, document_index, self.word_counts)
+        v_corpus = VectorizedCorpus(Y, token2id=self.token2id, documents=documents, word_counts=self.word_counts)
 
         return v_corpus
 
@@ -343,9 +343,9 @@ class VectorizedCorpus:
 
         years = list(range(min_value, max_value + 1))
 
-        document_index = pd.DataFrame({'year': years, 'filename': map(str, years)})
+        documents = pd.DataFrame({'year': years, 'filename': map(str, years)})
 
-        v_corpus = VectorizedCorpus(Y, self.token2id, document_index, self.word_counts)
+        v_corpus = VectorizedCorpus(Y, self.token2id, documents, self.word_counts)
 
         return v_corpus
 
