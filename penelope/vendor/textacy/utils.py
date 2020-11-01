@@ -197,7 +197,9 @@ def get_corpus_data(
 
 
 def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: str = ';', vocab=None):
+
     substitutions = {}
+
     if not os.path.isfile(filepath):
         return {}
 

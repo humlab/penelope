@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import penelope.utility as utility
 import textacy
 
-from .utils import frequent_document_words, infrequent_words
+from .utils import frequent_document_words, infrequent_words, load_term_substitutions
 
 logger = utility.getLogger('corpus_text_analysis')
 
@@ -40,62 +41,6 @@ def chunks(lst, n):
     else:
         for i in range(0, len(lst), n):
             yield lst[i : i + n]
-
-
-# def extract_document_tokens(docs, **opts):
-#     try:
-#         document_id = 0
-#         normalize = opts['normalize'] or 'orth'
-#         term_substitutions = opts.get('substitutions', {})
-#         min_freq_stats = opts.get('min_freq_stats', {})
-#         max_doc_freq_stats = opts.get('max_doc_freq_stats', {})
-#         extra_stop_words = set([])
-
-#         if opts['min_freq'] > 1:
-#             assert normalize in min_freq_stats
-#             stop_words = utility.extract_counter_items_within_threshold(min_freq_stats[normalize], 1, opts['min_freq'])
-#             extra_stop_words.update(stop_words)
-
-#         if opts['max_doc_freq'] < 100:
-#             assert normalize in max_doc_freq_stats
-#             stop_words = utility.extract_counter_items_within_threshold(
-#                 max_doc_freq_stats[normalize], opts['max_doc_freq'], 100
-#             )
-#             extra_stop_words.update(stop_words)
-
-#         extract_args = dict(
-#             args=dict(
-#                 ngrams=opts['ngrams'],
-#                 named_entities=opts['named_entities'],
-#                 normalize=opts['normalize'],
-#                 as_strings=True,
-#             ),
-#             kwargs=dict(
-#                 min_freq=opts['min_freq'],
-#                 include_pos=opts['include_pos'],
-#                 filter_stops=opts['filter_stops'],
-#                 filter_punct=opts['filter_punct'],
-#             ),
-#             extra_stop_words=extra_stop_words,
-#             substitutions=(term_substitutions if opts.get('substitute_terms', False) else None),
-#         )
-
-#         for document_name, doc in docs:
-#             # logger.info(document_name)
-
-#             terms = [x for x in extract_document_terms(doc, extract_args)]
-
-#             chunk_size = opts.get('chunk_size', 0)
-#             chunk_index = 0
-#             for tokens in chunks(terms, chunk_size):
-#                 yield document_id, document_name, chunk_index, tokens
-#                 chunk_index += 1
-
-#             document_id += 1
-
-#     except Exception as ex:
-#         logger.error(ex)
-#         raise
 
 
 class ExtractPipeline:
@@ -172,17 +117,15 @@ class ExtractPipeline:
             )
         )
 
-    def attributes_filter(self, filter_punct: bool = True, filter_nums: bool = True) -> ExtractPipeline:
-        return self.add(AttributeFilter(filter_punct=filter_punct, filter_nums=filter_nums))
-
     def predicate(self, predicate: Callable[[str], bool]) -> ExtractPipeline:
         return self.add(PredicateFilter(predicate=predicate))
 
     def transform(self, transformer: Callable[[str], str]) -> ExtractPipeline:
         return self.add(TransformTask(transformer=transformer))
 
-    def substitute(self, subst_map: Mapping[str, str]) -> ExtractPipeline:
-        return self.add(SubstitutionTask(subst_map=subst_map))
+    def substitute(self, subst_map: Mapping[str, str] = None, filename: str = None) -> ExtractPipeline:
+
+        return self.add(SubstitutionTask(subst_map=subst_map, filename=filename))
 
     def min_character_filter(self, min_length: int = 1) -> ExtractPipeline:
         return self.add(MinCharactersFilter(min_length=min_length))
@@ -195,6 +138,21 @@ class ExtractPipeline:
 
     def pos(self, include_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None) -> ExtractPipeline:
         return self.add(PoSFilter(include_pos=include_pos, exclude_pos=exclude_pos))
+
+    def ingest(self, **options):
+        for k, v in options.items():
+            if k in self.to_terms_list_args:
+                self.to_terms_list_args[k] = v
+            elif self.to_terms_list_kwargs:
+                self.to_terms_list_kwargs[k] = v
+            else:
+                logger.warning("ignoring unknown option %s", k)
+        return self
+
+    @staticmethod
+    def build(corpus, target, **options):
+        pipeline = ExtractPipeline(corpus, target).ingest(**options)
+        return pipeline
 
 
 class StopwordFilter:
@@ -254,14 +212,12 @@ class NamedEntityTask:
         return pipeline
 
 
-class AttributeFilter:
-    def __init__(self, filter_punct: bool = True, filter_nums: bool = True):
-        self.filter_punct = filter_punct
-        self.filter_nums = filter_nums
+class ExtractOptions:
+    def __init__(self, **options):
+        self.options = options
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-        pipeline.to_terms_list_kwargs['filter_punct'] = self.filter_punct
-        pipeline.to_terms_list_kwargs['filter_nums'] = self.filter_nums
+        pipeline.ingest(**self.options)
         return pipeline
 
 
@@ -282,8 +238,25 @@ class TransformTask:
 
 
 class SubstitutionTask:
-    def __init__(self, subst_map: Mapping[str, str]):
+    def __init__(self, subst_map: Mapping[str, str] = None, filename: str = None, vocab=None):
         self.subst_map = subst_map
+        self.filename = filename
+        self.vocab = vocab
+
+    def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
+
+        if self.filename is not None:
+
+            self.subst_map = self.subst_map or {}
+
+            if not os.path.isfile(self.filename):
+                raise FileNotFoundError(f"terms substitions file {self.filename} not found")
+
+            self.subst_map.update(
+                load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
+            )
+
+        return pipeline
 
     def apply(self, terms: Iterable[str]) -> Iterable[str]:
         return (self.subst_map[x] if x in self.subst_map else x for x in terms)
@@ -338,3 +311,59 @@ class FrequentWordsFilter(StopwordFilter):
         self.filter_words = words
         logger.info('Ignoring {} high-frequent words!'.format(len(words)))
         return pipeline
+
+
+# def extract_document_tokens(docs, **opts):
+#     try:
+#         document_id = 0
+#         normalize = opts['normalize'] or 'orth'
+#         term_substitutions = opts.get('substitutions', {})
+#         min_freq_stats = opts.get('min_freq_stats', {})
+#         max_doc_freq_stats = opts.get('max_doc_freq_stats', {})
+#         extra_stop_words = set([])
+
+#         if opts['min_freq'] > 1:
+#             assert normalize in min_freq_stats
+#             stop_words = utility.extract_counter_items_within_threshold(min_freq_stats[normalize], 1, opts['min_freq'])
+#             extra_stop_words.update(stop_words)
+
+#         if opts['max_doc_freq'] < 100:
+#             assert normalize in max_doc_freq_stats
+#             stop_words = utility.extract_counter_items_within_threshold(
+#                 max_doc_freq_stats[normalize], opts['max_doc_freq'], 100
+#             )
+#             extra_stop_words.update(stop_words)
+
+#         extract_args = dict(
+#             args=dict(
+#                 ngrams=opts['ngrams'],
+#                 named_entities=opts['named_entities'],
+#                 normalize=opts['normalize'],
+#                 as_strings=True,
+#             ),
+#             kwargs=dict(
+#                 min_freq=opts['min_freq'],
+#                 include_pos=opts['include_pos'],
+#                 filter_stops=opts['filter_stops'],
+#                 filter_punct=opts['filter_punct'],
+#             ),
+#             extra_stop_words=extra_stop_words,
+#             substitutions=(term_substitutions if opts.get('substitute_terms', False) else None),
+#         )
+
+#         for document_name, doc in docs:
+#             # logger.info(document_name)
+
+#             terms = [x for x in extract_document_terms(doc, extract_args)]
+
+#             chunk_size = opts.get('chunk_size', 0)
+#             chunk_index = 0
+#             for tokens in chunks(terms, chunk_size):
+#                 yield document_id, document_name, chunk_index, tokens
+#                 chunk_index += 1
+
+#             document_id += 1
+
+#     except Exception as ex:
+#         logger.error(ex)
+#         raise

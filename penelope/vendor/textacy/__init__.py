@@ -1,6 +1,6 @@
 from .corpus import create_corpus, generate_corpus_filename, load_corpus, load_or_create, save_corpus
 from .extract import (
-    AttributeFilter,
+    ExtractOptions,
     ExtractPipeline,
     FrequentWordsFilter,
     InfrequentWordsFilter,

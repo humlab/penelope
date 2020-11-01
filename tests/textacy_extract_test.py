@@ -67,7 +67,7 @@ def test_pos_extract_when_a_more_complexed_filter(mary_had_a_little_lamb_corpus:
         textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
         .pos(include_pos=('NOUN', 'PROPN'))
         .remove_stopwords(extra_stopwords=[])
-        .attributes_filter(filter_nums=True, filter_punct=True)
+        .ingest(filter_nums=True, filter_punct=True)
         .infrequent_word_filter(1)
         .frequent_word_filter(100)
         .min_character_filter(2)
