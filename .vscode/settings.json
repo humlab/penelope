@@ -1,14 +1,15 @@
 {
+    "peacock.remoteColor": "#4e673c",
     "python.formatting.provider": "black",
     "python.linting.pylintEnabled": true,
     "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/python",
     "python.sortImports.path": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/isort",
+    "python.testing.nosetestsEnabled": false,
     "python.testing.pytestArgs": [
         "tests"
     ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#66874f",
         "activityBar.activeBorder": "#afbcd0",
@@ -24,6 +25,5 @@
         "titleBar.activeForeground": "#e7e7e7",
         "titleBar.inactiveBackground": "#4e673c99",
         "titleBar.inactiveForeground": "#e7e7e799"
-    },
-    "peacock.remoteColor": "#4e673c"
+    }
 }
