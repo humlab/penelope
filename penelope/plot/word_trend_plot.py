@@ -1,18 +1,186 @@
 import itertools
 import math
-from typing import Any, Callable, List, Sequence, Tuple, Union
+from typing import Any, Callable, List, Mapping, Sequence, Tuple, Union
 
 import bokeh
 import numpy as np
-from bokeh.plotting import Figure
-
 import penelope.common.curve_fit as cf
+from bokeh.plotting import Figure
 from penelope.corpus import VectorizedCorpus
+from penelope.utility import take
 
 SmootherFunction = Callable[[Any, Any], Tuple[Any, Any]]
 
 
-def plot_distribution(
+def yearly_token_distributions_datasource(x_corpus: VectorizedCorpus, indices: List[int], *_):
+    """Returns a dictionary containing distributions sliced from `x_corpus` for tokens identities
+    found in `indices`. The corresponding `token` given by `id2token` is used as key.
+    The dictionary also contains the `year` vector common for all distrbutions.
+
+    Parameters
+    ----------
+    x_corpus : VectorizedCorpus
+        [description]
+    indices : List[int]
+        List of token indices (token ids)
+
+    Returns
+    -------
+    Mapping
+    """
+    xs = x_corpus.xs_years()
+    data = {x_corpus.id2token[token_id]: x_corpus.bag_term_matrix[:, token_id] for token_id in indices}
+    data["year"] = xs
+
+    return data
+
+
+def yearly_token_distributions_multiline_datasource(
+    x_corpus: VectorizedCorpus, indices: List[int], smoothers: Callable = None, palette: Any = None
+) -> Mapping:
+    """Returns a dictionary containing token distributions sliced from `x_corpus` using indices `indices`.
+        The data is prepared for a bokeh `multiline` plot which requires the distribution data
+        to be stored as two lists `xs` and `ys` containing coordinates (i.e. a list) for each line.
+
+        The i:th elements in `xs` and `ys` specifies the distribution for token `i` in index `indicies`
+
+        The `year` vectors in `xs` are the same for all distributions.
+
+             xs = [ [ years ], [ years ], ..., [ years ]]
+             ys = [ [ dist1 ], [ dist2 ], ..., [ distn ]]
+          token = [  "token1",  "token2", ...,  "token" ]
+
+        Optionally, a list of functions can be supplied to smooth the data.
+
+    Parameters
+    ----------
+    x_corpus : VectorizedCorpus
+    indices : List[int]
+        List of token indices (token ids)
+    smoothers : Callable, optional
+        List of smoothing functions, by default None
+    palette : [type], optional
+        Color palette, by default None
+
+    Returns
+    -------
+    Mapping
+    """
+    xs = x_corpus.xs_years()
+
+    if len(smoothers or []) > 0:
+        xs_data = []
+        ys_data = []
+        for j in indices:
+            xs_j = xs
+            ys_j = x_corpus.bag_term_matrix[:, j]
+            for smoother in smoothers:
+                xs_j, ys_j = smoother(xs_j, ys_j)
+            xs_data.append(xs_j)
+            ys_data.append(ys_j)
+    else:
+        xs_data = [xs.tolist()] * len(indices)
+        ys_data = [x_corpus.bag_term_matrix[:, token_id].tolist() for token_id in indices]
+
+    palette = palette or bokeh.palettes.Category10[10]
+
+    data = {
+        "xs": xs_data,
+        "ys": ys_data,
+        "token": [x_corpus.id2token[token_id].upper() for token_id in indices],
+        "color": take(len(indices), itertools.cycle(palette)),
+    }
+    return data
+
+
+def yearly_token_distributions_bar_plot(data: Mapping, **_):
+
+    years = [str(y) for y in data["year"]]
+
+    data["year"] = years
+
+    tokens = [w for w in data.keys() if w != "year"]
+
+    source = bokeh.models.ColumnDataSource(data=data)
+
+    max_value = max([max(data[key]) for key in data if key != "year"]) + 0.005
+
+    p = bokeh.plotting.figure(
+        x_range=years,
+        y_range=(0, max_value),
+        plot_height=400,
+        plot_width=1000,
+        title="Word frequecy by year",
+    )
+
+    colors = itertools.islice(itertools.cycle(bokeh.palettes.d3["Category20b"][20]), len(tokens))
+
+    offset = -0.25
+    v = []
+    for token in tokens:
+        w = p.vbar(
+            x=bokeh.transform.dodge("year", offset, range=p.x_range),
+            top=token,
+            width=0.2,
+            source=source,
+            color=next(colors),
+        )  # , legend_label=token)
+        offset += 0.25
+        v.append(w)
+
+    p.x_range.range_padding = 0.04
+    p.xaxis.major_label_orientation = math.pi / 4
+    p.xgrid.grid_line_color = None
+    p.ygrid.grid_line_color = None
+
+    # Note: Fixed Bokeh legend error
+    # p.legend.location = "top_right"
+    # p.legend.orientation = "vertical"
+
+    legend = bokeh.models.Legend(items=[(x, [v[i]]) for i, x in enumerate(tokens)])
+    p.add_layout(legend, "left")
+
+    return p
+
+
+def empty_multiline_datasource():
+
+    data = {
+        "xs": [[0]],
+        "ys": [[0]],
+        "label": [""],
+        "color": ["red"],
+    }
+
+    return bokeh.models.ColumnDataSource(data)
+
+
+def yearly_token_distributions_multiline_plot(
+    data_source, *, x_ticks=None, plot_width: int = 1000, plot_height: int = 800, **_
+):
+
+    p = bokeh.plotting.figure(plot_width=plot_width, plot_height=plot_height)
+    p.y_range.start = 0
+    p.yaxis.axis_label = "Frequency"
+    p.toolbar.autohide = True
+
+    if x_ticks is not None:
+        p.xaxis.ticker = x_ticks
+
+    p.xaxis.major_label_orientation = math.pi / 4
+    p.xgrid.grid_line_color = None
+    p.ygrid.grid_line_color = None
+
+    _ = p.multi_line(xs="xs", ys="ys", legend_field="label", line_color="color", source=data_source)
+
+    p.legend.location = "top_left"
+    p.legend.click_policy = "hide"
+    p.legend.background_fill_alpha = 0.0
+
+    return p
+
+
+def yearly_token_distribution_single_line_plot(
     xs: Union[str, Sequence[float]],
     ys: Union[str, Sequence[float]],
     *,
@@ -85,7 +253,7 @@ def plot_distribution(
     return p
 
 
-def plot_distributions(
+def yearly_token_distribution_multiple_line_plot(
     x_corpus: VectorizedCorpus,
     indices: List[int],
     n_columns: int = 3,
@@ -136,7 +304,7 @@ def plot_distributions(
 
             ys = x_corpus.data[:, token_id]
 
-            p = plot_distribution(
+            p = yearly_token_distribution_single_line_plot(
                 xs,
                 ys,
                 plot=p if n_columns is None else None,
