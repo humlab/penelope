@@ -1,8 +1,7 @@
 import os
 
-import pytest  # pylint: disable=unused-import
-
 import penelope.ner.stagger_wrapper as stagger
+import pytest  # pylint: disable=unused-import
 
 STAGGER_HOME = os.environ.get('STAGGER_HOME', './lib/stagger')
 

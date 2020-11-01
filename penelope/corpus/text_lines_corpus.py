@@ -1,7 +1,6 @@
 from typing import Dict, Sequence
 
 import pandas as pd
-
 import penelope.utility as utility
 from penelope.utility.file_utility import IndexOfSplitOrCallableOrRegExp
 

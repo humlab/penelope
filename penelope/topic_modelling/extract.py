@@ -2,7 +2,6 @@ from typing import Any, List
 
 import numpy as np
 import pandas as pd
-
 import penelope.utility as utility
 
 logger = utility.getLogger('corpus_text_analysis')

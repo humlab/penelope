@@ -2,7 +2,6 @@ import glob
 import os
 
 import ipywidgets
-
 import penelope.utility as utility
 
 logger = utility.getLogger('corpus_text_analysis')

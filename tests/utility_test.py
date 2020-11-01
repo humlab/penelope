@@ -1,6 +1,5 @@
-import pytest
-
 import penelope.utility as utility
+import pytest
 
 
 @pytest.mark.parametrize(

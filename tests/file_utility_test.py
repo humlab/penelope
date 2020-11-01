@@ -1,6 +1,5 @@
-import pytest  # pylint: disable=unused-import
-
 import penelope.utility.file_utility as file_utility
+import pytest  # pylint: disable=unused-import
 from tests.utils import TEST_CORPUS_FILENAME
 
 

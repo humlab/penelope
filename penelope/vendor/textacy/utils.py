@@ -5,12 +5,11 @@ import re
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple
 
 import pandas as pd
+import penelope.utility as utility
 import spacy.tokens
 import textacy
 from spacy import attrs
 from textacy.vsm import Vectorizer
-
-import penelope.utility as utility
 
 logger = utility.getLogger()
 

@@ -1,5 +1,4 @@
 import pandas as pd
-
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ICorpusReader
 

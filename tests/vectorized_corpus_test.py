@@ -3,11 +3,10 @@ import unittest
 
 import numpy as np
 import pandas as pd
-import scipy
-from sklearn.feature_extraction.text import CountVectorizer
-
 import penelope.corpus.tokenized_corpus as corpora
+import scipy
 from penelope.corpus import vectorized_corpus, vectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER, create_text_tokenizer
 
 

@@ -1,7 +1,6 @@
 import unittest
 
 import pandas as pd
-
 import penelope.corpus.readers as readers
 import penelope.corpus.tokenized_corpus as corpora
 from penelope.co_occurrence.term_term_matrix import to_dataframe

@@ -1,9 +1,8 @@
 from typing import Any, Dict
 
 import gensim
-import textacy
-
 import penelope.vendor.textacy as textacy_utility
+import textacy
 
 from ..container import InferredModel, TrainingCorpus
 

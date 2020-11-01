@@ -4,7 +4,6 @@ from collections import defaultdict
 from typing import Callable
 
 import pandas as pd
-
 import penelope.corpus.readers as readers
 from penelope.corpus.interfaces import ITokenizedCorpus
 from penelope.corpus.readers.in_memory_data_reader import InMemoryReader

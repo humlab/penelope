@@ -5,16 +5,15 @@ import warnings
 import bokeh
 import holoviews as hv
 import ipywidgets
-from IPython.display import display
-from markdown import markdown as md
-from scipy.cluster.hierarchy import dendrogram, linkage
-
 import penelope.common.cluster_analysis as cluster_analysis
 import penelope.common.curve_fit as cf
 import penelope.common.goodness_of_fit as gof
 import penelope.notebook.distributions_plot_gui as pdg
 import penelope.plot.cluster_plot as cluster_plot
+from IPython.display import display
+from markdown import markdown as md
 from penelope.utility import nth, setup_logger
+from scipy.cluster.hierarchy import dendrogram, linkage
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 

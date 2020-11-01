@@ -1,7 +1,6 @@
 import lxml
-import pytest  # pylint: disable=unused-import
-
 import penelope.corpus.sparv.sparv_xml_to_text as sparv
+import pytest  # pylint: disable=unused-import
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export_small.xml'
 

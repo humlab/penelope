@@ -1,7 +1,6 @@
 import zipfile
 
 import pandas as pd
-
 from penelope.utility import getLogger, path_add_sequence
 
 logger = getLogger("")

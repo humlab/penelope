@@ -12,7 +12,7 @@ import string
 import time
 import zipfile
 from numbers import Number
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar
 
 import gensim.utils
 import numpy as np
@@ -72,7 +72,7 @@ def noop(*_):
     pass
 
 
-def isint(s):
+def isint(s: Any) -> bool:
     try:
         int(s)
         return True
@@ -97,7 +97,7 @@ def timecall(f):
     return f_wrapper
 
 
-def extend(target, *args, **kwargs):
+def extend(target: Mapping, *args, **kwargs) -> Mapping:
     """Returns dictionary 'target' extended by supplied dictionaries (args) or named keywords
 
     Parameters
@@ -126,11 +126,11 @@ def extend(target, *args, **kwargs):
     return target
 
 
-def ifextend(target, source, p):
+def ifextend(target: Mapping, source: Mapping, p: bool) -> Mapping:
     return extend(target, source) if p else target
 
 
-def extend_single(target, source, name):
+def extend_single(target: Mapping, source: Mapping, name: str) -> Mapping:
     if name in source:
         target[name] = source[name]
     return target
@@ -160,18 +160,18 @@ def clamp_values(values: Sequence[Number], low_high: Tuple[Number, Number]) -> S
 
 
 @functools.lru_cache(maxsize=512)
-def _get_signature(func):
+def _get_signature(func: Callable) -> inspect.Signature:
     return inspect.signature(func)
 
 
-def get_func_args(func):
+def get_func_args(func: Callable) -> List[str]:
     sig = _get_signature(func)
     return [
         arg_name for arg_name, param in sig.parameters.items() if param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
     ]
 
 
-def filter_kwargs(f, args):
+def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
     """Removes keys in dict arg that are invalid arguments to function f
 
     Parameters
@@ -188,17 +188,18 @@ def filter_kwargs(f, args):
     """
 
     try:
+
         return {k: args[k] for k in args.keys() if k in get_func_args(f)}
 
     except:  # pylint: disable=bare-except
         return args
 
 
-def inspect_filter_args(f, args):
+def inspect_filter_args(f: Callable, args: Mapping) -> Mapping:
     return {k: args[k] for k in args.keys() if k in inspect.getfullargspec(f).args}
 
 
-def inspect_default_opts(f):
+def inspect_default_opts(f: Callable) -> Mapping:
     sig = inspect.signature(f)
     return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
 
@@ -206,33 +207,33 @@ def inspect_default_opts(f):
 VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
 
 
-def filename_whitelist(filename):
+def filename_whitelist(filename: str) -> str:
     filename = ''.join(x for x in filename if x in VALID_CHARS)
     return filename
 
 
-def dict_subset(d, keys):
+def dict_subset(d: Mapping, keys: Sequence[str]) -> Mapping:
     if keys is None:
         return d
     return {k: v for (k, v) in d.items() if k in keys}
 
 
-def dict_split(d, fn):
+def dict_split(d: Mapping, fn: Callable[[Mapping, str], bool]) -> Mapping:
     """Splits a dictionary into two parts based on predicate """
     true_keys = {k for k in d.keys() if fn(d, k)}
     return {k: d[k] for k in true_keys}, {k: d[k] for k in set(d.keys()) - true_keys}
 
 
-def list_of_dicts_to_dict_of_lists(dl):
+def list_of_dicts_to_dict_of_lists(dl: List[Mapping[str, Any]]) -> Mapping[str, List[Any]]:
     dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists
 
 
-def tuple_of_lists_to_list_of_tuples(tl):
+def tuple_of_lists_to_list_of_tuples(tl: Tuple[List[Any], ...]) -> List[Tuple[Any, ...]]:
     return zip(*tl)
 
 
-def dict_of_lists_to_list_of_dicts(dl):
+def dict_of_lists_to_list_of_dicts(dl: Mapping[str, List[Any]]) -> List[Mapping[str, Any]]:
     return [dict(zip(dl, t)) for t in zip(*dl.values())]
 
 
@@ -256,57 +257,58 @@ def lists_of_dicts_merged_by_key(lst1: ListOfDicts, lst2: ListOfDicts, key: str)
     return list(merged_list)
 
 
-def uniquify(sequence):
+def uniquify(sequence: Iterable[T]) -> List[T]:
     """ Removes duplicates from a list whilst still preserving order """
     seen = set()
     seen_add = seen.add
     return [x for x in sequence if not (x in seen or seen_add(x))]
 
 
-sort_chained = lambda x, f: list(x).sort(key=f) or x
+def sort_chained(x, f):
+    return list(x).sort(key=f) or x
 
 
-def ls_sorted(path):
+def ls_sorted(path: str) -> List[str]:
     return sort_chained(list(filter(os.path.isfile, glob.glob(path))), os.path.getmtime)
 
 
-def split(delimiters, text, maxsplit=0):
-    regexPattern = '|'.join(map(re.escape, delimiters))
-    return re.split(regexPattern, text, maxsplit)
+def split(delimiters: Sequence[str], text: str, maxsplit: int = 0) -> List[str]:
+    reg_ex = '|'.join(map(re.escape, delimiters))
+    return re.split(reg_ex, text, maxsplit)
 
 
-def path_add_suffix(path, suffix, new_extension=None):
+def path_add_suffix(path: str, suffix: str, new_extension: str = None) -> str:
     basename, extension = os.path.splitext(path)
     suffixed_path = basename + suffix + (extension if new_extension is None else new_extension)
     return suffixed_path
 
 
-def path_add_timestamp(path, fmt="%Y%m%d%H%M"):
+def path_add_timestamp(path: str, fmt: str = "%Y%m%d%H%M") -> str:
     suffix = '_{}'.format(time.strftime(fmt))
     return path_add_suffix(path, suffix)
 
 
-def path_add_date(path, fmt="%Y%m%d"):
+def path_add_date(path: str, fmt: str = "%Y%m%d") -> str:
     suffix = '_{}'.format(time.strftime(fmt))
     return path_add_suffix(path, suffix)
 
 
-def path_add_sequence(path, i, j=0):
+def path_add_sequence(path: str, i: int, j: int = 0) -> str:
     suffix = str(i).zfill(j)
     return path_add_suffix(path, suffix)
 
 
-def zip_get_filenames(zip_filename, extension='.txt'):
+def zip_get_filenames(zip_filename: str, extension: str = '.txt') -> List[str]:
     with zipfile.ZipFile(zip_filename, mode='r') as zf:
         return [x for x in zf.namelist() if x.endswith(extension)]
 
 
-def zip_get_text(zip_filename, filename):
+def zip_get_text(zip_filename: str, filename: str) -> str:
     with zipfile.ZipFile(zip_filename, mode='r') as zf:
         return zf.read(filename).decode(encoding='utf-8')
 
 
-def slim_title(x):
+def slim_title(x: str) -> str:
     try:
         m = re.match(r'.*\((.*)\)$', x).groups()
         if m is not None and len(m) > 0:
@@ -316,7 +318,7 @@ def slim_title(x):
         return x
 
 
-def complete_value_range(values, typef=str):
+def complete_value_range(values: Sequence[Number], typef=str) -> List[Number]:
     """Create a complete range from min/max range in case values are missing
 
     Parameters
@@ -337,7 +339,7 @@ def complete_value_range(values, typef=str):
     return list(map(typef, values))
 
 
-def is_platform_architecture(xxbit):
+def is_platform_architecture(xxbit: str) -> bool:
     assert xxbit in ['32bit', '64bit']
     logger.info(platform.architecture()[0])
     return platform.architecture()[0] == xxbit
@@ -349,7 +351,7 @@ def trunc_year_by(series, divisor):
 
 
 # FIXA! Use numpy instead
-def normalize_values(values):
+def normalize_values(values: Sequence[Number]) -> Sequence[Number]:
     if len(values or []) == 0:
         return []
     max_value = max(values)
@@ -373,7 +375,7 @@ def normalize_array(x: np.ndarray, ord: int = 1):  # pylint: disable=redefined-b
     return x / (norm if norm != 0 else 1.0)
 
 
-def extract_counter_items_within_threshold(counter, low, high):
+def extract_counter_items_within_threshold(counter: Mapping, low: Number, high: Number) -> Set:
     item_values = set([])
     for x, wl in counter.items():
         if low <= x <= high:
@@ -381,7 +383,7 @@ def extract_counter_items_within_threshold(counter, low, high):
     return item_values
 
 
-def chunks(lst, n):
+def chunks(lst: List[T], n: int) -> List[T]:
 
     if (n or 0) == 0:
         yield lst
@@ -401,6 +403,11 @@ def dataframe_to_tuples(df: pd.DataFrame, columns: List[str] = None) -> List[Tup
 def nth(iterable: Iterable[T], n: int, default: T = None) -> T:
     "Returns the nth item or a default value"
     return next(itertools.islice(iterable, n, None), default)
+
+
+def take(n: int, iterable: Iterator):
+    "Return first n items of the iterable as a list"
+    return list(itertools.islice(iterable, n))
 
 
 def read_json(path: str) -> Any:

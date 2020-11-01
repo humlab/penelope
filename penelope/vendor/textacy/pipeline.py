@@ -5,14 +5,13 @@ import os
 from typing import List, Sequence, Union
 
 import pandas as pd
-import textacy
-from spacy.language import Language as SpacyLanguage
-
 import penelope.utility.utils as utility
 import penelope.vendor.textacy as textacy_utility
+import textacy
 from penelope.corpus import preprocess_text_corpus
 from penelope.corpus.readers import ZipTextIterator
 from penelope.utility.file_utility import IndexOfSplitOrCallableOrRegExp
+from spacy.language import Language as SpacyLanguage
 
 
 class PipelineError(Exception):

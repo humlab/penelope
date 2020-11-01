@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
 

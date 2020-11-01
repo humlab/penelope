@@ -3,7 +3,6 @@ import sys
 from os.path import join as jj
 
 import click
-
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.corpus.tokenized_corpus as tokenized_corpus
 import penelope.topic_modelling as topic_modelling

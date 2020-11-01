@@ -4,7 +4,6 @@ import re
 
 from gensim import models
 from gensim.utils import check_output
-
 from penelope.utility import inspect_filter_args
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)

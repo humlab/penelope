@@ -3,7 +3,6 @@ from typing import Iterable, Tuple
 
 import pandas as pd
 from gensim.corpora.textcorpus import TextCorpus
-
 from penelope.corpus.readers import streamify_text_source
 
 logger = logging.getLogger(__name__)

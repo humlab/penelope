@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-
 from penelope.co_occurrence import WindowsCorpus, to_co_occurrence_matrix, to_dataframe
 from penelope.corpus import CorpusVectorizer
 from tests.utils import generate_token2id, very_simple_corpus

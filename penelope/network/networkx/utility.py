@@ -1,5 +1,4 @@
 import networkx as nx
-
 from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
 
 

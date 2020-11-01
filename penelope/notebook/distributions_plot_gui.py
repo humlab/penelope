@@ -2,10 +2,9 @@ import types
 from typing import Iterable, List, Sequence
 
 import ipywidgets
+import penelope.plot.word_trend_plot as plotter
 from bokeh.plotting import show
 from IPython.display import display
-
-import penelope.plot.distribution_plot as plotter
 from penelope.corpus import VectorizedCorpus
 
 
@@ -60,7 +59,7 @@ def display_gui(x_corpus: VectorizedCorpus, tokens: Iterable[str], n_columns: in
 
         with gui.output:
             x_columns: int = n_columns if gui.split.value else None
-            p = plotter.plot_distributions(x_corpus, indices, n_columns=x_columns)
+            p = plotter.yearly_token_distribution_multiple_line_plot(x_corpus, indices, n_columns=x_columns)
             show(p)
 
     def stepper_clicked(b):

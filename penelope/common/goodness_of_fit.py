@@ -8,7 +8,6 @@ import pandas as pd
 import scipy
 import statsmodels.api as sm
 from numpy.polynomial.polynomial import Polynomial as polyfit
-
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 

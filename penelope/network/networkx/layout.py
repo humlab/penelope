@@ -1,7 +1,6 @@
 from types import SimpleNamespace as bunch
 
 import networkx as nx
-
 from penelope.network.networkx.utility import get_bipartite_node_set
 from penelope.utility import extend_single
 

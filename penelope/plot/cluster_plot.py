@@ -3,12 +3,11 @@ import holoviews as hv
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from bokeh.models import HoverTool, TapTool
-from scipy.cluster.hierarchy import dendrogram
-
 import penelope.common.curve_fit as cf
 import penelope.common.goodness_of_fit as gof
+from bokeh.models import HoverTool, TapTool
 from penelope.corpus import VectorizedCorpus
+from scipy.cluster.hierarchy import dendrogram
 
 
 def noop(x=None, p=None, max=None):  # pylint: disable=redefined-builtin, unused-argument

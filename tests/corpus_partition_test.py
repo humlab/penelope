@@ -1,5 +1,4 @@
 import pytest  # pylint: disable=unused-import
-
 from penelope.corpus.readers.text_tokenizer import TextTokenizer
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 

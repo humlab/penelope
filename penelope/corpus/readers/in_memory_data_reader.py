@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Sequence, Tuple
 
 import pandas as pd
-
 from penelope.utility import IndexOfSplitOrCallableOrRegExp, extract_filenames_fields, strip_paths
 
 from .interfaces import ICorpusReader

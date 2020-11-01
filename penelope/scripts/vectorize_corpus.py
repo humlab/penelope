@@ -1,5 +1,4 @@
 import click
-
 import penelope.corpus.vectorizer as corpus_vectorizer
 
 

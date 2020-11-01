@@ -1,8 +1,7 @@
 import zipfile
 
-from tqdm.auto import tqdm
-
 from penelope.utility import create_iterator
+from tqdm.auto import tqdm
 
 from .text_transformer import TextTransformer
 

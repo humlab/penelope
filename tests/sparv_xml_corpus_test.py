@@ -1,9 +1,8 @@
 import os
 import uuid
 
-import pytest  # pylint: disable=unused-import
-
 import penelope.corpus.sparv_corpus as sparv_corpus
+import pytest  # pylint: disable=unused-import
 from penelope.utility import read_from_archive
 
 from .utils import OUTPUT_FOLDER

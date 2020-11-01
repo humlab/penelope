@@ -1,7 +1,6 @@
 from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
-
 from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 from penelope.vendor.nltk import word_tokenize
 

@@ -3,9 +3,8 @@ from typing import Any
 import gensim
 import numpy as np
 import pandas as pd
-from gensim.matutils import Sparse2Corpus
-
 import penelope.utility as utility
+from gensim.matutils import Sparse2Corpus
 from penelope.topic_modelling.container import InferredTopicsData
 from penelope.topic_modelling.extract import extract_topic_token_overview, extract_topic_token_weights
 

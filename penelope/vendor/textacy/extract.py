@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
-import textacy
-
 import penelope.utility as utility
+import textacy
 
 from .utils import frequent_document_words, infrequent_words
 

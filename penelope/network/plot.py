@@ -1,12 +1,11 @@
 import bokeh.models
 import bokeh.palettes
-from bokeh.models import ColumnDataSource
-from bokeh.plotting import figure
-
 import penelope.network.layout as network_layout
 import penelope.network.networkx.utility as networkx_utility
 import penelope.notebook.widgets_utils as widgets_utils
 import penelope.utility as utility
+from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure
 
 # pylint: disable=too-many-arguments
 

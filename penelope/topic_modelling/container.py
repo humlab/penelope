@@ -6,9 +6,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import gensim
 import pandas as pd
-import scipy
-
 import penelope.utility as utility
+import scipy
 
 from .utility import add_document_metadata
 

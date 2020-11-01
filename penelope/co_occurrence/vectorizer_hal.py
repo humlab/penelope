@@ -2,10 +2,9 @@ import itertools
 
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
-
 import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
+import scipy.sparse as sp
 
 logger = utility.getLogger('corpus_text_analysis')
 

@@ -1,10 +1,9 @@
 import unittest
 
 import numpy as np
-import statsmodels.api as sm
-
 import penelope.common.goodness_of_fit as gof
 import penelope.utility as utility
+import statsmodels.api as sm
 
 logger = utility.setup_logger()
 

@@ -2,7 +2,6 @@ import sys
 from typing import Any, List
 
 import click
-
 from penelope.workflows import WorkflowException, execute_workflow_concept_co_occurrence
 
 # pylint: disable=too-many-arguments

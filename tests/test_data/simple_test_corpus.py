@@ -1,7 +1,6 @@
 from typing import List
 
 import pandas as pd
-
 import penelope.utility as utility
 from penelope.corpus.tokenized_corpus import ReiterableTerms
 

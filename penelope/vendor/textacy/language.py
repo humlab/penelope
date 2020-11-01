@@ -1,10 +1,9 @@
 import re
 
+import penelope.utility as utility
 import spacy
 import textacy
 from spacy.language import Language
-
-import penelope.utility as utility
 
 logger = utility.getLogger('corpus_text_analysis')
 

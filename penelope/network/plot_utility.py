@@ -1,10 +1,9 @@
 import bokeh.models as bm
 import bokeh.palettes
 import networkx as nx
-from bokeh.plotting import figure
-
 import penelope.network.utility as utility
 import penelope.notebook.widgets_utils as widgets_utils
+from bokeh.plotting import figure
 
 from . import metrics
 

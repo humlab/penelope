@@ -1,9 +1,8 @@
 import unittest
 
+import penelope.vendor.textacy.mdw_modified as mdw
 from sklearn.feature_extraction.text import CountVectorizer
 from textacy import ke
-
-import penelope.vendor.textacy.mdw_modified as mdw
 
 flatten = lambda l: [x for ws in l for x in ws]
 

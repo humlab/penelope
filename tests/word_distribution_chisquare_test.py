@@ -1,11 +1,10 @@
 import unittest
 
 import pandas as pd
-import scipy
-from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
-
 import penelope.corpus.tokenized_corpus as corpora
+import scipy
 from penelope.corpus import vectorizer
+from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 from tests.utils import create_text_tokenizer
 
 unittest.main(argv=['first-arg-is-ignored'], exit=False)

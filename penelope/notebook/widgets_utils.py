@@ -5,7 +5,6 @@ from typing import Any
 import bokeh
 import ipywidgets as widgets
 import numpy as np
-
 from penelope.utility import extend
 
 AGGREGATES = {'mean': np.mean, 'sum': np.sum, 'max': np.max, 'std': np.std}
@@ -293,33 +292,3 @@ class WidgetState:
         for key, value in kwargs.items():
             setattr(self, key, value)
         # self.__dict__.update(kwargs)
-
-
-# class TopicWidgetState(WidgetState):
-
-#     def __init__(self, n_topics, years=None, word_count=None, text_id=None):
-
-#         self.n_topics = n_topics
-#         self.text_id = text_id
-#         self.text = text_widget(text_id)
-#         self.year = years_widget(options=years) if years is not None else None
-#         self.topic_id = self.topic_id_slider(n_topics)
-#         self.word_count = self.word_count_slider(1, 500) if word_count is not None else None
-#         self.prev_topic_id = button_with_previous_callback(self, property_name='topic_id', count=n_topics)
-#         self.next_topic_id = button_with_next_callback(self, property_name='topic_id', count=n_topics)
-
-
-# class TopTopicWidgets(WidgetState):
-
-#     def __init__(self, n_topics=0, years=None, aggregates=None, text_id='text_id', layout_algorithms=None):
-
-#         self.n_topics = n_topics
-#         self.text_id = text_id
-#         self.text = text_widget(text_id) if text_id is not None else None
-#         self.year = years_widget(options=years) if years is not None else None
-
-#         self.topics_count = self.topic_count_slider(n_topics) if n_topics > 0 else None
-
-#         self.aggregate = self.select_aggregate_fn_widget(aggregates, default='mean') if aggregates is not None else None
-#         self.layout_algorithm = self.layout_algorithm_widget(layout_algorithms, default='Fruchterman-Reingold') \
-#             if layout_algorithms is not None else None

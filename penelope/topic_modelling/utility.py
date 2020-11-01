@@ -6,9 +6,8 @@ from typing import Dict, List
 import gensim
 import numpy as np
 import pandas as pd
-import scipy
-
 import penelope.utility as utility
+import scipy
 
 logger = utility.getLogger('corpus_text_analysis')
 

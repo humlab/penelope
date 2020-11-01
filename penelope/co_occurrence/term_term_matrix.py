@@ -2,7 +2,6 @@ from typing import Mapping, Union
 
 import pandas as pd
 import scipy
-
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 from penelope.corpus.interfaces import ITokenizedCorpus
 from penelope.corpus.readers.interfaces import ICorpusReader

@@ -1,6 +1,5 @@
-import pytest  # pylint: disable=unused-import
-
 import penelope.corpus.readers as readers
+import pytest  # pylint: disable=unused-import
 from penelope.corpus import (
     ICorpus,
     ITokenizedCorpus,

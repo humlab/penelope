@@ -1,6 +1,5 @@
-import pytest  # pylint: disable=unused-import
-
 import penelope.corpus.readers as readers
+import pytest  # pylint: disable=unused-import
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'

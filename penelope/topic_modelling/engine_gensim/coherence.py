@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 import gensim
-
 import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
 

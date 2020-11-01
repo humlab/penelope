@@ -4,10 +4,9 @@ import numpy as np
 import pandas as pd
 import scipy
 import scipy.sparse as sp
+from penelope.utility import flatten, pretty_print_matrix
 from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
-
-from penelope.utility import flatten, pretty_print_matrix
 
 from .utils import very_simple_corpus
 

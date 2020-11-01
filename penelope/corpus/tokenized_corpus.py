@@ -4,7 +4,6 @@ from collections import defaultdict
 from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
-
 from penelope import utility
 
 from .corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn

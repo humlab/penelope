@@ -3,15 +3,14 @@ import types
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import pandas as pd
-import textacy
-from spacy.language import Language as SpacyLanguage
-from spacy.tokens import Doc as SpacyDoc
-from textacy import Corpus as TextacyCorpus
-
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.utility as utility
 import penelope.utility.file_utility as file_utility
+import textacy
 from penelope.corpus.readers.interfaces import ICorpusReader
+from spacy.language import Language as SpacyLanguage
+from spacy.tokens import Doc as SpacyDoc
+from textacy import Corpus as TextacyCorpus
 
 from .language import create_nlp
 

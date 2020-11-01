@@ -1,5 +1,4 @@
 import pytest  # pylint: disable=unused-import
-
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'

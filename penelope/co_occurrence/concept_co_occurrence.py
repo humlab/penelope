@@ -4,12 +4,11 @@ from typing import Iterable, List, Set
 
 import pandas as pd
 import scipy
-from tqdm.auto import tqdm
-
 from penelope.corpus import VectorizedCorpus
 from penelope.corpus.interfaces import ICorpus, ITokenizedCorpus, PartitionKeys
 from penelope.corpus.vectorizer import CorpusVectorizer
 from penelope.utility import file_utility
+from tqdm.auto import tqdm
 
 from .term_term_matrix import to_dataframe
 from .windows_corpus import WindowsCorpus

@@ -1,8 +1,7 @@
 import os
 
-import pytest  # pylint: disable=unused-import
-
 import penelope.corpus.readers as readers
+import pytest  # pylint: disable=unused-import
 
 SPARV_CSV_EXPORT_FILENAME = './tests/test_data/prot_197677__27.tsv'
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'

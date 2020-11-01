@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Mapping, Tuple
 
 import pandas as pd
-
 from penelope.corpus.interfaces import ITokenizedCorpus
 
 WindowsStream = Iterator[Tuple[str, int, Iterator[str]]]

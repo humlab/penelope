@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from penelope.co_occurrence import partitioned_corpus_concept_co_occurrence
 from penelope.co_occurrence.concept_co_occurrence import (
     corpus_concept_co_occurrence,
