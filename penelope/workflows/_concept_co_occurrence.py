@@ -134,7 +134,7 @@ def execute_workflow(
     concept_co_occurrence.store_co_occurrences(output_filename, coo_df)
 
     if store_vectorized:
-        v_corpus = concept_co_occurrence.to_vectorized_corpus(co_occurrences=output_filename, value_column='value_n_t')
+        v_corpus = concept_co_occurrence.to_vectorized_corpus(co_occurrences=coo_df, value_column='value_n_t')
         v_corpus.dump(tag=strip_path_and_extension(output_filename), folder=os.path.split(output_filename)[0])
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
