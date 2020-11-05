@@ -69,7 +69,6 @@ class TokensSelector(abc.ABC):
 
 
 class QgridTokensSelector(TokensSelector):
-    
     def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
 
         super().__init__(tokens, token_column, norms_columns)
