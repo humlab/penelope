@@ -208,7 +208,7 @@ class VectorizedCorpus:
             data = pickle.load(f)
 
         token2id: Mapping = data["token2id"]
-        documents: pd.DataFrame = data["documents"]
+        documents: pd.DataFrame = data.get("documents", data.get("document_index", None))
 
         matrix_basename = VectorizedCorpus._matrix_filename(tag, folder)
 
