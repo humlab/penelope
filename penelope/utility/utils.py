@@ -308,6 +308,16 @@ def zip_get_text(zip_filename: str, filename: str) -> str:
         return zf.read(filename).decode(encoding='utf-8')
 
 
+def right_chop(s: str, suffix: str) -> str:
+    """Returns `s` with `suffix` removed"""
+    return s[: -len(suffix)] if suffix != "" and s.endswith(suffix) else s
+
+
+def left_chop(s: str, suffix: str) -> str:
+    """Returns `s` with `suffix` removed"""
+    return s[len(suffix) :] if suffix != "" and s.startswith(suffix) else s
+
+
 def slim_title(x: str) -> str:
     try:
         m = re.match(r'.*\((.*)\)$', x).groups()
