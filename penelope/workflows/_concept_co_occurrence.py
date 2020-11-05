@@ -25,7 +25,7 @@ def execute_workflow(
     pos_excludes: str = '|MAD|MID|PAD|',
     lemmatize: bool = True,
     to_lowercase: bool = True,
-    remove_stopwords: bool = None,
+    remove_stopwords: str = None,
     min_word_length: int = 1,
     keep_symbols: bool = True,
     keep_numerals: bool = True,
@@ -62,7 +62,7 @@ def execute_workflow(
     lemmatize : bool, optional
         If true then use word's baseform, by default True
     to_lowercase : bool, optional
-    remove_stopwords : bool, optional
+    remove_stopwords : str, optional
     min_word_length : int, optional
     keep_symbols : bool, optional
     keep_numerals : bool, optional
