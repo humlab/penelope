@@ -1,37 +1,18 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
+import pandas as pd
 import penelope.utility as utility
 import textacy
+from penelope.corpus import VectorizedCorpus
+from sklearn.feature_extraction.text import CountVectorizer
 
+from .tags import PoS_tags
 from .utils import frequent_document_words, infrequent_words, load_term_substitutions
 
 logger = utility.getLogger('corpus_text_analysis')
-
-POS_CODES = {
-    'ADJ',
-    'ADP',
-    'ADV',
-    'AUX',
-    'CONJ',
-    'CCONJ',
-    'DET',
-    'INTJ',
-    'NOUN',
-    'NUM',
-    'PART',
-    'PRON',
-    'PROPN',
-    'PUNCT',
-    'SCONJ',
-    'SYM',
-    'VERB',
-    'X',
-    'EOL',
-    'SPACE',
-}
 
 
 def chunks(lst, n):
@@ -172,8 +153,8 @@ class PoSFilter:
         self.include_pos = include_pos
         self.exclude_pos = exclude_pos
 
-        assert all([x in POS_CODES for x in (self.include_pos or [])])
-        assert all([x in POS_CODES for x in (self.exclude_pos or [])])
+        assert all([x in PoS_tags for x in (self.include_pos or [])])
+        assert all([x in PoS_tags for x in (self.exclude_pos or [])])
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
         pipeline.to_terms_list_kwargs['include_pos'] = self.include_pos
@@ -313,57 +294,36 @@ class FrequentWordsFilter(StopwordFilter):
         return pipeline
 
 
-# def extract_document_tokens(docs, **opts):
-#     try:
-#         document_id = 0
-#         normalize = opts['normalize'] or 'orth'
-#         term_substitutions = opts.get('substitutions', {})
-#         min_freq_stats = opts.get('min_freq_stats', {})
-#         max_doc_freq_stats = opts.get('max_doc_freq_stats', {})
-#         extra_stop_words = set([])
+def vectorize_textacy_corpus(
+    corpus,
+    documents: pd.DataFrame,
+    n_count: int,
+    n_top: int,
+    normalize_axis=None,
+    year_range: Tuple[int, int] = (1920, 2020),
+    extract_args: Dict[str, Any] = None,
+    vecargs=None,
+):
 
-#         if opts['min_freq'] > 1:
-#             assert normalize in min_freq_stats
-#             stop_words = utility.extract_counter_items_within_threshold(min_freq_stats[normalize], 1, opts['min_freq'])
-#             extra_stop_words.update(stop_words)
+    target = extract_args.get("normalize", "lemma")
 
-#         if opts['max_doc_freq'] < 100:
-#             assert normalize in max_doc_freq_stats
-#             stop_words = utility.extract_counter_items_within_threshold(
-#                 max_doc_freq_stats[normalize], opts['max_doc_freq'], 100
-#             )
-#             extra_stop_words.update(stop_words)
+    document_stream = ExtractPipeline.build(corpus, target).ingest(**extract_args).process()
 
-#         extract_args = dict(
-#             args=dict(
-#                 ngrams=opts['ngrams'],
-#                 named_entities=opts['named_entities'],
-#                 normalize=opts['normalize'],
-#                 as_strings=True,
-#             ),
-#             kwargs=dict(
-#                 min_freq=opts['min_freq'],
-#                 include_pos=opts['include_pos'],
-#                 filter_stops=opts['filter_stops'],
-#                 filter_punct=opts['filter_punct'],
-#             ),
-#             extra_stop_words=extra_stop_words,
-#             substitutions=(term_substitutions if opts.get('substitute_terms', False) else None),
-#         )
+    vectorizer = CountVectorizer(tokenizer=lambda x: x.split(), **(vecargs or {}))
 
-#         for document_name, doc in docs:
-#             # logger.info(document_name)
+    bag_term_matrix = vectorizer.fit_transform(document_stream)
 
-#             terms = [x for x in extract_document_terms(doc, extract_args)]
+    x_corpus = VectorizedCorpus(bag_term_matrix, vectorizer.vocabulary_, documents)
 
-#             chunk_size = opts.get('chunk_size', 0)
-#             chunk_index = 0
-#             for tokens in chunks(terms, chunk_size):
-#                 yield document_id, document_name, chunk_index, tokens
-#                 chunk_index += 1
+    year_range = (
+        x_corpus.documents.year.min(),
+        x_corpus.documents.year.max(),
+    )
+    year_filter = lambda x: year_range[0] <= x["year"] <= year_range[1]
 
-#             document_id += 1
+    x_corpus = x_corpus.filter(year_filter).group_by_year().slice_by_n_count(n_count).slice_by_n_top(n_top)
 
-#     except Exception as ex:
-#         logger.error(ex)
-#         raise
+    for axis in normalize_axis or []:
+        x_corpus = x_corpus.normalize(axis=axis, keep_magnitude=False)
+
+    return x_corpus
