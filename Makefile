@@ -2,6 +2,27 @@
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
 
+release: ready guard_clean_working_repository bump.patch tag
+
+ready: tools clean tidy test lint build
+
+build: requirements.txt
+	@poetry build
+
+lint: pylint flake8
+
+tidy: black isort
+
+test: clean
+	@mkdir -p ./tests/output
+	@poetry run pytest --verbose --durations=0 \
+		--cov=penelope \
+		--cov-report=term \
+		--cov-report=xml \
+		--cov-report=html \
+		tests
+	@rm -rf ./tests/output/*
+
 init: tools
 	@poetry install
 
@@ -21,10 +42,6 @@ tools:
 	@pip install --upgrade pip --quiet
 	@pip install poetry --upgrade --quiet
 
-build: tools requirements.txt
-	@poetry build
-
-release: guard_clean_working_repository tools bump.patch tag
 
 bump.patch: requirements.txt
 	@poetry run dephell project bump patch
@@ -41,16 +58,6 @@ tag:
 test-coverage:
 	-poetry run coverage --rcfile=.coveragerc run -m pytest
 	-poetry run coveralls
-
-test: clean
-	@mkdir -p ./tests/output
-	@poetry run pytest --verbose --durations=0 \
-		--cov=penelope \
-		--cov-report=term \
-		--cov-report=xml \
-		--cov-report=html \
-		tests
-	@rm -rf ./tests/output/*
 
 pytest:
 	@mkdir -p ./tests/output
@@ -72,10 +79,6 @@ flake8:
 	@poetry run flake8 --version
 	@poetry run flake8
 
-lint: pylint flake8
-
-format: clean black isort
-
 isort:
 	@poetry run isort --profile black --float-to-top --line-length 120 --py 38 $(SOURCE_FOLDERS)
 
@@ -86,10 +89,6 @@ yapf: clean
 black: clean
 	@poetry run black --version
 	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
-
-tidy: black isort
-
-ready: tools format tidy test flake8 pylint
 
 clean:
 	@rm -rf .pytest_cache build dist .eggs *.egg-info
@@ -102,7 +101,7 @@ clean:
 clean_cache:
 	@poetry cache clear pypi --all
 
-penelope_data: nltk_data
+data: nltk_data spacy_data
 
 nltk_data:
 	@mkdir -p $(NLTK_DATA)
@@ -131,6 +130,35 @@ requirements.txt: poetry.lock
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
-.PHONY: check gh-exists
-.PHONY: init lint release flake8 pylint pytest pylint2 ready format yapf black clean test test-coverage \
-	update install_graphtool gh build isort tidy tag tools bump.patch penelope_data nltk_data
+.PHONY: help check init version
+.PHONY: lint flake8 pylint pylint2 yapf black isort tidy
+.PHONY: test test-coverage pytest
+.PHONY: ready build tag bump.patch release
+.PHONY: clean clean_cache update
+.PHONY: install_graphtool gh check-gh gh-exists tools
+.PHONY: data spacy_data nltk_data
+
+help:
+	@echo "Higher level recepies: "
+	@echo " make ready            Makes ready for release (tools tidy test flake8 pylint)"
+	@echo " make build            Updates tools, requirement.txt and build dist/wheel"
+	@echo " make release          Bumps version (patch), pushes to origin and creates a tag on origin"
+	@echo " make test             Runs tests with code coverage"
+	@echo " make lint             Runs pylint and flake8"
+	@echo " make tidy             Runs black and isort"
+	@echo " make clean            Removes temporary files, caches, build files"
+	@echo " make data             Downloads NLTK and SpaCy data"
+	@echo "  "
+	@echo "Lower level recepies: "
+	@echo " make init             Install development tools and dependencies (dev recepie)"
+	@echo " make tag              bump.patch + creates a tag on origin"
+	@echo " make bump.patch       Bumps version (patch), pushes to origin"
+	@echo " make pytest           Runs teets without code coverage"
+	@echo " make pylint           Runs pylint"
+	@echo " make pytest2          Runs pylint on a per-file basis"
+	@echo " make flake8           Runs flake8 (black, flake8-pytest-style, mccabe, naming, pycodestyle, pyflakes)"
+	@echo " make isort            Runs isort"
+	@echo " make yapf             Runs yapf"
+	@echo " make black            Runs black"
+	@echo " make gh               Installs Github CLI"
+	@echo " make update           Updates dependencies"
