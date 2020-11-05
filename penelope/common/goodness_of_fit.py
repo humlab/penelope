@@ -11,7 +11,8 @@ from numpy.polynomial.polynomial import Polynomial as polyfit
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 
-def gof_by_l2_norm(matrix, axis=1, scale=True):
+def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
+
     """Computes L2 norm for rows (axis = 1) or columns (axis = 0).
 
     See stats.stackexchange.com/questions/25827/how-does-one-measure-the-non-uniformity-of-a-distribution
@@ -136,14 +137,30 @@ def kullback_leibler_divergence_to_uniform(p):
     return kld
 
 
-def compute_goddness_of_fits_to_uniform(x_corpus):
+def compute_goddness_of_fits_to_uniform(
+    x_corpus: VectorizedCorpus, n_top_count: int = None, verbose=False
+) -> pd.DataFrame:
+    """Returns metric of how well the token distributions fit a uniform distribution.
 
+    Parameters
+    ----------
+    x_corpus : VectorizedCorpus
+    n_top_count : int, optional
+        Only return the `n_top_count` most frequent tokens, by default None
+    verbose : bool, optional
+        Reduces the number of returned columns, by default False
+
+    Returns
+    -------
+    pd.DataFrame
+        [description]
+    """
     x_corpus = x_corpus.todense()
     xs_years = x_corpus.xs_years()
 
     dtm = x_corpus.data
 
-    df = pd.DataFrame(
+    df_gof = pd.DataFrame(
         {
             'token': [x_corpus.id2token[i] for i in range(0, dtm.shape[1])],
             'word_count': [x_corpus.word_counts[x_corpus.id2token[i]] for i in range(0, dtm.shape[1])],
@@ -154,44 +171,78 @@ def compute_goddness_of_fits_to_uniform(x_corpus):
     chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
     ks, ms = list(zip(*[fit_polynomial(dtm[:, i], xs_years, 1) for i in range(0, dtm.shape[1])]))
 
-    df['slope'] = ks
-    df['intercept'] = ms
+    df_gof['slope'] = ks
+    df_gof['intercept'] = ms
 
-    df['chi2_stats'] = chi2_stats
-    df['chi2_p'] = chi2_p
+    df_gof['chi2_stats'] = chi2_stats
+    df_gof['chi2_p'] = chi2_p
 
-    df['min'] = [dtm[:, i].min() for i in range(0, dtm.shape[1])]
-    df['max'] = [dtm[:, i].max() for i in range(0, dtm.shape[1])]
-    df['mean'] = [dtm[:, i].mean() for i in range(0, dtm.shape[1])]
-    df['var'] = [dtm[:, i].var() for i in range(0, dtm.shape[1])]
+    df_gof['min'] = [dtm[:, i].min() for i in range(0, dtm.shape[1])]
+    df_gof['max'] = [dtm[:, i].max() for i in range(0, dtm.shape[1])]
+    df_gof['mean'] = [dtm[:, i].mean() for i in range(0, dtm.shape[1])]
+    df_gof['var'] = [dtm[:, i].var() for i in range(0, dtm.shape[1])]
 
-    df['earth_mover'] = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    df['entropy'] = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    df['kld'] = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    df_gof['earth_mover'] = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    df_gof['entropy'] = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    df_gof['kld'] = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
 
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.skew.html
-    df['skew'] = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    df_gof['skew'] = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
 
     # df['ols_m_k_p_xs_ys'] = [ gof.fit_ordinary_least_square(dtm[:,i], xs=xs_years) for i in range(0, dtm.shape[1]) ]
     # df['ols_k']           = [ m_k_p_xs_ys[1] for m_k_p_xs_ys in df.ols_m_k_p_xs_ys.values ]
     # df['ols_m']           = [ m_k_p_xs_ys[0] for m_k_p_xs_ys in df.ols_m_k_p_xs_ys.values ]
 
-    df.sort_values(['l2_norm'], ascending=False, inplace=True)
+    df_gof.sort_values(['l2_norm'], ascending=False, inplace=True)
 
     # uniform_constant = 1.0 / math.sqrt(float(dtm.shape[0]))
 
+    if (n_top_count or 0) > 0:
+        df_gof = df_gof.nlargest(10, columns=["word_count"])
+
+    if not verbose:
+        df_gof = df_gof[
+            [
+                "token",
+                "word_count",
+                "l2_norm",
+                "slope",
+                "chi2_stats",
+                "earth_mover",
+                "kld",
+                "skew",
+                "entropy",
+            ]
+        ]
+
+    return df_gof
+
+
+def get_most_deviating_words(df_gof, metric, n_count=500, ascending=False, abs_value=False):
+
+    # better sorting: df.iloc[df['b'].abs().argsort()]
+    # descending: df.iloc[(-df['b'].abs()).argsort()]
+
+    # df = (
+    #     df_gof.reindex(df_gof[metric].abs().sort_values(ascending=False).index)
+    #     if abs_value
+    #     else df_gof.nlargest(n_count, columns=metric).sort_values(by=metric, ascending=ascending)
+    # )
+
+    # df = df.reset_index()[['token', metric]].rename(columns={'token': metric + '_token'})
+
+    abs_metric = f'abs_{metric}'
+    df = df_gof[['token', metric]].rename(columns={'token': metric + '_token'})
+    df[abs_metric] = df[metric].abs()
+
+    sort_column = abs_metric if abs_value else metric
+
+    df = df.sort_values(by=sort_column, ascending=ascending)
+
+    if n_count > 0:
+        df = df.nlargest(n_count, columns=abs_metric)
+
     return df
-
-
-def get_most_deviating_words(df, metric, n_count=500, ascending=False, abs_value=False):
-
-    sx = (
-        df.reindex(df[metric].abs().sort_values(ascending=False).index)
-        if abs_value
-        else df.nlargest(n_count, columns=metric).sort_values(by=metric, ascending=ascending)
-    )
-
-    return sx.reset_index()[['token', metric]].rename(columns={'token': metric + '_token'})
 
 
 def compile_most_deviating_words(df, n_count=500):
@@ -202,7 +253,7 @@ def compile_most_deviating_words(df, n_count=500):
         .join(get_most_deviating_words(df, 'chi2_stats', n_count))
         .join(get_most_deviating_words(df, 'earth_mover', n_count))
         .join(get_most_deviating_words(df, 'kld', n_count))
-        .join(get_most_deviating_words(df, 'entropy', n_count))
+        .join(get_most_deviating_words(df, 'skew', n_count))
     )
 
     return xf
@@ -239,7 +290,9 @@ def plot_metrics(df_gof, bins=100):
     bokeh.plotting.show(gp)
 
 
-def plot_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str) -> Dict:
+def plot_slopes(
+    x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str, plot_height=300, plot_width=300
+) -> Dict:
     def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
 
         min_year = x_corpus.documents.year.min()
@@ -265,7 +318,7 @@ def plot_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric
 
     color_mapper = bokeh.models.LinearColorMapper(palette='Magma256', low=min(data['k']), high=max(data['k']))
 
-    p = bokeh.plotting.figure(plot_height=300, plot_width=300, tools='pan,wheel_zoom,box_zoom,reset')
+    p = bokeh.plotting.figure(plot_height=plot_height, plot_width=plot_width, tools='pan,wheel_zoom,box_zoom,reset')
     p.multi_line(
         xs='xs',
         ys='ys',
