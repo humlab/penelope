@@ -198,7 +198,7 @@ def compute_goddness_of_fits_to_uniform(
     # uniform_constant = 1.0 / math.sqrt(float(dtm.shape[0]))
 
     if (n_top_count or 0) > 0:
-        df_gof = df_gof.nlargest(10, columns=["word_count"])
+        df_gof = df_gof.nlargest(n_top_count, columns=["word_count"])
 
     if not verbose:
         df_gof = df_gof[
@@ -218,7 +218,7 @@ def compute_goddness_of_fits_to_uniform(
     return df_gof
 
 
-def get_most_deviating_words(df_gof, metric, n_count=500, ascending=False, abs_value=False):
+def get_most_deviating_words(df_gof: pd.DataFrame, metric: str, n_count: int=500, ascending: bool=False, abs_value: bool=False):
 
     # better sorting: df.iloc[df['b'].abs().argsort()]
     # descending: df.iloc[(-df['b'].abs()).argsort()]
