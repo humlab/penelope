@@ -3,8 +3,8 @@ import logging
 
 from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 
-from .annotation_opts import AnnotationOpts
 from .interfaces import FilenameOrFolderOrZipOrList
+from .option_objects import AnnotationOpts
 from .text_tokenizer import TextTokenizer
 from .text_transformer import TextTransformer
 

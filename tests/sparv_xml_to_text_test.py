@@ -1,7 +1,5 @@
-import lxml
 import penelope.corpus.sparv.sparv_xml_to_text as sparv
-import pytest  # pylint: disable=unused-import
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export_small.xml'
 

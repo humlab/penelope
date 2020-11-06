@@ -2,9 +2,8 @@ import json
 import os
 from typing import Any
 
-from penelope.corpus import CorpusVectorizer, SparvTokenizedCsvCorpus, VectorizedCorpus
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import CorpusVectorizer, SparvTokenizedCsvCorpus, TokensTransformOpts, VectorizedCorpus
+from penelope.corpus.readers import AnnotationOpts
 from penelope.utility import getLogger, replace_extension
 
 from .utils import WorkflowException

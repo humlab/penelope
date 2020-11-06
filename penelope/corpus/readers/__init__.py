@@ -1,7 +1,7 @@
-from .annotation_opts import AnnotationOpts
 from .dataframe_text_tokenizer import DataFrameTextTokenizer
 from .in_memory_data_reader import InMemoryReader
 from .interfaces import ICorpusReader
+from .option_objects import AnnotationOpts
 from .sparv_csv_tokenizer import SparvCsvTokenizer
 from .sparv_xml_tokenizer import Sparv3XmlTokenizer, SparvXmlTokenizer
 from .streamify_text_source import streamify_text_source

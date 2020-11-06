@@ -1,70 +1,28 @@
 import glob
 import os
 import types
-from typing import Callable, Set
+from typing import Callable
 
 import ipywidgets as widgets
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
+from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import flatten, replace_extension, strip_paths
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import concept_co_occurrence_workflow
-
-# from penelope.utility.utils import right_chop, getLogger
 
 # logger = getLogger('corpus_text_analysis')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
 
-def generate_concept_co_occurrences(
-    input_filename: str,
-    output_filename: str,
-    *,
-    concept: Set[str],
-    context_width: int,
-    count_threshold: int = 1,
-    no_concept: bool = False,
-    annotation_opts: AnnotationOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
-):
-    """[summary]
-
-    Parameters
-    ----------
-    input_filename : str
-        [description]
-    output_filename : str
-        [description]
-    concept : Set[str]
-        [description]
-    context_width : int
-        [description]
-    annotation_opts : AnnotationOpts
-    count_threshold : int, optional
-        [description], by default 1
-    no_concept : bool, optional
-        [description], by default False
-    tokens_transform_opts : TokensTransformOpts, optional
-    """
-    concept_co_occurrence_workflow(
-        input_filename=input_filename,
-        output_filename=output_filename,
-        concept=concept,
-        no_concept=no_concept,
-        count_threshold=count_threshold if count_threshold is not None and count_threshold > 1 else None,
-        context_width=context_width,
-        partition_keys="year",
-        filename_field={"year": r"prot\_(\d{4}).*"},
-        annotation_opts=annotation_opts,
-        tokens_transform_opts=tokens_transform_opts,
-        store_vectorized=True,
-    )
-
-
 def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Callable):
     lw = lambda w: widgets.Layout(width=w)
     corpus_filenames = list(map(strip_paths, sorted(glob.glob(os.path.join(data_folder, corpus_pattern)))))
+
+    # Hard coded for now, must be changed!!!!
+    filename_field = {"year": r"prot\_(\d{4}).*"}
+    partition_keys = "year"
 
     gui = types.SimpleNamespace(
         input_filename=widgets.Dropdown(description='Corpus', options=corpus_filenames, value=None, layout=lw('400px')),
@@ -88,6 +46,13 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
             rows=8,
             description='PoS',
             disabled=False,
+            layout=lw('400px'),
+        ),
+        filename_fields=widgets.Text(
+            value=r"year:prot\_(\d{4}).*",
+            placeholder='Fields to extract from filename (regex)',
+            description='Fields',
+            disabled=True,
             layout=lw('400px'),
         ),
         context_width=widgets.IntSlider(description='Context Size', min=1, max=20, step=1, value=2, layout=lw('400px')),
@@ -144,15 +109,22 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
                 pos_excludes="|MAD|MID|PAD|",
                 lemmatize=gui.lemmatize.value,
             )
-            generate_concept_co_occurrences(
+
+            concept_opts = ConceptContextOpts(
+                concept=concept, context_width=gui.context_width.value, ignore_concept=gui.no_concept.value
+            )
+            count_threshold = None if gui.count_threshold.value < 2 else gui.count_threshold.value
+
+            concept_co_occurrence_workflow(
                 input_filename=input_filename,
                 output_filename=output_filename,
-                concept=concept,
-                context_width=gui.context_width.value,
-                count_threshold=gui.count_threshold.value,
-                no_concept=gui.no_concept.value,
+                concept_opts=concept_opts,
+                count_threshold=count_threshold,
+                partition_keys=partition_keys,
+                filename_field=filename_field,
                 annotation_opts=annotation_opts,
                 tokens_transform_opts=tokens_transform_opts,
+                store_vectorized=True,
             )
 
             if generated_callback is not None:

@@ -1,7 +1,7 @@
 from typing import Any
 
 import click
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import getLogger
 from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow

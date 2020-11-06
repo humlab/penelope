@@ -44,11 +44,15 @@ def execute_workflow(
         filename_fields=filename_field,
         as_binary=False,
         tokenize=None,
-        text_transform_opts=TextTransformOpts(fix_whitespaces=True, fix_hyphenation=True),
     )
 
     corpus = TokenizedCorpus(
-        TextTokenizer(source=input_filename, **tokenizer_opts), tokens_transform_opts=tokens_transform_opts
+        TextTokenizer(
+            source=input_filename,
+            **tokenizer_opts,
+            text_transform_opts=TextTransformOpts(fix_whitespaces=True, fix_hyphenation=True),
+        ),
+        tokens_transform_opts=tokens_transform_opts,
     )
 
     logger.info('Creating document-term matrix...')

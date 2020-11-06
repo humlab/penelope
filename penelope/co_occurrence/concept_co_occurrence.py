@@ -1,5 +1,6 @@
 import collections
 import itertools
+from dataclasses import dataclass, field
 from typing import Iterable, List, Set
 
 import pandas as pd
@@ -14,9 +15,23 @@ from .term_term_matrix import to_dataframe
 from .windows_corpus import WindowsCorpus
 
 
-def tokens_concept_windows(
-    tokens: Iterable[str], concept: Set[str], no_concept: bool, n_context_width: int, padding='*'
-):
+@dataclass
+class ConceptContextOpts:
+
+    concept: Set[str] = field(default_factory=set)
+    ignore_concept: bool = False
+    context_width: int = 2
+
+    @property
+    def props(self):
+        return {
+            'concepts': list(self.concept),
+            'ignore_concept': self.ignore_concept,
+            'context_width': self.context_width,
+        }
+
+
+def tokens_concept_windows(tokens: Iterable[str], concept_opts: ConceptContextOpts, padding='*'):
     """Yields a sequence of windows centered on any of the concept's token stored in `concept`.
     `n_window` is the the number of tokens to either side of the docus word, i.e.
     the total size of the window is (n_window + 1 + n_window).
@@ -29,12 +44,13 @@ def tokens_concept_windows(
     ----------
     tokens : Iterable[str]
         The sequence of tokens to be windowed
-    concept : Sequence[str]
-        The token(s) in focus.
-    no_concept: bool
-        If to then filter ut the foxus word.
-    n_context_width : int
-        The number of tokens to either side of the token in focus.
+    concept_opts: ConceptContextOpts
+        concept : Sequence[str]
+            The token(s) in focus.
+        no_concept: bool
+            If to then filter ut the foxus word.
+        n_context_width : int
+            The number of tokens to either side of the token in focus.
 
     Returns
     -------
@@ -47,9 +63,11 @@ def tokens_concept_windows(
         [description]
     """
 
-    n_window = 2 * n_context_width + 1
+    n_window = 2 * concept_opts.context_width + 1
 
-    _tokens = itertools.chain([padding] * n_context_width, tokens, [padding] * n_context_width)
+    _tokens = itertools.chain(
+        [padding] * concept_opts.context_width, tokens, [padding] * concept_opts.context_width
+    )
     # _tokens = iter(_tokens)
 
     # FIXME: #7 Add test case for --no-concept option
@@ -57,23 +75,19 @@ def tokens_concept_windows(
     window = collections.deque((next(_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
     for token in _tokens:
         window.append(token)
-        if window[n_context_width] in concept:
+        if window[concept_opts.context_width] in concept_opts.concept:
             concept_window = list(window)
-            if no_concept:
-                _ = concept_window.pop(n_context_width)
+            if concept_opts.ignore_concept:
+                _ = concept_window.pop(concept_opts.context_width)
             yield concept_window
 
 
-def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_context_width: int, pad: str = "*"):
+def corpus_concept_windows(corpus: ICorpus, concept_opts: ConceptContextOpts, pad: str = "*"):
 
     win_iter = (
         [filename, i, window]
         for filename, tokens in corpus
-        for i, window in enumerate(
-            tokens_concept_windows(
-                tokens=tokens, concept=concept, no_concept=no_concept, n_context_width=n_context_width, padding=pad
-            )
-        )
+        for i, window in enumerate(tokens_concept_windows(tokens=tokens, concept_opts=concept_opts, padding=pad))
     )
     return win_iter
 
@@ -81,9 +95,7 @@ def corpus_concept_windows(corpus: ICorpus, concept: Set, no_concept: bool, n_co
 def corpus_concept_co_occurrence(
     corpus: ITokenizedCorpus,
     *,
-    concepts: Set[str],
-    no_concept: bool,
-    n_context_width: int,
+    concept_opts: ConceptContextOpts,
     filenames: List[str] = None,
     n_count_threshold: int = 1,
 ):
@@ -93,12 +105,8 @@ def corpus_concept_co_occurrence(
     ----------
     corpus : ITokenizedCorpus
         Tokenized corpus
-    concept : Set[str]
-        The concept that the defines the context, always the middle word in the window
-    no_concept : bool
-        If True then filter out concept from result
-    n_context_width : int
-        Width of left/right context
+    concept_opts : ConceptCoOccurrenceOpts
+        The concept definition (concept tokens, context width, concept remove option)
     filenames : List[str], optional
         Corpus filename subset, by default None
     n_count_threshold : int, optional
@@ -110,9 +118,7 @@ def corpus_concept_co_occurrence(
         [description]
     """
 
-    windows = corpus_concept_windows(
-        corpus, concept=concepts, no_concept=no_concept, n_context_width=n_context_width, pad='*'
-    )
+    windows = corpus_concept_windows(corpus, concept_opts=concept_opts, pad='*')
 
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=corpus.token2id)
     v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
@@ -131,10 +137,8 @@ def corpus_concept_co_occurrence(
 def partitioned_corpus_concept_co_occurrence(
     corpus: ITokenizedCorpus,
     *,
-    concepts: Set[str],
-    no_concept: bool,
+    concept_opts: ConceptContextOpts,
     n_count_threshold: int,
-    n_context_width: int,
     partition_keys: PartitionKeys = 'year',
 ) -> pd.DataFrame:
     """[summary]
@@ -143,14 +147,15 @@ def partitioned_corpus_concept_co_occurrence(
     ----------
     corpus : ITokenizedCorpus
         The source corpus
-    concept : Set[str]
-        The word(s) in focus
-    no_concept: bool
-        If True then the focus word is filtered out
+    concept_opts: ConceptContextOpts
+        concept : Set[str]
+            The word(s) in focus
+        no_concept: bool
+            If True then the focus word is filtered out
+        n_context_width : int
+            Number of tokens to either side of concept word
     n_count_threshold : int
         Min number of global co-occurrence count (i.e. sum over all partitions) to include in result
-    n_context_width : int
-        Number of tokens to either side of concept word
     partition_key : str, optional
         Document field to use when partitioning the data, by default 'year'
 
@@ -175,10 +180,8 @@ def partitioned_corpus_concept_co_occurrence(
 
         df_partition = corpus_concept_co_occurrence(
             corpus,
-            concepts=concepts,
-            no_concept=no_concept,
+            concept_opts=concept_opts,
             n_count_threshold=1,  # no threshold for single partition
-            n_context_width=n_context_width,
             filenames=filenames,
         )
 

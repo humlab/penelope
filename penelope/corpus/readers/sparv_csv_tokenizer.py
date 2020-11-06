@@ -3,8 +3,8 @@ import logging
 
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
-from .annotation_opts import AnnotationOpts
 from .interfaces import FilenameOrFolderOrZipOrList
+from .option_objects import AnnotationOpts
 from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)

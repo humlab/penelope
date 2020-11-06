@@ -1,5 +1,5 @@
 import penelope.corpus.readers as readers
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'

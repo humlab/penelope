@@ -2,7 +2,7 @@ import json
 
 import click
 import penelope.corpus.sparv_corpus as sparv_corpus
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, suffix_filename, timestamp_filename
 

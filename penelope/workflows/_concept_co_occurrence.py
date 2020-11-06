@@ -2,8 +2,13 @@ import json
 import os
 from typing import Any, List, Tuple
 
-import penelope.co_occurrence.concept_co_occurrence as concept_co_occurrence
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.co_occurrence import (
+    ConceptContextOpts,
+    partitioned_corpus_concept_co_occurrence,
+    store_co_occurrences,
+    to_vectorized_corpus,
+)
+from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, strip_path_and_extension
@@ -17,15 +22,13 @@ def execute_workflow(
     input_filename: str,
     output_filename: str,
     *,
-    concept: List[str] = None,
-    no_concept: bool = False,
-    count_threshold: int = None,
-    context_width: int = None,
-    partition_keys: Tuple[str, List[str]],
+    concept_opts: ConceptContextOpts = None,
     annotation_opts: AnnotationOpts = None,
+    tokens_transform_opts: TokensTransformOpts = None,
+    count_threshold: int = None,
+    partition_keys: Tuple[str, List[str]],
     filename_field: Any = None,
     store_vectorized: bool = False,
-    tokens_transform_opts: TokensTransformOpts = None,
 ):
     """Creates concept co-occurrence using specified options and stores a co-occurrence CSV file
     and optionally a vectorized corpus.
@@ -40,14 +43,15 @@ def execute_workflow(
         Key in corpus document index to use to split corpus in sub-corpora.
         Each sub-corpus co-occurrence is associated to corresponding key value.
         Usually the `year` column in the document index.
-    concept : List[str], optional
-        Tokens that defines the concept, by default None
-    no_concept : bool, optional
-        Specifies if concept should be removed from result, by default False
+    concept_opts: ConceptContextOpts
+        concept : List[str], optional
+            Tokens that defines the concept, by default None
+        no_concept : bool, optional
+            Specifies if concept should be removed from result, by default False
+        context_width : int, optional
+            Width of context i.e. distance to cencept word, by default None
     count_threshold : int, optional
         Word pair count threshold (entire corpus, by default None
-    context_width : int, optional
-        Width of context i.e. distance to cencept word, by default None
     annotation_opts : AnnotationOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
     filename_field : Any, optional
@@ -61,7 +65,7 @@ def execute_workflow(
     WorkflowException
         When any argument check fails.
     """
-    if len(concept or []) == 0:
+    if len(concept_opts.concept or []) == 0:
         raise WorkflowException("please specify at least one concept (--concept e.g. --concept=information)")
 
     if len(filename_field or []) == 0:
@@ -69,7 +73,7 @@ def execute_workflow(
             "please specify at least one filename field (--filename-field e.g. --filename-field='year:_:1')"
         )
 
-    if context_width is None:
+    if concept_opts.context_width is None:
         raise WorkflowException(
             "please specify at width of context as max distance from cencept (--context-width e.g. --context_width=2)"
         )
@@ -86,30 +90,26 @@ def execute_workflow(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    coo_df = concept_co_occurrence.partitioned_corpus_concept_co_occurrence(
+    coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
-        concepts=concept,
-        no_concept=no_concept,
+        concept_opts=concept_opts,
         n_count_threshold=count_threshold,
-        n_context_width=context_width,
         partition_keys=partition_keys,
     )
 
-    concept_co_occurrence.store_co_occurrences(output_filename, coo_df)
+    store_co_occurrences(output_filename, coo_df)
 
     if store_vectorized:
-        v_corpus = concept_co_occurrence.to_vectorized_corpus(co_occurrences=coo_df, value_column='value_n_t')
+        v_corpus = to_vectorized_corpus(co_occurrences=coo_df, value_column='value_n_t')
         v_corpus.dump(tag=strip_path_and_extension(output_filename), folder=os.path.split(output_filename)[0])
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         store_options = {
             'input': input_filename,
             'output': output_filename,
-            'concepts': list(concept),
-            'no_concept': no_concept,
             'n_count_threshold': count_threshold,
-            'n_context_width': context_width,
             'partition_keys': partition_keys,
+            'concept_opts': concept_opts.props,
             'tokenizer_opts': tokenizer_opts,
             'tokens_transform_opts': tokens_transform_opts.props,
             'annotation_opts': annotation_opts.props,

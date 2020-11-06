@@ -2,7 +2,7 @@ import sys
 from typing import Any, List
 
 import click
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
 

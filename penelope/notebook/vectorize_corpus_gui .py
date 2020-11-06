@@ -4,7 +4,7 @@ import types
 from typing import Callable
 
 import ipywidgets as widgets
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import flatten, strip_paths
 from penelope.utility.tags import SUC_PoS_tag_groups

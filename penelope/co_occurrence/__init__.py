@@ -1,5 +1,6 @@
 from .compute_hal_or_glove import compute
 from .concept_co_occurrence import (
+    ConceptContextOpts,
     corpus_concept_windows,
     load_co_occurrences,
     partitioned_corpus_concept_co_occurrence,

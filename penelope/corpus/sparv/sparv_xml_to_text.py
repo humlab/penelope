@@ -3,7 +3,7 @@ import logging
 import os
 
 from lxml import etree
-from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.readers import AnnotationOpts
 
 logger = logging.getLogger(__name__)
 
