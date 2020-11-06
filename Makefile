@@ -1,6 +1,7 @@
 .DEFAULT_GOAL=lint
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
+PACKAGE_FOLDER=penelope
 
 release: ready guard_clean_working_repository bump.patch tag
 
@@ -16,7 +17,7 @@ tidy: black isort
 test: clean
 	@mkdir -p ./tests/output
 	@poetry run pytest --verbose --durations=0 \
-		--cov=penelope \
+		--cov=$(PACKAGE_FOLDER) \
 		--cov-report=term \
 		--cov-report=xml \
 		--cov-report=html \
@@ -103,6 +104,9 @@ clean_cache:
 
 data: nltk_data spacy_data
 
+update:
+	@poetry update
+
 nltk_data:
 	@mkdir -p $(NLTK_DATA)
 	@poetry run python -m nltk.downloader -d $(NLTK_DATA) stopwords punkt sentiwordnet
@@ -114,9 +118,6 @@ gh:
 	@sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
 	@sudo apt-add-repository https://cli.github.com/packages
 	@sudo apt update && sudo apt install gh
-
-update:
-	@poetry update
 
 install_graphtool:
 	@echo "source code repository: https://git.skewed.de/count0/graph-tool"
