@@ -1,5 +1,5 @@
 import pytest  # pylint: disable=unused-import
-from penelope.corpus.text_transformer import TextTransformer
+from penelope.corpus import TextTransformer
 
 
 @pytest.mark.xfail

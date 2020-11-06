@@ -1,4 +1,5 @@
 from .interfaces import ICorpus, ITokenizedCorpus
+from .readers import TEXT_TRANSFORMS, AnnotationOpts, TextTransformer, TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (
     SparvTokenizedCsvCorpus,
@@ -8,8 +9,8 @@ from .sparv_corpus import (
 )
 from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
-from .text_transformer import TRANSFORMS, TextTransformer
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
+from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer, TokensTransformOpts
 from .transforms import (
     has_alpha_filter,
     lower_transform,
@@ -28,4 +29,3 @@ from .transforms import (
 from .utils import preprocess_text_corpus
 from .vectorized_corpus import VectorizedCorpus, load_cached_normalized_vectorized_corpus, load_corpus
 from .vectorizer import CorpusVectorizer
-from .vectorizer import generate_corpus as vectorize_stored_corpus

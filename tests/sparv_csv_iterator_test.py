@@ -1,7 +1,7 @@
 import os
 
 import penelope.corpus.readers as readers
-import pytest  # pylint: disable=unused-import
+from penelope.corpus.readers import AnnotationOpts
 
 SPARV_CSV_EXPORT_FILENAME = './tests/test_data/prot_197677__27.tsv'
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
@@ -21,7 +21,8 @@ def sparv_csv_export_small_text():
 def test_reader_when_no_transforms_returns_source_tokens():
 
     tokenizer = readers.SparvCsvTokenizer(
-        source=SPARV_CSV_EXPORT_FILENAME_SMALL, pos_includes=None, pos_excludes=None, lemmatize=False, append_pos=False
+        source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        annotation_opts=AnnotationOpts(pos_includes=None, pos_excludes=None, lemmatize=False),
     )
 
     expected = "Rödräven är ett hunddjur som har en mycket vidsträckt utbredning över norra halvklotet .".split()
@@ -35,7 +36,8 @@ def test_reader_when_no_transforms_returns_source_tokens():
 def test_reader_when_only_nn_returns_only_nn():
 
     tokenizer = readers.SparvCsvTokenizer(
-        source=SPARV_CSV_EXPORT_FILENAME_SMALL, pos_includes='NN', pos_excludes=None, lemmatize=False, append_pos=False
+        source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        annotation_opts=AnnotationOpts(pos_includes='NN', pos_excludes=None, lemmatize=False),
     )
 
     expected = "Rödräven hunddjur utbredning halvklotet".split()
@@ -49,7 +51,8 @@ def test_reader_when_only_nn_returns_only_nn():
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
     tokenizer = readers.SparvCsvTokenizer(
-        source=SPARV_CSV_EXPORT_FILENAME_SMALL, pos_includes='NN', pos_excludes=None, lemmatize=True, append_pos=False
+        source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        annotation_opts=AnnotationOpts(pos_includes='NN', pos_excludes=None, lemmatize=True),
     )
 
     expected = "rödräv hunddjur utbredning halvklot".split()
@@ -64,10 +67,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
-        pos_includes='NN|VB',
-        pos_excludes=None,
-        lemmatize=True,
-        append_pos=False,
+        annotation_opts=AnnotationOpts(pos_includes='NN|VB', pos_excludes=None, lemmatize=True),
     )
 
     expected = "rödräv vara hunddjur ha utbredning halvklot".split()
@@ -78,10 +78,11 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
     assert expected == tokens
 
 
-def test_reader_when_lemmatized_nn_vb_pos_appendedreturns_lemmatized_nn_vb_pos():
+def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos():
 
     tokenizer = readers.SparvCsvTokenizer(
-        source=SPARV_CSV_EXPORT_FILENAME_SMALL, pos_includes='NN|VB', pos_excludes=None, lemmatize=True, append_pos=True
+        source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        annotation_opts=AnnotationOpts(pos_includes='NN|VB', pos_excludes=None, lemmatize=True, append_pos=True),
     )
 
     expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN".split()
@@ -99,9 +100,14 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     ]
     expected_names = ["sparv_1978_001.txt"]
 
-    opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
-
-    reader = readers.SparvCsvTokenizer(SPARV_ZIPPED_CSV_EXPORT_FILENAME, **opts)
+    reader = readers.SparvCsvTokenizer(
+        SPARV_ZIPPED_CSV_EXPORT_FILENAME,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(
+            pos_includes='|NN|',
+            lemmatize=True,
+        ),
+    )
 
     for i, (document_name, tokens) in enumerate(reader):
 

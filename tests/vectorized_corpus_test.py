@@ -6,6 +6,7 @@ import pandas as pd
 import penelope.corpus.tokenized_corpus as corpora
 import scipy
 from penelope.corpus import vectorized_corpus, vectorizer
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER, create_text_tokenizer
 
@@ -28,7 +29,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
     def create_corpus(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=True,
             to_lower=True,
             remove_accents=False,
@@ -36,7 +37,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
             max_len=None,
             keep_numerals=False,
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         return corpus
 
     def create_vectorized_corpus(self):

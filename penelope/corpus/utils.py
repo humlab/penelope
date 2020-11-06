@@ -3,7 +3,7 @@ import zipfile
 from penelope.utility import create_iterator
 from tqdm.auto import tqdm
 
-from .text_transformer import TextTransformer
+from .readers import TextTransformer
 
 
 def preprocess_text_corpus(source_filename: str, target_filename: str, filename_pattern: str = '*.txt', _tqdm=tqdm):

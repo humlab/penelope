@@ -1,28 +1,26 @@
 import logging
-import os
 from typing import Callable, Iterable, Mapping, Tuple, Union
 
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .readers import TextTokenizer
 from .tokenized_corpus import TokenizedCorpus
 from .vectorized_corpus import VectorizedCorpus
 
 logger = logging.getLogger("corpus_vectorizer")
 
 
-def _default_tokenizer(lowercase=True):
-    def _lowerccase_tokenize(tokens):
-        return [x.lower() for x in tokens]
+# def _default_tokenizer(lowercase=True):
+#     def _lowerccase_tokenize(tokens):
+#         return [x.lower() for x in tokens]
 
-    def _no_tokenize(tokens):
-        return tokens
+#     def _no_tokenize(tokens):
+#         return tokens
 
-    if lowercase:
-        return lambda tokens: [x.lower() for x in tokens]
+#     if lowercase:
+#         return lambda tokens: [x.lower() for x in tokens]
 
-    return _lowerccase_tokenize if lowercase else _no_tokenize
+#     return _lowerccase_tokenize if lowercase else _no_tokenize
 
 
 def _no_tokenize(tokens):
@@ -113,48 +111,4 @@ class CorpusVectorizer:
         return v_corpus
 
 
-def generate_corpus(filename: str, output_folder: str, **kwargs):
-    """[summary]
-
-    Parameters
-    ----------
-    filename : str
-        Source filename
-    output_folder : str
-        Target folder
-    """
-    if not os.path.isfile(filename):
-        logger.error('no such file: {}'.format(filename))
-        return
-
-    dump_tag = '{}_{}_{}_{}'.format(
-        os.path.basename(filename).split('.')[0],
-        'L{}'.format(kwargs.get('min_len', 0)),
-        '-N' if kwargs.get('keep_numerals', False) else '+N',
-        '-S' if kwargs.get('keep_symbols', False) else '+S',
-    )
-
-    if VectorizedCorpus.dump_exists(dump_tag):
-        logger.info('removing existing result files...')
-        os.remove(os.path.join(output_folder, '{}_vector_data.npy'.format(dump_tag)))
-        os.remove(os.path.join(output_folder, '{}_vectorizer_data.pickle'.format(dump_tag)))
-
-    logger.info('Creating new corpus...')
-
-    reader = TextTokenizer(
-        source=None,
-        filename_pattern=kwargs.get("pattern", "*.txt"),
-        tokenize=None,
-        as_binary=False,
-        fix_whitespaces=True,
-        fix_hyphenation=True,
-        filename_fields=kwargs.get("filename_fields"),
-    )
-    corpus = TokenizedCorpus(reader, **kwargs)
-
-    logger.info('Creating document-term matrix...')
-    vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus)
-
-    logger.info('Saving data matrix...')
-    v_corpus.dump(tag=dump_tag, folder=output_folder)
+# FXIME: Deprecate this function (user _vectorize_corpus workflow instead)

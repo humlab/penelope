@@ -1,10 +1,10 @@
 from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
-from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import ICorpusReader
+from .text_transformer import TextTransformer
 
 
 class DataFrameTextTokenizer(
@@ -41,12 +41,7 @@ class DataFrameTextTokenizer(
             print('Warn: {} n/a rows encountered'.format(len(self.data[self.data[text_column].isna()])))
             self.data = self.data.dropna()
 
-        self.text_transformer = (
-            TextTransformer(transforms=[])
-            .add(TRANSFORMS.fix_unicode)
-            .add(TRANSFORMS.fix_whitespaces)
-            .add(TRANSFORMS.fix_hyphenation)
-        )
+        self.text_transformer = TextTransformer(transforms=[]).fix_unicode().fix_whitespaces().fix_hyphenation()
 
         self.iterator = None
         self._metadata = self.data.drop(self.text_column, axis=1).to_dict(orient='records')

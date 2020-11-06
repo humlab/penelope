@@ -6,6 +6,7 @@ from penelope.vendor.nltk import sent_tokenize, word_tokenize
 
 from .readers.interfaces import ICorpusReader
 from .tokenized_corpus import TokenizedCorpus
+from .tokens_transformer import TokensTransformOpts
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -57,7 +58,14 @@ class SegmentedTextCorpus(TokenizedCorpus):
     where tokens_x is a sequence of strings. The token order is preserved i.e. it is not a BOW
     """
 
-    def __init__(self, reader: ICorpusReader, segment_strategy: str = 'sentence', segment_size: int = 0, **kwargs):
+    def __init__(
+        self,
+        reader: ICorpusReader,
+        segment_strategy: str = 'sentence',
+        segment_size: int = 0,
+        *,
+        tokens_transform_opts: TokensTransformOpts = None,
+    ):
 
         if segment_strategy not in ['sentence', 'chunk', 'document']:
             raise AssertionError('Attribute segment_strategy must be specified for text corpus')
@@ -65,7 +73,7 @@ class SegmentedTextCorpus(TokenizedCorpus):
         if segment_strategy == 'chunk' and segment_size <= 0:
             raise AssertionError('Attribute segment_chunk must be positive if segement_strategy is chunk')
 
-        super().__init__(reader, **kwargs)
+        super().__init__(reader, tokens_transform_opts=tokens_transform_opts)
         self.segment_strategy = segment_strategy
         self.segment_size = segment_size
         self.strategies = {

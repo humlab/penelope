@@ -1,5 +1,6 @@
 import penelope.corpus.readers as readers
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 
 from . import utils as test_utils
 
@@ -26,7 +27,7 @@ def create_reader():
 
 def create_corpus():
     reader = create_reader()
-    kwargs = dict(
+    tokens_transform_opts = TokensTransformOpts(
         only_any_alphanumeric=True,
         to_lower=True,
         remove_accents=False,
@@ -34,7 +35,7 @@ def create_corpus():
         max_len=None,
         keep_numerals=False,
     )
-    corpus = TokenizedCorpus(reader, **kwargs)
+    corpus = TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
     return corpus
 
 
@@ -162,8 +163,7 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 
     corpus = TokenizedCorpus(
         reader=create_reader(),
-        to_lower=True,
-        min_len=10,
+        tokens_transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
     )
 
     vocabulary = (

@@ -1,6 +1,7 @@
-import pytest  # pylint: disable=unused-import
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
 from penelope.corpus.readers.text_tokenizer import TextTokenizer
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 
@@ -12,6 +13,7 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
         tokenizer_opts=dict(
             filename_fields="year:_:1",
         ),
+        annotation_opts=AnnotationOpts(),
     )
 
     return corpus
@@ -214,11 +216,11 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        pos_includes='|NN|',
         tokenizer_opts=dict(
             filename_fields="year:_:1",
         ),
-        tokens_transform_opts=dict(
+        annotation_opts=AnnotationOpts(pos_includes='|NN|'),
+        tokens_transform_opts=TokensTransformOpts(
             min_len=2,
             to_upper=True,
         ),

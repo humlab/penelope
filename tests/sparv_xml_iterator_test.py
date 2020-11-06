@@ -1,5 +1,5 @@
 import penelope.corpus.readers as readers
-import pytest  # pylint: disable=unused-import
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
@@ -9,17 +9,6 @@ SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_zipped_xml_export.zi
 def sparv_xml_test_file():
     with open(SPARV_XML_EXPORT_FILENAME, "rb") as fp:
         return fp.read()
-
-
-DEFAULT_OPTS = dict(
-    pos_includes='',
-    lemmatize=True,
-    chunk_size=None,
-    xslt_filename=None,
-    delimiter="|",
-    append_pos="",
-    pos_excludes="|MAD|MID|PAD|",
-)
 
 
 def test_reader_when_no_transforms_returns_source_tokens():
@@ -42,9 +31,11 @@ def test_reader_when_no_transforms_returns_source_tokens():
     ]
     expected_name = "sparv_xml_export_small.txt"
 
-    opts = dict(pos_includes='', lemmatize=False, chunk_size=None, pos_excludes="")
-
-    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(
+        SPARV_XML_EXPORT_FILENAME_SMALL,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(pos_includes='', lemmatize=False, pos_excludes=None),
+    )
 
     document_name, tokens = next(iter(reader))
 
@@ -72,9 +63,11 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
     ]
     expected_name = "sparv_xml_export_small.txt"
 
-    opts = dict(pos_includes='', lemmatize=True, chunk_size=None, pos_excludes="")
-
-    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(
+        SPARV_XML_EXPORT_FILENAME_SMALL,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(pos_includes='', lemmatize=True, pos_excludes=None),
+    )
 
     document_name, tokens = next(iter(reader))
 
@@ -101,9 +94,11 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
     ]
     expected_name = "sparv_xml_export_small.txt"
 
-    opts = dict(pos_includes='', lemmatize=True, chunk_size=None, pos_excludes="|MAD|MID|PAD|")
-
-    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(
+        SPARV_XML_EXPORT_FILENAME_SMALL,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(pos_includes='', lemmatize=True, pos_excludes="|MAD|MID|PAD|"),
+    )
 
     document_name, tokens = next(iter(reader))
 
@@ -116,9 +111,14 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
     expected = ['rödräv', 'hunddjur', 'utbredning', 'halvklot']
     expected_name = "sparv_xml_export_small.txt"
 
-    opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
-
-    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(
+        SPARV_XML_EXPORT_FILENAME_SMALL,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(
+            pos_includes='|NN|',
+            lemmatize=True,
+        ),
+    )
 
     document_name, tokens = next(iter(reader))
 
@@ -131,9 +131,11 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
     expected_documents = [['rödräv', 'hunddjur'], ['utbredning', 'halvklot']]
     expected_names = ["sparv_xml_export_small_001.txt", "sparv_xml_export_small_002.txt"]
 
-    opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=2)
-
-    reader = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL, **opts)
+    reader = readers.SparvXmlTokenizer(
+        SPARV_XML_EXPORT_FILENAME_SMALL,
+        chunk_size=2,
+        annotation_opts=AnnotationOpts(pos_includes='|NN|', lemmatize=True),
+    )
 
     for i, (document_name, tokens) in enumerate(reader):
 
@@ -149,9 +151,11 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     ]
     expected_names = ["document_001.txt", "document_002.txt"]
 
-    opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
-
-    reader = readers.SparvXmlTokenizer(SPARV_ZIPPED_XML_EXPORT_FILENAME, **opts)
+    reader = readers.SparvXmlTokenizer(
+        SPARV_ZIPPED_XML_EXPORT_FILENAME,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(pos_includes='|NN|', lemmatize=True),
+    )
 
     for i, (document_name, tokens) in enumerate(reader):
 
@@ -163,9 +167,11 @@ def test_reader_when_source_is_sparv3_succeeds():
 
     sparv_zipped_xml_export_v3_filename = './tests/test_data/sou_test_sparv3_xml.zip'
 
-    opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)  # , xslt_filename=xslt_filename)
-
-    reader = readers.Sparv3XmlTokenizer(sparv_zipped_xml_export_v3_filename, **opts)
+    reader = readers.Sparv3XmlTokenizer(
+        sparv_zipped_xml_export_v3_filename,
+        chunk_size=None,
+        annotation_opts=AnnotationOpts(pos_includes='|NN|', lemmatize=True),
+    )
 
     for _, (_, tokens) in enumerate(reader):
 

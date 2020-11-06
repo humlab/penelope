@@ -1,6 +1,7 @@
 import unittest
 
 import penelope.corpus.tokenized_corpus as corpora
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 from tests.utils import create_text_tokenizer
 
 
@@ -15,7 +16,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_next_document_when_only_any_alphanumeric_is_false_returns_all_tokens(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=False,
             to_lower=False,
             remove_accents=False,
@@ -24,7 +25,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
             keep_numerals=True,
             only_alphabetic=False,
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         _, tokens = next(corpus)
         expected = [
             "Tre",
@@ -55,7 +56,10 @@ class Test_ProcessedCorpus(unittest.TestCase):
     def test_next_document_when_only_any_alphanumeric_true_skips_deliminators(self):
         reader = self.create_reader()
         corpus = corpora.TokenizedCorpus(
-            reader, only_any_alphanumeric=True, to_lower=False, remove_accents=False, min_len=1, keep_numerals=True
+            reader,
+            tokens_transform_opts=TokensTransformOpts(
+                only_any_alphanumeric=True, to_lower=False, remove_accents=False, min_len=1, keep_numerals=True
+            ),
         )
         _, tokens = next(corpus)
         expected = [
@@ -82,7 +86,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_next_document_when_only_any_alphanumeric_true_skips_deliminators_using_defaults(self):
         reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
-        corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=True)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         _, tokens = next(corpus)
         expected = [
             "Tre",
@@ -108,10 +112,10 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_next_document_when_to_lower_is_true_returns_all_lowercase(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=True, to_lower=True, remove_accents=False, min_len=1, max_len=None, keep_numerals=True
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         _, tokens = next(corpus)
         expected = [
             "tre",
@@ -137,10 +141,10 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_next_document_when_min_len_is_two_returns_single_char_words_filtered_out(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=True, to_lower=True, remove_accents=False, min_len=2, max_len=None, keep_numerals=True
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         _, tokens = next(corpus)
         expected = [
             "tre",
@@ -165,17 +169,19 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_next_document_when_max_len_is_six_returns_filter_out_longer_words(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=True, to_lower=True, remove_accents=False, min_len=2, max_len=6, keep_numerals=True
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         _, tokens = next(corpus)
         expected = ["tre", "svarta", "ekar", "ur", "snön", "så", "grova", "men", "ur", "deras", "ska", "skumma", "vår"]
         self.assertEqual(expected, tokens)
 
     def test_n_tokens_when_exhausted_and_only_any_alphanumeric_min_len_two_returns_expected_count(self):
         reader = self.create_reader()
-        corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=True, min_len=2)
+        corpus = corpora.TokenizedCorpus(
+            reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True, min_len=2)
+        )
         n_expected = [17, 13, 21, 42, 18]
         _ = [x for x in corpus]
         n_tokens = list(corpus.documents.n_tokens)
@@ -217,7 +223,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_next_document_when_token_corpus_returns_tokenized_document(self):
         reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
-        corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=False)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=False))
         _, tokens = next(corpus)
         expected = [
             "Tre",
@@ -247,7 +253,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_get_index_when_extract_passed_returns_expected_count(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=False,
             to_lower=False,
             remove_accents=False,
@@ -255,13 +261,13 @@ class Test_ProcessedCorpus(unittest.TestCase):
             max_len=None,
             keep_numerals=True,
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         result = corpus.metadata
         self.assertEqual(5, len(result))
 
     def test_n_tokens_when_exhausted_iterater_returns_expected_count(self):
         reader = self.create_reader()
-        corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=False)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=False))
         _ = [x for x in corpus]
         n_tokens = list(corpus.documents.n_tokens)
         expected = [22, 16, 26, 45, 21]
@@ -269,7 +275,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_n_tokens_when_exhausted_and_only_any_alphanumeric_is_true_returns_expected_count(self):
         reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
-        corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=True)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         _ = [x for x in corpus]
         n_tokens = list(corpus.documents.n_tokens)
         expected = [18, 14, 24, 42, 18]
@@ -279,7 +285,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
         reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
 
-        corpus = corpora.TokenizedCorpus(reader, only_any_alphanumeric=True)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         for i in range(0, 4):
             n_tokens = [len(x) for x in corpus.terms]
             expected = [18, 14, 24, 42, 18]

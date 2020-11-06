@@ -2,16 +2,20 @@ import json
 
 import click
 import penelope.corpus.sparv_corpus as sparv_corpus
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, suffix_filename, timestamp_filename
 
 
 # pylint: disable=too-many-arguments
-def store_options_to_json_file(input_filename, output_filename, tokens_transform_opts, sparv_extract_opts):
+def store_options_to_json_file(
+    input_filename, output_filename, tokens_transform_opts: TokensTransformOpts, sparv_extract_opts
+):
 
     store_options = {
         'input': input_filename,
         'output': output_filename,
-        'tokens_transform_opts': tokens_transform_opts,
+        'tokens_transform_opts': tokens_transform_opts.props,
         'sparv_extract_opts': sparv_extract_opts,
     }
 
@@ -51,7 +55,7 @@ def prepare_train_corpus(
     version,
 ):
     """Prepares the a training corpus from Sparv XML archive"""
-    tokens_transform_opts = dict(
+    tokens_transform_opts: TokensTransformOpts = TokensTransformOpts(
         to_lower=lower,
         remove_stopwords=remove_stopwords is not None,
         language=remove_stopwords,
@@ -60,25 +64,32 @@ def prepare_train_corpus(
         keep_numerals=keep_numerals,
         keep_symbols=keep_symbols,
     )
-
+    annotation_opts = AnnotationOpts(
+        pos_includes=pos_includes,
+        pos_excludes=pos_excludes,
+        lemmatize=lemmatize,
+    )
     output_filename = replace_extension(timestamp_filename(suffix_filename(input_filename, "text")), 'zip')
 
     tokenizer_opts = {
         'chunk_size': chunk_size,
     }
 
-    sparv_extract_opts = {
-        'pos_includes': pos_includes,
-        'pos_excludes': pos_excludes,
-        'lemmatize': lemmatize,
-        'version': version,
-        'tokenizer_opts': tokenizer_opts,
-        'tokens_transform_opts': tokens_transform_opts,
-    }
+    sparv_corpus.sparv_xml_extract_and_store(
+        source=input_filename,
+        target=output_filename,
+        version=version,
+        annotation_opts=annotation_opts,
+        tokenizer_opts=tokenizer_opts,
+        tokens_transform_opts=tokens_transform_opts,
+    )
 
-    sparv_corpus.sparv_xml_extract_and_store(source=input_filename, target=output_filename, **sparv_extract_opts)
-
-    store_options_to_json_file(input_filename, output_filename, tokens_transform_opts, sparv_extract_opts)
+    store_options_to_json_file(
+        input_filename,
+        output_filename,
+        tokens_transform_opts,
+        dict(version=version, annotation_opts=annotation_opts, tokenizer_opts=tokenizer_opts),
+    )
 
 
 if __name__ == '__main__':

@@ -9,8 +9,10 @@ from penelope.co_occurrence.concept_co_occurrence import (
     to_vectorized_corpus,
 )
 from penelope.corpus import SparvTokenizedCsvCorpus
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
-from penelope.workflows import execute_workflow_concept_co_occurrence
+from penelope.workflows import concept_co_occurrence_workflow
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
 from .utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
@@ -61,20 +63,20 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         concept={'jag'},
         context_width=2,
         partition_keys=['year'],
-        pos_includes=None,
-        pos_excludes='|MAD|MID|PAD|',
-        lemmatize=True,
-        to_lowercase=True,
+        filename_field=["year:_:1"],
+    )
+    annotation_opts = AnnotationOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=True)
+    tokens_transform_opts = TokensTransformOpts(
         remove_stopwords=None,
-        min_word_length=1,
         keep_symbols=True,
         keep_numerals=True,
         only_alphabetic=False,
         only_any_alphanumeric=False,
-        filename_field=["year:_:1"],
     )
 
-    execute_workflow_concept_co_occurrence(**options)
+    concept_co_occurrence_workflow(
+        **options, annotation_opts=annotation_opts, tokens_transform_opts=tokens_transform_opts
+    )
 
     assert os.path.isfile(output_filename)
 
@@ -87,8 +89,7 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, n_count_thre
         tokenizer_opts=dict(
             filename_fields="year:_:1",
         ),
-        pos_includes='|NN|VB|',
-        lemmatize=False,
+        annotation_opts=AnnotationOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
 
     coo_df = partitioned_corpus_concept_co_occurrence(
@@ -114,8 +115,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         tokenizer_opts=dict(
             filename_fields="year:_:1",
         ),
-        pos_includes='|NN|VB|',
-        lemmatize=False,
+        annotation_opts=AnnotationOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
     coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
@@ -139,20 +139,21 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'concept': ('jag',),
         'context_width': 2,
         'partition_keys': ('year',),
-        'pos_includes': None,
-        'pos_excludes': '|MAD|MID|PAD|',
-        'lemmatize': True,
-        'to_lowercase': True,
-        'remove_stopwords': None,
-        'min_word_length': 1,
-        'keep_symbols': True,
-        'keep_numerals': True,
-        'only_alphabetic': False,
-        'only_any_alphanumeric': False,
         'filename_field': ('year:_:1',),
     }
-
-    execute_workflow_concept_co_occurrence(**options)
+    annotation_opts = AnnotationOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
+    tokens_transform_opts = TokensTransformOpts(
+        to_lower=True,
+        min_len=1,
+        remove_stopwords=None,
+        keep_symbols=True,
+        keep_numerals=True,
+        only_alphabetic=False,
+        only_any_alphanumeric=False,
+    )
+    concept_co_occurrence_workflow(
+        **options, annotation_opts=annotation_opts, tokens_transform_opts=tokens_transform_opts
+    )
 
     assert os.path.isfile(output_filename)
 

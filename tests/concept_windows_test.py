@@ -1,6 +1,7 @@
 import json
 
 from penelope.co_occurrence import WindowsCorpus, corpus_concept_windows
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
@@ -41,8 +42,6 @@ def test_windowed_when_nn_vb_lemma_2_tokens():
     windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=2, pad='*')]
 
     assert expected_windows == windows
-    # # log_corpus_windows_fixture('./tests/test_data/corpus_windows_2_nnvb_lemma.json', corpus, windows)
-    # corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True)
 
 
 def test_windowed_when_nn_vb_lemma_5_tokens():
@@ -54,13 +53,13 @@ def test_windowed_when_nn_vb_lemma_5_tokens():
     windows = [w for w in corpus_concept_windows(corpus, concept=concept, no_concept=False, n_context_width=5, pad='*')]
 
     assert expected_windows == windows
-    # # log_corpus_windows_fixture('./tests/test_data/corpus_windows_2_nnvb_lemma.json', corpus, windows)
-    # corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True)
 
 
 def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
 
-    corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=True)
+    corpus = SparvTokenizedCsvCorpus(
+        SPARV_ZIPPED_CSV_EXPORT_FILENAME, annotation_opts=AnnotationOpts(pos_includes='|NN|VB|', lemmatize=True)
+    )
     expected_windows = TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
     concept = {'piazza', 'kyrka', 'valv'}
@@ -71,7 +70,8 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
 
 def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
-    corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
+    annotation_opts = AnnotationOpts(pos_includes='|NN|VB|', lemmatize=False)
+    corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, annotation_opts=annotation_opts)
     expected_windows = [
         ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
         ['tran_2019_01_test.txt', 1, ['valv', 'blir', 'är', 'skall', 'tårar']],
@@ -96,10 +96,6 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
 
 def test_windows_iterator():
-
-    # corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, pos_includes='|NN|VB|', lemmatize=False)
-    # concept = {'är'}
-    # windows = corpus_concept_windows(corpus, concept, 2, pad='*')
 
     windows = [
         ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],

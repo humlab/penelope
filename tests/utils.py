@@ -4,10 +4,8 @@ from collections import defaultdict
 from typing import Callable
 
 import pandas as pd
-import penelope.corpus.readers as readers
-from penelope.corpus.interfaces import ITokenizedCorpus
-from penelope.corpus.readers.in_memory_data_reader import InMemoryReader
-from penelope.corpus.tokenized_corpus import TokenizedCorpus
+from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus
+from penelope.corpus.readers import InMemoryReader, TextTokenizer
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -118,11 +116,10 @@ def create_text_tokenizer(
         chunk_size=chunk_size,
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
-        fix_whitespaces=fix_whitespaces,
-        fix_hyphenation=fix_hyphenation,
+        filename_fields=filename_fields,
         as_binary=as_binary,
         tokenize=tokenize,
-        filename_fields=filename_fields,
+        text_transform_opts=TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation),
     )
-    reader = readers.TextTokenizer(source_path, **kwargs)
+    reader = TextTokenizer(source_path, **kwargs)
     return reader

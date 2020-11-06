@@ -3,13 +3,14 @@ import os
 from typing import Any, List, Tuple
 
 import penelope.co_occurrence.concept_co_occurrence as concept_co_occurrence
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, strip_path_and_extension
 
+from .utils import WorkflowException
 
 # pylint: disable=too-many-arguments
-class WorkflowException(Exception):
-    pass
 
 
 def execute_workflow(
@@ -21,18 +22,10 @@ def execute_workflow(
     count_threshold: int = None,
     context_width: int = None,
     partition_keys: Tuple[str, List[str]],
-    pos_includes: str = None,
-    pos_excludes: str = '|MAD|MID|PAD|',
-    lemmatize: bool = True,
-    to_lowercase: bool = True,
-    remove_stopwords: str = None,
-    min_word_length: int = 1,
-    keep_symbols: bool = True,
-    keep_numerals: bool = True,
-    only_alphabetic: bool = False,
-    only_any_alphanumeric: bool = False,
+    annotation_opts: AnnotationOpts = None,
     filename_field: Any = None,
     store_vectorized: bool = False,
+    tokens_transform_opts: TokensTransformOpts = None,
 ):
     """Creates concept co-occurrence using specified options and stores a co-occurrence CSV file
     and optionally a vectorized corpus.
@@ -55,19 +48,8 @@ def execute_workflow(
         Word pair count threshold (entire corpus, by default None
     context_width : int, optional
         Width of context i.e. distance to cencept word, by default None
-    pos_includes : str, optional
-        PoS to include, by default None
-    pos_excludes : str, optional
-        PoS to exclude, by default '|MAD|MID|PAD|'
-    lemmatize : bool, optional
-        If true then use word's baseform, by default True
-    to_lowercase : bool, optional
-    remove_stopwords : str, optional
-    min_word_length : int, optional
-    keep_symbols : bool, optional
-    keep_numerals : bool, optional
-    only_alphabetic : bool, optional
-    only_any_alphanumeric : bool, optional
+    annotation_opts : AnnotationOpts, optional
+    tokens_transform_opts : TokensTransformOpts, optional
     filename_field : Any, optional
         Specifies fields to extract from document's filename, by default None
     store_vectorized : bool, optional
@@ -95,30 +77,12 @@ def execute_workflow(
     if len(partition_keys or []) == 0:
         raise WorkflowException("please specify partition key(s) (--partition-key e.g --partition-key=year)")
 
-    tokens_transform_opts = {
-        'to_lower': to_lowercase,
-        'to_upper': False,
-        'min_len': min_word_length,
-        'max_len': None,
-        'remove_accents': False,
-        'remove_stopwords': remove_stopwords is not None,
-        'stopwords': None,
-        'extra_stopwords': None,
-        'language': remove_stopwords,
-        'keep_numerals': keep_numerals,
-        'keep_symbols': keep_symbols,
-        'only_alphabetic': only_alphabetic,
-        'only_any_alphanumeric': only_any_alphanumeric,
-    }
-
-    corpus_opts = {'pos_includes': pos_includes, 'pos_excludes': pos_excludes, 'lemmatize': lemmatize}
-
     tokenizer_opts = {'filename_pattern': '*.csv', 'filename_fields': filename_field, 'as_binary': False}
 
     corpus = SparvTokenizedCsvCorpus(
         source=input_filename,
-        **corpus_opts,
         tokenizer_opts=tokenizer_opts,
+        annotation_opts=annotation_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 
@@ -147,7 +111,7 @@ def execute_workflow(
             'n_context_width': context_width,
             'partition_keys': partition_keys,
             'tokenizer_opts': tokenizer_opts,
-            'tokens_transform_opts': tokens_transform_opts,
-            'sparv_extract_opts': corpus_opts,
+            'tokens_transform_opts': tokens_transform_opts.props,
+            'annotation_opts': annotation_opts.props,
         }
         json.dump(store_options, json_file, indent=4)

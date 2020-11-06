@@ -6,6 +6,7 @@ import click
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.corpus.tokenized_corpus as tokenized_corpus
 import penelope.topic_modelling as topic_modelling
+from penelope.corpus import TextTransformOpts, TokensTransformOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -102,7 +103,7 @@ def run_model(
         if k in ['n_topics', 'passes', 'random_seed', 'alpha', 'workers', 'max_iter', 'prefix'] and v is not None
     }
 
-    transformer_opts = dict(
+    transformer_opts = TokensTransformOpts(
         only_alphabetic=False,
         only_any_alphanumeric=True,
         to_lower=True,
@@ -117,19 +118,18 @@ def run_model(
         keep_symbols=False,
     )
 
-    # if SparvTokenizer opts = dict(pos_includes='|NN|', lemmatize=True, chunk_size=None)
+    # if SparvTokenizer opts = AnnotationOpts(pos_includes='|NN|', lemmatize=True, chunk_size=None)
 
     tokenizer = text_tokenizer.TextTokenizer(
         source=corpus_filename,
         chunk_size=None,
         filename_pattern="*.txt",
         filename_filter=None,
-        fix_hyphenation=True,
-        fix_whitespaces=False,
+        text_transform_opts=TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True),
         filename_fields=filename_field,
     )
 
-    corpus = tokenized_corpus.TokenizedCorpus(reader=tokenizer, **transformer_opts)
+    corpus = tokenized_corpus.TokenizedCorpus(reader=tokenizer, tokens_transform_opts=transformer_opts)
 
     train_corpus = topic_modelling.TrainingCorpus(
         terms=corpus.terms,

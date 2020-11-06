@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from penelope.corpus.tokens_transformer import transformer_defaults_filter
 from penelope.utility import store_to_archive
 
 from . import readers
+from .readers import AnnotationOpts
 from .tokenized_corpus import TokenizedCorpus
+from .tokens_transformer import TokensTransformOpts
 
 
 class SparvTokenizedXmlCorpus(TokenizedCorpus):
@@ -15,10 +16,8 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         source,
         version,
         *,
-        pos_includes=None,
-        pos_excludes="|MAD|MID|PAD|",
-        lemmatize=True,
-        tokens_transform_opts: Dict[str, Any] = None,
+        annotation_opts: AnnotationOpts = None,
+        tokens_transform_opts: TokensTransformOpts = None,
         tokenizer_opts: Dict[str, Any] = None,
     ):
         """[summary]
@@ -29,13 +28,9 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
             [description]
         version : [type]
             [description]
-        pos_includes : [type], optional
+        annotation_opts : AnnotationOpts, optional
             [description], by default None
-        pos_excludes : str, optional
-            [description], by default "|MAD|MID|PAD|"
-        lemmatize : bool, optional
-            If True then use token baseform, by default True
-        tokens_transform_opts : Dict[str, Any], optional
+        tokens_transform_opts :TokensTransformOpts, optional
             Passed to TokensTransformer:
                 only_alphabetic: bool = False,
                 only_any_alphanumeric: bool = False,
@@ -53,13 +48,12 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         tokenizer_opts : Dict[str, Any], optional
             Passed to source reader:
                 transforms: List[Callable] = None,
+                text_transforms_opts: TextTransformOpts
                 chunk_size: int = None,
                 filename_pattern: str = None,
                 filename_filter: Union[Callable, List[str]] = None,
                 filename_fields=None,
                 N/A: tokenize: Callable = None,
-                N/A: fix_whitespaces: bool = False,
-                N/A: fix_hyphenation: bool = False,
                 as_binary: bool = False,
         """
 
@@ -68,15 +62,13 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         else:
             tokenizer = readers.SparvXmlTokenizer(
                 source,
-                pos_includes=pos_includes,
-                pos_excludes=pos_excludes,
+                annotation_opts=annotation_opts or AnnotationOpts(),
                 xslt_filename=None,
-                append_pos="",
                 version=version,
-                **{'lemmatize': lemmatize, **(tokenizer_opts or {})},
+                **(tokenizer_opts or {}),
             )
 
-        super().__init__(tokenizer, **transformer_defaults_filter(tokens_transform_opts))
+        super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
 
 
 class SparvTokenizedCsvCorpus(TokenizedCorpus):
@@ -92,11 +84,8 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         self,
         source,
         *,
-        pos_includes: str = None,
-        pos_excludes: str = "|MAD|MID|PAD|",
-        lemmatize: bool = True,
-        append_pos: bool = False,
-        tokens_transform_opts: Dict[str, Any] = None,
+        annotation_opts: AnnotationOpts = None,
+        tokens_transform_opts: TokensTransformOpts = None,
         tokenizer_opts: Dict[str, Any] = None,
     ):
         if isinstance(source, readers.SparvCsvTokenizer):
@@ -104,42 +93,29 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         else:
             tokenizer = readers.SparvCsvTokenizer(
                 source,
-                pos_includes=pos_includes,
-                pos_excludes=pos_excludes,
-                append_pos=append_pos,
-                **{'lemmatize': lemmatize, **(tokenizer_opts or {})},
+                annotation_opts=annotation_opts,
+                **(tokenizer_opts or {}),
             )
-        super().__init__(tokenizer, **transformer_defaults_filter(tokens_transform_opts))
+        super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
 
 
 def sparv_xml_extract_and_store(
     source: str,
     target: str,
     version: int,
-    pos_includes: str = None,
-    pos_excludes: str = "|MAD|MID|PAD|",
-    lemmatize: bool = True,
-    # append_pos: bool = False,
+    annotation_opts: AnnotationOpts = None,
     tokenizer_opts=None,
-    tokens_transform_opts=None,
+    tokens_transform_opts: TokensTransformOpts = None,
 ):
     """[summary]
 
     Parameters
     ----------
     source : str
-        [description]
     target : str
-        [description]
     version : int
-        [description]
-    pos_includes : [type], optional
-        [description], by default None
-    pos_excludes : str, optional
-        [description], by default "|MAD|MID|PAD|"
-    lemmatize : bool, optional
-        If True then use token baseform, by default True
-    tokens_transform_opts : Dict[str, Any], optional
+    annotation_opts : AnnotationOpts, optional
+    tokens_transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
             only_any_alphanumeric: bool = False,
@@ -157,22 +133,18 @@ def sparv_xml_extract_and_store(
     tokenizer_opts : Dict[str, Any], optional
         Passed to source reader:
             transforms: List[Callable] = None,
+            text_transforms_opts: TextTransformOpts
             chunk_size: int = None,
             filename_pattern: str = None,
             filename_filter: Union[Callable, List[str]] = None,
             filename_fields=None,
             N/A: tokenize: Callable = None,
-            N/A: fix_whitespaces: bool = False,
-            N/A: fix_hyphenation: bool = False,
             as_binary: bool = False,
     """
     corpus = SparvTokenizedXmlCorpus(
         source,
         version,
-        pos_includes=pos_includes,
-        pos_excludes=pos_excludes,
-        lemmatize=lemmatize,
-        # append_pos=append_pos, FIXA
+        annotation_opts=annotation_opts,
         tokenizer_opts=tokenizer_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
@@ -183,12 +155,9 @@ def sparv_xml_extract_and_store(
 def sparv_csv_extract_and_store(
     source: str,
     target: str,
-    pos_includes: str = None,
-    pos_excludes: str = "|MAD|MID|PAD|",
-    lemmatize: bool = True,
-    append_pos: bool = False,
+    annotation_opts: AnnotationOpts = None,
     tokenizer_opts=None,
-    tokens_transform_opts=None,
+    tokens_transform_opts: TokensTransformOpts = None,
 ):
     """Extracts and stores text documents from a Sparv corpus in CSV format
 
@@ -198,13 +167,8 @@ def sparv_csv_extract_and_store(
         [description]
     target : str
         [description]
-    pos_includes : [type], optional
-        [description], by default None
-    pos_excludes : str, optional
-        [description], by default "|MAD|MID|PAD|"
-    lemmatize : bool, optional
-        If True then use token baseform, by default True
-    tokens_transform_opts : Dict[str, Any], optional
+    annotation_opts : AnnotationOpts, optional
+    tokens_transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
             only_any_alphanumeric: bool = False,
@@ -222,21 +186,17 @@ def sparv_csv_extract_and_store(
     tokenizer_opts : Dict[str, Any], optional
         Passed to source reader:
             transforms: List[Callable] = None,
+            text_transforms_opts: TextTransformOpts
             chunk_size: int = None,
             filename_pattern: str = None,
             filename_filter: Union[Callable, List[str]] = None,
             filename_fields=None,
             N/A: tokenize: Callable = None,
-            N/A: fix_whitespaces: bool = False,
-            N/A: fix_hyphenation: bool = False,
             as_binary: bool = False,
     """
     corpus = SparvTokenizedCsvCorpus(
         source,
-        pos_includes=pos_includes,
-        pos_excludes=pos_excludes,
-        lemmatize=lemmatize,
-        append_pos=append_pos,
+        annotation_opts=annotation_opts,
         tokenizer_opts=tokenizer_opts,
         tokens_transform_opts=tokens_transform_opts,
     )

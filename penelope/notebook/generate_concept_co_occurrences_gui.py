@@ -1,12 +1,14 @@
 import glob
 import os
 import types
-from typing import Callable, List, Set
+from typing import Callable, Set
 
 import ipywidgets as widgets
-from penelope.utility import flatten, strip_paths
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.utility import flatten, replace_extension, strip_paths
 from penelope.utility.tags import SUC_PoS_tag_groups
-from penelope.workflows import execute_workflow_concept_co_occurrence
+from penelope.workflows import concept_co_occurrence_workflow
 
 # from penelope.utility.utils import right_chop, getLogger
 
@@ -21,12 +23,10 @@ def generate_concept_co_occurrences(
     *,
     concept: Set[str],
     context_width: int,
-    pos_includes: List[str],
     count_threshold: int = 1,
     no_concept: bool = False,
-    lemmatize: bool = True,
-    to_lowercase: bool = True,
-    remove_stopwords: str = None,
+    annotation_opts: AnnotationOpts = None,
+    tokens_transform_opts: TokensTransformOpts = None,
 ):
     """[summary]
 
@@ -40,35 +40,24 @@ def generate_concept_co_occurrences(
         [description]
     context_width : int
         [description]
-    pos_includes : List[str]
-        [description]
+    annotation_opts : AnnotationOpts
     count_threshold : int, optional
         [description], by default 1
     no_concept : bool, optional
         [description], by default False
-    lemmatize : bool, optional
-    to_lowercase : bool, optional
-    remove_stopwords : bool, optional
+    tokens_transform_opts : TokensTransformOpts, optional
     """
-    execute_workflow_concept_co_occurrence(
+    concept_co_occurrence_workflow(
         input_filename=input_filename,
         output_filename=output_filename,
         concept=concept,
         no_concept=no_concept,
         count_threshold=count_threshold if count_threshold is not None and count_threshold > 1 else None,
         context_width=context_width,
-        pos_includes=f"|{'|'.join(pos_includes)}|",
-        lemmatize=lemmatize,
-        to_lowercase=to_lowercase,
-        remove_stopwords='swedish' if remove_stopwords else None,
-        # keep_symbols = True,
-        # keep_numerals = True,
-        # only_alphabetic = False,
-        # only_any_alphanumeric = False,
-        pos_excludes="|MAD|MID|PAD|",
-        min_word_length=2,
         partition_keys="year",
         filename_field={"year": r"prot\_(\d{4}).*"},
+        annotation_opts=annotation_opts,
+        tokens_transform_opts=tokens_transform_opts,
         store_vectorized=True,
     )
 
@@ -81,7 +70,7 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
         input_filename=widgets.Dropdown(description='Corpus', options=corpus_filenames, value=None, layout=lw('400px')),
         output_filename=widgets.Text(
             value='',
-            placeholder='Enter a filename without extension',
+            placeholder='Enter a filename without path or extension',
             description='Result',
             disabled=False,
             layout=lw('400px'),
@@ -125,24 +114,45 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
         if gui.output_filename.value.strip() == "":
             return
 
+        input_filename = os.path.join(data_folder, gui.input_filename.value)
+        output_filename = replace_extension(gui.output_filename.value.strip(), 'csv.zip')
+        if not os.path.isabs(output_filename):
+            output_filename = os.path.join(data_folder, output_filename)
+
+        if not os.path.isfile(input_filename):
+            raise FileNotFoundError(input_filename)
+
         with gui.output:
 
-            # gui.output.clear_output()
             gui.button.disabled = True
 
             concept = set(map(str.strip, gui.concept.value.split(',')))
 
+            tokens_transform_opts = TokensTransformOpts(
+                to_lower=gui.to_lowercase.value,
+                to_upper=False,
+                remove_stopwords=gui.remove_stopwords.value,
+                extra_stopwords=None,
+                language='swedish' if gui.remove_stopwords.value else None,
+                keep_numerals=False,
+                keep_symbols=False,
+                only_alphabetic=False,
+                only_any_alphanumeric=True,
+            )
+            annotation_opts = AnnotationOpts(
+                pos_includes=f"|{'|'.join(flatten(gui.pos_includes.value))}|",
+                pos_excludes="|MAD|MID|PAD|",
+                lemmatize=gui.lemmatize.value,
+            )
             generate_concept_co_occurrences(
-                input_filename=gui.input_filename.value,
-                output_filename=gui.output_filename.value,
+                input_filename=input_filename,
+                output_filename=output_filename,
                 concept=concept,
                 context_width=gui.context_width.value,
-                pos_includes=flatten(gui.pos_includes.value),
                 count_threshold=gui.count_threshold.value,
                 no_concept=gui.no_concept.value,
-                lemmatize=gui.lemmatize.value,
-                to_lowercase=gui.to_lowercase.value,
-                remove_stopwords=gui.remove_stopwords.value,
+                annotation_opts=annotation_opts,
+                tokens_transform_opts=tokens_transform_opts,
             )
 
             if generated_callback is not None:

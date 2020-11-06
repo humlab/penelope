@@ -2,7 +2,6 @@ import logging
 import os
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, Union
 
-from penelope.corpus.text_transformer import TRANSFORMS, TextTransformer
 from penelope.utility import (
     IndexOfSplitOrCallableOrRegExp,
     extract_filenames_fields,
@@ -15,6 +14,7 @@ from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
 from .streamify_text_source import streamify_text_source
+from .text_transformer import TextTransformer, TextTransformOpts
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +40,8 @@ class TextTokenizer(ICorpusReader):
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
         filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
         tokenize: Callable = None,
-        fix_whitespaces: bool = False,
-        fix_hyphenation: bool = False,
         as_binary: bool = False,
+        text_transform_opts: TextTransformOpts = None,
     ):
         """[summary]
 
@@ -62,12 +61,9 @@ class TextTokenizer(ICorpusReader):
             [description], by default None
         tokenize : Callable, optional
             [description], by default None
-        fix_whitespaces : bool, optional
-            [description], by default False
-        fix_hyphenation : bool, optional
-            [description], by default False
         as_binary : bool, optional
             [description], by default False
+        text_transform_opts : TextTransformOpts
         """
         self._source = source
         self._as_binary = as_binary
@@ -77,12 +73,8 @@ class TextTokenizer(ICorpusReader):
         self._tokenize = tokenize or word_tokenize
         self.chunk_size = chunk_size
 
-        self.text_transformer = (
-            TextTransformer(transforms=transforms)
-            .add(TRANSFORMS.fix_unicode)
-            .add(TRANSFORMS.fix_whitespaces, condition=fix_whitespaces)
-            .add(TRANSFORMS.fix_hyphenation, condition=fix_hyphenation)
-        )
+        text_transform_opts = text_transform_opts or TextTransformOpts()
+        self.text_transformer = TextTransformer(transforms=transforms, text_transform_opts=text_transform_opts)
 
         self._iterator = None
 

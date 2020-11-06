@@ -9,20 +9,20 @@ from penelope import utility
 from .corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
-from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer
+from .tokens_transformer import TokensTransformer, TokensTransformOpts
 
 logger = utility.getLogger("__penelope__")
 
 
 class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
-    def __init__(self, reader: ICorpusReader, **tokens_transform_opts):
+    def __init__(self, reader: ICorpusReader, *, tokens_transform_opts: TokensTransformOpts = None):
         """[summary]
 
         Parameters
         ----------
         reader : ICorpusReader
             Corpus tokenizer/reader
-        tokens_transform_opts : kwargs
+        tokens_transform_opts : TokensTransformOpts
             Passed to TokensTransformer and can be:
                 only_alphabetic: bool = False,
                 only_any_alphanumeric: bool = False,
@@ -54,10 +54,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
         if 'document_id' not in self._documents:
             self._documents['document_id'] = list(self._documents.index)
 
-        opts = DEFAULT_TOKENS_TRANSFORM_OPTIONS
-        opts = {**opts, **{k: v for k, v in tokens_transform_opts.items() if k in opts}}
-
-        self.transformer = TokensTransformer(**opts)
+        self.transformer = TokensTransformer(tokens_transform_opts=(tokens_transform_opts or TokensTransformOpts()))
         self.iterator = None
         self._token2id = None
 

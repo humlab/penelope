@@ -2,7 +2,9 @@ import sys
 from typing import Any, List
 
 import click
-from penelope.workflows import WorkflowException, execute_workflow_concept_co_occurrence
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
+from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
 
 # pylint: disable=too-many-arguments
 
@@ -40,9 +42,9 @@ from penelope.workflows import WorkflowException, execute_workflow_concept_co_oc
     type=click.Choice(['swedish', 'english']),
     help='Remove stopwords using given language',
 )
-@click.option('-m', '--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
-@click.option('-s', '--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
-@click.option('-n', '--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
+@click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
+@click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
+@click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
 @click.option(
     '--only-alphabetic', default=False, is_flag=True, help='Keep only tokens having only alphabetic characters'
 )
@@ -69,19 +71,40 @@ def main(
     pos_includes: str,
     pos_excludes: str,
     lemmatize: bool,
-    to_lowercase: bool,
-    remove_stopwords: bool,
-    min_word_length: int,
-    keep_symbols: bool,
-    keep_numerals: bool,
-    only_alphabetic: bool,
-    only_any_alphanumeric: bool,
-    filename_field: Any,
-    store_vectorized: bool,
+    to_lowercase: bool = True,
+    remove_stopwords: str = None,
+    min_word_length: int = 2,
+    keep_symbols: bool = False,
+    keep_numerals: bool = False,
+    only_any_alphanumeric: bool = False,
+    only_alphabetic: bool = False,
+    filename_field: Any = None,
+    store_vectorized: bool = True,
 ):
 
+    tokens_transform_opts = TokensTransformOpts(
+        to_lower=to_lowercase,
+        to_upper=False,
+        min_len=min_word_length,
+        max_len=None,
+        remove_accents=False,
+        remove_stopwords=(remove_stopwords is not None),
+        stopwords=None,
+        extra_stopwords=None,
+        language=remove_stopwords,
+        keep_numerals=keep_numerals,
+        keep_symbols=keep_symbols,
+        only_alphabetic=only_alphabetic,
+        only_any_alphanumeric=only_any_alphanumeric,
+    )
+    annotation_opts = AnnotationOpts(
+        pos_includes=pos_includes,
+        pos_excludes=pos_excludes,
+        lemmatize=lemmatize,
+    )
     try:
-        execute_workflow_concept_co_occurrence(
+
+        concept_co_occurrence_workflow(
             input_filename=input_filename,
             output_filename=output_filename,
             concept=concept,
@@ -89,18 +112,10 @@ def main(
             count_threshold=count_threshold,
             context_width=context_width,
             partition_keys=partition_key,
-            pos_includes=pos_includes,
-            pos_excludes=pos_excludes,
-            lemmatize=lemmatize,
-            to_lowercase=to_lowercase,
-            remove_stopwords=remove_stopwords,
-            min_word_length=min_word_length,
-            keep_symbols=keep_symbols,
-            keep_numerals=keep_numerals,
-            only_alphabetic=only_alphabetic,
-            only_any_alphanumeric=only_any_alphanumeric,
             filename_field=filename_field,
             store_vectorized=store_vectorized,
+            annotation_opts=annotation_opts,
+            tokens_transform_opts=tokens_transform_opts,
         )
 
     except WorkflowException as ex:

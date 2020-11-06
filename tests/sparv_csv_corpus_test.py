@@ -1,5 +1,7 @@
 import pytest  # pylint: disable=unused-import
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 
@@ -163,9 +165,8 @@ def test_tokenize_when_nn_lemmatized_lower_returns_correct_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        pos_includes='|NN|',
-        lemmatize=True,
-        tokens_transform_opts=dict(to_lower=True),
+        annotation_opts=AnnotationOpts(pos_includes='|NN|', lemmatize=True),
+        tokens_transform_opts=TokensTransformOpts(to_lower=True),
     )
 
     for i, (filename, tokens) in enumerate(corpus):
@@ -281,14 +282,13 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        pos_includes='|VB|',
+        annotation_opts=AnnotationOpts(pos_includes='|VB|', lemmatize=True),
         tokenizer_opts=dict(
             chunk_size=None,
         ),
-        tokens_transform_opts=dict(
+        tokens_transform_opts=TokensTransformOpts(
             to_lower=True,
         ),
-        lemmatize=True,
     )
 
     for i, (filename, tokens) in enumerate(corpus):

@@ -7,6 +7,7 @@ import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.utility as utility
 import penelope.utility.file_utility as file_utility
 import textacy
+from penelope.corpus import TextTransformOpts
 from penelope.corpus.readers.interfaces import ICorpusReader
 from spacy.language import Language as SpacyLanguage
 from spacy.tokens import Doc as SpacyDoc
@@ -248,13 +249,8 @@ def load_or_create(
 
         tokens_streams = text_tokenizer.TextTokenizer(
             source=source_path,
-            transforms=[
-                text_tokenizer.TRANSFORMS.fix_hyphenation,
-                text_tokenizer.TRANSFORMS.fix_unicode,
-                text_tokenizer.TRANSFORMS.fix_whitespaces,
-                text_tokenizer.TRANSFORMS.fix_accents,
-                text_tokenizer.TRANSFORMS.fix_ftfy_text,
-            ],
+            transforms=[],
+            text_transform_opts=TextTransformOpts(fix_unicode=True, fix_accents=True),
             filename_fields=filename_fields,
         )
 

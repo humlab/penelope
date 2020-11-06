@@ -4,6 +4,7 @@ import pandas as pd
 import penelope.corpus.tokenized_corpus as corpora
 import scipy
 from penelope.corpus import vectorizer
+from penelope.corpus.tokens_transformer import TokensTransformOpts
 from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 from tests.utils import create_text_tokenizer
 
@@ -21,7 +22,7 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_corpus(self):
         reader = self.create_reader()
-        kwargs = dict(
+        tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=True,
             to_lower=True,
             remove_accents=False,
@@ -29,7 +30,7 @@ class Test_ChiSquare(unittest.TestCase):
             max_len=None,
             keep_numerals=False,
         )
-        corpus = corpora.TokenizedCorpus(reader, **kwargs)
+        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         return corpus
 
     def skip_test_chisquare(self):

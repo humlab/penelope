@@ -3,6 +3,7 @@ import logging
 import os
 
 from lxml import etree
+from penelope.corpus.readers.annotation_opts import AnnotationOpts
 
 logger = logging.getLogger(__name__)
 
@@ -13,26 +14,26 @@ XSLT_FILENAME_V3 = os.path.join(script_path, 'sparv_xml_extract.v3.xslt')
 # pylint: disable=too-many-instance-attributes
 
 
+def snuttify(token):
+    if token is None:
+        token = ''
+    if token.startswith("'") and token.endswith("'"):
+        return token
+    return "'{}'".format(token)
+
+
 class SparvXml2Text:
     def __init__(
         self,
-        xslt_filename=None,
-        pos_includes=None,
-        lemmatize=True,
-        delimiter=" ",
-        append_pos="",
-        pos_excludes="|MAD|MID|PAD|",
+        xslt_filename: str = None,
+        annotation_opts: AnnotationOpts = None,
+        delimiter: str = " ",
     ):
-
+        self.annotation_opts = annotation_opts or AnnotationOpts()
         self.xslt_filename = xslt_filename or XSLT_FILENAME
-        self.pos_includes = self.snuttify(pos_includes) if pos_includes is not None else ''
         self.xslt = etree.parse(self.xslt_filename)  # pylint: disable=I1101
         self.xslt_transformer = etree.XSLT(self.xslt)  # pylint: disable=I1101
-        self.delimiter = self.snuttify(delimiter)
-        self.lemmatize = lemmatize
-        self.pos_excludes = self.snuttify(pos_excludes)
-        self.append_pos = self.snuttify(append_pos)
-        self.target = "'lemma'" if self.lemmatize is True else "'content'"
+        self.delimiter = snuttify(delimiter)
 
     def transform(self, content):
         xml = etree.XML(content)  # pylint: disable=I1101
@@ -42,18 +43,18 @@ class SparvXml2Text:
         xml = etree.parse(filename)  # pylint: disable=I1101
         return self._transform(xml)
 
-    def snuttify(self, token):
-        if token.startswith("'") and token.endswith("'"):
-            return token
-        return "'{}'".format(token)
-
     def _transform(self, xml):
+        _opts = self.annotation_opts
+        _target = "'lemma'" if _opts.lemmatize is True else "'content'"
+        _pos_includes = snuttify(_opts.pos_includes or "")
+        _pos_excludes = snuttify(_opts.pos_excludes or "")
+        _append_pos = snuttify("|" if _opts.append_pos else "")
         text = self.xslt_transformer(
             xml,
-            pos_includes=self.pos_includes,
+            pos_includes=_pos_includes,
             delimiter=self.delimiter,
-            target=self.target,
-            append_pos=self.append_pos,
-            pos_excludes=self.pos_excludes,
+            target=_target,
+            append_pos=_append_pos,
+            pos_excludes=_pos_excludes,
         )
         return str(text)

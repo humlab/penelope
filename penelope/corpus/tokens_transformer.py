@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Dict, List
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List
 
 import textacy.preprocessing.remove as textacy_remove
 
@@ -9,21 +10,33 @@ from . import transforms
 
 # pylint: disable=too-many-arguments
 
-DEFAULT_TOKENS_TRANSFORM_OPTIONS = dict(
-    only_alphabetic=False,
-    only_any_alphanumeric=False,
-    to_lower=False,
-    to_upper=False,
-    min_len=1,
-    max_len=100,
-    remove_accents=False,
-    remove_stopwords=False,
-    stopwords=None,
-    extra_stopwords=None,
-    language="swedish",
-    keep_numerals=True,
-    keep_symbols=True,
-)
+
+@dataclass
+class TokensTransformOpts:
+
+    only_alphabetic: bool = False
+    only_any_alphanumeric: bool = False
+    to_lower: bool = False
+    to_upper: bool = False
+    min_len: int = 1
+    max_len: int = None
+    remove_accents: bool = False
+    remove_stopwords: bool = False
+    stopwords: Iterable[str] = None
+    extra_stopwords: List[str] = None
+    language: str = "swedish"
+    keep_numerals: bool = True
+    keep_symbols: bool = True
+
+    def is_valid(self, attribute: str) -> bool:
+        return hasattr(self, attribute)
+
+    @property
+    def props(self):
+        return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
+
+
+DEFAULT_TOKENS_TRANSFORM_OPTIONS = TokensTransformOpts().props
 
 
 def transformer_defaults():
@@ -37,58 +50,50 @@ def transformer_defaults_filter(opts: Dict[str, Any]):
     return {k: v for k, v in opts.items() if k in transformer_defaults()}
 
 
+# TODO: Refactor to make it more extendable
 class TokensTransformer:
     """Transforms applied on tokenized text"""
 
-    def __init__(
-        self,
-        only_alphabetic: bool = False,
-        only_any_alphanumeric: bool = False,
-        to_lower: bool = False,
-        to_upper: bool = False,
-        min_len: int = None,
-        max_len: int = None,
-        remove_accents: bool = False,
-        remove_stopwords: bool = False,
-        stopwords: Any = None,
-        extra_stopwords: List[str] = None,
-        language: str = "swedish",
-        keep_numerals: bool = True,
-        keep_symbols: bool = True,
-    ):
+    def __init__(self, tokens_transform_opts: TokensTransformOpts):
         self.transforms = []
+        self.ingest(tokens_transform_opts)
 
+    def ingest(self, opts: TokensTransformOpts):
+
+        assert isinstance(opts, TokensTransformOpts)
         self.min_chars_filter(1)
 
-        if to_lower:
+        if opts.to_lower:
             self.to_lower()
 
-        if to_upper:
+        if opts.to_upper:
             self.to_upper()
 
-        if max_len is not None:
-            self.max_chars_filter(max_len)
+        if opts.max_len is not None:
+            self.max_chars_filter(opts.max_len)
 
-        if keep_symbols is False:
+        if opts.keep_symbols is False:
             self.remove_symbols()
 
-        if remove_accents:
+        if opts.remove_accents:
             self.remove_accents()
 
-        if min_len is not None and min_len > 1:
-            self.min_chars_filter(min_len)
+        if opts.min_len is not None and opts.min_len > 1:
+            self.min_chars_filter(opts.min_len)
 
-        if only_alphabetic:
+        if opts.only_alphabetic:
             self.only_alphabetic()
 
-        if only_any_alphanumeric:
+        if opts.only_any_alphanumeric:
             self.only_any_alphanumeric()
 
-        if keep_numerals is False:
+        if opts.keep_numerals is False:
             self.remove_numerals()
 
-        if remove_stopwords or (stopwords is not None):
-            self.remove_stopwords(language_or_stopwords=(stopwords or language), extra_stopwords=extra_stopwords)
+        if opts.remove_stopwords or (opts.stopwords is not None):
+            self.remove_stopwords(
+                language_or_stopwords=(opts.stopwords or opts.language), extra_stopwords=opts.extra_stopwords
+            )
 
     def add(self, transform) -> TokensTransformer:
         self.transforms.append(transform)
