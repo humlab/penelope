@@ -41,7 +41,9 @@ def test_concept_co_occurrence_with_no_concept_succeeds():
     expected_result = {('d', 'a', 1), ('b', 'a', 1)}
 
     coo_df = corpus_concept_co_occurrence(
-        corpus, concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=True, context_width=1), n_count_threshold=1
+        corpus,
+        concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
+        n_count_threshold=1,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 

@@ -65,9 +65,7 @@ def tokens_concept_windows(tokens: Iterable[str], concept_opts: ConceptContextOp
 
     n_window = 2 * concept_opts.context_width + 1
 
-    _tokens = itertools.chain(
-        [padding] * concept_opts.context_width, tokens, [padding] * concept_opts.context_width
-    )
+    _tokens = itertools.chain([padding] * concept_opts.context_width, tokens, [padding] * concept_opts.context_width)
     # _tokens = iter(_tokens)
 
     # FIXME: #7 Add test case for --no-concept option
