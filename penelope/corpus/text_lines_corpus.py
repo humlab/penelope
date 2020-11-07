@@ -2,7 +2,7 @@ from typing import Dict, Sequence
 
 import pandas as pd
 import penelope.utility as utility
-from penelope.utility.file_utility import IndexOfSplitOrCallableOrRegExp
+from penelope.utility import IndexOfSplitOrCallableOrRegExp
 
 from .interfaces import ITokenizedCorpus
 from .tokenized_corpus import ReiterableTerms

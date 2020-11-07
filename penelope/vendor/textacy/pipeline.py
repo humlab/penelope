@@ -5,12 +5,11 @@ import os
 from typing import List, Sequence, Union
 
 import pandas as pd
-import penelope.utility.utils as utility
 import penelope.vendor.textacy as textacy_utility
 import textacy
 from penelope.corpus import preprocess_text_corpus
 from penelope.corpus.readers import ZipTextIterator
-from penelope.utility.file_utility import IndexOfSplitOrCallableOrRegExp
+from penelope.utility import IndexOfSplitOrCallableOrRegExp, path_add_suffix
 from spacy.language import Language as SpacyLanguage
 
 
@@ -83,7 +82,7 @@ class CreateTask(ITask):
 
 class PreprocessTask(ITask):
     def execute(self, pipeline: TextacyCorpusPipeline):
-        prepped_source_path = utility.path_add_suffix(pipeline.filename, pipeline.suffix)
+        prepped_source_path = path_add_suffix(pipeline.filename, pipeline.suffix)
         if not os.path.isfile(prepped_source_path) or pipeline.force:
             preprocess_text_corpus(pipeline.filename, prepped_source_path)
         pipeline.filename = prepped_source_path

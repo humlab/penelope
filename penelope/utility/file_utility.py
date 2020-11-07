@@ -1,55 +1,18 @@
 import fnmatch
 import glob
+import json
 import logging
 import os
 import pathlib
-import re
-import sys
-import time
 import zipfile
-from typing import Callable, Dict, Iterable, Iterator, List, Sequence, Tuple, Union
+from typing import Any, Iterable, Iterator, List, Tuple, Union
 
 import gensim
 import pandas as pd
 
+from .filename_utils import filename_satisfied_by
+
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
-
-
-def strip_paths(filenames: Union[str, List[str]]) -> Union[str, List[str]]:
-
-    if isinstance(filenames, str):
-        return os.path.basename(filenames)
-
-    return [os.path.basename(filename) for filename in filenames]
-
-
-def strip_path_and_extension(filename: str) -> bool:
-
-    return os.path.splitext(os.path.basename(filename))[0]
-
-
-def strip_path_and_add_counter(filename, n_chunk):
-
-    return '{}_{}.txt'.format(os.path.basename(filename), str(n_chunk).zfill(3))
-
-
-def filename_satisfied_by(
-    filename: Iterable[str], filename_filter: Union[List[str], Callable], filename_pattern: str = None
-) -> bool:
-
-    if filename_pattern is not None:
-        if not fnmatch.fnmatch(filename, filename_pattern):
-            return False
-
-    if filename_filter is not None:
-        if isinstance(filename_filter, list):
-            if filename not in filename_filter:
-                return False
-        elif callable(filename_filter):
-            if not filename_filter(filename):
-                return False
-
-    return True
 
 
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
@@ -221,141 +184,10 @@ def read_textfile(filename: str, as_binary: bool = False) -> str:
         return content
 
 
-# def read_file(path, filename):
-#     if os.path.isdir(path):
-#         with open(os.path.join(path, filename), 'r') as file:
-#             content = file.read()
-#     else:
-#         with zipfile.ZipFile(path) as zf:
-#             with zf.open(filename, 'r') as file:
-#                 content = file.read()
-#     content = gensim.utils.to_unicode(content, 'utf8', errors='ignore')
-#     return content
-
-
-def filename_field_indexed_split_parser(filename_fields: List[str]):
-    """Parses a list of meta-field expressions into a format (kwargs) suitable for `extract_filename_fields`
-    The meta-field expressions must either of:
-        `fieldname:regexp`
-        `fieldname:sep:position`
-
-    Parameters
-    ----------
-    meta_fields : [type]
-        [description]
-    """
-
-    def extract_field(data):
-
-        if len(data) == 1:  # regexp
-            return data[0]
-
-        if len(data) == 2:  #
-            sep = data[0]
-            position = int(data[1])
-            return lambda f: f.replace('.', sep).split(sep)[position]
-
-        raise ValueError("to many parts in extract expression")
-
-    try:
-
-        filename_fields = {x[0]: extract_field(x[1:]) for x in [y.split(':') for y in filename_fields]}
-
-        return filename_fields
-
-    except:  # pylint: disable=bare-except
-        print("parse error: meta-fields, must be in format 'name:regexp'")
-        sys.exit(-1)
-
-
-IndexOfSplitOrCallableOrRegExp = Union[List[str], Dict[str, Union[Callable, str]]]
-ExtractedFilenameFields = Dict[str, Union[int, str]]
-
-
-def extract_filename_fields(filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp) -> ExtractedFilenameFields:
-    """Extracts metadata from filename
-
-    The extractor in kwargs must be either a regular expression that extracts the single value
-    or a callable function that given the filename return corresponding value.
-
-    Parameters
-    ----------
-    filename : str
-        Filename (basename)
-    kwargs: Dict[str, Union[Callable, str]]
-        key=extractor list
-
-    Returns
-    -------
-    Dict[str,Union[int,str]]
-        Each key in kwargs is extacted and stored in the dict.
-
-    """
-
-    def astype_int_or_str(v):
-
-        return int(v) if v is not None and v.isnumeric() else v
-
-    def regexp_extract(compiled_regexp, filename: str) -> str:
-        try:
-            return compiled_regexp.match(filename).groups()[0]
-        except:  # pylint: disable=bare-except
-            return None
-
-    def fxify(fx_or_re) -> Callable:
-
-        if callable(fx_or_re):
-            return fx_or_re
-
-        try:
-            compiled_regexp = re.compile(fx_or_re)
-            return lambda filename: regexp_extract(compiled_regexp, filename)
-        except re.error:
-            pass
-
-        return lambda x: fx_or_re  # Return constant expression
-
-    basename = os.path.basename(filename)
-
-    if filename_fields is None:
-        return {}
-
-    if isinstance(filename_fields, (list, tuple)):
-        # List of `key:sep:index`
-        filename_fields = filename_field_indexed_split_parser(filename_fields)
-
-    if isinstance(filename_fields, str):
-        # List of `key:sep:index`
-        filename_fields = filename_field_indexed_split_parser(filename_fields.split('#'))
-
-    key_fx = {key: fxify(fx_or_re) for key, fx_or_re in filename_fields.items()}
-
-    data = {'filename': basename}
-    for key, fx in key_fx.items():
-        data[key] = astype_int_or_str(fx(basename))
-
-    return data
-
-
-def extract_filenames_fields(
-    *, filenames: str, filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp]
-) -> List[ExtractedFilenameFields]:
-    return [
-        {'filename': filename, **extract_filename_fields(filename, filename_fields)}
-        for filename in strip_paths(filenames)
-    ]
-
-
-def export_excel_to_text(excel_file: str, text_file: str) -> pd.DataFrame:
+def excel_to_csv(excel_file: str, text_file: str, sep: str = '\t') -> pd.DataFrame:
     """Exports Excel to a tab-seperated text file"""
     df = pd.read_excel(excel_file)
-    df.to_csv(text_file, sep='\t')
-    return df
-
-
-def read_text_file(filename: str) -> pd.DataFrame:
-    """Exports Excel to a tab-seperated text file"""
-    df = pd.read_csv(filename, sep='\t')  # [['year', 'txt']]
+    df.to_csv(text_file, sep=sep)
     return df
 
 
@@ -395,22 +227,27 @@ def save_excel(data: pd.DataFrame, filename: str):
         writer.save()
 
 
-def ts_data_path(directory: str, filename: str):
-    return os.path.join(directory, '{}_{}'.format(time.strftime("%Y%m%d%H%M"), filename))
-
-
-def data_path_ts(directory: str, path: str):
-    name, extension = os.path.splitext(path)
-    return os.path.join(directory, '{}_{}{}'.format(name, time.strftime("%Y%m%d%H%M"), extension))
-
-
 def compress_file(path: str):
     if not os.path.exists(path):
-        # logger.error("ERROR: file not found (zip)")
-        return
+        raise FileNotFoundError(path)
     folder, filename = os.path.split(path)
     name, _ = os.path.splitext(filename)
     zip_name = os.path.join(folder, name + '.zip')
     with zipfile.ZipFile(zip_name, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
         zf.write(path)
     os.remove(path)
+
+
+def zip_get_filenames(zip_filename: str, extension: str = '.txt') -> List[str]:
+    with zipfile.ZipFile(zip_filename, mode='r') as zf:
+        return [x for x in zf.namelist() if x.endswith(extension)]
+
+
+def zip_get_text(zip_filename: str, filename: str) -> str:
+    with zipfile.ZipFile(zip_filename, mode='r') as zf:
+        return zf.read(filename).decode(encoding='utf-8')
+
+
+def read_json(path: str) -> Any:
+    with open(path) as fp:
+        return json.load(fp)

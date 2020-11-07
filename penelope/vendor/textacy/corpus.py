@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 import pandas as pd
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.utility as utility
-import penelope.utility.file_utility as file_utility
 import textacy
 from penelope.corpus import TextTransformOpts
 from penelope.corpus.readers.interfaces import ICorpusReader
@@ -112,14 +111,14 @@ def _get_document_metadata(
     metadata: Dict[str, Any] = None,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: Sequence[utility.IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Mapping[str, Any]:
     """Extract document metadata from filename and document index"""
     metadata = metadata or {}
 
     if filename_fields is not None:
 
-        metadata = {**metadata, **file_utility.extract_filename_fields(filename, filename_fields)}
+        metadata = {**metadata, **utility.extract_filename_fields(filename, filename_fields)}
 
     if documents is not None:
 
@@ -146,7 +145,7 @@ def _extend_stream_with_metadata(
     tokenizer: text_tokenizer.TextTokenizer,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: Sequence[utility.IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Iterable[Tuple[str, str, Dict]]:
     """Extract and adds document meta data to stream
 
@@ -158,7 +157,7 @@ def _extend_stream_with_metadata(
         Document index, by default None
     document_columns : List[str], optional
         Columns in document index, by default None
-    filename_fields : Sequence[file_utility.IndexOfSplitOrCallableOrRegExp], optional
+    filename_fields : Sequence[utility.IndexOfSplitOrCallableOrRegExp], optional
         Filename fields to extract, by default None
 
     Yields
@@ -190,7 +189,7 @@ def load_or_create(
     binary_format: bool = True,
     use_compression: bool = True,
     disabled_pipes: List[str] = None,
-    filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: Sequence[utility.IndexOfSplitOrCallableOrRegExp] = None,
     document_columns: List[str] = None,
     tick=utility.noop,
 ) -> Dict[str, Any]:

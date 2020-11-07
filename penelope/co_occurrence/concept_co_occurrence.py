@@ -8,7 +8,7 @@ import scipy
 from penelope.corpus import VectorizedCorpus
 from penelope.corpus.interfaces import ICorpus, ITokenizedCorpus, PartitionKeys
 from penelope.corpus.vectorizer import CorpusVectorizer
-from penelope.utility import file_utility
+from penelope.utility import strip_path_and_extension
 from tqdm.auto import tqdm
 
 from .term_term_matrix import to_dataframe
@@ -198,7 +198,7 @@ def store_co_occurrences(filename: str, df: pd.DataFrame):
     """Store co-occurrence result data to CSV-file"""
 
     if filename.endswith('zip'):
-        archive_name = f"{file_utility.strip_path_and_extension(filename)}.csv"
+        archive_name = f"{strip_path_and_extension(filename)}.csv"
         compression = dict(method='zip', archive_name=archive_name)
     else:
         compression = 'infer'

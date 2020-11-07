@@ -3,14 +3,11 @@ import functools
 import glob
 import inspect
 import itertools
-import json
 import logging
 import os
 import platform
 import re
-import string
 import time
-import zipfile
 from numbers import Number
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar
 
@@ -148,6 +145,11 @@ def project_series_to_range(series: Sequence[Number], low: Number, high: Number)
     return norm_series.apply(lambda x: low + (high - low) * x)
 
 
+def project_values_to_range(values: List[Number], low: Number, high: Number) -> List[Number]:
+    w_max = max(values)
+    return [low + (high - low) * (x / w_max) for x in values]
+
+
 def project_to_range(value: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
     """Project a singlevalue to a range (low, high)"""
     return low + (high - low) * value
@@ -204,14 +206,6 @@ def inspect_default_opts(f: Callable) -> Mapping:
     return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
 
 
-VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
-
-
-def filename_whitelist(filename: str) -> str:
-    filename = ''.join(x for x in filename if x in VALID_CHARS)
-    return filename
-
-
 def dict_subset(d: Mapping, keys: Sequence[str]) -> Mapping:
     if keys is None:
         return d
@@ -260,8 +254,7 @@ def lists_of_dicts_merged_by_key(lst1: ListOfDicts, lst2: ListOfDicts, key: str)
 def uniquify(sequence: Iterable[T]) -> List[T]:
     """ Removes duplicates from a list whilst still preserving order """
     seen = set()
-    seen_add = seen.add
-    return [x for x in sequence if not (x in seen or seen_add(x))]
+    return [x for x in sequence if not (x in seen or seen.add(x))]
 
 
 def sort_chained(x, f):
@@ -275,37 +268,6 @@ def ls_sorted(path: str) -> List[str]:
 def split(delimiters: Sequence[str], text: str, maxsplit: int = 0) -> List[str]:
     reg_ex = '|'.join(map(re.escape, delimiters))
     return re.split(reg_ex, text, maxsplit)
-
-
-def path_add_suffix(path: str, suffix: str, new_extension: str = None) -> str:
-    basename, extension = os.path.splitext(path)
-    suffixed_path = basename + suffix + (extension if new_extension is None else new_extension)
-    return suffixed_path
-
-
-def path_add_timestamp(path: str, fmt: str = "%Y%m%d%H%M") -> str:
-    suffix = '_{}'.format(time.strftime(fmt))
-    return path_add_suffix(path, suffix)
-
-
-def path_add_date(path: str, fmt: str = "%Y%m%d") -> str:
-    suffix = '_{}'.format(time.strftime(fmt))
-    return path_add_suffix(path, suffix)
-
-
-def path_add_sequence(path: str, i: int, j: int = 0) -> str:
-    suffix = str(i).zfill(j)
-    return path_add_suffix(path, suffix)
-
-
-def zip_get_filenames(zip_filename: str, extension: str = '.txt') -> List[str]:
-    with zipfile.ZipFile(zip_filename, mode='r') as zf:
-        return [x for x in zf.namelist() if x.endswith(extension)]
-
-
-def zip_get_text(zip_filename: str, filename: str) -> str:
-    with zipfile.ZipFile(zip_filename, mode='r') as zf:
-        return zf.read(filename).decode(encoding='utf-8')
 
 
 def right_chop(s: str, suffix: str) -> str:
@@ -420,11 +382,6 @@ def take(n: int, iterable: Iterator):
     return list(itertools.islice(iterable, n))
 
 
-def read_json(path: str) -> Any:
-    with open(path) as fp:
-        return json.load(fp)
-
-
 def now_timestamp() -> str:
     return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
@@ -433,29 +390,6 @@ def timestamp(format_string: str = None) -> str:
     """ Add timestamp to string that must contain exacly one placeholder """
     tz = now_timestamp()
     return tz if format_string is None else format_string.format(tz)
-
-
-def suffix_filename(filename: str, suffix: str) -> str:
-    output_path, output_file = os.path.split(filename)
-    output_base, output_ext = os.path.splitext(output_file)
-    suffixed_filename = os.path.join(output_path, f"{output_base}_{suffix}{output_ext}")
-    return suffixed_filename
-
-
-def replace_extension(filename: str, extension: str) -> str:
-    if filename.endswith(extension):
-        return filename
-    base, _ = os.path.splitext(filename)
-    return f"{base}{'' if extension.startswith('.') else '.'}{extension}"
-
-
-def timestamp_filename(filename: str) -> str:
-    return suffix_filename(filename, now_timestamp())
-
-
-def project_values_to_range(values: List[Number], low: Number, high: Number) -> List[Number]:
-    w_max = max(values)
-    return [low + (high - low) * (x / w_max) for x in values]
 
 
 def pretty_print_matrix(
