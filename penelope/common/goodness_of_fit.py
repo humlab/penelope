@@ -218,7 +218,9 @@ def compute_goddness_of_fits_to_uniform(
     return df_gof
 
 
-def get_most_deviating_words(df_gof: pd.DataFrame, metric: str, n_count: int=500, ascending: bool=False, abs_value: bool=False):
+def get_most_deviating_words(
+    df_gof: pd.DataFrame, metric: str, n_count: int = 500, ascending: bool = False, abs_value: bool = False
+):
 
     # better sorting: df.iloc[df['b'].abs().argsort()]
     # descending: df.iloc[(-df['b'].abs()).argsort()]
