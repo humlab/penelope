@@ -188,7 +188,8 @@ def partitioned_corpus_concept_co_occurrence(
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
 
     if n_count_threshold > 1 and len(df_total) > 0:
-        df_total = df_total[df_total.groupby(["w1", "w2"])['value'].transform('sum') > n_count_threshold]
+        # FIXME: #13 Count threshold value should specify min inclusion value
+        df_total = df_total[df_total.groupby(["w1", "w2"])['value'].transform('sum') >= n_count_threshold]
 
     return df_total
 
