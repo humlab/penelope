@@ -142,6 +142,7 @@ def extract_filenames_fields(
 
 
 def filename_whitelist(filename: str) -> str:
+    """Removes invalid characters from filename"""
     filename = ''.join(x for x in filename if x in VALID_CHARS)
     return filename
 

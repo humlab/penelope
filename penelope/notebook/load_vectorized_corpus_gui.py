@@ -1,14 +1,14 @@
-import glob
 import os
-import types
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
+import ipyfilechooser
 import ipywidgets
 from penelope.corpus import VectorizedCorpus
+from penelope.utility import getLogger
 
-# from penelope.utility.utils import right_chop, getLogger
-
-# logger = getLogger('corpus_text_analysis')
+logger = getLogger('penelope')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 def right_chop(s: str, suffix: str) -> str:
@@ -56,39 +56,51 @@ def load_corpus(
     return v_corpus
 
 
-def display_gui(data_folder: str, corpus_loaded_callback: Callable):
+@dataclass
+class GUI:
+    input_filename_chooser = ipyfilechooser.FileChooser(
+        path=str(Path.home()),
+        filter_pattern='*_vectorizer_data.pickle',
+        title='<b>Corpus file (vectorized corpus)</b>',
+        show_hidden=False,
+        select_default=False,
+        use_dir_icons=True,
+        show_only_dirs=False,
+    )
+    button = ipywidgets.Button(
+        description='Load',
+        button_style='Success',
+        layout=ipywidgets.Layout(width='115px', background_color='blue'),
+    )
+    output = ipywidgets.Output()
+
+
+def display_gui(loaded_callback: Callable):
 
     corpus_suffix = '_vectorizer_data.pickle'
-    corpus_files = sorted(glob.glob(os.path.join(data_folder, "*" + corpus_suffix)))
-    corpus_tags = list(map(lambda x: right_chop(x, corpus_suffix), corpus_files))
 
-    gui = types.SimpleNamespace(
-        corpus_tag=ipywidgets.Dropdown(
-            description='Corpus', options=corpus_tags, value=None, layout=ipywidgets.Layout(width='400px')
-        ),
-        button=ipywidgets.Button(
-            description='Load',
-            button_style='Success',
-            layout=ipywidgets.Layout(width='115px', background_color='blue'),
-        ),
-        min_word_count=ipywidgets.IntSlider(description='Min Count', min=1, max=1000, step=1, value=1),
-        output=ipywidgets.Output(),
-    )
+    gui = GUI()
 
     def on_button_clicked(_):
 
-        if gui.corpus_tag.value is None:
-            return
-        gui.button.disabled = True
         gui.output.clear_output()
+        gui.button.disabled = True
+
         with gui.output:
             try:
-                v_corpus = load_corpus(
-                    data_folder, gui.corpus_tag.value, min_word_count=None, n_top=None, norm_axis=None
-                )
-                corpus_loaded_callback(v_corpus, gui.corpus_tag.value, gui.output)
-            except Exception as ex:
-                print(ex)
+
+                if (gui.input_filename_chooser.selected or "") == "":
+                    raise ValueError("Please select a corpus")
+
+                input_filename = gui.input_filename_chooser.selected
+                input_folder, filename = os.path.split(input_filename)
+                corpus_tag = right_chop(filename, corpus_suffix)
+                v_corpus = load_corpus(input_folder, corpus_tag, min_word_count=None, n_top=None, norm_axis=None)
+
+                loaded_callback(output=gui.output, corpus=v_corpus, corpus_tag=corpus_tag)
+
+            except (ValueError, FileNotFoundError, Exception) as ex:
+                logger.error(ex)
             finally:
                 gui.button.disabled = False
 
@@ -96,7 +108,7 @@ def display_gui(data_folder: str, corpus_loaded_callback: Callable):
 
     return ipywidgets.VBox(
         [
-            ipywidgets.HBox([ipywidgets.VBox([gui.corpus_tag, gui.min_word_count]), gui.button]),
+            ipywidgets.HBox([ipywidgets.VBox([gui.input_filename_chooser]), gui.button]),
             gui.output,
         ]
     )

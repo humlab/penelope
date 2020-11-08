@@ -3,6 +3,7 @@ from typing import Any
 
 import ipywidgets as widgets
 import pandas as pd
+import yaml
 from IPython.display import HTML
 from IPython.display import display as ipython_display
 
@@ -82,4 +83,11 @@ class OutputsTabExt(widgets.Tab):
         else:
             self.display_content(i, lambda: fx(*args, **kwargs), clear=clear, plot=plot)
 
+        return self
+
+    def display_as_yaml(self, i: int, what: Any, clear: bool = False, width='800px', height='600px'):
+
+        yaml_text = yaml.dump(what, explicit_start=True, line_break=True, indent=4)
+        _what = widgets.Textarea(value=yaml_text, layout=widgets.Layout(width=width, height=height))
+        self.display_content(i, _what, clear=clear, plot=True)
         return self

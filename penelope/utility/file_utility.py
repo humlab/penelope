@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 import zipfile
-from typing import Any, Iterable, Iterator, List, Tuple, Union
+from typing import Dict, Iterable, Iterator, List, Tuple, Union
 
 import gensim
 import pandas as pd
@@ -248,6 +248,9 @@ def zip_get_text(zip_filename: str, filename: str) -> str:
         return zf.read(filename).decode(encoding='utf-8')
 
 
-def read_json(path: str) -> Any:
+def read_json(path: str) -> Dict:
+    """Reads JSON from file"""
+    if not os.path.isfile(path):
+        raise FileNotFoundError(path)
     with open(path) as fp:
         return json.load(fp)

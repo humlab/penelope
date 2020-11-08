@@ -1,5 +1,5 @@
 import abc
-import types
+from dataclasses import dataclass
 from typing import Any, List, Sequence
 
 import ipywidgets
@@ -203,16 +203,16 @@ class SelectMultipleTokensSelector(TokensSelector):
     def _create_widget(self) -> ipywidgets.SelectMultiple:
 
         _tokens = list(self.tokens.index)
-
+        _layout = ipywidgets.Layout(width="200px")
         self._tokens_widget = ipywidgets.SelectMultiple(options=_tokens, value=[], rows=30)
-        self._tokens_widget.layout = ipywidgets.Layout(width="250px")
+        self._tokens_widget.layout = _layout
         self._tokens_widget.observe(self._on_selection_changed, "value")
 
-        self._text_widget = ipywidgets.Text(description="Filter:")
-        self._text_widget.layout = ipywidgets.Layout(width="250px")
+        self._text_widget = ipywidgets.Text(description="")
+        self._text_widget.layout = _layout
         self._text_widget.observe(self._on_filter_changed, "value")
 
-        _widget = ipywidgets.VBox([self._text_widget, self._tokens_widget])
+        _widget = ipywidgets.VBox([ipywidgets.HTML("<b>Filter</b>"), self._text_widget, self._tokens_widget])
 
         return _widget
 
@@ -248,56 +248,59 @@ class SelectMultipleTokensSelector(TokensSelector):
         return self._tokens_widget.options[key]
 
 
+@dataclass
+class GUI:
+    token_selector: TokensSelector = None
+    n_count = ipywidgets.IntSlider(
+        description="Count",
+        min=0,
+        max=100,
+        step=1,
+        value=3,
+        continuous_update=False,
+        layout=ipywidgets.Layout(width="300px"),
+    )
+    forward = ipywidgets.Button(
+        description=">>",
+        button_style="Success",
+        layout=ipywidgets.Layout(width="40px", color="green"),
+    )
+    back = ipywidgets.Button(
+        description="<<",
+        button_style="Success",
+        layout=ipywidgets.Layout(width="40px", color="green"),
+    )
+    split = ipywidgets.ToggleButton(description="Split", layout=ipywidgets.Layout(width="80px", color="green"))
+    output = ipywidgets.Output(layout=ipywidgets.Layout(width="80%"))
+
+    def layout(self):
+        return ipywidgets.VBox(
+            [
+                ipywidgets.HBox([self.back, self.forward, self.n_count, self.split]),
+                ipywidgets.HBox([self.token_selector.widget, self.output], layout=ipywidgets.Layout(width="98%")),
+            ]
+        )
+
+
 def display_gui(
     x_corpus: VectorizedCorpus,
-    df_tokens: pd.DataFrame,
+    tokens: pd.DataFrame,
     n_columns: int = 3,
     token_sector_cls: TokensSelector = SelectMultipleTokensSelector,
+    display_widgets: bool = True,
 ):
 
-    gui = types.SimpleNamespace(
-        progress=ipywidgets.IntProgress(
-            description="",
-            min=0,
-            max=10,
-            step=1,
-            value=0,
-            continuous_update=False,
-            layout=ipywidgets.Layout(width="98%"),
-        ),
-        n_count=ipywidgets.IntSlider(
-            description="Count",
-            min=0,
-            max=100,
-            step=1,
-            value=3,
-            continuous_update=False,
-            layout=ipywidgets.Layout(width="300px"),
-        ),
-        forward=ipywidgets.Button(
-            description=">>",
-            button_style="Success",
-            layout=ipywidgets.Layout(width="40px", color="green"),
-        ),
-        back=ipywidgets.Button(
-            description="<<",
-            button_style="Success",
-            layout=ipywidgets.Layout(width="40px", color="green"),
-        ),
-        split=ipywidgets.ToggleButton(description="Split", layout=ipywidgets.Layout(width="80px", color="green")),
-        output=ipywidgets.Output(layout=ipywidgets.Layout(width="99%")),
-    )
-
-    token_selector = token_sector_cls(df_tokens)
+    gui = GUI()
+    gui.token_selector = token_sector_cls(tokens)
 
     def update_plot(*_):
 
         gui.output.clear_output()
 
-        selected_tokens: Sequence[str] = token_selector.get_selected_tokens()
+        selected_tokens: Sequence[str] = gui.token_selector.get_selected_tokens()
 
         if len(selected_tokens) == 0:
-            selected_tokens = token_selector[: gui.n_count.value]
+            selected_tokens = gui.token_selector[: gui.n_count.value]
 
         indices: List[int] = [x_corpus.token2id[token] for token in selected_tokens]
 
@@ -310,16 +313,16 @@ def display_gui(
 
     def stepper_clicked(b):
 
-        _selected_indices = token_selector.get_selected_indices()
+        _selected_indices = gui.token_selector.get_selected_indices()
         _current_index = min(_selected_indices) if len(_selected_indices) > 0 else 0
 
         if b.description == "<<":
             _current_index = max(_current_index - gui.n_count.value, 0)
 
         if b.description == ">>":
-            _current_index = min(_current_index + gui.n_count.value, len(token_selector) - gui.n_count.value)
+            _current_index = min(_current_index + gui.n_count.value, len(gui.token_selector) - gui.n_count.value)
 
-        token_selector.set_selected_indices(list(range(_current_index, _current_index + gui.n_count.value)))
+        gui.token_selector.set_selected_indices(list(range(_current_index, _current_index + gui.n_count.value)))
 
     def split_changed(*_):
         update_plot()
@@ -328,16 +331,12 @@ def display_gui(
     gui.split.observe(split_changed, "value")
     gui.forward.on_click(stepper_clicked)
     gui.back.on_click(stepper_clicked)
+    gui.token_selector.on_selection_change_handler(update_plot)
 
-    token_selector.on_selection_change_handler(update_plot)
+    layout = gui.layout()
 
-    display(
-        ipywidgets.VBox(
-            [
-                gui.progress,
-                ipywidgets.HBox([gui.back, gui.forward, gui.n_count, gui.split]),
-                ipywidgets.HBox([token_selector.widget, gui.output]),
-            ]
-        )
-    )
-    update_plot()
+    if display_widgets:
+        display(layout)
+        update_plot()
+
+    return layout
