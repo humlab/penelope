@@ -2,6 +2,7 @@ import json
 import os
 from typing import Any, List, Tuple
 
+import pandas as pd
 from penelope.co_occurrence import (
     ConceptContextOpts,
     partitioned_corpus_concept_co_occurrence,
@@ -29,7 +30,7 @@ def execute_workflow(
     partition_keys: Tuple[str, List[str]],
     filename_field: Any = None,
     store_vectorized: bool = False,
-):
+) -> pd.DataFrame:
     """Creates concept co-occurrence using specified options and stores a co-occurrence CSV file
     and optionally a vectorized corpus.
 
@@ -115,3 +116,5 @@ def execute_workflow(
             'annotation_opts': annotation_opts.props,
         }
         json.dump(store_options, json_file, indent=4)
+
+    return coo_df
