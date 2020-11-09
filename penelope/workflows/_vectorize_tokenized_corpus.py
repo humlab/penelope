@@ -22,11 +22,10 @@ def execute_workflow(
     filename_pattern: str = '*.*',
     count_threshold: int = None,
     tokens_transform_opts: TokensTransformOpts = None,
-):
+) -> VectorizedCorpus:
 
     if not os.path.isfile(input_filename):
-        logger.error('no such file: {}'.format(input_filename))
-        return
+        raise WorkflowException(f'no such file: {input_filename}')
 
     if len(filename_field or []) == 0:
         raise WorkflowException("please specify at least one filename field (e.g. --filename-field='year:_:1')")
@@ -75,3 +74,5 @@ def execute_workflow(
             'annotation_opts': {},
         }
         json.dump(store_options, json_file, indent=4)
+
+    return v_corpus
