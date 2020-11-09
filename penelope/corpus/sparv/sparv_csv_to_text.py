@@ -1,7 +1,7 @@
 import csv
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Set
 
 from penelope.corpus.readers import AnnotationOpts
 
@@ -38,6 +38,7 @@ class SparvCsvToText:
         _lemmatize: bool = _opts.lemmatize
         _pos_includes: str = _opts.get_pos_includes()
         _pos_excludes: str = _opts.get_pos_excludes()
+        _passthrough_tokens: Set[str] = _opts.get_passthrough_tokens()
         _append_pos: bool = _opts.append_pos
 
         _pos = self.fields_index['pos']
@@ -49,7 +50,13 @@ class SparvCsvToText:
         next(data)
 
         if _pos_includes is not None:
-            data = (x for x in data if x[_pos] in _pos_includes)
+            if len(_passthrough_tokens) == 0:
+                data = (x for x in data if x[_pos] in _pos_includes)
+            else:
+                if _lemmatize:
+                    data = (x for x in data if x[_lem] in _passthrough_tokens or x[_pos] in _pos_includes)
+                else:
+                    data = (x for x in data if x[_tok] in _passthrough_tokens or x[_pos] in _pos_includes)
 
         if _pos_excludes is not None:
             data = (x for x in data if x[_pos] not in _pos_excludes)

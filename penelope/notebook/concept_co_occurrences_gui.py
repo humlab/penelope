@@ -31,7 +31,7 @@ class GUI:
     col_layout = _layout('400px')
     button_layout = _layout('120px')
     input_filename_chooser = ipyfilechooser.FileChooser(
-        path='/data/westac',
+        path=str(Path.home()),
         filter_pattern='*.zip',
         title='<b>Corpus file (Sparv v4 annotated, CSV exported)</b>',
         show_hidden=False,
@@ -132,6 +132,42 @@ class GUI:
             ]
         )
 
+    @property
+    def tokens_transform_opts(self) -> TokensTransformOpts:
+        return TokensTransformOpts(
+            to_lower=self.to_lowercase.value,
+            to_upper=False,
+            remove_stopwords=self.remove_stopwords.value,
+            extra_stopwords=None,
+            language='swedish' if self.remove_stopwords.value else None,
+            keep_numerals=False,
+            keep_symbols=False,
+            only_alphabetic=False,
+            only_any_alphanumeric=True,
+        )
+
+    @property
+    def annotation_opts(self):
+
+        return AnnotationOpts(
+            pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
+            pos_excludes="|MAD|MID|PAD|",
+            lemmatize=self.lemmatize.value,
+            passthrough_tokens=self.concept_tokens,
+        )
+
+    @property
+    def concept_opts(self):
+
+        return ConceptContextOpts(
+            concept=self.concept_tokens, context_width=self.context_width.value, ignore_concept=self.no_concept.value
+        )
+
+    @property
+    def concept_tokens(self):
+
+        return set(map(str.strip, self.concept.value.split(',')))
+
 
 def display_gui(
     *, data_folder: str, corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str, str], None]
@@ -140,6 +176,8 @@ def display_gui(
     # Hard coded for now, must be changed!!!!
     filename_field = {"year": r"prot\_(\d{4}).*"}
     partition_keys = "year"
+
+    data_folder = data_folder or str(Path.home())
 
     gui = GUI()
     gui.input_filename_chooser.path = data_folder
@@ -180,41 +218,17 @@ def display_gui(
 
                 gui.button.disabled = True
 
-                concept = set(map(str.strip, gui.concept.value.split(',')))
-
-                tokens_transform_opts = TokensTransformOpts(
-                    to_lower=gui.to_lowercase.value,
-                    to_upper=False,
-                    remove_stopwords=gui.remove_stopwords.value,
-                    extra_stopwords=None,
-                    language='swedish' if gui.remove_stopwords.value else None,
-                    keep_numerals=False,
-                    keep_symbols=False,
-                    only_alphabetic=False,
-                    only_any_alphanumeric=True,
-                )
-
-                annotation_opts = AnnotationOpts(
-                    pos_includes=f"|{'|'.join(flatten(gui.pos_includes.value))}|",
-                    pos_excludes="|MAD|MID|PAD|",
-                    lemmatize=gui.lemmatize.value,
-                )
-
-                concept_opts = ConceptContextOpts(
-                    concept=concept, context_width=gui.context_width.value, ignore_concept=gui.no_concept.value
-                )
-
                 count_threshold = None if gui.count_threshold.value < 2 else gui.count_threshold.value
 
                 concept_co_occurrences = concept_co_occurrence_workflow(
                     input_filename=gui.input_filename_chooser.selected,
                     output_filename=output_filename,
-                    concept_opts=concept_opts,
+                    concept_opts=gui.concept_opts,
                     count_threshold=count_threshold,
                     partition_keys=partition_keys,
                     filename_field=filename_field,
-                    annotation_opts=annotation_opts,
-                    tokens_transform_opts=tokens_transform_opts,
+                    annotation_opts=gui.annotation_opts,
+                    tokens_transform_opts=gui.tokens_transform_opts,
                     store_vectorized=True,
                 )
 

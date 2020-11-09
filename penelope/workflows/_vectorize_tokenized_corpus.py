@@ -22,6 +22,7 @@ def execute_workflow(
     filename_pattern: str = '*.*',
     count_threshold: int = None,
     tokens_transform_opts: TokensTransformOpts = None,
+    **_
 ) -> VectorizedCorpus:
 
     if not os.path.isfile(input_filename):

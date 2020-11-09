@@ -85,6 +85,33 @@ class GUI:
     )
     output = widgets.Output()
 
+    @property
+    def tokens_transform_opts(self):
+
+        extra_stopwords = None
+
+        if self.extra_stopwords.value.strip() != '':
+            _words = [x for x in map(str.strip, self.extra_stopwords.value.strip().split()) if x != '']
+            if len(_words) > 0:
+                extra_stopwords = _words
+
+        return TokensTransformOpts(
+            remove_stopwords=self.remove_stopwords.value,
+            to_lower=self.to_lowercase.value,
+            only_alphabetic=self.only_alphabetic.value,
+            only_any_alphanumeric=self.only_any_alphanumeric.value,
+            extra_stopwords=extra_stopwords,
+        )
+
+    @property
+    def annotations_opts(self):
+        return AnnotationOpts(
+            pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
+            pos_excludes="|MAD|MID|PAD|",
+            lemmatize=self.lemmatize.value,
+            passthrough_tokens=set()
+        )
+
     def layout(self):
 
         return widgets.VBox(
@@ -200,54 +227,27 @@ def display_gui(
                     raise FileNotFoundError(input_filename)
 
                 output_tag = gui.output_tag.value.strip()
+
                 if output_tag == "":
                     raise ValueError("please specify a unique string that will be prepended to output file")
 
                 gui.button.disabled = True
-                extra_stopwords = None
-                if gui.extra_stopwords.value.strip() != '':
-                    _words = [x for x in map(str.strip, gui.extra_stopwords.value.strip().split()) if x != '']
-                    if len(_words) > 0:
-                        extra_stopwords = _words
 
-                gui.output.clear_output()
-
-                tokens_transform_opts = TokensTransformOpts(
-                    remove_stopwords=gui.remove_stopwords.value,
-                    to_lower=gui.to_lowercase.value,
-                    only_alphabetic=gui.only_alphabetic.value,
-                    only_any_alphanumeric=gui.only_any_alphanumeric.value,
-                    extra_stopwords=extra_stopwords,
+                _workflow = (
+                    vectorize_sparv_csv_corpus_workflow
+                    if gui.corpus_type.value == 'sparv4-csv'
+                    else vectorize_tokenized_corpus_workflow
                 )
 
-                if gui.corpus_type.value == 'sparv4-csv':
-                    annotation_opts = AnnotationOpts(
-                        pos_includes=f"|{'|'.join(flatten(gui.pos_includes.value))}|",
-                        pos_excludes="|MAD|MID|PAD|",
-                        lemmatize=gui.lemmatize.value,
-                    )
-                    v_corpus = vectorize_sparv_csv_corpus_workflow(
-                        input_filename=input_filename,
-                        output_folder=output_folder,
-                        output_tag=output_tag,
-                        filename_field=gui.filename_fields.value,
-                        count_threshold=gui.count_threshold.value,
-                        annotation_opts=annotation_opts,
-                        tokens_transform_opts=tokens_transform_opts,
-                    )
-
-                elif gui.corpus_type.value == 'text':
-
-                    v_corpus = vectorize_tokenized_corpus_workflow(
-                        input_filename=input_filename,
-                        output_folder=output_folder,
-                        output_tag=output_tag,
-                        filename_field=gui.filename_fields.value,
-                        count_threshold=gui.count_threshold.value,
-                        tokens_transform_opts=tokens_transform_opts,
-                    )
-                else:
-                    v_corpus = None
+                v_corpus = _workflow(
+                    input_filename=input_filename,
+                    output_folder=output_folder,
+                    output_tag=output_tag,
+                    filename_field=gui.filename_fields.value,
+                    count_threshold=gui.count_threshold.value,
+                    annotation_opts=gui.annotations_opts,
+                    tokens_transform_opts=gui.tokens_transform_opts,
+                )
 
                 if generated_callback is not None:
                     generated_callback(

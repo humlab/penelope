@@ -35,6 +35,9 @@ class SparvXml2Text:
         self.xslt_transformer = etree.XSLT(self.xslt)  # pylint: disable=I1101
         self.delimiter = snuttify(delimiter)
 
+        if len(self.annotation_opts.get_passthrough_tokens()) > 0:
+            raise ValueError("use of passthrough not implemented for Sparv XML files")
+
     def transform(self, content):
         xml = etree.XML(content)  # pylint: disable=I1101
         return self._transform(xml)
