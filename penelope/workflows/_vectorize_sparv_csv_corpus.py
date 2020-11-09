@@ -28,7 +28,6 @@ def execute_workflow(
     if not os.path.isfile(input_filename):
         raise WorkflowException(f'no such file: {input_filename}')
 
-
     if len(filename_field or []) == 0:
         raise WorkflowException("please specify at least one filename field (e.g. --filename-field='year:_:1')")
 
