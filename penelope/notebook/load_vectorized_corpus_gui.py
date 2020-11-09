@@ -1,11 +1,10 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable
 
 import ipyfilechooser
 import ipywidgets
-from ipywidgets.widgets import widget
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import getLogger
 

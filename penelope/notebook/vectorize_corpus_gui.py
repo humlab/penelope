@@ -174,7 +174,9 @@ class GUI:
         )
 
 
-def display_gui(corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str], None]):
+def display_gui(
+    corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str], None]
+):  # pylint: disable=too-many-statements
 
     gui = GUI()
     gui.input_filename_chooser.filter_pattern = corpus_pattern
