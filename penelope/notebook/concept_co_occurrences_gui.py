@@ -133,7 +133,9 @@ class GUI:
         )
 
 
-def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Callable):
+def display_gui(
+    *, data_folder: str, corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str, str], None]
+):
 
     # Hard coded for now, must be changed!!!!
     filename_field = {"year": r"prot\_(\d{4}).*"}
@@ -204,7 +206,7 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
 
                 count_threshold = None if gui.count_threshold.value < 2 else gui.count_threshold.value
 
-                concept_co_occurrence_workflow(
+                concept_co_occurrences = concept_co_occurrence_workflow(
                     input_filename=gui.input_filename_chooser.selected,
                     output_filename=output_filename,
                     concept_opts=concept_opts,
@@ -217,7 +219,13 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
                 )
 
                 if generated_callback is not None:
-                    generated_callback(gui.output_tag.value, gui.output)
+                    generated_callback(
+                        output=gui.output,
+                        corpus_folder=output_folder,
+                        corpus_tag=gui.output_tag.value,
+                        concept_co_occurrences=concept_co_occurrences,
+                        concept_co_occurrences_filename=output_filename,
+                    )
 
         except (
             ValueError,

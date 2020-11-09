@@ -74,7 +74,7 @@ class GUI:
 
 
 def display_gui(
-    data_folder: str, filename_suffix: str = ".coo_concept_context.csv.zip", loaded_callback: Callable = None
+    data_folder: str, filename_suffix: str = ".coo_concept_context.csv.zip", loaded_callback: Callable[..., None] = None
 ):
 
     # Hard coded for now, must be changed!!!!
@@ -105,15 +105,13 @@ def display_gui(
                 gui.button.disabled = True
 
                 concept_co_occurrences = load_co_occurrences(input_filename)
-                metadata = read_json(metadata_filename)
+                compute_options = read_json(metadata_filename)
 
                 if loaded_callback is not None:
                     loaded_callback(
                         output=gui.output,
                         concept_co_occurrences=concept_co_occurrences,
-                        metadata=metadata,
-                        corpus=None,
-                        corpus_tag=None,
+                        compute_options=compute_options,
                     )
 
         except (

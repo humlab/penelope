@@ -1,98 +1,205 @@
-import glob
 import os
-import types
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
+import ipyfilechooser
 import ipywidgets as widgets
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import flatten, strip_paths
+from penelope.utility import flatten
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow
-
-# from penelope.utility.utils import right_chop, getLogger
 
 # logger = getLogger('corpus_text_analysis')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
+layout_default = widgets.Layout(width='200px')
+layout_button = widgets.Layout(width='140px')
 
 
-def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Callable):
-    lw = lambda w: widgets.Layout(width=w)
-    corpus_filenames = list(map(strip_paths, sorted(glob.glob(os.path.join(data_folder, corpus_pattern)))))
-
-    gui = types.SimpleNamespace(
-        input_filename=widgets.Dropdown(description='Corpus', options=corpus_filenames, value=None, layout=lw('350px')),
-        corpus_type=widgets.Dropdown(
-            description='Type', options=['text', 'sparv4-csv'], value='sparv4-csv', layout=lw('350px')
-        ),
-        output_tag=widgets.Text(
-            value='',
-            placeholder='Tag to prepend filenames',
-            description='Output tag',
-            disabled=False,
-            layout=lw('350px'),
-        ),
-        pos_includes=widgets.SelectMultiple(
-            options=SUC_PoS_tag_groups,
-            value=[SUC_PoS_tag_groups['Noun'], SUC_PoS_tag_groups['Verb']],
-            rows=8,
-            description='PoS',
-            disabled=False,
-            layout=lw('350px'),
-        ),
-        count_threshold=widgets.IntSlider(
-            description='Min Count', min=1, max=1000, step=1, value=1, layout=lw('350px')
-        ),
-        filename_fields=widgets.Text(
-            value=r"year:prot\_(\d{4}).*",
-            placeholder='Fields to extract from filename (regex)',
-            description='Fields',
-            disabled=False,
-            layout=lw('350px'),
-        ),
-        lemmatize=widgets.ToggleButton(value=True, description='Lemmatize', icon='check', layout=lw('140px')),
-        to_lowercase=widgets.ToggleButton(value=True, description='To Lower', icon='check', layout=lw('140px')),
-        remove_stopwords=widgets.ToggleButton(value=True, description='No Stopwords', icon='check', layout=lw('140px')),
-        only_alphabetic=widgets.ToggleButton(value=False, description='Only Alpha', icon='', layout=lw('140px')),
-        only_any_alphanumeric=widgets.ToggleButton(
-            value=False, description='Only Alphanum', icon='', layout=lw('140px')
-        ),
-        extra_stopwords_label=widgets.Label("Extra stopwords"),
-        extra_stopwords=widgets.Textarea(
-            value='örn',
-            placeholder='Enter extra stop words',
-            description='',
-            disabled=False,
-            layout=widgets.Layout(width='350px', height='100px'),
-        ),
-        button=widgets.Button(
-            description='Vectorize!',
-            button_style='Success',
-            layout=lw('140px'),
-        ),
-        output=widgets.Output(),
+@dataclass
+class GUI:
+    input_filename_chooser = ipyfilechooser.FileChooser(
+        path=str(Path.home()),
+        filter_pattern='*_vectorizer_data.pickle',
+        title='<b>Source corpus file</b>',
+        show_hidden=False,
+        select_default=False,
+        use_dir_icons=True,
+        show_only_dirs=False,
     )
+    corpus_type = widgets.Dropdown(
+        description='', options=['text', 'sparv4-csv'], value='sparv4-csv', layout=layout_default
+    )
+    output_folder_chooser = ipyfilechooser.FileChooser(
+        path=str(Path.home()),
+        title='<b>Output folder</b>',
+        show_hidden=False,
+        select_default=True,
+        use_dir_icons=True,
+        show_only_dirs=True,
+    )
+    output_tag = widgets.Text(
+        value='',
+        placeholder='Tag to prepend filenames',
+        description='',
+        disabled=False,
+        layout=layout_default,
+    )
+    pos_includes = widgets.SelectMultiple(
+        options=SUC_PoS_tag_groups,
+        value=[SUC_PoS_tag_groups['Noun'], SUC_PoS_tag_groups['Verb']],
+        rows=8,
+        description='',
+        disabled=False,
+        layout=layout_default,
+    )
+    count_threshold = widgets.IntSlider(description='', min=1, max=1000, step=1, value=1, layout=layout_default)
+    filename_fields = widgets.Text(
+        value=r"year:prot\_(\d{4}).*",
+        placeholder='Fields to extract from filename (regex)',
+        description='',
+        disabled=False,
+        layout=layout_default,
+    )
+    lemmatize = widgets.ToggleButton(value=True, description='Lemmatize', icon='check', layout=layout_button)
+    to_lowercase = widgets.ToggleButton(value=True, description='To Lower', icon='check', layout=layout_button)
+    remove_stopwords = widgets.ToggleButton(value=True, description='No Stopwords', icon='check', layout=layout_button)
+    only_alphabetic = widgets.ToggleButton(value=False, description='Only Alpha', icon='', layout=layout_button)
+    only_any_alphanumeric = widgets.ToggleButton(
+        value=False, description='Only Alphanum', icon='', layout=layout_button
+    )
+    extra_stopwords = widgets.Textarea(
+        value='örn',
+        placeholder='Enter extra stop words',
+        description='',
+        disabled=False,
+        rows=8,
+        layout=widgets.Layout(width='350px'),
+    )
+    button = widgets.Button(
+        description='Vectorize!',
+        button_style='Success',
+        layout=layout_button,
+    )
+    output = widgets.Output()
+
+    def layout(self):
+
+        return widgets.VBox(
+            [
+                widgets.HBox(
+                    [
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Corpus type</b>"),
+                                self.corpus_type,
+                            ]
+                        ),
+                        self.input_filename_chooser,
+                    ]
+                ),
+                widgets.HBox(
+                    [
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Output tag</b>"),
+                                self.output_tag,
+                            ]
+                        ),
+                        self.output_folder_chooser,
+                    ]
+                ),
+                widgets.HBox(
+                    [
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Part-Of-Speech tags</b>"),
+                                self.pos_includes,
+                            ]
+                        ),
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Extra stopwords</b>"),
+                                self.extra_stopwords,
+                            ]
+                        ),
+                    ]
+                ),
+                widgets.HBox(
+                    [
+                        widgets.VBox(
+                            [
+                                widgets.VBox(
+                                    [
+                                        widgets.HTML("<b>Filename fields</b>"),
+                                        self.filename_fields,
+                                    ]
+                                ),
+                                widgets.VBox(
+                                    [
+                                        widgets.HTML("<b>Frequency threshold</b>"),
+                                        self.count_threshold,
+                                    ]
+                                ),
+                            ]
+                        ),
+                        widgets.VBox(
+                            [
+                                widgets.HBox(
+                                    [
+                                        widgets.VBox(
+                                            [
+                                                self.lemmatize,
+                                                self.to_lowercase,
+                                                self.remove_stopwords,
+                                            ]
+                                        ),
+                                        widgets.VBox(
+                                            [
+                                                self.only_alphabetic,
+                                                self.only_any_alphanumeric,
+                                                self.button,
+                                            ]
+                                        ),
+                                    ]
+                                ),
+                            ]
+                        ),
+                    ]
+                ),
+                self.output,
+            ]
+        )
+
+
+def display_gui(corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str], None]):
+
+    gui = GUI()
+    gui.input_filename_chooser.filter_pattern = corpus_pattern
 
     def on_button_clicked(_):
 
         try:
-            with gui.output as out:
 
-                if gui.input_filename.value is None:
-                    return
+            with gui.output:
 
-                output_folder = data_folder
+                if not gui.input_filename_chooser.selected:
+                    raise ValueError("please specify corpus file")
 
-                input_filename = os.path.join(data_folder, gui.input_filename.value)
+                if not gui.output_folder_chooser.selected:
+                    raise ValueError("please specify output folder")
+
+                input_filename = gui.input_filename_chooser.selected
+                output_folder = gui.output_folder_chooser.selected
 
                 if not os.path.isfile(input_filename):
                     raise FileNotFoundError(input_filename)
 
                 output_tag = gui.output_tag.value.strip()
                 if output_tag == "":
-                    print("please specify a unique string that will be prepended to output file")
-                    return
+                    raise ValueError("please specify a unique string that will be prepended to output file")
 
                 gui.button.disabled = True
                 extra_stopwords = None
@@ -101,6 +208,8 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
                     if len(_words) > 0:
                         extra_stopwords = _words
 
+                gui.output.clear_output()
+
                 tokens_transform_opts = TokensTransformOpts(
                     remove_stopwords=gui.remove_stopwords.value,
                     to_lower=gui.to_lowercase.value,
@@ -108,7 +217,6 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
                     only_any_alphanumeric=gui.only_any_alphanumeric.value,
                     extra_stopwords=extra_stopwords,
                 )
-                out.clear_output()
 
                 if gui.corpus_type.value == 'sparv4-csv':
                     annotation_opts = AnnotationOpts(
@@ -116,7 +224,7 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
                         pos_excludes="|MAD|MID|PAD|",
                         lemmatize=gui.lemmatize.value,
                     )
-                    vectorize_sparv_csv_corpus_workflow(
+                    v_corpus = vectorize_sparv_csv_corpus_workflow(
                         input_filename=input_filename,
                         output_folder=output_folder,
                         output_tag=output_tag,
@@ -128,7 +236,7 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
 
                 elif gui.corpus_type.value == 'text':
 
-                    vectorize_tokenized_corpus_workflow(
+                    v_corpus = vectorize_tokenized_corpus_workflow(
                         input_filename=input_filename,
                         output_folder=output_folder,
                         output_tag=output_tag,
@@ -136,9 +244,16 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
                         count_threshold=gui.count_threshold.value,
                         tokens_transform_opts=tokens_transform_opts,
                     )
+                else:
+                    v_corpus = None
 
                 if generated_callback is not None:
-                    generated_callback(gui.output_tag.value, gui.output)
+                    generated_callback(
+                        output=gui.output,
+                        corpus=v_corpus,
+                        corpus_tag=gui.output_tag.value,
+                        corpus_folder=output_folder,
+                    )
 
                 gui.button.disabled = False
 
@@ -169,50 +284,4 @@ def display_gui(data_folder: str, corpus_pattern: str, generated_callback: Calla
     gui.only_alphabetic.observe(toggle_state_changed, 'value')
     gui.only_any_alphanumeric.observe(toggle_state_changed, 'value')
 
-    return widgets.VBox(
-        [
-            widgets.HBox(
-                [
-                    widgets.VBox(
-                        [
-                            gui.input_filename,
-                            gui.corpus_type,
-                            gui.output_tag,
-                            gui.filename_fields,
-                            gui.pos_includes,
-                            gui.count_threshold,
-                        ]
-                    ),
-                    widgets.VBox(
-                        [
-                            widgets.VBox(
-                                [
-                                    gui.extra_stopwords_label,
-                                    gui.extra_stopwords,
-                                ]
-                            ),
-                            widgets.HBox(
-                                [
-                                    widgets.VBox(
-                                        [
-                                            gui.lemmatize,
-                                            gui.to_lowercase,
-                                            gui.remove_stopwords,
-                                        ]
-                                    ),
-                                    widgets.VBox(
-                                        [
-                                            gui.only_alphabetic,
-                                            gui.only_any_alphanumeric,
-                                            gui.button,
-                                        ]
-                                    ),
-                                ]
-                            ),
-                        ]
-                    ),
-                ]
-            ),
-            gui.output,
-        ]
-    )
+    return gui.layout()

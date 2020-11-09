@@ -1,10 +1,11 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Dict
 
 import ipyfilechooser
 import ipywidgets
+from ipywidgets.widgets import widget
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import getLogger
 
@@ -75,7 +76,7 @@ class GUI:
     output = ipywidgets.Output()
 
 
-def display_gui(loaded_callback: Callable):
+def display_gui(loaded_callback: Callable[[ipywidgets.Output, str, str, VectorizedCorpus], None]):
 
     corpus_suffix = '_vectorizer_data.pickle'
 
@@ -97,7 +98,10 @@ def display_gui(loaded_callback: Callable):
                 corpus_tag = right_chop(filename, corpus_suffix)
                 v_corpus = load_corpus(input_folder, corpus_tag, min_word_count=None, n_top=None, norm_axis=None)
 
-                loaded_callback(output=gui.output, corpus=v_corpus, corpus_tag=corpus_tag)
+                if loaded_callback is not None:
+                    loaded_callback(
+                        output=gui.output, corpus_folder=input_folder, corpus_tag=corpus_tag, corpus=v_corpus
+                    )
 
             except (ValueError, FileNotFoundError, Exception) as ex:
                 logger.error(ex)
