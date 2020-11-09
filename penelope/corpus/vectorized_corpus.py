@@ -166,8 +166,9 @@ class VectorizedCorpus:
 
         return self
 
+    # FIXME: #15 Make arguments naming mandatory to avoid mixups
     @staticmethod
-    def dump_exists(tag, folder: str = './output') -> bool:
+    def dump_exists(*, tag: str, folder: str) -> bool:
         """Checks if corpus with tag `tag` exists in folder `folder`
 
         Parameters
@@ -751,7 +752,7 @@ def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=1
 
     v_corpus = None
 
-    if not VectorizedCorpus.dump_exists(year_cache_tag, folder=folder):
+    if not VectorizedCorpus.dump_exists(tag=year_cache_tag, folder=folder):
         logger.info("Caching corpus grouped by year...")
         v_corpus = (
             VectorizedCorpus.load(tag=tag, folder=folder)
