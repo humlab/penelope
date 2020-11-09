@@ -22,6 +22,13 @@ class AnnotationOpts:
             return set()
         return set(self.passthrough_tokens)
 
+    # FIXME; #16 Serialization of annotatioon opts fails
     @property
     def props(self):
-        return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
+        return dict(
+            pos_includes=self.pos_includes,
+            pos_excludes=self.pos_excludes,
+            passthrough_tokens=list(self.passthrough_tokens),
+            lemmatize=self.lemmatize,
+            append_pos=self.append_pos
+        )
