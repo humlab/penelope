@@ -109,7 +109,7 @@ class GUI:
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
             pos_excludes="|MAD|MID|PAD|",
             lemmatize=self.lemmatize.value,
-            passthrough_tokens=set()
+            passthrough_tokens=set(),
         )
 
     def layout(self):
