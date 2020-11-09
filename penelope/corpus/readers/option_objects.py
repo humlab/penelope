@@ -27,7 +27,7 @@ class AnnotationOpts:
         return dict(
             pos_includes=self.pos_includes,
             pos_excludes=self.pos_excludes,
-            passthrough_tokens=list(self.passthrough_tokens),
+            passthrough_tokens=list(self.get_passthrough_tokens()),
             lemmatize=self.lemmatize,
-            append_pos=self.append_pos
+            append_pos=self.append_pos,
         )
