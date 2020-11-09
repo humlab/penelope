@@ -22,7 +22,6 @@ class AnnotationOpts:
             return set()
         return set(self.passthrough_tokens)
 
-    # FIXME; #16 Serialization of annotatioon opts fails
     @property
     def props(self):
         return dict(
