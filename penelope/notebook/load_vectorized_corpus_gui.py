@@ -1,12 +1,11 @@
 import os
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable
 
 import ipyfilechooser
 import ipywidgets
 from penelope.corpus import VectorizedCorpus
-from penelope.utility import getLogger
+from penelope.utility import default_data_folder, getLogger
 
 logger = getLogger('penelope')
 
@@ -59,7 +58,7 @@ def load_corpus(
 @dataclass
 class GUI:
     input_filename_chooser = ipyfilechooser.FileChooser(
-        path=str(Path.home()),
+        path=default_data_folder(),
         filter_pattern='*_vectorizer_data.pickle',
         title='<b>Corpus file (vectorized corpus)</b>',
         show_hidden=False,

@@ -1,6 +1,5 @@
 import os
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable
 
 import ipyfilechooser
@@ -8,7 +7,7 @@ import ipywidgets as widgets
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import filename_whitelist, flatten, getLogger, replace_extension
+from penelope.utility import filename_whitelist, flatten, getLogger, replace_extension, default_data_folder
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import concept_co_occurrence_workflow
 
@@ -25,13 +24,14 @@ def _layout(width, **kwargs):
     return widgets.Layout(width=width, **kwargs)
 
 
+
 @dataclass
 class GUI:
 
     col_layout = _layout('400px')
     button_layout = _layout('120px')
     input_filename_chooser = ipyfilechooser.FileChooser(
-        path=str(Path.home()),
+        path=default_data_folder(),
         filter_pattern='*.zip',
         title='<b>Corpus file (Sparv v4 annotated, CSV exported)</b>',
         show_hidden=False,
@@ -40,7 +40,7 @@ class GUI:
         show_only_dirs=False,
     )
     output_folder_chooser = ipyfilechooser.FileChooser(
-        path=str(Path.home()),
+        path=default_data_folder(),
         title='<b>Output folder</b>',
         show_hidden=False,
         select_default=True,
@@ -153,7 +153,7 @@ class GUI:
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
             pos_excludes="|MAD|MID|PAD|",
             lemmatize=self.lemmatize.value,
-            passthrough_tokens=self.concept_tokens,
+            passthrough_tokens=list(self.concept_tokens),
         )
 
     @property
@@ -177,7 +177,7 @@ def display_gui(
     filename_field = {"year": r"prot\_(\d{4}).*"}
     partition_keys = "year"
 
-    data_folder = data_folder or str(Path.home())
+    data_folder = data_folder or default_data_folder()
 
     gui = GUI()
     gui.input_filename_chooser.path = data_folder

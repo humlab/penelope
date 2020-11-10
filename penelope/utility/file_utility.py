@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import zipfile
+from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Tuple, Union
 
 import gensim
@@ -13,6 +14,17 @@ import pandas as pd
 from .filename_utils import filename_satisfied_by
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
+
+
+def default_data_folder():
+    home = Path.home()
+    home_data = os.path.join(str(home), "data")
+    if os.path.isdir(home_data):
+        return home_data
+    if os.path.isdir('/data'):
+        return '/data'
+    return str(home)
+
 
 
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?

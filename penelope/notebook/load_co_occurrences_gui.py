@@ -1,15 +1,13 @@
 import os
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable
 
 import ipyfilechooser
 import ipywidgets as widgets
 from penelope.co_occurrence import load_co_occurrences
-from penelope.utility import getLogger
+from penelope.utility import default_data_folder, getLogger, right_chop
 from penelope.utility.file_utility import read_json
 from penelope.utility.filename_utils import replace_extension, strip_paths
-from penelope.utility.utils import right_chop
 
 logger = getLogger('penelope')
 
@@ -27,7 +25,7 @@ class GUI:
     col_layout = _layout('400px')
     button_layout = _layout('120px')
     input_filename_chooser = ipyfilechooser.FileChooser(
-        path=str(Path.home()),
+        path=default_data_folder(),
         filter_pattern=f'*{filename_suffix}',
         title=f'<b>Co-occurrence file</b> (*{filename_suffix})',
         show_hidden=False,

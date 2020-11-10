@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Set
+from dataclasses import dataclass, field
+from typing import List, Set
 
 
 @dataclass
@@ -7,7 +7,7 @@ class AnnotationOpts:
 
     pos_includes: str = ''
     pos_excludes: str = "|MAD|MID|PAD|"
-    passthrough_tokens: Set[str] = None
+    passthrough_tokens: List[str] = field(default_factory=list)
     lemmatize: bool = True
     append_pos: bool = False
 
@@ -17,7 +17,7 @@ class AnnotationOpts:
     def get_pos_excludes(self):
         return self.pos_excludes.strip('|').split('|') if self.pos_excludes is not None else None
 
-    def get_passthrough_tokens(self):
+    def get_passthrough_tokens(self) -> Set[str]:
         if self.passthrough_tokens is None:
             return set()
         return set(self.passthrough_tokens)
@@ -27,7 +27,7 @@ class AnnotationOpts:
         return dict(
             pos_includes=self.pos_includes,
             pos_excludes=self.pos_excludes,
-            passthrough_tokens=list(self.get_passthrough_tokens()),
+            passthrough_tokens=(self.passthrough_tokens or []),
             lemmatize=self.lemmatize,
             append_pos=self.append_pos,
         )

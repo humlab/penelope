@@ -7,7 +7,7 @@ import ipyfilechooser
 import ipywidgets as widgets
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import flatten
+from penelope.utility import flatten, default_data_folder
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow
 
@@ -21,7 +21,7 @@ layout_button = widgets.Layout(width='140px')
 @dataclass
 class GUI:
     input_filename_chooser = ipyfilechooser.FileChooser(
-        path=str(Path.home()),
+        path=default_data_folder(),
         filter_pattern='*_vectorizer_data.pickle',
         title='<b>Source corpus file</b>',
         show_hidden=False,
@@ -33,7 +33,7 @@ class GUI:
         description='', options=['text', 'sparv4-csv'], value='sparv4-csv', layout=layout_default
     )
     output_folder_chooser = ipyfilechooser.FileChooser(
-        path=str(Path.home()),
+        path=default_data_folder(),
         title='<b>Output folder</b>',
         show_hidden=False,
         select_default=True,
@@ -109,7 +109,7 @@ class GUI:
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
             pos_excludes="|MAD|MID|PAD|",
             lemmatize=self.lemmatize.value,
-            passthrough_tokens=set(),
+            passthrough_tokens=list(),
         )
 
     def layout(self):
@@ -260,7 +260,8 @@ def display_gui(
                 gui.button.disabled = False
 
         except Exception as ex:
-            print(ex)
+            with gui.output:
+                raise ex
 
     def corpus_type_changed(*_):
         gui.pos_includes.disabled = gui.corpus_type.value == 'text'
