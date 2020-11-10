@@ -5,6 +5,7 @@ import os
 import pickle
 import time
 from heapq import nlargest
+from pathlib import Path
 from typing import Dict, Iterable, Mapping, Optional, Tuple
 
 import numpy as np
@@ -179,6 +180,13 @@ class VectorizedCorpus:
             Corpus folder to look in, by default './output'
         """
         return os.path.isfile(VectorizedCorpus._data_filename(tag, folder))
+
+    @staticmethod
+    def remove(*, tag: str, folder: str):
+        Path(os.path.join(folder, f'{tag}_vector_data.npz')).unlink(missing_ok=True)
+        Path(os.path.join(folder, f'{tag}_vector_data.npy')).unlink(missing_ok=True)
+        Path(os.path.join(folder, f'{tag}_vectorizer_data.pickle')).unlink(missing_ok=True)
+        Path(os.path.join(folder, f'{tag}_vectorizer_data.json')).unlink(missing_ok=True)
 
     @staticmethod
     def load(*, tag: str, folder: str) -> VectorizedCorpus:

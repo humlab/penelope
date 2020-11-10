@@ -34,10 +34,7 @@ def execute_workflow(
     logger.info('Creating new corpus...')
 
     if VectorizedCorpus.dump_exists(tag=output_tag, folder=output_folder):
-        logger.info('removing existing result files...')
-        os.remove(os.path.join(output_folder, '{}_vector_data.npy'.format(output_tag)))
-        os.remove(os.path.join(output_folder, '{}_vectorizer_data.pickle'.format(output_tag)))
-        os.remove(os.path.join(output_folder, '{}_vectorizer_data.json'.format(output_tag)))
+        VectorizedCorpus.remove(tag=output_tag, folder=output_folder)
 
     tokenizer_opts = dict(
         filename_pattern=filename_pattern,
