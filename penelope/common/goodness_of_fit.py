@@ -1,5 +1,6 @@
 import collections
 import math
+import warnings
 from typing import Dict
 
 import bokeh
@@ -10,6 +11,8 @@ import statsmodels.api as sm
 from numpy.polynomial.polynomial import Polynomial as polyfit
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
+
+warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynomial.polynomial')
 
 def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
 
@@ -168,26 +171,48 @@ def compute_goddness_of_fits_to_uniform(
         }
     )
 
-    chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
-    ks, ms = list(zip(*[fit_polynomial(dtm[:, i], xs_years, 1) for i in range(0, dtm.shape[1])]))
 
-    df_gof['slope'] = ks
-    df_gof['intercept'] = ms
+    try:
+        ks, ms = list(zip(*[fit_polynomial(dtm[:, i], xs_years, 1) for i in range(0, dtm.shape[1])]))
+        df_gof['slope'] = ks
+        df_gof['intercept'] = ms
+    except:  # pylint: disable=bare-except
+        df_gof['slope'] = np.nan
+        df_gof['intercept'] = np.nan
 
-    df_gof['chi2_stats'] = chi2_stats
-    df_gof['chi2_p'] = chi2_p
+    try:
+        chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
+        df_gof['chi2_stats'] = chi2_stats
+        df_gof['chi2_p'] = chi2_p
+    except:  # pylint: disable=bare-except
+        df_gof['chi2_stats'] = np.nan
+        df_gof['chi2_p'] = np.nan
 
     df_gof['min'] = [dtm[:, i].min() for i in range(0, dtm.shape[1])]
     df_gof['max'] = [dtm[:, i].max() for i in range(0, dtm.shape[1])]
     df_gof['mean'] = [dtm[:, i].mean() for i in range(0, dtm.shape[1])]
     df_gof['var'] = [dtm[:, i].var() for i in range(0, dtm.shape[1])]
 
-    df_gof['earth_mover'] = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    df_gof['entropy'] = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    df_gof['kld'] = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    try:
+        df_gof['earth_mover'] = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        df_gof['earth_mover'] = np.nan
 
-    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.skew.html
-    df_gof['skew'] = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    try:
+        df_gof['entropy'] = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        df_gof['entropy'] = np.nan
+
+    try:
+        df_gof['kld'] = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        df_gof['kld'] = np.nan
+
+    try:
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.skew.html
+        df_gof['skew'] = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        df_gof['skew'] = np.nan
 
     # df['ols_m_k_p_xs_ys'] = [ gof.fit_ordinary_least_square(dtm[:,i], xs=xs_years) for i in range(0, dtm.shape[1]) ]
     # df['ols_k']           = [ m_k_p_xs_ys[1] for m_k_p_xs_ys in df.ols_m_k_p_xs_ys.values ]
