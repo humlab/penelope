@@ -7,7 +7,7 @@ import ipyfilechooser
 import ipywidgets as widgets
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import flatten, default_data_folder
+from penelope.utility import default_data_folder, flatten
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow
 

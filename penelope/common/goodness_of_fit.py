@@ -11,8 +11,8 @@ import statsmodels.api as sm
 from numpy.polynomial.polynomial import Polynomial as polyfit
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
-
 warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynomial.polynomial')
+
 
 def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
 
@@ -170,7 +170,6 @@ def compute_goddness_of_fits_to_uniform(
             'l2_norm': gof_by_l2_norm(dtm, axis=0),
         }
     )
-
 
     try:
         ks, ms = list(zip(*[fit_polynomial(dtm[:, i], xs_years, 1) for i in range(0, dtm.shape[1])]))

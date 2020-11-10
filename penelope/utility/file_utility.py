@@ -26,7 +26,6 @@ def default_data_folder():
     return str(home)
 
 
-
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
 def create_iterator(
     folder_or_zip: str, filenames: List[str] = None, filename_pattern: str = '*.txt', as_binary: bool = False

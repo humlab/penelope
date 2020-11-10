@@ -7,7 +7,7 @@ import ipywidgets as widgets
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import filename_whitelist, flatten, getLogger, replace_extension, default_data_folder
+from penelope.utility import default_data_folder, filename_whitelist, flatten, getLogger, replace_extension
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import concept_co_occurrence_workflow
 
@@ -22,7 +22,6 @@ def _label(x):
 
 def _layout(width, **kwargs):
     return widgets.Layout(width=width, **kwargs)
-
 
 
 @dataclass
