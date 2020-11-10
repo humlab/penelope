@@ -34,10 +34,7 @@ def execute_workflow(
     logger.info('Creating new corpus...')
 
     if VectorizedCorpus.dump_exists(tag=output_tag, folder=output_folder):
-        logger.info('removing existing result files...')
-        os.remove(os.path.join(output_folder, '{}_vector_data.npy'.format(output_tag)))
-        os.remove(os.path.join(output_folder, '{}_vectorizer_data.pickle'.format(output_tag)))
-        os.remove(os.path.join(output_folder, '{}_vectorizer_data.json'.format(output_tag)))
+        VectorizedCorpus.remove(tag=output_tag, folder=output_folder)
 
     tokenizer_opts = {
         'filename_pattern': filename_pattern,
@@ -63,14 +60,15 @@ def execute_workflow(
     json_filename = os.path.join(output_folder, f"{output_tag}_vectorizer_data.json")
     with open(replace_extension(json_filename, 'json'), 'w') as json_file:
         store_options = {
-            'input': input_filename,
-            'output': output_folder,
-            'tag': output_tag,
-            'n_count_threshold': count_threshold,
+            'input_filename': input_filename,
+            'output_folder': output_folder,
+            'output_tag': output_tag,
+            'count_threshold': count_threshold,
             'tokenizer_opts': tokenizer_opts,
             'tokens_transform_opts': tokens_transform_opts.props,
             'annotation_opts': annotation_opts.props,
         }
         json.dump(store_options, json_file, indent=4)
+    logger.info('Done!')
 
     return v_corpus
