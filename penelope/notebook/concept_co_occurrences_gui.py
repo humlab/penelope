@@ -93,11 +93,12 @@ class GUI:
     def layout(self):
         return widgets.VBox(
             [
+                self.input_filename_chooser,
+                self.output_folder_chooser,
                 widgets.HBox(
                     [
                         widgets.VBox(
                             [
-                                self.input_filename_chooser,
                                 widgets.VBox([_label("Concept tokens"), self.concept]),
                                 widgets.VBox([_label("PoS group filter"), self.pos_includes]),
                                 self.count_threshold,
@@ -105,7 +106,6 @@ class GUI:
                         ),
                         widgets.VBox(
                             [
-                                self.output_folder_chooser,
                                 widgets.VBox([_label("Output tag"), self.output_tag]),
                                 widgets.VBox([_label("Filename metadata fields"), self.filename_fields]),
                                 widgets.VBox([_label("Width (max distance to concept)"), self.context_width]),
@@ -217,13 +217,11 @@ def display_gui(
 
                 gui.button.disabled = True
 
-                count_threshold = None if gui.count_threshold.value < 2 else gui.count_threshold.value
-
                 concept_co_occurrences = concept_co_occurrence_workflow(
                     input_filename=gui.input_filename_chooser.selected,
                     output_filename=output_filename,
                     concept_opts=gui.concept_opts,
-                    count_threshold=count_threshold,
+                    count_threshold=gui.count_threshold.value,
                     partition_keys=partition_keys,
                     filename_field=filename_field,
                     annotation_opts=gui.annotation_opts,
