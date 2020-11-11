@@ -7,8 +7,9 @@ import numpy as np
 import penelope.common.curve_fit as cf
 from bokeh.plotting import Figure
 from penelope.corpus import VectorizedCorpus
-from penelope.utility import take
+from penelope.utility import get_logger, take
 
+logger = get_logger()
 SmootherFunction = Callable[[Any, Any], Tuple[Any, Any]]
 
 
@@ -319,7 +320,7 @@ def yearly_token_distribution_multiple_line_plot(
 
         except Exception as ex:  # pylint: disable=bare-except
 
-            print(ex)
+            logger.exception(ex)
 
     if n_columns is not None:
 
