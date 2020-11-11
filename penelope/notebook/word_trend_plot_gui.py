@@ -309,6 +309,10 @@ def display_gui(
             p = plotter.yearly_token_distribution_multiple_line_plot(
                 x_corpus, indices, width=1000, height=600, n_columns=x_columns
             )
+            if p is None:
+                print(f"Nothing to plot! Length indices: {len(indices)}, corpus shape: {x_corpus.data.shape}")
+                return
+
             show(p)
 
     def stepper_clicked(b):
