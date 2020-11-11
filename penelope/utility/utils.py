@@ -8,6 +8,7 @@ import os
 import platform
 import re
 import time
+from logging import Logger
 from numbers import Number
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar
 
@@ -19,7 +20,12 @@ T = TypeVar('T')
 
 
 def get_logger(
-    logger=None, to_file=False, filename=None, level=logging.DEBUG, name="penelope"
+    name: str = "penelope",
+    *,
+    logger: Logger = None,
+    to_file: bool = False,
+    filename: str = None,
+    level: int = logging.DEBUG,
 ):  # pylint: disable=redefined-outer-name
     """
     Setup logging of messages to both file and console

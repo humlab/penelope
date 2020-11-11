@@ -44,7 +44,7 @@ def display_grid(data, column_defs=None, grid_options=None, grid_style=None):
     elif isinstance(data, pd.DataFrame):
         df = data
     else:
-        raise ValueError("Data must be dict or pandas.DataFrame")
+        raise ValueError(f"Data must be dict or pandas.DataFrame not {type(data)}")
 
     column_defs = default_column_defs(df) if column_defs is None else column_defs
 

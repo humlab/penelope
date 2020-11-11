@@ -6,7 +6,9 @@ import pandas as pd
 import yaml
 from IPython.display import HTML
 from IPython.display import display as ipython_display
+from penelope.utility import getLogger
 
+logger = getLogger()
 # pylint: disable=too-many-ancestors
 
 
@@ -36,6 +38,7 @@ def create_download_link(df: pd.DataFrame, title: str = "Download CSV", filename
 
 
 class OutputsTabExt(widgets.Tab):
+
     def __init__(self, names):
         super().__init__()
         self.children = [widgets.Output() for _ in range(0, len(names))]
@@ -56,21 +59,25 @@ class OutputsTabExt(widgets.Tab):
 
     def display_content(self, i: int, what: Any, clear: bool = False, plot=True):
 
-        if clear:
+        try:
+            if clear:
 
-            self.children[i].clear_output()
-            self.loaded[i] = False
+                self.children[i].clear_output()
+                self.loaded[i] = False
 
-        with self.children[i]:
+            with self.children[i]:
 
-            if not self.loaded[i]:
+                if not self.loaded[i]:
 
-                if plot:
-                    ipython_display(what if not callable(what) else what())
-                elif callable(what):
-                    what()
+                    if plot:
+                        ipython_display(what if not callable(what) else what())
+                    elif callable(what):
+                        what()
 
-                self.loaded[i] = True
+                    self.loaded[i] = True
+
+        except ValueError as ex:
+            logger.error(f"display_content: index {i}, type{type(what)} failed: {str(ex)}. ")
 
         return self
 
@@ -86,6 +93,10 @@ class OutputsTabExt(widgets.Tab):
         return self
 
     def display_as_yaml(self, i: int, what: Any, clear: bool = False, width='800px', height='600px'):
+
+        if what is None:
+            logger.info(f"display_as_yaml: index {i} what is None")
+            return self
 
         yaml_text = yaml.dump(what, explicit_start=True, line_break=True, indent=4)
         _what = widgets.Textarea(value=yaml_text, layout=widgets.Layout(width=width, height=height))

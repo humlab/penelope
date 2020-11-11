@@ -145,7 +145,7 @@ def kullback_leibler_divergence_to_uniform(p):
 
 
 def compute_goddness_of_fits_to_uniform(
-    x_corpus: VectorizedCorpus, n_top_count: int = None, verbose=False
+    corpus: VectorizedCorpus, n_top_count: int = None, verbose=False
 ) -> pd.DataFrame:
     """Returns metric of how well the token distributions fit a uniform distribution.
 
@@ -162,10 +162,10 @@ def compute_goddness_of_fits_to_uniform(
     pd.DataFrame
         [description]
     """
-    x_corpus = x_corpus.todense()
-    xs_years = x_corpus.xs_years()
+    corpus = corpus.todense()
+    xs_years = corpus.xs_years()
 
-    dtm = x_corpus.data
+    dtm = corpus.data
 
     if dtm.shape[0] <= 1:
         raise GoodnessOfFitComputeError("Unable to compute GoF (to few bags)")
@@ -175,8 +175,8 @@ def compute_goddness_of_fits_to_uniform(
 
     df_gof = pd.DataFrame(
         {
-            'token': [x_corpus.id2token[i] for i in range(0, dtm.shape[1])],
-            'word_count': [x_corpus.word_counts[x_corpus.id2token[i]] for i in range(0, dtm.shape[1])],
+            'token': [corpus.id2token[i] for i in range(0, dtm.shape[1])],
+            'word_count': [corpus.word_counts[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
             'l2_norm': gof_by_l2_norm(dtm, axis=0),
         }
     )
