@@ -52,6 +52,7 @@ def execute_workflow(
     logger.info('Creating document-term matrix...')
     vectorizer = CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus)
+    # FIXME: #18 count_threshold not used in _vectorize_sparv_csv_corpus.
 
     logger.info('Saving data matrix...')
     v_corpus.dump(tag=output_tag, folder=output_folder)
