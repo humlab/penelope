@@ -5,7 +5,7 @@ import penelope.common.goodness_of_fit as gof
 import penelope.utility as utility
 import statsmodels.api as sm
 
-logger = utility.setup_logger()
+logger = utility.get_logger()
 
 
 class test_goodness_of_fit(unittest.TestCase):

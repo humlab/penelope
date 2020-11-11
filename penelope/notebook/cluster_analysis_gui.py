@@ -12,12 +12,12 @@ import penelope.notebook.word_trend_plot_gui as word_trend_plot_gui
 import penelope.plot.cluster_plot as cluster_plot
 from IPython.display import display
 from markdown import markdown as md
-from penelope.utility import nth, setup_logger
+from penelope.utility import nth, get_logger
 from scipy.cluster.hierarchy import dendrogram, linkage
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-logger = setup_logger()
+logger = get_logger()
 
 DEBUG_CONTAINER = {'data': None}
 

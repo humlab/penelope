@@ -18,14 +18,14 @@ import pandas as pd
 T = TypeVar('T')
 
 
-def setup_logger(
+def get_logger(
     logger=None, to_file=False, filename=None, level=logging.DEBUG
 ):  # pylint: disable=redefined-outer-name
     """
     Setup logging of import messages to both file and console
     """
     if logger is None:
-        logger = logging.getLogger("")
+        logger = logging.getLogger("penelope")
 
     logger.handlers = []
 
