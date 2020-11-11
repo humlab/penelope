@@ -7,6 +7,7 @@ from .concept_co_occurrence import (
     store_co_occurrences,
     to_vectorized_corpus,
     tokens_concept_windows,
+    filter_co_coccurrences_by_global_threshold,
 )
 
 # from .compute_partitioned import (compute_for_column_group, load_text_windows,

@@ -56,6 +56,10 @@ def execute_workflow(
     vectorizer = CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus)
 
+    # FIXME #19 count_threshold ignored in
+    if (count_threshold or 1) > 1:
+        v_corpus = v_corpus.slice_by_n_count(count_threshold)
+
     logger.info('Saving data matrix...')
     v_corpus.dump(tag=output_tag, folder=output_folder)
 
@@ -63,10 +67,10 @@ def execute_workflow(
     json_filename = os.path.join(output_folder, f"{output_tag}_vectorizer_data.json")
     with open(replace_extension(json_filename, 'json'), 'w') as json_file:
         store_options = {
-            'input': input_filename,
-            'output': output_folder,
-            'tag': output_tag,
-            'n_count_threshold': count_threshold,
+            'input_filename': input_filename,
+            'output_folder': output_folder,
+            'output_tag': output_tag,
+            'count_threshold': count_threshold,
             'tokenizer_opts': tokenizer_opts,
             'tokens_transform_opts': tokens_transform_opts.props,
             'annotation_opts': {},
