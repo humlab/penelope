@@ -38,7 +38,6 @@ def create_download_link(df: pd.DataFrame, title: str = "Download CSV", filename
 
 
 class OutputsTabExt(widgets.Tab):
-
     def __init__(self, names):
         super().__init__()
         self.children = [widgets.Output() for _ in range(0, len(names))]
