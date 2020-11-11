@@ -2,6 +2,7 @@ import sys
 from typing import Any, List
 
 import click
+from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
@@ -102,18 +103,21 @@ def main(
         pos_excludes=pos_excludes,
         lemmatize=lemmatize,
     )
+    concept_opts = ConceptContextOpts(
+        concept=concept,
+        ignore_concept=no_concept,
+        context_width=context_width,
+    )
     try:
 
         concept_co_occurrence_workflow(
             input_filename=input_filename,
             output_filename=output_filename,
-            concept=concept,
-            no_concept=no_concept,
             count_threshold=count_threshold,
-            context_width=context_width,
-            partition_keys=partition_key,
             filename_field=filename_field,
             store_vectorized=store_vectorized,
+            partition_keys=partition_key,
+            concept_opts=concept_opts,
             annotation_opts=annotation_opts,
             tokens_transform_opts=tokens_transform_opts,
         )
