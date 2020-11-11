@@ -19,13 +19,13 @@ T = TypeVar('T')
 
 
 def get_logger(
-    logger=None, to_file=False, filename=None, level=logging.DEBUG
+    logger=None, to_file=False, filename=None, level=logging.DEBUG, name="penelope"
 ):  # pylint: disable=redefined-outer-name
     """
-    Setup logging of import messages to both file and console
+    Setup logging of messages to both file and console
     """
     if logger is None:
-        logger = logging.getLogger("penelope")
+        logger = logging.getLogger(name)
 
     logger.handlers = []
 
@@ -40,10 +40,10 @@ def get_logger(
         fh.setFormatter(formatter)
         logger.addHandler(fh)
 
-    ch = logging.StreamHandler()
-    ch.setLevel(level)
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
     return logger
 
 

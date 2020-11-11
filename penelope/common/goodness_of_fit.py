@@ -13,8 +13,10 @@ from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynomial.polynomial')
 
+
 class GoodnessOfFitComputeError(ValueError):
     pass
+
 
 def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
 

@@ -10,7 +10,7 @@ from penelope.topic_modelling.extract import extract_topic_token_overview, extra
 
 from .utility import add_document_metadata, add_document_terms_count, id2word_to_dataframe
 
-logger = utility.getLogger('corpus_text_analysis')
+logger = utility.get_logger('corpus_text_analysis')
 
 
 def _infer_document_topics_iter(model, corpus, minimum_probability=0.0):

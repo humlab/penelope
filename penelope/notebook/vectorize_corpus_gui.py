@@ -6,11 +6,11 @@ import ipyfilechooser
 import ipywidgets as widgets
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import default_data_folder, flatten
+from penelope.utility import default_data_folder, flatten, get_logger
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow
 
-# logger = getLogger('corpus_text_analysis')
+logger = get_logger()
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 layout_default = widgets.Layout(width='200px')
@@ -271,8 +271,7 @@ def display_gui(
             try:
                 event['owner'].icon = 'check' if event['new'] else ''
             except Exception as ex:
-                print(event)
-                print(ex)
+                logger.exception(ex)
 
     def remove_stopwords_state_changed(*_):
         gui.extra_stopwords.disabled = not gui.remove_stopwords.value

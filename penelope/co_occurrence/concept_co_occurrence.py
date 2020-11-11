@@ -125,9 +125,7 @@ def corpus_concept_co_occurrence(
 
     documents = corpus.documents if filenames is None else corpus.documents[corpus.documents.filename.isin(filenames)]
 
-    df_coo = to_dataframe(
-        coo_matrix, id2token=corpus.id2token, documents=documents, threshold_count=threshold_count
-    )
+    df_coo = to_dataframe(coo_matrix, id2token=corpus.id2token, documents=documents, threshold_count=threshold_count)
 
     return df_coo
 
@@ -196,13 +194,17 @@ def partitioned_corpus_concept_co_occurrence(
 
     return df_total
 
+
 def filter_co_coccurrences_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
     if len(co_occurrences) == 0:
         return co_occurrences
     if threshold is None or threshold <= 1:
         return co_occurrences
-    filtered_co_occurrences = co_occurrences[co_occurrences.groupby(["w1", "w2"])['value'].transform('sum') >= threshold]
+    filtered_co_occurrences = co_occurrences[
+        co_occurrences.groupby(["w1", "w2"])['value'].transform('sum') >= threshold
+    ]
     return filtered_co_occurrences
+
 
 def store_co_occurrences(filename: str, df: pd.DataFrame):
     """Store co-occurrence result data to CSV-file"""
