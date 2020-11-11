@@ -6,11 +6,12 @@ import pandas as pd
 
 from .interfaces import PartitionKeys
 
+
 class StupidThingThatMustbeChecked(Exception):
     pass
 
-class PartitionMixIn:
 
+class PartitionMixIn:
     def partition_documents(self, by: PartitionKeys) -> Dict[Any, List[str]]:
 
         if 'filename' not in self.documents.columns:
@@ -18,7 +19,7 @@ class PartitionMixIn:
 
         if isinstance(by, (list, tuple)):
             raise StupidThingThatMustbeChecked("Why concatenate, looks stupid to me!")
-            #by = '_'.join(by)
+            # by = '_'.join(by)
 
         groups = self.documents.groupby(by=by)['filename'].aggregate(list).to_dict()
 
