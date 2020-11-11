@@ -7,10 +7,6 @@ import pandas as pd
 from .interfaces import PartitionKeys
 
 
-class StupidThingThatMustbeChecked(Exception):
-    pass
-
-
 class PartitionMixIn:
     def partition_documents(self, by: PartitionKeys) -> Dict[Any, List[str]]:
 
@@ -18,8 +14,8 @@ class PartitionMixIn:
             raise ValueError("`filename` columns missing")
 
         if isinstance(by, (list, tuple)):
-            raise StupidThingThatMustbeChecked("Why concatenate, looks stupid to me!")
-            # by = '_'.join(by)
+            # FIXME: #20 Investigate rule that concatenates concepts
+            by = '_'.join(by)
 
         groups = self.documents.groupby(by=by)['filename'].aggregate(list).to_dict()
 
