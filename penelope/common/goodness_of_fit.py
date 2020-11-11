@@ -13,6 +13,8 @@ from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
 warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynomial.polynomial')
 
+class GoodnessOfFitComputeError(ValueError):
+    pass
 
 def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
 
@@ -162,6 +164,12 @@ def compute_goddness_of_fits_to_uniform(
     xs_years = x_corpus.xs_years()
 
     dtm = x_corpus.data
+
+    if dtm.shape[0] <= 1:
+        raise GoodnessOfFitComputeError("Unable to compute GoF (to few bags)")
+
+    if dtm.shape[1] == 0:
+        raise GoodnessOfFitComputeError("Unable to compute GoF (no terms supplied)")
 
     df_gof = pd.DataFrame(
         {
