@@ -94,7 +94,7 @@ def execute_workflow(
     coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
         concept_opts=concept_opts,
-        n_count_threshold=count_threshold,
+        global_threshold_count=count_threshold,
         partition_keys=partition_keys,
     )
 
@@ -106,15 +106,16 @@ def execute_workflow(
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         store_options = {
-            'input': input_filename,
-            'output': output_filename,
-            'n_count_threshold': count_threshold,
+            'input_filename': input_filename,
+            'output_filename': output_filename,
             'partition_keys': partition_keys,
-            'concept_opts': concept_opts.props,
             'tokenizer_opts': tokenizer_opts,
+            'count_threshold': count_threshold,
+            'concept_opts': concept_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'annotation_opts': annotation_opts.props,
         }
+
         json.dump(store_options, json_file, indent=4)
 
     return coo_df

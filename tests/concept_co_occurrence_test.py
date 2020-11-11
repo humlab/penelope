@@ -29,7 +29,7 @@ def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
     coo_df = corpus_concept_co_occurrence(
         corpus,
         concept_opts=ConceptContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
-        n_count_threshold=0,
+        threshold_count=0,
     )
     assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
 
@@ -43,7 +43,7 @@ def test_concept_co_occurrence_with_no_concept_succeeds():
     coo_df = corpus_concept_co_occurrence(
         corpus,
         concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
-        n_count_threshold=1,
+        threshold_count=1,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -56,7 +56,7 @@ def test_concept_co_occurrence_with_thresholdt_succeeds():
     coo_df = corpus_concept_co_occurrence(
         corpus,
         concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
-        n_count_threshold=2,
+        threshold_count=2,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -90,8 +90,8 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
     assert os.path.isfile(output_filename)
 
 
-@pytest.mark.parametrize("concept, n_count_threshold, n_context_width", [('fråga', 0, 2), ('fråga', 2, 2)])
-def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, n_count_threshold, n_context_width):
+@pytest.mark.parametrize("concept, threshold_count, context_width", [('fråga', 0, 2), ('fråga', 2, 2)])
+def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_count, context_width):
 
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
@@ -103,8 +103,8 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, n_count_thre
 
     coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
-        concept_opts=ConceptContextOpts(concept={concept}, ignore_concept=False, context_width=n_context_width),
-        n_count_threshold=n_count_threshold,
+        concept_opts=ConceptContextOpts(concept={concept}, ignore_concept=False, context_width=context_width),
+        global_threshold_count=threshold_count,
         partition_keys='year',
     )
 
@@ -127,7 +127,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
     coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
         concept_opts=ConceptContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
-        n_count_threshold=None,
+        global_threshold_count=None,
         partition_keys='year',
     )
 
@@ -173,7 +173,7 @@ def test_store_when_co_occurrences_data_is_not_partitioned(filename):
     coo_df = corpus_concept_co_occurrence(
         corpus,
         concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
-        n_count_threshold=1,
+        threshold_count=1,
     )
 
     store_co_occurrences(expected_filename, coo_df)
@@ -204,14 +204,14 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
 
     expected_filename = jj(OUTPUT_FOLDER, filename)
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    coo_df = partitioned_corpus_concept_co_occurrence(
+    df = partitioned_corpus_concept_co_occurrence(
         corpus,
         concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
-        n_count_threshold=1,
+        global_threshold_count=1,
         partition_keys='year',
     )
 
-    store_co_occurrences(expected_filename, coo_df)
+    store_co_occurrences(expected_filename, df)
 
     assert os.path.isfile(expected_filename)
 

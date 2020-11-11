@@ -25,7 +25,7 @@ class ConceptContextOpts:
     @property
     def props(self):
         return {
-            'concepts': list(self.concept),
+            'concept': list(self.concept),
             'ignore_concept': self.ignore_concept,
             'context_width': self.context_width,
         }
@@ -95,7 +95,7 @@ def corpus_concept_co_occurrence(
     *,
     concept_opts: ConceptContextOpts,
     filenames: List[str] = None,
-    n_count_threshold: int = 1,
+    threshold_count: int = 1,
 ):
     """Computes a concept co-occurrence dataframe for given arguments
 
@@ -107,7 +107,7 @@ def corpus_concept_co_occurrence(
         The concept definition (concept tokens, context width, concept remove option)
     filenames : List[str], optional
         Corpus filename subset, by default None
-    n_count_threshold : int, optional
+    threshold_count : int, optional
         Co-occurrence count filter threshold to use, by default 1
 
     Returns
@@ -126,7 +126,7 @@ def corpus_concept_co_occurrence(
     documents = corpus.documents if filenames is None else corpus.documents[corpus.documents.filename.isin(filenames)]
 
     df_coo = to_dataframe(
-        coo_matrix, id2token=corpus.id2token, documents=documents, n_count_threshold=n_count_threshold
+        coo_matrix, id2token=corpus.id2token, documents=documents, threshold_count=threshold_count
     )
 
     return df_coo
@@ -136,7 +136,7 @@ def partitioned_corpus_concept_co_occurrence(
     corpus: ITokenizedCorpus,
     *,
     concept_opts: ConceptContextOpts,
-    n_count_threshold: int,
+    global_threshold_count: int,
     partition_keys: PartitionKeys = 'year',
 ) -> pd.DataFrame:
     """[summary]
@@ -152,7 +152,7 @@ def partitioned_corpus_concept_co_occurrence(
             If True then the focus word is filtered out
         n_context_width : int
             Number of tokens to either side of concept word
-    n_count_threshold : int
+    global_threshold_count : int
         Min number of global co-occurrence count (i.e. sum over all partitions) to include in result
     partition_key : str, optional
         Document field to use when partitioning the data, by default 'year'
@@ -162,13 +162,17 @@ def partitioned_corpus_concept_co_occurrence(
     pd.DataFrame
         Co-occurrence matrix as a pd.DataFrame
     """
-    if not isinstance(n_count_threshold, int) or n_count_threshold < 1:
-        n_count_threshold = 1
+    if not isinstance(global_threshold_count, int) or global_threshold_count < 1:
+        global_threshold_count = 1
 
     partitions = corpus.partition_documents(partition_keys)
+
     df_total = None
 
     partition_column = partition_keys if isinstance(partition_keys, str) else '_'.join(partition_keys)
+
+    if len(partitions) == 0:
+        raise ValueError(f"No partitions found for key {partition_column}")
 
     for partition in tqdm(partitions):
 
@@ -179,7 +183,7 @@ def partitioned_corpus_concept_co_occurrence(
         df_partition = corpus_concept_co_occurrence(
             corpus,
             concept_opts=concept_opts,
-            n_count_threshold=1,  # no threshold for single partition
+            threshold_count=1,  # no threshold for single partition
             filenames=filenames,
         )
 
@@ -187,12 +191,18 @@ def partitioned_corpus_concept_co_occurrence(
 
         df_total = df_partition if df_total is None else df_total.append(df_partition, ignore_index=True)
 
-    if n_count_threshold > 1 and len(df_total) > 0:
-        # FIXME: #13 Count threshold value should specify min inclusion value
-        df_total = df_total[df_total.groupby(["w1", "w2"])['value'].transform('sum') >= n_count_threshold]
+    # FIXME: #13 Count threshold value should specify min inclusion value
+    df_total = filter_co_coccurrences_by_global_threshold(df_total, global_threshold_count)
 
     return df_total
 
+def filter_co_coccurrences_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
+    if len(co_occurrences) == 0:
+        return co_occurrences
+    if threshold is None or threshold <= 1:
+        return co_occurrences
+    filtered_co_occurrences = co_occurrences[co_occurrences.groupby(["w1", "w2"])['value'].transform('sum') >= threshold]
+    return filtered_co_occurrences
 
 def store_co_occurrences(filename: str, df: pd.DataFrame):
     """Store co-occurrence result data to CSV-file"""
