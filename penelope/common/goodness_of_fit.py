@@ -1,151 +1,115 @@
 import collections
-import math
-import warnings
-from typing import Dict
+from typing import Dict, List
 
 import bokeh
 import numpy as np
 import pandas as pd
 import scipy
-import statsmodels.api as sm
-from numpy.polynomial.polynomial import Polynomial as polyfit
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.utility import chunks
 
-warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynomial.polynomial')
+from .distance_metrics import (
+    earth_mover_distance,
+    entropy,
+    fit_ordinary_least_square,
+    fit_polynomial,
+    gof_by_l2_norm,
+    gof_chisquare_to_uniform,
+    kullback_leibler_divergence_to_uniform,
+)
 
 
 class GoodnessOfFitComputeError(ValueError):
     pass
 
 
-def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
-
-    """Computes L2 norm for rows (axis = 1) or columns (axis = 0).
-
-    See stats.stackexchange.com/questions/25827/how-does-one-measure-the-non-uniformity-of-a-distribution
-
-    Measures distance tp unform distribution (1/sqrt(d))
-
-    "The lower bound 1d√ corresponds to uniformity and upper bound to the 1-hot vector."
-
-    "It just so happens, though, that the L2 norm has a simple algebraic connection to the χ2 statistic used in goodness of fit tests:
-    that's the reason it might be suitable to measure non-uniformity"
-
-    """
-    d = matrix.shape[axis]  # int(not axis)]
-
-    if scipy.sparse.issparse(matrix):
-        matrix = matrix.todense()
-
-    l2_norm = np.linalg.norm(matrix, axis=axis)
-
-    if scale:
-        l2_norm = (l2_norm * math.sqrt(d) - 1) / (math.sqrt(d) - 1)
-
-    return l2_norm
+def get_gof_by_l2_norms(dtm):
+    df_gof = pd.DataFrame(
+        {
+            'l2_norm': gof_by_l2_norm(dtm, axis=0),
+        }
+    )
+    return df_gof
 
 
-def fit_ordinary_least_square(ys, xs=None):
-    """[summary]
+def get_gof_by_polynomial(dtm: scipy.sparse.spmatrix, x_offset: float = 0.0):
+    try:
+        if isinstance(dtm, scipy.sparse.spmatrix):
+            dtm = dtm.todense()
+        xs = [x + x_offset for x in range(0, dtm.shape[0])]
+        fitted_values = fit_polynomial(xs=xs, ys=dtm, deg=1)
+    except:  # pylint: disable=bare-except
+        fitted_values = (np.nan, np.nan)
 
-    Parameters
-    ----------
-    ys : array-like
-        observations
-    xs : array-like, optional
-        categories, domain, by default None
-
-    Returns
-    -------
-    tuple m, k, p, (x1, x2), (y1, y2)
-        where y = k * x + m
-          and p is the p-value
-    """
-    if xs is None:
-        xs = np.arange(len(ys))  # 0.0, len(ys), 1.0))
-
-    xs = sm.add_constant(xs)
-
-    model = sm.OLS(endog=ys, exog=xs)
-    result = model.fit()
-    coeffs = result.params
-    predicts = result.predict()
-    (x1, x2), (y1, y2) = (xs[0][1], xs[-1][1]), (predicts[0], predicts[-1])
-
-    return coeffs[0], coeffs[1], result.pvalues, (x1, x2), (y1, y2)
+    return pd.DataFrame({'slope': fitted_values[1], 'intercept': fitted_values[0]}, index=range(0, dtm.shape[1]))
 
 
-def fit_ordinary_least_square_ravel(Y, xs):
-
-    if xs is None:
-        xs = np.arange(Y.shape[0])
-
-    xsr = np.repeat(xs, Y.shape[1])
-    ysr = Y.ravel()
-
-    return fit_ordinary_least_square(ys=ysr, xs=xsr)
+def get_gof_chisquare_to_uniform(dtm):
+    try:
+        chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
+    except:  # pylint: disable=bare-except
+        chi2_stats, chi2_p = np.nan, np.nan
+    return pd.DataFrame({'chi2_stats': chi2_stats, 'chi2_p': chi2_p}, index=range(0, dtm.shape[1]))
 
 
-def fit_polynomial(ys, xs=None, deg=1):
-
-    if xs is None:
-        xs = np.arange(len(ys))
-
-    return polyfit.fit(xs, ys, deg).convert().coef
-
-
-def fit_polynomial_ravel(Y, xs):
-
-    # xs = np.arange(x_corpus.documents.year.min(), x_corpus.documents.year.max() + 1, 1)
-
-    # Layout columns as a single y-vector using ravel. Repeat x-vector for each column
-    xsr = np.repeat(xs, Y.shape[1])
-    ysr = Y.ravel()
-    kx_m = np.polyfit(x=xsr, y=ysr, deg=1)
-
-    return kx_m
+def get_earth_mover_distance(dtm):
+    try:
+        emd = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        emd = np.nan
+    return pd.DataFrame({'earth_mover': emd}, index=range(0, dtm.shape[1]))
 
 
-def gof_chisquare_to_uniform(f_obs, axis=0):
-
-    (chi2, p) = scipy.stats.chisquare(f_obs, axis=axis)
-
-    return (chi2, p)
-
-
-def earth_mover_distance(vs, ws=None):
-
-    if ws is None:
-        ws = np.full(len(vs), vs.mean())
-
-    return scipy.stats.wasserstein_distance(vs, ws)
+def get_entropy_to_uniform(dtm):
+    try:
+        e = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        e = np.nan
+    return pd.DataFrame({'entropy': e}, index=range(0, dtm.shape[1]))
 
 
-def entropy(pk, qk=None):
-
-    if qk is None:
-        qk = np.full(len(pk), pk.mean())
-
-    return scipy.stats.entropy(pk, qk)
-
-
-def kullback_leibler_divergence(p, q):
-    if q is None:
-        q = np.full(len(p), p.mean())
-    e = 0.00001  # avoid div by zero
-    kld = np.sum((p + e) * np.log((p + e) / (q + e)))
-    return kld
+def get_kullback_leibler_divergence_to_uniform(dtm):
+    try:
+        kld = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        kld = np.nan
+    return pd.DataFrame({'kld': kld}, index=range(0, dtm.shape[1]))
 
 
-def kullback_leibler_divergence_to_uniform(p):
-    q = p.mean()
-    e = 0.00001  # avoid div by zero
-    kld = np.sum((p + e) * np.log((p + e) / (q + e)))
-    return kld
+def get_skew(dtm):
+    try:
+        skew = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
+    except:  # pylint: disable=bare-except
+        skew = np.nan
+    return pd.DataFrame({'skew': skew}, index=range(0, dtm.shape[1]))
+
+
+def get_basic_statistics(dtm):
+    return pd.DataFrame(
+        {
+            'min': [dtm[:, i].min() for i in range(0, dtm.shape[1])],
+            'max': [dtm[:, i].max() for i in range(0, dtm.shape[1])],
+            'mean': [dtm[:, i].mean() for i in range(0, dtm.shape[1])],
+            'var': [dtm[:, i].var() for i in range(0, dtm.shape[1])],
+        },
+        index=range(0, dtm.shape[1]),
+    )
+
+
+METRIC_FUNCTIONS = {
+    'l2_norm': get_gof_by_l2_norms,
+    "slope": get_gof_by_polynomial,
+    "chi2_stats": get_gof_chisquare_to_uniform,
+    'stats': get_basic_statistics,
+    'earth_mover': get_earth_mover_distance,
+    'entropy': get_entropy_to_uniform,
+    'kld': get_kullback_leibler_divergence_to_uniform,
+    'skew': get_skew,
+}
 
 
 def compute_goddness_of_fits_to_uniform(
-    corpus: VectorizedCorpus, n_top_count: int = None, verbose=False
+    corpus: VectorizedCorpus, n_top_count: int = None, verbose=False, metrics: List[str] = None
 ) -> pd.DataFrame:
     """Returns metric of how well the token distributions fit a uniform distribution.
 
@@ -162,8 +126,8 @@ def compute_goddness_of_fits_to_uniform(
     pd.DataFrame
         [description]
     """
+    metrics = metrics or list(METRIC_FUNCTIONS.keys())
     corpus = corpus.todense()
-    xs_years = corpus.xs_years()
 
     dtm = corpus.data
 
@@ -177,79 +141,31 @@ def compute_goddness_of_fits_to_uniform(
         {
             'token': [corpus.id2token[i] for i in range(0, dtm.shape[1])],
             'word_count': [corpus.word_counts[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
-            'l2_norm': gof_by_l2_norm(dtm, axis=0),
         }
     )
 
-    try:
-        ks, ms = list(zip(*[fit_polynomial(dtm[:, i], xs_years, 1) for i in range(0, dtm.shape[1])]))
-        df_gof['slope'] = ks
-        df_gof['intercept'] = ms
-    except:  # pylint: disable=bare-except
-        df_gof['slope'] = np.nan
-        df_gof['intercept'] = np.nan
-
-    try:
-        chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
-        df_gof['chi2_stats'] = chi2_stats
-        df_gof['chi2_p'] = chi2_p
-    except:  # pylint: disable=bare-except
-        df_gof['chi2_stats'] = np.nan
-        df_gof['chi2_p'] = np.nan
-
-    df_gof['min'] = [dtm[:, i].min() for i in range(0, dtm.shape[1])]
-    df_gof['max'] = [dtm[:, i].max() for i in range(0, dtm.shape[1])]
-    df_gof['mean'] = [dtm[:, i].mean() for i in range(0, dtm.shape[1])]
-    df_gof['var'] = [dtm[:, i].var() for i in range(0, dtm.shape[1])]
-
-    try:
-        df_gof['earth_mover'] = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        df_gof['earth_mover'] = np.nan
-
-    try:
-        df_gof['entropy'] = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        df_gof['entropy'] = np.nan
-
-    try:
-        df_gof['kld'] = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        df_gof['kld'] = np.nan
-
-    try:
-        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.skew.html
-        df_gof['skew'] = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        df_gof['skew'] = np.nan
-
-    # df['ols_m_k_p_xs_ys'] = [ gof.fit_ordinary_least_square(dtm[:,i], xs=xs_years) for i in range(0, dtm.shape[1]) ]
-    # df['ols_k']           = [ m_k_p_xs_ys[1] for m_k_p_xs_ys in df.ols_m_k_p_xs_ys.values ]
-    # df['ols_m']           = [ m_k_p_xs_ys[0] for m_k_p_xs_ys in df.ols_m_k_p_xs_ys.values ]
+    for metric in metrics:
+        if metric in METRIC_FUNCTIONS:
+            df_gof = df_gof.join(METRIC_FUNCTIONS[metric](dtm))
 
     df_gof.sort_values(['l2_norm'], ascending=False, inplace=True)
-
-    # uniform_constant = 1.0 / math.sqrt(float(dtm.shape[0]))
 
     if (n_top_count or 0) > 0:
         df_gof = df_gof.nlargest(n_top_count, columns=["word_count"])
 
     if not verbose:
+
+        if 'stats' in metrics:
+            metrics.remove('stats')
+
         df_gof = df_gof[
             [
                 "token",
                 "word_count",
-                "l2_norm",
-                "slope",
-                "chi2_stats",
-                "earth_mover",
-                "kld",
-                "skew",
-                "entropy",
             ]
+            + metrics
         ]
-
-    return df_gof
+        return df_gof
 
 
 def get_most_deviating_words(
@@ -283,15 +199,10 @@ def get_most_deviating_words(
 
 def compile_most_deviating_words(df, n_count=500):
 
-    xf = (
-        get_most_deviating_words(df, 'l2_norm', n_count)
-        .join(get_most_deviating_words(df, 'slope', n_count, abs_value=True))
-        .join(get_most_deviating_words(df, 'chi2_stats', n_count))
-        .join(get_most_deviating_words(df, 'earth_mover', n_count))
-        .join(get_most_deviating_words(df, 'kld', n_count))
-        .join(get_most_deviating_words(df, 'skew', n_count))
-    )
-
+    computed_metrics = list(set(df.columns) - set(["token", "word_count"]))
+    xf = df[["token", "word_count"]]
+    for metric in computed_metrics:
+        xf = xf.join(get_most_deviating_words(df, metric, n_count, abs_value=True))
     return xf
 
 
@@ -308,20 +219,14 @@ def plot_metric_histogram(df_gof, metric='l2_norm', bins=100):
 
 
 def plot_metrics(df_gof, bins=100):
-    gp = bokeh.layouts.gridplot(
-        [
-            [
-                plot_metric_histogram(df_gof, metric='l2_norm', bins=bins),
-                plot_metric_histogram(df_gof, metric='earth_mover', bins=bins),
-                plot_metric_histogram(df_gof, metric='entropy', bins=bins),
-            ],
-            [
-                plot_metric_histogram(df_gof, metric='kld', bins=bins),
-                plot_metric_histogram(df_gof, metric='slope', bins=bins),
-                plot_metric_histogram(df_gof, metric='chi2_stats', bins=bins),
-            ],
-        ]
-    )
+    plots = []
+    for metric in METRIC_FUNCTIONS.keys():
+        if metric in df_gof.columns:
+            plots.append(plot_metric_histogram(df_gof, metric=metric, bins=bins))
+
+    plots = chunks(list(plots), 3)
+
+    gp = bokeh.layouts.gridplot(plots)
 
     bokeh.plotting.show(gp)
 
