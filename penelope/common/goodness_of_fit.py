@@ -5,6 +5,7 @@ import bokeh
 import numpy as np
 import pandas as pd
 import scipy
+from pandas.core.frame import DataFrame
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import chunks
 
@@ -23,7 +24,7 @@ class GoodnessOfFitComputeError(ValueError):
     pass
 
 
-def get_gof_by_l2_norms(dtm):
+def get_gof_by_l2_norms(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     df_gof = pd.DataFrame(
         {
             'l2_norm': gof_by_l2_norm(dtm, axis=0),
@@ -32,7 +33,7 @@ def get_gof_by_l2_norms(dtm):
     return df_gof
 
 
-def get_gof_by_polynomial(dtm: scipy.sparse.spmatrix, x_offset: float = 0.0):
+def get_gof_by_polynomial(dtm: scipy.sparse.spmatrix, x_offset: float = 0.0) -> DataFrame:
     try:
         if isinstance(dtm, scipy.sparse.spmatrix):
             dtm = dtm.todense()
@@ -41,50 +42,56 @@ def get_gof_by_polynomial(dtm: scipy.sparse.spmatrix, x_offset: float = 0.0):
     except:  # pylint: disable=bare-except
         fitted_values = (np.nan, np.nan)
 
-    return pd.DataFrame({'slope': fitted_values[1], 'intercept': fitted_values[0]}, index=range(0, dtm.shape[1]))
+    return pd.DataFrame(
+        {'slope': fitted_values[1], 'intercept': fitted_values[0]}, index=range(0, dtm.shape[1]), dtype=np.float64
+    )
 
 
-def get_gof_chisquare_to_uniform(dtm):
+def get_gof_chisquare_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     try:
-        chi2_stats, chi2_p = list(zip(*[gof_chisquare_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]))
+        chi2_stats, chi2_p = list(
+            zip(*[gof_chisquare_to_uniform(dtm.getcol(0).A.ravel()) for i in range(0, dtm.shape[1])])
+        )
     except:  # pylint: disable=bare-except
         chi2_stats, chi2_p = np.nan, np.nan
-    return pd.DataFrame({'chi2_stats': chi2_stats, 'chi2_p': chi2_p}, index=range(0, dtm.shape[1]))
+    return pd.DataFrame({'chi2_stats': chi2_stats, 'chi2_p': chi2_p}, index=range(0, dtm.shape[1]), dtype=np.float64)
 
 
-def get_earth_mover_distance(dtm):
+def get_earth_mover_distance(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     try:
-        emd = [earth_mover_distance(dtm[:, i]) for i in range(0, dtm.shape[1])]
+        emd = [earth_mover_distance(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
     except:  # pylint: disable=bare-except
         emd = np.nan
-    return pd.DataFrame({'earth_mover': emd}, index=range(0, dtm.shape[1]))
+    return pd.DataFrame({'earth_mover': emd}, index=range(0, dtm.shape[1]), dtype=np.float64)
 
 
-def get_entropy_to_uniform(dtm):
+def get_entropy_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     try:
-        e = [entropy(dtm[:, i]) for i in range(0, dtm.shape[1])]
+        e = [entropy(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
     except:  # pylint: disable=bare-except
         e = np.nan
-    return pd.DataFrame({'entropy': e}, index=range(0, dtm.shape[1]))
+    return pd.DataFrame({'entropy': e}, index=range(0, dtm.shape[1]), dtype=np.float64)
 
 
-def get_kullback_leibler_divergence_to_uniform(dtm):
+def get_kullback_leibler_divergence_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     try:
-        kld = [kullback_leibler_divergence_to_uniform(dtm[:, i]) for i in range(0, dtm.shape[1])]
+        kld = [kullback_leibler_divergence_to_uniform(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
     except:  # pylint: disable=bare-except
         kld = np.nan
-    return pd.DataFrame({'kld': kld}, index=range(0, dtm.shape[1]))
+    return pd.DataFrame({'kld': kld}, index=range(0, dtm.shape[1]), dtype=np.float64)
 
 
-def get_skew(dtm):
+def get_skew(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     try:
-        skew = [scipy.stats.skew(dtm[:, i]) for i in range(0, dtm.shape[1])]
+        if not isinstance(dtm, scipy.sparse.spmatrix):
+            raise GoodnessOfFitComputeError("get_skew expects a sparse matrixs")
+        skew = [scipy.stats.skew(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
     except:  # pylint: disable=bare-except
         skew = np.nan
-    return pd.DataFrame({'skew': skew}, index=range(0, dtm.shape[1]))
+    return pd.DataFrame({'skew': skew}, index=range(0, dtm.shape[1]), dtype=np.float64)
 
 
-def get_basic_statistics(dtm):
+def get_basic_statistics(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     return pd.DataFrame(
         {
             'min': [dtm[:, i].min() for i in range(0, dtm.shape[1])],
@@ -93,6 +100,7 @@ def get_basic_statistics(dtm):
             'var': [dtm[:, i].var() for i in range(0, dtm.shape[1])],
         },
         index=range(0, dtm.shape[1]),
+        dtype=np.float64,
     )
 
 
@@ -127,9 +135,8 @@ def compute_goddness_of_fits_to_uniform(
         [description]
     """
     metrics = metrics or list(METRIC_FUNCTIONS.keys())
-    corpus = corpus.todense()
 
-    dtm = corpus.data
+    dtm = corpus.data.todense()
 
     if dtm.shape[0] <= 1:
         raise GoodnessOfFitComputeError("Unable to compute GoF (to few bags)")
@@ -165,13 +172,12 @@ def compute_goddness_of_fits_to_uniform(
             ]
             + metrics
         ]
-        return df_gof
+    return df_gof
 
 
 def get_most_deviating_words(
     df_gof: pd.DataFrame, metric: str, n_count: int = 500, ascending: bool = False, abs_value: bool = False
 ):
-
     # better sorting: df.iloc[df['b'].abs().argsort()]
     # descending: df.iloc[(-df['b'].abs()).argsort()]
 
@@ -220,7 +226,7 @@ def plot_metric_histogram(df_gof, metric='l2_norm', bins=100):
 
 def plot_metrics(df_gof, bins=100):
     plots = []
-    for metric in METRIC_FUNCTIONS.keys():
+    for metric in METRIC_FUNCTIONS:
         if metric in df_gof.columns:
             plots.append(plot_metric_histogram(df_gof, metric=metric, bins=bins))
 

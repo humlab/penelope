@@ -4,6 +4,7 @@ import penelope.common.distance_metrics as distance_metrics
 import penelope.common.goodness_of_fit as gof
 import penelope.utility as utility
 import pytest
+import scipy
 import statsmodels.api as sm
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 
@@ -153,3 +154,84 @@ def test_gof_by_polynomial():
     df = gof.get_gof_by_polynomial(corpus.data)
 
     assert np.allclose(expected_values.T, df[['intercept', 'slope']].to_numpy())
+
+
+def test_gof_get_skew():
+
+    row = np.arange(0, 8)
+    col = np.zeros(8)
+    data = np.array([2, 8, 0, 4, 1, 9, 9, 0])
+
+    dtm = scipy.sparse.csr_matrix((data, (row, col)), shape=(8, 1))
+
+    df = gof.get_skew(dtm)
+    assert df['skew'].iloc[0] == 0.2650554122698573
+
+    # skew([1, 2, 3, 4, 5])
+    # 0.0
+    # skew([2, 8, 0, 4, 1, 9, 9, 0])
+    # 0.2650554122698573
+
+
+def create_single_column_sparse_csr_matrix(data):
+    row = np.arange(0, len(data))
+    col = np.zeros(len(data))
+    dtm = scipy.sparse.csr_matrix((data, (row, col)), shape=(len(data), 1))
+    return dtm
+
+
+def test_get_gof_by_polynomial():
+
+    data = [2, 8, 0, 4, 1, 9, 9, 0]
+    expected_result = np.polyfit(np.arange(0, 8), data, 1)
+    dtm = create_single_column_sparse_csr_matrix(data)
+
+    df = gof.get_gof_by_polynomial(dtm)
+
+    assert np.allclose([expected_result[0]], df['slope'])
+    assert np.allclose([expected_result[1]], df['intercept'])
+
+
+def test_get_earth_mover_distance():
+
+    data = [2, 8, 0, 4, 1, 9, 9, 0]
+    expected_result = distance_metrics.earth_mover_distance(np.array(data))
+    dtm = create_single_column_sparse_csr_matrix(data)
+
+    df = gof.get_earth_mover_distance(dtm)
+
+    assert np.allclose([expected_result], df['earth_mover'])
+
+
+def test_get_entropy_to_uniform():
+
+    data = [2, 8, 0, 4, 1, 9, 9, 0]
+    expected_result = distance_metrics.entropy(np.array(data))
+    dtm = create_single_column_sparse_csr_matrix(data)
+
+    df = gof.get_entropy_to_uniform(dtm)
+
+    assert np.allclose([expected_result], df['entropy'])
+
+
+def test_get_kullback_leibler_divergence_to_uniform():
+
+    data = [2, 8, 0, 4, 1, 9, 9, 0]
+    expected_result = distance_metrics.kullback_leibler_divergence_to_uniform(np.array(data))
+    dtm = create_single_column_sparse_csr_matrix(data)
+
+    df = gof.get_kullback_leibler_divergence_to_uniform(dtm)
+
+    assert np.allclose([expected_result], df['kld'])
+
+
+def test_get_gof_chisquare_to_uniform():
+
+    data = [2, 8, 0, 4, 1, 9, 9, 0]
+    expected_result = distance_metrics.gof_chisquare_to_uniform(np.array(data))
+    dtm = create_single_column_sparse_csr_matrix(data)
+
+    df = gof.get_gof_chisquare_to_uniform(dtm)
+
+    assert np.allclose(expected_result[0], df['chi2_stats'])
+    assert np.allclose(expected_result[1], df['chi2_p'])

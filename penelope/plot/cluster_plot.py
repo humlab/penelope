@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import penelope.common.curve_fit as cf
-import penelope.common.goodness_of_fit as gof
 from bokeh.models import HoverTool, TapTool
+from penelope.common import distance_metrics
 from penelope.corpus import VectorizedCorpus
 from scipy.cluster.hierarchy import dendrogram
 
@@ -22,7 +22,7 @@ def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noo
 
     xs = np.arange(x_corpus.documents.year.min(), x_corpus.documents.year.max() + 1, 1)
     token_ids = list(token_clusters[token_clusters.cluster == n_cluster].index)
-    word_distributions = x_corpus.todense()[:, token_ids]
+    word_distributions = x_corpus.data.todense()[:, token_ids]
 
     tick(1, max=len(token_ids))
 
@@ -50,7 +50,7 @@ def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noo
     p.line(xs=xsr, ys=ysr, line_width=1.0, color='green', alpha=0.1, legend_label='actual')
 
     tick(1)
-    _, _, _, lx, ly = gof.fit_ordinary_least_square_ravel(word_distributions, xs)
+    _, _, _, lx, ly = distance_metrics.fit_ordinary_least_square_ravel(word_distributions, xs)
     p.line(xs=lx, ys=ly, line_width=0.6, color='black', alpha=0.8, legend_label='trend')
 
     xsp, ysp = cf.fit_curve_ravel(cf.polynomial3, xs, word_distributions)

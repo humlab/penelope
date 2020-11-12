@@ -8,7 +8,6 @@ import os
 import platform
 import re
 import time
-from logging import Logger
 from numbers import Number
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar, Union
 

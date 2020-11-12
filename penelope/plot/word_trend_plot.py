@@ -289,7 +289,7 @@ def yearly_token_distribution_multiple_line_plot(
     Figure
         bokeh Figure
     """
-    x_corpus = x_corpus.todense()
+    # x_corpus = x_corpus.todense()
 
     smoothers = smoothers or [cf.rolling_average_smoother('nearest', 3), cf.pchip_spline]
 
@@ -303,8 +303,8 @@ def yearly_token_distribution_multiple_line_plot(
     for token_id in indices:
         try:
 
-            ys = x_corpus.data[:, token_id]
-
+            # ys = x_corpus.data[:, token_id]
+            ys = x_corpus.data.getcol(token_id).A.ravel()
             p = yearly_token_distribution_single_line_plot(
                 xs,
                 ys,
