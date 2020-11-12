@@ -10,7 +10,7 @@ import re
 import time
 from logging import Logger
 from numbers import Number
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar, Union
 
 import gensim.utils
 import numpy as np
@@ -19,42 +19,32 @@ import pandas as pd
 T = TypeVar('T')
 
 
+LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
+
+
 def get_logger(
     name: str = "penelope",
     *,
-    logger: Logger = None,
-    to_file: bool = False,
-    filename: str = None,
+    to_file: Union[bool, str] = False,
     level: int = logging.DEBUG,
 ):  # pylint: disable=redefined-outer-name
     """
     Setup logging of messages to both file and console
     """
-    if logger is None:
-        logger = logging.getLogger(name)
 
-    logger.handlers = []
+    logger = getLogger(name, level=level)
 
-    logger.setLevel(level)
-    formatter = logging.Formatter('%(message)s')
-
-    if to_file is True or filename is not None:
-        if filename is None:
-            filename = '_{}.log'.format(time.strftime("%Y%m%d"))
-        fh = logging.FileHandler(filename)
+    if to_file and isinstance(to_file, (bool, str)):
+        fh = logging.FileHandler(f'{name}_{time.strftime("%Y%m%d")}.log' if isinstance(to_file, bool) else to_file)
         fh.setLevel(level)
-        fh.setFormatter(formatter)
+        fh.setFormatter(logging.Formatter(fmt=LOG_FORMAT))
         logger.addHandler(fh)
 
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(level)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
     return logger
 
 
 def getLogger(name: str = '', level=logging.INFO):
-    logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=level)
+    logging.basicConfig(format=LOG_FORMAT, level=level)
     _logger = logging.getLogger(name)
     _logger.setLevel(level)
     return _logger
