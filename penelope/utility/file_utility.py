@@ -265,3 +265,8 @@ def read_json(path: str) -> Dict:
         raise FileNotFoundError(path)
     with open(path) as fp:
         return json.load(fp)
+
+
+def write_json(path: str, data: Dict):
+    with open(path, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
