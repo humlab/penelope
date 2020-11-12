@@ -200,6 +200,19 @@ class GUI:
         )
 
 
+# def _log_vectorize_xyz_corpus_workflow_call_arguments(input_filename: str, output_folder: str, output_tag: str, gui: GUI):
+#     from penelope.utility import write_json
+#     write_json("vectorize_xyz_corpus_workflow.json", dict(
+#         input_filename=input_filename,
+#         output_folder=output_folder,
+#         output_tag=output_tag,
+#         filename_field=gui.filename_fields.value,
+#         count_threshold=gui.count_threshold.value,
+#         annotation_opts=gui.annotations_opts.props,
+#         tokens_transform_opts=gui.tokens_transform_opts.props,
+#     ))
+
+
 def display_gui(
     corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str], None]
 ):  # pylint: disable=too-many-statements
