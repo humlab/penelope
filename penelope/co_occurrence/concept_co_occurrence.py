@@ -47,20 +47,15 @@ def tokens_concept_windows(tokens: Iterable[str], concept_opts: ConceptContextOp
     concept_opts: ConceptContextOpts
         concept : Sequence[str]
             The token(s) in focus.
-        no_concept: bool
+        ignore_concept: bool
             If to then filter ut the foxus word.
-        n_context_width : int
+        context_width : int
             The number of tokens to either side of the token in focus.
-
-    Returns
-    -------
-    Sequence[str]
-        The window
 
     Yields
     -------
-    [type]
-        [description]
+    Iterable[List[str]]
+        The sequence of windows
     """
 
     n_window = 2 * concept_opts.context_width + 1
