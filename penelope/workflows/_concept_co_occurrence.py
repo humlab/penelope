@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 from penelope.co_occurrence import (
@@ -82,7 +82,11 @@ def execute_workflow(
     if len(partition_keys or []) == 0:
         raise WorkflowException("please specify partition key(s) (--partition-key e.g --partition-key=year)")
 
-    tokenizer_opts = {'filename_pattern': '*.csv', 'filename_fields': filename_field, 'as_binary': False}
+    tokenizer_opts = {
+        'filename_pattern': '*.csv',
+        'filename_fields': filename_field,
+        'as_binary': False,
+    }
 
     corpus = SparvTokenizedCsvCorpus(
         source=input_filename,
@@ -97,6 +101,36 @@ def execute_workflow(
         global_threshold_count=count_threshold,
         partition_keys=partition_keys,
     )
+
+    store_concept_co_occurrence_bundle(
+        output_filename,
+        store_vectorized=store_vectorized,
+        input_filename=input_filename,
+        partition_keys=partition_keys,
+        count_threshold=count_threshold,
+        co_occurrences=co_occurrences,
+        tokenizer_opts=tokenizer_opts,
+        tokens_transform_opts=tokens_transform_opts,
+        concept_opts=concept_opts,
+        annotation_opts=annotation_opts,
+    )
+
+    return co_occurrences
+
+
+def store_concept_co_occurrence_bundle(
+    output_filename: str,
+    *,
+    store_vectorized: bool,
+    input_filename: str,
+    partition_keys: Tuple[str, List[str]],
+    count_threshold: int = None,
+    co_occurrences: pd.DataFrame,
+    tokenizer_opts: Dict,
+    tokens_transform_opts: TokensTransformOpts,
+    concept_opts: ConceptContextOpts,
+    annotation_opts: AnnotationOpts,
+):
 
     store_co_occurrences(output_filename, co_occurrences)
 
@@ -117,5 +151,3 @@ def execute_workflow(
         }
 
         json.dump(store_options, json_file, indent=4)
-
-    return co_occurrences
