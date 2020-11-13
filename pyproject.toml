@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.2.28"
+version = "0.2.29"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -70,6 +70,7 @@ yapf = "==0.*,>=0.30.0"
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 concept_cooccurrence = "penelope.scripts.concept_co_occurrence:main"
+
 
 
 
