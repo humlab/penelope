@@ -31,7 +31,7 @@ def plot(data, **_):
         x_range=years, y_range=(0, max_value), plot_height=400, plot_width=1000, title="Word frequecy by year"
     )
 
-    colors = itertools.islice(itertools.cycle(bokeh.palettes.d3['Category20b'][20]), len(tokens))
+    colors = itertools.islice(itertools.cycle(bokeh.palettes.d3['Category20'][20]), len(tokens))
 
     offset = -0.25
     v = []
