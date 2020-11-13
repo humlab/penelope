@@ -91,17 +91,17 @@ def execute_workflow(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    coo_df = partitioned_corpus_concept_co_occurrence(
+    co_occurrences = partitioned_corpus_concept_co_occurrence(
         corpus,
         concept_opts=concept_opts,
         global_threshold_count=count_threshold,
         partition_keys=partition_keys,
     )
 
-    store_co_occurrences(output_filename, coo_df)
+    store_co_occurrences(output_filename, co_occurrences)
 
     if store_vectorized:
-        v_corpus = to_vectorized_corpus(co_occurrences=coo_df, value_column='value_n_t')
+        v_corpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
         v_corpus.dump(tag=strip_path_and_extension(output_filename), folder=os.path.split(output_filename)[0])
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
@@ -109,8 +109,8 @@ def execute_workflow(
             'input_filename': input_filename,
             'output_filename': output_filename,
             'partition_keys': partition_keys,
-            'tokenizer_opts': tokenizer_opts,
             'count_threshold': count_threshold,
+            'tokenizer_opts': tokenizer_opts,
             'concept_opts': concept_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'annotation_opts': annotation_opts.props,
@@ -118,4 +118,4 @@ def execute_workflow(
 
         json.dump(store_options, json_file, indent=4)
 
-    return coo_df
+    return co_occurrences
