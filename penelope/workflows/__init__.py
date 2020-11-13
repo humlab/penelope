@@ -1,4 +1,3 @@
 from ._concept_co_occurrence import execute_workflow as concept_co_occurrence_workflow
-from ._vectorize_sparv_csv_corpus import execute_workflow as vectorize_sparv_csv_corpus_workflow
-from ._vectorize_tokenized_corpus import execute_workflow as vectorize_tokenized_corpus_workflow
+from ._vectorize_tokenized_corpus import execute_workflow as vectorize_corpus_workflow
 from .utils import WorkflowException
