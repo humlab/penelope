@@ -4,7 +4,7 @@ import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
 
 try:
-    import glove
+    import glove  # pylint: disable=import-error
 except ModuleNotFoundError:
     glove = None
 
