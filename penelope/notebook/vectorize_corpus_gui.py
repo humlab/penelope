@@ -8,7 +8,7 @@ from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import default_data_folder, flatten, get_logger
 from penelope.utility.tags import SUC_PoS_tag_groups
-from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow
+from penelope.workflows import vectorize_corpus_workflow
 
 logger = get_logger()
 
@@ -62,6 +62,7 @@ class GUI:
         disabled=False,
         layout=layout_default,
     )
+    create_subfolder = widgets.ToggleButton(value=True, description='Create folder', icon='check', layout=layout_button)
     lemmatize = widgets.ToggleButton(value=True, description='Lemmatize', icon='check', layout=layout_button)
     to_lowercase = widgets.ToggleButton(value=True, description='To Lower', icon='check', layout=layout_button)
     remove_stopwords = widgets.ToggleButton(value=True, description='No Stopwords', icon='check', layout=layout_button)
@@ -186,6 +187,7 @@ class GUI:
                                             [
                                                 self.only_alphabetic,
                                                 self.only_any_alphanumeric,
+                                                self.create_subfolder,
                                                 self.button,
                                             ]
                                         ),
@@ -245,16 +247,12 @@ def display_gui(
 
                 gui.button.disabled = True
 
-                _workflow = (
-                    vectorize_sparv_csv_corpus_workflow
-                    if gui.corpus_type.value == 'sparv4-csv'
-                    else vectorize_tokenized_corpus_workflow
-                )
-
-                v_corpus = _workflow(
+                v_corpus = vectorize_corpus_workflow(
+                    corpus_type=gui.corpus_type.value,
                     input_filename=input_filename,
                     output_folder=output_folder,
                     output_tag=output_tag,
+                    create_subfolder=gui.create_subfolder.value,
                     filename_field=gui.filename_fields.value,
                     count_threshold=gui.count_threshold.value,
                     annotation_opts=gui.annotations_opts,

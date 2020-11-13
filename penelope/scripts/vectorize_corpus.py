@@ -4,7 +4,7 @@ import click
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import getLogger
-from penelope.workflows import vectorize_sparv_csv_corpus_workflow, vectorize_tokenized_corpus_workflow
+from penelope.workflows import vectorize_corpus_workflow
 
 logger = getLogger("penelope")
 # pylint: disable=too-many-arguments, unused-argument
@@ -61,6 +61,7 @@ def main(
     input_filename: str = None,
     output_folder: str = None,
     output_tag: str = None,
+    create_subfolder: bool = True,
     corpus_type: str = 'text',
     pos_includes: str = None,
     pos_excludes: str = '|MAD|MID|PAD|',
@@ -95,34 +96,29 @@ def main(
         only_any_alphanumeric=only_any_alphanumeric,
     )
 
-    if corpus_type == 'text':
-        logger.info("PoS filter and lemmatize options not avaliable for raw text corpus")
-        vectorize_tokenized_corpus_workflow(
-            input_filename=input_filename,
-            output_folder=output_folder,
-            output_tag=output_tag,
-            filename_field=filename_field,
-            filename_pattern='*.txt',
-            count_threshold=count_threshold,
-            tokens_transform_opts=tokens_transform_opts,
-        )
-
+    annotation_opts = None
     if corpus_type == 'sparv4-csv':
+        file_pattern = '*.csv'
         annotation_opts = AnnotationOpts(
             pos_includes=pos_includes,
             pos_excludes=pos_excludes,
             lemmatize=lemmatize,
         )
-        vectorize_sparv_csv_corpus_workflow(
-            input_filename=input_filename,
-            output_folder=output_folder,
-            output_tag=output_tag,
-            filename_field=filename_field,
-            filename_pattern='*.csv',
-            count_threshold=count_threshold,
-            annotation_opts=annotation_opts,
-            tokens_transform_opts=tokens_transform_opts,
-        )
+    else:
+        logger.info("PoS filter and lemmatize options not avaliable for raw text corpus")
+
+    vectorize_corpus_workflow(
+        corpus_type=corpus_type,
+        input_filename=input_filename,
+        output_folder=output_folder,
+        output_tag=output_tag,
+        create_subfolder=create_subfolder,
+        filename_field=filename_field,
+        filename_pattern=file_pattern,
+        count_threshold=count_threshold,
+        annotation_opts=annotation_opts,
+        tokens_transform_opts=tokens_transform_opts,
+    )
 
 
 if __name__ == "__main__":
