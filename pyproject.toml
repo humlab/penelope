@@ -71,11 +71,6 @@ vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 concept_cooccurrence = "penelope.scripts.concept_co_occurrence:main"
 
-
-
-
-
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
