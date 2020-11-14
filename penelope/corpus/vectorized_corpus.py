@@ -13,6 +13,7 @@ import pandas as pd
 import scipy
 import sklearn.preprocessing
 import textacy
+from penelope.utility import read_json, write_json
 from sklearn.feature_extraction.text import TfidfTransformer
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods
@@ -227,6 +228,19 @@ class VectorizedCorpus:
             bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
 
         return VectorizedCorpus(bag_term_matrix, token2id=token2id, documents=documents)
+
+    @staticmethod
+    def dump_options(*, tag: str, folder: str, options: Dict):
+        json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
+        write_json(json_filename, options)
+
+    @staticmethod
+    def load_options(*, tag: str, folder: str) -> Dict:
+        """Loads vectrize options if they exists"""
+        json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
+        if os.path.isfile(json_filename):
+            return read_json(json_filename)
+        return dict()
 
     @staticmethod
     def _data_filename(tag: str, folder: str) -> str:

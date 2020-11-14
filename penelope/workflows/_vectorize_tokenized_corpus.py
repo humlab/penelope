@@ -1,10 +1,9 @@
-import json
 import os
 from typing import Any
 
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import AnnotationOpts
-from penelope.utility import getLogger, replace_extension
+from penelope.utility import getLogger
 
 from ._tokenized_corpus_factory import create_corpus
 from .utils import WorkflowException
@@ -72,10 +71,10 @@ def execute_workflow(
     logger.info('Saving vectorized corpus...')
     v_corpus.dump(tag=output_tag, folder=output_folder)
 
-    logger.info('Saving parameters JSON...')
-    json_filename = os.path.join(output_folder, f"{output_tag}_vectorizer_data.json")
-    with open(replace_extension(json_filename, 'json'), 'w') as json_file:
-        store_options = {
+    VectorizedCorpus.dump_options(
+        tag=output_tag,
+        folder=output_folder,
+        options={
             'input_filename': input_filename,
             'output_folder': output_folder,
             'output_tag': output_tag,
@@ -83,8 +82,9 @@ def execute_workflow(
             'tokenizer_opts': tokenizer_opts,
             'tokens_transform_opts': tokens_transform_opts.props,
             'annotation_opts': annotation_opts.props if annotation_opts is not None else {},
-        }
-        json.dump(store_options, json_file, indent=4)
+        },
+    )
+
     logger.info('Done!')
 
     return v_corpus
