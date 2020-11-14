@@ -6,6 +6,7 @@ import ipyfilechooser
 import ipywidgets as widgets
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import default_data_folder, flatten, get_logger
 from penelope.utility.tags import SUC_PoS_tag_groups
 from penelope.workflows import vectorize_corpus_workflow
@@ -202,25 +203,36 @@ class GUI:
         )
 
 
-# def _log_vectorize_xyz_corpus_workflow_call_arguments(input_filename: str, output_folder: str, output_tag: str, gui: GUI):
-#     from penelope.utility import write_json
-#     write_json("vectorize_xyz_corpus_workflow.json", dict(
-#         input_filename=input_filename,
-#         output_folder=output_folder,
-#         output_tag=output_tag,
-#         filename_field=gui.filename_fields.value,
-#         count_threshold=gui.count_threshold.value,
-#         annotation_opts=gui.annotations_opts.props,
-#         tokens_transform_opts=gui.tokens_transform_opts.props,
-#     ))
+def default_callback(*_, **__):
+    print("Vectorization done!")
 
 
 def display_gui(
-    corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str], None]
-):  # pylint: disable=too-many-statements
+    corpus_pattern: str,
+    generated_callback: Callable[[VectorizedCorpus, str, str], None],
+) -> widgets.Widget:
+    """Display GUI for vectorization to a BoW model of a tokenized corpus
+
+    Parameters
+    ----------
+    corpus_pattern : str
+        File pattern that lists avaliable corpora
+    state_cls : Type[T]
+        Class where `generated_callback` GUI stores intermediate results
+    generated_callback : Callable[[T, widgets.Output, str, str], None]
+        Callback called when vectorize upon successful vectorize
+
+    Returns
+    -------
+    ipywidgets.Widget
+        Vectorize corpus (ipywidgets) UI
+
+    """
 
     gui = GUI()
     gui.input_filename_chooser.filter_pattern = corpus_pattern
+
+    generated_callback = generated_callback or default_callback
 
     def on_button_clicked(_):
 
@@ -259,13 +271,12 @@ def display_gui(
                     tokens_transform_opts=gui.tokens_transform_opts,
                 )
 
-                if generated_callback is not None:
-                    generated_callback(
-                        output=gui.output,
-                        corpus=v_corpus,
-                        corpus_tag=gui.output_tag.value,
-                        corpus_folder=output_folder,
-                    )
+                generated_callback(
+                    corpus=v_corpus,
+                    corpus_tag=gui.output_tag.value,
+                    corpus_folder=output_folder,
+                    output=gui.output,
+                )
 
                 gui.button.disabled = False
 
