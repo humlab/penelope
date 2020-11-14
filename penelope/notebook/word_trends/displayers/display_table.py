@@ -1,21 +1,21 @@
+import IPython.display
 import pandas as pd
-from IPython.display import display
 from penelope.notebook.ipyaggrid_utility import display_grid
 
-from . import data_compilers
-
-NAME = "Table"
-
-compile = data_compilers.compile_year_token_vector_data  # pylint: disable=redefined-builtin
+from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
-def setup(container, **_):  # pylint: disable=unused-argument
-    pass
+class TableDisplayer(ITrendDisplayer, YearTokenDataMixin):
 
+    name = "Table"
 
-def plot(data, **_):  # pylint: disable=unused-argument
+    def setup(self, *_, **__):
+        pass
 
-    df = pd.DataFrame(data=data)
-    df = df[['year'] + [x for x in df.columns if x != 'year']].set_index('year')
-    g = display_grid(df)
-    display(g)
+    def plot(self, data, **_):  # pylint: disable=unused-argument
+
+        with self.output:
+            df = pd.DataFrame(data=data)
+            df = df[['year'] + [x for x in df.columns if x != 'year']].set_index('year')
+            g = display_grid(df)
+            IPython.display.display(g)

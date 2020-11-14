@@ -3,59 +3,58 @@ import math
 
 import bokeh
 
-from . import data_compilers
-
-NAME = "Bar"
-
-# compile = data_compilers.compile_multiline_data  # pylint: disable=redefined-builtin
-compile = data_compilers.compile_year_token_vector_data  # pylint: disable=redefined-builtin
+from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
-def setup(container, **kwargs):  # pylint: disable=unused-argument
-    pass
+class BarDisplayer(ITrendDisplayer, YearTokenDataMixin):
 
+    name = "Bar"
 
-def plot(data, **_):
+    def setup(self):
+        pass
 
-    years = [str(y) for y in data['year']]
+    def plot(self, data, **_):
 
-    data['year'] = years
+        years = [str(y) for y in data['year']]
 
-    tokens = [w for w in data.keys() if w != 'year']
+        data['year'] = years
 
-    source = bokeh.models.ColumnDataSource(data=data)
+        tokens = [w for w in data.keys() if w != 'year']
 
-    max_value = max([max(data[key]) for key in data if key != 'year']) + 0.005
+        source = bokeh.models.ColumnDataSource(data=data)
 
-    p = bokeh.plotting.figure(
-        x_range=years, y_range=(0, max_value), plot_height=400, plot_width=1000, title="Word frequecy by year"
-    )
+        max_value = max([max(data[key]) for key in data if key != 'year']) + 0.005
 
-    colors = itertools.islice(itertools.cycle(bokeh.palettes.d3['Category20'][20]), len(tokens))
+        p = bokeh.plotting.figure(
+            x_range=years, y_range=(0, max_value), plot_height=400, plot_width=1000, title="Word frequecy by year"
+        )
 
-    offset = -0.25
-    v = []
-    for token in tokens:
-        w = p.vbar(
-            x=bokeh.transform.dodge('year', offset, range=p.x_range),
-            top=token,
-            width=0.2,
-            source=source,
-            color=next(colors),
-        )  # , legend_label=token)
-        offset += 0.25
-        v.append(w)
+        colors = itertools.islice(itertools.cycle(bokeh.palettes.d3['Category20'][20]), len(tokens))
 
-    p.x_range.range_padding = 0.04
-    p.xaxis.major_label_orientation = math.pi / 4
-    p.xgrid.grid_line_color = None
-    p.ygrid.grid_line_color = None
+        offset = -0.25
+        v = []
+        for token in tokens:
+            w = p.vbar(
+                x=bokeh.transform.dodge('year', offset, range=p.x_range),
+                top=token,
+                width=0.2,
+                source=source,
+                color=next(colors),
+            )
+            offset += 0.25
+            v.append(w)
 
-    legend = bokeh.models.Legend(items=[(x, [v[i]]) for i, x in enumerate(tokens)])
+        p.x_range.range_padding = 0.04
+        p.xaxis.major_label_orientation = math.pi / 4
+        p.xgrid.grid_line_color = None
+        p.ygrid.grid_line_color = None
 
-    p.add_layout(legend, 'left')
+        legend = bokeh.models.Legend(items=[(x, [v[i]]) for i, x in enumerate(tokens)])
 
-    p.legend.location = "top_right"
-    p.legend.orientation = "vertical"
+        p.add_layout(legend, 'left')
 
-    bokeh.io.show(p)
+        p.legend.location = "top_right"
+        p.legend.orientation = "vertical"
+
+        with self.output:
+            bokeh.io.show(p)
