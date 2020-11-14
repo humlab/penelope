@@ -1,34 +1,48 @@
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Dict, Sequence
 
 import ipywidgets as widgets
+import pandas as pd
 from IPython.display import display
 from penelope.common.curve_fit import pchip_spline, rolling_average_smoother
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import get_logger
 
-from .displayers import display_bar, display_line, display_table
+from .displayers import DISPLAYERS, ITrendDisplayer
 
 logger = get_logger()
 
 DEFAULT_SMOOTHERS = [pchip_spline, rolling_average_smoother('nearest', 3)]
+BUTTON_LAYOUT = widgets.Layout(width='80px')
+OUTPUT_LAYOUT = widgets.Layout(width='600px')
+
+
+@dataclass
+class WordTrendData:
+    corpus: VectorizedCorpus = None
+    corpus_folder: str = None
+    corpus_tag: str = None
+    compute_options: Dict = None
+    goodness_of_fit: pd.DataFrame = None
+    most_deviating_overview: pd.DataFrame = None
+    most_deviating: pd.DataFrame = None
 
 
 @dataclass
 class GUI:
 
     tab = widgets.Tab()
-    normalize = widgets.ToggleButton(description="Normalize", icon='check', value=False)
-    smooth = widgets.ToggleButton(description="Smooth", icon='check', value=False)
-    status = widgets.HTML("")
+    normalize = widgets.ToggleButton(description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT)
+    smooth = widgets.ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
+    status = widgets.HTML(value="", layout=widgets.Layout(width='300px'))
     output = widgets.Output(layout=widgets.Layout(width='600px', height='200px'))
     words = widgets.Textarea(
         description="",
         rows=4,
-        value="och eller hur",
+        value="",
         layout=widgets.Layout(width='600px', height='200px'),
     )
-    display_handlers: List[Any] = None
+    displayers: Sequence[ITrendDisplayer] = None
 
     def layout(self):
         return widgets.VBox(
@@ -37,47 +51,49 @@ class GUI:
                     [
                         self.normalize,
                         self.smooth,
-                        self.status,
                     ]
                 ),
                 widgets.HBox(
                     [
                         self.words,
-                        self.output,
+                        widgets.VBox(
+                            [
+                                self.status,
+                                self.output,
+                            ]
+                        ),
                     ]
                 ),
                 self.tab,
             ]
         )
 
-    def set_displays(self, handlers: List[Any]):
+    def set_displayers(self, *, displayers: Sequence[ITrendDisplayer], trend_data: WordTrendData):
 
-        self.display_handlers = handlers
-
-        self.tab.children = [widgets.Output() for _ in handlers]
-        _ = [self.tab.set_title(i, x.NAME) for i, x in enumerate(self.display_handlers)]
+        self.displayers = [cls(trend_data) for cls in displayers]
+        self.tab.children = [d.output for d in self.displayers]
+        _ = [self.tab.set_title(i, x.name) for i, x in enumerate(self.displayers)]
 
         return self
 
     @property
-    def current_display(self):
-        return self.display_handlers[self.tab.selected_index]
+    def current_displayer(self):
+        return self.displayers[self.tab.selected_index]
 
     @property
     def current_output(self):
-        return self.tab.children[self.tab.selected_index]
+        return self.current_displayer.output
 
 
-def display_gui(state, display_widgets=True):
+def display_gui(trend_data: WordTrendData, display_widgets: bool = True):
 
-    gui = GUI().set_displays([display_table, display_line, display_bar])  # , display_grid])
+    gui = GUI().set_displayers(displayers=DISPLAYERS, trend_data=trend_data)
 
     _corpus: VectorizedCorpus = None
 
     def toggle_normalize(*_):
 
         nonlocal _corpus
-
         _corpus = None
         update_plot(*_)
 
@@ -85,25 +101,20 @@ def display_gui(state, display_widgets=True):
 
         nonlocal _corpus
 
-        if state.corpus is None:
-
-            with gui.output:
-                gui.status.value = "Please load a corpus!"
-
+        if trend_data.corpus is None:
+            gui.status.value = "Please load a corpus!"
             return
 
-        if _corpus is None or _corpus is not state.corpus:
+        if _corpus is None or _corpus is not trend_data.corpus:
 
-            with gui.output:
-                gui.status.value = "Corpus changed..."
+            gui.status.value = "Corpus changed..."
 
-            _corpus = state.corpus
+            _corpus = trend_data.corpus
             if gui.normalize.value:
                 _corpus = _corpus.normalize()
 
-            gui.tab.children[1].clear_output()
-            with gui.tab.children[1]:
-                display_line.setup(state, x_ticks=[x for x in _corpus.xs_years()], plot_width=1000, plot_height=500)
+            for displayer in gui.displayers:
+                displayer.setup()
 
         tokens = '\n'.join(gui.words.value.split()).split()
         indices = [_corpus.token2id[token] for token in tokens if token in _corpus.token2id]
@@ -114,21 +125,16 @@ def display_gui(state, display_widgets=True):
         missing_tokens = [token for token in tokens if token not in _corpus.token2id]
 
         if len(missing_tokens) > 0:
-            gui.status.value = f"<b>Not in corpus subset</b>: {' '.join(missing_tokens)}"
+            gui.status.value = f"<b>Not found</b>: {' '.join(missing_tokens)}"
             return
 
-        if gui.current_display.NAME != "Line":
-            gui.current_output.clear_output()
+        gui.current_displayer.clear()
 
-        with gui.current_output:
+        smoothers = DEFAULT_SMOOTHERS if gui.smooth.value else []
 
-            smoothers = DEFAULT_SMOOTHERS if gui.smooth.value else []
+        data = gui.current_displayer.compile(_corpus, indices, smoothers=smoothers)
 
-            data = gui.current_display.compile(_corpus, indices, smoothers=smoothers)
-
-            state.data = data
-
-            gui.current_display.plot(data, container=state)
+        gui.current_displayer.plot(data, state=trend_data)
 
     gui.words.observe(update_plot, names='value')
     gui.tab.observe(update_plot, 'selected_index')
