@@ -58,7 +58,7 @@ def build_layout(
     return layout
 
 
-def loaded_callback(
+def display_word_trends(
     *,
     corpus: VectorizedCorpus = None,
     corpus_folder: str = None,
