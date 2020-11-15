@@ -99,7 +99,8 @@ class CorpusVectorizer:
             if hasattr(corpus, '__len__'):
                 total = len(corpus)
             elif hasattr(corpus, 'documents'):
-                total = len(corpus.documents)
+                total = len(corpus.documents) if corpus.documents is not None else None
+
             terms = tqdm(terms, total=total, desc="Vectorizing: ")
 
         bag_term_matrix = self.vectorizer.fit_transform(terms)
