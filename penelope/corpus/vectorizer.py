@@ -3,6 +3,7 @@ from typing import Callable, Iterable, Mapping, Tuple, Union
 
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
+from tqdm.std import tqdm
 
 from .tokenized_corpus import TokenizedCorpus
 from .vectorized_corpus import VectorizedCorpus
@@ -46,6 +47,7 @@ class CorpusVectorizer:
         stop_words: str = None,
         max_df: float = 1.0,
         min_df: int = 1,
+        verbose: bool = True,
     ) -> VectorizedCorpus:
         """Returns a vectorized corpus from of `corpus`
 
@@ -91,6 +93,14 @@ class CorpusVectorizer:
 
         self.vectorizer = CountVectorizer(**vectorizer_opts)
         self.vectorizer_opts = vectorizer_opts
+
+        if verbose:
+            total = None
+            if hasattr(corpus, '__len__'):
+                total = len(corpus)
+            elif hasattr(corpus, 'documents'):
+                total = len(corpus.documents)
+            terms = tqdm(terms, total=total, desc="Vectorizing: ")
 
         bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
