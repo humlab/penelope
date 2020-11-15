@@ -282,13 +282,13 @@ class GUI:
         )
 
 
-def display_gui(
+def word_trends_pick_gui(
     x_corpus: VectorizedCorpus,
     tokens: pd.DataFrame,
     n_columns: int = 3,
     token_sector_cls: TokensSelector = SelectMultipleTokensSelector,
     display_widgets: bool = True,
-):
+) -> ipywidgets.Widget:
 
     gui = GUI()
     gui.token_selector = token_sector_cls(tokens)

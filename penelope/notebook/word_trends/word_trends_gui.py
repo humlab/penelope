@@ -1,31 +1,19 @@
 from dataclasses import dataclass
-from typing import Dict, Sequence
+from typing import Sequence
 
 import ipywidgets as widgets
-import pandas as pd
 from IPython.display import display
 from penelope.common.curve_fit import pchip_spline, rolling_average_smoother
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import get_logger
 
-from .displayers import DISPLAYERS, ITrendDisplayer
+from .displayers import DISPLAYERS, ITrendDisplayer, WordTrendData
 
 logger = get_logger()
 
 DEFAULT_SMOOTHERS = [pchip_spline, rolling_average_smoother('nearest', 3)]
 BUTTON_LAYOUT = widgets.Layout(width='80px')
 OUTPUT_LAYOUT = widgets.Layout(width='600px')
-
-
-@dataclass
-class WordTrendData:
-    corpus: VectorizedCorpus = None
-    corpus_folder: str = None
-    corpus_tag: str = None
-    compute_options: Dict = None
-    goodness_of_fit: pd.DataFrame = None
-    most_deviating_overview: pd.DataFrame = None
-    most_deviating: pd.DataFrame = None
 
 
 @dataclass
@@ -85,7 +73,7 @@ class GUI:
         return self.current_displayer.output
 
 
-def display_gui(trend_data: WordTrendData, display_widgets: bool = True):
+def word_trend_gui(trend_data: WordTrendData, display_widgets: bool = True) -> widgets.Widget:
 
     gui = GUI().set_displayers(displayers=DISPLAYERS, trend_data=trend_data)
 
