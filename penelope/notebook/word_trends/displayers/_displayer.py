@@ -86,7 +86,6 @@ class MultiLineDataMixin:
 class YearTokenDataMixin:
     def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Dict:
         """Extracts token's vectors for tokens ´indices` and returns a dict keyed by token"""
-        # FIXME: Logic assumes that vector is grouped_by_year
         xs = corpus.xs_years()
         if len(xs) != corpus.data.shape[0]:
             raise PenelopeBugCheck(
