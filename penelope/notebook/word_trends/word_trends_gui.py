@@ -58,7 +58,7 @@ class GUI:
 
     def set_displayers(self, *, displayers: Sequence[ITrendDisplayer], trend_data: WordTrendData):
 
-        self.displayers = [cls(trend_data) for cls in displayers]
+        self.displayers = [cls(data=trend_data) for cls in displayers]
         self.tab.children = [d.output for d in self.displayers]
         _ = [self.tab.set_title(i, x.name) for i, x in enumerate(self.displayers)]
 

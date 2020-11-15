@@ -26,7 +26,7 @@ class WordTrendData:
 class ITrendDisplayer(abc.ABC):
 
     output: ipywidgets.Output = ipywidgets.Output()
-    state: WordTrendData = None
+    data: WordTrendData = None
     name: str = None
 
     @abc.abstractmethod
