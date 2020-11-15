@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope import utility
+from tqdm import tqdm
 
 from .corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
 from .interfaces import ITokenizedCorpus
@@ -113,15 +114,15 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
             raise
 
     def _generate_token2id(self):
-        logger.info("generating vocabulary...")
         token2id = defaultdict()
         token2id.default_factory = token2id.__len__
-        # FIXME: what happens if filtered is applied?
-        for tokens in self.terms:
-            for token in tokens:
-                _ = token2id[token]  # returns token_id
-        logger.info("vocabulary generated with %s tokens...", len(token2id))
+        for token in tqdm(self._token_stream(), desc="Vocabulary: "):
+            _ = token2id[token]
+        logger.info("Vocabulary generated with %s tokens...", len(token2id))
         return dict(token2id)
+
+    def _token_stream(self):
+        return (token for token in (tokens for tokens in self.terms))
 
     @property
     def token2id(self):
