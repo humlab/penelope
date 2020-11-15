@@ -5,10 +5,21 @@ from typing import Callable, Dict, List, Sequence
 
 import bokeh
 import ipywidgets
+import pandas as pd
 import scipy
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
-from penelope.notebook.word_trends.word_trends_gui import WordTrendData
 from penelope.utility import take
+
+
+@dataclass
+class WordTrendData:
+    corpus: VectorizedCorpus = None
+    corpus_folder: str = None
+    corpus_tag: str = None
+    compute_options: Dict = None
+    goodness_of_fit: pd.DataFrame = None
+    most_deviating_overview: pd.DataFrame = None
+    most_deviating: pd.DataFrame = None
 
 
 @dataclass

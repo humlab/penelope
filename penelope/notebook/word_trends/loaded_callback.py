@@ -7,7 +7,8 @@ from penelope.corpus import VectorizedCorpus
 from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.utility import getLogger
 
-from .word_trends_gui import WordTrendData, display_gui
+from .displayers import WordTrendData
+from .word_trends_gui import word_trend_gui
 
 logger = getLogger("penelope")
 
@@ -35,7 +36,7 @@ def update_trend_data(
 def build_layout(
     data: WordTrendData,  # pylint: disable=redefined-outer-name
 ):
-    tab_trends = display_gui(trend_data=data, display_widgets=False)
+    tab_trends = word_trend_gui(trend_data=data, display_widgets=False)
 
     tab_gof = (
         notebook_utility.OutputsTabExt(["GoF", "GoF (abs)", "Plots", "Slopes"])
