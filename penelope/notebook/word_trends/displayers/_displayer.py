@@ -1,7 +1,7 @@
 import abc
 import itertools
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Sequence
+from typing import Callable, Dict, List, Sequence, TypeVar
 
 import bokeh
 import ipywidgets
@@ -22,15 +22,18 @@ class WordTrendData:
     most_deviating: pd.DataFrame = None
 
 
+T = TypeVar('T', bound='ITrendDisplayer')
+
+
 @dataclass
 class ITrendDisplayer(abc.ABC):
 
-    output: ipywidgets.Output = ipywidgets.Output()
+    output: ipywidgets.Output = None
     data: WordTrendData = None
-    name: str = None
+    name: str = "noname"
 
     @abc.abstractmethod
-    def setup(self) -> None:
+    def setup(self):
         return
 
     @abc.abstractmethod
@@ -38,7 +41,7 @@ class ITrendDisplayer(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def plot(self, data: Dict, **_) -> None:
+    def plot(self, data: Dict, **_):  # pylint: disable=unused-argument
         return
 
     def clear(self):

@@ -1,9 +1,11 @@
 import math
+from dataclasses import dataclass, field
 from typing import Any, Dict, Sequence
 
 import bokeh
 import bokeh.models
 import bokeh.plotting
+import ipywidgets
 
 from ._displayer import ITrendDisplayer, MultiLineDataMixin
 
@@ -11,21 +13,20 @@ PLOT_WIDTH = 800
 PLOT_HEIGHT = 500
 
 
+@dataclass
 class LineDisplayer(MultiLineDataMixin, ITrendDisplayer):
 
-    name = "Line"
+    name: str = field(default="Line")
     figure: bokeh.plotting.Figure = None
     handle: Any = None
     data_source: bokeh.models.ColumnDataSource = None
-    year_tick = 5
+    year_tick: int = field(default=5)
 
     def setup(self):
 
-        self.output.clear_output()
-
+        self.output = ipywidgets.Output()
         self.data_source = bokeh.models.ColumnDataSource({'xs': [[0]], 'ys': [[0]], 'label': [""], 'color': ['red']})
         self.figure = self._setup_plot(data_source=self.data_source)
-        self.handle = bokeh.plotting.show(self.figure, notebook_handle=True)
 
     def _setup_plot(
         self,
@@ -70,6 +71,10 @@ class LineDisplayer(MultiLineDataMixin, ITrendDisplayer):
         return p
 
     def plot(self, data: Dict, **_):
+
+        if self.handle is None:
+            self.handle = bokeh.plotting.show(self.figure, notebook_handle=True)
+
         self.figure.xaxis.ticker = self._year_ticks()
         self.data_source.data.update(data)
         bokeh.io.push_notebook(handle=self.handle)

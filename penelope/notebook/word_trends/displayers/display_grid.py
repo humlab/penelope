@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 import pandas as pd
 from ipyaggrid import Grid
 from IPython.display import display
@@ -5,12 +7,13 @@ from IPython.display import display
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
+@dataclass
 class GridDisplayer(YearTokenDataMixin, ITrendDisplayer):
 
-    name = "Grid"
+    name: str = field(default="Grid")
 
     def setup(self):
-        pass
+        return
 
     def default_column_defs(self, df):
         column_defs = [

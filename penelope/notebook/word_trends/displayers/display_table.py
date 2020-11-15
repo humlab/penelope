@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 import IPython.display
 import pandas as pd
 from penelope.notebook.ipyaggrid_utility import display_grid
@@ -5,14 +7,15 @@ from penelope.notebook.ipyaggrid_utility import display_grid
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
+@dataclass
 class TableDisplayer(YearTokenDataMixin, ITrendDisplayer):
 
-    name = "Table"
+    name: str = field(default="Table")
 
     def setup(self, *_, **__):
-        pass
+        return
 
-    def plot(self, data, **_):  # pylint: disable=unused-argument
+    def plot(self, data, **_):
 
         with self.output:
             df = pd.DataFrame(data=data)
