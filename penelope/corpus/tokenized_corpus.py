@@ -113,16 +113,18 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
             self.iterator = None
             raise
 
+    def __len__(self):
+        return len(self.documents)
+
     def _generate_token2id(self):
         token2id = defaultdict()
         token2id.default_factory = token2id.__len__
-        for token in tqdm(self._token_stream(), desc="Vocabulary: "):
-            _ = token2id[token]
-        logger.info("Vocabulary generated with %s tokens...", len(token2id))
+        tokens_iter = tqdm(self.terms, desc="Vocab", total=len(self))
+        for tokens in tokens_iter:
+            for token in tokens:
+                _ = token2id[token]
+            tokens_iter.set_description(f"Vocab #{len(token2id)}")
         return dict(token2id)
-
-    def _token_stream(self):
-        return (token for token in (tokens for tokens in self.terms))
 
     @property
     def token2id(self):
