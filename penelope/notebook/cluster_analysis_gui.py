@@ -8,7 +8,7 @@ import ipywidgets
 import penelope.common.cluster_analysis as cluster_analysis
 import penelope.common.curve_fit as cf
 import penelope.common.goodness_of_fit as gof
-import penelope.notebook.word_trends.word_trend_plot_gui as word_trend_plot_gui
+import penelope.notebook.word_trends.word_trends_pick_gui as word_trend_plot_gui
 import penelope.plot.cluster_plot as cluster_plot
 from IPython.display import display
 from markdown import markdown as md
