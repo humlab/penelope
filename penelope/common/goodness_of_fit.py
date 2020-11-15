@@ -8,6 +8,7 @@ import scipy
 from pandas.core.frame import DataFrame
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import chunks
+from tqdm import tqdm
 
 from .distance_metrics import (
     earth_mover_distance,
@@ -50,7 +51,7 @@ def get_gof_by_polynomial(dtm: scipy.sparse.spmatrix, x_offset: float = 0.0) -> 
 def get_gof_chisquare_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     try:
         chi2_stats, chi2_p = list(
-            zip(*[gof_chisquare_to_uniform(dtm.getcol(0).A.ravel()) for i in range(0, dtm.shape[1])])
+            zip(*[gof_chisquare_to_uniform(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])])
         )
     except:  # pylint: disable=bare-except
         chi2_stats, chi2_p = np.nan, np.nan
@@ -97,7 +98,8 @@ def get_basic_statistics(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
             'min': [dtm[:, i].min() for i in range(0, dtm.shape[1])],
             'max': [dtm[:, i].max() for i in range(0, dtm.shape[1])],
             'mean': [dtm[:, i].mean() for i in range(0, dtm.shape[1])],
-            'var': [dtm[:, i].var() for i in range(0, dtm.shape[1])],
+            # FIXME: #22 Variance computation fails for sparse matrixs
+            # 'var': [np.var(dtm[:, i]) for i in range(0, dtm.shape[1])],
         },
         index=range(0, dtm.shape[1]),
         dtype=np.float64,
@@ -136,7 +138,7 @@ def compute_goddness_of_fits_to_uniform(
     """
     metrics = metrics or list(METRIC_FUNCTIONS.keys())
 
-    dtm = corpus.data.todense()
+    dtm = corpus.data #.todense()
 
     if dtm.shape[0] <= 1:
         raise GoodnessOfFitComputeError("Unable to compute GoF (to few bags)")
@@ -151,8 +153,11 @@ def compute_goddness_of_fits_to_uniform(
         }
     )
 
-    for metric in metrics:
+    metrics_iter = tqdm(metrics) if verbose else metrics
+    for metric in metrics_iter:
         if metric in METRIC_FUNCTIONS:
+            if hasattr(metrics_iter, 'set_description'):
+                metrics_iter.set_description(metric)
             df_gof = df_gof.join(METRIC_FUNCTIONS[metric](dtm))
 
     df_gof.sort_values(['l2_norm'], ascending=False, inplace=True)
