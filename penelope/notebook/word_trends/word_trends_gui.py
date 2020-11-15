@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Sequence
 
 import ipywidgets as widgets
@@ -11,26 +11,26 @@ from .displayers import DISPLAYERS, ITrendDisplayer, WordTrendData
 
 logger = get_logger()
 
-DEFAULT_SMOOTHERS = [pchip_spline, rolling_average_smoother('nearest', 3)]
-BUTTON_LAYOUT = widgets.Layout(width='80px')
+DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
+BUTTON_LAYOUT = widgets.Layout(width='100px')
 OUTPUT_LAYOUT = widgets.Layout(width='600px')
 
 
 @dataclass
 class GUI:
 
-    tab = widgets.Tab()
+    tab: widgets.Tab = widgets.Tab()
     normalize = widgets.ToggleButton(description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT)
     smooth = widgets.ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
-    status = widgets.HTML(value="", layout=widgets.Layout(width='300px'))
-    output = widgets.Output(layout=widgets.Layout(width='600px', height='200px'))
+    # status = widgets.HTML(value="", layout=widgets.Layout(width='300px'))
+    status = widgets.Label(layout=widgets.Layout(width='50%', border="0px transparent white"))
     words = widgets.Textarea(
         description="",
-        rows=4,
+        rows=2,
         value="",
-        layout=widgets.Layout(width='600px', height='200px'),
+        layout=widgets.Layout(width='90%'),
     )
-    displayers: Sequence[ITrendDisplayer] = None
+    displayers: Sequence[ITrendDisplayer] = field(default_factory=list)
 
     def layout(self):
         return widgets.VBox(
@@ -39,28 +39,26 @@ class GUI:
                     [
                         self.normalize,
                         self.smooth,
+                        self.status,
                     ]
                 ),
-                widgets.HBox(
-                    [
-                        self.words,
-                        widgets.VBox(
-                            [
-                                self.status,
-                                self.output,
-                            ]
-                        ),
-                    ]
-                ),
+                self.words,
                 self.tab,
             ]
         )
 
     def set_displayers(self, *, displayers: Sequence[ITrendDisplayer], trend_data: WordTrendData):
 
-        self.displayers = [cls(data=trend_data) for cls in displayers]
+        for i, cls in enumerate(displayers):
+            displayer: ITrendDisplayer = cls(data=trend_data)
+            self.displayers.append(displayer)
+            displayer.output = widgets.Output()
+            with displayer.output:
+                displayer.setup()
+
         self.tab.children = [d.output for d in self.displayers]
-        _ = [self.tab.set_title(i, x.name) for i, x in enumerate(self.displayers)]
+        for i, d in enumerate(self.displayers):
+            self.tab.set_title(i, d.name)
 
         return self
 
@@ -73,9 +71,15 @@ class GUI:
         return self.current_displayer.output
 
 
+MYGUI = None
+
+
 def word_trend_gui(trend_data: WordTrendData, display_widgets: bool = True) -> widgets.Widget:
 
+    global MYGUI
     gui = GUI().set_displayers(displayers=DISPLAYERS, trend_data=trend_data)
+
+    MYGUI = gui
 
     _corpus: VectorizedCorpus = None
 
@@ -100,29 +104,32 @@ def word_trend_gui(trend_data: WordTrendData, display_widgets: bool = True) -> w
             _corpus = trend_data.corpus
             if gui.normalize.value:
                 _corpus = _corpus.normalize()
+                gui.status.value = "Corpus changed..."
 
-            for displayer in gui.displayers:
-                displayer.setup()
+            # for displayer in gui.displayers:
+            #    displayer.setup()
 
-        tokens = '\n'.join(gui.words.value.split()).split()
+        tokens = ' '.join(gui.words.value.split()).split()
         indices = [_corpus.token2id[token] for token in tokens if token in _corpus.token2id]
-
-        if len(indices) == 0:
-            return
 
         missing_tokens = [token for token in tokens if token not in _corpus.token2id]
 
         if len(missing_tokens) > 0:
-            gui.status.value = f"<b>Not found</b>: {' '.join(missing_tokens)}"
+            gui.status.value = f"Not found: {' '.join(missing_tokens)}"
+            return
+
+        if len(indices) == 0:
             return
 
         gui.current_displayer.clear()
 
-        smoothers = DEFAULT_SMOOTHERS if gui.smooth.value else []
+        with gui.current_output:
 
-        data = gui.current_displayer.compile(_corpus, indices, smoothers=smoothers)
+            smoothers = DEFAULT_SMOOTHERS if gui.smooth.value else []
 
-        gui.current_displayer.plot(data, state=trend_data)
+            data = gui.current_displayer.compile(_corpus, indices, smoothers=smoothers)
+
+            _ = gui.current_displayer.plot(data, state=trend_data)
 
     gui.words.observe(update_plot, names='value')
     gui.tab.observe(update_plot, 'selected_index')
