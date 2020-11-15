@@ -152,7 +152,11 @@ class VectorizedCorpus:
         """
         tag = tag or time.strftime("%Y%m%d_%H%M%S")
 
-        data = {'token2id': self.token2id, 'word_counts': self.word_counts, 'documents': self.documents}
+        data = {
+            'token2id': self.token2id,
+            'word_counts': self.word_counts,
+            'documents': self.documents,
+        }
         data_filename = VectorizedCorpus._data_filename(tag, folder)
 
         with open(data_filename, 'wb') as f:
