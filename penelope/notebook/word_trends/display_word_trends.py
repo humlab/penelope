@@ -25,7 +25,7 @@ def update_trend_data(
     data.corpus_folder = corpus_folder
     data.corpus_tag = corpus_tag
     data.compute_options = VectorizedCorpus.load_options(tag=corpus_tag, folder=corpus_folder)
-    data.goodness_of_fit = gof.compute_goddness_of_fits_to_uniform(data.corpus, None, verbose=False)
+    data.goodness_of_fit = gof.compute_goddness_of_fits_to_uniform(data.corpus, None, verbose=True, metrics=['l2_norm', 'slope'])
     data.most_deviating_overview = gof.compile_most_deviating_words(data.goodness_of_fit, n_count=n_count)
     data.most_deviating = gof.get_most_deviating_words(
         data.goodness_of_fit, 'l2_norm', n_count=n_count, ascending=False, abs_value=True
