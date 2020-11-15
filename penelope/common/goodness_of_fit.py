@@ -138,7 +138,7 @@ def compute_goddness_of_fits_to_uniform(
     """
     metrics = metrics or list(METRIC_FUNCTIONS.keys())
 
-    dtm = corpus.data #.todense()
+    dtm = corpus.data  # .todense()
 
     if dtm.shape[0] <= 1:
         raise GoodnessOfFitComputeError("Unable to compute GoF (to few bags)")
