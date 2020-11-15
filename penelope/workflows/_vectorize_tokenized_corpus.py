@@ -41,8 +41,6 @@ def execute_workflow(
         output_folder = os.path.join(output_folder, output_tag)
         os.makedirs(output_folder, exist_ok=True)
 
-    logger.info('Creating new corpus...')
-
     if VectorizedCorpus.dump_exists(tag=output_tag, folder=output_folder):
         VectorizedCorpus.remove(tag=output_tag, folder=output_folder)
 
