@@ -3,7 +3,7 @@ from typing import Sequence
 
 import ipywidgets as widgets
 from IPython.display import display
-from penelope.common.curve_fit import pchip_spline, rolling_average_smoother
+from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import get_logger
 
