@@ -6,7 +6,7 @@ import bokeh
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
-class BarDisplayer(ITrendDisplayer, YearTokenDataMixin):
+class BarDisplayer(YearTokenDataMixin, ITrendDisplayer):
 
     name = "Bar"
 

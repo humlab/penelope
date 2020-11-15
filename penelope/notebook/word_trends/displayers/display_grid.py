@@ -5,7 +5,7 @@ from IPython.display import display
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
-class GridDisplayer(ITrendDisplayer, YearTokenDataMixin):
+class GridDisplayer(YearTokenDataMixin, ITrendDisplayer):
 
     name = "Grid"
 

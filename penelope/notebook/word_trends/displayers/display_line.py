@@ -11,7 +11,7 @@ PLOT_WIDTH = 800
 PLOT_HEIGHT = 500
 
 
-class LineDisplayer(ITrendDisplayer, MultiLineDataMixin):
+class LineDisplayer(MultiLineDataMixin, ITrendDisplayer):
 
     name = "Line"
     figure: bokeh.plotting.Figure = None
@@ -75,7 +75,7 @@ class LineDisplayer(ITrendDisplayer, MultiLineDataMixin):
         bokeh.io.push_notebook(handle=self.handle)
 
     def _year_ticks(self):
-        year_min, year_max = self.state.corpus.year_range()
+        year_min, year_max = self.data.corpus.year_range()
         y_min = year_min - (year_min % self.year_tick)
         y_max = year_max if year_max % self.year_tick == 0 else year_max + (self.year_tick - year_max % self.year_tick)
         return list(range(y_min, y_max + 1, self.year_tick))

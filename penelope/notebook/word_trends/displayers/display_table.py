@@ -5,7 +5,7 @@ from penelope.notebook.ipyaggrid_utility import display_grid
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
 
-class TableDisplayer(ITrendDisplayer, YearTokenDataMixin):
+class TableDisplayer(YearTokenDataMixin, ITrendDisplayer):
 
     name = "Table"
 
