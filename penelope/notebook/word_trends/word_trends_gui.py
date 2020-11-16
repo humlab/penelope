@@ -18,7 +18,7 @@ OUTPUT_LAYOUT = widgets.Layout(width='600px')
 
 @dataclass
 class GUI:
-
+    """Container for GUO components"""
     tab: widgets.Tab = widgets.Tab()
     normalize = widgets.ToggleButton(description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT)
     smooth = widgets.ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
