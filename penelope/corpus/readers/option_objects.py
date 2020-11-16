@@ -12,7 +12,7 @@ class AnnotationOpts:
     append_pos: bool = False
 
     def get_pos_includes(self):
-        return self.pos_includes.strip('|').split('|') if self.pos_includes is not None else None
+        return self.pos_includes.strip('|').split('|') if self.pos_includes else None
 
     def get_pos_excludes(self):
         return self.pos_excludes.strip('|').split('|') if self.pos_excludes is not None else None
