@@ -48,6 +48,7 @@ wordcloud = "^1.8.0"
 qgrid = "^1.3.1"
 ipyfilechooser = "^0.4.0"
 ipyaggrid = "^0.2.1"
+jupyter_bokeh = "^2.0.4"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
