@@ -7,8 +7,7 @@ import ipywidgets as widgets
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
-from penelope.utility import default_data_folder, flatten, get_logger
-from penelope.utility.tags import SUC_PoS_tag_groups
+from penelope.utility import PoS_TAGS_SCHEMES, default_data_folder, flatten, get_logger
 from penelope.workflows import vectorize_corpus_workflow
 
 logger = get_logger()
@@ -48,8 +47,8 @@ class GUI:
         layout=layout_default,
     )
     pos_includes = widgets.SelectMultiple(
-        options=SUC_PoS_tag_groups,
-        value=[SUC_PoS_tag_groups['Noun'], SUC_PoS_tag_groups['Verb']],
+        options=PoS_TAGS_SCHEMES.SUC.groups,
+        value=[PoS_TAGS_SCHEMES.SUC.group['Noun'], PoS_TAGS_SCHEMES.SUC.group['Verb']],
         rows=8,
         description='',
         disabled=False,

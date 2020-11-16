@@ -7,8 +7,15 @@ import ipywidgets as widgets
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
 from penelope.corpus.readers import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.utility import default_data_folder, filename_whitelist, flatten, getLogger, replace_extension
-from penelope.utility.tags import SUC_PoS_tag_groups
+from penelope.utility import (
+    PoS_TAGS_SCHEMES,
+    default_data_folder,
+    filename_whitelist,
+    flatten,
+    getLogger,
+    replace_extension,
+)
+from penelope.utility.pos_tags import PoS_Tag_Scheme
 from penelope.workflows import concept_co_occurrence_workflow
 
 logger = getLogger('penelope')
@@ -61,8 +68,8 @@ class GUI:
         layout=col_layout,
     )
     pos_includes = widgets.SelectMultiple(
-        options=SUC_PoS_tag_groups,
-        value=[SUC_PoS_tag_groups['Noun'], SUC_PoS_tag_groups['Verb']],
+        options=PoS_TAGS_SCHEMES.SUC.groups,
+        value=[PoS_TAGS_SCHEMES.SUC.groups['Noun'], PoS_TAGS_SCHEMES.SUC.groups['Verb']],
         rows=8,
         description='',
         disabled=False,
@@ -167,6 +174,12 @@ class GUI:
 
         return set(map(str.strip, self.concept.value.split(',')))
 
+    def set_PoS_scheme(self, pos_scheme: PoS_Tag_Scheme):
+
+        self.pos_includes.value = None
+        self.pos_includes.options = pos_scheme.groups
+        self.pos_includes.value = [pos_scheme.groups['Noun'], pos_scheme.groups['Verb']]
+
 
 def display_gui(
     *, data_folder: str, corpus_pattern: str, generated_callback: Callable[[widgets.Output, str, str, str], None]
@@ -175,10 +188,13 @@ def display_gui(
     # Hard coded for now, must be changed!!!!
     filename_field = {"year": r"prot\_(\d{4}).*"}
     partition_keys = "year"
+    default_PoS_scheme = PoS_TAGS_SCHEMES.SUC
 
     data_folder = data_folder or default_data_folder()
 
     gui = GUI()
+    gui.set_PoS_scheme(default_PoS_scheme)
+
     gui.input_filename_chooser.path = data_folder
     gui.input_filename_chooser.filter_pattern = corpus_pattern
 

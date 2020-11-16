@@ -9,7 +9,6 @@ import textacy
 from penelope.corpus import VectorizedCorpus
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .tags import PoS_tags
 from .utils import frequent_document_words, infrequent_words, load_term_substitutions
 
 logger = utility.getLogger('corpus_text_analysis')
@@ -153,8 +152,10 @@ class PoSFilter:
         self.include_pos = include_pos
         self.exclude_pos = exclude_pos
 
-        assert all([x in PoS_tags for x in (self.include_pos or [])])
-        assert all([x in PoS_tags for x in (self.exclude_pos or [])])
+        universal_tags = utility.PoS_TAGS_SCHEMES.Universal.tags
+
+        assert all([x in universal_tags for x in (self.include_pos or [])])
+        assert all([x in universal_tags for x in (self.exclude_pos or [])])
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
         pipeline.to_terms_list_kwargs['include_pos'] = self.include_pos

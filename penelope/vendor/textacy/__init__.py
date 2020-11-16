@@ -17,7 +17,6 @@ from .language import create_nlp
 from .mdw_modified import compute_likelihoods, compute_most_discriminating_terms
 from .pipeline import CreateTask, ITask, LoadTask, PipelineError, PreprocessTask, SaveTask, TextacyCorpusPipeline
 from .stats import frequent_document_words, infrequent_words
-from .tags import PoS_tag_groups, PoS_tags
 from .utils import (
     POS_NAMES,
     POS_TO_COUNT,
