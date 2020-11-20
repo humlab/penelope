@@ -153,6 +153,39 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
 
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
+
+    # Arrange
+    name = f"{uuid.uuid1()}"
+    target_folder = jj(OUTPUT_FOLDER, name)
+    test_inferred_model = compute_inferred_model(method)
+    topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
+
+    # Act
+
+    inferred_model = topic_modelling.load_model(target_folder, lazy=True)
+
+    # Assert
+    assert callable(inferred_model._topic_model)  # pylint: disable=protected-access
+
+    _ = inferred_model.topic_model
+
+    assert not callable(inferred_model._topic_model)  # pylint: disable=protected-access
+
+    assert inferred_model._train_corpus is None or callable(
+        inferred_model._train_corpus
+    )  # pylint: disable=protected-access
+
+    _ = inferred_model.topic_model
+
+    assert inferred_model._train_corpus is None or not callable(
+        inferred_model._topic_model
+    )  # pylint: disable=protected-access
+
+    shutil.rmtree(target_folder)
+
+
+@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_infer_topics_data(method):
 
     # Arrange
@@ -283,22 +316,27 @@ def test_run_cli():
     shutil.rmtree(target_folder)
 
 
-def test_run_model_cli():
+def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
 
+    name = "test_corpus.xyz"
+    target_folder = jj(OUTPUT_FOLDER, name)
     options = dict(
-        name="test_corpus.xyz",
+        name=name,
         n_topics=5,
         corpus_folder=OUTPUT_FOLDER,
         corpus_filename='./tests/test_data/test_corpus.zip',
         engine="gensim_lda-multicore",
-        # passes=None,
-        # random_seed=None,
-        # alpha=None,
         workers=2,
         max_iter=2000,
-        # prefix=None,
-        # meta_field=None,
         store_corpus=True,
     )
 
     run_model(**options)
+
+    inferred_model = topic_modelling.load_model(target_folder)
+    inferred_topic_data = InferredTopicsData.load(target_folder)
+
+    assert inferred_model is not None
+    assert inferred_topic_data is not None
+
+    shutil.rmtree(target_folder)

@@ -1,16 +1,21 @@
+import bz2
 import fnmatch
 import glob
 import json
 import logging
 import os
 import pathlib
+import pickle
 import zipfile
+from io import StringIO
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Tuple, Union
 
 import gensim
 import pandas as pd
+from pandas.core.algorithms import isin
 
+from . import filename_utils as utils
 from .filename_utils import filename_satisfied_by
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
@@ -270,3 +275,75 @@ def read_json(path: str) -> Dict:
 def write_json(path: str, data: Dict):
     with open(path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
+
+
+DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
+
+
+def pandas_to_csv_zip(
+    zip_filename: str, dfs: Union[DataFrameFilenameTuple, List[DataFrameFilenameTuple]], extension='csv', **to_csv_opts
+):
+    if not isinstance(
+        dfs,
+        (
+            list,
+            tuple,
+        ),
+    ):
+        raise ValueError("expected tuple or list of tuples")
+
+    if isinstance(dfs, (tuple,)):
+        dfs = [dfs]
+
+    with zipfile.ZipFile(zip_filename, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for (df, filename) in dfs:
+            if not isinstance(df, pd.core.frame.DataFrame) or not isinstance(filename, str):
+                raise ValueError(
+                    f"Expected Tuple[pd.DateFrame, filename: str], found Tuple[{type(df)}, {type(filename)}]"
+                )
+            filename = utils.replace_extension(filename=filename, extension=extension)
+            data_str = df.to_csv(**to_csv_opts)
+            zf.writestr(filename, data=data_str)
+
+
+def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> Dict:
+
+    data = dict()
+    with zipfile.ZipFile(zip_filename, mode='r') as zf:
+        for filename in zf.namelist():
+            if not fnmatch.fnmatch(filename, pattern):
+                logging.info(f"skipping {filename} down't match {pattern} ")
+                continue
+            df = pd.read_csv(StringIO(zf.read(filename).decode(encoding='utf-8')), **read_csv_opts)
+            data[filename] = df
+    return data
+
+
+def pickle_compressed_to_file(filename: str, thing: Any):
+    with bz2.BZ2File(filename, 'w') as f:
+        pickle.dump(thing, f)
+
+
+def unpickle_compressed_from_file(filename: str):
+    with bz2.BZ2File(filename, 'rb') as f:
+        data = pickle.load(f)
+        return data
+
+
+def pickle_to_file(filename: str, thing: Any):
+    """Pickles a thing to disk """
+    if filename.endswith('.pbz2'):
+        pickle_compressed_to_file(filename, thing)
+    else:
+        with open(filename, 'wb') as f:
+            pickle.dump(thing, f, pickle.HIGHEST_PROTOCOL)
+
+
+def unpickle_from_file(filename: str) -> Any:
+    """Unpickles a thing from disk."""
+    if filename.endswith('.pbz2'):
+        thing = unpickle_compressed_from_file(filename)
+    else:
+        with open(filename, 'rb') as f:
+            thing = pickle.load(f)
+    return thing

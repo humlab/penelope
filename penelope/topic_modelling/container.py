@@ -8,12 +8,15 @@ import gensim
 import pandas as pd
 import penelope.utility as utility
 import scipy
+from penelope.utility import file_utility, filename_utils
+from tqdm import tqdm
 
 from .utility import add_document_metadata
 
 logger = utility.getLogger('corpus_text_analysis')
 
 DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
+jj = os.path.join
 
 
 class TrainingCorpus:
@@ -56,17 +59,41 @@ class TrainingCorpus:
 
 
 class InferredModel:
-    """A container for the inferred model (the distributions over topic and word mixtures) during based on training data """
+    """A container for the trained topic model """
 
-    def __init__(self, topic_model: Any, train_corpus: TrainingCorpus, method: str, **options: Dict[str, Any]):
-        self.topic_model = topic_model
-        self.train_corpus = train_corpus
+    def __init__(
+        self,
+        topic_model: Any,
+        train_corpus: TrainingCorpus,
+        method: str,
+        **options: Dict[str, Any],
+    ):
+        self._topic_model = topic_model
+        self._train_corpus = train_corpus
         self.method = method
         self.options = options
 
+    @property
+    def topic_model(self):
+        if callable(self._topic_model):
+            tbar = tqdm(desc="Lazy Loading model...")
+            self._topic_model = self._topic_model()
+            tbar.close()
+        return self._topic_model
+
+    @property
+    def train_corpus(self):
+        if callable(self._train_corpus):
+            tbar = tqdm(desc="Lazy corpus...")
+            self._train_corpus = self._train_corpus()
+            tbar.close()
+        return self._train_corpus
+
 
 class InferredTopicsData:
-    """Container for a topic model as a generic set of pd.DataFrames. The content is common to all types model engines."""
+    """The result of applying a topic model on a corpus.
+    The content, a generic set of pd.DataFrames, is common to all types model engines.
+    """
 
     def __init__(
         self,
@@ -144,11 +171,18 @@ class InferredTopicsData:
 
         else:
 
-            self.documents.to_csv(os.path.join(target_folder, 'documents.zip'), '\t')
-            self.dictionary.to_csv(os.path.join(target_folder, 'dictionary.zip'), '\t')
-            self.topic_token_weights.to_csv(os.path.join(target_folder, 'topic_token_weights.zip'), '\t')
-            self.topic_token_overview.to_csv(os.path.join(target_folder, 'topic_token_overview.zip'), '\t')
-            self.document_topic_weights.to_csv(os.path.join(target_folder, 'document_topic_weights.zip'), '\t')
+            data = [
+                (self.documents, 'documents.csv'),
+                (self.dictionary, 'dictionary.csv'),
+                (self.topic_token_weights, 'topic_token_weights.csv'),
+                (self.topic_token_overview, 'topic_token_overview.csv'),
+                (self.document_topic_weights, 'document_topic_weights.csv'),
+            ]
+
+            for (df, name) in data:
+                archive_name = jj(target_folder, filename_utils.replace_extension(name, ".zip"))
+                file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
+                # df.to_csv(jj(target_folder, filename_utils.replace_extension(name, ".zip")), '\t')
 
     @staticmethod
     def load(folder: str, pickled: bool = False):

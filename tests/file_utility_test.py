@@ -1,6 +1,13 @@
+import os
+
+import numpy as np
+import pandas as pd
 import penelope.utility as utility
 import pytest  # pylint: disable=unused-import
+from penelope.utility.file_utility import pandas_read_csv_zip, pandas_to_csv_zip, zip_get_filenames
 from tests.utils import TEST_CORPUS_FILENAME
+
+OUTPUT_FOLDER = './tests/output'
 
 
 def test_extract_filename_fields_when_valid_regexp_returns_metadata_values():
@@ -121,3 +128,34 @@ def test_read_textfile():
 def test_filename_field_parser():
     # utility.filename_field_parser(meta_fields)
     pass
+
+
+def create_pandas_test_data():
+    df1 = pd.DataFrame({'A': [1, 2], 'B': [3, 4], 'C': [5, 6]}, index=[4, 5])
+    df2 = pd.DataFrame(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), columns=['a', 'b', 'c'], index=[1, 2, 3])
+    data = [(df1, 'df1.csv'), (df2, 'df2.csv')]
+    return data
+
+
+def test_pandas_to_csv_zip():
+
+    filename = os.path.join(OUTPUT_FOLDER, "test_pandas_to_csv_zip.zip")
+    data = create_pandas_test_data()
+
+    pandas_to_csv_zip(filename, dfs=data, extension='csv', sep='\t')
+
+    assert os.path.isfile(filename)
+    assert set(zip_get_filenames(filename, extension="csv")) == set({'df1.csv', 'df2.csv'})
+
+
+def test_pandas_read_csv_zip():
+
+    filename = os.path.join(OUTPUT_FOLDER, "test_pandas_to_csv_zip.zip")
+    expected_data = create_pandas_test_data()
+    pandas_to_csv_zip(filename, dfs=expected_data, extension='csv', sep='\t')
+
+    data = pandas_read_csv_zip(filename, pattern='*.csv', sep='\t', index_col=0)
+
+    assert 'df1.csv' in data and 'df2.csv' in data
+    assert ((data['df1.csv'] == expected_data[0][0]).all()).all()
+    assert ((data['df2.csv'] == expected_data[1][0]).all()).all()
