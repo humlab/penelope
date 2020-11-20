@@ -4,7 +4,7 @@ from typing import Any
 import ipywidgets as widgets
 import pandas as pd
 import yaml
-from IPython.display import HTML
+from IPython.display import HTML, Javascript
 from IPython.display import display as ipython_display
 from penelope.utility import getLogger
 
@@ -35,6 +35,39 @@ def create_download_link(df: pd.DataFrame, title: str = "Download CSV", filename
     html = '<a download="{filename}" href="data:text/csv;base64,{payload}" target="_blank">{title}</a>'
     html = html.format(payload=payload, title=title, filename=filename)
     return HTML(html)
+
+
+def create_js_download(df: pd.DataFrame, **to_csv_opts) -> Javascript:
+
+    if df is None or len(df) == 0:
+        return None
+
+    csv_text = df.to_csv(**to_csv_opts).replace('\n', '\\n').replace('\r', '').replace("'", "\'")
+
+    js_download = (
+        """
+        var csv = '%s';
+        var filename = 'results.csv';
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        if (navigator.msSaveBlob) { // IE 10+
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            var link = document.createElement("a");
+            if (link.download !== undefined) { // HTML5 check
+                var url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    """
+        % csv_text
+    )
+
+    return Javascript(js_download)
 
 
 class OutputsTabExt(widgets.Tab):
