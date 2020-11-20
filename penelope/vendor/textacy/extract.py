@@ -7,6 +7,9 @@ import pandas as pd
 import penelope.utility as utility
 import textacy
 from penelope.corpus import VectorizedCorpus
+from penelope.corpus.readers.option_objects import AnnotationOpts
+from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus.vectorizer import CorpusVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 
 from .utils import frequent_document_words, infrequent_words, load_term_substitutions
@@ -119,6 +122,33 @@ class ExtractPipeline:
     def pos(self, include_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None) -> ExtractPipeline:
         return self.add(PoSFilter(include_pos=include_pos, exclude_pos=exclude_pos))
 
+    def ingest_transform_opts(self, tokens_transform_opts: TokensTransformOpts) -> ExtractPipeline:
+
+        if not tokens_transform_opts.keep_numerals:
+            self.ingest(filter_nums=True)
+
+        if tokens_transform_opts.remove_stopwords:
+            self.remove_stopwords(tokens_transform_opts.extra_stopwords)
+
+        if tokens_transform_opts.min_len and tokens_transform_opts.min_len > 1:
+            self.add(MinCharactersFilter(min_length=tokens_transform_opts.min_len))
+
+        if tokens_transform_opts.max_len:
+            self.add(MaxCharactersFilter(max_length=tokens_transform_opts.max_len))
+
+        if tokens_transform_opts.to_lower:
+            self.add(TransformTask(transformer=str.lower))
+
+        if tokens_transform_opts.to_upper:
+            self.add(TransformTask(transformer=str.upper))
+
+        # only_alphabetic: bool = False
+        # only_any_alphanumeric: bool = False
+        # remove_accents: bool = False
+        # keep_symbols: bool = True
+
+        return self
+
     def ingest(self, **options):
         for k, v in options.items():
             if k in self.to_terms_list_args:
@@ -130,7 +160,7 @@ class ExtractPipeline:
         return self
 
     @staticmethod
-    def build(corpus, target, **options):
+    def build(corpus: textacy.Corpus, target: str, **options):
         pipeline = ExtractPipeline(corpus, target).ingest(**options)
         return pipeline
 
@@ -249,6 +279,11 @@ class MinCharactersFilter(PredicateFilter):
         super().__init__(predicate=lambda x: len(x) >= min_length)
 
 
+class MaxCharactersFilter(PredicateFilter):
+    def __init__(self, max_length: int = 100):
+        super().__init__(predicate=lambda x: len(x) <= max_length)
+
+
 class InfrequentWordsFilter(StopwordFilter):
     def __init__(self, min_global_count: int = 100, target: str = 'lemma'):
         self.min_freq = min_global_count
@@ -295,36 +330,53 @@ class FrequentWordsFilter(StopwordFilter):
         return pipeline
 
 
-def vectorize_textacy_corpus(
-    corpus,
+def extract_document_tokens(
+    *,
+    textacy_corpus: textacy.Corpus,
     documents: pd.DataFrame,
-    n_count: int,
-    n_top: int,
-    normalize_axis=None,
-    year_range: Tuple[int, int] = (1920, 2020),
+    annotation_opts: AnnotationOpts = None,
+    tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
-    vecargs=None,
-):
+) -> Iterable[Tuple[str, Iterable[str]]]:
 
-    target = extract_args.get("normalize", "lemma")
+    target = "lemma" if annotation_opts.lemmatize else "text"
 
-    document_stream = ExtractPipeline.build(corpus, target).ingest(**extract_args).process()
-
-    vectorizer = CountVectorizer(tokenizer=lambda x: x.split(), **(vecargs or {}))
-
-    bag_term_matrix = vectorizer.fit_transform(document_stream)
-
-    x_corpus = VectorizedCorpus(bag_term_matrix, vectorizer.vocabulary_, documents)
-
-    year_range = (
-        x_corpus.documents.year.min(),
-        x_corpus.documents.year.max(),
+    tokens_stream = (
+        ExtractPipeline.build(corpus=textacy_corpus, target=target)
+        .pos(include_pos=annotation_opts.pos_includes, exclude_pos=annotation_opts.pos_excludes)
+        .ingest_opts(tokens_transform_opts)
+        .ingest(**extract_args)
+        .process()
     )
-    year_filter = lambda x: year_range[0] <= x["year"] <= year_range[1]
+    document_tokens = zip(documents.filename, tokens_stream)
 
-    x_corpus = x_corpus.filter(year_filter).group_by_year().slice_by_n_count(n_count).slice_by_n_top(n_top)
+    return document_tokens
 
-    for axis in normalize_axis or []:
-        x_corpus = x_corpus.normalize(axis=axis, keep_magnitude=False)
 
-    return x_corpus
+def vectorize_textacy_corpus(
+    *,
+    textacy_corpus: textacy.Corpus,
+    documents: pd.DataFrame,
+    annotation_opts: AnnotationOpts = None,
+    tokens_transform_opts: TokensTransformOpts = None,
+    extract_args: Dict[str, Any] = None,
+    vectorizer_args=None,
+):
+    document_tokens = extract_document_tokens(
+        textacy_corpus=textacy_corpus,
+        documents=documents,
+        annotation_opts=annotation_opts,
+        tokens_transform_opts=tokens_transform_opts,
+        extract_args=extract_args,
+    )
+
+    v_corpus = CorpusVectorizer().fit_transform(
+        corpus=document_tokens,
+        documents=documents,
+        verbose=True,
+        **{
+            **vectorizer_args,
+        },
+    )
+
+    return v_corpus
