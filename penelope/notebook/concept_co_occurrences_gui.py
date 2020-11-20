@@ -153,7 +153,7 @@ class GUI:
         )
 
     @property
-    def annotation_opts(self):
+    def annotation_opts(self) -> AnnotationOpts:
 
         return AnnotationOpts(
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
@@ -163,7 +163,7 @@ class GUI:
         )
 
     @property
-    def concept_opts(self):
+    def concept_opts(self) -> ConceptContextOpts:
 
         return ConceptContextOpts(
             concept=self.concept_tokens, context_width=self.context_width.value, ignore_concept=self.no_concept.value
