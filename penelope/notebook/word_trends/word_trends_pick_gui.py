@@ -4,11 +4,12 @@ from typing import Any, List, Sequence
 
 import ipywidgets
 import pandas as pd
-import penelope.plot.word_trend_plot as plotter
 import qgrid
 from bokeh.plotting import show
 from IPython.display import display
 from penelope.corpus import VectorizedCorpus
+
+from .displayers import deprecated_plot as plotter
 
 
 class TokensSelector(abc.ABC):
