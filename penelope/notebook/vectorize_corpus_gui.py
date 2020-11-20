@@ -48,7 +48,7 @@ class GUI:
     )
     pos_includes = widgets.SelectMultiple(
         options=PoS_TAGS_SCHEMES.SUC.groups,
-        value=[PoS_TAGS_SCHEMES.SUC.group['Noun'], PoS_TAGS_SCHEMES.SUC.group['Verb']],
+        value=[PoS_TAGS_SCHEMES.SUC.groups['Noun'], PoS_TAGS_SCHEMES.SUC.groups['Verb']],
         rows=8,
         description='',
         disabled=False,
