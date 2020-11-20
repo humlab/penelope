@@ -6,11 +6,9 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 import pandas as pd
 import penelope.utility as utility
 import textacy
-from penelope.corpus import VectorizedCorpus
 from penelope.corpus.readers.option_objects import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.corpus.vectorizer import CorpusVectorizer
-from sklearn.feature_extraction.text import CountVectorizer
 
 from .utils import frequent_document_words, infrequent_words, load_term_substitutions
 
@@ -344,7 +342,7 @@ def extract_document_tokens(
     tokens_stream = (
         ExtractPipeline.build(corpus=textacy_corpus, target=target)
         .pos(include_pos=annotation_opts.pos_includes, exclude_pos=annotation_opts.pos_excludes)
-        .ingest_opts(tokens_transform_opts)
+        .ingest_transform_opts(tokens_transform_opts)
         .ingest(**extract_args)
         .process()
     )

@@ -23,6 +23,7 @@ TOPIC_MODELING_OPTS = {
     'max_iter': 100,
     'prefix': '',
 }
+# pylint: disable=protected-access
 
 
 def compute_inferred_model(method="gensim_lda-multicore"):
@@ -166,21 +167,17 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     inferred_model = topic_modelling.load_model(target_folder, lazy=True)
 
     # Assert
-    assert callable(inferred_model._topic_model)  # pylint: disable=protected-access
+    assert callable(inferred_model._topic_model)
 
     _ = inferred_model.topic_model
 
-    assert not callable(inferred_model._topic_model)  # pylint: disable=protected-access
+    assert not callable(inferred_model._topic_model)
 
-    assert inferred_model._train_corpus is None or callable(
-        inferred_model._train_corpus
-    )  # pylint: disable=protected-access
+    assert inferred_model._train_corpus is None or callable(inferred_model._train_corpus)
 
     _ = inferred_model.topic_model
 
-    assert inferred_model._train_corpus is None or not callable(
-        inferred_model._topic_model
-    )  # pylint: disable=protected-access
+    assert inferred_model._train_corpus is None or not callable(inferred_model._topic_model)
 
     shutil.rmtree(target_folder)
 

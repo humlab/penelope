@@ -13,7 +13,6 @@ from typing import Any, Dict, Iterable, Iterator, List, Tuple, Union
 
 import gensim
 import pandas as pd
-from pandas.core.algorithms import isin
 
 from . import filename_utils as utils
 from .filename_utils import filename_satisfied_by
