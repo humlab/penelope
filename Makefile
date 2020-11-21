@@ -69,7 +69,15 @@ pylint:
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
-pylint2:
+# https://nerderati.com/speed-up-pylint-by-reducing-the-files-it-examines/
+.ONESHELL: pylint_diff_only
+pylint_diff_only:
+	@delta_files=$(shell git diff --name-only --diff-filter=d | grep -E '\.py$$' | tr '\n' ' ')
+	@if [[ "$$delta_files" != "" ]]; then
+		pylint $(delta_files)
+	fi
+
+pylint_by_file:
 	@-find $(SOURCE_FOLDERS) -type f -name "*.py" | \
 		grep -v .ipynb_checkpoints | \
 			poetry run xargs -I @@ bash -c '{ echo "@@" ; pylint "@@" ; }'
@@ -132,7 +140,7 @@ check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
 .PHONY: help check init version
-.PHONY: lint flake8 pylint pylint2 yapf black isort tidy
+.PHONY: lint flake8 pylint pylint_by_file yapf black isort tidy pylint_diff_only
 .PHONY: test test-coverage pytest
 .PHONY: ready build tag bump.patch release
 .PHONY: clean clean_cache update
