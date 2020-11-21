@@ -11,8 +11,8 @@ import penelope.topic_modelling as topic_modelling
 import penelope.utility as utility
 from IPython.display import display
 
-from .model_container import TopicModelContainer
 from .display_utility import display_document_topics_as_grid
+from .model_container import TopicModelContainer
 
 logger = utility.getLogger("westac")
 

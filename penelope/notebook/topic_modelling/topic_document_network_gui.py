@@ -12,7 +12,7 @@ import penelope.utility as utility
 from IPython.display import display
 
 from .model_container import TopicModelContainer
-from .utils import display_document_topics_as_grid
+from .display_utility import display_document_topics_as_grid
 
 logger = utility.getLogger("westac")
 

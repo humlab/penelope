@@ -70,4 +70,3 @@ def reduce_topic_tokens_overview(topics: pd.DataFrame, n_count: int, search: str
     if search:
         reduced_topics = reduced_topics[reduced_topics.tokens.str.contains(search)]
     return reduced_topics
-    

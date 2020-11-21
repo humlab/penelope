@@ -8,6 +8,7 @@ from IPython.display import display as IPython_display
 from ipywidgets import HBox, IntSlider, Output, Text, VBox
 from ipywidgets.widgets.widget_button import Button
 from penelope.notebook.utility import create_js_download
+
 from .utility import reduce_topic_tokens_overview
 
 
