@@ -1,5 +1,5 @@
 # from __future__ import print_function
-import collections
+# import collections
 from typing import Any
 
 import bokeh
@@ -39,38 +39,38 @@ MATPLOTLIB_PLOT_STYLES = [
     'classic',
 ]
 
-output_formats = {
-    'Plot vertical bar': 'plot_bar',
-    'Plot horisontal bar': 'plot_barh',
-    'Plot vertical bar, stacked': 'plot_bar_stacked',
-    'Plot horisontal bar, stacked': 'plot_barh_stacked',
-    'Plot line': 'plot_line',
-    'Table': 'table',
-    'Pivot': 'pivot',
-}
+# output_formats = {
+#     'Plot vertical bar': 'plot_bar',
+#     'Plot horisontal bar': 'plot_barh',
+#     'Plot vertical bar, stacked': 'plot_bar_stacked',
+#     'Plot horisontal bar, stacked': 'plot_barh_stacked',
+#     'Plot line': 'plot_line',
+#     'Table': 'table',
+#     'Pivot': 'pivot',
+# }
 
-KindOfChart = collections.namedtuple('KindOfChart', 'description name kind stacked horizontal')
+# KindOfChart = collections.namedtuple('KindOfChart', 'description name kind stacked horizontal')
 
-CHART_TYPES = [
-    KindOfChart(description='Area', name='plot_area', kind='area', stacked=False, horizontal=False),
-    KindOfChart(description='Area (stacked)', name='plot_stacked_area', kind='area', stacked=True, horizontal=False),
-    KindOfChart(description='Bar', name='plot_bar', kind='bar', stacked=False, horizontal=False),
-    KindOfChart(description='Line', name='plot_line', kind='line', stacked=False, horizontal=False),
-    KindOfChart(description='Bar (stacked)', name='plot_stacked_bar', kind='bar', stacked=True, horizontal=False),
-    KindOfChart(description='Line (stacked)', name='plot_stacked_line', kind='line', stacked=True, horizontal=False),
-    KindOfChart(description='Bar (horizontal)', name='plot_barh', kind='bar', stacked=False, horizontal=True),
-    KindOfChart(
-        description='Bar (horizontal, stacked)', name='plot_stacked_barh', kind='bar', stacked=True, horizontal=True
-    ),
-    # KindOfChart(description='Scatter', name='plot_scatter', kind='scatter', stacked=False, horizontal=False),
-    # KindOfChart(description='Histogram', name='plot_hist', kind='hist', stacked=False, horizontal=False),
-    KindOfChart(description='Table', name='table', kind=None, stacked=False, horizontal=False),
-    KindOfChart(description='Pivot', name='pivot', kind=None, stacked=False, horizontal=False),
-]
+# CHART_TYPES = [
+#     KindOfChart(description='Area', name='plot_area', kind='area', stacked=False, horizontal=False),
+#     KindOfChart(description='Area (stacked)', name='plot_stacked_area', kind='area', stacked=True, horizontal=False),
+#     KindOfChart(description='Bar', name='plot_bar', kind='bar', stacked=False, horizontal=False),
+#     KindOfChart(description='Line', name='plot_line', kind='line', stacked=False, horizontal=False),
+#     KindOfChart(description='Bar (stacked)', name='plot_stacked_bar', kind='bar', stacked=True, horizontal=False),
+#     KindOfChart(description='Line (stacked)', name='plot_stacked_line', kind='line', stacked=True, horizontal=False),
+#     KindOfChart(description='Bar (horizontal)', name='plot_barh', kind='bar', stacked=False, horizontal=True),
+#     KindOfChart(
+#         description='Bar (horizontal, stacked)', name='plot_stacked_barh', kind='bar', stacked=True, horizontal=True
+#     ),
+#     # KindOfChart(description='Scatter', name='plot_scatter', kind='scatter', stacked=False, horizontal=False),
+#     # KindOfChart(description='Histogram', name='plot_hist', kind='hist', stacked=False, horizontal=False),
+#     KindOfChart(description='Table', name='table', kind=None, stacked=False, horizontal=False),
+#     KindOfChart(description='Pivot', name='pivot', kind=None, stacked=False, horizontal=False),
+# ]
 
-CHART_TYPE_MAP = {x.name: x for x in CHART_TYPES}
-CHART_TYPE_OPTIONS = {x.name: x.name for x in CHART_TYPES}
-CHART_TYPE_NAME_OPTIONS = [(x.description, x.name) for x in CHART_TYPES]
+# CHART_TYPE_MAP = {x.name: x for x in CHART_TYPES}
+# CHART_TYPE_OPTIONS = {x.name: x.name for x in CHART_TYPES}
+# CHART_TYPE_NAME_OPTIONS = [(x.description, x.name) for x in CHART_TYPES]
 
 
 def kwargser(d):
@@ -82,48 +82,48 @@ def kwargser(d):
     return args
 
 
-def toggle(description, value, **kwargs):  # pylint: disable=W0613
-    return widgets.ToggleButton(**kwargser(locals()))
+# def toggle(description, value, **kwargs):  # pylint: disable=W0613
+#     return widgets.ToggleButton(**kwargser(locals()))
 
 
-def toggles(description, options, value, **kwopts):  # pylint: disable=W0613
-    return widgets.ToggleButtons(**kwargser(locals()))
+# def toggles(description, options, value, **kwopts):  # pylint: disable=W0613
+#     return widgets.ToggleButtons(**kwargser(locals()))
 
 
-def select_multiple(description, options, values, **kwopts):
-    default_opts = dict(
-        options=options,
-        value=values,
-        rows=4,
-        description=description,
-        disabled=False,
-        layout=widgets.Layout(width='180px'),
-    )
-    return widgets.SelectMultiple(**extend(default_opts, kwopts))
+# def select_multiple(description, options, values, **kwopts):
+#     default_opts = dict(
+#         options=options,
+#         value=values,
+#         rows=4,
+#         description=description,
+#         disabled=False,
+#         layout=widgets.Layout(width='180px'),
+#     )
+#     return widgets.SelectMultiple(**extend(default_opts, kwopts))
 
 
-def dropdown(description, options, value, **kwargs):  # pylint: disable=unused-argument
-    return widgets.Dropdown(**kwargser(locals()))
+# def dropdown(description, options, value, **kwargs):  # pylint: disable=unused-argument
+#     return widgets.Dropdown(**kwargser(locals()))
 
 
-def slider(description, min, max, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
-    return widgets.IntSlider(**kwargser(locals()))
+# def slider(description, min, max, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
+#     return widgets.IntSlider(**kwargser(locals()))
 
 
-def rangeslider(description, min, max, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
-    return widgets.IntRangeSlider(**kwargser(locals()))
+# def rangeslider(description, min, max, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
+#     return widgets.IntRangeSlider(**kwargser(locals()))
 
 
-def sliderf(description, min, max, step, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
-    return widgets.FloatSlider(**kwargser(locals()))
+# def sliderf(description, min, max, step, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
+#     return widgets.FloatSlider(**kwargser(locals()))
 
 
-def progress(min, max, step, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
-    return widgets.IntProgress(**kwargser(locals()))
+# def progress(min, max, step, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
+#     return widgets.IntProgress(**kwargser(locals()))
 
 
-def itext(min, max, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
-    return widgets.BoundedIntText(**kwargser(locals()))
+# def itext(min, max, value, **kwargs):  # pylint: disable=unused-argument, redefined-builtin
+#     return widgets.BoundedIntText(**kwargser(locals()))
 
 
 def wrap_id_text(dom_id, value=''):
@@ -135,8 +135,8 @@ def textblock(dom_id=None, value=''):
     return widgets.HTML(value=wrap_id_text(dom_id, value), placeholder='', description='')
 
 
-def button(description):  # pylint: disable=unused-argument
-    return widgets.Button(**kwargser(locals()))
+# def button(description):  # pylint: disable=unused-argument
+#     return widgets.Button(**kwargser(locals()))
 
 
 def glyph_hover_js_code(element_id, id_name, text_name, glyph_name='glyph', glyph_data='glyph_data'):
@@ -232,25 +232,25 @@ def increment_button(target_control, max_value, label='>>', increment=1):
     return widgets.Button(description=label, callback=f)
 
 
-def _get_field_values(documents, field, as_tuple=False, query=None):
-    items = documents.query(query) if query is not None else documents
-    unique_values = sorted(list(items[field].unique()))
-    if as_tuple:
-        unique_values = [(str(x).title(), x) for x in unique_values]
-    return unique_values
+# def _get_field_values(documents, field, as_tuple=False, query=None):
+#     items = documents.query(query) if query is not None else documents
+#     unique_values = sorted(list(items[field].unique()))
+#     if as_tuple:
+#         unique_values = [(str(x).title(), x) for x in unique_values]
+#     return unique_values
 
 
-def generate_field_filters(documents, opts):
-    filters = []
-    for opt in opts:  # if opt['type'] == 'multiselect':
-        options = opt.get(
-            'options', _get_field_values(documents, opt['field'], as_tuple=True, query=opt.get('query', None))
-        )
-        description = opt.get('description', '')
-        rows = min(4, len(options))
-        gf = extend(opt, widget=select_multiple(description, options, values=(), rows=rows))
-        filters.append(gf)
-    return filters
+# def generate_field_filters(documents, opts):
+#     filters = []
+#     for opt in opts:  # if opt['type'] == 'multiselect':
+#         options = opt.get(
+#             'options', _get_field_values(documents, opt['field'], as_tuple=True, query=opt.get('query', None))
+#         )
+#         description = opt.get('description', '')
+#         rows = min(4, len(options))
+#         gf = extend(opt, widget=select_multiple(description, options, values=(), rows=rows))
+#         filters.append(gf)
+#     return filters
 
 
 BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
