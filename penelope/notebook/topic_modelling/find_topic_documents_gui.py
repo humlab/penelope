@@ -1,0 +1,96 @@
+from dataclasses import dataclass
+from typing import Any
+
+from IPython.display import display as ip_display
+from ipywidgets import FloatSlider, IntSlider, Label, Output, Text, VBox
+
+from .display_topic_titles import reduce_topic_tokens_overview
+
+
+@dataclass
+class GUI:
+
+    threshold_slider = FloatSlider(min=0.01, max=1.0, value=0.2)
+    top_token_slider = IntSlider(min=3, max=200, value=3, disabled=True)
+    find_text = Text(description="")
+    output = Output()
+    callback = lambda *_: ()
+
+    def layout(self):
+        return VBox(
+            (
+                VBox(
+                    (
+                        Label("Topic weight in document threshold"),
+                        self.threshold_slider,
+                    )
+                ),
+                VBox(
+                    (
+                        Label("Find topics containing token"),
+                        self.find_text,
+                    )
+                ),
+                VBox(
+                    (
+                        Label("Tokens toplist threshold for token"),
+                        self.top_token_slider,
+                    )
+                ),
+                self.output,
+            )
+        )
+
+    def _callback(self, *_):
+        self.callback(
+            gui=self,
+        )
+
+    def _find_text(self, *_):
+        self.top_token_slider.disabled = len(self.find_text.value) < 2
+
+    def setup(self, callback):
+        self.threshold_slider.observe(self._callback, 'value')
+        self.top_token_slider.observe(self._callback, 'value')
+        self.find_text.observe(self._callback, 'value')
+        self.find_text.observe(self._find_text, 'value')
+        self.callback = callback or self.callback
+        return self
+
+    @property
+    def threshold(self) -> float:
+        return self.threshold_slider.value
+
+    @property
+    def text(self) -> str:
+        return self.find_text.value
+
+    @property
+    def top(self) -> int:
+        return self.top_token_slider.value
+
+
+def controller(document_topic_weights, topic_token_overview):
+    def display_document_topic_weights(gui: Any):
+        gui.output.clear_output()
+        with gui.output:
+
+            df = document_topic_weights
+
+            if len(gui.text) > 2:
+
+                topic_ids = reduce_topic_tokens_overview(
+                    topic_token_overview,
+                    gui.top,
+                    gui.text,
+                ).index.tolist()
+
+                df = df[df.topic_id.isin(topic_ids)]
+
+            df = df[document_topic_weights.weight >= gui.threshold]
+
+            ip_display(df)
+
+    gui = GUI().setup(callback=display_document_topic_weights)
+
+    ip_display(gui.layout())
