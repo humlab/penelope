@@ -213,6 +213,12 @@ def dict_split(d: Mapping, fn: Callable[[Mapping, str], bool]) -> Mapping:
     return {k: d[k] for k in true_keys}, {k: d[k] for k in set(d.keys()) - true_keys}
 
 
+def dict_to_list_of_tuples(d: Mapping) -> List[Tuple[Any, Any]]:
+    if d is None:
+        return []
+    return [(k, v) for (k, v) in d.items()]
+
+
 def list_of_dicts_to_dict_of_lists(dl: List[Mapping[str, Any]]) -> Mapping[str, List[Any]]:
     dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists

@@ -2,7 +2,7 @@ import functools
 import logging
 
 
-def try_catch(func, exceptions=None, suppress=False):
+def try_catch(func, exceptions=None, suppress=False, nice=False):
     """
     Surrounds the function with a try-except block
     """
@@ -12,7 +12,10 @@ def try_catch(func, exceptions=None, suppress=False):
         try:
             func(*args, **kwargs)
         except exceptions as e:
-            logging.exception('Exception occurred: [{}]'.format(e))
+            if nice:
+                logging.error(str(e))
+            else:
+                logging.exception('[{}]'.format(e))
             if not suppress:
                 raise
 
