@@ -75,6 +75,7 @@ def load_model(
     display_topic_titles.display_gui(topics, DisplayPandasGUI)
 
 
+@utility.try_catch
 def display_gui(corpus_folder: str, state: TopicModelContainer):
 
     model_infos = topic_modelling.find_models(corpus_folder)

@@ -280,4 +280,3 @@ def display_gui(state: TopicModelContainer):
     )
 
     display(w)
-    return w

@@ -3,6 +3,7 @@ from typing import Any
 
 from IPython.display import display as ip_display
 from ipywidgets import FloatSlider, IntSlider, Label, Output, Text, VBox
+from ipywidgets.widgets.widget_box import HBox
 
 from .display_topic_titles import reduce_topic_tokens_overview
 
@@ -19,22 +20,22 @@ class GUI:
     def layout(self):
         return VBox(
             (
-                VBox(
+                HBox(
                     (
-                        Label("Topic weight in document threshold"),
-                        self.threshold_slider,
-                    )
-                ),
-                VBox(
-                    (
-                        Label("Find topics containing token"),
-                        self.find_text,
-                    )
-                ),
-                VBox(
-                    (
-                        Label("Tokens toplist threshold for token"),
-                        self.top_token_slider,
+                        VBox(
+                            (
+                                Label("Topic weight in document threshold"),
+                                self.threshold_slider,
+                            )
+                        ),
+                        VBox(
+                            (
+                                Label("Find topics containing token"),
+                                self.find_text,
+                                Label("Tokens toplist threshold for token"),
+                                self.top_token_slider,
+                            )
+                        ),
                     )
                 ),
                 self.output,
@@ -70,7 +71,7 @@ class GUI:
         return self.top_token_slider.value
 
 
-def controller(document_topic_weights, topic_token_overview):
+def gui_controller(document_topic_weights, topic_token_overview):
     def display_document_topic_weights(gui: Any):
         gui.output.clear_output()
         with gui.output:
