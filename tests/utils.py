@@ -5,7 +5,7 @@ from typing import Callable
 
 import pandas as pd
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus
-from penelope.corpus.readers import InMemoryReader, TextTokenizer
+from penelope.corpus.readers import InMemoryReader, TextReader, TextTokenizer
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -99,17 +99,39 @@ class MockedProcessedCorpus(ITokenizedCorpus):
         return document
 
 
-def create_text_tokenizer(
+def create_text_reader(
     source_path=TEST_CORPUS_FILENAME,
     transforms=None,
-    chunk_size: int = None,
-    filename_pattern: str = "*.txt",
-    filename_filter: str = None,
-    fix_whitespaces=False,
-    fix_hyphenation=True,
     as_binary: bool = False,
-    tokenize: Callable = None,
     filename_fields=None,
+    filename_filter: str = None,
+    filename_pattern: str = "*.txt",
+    fix_hyphenation=True,
+    fix_whitespaces=False,
+):
+    kwargs = dict(
+        transforms=transforms,
+        filename_pattern=filename_pattern,
+        filename_filter=filename_filter,
+        filename_fields=filename_fields,
+        as_binary=as_binary,
+        text_transform_opts=TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation),
+    )
+    reader = TextReader(source=source_path, **kwargs)
+    return reader
+
+
+def create_text_tokenizer(
+    source_path=TEST_CORPUS_FILENAME,
+    as_binary: bool = False,
+    filename_fields=None,
+    filename_filter: str = None,
+    filename_pattern: str = "*.txt",
+    fix_hyphenation=True,
+    fix_whitespaces=False,
+    transforms=None,
+    chunk_size: int = None,
+    tokenize: Callable = None,
 ):
     kwargs = dict(
         transforms=transforms,
