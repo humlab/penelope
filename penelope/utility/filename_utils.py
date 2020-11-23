@@ -170,8 +170,7 @@ def data_path_ts(directory: str, path: str):
 
 
 def path_add_sequence(path: str, i: int, j: int = 0) -> str:
-    suffix = str(i).zfill(j)
-    return path_add_suffix(path, suffix)
+    return path_add_suffix(path, f"_{str(i).zfill(j)}")
 
 
 def strip_path_and_add_counter(filename: str, i: int, n_zfill: int = 3):
