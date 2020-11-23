@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import spacy
 from penelope import utility
+from penelope.corpus.readers.interfaces import TextSource
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.corpus.vectorizer import VectorizeOpts
 from spacy.language import Language
@@ -142,21 +143,26 @@ def _get_disables(attributes):
 #    #reader = TextReader(TEST_CORPUS, filename_pattern="*.txt", filename_fields="year:_:1")
 #    payload = PipelinePayload(source=text_source, document_index=None)
 
-
+    # extract_text_opts = ExtractTextOpts(
+    #     target="lemma",
+    #     include_pos={'VERB', 'NOUN'},
+    # )
+    # vectorize_opts = VectorizeOpts(verbose=True)
+    #
 def extract_text_to_vectorized_corpus(
-    sourcepayload: PipelinePayload, nlp: Language) -> VectorizedCorpus:
-
-    attributes = ['text', 'lemma_', 'pos_']
-    extract_text_opts = ExtractTextOpts(
-        target="lemma",
-        include_pos={'VERB', 'NOUN'},
-    )
-    vectorize_opts = VectorizeOpts(verbose=True)
+    source: TextSource,
+    nlp: Language,
+    *,
+    extract_text_opts: ExtractTextOpts,
+    vectorize_opts: VectorizeOpts,
+    document_index: pd.DataFrame = None,
+) -> VectorizedCorpus:
+    payload = PipelinePayload(source=source, document_index=document_index)
     pipeline = (
         SpacyPipeline(payload=payload)
         .load(filename_pattern="*.txt", filename_fields="year:_:1")
         .text_to_spacy(nlp=nlp)
-        .spacy_to_dataframe(nlp, attributes=attributes)
+        .spacy_to_dataframe(nlp, attributes=['text', 'lemma_', 'pos_'])
         .dataframe_to_tokens(extract_text_opts=extract_text_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
