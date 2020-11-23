@@ -43,7 +43,7 @@ class SparvCsvTokenizer(TextTokenizer):
 
         super().__init__(
             source,
-            **{**dict(tokenize=lambda x: x.split(), filename_pattern='*.csv', transforms=None), **tokenizer_opts},
+            **{**dict(tokenize=lambda x: x.split(), filename_pattern='*.csv'), **tokenizer_opts},
         )
 
         self.annotation_opts = annotation_opts or AnnotationOpts()
