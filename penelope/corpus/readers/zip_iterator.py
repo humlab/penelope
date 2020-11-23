@@ -2,6 +2,7 @@
 import logging
 from typing import Callable, List, Sequence, Union
 
+import pandas as pd
 from penelope.corpus.readers import ICorpusReader
 from penelope.utility import IndexOfSplitOrCallableOrRegExp, create_iterator, extract_filenames_fields, list_filenames
 
@@ -58,6 +59,13 @@ class ZipTextIterator(ICorpusReader):
         if self._metadata is None:
             self._metadata = self._create_metadata()
         return self._metadata
+
+    @property
+    def document_index(self):
+        _document_index: pd.DataFrame = pd.DataFrame(self.metadata)
+        if 'document_id' not in _document_index:
+            _document_index['document_id'] = list(_document_index.index)
+        return _document_index
 
     def __iter__(self):
         return self
