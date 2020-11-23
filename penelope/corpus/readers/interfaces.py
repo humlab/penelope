@@ -3,8 +3,9 @@ import zipfile
 from typing import Any, Dict, List, Union
 
 import pandas as pd
+from penelope.corpus.readers.text_reader import TextReader
 
-FilenameOrFolderOrZipOrList = Union[str, zipfile.ZipFile, List]
+TextSource = Union[str, zipfile.ZipFile, List, TextReader]
 
 
 class ICorpusReader(abc.ABC):

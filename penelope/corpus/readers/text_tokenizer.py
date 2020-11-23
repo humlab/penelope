@@ -1,7 +1,7 @@
 import logging
 from typing import Callable, Iterable, List, Sequence, Tuple, Union
 
-from penelope.corpus.readers.interfaces import FilenameOrFolderOrZipOrList
+from penelope.corpus.readers.interfaces import TextSource
 from penelope.corpus.readers.text_reader import TextReader
 from penelope.utility import IndexOfSplitOrCallableOrRegExp, strip_path_and_extension
 from penelope.utility.filename_utils import path_add_sequence
@@ -28,7 +28,7 @@ class TextTokenizer(TextReader):
 
     def __init__(
         self,
-        source: FilenameOrFolderOrZipOrList,
+        source: TextSource,
         *,
         filename_pattern: str = None,
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
@@ -44,7 +44,7 @@ class TextTokenizer(TextReader):
 
         Parameters
         ----------
-        source : FilenameOrFolderOrZipOrList
+        source : TextSource
             [description]
         transforms : List[Callable], optional
             [description], by default None

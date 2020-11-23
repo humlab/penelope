@@ -11,7 +11,7 @@ from penelope.utility import (
     strip_paths,
 )
 
-from .interfaces import FilenameOrFolderOrZipOrList, ICorpusReader
+from .interfaces import TextSource, ICorpusReader
 from .streamify_text_source import streamify_text_source
 from .text_transformer import TextTransformer, TextTransformOpts
 
@@ -31,7 +31,7 @@ class TextReader(ICorpusReader):
 
     def __init__(
         self,
-        source: FilenameOrFolderOrZipOrList,
+        source: TextSource,
         *,
         filename_pattern: str = None,
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
@@ -44,7 +44,7 @@ class TextReader(ICorpusReader):
 
         Parameters
         ----------
-        source : FilenameOrFolderOrZipOrList
+        source : TextSource
             [description]
         transforms : List[Callable], optional
             [description], by default None

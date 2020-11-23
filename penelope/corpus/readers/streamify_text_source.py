@@ -5,13 +5,13 @@ from typing import Callable, List, Union
 
 from penelope.utility import filename_satisfied_by, read_textfile
 
-from .interfaces import FilenameOrFolderOrZipOrList
+from .interfaces import TextSource
 from .zip_iterator import ZipTextIterator
 
 
 # pylint: disable=too-many-return-statements
 def streamify_text_source(
-    text_source: FilenameOrFolderOrZipOrList,
+    text_source: TextSource,
     *,
     filename_pattern: str = '*.txt',
     filename_filter: Union[List[str], Callable] = None,

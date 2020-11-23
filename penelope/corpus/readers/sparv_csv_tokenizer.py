@@ -3,7 +3,7 @@ import logging
 
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
-from .interfaces import FilenameOrFolderOrZipOrList
+from .interfaces import TextSource
 from .option_objects import AnnotationOpts
 from .text_tokenizer import TextTokenizer
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class SparvCsvTokenizer(TextTokenizer):
     def __init__(
         self,
-        source: FilenameOrFolderOrZipOrList,
+        source: TextSource,
         *,
         annotation_opts: AnnotationOpts = None,
         **tokenizer_opts,

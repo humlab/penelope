@@ -3,7 +3,7 @@ import logging
 
 from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 
-from .interfaces import FilenameOrFolderOrZipOrList
+from .interfaces import TextSource
 from .option_objects import AnnotationOpts
 from .text_tokenizer import TextTokenizer
 from .text_transformer import TextTransformer
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class SparvXmlTokenizer(TextTokenizer):
     def __init__(
         self,
-        source: FilenameOrFolderOrZipOrList,
+        source: TextSource,
         *,
         annotation_opts: AnnotationOpts = None,
         xslt_filename: str = None,
@@ -27,7 +27,7 @@ class SparvXmlTokenizer(TextTokenizer):
 
         Parameters
         ----------
-        source : FilenameOrFolderOrZipOrList
+        source : TextSource
             Source (filename, ZIP, tokenizer)
         annotation_opts : AnnotationOpts, optional
         xslt_filename : str, optional
@@ -71,7 +71,7 @@ class SparvXmlTokenizer(TextTokenizer):
 class Sparv3XmlTokenizer(SparvXmlTokenizer):
     def __init__(
         self,
-        source: FilenameOrFolderOrZipOrList,
+        source: TextSource,
         *,
         annotation_opts: AnnotationOpts = None,
         **tokenizer_opts,
@@ -80,7 +80,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
 
         Parameters
         ----------
-        source : FilenameOrFolderOrZipOrList
+        source : TextSource
             Source (filename, folder, zip, list)
         annotation_opts: AnnotationOpts, optional
         tokenizer_opts : Dict[str, Any]

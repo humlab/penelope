@@ -6,7 +6,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Sequence, Union
 import pandas as pd
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import AnnotationOpts, TextReader
-from penelope.corpus.readers.interfaces import FilenameOrFolderOrZipOrList
+from penelope.corpus.readers.interfaces import TextSource
 from spacy.language import Language
 from spacy.tokens import Doc as SpacyDoc
 
@@ -40,22 +40,15 @@ class DocumentPayload:
 @dataclass
 class PipelinePayload:
 
-    source: FilenameOrFolderOrZipOrList = None
+    source: TextSource = None
 
     document_index_filename: pd.DataFrame = None
     document_index: pd.DataFrame = None
 
-    token2id: Mapping = None
-    annotation_opts: AnnotationOpts = None
-    tokens_transform_opts: TokensTransformOpts = None
-    extract_opts: Mapping = None
-    corpus: Union[
-        Iterable[DocumentPayload],
-        Iterable[SpacyDoc],
-        # TokenizedCorpus,
-        # VectorizedCorpus,
-        # textacy.Corpus
-    ] = None
+    # NOT USED: token2id: Mapping = None
+    # NOT USED: annotation_opts: AnnotationOpts = None
+    # NOT USED: tokens_transform_opts: TokensTransformOpts = None
+    # NOT USED: extract_opts: Mapping = None
 
 
 class ITask(abc.ABC):
