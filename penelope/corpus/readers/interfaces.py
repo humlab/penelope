@@ -2,6 +2,8 @@ import abc
 import zipfile
 from typing import Any, Dict, List, Union
 
+import pandas as pd
+
 FilenameOrFolderOrZipOrList = Union[str, zipfile.ZipFile, List]
 
 
@@ -14,6 +16,10 @@ class ICorpusReader(abc.ABC):
     @property
     @abc.abstractproperty
     def metadata(self) -> List[Dict[str, Any]]:
+        return None
+
+    @property
+    def document_index(self) -> pd.DataFrame:
         return None
 
     @abc.abstractmethod

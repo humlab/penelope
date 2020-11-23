@@ -19,7 +19,7 @@ class InMemoryReader(ICorpusReader):
 
         self._all_filenames = [x[0] for x in self.data]
         self._all_metadata = self._create_all_metadata()
-        self._documents: pd.DataFrame = pd.DataFrame(self._all_metadata)
+        self._document_index: pd.DataFrame = pd.DataFrame(self._all_metadata)
 
     def _create_iterator(self):
         _filenames = self._get_filenames()
@@ -51,12 +51,12 @@ class InMemoryReader(ICorpusReader):
         return self._get_metadata(strip_paths(self._get_filenames()))
 
     @property
-    def documents(self) -> pd.DataFrame:
+    def document_index(self) -> pd.DataFrame:
 
         if self._filename_filter is None:
-            return self._documents
+            return self._document_index
 
-        return self._documents[self._documents.filename.isin(self._filename_filter)]
+        return self._document_index[self._document_index.filename.isin(self._filename_filter)]
 
     def apply_filter(self, filename_filter: List[str]):
         self._filename_filter = filename_filter
