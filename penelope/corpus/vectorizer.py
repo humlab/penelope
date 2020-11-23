@@ -1,7 +1,9 @@
 import logging
+from dataclasses import dataclass
 from typing import Callable, Iterable, Mapping, Tuple, Union
 
 import pandas as pd
+from penelope.utility import PropsMixIn
 from sklearn.feature_extraction.text import CountVectorizer
 from tqdm.std import tqdm
 
@@ -11,30 +13,38 @@ from .vectorized_corpus import VectorizedCorpus
 logger = logging.getLogger("corpus_vectorizer")
 
 
-# def _default_tokenizer(lowercase=True):
-#     def _lowerccase_tokenize(tokens):
-#         return [x.lower() for x in tokens]
+DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
 
-#     def _no_tokenize(tokens):
-#         return tokens
 
-#     if lowercase:
-#         return lambda tokens: [x.lower() for x in tokens]
-
-#     return _lowerccase_tokenize if lowercase else _no_tokenize
+@dataclass
+class VectorizeOpts(PropsMixIn):
+    tokenizer: Callable = None
+    lowercase: bool = False
+    stop_words: str = None
+    max_df: float = 1.0
+    min_df: int = 1
+    verbose: bool = True
 
 
 def _no_tokenize(tokens):
     return tokens
 
 
-DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
-
-
 class CorpusVectorizer:
     def __init__(self):
         self.vectorizer = None
         self.vectorizer_opts = {}
+
+    def fit_transform_(
+        self,
+        corpus: Union[TokenizedCorpus, DocumentTermsStream],
+        *,
+        vocabulary: Mapping[str, int] = None,
+        documents: pd.DataFrame = None,
+        vectorize_opts: VectorizeOpts,
+    ) -> VectorizedCorpus:
+        """Same as `fit_transform` but with a parameter object """
+        return self.fit_transform(corpus, vocabulary=vocabulary, documents=documents, **vectorize_opts.props)
 
     def fit_transform(
         self,
@@ -120,6 +130,3 @@ class CorpusVectorizer:
         v_corpus = VectorizedCorpus(bag_term_matrix, token2id, documents)
 
         return v_corpus
-
-
-# FXIME: Deprecate this function (user _vectorize_corpus workflow instead)
