@@ -55,7 +55,7 @@ class SparvXmlTokenizer(TextTokenizer):
         }
         super().__init__(source, **tokenizer_opts)
 
-        self.text_transformer = TextTransformer(transforms=[])
+        self.text_transformer = TextTransformer()
         self.annotation_opts = annotation_opts or AnnotationOpts()
         self.xslt_filename = XSLT_FILENAME_V3 if version == 3 else xslt_filename
         self.parser = SparvXml2Text(

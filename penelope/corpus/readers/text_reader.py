@@ -1,5 +1,6 @@
 import logging
 import os
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, Union
 
 import pandas as pd
@@ -10,8 +11,9 @@ from penelope.utility import (
     list_filenames,
     strip_paths,
 )
+from penelope.utility.mixins import PropsMixIn
 
-from .interfaces import TextSource, ICorpusReader
+from .interfaces import ICorpusReader, TextSource
 from .streamify_text_source import streamify_text_source
 from .text_transformer import TextTransformer, TextTransformOpts
 
@@ -21,13 +23,21 @@ logger = logging.getLogger(__name__)
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
+@dataclass
+class TextReaderOpts(PropsMixIn):
+    filename_pattern: str = None
+    filename_filter: FilenameOrCallableOrSequenceFilter = None
+    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None
 
 class TextReader(ICorpusReader):
     """Reads a text corpus from `source` and applies given transforms.
     Derived classes can override `preprocess` as an initial step before transforms are applied.
-    The `preprocess` is applied on the entire document, and the transforms on each token.
     The `preprocess can for instance be used to extract text from an XML file (see derived class SParvXmlCorpusSourceReader)
     """
+
+    @staticmethod
+    def create(source: TextSource, reader_opts: TextReaderOpts, transform_opts: TextTransformOpts) -> "TextReader":
+        return TextReader(source=source, **reader_opts.props, **transform_opts.props)
 
     def __init__(
         self,
@@ -36,7 +46,6 @@ class TextReader(ICorpusReader):
         filename_pattern: str = None,
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
         filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
-        transforms: List[Callable] = None,
         text_transform_opts: TextTransformOpts = None,
         as_binary: bool = False,
     ):
@@ -46,12 +55,8 @@ class TextReader(ICorpusReader):
         ----------
         source : TextSource
             [description]
-        transforms : List[Callable], optional
-            [description], by default None
-        chunk_size : int, optional
             [description], by default None
         filename_pattern : str, optional
-            [description], by default None
         filename_filter : Union[Callable, List[str]], optional
             [description], by default None
         filename_fields : Sequence[IndexOfSplitOrCallableOrRegExp], optional
@@ -68,7 +73,7 @@ class TextReader(ICorpusReader):
 
         text_transform_opts = text_transform_opts or TextTransformOpts()
 
-        self.text_transformer = TextTransformer(transforms=transforms, text_transform_opts=text_transform_opts)
+        self.text_transformer = TextTransformer(text_transform_opts=text_transform_opts)
         self._iterator = None
         self._all_filenames = list_filenames(source, filename_pattern=filename_pattern, filename_filter=None)
         self._all_metadata = self._create_all_metadata()

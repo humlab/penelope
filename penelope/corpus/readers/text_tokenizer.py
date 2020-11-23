@@ -69,7 +69,7 @@ class TextTokenizer(TextReader):
             filename_pattern=filename_pattern,
             filename_filter=filename_filter,
             filename_fields=filename_fields,
-            transforms=transforms,
+            extra_text_transforms=transforms,
             text_transform_opts=text_transform_opts,
             as_binary=as_binary,
         )

@@ -41,7 +41,7 @@ class DataFrameTextTokenizer(
             print('Warn: {} n/a rows encountered'.format(len(self.data[self.data[text_column].isna()])))
             self.data = self.data.dropna()
 
-        self.text_transformer = TextTransformer(transforms=[]).fix_unicode().fix_whitespaces().fix_hyphenation()
+        self.text_transformer = TextTransformer().fix_unicode().fix_whitespaces().fix_hyphenation()
 
         self.iterator = None
         self._metadata = self.data.drop(self.text_column, axis=1).to_dict(orient='records')

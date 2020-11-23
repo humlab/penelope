@@ -25,16 +25,22 @@ class TextTransformOpts:
     fix_accents: bool = False
     fix_unicode: bool = False
 
+    extra_transforms: List[Callable] = []
+
     @property
     def props(self):
-        return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
+        return {
+            k: v
+            for k, v in self.__dict__.items()
+            if k not in ('props', 'extra_transforms') and not k.startswith('_') and not callable(v)
+        }
 
 
 class TextTransformer:
     """Transforms applied on non-tokenized text"""
 
-    def __init__(self, transforms: List[Callable] = None, text_transform_opts: TextTransformOpts = None):
-        self.transforms: List[Callable] = transforms or []
+    def __init__(self, *, text_transform_opts: TextTransformOpts = None):
+        self.transforms: List[Callable] = []
         self.ingest(text_transform_opts)
 
     def ingest(self, opts: TextTransformOpts) -> TextTransformer:
@@ -50,6 +56,8 @@ class TextTransformer:
             self.fix_accents()
         if opts.fix_unicode:
             self.fix_unicode()
+        if isinstance(opts.extra_transforms, list):
+            self.transforms.extend(opts.extra_transforms)
         return self
 
     def add(self, transform, condition=True) -> TextTransformer:
