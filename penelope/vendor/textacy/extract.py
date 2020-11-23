@@ -5,10 +5,11 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 
 import pandas as pd
 import penelope.utility as utility
-import textacy
 from penelope.corpus.readers.option_objects import AnnotationOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.corpus.vectorizer import CorpusVectorizer
+from spacy.tokens import Doc
+from textacy.spacier.doc_extensions import to_terms_list
 
 from .utils import frequent_document_words, infrequent_words, load_term_substitutions
 
@@ -25,7 +26,7 @@ def chunks(lst, n):
 
 
 class ExtractPipeline:
-    def __init__(self, corpus: textacy.Corpus, target: Union[str, Callable] = 'lemma', tasks: List[Any] = None):
+    def __init__(self, corpus: Iterable[Doc], target: Union[str, Callable] = 'lemma', tasks: List[Any] = None):
 
         self.corpus = corpus
         self.tasks = tasks or []
@@ -63,7 +64,7 @@ class ExtractPipeline:
 
         for doc in self.corpus:
 
-            terms = doc._.to_terms_list(**self.to_terms_list_args, **self.to_terms_list_kwargs)
+            terms = to_terms_list(doc, **self.to_terms_list_args, **self.to_terms_list_kwargs)
 
             for task in self.tasks:
                 if hasattr(task, 'apply'):
@@ -158,7 +159,7 @@ class ExtractPipeline:
         return self
 
     @staticmethod
-    def build(corpus: textacy.Corpus, target: str, **options):
+    def build(corpus: Iterable[Doc], target: str, **options):
         pipeline = ExtractPipeline(corpus, target).ingest(**options)
         return pipeline
 
@@ -330,7 +331,7 @@ class FrequentWordsFilter(StopwordFilter):
 
 def extract_document_tokens(
     *,
-    textacy_corpus: textacy.Corpus,
+    spacy_docs: Iterable[Doc],
     documents: pd.DataFrame,
     annotation_opts: AnnotationOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
@@ -340,7 +341,7 @@ def extract_document_tokens(
     target = "lemma" if annotation_opts.lemmatize else "text"
 
     tokens_stream = (
-        ExtractPipeline.build(corpus=textacy_corpus, target=target)
+        ExtractPipeline.build(corpus=spacy_docs, target=target)
         .pos(include_pos=annotation_opts.pos_includes, exclude_pos=annotation_opts.pos_excludes)
         .ingest_transform_opts(tokens_transform_opts)
         .ingest(**extract_args)
@@ -353,7 +354,7 @@ def extract_document_tokens(
 
 def vectorize_textacy_corpus(
     *,
-    textacy_corpus: textacy.Corpus,
+    spacy_docs: Iterable[Doc],
     documents: pd.DataFrame,
     annotation_opts: AnnotationOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
@@ -361,7 +362,7 @@ def vectorize_textacy_corpus(
     vectorizer_args=None,
 ):
     document_tokens = extract_document_tokens(
-        textacy_corpus=textacy_corpus,
+        spacy_docs=spacy_docs,
         documents=documents,
         annotation_opts=annotation_opts,
         tokens_transform_opts=tokens_transform_opts,
