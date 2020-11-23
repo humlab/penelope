@@ -4,11 +4,10 @@ from enum import Enum
 from typing import Any, Callable, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
-from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import AnnotationOpts, TextReader
+from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
+from penelope.corpus.readers import TextReader
 from penelope.corpus.readers.interfaces import TextSource
 from spacy.language import Language
-from spacy.tokens import Doc as SpacyDoc
 
 from .extract import ExtractTextOpts, dataframe_to_tokens, spacy_doc_to_annotated_dataframe, text_to_annotated_dataframe
 
