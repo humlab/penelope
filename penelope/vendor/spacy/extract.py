@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import spacy
 from penelope import utility
-from penelope.corpus.readers.interfaces import FilenameOrFolderOrZipOrList
-from penelope.corpus.readers.text_reader import TextReader
+from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.corpus.vectorizer import VectorizeOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -143,7 +143,8 @@ def _get_disables(attributes):
 #    payload = PipelinePayload(source=text_source, document_index=None)
 
 
-def extract_text_to_vectorized_corpus(payload: PipelinePayload, nlp: Language):
+def extract_text_to_vectorized_corpus(
+    sourcepayload: PipelinePayload, nlp: Language) -> VectorizedCorpus:
 
     attributes = ['text', 'lemma_', 'pos_']
     extract_text_opts = ExtractTextOpts(
@@ -163,4 +164,4 @@ def extract_text_to_vectorized_corpus(payload: PipelinePayload, nlp: Language):
 
     corpus = pipeline.resolve()
 
-    assert isinstance(corpus, VectorizedCorpus)
+    return corpus

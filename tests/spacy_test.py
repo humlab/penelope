@@ -1,10 +1,8 @@
 import pandas as pd
 import pytest
-
-# %%
 import spacy
 from penelope.corpus import VectorizeOpts
-from penelope.corpus.readers import InMemoryReader, TextReader, streamify_text_source
+from penelope.corpus.readers import TextReader, streamify_text_source
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.vendor.spacy.extract import (
     ExtractTextOpts,
@@ -15,6 +13,8 @@ from penelope.vendor.spacy.extract import (
 from penelope.vendor.spacy.pipeline import PipelinePayload, SpacyPipeline
 from spacy.language import Language
 from spacy.tokens import Doc
+
+# pylint: disable=redefined-outer-name
 
 TEST_CORPUS = [
     ('mars_1999_01.txt', 'Mars was once home to seas and oceans, and perhaps even life.'),
