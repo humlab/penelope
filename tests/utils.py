@@ -101,7 +101,6 @@ class MockedProcessedCorpus(ITokenizedCorpus):
 
 def create_text_reader(
     source_path=TEST_CORPUS_FILENAME,
-    transforms=None,
     as_binary: bool = False,
     filename_fields=None,
     filename_filter: str = None,
@@ -110,7 +109,6 @@ def create_text_reader(
     fix_whitespaces=False,
 ):
     kwargs = dict(
-        transforms=transforms,
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
         filename_fields=filename_fields,
@@ -129,12 +127,10 @@ def create_text_tokenizer(
     filename_pattern: str = "*.txt",
     fix_hyphenation=True,
     fix_whitespaces=False,
-    transforms=None,
     chunk_size: int = None,
     tokenize: Callable = None,
 ):
     kwargs = dict(
-        transforms=transforms,
         chunk_size=chunk_size,
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,

@@ -248,7 +248,6 @@ def load_or_create(
 
         tokens_streams = text_tokenizer.TextTokenizer(
             source=source_path,
-            transforms=[],
             text_transform_opts=TextTransformOpts(fix_unicode=True, fix_accents=True),
             filename_fields=filename_fields,
         )

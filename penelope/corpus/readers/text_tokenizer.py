@@ -34,7 +34,6 @@ class TextTokenizer(TextReader):
         filename_filter: FilenameOrCallableOrSequenceFilter = None,
         filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
         as_binary: bool = False,
-        transforms: List[Callable] = None,
         text_transform_opts: TextTransformOpts = None,
         tokenize: Callable = None,
         chunk_size: int = None,
@@ -46,8 +45,6 @@ class TextTokenizer(TextReader):
         ----------
         source : TextSource
             [description]
-        transforms : List[Callable], optional
-            [description], by default None
         chunk_size : int, optional
             [description], by default None
         filename_pattern : str, optional
@@ -69,7 +66,6 @@ class TextTokenizer(TextReader):
             filename_pattern=filename_pattern,
             filename_filter=filename_filter,
             filename_fields=filename_fields,
-            extra_text_transforms=transforms,
             text_transform_opts=text_transform_opts,
             as_binary=as_binary,
         )

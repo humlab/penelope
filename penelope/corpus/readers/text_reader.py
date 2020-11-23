@@ -1,7 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Sequence, Tuple, Union
 
 import pandas as pd
 from penelope.utility import (
@@ -23,11 +23,13 @@ logger = logging.getLogger(__name__)
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
+
 @dataclass
 class TextReaderOpts(PropsMixIn):
     filename_pattern: str = None
     filename_filter: FilenameOrCallableOrSequenceFilter = None
     filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None
+
 
 class TextReader(ICorpusReader):
     """Reads a text corpus from `source` and applies given transforms.

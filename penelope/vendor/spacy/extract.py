@@ -143,12 +143,12 @@ def _get_disables(attributes):
 #    #reader = TextReader(TEST_CORPUS, filename_pattern="*.txt", filename_fields="year:_:1")
 #    payload = PipelinePayload(source=text_source, document_index=None)
 
-    # extract_text_opts = ExtractTextOpts(
-    #     target="lemma",
-    #     include_pos={'VERB', 'NOUN'},
-    # )
-    # vectorize_opts = VectorizeOpts(verbose=True)
-    #
+# extract_text_opts = ExtractTextOpts(
+#     target="lemma",
+#     include_pos={'VERB', 'NOUN'},
+# )
+# vectorize_opts = VectorizeOpts(verbose=True)
+#
 def extract_text_to_vectorized_corpus(
     source: TextSource,
     nlp: Language,
