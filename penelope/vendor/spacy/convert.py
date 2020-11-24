@@ -1,31 +1,11 @@
-from dataclasses import dataclass
-from typing import Iterable, List, Set, Union
+from typing import Iterable, List, Union
 
 import numpy as np
 import pandas as pd
 import spacy
-from penelope import utility
-from penelope.corpus.readers.interfaces import TextSource
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
-from penelope.corpus.vectorizer import VectorizeOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from spacy.language import Language
 from spacy.tokens import Doc
-
-from .pipeline import PipelinePayload, SpacyPipeline
-
-
-@dataclass
-class ExtractTextOpts(utility.PropsMixIn):
-    """Spacy document extract options"""
-
-    target: str = "lemma"
-    is_alpha: bool = None
-    is_space: bool = False
-    is_punct: bool = False
-    is_digit: bool = None
-    is_stop: bool = None
-    include_pos: Set[str] = None
-    exclude_pos: Set[str] = None
 
 
 def spacy_doc_to_annotated_dataframe(spacy_doc: Doc, attributes: List[str]) -> pd.DataFrame:
@@ -90,7 +70,7 @@ def texts_to_annotated_dataframes(
 TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 
 
-def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTextOpts) -> Iterable[str]:
+def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts) -> Iterable[str]:
 
     target = TARGET_MAP.get(extract_opts.target, extract_opts.target)
 
@@ -138,36 +118,3 @@ def _get_disables(attributes):
     if not any('dep' in x for x in attributes):
         disable.append('parser')
     return disable
-
-
-#    #reader = TextReader(TEST_CORPUS, filename_pattern="*.txt", filename_fields="year:_:1")
-#    payload = PipelinePayload(source=text_source, document_index=None)
-
-# extract_text_opts = ExtractTextOpts(
-#     target="lemma",
-#     include_pos={'VERB', 'NOUN'},
-# )
-# vectorize_opts = VectorizeOpts(verbose=True)
-#
-def extract_text_to_vectorized_corpus(
-    source: TextSource,
-    nlp: Language,
-    *,
-    extract_text_opts: ExtractTextOpts,
-    vectorize_opts: VectorizeOpts,
-    document_index: pd.DataFrame = None,
-) -> VectorizedCorpus:
-    payload = PipelinePayload(source=source, document_index=document_index)
-    pipeline = (
-        SpacyPipeline(payload=payload)
-        .load(filename_pattern="*.txt", filename_fields="year:_:1")
-        .text_to_spacy(nlp=nlp)
-        .spacy_to_dataframe(nlp, attributes=['text', 'lemma_', 'pos_'])
-        .dataframe_to_tokens(extract_text_opts=extract_text_opts)
-        .tokens_to_text()
-        .to_dtm(vectorize_opts)
-    )
-
-    corpus = pipeline.resolve()
-
-    return corpus
