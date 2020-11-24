@@ -32,11 +32,14 @@ class GUI:
                             (
                                 Label("Find topics containing token"),
                                 self.find_text,
+                            )
+                        ),
+                        VBox(
+                            (
                                 Label("Tokens toplist threshold for token"),
                                 self.top_token_slider,
                             )
-                        ),
-                    )
+                        ),                    )
                 ),
                 self.output,
             )
@@ -88,7 +91,7 @@ def gui_controller(document_topic_weights, topic_token_overview):
 
                 df = df[df.topic_id.isin(topic_ids)]
 
-            df = df[document_topic_weights.weight >= gui.threshold]
+            df = df[df.weight >= gui.threshold]
 
             ip_display(df)
 

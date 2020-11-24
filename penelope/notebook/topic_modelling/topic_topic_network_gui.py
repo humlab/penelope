@@ -32,33 +32,27 @@ def display_gui(state: TopicModelContainer):
         n_topics=n_topics,
         text=widgets_utils.text_widget(text_id),
         period=widgets.IntRangeSlider(
-            description='Time',
+            description='',
             min=year_min,
             max=year_max,
             step=1,
             value=(year_min, year_min + 5),
             continues_update=False,
         ),
-        scale=widgets.FloatSlider(description='Scale', min=0.0, max=1.0, step=0.01, value=0.1, continues_update=False),
-        n_docs=widgets.IntSlider(description='n-docs', min=10, max=100, step=1, value=1, continues_update=False),
-        threshold=widgets.FloatSlider(
-            description='Threshold', min=0.01, max=1.0, step=0.01, value=0.20, continues_update=False
-        ),
-        output_format=widgets.Dropdown(
-            description='Output', options=output_options, value='network', layout=lw('200px')
-        ),
+        scale=widgets.FloatSlider(description='', min=0.0, max=1.0, step=0.01, value=0.1, continues_update=False),
+        n_docs=widgets.IntSlider(description='', min=1, max=100, step=1, value=10, continues_update=False),
+        threshold=widgets.FloatSlider(description='', min=0.01, max=1.0, step=0.01, value=0.20, continues_update=False),
+        output_format=widgets.Dropdown(description='', options=output_options, value='network', layout=lw('200px')),
         layout=widgets.Dropdown(
-            description='Layout', options=layout_options, value='Fruchterman-Reingold', layout=lw('250px')
+            description='', options=layout_options, value='Fruchterman-Reingold', layout=lw('250px')
         ),
         progress=widgets.IntProgress(min=0, max=4, step=1, value=0, layout=widgets.Layout(width="99%")),
-        ignores=widgets.SelectMultiple(
-            description='Ignore', options=ignore_options, value=[], rows=5, layout=lw('250px')
-        ),
+        ignores=widgets.SelectMultiple(description='', options=ignore_options, value=[], rows=10, layout=lw('250px')),
         node_range=widgets.IntRangeSlider(
-            description='Node size', min=10, max=100, step=1, value=(20, 60), continues_update=False
+            description='', min=10, max=100, step=1, value=(20, 60), continues_update=False
         ),
         edge_range=widgets.IntRangeSlider(
-            description='Edge size', min=1, max=20, step=1, value=(2, 6), continues_update=False
+            description='', min=1, max=20, step=1, value=(2, 6), continues_update=False
         ),
         output=widgets.Output(),
     )
@@ -105,10 +99,41 @@ def display_gui(state: TopicModelContainer):
             [
                 widgets.HBox(
                     [
-                        widgets.VBox([gui.layout, gui.threshold, gui.n_docs, gui.period]),
-                        widgets.VBox([gui.ignores]),
-                        widgets.VBox([gui.node_range, gui.edge_range, gui.scale]),
-                        widgets.VBox([widgets.HBox([gui.output_format]), gui.progress]),
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Co-occurrence threshold</b>"),
+                                gui.threshold,
+                                widgets.HTML("<b>Documents in common</b>"),
+                                gui.n_docs,
+                                widgets.HTML("<b>Year range</b>"),
+                                gui.period,
+                            ]
+                        ),
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Ignore topics</b>"),
+                                gui.ignores,
+                            ]
+                        ),
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Node size</b>"),
+                                gui.node_range,
+                                widgets.HTML("<b>Edge size</b>"),
+                                gui.edge_range,
+                                widgets.HTML("<b>Scale</b>"),
+                                gui.scale,
+                            ]
+                        ),
+                        widgets.VBox(
+                            [
+                                widgets.HTML("<b>Network layout</b>"),
+                                gui.layout,
+                                widgets.HTML("<b>Output</b>"),
+                                gui.output_format,
+                                gui.progress,
+                            ]
+                        ),
                     ]
                 ),
                 gui.output,

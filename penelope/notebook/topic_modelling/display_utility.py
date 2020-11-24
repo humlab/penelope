@@ -18,13 +18,9 @@ def display_document_topics_as_grid(df):
         {"headerName": "N_Tokens", "field": "n_tokens"},
         {"headerName": "N_Terms", "field": "n_terms"},
         {"headerName": "Year", "field": "year", "cellRenderer": None},
-        {"headerName": "Title", "field": "title"},
-        # {"headerName": "Source", "field": "topic_id"},
-        # {"headerName": "Target", "field": "filename"},
+        {"headerName": "Title", "field": "title"}
     ]
 
-    # FIXME: Add cellRenderer to filename (or title) that removes file extension
-    # https://www.ag-grid.com/javascript-grid-cell-rendering-components/
     extra_options = {
         "menu": {
             "buttons": [

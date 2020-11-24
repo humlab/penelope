@@ -162,12 +162,12 @@ def display_gui(state: TopicModelContainer):
     layout_options = ["Circular", "Kamada-Kawai", "Fruchterman-Reingold"]
     year_min, year_max = inferred_topics.year_period
 
-    n_topics = len(inferred_topics.topic_ids)
+    n_topics = state.num_topics
 
     gui = types.SimpleNamespace(
         text=widget_utils.text_widget(text_id),
         period=widgets.IntRangeSlider(
-            description="Time",
+            description="",
             min=year_min,
             max=year_max,
             step=1,
@@ -175,7 +175,7 @@ def display_gui(state: TopicModelContainer):
             continues_update=False,
         ),
         scale=widgets.FloatSlider(
-            description="Scale",
+            description="",
             min=0.0,
             max=1.0,
             step=0.01,
@@ -183,7 +183,7 @@ def display_gui(state: TopicModelContainer):
             continues_update=False,
         ),
         threshold=widgets.FloatSlider(
-            description="Threshold",
+            description="",
             min=0.0,
             max=1.0,
             step=0.01,
@@ -191,20 +191,20 @@ def display_gui(state: TopicModelContainer):
             continues_update=False,
         ),
         output_format=widgets.Dropdown(
-            description="Output",
+            description="",
             options={"Network": "network", "Table": "table"},
             value="network",
             layout=lw("200px"),
         ),
         layout=widgets.Dropdown(
-            description="Layout",
+            description="",
             options=layout_options,
             value="Fruchterman-Reingold",
             layout=lw("250px"),
         ),
         progress=widgets.IntProgress(min=0, max=4, step=1, value=0, layout=widgets.Layout(width="99%")),
         ignores=widgets.SelectMultiple(
-            description="Ignore",
+            description="",
             options=[("", None)] + [("Topic #" + str(i), i) for i in range(0, n_topics)],
             value=[],
             rows=8,
@@ -242,13 +242,35 @@ def display_gui(state: TopicModelContainer):
 
     # FIXME: Add button
 
-    w = widgets.VBox(
+    _layout = widgets.VBox(
         [
             widgets.HBox(
                 [
-                    widgets.VBox([gui.layout, gui.threshold, gui.scale, gui.period]),
-                    widgets.VBox([gui.ignores]),
-                    widgets.VBox([gui.output_format, gui.progress]),
+                    widgets.VBox(
+                        [
+                            widgets.HTML("<b>Year range</b>"),
+                            gui.period,
+                            widgets.HTML("<b>Scale</b>"),
+                            gui.scale,
+                            widgets.HTML("<b>Weight threshold</b>"),
+                            gui.threshold,
+                        ]
+                    ),
+                    widgets.VBox(
+                        [
+                            widgets.HTML("<b>Ignore topics</b>"),
+                            gui.ignores,
+                        ]
+                    ),
+                    widgets.VBox(
+                        [
+                            widgets.HTML("<b>Network layout</b>"),
+                            gui.layout,
+                            widgets.HTML("<b>Output</b>"),
+                            gui.output_format,
+                            gui.progress,
+                        ]
+                    ),
                 ]
             ),
             gui.output,
@@ -256,6 +278,5 @@ def display_gui(state: TopicModelContainer):
         ]
     )
 
-    display(w)
+    display(_layout)
     update_handler()
-    return w

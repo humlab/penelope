@@ -137,6 +137,7 @@ def display_document_topic_network(  # pylint: disable=too-many-locals)
     df = df_focus.append(df_others).reset_index()
 
     if len(df) == 0:
+        tick(0)
         logger.info("No data to show")
         return
 
@@ -154,10 +155,10 @@ def display_document_topic_network(  # pylint: disable=too-many-locals)
 
     df["title"] = df.filename
 
-    network = network_utility.create_bipartite_network(df, "title", "topic_id")
     tick()
 
     if output_format == "network":
+        network = network_utility.create_bipartite_network(df, "title", "topic_id")
         if layout_algorithm == "Circular":
             args = dict(dim=2, center=None, scale=1.0)
         else:
@@ -168,7 +169,8 @@ def display_document_topic_network(  # pylint: disable=too-many-locals)
         bokeh.plotting.show(p)
 
     elif output_format == "table":
-        display_document_topics_as_grid(df)
+        g = display_document_topics_as_grid(df)
+        display(g)
 
     tick(0)
 
@@ -188,7 +190,7 @@ def display_gui(state: TopicModelContainer):
     gui = types.SimpleNamespace(
         text=widget_utils.text_widget(text_id),
         period=widgets.IntRangeSlider(
-            description="Time",
+            description="",
             min=year_min,
             max=year_max,
             step=1,
@@ -196,7 +198,7 @@ def display_gui(state: TopicModelContainer):
             continues_update=False,
         ),
         scale=widgets.FloatSlider(
-            description="Scale",
+            description="",
             min=0.0,
             max=1.0,
             step=0.01,
@@ -204,7 +206,7 @@ def display_gui(state: TopicModelContainer):
             continues_update=False,
         ),
         threshold=widgets.FloatSlider(
-            description="Threshold",
+            description="",
             min=0.0,
             max=1.0,
             step=0.01,
@@ -221,7 +223,7 @@ def display_gui(state: TopicModelContainer):
             description="",
             options=layout_options,
             value="Fruchterman-Reingold",
-            layout=lw("250px"),
+            layout=lw("200px"),
         ),
         progress=widgets.IntProgress(min=0, max=4, step=1, value=0, layout=widgets.Layout(width="99%")),
         focus_topics=widgets.SelectMultiple(
@@ -231,7 +233,10 @@ def display_gui(state: TopicModelContainer):
             rows=8,
             layout=lw("180px"),
         ),
-        button=widgets.Button(description="Display", layout=widgets.Layout(width="99%")),
+        button=widgets.Button(
+            description="Display",
+            button_style='Success',
+            layout=widgets.Layout(width='115px', background_color='blue')),
         output=widgets.Output(),
     )
 
@@ -269,9 +274,32 @@ def display_gui(state: TopicModelContainer):
         [
             widgets.HBox(
                 [
-                    widgets.VBox([widgets.HTML("Layout"), gui.layout, gui.threshold, gui.scale, gui.period]),
-                    widgets.VBox([widgets.HTML("Focus topics"), gui.focus_topics]),
-                    widgets.VBox([widgets.HTML("Output"), gui.output_format, gui.progress, gui.button]),
+                    widgets.VBox(
+                        [
+                            widgets.HTML("<b>Year range</b>"),
+                            gui.period,
+                            widgets.HTML("<b>Scale</b>"),
+                            gui.scale,
+                            widgets.HTML("<b>Weight threshold</b>"),
+                            gui.threshold,
+                        ]
+                    ),
+                    widgets.VBox(
+                        [
+                            widgets.HTML("<b>Focus topics</b>"),
+                            gui.focus_topics,
+                        ]
+                    ),
+                    widgets.VBox(
+                        [
+                            widgets.HTML("<b>Network layout</b>"),
+                            gui.layout,
+                            widgets.HTML("<b>Output</b>"),
+                            gui.output_format,
+                            gui.progress,
+                            gui.button,
+                        ]
+                    ),
                 ]
             ),
             gui.output,
