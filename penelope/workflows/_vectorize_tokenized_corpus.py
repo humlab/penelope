@@ -2,7 +2,7 @@ import os
 from typing import Any
 
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from penelope.utility import getLogger
 
 from ._tokenized_corpus_factory import create_corpus
@@ -24,7 +24,7 @@ def execute_workflow(
     filename_pattern: str = '*.*',
     count_threshold: int = None,
     tokens_transform_opts: TokensTransformOpts = None,
-    annotation_opts: AnnotationOpts = None,
+    extract_tokens_opts: ExtractTokensOpts = None,
     **_,
 ) -> VectorizedCorpus:
 
@@ -56,7 +56,7 @@ def execute_workflow(
         input_filename=input_filename,
         tokens_transform_opts=tokens_transform_opts,
         tokenizer_opts=tokenizer_opts,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
     )
 
     logger.info('Creating document-term matrix...')
@@ -79,7 +79,7 @@ def execute_workflow(
             'count_threshold': count_threshold,
             'tokenizer_opts': tokenizer_opts,
             'tokens_transform_opts': tokens_transform_opts.props,
-            'annotation_opts': annotation_opts.props if annotation_opts is not None else {},
+            'extract_tokens_opts': extract_tokens_opts.props if extract_tokens_opts is not None else {},
         },
     )
 

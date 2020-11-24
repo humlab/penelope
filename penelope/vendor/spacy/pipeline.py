@@ -5,7 +5,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import ExtractTokensOpts, TextReader, TextReaderOpts, TextSource, TextTransformOpts
+from penelope.corpus.readers import ExtractTokensOpts2, TextReader, TextReaderOpts, TextSource, TextTransformOpts
 from spacy.language import Language
 
 from .convert import dataframe_to_tokens, spacy_doc_to_annotated_dataframe, text_to_annotated_dataframe
@@ -44,7 +44,7 @@ class PipelinePayload:
     document_index: pd.DataFrame = None
 
     # NOT USED: token2id: Mapping = None
-    # NOT USED: annotation_opts: AnnotationOpts = None
+    # NOT USED: extract_tokens_opts: ExtractTokensOpts = None
     # NOT USED: tokens_transform_opts: TokensTransformOpts = None
     # NOT USED: extract_opts: Mapping = None
 
@@ -121,7 +121,7 @@ class SpacyPipeline:
     def spacy_to_dataframe(self, nlp: Language, attributes: List[str]) -> "SpacyPipeline":
         return self.add(SpacyToDataFrame(nlp=nlp, attributes=attributes))
 
-    def dataframe_to_tokens(self, extract_tokens_opts: ExtractTokensOpts) -> "SpacyPipeline":
+    def dataframe_to_tokens(self, extract_tokens_opts: ExtractTokensOpts2) -> "SpacyPipeline":
         return self.add(DataFrameToTokens(extract_word_opts=extract_tokens_opts))
 
     def tokens_to_text(self) -> "SpacyPipeline":
@@ -213,7 +213,7 @@ class SpacyToDataFrame(ITask):
 class DataFrameToTokens(ITask):
     """Extracts text from payload.content based on annotations etc. """
 
-    extract_word_opts: ExtractTokensOpts = None
+    extract_word_opts: ExtractTokensOpts2 = None
 
     def _resolve(self, payload: DocumentPayload) -> DocumentPayload:
 
@@ -256,7 +256,7 @@ def extract_text_to_vectorized_corpus(
     *,
     reader_opts: TextReaderOpts,
     transform_opts: TextTransformOpts,
-    extract_tokens_opts: ExtractTokensOpts,
+    extract_tokens_opts: ExtractTokensOpts2,
     vectorize_opts: VectorizeOpts,
     document_index: pd.DataFrame = None,
 ) -> VectorizedCorpus:

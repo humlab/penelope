@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 import pandas as pd
 import penelope.utility as utility
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from spacy.tokens import Doc
 from textacy.spacier.doc_extensions import to_terms_list
 
@@ -332,16 +332,16 @@ def extract_document_tokens(
     *,
     spacy_docs: Iterable[Doc],
     documents: pd.DataFrame,
-    annotation_opts: AnnotationOpts = None,
+    extract_tokens_opts: ExtractTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
 ) -> Iterable[Tuple[str, Iterable[str]]]:
 
-    target = "lemma" if annotation_opts.lemmatize else "text"
+    target = "lemma" if extract_tokens_opts.lemmatize else "text"
 
     tokens_stream = (
         ExtractPipeline.build(corpus=spacy_docs, target=target)
-        .pos(include_pos=annotation_opts.pos_includes, exclude_pos=annotation_opts.pos_excludes)
+        .pos(include_pos=extract_tokens_opts.pos_includes, exclude_pos=extract_tokens_opts.pos_excludes)
         .ingest_transform_opts(tokens_transform_opts)
         .ingest(**extract_args)
         .process()
@@ -355,7 +355,7 @@ def vectorize_textacy_corpus(
     *,
     spacy_docs: Iterable[Doc],
     documents: pd.DataFrame,
-    annotation_opts: AnnotationOpts = None,
+    extract_tokens_opts: ExtractTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
     vectorizer_args=None,
@@ -363,7 +363,7 @@ def vectorize_textacy_corpus(
     document_tokens = extract_document_tokens(
         spacy_docs=spacy_docs,
         documents=documents,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
         extract_args=extract_args,
     )

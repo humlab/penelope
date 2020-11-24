@@ -3,7 +3,7 @@ from typing import Iterable, List, Union
 import numpy as np
 import pandas as pd
 import spacy
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTokensOpts2
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -70,7 +70,7 @@ def texts_to_annotated_dataframes(
 TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 
 
-def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts) -> Iterable[str]:
+def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts2) -> Iterable[str]:
 
     target = TARGET_MAP.get(extract_opts.target, extract_opts.target)
 

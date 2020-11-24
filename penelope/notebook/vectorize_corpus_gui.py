@@ -4,7 +4,7 @@ from typing import Callable
 
 import ipyfilechooser
 import ipywidgets as widgets
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import PoS_TAGS_SCHEMES, default_data_folder, flatten, get_logger
@@ -105,7 +105,7 @@ class GUI:
 
     @property
     def annotations_opts(self):
-        return AnnotationOpts(
+        return ExtractTokensOpts(
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
             pos_excludes="|MAD|MID|PAD|",
             lemmatize=self.lemmatize.value,
@@ -266,7 +266,7 @@ def display_gui(
                     create_subfolder=gui.create_subfolder.value,
                     filename_field=gui.filename_fields.value,
                     count_threshold=gui.count_threshold.value,
-                    annotation_opts=gui.annotations_opts,
+                    extract_tokens_opts=gui.annotations_opts,
                     tokens_transform_opts=gui.tokens_transform_opts,
                 )
 

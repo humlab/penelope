@@ -3,7 +3,7 @@ import logging
 import os
 
 from lxml import etree
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +26,16 @@ class SparvXml2Text:
     def __init__(
         self,
         xslt_filename: str = None,
-        annotation_opts: AnnotationOpts = None,
+        extract_tokens_opts: ExtractTokensOpts = None,
         delimiter: str = " ",
     ):
-        self.annotation_opts = annotation_opts or AnnotationOpts()
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()
         self.xslt_filename = xslt_filename or XSLT_FILENAME
         self.xslt = etree.parse(self.xslt_filename)  # pylint: disable=I1101
         self.xslt_transformer = etree.XSLT(self.xslt)  # pylint: disable=I1101
         self.delimiter = snuttify(delimiter)
 
-        if len(self.annotation_opts.get_passthrough_tokens()) > 0:
+        if len(self.extract_tokens_opts.get_passthrough_tokens()) > 0:
             raise ValueError("use of passthrough not implemented for Sparv XML files")
 
     def transform(self, content):
@@ -47,7 +47,7 @@ class SparvXml2Text:
         return self._transform(xml)
 
     def _transform(self, xml):
-        _opts = self.annotation_opts
+        _opts = self.extract_tokens_opts
         _target = "'lemma'" if _opts.lemmatize is True else "'content'"
         _pos_includes = snuttify(_opts.pos_includes or "")
         _pos_excludes = snuttify(_opts.pos_excludes or "")

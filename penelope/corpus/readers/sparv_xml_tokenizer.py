@@ -3,7 +3,7 @@ import logging
 
 from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 
-from .interfaces import AnnotationOpts, TextSource
+from .interfaces import ExtractTokensOpts, TextSource
 from .text_tokenizer import TextTokenizer
 from .text_transformer import TextTransformer
 
@@ -17,7 +17,7 @@ class SparvXmlTokenizer(TextTokenizer):
         self,
         source: TextSource,
         *,
-        annotation_opts: AnnotationOpts = None,
+        extract_tokens_opts: ExtractTokensOpts = None,
         xslt_filename: str = None,
         version: int = 4,
         **tokenizer_opts,
@@ -28,7 +28,7 @@ class SparvXmlTokenizer(TextTokenizer):
         ----------
         source : TextSource
             Source (filename, ZIP, tokenizer)
-        annotation_opts : AnnotationOpts, optional
+        extract_tokens_opts : ExtractTokensOpts, optional
         xslt_filename : str, optional
             XSLT filename, by default None
         version : int, optional
@@ -55,12 +55,12 @@ class SparvXmlTokenizer(TextTokenizer):
         super().__init__(source, **tokenizer_opts)
 
         self.text_transformer = TextTransformer()
-        self.annotation_opts = annotation_opts or AnnotationOpts()
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()
         self.xslt_filename = XSLT_FILENAME_V3 if version == 3 else xslt_filename
         self.parser = SparvXml2Text(
             xslt_filename=self.xslt_filename,
             delimiter=self.delimiter,
-            annotation_opts=self.annotation_opts,
+            extract_tokens_opts=self.extract_tokens_opts,
         )
 
     def preprocess(self, content):
@@ -72,7 +72,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
         self,
         source: TextSource,
         *,
-        annotation_opts: AnnotationOpts = None,
+        extract_tokens_opts: ExtractTokensOpts = None,
         **tokenizer_opts,
     ):
         """Sparv v3 XML file reader
@@ -81,7 +81,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
         ----------
         source : TextSource
             Source (filename, folder, zip, list)
-        annotation_opts: AnnotationOpts, optional
+        extract_tokens_opts: ExtractTokensOpts, optional
         tokenizer_opts : Dict[str, Any]
             chunk_size : int
                 Optional chunking of text in chunk_size pieces
@@ -94,7 +94,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
         """
         super().__init__(
             source,
-            annotation_opts=annotation_opts,
+            extract_tokens_opts=extract_tokens_opts,
             xslt_filename=XSLT_FILENAME_V3,
             **tokenizer_opts,
         )

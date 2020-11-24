@@ -10,7 +10,7 @@ TextSource = Union[str, zipfile.ZipFile, List, Any]
 
 
 @dataclass
-class ExtractTokensOpts(PropsMixIn):
+class ExtractTokensOpts2(PropsMixIn):
     """Spacy document extract options"""
 
     target: str = "lemma"
@@ -24,7 +24,7 @@ class ExtractTokensOpts(PropsMixIn):
 
 
 @dataclass
-class AnnotationOpts:
+class ExtractTokensOpts:
 
     pos_includes: str = ''
     pos_excludes: str = "|MAD|MID|PAD|"

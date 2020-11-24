@@ -5,7 +5,7 @@ from typing import Callable
 import ipyfilechooser
 import ipywidgets as widgets
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import (
     PoS_TAGS_SCHEMES,
@@ -153,9 +153,9 @@ class GUI:
         )
 
     @property
-    def annotation_opts(self) -> AnnotationOpts:
+    def extract_tokens_opts(self) -> ExtractTokensOpts:
 
-        return AnnotationOpts(
+        return ExtractTokensOpts(
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
             pos_excludes="|MAD|MID|PAD|",
             lemmatize=self.lemmatize.value,
@@ -240,7 +240,7 @@ def display_gui(
                     count_threshold=gui.count_threshold.value,
                     partition_keys=partition_keys,
                     filename_field=filename_field,
-                    annotation_opts=gui.annotation_opts,
+                    extract_tokens_opts=gui.extract_tokens_opts,
                     tokens_transform_opts=gui.tokens_transform_opts,
                     store_vectorized=True,
                 )

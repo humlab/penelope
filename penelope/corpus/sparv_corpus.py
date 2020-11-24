@@ -5,7 +5,7 @@ from typing import Any, Dict
 from penelope.utility import store_to_archive
 
 from . import readers
-from .readers import AnnotationOpts
+from .readers import ExtractTokensOpts
 from .tokenized_corpus import TokenizedCorpus
 from .tokens_transformer import TokensTransformOpts
 
@@ -16,7 +16,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         source,
         version,
         *,
-        annotation_opts: AnnotationOpts = None,
+        extract_tokens_opts: ExtractTokensOpts = None,
         tokens_transform_opts: TokensTransformOpts = None,
         tokenizer_opts: Dict[str, Any] = None,
     ):
@@ -28,7 +28,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
             [description]
         version : [type]
             [description]
-        annotation_opts : AnnotationOpts, optional
+        extract_tokens_opts : ExtractTokensOpts, optional
             [description], by default None
         tokens_transform_opts :TokensTransformOpts, optional
             Passed to TokensTransformer:
@@ -62,7 +62,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         else:
             tokenizer = readers.SparvXmlTokenizer(
                 source,
-                annotation_opts=annotation_opts or AnnotationOpts(),
+                extract_tokens_opts=extract_tokens_opts or ExtractTokensOpts(),
                 xslt_filename=None,
                 version=version,
                 **(tokenizer_opts or {}),
@@ -84,7 +84,7 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         self,
         source,
         *,
-        annotation_opts: AnnotationOpts = None,
+        extract_tokens_opts: ExtractTokensOpts = None,
         tokens_transform_opts: TokensTransformOpts = None,
         tokenizer_opts: Dict[str, Any] = None,
     ):
@@ -93,7 +93,7 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         else:
             tokenizer = readers.SparvCsvTokenizer(
                 source,
-                annotation_opts=annotation_opts,
+                extract_tokens_opts=extract_tokens_opts,
                 **(tokenizer_opts or {}),
             )
         super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
@@ -103,7 +103,7 @@ def sparv_xml_extract_and_store(
     source: str,
     target: str,
     version: int,
-    annotation_opts: AnnotationOpts = None,
+    extract_tokens_opts: ExtractTokensOpts = None,
     tokenizer_opts=None,
     tokens_transform_opts: TokensTransformOpts = None,
 ):
@@ -114,7 +114,7 @@ def sparv_xml_extract_and_store(
     source : str
     target : str
     version : int
-    annotation_opts : AnnotationOpts, optional
+    extract_tokens_opts : ExtractTokensOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
@@ -144,7 +144,7 @@ def sparv_xml_extract_and_store(
     corpus = SparvTokenizedXmlCorpus(
         source,
         version,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokenizer_opts=tokenizer_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
@@ -155,7 +155,7 @@ def sparv_xml_extract_and_store(
 def sparv_csv_extract_and_store(
     source: str,
     target: str,
-    annotation_opts: AnnotationOpts = None,
+    extract_tokens_opts: ExtractTokensOpts = None,
     tokenizer_opts=None,
     tokens_transform_opts: TokensTransformOpts = None,
 ):
@@ -167,7 +167,7 @@ def sparv_csv_extract_and_store(
         [description]
     target : str
         [description]
-    annotation_opts : AnnotationOpts, optional
+    extract_tokens_opts : ExtractTokensOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
@@ -196,7 +196,7 @@ def sparv_csv_extract_and_store(
     """
     corpus = SparvTokenizedCsvCorpus(
         source,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokenizer_opts=tokenizer_opts,
         tokens_transform_opts=tokens_transform_opts,
     )

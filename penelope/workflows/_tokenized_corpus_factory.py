@@ -1,7 +1,7 @@
 from typing import Dict
 
 from penelope.corpus import SparvTokenizedCsvCorpus, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
-from penelope.corpus.readers import AnnotationOpts, TextTokenizer
+from penelope.corpus.readers import ExtractTokensOpts, TextTokenizer
 
 
 def create_corpus(
@@ -9,14 +9,14 @@ def create_corpus(
     input_filename: str,
     tokens_transform_opts: TokensTransformOpts,
     tokenizer_opts: Dict,
-    annotation_opts: AnnotationOpts,
+    extract_tokens_opts: ExtractTokensOpts,
     **_,
 ) -> TokenizedCorpus:
     return _ABSTRACT_FACTORY.get(corpus_type, NullCorpusFactory).create(
         input_filename=input_filename,
         tokens_transform_opts=tokens_transform_opts,
         tokenizer_opts=tokenizer_opts,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
     )
 
 
@@ -32,7 +32,7 @@ class TextTokenizedCorpusFactory:
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
         tokenizer_opts: Dict,
-        annotation_opts: AnnotationOpts,  # pylint: disable=unused-argument
+        extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
     ):
         corpus = TokenizedCorpus(
             TextTokenizer(
@@ -54,12 +54,12 @@ class SparvTokenizedCsvCorpusFactory:
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
         tokenizer_opts: Dict,
-        annotation_opts: AnnotationOpts,  # pylint: disable=unused-argument
+        extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
     ):
         corpus = SparvTokenizedCsvCorpus(
             source=input_filename,
             tokenizer_opts=tokenizer_opts,
-            annotation_opts=annotation_opts,
+            extract_tokens_opts=extract_tokens_opts,
             tokens_transform_opts=tokens_transform_opts,
         )
         return corpus

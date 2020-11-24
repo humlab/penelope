@@ -10,7 +10,7 @@ from penelope.co_occurrence.concept_co_occurrence import (
     to_vectorized_corpus,
 )
 from penelope.corpus import SparvTokenizedCsvCorpus
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
 from penelope.workflows import concept_co_occurrence_workflow
@@ -68,7 +68,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         concept={'jag'},
         context_width=2,
     )
-    annotation_opts = AnnotationOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=True)
+    extract_tokens_opts = ExtractTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=True)
     tokens_transform_opts = TokensTransformOpts(
         remove_stopwords=None,
         keep_symbols=True,
@@ -83,7 +83,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         partition_keys=['year'],
         filename_field=["year:_:1"],
         concept_opts=concept_opts,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 
@@ -98,7 +98,7 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_co
         tokenizer_opts=dict(
             filename_fields="year:_:1",
         ),
-        annotation_opts=AnnotationOpts(pos_includes='|NN|VB|', lemmatize=False),
+        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
 
     coo_df = partitioned_corpus_concept_co_occurrence(
@@ -122,7 +122,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         tokenizer_opts=dict(
             filename_fields="year:_:1",
         ),
-        annotation_opts=AnnotationOpts(pos_includes='|NN|VB|', lemmatize=False),
+        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
     coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
@@ -145,7 +145,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'filename_field': ('year:_:1',),
     }
     concept_opts = ConceptContextOpts(concept=('jag',), context_width=2)
-    annotation_opts = AnnotationOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
+    extract_tokens_opts = ExtractTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
     tokens_transform_opts = TokensTransformOpts(
         to_lower=True,
         min_len=1,
@@ -158,7 +158,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     concept_co_occurrence_workflow(
         **options,
         concept_opts=concept_opts,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 

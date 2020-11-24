@@ -1,7 +1,7 @@
 from typing import Any
 
 import click
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import getLogger
 from penelope.workflows import vectorize_corpus_workflow
@@ -96,10 +96,10 @@ def main(
         only_any_alphanumeric=only_any_alphanumeric,
     )
 
-    annotation_opts = None
+    extract_tokens_opts = None
     if corpus_type == 'sparv4-csv':
         file_pattern = '*.csv'
-        annotation_opts = AnnotationOpts(
+        extract_tokens_opts = ExtractTokensOpts(
             pos_includes=pos_includes,
             pos_excludes=pos_excludes,
             lemmatize=lemmatize,
@@ -116,7 +116,7 @@ def main(
         filename_field=filename_field,
         filename_pattern=file_pattern,
         count_threshold=count_threshold,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 

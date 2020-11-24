@@ -9,7 +9,7 @@ from penelope.co_occurrence import (
     store_co_occurrences,
     to_vectorized_corpus,
 )
-from penelope.corpus.readers import AnnotationOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, strip_path_and_extension
@@ -24,7 +24,7 @@ def execute_workflow(
     output_filename: str,
     *,
     concept_opts: ConceptContextOpts = None,
-    annotation_opts: AnnotationOpts = None,
+    extract_tokens_opts: ExtractTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     count_threshold: int = None,
     partition_keys: Tuple[str, List[str]],
@@ -53,7 +53,7 @@ def execute_workflow(
             Width of context i.e. distance to cencept word, by default None
     count_threshold : int, optional
         Word pair count threshold (entire corpus, by default None
-    annotation_opts : AnnotationOpts, optional
+    extract_tokens_opts : ExtractTokensOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
     filename_field : Any, optional
         Specifies fields to extract from document's filename, by default None
@@ -91,7 +91,7 @@ def execute_workflow(
     corpus = SparvTokenizedCsvCorpus(
         source=input_filename,
         tokenizer_opts=tokenizer_opts,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 
@@ -112,7 +112,7 @@ def execute_workflow(
         tokenizer_opts=tokenizer_opts,
         tokens_transform_opts=tokens_transform_opts,
         concept_opts=concept_opts,
-        annotation_opts=annotation_opts,
+        extract_tokens_opts=extract_tokens_opts,
     )
 
     return co_occurrences
@@ -129,7 +129,7 @@ def store_concept_co_occurrence_bundle(
     tokenizer_opts: Dict,
     tokens_transform_opts: TokensTransformOpts,
     concept_opts: ConceptContextOpts,
-    annotation_opts: AnnotationOpts,
+    extract_tokens_opts: ExtractTokensOpts,
 ):
 
     store_co_occurrences(output_filename, co_occurrences)
@@ -147,7 +147,7 @@ def store_concept_co_occurrence_bundle(
             'tokenizer_opts': tokenizer_opts,
             'concept_opts': concept_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
-            'annotation_opts': annotation_opts.props,
+            'extract_tokens_opts': extract_tokens_opts.props,
         }
 
         json.dump(store_options, json_file, indent=4)

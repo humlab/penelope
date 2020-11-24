@@ -3,7 +3,7 @@ import logging
 
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
-from .interfaces import AnnotationOpts, TextSource
+from .interfaces import ExtractTokensOpts, TextSource
 from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class SparvCsvTokenizer(TextTokenizer):
         self,
         source: TextSource,
         *,
-        annotation_opts: AnnotationOpts = None,
+        extract_tokens_opts: ExtractTokensOpts = None,
         **tokenizer_opts,
     ):
         """[summary]
@@ -25,7 +25,7 @@ class SparvCsvTokenizer(TextTokenizer):
         ----------
         source : [type]
             [description]
-        annotation_opts : AnnotationOpts, optional
+        extract_tokens_opts : ExtractTokensOpts, optional
         tokenizer_opts : Dict[str, Any]
             Optional chunking of text in chunk_size pieces
             filename_pattern : str
@@ -45,8 +45,8 @@ class SparvCsvTokenizer(TextTokenizer):
             **{**dict(tokenize=lambda x: x.split(), filename_pattern='*.csv'), **tokenizer_opts},
         )
 
-        self.annotation_opts = annotation_opts or AnnotationOpts()
-        self.parser = SparvCsvToText(delimiter=self.delimiter, annotation_opts=self.annotation_opts)
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()
+        self.parser = SparvCsvToText(delimiter=self.delimiter, extract_tokens_opts=self.extract_tokens_opts)
 
     def preprocess(self, content):
         return self.parser.transform(content)
