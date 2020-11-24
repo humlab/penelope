@@ -218,13 +218,13 @@ def test_extract_tokens_lemma_no_stops_succeeds(df_doc):
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc):
-    extract_opts = ExtractTokensOpts2(target="lemma", include_pos={'PROPN'})
+    extract_opts = ExtractTokensOpts2(target="lemma", pos_includes='|PROPN|')
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['Mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc):
-    extract_opts = ExtractTokensOpts2(target="text", include_pos={'VERB', 'NOUN'})
+    extract_opts = ExtractTokensOpts2(target="text", pos_includes='|VERB|NOUN|')
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['seas', 'oceans', 'life']
 
@@ -294,7 +294,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
     attributes = ['text', 'lemma_', 'pos_']
     extract_text_opts = ExtractTokensOpts2(
         target="lemma",
-        include_pos={'VERB', 'NOUN'},
+        pos_includes='|VERB|NOUN|',
     )
     pipeline = (
         SpacyPipeline(payload=payload)
@@ -326,8 +326,8 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
 
     attributes = ['text', 'lemma_', 'pos_']
     filter_tokens_opts = ExtractTokensOpts2(
-        target="lemma",
-        include_pos={'VERB', 'NOUN'},
+        lemmatize=True,
+        pos_includes='|VERB|NOUN|',
     )
     vectorize_opts = VectorizeOpts(verbose=True)
 

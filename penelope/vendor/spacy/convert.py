@@ -74,6 +74,12 @@ def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts2) -> 
 
     target = TARGET_MAP.get(extract_opts.target, extract_opts.target)
 
+    if extract_opts.lemmatize:
+        target = "_lemma"
+    else:
+        if not extract_opts.lemmatize and target == "_lemma":
+            target = "text"
+
     if target not in doc.columns:
         raise ValueError(f"{extract_opts.target} is not valid target for given document (missing column)")
 
@@ -101,11 +107,11 @@ def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts2) -> 
 
     if "pos_" in doc.columns:
 
-        if len(extract_opts.include_pos or set()) > 0:
-            mask &= doc.pos_.isin(extract_opts.include_pos)
+        if len(extract_opts.get_pos_includes() or set()) > 0:
+            mask &= doc.pos_.isin(extract_opts.get_pos_includes())
 
-        if len(extract_opts.exclude_pos or set()) > 0:
-            mask &= ~(doc.pos_.isin(extract_opts.exclude_pos))
+        if len(extract_opts.get_pos_excludes() or set()) > 0:
+            mask &= ~(doc.pos_.isin(extract_opts.get_pos_excludes()))
 
     return doc.loc[mask][target].tolist()
 
