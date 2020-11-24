@@ -74,7 +74,7 @@ def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts) -> I
 
     target = TARGET_MAP.get(extract_opts.target, extract_opts.target)
 
-    if not target in doc.columns:
+    if target not in doc.columns:
         raise ValueError(f"{extract_opts.target} is not valid target for given document (missing column)")
 
     mask = np.repeat(True, len(doc.index))

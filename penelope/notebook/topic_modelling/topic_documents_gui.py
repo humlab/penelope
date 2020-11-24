@@ -139,7 +139,7 @@ def display_gui(state: TopicModelContainer):
                 topic_id=gui.topic_id.value,
             )
 
-            if not documents is None:
+            if documents is not None:
                 display(documents)
 
     _gui = GUI().setup(n_topics=state.num_topics, callback=display_callback)
