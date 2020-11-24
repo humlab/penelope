@@ -3,8 +3,9 @@ import logging
 from typing import Callable, List, Sequence, Union
 
 import pandas as pd
-from penelope.corpus.readers import ICorpusReader
 from penelope.utility import IndexOfSplitOrCallableOrRegExp, create_iterator, extract_filenames_fields, list_filenames
+
+from .interfaces import ICorpusReader
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 

@@ -1,15 +1,14 @@
 import abc
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Iterable, List, Mapping, Sequence, Union
+from typing import Any, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import TextReader
-from penelope.corpus.readers.interfaces import TextSource
+from penelope.corpus.readers import ExtractTokensOpts, TextReader, TextReaderOpts, TextSource, TextTransformOpts
 from spacy.language import Language
 
-from .extract import ExtractTextOpts, dataframe_to_tokens, spacy_doc_to_annotated_dataframe, text_to_annotated_dataframe
+from .convert import dataframe_to_tokens, spacy_doc_to_annotated_dataframe, text_to_annotated_dataframe
 
 
 class ContentType(Enum):
@@ -113,19 +112,8 @@ class SpacyPipeline:
         self.tasks.extend(map(lambda x: x.hookup(self), tasks))
         return self
 
-    def load(
-        self,
-        filename_pattern: str = "*.txt",
-        filename_filter: List[str] = None,
-        filename_fields: List[str] = None,
-    ) -> "SpacyPipeline":
-        return self.add(
-            LoadText(
-                filename_pattern=filename_pattern,
-                filename_filter=filename_filter,
-                filename_fields=filename_fields,
-            )
-        )
+    def load(self, reader_opts: TextReaderOpts, transform_opts: TextTransformOpts = None) -> "SpacyPipeline":
+        return self.add(LoadText(reader_opts=reader_opts, transform_opts=transform_opts))
 
     def text_to_spacy(self, nlp: Language) -> "SpacyPipeline":
         return self.add(TextToSpacy(nlp=nlp))
@@ -133,8 +121,8 @@ class SpacyPipeline:
     def spacy_to_dataframe(self, nlp: Language, attributes: List[str]) -> "SpacyPipeline":
         return self.add(SpacyToDataFrame(nlp=nlp, attributes=attributes))
 
-    def dataframe_to_tokens(self, extract_text_opts: ExtractTextOpts) -> "SpacyPipeline":
-        return self.add(DataFrameToTokens(extract_word_opts=extract_text_opts))
+    def dataframe_to_tokens(self, extract_tokens_opts: ExtractTokensOpts) -> "SpacyPipeline":
+        return self.add(DataFrameToTokens(extract_word_opts=extract_tokens_opts))
 
     def tokens_to_text(self) -> "SpacyPipeline":
         return self.add(TokensToText())
@@ -149,20 +137,18 @@ class LoadText(ITask):
     Also loads a document_index, and/or extracts value fields from filenames
     """
 
-    filename_pattern: str = "*.txt"
-    filename_filter: Union[List[str], Callable] = None
-    filename_fields: List[str] = None
+    reader_opts: TextReaderOpts = None
+    transform_opts: TextReaderOpts = None
 
     def setup(self):
 
         text_reader: TextReader = (
             self.pipeline.payload.source
             if isinstance(self.pipeline.payload.source, TextReader)
-            else TextReader(
+            else TextReader.create(
                 source=self.pipeline.payload.source,
-                filename_pattern=self.filename_pattern,
-                filename_filter=self.filename_filter,
-                filename_fields=self.filename_fields,
+                reader_opts=self.reader_opts,
+                transform_opts=(self.transform_opts or TextTransformOpts()),
             )
         )
         self.load_document_index(reader_index=text_reader.document_index)
@@ -227,7 +213,7 @@ class SpacyToDataFrame(ITask):
 class DataFrameToTokens(ITask):
     """Extracts text from payload.content based on annotations etc. """
 
-    extract_word_opts: ExtractTextOpts = None
+    extract_word_opts: ExtractTokensOpts = None
 
     def _resolve(self, payload: DocumentPayload) -> DocumentPayload:
 
@@ -262,3 +248,29 @@ class TextToDTM(ITask):
 
     def _resolve(self, payload: DocumentPayload) -> DocumentPayload:
         return None
+
+
+def extract_text_to_vectorized_corpus(
+    source: TextSource,
+    nlp: Language,
+    *,
+    reader_opts: TextReaderOpts,
+    transform_opts: TextTransformOpts,
+    extract_tokens_opts: ExtractTokensOpts,
+    vectorize_opts: VectorizeOpts,
+    document_index: pd.DataFrame = None,
+) -> VectorizedCorpus:
+    payload = PipelinePayload(source=source, document_index=document_index)
+    pipeline = (
+        SpacyPipeline(payload=payload)
+        .load(reader_opts=reader_opts, transform_opts=transform_opts)
+        .text_to_spacy(nlp=nlp)
+        .spacy_to_dataframe(nlp=nlp, attributes=['text', 'lemma_', 'pos_'])
+        .dataframe_to_tokens(extract_tokens_opts=extract_tokens_opts)
+        .tokens_to_text()
+        .to_dtm(vectorize_opts)
+    )
+
+    corpus = pipeline.resolve()
+
+    return corpus

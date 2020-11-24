@@ -1,11 +1,15 @@
 import pandas as pd
 import pytest
 import spacy
-from penelope.corpus import VectorizeOpts
-from penelope.corpus.readers import TextReader, streamify_text_source
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
-from penelope.vendor.spacy.extract import (
-    ExtractTextOpts,
+from penelope.corpus import VectorizedCorpus, VectorizeOpts
+from penelope.corpus.readers import (
+    ExtractTokensOpts,
+    TextReader,
+    TextReaderOpts,
+    TextTransformOpts,
+    streamify_text_source,
+)
+from penelope.vendor.spacy.convert import (
     dataframe_to_tokens,
     text_to_annotated_dataframe,
     texts_to_annotated_dataframes,
@@ -174,7 +178,7 @@ def df_doc() -> Language:
 
 def test_extract_tokens_when_punct_filter_enables_succeeds(df_doc):
 
-    extract_opts = ExtractTextOpts(target="lemma", is_punct=True, is_space=False)
+    extract_opts = ExtractTokensOpts(target="lemma", is_punct=True, is_space=False)
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == [
         'Mars',
@@ -196,31 +200,31 @@ def test_extract_tokens_when_punct_filter_enables_succeeds(df_doc):
 
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc):
 
-    extract_opts = ExtractTextOpts(target="lemma", is_punct=False, is_space=False)
+    extract_opts = ExtractTokensOpts(target="lemma", is_punct=False, is_space=False)
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['Mars', 'be', 'once', 'home', 'to', 'sea', 'and', 'ocean', 'and', 'perhaps', 'even', 'life']
 
 
 def test_extract_tokens_target_text_succeeds(df_doc):
-    extract_opts = ExtractTextOpts(target="text", is_punct=False, is_space=False)
+    extract_opts = ExtractTokensOpts(target="text", is_punct=False, is_space=False)
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ["Mars", "was", "once", "home", "to", "seas", "and", "oceans", "and", "perhaps", "even", "life"]
 
 
 def test_extract_tokens_lemma_no_stops_succeeds(df_doc):
-    extract_opts = ExtractTextOpts(target="lemma", is_stop=False, is_punct=False, is_space=False)
+    extract_opts = ExtractTokensOpts(target="lemma", is_stop=False, is_punct=False, is_space=False)
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['Mars', 'home', 'sea', 'ocean', 'life']
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc):
-    extract_opts = ExtractTextOpts(target="lemma", include_pos={'PROPN'})
+    extract_opts = ExtractTokensOpts(target="lemma", include_pos={'PROPN'})
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['Mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc):
-    extract_opts = ExtractTextOpts(target="text", include_pos={'VERB', 'NOUN'})
+    extract_opts = ExtractTokensOpts(target="text", include_pos={'VERB', 'NOUN'})
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['seas', 'oceans', 'life']
 
@@ -238,9 +242,10 @@ def dummy_source():
 
 
 def test_spacy_pipeline_load_text_resolves():
+    reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
     payload = PipelinePayload(source=source, document_index=None)
-    pipeline = SpacyPipeline(payload=payload).load(filename_pattern="*.txt", filename_fields="year:_:1")
+    pipeline = SpacyPipeline(payload=payload).load(reader_opts=reader_opts)
 
     payloads = [x.content for x in pipeline.resolve()]
 
@@ -250,13 +255,10 @@ def test_spacy_pipeline_load_text_resolves():
 
 
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
+    reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
     payload = PipelinePayload(source=source, document_index=None)
-    pipeline = (
-        SpacyPipeline(payload=payload)
-        .load(filename_pattern="*.txt", filename_fields="year:_:1")
-        .text_to_spacy(nlp=en_nlp)
-    )
+    pipeline = SpacyPipeline(payload=payload).load(reader_opts=reader_opts).text_to_spacy(nlp=en_nlp)
 
     payloads = [x.content for x in pipeline.resolve()]
 
@@ -264,12 +266,13 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
-    reader = TextReader(TEST_CORPUS, filename_pattern="*.txt", filename_fields="year:_:1")
+    reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts)
     payload = PipelinePayload(source=reader, document_index=None)
     attributes = ['text', 'lemma_', 'pos_']
     pipeline = (
         SpacyPipeline(payload=payload)
-        .load(filename_pattern="*.txt", filename_fields="year:_:1")
+        .load(reader_opts=reader_opts)
         .text_to_spacy(nlp=en_nlp)
         .spacy_to_dataframe(en_nlp, attributes=attributes)
     )
@@ -282,19 +285,23 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp):
-    reader = TextReader(TEST_CORPUS, filename_pattern="*.txt", filename_fields="year:_:1")
+
+    reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
+    transform_opts = TextTransformOpts()
+    reader = TextReader.create(TEST_CORPUS, reader_opts, transform_opts)
+
     payload = PipelinePayload(source=reader, document_index=None)
     attributes = ['text', 'lemma_', 'pos_']
-    extract_text_opts = ExtractTextOpts(
+    extract_text_opts = ExtractTokensOpts(
         target="lemma",
         include_pos={'VERB', 'NOUN'},
     )
     pipeline = (
         SpacyPipeline(payload=payload)
-        .load(filename_pattern="*.txt", filename_fields="year:_:1")
+        .load(reader_opts=reader_opts)
         .text_to_spacy(nlp=en_nlp)
         .spacy_to_dataframe(en_nlp, attributes=attributes)
-        .dataframe_to_tokens(extract_text_opts=extract_text_opts)
+        .dataframe_to_tokens(extract_tokens_opts=extract_text_opts)
     )
 
     payloads = [x.content for x in pipeline.resolve()]
@@ -312,20 +319,26 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(en_nlp):
-    reader = TextReader(TEST_CORPUS, filename_pattern="*.txt", filename_fields="year:_:1")
-    payload = PipelinePayload(source=reader, document_index=None)
+
+    reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
+    transform_opts = TextTransformOpts()
+    reader = TextReader.create(TEST_CORPUS, reader_opts, transform_opts)
+
     attributes = ['text', 'lemma_', 'pos_']
-    extract_text_opts = ExtractTextOpts(
+    filter_tokens_opts = ExtractTokensOpts(
         target="lemma",
         include_pos={'VERB', 'NOUN'},
     )
     vectorize_opts = VectorizeOpts(verbose=True)
+
+    payload = PipelinePayload(source=reader, document_index=None)
+
     pipeline = (
         SpacyPipeline(payload=payload)
-        .load(filename_pattern="*.txt", filename_fields="year:_:1")
+        .load(reader_opts=reader_opts, transform_opts=transform_opts)
         .text_to_spacy(nlp=en_nlp)
         .spacy_to_dataframe(en_nlp, attributes=attributes)
-        .dataframe_to_tokens(extract_text_opts=extract_text_opts)
+        .dataframe_to_tokens(extract_tokens_opts=filter_tokens_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
     )

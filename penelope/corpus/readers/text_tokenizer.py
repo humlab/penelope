@@ -1,12 +1,10 @@
 import logging
 from typing import Callable, Iterable, List, Sequence, Tuple, Union
 
-from penelope.corpus.readers.interfaces import TextSource
-from penelope.corpus.readers.text_reader import TextReader
-from penelope.utility import IndexOfSplitOrCallableOrRegExp, strip_path_and_extension
-from penelope.utility.filename_utils import path_add_sequence
+from penelope.utility import IndexOfSplitOrCallableOrRegExp, path_add_sequence, strip_path_and_extension
 from penelope.vendor.nltk import word_tokenize
 
+from .text_reader import TextReader, TextSource
 from .text_transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)

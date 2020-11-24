@@ -6,12 +6,12 @@ from typing import Any, Callable, Dict, Iterable, Sequence, Tuple, Union
 import pandas as pd
 from penelope.utility import (
     IndexOfSplitOrCallableOrRegExp,
+    PropsMixIn,
     extract_filenames_fields,
     filename_satisfied_by,
     list_filenames,
     strip_paths,
 )
-from penelope.utility.mixins import PropsMixIn
 
 from .interfaces import ICorpusReader, TextSource
 from .streamify_text_source import streamify_text_source
@@ -38,8 +38,10 @@ class TextReader(ICorpusReader):
     """
 
     @staticmethod
-    def create(source: TextSource, reader_opts: TextReaderOpts, transform_opts: TextTransformOpts) -> "TextReader":
-        return TextReader(source=source, **reader_opts.props, **transform_opts.props)
+    def create(
+        source: TextSource, *, reader_opts: TextReaderOpts, transform_opts: TextTransformOpts = None
+    ) -> "TextReader":
+        return TextReader(source=source, **reader_opts.props, text_transform_opts=transform_opts)
 
     def __init__(
         self,
@@ -72,10 +74,7 @@ class TextReader(ICorpusReader):
         self._filename_filter = filename_filter
         self._filename_fields = filename_fields
         self._filename_pattern = filename_pattern
-
-        text_transform_opts = text_transform_opts or TextTransformOpts()
-
-        self.text_transformer = TextTransformer(text_transform_opts=text_transform_opts)
+        self.text_transformer = TextTransformer(text_transform_opts=text_transform_opts or TextTransformOpts())
         self._iterator = None
         self._all_filenames = list_filenames(source, filename_pattern=filename_pattern, filename_filter=None)
         self._all_metadata = self._create_all_metadata()

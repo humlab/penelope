@@ -1,9 +1,7 @@
 from typing import Dict
 
-from penelope.corpus import TextTransformOpts, TokenizedCorpus, TokensTransformOpts
-from penelope.corpus.readers import TextTokenizer
-from penelope.corpus.readers.option_objects import AnnotationOpts
-from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+from penelope.corpus import SparvTokenizedCsvCorpus, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
+from penelope.corpus.readers import AnnotationOpts, TextTokenizer
 
 
 def create_corpus(

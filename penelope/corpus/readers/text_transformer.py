@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, List
 
 import ftfy
@@ -25,7 +25,7 @@ class TextTransformOpts:
     fix_accents: bool = False
     fix_unicode: bool = False
 
-    extra_transforms: List[Callable] = []
+    extra_transforms: List[Callable] = field(default_factory=list)
 
     @property
     def props(self):

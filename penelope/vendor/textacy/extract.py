@@ -5,9 +5,8 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 
 import pandas as pd
 import penelope.utility as utility
-from penelope.corpus.readers.option_objects import AnnotationOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.corpus.vectorizer import CorpusVectorizer
+from penelope.corpus import CorpusVectorizer, TokensTransformOpts
+from penelope.corpus.readers import AnnotationOpts
 from spacy.tokens import Doc
 from textacy.spacier.doc_extensions import to_terms_list
 
