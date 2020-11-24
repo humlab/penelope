@@ -1,5 +1,5 @@
 from .interfaces import ICorpus, ITokenizedCorpus
-from .readers import TEXT_TRANSFORMS, AnnotationOpts, TextTransformer, TextTransformOpts
+from .readers import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (
     SparvTokenizedCsvCorpus,
