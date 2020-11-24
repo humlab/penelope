@@ -14,7 +14,7 @@ from penelope.vendor.spacy.convert import (
     text_to_annotated_dataframe,
     texts_to_annotated_dataframes,
 )
-from penelope.vendor.spacy.pipeline import PipelinePayload, SpacyPipeline
+from penelope.vendor.spacy.pipeline import PipelinePayload, SpacyPipeline, extract_text_to_vectorized_corpus
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -319,6 +319,35 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(en_nlp):
+
+    reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
+    transform_opts = TextTransformOpts()
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
+
+    attributes = ['text', 'lemma_', 'pos_']
+    filter_tokens_opts = ExtractTokensOpts2(
+        lemmatize=True,
+        pos_includes='|VERB|NOUN|',
+    )
+    vectorize_opts = VectorizeOpts(verbose=True)
+
+    payload = PipelinePayload(source=reader, document_index=None)
+
+    pipeline = (
+        SpacyPipeline(payload=payload)
+        .load(reader_opts=reader_opts, transform_opts=transform_opts)
+        .text_to_spacy(nlp=en_nlp)
+        .spacy_to_dataframe(en_nlp, attributes=attributes)
+        .dataframe_to_tokens(extract_tokens_opts=filter_tokens_opts)
+        .tokens_to_text()
+        .to_dtm(vectorize_opts)
+    )
+
+    corpus = pipeline.resolve()
+
+    assert isinstance(corpus, VectorizedCorpus)
+
+def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     transform_opts = TextTransformOpts()

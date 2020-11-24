@@ -121,6 +121,9 @@ class SpacyPipeline:
     def spacy_to_dataframe(self, nlp: Language, attributes: List[str]) -> "SpacyPipeline":
         return self.add(SpacyToDataFrame(nlp=nlp, attributes=attributes))
 
+    def spacy_to_pos_dataframe(self, nlp: Language) -> "SpacyPipeline":
+        return self.add(SpacyToDataFrame(nlp=nlp, attributes=['text', 'lemma_', 'pos_']))
+
     def dataframe_to_tokens(self, extract_tokens_opts: ExtractTokensOpts2) -> "SpacyPipeline":
         return self.add(DataFrameToTokens(extract_word_opts=extract_tokens_opts))
 
@@ -138,7 +141,7 @@ class LoadText(ITask):
     """
 
     reader_opts: TextReaderOpts = None
-    transform_opts: TextReaderOpts = None
+    transform_opts: TextTransformOpts = None
 
     def setup(self):
 
