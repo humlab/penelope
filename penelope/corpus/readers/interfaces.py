@@ -18,7 +18,7 @@ class ExtractTokensOpts2(PropsMixIn):
     pos_includes: str = ''
     pos_excludes: str = ""
 
-    target: str = "lemma"             # Ignored if lemmatize is True
+    target: str = "lemma"  # Ignored if lemmatize is True
 
     def get_pos_includes(self):
         return self.pos_includes.strip('|').split('|') if self.pos_includes else None
@@ -45,7 +45,9 @@ class ExtractTokensOpts2(PropsMixIn):
             is_space=self.is_space,
             is_punct=self.is_punct,
             is_digit=self.is_digit,
-            is_stop=self.is_stop,        )
+            is_stop=self.is_stop,
+        )
+
 
 @dataclass
 class ExtractTokensOpts:
