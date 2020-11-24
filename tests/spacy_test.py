@@ -288,7 +288,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts, transform_opts)
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
     payload = PipelinePayload(source=reader, document_index=None)
     attributes = ['text', 'lemma_', 'pos_']
@@ -322,7 +322,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts, transform_opts)
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
     attributes = ['text', 'lemma_', 'pos_']
     filter_tokens_opts = ExtractTokensOpts(
