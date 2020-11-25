@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Callable, List, Sequence, Union
 
 import pandas as pd
-from penelope.utility import IndexOfSplitOrCallableOrRegExp, create_iterator, extract_filenames_fields, list_filenames
+from penelope.corpus.readers.text_reader import TextReaderOpts
+from penelope.utility import create_iterator, extract_filenames_metadata, list_filenames, metadata_to_document_index
 
 from .interfaces import ICorpusReader
 
@@ -13,43 +13,30 @@ logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=lo
 class ZipTextIterator(ICorpusReader):
     """Iterator that returns filename and content for each matching file in archive."""
 
-    def __init__(
-        self,
-        source_path: str,
-        *,
-        filename_pattern: str = "*.txt",
-        filename_filter: Union[List[str], Callable] = None,
-        filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
-        as_binary: bool = False,
-    ):
+    def __init__(self, source_path: str, reader_opts: TextReaderOpts):
         """Iterates a text corpus stored as textfiles in a zip archive
         Parameters
         ----------
         source_path : str
             [description]
-        filename_pattern : str
+        reader_opts : TextReaderOpts
             [description]
-        filename_filter : List[str], optional
-            [description], by default None
-        filename_fields: Sequence[file_utility.IndexOfSplitOrCallableOrRegExp],
-            [description], by default None
-        as_binary : bool, optional
-            If true then files are opened as `rb` and no decoding, by default False
         """
+        self.reader_opts = reader_opts
         self.source_path = source_path
         self._filenames = list_filenames(
-            source_path, filename_pattern=filename_pattern, filename_filter=filename_filter
+            source_path,
+            filename_pattern=self.reader_opts.filename_pattern,
+            filename_filter=self.reader_opts.filename_filter,
         )
-        self.filename_fields = filename_fields
         self._metadata = None
-        self.as_binary = as_binary
         self.iterator = None
 
     def _create_metadata(self):
-        return extract_filenames_fields(filenames=self.filenames, filename_fields=self.filename_fields)
+        return extract_filenames_metadata(filenames=self.filenames, filename_fields=self.reader_opts.filename_fields)
 
     def _create_iterator(self):
-        return create_iterator(self.source_path, filenames=self.filenames, as_binary=self.as_binary)
+        return create_iterator(self.source_path, filenames=self.filenames, as_binary=self.reader_opts.as_binary)
 
     @property
     def filenames(self):
@@ -62,11 +49,8 @@ class ZipTextIterator(ICorpusReader):
         return self._metadata
 
     @property
-    def document_index(self):
-        _document_index: pd.DataFrame = pd.DataFrame(self.metadata)
-        if 'document_id' not in _document_index:
-            _document_index['document_id'] = list(_document_index.index)
-        return _document_index
+    def document_index(self) -> pd.DataFrame:
+        return metadata_to_document_index(self.metadata, self.reader_opts.filename_fields_key)
 
     def __iter__(self):
         return self

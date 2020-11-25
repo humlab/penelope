@@ -1,12 +1,15 @@
-from typing import List
-
 import pandas as pd
-import penelope.utility as utility
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.tokenized_corpus import ReiterableTerms
+from penelope.utility import metadata_to_document_index
+from penelope.utility.filename_fields import extract_filenames_metadata
 
 
 class SimpleTestCorpus:
-    def __init__(self, filename: str, filename_fields: List[str] = None):
+    def __init__(self, filename: str, reader_opts: TextReaderOpts):
+
+        filename_fields = reader_opts.filename_fields
+        filename_fields_key = reader_opts.filename_fields_key
 
         with open(filename, 'r') as f:
             lines = f.readlines()
@@ -20,16 +23,9 @@ class SimpleTestCorpus:
         self.filenames = [x['filename'] for x in self.corpus_data]
         self.iterator = None
 
-        metadata = {'filename': self.filenames, 'title': [x['title'] for x in self.corpus_data]}
-
-        if filename_fields is not None:
-
-            filename_data = [utility.extract_filename_fields(filename, filename_fields) for filename in self.filenames]
-            metadata = {**metadata, **utility.list_of_dicts_to_dict_of_lists(filename_data)}
-
-        self.documents = pd.DataFrame(data=metadata)
-        if 'document_id' not in self.documents.columns:
-            self.documents['document_id'] = self.documents.index
+        metadata = extract_filenames_metadata(filenames=self.filenames, filename_fields=filename_fields)
+        self.documents: pd.DataFrame = metadata_to_document_index(metadata, filename_fields_key)
+        self.documents['title'] = [x['title'] for x in self.corpus_data]
 
     @property
     def terms(self):

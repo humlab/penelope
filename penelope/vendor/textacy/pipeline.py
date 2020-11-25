@@ -8,8 +8,8 @@ import pandas as pd
 import penelope.vendor.textacy as textacy_utility
 import textacy
 from penelope.corpus import preprocess_text_corpus
-from penelope.corpus.readers import ZipTextIterator
-from penelope.utility import IndexOfSplitOrCallableOrRegExp, path_add_suffix
+from penelope.corpus.readers import TextReaderOpts, ZipTextIterator
+from penelope.utility import path_add_suffix
 from spacy.language import Language as SpacyLanguage
 
 
@@ -27,8 +27,7 @@ class TextacyCorpusPipeline:
         tasks: Sequence[ITask] = None,
         disables: str = "ner,",
         force: bool = False,
-        filename_pattern: str = '*.txt',
-        filename_fields: List[IndexOfSplitOrCallableOrRegExp],
+        reader_opts: TextReaderOpts,
     ):
 
         self.filename = filename
@@ -39,8 +38,7 @@ class TextacyCorpusPipeline:
         self.corpus: textacy.Corpus = None
         self.force = force
         self.suffix = '_preprocessed'
-        self.filename_pattern = filename_pattern
-        self.filename_fields = filename_fields
+        self.reader_opts = reader_opts
 
     def process(self) -> TextacyCorpusPipeline:
         for task in self._tasks:
@@ -73,7 +71,8 @@ class ITask(abc.ABC):
 class CreateTask(ITask):
     def execute(self, pipeline: TextacyCorpusPipeline):
         stream = ZipTextIterator(
-            pipeline.filename, filename_pattern=pipeline.filename_pattern, filename_fields=pipeline.filename_fields
+            pipeline.filename,
+            reader_opts=pipeline.reader_opts,
         )
         extra_metadata = pipeline.documents.to_dict('records')
         pipeline.corpus = textacy_utility.create_corpus(stream, pipeline.nlp, extra_metadata=extra_metadata)

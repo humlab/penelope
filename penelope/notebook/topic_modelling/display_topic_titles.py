@@ -110,9 +110,10 @@ class DisplayPandasGUI:  # pylint: disable=too-many-instance-attributes
         return VBox((HBox((self.count_slider, self.search_text, self.download_button)), self.output))
 
     def download(self, *_):
-        js_download = create_js_download(self.reduced_topics, index=True)
-        if js_download is not None:
-            IPython_display(js_download)
+        with self.output:
+            js_download = create_js_download(self.reduced_topics, index=True)
+            if js_download is not None:
+                IPython_display(js_download)
 
     def update(self, *_):
 

@@ -11,6 +11,7 @@ from penelope.co_occurrence.concept_co_occurrence import (
 )
 from penelope.corpus import SparvTokenizedCsvCorpus
 from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
 from penelope.workflows import concept_co_occurrence_workflow
@@ -95,7 +96,7 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_co
 
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
-        reader_opts=dict(
+        reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
@@ -119,7 +120,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
     n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
-        reader_opts=dict(
+        reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),

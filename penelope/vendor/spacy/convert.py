@@ -72,16 +72,16 @@ TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 
 def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts2) -> Iterable[str]:
 
-    target = TARGET_MAP.get(extract_opts.target, extract_opts.target)
+    if extract_opts.lemmatize is None and extract_opts.target_override is None:
+        raise ValueError("a valid target not supplied (no lemmatize or target")
 
-    if extract_opts.lemmatize:
-        target = "_lemma"
+    if extract_opts.target_override:
+        target = TARGET_MAP.get(extract_opts.target_override, extract_opts.target_override)
     else:
-        if not extract_opts.lemmatize and target == "_lemma":
-            target = "text"
+        target = "lemma_" if extract_opts.lemmatize else "text"
 
     if target not in doc.columns:
-        raise ValueError(f"{extract_opts.target} is not valid target for given document (missing column)")
+        raise ValueError(f"{extract_opts.target_override} is not valid target for given document (missing column)")
 
     mask = np.repeat(True, len(doc.index))
 

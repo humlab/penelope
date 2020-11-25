@@ -1,5 +1,6 @@
 import penelope.corpus.readers as readers
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 
 from . import utils as test_utils
@@ -40,8 +41,7 @@ def create_corpus():
 
 
 def test_create_text_tokenizer_smoke_test():
-    kwargs = {}
-    reader = readers.TextTokenizer(test_utils.TEST_CORPUS_FILENAME, **kwargs)
+    reader = readers.TextTokenizer(test_utils.TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert reader is not None
     assert next(reader) is not None
 

@@ -7,6 +7,7 @@ import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import penelope.corpus.tokenized_corpus as tokenized_corpus
 import penelope.topic_modelling as topic_modelling
 from penelope.corpus import TextTransformOpts, TokensTransformOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -122,11 +123,13 @@ def run_model(
 
     tokenizer = text_tokenizer.TextTokenizer(
         source=corpus_filename,
+        transform_opts=TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True),
+        reader_opts=TextReaderOpts(
+            filename_pattern="*.txt",
+            filename_filter=None,
+            filename_fields=filename_field,
+        ),
         chunk_size=None,
-        filename_pattern="*.txt",
-        filename_filter=None,
-        text_transform_opts=TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True),
-        filename_fields=filename_field,
     )
 
     corpus = tokenized_corpus.TokenizedCorpus(reader=tokenizer, tokens_transform_opts=transformer_opts)

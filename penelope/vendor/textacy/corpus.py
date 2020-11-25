@@ -4,17 +4,25 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import pandas as pd
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
-import penelope.utility as utility
 import textacy
 from penelope.corpus import TextTransformOpts
-from penelope.corpus.readers.interfaces import ICorpusReader
+from penelope.corpus.readers.interfaces import ICorpusReader, TextReaderOpts
+from penelope.utility import (
+    IndexOfSplitOrCallableOrRegExp,
+    extract_filename_metadata,
+    getLogger,
+    lists_of_dicts_merged_by_key,
+    noop,
+    path_add_suffix,
+    timecall,
+)
 from spacy.language import Language as SpacyLanguage
 from spacy.tokens import Doc as SpacyDoc
 from textacy import Corpus as TextacyCorpus
 
 from .language import create_nlp
 
-logger = utility.getLogger('corpus_text_analysis')
+logger = getLogger('corpus_text_analysis')
 
 # pylint: disable=too-many-arguments
 
@@ -24,7 +32,7 @@ def create_corpus(
     nlp: SpacyLanguage,
     *,
     extra_metadata: List[Dict[str, Any]] = None,
-    tick: Callable = utility.noop,
+    tick: Callable = noop,
     n_chunk_threshold: int = 100000,
 ) -> TextacyCorpus:
 
@@ -32,7 +40,7 @@ def create_corpus(
     counter = 0
 
     metadata_lookup = {
-        x['filename']: x for x in utility.lists_of_dicts_merged_by_key(reader.metadata, extra_metadata, key='filename')
+        x['filename']: x for x in lists_of_dicts_merged_by_key(reader.metadata, extra_metadata, key='filename')
     }
 
     for filename, text in reader:
@@ -57,7 +65,7 @@ def create_corpus(
     return corpus
 
 
-@utility.timecall
+@timecall
 def save_corpus(
     corpus: textacy.Corpus, filename: str, lang=None, include_tensor: bool = False
 ):  # pylint: disable=unused-argument
@@ -67,7 +75,7 @@ def save_corpus(
     corpus.save(filename)
 
 
-@utility.timecall
+@timecall
 def load_corpus(filename: str, lang: str) -> textacy.Corpus:  # pylint: disable=unused-argument
     corpus = textacy.Corpus.load(lang, filename)
     return corpus
@@ -100,7 +108,7 @@ def generate_corpus_filename(
         '_'.join([k for k in preprocess_args if preprocess_args[k]]),
         '_disable({})'.format(','.join(disabled_pipes)) if len(disabled_pipes) > 0 else '',
     )
-    filename = utility.path_add_suffix(source_path, suffix, new_extension='.' + extension)
+    filename = path_add_suffix(source_path, suffix, new_extension='.' + extension)
     if (compression or '') != '':
         filename += '.' + compression
     return filename
@@ -111,14 +119,14 @@ def _get_document_metadata(
     metadata: Dict[str, Any] = None,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Sequence[utility.IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Mapping[str, Any]:
     """Extract document metadata from filename and document index"""
     metadata = metadata or {}
 
     if filename_fields is not None:
 
-        metadata = {**metadata, **utility.extract_filename_fields(filename, filename_fields)}
+        metadata = {**metadata, **extract_filename_metadata(filename=filename, filename_fields=filename_fields)}
 
     if documents is not None:
 
@@ -145,7 +153,7 @@ def _extend_stream_with_metadata(
     tokenizer: text_tokenizer.TextTokenizer,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Sequence[utility.IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Iterable[Tuple[str, str, Dict]]:
     """Extract and adds document meta data to stream
 
@@ -157,7 +165,7 @@ def _extend_stream_with_metadata(
         Document index, by default None
     document_columns : List[str], optional
         Columns in document index, by default None
-    filename_fields : Sequence[utility.IndexOfSplitOrCallableOrRegExp], optional
+    filename_fields : Sequence[IndexOfSplitOrCallableOrRegExp], optional
         Filename fields to extract, by default None
 
     Yields
@@ -189,9 +197,9 @@ def load_or_create(
     binary_format: bool = True,
     use_compression: bool = True,
     disabled_pipes: List[str] = None,
-    filename_fields: Sequence[utility.IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
     document_columns: List[str] = None,
-    tick=utility.noop,
+    tick=noop,
 ) -> Dict[str, Any]:
     """Loads textaCy corpus from disk if it exists on disk with a name that satisfies the given arguments.
     Otherwise creates a new corpus and adds metadata to corpus documents as specified by `filename_fields` and/or document index.
@@ -212,12 +220,12 @@ def load_or_create(
         Use compression, by default True
     disabled_pipes : List[str], optional
         SpaCy pipes that should be disabled, by default None
-    filename_fields : Sequence[file_utility.IndexOfSplitOrCallableOrRegExp], optional
+    filename_fields : Sequence[file_IndexOfSplitOrCallableOrRegExp], optional
         Specifies metadata that should be extracted from filename, by default None
     document_columns : List[str], optional
         Columns in `documents` to add to metadata, all columns will be added if None, by default None
     tick : Callable, optional
-        Progress callback function, by default utility.noop
+        Progress callback function, by default noop
 
     Returns
     -------
@@ -228,7 +236,7 @@ def load_or_create(
         textacy_corpus      textaCy corpus
         textacy_corpus_path textaCy corpus filename
     """
-    tick = tick or utility.noop
+    tick = tick or noop
 
     nlp_args = {'disable': disabled_pipes or []}
 
@@ -248,8 +256,8 @@ def load_or_create(
 
         tokens_streams = text_tokenizer.TextTokenizer(
             source=source_path,
-            text_transform_opts=TextTransformOpts(fix_unicode=True, fix_accents=True),
-            filename_fields=filename_fields,
+            transform_opts=TextTransformOpts(fix_unicode=True, fix_accents=True),
+            reader_opts=TextReaderOpts(filename_fields=filename_fields),
         )
 
         reader = _extend_stream_with_metadata(

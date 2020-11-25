@@ -1,8 +1,12 @@
 from typing import Dict, Sequence
 
 import pandas as pd
-import penelope.utility as utility
-from penelope.utility import IndexOfSplitOrCallableOrRegExp
+from penelope.utility import (
+    IndexOfSplitOrCallableOrRegExp,
+    extract_filenames_metadata,
+    list_of_dicts_to_dict_of_lists,
+    tuple_of_lists_to_list_of_tuples,
+)
 
 from .interfaces import ITokenizedCorpus
 from .tokenized_corpus import ReiterableTerms
@@ -16,33 +20,17 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         filename: str,
         fields: Dict[str, int],
         filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
+        filename_fields_key: str = None,
         sep: str = ' # ',
     ):
-        """[summary]
-
-        Parameters
-        ----------
-        filename : str
-            [description]
-        fields : Dict[str, int]
-            [description]
-        meta_fields : List[str], optional
-            [description], by default None
-        sep : str, optional
-            [description], by default ' # '
-
-        Raises
-        ------
-        ValueError
-            [description]
-        """
+        """Simple corpus for document per line data  """
         with open(filename, 'r') as f:
             lines = f.readlines()
 
         if 'filename' not in fields or 'text' not in fields:
             raise ValueError("Fields `filename` and `text` are not specified (required fields)")
 
-        data = utility.list_of_dicts_to_dict_of_lists(
+        data = list_of_dicts_to_dict_of_lists(
             [{k: data[fields[k]] for k in fields} for data in [line.split(sep) for line in lines]]
         )
 
@@ -54,10 +42,14 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
 
         if filename_fields is not None:
 
-            filename_data = [utility.extract_filename_fields(filename, filename_fields) for filename in self._filenames]
-            fields_data = {**fields_data, **utility.list_of_dicts_to_dict_of_lists(filename_data)}
+            filename_data = extract_filenames_metadata(filenames=self._filenames, filename_fields=filename_fields)
+            fields_data = {**fields_data, **list_of_dicts_to_dict_of_lists(filename_data)}
 
         self._documents = pd.DataFrame(data=fields_data)
+
+        if filename_fields_key is not None:
+            self._documents.set_index(filename_fields_key)
+            self._documents[filename_fields_key] = self._documents.index
 
         if 'document_id' not in self._documents.columns:
             self._documents['document_id'] = self._documents.index
@@ -79,7 +71,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         return ReiterableTerms(self)
 
     def _create_iterator(self):
-        return utility.tuple_of_lists_to_list_of_tuples((self._filenames, self.tokens))
+        return tuple_of_lists_to_list_of_tuples((self._filenames, self.tokens))
 
     def __iter__(self):
         return self

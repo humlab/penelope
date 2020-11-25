@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from penelope.corpus.readers.text_transformer import TextTransformOpts
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
-from .interfaces import ExtractTokensOpts, TextSource
+from .interfaces import ExtractTokensOpts, TextReaderOpts, TextSource
 from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)
@@ -15,9 +16,10 @@ class SparvCsvTokenizer(TextTokenizer):
     def __init__(
         self,
         source: TextSource,
+        reader_opts: TextReaderOpts,
         *,
         extract_tokens_opts: ExtractTokensOpts = None,
-        **reader_opts,
+        chunk_size: int = None,
     ):
         """[summary]
 
@@ -26,24 +28,16 @@ class SparvCsvTokenizer(TextTokenizer):
         source : [type]
             [description]
         extract_tokens_opts : ExtractTokensOpts, optional
-        reader_opts : Dict[str, Any]
-            filename_pattern : str
-                Filename pattern
-            filename_filter: Union[Callable, List[str]]
-                Filename inclusion predicate filter, or list of filenames to include
-            filename_fields : Sequence[Sequence[IndexOfSplitOrCallableOrRegExp]]
-                Document metadata fields to extract from filename
-            filename_fields_key : str
-                Field to be used as document_id
-            as_binary : bool
-                Open input file as binary file (XML)
+        reader_opts : TextReaderOpts
 
         """
         self.delimiter: str = '\t'
-
         super().__init__(
             source,
-            **{**dict(tokenize=lambda x: x.split(), filename_pattern='*.csv'), **reader_opts},
+            reader_opts=reader_opts.copy(filename_pattern='*.csv'),
+            transform_opts=TextTransformOpts.no_transforms(),
+            tokenize=lambda x: x.split(),
+            chunk_size=chunk_size,
         )
 
         self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()

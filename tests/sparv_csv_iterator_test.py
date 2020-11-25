@@ -2,6 +2,7 @@ import os
 
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 
 SPARV_CSV_EXPORT_FILENAME = './tests/test_data/prot_197677__27.tsv'
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
@@ -22,6 +23,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTokensOpts(pos_includes=None, pos_excludes=None, lemmatize=False),
     )
 
@@ -37,6 +39,7 @@ def test_reader_when_only_nn_returns_only_nn():
 
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=False),
     )
 
@@ -52,6 +55,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=True),
     )
 
@@ -67,6 +71,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='NN|VB', pos_excludes=None, lemmatize=True),
     )
 
@@ -82,6 +87,7 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
 
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
+        reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='NN|VB', pos_excludes=None, lemmatize=True, append_pos=True),
     )
 
@@ -102,11 +108,12 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 
     reader = readers.SparvCsvTokenizer(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        chunk_size=None,
+        reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTokensOpts(
             pos_includes='|NN|',
             lemmatize=True,
         ),
+        chunk_size=None,
     )
 
     for i, (document_name, tokens) in enumerate(reader):

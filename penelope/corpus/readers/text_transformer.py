@@ -25,6 +25,18 @@ class TextTransformOpts:
     fix_accents: bool = False
     fix_unicode: bool = False
 
+    def clear(self):
+        self.fix_whitespaces = False
+        self.fix_hyphenation = False
+        self.fix_ftfy_text = False
+        self.fix_accents = False
+        self.fix_unicode = False
+        return self
+
+    @staticmethod
+    def no_transforms():
+        return TextTransformOpts().clear()
+
     extra_transforms: List[Callable] = field(default_factory=list)
 
     @property

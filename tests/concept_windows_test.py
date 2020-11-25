@@ -3,6 +3,7 @@ import json
 from penelope.co_occurrence import WindowsCorpus, corpus_concept_windows
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
 from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
@@ -69,7 +70,9 @@ def test_windowed_when_nn_vb_lemma_5_tokens():
 def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
-        SPARV_ZIPPED_CSV_EXPORT_FILENAME, extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=True)
+        SPARV_ZIPPED_CSV_EXPORT_FILENAME,
+        reader_opts=TextReaderOpts(),
+        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=True),
     )
     expected_windows = TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
@@ -87,7 +90,9 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
 def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
     extract_tokens_opts = ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False)
-    corpus = SparvTokenizedCsvCorpus(SPARV_ZIPPED_CSV_EXPORT_FILENAME, extract_tokens_opts=extract_tokens_opts)
+    corpus = SparvTokenizedCsvCorpus(
+        SPARV_ZIPPED_CSV_EXPORT_FILENAME, reader_opts=TextReaderOpts(), extract_tokens_opts=extract_tokens_opts
+    )
     expected_windows = [
         ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
         ['tran_2019_01_test.txt', 1, ['valv', 'blir', 'är', 'skall', 'tårar']],

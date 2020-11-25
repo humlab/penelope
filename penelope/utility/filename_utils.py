@@ -1,18 +1,11 @@
 import fnmatch
-import logging
 import os
-import re
 import string
-import sys
 import time
-from typing import Callable, Dict, Iterable, List, Sequence, Union
-
-import pandas as pd
+from typing import Callable, Iterable, List, Union
 
 from .utils import now_timestamp
 
-IndexOfSplitOrCallableOrRegExp = Union[List[str], Dict[str, Union[Callable, str]]]
-ExtractedFilenameFields = Dict[str, Union[int, str]]
 VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
 
 
@@ -34,127 +27,6 @@ def filename_satisfied_by(
 
     return True
 
-
-def filename_field_indexed_split_parser(filename_fields: List[str]):
-    """Parses a list of meta-field expressions into a format (kwargs) suitable for `extract_filename_fields`
-    The meta-field expressions must either of:
-        `fieldname:regexp`
-        `fieldname:sep:position`
-
-    Parameters
-    ----------
-    meta_fields : [type]
-        [description]
-    """
-
-    def extract_field(data):
-
-        if len(data) == 1:  # regexp
-            return data[0]
-
-        if len(data) == 2:  #
-            sep = data[0]
-            position = int(data[1])
-            return lambda f: f.replace('.', sep).split(sep)[position]
-
-        raise ValueError("to many parts in extract expression")
-
-    try:
-
-        filename_fields = {x[0]: extract_field(x[1:]) for x in [y.split(':') for y in filename_fields]}
-
-        return filename_fields
-
-    except:  # pylint: disable=bare-except
-        print("parse error: meta-fields, must be in format 'name:regexp'")
-        sys.exit(-1)
-
-
-def extract_filename_fields(filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp) -> ExtractedFilenameFields:
-    """Extracts metadata from filename
-
-    The extractor in kwargs must be either a regular expression that extracts the single value
-    or a callable function that given the filename return corresponding value.
-
-    Parameters
-    ----------
-    filename : str
-        Filename (basename)
-    kwargs: Dict[str, Union[Callable, str]]
-        key=extractor list
-
-    Returns
-    -------
-    Dict[str,Union[int,str]]
-        Each key in kwargs is extacted and stored in the dict.
-
-    """
-
-    def astype_int_or_str(v):
-
-        return int(v) if v is not None and v.isnumeric() else v
-
-    def regexp_extract(compiled_regexp, filename: str) -> str:
-        try:
-            return compiled_regexp.match(filename).groups()[0]
-        except:  # pylint: disable=bare-except
-            return None
-
-    def fxify(fx_or_re) -> Callable:
-
-        if callable(fx_or_re):
-            return fx_or_re
-
-        try:
-            compiled_regexp = re.compile(fx_or_re)
-            return lambda filename: regexp_extract(compiled_regexp, filename)
-        except re.error:
-            pass
-
-        return lambda x: fx_or_re  # Return constant expression
-
-    basename = os.path.basename(filename)
-
-    if filename_fields is None:
-        return {}
-
-    if isinstance(filename_fields, (list, tuple)):
-        # List of `key:sep:index`
-        filename_fields = filename_field_indexed_split_parser(filename_fields)
-
-    if isinstance(filename_fields, str):
-        # List of `key:sep:index`
-        filename_fields = filename_field_indexed_split_parser(filename_fields.split('#'))
-
-    key_fx = {key: fxify(fx_or_re) for key, fx_or_re in filename_fields.items()}
-
-    data = {'filename': basename}
-    for key, fx in key_fx.items():
-        data[key] = astype_int_or_str(fx(basename))
-
-    return data
-
-
-def extract_filenames_fields(
-    *, filenames: str, filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp]
-) -> List[ExtractedFilenameFields]:
-    return [
-        {'filename': filename, **extract_filename_fields(filename, filename_fields)}
-        for filename in strip_paths(filenames)
-    ]
-
-def filename_fields_metadata_to_index(metadata: Dict, _filename_id_field: str) -> pd.DataFrame:
-    _document_index: pd.DataFrame = pd.DataFrame(metadata)
-    if _filename_id_field:
-        if _filename_id_field not in _document_index.columns:
-            raise ValueError(f"Field {_filename_id_field} specified as index field is not among extracted fields")
-        _document_index['document_id'] = _document_index[_filename_id_field]
-        _document_index.set_index('document_id')
-        _document_index['document_id'] = _document_index.index
-    if 'document_id' not in _document_index:
-        logging.warning("document index key field not specified (using sequence)")
-        _document_index['document_id'] = list(_document_index.index)
-    return _document_index
 
 def filename_whitelist(filename: str) -> str:
     """Removes invalid characters from filename"""

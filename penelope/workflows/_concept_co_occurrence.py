@@ -10,6 +10,7 @@ from penelope.co_occurrence import (
     to_vectorized_corpus,
 )
 from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, strip_path_and_extension
@@ -82,11 +83,12 @@ def execute_workflow(
     if len(partition_keys or []) == 0:
         raise WorkflowException("please specify partition key(s) (--partition-key e.g --partition-key=year)")
 
-    reader_opts = {
-        'filename_pattern': '*.csv',
-        'filename_fields': filename_field,
-        'as_binary': False,
-    }
+    reader_opts = TextReaderOpts(
+        filename_pattern='*.csv',
+        filename_fields=filename_field,
+        filename_fields_key=None,  # FIXME!
+        as_binary=False,
+    )
 
     corpus = SparvTokenizedCsvCorpus(
         source=input_filename,
@@ -144,7 +146,7 @@ def store_concept_co_occurrence_bundle(
             'output_filename': output_filename,
             'partition_keys': partition_keys,
             'count_threshold': count_threshold,
-            'reader_opts': reader_opts,
+            'reader_opts': reader_opts.props,
             'concept_opts': concept_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'extract_tokens_opts': extract_tokens_opts.props,

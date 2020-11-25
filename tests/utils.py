@@ -6,6 +6,7 @@ from typing import Callable
 import pandas as pd
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import InMemoryReader, TextReader, TextTokenizer
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -38,7 +39,7 @@ def generate_token2id(terms):
 
 def very_simple_corpus(documents):
 
-    reader = InMemoryReader(documents, filename_fields="year:_:1")
+    reader = InMemoryReader(documents, reader_opts=TextReaderOpts(filename_fields="year:_:1"))
     corpus = TokenizedCorpus(reader=reader)
     return corpus
 
@@ -103,19 +104,21 @@ def create_text_reader(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,
+    filename_fields_key=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
     fix_hyphenation=True,
     fix_whitespaces=False,
 ):
-    kwargs = dict(
+    reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
         filename_fields=filename_fields,
+        filename_fields_key=filename_fields_key,
         as_binary=as_binary,
-        text_transform_opts=TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation),
     )
-    reader = TextReader(source=source_path, **kwargs)
+    transform_opts = TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation)
+    reader = TextReader(source=source_path, reader_opts=reader_opts, transform_opts=transform_opts)
     return reader
 
 
@@ -123,6 +126,7 @@ def create_text_tokenizer(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,
+    filename_fields_key=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
     fix_hyphenation=True,
@@ -130,14 +134,19 @@ def create_text_tokenizer(
     chunk_size: int = None,
     tokenize: Callable = None,
 ):
-    kwargs = dict(
-        chunk_size=chunk_size,
+    reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
         filename_fields=filename_fields,
+        filename_fields_key=filename_fields_key,
         as_binary=as_binary,
-        tokenize=tokenize,
-        text_transform_opts=TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation),
     )
-    reader = TextTokenizer(source_path, **kwargs)
+    transform_opts = TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation)
+    reader = TextTokenizer(
+        source_path,
+        reader_opts=reader_opts,
+        transform_opts=transform_opts,
+        tokenize=tokenize,
+        chunk_size=chunk_size,
+    )
     return reader

@@ -6,6 +6,7 @@ from typing import Callable, List, Union
 from penelope.utility import filename_satisfied_by, read_textfile
 
 from .interfaces import TextSource
+from .text_reader import TextReaderOpts
 from .zip_iterator import ZipTextIterator
 
 
@@ -52,7 +53,10 @@ def streamify_text_source(
 
         if zipfile.is_zipfile(text_source):
             return ZipTextIterator(
-                text_source, filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
+                text_source,
+                reader_opts=TextReaderOpts(
+                    filename_pattern=filename_pattern, filename_filter=filename_filter, as_binary=as_binary
+                ),
             )
 
         text = read_textfile(text_source, as_binary=as_binary)

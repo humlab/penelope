@@ -1,13 +1,19 @@
 import abc
-from dataclasses import dataclass
+import collections
+import os
+import zipfile
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Iterable, List, Mapping, Sequence, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTokensOpts2, TextReader, TextReaderOpts, TextSource, TextTransformOpts
+from penelope.utility import replace_extension
 from spacy.language import Language
+from tqdm import tqdm
 
+from ._utils import read_data_frame_from_zip, to_text, write_data_frame_to_zip
 from .convert import dataframe_to_tokens, spacy_doc_to_annotated_dataframe, text_to_annotated_dataframe
 
 
@@ -35,6 +41,10 @@ class DocumentPayload:
         return self
 
 
+class PipelineError(Exception):
+    pass
+
+
 @dataclass
 class PipelinePayload:
 
@@ -54,10 +64,13 @@ class ITask(abc.ABC):
     pipeline: "SpacyPipeline" = None
     instream: Iterable[DocumentPayload] = None
 
-    def setup(self) -> "ITask":
+    def chain(self) -> "ITask":
         prior_task = self.pipeline.get_prior_to(self)
         if prior_task is not None:
             self.instream = prior_task.outstream()
+        return self
+
+    def setup(self):
         return self
 
     def outstream(self) -> Iterable[DocumentPayload]:
@@ -72,6 +85,10 @@ class ITask(abc.ABC):
         self.pipeline = pipeline
         return self
 
+    @property
+    def document_index(self) -> pd.DataFrame:
+        return self.pipeline.payload.document_index
+
 
 class SpacyPipeline:
     def __init__(
@@ -83,6 +100,7 @@ class SpacyPipeline:
         self.payload = payload
         self.tasks: List[ITask] = []
         self.add(tasks or [])
+        self.resolved = False
 
     # def process(self) -> Any:
     #     stream = self.payload.source
@@ -100,10 +118,13 @@ class SpacyPipeline:
     #     prior : ITask = self.get_prior_to(task)
     #     return prior.
 
-    def resolve(self):
+    def resolve(self) -> Iterator[DocumentPayload]:
         """Resolves the pipeline by calling outstream on last task"""
-        for task in self.tasks:
-            task.setup()
+        if not self.resolved:
+            for task in self.tasks:
+                task.chain()
+                task.setup()
+            self.resolved = True
         return self.tasks[-1].outstream()
 
     def add(self, task: Union[ITask, List[ITask]]) -> "SpacyPipeline":
@@ -127,11 +148,59 @@ class SpacyPipeline:
     def dataframe_to_tokens(self, extract_tokens_opts: ExtractTokensOpts2) -> "SpacyPipeline":
         return self.add(DataFrameToTokens(extract_word_opts=extract_tokens_opts))
 
+    def save_dataframe(self, filename: str) -> "SpacyPipeline":
+        return self.add(SaveDataFrame(filename=filename))
+
+    def load_dataframe(self, filename: str) -> "SpacyPipeline":
+        return self.add(LoadDataFrame(filename=filename))
+
+    def checkpoint_dataframe(self, filename: str) -> "SpacyPipeline":
+        return self.add(CheckpointDataFrame(filename=filename))
+
     def tokens_to_text(self) -> "SpacyPipeline":
         return self.add(TokensToText())
 
     def to_dtm(self, vectorize_opts: VectorizeOpts = None) -> "SpacyPipeline":
         return self.add(TextToDTM(vectorize_opts or VectorizeOpts()))
+
+    def to_content(self) -> "SpacyPipeline":
+        return self.add(ToContent())
+
+    def tqdm(self) -> "SpacyPipeline":
+        return self.add(Tqdm())
+
+    def passthrough(self) -> "SpacyPipeline":
+        return self.add(Passthrough())
+
+    def exhaust(self) -> "SpacyPipeline":
+        if self.resolved:
+            raise PipelineError("cannot exhaust an already resolved pipeline")
+        collections.deque(self.resolve(), maxlen=0)
+        return self
+
+    def load_data_frame_instream(self, source_filename: str) -> Iterable[DocumentPayload]:
+        document_index_name = self.payload.document_index_filename
+        self.payload.source = source_filename
+        with zipfile.ZipFile(source_filename, mode="r") as zf:
+            filenames = zf.namelist()
+            if document_index_name in filenames:
+                self.payload.document_index = read_data_frame_from_zip(zf, document_index_name)
+                filenames.remove(document_index_name)
+            for filename in filenames:
+                df = read_data_frame_from_zip(zf, filename)
+                payload = DocumentPayload(content_type=ContentType.DATAFRAME, content=df, filename=filename)
+                yield payload
+
+    @staticmethod
+    def store_data_frame_outstream(
+        target_filename: str, document_index: pd.DataFrame, payload_stream: Iterator[DocumentPayload]
+    ):
+        with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
+            write_data_frame_to_zip(document_index, "document_index.csv", zf)
+            for payload in payload_stream:
+                filename = replace_extension(payload.filename, ".csv")
+                write_data_frame_to_zip(payload.content, filename, zf)
+                yield payload
 
 
 @dataclass
@@ -144,7 +213,7 @@ class LoadText(ITask):
     transform_opts: TextTransformOpts = None
 
     def setup(self):
-
+        super().setup()
         text_reader: TextReader = (
             self.pipeline.payload.source
             if isinstance(self.pipeline.payload.source, TextReader)
@@ -159,6 +228,7 @@ class LoadText(ITask):
             DocumentPayload(filename=filename, content_type=ContentType.TEXT, content=text)
             for filename, text in text_reader
         )
+        return self
 
     def _resolve(self, payload: DocumentPayload) -> DocumentPayload:
         return payload
@@ -182,12 +252,49 @@ class LoadText(ITask):
 
 
 @dataclass
+class Tqdm(ITask):
+
+    tbar = None
+
+    def setup(self):
+        super().setup()
+        self.tbar = tqdm(total=len(self.document_index))
+
+    def _resolve(self, payload: DocumentPayload) -> Any:
+        self.tbar.update()
+        return payload
+
+
+@dataclass
+class Passthrough(ITask):
+    def _resolve(self, payload: DocumentPayload) -> Any:
+        return payload
+
+
+@dataclass
+class Project(ITask):
+
+    project: Callable[[DocumentPayload], Any] = None
+
+    def _resolve(self, payload: DocumentPayload) -> Any:
+        return self.project(payload)
+
+
+@dataclass
+class ToContent(ITask):
+    def _resolve(self, payload: DocumentPayload) -> Any:
+        return payload.content
+
+
+@dataclass
 class TextToSpacy(ITask):
 
     nlp: Language = None
+    disable: List[str] = None
 
     def _resolve(self, payload: DocumentPayload) -> DocumentPayload:
-        return payload.update(ContentType.SPACYDOC, self.nlp(payload.content))
+        disable = self.disable or ['vectors', 'textcat', 'ner', 'parser']
+        return payload.update(ContentType.SPACYDOC, self.nlp(payload.content, disable=disable))
 
 
 @dataclass
@@ -223,8 +330,51 @@ class DataFrameToTokens(ITask):
         return payload.update(ContentType.TOKENS, dataframe_to_tokens(payload.content, self.extract_word_opts))
 
 
-def to_text(data: Union[str, Iterable[str]]):
-    return data if isinstance(data, str) else ' '.join(data)
+@dataclass
+class SaveDataFrame(ITask):
+    """Stores sequence of data frame documents. """
+
+    filename: str = None
+
+    def _resolve(self, payload: DocumentPayload) -> Any:
+        return payload
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+        for payload in self.pipeline.store_data_frame_outstream(self.filename, self.document_index, self.instream):
+            yield payload
+
+
+@dataclass
+class LoadDataFrame(ITask):
+    """Extracts text from payload.content based on annotations etc. """
+
+    filename: str = None
+    document_index_name: str = field(default="document_index.csv")
+
+    def _resolve(self, payload: DocumentPayload) -> DocumentPayload:
+        return payload
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+        for payload in self.pipeline.load_data_frame_instream(self.filename):
+            yield payload
+
+
+@dataclass
+class CheckpointDataFrame(ITask):
+
+    filename: str = None
+
+    def _resolve(self, payload: DocumentPayload) -> Any:
+        return payload
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+        stream = (
+            self.pipeline.load_data_frame_instream(self.filename)
+            if os.path.isfile(self.filename)
+            else self.pipeline.store_data_frame_outstream(self.filename, self.document_index, self.instream)
+        )
+        for payload in stream:
+            yield payload
 
 
 @dataclass

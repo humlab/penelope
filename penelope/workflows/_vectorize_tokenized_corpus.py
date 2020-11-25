@@ -3,6 +3,7 @@ from typing import Any
 
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import getLogger
 
 from ._tokenized_corpus_factory import create_corpus
@@ -44,11 +45,11 @@ def execute_workflow(
     if VectorizedCorpus.dump_exists(tag=output_tag, folder=output_folder):
         VectorizedCorpus.remove(tag=output_tag, folder=output_folder)
 
-    reader_opts = dict(
+    reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_fields=filename_field,
+        filename_fields_key=None,  # FIXME
         as_binary=False,
-        tokenize=None,
     )
 
     corpus = create_corpus(

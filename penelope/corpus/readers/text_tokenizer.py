@@ -1,10 +1,10 @@
 import logging
 from typing import Callable, Iterable, List, Sequence, Tuple, Union
 
-from penelope.utility import IndexOfSplitOrCallableOrRegExp, path_add_sequence, strip_path_and_extension
+from penelope.utility import path_add_sequence, strip_path_and_extension
 from penelope.vendor.nltk import word_tokenize
 
-from .text_reader import TextReader, TextSource
+from .text_reader import TextReader, TextReaderOpts, TextSource
 from .text_transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)
@@ -28,11 +28,8 @@ class TextTokenizer(TextReader):
         self,
         source: TextSource,
         *,
-        filename_pattern: str = None,
-        filename_filter: FilenameOrCallableOrSequenceFilter = None,
-        filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
-        as_binary: bool = False,
-        text_transform_opts: TextTransformOpts = None,
+        reader_opts: TextReaderOpts = None,
+        transform_opts: TextTransformOpts = None,
         tokenize: Callable = None,
         chunk_size: int = None,
     ):
@@ -43,30 +40,18 @@ class TextTokenizer(TextReader):
         ----------
         source : TextSource
             [description]
-        chunk_size : int, optional
+        reader_opts : str, optional
             [description], by default None
-        filename_pattern : str, optional
-            [description], by default None
-        filename_filter : Union[Callable, List[str]], optional
-            [description], by default None
-        filename_fields : Sequence[IndexOfSplitOrCallableOrRegExp], optional
-            [description], by default None
+        transform_opts : TextTransformOpts
         tokenize : Callable, optional
             [description], by default None
-        as_binary : bool, optional
-            [description], by default False
-        text_transform_opts : TextTransformOpts
+        chunk_size : int, optional
+            [description], by default None
         """
+        reader_opts = reader_opts or TextReaderOpts()
         self._tokenize = tokenize or word_tokenize
         self.chunk_size = chunk_size
-        super().__init__(
-            source=source,
-            filename_pattern=filename_pattern,
-            filename_filter=filename_filter,
-            filename_fields=filename_fields,
-            text_transform_opts=text_transform_opts,
-            as_binary=as_binary,
-        )
+        super().__init__(source=source, reader_opts=reader_opts, transform_opts=transform_opts)
 
     def process(self, filename: str, content: str) -> Iterable[Tuple[str, List[str]]]:
         """Process a document and returns tokenized text, and optionally splits text in equal length chunks

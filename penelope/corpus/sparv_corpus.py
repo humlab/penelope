@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
-
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import store_to_archive
 
 from . import readers
@@ -16,46 +15,12 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         source,
         version,
         *,
+        reader_opts: TextReaderOpts = None,
         extract_tokens_opts: ExtractTokensOpts = None,
         tokens_transform_opts: TokensTransformOpts = None,
-        reader_opts: Dict[str, Any] = None,
+        chunk_size: int = None,
     ):
-        """[summary]
-
-        Parameters
-        ----------
-        source : [type]
-            [description]
-        version : [type]
-            [description]
-        extract_tokens_opts : ExtractTokensOpts, optional
-            [description], by default None
-        tokens_transform_opts :TokensTransformOpts, optional
-            Passed to TokensTransformer:
-                only_alphabetic: bool = False,
-                only_any_alphanumeric: bool = False,
-                to_lower: bool = False,
-                to_upper: bool = False,
-                min_len: int = None,
-                max_len: int = None,
-                remove_accents: bool = False,
-                remove_stopwords: bool = False,
-                stopwords: Any = None,
-                extra_stopwords: List[str] = None,
-                language: str = "swedish",
-                keep_numerals: bool = True,
-                keep_symbols: bool = True,
-        reader_opts : Dict[str, Any], optional
-            Passed to source reader:
-                transforms: List[Callable] = None,
-                text_transforms_opts: TextTransformOpts
-                chunk_size: int = None,
-                filename_pattern: str = None,
-                filename_filter: Union[Callable, List[str]] = None,
-                filename_fields=None,
-                N/A: tokenize: Callable = None,
-                as_binary: bool = False,
-        """
+        reader_opts = reader_opts or TextReaderOpts()
 
         if isinstance(source, readers.SparvXmlTokenizer):
             tokenizer = source
@@ -65,7 +30,8 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
                 extract_tokens_opts=extract_tokens_opts or ExtractTokensOpts(),
                 xslt_filename=None,
                 version=version,
-                **(reader_opts or {}),
+                reader_opts=reader_opts,
+                chunk_size=chunk_size,
             )
 
         super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
@@ -84,17 +50,20 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         self,
         source,
         *,
+        reader_opts: TextReaderOpts = None,
         extract_tokens_opts: ExtractTokensOpts = None,
         tokens_transform_opts: TokensTransformOpts = None,
-        reader_opts: Dict[str, Any] = None,
+        chunk_size: int = None,
     ):
+        reader_opts = reader_opts or TextReaderOpts()
         if isinstance(source, readers.SparvCsvTokenizer):
             tokenizer = source
         else:
             tokenizer = readers.SparvCsvTokenizer(
                 source,
                 extract_tokens_opts=extract_tokens_opts,
-                **(reader_opts or {}),
+                reader_opts=reader_opts,
+                chunk_size=chunk_size,
             )
         super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
 
@@ -104,8 +73,9 @@ def sparv_xml_extract_and_store(
     target: str,
     version: int,
     extract_tokens_opts: ExtractTokensOpts = None,
-    reader_opts=None,
+    reader_opts: TextReaderOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
+    chunk_size: int = None,
 ):
     """[summary]
 
@@ -130,16 +100,9 @@ def sparv_xml_extract_and_store(
             language: str = "swedish",
             keep_numerals: bool = True,
             keep_symbols: bool = True,
-    reader_opts : Dict[str, Any], optional
+    reader_opts : TextReaderOpts
         Passed to source reader:
-            transforms: List[Callable] = None,
-            text_transforms_opts: TextTransformOpts
-            chunk_size: int = None,
-            filename_pattern: str = None,
-            filename_filter: Union[Callable, List[str]] = None,
-            filename_fields=None,
-            N/A: tokenize: Callable = None,
-            as_binary: bool = False,
+    chunk_size: int = None,
     """
     corpus = SparvTokenizedXmlCorpus(
         source,
@@ -147,6 +110,7 @@ def sparv_xml_extract_and_store(
         extract_tokens_opts=extract_tokens_opts,
         reader_opts=reader_opts,
         tokens_transform_opts=tokens_transform_opts,
+        chunk_size=chunk_size,
     )
 
     store_to_archive(target, corpus)
@@ -156,8 +120,9 @@ def sparv_csv_extract_and_store(
     source: str,
     target: str,
     extract_tokens_opts: ExtractTokensOpts = None,
-    reader_opts=None,
+    reader_opts: TextReaderOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
+    chunk_size: int = None,
 ):
     """Extracts and stores text documents from a Sparv corpus in CSV format
 
@@ -184,21 +149,13 @@ def sparv_csv_extract_and_store(
             keep_numerals: bool = True,
             keep_symbols: bool = True,
     reader_opts : Dict[str, Any], optional
-        Passed to source reader:
-            transforms: List[Callable] = None,
-            text_transforms_opts: TextTransformOpts
-            chunk_size: int = None,
-            filename_pattern: str = None,
-            filename_filter: Union[Callable, List[str]] = None,
-            filename_fields=None,
-            N/A: tokenize: Callable = None,
-            as_binary: bool = False,
     """
     corpus = SparvTokenizedCsvCorpus(
         source,
         extract_tokens_opts=extract_tokens_opts,
         reader_opts=reader_opts,
         tokens_transform_opts=tokens_transform_opts,
+        chunk_size=chunk_size,
     )
 
     store_to_archive(target, corpus)

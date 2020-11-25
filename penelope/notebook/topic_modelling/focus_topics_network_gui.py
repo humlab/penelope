@@ -234,9 +234,8 @@ def display_gui(state: TopicModelContainer):
             layout=lw("180px"),
         ),
         button=widgets.Button(
-            description="Display",
-            button_style='Success',
-            layout=widgets.Layout(width='115px', background_color='blue')),
+            description="Display", button_style='Success', layout=widgets.Layout(width='115px', background_color='blue')
+        ),
         output=widgets.Output(),
     )
 

@@ -1,6 +1,7 @@
 import pandas as pd
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ICorpusReader
+from penelope.corpus.readers.interfaces import TextReaderOpts
 
 from .sparv_csv_iterator_test import SPARV_CSV_EXPORT_FILENAME_SMALL
 from .sparv_xml_iterator_test import SPARV_XML_EXPORT_FILENAME_SMALL
@@ -30,7 +31,7 @@ def test_sparv_csv_tokenizer_interface():
 
     assert issubclass(readers.SparvCsvTokenizer, ICorpusReader)
 
-    instance = readers.SparvCsvTokenizer(SPARV_CSV_EXPORT_FILENAME_SMALL)
+    instance = readers.SparvCsvTokenizer(SPARV_CSV_EXPORT_FILENAME_SMALL, reader_opts=TextReaderOpts())
     assert isinstance(instance, ICorpusReader)
 
 
@@ -53,5 +54,5 @@ def test_sparv_xml_tokenizer_interface():
 def test_zip_text_iterator_interface():
 
     assert issubclass(readers.ZipTextIterator, ICorpusReader)
-    instance = readers.ZipTextIterator(TEST_CORPUS_FILENAME)
+    instance = readers.ZipTextIterator(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert isinstance(instance, ICorpusReader)

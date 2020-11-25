@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from IPython.display import display as ip_display
-from ipywidgets import FloatSlider, IntSlider, Label, Output, Text, VBox
+from ipywidgets import HTML, FloatSlider, IntSlider, Output, Text, VBox
 from ipywidgets.widgets.widget_box import HBox
 
 from .display_topic_titles import reduce_topic_tokens_overview
@@ -17,6 +17,8 @@ class GUI:
     output = Output()
     callback = lambda *_: ()
 
+    toplist_label: HTML = HTML("Tokens toplist threshold for token")
+
     def layout(self):
         return VBox(
             (
@@ -24,28 +26,30 @@ class GUI:
                     (
                         VBox(
                             (
-                                Label("Topic weight in document threshold"),
+                                HTML("Topic weight in document threshold"),
                                 self.threshold_slider,
                             )
                         ),
                         VBox(
                             (
-                                Label("Find topics containing token"),
+                                HTML("<b>Find topics containing token</b>"),
                                 self.find_text,
                             )
                         ),
                         VBox(
                             (
-                                Label("Tokens toplist threshold for token"),
+                                self.toplist_label,
                                 self.top_token_slider,
                             )
-                        ),                    )
+                        ),
+                    )
                 ),
                 self.output,
             )
         )
 
     def _callback(self, *_):
+        self.toplist_label.value = f"<b>Token must be within top {self.top_token_slider.value} topic tokens</b>"
         self.callback(
             gui=self,
         )

@@ -1,22 +1,22 @@
-from typing import Dict
-
 from penelope.corpus import SparvTokenizedCsvCorpus, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTokensOpts, TextTokenizer
+from penelope.corpus.readers.interfaces import TextReaderOpts
 
 
 def create_corpus(
     corpus_type: str,
     input_filename: str,
     tokens_transform_opts: TokensTransformOpts,
-    reader_opts: Dict,
+    reader_opts: TextReaderOpts,
     extract_tokens_opts: ExtractTokensOpts,
-    **_,
+    chunk_size: int = None,
 ) -> TokenizedCorpus:
     return _ABSTRACT_FACTORY.get(corpus_type, NullCorpusFactory).create(
         input_filename=input_filename,
         tokens_transform_opts=tokens_transform_opts,
         reader_opts=reader_opts,
         extract_tokens_opts=extract_tokens_opts,
+        chunk_size=chunk_size,
     )
 
 
@@ -31,17 +31,19 @@ class TextTokenizedCorpusFactory:
     def create(
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
-        reader_opts: Dict,
+        reader_opts: TextReaderOpts,
         extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
+        chunk_size: int = None,
     ):
         corpus = TokenizedCorpus(
             TextTokenizer(
                 source=input_filename,
-                **reader_opts,
-                text_transform_opts=TextTransformOpts(
+                reader_opts=reader_opts,
+                transform_opts=TextTransformOpts(
                     fix_whitespaces=True,
                     fix_hyphenation=True,
                 ),
+                chunk_size=chunk_size,
             ),
             tokens_transform_opts=tokens_transform_opts,
         )
@@ -53,14 +55,16 @@ class SparvTokenizedCsvCorpusFactory:
     def create(
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
-        reader_opts: Dict,
-        extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
+        reader_opts: TextReaderOpts,
+        extract_tokens_opts: ExtractTokensOpts,
+        chunk_size: int = None,
     ):
         corpus = SparvTokenizedCsvCorpus(
             source=input_filename,
             reader_opts=reader_opts,
             extract_tokens_opts=extract_tokens_opts,
             tokens_transform_opts=tokens_transform_opts,
+            chunk_size=chunk_size,
         )
         return corpus
 

@@ -18,7 +18,7 @@ def display_document_topics_as_grid(df):
         {"headerName": "N_Tokens", "field": "n_tokens"},
         {"headerName": "N_Terms", "field": "n_terms"},
         {"headerName": "Year", "field": "year", "cellRenderer": None},
-        {"headerName": "Title", "field": "title"}
+        {"headerName": "Title", "field": "title"},
     ]
 
     extra_options = {

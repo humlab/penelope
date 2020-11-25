@@ -51,9 +51,7 @@ def display_gui(state: TopicModelContainer):
         node_range=widgets.IntRangeSlider(
             description='', min=10, max=100, step=1, value=(20, 60), continues_update=False
         ),
-        edge_range=widgets.IntRangeSlider(
-            description='', min=1, max=20, step=1, value=(2, 6), continues_update=False
-        ),
+        edge_range=widgets.IntRangeSlider(description='', min=1, max=20, step=1, value=(2, 6), continues_update=False),
         output=widgets.Output(),
     )
 
