@@ -8,14 +8,14 @@ def create_corpus(
     corpus_type: str,
     input_filename: str,
     tokens_transform_opts: TokensTransformOpts,
-    tokenizer_opts: Dict,
+    reader_opts: Dict,
     extract_tokens_opts: ExtractTokensOpts,
     **_,
 ) -> TokenizedCorpus:
     return _ABSTRACT_FACTORY.get(corpus_type, NullCorpusFactory).create(
         input_filename=input_filename,
         tokens_transform_opts=tokens_transform_opts,
-        tokenizer_opts=tokenizer_opts,
+        reader_opts=reader_opts,
         extract_tokens_opts=extract_tokens_opts,
     )
 
@@ -31,13 +31,13 @@ class TextTokenizedCorpusFactory:
     def create(
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
-        tokenizer_opts: Dict,
+        reader_opts: Dict,
         extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
     ):
         corpus = TokenizedCorpus(
             TextTokenizer(
                 source=input_filename,
-                **tokenizer_opts,
+                **reader_opts,
                 text_transform_opts=TextTransformOpts(
                     fix_whitespaces=True,
                     fix_hyphenation=True,
@@ -53,12 +53,12 @@ class SparvTokenizedCsvCorpusFactory:
     def create(
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
-        tokenizer_opts: Dict,
+        reader_opts: Dict,
         extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
     ):
         corpus = SparvTokenizedCsvCorpus(
             source=input_filename,
-            tokenizer_opts=tokenizer_opts,
+            reader_opts=reader_opts,
             extract_tokens_opts=extract_tokens_opts,
             tokens_transform_opts=tokens_transform_opts,
         )

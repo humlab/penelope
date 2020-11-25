@@ -71,7 +71,7 @@ def prepare_train_corpus(
     )
     output_filename = replace_extension(timestamp_filename(suffix_filename(input_filename, "text")), 'zip')
 
-    tokenizer_opts = {
+    reader_opts = {
         'chunk_size': chunk_size,
     }
 
@@ -80,7 +80,7 @@ def prepare_train_corpus(
         target=output_filename,
         version=version,
         extract_tokens_opts=extract_tokens_opts,
-        tokenizer_opts=tokenizer_opts,
+        reader_opts=reader_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 
@@ -88,7 +88,7 @@ def prepare_train_corpus(
         input_filename,
         output_filename,
         tokens_transform_opts,
-        dict(version=version, extract_tokens_opts=extract_tokens_opts, tokenizer_opts=tokenizer_opts),
+        dict(version=version, extract_tokens_opts=extract_tokens_opts, reader_opts=reader_opts),
     )
 
 

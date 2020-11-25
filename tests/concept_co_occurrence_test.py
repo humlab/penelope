@@ -95,7 +95,7 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_co
 
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
-        tokenizer_opts=dict(
+        reader_opts=dict(
             filename_fields="year:_:1",
         ),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
@@ -119,7 +119,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
     n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
-        tokenizer_opts=dict(
+        reader_opts=dict(
             filename_fields="year:_:1",
         ),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),

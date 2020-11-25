@@ -82,7 +82,7 @@ def execute_workflow(
     if len(partition_keys or []) == 0:
         raise WorkflowException("please specify partition key(s) (--partition-key e.g --partition-key=year)")
 
-    tokenizer_opts = {
+    reader_opts = {
         'filename_pattern': '*.csv',
         'filename_fields': filename_field,
         'as_binary': False,
@@ -90,7 +90,7 @@ def execute_workflow(
 
     corpus = SparvTokenizedCsvCorpus(
         source=input_filename,
-        tokenizer_opts=tokenizer_opts,
+        reader_opts=reader_opts,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
@@ -109,7 +109,7 @@ def execute_workflow(
         partition_keys=partition_keys,
         count_threshold=count_threshold,
         co_occurrences=co_occurrences,
-        tokenizer_opts=tokenizer_opts,
+        reader_opts=reader_opts,
         tokens_transform_opts=tokens_transform_opts,
         concept_opts=concept_opts,
         extract_tokens_opts=extract_tokens_opts,
@@ -126,7 +126,7 @@ def store_concept_co_occurrence_bundle(
     partition_keys: Tuple[str, List[str]],
     count_threshold: int = None,
     co_occurrences: pd.DataFrame,
-    tokenizer_opts: Dict,
+    reader_opts: Dict,
     tokens_transform_opts: TokensTransformOpts,
     concept_opts: ConceptContextOpts,
     extract_tokens_opts: ExtractTokensOpts,
@@ -144,7 +144,7 @@ def store_concept_co_occurrence_bundle(
             'output_filename': output_filename,
             'partition_keys': partition_keys,
             'count_threshold': count_threshold,
-            'tokenizer_opts': tokenizer_opts,
+            'reader_opts': reader_opts,
             'concept_opts': concept_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'extract_tokens_opts': extract_tokens_opts.props,

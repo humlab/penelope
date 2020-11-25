@@ -17,7 +17,7 @@ class SparvCsvTokenizer(TextTokenizer):
         source: TextSource,
         *,
         extract_tokens_opts: ExtractTokensOpts = None,
-        **tokenizer_opts,
+        **reader_opts,
     ):
         """[summary]
 
@@ -26,14 +26,15 @@ class SparvCsvTokenizer(TextTokenizer):
         source : [type]
             [description]
         extract_tokens_opts : ExtractTokensOpts, optional
-        tokenizer_opts : Dict[str, Any]
-            Optional chunking of text in chunk_size pieces
+        reader_opts : Dict[str, Any]
             filename_pattern : str
-            Filename pattern
+                Filename pattern
             filename_filter: Union[Callable, List[str]]
                 Filename inclusion predicate filter, or list of filenames to include
             filename_fields : Sequence[Sequence[IndexOfSplitOrCallableOrRegExp]]
                 Document metadata fields to extract from filename
+            filename_fields_key : str
+                Field to be used as document_id
             as_binary : bool
                 Open input file as binary file (XML)
 
@@ -42,7 +43,7 @@ class SparvCsvTokenizer(TextTokenizer):
 
         super().__init__(
             source,
-            **{**dict(tokenize=lambda x: x.split(), filename_pattern='*.csv'), **tokenizer_opts},
+            **{**dict(tokenize=lambda x: x.split(), filename_pattern='*.csv'), **reader_opts},
         )
 
         self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()

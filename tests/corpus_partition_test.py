@@ -10,7 +10,7 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        tokenizer_opts=dict(
+        reader_opts=dict(
             filename_fields="year:_:1",
         ),
         extract_tokens_opts=ExtractTokensOpts(),
@@ -216,7 +216,7 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        tokenizer_opts=dict(
+        reader_opts=dict(
             filename_fields="year:_:1",
         ),
         extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|'),

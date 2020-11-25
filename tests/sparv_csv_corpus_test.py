@@ -283,7 +283,7 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
         extract_tokens_opts=ExtractTokensOpts(pos_includes='|VB|', lemmatize=True),
-        tokenizer_opts=dict(
+        reader_opts=dict(
             chunk_size=None,
         ),
         tokens_transform_opts=TokensTransformOpts(

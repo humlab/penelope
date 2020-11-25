@@ -44,7 +44,7 @@ def execute_workflow(
     if VectorizedCorpus.dump_exists(tag=output_tag, folder=output_folder):
         VectorizedCorpus.remove(tag=output_tag, folder=output_folder)
 
-    tokenizer_opts = dict(
+    reader_opts = dict(
         filename_pattern=filename_pattern,
         filename_fields=filename_field,
         as_binary=False,
@@ -55,7 +55,7 @@ def execute_workflow(
         corpus_type=corpus_type,
         input_filename=input_filename,
         tokens_transform_opts=tokens_transform_opts,
-        tokenizer_opts=tokenizer_opts,
+        reader_opts=reader_opts,
         extract_tokens_opts=extract_tokens_opts,
     )
 
@@ -77,7 +77,7 @@ def execute_workflow(
             'output_folder': output_folder,
             'output_tag': output_tag,
             'count_threshold': count_threshold,
-            'tokenizer_opts': tokenizer_opts,
+            'reader_opts': reader_opts,
             'tokens_transform_opts': tokens_transform_opts.props,
             'extract_tokens_opts': extract_tokens_opts.props if extract_tokens_opts is not None else {},
         },
