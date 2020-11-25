@@ -3,6 +3,8 @@ SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
 PACKAGE_FOLDER=penelope
 
+fast-release: clean tidy build guard_clean_working_repository bump.patch tag
+
 release: ready guard_clean_working_repository bump.patch tag
 
 ready: tools clean tidy test lint build
@@ -142,7 +144,7 @@ gh-exists: ; @which gh > /dev/null
 .PHONY: help check init version
 .PHONY: lint flake8 pylint pylint_by_file yapf black isort tidy pylint_diff_only
 .PHONY: test test-coverage pytest
-.PHONY: ready build tag bump.patch release
+.PHONY: ready build tag bump.patch release fast-release
 .PHONY: clean clean_cache update
 .PHONY: install_graphtool gh check-gh gh-exists tools
 .PHONY: data spacy_data nltk_data
@@ -152,6 +154,7 @@ help:
 	@echo " make ready            Makes ready for release (tools tidy test flake8 pylint)"
 	@echo " make build            Updates tools, requirement.txt and build dist/wheel"
 	@echo " make release          Bumps version (patch), pushes to origin and creates a tag on origin"
+	@echo " make fast-release     Same as release but without lint and test"
 	@echo " make test             Runs tests with code coverage"
 	@echo " make lint             Runs pylint and flake8"
 	@echo " make tidy             Runs black and isort"
