@@ -1,10 +1,13 @@
 import fnmatch
+import logging
 import os
 import re
 import string
 import sys
 import time
 from typing import Callable, Dict, Iterable, List, Sequence, Union
+
+import pandas as pd
 
 from .utils import now_timestamp
 
@@ -140,6 +143,18 @@ def extract_filenames_fields(
         for filename in strip_paths(filenames)
     ]
 
+def filename_fields_metadata_to_index(metadata: Dict, _filename_id_field: str) -> pd.DataFrame:
+    _document_index: pd.DataFrame = pd.DataFrame(metadata)
+    if _filename_id_field:
+        if _filename_id_field not in _document_index.columns:
+            raise ValueError(f"Field {_filename_id_field} specified as index field is not among extracted fields")
+        _document_index['document_id'] = _document_index[_filename_id_field]
+        _document_index.set_index('document_id')
+        _document_index['document_id'] = _document_index.index
+    if 'document_id' not in _document_index:
+        logging.warning("document index key field not specified (using sequence)")
+        _document_index['document_id'] = list(_document_index.index)
+    return _document_index
 
 def filename_whitelist(filename: str) -> str:
     """Removes invalid characters from filename"""
