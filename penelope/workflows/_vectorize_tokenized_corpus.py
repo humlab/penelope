@@ -78,7 +78,7 @@ def execute_workflow(
             'output_folder': output_folder,
             'output_tag': output_tag,
             'count_threshold': count_threshold,
-            'reader_opts': reader_opts,
+            'reader_opts': reader_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'extract_tokens_opts': extract_tokens_opts.props if extract_tokens_opts is not None else {},
         },
