@@ -8,10 +8,6 @@ import penelope.notebook.widgets_utils as widgets_utils
 import penelope.utility as utility
 from IPython.display import display
 
-# from beakerx import *
-# from beakerx.object import beakerx
-# beakerx.pandas_display_table()
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 

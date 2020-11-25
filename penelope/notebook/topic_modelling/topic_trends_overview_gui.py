@@ -9,10 +9,6 @@ from IPython.display import display
 from .display_topic_trends_heatmap import display_heatmap
 from .model_container import TopicModelContainer
 
-# from beakerx import *
-# from beakerx.object import beakerx
-# beakerx.pandas_display_table()
-
 logger = utility.get_logger()
 
 

@@ -12,9 +12,6 @@ from .model_container import TopicModelContainer
 from .utility import filter_document_topic_weights
 
 logger = utility.get_logger()
-# from beakerx import *
-# from beakerx.object import beakerx
-# beakerx.pandas_display_table()
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
