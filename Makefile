@@ -74,9 +74,9 @@ pylint:
 # https://nerderati.com/speed-up-pylint-by-reducing-the-files-it-examines/
 .ONESHELL: pylint_diff_only
 pylint_diff_only:
-	@delta_files=$(shell git diff --name-only --diff-filter=d | grep -E '\.py$$' | tr '\n' ' ')
+	@delta_files=$$(git status --porcelain | awk '{print $$2}' | grep -E '\.py$$' | tr '\n' ' ')
 	@if [[ "$$delta_files" != "" ]]; then
-		pylint $(delta_files)
+		pylint $$delta_files
 	fi
 
 pylint_by_file:
