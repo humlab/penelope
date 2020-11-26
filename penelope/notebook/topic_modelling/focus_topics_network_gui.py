@@ -185,7 +185,7 @@ def display_gui(state: TopicModelContainer):
     layout_options = ["Circular", "Kamada-Kawai", "Fruchterman-Reingold"]
     year_min, year_max = inferred_topics.year_period
 
-    n_topics = len(inferred_topics.topic_ids)
+    n_topics = inferred_topics.topic_token_overview.index.max() + 1
 
     gui = types.SimpleNamespace(
         text=widget_utils.text_widget(text_id),
@@ -261,12 +261,6 @@ def display_gui(state: TopicModelContainer):
                 tick=tick,
             )
 
-    # gui.threshold.observe(update_handler, names='value')
-    # gui.period.observe(update_handler, names='value')
-    # gui.scale.observe(update_handler, names='value')
-    # gui.output_format.observe(update_handler, names='value')
-    # gui.layout.observe(update_handler, names='value')
-    # gui.focus_topics.observe(update_handler, names='value')
     gui.button.on_click(update_handler)
 
     w = widgets.VBox(
