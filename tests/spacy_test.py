@@ -9,12 +9,12 @@ from penelope.corpus.readers import (
     TextTransformOpts,
     streamify_text_source,
 )
+from penelope.vendor.spacy import PipelinePayload, SpacyPipeline
 from penelope.vendor.spacy.convert import (
     dataframe_to_tokens,
     text_to_annotated_dataframe,
     texts_to_annotated_dataframes,
 )
-from penelope.vendor.spacy.pipeline import PipelinePayload, SpacyPipeline
 from spacy.language import Language
 from spacy.tokens import Doc
 
