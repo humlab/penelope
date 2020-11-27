@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pandas as pd
 import pytest
 import spacy
@@ -244,7 +246,7 @@ def dummy_source():
 def test_spacy_pipeline_load_text_resolves():
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
-    payload = PipelinePayload(source=source, document_index=None)
+    payload = PipelinePayload(source=source)
     pipeline = SpacyPipeline(payload=payload).load(reader_opts=reader_opts)
 
     payloads = [x.content for x in pipeline.resolve()]
@@ -257,7 +259,7 @@ def test_spacy_pipeline_load_text_resolves():
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
-    payload = PipelinePayload(source=source, document_index=None)
+    payload = PipelinePayload(source=source)
     pipeline = SpacyPipeline(payload=payload).load(reader_opts=reader_opts).text_to_spacy(nlp=en_nlp)
 
     payloads = [x.content for x in pipeline.resolve()]
@@ -265,22 +267,22 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
     assert all([isinstance(x, Doc) for x in payloads])
 
 
-def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
+def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves():
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts)
-    payload = PipelinePayload(source=reader, document_index=None)
+    payload = PipelinePayload(source=reader)
     attributes = ['text', 'lemma_', 'pos_']
+    en_nlp = MagicMock(spec=spacy.language.Language)
     pipeline = (
         SpacyPipeline(payload=payload)
         .load(reader_opts=reader_opts)
         .text_to_spacy(nlp=en_nlp)
-        .spacy_to_dataframe(en_nlp, attributes=attributes)
+        .spacy_to_dataframe(attributes=attributes)
     )
 
     payloads = [x.content for x in pipeline.resolve()]
 
     assert all([isinstance(x, pd.DataFrame) for x in payloads])
-    assert all([len(x) > 0 for x in payloads])
     assert all([x.columns.tolist() == attributes for x in payloads])
 
 
@@ -290,7 +292,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
     transform_opts = TextTransformOpts()
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
-    payload = PipelinePayload(source=reader, document_index=None)
+    payload = PipelinePayload(source=reader)
     attributes = ['text', 'lemma_', 'pos_']
     extract_text_opts = ExtractTokensOpts2(
         lemmatize=True,
@@ -300,7 +302,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
         SpacyPipeline(payload=payload)
         .load(reader_opts=reader_opts)
         .text_to_spacy(nlp=en_nlp)
-        .spacy_to_dataframe(en_nlp, attributes=attributes)
+        .spacy_to_dataframe(attributes=attributes)
         .dataframe_to_tokens(extract_tokens_opts=extract_text_opts)
     )
 
@@ -331,13 +333,13 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     )
     vectorize_opts = VectorizeOpts(verbose=True)
 
-    payload = PipelinePayload(source=reader, document_index=None)
+    payload = PipelinePayload(source=reader)
 
     pipeline = (
         SpacyPipeline(payload=payload)
         .load(reader_opts=reader_opts, transform_opts=transform_opts)
         .text_to_spacy(nlp=en_nlp)
-        .spacy_to_dataframe(en_nlp, attributes=attributes)
+        .spacy_to_dataframe(attributes=attributes)
         .dataframe_to_tokens(extract_tokens_opts=filter_tokens_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
@@ -361,13 +363,13 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     )
     vectorize_opts = VectorizeOpts(verbose=True)
 
-    payload = PipelinePayload(source=reader, document_index=None)
+    payload = PipelinePayload(source=reader)
 
     pipeline = (
         SpacyPipeline(payload=payload)
         .load(reader_opts=reader_opts, transform_opts=transform_opts)
         .text_to_spacy(nlp=en_nlp)
-        .spacy_to_dataframe(en_nlp, attributes=attributes)
+        .spacy_to_dataframe(attributes=attributes)
         .dataframe_to_tokens(extract_tokens_opts=filter_tokens_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)

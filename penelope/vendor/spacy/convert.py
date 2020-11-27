@@ -1,11 +1,17 @@
-from typing import Iterable, List, Union
+import zipfile
+from typing import Iterable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import spacy
+from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTokensOpts2
+from penelope.utility.filename_utils import replace_extension
+from penelope.vendor.spacy import ContentType, DocumentPayload
 from spacy.language import Language
 from spacy.tokens import Doc
+
+from ._utils import read_data_frame_from_zip, to_text, write_data_frame_to_zip
 
 
 def spacy_doc_to_annotated_dataframe(spacy_doc: Doc, attributes: List[str]) -> pd.DataFrame:
@@ -124,3 +130,73 @@ def _get_disables(attributes):
     if not any('dep' in x for x in attributes):
         disable.append('parser')
     return disable
+
+
+def to_vectorized_corpus(
+    stream: Iterable[DocumentPayload], vectorize_opts: VectorizeOpts, document_index: pd.DataFrame
+) -> VectorizedCorpus:
+    vectorizer = CorpusVectorizer()
+    terms = (to_text(payload.content) for payload in stream)
+    corpus = vectorizer.fit_transform_(terms, documents=document_index, vectorize_opts=vectorize_opts)
+    return corpus
+
+
+def store_data_frame_stream(
+    *,
+    target_filename: str,
+    document_index: pd.DataFrame,
+    payload_stream: Iterator[DocumentPayload],
+    document_index_name="document_index.csv",
+):
+    with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
+        write_data_frame_to_zip(document_index, document_index_name, zf)
+        for payload in payload_stream:
+            filename = replace_extension(payload.filename, ".csv")
+            write_data_frame_to_zip(payload.content, filename, zf)
+            yield payload
+
+
+def load_data_frame_stream(
+    *,
+    source_filename: str,
+    document_index_name: str = "document_index.csv",
+) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
+
+    document_index = None
+
+    with zipfile.ZipFile(source_filename, mode="r") as zf:
+
+        filenames = zf.namelist()
+        if document_index_name in filenames:
+            document_index = read_data_frame_from_zip(zf, document_index_name)
+            filenames.remove(document_index_name)
+
+    def document_stream():
+        with zipfile.ZipFile(source_filename, mode="r") as zf:
+            for filename in filenames:
+                payload = DocumentPayload(
+                    content_type=ContentType.DATAFRAME,
+                    content=read_data_frame_from_zip(zf, filename),
+                    filename=filename,
+                )
+                yield payload
+
+    return (document_stream(), document_index)
+
+
+# def load_data_frame_instream(
+#     *,
+#     payload: PipelinePayload,
+#     source_filename: str,
+#     document_index_name: str = "document_index.csv",
+# ) -> Iterable[DocumentPayload]:
+#     payload.source = source_filename
+#     with zipfile.ZipFile(source_filename, mode="r") as zf:
+#         filenames = zf.namelist()
+#         for filename in filenames:
+#             df = read_data_frame_from_zip(zf, filename)
+#             if filename == document_index_name:
+#                 payload.document_index_source = df
+#             else:
+#                 payload = DocumentPayload(content_type=ContentType.DATAFRAME, content=df, filename=filename)
+#                 yield payload
