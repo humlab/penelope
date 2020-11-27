@@ -22,6 +22,7 @@ class ConceptContextOpts:
     ignore_concept: bool = False
     context_width: int = 2
 
+    # FIXME: Use dataclass.asdict() instead!
     @property
     def props(self):
         return {
