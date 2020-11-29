@@ -39,6 +39,8 @@ class ExtractTokensOpts:
     # FIXME: Removed optional, change default to False if optional
     lemmatize: bool  # = True
 
+    target_override: str = None
+
     pos_includes: str = ''
     # FIXME: Changed default, investigate use, force in Sparv extracts
     pos_excludes: str = ''  # "|MAD|MID|PAD|"
@@ -73,12 +75,6 @@ class ExtractTokensOpts:
 @dataclass
 class SpacyExtractTokensOpts(ExtractTokensOpts):
     """Spacy document extract options"""
-
-    # lemmatize: bool = False
-    target_override: str = None
-
-    # pos_includes: str = ''
-    # pos_excludes: str = ""
 
     is_alpha: bool = None
     is_space: bool = False
