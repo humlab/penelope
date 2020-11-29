@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Dict, List
 
 import pandas as pd
@@ -203,6 +203,11 @@ class PoS_Tag_Scheme:
     def groups(self) -> Dict[str, List[str]]:
         return self.PD_PoS_groups.to_dict()
 
+Known_PoS_Tag_Schemes = dict(
+    SUC=PoS_Tag_Scheme(PD_SUC_PoS_tags),
+    Universal= PoS_Tag_Scheme(PD_Universal_PoS_tags),
+    PennTree = PoS_Tag_Scheme(PD_PennTree_O5_PoS_tags)
+)
 
 @dataclass
 class PoS_Tag_Schemes:
@@ -211,5 +216,10 @@ class PoS_Tag_Schemes:
     Universal: PoS_Tag_Scheme = PoS_Tag_Scheme(PD_Universal_PoS_tags)
     PennTree: PoS_Tag_Scheme = PoS_Tag_Scheme(PD_PennTree_O5_PoS_tags)
 
-
 PoS_TAGS_SCHEMES = PoS_Tag_Schemes()
+
+Known_PoS_Tag_Schemes = asdict(PoS_TAGS_SCHEMES)
+
+def get_pos_schema(name: str) -> PoS_Tag_Scheme:
+    return Known_PoS_Tag_Schemes.get(name, None)
+    
