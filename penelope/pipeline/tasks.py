@@ -27,6 +27,10 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
     reader_opts: TextReaderOpts = None
     transform_opts: TextTransformOpts = None
 
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TEXT
+
     def setup(self):
         super().setup()
         if self.source is not None:
@@ -44,6 +48,10 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
             index=self.pipeline.payload.document_index,
             reader_index=text_reader.document_index,
         )
+        self.pipeline.payload.metadata = text_reader.metadata
+        self.pipeline.put("text_reader_opts", self.reader_opts.props)
+        self.pipeline.put("text_transform_opts", self.transform_opts.props)
+
         self.instream = (
             interfaces.DocumentPayload(filename=filename, content_type=interfaces.ContentType.TEXT, content=text)
             for filename, text in text_reader
@@ -56,9 +64,17 @@ class Tqdm(interfaces.ITask):
 
     tbar = None
 
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.ANY
+
     def setup(self):
         super().setup()
-        self.tbar = tqdm(total=len(self.document_index) if self.document_index is not None else None)
+        self.tbar = tqdm(
+            position=0,
+            leave=True,
+            total=len(self.document_index) if self.document_index is not None else None,
+        )
         return self
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
@@ -76,14 +92,38 @@ class Project(interfaces.ITask):
 
     project: Callable[[interfaces.DocumentPayload], Any] = None
 
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.ANY
+
     def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
         return self.project(payload)
 
 
 @dataclass
 class ToContent(interfaces.ITask):
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = Any
+
     def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
         return payload.content
+
+
+@dataclass
+class ToDocumentContentTuple(interfaces.ITask):
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
+
+    def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
+        return payload.update(
+            ContentType.DOCUMENT_CONTENT_TUPLE,
+            content=(
+                self.filename,
+                payload.content,
+            ),
+        )
 
 
 @dataclass
@@ -92,7 +132,7 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
     filename: str = None
 
     def __post_init__(self):
-        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.DATAFRAME]
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGEDFRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
@@ -128,12 +168,12 @@ class SaveDataFrame(DefaultResolveMixIn, interfaces.ITask):
     filename: str = None
 
     def __post_init__(self):
-        self.in_content_type = ContentType.DATAFRAME
-        self.out_content_type = ContentType.DATAFRAME
+        self.in_content_type = ContentType.TAGGEDFRAME
+        self.out_content_type = ContentType.TAGGEDFRAME
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
         for payload in checkpoint.store_checkpoint(
-            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.DATAFRAME)),
+            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -149,8 +189,8 @@ class LoadDataFrame(DefaultResolveMixIn, interfaces.ITask):
     document_index_name: str = field(default="document_index.csv")
 
     def __post_init__(self):
-        self.in_content_type = None
-        self.out_content_type = ContentType.DATAFRAME
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TAGGEDFRAME
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
 
@@ -221,14 +261,14 @@ class TokensToText(interfaces.ITask):
 @dataclass
 class TextToDTM(interfaces.ITask):
     def __post_init__(self):
-        self.in_content_type = ContentType.TEXT
+        self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
         self.out_content_type = ContentType.VECTORIZED_CORPUS
 
     vectorize_opts: VectorizeOpts = None
 
     def outstream(self) -> VectorizedCorpus:
         corpus = convert.to_vectorized_corpus(
-            stream=self.instream,
+            stream=(x.content for x in self.instream),
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
         )
