@@ -21,7 +21,7 @@ class TextTokenizer(TextReader):
     """Reads a text corpus from `source` and applies given transforms.
     Derived classes can override `preprocess` as an initial step before transforms are applied.
     The `preprocess` is applied on the entire document, and the transforms on each token.
-    The `preprocess can for instance be used to extract text from an XML file (see derived class SParvXmlCorpusSourceReader)
+    The `preprocess can for instance be used to extract text from an XML file (see derived class SparvXmlCorpusSourceReader)
     """
 
     def __init__(
