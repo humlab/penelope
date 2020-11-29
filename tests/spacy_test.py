@@ -11,8 +11,8 @@ from penelope.corpus.readers import (
     TextTransformOpts,
     streamify_text_source,
 )
-from penelope.vendor.spacy import PipelinePayload, SpacyPipeline
-from penelope.vendor.spacy.convert import (
+from penelope.pipeline import PipelinePayload, SpacyPipeline
+from penelope.pipeline.convert import (
     dataframe_to_tokens,
     text_to_annotated_dataframe,
     texts_to_annotated_dataframes,
@@ -202,7 +202,7 @@ def test_extract_tokens_when_punct_filter_enables_succeeds(df_doc):
 
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc):
 
-    extract_opts = SpacyExtractTokensOpts(target_override="lemma", is_punct=False, is_space=False)
+    extract_opts = SpacyExtractTokensOpts(lemmatize=False, target_override="lemma", is_punct=False, is_space=False)
     tokens = dataframe_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['Mars', 'be', 'once', 'home', 'to', 'sea', 'and', 'ocean', 'and', 'perhaps', 'even', 'life']
 

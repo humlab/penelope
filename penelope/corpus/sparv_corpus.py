@@ -27,7 +27,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         else:
             tokenizer = readers.SparvXmlTokenizer(
                 source,
-                extract_tokens_opts=extract_tokens_opts or ExtractTokensOpts(),
+                extract_tokens_opts=extract_tokens_opts or ExtractTokensOpts(lemmatize=True),
                 xslt_filename=None,
                 version=version,
                 reader_opts=reader_opts,

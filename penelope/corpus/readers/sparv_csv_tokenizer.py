@@ -40,7 +40,7 @@ class SparvCsvTokenizer(TextTokenizer):
             chunk_size=chunk_size,
         )
 
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts(lemmatize=True)
         self.parser = SparvCsvToText(delimiter=self.delimiter, extract_tokens_opts=self.extract_tokens_opts)
 
     def preprocess(self, content):

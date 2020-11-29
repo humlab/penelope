@@ -50,13 +50,64 @@ def transformer_defaults_filter(opts: Dict[str, Any]):
     return {k: v for k, v in opts.items() if k in transformer_defaults()}
 
 
-# TODO: Refactor to make it more extendable
-class TokensTransformer:
+class TokensTransformerBase:
     """Transforms applied on tokenized text"""
 
-    def __init__(self, tokens_transform_opts: TokensTransformOpts):
+    def __init__(self):
         self.transforms = []
-        self.ingest(tokens_transform_opts)
+
+    def add(self, transform) -> TokensTransformer:
+        self.transforms.append(transform)
+        return self
+
+    def transform(self, tokens) -> TokensTransformer:
+
+        for ft in self.transforms:
+            tokens = [x for x in ft(tokens)]
+
+        return tokens
+
+    # Shortcuts
+
+
+class TokensTransformerMixin:
+    """Convinient functions that enable chaining of transforms"""
+
+    def min_chars_filter(self, n_chars) -> TokensTransformer:
+        if (n_chars or 0) < 1:
+            return self
+        return self.add(transforms.min_chars_filter(n_chars))
+
+    def max_chars_filter(self, n_chars) -> TokensTransformer:
+        if (n_chars or 0) < 1:
+            return self
+        return self.add(transforms.max_chars_filter(n_chars))
+
+    def to_lower(self) -> TokensTransformer:
+        return self.add(transforms.lower_transform())
+
+    def to_upper(self) -> TokensTransformer:
+        return self.add(transforms.upper_transform())
+
+    def remove_symbols(self) -> TokensTransformer:
+        return self.add(transforms.remove_symbols()).add(transforms.min_chars_filter(1))
+
+    def only_alphabetic(self) -> TokensTransformer:
+        return self.add(transforms.only_alphabetic_filter())
+
+    def remove_numerals(self) -> TokensTransformer:
+        return self.add(transforms.remove_numerals())
+
+    def remove_stopwords(self, language_or_stopwords=None, extra_stopwords=None) -> TokensTransformer:
+        if language_or_stopwords is None:
+            return self
+        return self.add(transforms.remove_stopwords(language_or_stopwords, extra_stopwords))
+
+    def remove_accents(self) -> TokensTransformer:
+        return self.add(textacy_remove.remove_accents)
+
+    def only_any_alphanumeric(self) -> TokensTransformer:
+        return self.add(transforms.only_any_alphanumeric())
 
     def ingest(self, opts: TokensTransformOpts):
 
@@ -95,51 +146,11 @@ class TokensTransformer:
                 language_or_stopwords=(opts.stopwords or opts.language), extra_stopwords=opts.extra_stopwords
             )
 
-    def add(self, transform) -> TokensTransformer:
-        self.transforms.append(transform)
-        return self
 
-    def transform(self, tokens) -> TokensTransformer:
+# TODO: Refactor to make it more extendable
+class TokensTransformer(TokensTransformerMixin, TokensTransformerBase):
+    """Transforms applied on tokenized text"""
 
-        for ft in self.transforms:
-            tokens = [x for x in ft(tokens)]
-
-        return tokens
-
-    # Shortcuts
-
-    def min_chars_filter(self, n_chars) -> TokensTransformer:
-        if (n_chars or 0) < 1:
-            return self
-        return self.add(transforms.min_chars_filter(n_chars))
-
-    def max_chars_filter(self, n_chars) -> TokensTransformer:
-        if (n_chars or 0) < 1:
-            return self
-        return self.add(transforms.max_chars_filter(n_chars))
-
-    def to_lower(self) -> TokensTransformer:
-        return self.add(transforms.lower_transform())
-
-    def to_upper(self) -> TokensTransformer:
-        return self.add(transforms.upper_transform())
-
-    def remove_symbols(self) -> TokensTransformer:
-        return self.add(transforms.remove_symbols()).add(transforms.min_chars_filter(1))
-
-    def only_alphabetic(self) -> TokensTransformer:
-        return self.add(transforms.only_alphabetic_filter())
-
-    def remove_numerals(self) -> TokensTransformer:
-        return self.add(transforms.remove_numerals())
-
-    def remove_stopwords(self, language_or_stopwords=None, extra_stopwords=None) -> TokensTransformer:
-        if language_or_stopwords is None:
-            return self
-        return self.add(transforms.remove_stopwords(language_or_stopwords, extra_stopwords))
-
-    def remove_accents(self) -> TokensTransformer:
-        return self.add(textacy_remove.remove_accents)
-
-    def only_any_alphanumeric(self) -> TokensTransformer:
-        return self.add(transforms.only_any_alphanumeric())
+    def __init__(self, tokens_transform_opts: TokensTransformOpts):
+        TokensTransformerBase.__init__(self)
+        self.ingest(tokens_transform_opts)

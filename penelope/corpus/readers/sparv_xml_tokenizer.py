@@ -47,7 +47,7 @@ class SparvXmlTokenizer(TextTokenizer):
             chunk_size=chunk_size,
         )
 
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts(lemmatize=True)
         self.xslt_filename = XSLT_FILENAME_V3 if version == 3 else xslt_filename
         self.parser = SparvXml2Text(
             xslt_filename=self.xslt_filename,

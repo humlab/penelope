@@ -29,7 +29,7 @@ class SparvXml2Text:
         extract_tokens_opts: ExtractTokensOpts = None,
         delimiter: str = " ",
     ):
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts()
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts(lemmatize=True)
         self.xslt_filename = xslt_filename or XSLT_FILENAME
         self.xslt = etree.parse(self.xslt_filename)  # pylint: disable=I1101
         self.xslt_transformer = etree.XSLT(self.xslt)  # pylint: disable=I1101

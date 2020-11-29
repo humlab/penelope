@@ -1,7 +1,7 @@
 import collections
 from typing import Any, Iterator, List, Sequence, Union
 
-from penelope.vendor.spacy.interfaces import ContentType
+from penelope.pipeline.interfaces import ContentType
 
 from . import interfaces, tasks_mixin
 
