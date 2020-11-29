@@ -1,7 +1,7 @@
 import glob
 import os
 import zipfile
-from typing import Callable, List, Union
+from typing import Callable, Iterable, List, Tuple, Union
 
 from penelope.utility import filename_satisfied_by, read_textfile
 
@@ -17,8 +17,8 @@ def streamify_text_source(
     filename_pattern: str = '*.txt',
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
-):
-    """Returns an (file_pattern, text) iterator for `text_source`
+) -> Iterable[Tuple[str,str]]:
+    """Returns an (filename, text) iterator for `text_source`
 
     Parameters
     ----------
