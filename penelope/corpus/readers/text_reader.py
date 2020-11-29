@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict, Iterable, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 import pandas as pd
 from penelope.utility import (
@@ -41,17 +41,21 @@ class TextReader(ICorpusReader):
     ):
         reader_opts = reader_opts or TextReaderOpts()
 
-        self._source = source
-        self.reader_opts = reader_opts.copy()
-        self.text_transformer = TextTransformer(text_transform_opts=transform_opts or TextTransformOpts())
+        self._source: TextSource = source
+        self.reader_opts: TextReaderOpts = reader_opts.copy()
+        self.text_transformer: TextTransformer = TextTransformer(
+            text_transform_opts=transform_opts or TextTransformOpts()
+        )
 
         self._iterator = None
-        self._all_filenames = list_filenames(
-            source, filename_pattern=self.reader_opts.filename_pattern, filename_filter=None
+        self._all_filenames: List[str] = list_filenames(
+            source,
+            filename_pattern=self.reader_opts.filename_pattern,
+            filename_filter=None,
         )
-        self._all_metadata = self._create_all_metadata()
+        self._all_metadata: Sequence[Dict[str, Any]] = self._create_all_metadata()
 
-    def _get_texts(self):
+    def _get_texts(self) -> Iterable[Tuple[str,str]]:
         return streamify_text_source(
             self._source,
             filename_pattern=self.reader_opts.filename_pattern,
@@ -59,7 +63,7 @@ class TextReader(ICorpusReader):
             as_binary=self.reader_opts.as_binary,
         )
 
-    def _create_iterator(self):
+    def _create_iterator(self) -> Iterable[Tuple[str,str]]:
         return (
             (os.path.basename(filename), document)
             for (filename, content) in self._get_texts()
@@ -72,7 +76,7 @@ class TextReader(ICorpusReader):
             filename_fields=self.reader_opts.filename_fields,
         )
 
-    def _get_filenames(self):
+    def _get_filenames(self) -> List[str]:
 
         if self.reader_opts.filename_filter is None:
             return self._all_filenames
@@ -83,7 +87,7 @@ class TextReader(ICorpusReader):
             if filename_satisfied_by(filename, filename_pattern=None, filename_filter=self.reader_opts.filename_filter)
         ]
 
-    def _get_metadata(self, filenames):
+    def _get_metadata(self, filenames) -> Sequence[Dict[str, Any]]:
 
         if self.reader_opts.filename_filter is None:
             return self._all_metadata
@@ -91,15 +95,15 @@ class TextReader(ICorpusReader):
         return [metadata for metadata in self._all_metadata if metadata['filename'] in filenames]
 
     @property
-    def filenames(self):
+    def filenames(self) -> List[str]:
         return self._get_filenames()
 
     @property
-    def metadata(self):
+    def metadata(self) -> Sequence[Dict[str, Any]]:
         return self._get_metadata(strip_paths(self._get_filenames()))
 
     @property
-    def metadata_lookup(self):
+    def metadata_lookup(self) -> Dict[str, Dict[str, Any]]:
         return {x['filename']: x for x in self.metadata}
 
     @property
