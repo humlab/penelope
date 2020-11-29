@@ -1,5 +1,5 @@
 import pytest  # pylint: disable=unused-import
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
@@ -16,7 +16,7 @@ TEST_DATA = sparv_csv_export_small_text()
 def test_reader_when_no_transforms_returns_source_tokens():
 
     reader = SparvCsvToText(
-        extract_tokens_opts=ExtractTokensOpts(pos_includes=None, pos_excludes=None, lemmatize=False)
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes=None, pos_excludes=None, lemmatize=False)
     )
 
     expected = "Rödräven är ett hunddjur som har en mycket vidsträckt utbredning över norra halvklotet ."
@@ -29,7 +29,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 def test_reader_when_only_nn_returns_only_nn():
 
     reader = SparvCsvToText(
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=False)
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=False)
     )
 
     expected = "Rödräven hunddjur utbredning halvklotet"
@@ -41,7 +41,7 @@ def test_reader_when_only_nn_returns_only_nn():
 
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
-    reader = SparvCsvToText(extract_tokens_opts=ExtractTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=True))
+    reader = SparvCsvToText(extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=True))
 
     expected = "rödräv hunddjur utbredning halvklot"
 
@@ -53,7 +53,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
     reader = SparvCsvToText(
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='NN|VB', pos_excludes='', lemmatize=True)
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN|VB', pos_excludes='', lemmatize=True)
     )
 
     expected = "rödräv vara hunddjur ha utbredning halvklot"
@@ -66,7 +66,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 def test_reader_when_lemmatized_nn_vb_pos_appendedreturns_lemmatized_nn_vb_pos():
 
     reader = SparvCsvToText(
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='NN|VB', pos_excludes='', lemmatize=True, append_pos=True)
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN|VB', pos_excludes='', lemmatize=True, append_pos=True)
     )
 
     expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN"

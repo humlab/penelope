@@ -34,7 +34,7 @@ class TextReaderOpts:
 
 
 @dataclass
-class ExtractTokensOpts:
+class ExtractTaggedTokensOpts:
 
     # FIXME: Removed optional, change default to False if optional
     lemmatize: bool  # = True
@@ -71,9 +71,9 @@ class ExtractTokensOpts:
         )
 
 
-# FIXME Consolidate ExtractTokensOpts and SpacyExtractTokensOpts
+# FIXME Consolidate ExtractTaggedTokensOpts and SpacyExtractTokensOpts
 @dataclass
-class SpacyExtractTokensOpts(ExtractTokensOpts):
+class SpacyExtractTokensOpts(ExtractTaggedTokensOpts):
     """Spacy document extract options"""
 
     is_alpha: bool = None

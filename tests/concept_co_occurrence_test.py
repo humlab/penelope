@@ -10,7 +10,7 @@ from penelope.co_occurrence.concept_co_occurrence import (
     to_vectorized_corpus,
 )
 from penelope.corpus import SparvTokenizedCsvCorpus
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
@@ -69,7 +69,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         concept={'jag'},
         context_width=2,
     )
-    extract_tokens_opts = ExtractTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=True)
+    extract_tokens_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=True)
     tokens_transform_opts = TokensTransformOpts(
         remove_stopwords=None,
         keep_symbols=True,
@@ -99,7 +99,7 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_co
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
 
     coo_df = partitioned_corpus_concept_co_occurrence(
@@ -123,7 +123,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
     coo_df = partitioned_corpus_concept_co_occurrence(
         corpus,
@@ -146,7 +146,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'filename_field': ('year:_:1',),
     }
     concept_opts = ConceptContextOpts(concept=('jag',), context_width=2)
-    extract_tokens_opts = ExtractTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
+    extract_tokens_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
     tokens_transform_opts = TokensTransformOpts(
         to_lower=True,
         min_len=1,

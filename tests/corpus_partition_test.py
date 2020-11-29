@@ -1,4 +1,4 @@
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.readers.text_tokenizer import TextTokenizer
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
@@ -14,7 +14,7 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTokensOpts(lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(lemmatize=True),
     )
 
     return corpus
@@ -220,7 +220,7 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTokensOpts(lemmatize=True, pos_includes='|NN|'),
+        extract_tokens_opts=ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NN|'),
         tokens_transform_opts=TokensTransformOpts(
             min_len=2,
             to_upper=True,

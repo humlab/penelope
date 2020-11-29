@@ -1,5 +1,5 @@
 import penelope.corpus.sparv.sparv_xml_to_text as sparv
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export_small.xml'
 
@@ -15,7 +15,7 @@ def test_extract_when_no_filter_or_lemmatize_returns_original_text():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='', lemmatize=False, append_pos=False, pos_excludes=''),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=False, append_pos=False, pos_excludes=''),
     )
 
     result = parser.transform(content)
@@ -29,7 +29,7 @@ def test_extract_when_ignore_punctuation_filters_out_punctuations():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTokensOpts(
+        extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes='', lemmatize=False, append_pos=False, pos_excludes="|MAD|MID|PAD|"
         ),
     )
@@ -45,7 +45,7 @@ def test_extract_when_lemmatized_returns_baseform():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='', lemmatize=True, append_pos=False, pos_excludes=''),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=True, append_pos=False, pos_excludes=''),
     )
 
     result = parser.transform(content)
@@ -59,7 +59,7 @@ def test_extract_when_lemmatized_and_filter_nouns_returns_nouns_in_baseform():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTokensOpts(
+        extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes="|NN|", lemmatize=True, append_pos=False, pos_excludes="|MAD|MID|PAD|"
         ),
     )
@@ -75,7 +75,7 @@ def test_extract_when_lemmatized_and_filter_nouns_returns_nouns_in_baseform_with
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter="|",
-        extract_tokens_opts=ExtractTokensOpts(
+        extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes="|NN|", lemmatize=True, append_pos=False, pos_excludes="|MAD|MID|PAD|"
         ),
     )

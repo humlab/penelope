@@ -119,7 +119,7 @@ def run_model(
         keep_symbols=False,
     )
 
-    # if SparvTokenizer opts = ExtractTokensOpts(pos_includes='|NN|', lemmatize=True, chunk_size=None)
+    # if SparvTokenizer opts = ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True, chunk_size=None)
 
     tokenizer = text_tokenizer.TextTokenizer(
         source=corpus_filename,

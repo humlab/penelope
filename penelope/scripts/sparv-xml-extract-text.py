@@ -2,7 +2,7 @@ import json
 
 import click
 import penelope.corpus.sparv_corpus as sparv_corpus
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import replace_extension, suffix_filename, timestamp_filename
 
@@ -64,7 +64,7 @@ def prepare_train_corpus(
         keep_numerals=keep_numerals,
         keep_symbols=keep_symbols,
     )
-    extract_tokens_opts = ExtractTokensOpts(
+    extract_tokens_opts = ExtractTaggedTokensOpts(
         pos_includes=pos_includes,
         pos_excludes=pos_excludes,
         lemmatize=lemmatize,

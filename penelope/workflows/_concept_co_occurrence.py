@@ -9,7 +9,7 @@ from penelope.co_occurrence import (
     store_co_occurrences,
     to_vectorized_corpus,
 )
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from penelope.corpus.tokens_transformer import TokensTransformOpts
@@ -25,7 +25,7 @@ def execute_workflow(
     output_filename: str,
     *,
     concept_opts: ConceptContextOpts = None,
-    extract_tokens_opts: ExtractTokensOpts = None,
+    extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     count_threshold: int = None,
     partition_keys: Tuple[str, List[str]],
@@ -54,7 +54,7 @@ def execute_workflow(
             Width of context i.e. distance to cencept word, by default None
     count_threshold : int, optional
         Word pair count threshold (entire corpus, by default None
-    extract_tokens_opts : ExtractTokensOpts, optional
+    extract_tokens_opts : ExtractTaggedTokensOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
     filename_field : Any, optional
         Specifies fields to extract from document's filename, by default None
@@ -131,7 +131,7 @@ def store_concept_co_occurrence_bundle(
     reader_opts: Dict,
     tokens_transform_opts: TokensTransformOpts,
     concept_opts: ConceptContextOpts,
-    extract_tokens_opts: ExtractTokensOpts,
+    extract_tokens_opts: ExtractTaggedTokensOpts,
 ):
 
     store_co_occurrences(output_filename, co_occurrences)

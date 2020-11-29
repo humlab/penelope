@@ -4,7 +4,7 @@ from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import store_to_archive
 
 from . import readers
-from .readers import ExtractTokensOpts
+from .readers import ExtractTaggedTokensOpts
 from .tokenized_corpus import TokenizedCorpus
 from .tokens_transformer import TokensTransformOpts
 
@@ -16,7 +16,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         version,
         *,
         reader_opts: TextReaderOpts = None,
-        extract_tokens_opts: ExtractTokensOpts = None,
+        extract_tokens_opts: ExtractTaggedTokensOpts = None,
         tokens_transform_opts: TokensTransformOpts = None,
         chunk_size: int = None,
     ):
@@ -27,7 +27,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         else:
             tokenizer = readers.SparvXmlTokenizer(
                 source,
-                extract_tokens_opts=extract_tokens_opts or ExtractTokensOpts(lemmatize=True),
+                extract_tokens_opts=extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True),
                 xslt_filename=None,
                 version=version,
                 reader_opts=reader_opts,
@@ -51,7 +51,7 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         source,
         *,
         reader_opts: TextReaderOpts = None,
-        extract_tokens_opts: ExtractTokensOpts = None,
+        extract_tokens_opts: ExtractTaggedTokensOpts = None,
         tokens_transform_opts: TokensTransformOpts = None,
         chunk_size: int = None,
     ):
@@ -72,7 +72,7 @@ def sparv_xml_extract_and_store(
     source: str,
     target: str,
     version: int,
-    extract_tokens_opts: ExtractTokensOpts = None,
+    extract_tokens_opts: ExtractTaggedTokensOpts = None,
     reader_opts: TextReaderOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     chunk_size: int = None,
@@ -84,7 +84,7 @@ def sparv_xml_extract_and_store(
     source : str
     target : str
     version : int
-    extract_tokens_opts : ExtractTokensOpts, optional
+    extract_tokens_opts : ExtractTaggedTokensOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
@@ -119,7 +119,7 @@ def sparv_xml_extract_and_store(
 def sparv_csv_extract_and_store(
     source: str,
     target: str,
-    extract_tokens_opts: ExtractTokensOpts = None,
+    extract_tokens_opts: ExtractTaggedTokensOpts = None,
     reader_opts: TextReaderOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     chunk_size: int = None,
@@ -132,7 +132,7 @@ def sparv_csv_extract_and_store(
         [description]
     target : str
         [description]
-    extract_tokens_opts : ExtractTokensOpts, optional
+    extract_tokens_opts : ExtractTaggedTokensOpts, optional
     tokens_transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,

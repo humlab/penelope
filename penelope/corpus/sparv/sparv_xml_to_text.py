@@ -3,7 +3,7 @@ import logging
 import os
 
 from lxml import etree
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +26,10 @@ class SparvXml2Text:
     def __init__(
         self,
         xslt_filename: str = None,
-        extract_tokens_opts: ExtractTokensOpts = None,
+        extract_tokens_opts: ExtractTaggedTokensOpts = None,
         delimiter: str = " ",
     ):
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts(lemmatize=True)
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True)
         self.xslt_filename = xslt_filename or XSLT_FILENAME
         self.xslt = etree.parse(self.xslt_filename)  # pylint: disable=I1101
         self.xslt_transformer = etree.XSLT(self.xslt)  # pylint: disable=I1101

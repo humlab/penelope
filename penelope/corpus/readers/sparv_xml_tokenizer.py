@@ -4,7 +4,7 @@ import logging
 from penelope.corpus.readers.text_transformer import TextTransformOpts
 from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 
-from .interfaces import ExtractTokensOpts, TextReaderOpts, TextSource
+from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from .text_tokenizer import TextTokenizer
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class SparvXmlTokenizer(TextTokenizer):
         reader_opts: TextReaderOpts = None,
         version: int = 4,
         xslt_filename: str = None,
-        extract_tokens_opts: ExtractTokensOpts = None,
+        extract_tokens_opts: ExtractTaggedTokensOpts = None,
         chunk_size: int = None,
     ):
         """Sparv XML file reader
@@ -29,7 +29,7 @@ class SparvXmlTokenizer(TextTokenizer):
         ----------
         source : TextSource
             Source (filename, ZIP, tokenizer)
-        extract_tokens_opts : ExtractTokensOpts, optional
+        extract_tokens_opts : ExtractTaggedTokensOpts, optional
         reader_opts: TextReaderOpts
         chunk_size: int
         xslt_filename : str, optional
@@ -47,7 +47,7 @@ class SparvXmlTokenizer(TextTokenizer):
             chunk_size=chunk_size,
         )
 
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTokensOpts(lemmatize=True)
+        self.extract_tokens_opts = extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True)
         self.xslt_filename = XSLT_FILENAME_V3 if version == 3 else xslt_filename
         self.parser = SparvXml2Text(
             xslt_filename=self.xslt_filename,
@@ -64,7 +64,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
         self,
         source: TextSource,
         *,
-        extract_tokens_opts: ExtractTokensOpts = None,
+        extract_tokens_opts: ExtractTaggedTokensOpts = None,
         reader_opts: TextReaderOpts = None,
         chunk_size: int = None,
     ):
@@ -74,7 +74,7 @@ class Sparv3XmlTokenizer(SparvXmlTokenizer):
         ----------
         source : TextSource
             Source (filename, folder, zip, list)
-        extract_tokens_opts: ExtractTokensOpts, optional
+        extract_tokens_opts: ExtractTaggedTokensOpts, optional
         reader_opts : TextReaderOpts
         """
         reader_opts = reader_opts or TextReaderOpts()

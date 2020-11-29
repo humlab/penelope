@@ -3,7 +3,7 @@ from typing import Any, List
 
 import click
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
 
@@ -98,7 +98,7 @@ def main(
         only_alphabetic=only_alphabetic,
         only_any_alphanumeric=only_any_alphanumeric,
     )
-    extract_tokens_opts = ExtractTokensOpts(
+    extract_tokens_opts = ExtractTaggedTokensOpts(
         pos_includes=pos_includes,
         pos_excludes=pos_excludes,
         lemmatize=lemmatize,

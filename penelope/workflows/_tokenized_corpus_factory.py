@@ -1,5 +1,5 @@
 from penelope.corpus import SparvTokenizedCsvCorpus, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
-from penelope.corpus.readers import ExtractTokensOpts, TextTokenizer
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextTokenizer
 from penelope.corpus.readers.interfaces import TextReaderOpts
 
 
@@ -8,7 +8,7 @@ def create_corpus(
     input_filename: str,
     tokens_transform_opts: TokensTransformOpts,
     reader_opts: TextReaderOpts,
-    extract_tokens_opts: ExtractTokensOpts,
+    extract_tokens_opts: ExtractTaggedTokensOpts,
     chunk_size: int = None,
 ) -> TokenizedCorpus:
     return _ABSTRACT_FACTORY.get(corpus_type, NullCorpusFactory).create(
@@ -32,7 +32,7 @@ class TextTokenizedCorpusFactory:
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
         reader_opts: TextReaderOpts,
-        extract_tokens_opts: ExtractTokensOpts,  # pylint: disable=unused-argument
+        extract_tokens_opts: ExtractTaggedTokensOpts,  # pylint: disable=unused-argument
         chunk_size: int = None,
     ):
         corpus = TokenizedCorpus(
@@ -56,7 +56,7 @@ class SparvTokenizedCsvCorpusFactory:
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
         reader_opts: TextReaderOpts,
-        extract_tokens_opts: ExtractTokensOpts,
+        extract_tokens_opts: ExtractTaggedTokensOpts,
         chunk_size: int = None,
     ):
         corpus = SparvTokenizedCsvCorpus(

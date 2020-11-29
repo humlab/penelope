@@ -3,7 +3,7 @@ from typing import Iterable, List, Union
 import numpy as np
 import pandas as pd
 import spacy
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -74,7 +74,7 @@ TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 # FIXME: Move this function out of spaCy
 def tagged_frame_to_tokens(
     doc: pd.DataFrame,
-    extract_opts: ExtractTokensOpts,
+    extract_opts: ExtractTaggedTokensOpts,
 ) -> Iterable[str]:
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:

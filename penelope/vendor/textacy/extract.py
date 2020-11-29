@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 import pandas as pd
 import penelope.utility as utility
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from spacy.tokens import Doc
 from textacy.spacier.doc_extensions import to_terms_list
 
@@ -332,7 +332,7 @@ def extract_document_tokens(
     *,
     spacy_docs: Iterable[Doc],
     documents: pd.DataFrame,
-    extract_tokens_opts: ExtractTokensOpts = None,
+    extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
 ) -> Iterable[Tuple[str, Iterable[str]]]:
@@ -355,7 +355,7 @@ def vectorize_textacy_corpus(
     *,
     spacy_docs: Iterable[Doc],
     documents: pd.DataFrame,
-    extract_tokens_opts: ExtractTokensOpts = None,
+    extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
     vectorizer_args=None,

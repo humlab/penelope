@@ -2,7 +2,7 @@ import os
 from typing import Any
 
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import getLogger
 
@@ -25,7 +25,7 @@ def execute_workflow(
     filename_pattern: str = '*.*',
     count_threshold: int = None,
     tokens_transform_opts: TokensTransformOpts = None,
-    extract_tokens_opts: ExtractTokensOpts = None,
+    extract_tokens_opts: ExtractTaggedTokensOpts = None,
     **_,
 ) -> VectorizedCorpus:
 

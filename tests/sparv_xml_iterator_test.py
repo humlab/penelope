@@ -1,5 +1,5 @@
 import penelope.corpus.readers as readers
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
@@ -34,7 +34,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
     reader = readers.SparvXmlTokenizer(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='', lemmatize=False, pos_excludes=None),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=False, pos_excludes=None),
     )
 
     document_name, tokens = next(iter(reader))
@@ -66,7 +66,7 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
     reader = readers.SparvXmlTokenizer(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='', lemmatize=True, pos_excludes=None),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=True, pos_excludes=None),
     )
 
     document_name, tokens = next(iter(reader))
@@ -97,7 +97,7 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
     reader = readers.SparvXmlTokenizer(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='', lemmatize=True, pos_excludes="|MAD|MID|PAD|"),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=True, pos_excludes="|MAD|MID|PAD|"),
     )
 
     document_name, tokens = next(iter(reader))
@@ -114,7 +114,7 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
     reader = readers.SparvXmlTokenizer(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTokensOpts(
+        extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes='|NN|',
             lemmatize=True,
         ),
@@ -134,7 +134,7 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
     reader = readers.SparvXmlTokenizer(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=2,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
     for i, (document_name, tokens) in enumerate(reader):
@@ -154,7 +154,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     reader = readers.SparvXmlTokenizer(
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
         chunk_size=None,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
     for i, (document_name, tokens) in enumerate(reader):
@@ -170,7 +170,7 @@ def test_reader_when_source_is_sparv3_succeeds():
     reader = readers.Sparv3XmlTokenizer(
         sparv_zipped_xml_export_v3_filename,
         chunk_size=None,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
     for _, (_, tokens) in enumerate(reader):

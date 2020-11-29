@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Any, Dict, Set
 
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class SparvCsvToText:
 
     def __init__(
         self,
-        extract_tokens_opts: ExtractTokensOpts = None,
+        extract_tokens_opts: ExtractTaggedTokensOpts = None,
         delimiter: str = '\t',
         fields_index: Dict[str, int] = None,
     ):

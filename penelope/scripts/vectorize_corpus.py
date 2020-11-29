@@ -1,7 +1,7 @@
 from typing import Any
 
 import click
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import getLogger
 from penelope.workflows import vectorize_corpus_workflow
@@ -99,7 +99,7 @@ def main(
     extract_tokens_opts = None
     if corpus_type == 'sparv4-csv':
         file_pattern = '*.csv'
-        extract_tokens_opts = ExtractTokensOpts(
+        extract_tokens_opts = ExtractTaggedTokensOpts(
             pos_includes=pos_includes,
             pos_excludes=pos_excludes,
             lemmatize=lemmatize,

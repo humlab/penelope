@@ -5,7 +5,7 @@ from typing import Callable
 import ipyfilechooser
 import ipywidgets as widgets
 from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import (
     PoS_TAGS_SCHEMES,
@@ -153,9 +153,9 @@ class GUI:
         )
 
     @property
-    def extract_tokens_opts(self) -> ExtractTokensOpts:
+    def extract_tokens_opts(self) -> ExtractTaggedTokensOpts:
 
-        return ExtractTokensOpts(
+        return ExtractTaggedTokensOpts(
             pos_includes=f"|{'|'.join(flatten(self.pos_includes.value))}|",
             pos_excludes="|MAD|MID|PAD|",
             lemmatize=self.lemmatize.value,

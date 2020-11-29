@@ -3,7 +3,7 @@ import uuid
 
 import penelope.corpus.sparv_corpus as sparv_corpus
 import pytest  # pylint: disable=unused-import
-from penelope.corpus.readers import ExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import read_from_archive
 
@@ -31,7 +31,7 @@ def test_reader_store_result():
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
         target_filename,
         version=4,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
         tokens_transform_opts=TokensTransformOpts(to_lower=True),
     )
 
@@ -54,7 +54,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
         SPARV3_ZIPPED_XML_EXPORT_FILENAME,
         target_filename,
         version=3,
-        extract_tokens_opts=ExtractTokensOpts(pos_includes='|NN|', lemmatize=False),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=False),
         tokens_transform_opts=TokensTransformOpts(to_lower=True, min_len=2, stopwords=['<text>']),
     )
 

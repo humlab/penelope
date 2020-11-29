@@ -72,7 +72,7 @@ class PipelinePayload:
     metadata: List[Dict[str,Any]] = None
 
     # NOT USED: token2id: Mapping = None
-    # NOT USED: extract_tokens_opts: ExtractTokensOpts = None
+    # NOT USED: extract_tokens_opts: ExtractTaggedTokensOpts = None
     # NOT USED: tokens_transform_opts: TokensTransformOpts = None
     # NOT USED: extract_opts: Mapping = None
 
