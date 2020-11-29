@@ -110,6 +110,9 @@ class CorpusVectorizer:
                 total = len(corpus)
             elif hasattr(corpus, 'documents'):
                 total = len(corpus.documents) if corpus.documents is not None else None
+            else:
+                if documents is not None:
+                    total = len(documents)
 
             terms = tqdm(terms, total=total, desc="Vectorizing: ")
 
