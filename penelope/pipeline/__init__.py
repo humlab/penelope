@@ -6,7 +6,7 @@ from .checkpoint import (
     load_checkpoint,
     store_checkpoint,
 )
-from .config import CorpusConfig
+from .config import CorpusConfig, CorpusType
 from .convert import to_vectorized_corpus
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, PipelinePayload
 from .pipelines import CorpusPipeline, SpacyPipeline
