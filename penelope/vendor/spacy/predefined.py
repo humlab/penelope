@@ -1,6 +1,6 @@
 import pandas as pd
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import ExtractTokensOpts2, TextReaderOpts, TextSource, TextTransformOpts
+from penelope.corpus.readers import SpacyExtractTokensOpts, TextReaderOpts, TextSource, TextTransformOpts
 from spacy.language import Language
 
 from . import interfaces
@@ -13,7 +13,7 @@ def extract_text_to_vectorized_corpus(
     *,
     reader_opts: TextReaderOpts,
     transform_opts: TextTransformOpts,
-    extract_tokens_opts: ExtractTokensOpts2,
+    extract_tokens_opts: SpacyExtractTokensOpts,
     vectorize_opts: VectorizeOpts,
     document_index: pd.DataFrame = None,
 ) -> VectorizedCorpus:

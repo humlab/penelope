@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import abc
-import zipfile
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import TYPE_CHECKING, Any, Iterable, Iterator, Mapping, Sequence, Tuple, Union
+from enum import IntEnum, unique
+from typing import TYPE_CHECKING, Any, Iterable, Mapping, Sequence, Union
 
 import pandas as pd
 from penelope.corpus.readers import TextSource
-from penelope.utility.filename_utils import replace_extension
 
-from ._utils import load_document_index, read_data_frame_from_zip, write_data_frame_to_zip
+from ._utils import load_document_index
 
 if TYPE_CHECKING:
     from . import pipeline as corpus_pipeline
@@ -18,7 +16,8 @@ if TYPE_CHECKING:
 # FIXME: #24 Make a GENERIC CORPUS PIPELIME, use MixIn for vendor specific tasks
 
 
-class ContentType(Enum):
+@unique
+class ContentType(IntEnum):
     NONE = 0
     DATAFRAME = 1
     TEXT = 2
@@ -26,7 +25,12 @@ class ContentType(Enum):
     SPACYDOC = 4
     SPARV_XML = 5
     SPARV_CSV = 6
-    VECTORIZED_CORPUS = 6
+    TOKENIZED_CORPUS = 7
+    VECTORIZED_CORPUS = 8
+    # DTM = 9
+    # BOW = 10
+    ANY = 11
+    PASSTHROUGH = 12
 
 
 @dataclass
@@ -59,7 +63,7 @@ class PipelinePayload:
 
     source: TextSource = None
     document_index_source: Union[str, pd.DataFrame] = None
-
+    # FIXME: Add document_index_key
     _document_index: pd.DataFrame = None
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
@@ -139,6 +143,8 @@ class ITask(abc.ABC):
         if self.in_content_type is None:
             return
         if isinstance(self.in_content_type, ContentType):
+            if self.in_content_type == ContentType.ANY:
+                return
             if self.in_content_type == content_type:
                 return
         if isinstance(

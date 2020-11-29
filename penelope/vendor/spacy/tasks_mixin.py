@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Union
 
 from penelope.corpus import VectorizeOpts
-from penelope.corpus.readers import ExtractTokensOpts2, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import SpacyExtractTokensOpts, TextReaderOpts, TextTransformOpts
 from spacy.language import Language
 
 from . import tasks
@@ -18,7 +18,7 @@ class PipelineShortcutMixIn:
     ) -> pipeline.CorpusPipeline:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
-    def dataframe_to_tokens(self, extract_tokens_opts: ExtractTokensOpts2) -> pipeline.CorpusPipeline:
+    def dataframe_to_tokens(self, extract_tokens_opts: SpacyExtractTokensOpts) -> pipeline.CorpusPipeline:
         return self.add(tasks.DataFrameToTokens(extract_word_opts=extract_tokens_opts))
 
     def save_dataframe(self, filename: str) -> pipeline.CorpusPipeline:
@@ -28,9 +28,9 @@ class PipelineShortcutMixIn:
         """ _ => DATAFRAME """
         return self.add(tasks.LoadDataFrame(filename=filename))
 
-    def checkpoint_dataframe(self, filename: str) -> pipeline.CorpusPipeline:
-        """ DATAFRAME => [CHECKPOINT] => DATAFRAME """
-        return self.add(tasks.CheckpointDataFrame(filename=filename))
+    def checkpoint(self, filename: str) -> pipeline.CorpusPipeline:
+        """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
+        return self.add(tasks.Checkpoint(filename=filename))
 
     def tokens_to_text(self) -> pipeline.CorpusPipeline:
         """ [TOKEN] => TEXT """

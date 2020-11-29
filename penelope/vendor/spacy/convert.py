@@ -1,17 +1,163 @@
+import json
 import zipfile
-from typing import Iterable, Iterator, List, Optional, Tuple, Union
+from dataclasses import asdict, dataclass, field
+from io import StringIO
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Union
 
 import numpy as np
 import pandas as pd
 import spacy
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import ExtractTokensOpts2
-from penelope.utility.filename_utils import replace_extension
-from penelope.vendor.spacy import ContentType, DocumentPayload
+from penelope.corpus.readers import SpacyExtractTokensOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 
-from ._utils import read_data_frame_from_zip, to_text, write_data_frame_to_zip
+from ._utils import to_text
+from .interfaces import ContentType, DocumentPayload, PipelineError
+
+SerializableContent = Union[str, Iterable[str], pd.core.api.DataFrame]
+
+
+@dataclass
+class ContentSerializer:
+
+    serialize: Callable[[SerializableContent], str] = None
+    deserialize: Callable[[str], SerializableContent] = None
+
+    @staticmethod
+    def identity(content: Any):
+        return content
+
+    @staticmethod
+    def token_to_text(content: Iterable[str]) -> str:
+        return ' '.join(content)
+
+    @staticmethod
+    def text_to_token(content: str) -> Iterable[str]:
+        return content.split(' ')
+
+    @staticmethod
+    def df_to_text(content: pd.DataFrame) -> str:
+        return content.to_csv(sep='\t', header=True)
+
+    @staticmethod
+    def text_to_df(content: str) -> pd.DataFrame:
+        return pd.read_csv(StringIO(content), sep='\t', index_col=0)
+
+    @staticmethod
+    def read_text(zf: zipfile.ZipFile, filename: str) -> str:
+        return zf.read(filename).decode('utf-8')
+
+    @staticmethod
+    def read_binary(zf: zipfile.ZipFile, filename: str) -> bytes:
+        return zf.read(filename)
+
+    @staticmethod
+    def read_json(zf: zipfile.ZipFile, filename: str) -> Dict:
+        return json.loads(ContentSerializer.read_text(zf, filename))
+
+    @staticmethod
+    def read_dataframe(zf: zipfile.ZipFile, filename: str) -> pd.DataFrame:
+        return pd.read_csv(StringIO(ContentSerializer.read_text(zf, filename)), sep='\t', index_col=0)
+
+
+CHECKPOINT_SERIALIZERS = {
+    ContentType.TEXT: ContentSerializer(serialize=ContentSerializer.identity, deserialize=ContentSerializer.identity),
+    ContentType.TOKENS: ContentSerializer(
+        serialize=ContentSerializer.token_to_text, deserialize=ContentSerializer.text_to_token
+    ),
+    ContentType.DATAFRAME: ContentSerializer(
+        serialize=ContentSerializer.df_to_text, deserialize=ContentSerializer.text_to_df
+    ),
+    # FIXME: ADD SPARV XML with as_binary
+}
+
+
+@dataclass
+class ContentSerializeOpts:
+    content_type_code: int = 0
+    document_index_name: str = field(default="document_index.csv")
+    as_binary: bool = False
+
+    @property
+    def content_type(self) -> ContentType:
+        return ContentType(self.content_type_code)
+
+    @content_type.setter
+    def content_type(self, value: ContentType):
+        self.content_type_code = int(value)
+
+
+@dataclass
+class CheckpointData:
+    content_type: ContentType = ContentType.NONE
+    document_index: pd.DataFrame = None
+    payload_stream: Iterable[DocumentPayload] = None
+    serialize_opts: ContentSerializeOpts = None
+
+
+def store_checkpoint(
+    *,
+    options: ContentSerializeOpts,
+    target_filename: str,
+    document_index: pd.DataFrame,
+    payload_stream: Iterator[DocumentPayload],
+) -> Iterable[DocumentPayload]:
+
+    serializer = CHECKPOINT_SERIALIZERS[options.content_type]
+
+    with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
+
+        zf.writestr("options.json", json.dumps(asdict(options)).encode('utf8'))
+
+        if document_index is not None:
+            zf.writestr(options.document_index_name, data=document_index.to_csv(sep='\t', header=True))
+
+        for payload in payload_stream:
+            zf.writestr(payload.filename, data=serializer.serialize(payload.content))
+            yield payload
+
+
+def load_checkpoint(
+    source_filename: str,
+) -> CheckpointData:
+
+    with zipfile.ZipFile(source_filename, mode="r") as zf:
+
+        filenames = zf.namelist()
+
+        if "options.json" not in filenames:
+            raise PipelineError("Checkpoint file is not valid (has no options.json")
+
+        serialize_opts = ContentSerializeOpts(**ContentSerializer.read_json(zf, "options.json"))
+
+        document_index = None
+        if serialize_opts.document_index_name in filenames:
+            document_index = ContentSerializer.read_dataframe(zf, serialize_opts.document_index_name)
+            filenames.remove(serialize_opts.document_index_name)
+
+        filenames.remove("options.json")
+
+    content_reader = ContentSerializer.read_binary if serialize_opts.as_binary else ContentSerializer.read_text
+    serializer = CHECKPOINT_SERIALIZERS[serialize_opts.content_type]
+
+    def payload_stream():
+        with zipfile.ZipFile(source_filename, mode="r") as zf:
+            for filename in filenames:
+                yield DocumentPayload(
+                    content_type=serialize_opts.content_type,
+                    content=serializer.deserialize(content_reader(zf, filename)),
+                    filename=filename,
+                )
+
+    data: CheckpointData = CheckpointData(
+        content_type=serialize_opts.content_type,
+        payload_stream=payload_stream(),
+        document_index=document_index,
+        serialize_opts=serialize_opts,
+    )
+
+    return data
 
 
 def spacy_doc_to_annotated_dataframe(spacy_doc: Doc, attributes: List[str]) -> pd.DataFrame:
@@ -76,7 +222,7 @@ def texts_to_annotated_dataframes(
 TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 
 
-def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: ExtractTokensOpts2) -> Iterable[str]:
+def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: SpacyExtractTokensOpts) -> Iterable[str]:
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
@@ -139,64 +285,3 @@ def to_vectorized_corpus(
     terms = (to_text(payload.content) for payload in stream)
     corpus = vectorizer.fit_transform_(terms, documents=document_index, vectorize_opts=vectorize_opts)
     return corpus
-
-
-def store_data_frame_stream(
-    *,
-    target_filename: str,
-    document_index: pd.DataFrame,
-    payload_stream: Iterator[DocumentPayload],
-    document_index_name="document_index.csv",
-):
-    with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
-        write_data_frame_to_zip(document_index, document_index_name, zf)
-        for payload in payload_stream:
-            filename = replace_extension(payload.filename, ".csv")
-            write_data_frame_to_zip(payload.content, filename, zf)
-            yield payload
-
-
-def load_data_frame_stream(
-    *,
-    source_filename: str,
-    document_index_name: str = "document_index.csv",
-) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
-
-    document_index = None
-
-    with zipfile.ZipFile(source_filename, mode="r") as zf:
-
-        filenames = zf.namelist()
-        if document_index_name in filenames:
-            document_index = read_data_frame_from_zip(zf, document_index_name)
-            filenames.remove(document_index_name)
-
-    def document_stream():
-        with zipfile.ZipFile(source_filename, mode="r") as zf:
-            for filename in filenames:
-                payload = DocumentPayload(
-                    content_type=ContentType.DATAFRAME,
-                    content=read_data_frame_from_zip(zf, filename),
-                    filename=filename,
-                )
-                yield payload
-
-    return (document_stream(), document_index)
-
-
-# def load_data_frame_instream(
-#     *,
-#     payload: PipelinePayload,
-#     source_filename: str,
-#     document_index_name: str = "document_index.csv",
-# ) -> Iterable[DocumentPayload]:
-#     payload.source = source_filename
-#     with zipfile.ZipFile(source_filename, mode="r") as zf:
-#         filenames = zf.namelist()
-#         for filename in filenames:
-#             df = read_data_frame_from_zip(zf, filename)
-#             if filename == document_index_name:
-#                 payload.document_index_source = df
-#             else:
-#                 payload = DocumentPayload(content_type=ContentType.DATAFRAME, content=df, filename=filename)
-#                 yield payload

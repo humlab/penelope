@@ -2,16 +2,15 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, List, Union
 
-import penelope.vendor.spacy.convert as convert
 import spacy
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import ExtractTokensOpts2, TextReader, TextReaderOpts, TextSource, TextTransformOpts
+from penelope.corpus.readers import SpacyExtractTokensOpts, TextReader, TextReaderOpts, TextSource, TextTransformOpts
 from spacy.language import Language
 from tqdm.std import tqdm
 
-from . import interfaces
+from . import convert, interfaces
 from ._utils import consolidate_document_index, to_text
-from .interfaces import ContentType
+from .interfaces import ContentType, PipelineError
 
 
 class DefaultResolveMixIn:
@@ -21,7 +20,8 @@ class DefaultResolveMixIn:
 
 @dataclass
 class LoadText(DefaultResolveMixIn, interfaces.ITask):
-    """Loads a text source into spaCy
+    """Loads a text source into the pipeline.
+    Note that this task can handle more kinds of source than "Checkpoint"
     Also loads a document_index, and/or extracts value fields from filenames
     """
 
@@ -173,7 +173,7 @@ class SpacyToDataFrame(interfaces.ITask):
 class DataFrameToTokens(interfaces.ITask):
     """Extracts text from payload.content based on annotations etc. """
 
-    extract_word_opts: ExtractTokensOpts2 = None
+    extract_word_opts: SpacyExtractTokensOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.DATAFRAME
@@ -191,6 +191,41 @@ class DataFrameToTokens(interfaces.ITask):
 
 
 @dataclass
+class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
+
+    filename: str = None
+
+    def __post_init__(self):
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.DATAFRAME]
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
+        if os.path.isfile(self.filename):
+            checkpoint_data: convert.CheckpointData = convert.load_checkpoint(self.filename)
+            self.pipeline.payload.document_index = checkpoint_data.document_index
+            self.out_content_type = checkpoint_data.content_type
+            payload_stream = checkpoint_data.payload_stream
+        else:
+            prior_content_type = self.pipeline.get_prior_content_type(self)
+            if prior_content_type == ContentType.NONE:
+                raise PipelineError(
+                    "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
+                )
+            self.out_content_type = prior_content_type
+            payload_stream = convert.store_checkpoint(
+                options=convert.ContentSerializeOpts(
+                    content_type_code=int(self.out_content_type),
+                    as_binary=False,  # should be True if ContentType.SPARV_XML
+                ),
+                target_filename=self.filename,
+                document_index=self.document_index,
+                payload_stream=self.instream,
+            )
+        for payload in payload_stream:
+            yield payload
+
+
+@dataclass
 class SaveDataFrame(DefaultResolveMixIn, interfaces.ITask):
     """Stores sequence of data frame documents. """
 
@@ -201,7 +236,8 @@ class SaveDataFrame(DefaultResolveMixIn, interfaces.ITask):
         self.out_content_type = ContentType.DATAFRAME
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
-        for payload in convert.store_data_frame_stream(
+        for payload in convert.store_checkpoint(
+            options=convert.ContentSerializeOpts(content_type_code=int(ContentType.DATAFRAME)),
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -222,31 +258,10 @@ class LoadDataFrame(DefaultResolveMixIn, interfaces.ITask):
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
 
-        instream, self.pipeline.payload.document_index = convert.load_data_frame_stream(
-            source_filename=self.filename, document_index_name=self.document_index_name
-        )
+        checkpoint_data: convert.CheckpointData = convert.load_checkpoint(self.filename)
+        self.pipeline.payload.document_index = checkpoint_data.document_index
 
-        for payload in instream:
-            yield payload
-
-
-@dataclass
-class CheckpointDataFrame(DefaultResolveMixIn, interfaces.ITask):
-
-    filename: str = None
-
-    def __post_init__(self):
-        self.in_content_type = ContentType.DATAFRAME
-        self.out_content_type = ContentType.DATAFRAME
-
-    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
-        if os.path.isfile(self.filename):
-            stream, self.pipeline.payload.document_index = convert.load_data_frame_stream(source_filename=self.filename)
-        else:
-            stream = convert.store_data_frame_stream(
-                target_filename=self.filename, document_index=self.document_index, payload_stream=self.instream
-            )
-        for payload in stream:
+        for payload in checkpoint_data.payload_stream:
             yield payload
 
 
@@ -262,10 +277,56 @@ class TokensToText(interfaces.ITask):
         return payload.update(self.out_content_type, to_text(payload.content))
 
 
+# @dataclass
+# class TokensToTokenizedCorpus(interfaces.ITask):
+#     def __post_init__(self):
+#         self.in_content_type = [ContentType.DATAFRAME]
+#         self.out_content_type = ContentType.TOKENIZED_CORPUS
+
+#     tokens_transform_opts: TokensTransformOpts = None
+
+#     def outstream(self) -> ITokenizedCorpus:
+
+#         reader: ICorpusReader = TextReader()
+#         tokenized_corpus = TokenizedCorpus(
+#             reader=reader,
+#             tokens_transform_opts=self.tokens_transform_opts,
+#         )
+#         return tokenized_corpus
+
+
+# class TCorpus(ITokenizedCorpus):
+#     """Krav: Reitererbar """
+
+#     def __init__(self, pipeline: CorpusPipeline):
+#         if pipeline.tasks[-1].content_type != ContentType.TOKENS:
+#             raise PipelineError("expected token stream")
+#         self.pipeline = pipeline
+#         # self.checkpoint = pipeline.
+
+#     @property
+#     def terms(self) -> Iterator[Iterator[str]]:
+#         for payload in self.pipeline:
+#             yield payload.content
+
+#     @property
+#     def metadata(self) -> List[Dict[str, Any]]:
+#         return None
+
+#     @property
+#     def filenames(self) -> List[str]:
+#         return None
+
+#     @property
+#     def documents(self) -> pd.DataFrame:
+#         return self.pipeline.payload.document_index
+
+
+PartitionKeys = Union[str, List[str], Callable]
+
+
 @dataclass
 class TextToDTM(interfaces.ITask):
-    """Extracts text from payload.content based on annotations etc. """
-
     def __post_init__(self):
         self.in_content_type = ContentType.TEXT
         self.out_content_type = ContentType.VECTORIZED_CORPUS
@@ -273,10 +334,10 @@ class TextToDTM(interfaces.ITask):
     vectorize_opts: VectorizeOpts = None
 
     def outstream(self) -> VectorizedCorpus:
-        corpus = self.to_vectorized_corpus(
+        corpus = convert.to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,
-            document_index=self.pipeline.document_index,
+            document_index=self.pipeline.payload.document_index,
         )
         return corpus
 
