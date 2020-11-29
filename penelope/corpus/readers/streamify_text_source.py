@@ -17,7 +17,7 @@ def streamify_text_source(
     filename_pattern: str = '*.txt',
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
-) -> Iterable[Tuple[str,str]]:
+) -> Iterable[Tuple[str, str]]:
     """Returns an (filename, text) iterator for `text_source`
 
     Parameters

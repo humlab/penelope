@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Union
 
 import spacy
-from penelope.corpus.readers import SpacyExtractTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from spacy.language import Language
 
 from .. import interfaces
@@ -16,6 +16,7 @@ DEFAULT_SPACY_DISABLES = ['vectors', 'textcat', 'dep', 'ner']
 @dataclass
 class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
     """Extracts text from payload.content"""
+
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
         self.out_content_type = ContentType.ANY
@@ -25,7 +26,9 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
 
     def setup(self):
         disables = DEFAULT_SPACY_DISABLES if self.disables is None else self.disables
-        nlp: Language = spacy.load(self.lang_or_nlp, disable=disables) if isinstance(self.lang_or_nlp, str) else self.lang_or_nlp
+        nlp: Language = (
+            spacy.load(self.lang_or_nlp, disable=disables) if isinstance(self.lang_or_nlp, str) else self.lang_or_nlp
+        )
         self.pipeline.put("spacy_nlp", nlp)
         return self
 
@@ -98,7 +101,8 @@ class SpacyDocToTaggedFrame(interfaces.ITask):
 class TaggedFrameToTokens(interfaces.ITask):
     """Extracts text from payload.content based on annotations etc. """
 
-    extract_word_opts: SpacyExtractTokensOpts = None
+    extract_opts: ExtractTaggedTokensOpts = None
+    filter_opts: TaggedTokensFilterOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGEDFRAME
@@ -110,6 +114,7 @@ class TaggedFrameToTokens(interfaces.ITask):
             self.out_content_type,
             convert.tagged_frame_to_tokens(
                 payload.content,
-                self.extract_word_opts,
+                self.extract_opts,
+                self.filter_opts,
             ),
         )

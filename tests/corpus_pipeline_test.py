@@ -9,7 +9,7 @@ import penelope.pipeline.tasks as tasks
 import pytest
 import spacy.language
 import spacy.tokens
-from penelope.corpus.readers import SpacyExtractTokensOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import CheckpointData, ContentSerializeOpts, ContentType, DocumentPayload, PipelinePayload
 from penelope.pipeline.pipelines import CorpusPipeline, SpacyPipeline
 from tests.utils import TEST_DATA_FOLDER
@@ -200,7 +200,8 @@ def dataframe_to_tokens_patch(*_) -> Iterable[str]:
 def test_data_frame_to_tokens_succeeds():
     task = spacy_tasks.TaggedFrameToTokens(
         pipeline=Mock(spec=CorpusPipeline),
-        extract_word_opts=SpacyExtractTokensOpts(lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
+        filter_opts=TaggedTokensFilterOpts(),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))
     next_payload = task.process(current_payload)
@@ -289,7 +290,7 @@ def test_spacy_pipeline():
         .load(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
         .text_to_spacy()
         .passthrough()
-        .spacy_to_pos_dataframe()
+        .spacy_to_pos_tagged_frame()
         .checkpoint(checkpoint_filename)
         .to_content()
     )

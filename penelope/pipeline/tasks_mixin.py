@@ -50,4 +50,4 @@ class PipelineShortcutMixIn:
         return self.add(tasks.Passthrough())
 
     def to_document_content_tuple(self):
-       return self.add(tasks.ToDocumentContentTuple())
+        return self.add(tasks.ToDocumentContentTuple())

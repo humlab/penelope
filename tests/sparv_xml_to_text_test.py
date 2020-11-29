@@ -15,7 +15,9 @@ def test_extract_when_no_filter_or_lemmatize_returns_original_text():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=False, append_pos=False, pos_excludes=''),
+        extract_tokens_opts=ExtractTaggedTokensOpts(
+            pos_includes='', lemmatize=False, append_pos=False, pos_excludes=''
+        ),
     )
 
     result = parser.transform(content)

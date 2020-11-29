@@ -120,7 +120,7 @@ class ToDocumentContentTuple(interfaces.ITask):
         return payload.update(
             ContentType.DOCUMENT_CONTENT_TUPLE,
             content=(
-                self.filename,
+                payload.filename,
                 payload.content,
             ),
         )

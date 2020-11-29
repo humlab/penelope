@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import Dict, List, TYPE_CHECKING, Any, Iterable, Mapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
 from penelope.corpus.readers import TextSource
@@ -69,7 +69,7 @@ class PipelinePayload:
     pos_schema_name: str = field(default="Universal")
 
     filenames: List[str] = None
-    metadata: List[Dict[str,Any]] = None
+    metadata: List[Dict[str, Any]] = None
 
     # NOT USED: token2id: Mapping = None
     # NOT USED: extract_tokens_opts: ExtractTaggedTokensOpts = None

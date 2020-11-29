@@ -71,10 +71,9 @@ class ExtractTaggedTokensOpts:
         )
 
 
-# FIXME Consolidate ExtractTaggedTokensOpts and SpacyExtractTokensOpts
 @dataclass
-class SpacyExtractTokensOpts(ExtractTaggedTokensOpts):
-    """Spacy document extract options"""
+class TaggedTokensFilterOpts:
+    """Used when filter is applied on tagged data (before string tokens are returned)"""
 
     is_alpha: bool = None
     is_space: bool = False
@@ -85,10 +84,6 @@ class SpacyExtractTokensOpts(ExtractTaggedTokensOpts):
     @property
     def props(self):
         return dict(
-            pos_includes=self.pos_includes,
-            pos_excludes=self.pos_excludes,
-            lemmatize=self.lemmatize,
-            target_override=self.target_override,
             is_alpha=self.is_alpha,
             is_space=self.is_space,
             is_punct=self.is_punct,

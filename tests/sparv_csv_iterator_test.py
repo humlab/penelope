@@ -88,7 +88,9 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
     tokenizer = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN|VB', pos_excludes=None, lemmatize=True, append_pos=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(
+            pos_includes='NN|VB', pos_excludes=None, lemmatize=True, append_pos=True
+        ),
     )
 
     expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN".split()

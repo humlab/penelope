@@ -55,7 +55,7 @@ class TextReader(ICorpusReader):
         )
         self._all_metadata: Sequence[Dict[str, Any]] = self._create_all_metadata()
 
-    def _get_texts(self) -> Iterable[Tuple[str,str]]:
+    def _get_texts(self) -> Iterable[Tuple[str, str]]:
         return streamify_text_source(
             self._source,
             filename_pattern=self.reader_opts.filename_pattern,
@@ -63,7 +63,7 @@ class TextReader(ICorpusReader):
             as_binary=self.reader_opts.as_binary,
         )
 
-    def _create_iterator(self) -> Iterable[Tuple[str,str]]:
+    def _create_iterator(self) -> Iterable[Tuple[str, str]]:
         return (
             (os.path.basename(filename), document)
             for (filename, content) in self._get_texts()

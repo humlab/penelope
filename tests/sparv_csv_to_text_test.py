@@ -41,7 +41,9 @@ def test_reader_when_only_nn_returns_only_nn():
 
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
-    reader = SparvCsvToText(extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=True))
+    reader = SparvCsvToText(
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=True)
+    )
 
     expected = "rödräv hunddjur utbredning halvklot"
 
@@ -66,7 +68,9 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 def test_reader_when_lemmatized_nn_vb_pos_appendedreturns_lemmatized_nn_vb_pos():
 
     reader = SparvCsvToText(
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN|VB', pos_excludes='', lemmatize=True, append_pos=True)
+        extract_tokens_opts=ExtractTaggedTokensOpts(
+            pos_includes='NN|VB', pos_excludes='', lemmatize=True, append_pos=True
+        )
     )
 
     expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN"

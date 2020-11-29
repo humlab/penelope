@@ -3,7 +3,7 @@ from typing import Iterable, List, Union
 import numpy as np
 import pandas as pd
 import spacy
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -58,8 +58,6 @@ def texts_to_annotated_dataframes(
     Iterator[pd.DataFrame]
         Seqence of documents represented as data frames
     """
-    # TODO: Check taht propertys exists
-    # TODO: fetch class property functions? (for performance)
 
     nlp: Language = spacy.load(language, disable=_get_disables(attributes)) if isinstance(language, str) else language
 
@@ -73,8 +71,7 @@ TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 # FIXME: Make generic (applicable to Sparv, Stanza tagging etc)
 # FIXME: Move this function out of spaCy
 def tagged_frame_to_tokens(
-    doc: pd.DataFrame,
-    extract_opts: ExtractTaggedTokensOpts,
+    doc: pd.DataFrame, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts
 ) -> Iterable[str]:
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
@@ -91,24 +88,24 @@ def tagged_frame_to_tokens(
     mask = np.repeat(True, len(doc.index))
 
     if "is_space" in doc.columns:
-        if not extract_opts.is_space:
+        if not filter_opts.is_space:
             mask &= ~(doc.is_space)
 
     if "is_punct" in doc.columns:
-        if not extract_opts.is_punct:
+        if not filter_opts.is_punct:
             mask &= ~(doc.is_punct)
 
-    if extract_opts.is_alpha is not None:
+    if filter_opts.is_alpha is not None:
         if "is_alpha" in doc.columns:
-            mask &= doc.is_alpha == extract_opts.is_alpha
+            mask &= doc.is_alpha == filter_opts.is_alpha
 
-    if extract_opts.is_digit is not None:
+    if filter_opts.is_digit is not None:
         if "is_digit" in doc.columns:
-            mask &= doc.is_digit == extract_opts.is_digit
+            mask &= doc.is_digit == filter_opts.is_digit
 
-    if extract_opts.is_stop is not None:
+    if filter_opts.is_stop is not None:
         if "is_stop" in doc.columns:
-            mask &= doc.is_stop == extract_opts.is_stop
+            mask &= doc.is_stop == filter_opts.is_stop
 
     if "pos_" in doc.columns:
 
@@ -137,7 +134,8 @@ def _get_disables(attributes):
 #     *,
 #     reader_opts: TextReaderOpts,
 #     transform_opts: TextTransformOpts,
-#     extract_tokens_opts: SpacyExtractTokensOpts,
+#     extract_tagged_tokens_opts: ExtractTaggedTokensOpts,
+#     tagged_tokens_filter_opts: TeagedTokensFilterOpts,
 #     vectorize_opts: VectorizeOpts,
 #     document_index: pd.DataFrame = None,
 # ) -> VectorizedCorpus:
