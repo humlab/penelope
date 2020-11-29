@@ -1,6 +1,6 @@
 from .dataframe_text_tokenizer import DataFrameTextTokenizer
 from .in_memory_data_reader import InMemoryReader
-from .interfaces import ExtractTokensOpts, SpacyExtractTokensOpts, ICorpusReader, TextSource
+from .interfaces import ExtractTokensOpts, ICorpusReader, SpacyExtractTokensOpts, TextSource
 from .sparv_csv_tokenizer import SparvCsvTokenizer
 from .sparv_xml_tokenizer import Sparv3XmlTokenizer, SparvXmlTokenizer
 from .streamify_text_source import streamify_text_source

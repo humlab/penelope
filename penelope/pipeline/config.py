@@ -1,10 +1,10 @@
 import enum
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from penelope.corpus.readers import TextReaderOpts
 from penelope.utility import get_pos_schema, replace_path
 
-from .interfaces import PipelinePayload
+from . import interfaces
 
 
 @enum.unique
@@ -16,13 +16,15 @@ class CorpusType(enum.IntEnum):
     SpacyCSV = 4
     Pipeline = 5
 
+
 @dataclass
 class CorpusConfig:
 
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
     text_reader_opts: TextReaderOpts = None
-    pipeline_payload: PipelinePayload = None
+    pipeline_payload: interfaces.PipelinePayload = None
+    pos_schema_name: str = None
 
     def set_folder(self, folder: str) -> "CorpusConfig":
         if self.pipeline_payload.document_index_source is not None:

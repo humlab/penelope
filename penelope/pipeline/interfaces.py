@@ -8,12 +8,10 @@ from typing import TYPE_CHECKING, Any, Iterable, Mapping, Sequence, Union
 import pandas as pd
 from penelope.corpus.readers import TextSource
 
-from ._utils import load_document_index
+from .utils import load_document_index
 
 if TYPE_CHECKING:
-    from . import pipeline as corpus_pipeline
-
-# FIXME: #24 Make a GENERIC CORPUS PIPELIME, use MixIn for vendor specific tasks
+    from . import pipelines
 
 
 @unique
@@ -102,7 +100,7 @@ class PipelinePayload:
 @dataclass
 class ITask(abc.ABC):
 
-    pipeline: corpus_pipeline.CorpusPipeline = None
+    pipeline: pipelines.CorpusPipeline = None
     instream: Iterable[DocumentPayload] = None
 
     in_content_type: Union[ContentType, Sequence[ContentType]] = field(init=False, default=None)
@@ -131,7 +129,7 @@ class ITask(abc.ABC):
         for payload in self.instream:
             yield self.process(payload)
 
-    def hookup(self, pipeline: corpus_pipeline.CorpusPipeline) -> corpus_pipeline.CorpusPipeline:
+    def hookup(self, pipeline: pipelines.AnyPipeline) -> ITask:
         self.pipeline = pipeline
         return self
 

@@ -9,5 +9,5 @@ from .filename_fields import (
 )
 from .filename_utils import *
 from .mixins import *
-from .pos_tags import PoS_Tag_Scheme, PoS_TAGS_SCHEMES, get_pos_schema, Known_PoS_Tag_Schemes
+from .pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, PoS_TAGS_SCHEMES, get_pos_schema
 from .utils import *

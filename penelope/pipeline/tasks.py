@@ -1,16 +1,14 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, List, Union
+from typing import Any, Callable, Iterable
 
-import spacy
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import SpacyExtractTokensOpts, TextReader, TextReaderOpts, TextSource, TextTransformOpts
-from spacy.language import Language
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformOpts
 from tqdm.std import tqdm
 
-from . import convert, interfaces
-from ._utils import consolidate_document_index, to_text
-from .interfaces import ContentType, PipelineError
+from . import checkpoint, convert, interfaces
+from .interfaces import ContentType
+from .utils import consolidate_document_index, to_text
 
 
 class DefaultResolveMixIn:
@@ -88,108 +86,6 @@ class ToContent(interfaces.ITask):
         return payload.content
 
 
-DEFAULT_SPACY_DISABLES = ['vectors', 'textcat', 'dep', 'ner']
-
-
-@dataclass
-class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
-    """Extracts text from payload.content"""
-
-    language: Union[str, Language] = None
-    disables: List[str] = None
-
-    def setup(self):
-        disables = DEFAULT_SPACY_DISABLES if self.disables is None else self.disables
-        nlp: Language = spacy.load(self.language, disable=disables) if isinstance(self.language, str) else Language
-        self.pipeline.put("spacy_nlp", nlp)
-        return self
-
-
-@dataclass
-class TextToSpacy(interfaces.ITask):
-
-    nlp: Language = None
-    disable: List[str] = None
-
-    def __post_init__(self):
-        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.SPACYDOC
-
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-        disable = self.disable or DEFAULT_SPACY_DISABLES
-        nlp = self.pipeline.get("spacy_nlp", self.nlp)
-        content = self._get_content_as_text(payload)
-        spacy_doc = nlp(content, disable=disable)
-        return payload.update(self.out_content_type, spacy_doc)
-
-    @staticmethod
-    def _get_content_as_text(payload):
-        if payload.content_type == ContentType.TOKENS:
-            return ' '.join(payload.content)
-        return payload.content
-
-
-@dataclass
-class TextToSpacyToDataFrame(interfaces.ITask):
-
-    nlp: Language = None
-    attributes: List[str] = None
-
-    def __post_init__(self):
-        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.DATAFRAME
-
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-        return payload.update(
-            self.out_content_type,
-            convert.text_to_annotated_dataframe(
-                document=payload.as_str(),
-                attributes=self.attributes,
-                nlp=self.pipeline.get("spacy_nlp", self.nlp),
-            ),
-        )
-
-
-@dataclass
-class SpacyToDataFrame(interfaces.ITask):
-
-    attributes: List[str] = None
-
-    def __post_init__(self):
-        self.in_content_type = ContentType.SPACYDOC
-        self.out_content_type = ContentType.DATAFRAME
-
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-        return payload.update(
-            self.out_content_type,
-            convert.spacy_doc_to_annotated_dataframe(
-                payload.content,
-                self.attributes,
-            ),
-        )
-
-
-@dataclass
-class DataFrameToTokens(interfaces.ITask):
-    """Extracts text from payload.content based on annotations etc. """
-
-    extract_word_opts: SpacyExtractTokensOpts = None
-
-    def __post_init__(self):
-        self.in_content_type = ContentType.DATAFRAME
-        self.out_content_type = ContentType.TOKENS
-
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-
-        return payload.update(
-            self.out_content_type,
-            convert.dataframe_to_tokens(
-                payload.content,
-                self.extract_word_opts,
-            ),
-        )
-
-
 @dataclass
 class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
 
@@ -201,19 +97,19 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: convert.CheckpointData = convert.load_checkpoint(self.filename)
+            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename)
             self.pipeline.payload.document_index = checkpoint_data.document_index
             self.out_content_type = checkpoint_data.content_type
             payload_stream = checkpoint_data.payload_stream
         else:
             prior_content_type = self.pipeline.get_prior_content_type(self)
             if prior_content_type == ContentType.NONE:
-                raise PipelineError(
+                raise interfaces.PipelineError(
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
-            payload_stream = convert.store_checkpoint(
-                options=convert.ContentSerializeOpts(
+            payload_stream = checkpoint.store_checkpoint(
+                options=checkpoint.ContentSerializeOpts(
                     content_type_code=int(self.out_content_type),
                     as_binary=False,  # should be True if ContentType.SPARV_XML
                 ),
@@ -236,8 +132,8 @@ class SaveDataFrame(DefaultResolveMixIn, interfaces.ITask):
         self.out_content_type = ContentType.DATAFRAME
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
-        for payload in convert.store_checkpoint(
-            options=convert.ContentSerializeOpts(content_type_code=int(ContentType.DATAFRAME)),
+        for payload in checkpoint.store_checkpoint(
+            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.DATAFRAME)),
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -258,7 +154,7 @@ class LoadDataFrame(DefaultResolveMixIn, interfaces.ITask):
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
 
-        checkpoint_data: convert.CheckpointData = convert.load_checkpoint(self.filename)
+        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename)
         self.pipeline.payload.document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
@@ -300,7 +196,7 @@ class TokensToText(interfaces.ITask):
 
 #     def __init__(self, pipeline: CorpusPipeline):
 #         if pipeline.tasks[-1].content_type != ContentType.TOKENS:
-#             raise PipelineError("expected token stream")
+#             raise interfaces.PipelineError("expected token stream")
 #         self.pipeline = pipeline
 #         # self.checkpoint = pipeline.
 
@@ -320,9 +216,6 @@ class TokensToText(interfaces.ITask):
 #     @property
 #     def documents(self) -> pd.DataFrame:
 #         return self.pipeline.payload.document_index
-
-
-PartitionKeys = Union[str, List[str], Callable]
 
 
 @dataclass

@@ -4,21 +4,14 @@ from typing import Iterable, Optional, Tuple
 from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
+import penelope.pipeline.spacy.tasks as spacy_tasks
+import penelope.pipeline.tasks as tasks
 import pytest
 import spacy.language
 import spacy.tokens
-from penelope.corpus.readers import TextReaderOpts, TextTransformOpts
-from penelope.corpus.readers.interfaces import SpacyExtractTokensOpts
-from penelope.pipeline import (
-    CheckpointData,
-    ContentType,
-    CorpusPipeline,
-    DocumentPayload,
-    PipelinePayload,
-    SpacyPipeline,
-    tasks,
-)
-from penelope.pipeline.convert import ContentSerializeOpts
+from penelope.corpus.readers import SpacyExtractTokensOpts, TextReaderOpts, TextTransformOpts
+from penelope.pipeline import CheckpointData, ContentSerializeOpts, ContentType, DocumentPayload, PipelinePayload
+from penelope.pipeline.pipelines import CorpusPipeline, SpacyPipeline
 from tests.utils import TEST_DATA_FOLDER
 
 TEST_CORPUS = [
@@ -106,7 +99,7 @@ def patch_spacy_pipeline(task):
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
     pipeline = SpacyPipeline(payload=PipelinePayload())
-    _ = tasks.SetSpacyModel(pipeline=pipeline, language="en_core_web_sm").setup()
+    _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, lang_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
 
 
@@ -161,14 +154,14 @@ def test_to_content_process_with_text_payload_succeeds():
 
 
 def test_text_to_spacy_process_with_text_payload_succeeds():
-    task = tasks.TextToSpacy(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.TextToSpacy(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert next_payload.content_type == ContentType.SPACYDOC
 
 
 def test_text_to_spacy_process_with_non_text_payload_fails():
-    task = tasks.TextToSpacy(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.TextToSpacy(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_data_frame_stream(1))
     with pytest.raises(Exception) as _:
         _ = task.setup().process(current_payload)
@@ -182,17 +175,17 @@ def patch_spacy_doc_to_annotated_dataframe(*_, **__) -> pd.DataFrame:
     return pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']})
 
 
-@patch('penelope.pipeline.convert.spacy_doc_to_annotated_dataframe', patch_spacy_doc_to_annotated_dataframe)
+@patch('penelope.pipeline.spacy.convert.spacy_doc_to_annotated_dataframe', patch_spacy_doc_to_annotated_dataframe)
 def test_text_to_dataframe_process_with_text_payload_succeeds():
-    task = tasks.TextToSpacyToDataFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.TextToSpacyToDataFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert next_payload.content_type == ContentType.DATAFRAME
 
 
-@patch('penelope.pipeline.convert.spacy_doc_to_annotated_dataframe', patch_any_to_annotated_dataframe)
+@patch('penelope.pipeline.spacy.convert.spacy_doc_to_annotated_dataframe', patch_any_to_annotated_dataframe)
 def test_spacy_to_dataframe_process_with_doc_payload_succeeds():
-    task = tasks.SpacyToDataFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.SpacyToDataFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
     assert next_payload.content_type == ContentType.DATAFRAME
@@ -203,9 +196,9 @@ def dataframe_to_tokens_patch(*_) -> Iterable[str]:
     return ["a", "b", "c"]
 
 
-@patch('penelope.pipeline.convert.dataframe_to_tokens', dataframe_to_tokens_patch)
+@patch('penelope.pipeline.spacy.convert.dataframe_to_tokens', dataframe_to_tokens_patch)
 def test_data_frame_to_tokens_succeeds():
-    task = tasks.DataFrameToTokens(
+    task = spacy_tasks.DataFrameToTokens(
         pipeline=Mock(spec=CorpusPipeline),
         extract_word_opts=SpacyExtractTokensOpts(lemmatize=True),
     ).setup()
@@ -230,7 +223,7 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
     )
 
 
-@patch('penelope.pipeline.convert.store_checkpoint', patch_store_checkpoint)
+@patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 def test_save_data_frame_succeeds():
     task = tasks.SaveDataFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
@@ -238,7 +231,7 @@ def test_save_data_frame_succeeds():
         assert payload.content_type == ContentType.DATAFRAME
 
 
-@patch('penelope.pipeline.convert.load_checkpoint', patch_load_checkpoint)
+@patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_load_data_frame_succeeds():
     task = tasks.LoadDataFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
@@ -246,8 +239,8 @@ def test_load_data_frame_succeeds():
         assert payload.content_type == ContentType.DATAFRAME
 
 
-@patch('penelope.pipeline.convert.store_checkpoint', patch_store_checkpoint)
-@patch('penelope.pipeline.convert.load_checkpoint', patch_load_checkpoint)
+@patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
+@patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_checkpoint_data_frame_succeeds():
     attrs = {'get_prior_content_type.return_value': ContentType.DATAFRAME}
     task = tasks.Checkpoint(pipeline=Mock(spec=CorpusPipeline, **attrs), filename="dummy.zip").setup()
@@ -291,7 +284,7 @@ def test_spacy_pipeline():
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
     )
     pipeline = (
-        SpacyPipeline(payload=pipeline_payload)
+        CorpusPipeline(payload=pipeline_payload)
         .set_spacy_model(pipeline_payload.memory_store['spacy_model'])
         .load(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
         .text_to_spacy()

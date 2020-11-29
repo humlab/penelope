@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Sequence, Set, Union
 
 import pandas as pd
-from penelope.utility import IndexOfSplitOrCallableOrRegExp, PropsMixIn
+from penelope.utility import IndexOfSplitOrCallableOrRegExp
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
@@ -41,7 +41,7 @@ class ExtractTokensOpts:
 
     pos_includes: str = ''
     # FIXME: Changed default, investigate use, force in Sparv extracts
-    pos_excludes: str = '' # "|MAD|MID|PAD|"
+    pos_excludes: str = ''  # "|MAD|MID|PAD|"
 
     # FIXME: Implement in spaCy extact
     passthrough_tokens: List[str] = field(default_factory=list)
