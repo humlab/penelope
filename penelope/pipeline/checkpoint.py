@@ -61,7 +61,7 @@ CHECKPOINT_SERIALIZERS = {
     interfaces.ContentType.TOKENS: ContentSerializer(
         serialize=ContentSerializer.token_to_text, deserialize=ContentSerializer.text_to_token
     ),
-    interfaces.ContentType.DATAFRAME: ContentSerializer(
+    interfaces.ContentType.TAGGEDFRAME: ContentSerializer(
         serialize=ContentSerializer.df_to_text, deserialize=ContentSerializer.text_to_df
     ),
     # FIXME: ADD SPARV XML with as_binary

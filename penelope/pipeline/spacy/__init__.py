@@ -1,2 +1,2 @@
-from .convert import spacy_doc_to_annotated_dataframe
+from .convert import spacy_doc_to_tagged_frame
 from .tasks_mixin import SpacyPipelineShortcutMixIn

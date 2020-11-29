@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Iterable, Mapping, Sequence, Union
+from typing import Dict, List, TYPE_CHECKING, Any, Iterable, Mapping, Sequence, Union
 
 import pandas as pd
 from penelope.corpus.readers import TextSource
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 @unique
 class ContentType(IntEnum):
     NONE = 0
-    DATAFRAME = 1
+    TAGGEDFRAME = 1
     TEXT = 2
     TOKENS = 3
     SPACYDOC = 4
@@ -29,6 +29,7 @@ class ContentType(IntEnum):
     # BOW = 10
     ANY = 11
     PASSTHROUGH = 12
+    DOCUMENT_CONTENT_TUPLE = 13
 
 
 @dataclass
@@ -66,6 +67,9 @@ class PipelinePayload:
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
     pos_schema_name: str = field(default="Universal")
+
+    filenames: List[str] = None
+    metadata: List[Dict[str,Any]] = None
 
     # NOT USED: token2id: Mapping = None
     # NOT USED: extract_tokens_opts: ExtractTokensOpts = None

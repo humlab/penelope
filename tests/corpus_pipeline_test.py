@@ -49,7 +49,7 @@ def fake_data_frame_stream(n: int = 1):
     for i in range(1, n + 1):
         yield DocumentPayload(
             filename=f'dummy_{i}.csv',
-            content_type=ContentType.DATAFRAME,
+            content_type=ContentType.TAGGEDFRAME,
             content=df_dummy,
         )
 
@@ -154,14 +154,14 @@ def test_to_content_process_with_text_payload_succeeds():
 
 
 def test_text_to_spacy_process_with_text_payload_succeeds():
-    task = spacy_tasks.TextToSpacy(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.ToSpacyDoc(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert next_payload.content_type == ContentType.SPACYDOC
 
 
 def test_text_to_spacy_process_with_non_text_payload_fails():
-    task = spacy_tasks.TextToSpacy(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.ToSpacyDoc(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_data_frame_stream(1))
     with pytest.raises(Exception) as _:
         _ = task.setup().process(current_payload)
@@ -177,18 +177,18 @@ def patch_spacy_doc_to_annotated_dataframe(*_, **__) -> pd.DataFrame:
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_annotated_dataframe', patch_spacy_doc_to_annotated_dataframe)
 def test_text_to_dataframe_process_with_text_payload_succeeds():
-    task = spacy_tasks.TextToSpacyToDataFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.ToSpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
-    assert next_payload.content_type == ContentType.DATAFRAME
+    assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_annotated_dataframe', patch_any_to_annotated_dataframe)
 def test_spacy_to_dataframe_process_with_doc_payload_succeeds():
-    task = spacy_tasks.SpacyToDataFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.SpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
-    assert next_payload.content_type == ContentType.DATAFRAME
+    assert next_payload.content_type == ContentType.TAGGEDFRAME
     assert next_payload.content.columns.tolist() == ['text', 'pos_', 'lemma_']
 
 
@@ -198,7 +198,7 @@ def dataframe_to_tokens_patch(*_) -> Iterable[str]:
 
 @patch('penelope.pipeline.spacy.convert.dataframe_to_tokens', dataframe_to_tokens_patch)
 def test_data_frame_to_tokens_succeeds():
-    task = spacy_tasks.DataFrameToTokens(
+    task = spacy_tasks.TaggedFrameToTokens(
         pipeline=Mock(spec=CorpusPipeline),
         extract_word_opts=SpacyExtractTokensOpts(lemmatize=True),
     ).setup()
@@ -216,10 +216,10 @@ def patch_store_checkpoint(
 
 def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
     return CheckpointData(
-        content_type=ContentType.DATAFRAME,
+        content_type=ContentType.TAGGEDFRAME,
         document_index=None,
         payload_stream=fake_data_frame_stream(1),
-        serialize_opts=ContentSerializeOpts(content_type_code=int(ContentType.DATAFRAME)),
+        serialize_opts=ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
     )
 
 
@@ -228,7 +228,7 @@ def test_save_data_frame_succeeds():
     task = tasks.SaveDataFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
-        assert payload.content_type == ContentType.DATAFRAME
+        assert payload.content_type == ContentType.TAGGEDFRAME
 
 
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
@@ -236,17 +236,17 @@ def test_load_data_frame_succeeds():
     task = tasks.LoadDataFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
-        assert payload.content_type == ContentType.DATAFRAME
+        assert payload.content_type == ContentType.TAGGEDFRAME
 
 
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_checkpoint_data_frame_succeeds():
-    attrs = {'get_prior_content_type.return_value': ContentType.DATAFRAME}
+    attrs = {'get_prior_content_type.return_value': ContentType.TAGGEDFRAME}
     task = tasks.Checkpoint(pipeline=Mock(spec=CorpusPipeline, **attrs), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
-        assert payload.content_type == ContentType.DATAFRAME
+        assert payload.content_type == ContentType.TAGGEDFRAME
 
 
 def test_tokens_to_text_when_tokens_instream_succeeds():

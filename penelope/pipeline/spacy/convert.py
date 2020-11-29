@@ -3,12 +3,12 @@ from typing import Iterable, List, Union
 import numpy as np
 import pandas as pd
 import spacy
-from penelope.corpus.readers import SpacyExtractTokensOpts
+from penelope.corpus.readers import ExtractTokensOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 
 
-def spacy_doc_to_annotated_dataframe(spacy_doc: Doc, attributes: List[str]) -> pd.DataFrame:
+def spacy_doc_to_tagged_frame(spacy_doc: Doc, attributes: List[str]) -> pd.DataFrame:
     """Returns token attribute values from a spacy doc a returns a data frame with given attributes as columns"""
     df = pd.DataFrame(
         data=[tuple(getattr(token, x, None) for x in attributes) for token in spacy_doc],
@@ -17,13 +17,13 @@ def spacy_doc_to_annotated_dataframe(spacy_doc: Doc, attributes: List[str]) -> p
     return df
 
 
-def text_to_annotated_dataframe(
+def text_to_tagged_frame(
     document: str,
     attributes: List[str],
     nlp: Language,
 ) -> pd.DataFrame:
     """Loads a single text into a spacy doc and returns a data frame with given token attributes columns"""
-    return spacy_doc_to_annotated_dataframe(nlp(document), attributes=attributes)
+    return spacy_doc_to_tagged_frame(nlp(document), attributes=attributes)
 
 
 def texts_to_annotated_dataframes(
@@ -64,13 +64,18 @@ def texts_to_annotated_dataframes(
     nlp: Language = spacy.load(language, disable=_get_disables(attributes)) if isinstance(language, str) else language
 
     for document in documents:
-        yield text_to_annotated_dataframe(document, attributes, nlp)
+        yield text_to_tagged_frame(document, attributes, nlp)
 
 
 TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 
 
-def dataframe_to_tokens(doc: pd.DataFrame, extract_opts: SpacyExtractTokensOpts) -> Iterable[str]:
+# FIXME: Make generic (applicable to Sparv, Stanza tagging etc)
+# FIXME: Move this function out of spaCy
+def tagged_frame_to_tokens(
+    doc: pd.DataFrame,
+    extract_opts: ExtractTokensOpts,
+) -> Iterable[str]:
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")

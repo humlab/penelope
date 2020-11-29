@@ -16,6 +16,9 @@ DEFAULT_SPACY_DISABLES = ['vectors', 'textcat', 'dep', 'ner']
 @dataclass
 class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
     """Extracts text from payload.content"""
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.ANY
 
     lang_or_nlp: Union[str, Language] = None
     disables: List[str] = None
@@ -28,7 +31,7 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
-class TextToSpacy(interfaces.ITask):
+class ToSpacyDoc(interfaces.ITask):
 
     disable: List[str] = None
 
@@ -53,18 +56,18 @@ class TextToSpacy(interfaces.ITask):
 
 
 @dataclass
-class TextToSpacyToDataFrame(interfaces.ITask):
+class ToSpacyDocToTaggedFrame(interfaces.ITask):
 
     attributes: List[str] = None
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.DATAFRAME
+        self.out_content_type = ContentType.TAGGEDFRAME
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         return payload.update(
             self.out_content_type,
-            convert.text_to_annotated_dataframe(
+            convert.text_to_tagged_frame(
                 document=payload.as_str(),
                 attributes=self.attributes,
                 nlp=self.pipeline.get("spacy_nlp"),
@@ -73,18 +76,18 @@ class TextToSpacyToDataFrame(interfaces.ITask):
 
 
 @dataclass
-class SpacyToDataFrame(interfaces.ITask):
+class SpacyDocToTaggedFrame(interfaces.ITask):
 
     attributes: List[str] = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.SPACYDOC
-        self.out_content_type = ContentType.DATAFRAME
+        self.out_content_type = ContentType.TAGGEDFRAME
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         return payload.update(
             self.out_content_type,
-            convert.spacy_doc_to_annotated_dataframe(
+            convert.spacy_doc_to_tagged_frame(
                 payload.content,
                 self.attributes,
             ),
@@ -92,20 +95,20 @@ class SpacyToDataFrame(interfaces.ITask):
 
 
 @dataclass
-class DataFrameToTokens(interfaces.ITask):
+class TaggedFrameToTokens(interfaces.ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_word_opts: SpacyExtractTokensOpts = None
 
     def __post_init__(self):
-        self.in_content_type = ContentType.DATAFRAME
+        self.in_content_type = ContentType.TAGGEDFRAME
         self.out_content_type = ContentType.TOKENS
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
 
         return payload.update(
             self.out_content_type,
-            convert.dataframe_to_tokens(
+            convert.tagged_frame_to_tokens(
                 payload.content,
                 self.extract_word_opts,
             ),

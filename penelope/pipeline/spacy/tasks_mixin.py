@@ -15,16 +15,16 @@ if TYPE_CHECKING:
 
 class SpacyPipelineShortcutMixIn:
     def text_to_spacy(self: SpacyPipeline) -> SpacyPipeline:
-        return self.add(tasks.TextToSpacy())
+        return self.add(tasks.ToSpacyDoc())
 
     def spacy_to_dataframe(self: SpacyPipeline, attributes: List[str] = None) -> SpacyPipeline:
-        return self.add(tasks.SpacyToDataFrame(attributes=attributes))
+        return self.add(tasks.SpacyDocToTaggedFrame(attributes=attributes))
 
     def spacy_to_pos_dataframe(self: SpacyPipeline) -> SpacyPipeline:
-        return self.add(tasks.SpacyToDataFrame(attributes=['text', 'lemma_', 'pos_']))
+        return self.add(tasks.SpacyDocToTaggedFrame(attributes=['text', 'lemma_', 'pos_']))
 
     def set_spacy_model(self: SpacyPipeline, language: Union[str, Language]) -> SpacyPipeline:
         return self.add(tasks.SetSpacyModel(lang_or_nlp=language))
 
     def dataframe_to_tokens(self: SpacyPipeline, extract_tokens_opts: SpacyExtractTokensOpts) -> SpacyPipeline:
-        return self.add(tasks.DataFrameToTokens(extract_word_opts=extract_tokens_opts))
+        return self.add(tasks.TaggedFrameToTokens(extract_word_opts=extract_tokens_opts))
