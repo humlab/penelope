@@ -9,6 +9,10 @@ from .utils import now_timestamp
 VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
 
 
+def replace_path(filepath: str, path: str) -> str:
+    return os.path.join(path, strip_paths(filepath))
+
+
 def filename_satisfied_by(
     filename: Iterable[str], filename_filter: Union[List[str], Callable], filename_pattern: str = None
 ) -> bool:
