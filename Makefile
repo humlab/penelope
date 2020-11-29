@@ -12,7 +12,7 @@ ready: tools clean tidy test lint build
 build: requirements.txt
 	@poetry build
 
-lint: pylint flake8
+lint: tidy pylint flake8
 
 tidy: black isort
 
