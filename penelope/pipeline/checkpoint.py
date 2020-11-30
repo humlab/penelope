@@ -1,10 +1,12 @@
 import json
+import os
 import zipfile
 from dataclasses import asdict, dataclass, field
 from io import StringIO
 from typing import Any, Callable, Dict, Iterable, Iterator, Union
 
 import pandas as pd
+from penelope.pipeline.utils import load_document_index
 
 from . import interfaces
 
@@ -101,6 +103,10 @@ def store_checkpoint(
 
     serializer = CHECKPOINT_SERIALIZERS[options.content_type]
 
+    store_path = os.path.split(target_filename)[0]
+    if not os.path.isdir(store_path):
+        raise FileNotFoundError(f"target folder {store_path} does not exist")
+
     with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
 
         zf.writestr("options.json", json.dumps(asdict(options)).encode('utf8'))
@@ -113,9 +119,7 @@ def store_checkpoint(
             yield payload
 
 
-def load_checkpoint(
-    source_filename: str,
-) -> CheckpointData:
+def load_checkpoint(source_filename: str, document_index_key_column: str) -> CheckpointData:
 
     with zipfile.ZipFile(source_filename, mode="r") as zf:
 
@@ -128,7 +132,8 @@ def load_checkpoint(
 
         document_index = None
         if serialize_opts.document_index_name in filenames:
-            document_index = ContentSerializer.read_dataframe(zf, serialize_opts.document_index_name)
+            data_str = ContentSerializer.read_text(zf, serialize_opts.document_index_name)
+            document_index = load_document_index(StringIO(data_str), key_column=document_index_key_column, sep='\t')
             filenames.remove(serialize_opts.document_index_name)
 
         filenames.remove("options.json")

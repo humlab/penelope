@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, 
 import pandas as pd
 from penelope.corpus.readers import TextSource
 
-from .utils import load_document_index
+from .utils import consolidate_document_index, load_document_index
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -62,8 +62,12 @@ class PipelinePayload:
 
     source: TextSource = None
     document_index_source: Union[str, pd.DataFrame] = None
-    # FIXME: Add document_index_key
-    _document_index: pd.DataFrame = None
+    document_index_key: str = None
+    document_index_sep: str = '\t'
+
+    primary_document_index: pd.DataFrame = None  # Given index i.e. DataFrane or loaded given  filenames
+    secondary_document_index: pd.DataFrame = None  # Index reconstructed from source (filename, filename fields)
+    consolidated_document_index: pd.DataFrame = None  # Merged index (if both exists)
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
     pos_schema_name: str = field(default="Universal")
@@ -82,23 +86,43 @@ class PipelinePayload:
     def put(self, key: str, value: Any):
         self.memory_store[key] = value
 
+    def __post_init__(self):
+        self.primary_document_index = self.load_primary_index()
+
     @property
     def document_index(self) -> pd.DataFrame:
 
-        if self._document_index is None:
-            if self.document_index_source is not None:
-                if isinstance(self.document_index_source, pd.DataFrame):
-                    self._document_index = self.document_index_source
-                elif isinstance(self.document_index_source, str):
-                    self._document_index = load_document_index(self.document_index_source)
+        if self.consolidated_document_index is None:
+            if self.primary_document_index is not None and self.secondary_document_index is not None:
+                self.consolidated_document_index = consolidate_document_index(
+                    index=self.primary_document_index,
+                    reader_index=self.secondary_document_index,
+                )
 
-        return self._document_index
+        if self.consolidated_document_index is not None:
+            return self.consolidated_document_index
 
-    @document_index.setter
-    def document_index(self, value: pd.DataFrame):
+        if self.primary_document_index is not None:
+            return self.primary_document_index
 
-        self.document_index_source = value
-        self._document_index = value
+        return self.secondary_document_index
+
+    def load_primary_index(self) -> pd.DataFrame:
+
+        if self.document_index_source is None:
+            return None
+
+        if isinstance(self.document_index_source, pd.DataFrame):
+            return self.document_index_source
+
+        if isinstance(self.document_index_source, str):
+            return load_document_index(
+                self.document_index_source,
+                key_column=self.document_index_key,
+                sep=self.document_index_sep,
+            )
+
+        return None
 
 
 @dataclass
@@ -151,10 +175,7 @@ class ITask(abc.ABC):
                 return
         if isinstance(
             self.in_content_type,
-            (
-                list,
-                tuple,
-            ),
+            (list, tuple),
         ):
             if content_type in self.in_content_type:
                 return

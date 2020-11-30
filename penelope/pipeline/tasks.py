@@ -8,7 +8,7 @@ from tqdm.std import tqdm
 
 from . import checkpoint, convert, interfaces
 from .interfaces import ContentType
-from .utils import consolidate_document_index, to_text
+from .utils import to_text
 
 
 class DefaultResolveMixIn:
@@ -45,10 +45,7 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
                 transform_opts=self.transform_opts,
             )
         )
-        self.pipeline.payload.document_index = consolidate_document_index(
-            index=self.pipeline.payload.document_index,
-            reader_index=text_reader.document_index,
-        )
+        self.pipeline.payload.secondary_document_index = text_reader.document_index
         self.pipeline.payload.metadata = text_reader.metadata
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
         self.pipeline.put("text_transform_opts", self.transform_opts.props)
@@ -138,8 +135,10 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename)
-            self.pipeline.payload.document_index = checkpoint_data.document_index
+            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+                self.filename, document_index_key_column=self.pipeline.payload.document_index_key
+            )
+            self.pipeline.payload.primary_document_index = checkpoint_data.document_index
             self.out_content_type = checkpoint_data.content_type
             payload_stream = checkpoint_data.payload_stream
         else:
@@ -195,8 +194,11 @@ class LoadTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
 
     def outstream(self) -> Iterable[interfaces.DocumentPayload]:
 
-        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename)
-        self.pipeline.payload.document_index = checkpoint_data.document_index
+        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+            self.filename,
+            document_index_key_column=self.pipeline.payload.document_index_key,
+        )
+        self.pipeline.payload.primary_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
             yield payload

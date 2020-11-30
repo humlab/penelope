@@ -10,7 +10,14 @@ import pytest
 import spacy.language
 import spacy.tokens
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
-from penelope.pipeline import CheckpointData, ContentSerializeOpts, ContentType, DocumentPayload, PipelinePayload
+from penelope.pipeline import (
+    CheckpointData,
+    ContentSerializeOpts,
+    ContentType,
+    DocumentPayload,
+    PipelinePayload,
+    load_document_index,
+)
 from penelope.pipeline.pipelines import CorpusPipeline, SpacyPipeline
 from tests.utils import TEST_DATA_FOLDER
 
@@ -316,3 +323,19 @@ def test_spacy_pipeline_load_checkpoint():
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None
+
+
+def test_load_primary_document_index():
+
+    filename = './tests/test_data/legal_instrument_five_docs_test.csv'
+    df = load_document_index(filename, key_column='unesco_id', sep=';')
+
+    assert df is not None
+    assert 'unesco_id' in df.columns
+    assert 'document_id' in df.columns
+    assert (df.unesco_id == df.document_id).all()
+    assert (df.unesco_id == df.index).all()
+
+
+def store_document_index(document_index: pd.DataFrame, filename: str):
+    document_index.to_csv(filename, sep='\t', header=True, index=True)

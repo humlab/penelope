@@ -28,9 +28,10 @@ class CorpusConfig:
 
     def set_folder(self, folder: str) -> "CorpusConfig":
         if self.pipeline_payload.document_index_source is not None:
-            self.pipeline_payload.document_index_source = replace_path(
-                self.pipeline_payload.document_index_source, folder
-            )
+            if isinstance(self.pipeline_payload.source, str):
+                self.pipeline_payload.document_index_source = replace_path(
+                    self.pipeline_payload.document_index_source, folder
+                )
         if isinstance(self.pipeline_payload.source, str):
             self.pipeline_payload.source = replace_path(self.pipeline_payload.source, folder)
 
