@@ -33,6 +33,7 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
 
     def setup(self):
         super().setup()
+        self.transform_opts = self.transform_opts or TextTransformOpts()
         if self.source is not None:
             self.pipeline.payload.source = self.source
         text_reader: TextReader = (
@@ -41,7 +42,7 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
             else TextReader.create(
                 source=self.pipeline.payload.source,
                 reader_opts=self.reader_opts,
-                transform_opts=(self.transform_opts or TextTransformOpts()),
+                transform_opts=self.transform_opts,
             )
         )
         self.pipeline.payload.document_index = consolidate_document_index(
@@ -118,7 +119,7 @@ class ToDocumentContentTuple(interfaces.ITask):
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
         return payload.update(
-            ContentType.DOCUMENT_CONTENT_TUPLE,
+            self.out_content_type,
             content=(
                 payload.filename,
                 payload.content,
@@ -162,7 +163,7 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
-class SaveDataFrame(DefaultResolveMixIn, interfaces.ITask):
+class SaveTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
     """Stores sequence of data frame documents. """
 
     filename: str = None
@@ -182,7 +183,7 @@ class SaveDataFrame(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
-class LoadDataFrame(DefaultResolveMixIn, interfaces.ITask):
+class LoadTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     filename: str = None
@@ -268,7 +269,7 @@ class TextToDTM(interfaces.ITask):
 
     def outstream(self) -> VectorizedCorpus:
         corpus = convert.to_vectorized_corpus(
-            stream=(x.content for x in self.instream),
+            stream=self.instream,
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
         )

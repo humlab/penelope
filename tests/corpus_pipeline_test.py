@@ -167,24 +167,24 @@ def test_text_to_spacy_process_with_non_text_payload_fails():
         _ = task.setup().process(current_payload)
 
 
-def patch_any_to_annotated_dataframe(*_) -> pd.DataFrame:
+def patch_any_to_tagged_frame(*_) -> pd.DataFrame:
     return pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']})
 
 
-def patch_spacy_doc_to_annotated_dataframe(*_, **__) -> pd.DataFrame:
+def patch_spacy_doc_to_tagged_frame(*_, **__) -> pd.DataFrame:
     return pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']})
 
 
-@patch('penelope.pipeline.spacy.convert.spacy_doc_to_annotated_dataframe', patch_spacy_doc_to_annotated_dataframe)
-def test_text_to_dataframe_process_with_text_payload_succeeds():
+@patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_spacy_doc_to_tagged_frame)
+def test_text_to_tagged_frame_with_text_payload_succeeds():
     task = spacy_tasks.ToSpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
-@patch('penelope.pipeline.spacy.convert.spacy_doc_to_annotated_dataframe', patch_any_to_annotated_dataframe)
-def test_spacy_to_dataframe_process_with_doc_payload_succeeds():
+@patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_any_to_tagged_frame)
+def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     task = spacy_tasks.SpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
@@ -192,16 +192,16 @@ def test_spacy_to_dataframe_process_with_doc_payload_succeeds():
     assert next_payload.content.columns.tolist() == ['text', 'pos_', 'lemma_']
 
 
-def dataframe_to_tokens_patch(*_) -> Iterable[str]:
+def patch_tagged_frame_to_tokens(*_) -> Iterable[str]:
     return ["a", "b", "c"]
 
 
-@patch('penelope.pipeline.spacy.convert.dataframe_to_tokens', dataframe_to_tokens_patch)
-def test_data_frame_to_tokens_succeeds():
+@patch('penelope.pipeline.spacy.convert.tagged_frame_to_tokens', patch_tagged_frame_to_tokens)
+def test_tagged_frame_to_tokens_succeeds():
     task = spacy_tasks.TaggedFrameToTokens(
         pipeline=Mock(spec=CorpusPipeline),
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
-        filter_opts=TaggedTokensFilterOpts(),
+        filter_opts=TaggedTokensFilterOpts(is_punct=False, is_space=False),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))
     next_payload = task.process(current_payload)
@@ -226,7 +226,7 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
 
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 def test_save_data_frame_succeeds():
-    task = tasks.SaveDataFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
+    task = tasks.SaveTaggedFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -234,7 +234,7 @@ def test_save_data_frame_succeeds():
 
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_load_data_frame_succeeds():
-    task = tasks.LoadDataFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
+    task = tasks.LoadTaggedFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -287,7 +287,7 @@ def test_spacy_pipeline():
     pipeline = (
         CorpusPipeline(payload=pipeline_payload)
         .set_spacy_model(pipeline_payload.memory_store['spacy_model'])
-        .load(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
+        .load_text(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
         .text_to_spacy()
         .passthrough()
         .spacy_to_pos_tagged_frame()

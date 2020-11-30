@@ -142,7 +142,7 @@ class ITask(abc.ABC):
         return self.pipeline.payload.document_index
 
     def input_type_guard(self, content_type):
-        if self.in_content_type is None:
+        if self.in_content_type is None or self.in_content_type == ContentType.NONE:
             return
         if isinstance(self.in_content_type, ContentType):
             if self.in_content_type == ContentType.ANY:

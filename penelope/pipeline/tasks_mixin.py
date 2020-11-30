@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 # FIXME:  pipelines.CorpusPipeline => pipeline.T_self
 class PipelineShortcutMixIn:
-    def load(
+    def load_text(
         self: pipelines.CorpusPipeline,
         *,
         reader_opts: TextReaderOpts = None,
@@ -22,11 +22,11 @@ class PipelineShortcutMixIn:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
     def save_dataframe(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
-        return self.add(tasks.SaveDataFrame(filename=filename))
+        return self.add(tasks.SaveTaggedFrame(filename=filename))
 
     def load_dataframe(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
-        return self.add(tasks.LoadDataFrame(filename=filename))
+        return self.add(tasks.LoadTaggedFrame(filename=filename))
 
     def checkpoint(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
@@ -37,7 +37,7 @@ class PipelineShortcutMixIn:
         return self.add(tasks.TokensToText())
 
     def to_dtm(self: pipelines.CorpusPipeline, vectorize_opts: VectorizeOpts = None) -> pipelines.CorpusPipeline:
-        """ TEXT => DTM """
+        """ (filename, TEXT => DTM) """
         return self.add(tasks.TextToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
@@ -49,5 +49,5 @@ class PipelineShortcutMixIn:
     def passthrough(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.Passthrough())
 
-    def to_document_content_tuple(self):
+    def to_document_content_tuple(self) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToDocumentContentTuple())
