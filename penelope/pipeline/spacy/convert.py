@@ -26,7 +26,7 @@ def text_to_tagged_frame(
     return spacy_doc_to_tagged_frame(nlp(document), attributes=attributes)
 
 
-def texts_to_annotated_dataframes(
+def texts_to_tagged_frames(
     documents: Iterable[str],
     attributes: List[str],
     language: Union[Language, str] = "en_core_web_sm",
@@ -68,10 +68,9 @@ def texts_to_annotated_dataframes(
 TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
 
 
-# FIXME: Make generic (applicable to Sparv, Stanza tagging etc)
-# FIXME: Move this function out of spaCy
+# FIXME: Make generic (applicable to Sparv, Stanza tagging etc), sove this function out of spaCy
 def tagged_frame_to_tokens(
-    doc: pd.DataFrame, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts
+    doc: pd.DataFrame, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts = None
 ) -> Iterable[str]:
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
@@ -86,6 +85,22 @@ def tagged_frame_to_tokens(
         raise ValueError(f"{extract_opts.target_override} is not valid target for given document (missing column)")
 
     mask = np.repeat(True, len(doc.index))
+
+    if filter_opts is not None:
+        mask &= filter_opts.mask(doc)
+
+    # FIXME: Merge with filter_opts:
+    if "pos_" in doc.columns:
+
+        if len(extract_opts.get_pos_includes() or set()) > 0:
+            mask &= doc.pos_.isin(extract_opts.get_pos_includes())
+
+        if len(extract_opts.get_pos_excludes() or set()) > 0:
+            mask &= ~(doc.pos_.isin(extract_opts.get_pos_excludes()))
+
+    return doc.loc[mask][target].tolist()
+
+def filter_by_tags(doc, filter_opts, mask):
 
     if "is_space" in doc.columns:
         if not filter_opts.is_space:
@@ -107,16 +122,7 @@ def tagged_frame_to_tokens(
         if "is_stop" in doc.columns:
             mask &= doc.is_stop == filter_opts.is_stop
 
-    if "pos_" in doc.columns:
-
-        if len(extract_opts.get_pos_includes() or set()) > 0:
-            mask &= doc.pos_.isin(extract_opts.get_pos_includes())
-
-        if len(extract_opts.get_pos_excludes() or set()) > 0:
-            mask &= ~(doc.pos_.isin(extract_opts.get_pos_excludes()))
-
-    return doc.loc[mask][target].tolist()
-
+    return mask
 
 def _get_disables(attributes):
     disable = ['vectors', 'textcat']

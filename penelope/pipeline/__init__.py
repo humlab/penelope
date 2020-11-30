@@ -13,11 +13,10 @@ from .pipelines import CorpusPipeline, SpacyPipeline
 from .tasks_mixin import PipelineShortcutMixIn
 from .utils import load_document_index, store_document_index
 
-# from .spacy.pipeline import SpacyPipeline
 # from .spacy.convert import (
-#     dataframe_to_tokens,
-#     spacy_doc_to_annotated_dataframe,
-#     text_to_annotated_dataframe,
-#     texts_to_annotated_dataframes,
+#     tagged_frame_to_tokens,
+#     spacy_doc_to_tagged_frame,
+#     text_to_tagged_frame,
+#     texts_to_tagged_frames,
 # )
 # from .spacy.tasks_mixin SpacyPipelineShortcutMixIn

@@ -3,6 +3,7 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Sequence, Set, Union
 
+import numpy as np
 import pandas as pd
 from penelope.utility import IndexOfSplitOrCallableOrRegExp
 
@@ -45,7 +46,7 @@ class ExtractTaggedTokensOpts:
     # FIXME: Changed default, investigate use, force in Sparv extracts
     pos_excludes: str = ''  # "|MAD|MID|PAD|"
 
-    # FIXME: Implement in spaCy extact
+    # FIXME: Implement in spaCy extract
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
 
@@ -71,26 +72,82 @@ class ExtractTaggedTokensOpts:
         )
 
 
-@dataclass
 class TaggedTokensFilterOpts:
-    """Used when filter is applied on tagged data (before string tokens are returned)"""
+    """Used for filtering tagged data that are stored as Pandas data frames.
+    A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
 
-    is_alpha: bool = None
-    is_space: bool = False
-    is_punct: bool = False
-    is_digit: bool = None
-    is_stop: bool = None
+    def __init__(self, **kwargs):
+        super().__setattr__('data', kwargs or dict())
+
+    def __getitem__(self, key: int):
+        return self.data[key]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __setattr__(self, k, v):
+        self.data[k] = v
+
+    def __getattr__(self, k):
+        try:
+            return self.data[k]
+        except KeyError:
+            return None
 
     @property
-    def props(self):
-        return dict(
-            is_alpha=self.is_alpha,
-            is_space=self.is_space,
-            is_punct=self.is_punct,
-            is_digit=self.is_digit,
-            is_stop=self.is_stop,
-        )
+    def props(self) -> Dict:
+        return self.data
 
+    def mask(self, doc):
+
+        mask = np.repeat(True, len(doc.index))
+
+        for attr_name, attr_value in self.data.items():
+
+            attr_value_sign = True
+            if attr_value is None:
+                continue
+
+            if attr_name not in doc.columns:
+                continue
+
+            if isinstance(attr_value, tuple):
+                # if LIST and tuple is passed, then first element indicates if mask should be negated
+                if (
+                    len(attr_value) != 2
+                    or not isinstance(attr_value[0], bool)
+                    or not isinstance(attr_value[1], (list, set))
+                ):
+                    raise ValueError(
+                        "when tuple is passed: length must be 2 and first element must be boolean and second must be a list"
+                    )
+                attr_value_sign = attr_value[0]
+                attr_value = attr_value[1]
+
+            value_serie: pd.Series = doc[attr_name]
+            if isinstance(attr_value, bool):
+                if attr_value:
+                    mask &= value_serie == True
+                else:
+                    mask &= ~(value_serie)
+            elif isinstance(attr_value, (list, set)):
+                if attr_value_sign:
+                    mask &= value_serie.isin(attr_value)
+                else:
+                    mask &= ~value_serie.isin(attr_value)
+            else:
+                mask &= value_serie == attr_value
+
+        return mask
+
+    def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
+        if len(self.hot_attributes(doc)) == 0:
+            return doc
+        return doc[self.mask(doc)]
+
+    def hot_attributes(self, doc: pd.DataFrame) -> List[str]:
+        """Returns attributes that __might__ filter tagged frame"""
+        return [ (attr_name, attr_value) for attr_name, attr_value in self.data.items() if attr_name in doc.columns and attr_value is not None ]
 
 class ICorpusReader(abc.ABC):
     @property
