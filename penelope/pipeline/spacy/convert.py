@@ -100,6 +100,7 @@ def tagged_frame_to_tokens(
 
     return doc.loc[mask][target].tolist()
 
+
 def filter_by_tags(doc, filter_opts, mask):
 
     if "is_space" in doc.columns:
@@ -123,6 +124,7 @@ def filter_by_tags(doc, filter_opts, mask):
             mask &= doc.is_stop == filter_opts.is_stop
 
     return mask
+
 
 def _get_disables(attributes):
     disable = ['vectors', 'textcat']

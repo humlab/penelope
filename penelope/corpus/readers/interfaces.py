@@ -147,7 +147,12 @@ class TaggedTokensFilterOpts:
 
     def hot_attributes(self, doc: pd.DataFrame) -> List[str]:
         """Returns attributes that __might__ filter tagged frame"""
-        return [ (attr_name, attr_value) for attr_name, attr_value in self.data.items() if attr_name in doc.columns and attr_value is not None ]
+        return [
+            (attr_name, attr_value)
+            for attr_name, attr_value in self.data.items()
+            if attr_name in doc.columns and attr_value is not None
+        ]
+
 
 class ICorpusReader(abc.ABC):
     @property

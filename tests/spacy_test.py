@@ -294,7 +294,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
     )
-    filter_opts=TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
     pipeline = (
         SpacyPipeline(payload=payload)
         .load_text(reader_opts=reader_opts)

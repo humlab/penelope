@@ -22,7 +22,7 @@ def test_tagged_tokens_filter_props_is_as_expected():
 
 
 def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True,False,True]))
+    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True, False, True]))
 
     filter_opts = TaggedTokensFilterOpts(is_stop=True)
     mask = filter_opts.mask(doc)
@@ -34,14 +34,14 @@ def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
     assert len(new_doc) == 3
     assert new_doc['text'].to_list() == ['a', 'b', 'c']
 
-
     new_doc = doc[TaggedTokensFilterOpts(is_stop=False).mask(doc)]
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['b']
 
+
 def test_tagged_tokens_filter_apply_when_boolean_attribute_succeeds():
 
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True,False,True]))
+    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True, False, True]))
 
     new_doc = TaggedTokensFilterOpts(is_stop=True).apply(doc)
     assert len(new_doc) == 2
@@ -55,9 +55,10 @@ def test_tagged_tokens_filter_apply_when_boolean_attribute_succeeds():
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['b']
 
+
 def test_tagged_tokens_filter_apply_when_list_attribute_succeeds():
 
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X','X','Y']))
+    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y']))
 
     new_doc = TaggedTokensFilterOpts(pos='X').apply(doc)
     assert len(new_doc) == 2
@@ -67,29 +68,31 @@ def test_tagged_tokens_filter_apply_when_list_attribute_succeeds():
     assert len(new_doc) == 3
     assert new_doc['text'].to_list() == ['a', 'b', 'c']
 
+
 def test_tagged_tokens_filter_apply_unknown_attribute_is_ignored():
 
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X','X','Y']))
+    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y']))
 
     new_doc = TaggedTokensFilterOpts(kallekula='kurt').apply(doc)
     assert len(new_doc) == 3
     assert new_doc['text'].to_list() == ['a', 'b', 'c']
 
+
 def test_tagged_tokens_filter_apply_when_unary_sign_operator_attribute_succeeds():
 
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X','X','Y']))
+    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y']))
 
-    new_doc = TaggedTokensFilterOpts(pos=(True,['X'])).apply(doc)
+    new_doc = TaggedTokensFilterOpts(pos=(True, ['X'])).apply(doc)
     assert len(new_doc) == 2
     assert new_doc['text'].to_list() == ['a', 'b']
 
-    new_doc = TaggedTokensFilterOpts(pos=(False,['X'])).apply(doc)
+    new_doc = TaggedTokensFilterOpts(pos=(False, ['X'])).apply(doc)
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['c']
 
-    new_doc = TaggedTokensFilterOpts(pos=(False,['Y'])).apply(doc)
+    new_doc = TaggedTokensFilterOpts(pos=(False, ['Y'])).apply(doc)
     assert len(new_doc) == 2
-    assert new_doc['text'].to_list() == ['a','b']
+    assert new_doc['text'].to_list() == ['a', 'b']
 
     new_doc = TaggedTokensFilterOpts(pos=(False, ['X', 'Y'])).apply(doc)
     assert len(new_doc) == 0
@@ -104,13 +107,15 @@ def test_tagged_tokens_filter_apply_when_unary_sign_operator_attribute_succeeds(
     with pytest.raises(ValueError):
         new_doc = TaggedTokensFilterOpts(pos=(True, 1)).apply(doc)
 
+
 def test_hot_attributes():
 
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X','X','Y'], lemma=['a', 'b', 'c'], is_stop=[True, False, True]))
+    doc = pd.DataFrame(
+        data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y'], lemma=['a', 'b', 'c'], is_stop=[True, False, True])
+    )
 
     assert len(TaggedTokensFilterOpts(pos=(True, 1)).hot_attributes(doc)) == 1
     assert len(TaggedTokensFilterOpts(pos='A', lemma='a').hot_attributes(doc)) == 2
     assert len(TaggedTokensFilterOpts(pos='A', lemma='a', _lemma='c').hot_attributes(doc)) == 2
     assert len(TaggedTokensFilterOpts().hot_attributes(doc)) == 0
     assert len(TaggedTokensFilterOpts(kalle=1, kula=2, kurt=2).hot_attributes(doc)) == 0
-
