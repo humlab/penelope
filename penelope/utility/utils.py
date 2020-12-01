@@ -56,6 +56,10 @@ iter_windows = gensim.utils.iter_windows
 deprecated = gensim.utils.deprecated
 
 
+def to_text(data: Union[str, Iterable[str]]):
+    return data if isinstance(data, str) else ' '.join(data)
+
+
 def remove_snake_case(snake_str: str) -> str:
     return ' '.join(x.title() for x in snake_str.split('_'))
 
@@ -403,3 +407,16 @@ def pretty_print_matrix(
             print(df)
     else:
         print(df)
+
+
+# def read_data_frame_from_zip(zf, filename):
+#     data_str = zf.read(filename).decode('utf-8')
+#     data_source = StringIO(data_str)
+#     df = pd.read_csv(data_source, sep='\t', index_col=0)
+#     return df
+
+
+# def write_data_frame_to_zip(df: pd.DataFrame, filename: str, zf: zipfile.ZipFile):
+#     assert isinstance(df, (pd.DataFrame,))
+#     data_str: str = df.to_csv(sep='\t', header=True)
+#     zf.writestr(filename, data=data_str)

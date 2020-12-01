@@ -63,3 +63,6 @@ class CorpusPipelineBase(Generic[T_self]):
 
     def put(self, key: str, value: Any):
         self.payload.put(key, value)
+
+    def to_list(self) -> List[interfaces.DocumentPayload]:
+        return [x for x in self.resolve()]
