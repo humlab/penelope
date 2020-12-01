@@ -1,3 +1,11 @@
+from .document_index import (
+    consolidate_document_index,
+    document_index_upgrade,
+    load_document_index,
+    load_document_index_from_str,
+    metadata_to_document_index,
+    store_document_index,
+)
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
