@@ -245,9 +245,9 @@ def add_document_metadata(df: pd.DataFrame, columns: List[str], documents: pd.Da
     if isinstance(columns, str):
         columns = [columns]
 
-    columns = [c for c in columns if c not in df.columns and c in documents.columns]
+    columns = ['document_id']+[c for c in columns if c not in df.columns and c in documents.columns]
 
-    df = df.merge(documents[columns], how='inner', left_on='document_id', right_index=True)
+    df = df.merge(documents[columns], how='inner', left_on='document_id', right_on='document_id')
 
     return df
 
