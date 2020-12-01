@@ -6,7 +6,7 @@ from io import StringIO
 from typing import Any, Callable, Dict, Iterable, Iterator, Union
 
 import pandas as pd
-from penelope.pipeline.utils import load_document_index
+from penelope.corpus import load_document_index
 
 from . import interfaces
 

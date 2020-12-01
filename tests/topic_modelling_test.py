@@ -6,6 +6,7 @@ import gensim
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest  # pylint: disable=unused-import
+from penelope.corpus import document_index_upgrade
 from penelope.scripts.compute_topic_model import run_model
 from penelope.topic_modelling.container import InferredTopicsData, TrainingCorpus
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
@@ -61,7 +62,7 @@ def test_infer_model(method):
     assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
     assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.documents)
     assert len(inferred_model.train_corpus.documents) == 5
-    assert len(inferred_model.train_corpus.documents.columns) == 6
+    assert len(inferred_model.train_corpus.documents.columns) == 7
     assert 'n_terms' in inferred_model.train_corpus.documents.columns
     assert inferred_model.train_corpus.corpus is not None
 
@@ -123,7 +124,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
     assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.documents)
     assert len(inferred_model.train_corpus.documents) == 5
-    assert len(inferred_model.train_corpus.documents.columns) == 6
+    assert len(inferred_model.train_corpus.documents.columns) == 7
     assert 'n_terms' in inferred_model.train_corpus.documents.columns
     assert inferred_model.train_corpus.corpus is not None
 
@@ -337,3 +338,20 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
     assert inferred_topic_data is not None
 
     shutil.rmtree(target_folder)
+
+
+def test_load_document_index_versions():
+
+    filename = './tests/test_data/documents_index_doc_id.zip'
+
+    documents = pd.read_csv(
+        filename, '\t', header=0, index_col=0, na_filter=False
+    )
+
+    documents = document_index_upgrade(documents)
+    expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_terms'])
+    assert set(documents.columns.tolist()).intersection(expected_columns) == expected_columns
+
+    # df, name = (documents.rename_axis(''), 'documents.csv')
+
+    # file_utility.pandas_to_csv_zip(filename, (df, 'document_index'), extension="csv", sep='\t')

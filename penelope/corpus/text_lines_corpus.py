@@ -1,6 +1,6 @@
 from typing import Dict, Sequence
 
-import pandas as pd
+from penelope.corpus import metadata_to_document_index
 from penelope.utility import (
     IndexOfSplitOrCallableOrRegExp,
     extract_filenames_metadata,
@@ -20,7 +20,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         filename: str,
         fields: Dict[str, int],
         filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
-        filename_fields_key: str = None,
+        index_field: str = None,
         sep: str = ' # ',
     ):
         """Simple corpus for document per line data  """
@@ -45,14 +45,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
             filename_data = extract_filenames_metadata(filenames=self._filenames, filename_fields=filename_fields)
             fields_data = {**fields_data, **list_of_dicts_to_dict_of_lists(filename_data)}
 
-        self._documents = pd.DataFrame(data=fields_data)
-
-        if filename_fields_key is not None:
-            self._documents.set_index(filename_fields_key)
-            self._documents[filename_fields_key] = self._documents.index
-
-        if 'document_id' not in self._documents.columns:
-            self._documents['document_id'] = self._documents.index
+        self._documents = metadata_to_document_index(fields_data, document_id_field=index_field)
 
     @property
     def filenames(self):

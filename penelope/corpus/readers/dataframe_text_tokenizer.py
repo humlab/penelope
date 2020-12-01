@@ -1,6 +1,7 @@
 from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
+from penelope.corpus import metadata_to_document_index
 from penelope.vendor.nltk import word_tokenize
 
 from .interfaces import ICorpusReader
@@ -45,7 +46,7 @@ class DataFrameTextTokenizer(
 
         self.iterator = None
         self._metadata = self.data.drop(self.text_column, axis=1).to_dict(orient='records')
-        self._documents = pd.DataFrame(self._metadata)
+        self._documents = metadata_to_document_index(self._metadata)
         self._filenames = [x['filename'] for x in self._metadata]
         self.tokenize = word_tokenize
 

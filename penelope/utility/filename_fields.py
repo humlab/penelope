@@ -1,10 +1,7 @@
-import logging
 import os
 import re
 import sys
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Union
-
-import pandas as pd
 
 from .filename_utils import strip_paths
 
@@ -118,24 +115,3 @@ def extract_filenames_metadata(
         {'filename': filename, **extract_filename_metadata(filename, filename_fields)}
         for filename in strip_paths(filenames)
     ]
-
-
-def metadata_to_document_index(metadata: Dict, filename_fields_key: str) -> pd.DataFrame:
-    """Creates a document index with metadata key as columns and filename_fields_key as document_id`"""
-
-    document_index: pd.DataFrame = pd.DataFrame(metadata)
-
-    if filename_fields_key:
-
-        if filename_fields_key not in document_index.columns:
-            raise ValueError(f"Field {filename_fields_key} specified as index field is not among extracted fields")
-
-        document_index['document_id'] = document_index[filename_fields_key]
-        document_index.set_index('document_id')
-        document_index['document_id'] = document_index.index
-
-    if 'document_id' not in document_index:
-        logging.warning("document index key field not specified (using sequence)")
-        document_index['document_id'] = list(document_index.index)
-
-    return document_index

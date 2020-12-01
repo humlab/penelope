@@ -2,10 +2,11 @@
 import logging
 
 import pandas as pd
-from penelope.corpus.readers.text_reader import TextReaderOpts
-from penelope.utility import create_iterator, extract_filenames_metadata, list_filenames, metadata_to_document_index
+from penelope.corpus import metadata_to_document_index
+from penelope.utility import create_iterator, extract_filenames_metadata, list_filenames
 
 from .interfaces import ICorpusReader
+from .text_reader import TextReaderOpts
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -50,7 +51,7 @@ class ZipTextIterator(ICorpusReader):
 
     @property
     def document_index(self) -> pd.DataFrame:
-        return metadata_to_document_index(self.metadata, self.reader_opts.filename_fields_key)
+        return metadata_to_document_index(self.metadata, document_id_field=self.reader_opts.index_field)
 
     def __iter__(self):
         return self

@@ -17,7 +17,7 @@ class TextReaderOpts:
     filename_pattern: str = field(default="*.txt")
     filename_filter: FilenameOrCallableOrSequenceFilter = None
     filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None
-    filename_fields_key: str = None
+    index_field: str = None
     as_binary: bool = False
 
     @property
@@ -26,7 +26,7 @@ class TextReaderOpts:
             filename_pattern=self.filename_pattern,
             filename_filter=self.filename_filter,
             filename_fields=self.filename_fields,
-            filename_fields_key=self.filename_fields_key,
+            index_field=self.index_field,
             as_binary=self.as_binary,
         )
 

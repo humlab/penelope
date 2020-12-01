@@ -1,7 +1,8 @@
 from typing import Any, Dict, List, Sequence, Tuple
 
 import pandas as pd
-from penelope.utility import extract_filenames_metadata, metadata_to_document_index, strip_paths
+from penelope.corpus import metadata_to_document_index
+from penelope.utility import extract_filenames_metadata, strip_paths
 
 from .interfaces import ICorpusReader, TextReaderOpts
 
@@ -23,7 +24,7 @@ class InMemoryReader(ICorpusReader):
         self._all_filenames = [x[0] for x in self.data]
         self._all_metadata = self._create_all_metadata()
         self._document_index: pd.DataFrame = metadata_to_document_index(
-            self._all_metadata, self.reader_opts.filename_fields_key
+            self._all_metadata, document_id_field=self.reader_opts.index_field
         )
 
     def _create_iterator(self):

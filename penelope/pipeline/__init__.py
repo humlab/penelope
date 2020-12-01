@@ -11,7 +11,6 @@ from .convert import to_vectorized_corpus
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, PipelinePayload
 from .pipelines import CorpusPipeline, SpacyPipeline
 from .tasks_mixin import PipelineShortcutMixIn
-from .utils import load_document_index, store_document_index
 
 # from .spacy.convert import (
 #     tagged_frame_to_tokens,

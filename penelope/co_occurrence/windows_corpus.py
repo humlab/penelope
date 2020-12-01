@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Mapping, Tuple
 
 import pandas as pd
-from penelope.corpus.interfaces import ITokenizedCorpus
+from penelope.corpus import ITokenizedCorpus, metadata_to_document_index
 
 WindowsStream = Iterator[Tuple[str, int, Iterator[str]]]
 
@@ -38,7 +38,7 @@ class WindowsCorpus(ITokenizedCorpus):
             return (filename, tokens)
         except StopIteration:
             self._metadata = [{'filename': k, **v} for k, v in dict(self.statistics).items()]
-            self._documents = pd.DataFrame(self._metadata)
+            self._documents = metadata_to_document_index(self._metadata)
             raise
 
     @property

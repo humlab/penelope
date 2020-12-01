@@ -85,8 +85,8 @@ def execute_workflow(
 
     reader_opts = TextReaderOpts(
         filename_pattern='*.csv',
-        filename_fields=filename_field,
-        filename_fields_key=None,  # FIXME!
+        filename_fields=filename_field,  # use filename
+        index_field=None,
         as_binary=False,
     )
 

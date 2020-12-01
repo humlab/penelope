@@ -3,10 +3,8 @@ import random
 from collections import defaultdict
 from typing import Callable
 
-import pandas as pd
-from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus
-from penelope.corpus.readers import InMemoryReader, TextReader, TextTokenizer
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
+from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -59,7 +57,7 @@ class MockedProcessedCorpus(ITokenizedCorpus):
         self.n_tokens = {f: len(d) for f, d in mock_data}
         self.iterator = None
         self._metadata = [dict(filename=filename, year=filename.split('_')[1]) for filename, _ in self.data]
-        self._documents = pd.DataFrame(self._metadata)
+        self._documents = metadata_to_document_index(self._metadata)
 
     @property
     def terms(self):
@@ -104,7 +102,7 @@ def create_text_reader(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,
-    filename_fields_key=None,
+    index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
     fix_hyphenation=True,
@@ -114,7 +112,7 @@ def create_text_reader(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
         filename_fields=filename_fields,
-        filename_fields_key=filename_fields_key,
+        index_field=index_field,
         as_binary=as_binary,
     )
     transform_opts = TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation)
@@ -126,7 +124,7 @@ def create_text_tokenizer(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,
-    filename_fields_key=None,
+    index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
     fix_hyphenation=True,
@@ -138,7 +136,7 @@ def create_text_tokenizer(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
         filename_fields=filename_fields,
-        filename_fields_key=filename_fields_key,
+        index_field=index_field,
         as_binary=as_binary,
     )
     transform_opts = TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation)

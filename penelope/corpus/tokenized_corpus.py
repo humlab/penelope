@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope import utility
+from penelope.corpus import metadata_to_document_index
 from tqdm import tqdm
 
 from .corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
@@ -50,11 +51,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
             raise TypeError(f"Corpus reader {type(reader)} has no `filenames` property")
 
         self.reader: ICorpusReader = reader
-        self._documents: pd.DataFrame = pd.DataFrame(reader.metadata)
-
-        if 'document_id' not in self._documents:
-            self._documents['document_id'] = list(self._documents.index)
-
+        self._documents: pd.DataFrame = metadata_to_document_index(reader.metadata)
         self.transformer = TokensTransformer(tokens_transform_opts=(tokens_transform_opts or TokensTransformOpts()))
         self.iterator = None
         self._token2id = None

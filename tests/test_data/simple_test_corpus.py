@@ -1,15 +1,14 @@
 import pandas as pd
-from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.corpus.tokenized_corpus import ReiterableTerms
-from penelope.utility import metadata_to_document_index
-from penelope.utility.filename_fields import extract_filenames_metadata
+from penelope.corpus import ReiterableTerms, metadata_to_document_index
+from penelope.corpus.readers import TextReaderOpts
+from penelope.utility import extract_filenames_metadata
 
 
 class SimpleTestCorpus:
     def __init__(self, filename: str, reader_opts: TextReaderOpts):
 
         filename_fields = reader_opts.filename_fields
-        filename_fields_key = reader_opts.filename_fields_key
+        index_field = reader_opts.index_field
 
         with open(filename, 'r') as f:
             lines = f.readlines()
@@ -24,7 +23,7 @@ class SimpleTestCorpus:
         self.iterator = None
 
         metadata = extract_filenames_metadata(filenames=self.filenames, filename_fields=filename_fields)
-        self.documents: pd.DataFrame = metadata_to_document_index(metadata, filename_fields_key)
+        self.documents: pd.DataFrame = metadata_to_document_index(metadata, document_id_field=index_field)
         self.documents['title'] = [x['title'] for x in self.corpus_data]
 
     @property

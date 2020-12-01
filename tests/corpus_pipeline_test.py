@@ -9,16 +9,17 @@ import penelope.pipeline.tasks as tasks
 import pytest
 import spacy.language
 import spacy.tokens
+from penelope.corpus import load_document_index
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (
     CheckpointData,
     ContentSerializeOpts,
     ContentType,
+    CorpusPipeline,
     DocumentPayload,
     PipelinePayload,
-    load_document_index,
+    SpacyPipeline,
 )
-from penelope.pipeline.pipelines import CorpusPipeline, SpacyPipeline
 from tests.utils import TEST_DATA_FOLDER
 
 TEST_CORPUS = [
@@ -43,8 +44,8 @@ def mary_had_a_little_lamb_corpus() -> Iterable[Tuple[str, str]]:
 @pytest.fixture(scope="module")
 def reader_opts():
     return TextReaderOpts(
-        filename_fields=["document_id:_:2", "year:_:1"],
-        filename_fields_key="document_id",
+        filename_fields=["file_id:_:2", "year:_:1"],
+        index_field=None,
         filename_filter=None,
         filename_pattern="*.txt",
         as_binary=False,
@@ -278,8 +279,8 @@ def test_spacy_pipeline():
     pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
     text_reader_opts = TextReaderOpts(
-        filename_fields=["document_id:_:2", "year:_:1"],
-        filename_fields_key="document_id",
+        filename_fields=["doc_id:_:2", "year:_:1"],
+        index_field=None,  # use filename
         filename_filter=None,
         filename_pattern="*.txt",
         as_binary=False,
@@ -334,7 +335,6 @@ def test_load_primary_document_index():
     assert 'unesco_id' in df.columns
     assert 'document_id' in df.columns
     assert (df.unesco_id == df.document_id).all()
-    assert (df.unesco_id == df.index).all()
 
 
 def store_document_index(document_index: pd.DataFrame, filename: str):
