@@ -1,8 +1,5 @@
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.corpus.readers.text_tokenizer import TextTokenizer
-from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTokenizer
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
 

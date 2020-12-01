@@ -3,8 +3,7 @@ import unittest
 import pandas as pd
 import penelope.corpus.tokenized_corpus as corpora
 import scipy
-from penelope.corpus import vectorizer
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import TokensTransformOpts, vectorizer
 from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 from tests.utils import create_text_tokenizer
 

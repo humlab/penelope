@@ -1,5 +1,5 @@
 import pytest  # pylint: disable=unused-import
-from penelope.corpus.tokens_transformer import TokensTransformer, TokensTransformOpts
+from penelope.corpus import TokensTransformer, TokensTransformOpts
 
 
 @pytest.mark.xfail

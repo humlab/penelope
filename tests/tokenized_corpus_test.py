@@ -1,7 +1,7 @@
 import unittest
 
 import penelope.corpus.tokenized_corpus as corpora
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import TokensTransformOpts
 from tests.utils import create_text_tokenizer
 
 

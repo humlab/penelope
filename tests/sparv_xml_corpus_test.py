@@ -3,8 +3,8 @@ import uuid
 
 import penelope.corpus.sparv_corpus as sparv_corpus
 import pytest  # pylint: disable=unused-import
+from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import read_from_archive
 
 from .utils import OUTPUT_FOLDER

@@ -1,8 +1,7 @@
 import os
 
 import penelope.corpus.readers as readers
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 
 SPARV_CSV_EXPORT_FILENAME = './tests/test_data/prot_197677__27.tsv'
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
