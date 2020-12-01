@@ -6,9 +6,8 @@ from enum import IntEnum, unique
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
+from penelope.corpus import consolidate_document_index, load_document_index
 from penelope.corpus.readers import TextSource
-
-from .utils import consolidate_document_index, load_document_index
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -39,6 +38,7 @@ class DocumentPayload:
     content: Any = None
     filename: str = None
     filename_values: Mapping[str, Any] = None
+    chunk_id = None
 
     def update(self, content_type: ContentType, content: Any):
         self.content_type = content_type
@@ -65,15 +65,18 @@ class PipelinePayload:
     document_index_key: str = None
     document_index_sep: str = '\t'
 
-    primary_document_index: pd.DataFrame = None  # Given index i.e. DataFrane or loaded given  filenames
-    secondary_document_index: pd.DataFrame = None  # Index reconstructed from source (filename, filename fields)
-    consolidated_document_index: pd.DataFrame = None  # Merged index (if both exists)
-
     memory_store: Mapping[str, Any] = field(default_factory=dict)
     pos_schema_name: str = field(default="Universal")
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
+
+    # FIXME: Move to document_index_proxy object
+    primary_document_index: pd.DataFrame = None  # Given index i.e. DataFrane or loaded given  filenames
+    secondary_document_index: pd.DataFrame = None  # Index reconstructed from source (filename, filename fields)
+    consolidated_document_index: pd.DataFrame = None  # Merged index (if both exists)
+
+    _document_index_lookup: Mapping[str, Dict[str, Any]] = None
 
     # NOT USED: token2id: Mapping = None
     # NOT USED: extract_tokens_opts: ExtractTaggedTokensOpts = None
@@ -86,11 +89,12 @@ class PipelinePayload:
     def put(self, key: str, value: Any):
         self.memory_store[key] = value
 
-    def __post_init__(self):
-        self.primary_document_index = self.load_primary_index()
-
     @property
     def document_index(self) -> pd.DataFrame:
+
+        if self.primary_document_index is None:
+            if self.document_index_source is not None:
+                self.primary_document_index = self.load_primary_index()
 
         if self.consolidated_document_index is None:
             if self.primary_document_index is not None and self.secondary_document_index is not None:
@@ -123,6 +127,11 @@ class PipelinePayload:
             )
 
         return None
+
+    def document_lookup(self, filename: str) -> Dict[str, Any]:
+        if self._document_index_lookup is None:
+            self._document_index_lookup = {x['filename']: x for x in self.document_index.to_dict(orient='record')}
+        return self._document_index_lookup.get(filename, None)
 
 
 @dataclass
