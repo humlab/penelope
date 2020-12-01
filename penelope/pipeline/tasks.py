@@ -4,11 +4,11 @@ from typing import Any, Callable, Iterable
 
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformOpts
+from penelope.utility import to_text
 from tqdm.std import tqdm
 
 from . import checkpoint, convert, interfaces
 from .interfaces import ContentType
-from .utils import to_text
 
 
 class DefaultResolveMixIn:
@@ -216,6 +216,50 @@ class TokensToText(interfaces.ITask):
         return payload.update(self.out_content_type, to_text(payload.content))
 
 
+@dataclass
+class TextToDTM(interfaces.ITask):
+    def __post_init__(self):
+        self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
+        self.out_content_type = ContentType.VECTORIZED_CORPUS
+
+    vectorize_opts: VectorizeOpts = None
+
+    def outstream(self) -> VectorizedCorpus:
+        corpus = convert.to_vectorized_corpus(
+            stream=self.instream,
+            vectorize_opts=self.vectorize_opts,
+            document_index=self.pipeline.payload.document_index,
+        )
+        return corpus
+
+    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+        return None
+
+
+@dataclass
+class ChunkTokens(interfaces.ITask):
+    chunk_size: int = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TOKENS
+        self.out_content_type = ContentType.TOKENS
+
+    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
+
+        for payload in self.instream:
+            tokens = payload.content
+            if len(payload.content) < self.chunk_size:
+                yield payload
+            else:
+                for chunk_id, i in enumerate(range(0, len(tokens), self.chunk_size)):
+                    yield interfaces.DocumentPayload(
+                        filename=payload.filename,
+                        content_type=ContentType.TOKENS,
+                        content=tokens[i : i + self.chunk_size],
+                        chunk_id=chunk_id,
+                    )
+
+
 # @dataclass
 # class TokensToTokenizedCorpus(interfaces.ITask):
 #     def __post_init__(self):
@@ -259,23 +303,3 @@ class TokensToText(interfaces.ITask):
 #     @property
 #     def documents(self) -> pd.DataFrame:
 #         return self.pipeline.payload.document_index
-
-
-@dataclass
-class TextToDTM(interfaces.ITask):
-    def __post_init__(self):
-        self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
-        self.out_content_type = ContentType.VECTORIZED_CORPUS
-
-    vectorize_opts: VectorizeOpts = None
-
-    def outstream(self) -> VectorizedCorpus:
-        corpus = convert.to_vectorized_corpus(
-            stream=self.instream,
-            vectorize_opts=self.vectorize_opts,
-            document_index=self.pipeline.payload.document_index,
-        )
-        return corpus
-
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-        return None
