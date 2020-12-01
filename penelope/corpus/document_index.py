@@ -27,7 +27,7 @@ def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str =
         document_index['document_name'] = document_index['filename']
 
     document_index['document_id'] = (
-        document_index[document_id_field] if not document_id_field is None else document_index.index
+        document_index[document_id_field] if document_id_field is not None else document_index.index
     )
     document_index = document_index.set_index('filename', drop=False)
 
