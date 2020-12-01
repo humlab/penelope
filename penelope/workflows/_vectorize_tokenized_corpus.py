@@ -48,7 +48,7 @@ def execute_workflow(
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_fields=filename_field,
-        filename_fields_key=None,  # FIXME
+        index_field=None,  # use filename
         as_binary=False,
     )
 
