@@ -45,7 +45,8 @@ def display_topic_topic_network(
         documents = inferred_topics.documents
 
         if 'document_id' not in documents.columns:
-            documents['document_id'] = documents.index
+            raise ValueError("Supplied document index has not document_id")
+            # documents['document_id'] = documents.index
 
         df = filter_document_topic_weights(inferred_topics.document_topic_weights, filters=filters, threshold=threshold)
 

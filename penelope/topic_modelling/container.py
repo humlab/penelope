@@ -1,4 +1,5 @@
 import os
+from penelope.corpus.document_index import document_index_upgrade
 import pickle
 import sys
 import types
@@ -170,9 +171,8 @@ class InferredTopicsData:
                 pickle.dump(c_data, f, pickle.HIGHEST_PROTOCOL)
 
         else:
-
             data = [
-                (self.documents, 'documents.csv'),
+                (self.documents.rename_axis(''), 'documents.csv'),
                 (self.dictionary, 'dictionary.csv'),
                 (self.topic_token_weights, 'topic_token_weights.csv'),
                 (self.topic_token_overview, 'topic_token_overview.csv'),
@@ -222,6 +222,8 @@ class InferredTopicsData:
                     os.path.join(folder, 'document_topic_weights.zip'), '\t', header=0, index_col=0, na_filter=False
                 ),
             )
+
+            data.documents = document_index_upgrade(data.documents)
 
         return data
 
