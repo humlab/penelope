@@ -258,7 +258,7 @@ def display_gui(
 
                 gui.button.disabled = True
 
-                # FIXME: #23 Add filename field key to vectorize workflow (filename_fields_key)
+                # FIXME: #23 Addindex field to vectorize workflow (index_field)
                 v_corpus = vectorize_corpus_workflow(
                     corpus_type=gui.corpus_type.value,
                     input_filename=input_filename,
