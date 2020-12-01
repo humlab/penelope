@@ -183,6 +183,7 @@ class Cooccurrence(CountVectorizer):
 
     def __init__(
         self,
+        *,
         ngram_range=(1, 1),
         max_df=1.0,
         min_df=1,
