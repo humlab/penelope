@@ -375,6 +375,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
         .spacy_to_tagged_frame(attributes=attributes)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
         .tokens_to_text()
+        .to_document_content_tuple()
         .to_dtm(vectorize_opts)
     )
 
