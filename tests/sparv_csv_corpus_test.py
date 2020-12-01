@@ -315,4 +315,3 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
 #     n_counts = pd.DataFrame(data=n_counts).set_index('filename', drop=False)
 
 #     df = corpus.documents.merge(n_counts, left_on='filename', right_index=True)
-

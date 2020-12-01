@@ -1,8 +1,8 @@
 import logging
 from io import StringIO
 from typing import Dict, List, Union
-import numpy as np
 
+import numpy as np
 import pandas as pd
 
 

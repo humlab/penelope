@@ -344,9 +344,7 @@ def test_load_document_index_versions():
 
     filename = './tests/test_data/documents_index_doc_id.zip'
 
-    documents = pd.read_csv(
-        filename, '\t', header=0, index_col=0, na_filter=False
-    )
+    documents = pd.read_csv(filename, '\t', header=0, index_col=0, na_filter=False)
 
     documents = document_index_upgrade(documents)
     expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_terms'])

@@ -251,13 +251,17 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
         (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id))
     )
 
-    documents = pd.DataFrame(
-        data={
-            'document_id': list(range(0, len(years))),
-            'filename': [f'{y}.coo' for y in years],
-            'year': years,
-        }
-    ).set_index('filename', drop=False).rename_axis('')
+    documents = (
+        pd.DataFrame(
+            data={
+                'document_id': list(range(0, len(years))),
+                'filename': [f'{y}.coo' for y in years],
+                'year': years,
+            }
+        )
+        .set_index('filename', drop=False)
+        .rename_axis('')
+    )
 
     v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, documents=documents)
 

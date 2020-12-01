@@ -1,5 +1,4 @@
 import os
-from penelope.corpus.document_index import document_index_upgrade
 import pickle
 import sys
 import types
@@ -9,6 +8,7 @@ import gensim
 import pandas as pd
 import penelope.utility as utility
 import scipy
+from penelope.corpus.document_index import document_index_upgrade
 from penelope.utility import file_utility, filename_utils
 from tqdm import tqdm
 
