@@ -1,5 +1,6 @@
 import zipfile
 
+import nltk
 from penelope.utility import create_iterator
 from tqdm.auto import tqdm
 
@@ -32,3 +33,6 @@ def preprocess_text_corpus(source_filename: str, target_filename: str, filename_
         for filename, text in source:
             text = transformer.transform(text)
             zf.writestr(filename, text)
+
+
+default_tokenizer = nltk.regexp_tokenize
