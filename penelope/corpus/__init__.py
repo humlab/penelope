@@ -1,4 +1,5 @@
 from .document_index import (
+    add_document_index_attributes,
     consolidate_document_index,
     document_index_upgrade,
     load_document_index,
@@ -34,6 +35,6 @@ from .transforms import (
     remove_symbols,
     upper_transform,
 )
-from .utils import preprocess_text_corpus, default_tokenizer
+from .utils import default_tokenizer, preprocess_text_corpus
 from .vectorized_corpus import VectorizedCorpus, load_cached_normalized_vectorized_corpus, load_corpus
 from .vectorizer import CorpusVectorizer, VectorizeOpts
