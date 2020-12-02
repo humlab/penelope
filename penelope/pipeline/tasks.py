@@ -1,9 +1,9 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, List, Optional
 
-from penelope.corpus import VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformOpts
+from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformer, TextTransformOpts
 from penelope.utility import to_text
 from tqdm.std import tqdm
 
@@ -129,6 +129,11 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
 
     filename: str = None
 
+    def setup(self):
+        super().setup()
+        self.pipeline.put("checkpoint_file", self.filename)
+        return self
+
     def __post_init__(self):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGEDFRAME]
         self.out_content_type = ContentType.PASSTHROUGH
@@ -205,6 +210,75 @@ class LoadTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
+class TextToTokens(interfaces.ITask):
+    """Extracts tokens from payload.content, optinally transforming"""
+
+    tokenize: Callable[[str], List[str]] = None
+    text_transform_opts: TokensTransformOpts = None
+
+    tokens_transform_opts: Optional[TokensTransformOpts] = None
+    transformer: Optional[TokensTransformer] = None
+
+    _text_transformer: TextTransformer = field(init=False)
+
+    def setup(self):
+        super().setup()
+        self.pipeline.put("text_transform_opts", self.text_transform_opts)
+        self.pipeline.put("tokens_transform_opts_text", self.tokens_transform_opts)
+        return self
+
+    def __post_init__(self):
+
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
+        self.out_content_type = ContentType.TOKENS
+        self.tokenize = self.tokenize or default_tokenizer
+
+        if self.text_transform_opts is not None:
+            self._text_transformer = TextTransformer(text_transform_opts=self.text_transform_opts)
+
+        if self.tokens_transform_opts is not None:
+            if self.transformer is None:
+                self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
+            self.transformer.ingest(self.tokens_transform_opts)
+
+    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+        if self.in_content_type == ContentType.TOKENS:
+            tokens = payload.content
+        else:
+            if self._text_transformer is not None:
+                self.tokenize(self._text_transformer.transform(payload.content))
+            tokens = self.tokenize(payload.content)
+        if self.transformer is not None:
+            tokens = self.transformer.transform(tokens)
+        return payload.update(self.out_content_type, tokens)
+
+
+@dataclass
+class TokensTransform(interfaces.ITask):
+    """Transforms tokens payload.content"""
+
+    tokens_transform_opts: TokensTransformOpts = None
+    transformer: TokensTransformer = None
+
+    def setup(self):
+        super().setup()
+        self.pipeline.put("tokens_transform_opts", self.tokens_transform_opts)
+        return self
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TOKENS
+        self.out_content_type = ContentType.TOKENS
+        self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
+
+    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+        return payload.update(self.out_content_type, self.transformer.transform(payload.content))
+
+    def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":
+        self.transformer.add(transform)
+        return self
+
+
+@dataclass
 class TokensToText(interfaces.ITask):
     """Extracts text from payload.content"""
 
@@ -224,13 +298,21 @@ class TextToDTM(interfaces.ITask):
 
     vectorize_opts: VectorizeOpts = None
 
+    def setup(self):
+        super().setup()
+        self.pipeline.put("vectorize_opts", self.vectorize_opts)
+        return self
+
     def outstream(self) -> VectorizedCorpus:
         corpus = convert.to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
         )
-        return corpus
+        yield interfaces.DocumentPayload(
+            content_type=ContentType.VECTORIZED_CORPUS,
+            content=corpus
+        )
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         return None
@@ -239,6 +321,11 @@ class TextToDTM(interfaces.ITask):
 @dataclass
 class ChunkTokens(interfaces.ITask):
     chunk_size: int = None
+
+    def setup(self):
+        super().setup()
+        self.pipeline.put("chunk_size", self.chunk_size)
+        return self
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS

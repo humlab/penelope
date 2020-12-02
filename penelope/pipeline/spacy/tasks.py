@@ -30,6 +30,7 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
             spacy.load(self.lang_or_nlp, disable=disables) if isinstance(self.lang_or_nlp, str) else self.lang_or_nlp
         )
         self.pipeline.put("spacy_nlp", nlp)
+        self.pipeline.put("disables", self.disables)
         return self
 
 
@@ -62,6 +63,10 @@ class ToSpacyDoc(interfaces.ITask):
 class ToSpacyDocToTaggedFrame(interfaces.ITask):
 
     attributes: List[str] = None
+
+    def setup(self):
+        self.pipeline.put("spacy_attributes", self.attributes)
+        return self
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
