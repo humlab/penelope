@@ -271,9 +271,9 @@ def read_json(path: str) -> Dict:
         return json.load(fp)
 
 
-def write_json(path: str, data: Dict):
+def write_json(path: str, data: Dict, default=None):
     with open(path, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
+        json.dump(data, json_file, indent=4, default=default)
 
 
 DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
