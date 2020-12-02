@@ -1,3 +1,4 @@
+from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 import types
 import warnings
 from os.path import join as jj
@@ -8,6 +9,7 @@ import numpy as np
 import penelope.topic_modelling as topic_modelling
 import penelope.utility as utility
 from IPython.display import display
+from penelope.corpus import add_document_index_attributes
 
 from . import display_topic_titles
 from .display_topic_titles import DisplayPandasGUI
@@ -18,11 +20,6 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 logger = utility.get_logger()
 
-
-def extend_with_document_info(df, documents):
-    """ Adds document meta data to given data frame (must have a document_id) """
-    df = df.merge(documents, how='inner', left_on='document_id', right_index=True)
-    return df
 
 
 # FIXME: #94 Column 'year' is missing in `documents` in model metadata (InferredTopicsData)
@@ -36,7 +33,7 @@ def temporary_bug_fixupdate_documents(inferred_topics):
         documents["year"] = documents.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
 
     if "year" not in document_topic_weights.columns:
-        document_topic_weights = extend_with_document_info(document_topic_weights, documents)
+        document_topic_weights = add_document_index_attributes(document_index=documents, target=document_topic_weights)
 
     inferred_topics.documents = documents
     inferred_topics.document_topic_weights = document_topic_weights
@@ -57,8 +54,8 @@ def load_model(
     model_infos = model_infos or topic_modelling.find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
 
-    inferred_model = topic_modelling.load_model(model_info["folder"], lazy=True)
-    inferred_topics = topic_modelling.InferredTopicsData.load(jj(corpus_folder, model_info["name"]))
+    inferred_model: InferredModel = topic_modelling.load_model(model_info["folder"], lazy=True)
+    inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(jj(corpus_folder, model_info["name"]))
 
     inferred_topics = temporary_bug_fixupdate_documents(inferred_topics)
 
