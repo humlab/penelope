@@ -1,7 +1,6 @@
 import collections
 import functools
-import itertools
-from typing import Any, Callable, Generic, Iterable, Iterator, List, Sequence, TypeVar, Union
+from typing import Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
 
 from penelope.pipeline.interfaces import DocumentPayload
 

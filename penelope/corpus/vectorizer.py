@@ -6,7 +6,6 @@ import pandas as pd
 from penelope.corpus import metadata_to_document_index
 from penelope.utility import PropsMixIn
 from sklearn.feature_extraction.text import CountVectorizer
-from tqdm.std import tqdm
 
 from .tokenized_corpus import TokenizedCorpus
 from .vectorized_corpus import VectorizedCorpus
@@ -58,7 +57,7 @@ class CorpusVectorizer:
         stop_words: str = None,
         max_df: float = 1.0,
         min_df: int = 1,
-        verbose: bool = True,
+        verbose: bool = True,  # pylint: disable=unused-argument
     ) -> VectorizedCorpus:
         """Returns a `VectorizedCorpus` (document-term-matrix, bag-of-word) by applying sklearn's `CountVecorizer` on `corpus`
 

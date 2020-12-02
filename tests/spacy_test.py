@@ -346,7 +346,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
         .to_dtm(vectorize_opts)
     )
 
-    corpus = pipeline.resolve()
+    corpus = pipeline.value()
     assert corpus is not None
     assert isinstance(corpus, VectorizedCorpus)
 
@@ -379,6 +379,6 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
         .to_dtm(vectorize_opts)
     )
 
-    corpus = pipeline.resolve()
+    corpus = pipeline.value()
 
     assert isinstance(corpus, VectorizedCorpus)
