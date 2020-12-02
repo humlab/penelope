@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List
 
 import textacy.preprocessing.remove as textacy_remove
 
@@ -56,11 +56,11 @@ class TokensTransformerBase:
     def __init__(self):
         self.transforms = []
 
-    def add(self, transform) -> TokensTransformer:
+    def add(self, transform: Callable[[List[str]], List[str]]) -> TokensTransformer:
         self.transforms.append(transform)
         return self
 
-    def transform(self, tokens) -> TokensTransformer:
+    def transform(self, tokens: List[str]) -> TokensTransformer:
 
         for ft in self.transforms:
             tokens = [x for x in ft(tokens)]
