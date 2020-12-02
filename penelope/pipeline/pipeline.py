@@ -1,12 +1,17 @@
 import collections
-from typing import Any, Generic, Iterator, List, Sequence, TypeVar, Union
+import functools
+import itertools
+from typing import Any, Callable, Generic, Iterable, Iterator, List, Sequence, TypeVar, Union
+
+from penelope.pipeline.interfaces import DocumentPayload
 
 from . import interfaces
 
-T_self = TypeVar("T_self")
+_T_self = TypeVar("_T_self")
+_A = TypeVar("_A")
 
 
-class CorpusPipelineBase(Generic[T_self]):
+class CorpusPipelineBase(Generic[_T_self]):
     def __init__(
         self,
         *,
@@ -48,11 +53,11 @@ class CorpusPipelineBase(Generic[T_self]):
         self.setup()
         return self.tasks[-1].outstream()
 
-    def exhaust(self) -> T_self:
+    def exhaust(self) -> _T_self:
         collections.deque(self.resolve(), maxlen=0)
         return self
 
-    def add(self, task: Union[interfaces.ITask, List[interfaces.ITask]]) -> T_self:
+    def add(self, task: Union[interfaces.ITask, List[interfaces.ITask]]) -> _T_self:
         """Add one or more tasks to the pipeline. Hooks up a reference to pipeline for each task"""
         tasks = [task] if isinstance(task, interfaces.ITask) else task
         self.tasks.extend(map(lambda x: x.hookup(self), tasks))
@@ -66,3 +71,15 @@ class CorpusPipelineBase(Generic[T_self]):
 
     def to_list(self) -> List[interfaces.DocumentPayload]:
         return [x for x in self.resolve()]
+
+    def single(self) -> List[interfaces.DocumentPayload]:
+        return next(self.resolve())
+
+    def value(self) -> Any:
+        return self.single().content
+
+    def reduce(self, function: Callable[[DocumentPayload, _A], _A], initial: _A=None) -> _A:
+        """Reduces payload stream to a single value. If `initial` is `None` then first element is used."""
+        if initial is None:
+            return functools.reduce(function=function, sequence=self.resolve())
+        return functools.reduce(function=function, sequence=self.resolve(), initial=initial)
