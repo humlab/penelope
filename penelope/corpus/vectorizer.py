@@ -125,10 +125,19 @@ class CorpusVectorizer:
 
         v_document_index = _consolidate_document_index(corpus, documents, seen_document_filenames)
 
+        # We need to recode document indexso so that dooument_id corresponds to DTM document row number
+        v_document_index = _document_index_recode_id(v_document_index, seen_document_filenames)
+
         v_corpus = VectorizedCorpus(bag_term_matrix, token2id, v_document_index)
 
         return v_corpus
 
+
+def _document_index_recode_id(document_index: pd.DataFrame, document_names: List[str]) -> pd.DataFrame:
+
+    _recode_map = { x: i for i,x in enumerate(document_names)}
+    document_index['document_id'] = document_index['filename'].apply(lambda x: _recode_map[x])
+    return document_index.sort_values('document_id')
 
 def _supplied_document_index(
     corpus: Union[TokenizedCorpus, DocumentTermsStream], documents_index: pd.DataFrame
@@ -162,7 +171,8 @@ def _consolidate_document_index(
     if supplied_index is not None:
         if supplied_index.index.tolist() != seen_document_filenames:
             if supplied_index.index.tolist() != unique_list_with_preserved_order(seen_document_filenames):
-                raise ValueError("bug-check: documents_index mismatch (supplied/seen differs)")
+                logger.warning('"bug-check: documents_index mismatch (supplied/seen differs)"')
+                # raise ValueError("bug-check: documents_index mismatch (supplied/seen differs)")
         return supplied_index
 
     logger.warning("no corpus document index supplied: generating from seen filenames")
