@@ -1,5 +1,6 @@
 import enum
 from dataclasses import dataclass
+from typing import Any, Dict
 
 from penelope.corpus.readers import TextReaderOpts
 from penelope.utility import get_pos_schema, replace_path
@@ -40,3 +41,13 @@ class CorpusConfig:
     @property
     def pos_schema(self):
         return get_pos_schema(self.pos_schema_name)
+
+    @property
+    def props(self) -> Dict[str,Any]:
+        return(dict(
+            corpus_name=self.corpus_name,
+            corpus_type=int(self.corpus_type),
+            text_reader_opts=self.text_reader_opts.props,
+            pipeline_payload=self.pipeline_payload.props,
+            pos_schema_name=self.pos_schema_name,
+        ))
