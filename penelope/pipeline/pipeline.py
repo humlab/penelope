@@ -78,7 +78,7 @@ class CorpusPipelineBase(Generic[_T_self]):
     def value(self) -> Any:
         return self.single().content
 
-    def reduce(self, function: Callable[[DocumentPayload, _A], _A], initial: _A=None) -> _A:
+    def reduce(self, function: Callable[[DocumentPayload, _A], _A], initial: _A = None) -> _A:
         """Reduces payload stream to a single value. If `initial` is `None` then first element is used."""
         if initial is None:
             return functools.reduce(function=function, sequence=self.resolve())
