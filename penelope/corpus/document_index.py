@@ -95,3 +95,9 @@ def document_index_upgrade(documents: pd.DataFrame) -> pd.DataFrame:
         documents['document_name'] = documents.filename
 
     return documents
+
+
+def add_document_index_attributes(*, document_index: pd.DataFrame, target: pd.DataFrame) -> pd.DataFrame:
+    """ Adds document meta data to given data frame (must have a document_id) """
+    df = target.merge(document_index, how='inner', left_on='document_id', right_on='document_id')
+    return df
