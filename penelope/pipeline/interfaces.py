@@ -78,15 +78,16 @@ class PipelinePayload:
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
 
-
     @property
-    def props(self) -> Dict[str,Any]:
-        return(dict(
+    def props(self) -> Dict[str, Any]:
+        return dict(
             source=self.source if isinstance(self.source, str) else 'object',
-            document_index_source=self.document_index_source if isinstance(self.document_index_source, str) else 'object',
+            document_index_source=self.document_index_source
+            if isinstance(self.document_index_source, str)
+            else 'object',
             document_index_key=self.document_index_key,
             pos_schema_name=self.pos_schema_name,
-        ))
+        )
 
     # NOT USED: token2id: Mapping = None
     # NOT USED: extract_tokens_opts: ExtractTaggedTokensOpts = None

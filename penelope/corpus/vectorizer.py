@@ -135,9 +135,10 @@ class CorpusVectorizer:
 
 def _document_index_recode_id(document_index: pd.DataFrame, document_names: List[str]) -> pd.DataFrame:
 
-    _recode_map = { x: i for i,x in enumerate(document_names)}
+    _recode_map = {x: i for i, x in enumerate(document_names)}
     document_index['document_id'] = document_index['filename'].apply(lambda x: _recode_map[x])
     return document_index.sort_values('document_id')
+
 
 def _supplied_document_index(
     corpus: Union[TokenizedCorpus, DocumentTermsStream], documents_index: pd.DataFrame

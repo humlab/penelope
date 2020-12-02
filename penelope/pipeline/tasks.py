@@ -309,10 +309,7 @@ class TextToDTM(interfaces.ITask):
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
         )
-        yield interfaces.DocumentPayload(
-            content_type=ContentType.VECTORIZED_CORPUS,
-            content=corpus
-        )
+        yield interfaces.DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         return None

@@ -39,9 +39,21 @@ class PipelineShortcutMixIn:
         """ [TOKEN] => TEXT """
         return self.add(tasks.TokensToText())
 
-    def text_to_tokens(self, *, text_transform_opts: TextTransformOpts, tokens_transform_opts: TokensTransformOpts=None, transformer: TokensTransformer=None) -> pipelines.CorpusPipeline:
+    def text_to_tokens(
+        self,
+        *,
+        text_transform_opts: TextTransformOpts,
+        tokens_transform_opts: TokensTransformOpts = None,
+        transformer: TokensTransformer = None,
+    ) -> pipelines.CorpusPipeline:
         """ TOKEN => TOKENS """
-        return self.add(tasks.TextToTokens(text_transform_opts=text_transform_opts, tokens_transform_opts=tokens_transform_opts, transformer=transformer))
+        return self.add(
+            tasks.TextToTokens(
+                text_transform_opts=text_transform_opts,
+                tokens_transform_opts=tokens_transform_opts,
+                transformer=transformer,
+            )
+        )
 
     def tokens_transform(
         self, *, tokens_transform_opts: TokensTransformOpts, transformer: TokensTransformer = None
@@ -65,5 +77,5 @@ class PipelineShortcutMixIn:
     def to_document_content_tuple(self) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToDocumentContentTuple())
 
-    def project(self, project: Callable[[Any],Any]) -> pipelines.CorpusPipeline:
+    def project(self, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
         return self.add(tasks.Project(project=project))

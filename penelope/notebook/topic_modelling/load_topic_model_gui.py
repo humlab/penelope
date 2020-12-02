@@ -1,4 +1,3 @@
-from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 import types
 import warnings
 from os.path import join as jj
@@ -10,6 +9,7 @@ import penelope.topic_modelling as topic_modelling
 import penelope.utility as utility
 from IPython.display import display
 from penelope.corpus import add_document_index_attributes
+from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 
 from . import display_topic_titles
 from .display_topic_titles import DisplayPandasGUI
@@ -19,7 +19,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 logger = utility.get_logger()
-
 
 
 # FIXME: #94 Column 'year' is missing in `documents` in model metadata (InferredTopicsData)
