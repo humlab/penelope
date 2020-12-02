@@ -1,5 +1,3 @@
-import pandas as pd
-import tqdm
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 
@@ -294,24 +292,3 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
 
         assert filename == expected[i][0]
         assert tokens == expected[i][1]
-
-
-# def test_count_words():
-#     corpus = SparvTokenizedCsvCorpus(
-#         '/data/westac/riksdagens-protokoll.1920-2019.sparv4.csv.zip',
-#         extract_tokens_opts=ExtractTaggedTokensOpts(lemmatize=False, pos_excludes='|MAD|MID|PAD|'),
-#         reader_opts=TextReaderOpts(),
-#         chunk_size=None,
-#         tokens_transform_opts=TokensTransformOpts(
-#             to_lower=True,
-#             min_len=1
-#         ),
-#     )
-
-#     n_counts = {}
-#     for filename, tokens in tqdm.tqdm(corpus, total=len(corpus.documents)):
-#         n_counts[filename] = len(tokens)
-
-#     n_counts = pd.DataFrame(data=n_counts).set_index('filename', drop=False)
-
-#     df = corpus.documents.merge(n_counts, left_on='filename', right_index=True)

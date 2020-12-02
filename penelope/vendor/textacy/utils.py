@@ -190,7 +190,7 @@ def get_corpus_data(
     df = pd.DataFrame(metadata)[['document_id'] + POS_NAMES]
     if columns_of_interest is not None:
         documents = documents[columns_of_interest]
-    df = pd.merge(df, documents, left_on='document_id', right_index=True, how='inner')
+    df = pd.merge(df, documents, left_on='document_id', right_on='document_id', how='inner')
     df['title'] = df[title]
     df['words'] = df[POS_NAMES].apply(sum, axis=1)
     return df
