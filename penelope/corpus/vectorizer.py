@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, List, Mapping, Tuple, Union
 
 import pandas as pd
-from penelope.corpus import metadata_to_document_index
-from penelope.utility import PropsMixIn
+from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order
 from sklearn.feature_extraction.text import CountVectorizer
 
 from .tokenized_corpus import TokenizedCorpus
@@ -40,18 +39,18 @@ class CorpusVectorizer:
         corpus: Union[TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
-        documents: pd.DataFrame = None,
+        document_index: pd.DataFrame = None,
         vectorize_opts: VectorizeOpts,
     ) -> VectorizedCorpus:
         """Same as `fit_transform` but with a parameter object """
-        return self.fit_transform(corpus, vocabulary=vocabulary, documents=documents, **vectorize_opts.props)
+        return self.fit_transform(corpus, vocabulary=vocabulary, document_index=document_index, **vectorize_opts.props)
 
     def fit_transform(
         self,
         corpus: Union[TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
-        documents: pd.DataFrame = None,
+        document_index: pd.DataFrame = None,
         tokenizer: Callable = None,
         lowercase: bool = False,
         stop_words: str = None,
@@ -79,6 +78,10 @@ class CorpusVectorizer:
                 vectorized_corpus.VectorizedCorpus
                     [description]
         """
+        if document_index is None:
+            for attr in ['documents', 'document_index']:
+                if hasattr(corpus, attr) and getattr(corpus, attr) is not None:
+                    document_index = getattr(corpus, attr)
 
         if vocabulary is None:
             if hasattr(corpus, 'vocabulary'):
@@ -122,66 +125,46 @@ class CorpusVectorizer:
         bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
 
-        v_document_index = _consolidate_document_index(corpus, documents, seen_document_filenames)
-
-        # We need to recode document indexso so that dooument_id corresponds to DTM document row number
-        v_document_index = _document_index_recode_id(v_document_index, seen_document_filenames)
+        v_document_index = _set_monotonic_index_by_seen_documents(document_index, seen_document_filenames)
 
         v_corpus = VectorizedCorpus(bag_term_matrix, token2id, v_document_index)
 
         return v_corpus
 
 
-def _document_index_recode_id(document_index: pd.DataFrame, document_names: List[str]) -> pd.DataFrame:
+def _set_monotonic_index_by_seen_documents(
+    document_index: pd.DataFrame, seen_document_filenames: List[str]
+) -> pd.DataFrame:
 
-    _recode_map = {x: i for i, x in enumerate(document_names)}
+    if document_index is None:
+
+        logger.warning("vectorizer: no corpus document index supplied: generating from seen filenames")
+        seed_document_index: pd.DataFrame = pd.DataFrame(
+            {
+                'filename': seen_document_filenames,
+                'document_name': seen_document_filenames,
+            }
+        )
+        seed_document_index['document_id'] = seed_document_index.index
+
+        return seed_document_index
+
+    # remove duplicates (should only occur  if chunked data) but we must keep document sequence
+    seen_document_filenames = list_to_unique_list_with_preserved_order(seen_document_filenames)
+
+    # create {filename: sequence_id} map of the seen documents, ordered as they were seen/processed
+    _recode_map = {x: i for i, x in enumerate(seen_document_filenames)}
+
+    # filter out documents that wasn't processed
+    document_index = document_index[document_index.filename.isin(seen_document_filenames)]
+
+    # recode document_id to sequence_id
     document_index['document_id'] = document_index['filename'].apply(lambda x: _recode_map[x])
-    return document_index.sort_values('document_id')
 
+    # set 'document_id' as new index, and make sure it is sorted monotonic increasing
+    document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
 
-def _supplied_document_index(
-    corpus: Union[TokenizedCorpus, DocumentTermsStream], documents_index: pd.DataFrame
-) -> pd.DataFrame:
-
-    if documents_index is not None:
-        return documents_index
-
-    for attr in ['documents', 'document_index']:
-        if hasattr(corpus, attr):
-            if getattr(corpus, attr) is not None:
-                return getattr(corpus, attr)
-
-    return None
-
-
-def unique_list_with_preserved_order(seq):
-    seen = set()
-    seen_add = seen.add
-    return [x for x in seq if not (x in seen or seen_add(x))]
-
-
-def _consolidate_document_index(
-    corpus: Union[TokenizedCorpus, DocumentTermsStream],
-    documents_index: pd.DataFrame,
-    seen_document_filenames: List[str],
-) -> pd.DataFrame:
-
-    supplied_index: pd.DataFrame = _supplied_document_index(corpus, documents_index)
-
-    if supplied_index is not None:
-        if supplied_index.index.tolist() != seen_document_filenames:
-            if supplied_index.index.tolist() != unique_list_with_preserved_order(seen_document_filenames):
-                logger.warning('"bug-check: documents_index mismatch (supplied/seen differs)"')
-                # raise ValueError("bug-check: documents_index mismatch (supplied/seen differs)")
-        return supplied_index
-
-    logger.warning("no corpus document index supplied: generating from seen filenames")
-
-    seen_document_index: pd.DataFrame = metadata_to_document_index(
-        [dict(filename=filename) for filename in seen_document_filenames]
-    )
-
-    return seen_document_index
+    return document_index
 
 
 def _get_stream_length(

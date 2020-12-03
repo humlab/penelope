@@ -329,12 +329,11 @@ def test_spacy_pipeline_load_checkpoint():
 def test_load_primary_document_index():
 
     filename = './tests/test_data/legal_instrument_five_docs_test.csv'
-    df = load_document_index(filename, key_column='unesco_id', sep=';')
+    df = load_document_index(filename, key_column=None, sep=';')
 
     assert df is not None
     assert 'unesco_id' in df.columns
     assert 'document_id' in df.columns
-    assert (df.unesco_id == df.document_id).all()
 
 
 def store_document_index(document_index: pd.DataFrame, filename: str):
