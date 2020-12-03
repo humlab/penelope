@@ -3,8 +3,6 @@ from typing import Dict, List
 
 import pandas as pd
 
-from .utils import flatten
-
 SUC_tags = {
     'AB': 'Adverb',
     'DT': 'Determinator',

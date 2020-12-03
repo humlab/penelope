@@ -11,6 +11,7 @@ def assert_is_monotonic_increasing_integer_series(series: pd.Series):
     if not is_monotonic_increasing_integer_series(series):
         raise ValueError(f"series: {series.name} must be an integer typed, monotonic increasing series starting from 0")
 
+
 def is_monotonic_increasing_integer_series(series: pd.Series):
     if not np.issubdtype(series.dtype, np.integer):
         return False
@@ -40,9 +41,7 @@ def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str =
     if 'document_name' not in catalogue.columns:
         catalogue['document_name'] = catalogue.filename.apply(strip_path_and_extension)
 
-    catalogue['document_id'] = (
-        catalogue[document_id_field] if document_id_field is not None else catalogue.index
-    )
+    catalogue['document_id'] = catalogue[document_id_field] if document_id_field is not None else catalogue.index
 
     assert_is_monotonic_increasing_integer_series(catalogue['document_id'])
 
