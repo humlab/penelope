@@ -426,3 +426,11 @@ def pretty_print_matrix(
 #     assert isinstance(df, (pd.DataFrame,))
 #     data_str: str = df.to_csv(sep='\t', header=True)
 #     zf.writestr(filename, data=data_str)
+
+
+class DummyContext:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
