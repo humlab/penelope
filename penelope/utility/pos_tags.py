@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import pandas as pd
 
+from .utils import flatten
+
 SUC_tags = {
     'AB': 'Adverb',
     'DT': 'Determinator',
@@ -40,6 +42,7 @@ SUC_PoS_tag_groups = {
     'Adjective': ['JJ'],
     'Preposition': ['PP'],
     'Conjunction': ['KN', 'SN'],
+    'Delimiter': ['MAD', 'MID', 'PAD'],
 }
 
 
@@ -226,3 +229,6 @@ Known_PoS_Tag_Schemes = asdict(PoS_TAGS_SCHEMES)
 
 def get_pos_schema(name: str) -> PoS_Tag_Scheme:
     return Known_PoS_Tag_Schemes.get(name, None)
+
+def pos_tags_to_str(tags: List[str]) -> str:
+    return f"|{'|'.join(tags)}|"
