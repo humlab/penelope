@@ -7,7 +7,7 @@ from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import get_logger
 
-from .displayers import DISPLAYERS, ITrendDisplayer, WordTrendData
+from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer, WordTrendData
 
 logger = get_logger()
 
@@ -78,7 +78,7 @@ MYGUI = None
 def word_trend_gui(trend_data: WordTrendData, display_widgets: bool = True) -> widgets.Widget:
 
     global MYGUI
-    gui = GUI().set_displayers(displayers=DISPLAYERS, trend_data=trend_data)
+    gui = GUI().set_displayers(displayers=WORD_TREND_DISPLAYERS, trend_data=trend_data)
 
     MYGUI = gui
 
