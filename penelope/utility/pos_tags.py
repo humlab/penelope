@@ -230,5 +230,6 @@ Known_PoS_Tag_Schemes = asdict(PoS_TAGS_SCHEMES)
 def get_pos_schema(name: str) -> PoS_Tag_Scheme:
     return Known_PoS_Tag_Schemes.get(name, None)
 
+
 def pos_tags_to_str(tags: List[str]) -> str:
     return f"|{'|'.join(tags)}|"

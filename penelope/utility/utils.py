@@ -261,6 +261,7 @@ def list_to_unique_list_with_preserved_order(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
+
 def uniquify(sequence: Iterable[T]) -> List[T]:
     """ Removes duplicates from a list whilst still preserving order """
     seen = set()
