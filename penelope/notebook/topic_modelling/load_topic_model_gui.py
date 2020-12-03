@@ -32,7 +32,7 @@ def temporary_bug_fixupdate_documents(inferred_topics):
         documents["year"] = documents.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
 
     if "year" not in document_topic_weights.columns:
-        document_topic_weights = add_document_index_attributes(document_index=documents, target=document_topic_weights)
+        document_topic_weights = add_document_index_attributes(catalogue=documents, target=document_topic_weights)
 
     inferred_topics.documents = documents
     inferred_topics.document_topic_weights = document_topic_weights
