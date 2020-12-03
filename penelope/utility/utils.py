@@ -256,6 +256,11 @@ def lists_of_dicts_merged_by_key(lst1: ListOfDicts, lst2: ListOfDicts, key: str)
     return list(merged_list)
 
 
+def list_to_unique_list_with_preserved_order(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
 def uniquify(sequence: Iterable[T]) -> List[T]:
     """ Removes duplicates from a list whilst still preserving order """
     seen = set()
