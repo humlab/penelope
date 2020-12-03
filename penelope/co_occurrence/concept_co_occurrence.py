@@ -121,7 +121,7 @@ def corpus_concept_co_occurrence(
 
     documents = corpus.documents if filenames is None else corpus.documents[corpus.documents.filename.isin(filenames)]
 
-    df_coo = to_dataframe(coo_matrix, id2token=corpus.id2token, documents=documents, threshold_count=threshold_count)
+    df_coo = to_dataframe(coo_matrix, id2token=corpus.id2token, catalogue=documents, threshold_count=threshold_count)
 
     return df_coo
 
@@ -259,7 +259,7 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
                 'year': years,
             }
         )
-        .set_index('filename', drop=False)
+        .set_index('document_id', drop=False)
         .rename_axis('')
     )
 

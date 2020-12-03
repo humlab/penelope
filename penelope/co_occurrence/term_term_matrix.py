@@ -40,7 +40,7 @@ def to_co_occurrence_matrix(
 def to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
-    documents: pd.DataFrame = None,
+    document_catalogue: pd.DataFrame = None,
     threshold_count: int = 1,
 ):
     """Converts a TTM to a Pandas DataFrame
@@ -72,14 +72,19 @@ def to_dataframe(
     if threshold_count > 0:
         coo_df = coo_df[coo_df.value >= threshold_count]
 
-    if documents is not None:
+    if document_catalogue is not None:
 
-        coo_df['value_n_d'] = coo_df.value / float(len(documents))
+        coo_df['value_n_d'] = coo_df.value / float(len(document_catalogue))
 
-        if 'n_tokens' in documents:
-            coo_df['value_n_t'] = coo_df.value / float(sum(documents.n_tokens.values))
-        else:
-            logger.warning("value_n_t: cannot compute, n_tokens not in corpus document")
+        for n_token_count, target_field in [('n_tokens', 'value_n_t'), ('n_raw_tokens', 'value_n_r_t')]:
+
+            if n_token_count in document_catalogue.columns:
+                try:
+                    coo_df[target_field] = coo_df.value / float(sum(document_catalogue[n_token_count].values))
+                except ZeroDivisionError:
+                    coo_df[target_field] = 0.0
+            else:
+                logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document catalogue")
 
     coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
     coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
