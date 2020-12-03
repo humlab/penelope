@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from penelope.corpus.document_index import is_monotonic_increasing_integer_series
 import pickle
 import time
 from heapq import nlargest
@@ -57,11 +58,7 @@ class VectorizedCorpus:
         self.token2id = token2id
         self.id2token_ = None
 
-        if (
-            not np.issubdtype(documents.index.dtype, np.integer)
-            or not documents.index.is_monotonic_increasing
-            or documents.index.min() != 0
-        ):
+        if not is_monotonic_increasing_integer_series(documents.index()):
             raise ValueError(
                 "supplied `document index` must have an integer typed, monotonic increasing index starting from 0"
             )
