@@ -23,9 +23,11 @@ class CorpusConfig:
 
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
+    corpus_pattern: str = "*.zip"
     text_reader_opts: TextReaderOpts = None
     pipeline_payload: interfaces.PipelinePayload = None
     pos_schema_name: str = None
+    language: str = "english"
 
     def set_folder(self, folder: str) -> "CorpusConfig":
         if self.pipeline_payload.document_index_source is not None:
