@@ -1,7 +1,9 @@
 from .document_index import (
     add_document_index_attributes,
+    assert_is_monotonic_increasing_integer_series,
     consolidate_document_index,
     document_index_upgrade,
+    is_monotonic_increasing_integer_series,
     load_document_index,
     load_document_index_from_str,
     metadata_to_document_index,

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, List, Mapping, Tuple, Union
 
 import pandas as pd
-from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order
+from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 from sklearn.feature_extraction.text import CountVectorizer
 
 from .tokenized_corpus import TokenizedCorpus
@@ -142,7 +142,7 @@ def _set_monotonic_index_by_seen_documents(
         seed_document_index: pd.DataFrame = pd.DataFrame(
             {
                 'filename': seen_document_filenames,
-                'document_name': seen_document_filenames,
+                'document_name': [strip_path_and_extension(x) for x in seen_document_filenames],
             }
         )
         seed_document_index['document_id'] = seed_document_index.index
