@@ -4,11 +4,11 @@ from penelope.corpus.readers.text_tokenizer import TextTokenizer
 from tests.utils import create_text_tokenizer
 
 
-def get_file(reader, document_name):
+def get_file(reader, filename):
     for name, tokens in reader:
-        if name == document_name:
+        if name == filename:
             return tokens
-    raise FileNotFoundError(document_name)
+    raise FileNotFoundError(filename)
 
 
 def test_archive_filenames_when_filter_txt_returns_txt_files():
@@ -37,8 +37,8 @@ def test_tokenize_corpus_with_list_source():
 
 
 def test_get_file_when_default_returns_unmodified_content():
-    document_name = 'dikt_2019_01_test.txt'
-    reader = create_text_tokenizer(fix_whitespaces=False, fix_hyphenation=True, filename_filter=[document_name])
+    filename = 'dikt_2019_01_test.txt'
+    reader = create_text_tokenizer(fix_whitespaces=False, fix_hyphenation=True, filename_filter=[filename])
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -46,7 +46,7 @@ def test_get_file_when_default_returns_unmodified_content():
         + "Ur deras väldiga flaskor "
         + "ska grönskan skumma i vår ."
     )
-    assert document_name == result[0]
+    assert filename == result[0]
     assert expected == ' '.join(result[1])
 
 
@@ -61,8 +61,8 @@ def test_metadata_has_filena():
 
 
 def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
-    document_name = 'dikt_2019_01_test.txt'
-    reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name])
+    filename = 'dikt_2019_01_test.txt'
+    reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename])
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -70,28 +70,28 @@ def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
         + "Ur deras väldiga flaskor "
         + "ska grönskan skumma i vår ."
     )
-    assert document_name == result[0]
+    assert filename == result[0]
     assert expected == ' '.join(result[1])
 
 
 def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
-    document_name = 'dikt_2019_03_test.txt'
-    reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name])
+    filename = 'dikt_2019_03_test.txt'
+    reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename])
     result = next(reader)
     expected = (
         "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
         + "stjärnbilderna stampa i sina spiltor "
         + "högt över trädet"
     )
-    assert document_name == result[0]
+    assert filename == result[0]
     assert expected == ' '.join(result[1])
 
 
 def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_metadata():
-    document_name = 'dikt_2019_03_test.txt'
+    filename = 'dikt_2019_03_test.txt'
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
     reader = create_text_tokenizer(
-        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True, filename_filter=[document_name]
+        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename]
     )
     result = next(reader)
     expected = (
@@ -99,7 +99,7 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
         + "stjärnbilderna stampa i sina spiltor "
         + "högt över trädet"
     )
-    assert document_name == result[0]
+    assert filename == result[0]
     assert expected == ' '.join(result[1])
     assert reader.metadata[0]['year'] > 0
 
