@@ -40,7 +40,7 @@ def to_co_occurrence_matrix(
 def to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
-    document_catalogue: pd.DataFrame = None,
+    catalogue: pd.DataFrame = None,
     threshold_count: int = 1,
 ):
     """Converts a TTM to a Pandas DataFrame
@@ -72,15 +72,15 @@ def to_dataframe(
     if threshold_count > 0:
         coo_df = coo_df[coo_df.value >= threshold_count]
 
-    if document_catalogue is not None:
+    if catalogue is not None:
 
-        coo_df['value_n_d'] = coo_df.value / float(len(document_catalogue))
+        coo_df['value_n_d'] = coo_df.value / float(len(catalogue))
 
         for n_token_count, target_field in [('n_tokens', 'value_n_t'), ('n_raw_tokens', 'value_n_r_t')]:
 
-            if n_token_count in document_catalogue.columns:
+            if n_token_count in catalogue.columns:
                 try:
-                    coo_df[target_field] = coo_df.value / float(sum(document_catalogue[n_token_count].values))
+                    coo_df[target_field] = coo_df.value / float(sum(catalogue[n_token_count].values))
                 except ZeroDivisionError:
                     coo_df[target_field] = 0.0
             else:
