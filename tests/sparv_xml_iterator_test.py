@@ -37,10 +37,10 @@ def test_reader_when_no_transforms_returns_source_tokens():
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=False, pos_excludes=None),
     )
 
-    document_name, tokens = next(iter(reader))
+    filename, tokens = next(iter(reader))
 
     assert expected == list(tokens)
-    assert expected_name == document_name
+    assert expected_name == filename
 
 
 def test_reader_when_lemmatized_returns_tokens_in_baseform():
@@ -69,10 +69,10 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=True, pos_excludes=None),
     )
 
-    document_name, tokens = next(iter(reader))
+    filename, tokens = next(iter(reader))
 
     assert expected == list(tokens)
-    assert expected_name == document_name
+    assert expected_name == filename
 
 
 def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
@@ -100,10 +100,10 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=True, pos_excludes="|MAD|MID|PAD|"),
     )
 
-    document_name, tokens = next(iter(reader))
+    filename, tokens = next(iter(reader))
 
     assert expected == tokens
-    assert expected_name == document_name
+    assert expected_name == filename
 
 
 def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
@@ -120,10 +120,10 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
         ),
     )
 
-    document_name, tokens = next(iter(reader))
+    filename, tokens = next(iter(reader))
 
     assert expected == list(tokens)
-    assert expected_name == document_name
+    assert expected_name == filename
 
 
 def test_reader_when_chunk_size_specified_returns_chunked_text():
@@ -137,10 +137,10 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
-    for i, (document_name, tokens) in enumerate(reader):
+    for i, (filename, tokens) in enumerate(reader):
 
         assert expected_documents[i] == list(tokens)
-        assert expected_names[i] == document_name
+        assert expected_names[i] == filename
 
 
 def test_reader_when_source_is_zipped_archive_succeeds():
@@ -157,10 +157,10 @@ def test_reader_when_source_is_zipped_archive_succeeds():
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
-    for i, (document_name, tokens) in enumerate(reader):
+    for i, (filename, tokens) in enumerate(reader):
 
         assert expected_documents[i] == list(tokens)
-        assert expected_names[i] == document_name
+        assert expected_names[i] == filename
 
 
 def test_reader_when_source_is_sparv3_succeeds():

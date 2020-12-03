@@ -12,9 +12,9 @@ def test_streamify_text_source_smoke_test():
         reader_opts=readers.TextReaderOpts(filename_pattern="*.txt", filename_filter=None, as_binary=False),
     )
 
-    document_name, text = next(stream)
+    filename, text = next(stream)
 
-    assert document_name == 'dikt_2019_01_test.txt'
+    assert filename == 'dikt_2019_01_test.txt'
     assert (
         text
         == 'Tre svarta ekar ur snön.\r\nSå grova, men fingerfärdiga.\r\nUr deras väldiga flaskor\r\nska grönskan skumma i vår.'

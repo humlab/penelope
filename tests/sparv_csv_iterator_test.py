@@ -117,7 +117,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
         chunk_size=None,
     )
 
-    for i, (document_name, tokens) in enumerate(reader):
+    for i, (filename, tokens) in enumerate(reader):
 
         assert expected_documents[i] == list(tokens)
-        assert expected_names[i] == document_name
+        assert expected_names[i] == filename
