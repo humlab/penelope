@@ -66,8 +66,10 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
             raise ValueError(f"specified key column {key_column} not found in columns")
 
     if 'document_id' not in catalogue.columns and key_column is not None:
-        catalogue['document_id'] = catalogue[key_column]
-    else:
+        if is_monotonic_increasing_integer_series(catalogue[key_column]):
+            catalogue['document_id'] = catalogue[key_column]
+
+    if 'document_id' not in catalogue.columns:
         catalogue['document_id'] = catalogue.index
 
     if 'document_name' not in catalogue.columns:
@@ -91,7 +93,8 @@ def consolidate_document_index(index: pd.DataFrame, reader_index: pd.DataFrame):
 
     if index is not None:
         columns = [x for x in reader_index.columns if x not in index.columns]
-        index = index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
+        if len(columns) > 0:
+            index = index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
         return index
 
     return reader_index
