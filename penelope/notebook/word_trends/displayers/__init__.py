@@ -3,4 +3,4 @@ from .display_bar import BarDisplayer
 from .display_line import LineDisplayer
 from .display_table import TableDisplayer
 
-DISPLAYERS = [TableDisplayer, LineDisplayer, BarDisplayer]
+WORD_TREND_DISPLAYERS = [TableDisplayer, LineDisplayer, BarDisplayer]
