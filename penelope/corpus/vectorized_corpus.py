@@ -56,7 +56,17 @@ class VectorizedCorpus:
 
         self.token2id = token2id
         self.id2token_ = None
+
+        if (
+            not np.issubdtype(documents.index.dtype, np.integer)
+            or not documents.index.is_monotonic_increasing
+            or documents.index.min() != 0
+        ):
+            raise ValueError("supplied `document index` must have an integer typed, monotonic increasing index starting from 0")
+
         self._documents = documents
+        #     self._documents = documents.sort_values('document_id', ignore_index=True)
+
         self.word_counts = word_counts
 
         if self.word_counts is None:

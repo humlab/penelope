@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 
-# FIXME: Move closer to to load_documents since matching logic
 def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = None) -> pd.DataFrame:
     """Creates a document index with all collected metadata key as columns.
     The data frame's index is set to `filename` by (default) or `index_field` if it is supplied.
@@ -29,6 +28,14 @@ def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str =
     document_index['document_id'] = (
         document_index[document_id_field] if document_id_field is not None else document_index.index
     )
+
+    if (
+        not np.issubdtype(document_index.document_id.dtype, np.integer)
+        or not document_index.document_id.is_monotonic_increasing
+        or document_index.document_id.min() != 0
+    ):
+        raise ValueError("`document_id` must have an integer typed, monotonic increasing index starting from 0")
+
     document_index = document_index.set_index('filename', drop=False)
 
     return document_index
@@ -42,8 +49,6 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
     """Loads a document index and sets `key_column` as index column. Also adds `document_id`"""
 
     attrs = dict(sep=sep)
-    # if key_column is None:
-    #     attrs['index_col'] = 0
 
     df = pd.read_csv(filename, **attrs)
 
@@ -51,13 +56,20 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
         if key_column not in df.columns:
             raise ValueError(f"specified key column {key_column} not found in columns")
 
-    if 'document_id' not in df.columns:
+    if 'document_id' not in df.columns and key_column is not None:
         df['document_id'] = df[key_column]
     else:
         df['document_id'] = df.index
 
     if 'document_name' not in df.columns:
         df['document_name'] = df['filename']
+
+    if (
+        not np.issubdtype(df.document_id.dtype, np.integer)
+        or not df.document_id.is_monotonic_increasing
+        or df.document_id.min() != 0
+    ):
+        raise ValueError("`document_id` must have an integer typed, monotonic increasing index starting from 0")
 
     df = df.set_index('filename', drop=False)
 
