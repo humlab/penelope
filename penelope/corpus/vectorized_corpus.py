@@ -58,7 +58,7 @@ class VectorizedCorpus:
         self.token2id = token2id
         self.id2token_ = None
 
-        if not is_monotonic_increasing_integer_series(documents.index()):
+        if not is_monotonic_increasing_integer_series(documents.index):
             raise ValueError(
                 "supplied `document index` must have an integer typed, monotonic increasing index starting from 0"
             )
