@@ -12,5 +12,5 @@ def to_vectorized_corpus(
 ) -> VectorizedCorpus:
     vectorizer = CorpusVectorizer()
     terms = ((payload.content[0], to_text(payload.content[1])) for payload in stream)
-    corpus = vectorizer.fit_transform_(terms, documents=document_index, vectorize_opts=vectorize_opts)
+    corpus = vectorizer.fit_transform_(terms, document_index=document_index, vectorize_opts=vectorize_opts)
     return corpus

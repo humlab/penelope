@@ -370,7 +370,7 @@ def vectorize_textacy_corpus(
 
     v_corpus = CorpusVectorizer().fit_transform(
         corpus=document_tokens,
-        documents=documents,
+        document_index=documents,
         verbose=True,
         **{
             **vectorizer_args,
