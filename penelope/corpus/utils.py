@@ -35,4 +35,5 @@ def preprocess_text_corpus(source_filename: str, target_filename: str, filename_
             zf.writestr(filename, text)
 
 
-default_tokenizer = nltk.regexp_tokenize
+default_tokenizer = nltk.word_tokenize
+# nltk.regexp_tokenize
