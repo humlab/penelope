@@ -297,4 +297,3 @@ class Test_VectorizedCorpus(unittest.TestCase):
         v_corpus = self.create_vectorized_corpus()
         id2token = {0: 'a', 1: 'b', 2: 'c', 3: 'd'}
         self.assertEqual(id2token, v_corpus.id2token)
-
