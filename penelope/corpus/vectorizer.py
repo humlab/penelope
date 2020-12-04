@@ -106,7 +106,6 @@ class CorpusVectorizer:
         else:
             tokenizer = None
 
-
         vectorizer_opts = dict(
             tokenizer=tokenizer,
             lowercase=lowercase,
