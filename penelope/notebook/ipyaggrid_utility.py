@@ -1,3 +1,5 @@
+import os
+import logging
 from typing import Dict, List
 
 import ipyaggrid
@@ -45,6 +47,10 @@ def display_grid(data, column_defs=None, grid_options=None, grid_style=None):
         df = data
     else:
         raise ValueError(f"Data must be dict or pandas.DataFrame not {type(data)}")
+
+    if os.environ.get('VSCODE_LOGS', None) is not None:
+        logging.warning("bug-check: vscode detected, aborting plot...")
+        return df
 
     column_defs = default_column_defs(df) if column_defs is None else column_defs
 
