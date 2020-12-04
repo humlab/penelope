@@ -1,9 +1,9 @@
-import os
 from dataclasses import dataclass
 
 import ipywidgets
 import penelope.common.goodness_of_fit as gof
 import penelope.notebook.utility as notebook_utility
+from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.utility import getLogger
@@ -48,6 +48,7 @@ def display_word_trends(
     corpus_folder: str = None,
     corpus_tag: str = None,
     output: ipywidgets.Output = None,
+    show: bool = True,
     **kwargs,
 ):
 
@@ -55,9 +56,9 @@ def display_word_trends(
 
         gui = GUI()
 
-        if os.environ.get('VSCODE_LOGS', None) is not None:
-            logger.error("bug-check: vscode detected, aborting plot...")
-            return
+        # if os.environ.get('VSCODE_LOGS', None) is not None:
+        #     logger.error("bug-check: vscode detected, aborting plot...")
+        #     return
 
         if corpus is None:
             logger.info("Please wait, loading corpus...")
@@ -69,8 +70,6 @@ def display_word_trends(
 
             output.clear_output()
 
-            logger.info("Please wait, compiling data...")
-
             data = WordTrendData().update(
                 corpus=corpus,
                 corpus_folder=corpus_folder,
@@ -79,11 +78,15 @@ def display_word_trends(
                 **kwargs,
             )
 
-            logger.info("Done!")
+            tab_widget = gui.layout(data=data)
+            if show:
+                display(tab_widget)
 
-            gui.layout(data=data).display()
+            return tab_widget
 
         except gof.GoodnessOfFitComputeError as ex:
             logger.info(f"Unable to compute GoF: {str(ex)}")
         except Exception as ex:
             logger.exception(ex)
+
+        return None
