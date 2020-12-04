@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 import spacy
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
@@ -63,6 +63,7 @@ class ToSpacyDoc(interfaces.ITask):
 class ToSpacyDocToTaggedFrame(interfaces.ITask):
 
     attributes: List[str] = None
+    attribute_value_filters: Dict[str, Any] = None
 
     def setup(self):
         self.pipeline.put("spacy_attributes", self.attributes)
@@ -78,6 +79,7 @@ class ToSpacyDocToTaggedFrame(interfaces.ITask):
             convert.text_to_tagged_frame(
                 document=payload.as_str(),
                 attributes=self.attributes,
+                attribute_value_filters=self.attribute_value_filters,
                 nlp=self.pipeline.get("spacy_nlp"),
             ),
         )
@@ -87,6 +89,7 @@ class ToSpacyDocToTaggedFrame(interfaces.ITask):
 class SpacyDocToTaggedFrame(interfaces.ITask):
 
     attributes: List[str] = None
+    attribute_value_filters: Dict[str, Any] = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.SPACYDOC
@@ -96,8 +99,9 @@ class SpacyDocToTaggedFrame(interfaces.ITask):
         return payload.update(
             self.out_content_type,
             convert.spacy_doc_to_tagged_frame(
-                payload.content,
-                self.attributes,
+                spacy_doc=payload.content,
+                attributes=self.attributes,
+                attribute_value_filters=self.attribute_value_filters,
             ),
         )
 

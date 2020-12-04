@@ -175,11 +175,15 @@ def test_text_to_spacy_process_with_non_text_payload_fails():
         _ = task.setup().process(current_payload)
 
 
-def patch_any_to_tagged_frame(*_) -> pd.DataFrame:
+def patch_any_to_tagged_frame(
+    spacy_doc, attributes, attribute_value_filters
+) -> pd.DataFrame:  # pylint: disable=unused-argument
     return pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']})
 
 
-def patch_spacy_doc_to_tagged_frame(*_, **__) -> pd.DataFrame:
+def patch_spacy_doc_to_tagged_frame(
+    spacy_doc, attributes, attribute_value_filters
+) -> pd.DataFrame:  # pylint: disable=unused-argument
     return pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']})
 
 

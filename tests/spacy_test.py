@@ -56,7 +56,7 @@ def en_nlp() -> Language:
 def df_doc(en_nlp) -> Language:
     # en_nlp = spacy.load("en_core_web_sm")
     attributes = ["text", "lemma_", "pos_", "is_space", "is_punct", "is_digit", "is_alpha", "is_stop"]
-    doc = text_to_tagged_frame(TEST_CORPUS[0][1], attributes=attributes, nlp=en_nlp)
+    doc = text_to_tagged_frame(TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp)
     return doc
 
 
@@ -67,6 +67,7 @@ def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
     df = text_to_tagged_frame(
         TEST_CORPUS[0][1],
         attributes=attributes,
+        attribute_value_filters=None,
         nlp=en_nlp,
     )
 
@@ -105,6 +106,48 @@ def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
     ]
 
 
+def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filtersucceeds(en_nlp):
+
+    attributes = ["lemma_", "pos_"]
+
+    df = text_to_tagged_frame(
+        TEST_CORPUS[0][1],
+        attributes=attributes,
+        attribute_value_filters={'is_punct': False},
+        nlp=en_nlp,
+    )
+
+    assert df.columns.tolist() == attributes
+    assert df.lemma_.tolist() == [
+        'Mars',
+        'be',
+        'once',
+        'home',
+        'to',
+        'sea',
+        'and',
+        'ocean',
+        'and',
+        'perhaps',
+        'even',
+        'life',
+    ]
+    assert df.pos_.tolist() == [
+        'PROPN',
+        'AUX',
+        'ADV',
+        'ADV',
+        'ADP',
+        'NOUN',
+        'CCONJ',
+        'NOUN',
+        'CCONJ',
+        'ADV',
+        'ADV',
+        'NOUN',
+    ]
+
+
 def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
 
     nlp = spacy.load("en_core_web_sm")
@@ -113,6 +156,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
     dfs = texts_to_tagged_frames(
         [text for _, text in TEST_CORPUS],
         attributes=attributes,
+        attribute_value_filters=None,
         language=nlp,
     )
     df = next(dfs)

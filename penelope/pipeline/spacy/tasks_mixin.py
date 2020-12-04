@@ -21,7 +21,11 @@ class SpacyPipelineShortcutMixIn:
         return self.add(tasks.SpacyDocToTaggedFrame(attributes=attributes))
 
     def spacy_to_pos_tagged_frame(self: SpacyPipeline) -> SpacyPipeline:
-        return self.add(tasks.SpacyDocToTaggedFrame(attributes=['text', 'lemma_', 'pos_']))
+        return self.add(
+            tasks.SpacyDocToTaggedFrame(
+                attributes=['text', 'lemma_', 'pos_', 'is_space', 'is_punct'],
+            ),
+        )
 
     def set_spacy_model(self: SpacyPipeline, language: Union[str, Language]) -> SpacyPipeline:
         return self.add(tasks.SetSpacyModel(lang_or_nlp=language))

@@ -1,17 +1,52 @@
-from typing import Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Union
 
 import numpy as np
 import pandas as pd
 import spacy
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+from penelope.utility import deprecated, filter_dict
 from spacy.language import Language
 from spacy.tokens import Doc
 
 
-def spacy_doc_to_tagged_frame(spacy_doc: Doc, attributes: List[str]) -> pd.DataFrame:
+def _filter_tokens_by_attribute_values(spacy_doc, attribute_value_filters):
+
+    tokens = spacy_doc
+
+    if attribute_value_filters is None:
+        return tokens
+
+    if len(attribute_value_filters) == 0:
+        return tokens
+
+    # Treat common attrbiutes explicitly for performance
+    if 'is_space' in attribute_value_filters:
+        value = attribute_value_filters['is_space']
+        tokens = (t for t in tokens if t.is_space == value)
+
+    if 'is_punct' in attribute_value_filters:
+        value = attribute_value_filters['is_punct']
+        tokens = (t for t in tokens if t.is_punct == value)
+
+    attribute_value_filters = filter_dict(attribute_value_filters, ('is_space', 'is_punct'), filter_out=True)
+
+    if len(attribute_value_filters) > 0:
+        tokens = (t for t in spacy_doc if all([getattr(t, attr) == value for attr, value in attribute_value_filters]))
+
+    return tokens
+
+
+def spacy_doc_to_tagged_frame(
+    *,
+    spacy_doc: Doc,
+    attributes: List[str],
+    attribute_value_filters: Dict[str, Any],
+) -> pd.DataFrame:
     """Returns token attribute values from a spacy doc a returns a data frame with given attributes as columns"""
+    tokens = _filter_tokens_by_attribute_values(spacy_doc, attribute_value_filters)
+
     df = pd.DataFrame(
-        data=[tuple(getattr(token, x, None) for x in attributes) for token in spacy_doc],
+        data=[tuple(getattr(token, x, None) for x in attributes) for token in tokens],
         columns=attributes,
     )
     return df
@@ -20,15 +55,21 @@ def spacy_doc_to_tagged_frame(spacy_doc: Doc, attributes: List[str]) -> pd.DataF
 def text_to_tagged_frame(
     document: str,
     attributes: List[str],
+    attribute_value_filters: Dict[str, Any],
     nlp: Language,
 ) -> pd.DataFrame:
     """Loads a single text into a spacy doc and returns a data frame with given token attributes columns"""
-    return spacy_doc_to_tagged_frame(nlp(document), attributes=attributes)
+    return spacy_doc_to_tagged_frame(
+        spacy_doc=nlp(document),
+        attributes=attributes,
+        attribute_value_filters=attribute_value_filters,
+    )
 
 
 def texts_to_tagged_frames(
     documents: Iterable[str],
     attributes: List[str],
+    attribute_value_filters: Dict[str, Any],
     language: Union[Language, str] = "en_core_web_sm",
 ) -> Iterable[pd.DataFrame]:
     """[summary]
@@ -62,7 +103,7 @@ def texts_to_tagged_frames(
     nlp: Language = spacy.load(language, disable=_get_disables(attributes)) if isinstance(language, str) else language
 
     for document in documents:
-        yield text_to_tagged_frame(document, attributes, nlp)
+        yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)
 
 
 TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
@@ -101,6 +142,7 @@ def tagged_frame_to_tokens(
     return doc.loc[mask][target].tolist()
 
 
+@deprecated
 def filter_by_tags(doc, filter_opts, mask):
 
     if "is_space" in doc.columns:
