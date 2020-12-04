@@ -45,6 +45,7 @@ def _deprecated_function(f):
     def _deprecated(*args, **kwargs):
         logging.warning(f"Method '{f.__name__}' is deprecated and will be removed in future release")
         return f(*args, **kwargs)
+
     return _deprecated
 
 
@@ -53,4 +54,5 @@ def _deprecated_class(cls):
         def __init__(self, *args, **kwargs):
             logging.warning(f"Class '{cls.__name__}' is deprecated and will be removed in future release")
             super().__init__(*args, **kwargs)
+
     return Deprecated

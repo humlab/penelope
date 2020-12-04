@@ -109,6 +109,7 @@ class TaggedTokensFilterOpts:
                 continue
 
             if attr_name not in doc.columns:
+                # FIXME: Warn if attribute not in colums!
                 continue
 
             if isinstance(attr_value, tuple):
