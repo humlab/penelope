@@ -72,7 +72,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Arrange
         corpus = self.create_corpus()
-        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
+        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus, already_tokenized=True)
 
         dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
 
@@ -89,7 +89,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Arrange
         corpus = self.create_corpus()
-        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus)
+        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus, already_tokenized=True)
 
         dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=True)
 

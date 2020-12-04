@@ -183,7 +183,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
             ),
         )
 
-        term_term_matrix = CorpusVectorizer().fit_transform(corpus).co_occurrence_matrix()
+        term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
         coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.documents)

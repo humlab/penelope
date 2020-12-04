@@ -115,7 +115,7 @@ def corpus_concept_co_occurrence(
     windows = corpus_concept_windows(corpus, concept_opts=concept_opts, pad='*')
 
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=corpus.token2id)
-    v_corpus = CorpusVectorizer().fit_transform(windows_corpus)
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, already_tokenized=True)
 
     coo_matrix = v_corpus.co_occurrence_matrix()
 

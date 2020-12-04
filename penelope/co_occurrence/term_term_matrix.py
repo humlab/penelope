@@ -31,7 +31,7 @@ def to_co_occurrence_matrix(
 
     vocabulary = vocabulary or corpus_or_reader.token2id
     vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus_or_reader, vocabulary=vocabulary)
+    v_corpus = vectorizer.fit_transform(corpus_or_reader, already_tokenized=True, vocabulary=vocabulary)
     term_term_matrix = v_corpus.co_occurrence_matrix()
 
     return term_term_matrix

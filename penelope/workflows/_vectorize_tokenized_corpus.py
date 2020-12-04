@@ -62,7 +62,7 @@ def execute_workflow(
 
     logger.info('Creating document-term matrix...')
     vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus)
+    v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
 
     if (count_threshold or 1) > 1:
         v_corpus = v_corpus.slice_by_n_count(count_threshold)

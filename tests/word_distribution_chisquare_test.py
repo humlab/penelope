@@ -35,7 +35,7 @@ class Test_ChiSquare(unittest.TestCase):
     def skip_test_chisquare(self):
         corpus = self.create_corpus()
         v = vectorizer.CorpusVectorizer()
-        v_corpus = v.fit_transform(corpus).group_by_year().slice_by_n_count(0)
+        v_corpus = v.fit_transform(corpus, already_tokenized=True).group_by_year().slice_by_n_count(0)
         _ = scipy.stats.chisquare(
             v_corpus.term_bag_matrix.todense(), f_exp=None, ddof=0, axis=0
         )  # pylint: disable=unused-variable

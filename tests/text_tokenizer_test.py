@@ -154,9 +154,7 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 def test_reader_can_be_reiterated():
 
-    reader: TextTokenizer = create_tokens_reader(
-        filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True
-    )
+    reader: TextTokenizer = create_tokens_reader(filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True)
     for _ in range(0, 4):
         n_tokens = [len(x) for _, x in reader]
         expected = [22, 16, 26, 45, 21]

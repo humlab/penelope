@@ -17,7 +17,7 @@ def test_co_occurrence_matrix_of_corpus_returns_correct_result():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    v_corpus = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id)
+    v_corpus = CorpusVectorizer().fit_transform(corpus, already_tokenized=True, vocabulary=corpus.token2id)
 
     term_term_matrix = v_corpus.co_occurrence_matrix()
 
@@ -29,7 +29,11 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    term_term_matrix = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).co_occurrence_matrix()
+    term_term_matrix = (
+        CorpusVectorizer()
+        .fit_transform(corpus, already_tokenized=True, vocabulary=corpus.token2id)
+        .co_occurrence_matrix()
+    )
 
     df_coo = to_dataframe(
         term_term_matrix=term_term_matrix, id2token=corpus.id2token, catalogue=corpus.documents, threshold_count=1
@@ -44,7 +48,11 @@ def test_to_coocurrence_matrix_yields_same_values_as_coocurrence_matrix():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    term_term_matrix1 = CorpusVectorizer().fit_transform(corpus, vocabulary=corpus.token2id).co_occurrence_matrix()
+    term_term_matrix1 = (
+        CorpusVectorizer()
+        .fit_transform(corpus, already_tokenized=True, vocabulary=corpus.token2id)
+        .co_occurrence_matrix()
+    )
 
     term_term_matrix2 = to_co_occurrence_matrix(corpus)
 
@@ -57,7 +65,7 @@ def test_co_occurrence_given_windows_and_vocabulary_succeeds():
 
     windows_corpus = WindowsCorpus(SAMPLE_WINDOW_STREAM, vocabulary=vocabulary)
 
-    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=vocabulary)
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, already_tokenized=True, vocabulary=vocabulary)
 
     coo_matrix = v_corpus.co_occurrence_matrix()
 

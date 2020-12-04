@@ -47,14 +47,14 @@ def test_create_text_tokenizer_smoke_test():
 def test_fit_transform_creates_a_vocabulary_with_unique_tokens_with_an_id_sequence():
     corpus = create_corpus()
     vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus)
+    v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
     assert corpus.token2id == v_corpus.token2id
 
 
 def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
     corpus = mock_corpus()
     vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus)
+    v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
     expected_vocab = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     expected_dtm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]]
     expected_word_counts = {'a': 10, 'b': 10, 'c': 11, 'd': 3}
@@ -67,7 +67,7 @@ def test_word_counts_of_vectorized_corpus_are_absolute_word_of_entire_corpus():
 
     corpus = create_corpus()
     vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus)
+    v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
     results = v_corpus.word_counts
     expected = {
         'tre': 1,
@@ -164,18 +164,16 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
         tokens_transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
     )
 
-    vocabulary = (
-        CorpusVectorizer()
-        .fit_transform(
-            corpus,
-        )
-        .token2id
-    )
+    vocabulary = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).token2id
 
     assert corpus.token2id == vocabulary
 
     expected_vocabulary_reversed = {k: abs(v - 5) for k, v in corpus.token2id.items()}
 
-    vocabulary = CorpusVectorizer().fit_transform(corpus, vocabulary=expected_vocabulary_reversed).token2id
+    vocabulary = (
+        CorpusVectorizer()
+        .fit_transform(corpus, already_tokenized=True, vocabulary=expected_vocabulary_reversed)
+        .token2id
+    )
 
     assert expected_vocabulary_reversed == vocabulary

@@ -1,7 +1,8 @@
 import logging
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Mapping, Tuple, Union
+from typing import Iterable, List, Mapping, Tuple, Union
 
+import more_itertools
 import pandas as pd
 from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 from sklearn.feature_extraction.text import CountVectorizer
@@ -17,7 +18,7 @@ DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
 
 @dataclass
 class VectorizeOpts(PropsMixIn):
-    tokenizer: Callable = None
+    already_tokenized: bool = True
     lowercase: bool = False
     stop_words: str = None
     max_df: float = 1.0
@@ -27,6 +28,10 @@ class VectorizeOpts(PropsMixIn):
 
 def _no_tokenize(tokens):
     return tokens
+
+
+def _no_tokenize_lowercase(tokens):
+    return [t.lower() for t in tokens]
 
 
 class CorpusVectorizer:
@@ -49,9 +54,9 @@ class CorpusVectorizer:
         self,
         corpus: Union[TokenizedCorpus, DocumentTermsStream],
         *,
+        already_tokenized: bool = True,
         vocabulary: Mapping[str, int] = None,
         document_index: pd.DataFrame = None,
-        tokenizer: Callable = None,
         lowercase: bool = False,
         stop_words: str = None,
         max_df: float = 1.0,
@@ -62,7 +67,7 @@ class CorpusVectorizer:
 
                 Note:
         `
-                  - Input stream is expected to be already tokenized if `tokenizer` is None
+                  - If `already_tokenized` is True then the input stream is expected to be tokenized
                   - Input stream sort order __MUST__ be the same as document_index sort order
 
                 Parameters
@@ -89,11 +94,11 @@ class CorpusVectorizer:
             elif hasattr(corpus, 'token2id'):
                 vocabulary = corpus.token2id
 
-        if tokenizer is None:
-            tokenizer = _no_tokenize
-            if lowercase:
-                tokenizer = lambda tokens: [t.lower() for t in tokens]
-            lowercase = False
+        ((_, head),), corpus = more_itertools.spy(corpus)
+        if isinstance(head, str) and already_tokenized:
+            raise ValueError("CorpusVectorizer expects List[str] when already_tokenized is True but found str")
+
+        tokenizer = (_no_tokenize_lowercase if lowercase else _no_tokenize) if already_tokenized else None
 
         vectorizer_opts = dict(
             tokenizer=tokenizer,
@@ -107,9 +112,6 @@ class CorpusVectorizer:
         seen_document_filenames = []
 
         def terms_stream():
-            # document_terms_stream = (
-            #     zip(corpus.documents.filename.to_list(), corpus.terms) if hasattr(corpus, 'terms') else corpus
-            # )
             for filename, terms in corpus:  # document_terms_stream:
                 seen_document_filenames.append(filename)
                 yield terms
