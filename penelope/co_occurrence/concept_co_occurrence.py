@@ -168,7 +168,7 @@ def partitioned_corpus_concept_co_occurrence(
     if len(partitions) == 0:
         raise ValueError(f"No partitions found for key {partition_column}")
 
-    for partition in tqdm(partitions):
+    for partition in tqdm(partitions, position=0, leave=True):
 
         filenames = partitions[partition]
 

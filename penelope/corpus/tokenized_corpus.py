@@ -116,7 +116,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
     def _generate_token2id(self):
         token2id = defaultdict()
         token2id.default_factory = token2id.__len__
-        tokens_iter = tqdm(self.terms, desc="Vocab", total=len(self))
+        tokens_iter = tqdm(self.terms, desc="Vocab", total=len(self), position=0, leave=True)
         for tokens in tokens_iter:
             for token in tokens:
                 _ = token2id[token]

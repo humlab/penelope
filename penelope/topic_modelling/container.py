@@ -77,7 +77,7 @@ class InferredModel:
     @property
     def topic_model(self):
         if callable(self._topic_model):
-            tbar = tqdm(desc="Lazy Loading model...")
+            tbar = tqdm(desc="Lazy Loading model...", position=0, leave=True)
             self._topic_model = self._topic_model()
             tbar.close()
         return self._topic_model
@@ -85,7 +85,7 @@ class InferredModel:
     @property
     def train_corpus(self):
         if callable(self._train_corpus):
-            tbar = tqdm(desc="Lazy corpus...")
+            tbar = tqdm(desc="Lazy corpus...", position=0, leave=True)
             self._train_corpus = self._train_corpus()
             tbar.close()
         return self._train_corpus

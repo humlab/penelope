@@ -153,7 +153,7 @@ def compute_goddness_of_fits_to_uniform(
         }
     )
 
-    metrics_iter = tqdm(metrics) if verbose else metrics
+    metrics_iter = tqdm(metrics, position=0, leave=True) if verbose else metrics
     for metric in metrics_iter:
         if metric in METRIC_FUNCTIONS:
             if hasattr(metrics_iter, 'set_description'):
