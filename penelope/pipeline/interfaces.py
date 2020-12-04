@@ -39,8 +39,10 @@ class DocumentPayload:
     filename: str = None
     filename_values: Mapping[str, Any] = None
     chunk_id = None
+    previous_content_type: ContentType = field(default=ContentType.NONE, init=False)
 
     def update(self, content_type: ContentType, content: Any):
+        self.previous_content_type = self.content_type
         self.content_type = content_type
         self.content = content
         return self
