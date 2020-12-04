@@ -94,11 +94,18 @@ class CorpusVectorizer:
             elif hasattr(corpus, 'token2id'):
                 vocabulary = corpus.token2id
 
-        ((_, head),), corpus = more_itertools.spy(corpus)
-        if isinstance(head, str) and already_tokenized:
-            raise ValueError("CorpusVectorizer expects List[str] when already_tokenized is True but found str")
+        if already_tokenized:
+            head, corpus = more_itertools.spy(corpus)
+            if len(head) > 0 and isinstance(head[0][1], str):
+                raise ValueError("CorpusVectorizer expects List[str] when already_tokenized is True but found str")
+            if lowercase:
+                tokenizer = _no_tokenize_lowercase
+                lowercase = False
+            else:
+                tokenizer = _no_tokenize
+        else:
+            tokenizer = None
 
-        tokenizer = (_no_tokenize_lowercase if lowercase else _no_tokenize) if already_tokenized else None
 
         vectorizer_opts = dict(
             tokenizer=tokenizer,
