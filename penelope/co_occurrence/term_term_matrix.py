@@ -5,7 +5,7 @@ import scipy
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus
 from penelope.corpus.interfaces import ITokenizedCorpus
 from penelope.corpus.readers.interfaces import ICorpusReader
-from penelope.utility.utils import getLogger
+from penelope.utility import getLogger
 
 logger = getLogger()
 
