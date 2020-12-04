@@ -120,7 +120,7 @@ def create_text_reader(
     return reader
 
 
-def create_text_tokenizer(
+def create_tokens_reader(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,

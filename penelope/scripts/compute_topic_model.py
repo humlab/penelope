@@ -121,7 +121,7 @@ def run_model(
 
     # if SparvTokenizer opts = ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True, chunk_size=None)
 
-    tokenizer = text_tokenizer.TextTokenizer(
+    tokens_reader = text_tokenizer.TextTokenizer(
         source=corpus_filename,
         transform_opts=TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True),
         reader_opts=TextReaderOpts(
@@ -132,7 +132,7 @@ def run_model(
         chunk_size=None,
     )
 
-    corpus = tokenized_corpus.TokenizedCorpus(reader=tokenizer, tokens_transform_opts=transformer_opts)
+    corpus = tokenized_corpus.TokenizedCorpus(reader=tokens_reader, tokens_transform_opts=transformer_opts)
 
     train_corpus = topic_modelling.TrainingCorpus(
         terms=corpus.terms,

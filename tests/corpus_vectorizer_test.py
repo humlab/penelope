@@ -18,7 +18,7 @@ def mock_corpus():
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = test_utils.create_text_tokenizer(
+    reader = test_utils.create_tokens_reader(
         filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
     )
     return reader

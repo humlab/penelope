@@ -23,7 +23,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
         Parameters
         ----------
         reader : ICorpusReader
-            Corpus tokenizer/reader
+            Corpus reader
         tokens_transform_opts : TokensTransformOpts
             Passed to TokensTransformer and can be:
                 only_alphabetic: bool = False,

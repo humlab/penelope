@@ -28,7 +28,7 @@ class SparvXmlTokenizer(TextTokenizer):
         Parameters
         ----------
         source : TextSource
-            Source (filename, ZIP, tokenizer)
+            Source (filename, ZIP, tokens_reader)
         extract_tokens_opts : ExtractTaggedTokensOpts, optional
         reader_opts: TextReaderOpts
         chunk_size: int

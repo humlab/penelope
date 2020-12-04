@@ -2,7 +2,7 @@ import unittest
 
 import penelope.corpus.tokenized_corpus as corpora
 from penelope.corpus import TokensTransformOpts
-from tests.utils import create_text_tokenizer
+from tests.utils import create_tokens_reader
 
 
 class Test_ProcessedCorpus(unittest.TestCase):
@@ -11,7 +11,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def create_reader(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = create_text_tokenizer(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
         return reader
 
     def test_next_document_when_only_any_alphanumeric_is_false_returns_all_tokens(self):
@@ -85,7 +85,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
         self.assertEqual(expected, tokens)
 
     def test_next_document_when_only_any_alphanumeric_true_skips_deliminators_using_defaults(self):
-        reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         _, tokens = next(corpus)
         expected = [
@@ -188,7 +188,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
         self.assertEqual(n_expected, n_tokens)
 
     def test_next_document_when_new_corpus_returns_document(self):
-        reader = create_text_tokenizer(fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader)
         result = next(corpus)
         expected = (
@@ -201,7 +201,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_get_index_when_extract_passed_returns_metadata(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = create_text_tokenizer(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader)
         result = corpus.metadata
         expected = [
@@ -216,13 +216,13 @@ class Test_ProcessedCorpus(unittest.TestCase):
             self.assertEqual(expected[i], result[i])
 
     def test_get_index_when_no_extract_passed_returns_not_none(self):
-        reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader)
         result = corpus.metadata
         self.assertIsNotNone(result)
 
     def test_next_document_when_token_corpus_returns_tokenized_document(self):
-        reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=False))
         _, tokens = next(corpus)
         expected = [
@@ -274,7 +274,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
         self.assertEqual(expected, n_tokens)
 
     def test_n_tokens_when_exhausted_and_only_any_alphanumeric_is_true_returns_expected_count(self):
-        reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         _ = [x for x in corpus]
         n_tokens = list(corpus.documents.n_tokens)
@@ -283,7 +283,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
 
     def test_corpus_can_be_reiterated(self):
 
-        reader = create_text_tokenizer(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
 
         corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         for i in range(0, 4):

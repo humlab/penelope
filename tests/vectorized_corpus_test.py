@@ -7,7 +7,7 @@ import penelope.corpus.tokenized_corpus as corpora
 import scipy
 from penelope.corpus import TokensTransformOpts, vectorized_corpus, vectorizer
 from sklearn.feature_extraction.text import CountVectorizer
-from tests.utils import OUTPUT_FOLDER, create_text_tokenizer
+from tests.utils import OUTPUT_FOLDER, create_tokens_reader
 
 
 def flatten(lst):
@@ -23,7 +23,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
     def create_reader(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = create_text_tokenizer(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
         return reader
 
     def create_corpus(self):

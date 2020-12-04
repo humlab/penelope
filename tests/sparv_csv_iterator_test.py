@@ -20,7 +20,7 @@ def sparv_csv_export_small_text():
 
 def test_reader_when_no_transforms_returns_source_tokens():
 
-    tokenizer = readers.SparvCsvTokenizer(
+    tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes=None, pos_excludes=None, lemmatize=False),
@@ -28,7 +28,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
     expected = "Rödräven är ett hunddjur som har en mycket vidsträckt utbredning över norra halvklotet .".split()
 
-    filename, tokens = next(tokenizer)
+    filename, tokens = next(tokens_reader)
 
     assert filename == os.path.split(filename)[1]
     assert expected == tokens
@@ -36,7 +36,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
 def test_reader_when_only_nn_returns_only_nn():
 
-    tokenizer = readers.SparvCsvTokenizer(
+    tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=False),
@@ -44,7 +44,7 @@ def test_reader_when_only_nn_returns_only_nn():
 
     expected = "Rödräven hunddjur utbredning halvklotet".split()
 
-    filename, tokens = next(tokenizer)
+    filename, tokens = next(tokens_reader)
 
     assert filename == os.path.split(filename)[1]
     assert expected == tokens
@@ -52,7 +52,7 @@ def test_reader_when_only_nn_returns_only_nn():
 
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
-    tokenizer = readers.SparvCsvTokenizer(
+    tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_excludes=None, lemmatize=True),
@@ -60,7 +60,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
     expected = "rödräv hunddjur utbredning halvklot".split()
 
-    filename, tokens = next(tokenizer)
+    filename, tokens = next(tokens_reader)
 
     assert filename == os.path.split(filename)[1]
     assert expected == tokens
@@ -68,7 +68,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
 def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
-    tokenizer = readers.SparvCsvTokenizer(
+    tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='NN|VB', pos_excludes=None, lemmatize=True),
@@ -76,7 +76,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
     expected = "rödräv vara hunddjur ha utbredning halvklot".split()
 
-    filename, tokens = next(tokenizer)
+    filename, tokens = next(tokens_reader)
 
     assert filename == os.path.split(filename)[1]
     assert expected == tokens
@@ -84,7 +84,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
 def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos():
 
-    tokenizer = readers.SparvCsvTokenizer(
+    tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTaggedTokensOpts(
@@ -94,7 +94,7 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
 
     expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN".split()
 
-    filename, tokens = next(tokenizer)
+    filename, tokens = next(tokens_reader)
 
     assert filename == os.path.split(filename)[1]
     assert expected == tokens
@@ -107,7 +107,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     ]
     expected_names = ["sparv_1978_001.txt"]
 
-    reader = readers.SparvCsvTokenizer(
+    tokens_reader = readers.SparvCsvTokenizer(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
         reader_opts=TextReaderOpts(),
         extract_tokens_opts=ExtractTaggedTokensOpts(
@@ -117,7 +117,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
         chunk_size=None,
     )
 
-    for i, (filename, tokens) in enumerate(reader):
+    for i, (filename, tokens) in enumerate(tokens_reader):
 
         assert expected_documents[i] == list(tokens)
         assert expected_names[i] == filename

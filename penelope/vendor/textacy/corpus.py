@@ -150,7 +150,7 @@ def _get_document_metadata(
 
 
 def _extend_stream_with_metadata(
-    tokenizer: text_tokenizer.TextTokenizer,
+    tokens_reader: text_tokenizer.TextTokenizer,
     documents: pd.DataFrame = None,
     document_columns: List[str] = None,
     filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
@@ -159,8 +159,8 @@ def _extend_stream_with_metadata(
 
     Parameters
     ----------
-    tokenizer : text_tokenizer.TextTokenizer
-        Tokenizer, stream of filename and tokens
+    tokens_reader : text_tokenizer.TextTokenizer
+        Reader, returns stream of filename and tokens
     documents : pd.DataFrame, optional
         Document index, by default None
     document_columns : List[str], optional
@@ -173,8 +173,8 @@ def _extend_stream_with_metadata(
     Iterable[Tuple[str, str, Dict]]
         Stream augumented with meta data.
     """
-    metadata_lookup = {x['filename']: x for x in tokenizer.metadata}
-    for filename, tokens in tokenizer:
+    metadata_lookup = {x['filename']: x for x in tokens_reader.metadata}
+    for filename, tokens in tokens_reader:
 
         metadata = _get_document_metadata(
             filename,

@@ -23,9 +23,9 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         reader_opts = reader_opts or TextReaderOpts()
 
         if isinstance(source, readers.SparvXmlTokenizer):
-            tokenizer = source
+            tokens_reader = source
         else:
-            tokenizer = readers.SparvXmlTokenizer(
+            tokens_reader = readers.SparvXmlTokenizer(
                 source,
                 extract_tokens_opts=extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True),
                 xslt_filename=None,
@@ -34,7 +34,7 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
                 chunk_size=chunk_size,
             )
 
-        super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
+        super().__init__(tokens_reader, tokens_transform_opts=tokens_transform_opts)
 
 
 class SparvTokenizedCsvCorpus(TokenizedCorpus):
@@ -57,15 +57,15 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
     ):
         reader_opts = reader_opts or TextReaderOpts()
         if isinstance(source, readers.SparvCsvTokenizer):
-            tokenizer = source
+            tokens_reader = source
         else:
-            tokenizer = readers.SparvCsvTokenizer(
+            tokens_reader = readers.SparvCsvTokenizer(
                 source,
                 extract_tokens_opts=extract_tokens_opts,
                 reader_opts=reader_opts,
                 chunk_size=chunk_size,
             )
-        super().__init__(tokenizer, tokens_transform_opts=tokens_transform_opts)
+        super().__init__(tokens_reader, tokens_transform_opts=tokens_transform_opts)
 
 
 def sparv_xml_extract_and_store(
