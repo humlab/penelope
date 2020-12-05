@@ -72,7 +72,7 @@ class PipelinePayload:
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
-    token2id: Mapping[str,int] = None
+    token2id: Mapping[str, int] = None
 
     # FIXME: Move to document_index_proxy object?
     primary_document_index: pd.DataFrame = None  # Given index i.e. DataFrane or loaded given  filenames

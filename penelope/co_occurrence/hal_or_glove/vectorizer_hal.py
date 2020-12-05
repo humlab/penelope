@@ -12,7 +12,7 @@ logger = utility.getLogger('corpus_text_analysis')
 
 # pylint: disable=too-many-instance-attributes
 class HyperspaceAnalogueToLanguageVectorizer:
-    def __init__(self, tokens_stream: Iterable[Iterable[str]]=None, token2id: Mapping[str, int]=None):
+    def __init__(self, tokens_stream: Iterable[Iterable[str]] = None, token2id: Mapping[str, int] = None):
         """
         Build vocabulary and create nw_xy term-term matrix and nw_x term global occurence vector
 
@@ -32,7 +32,7 @@ class HyperspaceAnalogueToLanguageVectorizer:
         return self._corpus
 
     @corpus.setter
-    def corpus(self, value:  Iterable[Iterable[str]]):
+    def corpus(self, value: Iterable[Iterable[str]]):
 
         self._corpus = value
         self.term_count = sum(map(len, value or []))
@@ -57,7 +57,9 @@ class HyperspaceAnalogueToLanguageVectorizer:
             memory = memory[1:] + (x,)
             yield memory
 
-    def fit(self, corpus: Iterable[str]=None, size: int = 2, distance_metric: int = 0, zero_out_diag: bool = False) -> "HyperspaceAnalogueToLanguageVectorizer":
+    def fit(
+        self, corpus: Iterable[str] = None, size: int = 2, distance_metric: int = 0, zero_out_diag: bool = False
+    ) -> "HyperspaceAnalogueToLanguageVectorizer":
         '''Trains HAL for a document. Note that sentence borders (for now) are ignored'''
 
         if corpus is not None:
@@ -174,7 +176,9 @@ class HyperspaceAnalogueToLanguageVectorizer:
 
     #     return df
 
-    def to_dataframe(self, *, normalize: str='size', zero_diagonal: bool=True, direction_sensitive: bool=False, **_) -> pd.DataFrame:
+    def to_dataframe(
+        self, *, normalize: str = 'size', zero_diagonal: bool = True, direction_sensitive: bool = False, **_
+    ) -> pd.DataFrame:
         '''Return computed co-occurrence values'''
 
         matrix: sp.csc_matrix = self.nw_xy
