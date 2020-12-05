@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from penelope.co_occurrence.term_term_matrix import to_dataframe
+from penelope.co_occurrence import to_dataframe
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import DataFrameTextTokenizer
 
