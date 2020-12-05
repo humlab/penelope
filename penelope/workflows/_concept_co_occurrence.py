@@ -1,11 +1,11 @@
 import json
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Sequence
 
 import pandas as pd
 from penelope.co_occurrence import (
-    ConceptContextOpts,
-    partitioned_corpus_concept_co_occurrence,
+    ContextOpts,
+    partitioned_corpus_co_occurrence,
     store_co_occurrences,
     to_vectorized_corpus,
 )
@@ -24,11 +24,11 @@ def execute_workflow(
     input_filename: str,
     output_filename: str,
     *,
-    concept_opts: ConceptContextOpts = None,
+    context_opts: ContextOpts = None,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     count_threshold: int = None,
-    partition_keys: Tuple[str, List[str]],
+    partition_keys: Sequence[str],
     filename_field: Any = None,
     store_vectorized: bool = False,
 ) -> pd.DataFrame:
@@ -41,17 +41,17 @@ def execute_workflow(
         Sparv v4 input corpus in CSV export format
     output_filename : str
         Target co-occurrence CSV file, optionally compressed if extension is ".zip"
-    partition_keys : Tuple[str, List[str]]
+    partition_keys : Sequence[str]
         Key in corpus document index to use to split corpus in sub-corpora.
-        Each sub-corpus co-occurrence is associated to corresponding key value.
+        Each sub-corpus co-occurrence is associated to the corresponding key value.
         Usually the `year` column in the document index.
-    concept_opts: ConceptContextOpts
+    context_opts: ContextOpts
+        context_width : int, optional
+            Width of context i.e. distance to cencept word, by default None
         concept : List[str], optional
             Tokens that defines the concept, by default None
         no_concept : bool, optional
             Specifies if concept should be removed from result, by default False
-        context_width : int, optional
-            Width of context i.e. distance to cencept word, by default None
     count_threshold : int, optional
         Word pair count threshold (entire corpus, by default None
     extract_tokens_opts : ExtractTaggedTokensOpts, optional
@@ -67,7 +67,7 @@ def execute_workflow(
     WorkflowException
         When any argument check fails.
     """
-    if len(concept_opts.concept or []) == 0:
+    if len(context_opts.concept or []) == 0:
         raise WorkflowException("please specify at least one concept (--concept e.g. --concept=information)")
 
     if len(filename_field or []) == 0:
@@ -75,13 +75,16 @@ def execute_workflow(
             "please specify at least one filename field (--filename-field e.g. --filename-field='year:_:1')"
         )
 
-    if concept_opts.context_width is None:
+    if context_opts.context_width is None:
         raise WorkflowException(
             "please specify at width of context as max distance from cencept (--context-width e.g. --context_width=2)"
         )
 
     if len(partition_keys or []) == 0:
-        raise WorkflowException("please specify partition key(s) (--partition-key e.g --partition-key=year)")
+        raise WorkflowException("please specify partition key) (--partition-key e.g --partition-key=year)")
+
+    if len(partition_keys) > 1:
+        raise WorkflowException("only one partition key is allowed (for now)")
 
     reader_opts = TextReaderOpts(
         filename_pattern='*.csv',
@@ -97,11 +100,13 @@ def execute_workflow(
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    co_occurrences = partitioned_corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=concept_opts,
+    co_occurrences = partitioned_corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=context_opts,
         global_threshold_count=count_threshold,
-        partition_keys=partition_keys,
+        partition_column=partition_keys[0],
     )
 
     store_concept_co_occurrence_bundle(
@@ -113,7 +118,7 @@ def execute_workflow(
         co_occurrences=co_occurrences,
         reader_opts=reader_opts,
         tokens_transform_opts=tokens_transform_opts,
-        concept_opts=concept_opts,
+        context_opts=context_opts,
         extract_tokens_opts=extract_tokens_opts,
     )
 
@@ -125,12 +130,12 @@ def store_concept_co_occurrence_bundle(
     *,
     store_vectorized: bool,
     input_filename: str,
-    partition_keys: Tuple[str, List[str]],
+    partition_keys: Sequence[str],
     count_threshold: int = None,
     co_occurrences: pd.DataFrame,
     reader_opts: Dict,
     tokens_transform_opts: TokensTransformOpts,
-    concept_opts: ConceptContextOpts,
+    context_opts: ContextOpts,
     extract_tokens_opts: ExtractTaggedTokensOpts,
 ):
 
@@ -147,7 +152,7 @@ def store_concept_co_occurrence_bundle(
             'partition_keys': partition_keys,
             'count_threshold': count_threshold,
             'reader_opts': reader_opts.props,
-            'concept_opts': concept_opts.props,
+            'context_opts': context_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'extract_tokens_opts': extract_tokens_opts.props,
         }

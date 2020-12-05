@@ -1,9 +1,7 @@
 import json
 
-from penelope.co_occurrence import WindowsCorpus, corpus_concept_windows
-from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.co_occurrence import ContextOpts, WindowsCorpus, corpus_to_windows
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 
 from .test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
@@ -43,8 +41,8 @@ def test_windowed_when_nn_vb_lemma_2_tokens():
 
     windows = [
         w
-        for w in corpus_concept_windows(
-            corpus, concept_opts=ConceptContextOpts(concept=concept, ignore_concept=False, context_width=2), pad='*'
+        for w in corpus_to_windows(
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=2), pad='*'
         )
     ]
 
@@ -59,8 +57,8 @@ def test_windowed_when_nn_vb_lemma_5_tokens():
 
     windows = [
         w
-        for w in corpus_concept_windows(
-            corpus, concept_opts=ConceptContextOpts(concept=concept, ignore_concept=False, context_width=5), pad='*'
+        for w in corpus_to_windows(
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=5), pad='*'
         )
     ]
 
@@ -79,8 +77,8 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
     concept = {'piazza', 'kyrka', 'valv'}
     windows = [
         w
-        for w in corpus_concept_windows(
-            corpus, concept_opts=ConceptContextOpts(concept=concept, ignore_concept=False, context_width=5), pad='*'
+        for w in corpus_to_windows(
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=5), pad='*'
         )
     ]
 
@@ -112,8 +110,8 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
     concept = {'är'}
     windows = [
         w
-        for w in corpus_concept_windows(
-            corpus, concept_opts=ConceptContextOpts(concept=concept, ignore_concept=False, context_width=2), pad='*'
+        for w in corpus_to_windows(
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=2), pad='*'
         )
     ]
 

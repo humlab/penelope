@@ -1,6 +1,7 @@
 import os
+from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, List, Optional
+from typing import Any, Callable, Iterable, List, Mapping, Optional
 
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformer, TextTransformOpts
@@ -313,6 +314,115 @@ class TextToDTM(interfaces.ITask):
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         return None
+
+
+@dataclass
+class Vocabulary(interfaces.ITask):
+
+    token2id: Mapping[str, int] = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TOKENS
+        self.out_content_type = ContentType.TOKENS
+
+    def setup(self):
+        self.token2id = defaultdict()
+        self.token2id.default_factory = self.token2id.__len__
+        self.pipeline.payload.token2id = self.token2id
+
+    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+        # FIXME: reset to normal dict upon completion
+        for token in payload.content:
+            _ = self.token2id[token]
+        return payload
+
+
+# @dataclass
+# class TextToCoOccurrence(interfaces.ITask):
+#     def __post_init__(self):
+#         self.in_content_type = ContentType.TOKENS
+#         self.out_content_type = ContentType.VECTORIZED_CORPUS
+
+#     windows_size: int = None
+#     co_occurrence_opts: Any = None
+#     vectorize_opts: VectorizeOpts = None
+
+#     def setup(self):
+#         super().setup()
+#         self.pipeline.put("co_occurrence_opts", self.co_occurrence_opts)
+#         self.pipeline.put("vectorize_opts", self.vectorize_opts)
+#         return self
+
+#     def outstream(self) -> VectorizedCorpus:
+#         """Creates a vectorized corpus of word-word co-occurences.
+#         1. Compute yearly co-occurrences
+#             - Split stream based on year. Have a look at more_itertools more_itertools.bucket(iterable, key, validator=None)
+#             - Use Glove.Corpus to computer term-term matrix for each year
+#             - Create yearly BoW Corpus where tokens are "word1-word2" pairs
+#             - Create document index where eeach item is a year
+#             - Create a DTM using CorpusVectorizer
+#             - Visualize using word-trends-gui notebook
+
+#         Returns
+#         -------
+#         VectorizedCorpus
+#             [description]
+
+#         Yields
+#         -------
+#         VectorizedCorpus
+#             [description]
+#         """
+
+#         def payload_year(payload: interfaces.DocumentPayload) -> int:
+#             return self.pipeline.payload.document_lookup(payload.filename)['year']
+
+#         yearly_streams = more_itertools.bucket(self.instream, key=payload_year, validator=None)
+#         yearly_keys = sorted(list(yearly_streams))
+
+#         metadata = []
+#         for i, year in enumerate(yearly_keys):
+#             metadata.append(dict(document_id=i, filename='year_{year}.txt', document_name='year_{year}', year=year))
+#             instream = yearly_keys[year]
+#             corpus = glove.Corpus(dictionary=self.pipeline.token2id)
+#             tokens = (payload.content for payload in instream)
+#             corpus.fit(tokens, self.windows_size, ignore_missing=False)
+#             coo_occurrence_matrix = corpus.matrix
+#             coo_occurrence_dataframe = to_dataframe(
+#                 term_term_matrix,
+#                 id2token: Mapping[int, str],
+#                 catalogue: pd.DataFrame = None,
+#                 threshold_count: int = 1,
+#             )
+#             # TODO: Create BoW, new
+
+#         corpus = convert.to_vectorized_corpus(
+#             stream=self.instream,
+#             vectorize_opts=self.vectorize_opts,
+#             document_index=self.pipeline.payload.document_index,
+#         )
+#         yield interfaces.DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
+
+#     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+#         return None
+
+
+# root_folder = (lambda x: os.path.join(os.getcwd().split(x)[0], x))("text_analytics")
+
+# corpus_folder = os.path.join(root_folder, "data")
+# corpus_path = os.path.join(corpus_folder, "legal_instrument_corpus_preprocessed.zip")
+
+# tokens_reader = TextTokenizer(
+#     source=corpus_path,
+#     reader_opts=TextReaderOpts(filename_pattern="*.txt", filename_fields=None),
+#     transform_opts=TextTransformOpts(fix_whitespaces=True, fix_hyphenation=True),
+# )
+
+# reader = (tokens for _, tokens in tokens_reader)
+
+# corpus = glove.Corpus()
+
+# corpus.fit(reader, 5, False)
 
 
 @dataclass

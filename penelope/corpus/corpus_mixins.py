@@ -3,8 +3,7 @@ import os
 from typing import Any, Dict, List, Tuple
 
 import pandas as pd
-
-from .interfaces import PartitionKeys
+from penelope.type_alias import PartitionKeys
 
 
 class PartitionMixIn:

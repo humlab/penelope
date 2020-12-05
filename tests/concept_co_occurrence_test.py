@@ -1,18 +1,16 @@
 import os
 
 import pytest
-from penelope.co_occurrence import partitioned_corpus_concept_co_occurrence
-from penelope.co_occurrence.concept_co_occurrence import (
-    ConceptContextOpts,
-    corpus_concept_co_occurrence,
+from penelope.co_occurrence import (
+    ContextOpts,
+    corpus_co_occurrence,
     load_co_occurrences,
+    partitioned_corpus_co_occurrence,
     store_co_occurrences,
     to_vectorized_corpus,
 )
-from penelope.corpus import SparvTokenizedCsvCorpus
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
 from penelope.workflows import concept_co_occurrence_workflow
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
@@ -27,9 +25,11 @@ def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
 
-    coo_df = corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
+    coo_df = corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         threshold_count=0,
     )
     assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
@@ -41,9 +41,11 @@ def test_concept_co_occurrence_with_no_concept_succeeds():
 
     expected_result = {('d', 'a', 1), ('b', 'a', 1)}
 
-    coo_df = corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
+    coo_df = corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         threshold_count=1,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
@@ -54,9 +56,11 @@ def test_concept_co_occurrence_with_thresholdt_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = {('g', 'a', 2)}
 
-    coo_df = corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
+    coo_df = corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         threshold_count=2,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
@@ -65,7 +69,7 @@ def test_concept_co_occurrence_with_thresholdt_succeeds():
 def test_co_occurrence_using_cli_succeeds(tmpdir):
 
     output_filename = jj(tmpdir, 'test_co_occurrence_using_cli_succeeds.csv')
-    concept_opts = ConceptContextOpts(
+    context_opts = ContextOpts(
         concept={'jag'},
         context_width=2,
     )
@@ -83,7 +87,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         output_filename=output_filename,
         partition_keys=['year'],
         filename_field=["year:_:1"],
-        concept_opts=concept_opts,
+        context_opts=context_opts,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
@@ -92,7 +96,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
 
 
 @pytest.mark.parametrize("concept, threshold_count, context_width", [('fråga', 0, 2), ('fråga', 2, 2)])
-def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_count, context_width):
+def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, context_width):
 
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
@@ -102,11 +106,13 @@ def test_partitioned_corpus_concept_co_occurrence_succeeds(concept, threshold_co
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
 
-    coo_df = partitioned_corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept={concept}, ignore_concept=False, context_width=context_width),
+    coo_df = partitioned_corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept={concept}, ignore_concept=False, context_width=context_width),
         global_threshold_count=threshold_count,
-        partition_keys='year',
+        partition_column='year',
     )
 
     assert coo_df is not None
@@ -125,11 +131,13 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         ),
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
-    coo_df = partitioned_corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
+    coo_df = partitioned_corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
         global_threshold_count=None,
-        partition_keys='year',
+        partition_column='year',
     )
 
     assert coo_df is not None
@@ -145,7 +153,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         'partition_keys': ('year',),
         'filename_field': ('year:_:1',),
     }
-    concept_opts = ConceptContextOpts(concept=('jag',), context_width=2)
+    context_opts = ContextOpts(concept=('jag',), context_width=2)
     extract_tokens_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
     tokens_transform_opts = TokensTransformOpts(
         to_lower=True,
@@ -158,7 +166,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     )
     concept_co_occurrence_workflow(
         **options,
-        concept_opts=concept_opts,
+        context_opts=context_opts,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
@@ -171,9 +179,11 @@ def test_store_when_co_occurrences_data_is_not_partitioned(filename):
 
     expected_filename = jj(OUTPUT_FOLDER, filename)
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    coo_df = corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
+    coo_df = corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         threshold_count=1,
     )
 
@@ -205,11 +215,13 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
 
     expected_filename = jj(OUTPUT_FOLDER, filename)
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    df = partitioned_corpus_concept_co_occurrence(
-        corpus,
-        concept_opts=ConceptContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
+    df = partitioned_corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.documents,
+        token2id=corpus.token2id,
+        context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         global_threshold_count=1,
-        partition_keys='year',
+        partition_column='year',
     )
 
     store_co_occurrences(expected_filename, df)

@@ -1,10 +1,10 @@
 import sys
-from typing import Any, List
+from typing import Any, List, Sequence
 
 import click
-from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
+from penelope.co_occurrence import ContextOpts
+from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
 
 # pylint: disable=too-many-arguments
@@ -64,11 +64,11 @@ from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
 def main(
     input_filename: str,
     output_filename: str,
+    count_threshold: int,
     concept: List[str],
     no_concept: bool,
-    count_threshold: int,
     context_width: int,
-    partition_key: List[str],
+    partition_key: Sequence[str],
     pos_includes: str,
     pos_excludes: str,
     lemmatize: bool,
@@ -103,10 +103,10 @@ def main(
         pos_excludes=pos_excludes,
         lemmatize=lemmatize,
     )
-    concept_opts = ConceptContextOpts(
-        concept=concept,
-        ignore_concept=no_concept,
+    context_opts = ContextOpts(
         context_width=context_width,
+        concept=(concept or []),
+        ignore_concept=no_concept,
     )
     try:
 
@@ -117,7 +117,7 @@ def main(
             filename_field=filename_field,
             store_vectorized=store_vectorized,
             partition_keys=partition_key,
-            concept_opts=concept_opts,
+            context_opts=context_opts,
             extract_tokens_opts=extract_tokens_opts,
             tokens_transform_opts=tokens_transform_opts,
         )
