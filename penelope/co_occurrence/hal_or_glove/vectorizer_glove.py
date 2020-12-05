@@ -60,7 +60,7 @@ class GloveVectorizer:
 
         return self
 
-    def cooccurence(self, normalize='size', zero_diagonal=True):
+    def to_dataframe(self, *, normalize='size', zero_diagonal=True, **_):
         '''Return computed co-occurrence values'''
 
         matrix = self.nw_xy

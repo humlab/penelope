@@ -1,4 +1,5 @@
 import itertools
+from typing import Iterable, Mapping
 
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ logger = utility.getLogger('corpus_text_analysis')
 
 # pylint: disable=too-many-instance-attributes
 class HyperspaceAnalogueToLanguageVectorizer:
-    def __init__(self, corpus=None, token2id=None, tick=utility.noop):
+    def __init__(self, tokens_stream: Iterable[Iterable[str]]=None, token2id: Mapping[str, int]=None):
         """
         Build vocabulary and create nw_xy term-term matrix and nw_x term global occurence vector
 
@@ -19,20 +20,19 @@ class HyperspaceAnalogueToLanguageVectorizer:
             corpus Iterable[Iterable[str]]
 
         """
-        self.token2id = token2id
-        self._id2token = None
-        self.corpus = corpus
+        self.token2id: Mapping[str, int] = token2id
+        self._id2token: Mapping[int, str] = None
+        self.corpus: Iterable[Iterable[str]] = tokens_stream
 
-        self.nw_xy = None
-        self.nw_x = None
-        self.tick = tick
+        self.nw_xy: sp.csc_matrix = None
+        self.nw_x: np.ndarray = None
 
     @property
-    def corpus(self):
+    def corpus(self) -> Iterable[Iterable[str]]:
         return self._corpus
 
     @corpus.setter
-    def corpus(self, value):
+    def corpus(self, value:  Iterable[Iterable[str]]):
 
         self._corpus = value
         self.term_count = sum(map(len, value or []))
@@ -42,22 +42,22 @@ class HyperspaceAnalogueToLanguageVectorizer:
             self._id2token = None
 
     @property
-    def id2token(self):
+    def id2token(self) -> Mapping[int, str]:
         if self._id2token is None:
             if self.token2id is not None:
                 self._id2token = {v: k for k, v in self.token2id.items()}
         return self._id2token
 
-    def sliding_window(self, seq, n):  # pylint: disable=unused-argument
-        it = itertools.chain(iter(seq), [None] * n)
-        memory = tuple(itertools.islice(it, n + 1))
+    def sliding_window(self, seq: Iterable[str], n: int) -> Iterable[str]:
+        it: Iterable[str] = itertools.chain(iter(seq), [None] * n)
+        memory: Iterable[str] = tuple(itertools.islice(it, n + 1))
         if len(memory) == n + 1:
             yield memory
         for x in it:
             memory = memory[1:] + (x,)
             yield memory
 
-    def fit(self, corpus=None, size: int = 2, distance_metric: int = 0, zero_out_diag: bool = False):
+    def fit(self, corpus: Iterable[str]=None, size: int = 2, distance_metric: int = 0, zero_out_diag: bool = False) -> "HyperspaceAnalogueToLanguageVectorizer":
         '''Trains HAL for a document. Note that sentence borders (for now) are ignored'''
 
         if corpus is not None:
@@ -66,14 +66,12 @@ class HyperspaceAnalogueToLanguageVectorizer:
         assert self.token2id is not None, "Fit with no vocabulary!"
         assert self.corpus is not None, "Fit with no corpus!"
 
-        nw_xy = sp.lil_matrix((len(self.token2id), len(self.token2id)), dtype=np.int32)
-        nw_x = np.zeros(len(self.token2id), dtype=np.int32)
+        nw_xy: sp.lil_matrix = sp.csc_matrix((len(self.token2id), len(self.token2id)), dtype=np.int32)
+        nw_x: np.ndarray = np.zeros(len(self.token2id), dtype=np.int32)
 
         for terms in corpus:
 
-            id_terms = (self.token2id[size] for size in terms)
-
-            self.tick()
+            id_terms = (self.token2id[t] for t in terms)
 
             for win in self.sliding_window(id_terms, size):
 
@@ -114,7 +112,7 @@ class HyperspaceAnalogueToLanguageVectorizer:
 
         return self
 
-    def to_df(self):
+    def to_df(self) -> pd.DataFrame:
         columns = [self.id2token[i] for i in range(0, len(self.token2id))]
         return pd.DataFrame(data=self.nw_xy.todense(), index=list(columns), columns=list(columns), dtype=np.float64).T
 
@@ -176,10 +174,10 @@ class HyperspaceAnalogueToLanguageVectorizer:
 
     #     return df
 
-    def cooccurence(self, direction_sensitive=False, normalize='size', zero_diagonal=True):
+    def to_dataframe(self, *, normalize: str='size', zero_diagonal: bool=True, direction_sensitive: bool=False, **_) -> pd.DataFrame:
         '''Return computed co-occurrence values'''
 
-        matrix = self.nw_xy
+        matrix: sp.csc_matrix = self.nw_xy
 
         if not direction_sensitive:
             matrix += matrix.T
@@ -188,11 +186,11 @@ class HyperspaceAnalogueToLanguageVectorizer:
             if zero_diagonal:
                 matrix.fill_diagonal(0)
 
-        coo_matrix = matrix.tocoo(copy=False)
+        coo_matrix: sp.coo_matrix = matrix.tocoo(copy=False)
 
-        df_nw_x = pd.DataFrame(self.nw_x, columns=['nw'])
+        df_nw_x: pd.DataFrame = pd.DataFrame(self.nw_x, columns=['nw'])
 
-        df = (
+        df: pd.DataFrame = (
             pd.DataFrame({'x_id': coo_matrix.row, 'y_id': coo_matrix.col, 'nw_xy': coo_matrix.data})[
                 ['x_id', 'y_id', 'nw_xy']
             ]
@@ -222,7 +220,7 @@ class HyperspaceAnalogueToLanguageVectorizer:
 
         # logger.info('Normalizing for document corpus size %s.', norm)
 
-        df_nw_xy = df.assign(cwr=((df.nw_xy / (df.nw_x + df.nw_y - df.nw_xy)) / norm))
+        df_nw_xy: pd.DataFrame = df.assign(cwr=((df.nw_xy / (df.nw_x + df.nw_y - df.nw_xy)) / norm))
 
         df_nw_xy.loc[df_nw_xy.cwr < 0.0, 'cwr'] = 0
         df_nw_xy.cwr.fillna(0.0, inplace=True)
