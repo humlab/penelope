@@ -72,8 +72,9 @@ class PipelinePayload:
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
+    token2id: Mapping[str,int] = None
 
-    # FIXME: Move to document_index_proxy object
+    # FIXME: Move to document_index_proxy object?
     primary_document_index: pd.DataFrame = None  # Given index i.e. DataFrane or loaded given  filenames
     secondary_document_index: pd.DataFrame = None  # Index reconstructed from source (filename, filename fields)
     consolidated_document_index: pd.DataFrame = None  # Merged index (if both exists)
@@ -90,11 +91,6 @@ class PipelinePayload:
             document_index_key=self.document_index_key,
             pos_schema_name=self.pos_schema_name,
         )
-
-    # NOT USED: token2id: Mapping = None
-    # NOT USED: extract_tokens_opts: ExtractTaggedTokensOpts = None
-    # NOT USED: tokens_transform_opts: TokensTransformOpts = None
-    # NOT USED: extract_opts: Mapping = None
 
     def get(self, key: str, default=None):
         return self.memory_store.get(key, default)
