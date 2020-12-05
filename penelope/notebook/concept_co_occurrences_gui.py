@@ -4,7 +4,7 @@ from typing import Callable
 
 import ipyfilechooser
 import ipywidgets as widgets
-from penelope.co_occurrence.concept_co_occurrence import ConceptContextOpts
+from penelope.co_occurrence import ContextOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.utility import (
@@ -163,9 +163,9 @@ class GUI:
         )
 
     @property
-    def concept_opts(self) -> ConceptContextOpts:
+    def context_opts(self) -> ContextOpts:
 
-        return ConceptContextOpts(
+        return ContextOpts(
             concept=self.concept_tokens, context_width=self.context_width.value, ignore_concept=self.no_concept.value
         )
 
@@ -236,7 +236,7 @@ def display_gui(
                 concept_co_occurrences = concept_co_occurrence_workflow(
                     input_filename=gui.input_filename_chooser.selected,
                     output_filename=output_filename,
-                    concept_opts=gui.concept_opts,
+                    context_opts=gui.context_opts,
                     count_threshold=gui.count_threshold.value,
                     partition_keys=partition_keys,
                     filename_field=filename_field,

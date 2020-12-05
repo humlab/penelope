@@ -61,8 +61,6 @@ def compute_hal_or_glove_co_occurrences(
         [description]
     """
 
-    # FIXME; Use more_itertools.bucket
-
     # if issubclass(type(corpus), CorpusABC):
     #    doc_terms = [[t.lower().strip('_') for t in terms if len(t) > 2] for terms in corpus.get_texts()]
 
@@ -76,7 +74,7 @@ def compute_hal_or_glove_co_occurrences(
         raise CoOccurrenceError("expected `token2id` found None")
         # token2id = gensim_utility.build_vocab(doc_terms)
 
-    def partition_key(item: Tuple[str, Iterable[str]]) -> int:
+    def get_bucket_key(item: Tuple[str, Iterable[str]]) -> int:
 
         if not isinstance(item, tuple):
             raise CoOccurrenceError(f"expected stream of (name,tokens) tuples found {type(item)}")
@@ -88,7 +86,7 @@ def compute_hal_or_glove_co_occurrences(
         return int(document_index.loc[filename][partition_column])
 
     total_results = []
-    key_streams = more_itertools.bucket(instream, key=partition_key, validator=None)
+    key_streams = more_itertools.bucket(instream, key=get_bucket_key, validator=None)
     keys = sorted(list(key_streams))
 
     metadata = []
