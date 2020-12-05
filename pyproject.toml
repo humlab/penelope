@@ -81,7 +81,7 @@ concept_cooccurrence = "penelope.scripts.concept_co_occurrence:main"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
-    "-ra",
+    "-rfE", # Show extra info as specified by chars: (f)ailed, (E)rror, (s)kipped, (x)failed, (X)passed, (p)assed, (P)assed with output, (a)ll except passed (p/P), or (A)ll
     "-q",
     "-s",
 ]
