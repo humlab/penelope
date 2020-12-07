@@ -2,7 +2,7 @@ import fnmatch
 import os
 import string
 import time
-from typing import Callable, Iterable, List, Union
+from typing import Callable, List, Union
 
 from .utils import now_timestamp
 
@@ -14,20 +14,29 @@ def replace_path(filepath: str, path: str) -> str:
 
 
 def filename_satisfied_by(
-    filename: Iterable[str], filename_filter: Union[List[str], Callable], filename_pattern: str = None
+    filename: str, filename_filter: Union[List[str], Callable], filename_pattern: str = None
 ) -> bool:
+
+    """Returns all filenames that are satisfied by filename filter, and that matchers pattern"""
 
     if filename_pattern is not None:
         if not fnmatch.fnmatch(filename, filename_pattern):
             return False
 
-    if filename_filter is not None:
-        if isinstance(filename_filter, list):
-            if filename not in filename_filter:
-                return False
-        elif callable(filename_filter):
-            if not filename_filter(filename):
-                return False
+    if filename_filter is None:
+        return True
+
+    if isinstance(filename_filter, list):
+
+        # Try both with and without extension
+        if filename not in filename_filter and strip_path_and_extension(filename) not in filename_filter:
+            return False
+
+    elif callable(filename_filter):
+
+        if not filename_filter(filename):
+
+            return False
 
     return True
 
@@ -65,7 +74,7 @@ def path_add_sequence(path: str, i: int, j: int = 0) -> str:
 
 
 def strip_path_and_add_counter(filename: str, i: int, n_zfill: int = 3):
-    return f'{os.path.basename(filename)}_{str(i).zfill(n_zfill)}.txt'
+    return f'{os.path.basename(strip_extensions(filename))}_{str(i).zfill(n_zfill)}.txt'
 
 
 def strip_paths(filenames: Union[str, List[str]]) -> Union[str, List[str]]:
@@ -74,9 +83,14 @@ def strip_paths(filenames: Union[str, List[str]]) -> Union[str, List[str]]:
     return [os.path.basename(filename) for filename in filenames]
 
 
-def strip_path_and_extension(filename: str) -> bool:
-
+def strip_path_and_extension(filename: str) -> List[str]:
     return os.path.splitext(os.path.basename(filename))[0]
+
+
+def strip_extensions(filename: Union[str, List[str]]) -> List[str]:
+    if isinstance(filename, str):
+        return os.path.splitext(filename)[0]
+    return [os.path.splitext(x)[0] for x in filename]
 
 
 def suffix_filename(filename: str, suffix: str) -> str:
