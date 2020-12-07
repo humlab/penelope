@@ -1,7 +1,7 @@
 import abc
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
@@ -98,9 +98,12 @@ class TaggedTokensFilterOpts:
     def props(self) -> Dict:
         return self.data
 
-    def mask(self, doc):
+    def mask(self, doc: pd.DataFrame) -> np.ndarray:
 
         mask = np.repeat(True, len(doc.index))
+
+        if doc is None or len(doc) == 0:
+            return mask
 
         for attr_name, attr_value in self.data.items():
 
@@ -176,9 +179,12 @@ class ICorpusReader(abc.ABC):
         raise StopIteration
 
     @abc.abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> "ICorpusReader":
         return self
 
-    @property
-    def metadata_lookup(self):
-        return {x['filename']: x for x in (self.metadata or [])}
+    # FIXME; Implement __getitem__
+    # def __getitem__(self, document_name: str):
+    #     return None
+
+    def lookup_document(self, document_name: str) -> Mapping[str, Any]:
+        return self.document_index.loc[document_name].to_dict()
