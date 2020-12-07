@@ -1,148 +1,77 @@
-from dataclasses import dataclass, field
-from typing import Sequence
+from dataclasses import dataclass
 
-import ipywidgets as widgets
-from IPython.display import display
-from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
-from penelope.utility import get_logger
+import penelope.common.goodness_of_fit as gof
+import penelope.notebook.utility as notebook_utility
+from penelope.corpus import VectorizedCorpus
+from penelope.notebook.ipyaggrid_utility import display_grid
+from penelope.utility import getLogger
 
-from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer, WordTrendData
+from .displayers import WordTrendData
+from .word_trends_tabs_gui import create_tabs_gui
 
-logger = get_logger()
+logger = getLogger("penelope")
 
-DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
-BUTTON_LAYOUT = widgets.Layout(width='100px')
-OUTPUT_LAYOUT = widgets.Layout(width='600px')
-
+# debug_view = ipywidgets.Output(layout={'border': '1px solid black'})
+# display(debug_view)
 
 @dataclass
-class GUI:
-    """Container for GUO components"""
+class WordTrendsGUI:
 
-    tab: widgets.Tab = widgets.Tab()
-    normalize = widgets.ToggleButton(description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT)
-    smooth = widgets.ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
-    # status = widgets.HTML(value="", layout=widgets.Layout(width='300px'))
-    status = widgets.Label(layout=widgets.Layout(width='50%', border="0px transparent white"))
-    words = widgets.Textarea(
-        description="",
-        rows=2,
-        value="",
-        layout=widgets.Layout(width='90%'),
-    )
-    displayers: Sequence[ITrendDisplayer] = field(default_factory=list)
+    word_trend_data: WordTrendData
 
     def layout(self):
-        return widgets.VBox(
-            [
-                widgets.HBox(
-                    [
-                        self.normalize,
-                        self.smooth,
-                        self.status,
-                    ]
-                ),
-                self.words,
-                self.tab,
-            ]
+        data = self.word_trend_data
+        tab_gui = create_tabs_gui(trend_data=data)
+        tab_gof = (
+            notebook_utility.OutputsTabExt(["GoF", "GoF (abs)", "Plots", "Slopes"])
+            .display_fx_result(0, display_grid, data.goodness_of_fit)
+            .display_fx_result(
+                1, display_grid, data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
+            )
+            .display_fx_result(2, gof.plot_metrics, data.goodness_of_fit, plot=False, lazy=True)
+            .display_fx_result(
+                3, gof.plot_slopes, data.corpus, data.most_deviating, "l2_norm", 600, 600, plot=False, lazy=True
+            )
+        )
+        _layout = (
+            notebook_utility.OutputsTabExt(["Trends", "GoF"])
+            .display_content(0, what=tab_gui.layout(), clear=True)
+            .display_content(1, what=tab_gof, clear=True)
         )
 
-    def set_displayers(self, *, displayers: Sequence[ITrendDisplayer], trend_data: WordTrendData):
-
-        for i, cls in enumerate(displayers):
-            displayer: ITrendDisplayer = cls(data=trend_data)
-            self.displayers.append(displayer)
-            displayer.output = widgets.Output()
-            with displayer.output:
-                displayer.setup()
-
-        self.tab.children = [d.output for d in self.displayers]
-        for i, d in enumerate(self.displayers):
-            self.tab.set_title(i, d.name)
-
-        return self
-
-    @property
-    def current_displayer(self):
-        return self.displayers[self.tab.selected_index]
-
-    @property
-    def current_output(self):
-        return self.current_displayer.output
+        return _layout
 
 
-MYGUI = None
+def create_gui(
+    *,
+    corpus: VectorizedCorpus = None,
+    corpus_folder: str = None,
+    corpus_tag: str = None,
+    word_trend_data: WordTrendData = None,
+    **kwargs,
+):
+    if corpus is None:
+        logger.info("Please wait, loading corpus...")
+        corpus = VectorizedCorpus.load(tag=corpus_tag, folder=corpus_folder)
+    corpus = corpus.group_by_year()
 
+    try:
 
-def word_trend_gui(trend_data: WordTrendData, display_widgets: bool = True) -> widgets.Widget:
+        word_trend_data = word_trend_data or WordTrendData().update(
+            corpus=corpus,
+            corpus_folder=corpus_folder,
+            corpus_tag=corpus_tag,
+            n_count=kwargs.get('n_count', 25000),
+            **kwargs,
+        )
 
-    global MYGUI
-    gui = GUI().set_displayers(displayers=WORD_TREND_DISPLAYERS, trend_data=trend_data)
+        gui = WordTrendsGUI(word_trend_data=word_trend_data)
 
-    MYGUI = gui
+        return gui
 
-    _corpus: VectorizedCorpus = None
-
-    def toggle_normalize(*_):
-
-        nonlocal _corpus
-        _corpus = None
-        update_plot(*_)
-
-    def update_plot(*_):
-
-        nonlocal _corpus
-
-        if trend_data.corpus is None:
-            gui.status.value = "Please load a corpus!"
-            return
-
-        if _corpus is None or _corpus is not trend_data.corpus:
-
-            gui.status.value = "Corpus changed..."
-
-            _corpus = trend_data.corpus
-            if gui.normalize.value:
-                _corpus = _corpus.normalize()
-                gui.status.value = "Corpus changed..."
-
-            # for displayer in gui.displayers:
-            #    displayer.setup()
-
-        tokens = ' '.join(gui.words.value.split()).split()
-        indices = [_corpus.token2id[token] for token in tokens if token in _corpus.token2id]
-
-        missing_tokens = [token for token in tokens if token not in _corpus.token2id]
-
-        if len(missing_tokens) > 0:
-            gui.status.value = f"Not found: {' '.join(missing_tokens)}"
-            return
-
-        if len(indices) == 0:
-            return
-
-        gui.current_displayer.clear()
-
-        with gui.current_output:
-
-            smoothers = DEFAULT_SMOOTHERS if gui.smooth.value else []
-
-            data = gui.current_displayer.compile(_corpus, indices, smoothers=smoothers)
-
-            _ = gui.current_displayer.plot(data, state=trend_data)
-
-    gui.words.observe(update_plot, names='value')
-    gui.tab.observe(update_plot, 'selected_index')
-    gui.normalize.observe(toggle_normalize, names='value')
-    gui.smooth.observe(update_plot, names='value')
-
-    _layout = gui.layout()
-
-    if display_widgets:
-
-        display(_layout)
-
-        update_plot()
-
-    return _layout
+    except gof.GoodnessOfFitComputeError as ex:
+        logger.info(f"Unable to compute GoF: {str(ex)}")
+        raise
+    except Exception as ex:
+        logger.exception(ex)
+        raise

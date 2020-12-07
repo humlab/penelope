@@ -8,6 +8,7 @@ from penelope.corpus import VectorizedCorpus
 
 @dataclass
 class WordTrendData:
+
     corpus: VectorizedCorpus = None
     corpus_folder: str = None
     corpus_tag: str = None
@@ -15,6 +16,8 @@ class WordTrendData:
     goodness_of_fit: pd.DataFrame = None
     most_deviating_overview: pd.DataFrame = None
     most_deviating: pd.DataFrame = None
+
+    normalized_corpus: VectorizedCorpus = None
 
     def update(
         self,
