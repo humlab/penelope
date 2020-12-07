@@ -182,12 +182,12 @@ def document_terms_count(corpus):
     return n_terms
 
 
-def add_document_terms_count(documents, corpus):
-    if 'n_terms' not in documents.columns:
+def add_document_terms_count(document_index, corpus):
+    if 'n_terms' not in document_index.columns:
         n_terms = document_terms_count(corpus)
         if n_terms is not None:
-            documents['n_terms'] = n_terms
-    return documents
+            document_index['n_terms'] = n_terms
+    return document_index
 
 
 def id2word_to_dataframe(id2word: Dict) -> pd.DataFrame:
@@ -218,7 +218,7 @@ def id2word_to_dataframe(id2word: Dict) -> pd.DataFrame:
     return dictionary
 
 
-def add_document_metadata(df: pd.DataFrame, columns: List[str], documents: pd.DataFrame) -> pd.DataFrame:
+def add_document_metadata(df: pd.DataFrame, columns: List[str], document_index: pd.DataFrame) -> pd.DataFrame:
     """Add document `columns` to `df` if columns not already exists.
 
     Parameters
@@ -226,8 +226,8 @@ def add_document_metadata(df: pd.DataFrame, columns: List[str], documents: pd.Da
     df : pd.DataFrame
         Data of interest
     columns : Union[str,List[str]]
-        Columns in `documents` that should be added to `df`
-    documents : pd.DataFrame
+        Columns in `document_index` that should be added to `df`
+    document_index : pd.DataFrame
         Corpus document index, by default None
 
     Returns
@@ -236,7 +236,7 @@ def add_document_metadata(df: pd.DataFrame, columns: List[str], documents: pd.Da
         `df` extended with `columns` data
     """
 
-    if documents is None:
+    if document_index is None:
         return df
 
     if 'document_id' not in df.columns:
@@ -245,9 +245,9 @@ def add_document_metadata(df: pd.DataFrame, columns: List[str], documents: pd.Da
     if isinstance(columns, str):
         columns = [columns]
 
-    columns = ['document_id'] + [c for c in columns if c not in df.columns and c in documents.columns]
+    columns = ['document_id'] + [c for c in columns if c not in df.columns and c in document_index.columns]
 
-    df = df.merge(documents[columns], how='inner', left_on='document_id', right_on='document_id')
+    df = df.merge(document_index[columns], how='inner', left_on='document_id', right_on='document_id')
 
     return df
 

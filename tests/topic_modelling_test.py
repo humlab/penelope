@@ -8,7 +8,7 @@ import penelope.topic_modelling as topic_modelling
 import pytest  # pylint: disable=unused-import
 from penelope.corpus import document_index_upgrade
 from penelope.scripts.compute_topic_model import run_model
-from penelope.topic_modelling.container import InferredTopicsData, TrainingCorpus
+from penelope.topic_modelling.container import InferredModel, InferredTopicsData, TrainingCorpus
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
 
 from .utils import OUTPUT_FOLDER
@@ -27,15 +27,15 @@ TOPIC_MODELING_OPTS = {
 # pylint: disable=protected-access
 
 
-def compute_inferred_model(method="gensim_lda-multicore"):
+def compute_inferred_model(method="gensim_lda-multicore") -> InferredModel:
 
     corpus = TranströmerCorpus()
     train_corpus = TrainingCorpus(
         terms=corpus.terms,
-        documents=corpus.documents,
+        document_index=corpus.document_index,
     )
 
-    inferred_model = topic_modelling.infer_model(
+    inferred_model: InferredModel = topic_modelling.infer_model(
         train_corpus=train_corpus,
         method=method,
         engine_args=TOPIC_MODELING_OPTS,
@@ -59,11 +59,11 @@ def test_infer_model(method):
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
     assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
-    assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
-    assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.documents)
-    assert len(inferred_model.train_corpus.documents) == 5
-    assert len(inferred_model.train_corpus.documents.columns) == 7
-    assert 'n_terms' in inferred_model.train_corpus.documents.columns
+    assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
+    assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.document_index)
+    assert len(inferred_model.train_corpus.document_index) == 5
+    assert len(inferred_model.train_corpus.document_index.columns) == 7
+    assert 'n_terms' in inferred_model.train_corpus.document_index.columns
     assert inferred_model.train_corpus.corpus is not None
 
 
@@ -121,11 +121,11 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
     assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
-    assert isinstance(inferred_model.train_corpus.documents, pd.DataFrame)
-    assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.documents)
-    assert len(inferred_model.train_corpus.documents) == 5
-    assert len(inferred_model.train_corpus.documents.columns) == 7
-    assert 'n_terms' in inferred_model.train_corpus.documents.columns
+    assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
+    assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.document_index)
+    assert len(inferred_model.train_corpus.document_index) == 5
+    assert len(inferred_model.train_corpus.document_index.columns) == 7
+    assert 'n_terms' in inferred_model.train_corpus.document_index.columns
     assert inferred_model.train_corpus.corpus is not None
 
     shutil.rmtree(target_folder)
@@ -191,24 +191,24 @@ def test_infer_topics_data(method):
 
     # Act
 
-    inferred_topics_data = topic_modelling.compile_inferred_topics_data(
+    inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
         id2word=inferred_model.train_corpus.id2word,
-        documents=inferred_model.train_corpus.documents,
+        document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
 
     # Assert
     assert inferred_topics_data is not None
-    assert isinstance(inferred_topics_data.documents, pd.DataFrame)
+    assert isinstance(inferred_topics_data.document_index, pd.DataFrame)
     assert isinstance(inferred_topics_data.dictionary, pd.DataFrame)
     assert isinstance(inferred_topics_data.topic_token_weights, pd.DataFrame)
     assert isinstance(inferred_topics_data.topic_token_overview, pd.DataFrame)
     assert isinstance(inferred_topics_data.document_topic_weights, pd.DataFrame)
     assert inferred_topics_data.year_period == (2019, 2020)
     assert inferred_topics_data.topic_ids == [0, 1, 2, 3]
-    assert len(inferred_topics_data.documents) == 5
+    assert len(inferred_topics_data.document_index) == 5
     assert list(inferred_topics_data.topic_token_weights.topic_id.unique()) == [0, 1, 2, 3]
     assert list(inferred_topics_data.topic_token_overview.index) == [0, 1, 2, 3]
     assert list(inferred_topics_data.document_topic_weights.topic_id.unique()) == [0, 1, 2, 3]
@@ -224,7 +224,7 @@ def test_store_inferred_topics_data(method):
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
         id2word=inferred_model.train_corpus.id2word,
-        documents=inferred_model.train_corpus.documents,
+        document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
@@ -252,7 +252,7 @@ def test_load_inferred_topics_data(method):
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
         id2word=inferred_model.train_corpus.id2word,
-        documents=inferred_model.train_corpus.documents,
+        document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
@@ -264,7 +264,7 @@ def test_load_inferred_topics_data(method):
     # Assert
     assert inferred_topics_data is not None
     assert inferred_topics_data.dictionary.equals(test_inferred_topics_data.dictionary)
-    assert inferred_topics_data.documents.equals(test_inferred_topics_data.documents)
+    assert inferred_topics_data.document_index.equals(test_inferred_topics_data.document_index)
     assert inferred_topics_data.topic_token_overview.round(5).equals(
         test_inferred_topics_data.topic_token_overview.round(5)
     )
@@ -339,17 +339,3 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
 
     shutil.rmtree(target_folder)
 
-
-def test_load_document_index_versions():
-
-    filename = './tests/test_data/documents_index_doc_id.zip'
-
-    documents = pd.read_csv(filename, '\t', header=0, index_col=0, na_filter=False)
-
-    documents = document_index_upgrade(documents)
-    expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_terms'])
-    assert set(documents.columns.tolist()).intersection(expected_columns) == expected_columns
-
-    # df, name = (documents.rename_axis(''), 'documents.csv')
-
-    # file_utility.pandas_to_csv_zip(filename, (df, 'document_index'), extension="csv", sep='\t')

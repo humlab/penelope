@@ -23,8 +23,8 @@ class SimpleTestCorpus:
         self.iterator = None
 
         metadata = extract_filenames_metadata(filenames=self.filenames, filename_fields=filename_fields)
-        self.documents: pd.DataFrame = metadata_to_document_index(metadata, document_id_field=index_field)
-        self.documents['title'] = [x['title'] for x in self.corpus_data]
+        self.document_index: pd.DataFrame = metadata_to_document_index(metadata, document_id_field=index_field)
+        self.document_index['title'] = [x['title'] for x in self.corpus_data]
 
     @property
     def terms(self):

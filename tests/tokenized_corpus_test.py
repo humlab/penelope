@@ -184,7 +184,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
         )
         n_expected = [17, 13, 21, 42, 18]
         _ = [x for x in corpus]
-        n_tokens = list(corpus.documents.n_tokens)
+        n_tokens = list(corpus.document_index.n_tokens)
         self.assertEqual(n_expected, n_tokens)
 
     def test_next_document_when_new_corpus_returns_document(self):
@@ -269,7 +269,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
         reader = self.create_reader()
         corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=False))
         _ = [x for x in corpus]
-        n_tokens = list(corpus.documents.n_tokens)
+        n_tokens = list(corpus.document_index.n_tokens)
         expected = [22, 16, 26, 45, 21]
         self.assertEqual(expected, n_tokens)
 
@@ -277,7 +277,7 @@ class Test_ProcessedCorpus(unittest.TestCase):
         reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
         corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts(only_any_alphanumeric=True))
         _ = [x for x in corpus]
-        n_tokens = list(corpus.documents.n_tokens)
+        n_tokens = list(corpus.document_index.n_tokens)
         expected = [18, 14, 24, 42, 18]
         self.assertEqual(expected, n_tokens)
 

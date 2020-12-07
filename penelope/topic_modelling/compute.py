@@ -38,6 +38,6 @@ def infer_model(
         tfidf_weiging=kwargs.get('tfidf_weiging', False),
     )
 
-    train_corpus.documents = add_document_terms_count(train_corpus.documents, train_corpus.corpus)
+    train_corpus.documents = add_document_terms_count(train_corpus.document_index, train_corpus.corpus)
 
     return inferred_model

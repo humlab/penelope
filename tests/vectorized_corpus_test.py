@@ -26,7 +26,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
         return reader
 
-    def create_corpus(self):
+    def create_corpus(self) -> corpora.TokenizedCorpus:
         reader = self.create_reader()
         tokens_transform_opts = TokensTransformOpts(
             only_any_alphanumeric=True,
@@ -81,7 +81,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
-        self.assertEqual(dumped_v_corpus.documents.to_dict(), loaded_v_corpus.documents.to_dict())
+        self.assertEqual(dumped_v_corpus.document_index.to_dict(), loaded_v_corpus.document_index.to_dict())
         self.assertEqual(dumped_v_corpus.token2id, loaded_v_corpus.token2id)
         # self.assertEqual(dumped_v_corpus.X, loaded_v_corpus.X)
 
@@ -98,7 +98,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
-        self.assertEqual(dumped_v_corpus.documents.to_dict(), loaded_v_corpus.documents.to_dict())
+        self.assertEqual(dumped_v_corpus.document_index.to_dict(), loaded_v_corpus.document_index.to_dict())
         self.assertEqual(dumped_v_corpus.token2id, loaded_v_corpus.token2id)
         # self.assertEqual(dumped_v_corpus.X, loaded_v_corpus.X)
 
@@ -172,12 +172,14 @@ class Test_VectorizedCorpus(unittest.TestCase):
             ]
         )
 
-        documents = pd.DataFrame({'year': [1, 1, 1, 2, 2]})
+        document_index = pd.DataFrame({'year': [1, 1, 1, 2, 2]})
 
         vec = CountVectorizer()
         bag_term_matrix = vec.fit_transform(corpus)
 
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id=vec.vocabulary_, documents=documents)
+        v_corpus = vectorized_corpus.VectorizedCorpus(
+            bag_term_matrix, token2id=vec.vocabulary_, document_index=document_index
+        )
 
         self.assertTrue(np.allclose(expected_bag_term_matrix, bag_term_matrix.todense()))
 

@@ -186,7 +186,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
-        coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.documents)
+        coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.document_index)
 
         # Assert
         assert 2 == int(coo_df[((coo_df.w1 == 'A') & (coo_df.w2 == 'B'))].value)
@@ -205,8 +205,8 @@ class Test_DataFrameVectorize(unittest.TestCase):
                 stopwords=None,
             )
         )
-        self.assertTrue('n_raw_tokens' not in corpus.documents.columns)
-        self.assertTrue('n_tokens' not in corpus.documents.columns)
+        self.assertTrue('n_raw_tokens' not in corpus.document_index.columns)
+        self.assertTrue('n_tokens' not in corpus.document_index.columns)
 
     def test_tokenized_document_token_counts_is_not_empty_if_enumerable_is_exhausted(self):
         # Note: Symbols are always removed by reader - hence "keep_symbols" filter has no effect
@@ -224,5 +224,5 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         for _ in corpus:
             pass
-        self.assertTrue('n_raw_tokens' in corpus.documents.columns)
-        self.assertTrue('n_tokens' in corpus.documents.columns)
+        self.assertTrue('n_raw_tokens' in corpus.document_index.columns)
+        self.assertTrue('n_tokens' in corpus.document_index.columns)

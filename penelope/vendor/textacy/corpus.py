@@ -39,13 +39,13 @@ def create_corpus(
     corpus: TextacyCorpus = textacy.Corpus(nlp)
     counter = 0
 
-    metadata_lookup = {
+    metadata_mapping = {
         x['filename']: x for x in lists_of_dicts_merged_by_key(reader.metadata, extra_metadata, key='filename')
     }
 
     for filename, text in reader:
 
-        metadata = metadata_lookup[filename]
+        metadata = metadata_mapping[filename]
 
         if len(text) > n_chunk_threshold:
             doc: SpacyDoc = textacy.spacier.utils.make_doc_from_text_chunks(
@@ -117,7 +117,7 @@ def generate_corpus_filename(
 def _get_document_metadata(
     filename: str,
     metadata: Dict[str, Any] = None,
-    documents: pd.DataFrame = None,
+    document_index: pd.DataFrame = None,
     document_columns: List[str] = None,
     filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Mapping[str, Any]:
@@ -128,12 +128,12 @@ def _get_document_metadata(
 
         metadata = {**metadata, **extract_filename_metadata(filename=filename, filename_fields=filename_fields)}
 
-    if documents is not None:
+    if document_index is not None:
 
-        if 'filename' not in documents.columns:
+        if 'filename' not in document_index.columns:
             raise ValueError("Filename field 'filename' not found in document index")
 
-        document_row = documents[documents.filename == filename]
+        document_row = document_index[document_index.filename == filename]
 
         if document_columns is not None:
             document_row = document_row[document_columns]
@@ -151,7 +151,7 @@ def _get_document_metadata(
 
 def _extend_stream_with_metadata(
     tokens_reader: text_tokenizer.TextTokenizer,
-    documents: pd.DataFrame = None,
+    document_index: pd.DataFrame = None,
     document_columns: List[str] = None,
     filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
 ) -> Iterable[Tuple[str, str, Dict]]:
@@ -161,7 +161,7 @@ def _extend_stream_with_metadata(
     ----------
     tokens_reader : text_tokenizer.TextTokenizer
         Reader, returns stream of filename and tokens
-    documents : pd.DataFrame, optional
+    document_index : pd.DataFrame, optional
         Document index, by default None
     document_columns : List[str], optional
         Columns in document index, by default None
@@ -173,13 +173,13 @@ def _extend_stream_with_metadata(
     Iterable[Tuple[str, str, Dict]]
         Stream augumented with meta data.
     """
-    metadata_lookup = {x['filename']: x for x in tokens_reader.metadata}
+    metadata_mapping = {x['filename']: x for x in tokens_reader.metadata}
     for filename, tokens in tokens_reader:
 
         metadata = _get_document_metadata(
             filename,
-            metadata=metadata_lookup['filename'],
-            documents=documents,
+            metadata=metadata_mapping[filename],
+            document_index=document_index,
             document_columns=document_columns,
             filename_fields=filename_fields,
         )
@@ -191,7 +191,7 @@ def load_or_create(
     source_path: Any,
     language: str,
     *,
-    documents: pd.DataFrame = None,  # data_frame or lambda corpus: corpus_index
+    document_index: pd.DataFrame = None,  # data_frame or lambda corpus: corpus_index
     merge_entities: bool = False,
     overwrite: bool = False,
     binary_format: bool = True,
@@ -202,7 +202,7 @@ def load_or_create(
     tick=noop,
 ) -> Dict[str, Any]:
     """Loads textaCy corpus from disk if it exists on disk with a name that satisfies the given arguments.
-    Otherwise creates a new corpus and adds metadata to corpus documents as specified by `filename_fields` and/or document index.
+    Otherwise creates a new corpus and adds metadata to corpus document index as specified by `filename_fields` and/or document index.
 
     Parameters
     ----------
@@ -210,7 +210,7 @@ def load_or_create(
         Corpus path name.
     language : str
         The spaCy language designator.
-    documents : pd.DataFrame, optional
+    document_index : pd.DataFrame, optional
         A document index (if specified, then must include a `filename` column), by default None
     overwrite : bool, optional
         Force recreate of corpus if it exists on disk, by default False
@@ -223,7 +223,7 @@ def load_or_create(
     filename_fields : Sequence[file_IndexOfSplitOrCallableOrRegExp], optional
         Specifies metadata that should be extracted from filename, by default None
     document_columns : List[str], optional
-        Columns in `documents` to add to metadata, all columns will be added if None, by default None
+        Columns in `document_index` to add to metadata, all columns will be added if None, by default None
     tick : Callable, optional
         Progress callback function, by default noop
 
@@ -262,7 +262,7 @@ def load_or_create(
 
         reader = _extend_stream_with_metadata(
             tokens_streams,
-            documents=documents,
+            document_index=document_index,
             document_columns=document_columns,
             filename_fields=None,  # n.b. fields extracted abve
         )

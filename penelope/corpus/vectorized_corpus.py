@@ -28,7 +28,7 @@ class VectorizedCorpus:
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
-        documents: pd.DataFrame,
+        document_index: pd.DataFrame,
         word_counts: Dict[str, int] = None,
     ):
         """Class that encapsulates a bag-of-word matrix.
@@ -39,7 +39,7 @@ class VectorizedCorpus:
             The bag-of-word matrix
         token2id : dict(str, int)
             Token to token id translation i.e. translates token to column index
-        documents : pd.DataFrame
+        document_index : pd.DataFrame
             Corpus document metadata (bag-of-word row metadata)
         word_counts : dict(str,int), optional
             Total corpus word counts, by default None, computed if None
@@ -58,13 +58,13 @@ class VectorizedCorpus:
         self.token2id = token2id
         self.id2token_ = None
 
-        if not is_monotonic_increasing_integer_series(documents.index):
+        if not is_monotonic_increasing_integer_series(document_index.index):
             raise ValueError(
                 "supplied `document index` must have an integer typed, monotonic increasing index starting from 0"
             )
 
-        self._documents = documents
-        #     self._documents = documents.sort_values('document_id', ignore_index=True)
+        self._document_index = document_index
+        #     self._documents = document_index.sort_values('document_id', ignore_index=True)
 
         self.word_counts = word_counts
 
@@ -119,9 +119,9 @@ class VectorizedCorpus:
         return self.bag_term_matrix.shape[0]
 
     @property
-    def documents(self) -> pd.DataFrame:
+    def document_index(self) -> pd.DataFrame:
         """Returns number document index (part of interface) """
-        return self._documents
+        return self._document_index
 
     def todense(self) -> VectorizedCorpus:
         """Returns dense BoW matrix"""
@@ -145,7 +145,7 @@ class VectorizedCorpus:
 
         The two files are stored in files with names based on the specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `documents` and `word_counts`
+            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `word_counts`
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
 
@@ -164,7 +164,7 @@ class VectorizedCorpus:
         data = {
             'token2id': self.token2id,
             'word_counts': self.word_counts,
-            'documents': self.documents,
+            'document_index': self.document_index,
         }
         data_filename = VectorizedCorpus._data_filename(tag, folder)
 
@@ -210,7 +210,7 @@ class VectorizedCorpus:
 
         Two files are loaded based on specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `documents` and `word_counts`
+            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `word_counts`
             {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
 
 
@@ -231,7 +231,7 @@ class VectorizedCorpus:
             data = pickle.load(f)
 
         token2id: Mapping = data["token2id"]
-        documents: pd.DataFrame = data.get("documents", data.get("document_index", None))
+        document_index: pd.DataFrame = data.get("document_index", data.get("document_index", None))
 
         matrix_basename = VectorizedCorpus._matrix_filename(tag, folder)
 
@@ -240,7 +240,7 @@ class VectorizedCorpus:
         else:
             bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
 
-        return VectorizedCorpus(bag_term_matrix, token2id=token2id, documents=documents)
+        return VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
 
     @staticmethod
     def dump_options(*, tag: str, folder: str, options: Dict):
@@ -306,7 +306,7 @@ class VectorizedCorpus:
         """
 
         X = self.bag_term_matrix if X is None else X
-        df = self.documents if df is None else df
+        df = self.document_index if df is None else df
 
         assert aggregate_function in {'sum', 'mean'}
         assert X.shape[0] == len(df)
@@ -332,7 +332,7 @@ class VectorizedCorpus:
         """Returns a new corpus where documents have been grouped and summed up by year."""
 
         X = self.bag_term_matrix  # if X is None else X
-        df = self.documents  # if df is None else df
+        df = self.document_index  # if df is None else df
 
         min_value, max_value = df.year.min(), df.year.max()
 
@@ -346,9 +346,11 @@ class VectorizedCorpus:
                 Y[i, :] = X[indices, :].sum(axis=0)
 
         years = list(range(min_value, max_value + 1))
-        documents = pd.DataFrame({'year': years, 'filename': map(str, years)})
+        document_index = pd.DataFrame({'year': years, 'filename': map(str, years), 'document_name': map(str, years)})
 
-        v_corpus = VectorizedCorpus(Y, token2id=self.token2id, documents=documents, word_counts=self.word_counts)
+        v_corpus = VectorizedCorpus(
+            Y, token2id=self.token2id, document_index=document_index, word_counts=self.word_counts
+        )
 
         return v_corpus
 
@@ -359,7 +361,7 @@ class VectorizedCorpus:
         assert aggregate_function in {'sum', 'mean'}
 
         X = self.bag_term_matrix  # if X is None else X
-        df = self.documents  # if df is None else df
+        df = self.document_index  # if df is None else df
 
         min_value, max_value = df.year.min(), df.year.max()
 
@@ -379,9 +381,9 @@ class VectorizedCorpus:
 
         years = list(range(min_value, max_value + 1))
 
-        documents = pd.DataFrame({'year': years, 'filename': map(str, years)})
+        document_index = pd.DataFrame({'year': years, 'filename': map(str, years), 'document_name': map(str, years)})
 
-        v_corpus = VectorizedCorpus(Y, self.token2id, documents, self.word_counts)
+        v_corpus = VectorizedCorpus(Y, self.token2id, document_index, self.word_counts)
 
         return v_corpus
 
@@ -399,7 +401,7 @@ class VectorizedCorpus:
             Filtered corpus.
         """
 
-        meta_documents = self.documents[self.documents.apply(px, axis=1)]
+        meta_documents = self.document_index[self.document_index.apply(px, axis=1)]
 
         indices = list(meta_documents.index)
 
@@ -433,7 +435,7 @@ class VectorizedCorpus:
             factor = self.bag_term_matrix[0, :].sum() / normalized_bag_term_matrix[0, :].sum()
             normalized_bag_term_matrix = normalized_bag_term_matrix * factor
 
-        v_corpus = VectorizedCorpus(normalized_bag_term_matrix, self.token2id, self.documents, self.word_counts)
+        v_corpus = VectorizedCorpus(normalized_bag_term_matrix, self.token2id, self.document_index, self.word_counts)
 
         return v_corpus
 
@@ -537,7 +539,7 @@ class VectorizedCorpus:
         )
         word_counts = {w: c for w, c in self.word_counts.items() if w in token2id}
 
-        v_corpus = VectorizedCorpus(sliced_bag_term_matrix, token2id, self.documents, word_counts)
+        v_corpus = VectorizedCorpus(sliced_bag_term_matrix, token2id, self.document_index, word_counts)
 
         return v_corpus
 
@@ -563,7 +565,7 @@ class VectorizedCorpus:
         token2id = {self.id2token[indices[i]]: i for i in range(0, len(indices))}
         word_counts = {w: c for w, c in self.word_counts.items() if w in token2id}
 
-        v_corpus = VectorizedCorpus(sliced_bag_term_matrix, token2id, self.documents, word_counts)
+        v_corpus = VectorizedCorpus(sliced_bag_term_matrix, token2id, self.document_index, word_counts)
 
         return v_corpus
 
@@ -611,8 +613,8 @@ class VectorizedCorpus:
         Tuple[Optional[int],Optional[int]]
             Min/max document year
         """
-        if 'year' in self.documents.columns:
-            return (self.documents.year.min(), self.documents.year.max())
+        if 'year' in self.document_index.columns:
+            return (self.document_index.year.min(), self.document_index.year.max())
         return (None, None)
 
     def xs_years(self) -> Tuple[int, int]:
@@ -665,7 +667,7 @@ class VectorizedCorpus:
 
         tfidf_bag_term_matrix = transformer.fit_transform(self.bag_term_matrix)
 
-        n_corpus = VectorizedCorpus(tfidf_bag_term_matrix, self.token2id, self.documents, self.word_counts)
+        n_corpus = VectorizedCorpus(tfidf_bag_term_matrix, self.token2id, self.document_index, self.word_counts)
 
         return n_corpus
 

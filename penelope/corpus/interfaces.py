@@ -36,7 +36,7 @@ class ITokenizedCorpus(ICorpus):
 
     @property
     @abc.abstractproperty
-    def documents(self) -> pd.DataFrame:
+    def document_index(self) -> pd.DataFrame:
         return None
 
 

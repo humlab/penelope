@@ -18,7 +18,7 @@ def compute(
     Parameters
     ----------
     train_corpus : TrainingCorpus
-        A container for the training corpus data (terms or DTM, id2word, documents)
+        A container for the training corpus data (terms or DTM, id2word, document_index)
     method : str
         The method to use (see `options` module for mappings)
     engine_args : Dict[str, Any]

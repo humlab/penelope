@@ -26,6 +26,3 @@ def test_lists_of_dicts_merged_by_key_when_exception_is_expected(lst1, lst2, key
 
     with pytest.raises(ValueError):
         _ = utility.lists_of_dicts_merged_by_key(lst1, lst2, key=key)
-
-
-#    metadata_lookup =  {x['filename']: x for x in utility.lists_of_dicts_merged_by_key(reader.metadata, extra_metadata, key='filename')}

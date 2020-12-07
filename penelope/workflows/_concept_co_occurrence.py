@@ -9,10 +9,8 @@ from penelope.co_occurrence import (
     store_co_occurrences,
     to_vectorized_corpus,
 )
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts, VectorizedCorpus
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.utility import replace_extension, strip_path_and_extension
 
 from .utils import WorkflowException
@@ -93,17 +91,20 @@ def execute_workflow(
         as_binary=False,
     )
 
-    corpus = SparvTokenizedCsvCorpus(
+    corpus: SparvTokenizedCsvCorpus = SparvTokenizedCsvCorpus(
         source=input_filename,
         reader_opts=reader_opts,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 
+    token2id = corpus.token2id  # make one pass to create vocabulary and gather token counts
+    document_index = corpus.document_index
+
     co_occurrences = partitioned_corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.documents,
-        token2id=corpus.token2id,
+        token2id=token2id,
+        document_index=document_index,
         context_opts=context_opts,
         global_threshold_count=count_threshold,
         partition_column=partition_keys[0],
@@ -142,7 +143,7 @@ def store_concept_co_occurrence_bundle(
     store_co_occurrences(output_filename, co_occurrences)
 
     if store_vectorized:
-        v_corpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
+        v_corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
         v_corpus.dump(tag=strip_path_and_extension(output_filename), folder=os.path.split(output_filename)[0])
 
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:

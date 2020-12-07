@@ -24,7 +24,7 @@ def display_gui(state: TopicModelContainer):
     year_min, year_max = state.inferred_topics.year_period
 
     topic_proportions = topic_modelling.compute_topic_proportions(
-        state.inferred_topics.document_topic_weights, state.inferred_topics.documents.n_terms.values
+        state.inferred_topics.document_topic_weights, state.inferred_topics.document_index.n_terms.values
     )
     titles = topic_modelling.get_topic_titles(state.inferred_topics.topic_token_weights)
 

@@ -232,19 +232,19 @@ def increment_button(target_control, max_value, label='>>', increment=1):
     return widgets.Button(description=label, callback=f)
 
 
-# def _get_field_values(documents, field, as_tuple=False, query=None):
-#     items = documents.query(query) if query is not None else documents
+# def _get_field_values(document_index, field, as_tuple=False, query=None):
+#     items = document_index.query(query) if query is not None else document_index
 #     unique_values = sorted(list(items[field].unique()))
 #     if as_tuple:
 #         unique_values = [(str(x).title(), x) for x in unique_values]
 #     return unique_values
 
 
-# def generate_field_filters(documents, opts):
+# def generate_field_filters(document_index, opts):
 #     filters = []
 #     for opt in opts:  # if opt['type'] == 'multiselect':
 #         options = opt.get(
-#             'options', _get_field_values(documents, opt['field'], as_tuple=True, query=opt.get('query', None))
+#             'options', _get_field_values(document_index, opt['field'], as_tuple=True, query=opt.get('query', None))
 #         )
 #         description = opt.get('description', '')
 #         rows = min(4, len(options))

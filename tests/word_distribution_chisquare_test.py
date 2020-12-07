@@ -49,7 +49,7 @@ def plot_dists(v_corpus):
     df = pd.DataFrame(v_corpus.bag_term_matrix.toarray(), columns=list(v_corpus.get_feature_names()))
     df['year'] = df.index + 45
     df = df.set_index('year')
-    df['year'] = pd.Series(df.index).apply(lambda x: v_corpus.documents[x][0])
+    df['year'] = pd.Series(df.index).apply(lambda x: v_corpus.document_index[x][0])
     df[['krig']].plot()  # .loc[df["000"]==49]
 
 

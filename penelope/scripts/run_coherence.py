@@ -57,7 +57,7 @@ def compute(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers
     # if engine not in [y for x, y in ENGINE_OPTIONS]:
     #     logging.error("Unknown method {}".format(engine))
 
-    # # dtm, documents, id2token = corpus_data.load_as_dtm2(data_folder, [1, 3])
+    # # dtm, document_index, id2token = corpus_data.load_as_dtm2(data_folder, [1, 3])
 
     # kwargs = dict(n_start=n_start, n_stop=n_stop, n_step=n_step)
 
@@ -71,7 +71,7 @@ def compute(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers
     #     kwargs.update(dict(prefix=prefix))
 
     # _, inferred_topics = topic_modelling.compute_model(
-    #     doc_term_matrix=dtm, id2word=id2token, documents=documents, method=engine, engine_args=kwargs
+    #     doc_term_matrix=dtm, id2word=id2token, document_index=document_index, method=engine, engine_args=kwargs
     # )
 
 

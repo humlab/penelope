@@ -27,9 +27,9 @@ class TopicModelContainer:
         self, _inferred_data: topic_modelling.InferredModel, _inferred_topics: topic_modelling.InferredTopicsData
     ):
         """ Fix missing document attribute n_terms """
-        if 'n_terms' not in _inferred_topics.documents.columns:
+        if 'n_terms' not in _inferred_topics.document_index.columns:
             assert _inferred_data.train_corpus is not None
-            _inferred_topics.documents['n_terms'] = _inferred_data.train_corpus.corpus.sparse.sum(axis=0).A1
+            _inferred_topics.document_index['n_terms'] = _inferred_data.train_corpus.corpus.sparse.sum(axis=0).A1
 
         self._inferred_data = _inferred_data
         self._inferred_topics = _inferred_topics

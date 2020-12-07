@@ -38,7 +38,7 @@ def compute_hal_or_glove_co_occurrences(
     ----------
     corpus : Iterable[str,Iterable[str]]
         Sequence of tokens
-    documents : pd.DataFrame
+    document_index : pd.DataFrame
         Document catalogue
     window_size : int
         [description]

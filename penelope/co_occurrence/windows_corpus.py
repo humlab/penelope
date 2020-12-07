@@ -22,7 +22,7 @@ class WindowsCorpus(ITokenizedCorpus):
         """
         self.statistics = defaultdict(lambda: {'n_windows': 0, 'n_tokens': 0})
         self.windows = iter(windows)
-        self._documents: pd.DataFrame = None
+        self._document_index: pd.DataFrame = None
         self._metadata = []
         self._vocabulary = vocabulary
 
@@ -38,12 +38,12 @@ class WindowsCorpus(ITokenizedCorpus):
             return (filename, tokens)
         except StopIteration:
             self._metadata = [{'filename': k, **v} for k, v in dict(self.statistics).items()]
-            self._documents = metadata_to_document_index(self._metadata)
+            self._document_index = metadata_to_document_index(self._metadata)
             raise
 
     @property
-    def documents(self) -> pd.DataFrame:
-        return self._documents
+    def document_index(self) -> pd.DataFrame:
+        return self._document_index
 
     @property
     def terms(self) -> Iterator[Iterator[str]]:

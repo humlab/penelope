@@ -331,7 +331,7 @@ class FrequentWordsFilter(StopwordFilter):
 def extract_document_tokens(
     *,
     spacy_docs: Iterable[Doc],
-    documents: pd.DataFrame,
+    document_index: pd.DataFrame,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
@@ -346,7 +346,7 @@ def extract_document_tokens(
         .ingest(**extract_args)
         .process()
     )
-    document_tokens = zip(documents.filename, tokens_stream)
+    document_tokens = zip(document_index.filename, tokens_stream)
 
     return document_tokens
 
@@ -354,7 +354,7 @@ def extract_document_tokens(
 def vectorize_textacy_corpus(
     *,
     spacy_docs: Iterable[Doc],
-    documents: pd.DataFrame,
+    document_index: pd.DataFrame,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
@@ -362,7 +362,7 @@ def vectorize_textacy_corpus(
 ):
     document_tokens = extract_document_tokens(
         spacy_docs=spacy_docs,
-        documents=documents,
+        document_index=document_index,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
         extract_args=extract_args,
@@ -370,7 +370,7 @@ def vectorize_textacy_corpus(
 
     v_corpus = CorpusVectorizer().fit_transform(
         corpus=document_tokens,
-        document_index=documents,
+        document_index=document_index,
         verbose=True,
         **{
             **vectorizer_args,

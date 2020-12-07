@@ -116,7 +116,7 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
     ]
 
     assert expected_windows == windows
-    assert corpus.documents is not None
+    assert corpus.document_index is not None
 
 
 def test_windows_iterator():
@@ -139,8 +139,8 @@ def test_windows_iterator():
 
     windows_iter = WindowsCorpus(windows)
     _ = [x for x in windows_iter]
-    documents = windows_iter.documents
+    document_index = windows_iter.document_index
 
-    assert int(documents[documents.filename == 'tran_2019_01_test.txt']['n_windows']) == 2
-    assert int(documents[documents.filename == 'tran_2019_03_test.txt']['n_windows']) == 8
-    assert int(documents[documents.filename == 'tran_2019_01_test.txt']['n_tokens']) == 10
+    assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_windows']) == 2
+    assert int(document_index[document_index.filename == 'tran_2019_03_test.txt']['n_windows']) == 8
+    assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_tokens']) == 10

@@ -1,8 +1,9 @@
 import os
 import random
 from collections import defaultdict
-from typing import Callable
+from typing import Callable, Iterable, List, Mapping, Tuple
 
+import pandas as pd
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
 from penelope.utility import flatten
@@ -26,7 +27,7 @@ if __file__ in globals():
 # PMI
 
 
-def generate_token2id(terms):
+def generate_token2id(terms: Iterable[str]) -> Mapping[str, int]:
     token2id = defaultdict()
     token2id.default_factory = token2id.__len__
     for tokens in terms:
@@ -35,14 +36,16 @@ def generate_token2id(terms):
     return dict(token2id)
 
 
-def very_simple_corpus(documents):
+def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
 
-    reader = InMemoryReader(documents, reader_opts=TextReaderOpts(filename_fields="year:_:1"))
+    reader = InMemoryReader(data, reader_opts=TextReaderOpts(filename_fields="year:_:1"))
     corpus = TokenizedCorpus(reader=reader)
     return corpus
 
 
-def random_corpus(n_docs: int = 5, vocabulary: str = 'abcdefg', min_length=4, max_length=10, years=None):
+def random_corpus(
+    n_docs: int = 5, vocabulary: str = 'abcdefg', min_length: int = 4, max_length: int = 10, years: List[int] = None
+) -> List[Tuple[str, List[str]]]:
     def random_tokens():
 
         return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
@@ -64,15 +67,15 @@ class MockedProcessedCorpus(ITokenizedCorpus):
         return [tokens for _, tokens in self.data]
 
     @property
-    def filenames(self):
-        return list(self.documents.filename)
+    def filenames(self) -> List[str]:
+        return list(self.document_index.filename)
 
     @property
     def metadata(self):
         return self._metadata
 
     @property
-    def documents(self):
+    def document_index(self) -> pd.DataFrame:
         return self._documents
 
     def create_token2id(self):
@@ -105,9 +108,9 @@ def create_text_reader(
     index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
-    fix_hyphenation=True,
-    fix_whitespaces=False,
-):
+    fix_hyphenation: bool = True,
+    fix_whitespaces: bool = False,
+) -> TextReader:
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
@@ -127,11 +130,11 @@ def create_tokens_reader(
     index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
-    fix_hyphenation=True,
-    fix_whitespaces=False,
+    fix_hyphenation: bool = True,
+    fix_whitespaces: bool = False,
     chunk_size: int = None,
     tokenize: Callable = None,
-):
+) -> TextTokenizer:
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,

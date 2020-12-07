@@ -44,7 +44,7 @@ def _infer_document_topics_iter(model, corpus, minimum_probability=0.0):
 def predict_document_topics(
     model: Any,
     corpus: Any,
-    documents: pd.DataFrame = None,
+    document_index: pd.DataFrame = None,
     minimum_probability: float = 0.001,
 ) -> pd.DataFrame:
     """Applies a the topic model on `corpus` and returns a document-topic dataframe
@@ -55,7 +55,7 @@ def predict_document_topics(
         The topic model
     corpus : Any
         The corpus
-    documents : pd.DataFrame, optional
+    document_index : pd.DataFrame, optional
         The document index, by default None
     minimum_probability : float, optional
         Threshold, by default 0.001
@@ -110,7 +110,7 @@ def predict_document_topics(
         df_doc_topics['document_id'] = df_doc_topics.document_id.astype(np.uint32)
         df_doc_topics['topic_id'] = df_doc_topics.topic_id.astype(np.uint16)
 
-        df_doc_topics = add_document_metadata(df_doc_topics, 'year', documents)
+        df_doc_topics = add_document_metadata(df_doc_topics, 'year', document_index)
 
         logger.info('  DONE!')
 
@@ -121,22 +121,28 @@ def predict_document_topics(
         return None
 
 
-def compile_inferred_topics_data(topic_model: Any, corpus: Any, id2word: Any, documents: pd.DataFrame, n_tokens=200):
+def compile_inferred_topics_data(
+    topic_model: Any, corpus: Any, id2word: Any, document_index: pd.DataFrame, n_tokens=200
+) -> InferredTopicsData:
 
     dictionary = id2word_to_dataframe(id2word)
     topic_token_weights = extract_topic_token_weights(topic_model, dictionary, n_tokens=n_tokens)
     topic_token_overview = extract_topic_token_overview(topic_model, topic_token_weights, n_tokens=n_tokens)
 
-    documents = add_document_terms_count(documents, corpus)
+    document_index = add_document_terms_count(document_index, corpus)
 
     document_topic_weights = predict_document_topics(
         topic_model,
         corpus,
-        documents=documents,
+        document_index=document_index,
         minimum_probability=0.001,
     )
 
     inferred_topics_data = InferredTopicsData(
-        documents, dictionary, topic_token_weights, topic_token_overview, document_topic_weights
+        document_index,
+        dictionary,
+        topic_token_weights,
+        topic_token_overview,
+        document_topic_weights,
     )
     return inferred_topics_data

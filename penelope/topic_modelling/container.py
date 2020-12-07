@@ -26,7 +26,7 @@ class TrainingCorpus:
     def __init__(
         self,
         terms: Iterable[Iterable[str]] = None,
-        documents: pd.DataFrame = None,
+        document_index: pd.DataFrame = None,
         doc_term_matrix: scipy.sparse.csr_matrix = None,
         id2word: Mapping[int, str] = None,
         vectorizer_args: Mapping[str, Any] = None,
@@ -42,7 +42,7 @@ class TrainingCorpus:
         ----------
         terms : Iterable[Iterable[str]], optional
             Document tokens stream, by default None
-        documents : pd.DataFrame, optional
+        document_index : pd.DataFrame, optional
             Documents metadata, by default None
         doc_term_matrix : scipy.sparse.csr_sparse, optional
             DTM BoW, by default None
@@ -54,9 +54,13 @@ class TrainingCorpus:
         self.terms = terms
         self.doc_term_matrix = doc_term_matrix
         self.id2word = id2word
-        self.documents = documents
+        self.documents = document_index
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
         self.corpus = corpus
+
+    @property
+    def document_index(self):
+        return self.documents
 
 
 class InferredModel:
@@ -98,7 +102,7 @@ class InferredTopicsData:
 
     def __init__(
         self,
-        documents: pd.DataFrame,  # documents (training, shuould be predicted?)
+        document_index: pd.DataFrame,  # document_index (training, shuould be predicted?)
         dictionary: Any,  # dictionary
         topic_token_weights: pd.DataFrame,  # model data
         topic_token_overview: pd.DataFrame,  # model data
@@ -107,7 +111,7 @@ class InferredTopicsData:
         """A container for compiled data as generic pandas dataframes suitable for analysi and visualisation
         Parameters
         ----------
-        documents : pd.DataFrame
+        document_index : pd.DataFrame
             Corpus document index
         dictionary : Any
             Corpus dictionary
@@ -119,14 +123,14 @@ class InferredTopicsData:
             Document topic weights
         """
         self.dictionary = dictionary
-        self.documents = documents
+        self.document_index = document_index
         self.topic_token_weights = topic_token_weights
         self.topic_token_overview = topic_token_overview
         self.document_topic_weights = document_topic_weights
 
         # Ensure that `year` column exists
 
-        self.document_topic_weights = add_document_metadata(self.document_topic_weights, 'year', documents)
+        self.document_topic_weights = add_document_metadata(self.document_topic_weights, 'year', document_index)
 
     @property
     def year_period(self) -> Tuple[int, int]:
@@ -161,7 +165,7 @@ class InferredTopicsData:
             filename = os.path.join(target_folder, "inferred_topics.pickle")
 
             c_data = types.SimpleNamespace(
-                documents=self.documents,
+                documents=self.document_index,
                 dictionary=self.dictionary,
                 topic_token_weights=self.topic_token_weights,
                 topic_token_overview=self.topic_token_overview,
@@ -172,7 +176,7 @@ class InferredTopicsData:
 
         else:
             data = [
-                (self.documents.rename_axis(''), 'documents.csv'),
+                (self.document_index.rename_axis(''), 'documents.csv'),
                 (self.dictionary, 'dictionary.csv'),
                 (self.topic_token_weights, 'topic_token_weights.csv'),
                 (self.topic_token_overview, 'topic_token_overview.csv'),
@@ -197,7 +201,7 @@ class InferredTopicsData:
                 data = pickle.load(f)
 
             data = InferredTopicsData(
-                documents=data.documents,
+                document_index=data.document_index if hasattr(data, 'document_index') else data.documents,
                 dictionary=data.dictionary,
                 topic_token_weights=data.topic_token_weights,
                 topic_token_overview=data.topic_token_overview,
@@ -206,7 +210,7 @@ class InferredTopicsData:
 
         else:
             data = InferredTopicsData(
-                documents=pd.read_csv(
+                document_index=pd.read_csv(
                     os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False
                 ),
                 dictionary=pd.read_csv(
@@ -223,7 +227,7 @@ class InferredTopicsData:
                 ),
             )
 
-            data.documents = document_index_upgrade(data.documents)
+            data.document_index = document_index_upgrade(data.document_index)
 
         return data
 

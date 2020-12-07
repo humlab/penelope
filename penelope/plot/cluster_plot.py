@@ -20,7 +20,7 @@ def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noo
     # palette = itertools.cycle(bokeh.palettes.Category20[20])
     assert n_cluster <= token_clusters.cluster.max()
 
-    xs = np.arange(x_corpus.documents.year.min(), x_corpus.documents.year.max() + 1, 1)
+    xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
     token_ids = list(token_clusters[token_clusters.cluster == n_cluster].index)
     word_distributions = x_corpus.data.todense()[:, token_ids]
 
@@ -81,7 +81,7 @@ def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noo
 
 def plot_cluster_boxplot(x_corpus: VectorizedCorpus, token_clusters, n_cluster, color):
 
-    xs = np.arange(x_corpus.documents.year.min(), x_corpus.documents.year.max() + 1, 1)
+    xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
 
     token_ids = list(token_clusters[token_clusters.cluster == n_cluster].index)
 
@@ -231,7 +231,7 @@ def plot_dendogram(linkage_matrix, labels):
 #     token_ids          = list(token_clusters[token_clusters.cluster==n_cluster].index)
 #     tokens             = [ x_corpus.id2token[token_id] for token_id in token_ids ]
 #     word_distributions = x_corpus.data[:,token_ids].T
-#     xs                 = np.arange(x_corpus.documents.year.min(), x_corpus.documents.year.max() + 1, 1)
+#     xs                 = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
 #     df                 = pd.DataFrame(data=word_distributions[:,:], index=tokens, columns=[str(x) for x in xs])
 
 #     sns.clustermap(df, metric="correlation", method="single", cmap="Blues", standard_scale=1) #, row_colors=row_colors)

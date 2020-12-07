@@ -129,15 +129,15 @@ def display_gui(state: TopicModelContainer):
 
             gui.text.value = get_topic_tokens(topic_token_weights, gui.topic_id.value)
 
-            documents = get_topic_documents(
+            topic_documents = get_topic_documents(
                 document_topic_weights=document_topic_weights,
                 threshold=gui.threshold.value,
                 n_top=gui.n_top.value,
                 topic_id=gui.topic_id.value,
             )
 
-            if documents is not None:
-                display(documents)
+            if topic_documents is not None:
+                display(topic_documents)
 
     _gui = GUI().setup(n_topics=state.num_topics, callback=display_callback)
 

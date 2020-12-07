@@ -247,8 +247,8 @@ def plot_slopes(
 ) -> Dict:
     def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
 
-        min_year = x_corpus.documents.year.min()
-        max_year = x_corpus.documents.year.max()
+        min_year = x_corpus.document_index.year.min()
+        max_year = x_corpus.document_index.year.max()
         xs = np.arange(min_year, max_year + 1, 1)
         token_ids = [x_corpus.token2id[token] for token in most_deviating[metric + '_token']]
         data = collections.defaultdict(list)

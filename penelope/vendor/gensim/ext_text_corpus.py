@@ -22,7 +22,7 @@ class ExtTextCorpus(TextCorpus):
     ):
         self.stream = stream
         self.filenames = None
-        self.documents = None
+        self.document_index = None
         self.length = None
 
         # if 'filenames' in content_iterator.__dict__:
@@ -72,8 +72,8 @@ class ExtTextCorpus(TextCorpus):
             document_infos.append({'document_name': filename})
 
         self.length = len(document_infos)
-        self.documents = pd.DataFrame(document_infos)
-        self.filenames = list(self.documents.document_name.values)
+        self.document_index = pd.DataFrame(document_infos)
+        self.filenames = list(self.document_index.document_name.values)
 
     def get_texts(self):
         """
@@ -114,10 +114,10 @@ class ExtTextCorpus(TextCorpus):
 
         document_data = map(self.__get_document_info, self.filenames)
 
-        documents = pd.DataFrame(list(document_data))
-        documents.index.names = ['document_id']
+        document_index = pd.DataFrame(list(document_data))
+        document_index.index.names = ['document_id']
 
-        return documents
+        return document_index
 
 
 class SimpleExtTextCorpus(ExtTextCorpus):

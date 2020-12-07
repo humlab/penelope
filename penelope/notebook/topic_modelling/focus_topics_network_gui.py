@@ -148,7 +148,7 @@ def display_document_topic_network(  # pylint: disable=too-many-locals)
 
     if "filename" not in df:
         df = df.merge(
-            inferred_topics.documents["filename", 'document_id'],
+            inferred_topics.document_index["filename", 'document_id'],
             left_on="document_id",
             right_on='document_id',
         )

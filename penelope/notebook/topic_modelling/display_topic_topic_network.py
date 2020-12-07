@@ -1,10 +1,13 @@
 # Visualize topic co-occurrence
+from typing import List, Tuple
+
 import bokeh
 import bokeh.plotting
 import penelope.network.plot_utility as plot_utility
 import penelope.network.utility as network_utility
 import penelope.utility as utility
 from IPython.display import display
+from penelope.topic_modelling import InferredTopicsData
 
 from .utility import filter_document_topic_weights
 
@@ -25,28 +28,27 @@ def get_topic_titles(topic_token_weights, topic_id=None, n_words=100):
 
 # pylint: disable=too-many-arguments, too-many-locals
 def display_topic_topic_network(
-    inferred_topics,
+    inferred_topics: InferredTopicsData,
     filters,
     period=None,
-    ignores=None,
-    threshold=0.10,
-    layout='Fruchterman-Reingold',
-    n_docs=1,
-    scale=1.0,
-    output_format='table',
-    text_id='',
+    ignores: List[int] = None,
+    threshold: float = 0.10,
+    layout: str = 'Fruchterman-Reingold',
+    n_docs: int = 1,
+    scale: float = 1.0,
+    output_format: str = 'table',
+    text_id: str = '',
     titles=None,
     topic_proportions=None,
-    node_range=(20, 60),
-    edge_range=(1, 10),
+    node_range: Tuple[int, int] = (20, 60),
+    edge_range: Tuple[int, int] = (1, 10),
 ):
     try:
 
-        documents = inferred_topics.documents
+        document_index = inferred_topics.document_index
 
-        if 'document_id' not in documents.columns:
-            raise ValueError("Supplied document index has not document_id")
-            # documents['document_id'] = documents.index
+        if 'document_id' not in document_index.columns:
+            raise ValueError("Supplied document index has no document_id")
 
         df = filter_document_topic_weights(inferred_topics.document_topic_weights, filters=filters, threshold=threshold)
 

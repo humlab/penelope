@@ -138,7 +138,7 @@ def run_model(
         terms=corpus.terms,
         doc_term_matrix=None,
         id2word=None,
-        documents=corpus.documents,
+        document_index=corpus.document_index,
     )
 
     inferred_model = topic_modelling.infer_model(
@@ -152,7 +152,7 @@ def run_model(
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus, store_compressed=compressed)
 
     inferred_topics = topic_modelling.compile_inferred_topics_data(
-        inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.documents
+        inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.document_index
     )
     inferred_topics.store(target_folder)
 

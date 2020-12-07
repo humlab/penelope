@@ -23,7 +23,7 @@ class TextacyCorpusPipeline:
         *,
         filename: str,
         lang: str,
-        documents: pd.DataFrame,
+        document_index: pd.DataFrame,
         tasks: Sequence[ITask] = None,
         disables: str = "ner,",
         force: bool = False,
@@ -32,7 +32,7 @@ class TextacyCorpusPipeline:
 
         self.filename = filename
         self._tasks: List[ITask] = tasks or []
-        self.documents = documents
+        self.document_index = document_index
         self.lang = lang
         self.nlp: SpacyLanguage = textacy_utility.create_nlp(lang, disable=tuple(disables.split(',')))
         self.corpus: textacy.Corpus = None
@@ -74,7 +74,7 @@ class CreateTask(ITask):
             pipeline.filename,
             reader_opts=pipeline.reader_opts,
         )
-        extra_metadata = pipeline.documents.to_dict('records')
+        extra_metadata = pipeline.document_index.to_dict('records')
         pipeline.corpus = textacy_utility.create_corpus(stream, pipeline.nlp, extra_metadata=extra_metadata)
         return pipeline
 

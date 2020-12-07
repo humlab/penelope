@@ -43,12 +43,12 @@ class DataFrameTextTokenizer(
             self.data = self.data.dropna()
 
         self.text_transformer = TextTransformer().fix_unicode().fix_whitespaces().fix_hyphenation()
-
-        self.iterator = None
-        self._metadata = self.data.drop(self.text_column, axis=1).to_dict(orient='records')
-        self._documents = metadata_to_document_index(self._metadata)
-        self._filenames = [x['filename'] for x in self._metadata]
         self.tokenize = word_tokenize
+        self.iterator = None
+
+        self._metadata = self.data.drop(self.text_column, axis=1).to_dict(orient='records')
+        self._document_index = metadata_to_document_index(self._metadata)
+        self._filenames = [x['filename'] for x in self._metadata]
 
     def _create_iterator(self) -> Iterator[Tuple[str, List[str]]]:
         return (self._process(row['filename'], row[self.text_column]) for _, row in self.data.iterrows())
@@ -86,5 +86,5 @@ class DataFrameTextTokenizer(
         return self._metadata
 
     @property
-    def documents(self) -> pd.DataFrame:
-        return self._documents
+    def document_index(self) -> pd.DataFrame:
+        return self._document_index

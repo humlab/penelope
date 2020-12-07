@@ -62,14 +62,14 @@ def count_documents_by_pivot(corpus: textacy.Corpus, attribute: str) -> List[int
     return [len(list(g)) for _, g in itertools.groupby(corpus, fx_key)]
 
 
-def count_documents_in_index_by_pivot(documents: pd.DataFrame, attribute: str) -> List[int]:
+def count_documents_in_index_by_pivot(document_index: pd.DataFrame, attribute: str) -> List[int]:
     """Return a list of document counts per group defined by attribute
     Assumes documents are sorted by attribute!
     Same as count_documents_by_pivot but uses document index instead of (spaCy) corpus
     """
-    assert documents[attribute].is_monotonic_increasing, 'Documents *MUST* be sorted by TIME-SLICE attribute!'
+    assert document_index[attribute].is_monotonic_increasing, 'Documents *MUST* be sorted by TIME-SLICE attribute!'
     # TODO: Either sort documents (and corpus or term stream!) prior to this call - OR force sortorder by filename (i.e add year-prefix)
-    return list(documents.groupby(attribute).size().values)
+    return list(document_index.groupby(attribute).size().values)
 
 
 def get_document_by_id(
@@ -182,15 +182,15 @@ def get_pos_statistics(doc: spacy.tokens.Doc):
 
 
 def get_corpus_data(
-    corpus: textacy.Corpus, documents: pd.DataFrame, title: str, columns_of_interest: List[str] = None
+    corpus: textacy.Corpus, document_index: pd.DataFrame, title: str, columns_of_interest: List[str] = None
 ) -> pd.DataFrame:
     metadata = [
         utility.extend({}, dict(document_id=doc._.meta['document_id']), get_pos_statistics(doc)) for doc in corpus
     ]
     df = pd.DataFrame(metadata)[['document_id'] + POS_NAMES]
     if columns_of_interest is not None:
-        documents = documents[columns_of_interest]
-    df = pd.merge(df, documents, left_on='document_id', right_on='document_id', how='inner')
+        document_index = document_index[columns_of_interest]
+    df = pd.merge(df, document_index, left_on='document_id', right_on='document_id', how='inner')
     df['title'] = df[title]
     df['words'] = df[POS_NAMES].apply(sum, axis=1)
     return df

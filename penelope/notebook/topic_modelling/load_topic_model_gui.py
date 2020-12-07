@@ -21,23 +21,23 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 logger = utility.get_logger()
 
 
-# FIXME: #94 Column 'year' is missing in `documents` in model metadata (InferredTopicsData)
+# FIXME: #94 Column 'year' is missing in `document_index` in model metadata (InferredTopicsData)
 def temporary_bug_fixupdate_documents(inferred_topics):
 
-    logger.info("applying temporary bug fix of missing year in documents...done!")
-    documents = inferred_topics.documents
+    logger.info("applying temporary bug fix of missing year in document_index...done!")
+    document_index = inferred_topics.document_index
     document_topic_weights = inferred_topics.document_topic_weights
 
-    if "year" not in documents.columns:
-        documents["year"] = documents.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
+    if "year" not in document_index.columns:
+        document_index["year"] = document_index.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
 
     if "year" not in document_topic_weights.columns:
-        document_topic_weights = add_document_index_attributes(catalogue=documents, target=document_topic_weights)
+        document_topic_weights = add_document_index_attributes(catalogue=document_index, target=document_topic_weights)
 
-    inferred_topics.documents = documents
+    inferred_topics.document_index = document_index
     inferred_topics.document_topic_weights = document_topic_weights
 
-    assert "year" in inferred_topics.documents.columns
+    assert "year" in inferred_topics.document_index.columns
     assert "year" in inferred_topics.document_topic_weights.columns
 
     return inferred_topics

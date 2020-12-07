@@ -45,19 +45,19 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
             filename_data = extract_filenames_metadata(filenames=self._filenames, filename_fields=filename_fields)
             fields_data = {**fields_data, **list_of_dicts_to_dict_of_lists(filename_data)}
 
-        self._documents = metadata_to_document_index(fields_data, document_id_field=index_field)
+        self._document_index = metadata_to_document_index(fields_data, document_id_field=index_field)
 
     @property
     def filenames(self):
         return self._filenames
 
     @property
-    def documents(self):
-        return self._documents
+    def document_index(self):
+        return self._document_index
 
     @property
     def metadata(self):
-        self.documents.to_dict('records')
+        self.document_index.to_dict('records')
 
     @property
     def terms(self):

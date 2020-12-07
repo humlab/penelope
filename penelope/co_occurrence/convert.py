@@ -58,11 +58,12 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
         (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id))
     )
 
-    documents = (
+    document_index = (
         pd.DataFrame(
             data={
                 'document_id': list(range(0, len(years))),
                 'filename': [f'{y}.coo' for y in years],
+                'document_name': [f'{y}' for y in years],
                 'year': years,
             }
         )
@@ -70,7 +71,7 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
         .rename_axis('')
     )
 
-    v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, documents=documents)
+    v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, document_index=document_index)
 
     return v_corpus
 
@@ -116,7 +117,7 @@ def to_dataframe(
         [description]
     id2token : Mapping[int,str]
         [description]
-    documents : pd.DataFrame, optional
+    document_index : pd.DataFrame, optional
         [description], by default None
     threshold_count : int, optional
         Min count (`value`) to include in result, by default 1
