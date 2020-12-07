@@ -70,11 +70,11 @@ class TextTokenizer(TextReader):
 
             tokens = self._tokenize(text)
 
-            basename = f"{strip_path_and_extension(ubername)}.txt"
+            filename = f"{strip_path_and_extension(ubername)}.txt"
 
             if self.chunk_size is None:
-                yield basename, tokens
+                yield filename, tokens
             else:
                 tokens = list(tokens)
                 for n_chunk, i in enumerate(range(0, len(tokens), self.chunk_size)):
-                    yield path_add_sequence(basename, n_chunk + 1, 3), tokens[i : i + self.chunk_size]
+                    yield path_add_sequence(filename, n_chunk + 1, 3), tokens[i : i + self.chunk_size]
