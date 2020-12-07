@@ -1,3 +1,4 @@
+from penelope.utility.pos_tags import PoS_Tag_Scheme
 from typing import Any, Dict, Iterable, List, Union
 
 import numpy as np
@@ -67,7 +68,7 @@ def text_to_tagged_frame(
 
 
 def texts_to_tagged_frames(
-    documents: Iterable[str],
+    stream: Iterable[str],
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
     language: Union[Language, str] = "en_core_web_sm",
@@ -76,8 +77,8 @@ def texts_to_tagged_frames(
 
     Parameters
     ----------
-    documents : Iterable[str]
-        A sequence of text documents
+    stream : Iterable[str]
+        A sequence of text stream
     attributes : List[str]
         A list of spaCy Token properties. Each property will be a column in the returned data frame.
         See https://spacy.io/api/token#attributes for valid properties.
@@ -102,7 +103,7 @@ def texts_to_tagged_frames(
 
     nlp: Language = spacy.load(language, disable=_get_disables(attributes)) if isinstance(language, str) else language
 
-    for document in documents:
+    for document in stream:
         yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)
 
 
@@ -141,6 +142,18 @@ def tagged_frame_to_tokens(
 
     return doc.loc[mask][target].tolist()
 
+
+def tagged_frame_to_pos_statistics(tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> np.ndarray:
+    return (
+        tagged_frame.merge(
+            pos_schema.PD_PoS_tags,
+            how='inner',
+            left_on=pos_column,
+            right_index=True,
+        )
+        .groupby('tag_group_name')['tag']
+        .size()
+    )
 
 @deprecated
 def filter_by_tags(doc, filter_opts, mask):
