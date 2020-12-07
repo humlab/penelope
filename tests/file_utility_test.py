@@ -10,8 +10,12 @@ from penelope.utility import (
     list_filenames,
     pandas_read_csv_zip,
     pandas_to_csv_zip,
+    strip_path_and_add_counter,
+    strip_path_and_extension,
+    strip_paths,
     zip_get_filenames,
 )
+from penelope.utility.filename_utils import strip_extensions
 from tests.utils import TEST_CORPUS_FILENAME
 
 OUTPUT_FOLDER = './tests/output'
@@ -60,13 +64,26 @@ def test_extract_filename_fields():
 
 
 def test_strip_path_and_extension():
-    # utility.strip_path_and_extension(filename)
-    pass
+    assert strip_path_and_extension('/tmp/hej.txt') == 'hej'
+    assert strip_path_and_extension('/tmp/hej') == 'hej'
+    assert strip_path_and_extension('hej') == 'hej'
 
 
 def test_strip_path_and_add_counter():
-    # utility.strip_path_and_add_counter(filename, n_chunk)
-    pass
+    assert strip_path_and_add_counter('/tmp/hej.txt', 4, 3) == 'hej_004.txt'
+
+
+def test_strip_extension():
+    assert strip_extensions('/tmp/hej.txt') == '/tmp/hej'
+    assert strip_extensions('/tmp/hej') == '/tmp/hej'
+    assert strip_extensions('hej.x') == 'hej'
+
+
+def test_strip_path():
+    assert strip_paths('/tmp/hej.txt') == 'hej.txt'
+    assert strip_paths(['/tmp/hej.txt']) == ['hej.txt']
+    assert strip_paths('/tmp/hej') == 'hej'
+    assert strip_paths('hej.x') == 'hej.x'
 
 
 def test_filename_satisfied_by():
@@ -79,6 +96,9 @@ def test_filename_satisfied_by():
     assert not filename_satisfied_by("abc.txt", filename_filter=["abc.csv"], filename_pattern=None)
     assert filename_satisfied_by("abc.txt", filename_filter=lambda x: x in ["abc.txt"], filename_pattern=None)
     assert not filename_satisfied_by("abc.txt", filename_filter=lambda x: x not in ["abc.txt"], filename_pattern=None)
+
+    assert filename_satisfied_by("abc", filename_filter=["abc"], filename_pattern=None)
+    # assert filename_satisfied_by("abc", filename_filter=["abc.txt"], filename_pattern=None)
 
 
 def test_basename():

@@ -20,8 +20,8 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
 def test_partition_documents():
 
     expected_groups = {
-        2019: ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv'],
-        2020: ['tran_2020_01_test.csv', 'tran_2020_02_test.csv'],
+        2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
+        2020: ['tran_2020_01_test', 'tran_2020_02_test'],
     }
 
     groups = create_test_corpus().partition_documents('year')
@@ -32,7 +32,7 @@ def test_partition_documents():
 def test_partition_groups_by_year_contains_year():
 
     expected_groups = {
-        2019: ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv'],
+        2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
     }
 
     groups = create_test_corpus().partition_documents('year')
@@ -42,21 +42,21 @@ def test_partition_groups_by_year_contains_year():
 
 def test_corpus_apply_when_single_group_partition_filter_then_other_groups_are_filtered_out():
 
-    expected_filenames = ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv']
+    expected_document_names = ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test']
 
-    corpus = create_test_corpus()
+    corpus: SparvTokenizedCsvCorpus = create_test_corpus()
 
-    filenames = corpus.partition_documents('year')[2019]
+    document_names = corpus.partition_documents('year')[2019]
 
-    assert expected_filenames == filenames
+    assert expected_document_names == document_names
     assert isinstance(corpus.reader, TextTokenizer)
     assert hasattr(corpus.reader, 'apply_filter')
 
-    corpus.reader.apply_filter(filenames)
+    corpus.reader.apply_filter(document_names)
 
-    assert corpus.filenames == filenames
+    assert corpus.document_names == document_names
 
-    expected_processed_filenames = [x.replace('.csv', '.txt') for x in expected_filenames]
+    expected_processed_filenames = [f'{x}.txt' for x in expected_document_names]
     for i, (filename, _) in enumerate(corpus):
         assert expected_processed_filenames[i] == filename
 
@@ -64,8 +64,8 @@ def test_corpus_apply_when_single_group_partition_filter_then_other_groups_are_f
 def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_groups():
 
     expected_groups = {
-        2019: ['tran_2019_01_test.csv', 'tran_2019_02_test.csv', 'tran_2019_03_test.csv'],
-        2020: ['tran_2020_01_test.csv', 'tran_2020_02_test.csv'],
+        2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
+        2020: ['tran_2020_01_test', 'tran_2020_02_test'],
     }
 
     expected_tokens = {
@@ -229,7 +229,7 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
     for key in partitions:
 
         corpus.reader.apply_filter(partitions[key])
-        assert expected_groups[key] == corpus.filenames
+        assert expected_groups[key] == corpus.document_names
 
         tokens = [x for x in corpus.terms]
         assert expected_tokens[key] == tokens
