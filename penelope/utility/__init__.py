@@ -55,7 +55,7 @@ from .filename_utils import (
     ts_data_path,
 )
 from .mixins import PropsMixIn
-from .pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, PoS_TAGS_SCHEMES, get_pos_schema
+from .pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, PoS_Tag_Schemes, PoS_TAGS_SCHEMES, get_pos_schema
 from .utils import (
     LOG_FORMAT,
     DummyContext,
