@@ -204,6 +204,46 @@ class PoS_Tag_Scheme:
     def groups(self) -> Dict[str, List[str]]:
         return self.PD_PoS_groups.to_dict()
 
+    @property
+    def Pronoun(self) -> List[str]:
+        return self.groups.get('Pronoun', [])
+
+    @property
+    def Noun(self) -> List[str]:
+        return self.groups.get('Noun', [])
+
+    @property
+    def Verb(self) -> List[str]:
+        return self.groups.get('Verb', [])
+
+    @property
+    def Adverb(self) -> List[str]:
+        return self.groups.get('Adverb', [])
+
+    @property
+    def Numeral(self) -> List[str]:
+        return self.groups.get('Numeral', [])
+
+    @property
+    def Adjective(self) -> List[str]:
+        return self.groups.get('Adjective', [])
+
+    @property
+    def Preposition(self) -> List[str]:
+        return self.groups.get('Preposition', [])
+
+    @property
+    def Conjunction(self) -> List[str]:
+        return self.groups.get('Conjunction', [])
+
+    @property
+    def Delimiter(self) -> List[str]:
+        return self.groups.get('Delimiter', [])
+
+    @property
+    def Other(self) -> List[str]:
+        return self.groups.get('Other', [])
+
 
 Known_PoS_Tag_Schemes = dict(
     SUC=PoS_Tag_Scheme(PD_SUC_PoS_tags),
