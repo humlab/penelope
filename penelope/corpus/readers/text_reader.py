@@ -98,10 +98,6 @@ class TextReader(ICorpusReader):
         return self._get_metadata(strip_paths(self._get_filenames()))
 
     @property
-    def metadata_lookup(self) -> Dict[str, Dict[str, Any]]:
-        return {x['filename']: x for x in self.metadata}
-
-    @property
     def document_index(self) -> pd.DataFrame:
         _document_index: pd.DataFrame = metadata_to_document_index(
             self.metadata, document_id_field=self.reader_opts.index_field
