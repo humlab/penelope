@@ -6,9 +6,11 @@ from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 import pandas as pd
 from penelope import utility
 from penelope.corpus import metadata_to_document_index
+from penelope.corpus.document_index import update_document_index_token_counts
+from penelope.utility.filename_utils import strip_path_and_extension
 from tqdm import tqdm
 
-from .corpus_mixins import PartitionMixIn, UpdateTokenCountsMixIn
+from .corpus_mixins import PartitionMixIn
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
 from .tokens_transformer import TokensTransformer, TokensTransformOpts
@@ -16,7 +18,7 @@ from .tokens_transformer import TokensTransformer, TokensTransformOpts
 logger = utility.getLogger("__penelope__")
 
 
-class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
+class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
     def __init__(self, reader: ICorpusReader, *, tokens_transform_opts: TokensTransformOpts = None):
         """[summary]
 
@@ -51,28 +53,25 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
             raise TypeError(f"Corpus reader {type(reader)} has no `filenames` property")
 
         self.reader: ICorpusReader = reader
-        self._documents: pd.DataFrame = metadata_to_document_index(reader.metadata)
+        self._document_index: pd.DataFrame = metadata_to_document_index(reader.metadata)
         self.transformer = TokensTransformer(tokens_transform_opts=(tokens_transform_opts or TokensTransformOpts()))
         self.iterator = None
         self._token2id = None
 
     def _create_document_tokens_stream(self):
 
-        doc_token_counts = []
+        token_counts = []
 
         for filename, tokens in self.reader:
 
-            tokens = [x for x in tokens]
-            n_raw_tokens = len(tokens)
+            raw_tokens = [x for x in tokens]
+            cooked_tokens = [x for x in self.transformer.transform(raw_tokens)]
 
-            tokens = [x for x in self.transformer.transform(tokens)]
-            n_tokens = len(tokens)
+            token_counts.append((filename, len(raw_tokens), len(cooked_tokens)))
 
-            doc_token_counts.append((filename, n_raw_tokens, n_tokens))
+            yield filename, cooked_tokens
 
-            yield filename, tokens
-
-        self._documents = self.update_token_counts(doc_token_counts)
+        self._document_index = update_document_index_token_counts(self._document_index, token_counts)
 
     def _create_iterator(self):
         return self._create_document_tokens_stream()
@@ -82,8 +81,8 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
         return ReiterableTerms(self)
 
     @property
-    def documents(self) -> pd.DataFrame:
-        return self._documents
+    def document_index(self) -> pd.DataFrame:
+        return self._document_index
 
     @property
     def metadata(self) -> List[Dict[str, Any]]:
@@ -92,6 +91,10 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
     @property
     def filenames(self) -> List[str]:
         return self.reader.filenames
+
+    @property
+    def document_names(self) -> List[str]:
+        return [strip_path_and_extension(x) for x in self.reader.filenames]
 
     def apply_filter(self, filename_filter: Union[str, Callable, Sequence]):
         if not hasattr(self.reader, 'apply_filter'):
@@ -111,7 +114,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn, UpdateTokenCountsMixIn):
             raise
 
     def __len__(self):
-        return len(self.documents)
+        return len(self.document_index)
 
     def _generate_token2id(self):
         token2id = defaultdict()

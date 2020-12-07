@@ -1,9 +1,11 @@
 import logging
+import os
 from io import StringIO
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from penelope.pipeline.interfaces import PipelineError
 from penelope.utility import strip_path_and_extension
 
 
@@ -45,7 +47,7 @@ def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str =
 
     assert_is_monotonic_increasing_integer_series(catalogue['document_id'])
 
-    catalogue = catalogue.set_index('filename', drop=False)
+    catalogue = catalogue.set_index('document_name', drop=False)
 
     return catalogue
 
@@ -57,29 +59,42 @@ def store_document_index(document_index: pd.DataFrame, filename: str):
 def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep: str) -> pd.DataFrame:
     """Loads a document index and sets `key_column` as index column. Also adds `document_id`"""
 
+    if filename is None:
+        return None
+
+    if isinstance(filename, pd.DataFrame):
+        return filename
+
     attrs = dict(sep=sep)
 
-    catalogue = pd.read_csv(filename, **attrs)
+    document_index = pd.read_csv(filename, **attrs)
 
     if key_column is not None:
-        if key_column not in catalogue.columns:
+        if key_column not in document_index.columns:
             raise ValueError(f"specified key column {key_column} not found in columns")
 
-    if 'document_id' not in catalogue.columns and key_column is not None:
-        if is_monotonic_increasing_integer_series(catalogue[key_column]):
-            catalogue['document_id'] = catalogue[key_column]
+    if 'filename' not in document_index.columns:
+        raise PipelineError("expected mandatry column `filename` in document index, found no such thing")
 
-    if 'document_id' not in catalogue.columns:
-        catalogue['document_id'] = catalogue.index
+    if 'document_id' not in document_index.columns and key_column is not None:
+        if is_monotonic_increasing_integer_series(document_index[key_column]):
+            document_index['document_id'] = document_index[key_column]
 
-    if 'document_name' not in catalogue.columns:
-        catalogue['document_name'] = catalogue.filename.apply(strip_path_and_extension)
+    if 'document_id' not in document_index.columns:
 
-    assert_is_monotonic_increasing_integer_series(catalogue.document_id)
+        if not is_monotonic_increasing_integer_series(document_index.index):
+            document_index.reset_index(inplace=True, drop=True)
 
-    catalogue = catalogue.set_index('filename', drop=False)
+        document_index['document_id'] = document_index.index
 
-    return catalogue
+    if 'document_name' not in document_index.columns:
+        document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
+
+    assert_is_monotonic_increasing_integer_series(document_index.document_id)
+
+    document_index.set_index('document_name', inplace=True, drop=False)
+
+    return document_index
 
 
 def load_document_index_from_str(data_str: str, key_column: str, sep: str) -> pd.DataFrame:
@@ -87,36 +102,71 @@ def load_document_index_from_str(data_str: str, key_column: str, sep: str) -> pd
     return df
 
 
-def consolidate_document_index(index: pd.DataFrame, reader_index: pd.DataFrame):
+def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.DataFrame):
     """Returns a consolidated document index from an existing index, if exists,
     and the reader index."""
 
-    if index is not None:
-        columns = [x for x in reader_index.columns if x not in index.columns]
+    if document_index is not None:
+        columns = [x for x in reader_index.columns if x not in document_index.columns]
         if len(columns) > 0:
-            index = index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
-        return index
+            document_index = document_index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
+        return document_index
 
     return reader_index
 
 
-def document_index_upgrade(catalogue: pd.DataFrame) -> pd.DataFrame:
+def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
     """Fixes older versions of document indexes"""
 
-    if catalogue.index.dtype == np.dtype('int64'):
+    if 'document_name' not in document_index.columns:
+        document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
 
-        if 'document_id' not in catalogue.columns:
-            catalogue['document_id'] = catalogue.index
+    if document_index.index.dtype == np.dtype('int64'):
 
-        catalogue = catalogue.set_index('filename', drop=False).rename_axis('')
+        if 'document_id' not in document_index.columns:
+            document_index['document_id'] = document_index.index
 
-    if 'document_name' not in catalogue.columns:
-        catalogue['document_name'] = catalogue.filename.apply(strip_path_and_extension)
+    document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
-    return catalogue
+    return document_index
 
 
 def add_document_index_attributes(*, catalogue: pd.DataFrame, target: pd.DataFrame) -> pd.DataFrame:
     """ Adds document meta data to given data frame (must have a document_id) """
     df = target.merge(catalogue, how='inner', left_on='document_id', right_on='document_id')
     return df
+
+
+def update_document_index_token_counts(
+    document_index: pd.DataFrame, doc_token_counts: List[Tuple[str, int, int]]
+) -> pd.DataFrame:
+    """Updates or adds fields `n_raw_tokens` and `n_tokens` to document index from collected during a corpus read pass
+    Only updates values that don't already exist in the document index"""
+    try:
+
+        strip_ext = lambda filename: os.path.splitext(filename)[0]
+
+        df_counts: pd.DataFrame = pd.DataFrame(data=doc_token_counts, columns=['filename', 'x_raw_tokens', 'x_tokens'])
+        df_counts['document_name'] = df_counts.filename.apply(strip_ext)
+        df_counts = df_counts.set_index('document_name').rename_axis('').drop('filename', axis=1)
+
+        if 'document_name' not in document_index.columns:
+            document_index['document_name'] = document_index.filename.apply(strip_ext)
+
+        if 'n_raw_tokens' not in document_index.columns:
+            document_index['n_raw_tokens'] = np.nan
+
+        if 'n_tokens' not in document_index.columns:
+            document_index['n_tokens'] = np.nan
+
+        document_index = document_index.merge(df_counts, how='left', left_index=True, right_index=True)
+
+        document_index['n_raw_tokens'] = document_index['x_raw_tokens'].fillna(document_index['n_raw_tokens'])
+        document_index['n_tokens'] = document_index['x_tokens'].fillna(document_index['n_tokens'])
+
+        document_index = document_index.drop(['x_raw_tokens', 'x_tokens'], axis=1)
+
+    except Exception as ex:
+        logging.error(ex)
+
+    return document_index
