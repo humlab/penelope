@@ -13,43 +13,43 @@ from penelope.corpus.document_index import (
 )
 
 TEST_FAULTY_DOCUMENT_INDEX = """
-filename	filename	year	year_id	document_name	document_id	title	n_terms
-tran_2019_01_test.txt	tran_2019_01_test.txt	2019	1	tran_2019_01_test.txt	0	Even break	68
-tran_2019_02_test.txt	tran_2019_02_test.txt	2019	2	tran_2019_02_test.txt	1	Night	59
-tran_2019_03_test.txt	tran_2019_03_test.txt	2019	3	tran_2019_03_test.txt	2	Shining	173
-tran_2020_01_test.txt	tran_2020_01_test.txt	2020	1	tran_2020_01_test.txt	3	Ostinato	33
-tran_2020_02_test.txt	tran_2020_02_test.txt	2020	2	tran_2020_02_test.txt	4	Epilogue	44
+filename;filename;year;year_id;document_name;document_id;title;n_terms
+tran_2019_01_test.txt;tran_2019_01_test.txt;2019;1;tran_2019_01_test.txt;0;Even break;68
+tran_2019_02_test.txt;tran_2019_02_test.txt;2019;2;tran_2019_02_test.txt;1;Night;59
+tran_2019_03_test.txt;tran_2019_03_test.txt;2019;3;tran_2019_03_test.txt;2;Shining;173
+tran_2020_01_test.txt;tran_2020_01_test.txt;2020;1;tran_2020_01_test.txt;3;Ostinato;33
+tran_2020_02_test.txt;tran_2020_02_test.txt;2020;2;tran_2020_02_test.txt;4;Epilogue;44
 """
 
 TEST_DOCUMENT_INDEX = """
-	filename	year	year_id	document_name	document_id	title	n_terms
-tran_2019_01_test	tran_2019_01_test.txt	2019	1	tran_2019_01_test	0	Even break	68
-tran_2019_02_test	tran_2019_02_test.txt	2019	2	tran_2019_02_test	1	Night	59
-tran_2019_03_test	tran_2019_03_test.txt	2019	3	tran_2019_03_test	2	Shining	173
-tran_2020_01_test	tran_2020_01_test.txt	2020	1	tran_2020_01_test	3	Ostinato	33
-tran_2020_02_test	tran_2020_02_test.txt	2020	2	tran_2020_02_test	4	Epilogue	44
+;filename;year;year_id;document_name;document_id;title;n_terms
+tran_2019_01_test;tran_2019_01_test.txt;2019;1;tran_2019_01_test;0;Even break;68
+tran_2019_02_test;tran_2019_02_test.txt;2019;2;tran_2019_02_test;1;Night;59
+tran_2019_03_test;tran_2019_03_test.txt;2019;3;tran_2019_03_test;2;Shining;173
+tran_2020_01_test;tran_2020_01_test.txt;2020;1;tran_2020_01_test;3;Ostinato;33
+tran_2020_02_test;tran_2020_02_test.txt;2020;2;tran_2020_02_test;4;Epilogue;44
 """
 
 TEST_DOCUMENT_INDEX2 = """
-filename	year	year_id	document_name	document_id	title	n_terms
-tran_2019_01_test.txt	2019	1	tran_2019_01_test	0	Even break	68
-tran_2019_02_test.txt	2019	2	tran_2019_02_test	1	Night	59
-tran_2019_03_test.txt	2019	3	tran_2019_03_test	2	Shining	173
-tran_2020_01_test.txt	2020	1	tran_2020_01_test	3	Ostinato	33
-tran_2020_02_test.txt	2020	2	tran_2020_02_test	4	Epilogue	44
+filename;year;year_id;document_name;document_id;title;n_terms
+tran_2019_01_test.txt;2019;1;tran_2019_01_test;0;Even break;68
+tran_2019_02_test.txt;2019;2;tran_2019_02_test;1;Night;59
+tran_2019_03_test.txt;2019;3;tran_2019_03_test;2;Shining;173
+tran_2020_01_test.txt;2020;1;tran_2020_01_test;3;Ostinato;33
+tran_2020_02_test.txt;2020;2;tran_2020_02_test;4;Epilogue;44
 """
 
 
 def test_load_document_index():
 
-    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep='\t')
+    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep=';')
     assert isinstance(index, pd.DataFrame)
     assert len(index) == 5
     assert index.columns.tolist() == ['filename', 'year', 'year_id', 'document_name', 'document_id', 'title', 'n_terms']
     assert index.document_id.tolist() == [0, 1, 2, 3, 4]
     assert index.index.name == ''
 
-    index2 = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), key_column=None, sep='\t')
+    index2 = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), key_column=None, sep=';')
     assert isinstance(index2, pd.DataFrame)
     assert len(index2) == 5
     assert index2.columns.tolist() == [
@@ -65,10 +65,10 @@ def test_load_document_index():
     assert index2.index.name == ''
     assert ((index == index2).all()).all()
 
-    index3 = load_document_index_from_str(TEST_DOCUMENT_INDEX, key_column=None, sep='\t')
+    index3 = load_document_index_from_str(TEST_DOCUMENT_INDEX, key_column=None, sep=';')
     assert ((index == index3).all()).all()
 
-    index4 = load_document_index_from_str(TEST_DOCUMENT_INDEX2, key_column=None, sep='\t')
+    index4 = load_document_index_from_str(TEST_DOCUMENT_INDEX2, key_column=None, sep=';')
     assert ((index == index4).all()).all()
 
 
@@ -204,11 +204,11 @@ def test_load_document_index_versions():
 
 
 def test_update_document_index_statistics():
-    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep='\t')
+    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep=';')
 
     statistics = {'extra_1': 1, 'extra_2': 2}
 
-    assert not 'extra_1' in index.columns
+    assert 'extra_1' not in index.columns
     update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)
 
     assert 'extra_1' in index.columns

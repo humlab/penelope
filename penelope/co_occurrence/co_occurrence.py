@@ -1,6 +1,6 @@
 import collections
 import itertools
-co-occurenecefrom dataclasses import dataclass, field
+from dataclasses import dataclass, field
 from typing import Iterable, Mapping, Set
 
 import pandas as pd
