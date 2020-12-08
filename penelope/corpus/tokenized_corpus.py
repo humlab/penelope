@@ -5,9 +5,7 @@ from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope import utility
-from penelope.corpus import metadata_to_document_index
-from penelope.corpus.document_index import update_document_index_token_counts
-from penelope.utility.filename_utils import strip_path_and_extension
+from .document_index import metadata_to_document_index, update_document_index_token_counts
 from tqdm import tqdm
 
 from .corpus_mixins import PartitionMixIn
@@ -94,7 +92,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
     @property
     def document_names(self) -> List[str]:
-        return [strip_path_and_extension(x) for x in self.reader.filenames]
+        return [utility.strip_path_and_extension(x) for x in self.reader.filenames]
 
     def apply_filter(self, filename_filter: Union[str, Callable, Sequence]):
         if not hasattr(self.reader, 'apply_filter'):

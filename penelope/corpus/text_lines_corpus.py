@@ -1,6 +1,6 @@
 from typing import Dict, Sequence
 
-from penelope.corpus import metadata_to_document_index
+from .document_index import metadata_to_document_index
 from penelope.utility import (
     IndexOfSplitOrCallableOrRegExp,
     extract_filenames_metadata,

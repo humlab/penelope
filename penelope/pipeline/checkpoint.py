@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Iterable, Iterator, Union
 import pandas as pd
 from penelope.corpus import load_document_index
 
-from . import interfaces
+from .interfaces import ContentType, DocumentPayload, PipelineError
 
 SerializableContent = Union[str, Iterable[str], pd.core.api.DataFrame]
 
@@ -57,13 +57,13 @@ class ContentSerializer:
 
 
 CHECKPOINT_SERIALIZERS = {
-    interfaces.ContentType.TEXT: ContentSerializer(
+    ContentType.TEXT: ContentSerializer(
         serialize=ContentSerializer.identity, deserialize=ContentSerializer.identity
     ),
-    interfaces.ContentType.TOKENS: ContentSerializer(
+    ContentType.TOKENS: ContentSerializer(
         serialize=ContentSerializer.token_to_text, deserialize=ContentSerializer.text_to_token
     ),
-    interfaces.ContentType.TAGGEDFRAME: ContentSerializer(
+    ContentType.TAGGEDFRAME: ContentSerializer(
         serialize=ContentSerializer.df_to_text, deserialize=ContentSerializer.text_to_df
     ),
     # FIXME: ADD SPARV XML with as_binary
@@ -77,19 +77,19 @@ class ContentSerializeOpts:
     as_binary: bool = False
 
     @property
-    def content_type(self) -> interfaces.ContentType:
-        return interfaces.ContentType(self.content_type_code)
+    def content_type(self) -> ContentType:
+        return ContentType(self.content_type_code)
 
     @content_type.setter
-    def content_type(self, value: interfaces.ContentType):
+    def content_type(self, value: ContentType):
         self.content_type_code = int(value)
 
 
 @dataclass
 class CheckpointData:
-    content_type: interfaces.ContentType = interfaces.ContentType.NONE
+    content_type: ContentType = ContentType.NONE
     document_index: pd.DataFrame = None
-    payload_stream: Iterable[interfaces.DocumentPayload] = None
+    payload_stream: Iterable[DocumentPayload] = None
     serialize_opts: ContentSerializeOpts = None
 
 
@@ -98,8 +98,8 @@ def store_checkpoint(
     options: ContentSerializeOpts,
     target_filename: str,
     document_index: pd.DataFrame,
-    payload_stream: Iterator[interfaces.DocumentPayload],
-) -> Iterable[interfaces.DocumentPayload]:
+    payload_stream: Iterator[DocumentPayload],
+) -> Iterable[DocumentPayload]:
 
     serializer = CHECKPOINT_SERIALIZERS[options.content_type]
 
@@ -126,7 +126,7 @@ def load_checkpoint(source_filename: str, document_index_key_column: str) -> Che
         filenames = zf.namelist()
 
         if "options.json" not in filenames:
-            raise interfaces.PipelineError("Checkpoint file is not valid (has no options.json")
+            raise PipelineError("Checkpoint file is not valid (has no options.json")
 
         serialize_opts = ContentSerializeOpts(**ContentSerializer.read_json(zf, "options.json"))
 
@@ -144,7 +144,7 @@ def load_checkpoint(source_filename: str, document_index_key_column: str) -> Che
     def payload_stream():
         with zipfile.ZipFile(source_filename, mode="r") as zf:
             for filename in filenames:
-                yield interfaces.DocumentPayload(
+                yield DocumentPayload(
                     content_type=serialize_opts.content_type,
                     content=serializer.deserialize(content_reader(zf, filename)),
                     filename=filename,

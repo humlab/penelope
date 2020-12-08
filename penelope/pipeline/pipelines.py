@@ -1,11 +1,12 @@
-from . import pipeline, tasks_mixin
-from .spacy import tasks_mixin as spacy_tasks_mixin
+from .pipeline import CorpusPipelineBase
+from .spacy.tasks_mixin import SpacyPipelineShortcutMixIn
+from .tasks_mixin import PipelineShortcutMixIn
 
 
 class CorpusPipeline(
-    tasks_mixin.PipelineShortcutMixIn,
-    spacy_tasks_mixin.SpacyPipelineShortcutMixIn,
-    pipeline.CorpusPipelineBase["CorpusPipeline"],
+    PipelineShortcutMixIn,
+    SpacyPipelineShortcutMixIn,
+    CorpusPipelineBase["CorpusPipeline"],
 ):
     pass
 

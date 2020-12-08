@@ -3,9 +3,9 @@ import os
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 import pandas as pd
-from penelope.corpus import metadata_to_document_index
 from penelope.utility import extract_filenames_metadata, filename_satisfied_by, list_filenames, strip_paths
 
+from ..document_index import metadata_to_document_index
 from .interfaces import FilenameOrCallableOrSequenceFilter, ICorpusReader, TextReaderOpts, TextSource
 from .streamify_text_source import streamify_text_source
 from .text_transformer import TextTransformer, TextTransformOpts

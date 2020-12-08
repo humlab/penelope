@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from penelope.corpus.readers.text_transformer import TextTransformOpts
 from penelope.corpus.sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 
 from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from .text_tokenizer import TextTokenizer
+from .text_transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)
 

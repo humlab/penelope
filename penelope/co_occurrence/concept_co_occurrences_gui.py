@@ -4,9 +4,9 @@ from typing import Callable
 
 import ipyfilechooser
 import ipywidgets as widgets
-from penelope.co_occurrence import ContextOpts
+from .co_occurrence import ContextOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import TokensTransformOpts
 from penelope.utility import (
     PoS_TAGS_SCHEMES,
     default_data_folder,

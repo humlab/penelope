@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Sequence, Tuple
 
 import pandas as pd
-from penelope.corpus import metadata_to_document_index
 from penelope.utility import extract_filenames_metadata, strip_paths
 
+from ..document_index import metadata_to_document_index
 from .interfaces import ICorpusReader, TextReaderOpts
 
 

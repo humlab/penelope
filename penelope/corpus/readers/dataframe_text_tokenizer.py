@@ -1,9 +1,9 @@
 from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
-from penelope.corpus import metadata_to_document_index
 from penelope.vendor.nltk import word_tokenize
 
+from ..document_index import metadata_to_document_index
 from .interfaces import ICorpusReader
 from .text_transformer import TextTransformer
 

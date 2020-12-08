@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from .readers import TextReaderOpts
 from penelope.utility import store_to_archive
 
 from . import readers

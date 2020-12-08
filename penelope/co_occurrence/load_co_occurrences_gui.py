@@ -4,10 +4,9 @@ from typing import Callable
 
 import ipyfilechooser
 import ipywidgets as widgets
-from penelope.co_occurrence import load_co_occurrences
-from penelope.utility import default_data_folder, getLogger, right_chop
-from penelope.utility.file_utility import read_json
-from penelope.utility.filename_utils import replace_extension, strip_paths
+from penelope.utility import default_data_folder, getLogger, read_json, replace_extension, right_chop, strip_paths
+
+from . import load_co_occurrences
 
 logger = getLogger('penelope')
 
