@@ -151,7 +151,7 @@ def update_document_index_token_counts(
 
         strip_ext = lambda filename: os.path.splitext(filename)[0]
 
-        df_counts: pd.DataFrame = pd.DataFrame(data=doc_token_counts, columns=['filename', 'x_raw_tokens', 'x_tokens'])
+        df_counts: pd.DataFrame = pd.DataFrame(data=doc_token_counts, columns=['filename', 'n_raw_tokens', 'n_tokens'])
         df_counts['document_name'] = df_counts.filename.apply(strip_ext)
         df_counts = df_counts.set_index('document_name').rename_axis('').drop('filename', axis=1)
 
@@ -164,12 +164,7 @@ def update_document_index_token_counts(
         if 'n_tokens' not in document_index.columns:
             document_index['n_tokens'] = np.nan
 
-        document_index = document_index.merge(df_counts, how='left', left_index=True, right_index=True)
-
-        document_index['n_raw_tokens'] = document_index['x_raw_tokens'].fillna(document_index['n_raw_tokens'])
-        document_index['n_tokens'] = document_index['x_tokens'].fillna(document_index['n_tokens'])
-
-        document_index = document_index.drop(['x_raw_tokens', 'x_tokens'], axis=1)
+        document_index.update(df_counts)
 
     except Exception as ex:
         logging.error(ex)

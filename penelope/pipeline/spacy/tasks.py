@@ -1,11 +1,7 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Union
 
-import pandas as pd
 import spacy
-from penelope.corpus.document_index import update_document_index_statistics
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
-from penelope.utility.pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme
 from spacy.language import Language
 
 from .. import interfaces
@@ -107,56 +103,3 @@ class SpacyDocToTaggedFrame(interfaces.ITask):
                 attribute_value_filters=self.attribute_value_filters,
             ),
         )
-
-
-@dataclass
-class TaggedFrameToTokens(interfaces.ITask):
-    """Extracts text from payload.content based on annotations etc. """
-
-    extract_opts: ExtractTaggedTokensOpts = None
-    filter_opts: TaggedTokensFilterOpts = None
-
-    _pos_schema: PoS_Tag_Scheme = field(default=None, init=False)
-
-    def __post_init__(self):
-        self.in_content_type = ContentType.TAGGEDFRAME
-        self.out_content_type = ContentType.TOKENS
-
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-
-        if self.pipeline.get('pos_column', None) is None:
-            raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
-
-        tagged_frame: pd.DataFrame = payload.content
-
-        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
-            payload.content,
-            self.extract_opts,
-            self.filter_opts,
-        )
-
-        tokens = list(tokens)
-
-        pos_statistics = convert.tagged_frame_to_pos_statistics(
-            tagged_frame, self.pos_schema, self.pipeline.get('pos_column')
-        )
-
-        payload.update_statistics(pos_statistics=pos_statistics, n_tokens=len(tokens))
-
-        update_document_index_statistics(
-            self.pipeline.payload.document_index,
-            document_name=payload.document_name,
-            statistics=payload.statistics,
-        )
-
-        return payload.update(self.out_content_type, tokens)
-
-    @property
-    def pos_schema(self) -> PoS_Tag_Scheme:
-
-        if self._pos_schema is None:
-            self._pos_schema = Known_PoS_Tag_Schemes.get(self.pipeline.payload.pos_schema_name, None)
-            if self._pos_schema is None:
-                raise PipelineError("expected PoS schema found None")
-
-        return self._pos_schema

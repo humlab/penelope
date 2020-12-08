@@ -6,12 +6,21 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional
 import pandas as pd
 from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformer, TextTransformOpts
+from penelope.corpus.readers import (
+    ExtractTaggedTokensOpts,
+    TaggedTokensFilterOpts,
+    TextReader,
+    TextReaderOpts,
+    TextSource,
+    TextTransformer,
+    TextTransformOpts,
+)
 from penelope.utility import to_text
 from tqdm.std import tqdm
 
-from .checkpoint import CheckpointData, ContentSerializeOpts, load_checkpoint, store_checkpoint
-from .convert import to_vectorized_corpus
+from . import checkpoint
+from .checkpoint import CheckpointData, ContentSerializeOpts
+from .convert import tagged_frame_to_tokens, to_vectorized_corpus
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
 
 
@@ -53,7 +62,7 @@ class LoadText(DefaultResolveMixIn, ITask):
             )
         )
 
-        self.pipeline.payload.set_secondary_document_index(text_reader.document_index)
+        self.pipeline.payload.set_reader_index(text_reader.document_index)
         self.pipeline.payload.metadata = text_reader.metadata
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
         self.pipeline.put("text_transform_opts", self.transform_opts.props)
@@ -148,7 +157,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: CheckpointData = load_checkpoint(
+            checkpoint_data: CheckpointData = checkpoint.load_checkpoint(
                 self.filename, document_index_key_column=self.pipeline.payload.document_index_key
             )
             self.pipeline.payload.primary_document_index = checkpoint_data.document_index
@@ -161,7 +170,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
-            payload_stream = store_checkpoint(
+            payload_stream = checkpoint.store_checkpoint(
                 options=ContentSerializeOpts(
                     content_type_code=int(self.out_content_type),
                     as_binary=False,  # should be True if ContentType.SPARV_XML
@@ -185,7 +194,7 @@ class SaveTaggedFrame(DefaultResolveMixIn, ITask):
         self.out_content_type = ContentType.TAGGEDFRAME
 
     def outstream(self) -> Iterable[DocumentPayload]:
-        for payload in store_checkpoint(
+        for payload in checkpoint.store_checkpoint(
             options=ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
             target_filename=self.filename,
             document_index=self.document_index,
@@ -207,7 +216,7 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
 
-        checkpoint_data: CheckpointData = load_checkpoint(
+        checkpoint_data: CheckpointData = checkpoint.load_checkpoint(
             self.filename,
             document_index_key_column=self.pipeline.payload.document_index_key,
         )
@@ -258,6 +267,37 @@ class TextToTokens(ITask):
             tokens = self.tokenize(payload.content)
         if self.transformer is not None:
             tokens = self.transformer.transform(tokens)
+        return payload.update(self.out_content_type, tokens)
+
+
+@dataclass
+class TaggedFrameToTokens(ITask):
+    """Extracts text from payload.content based on annotations etc. """
+
+    extract_opts: ExtractTaggedTokensOpts = None
+    filter_opts: TaggedTokensFilterOpts = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGEDFRAME
+        self.out_content_type = ContentType.TOKENS
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        if self.pipeline.get('pos_column', None) is None:
+            raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
+
+        tagged_frame: pd.DataFrame = payload.content
+
+        tokens: Iterable[str] = tagged_frame_to_tokens(
+            doc=payload.content,
+            extract_opts=self.extract_opts,
+            filter_opts=self.filter_opts,
+        )
+
+        tokens = list(tokens)
+
+        self.pipeline.update_statistics(tagged_frame, payload, tokens)
+
         return payload.update(self.out_content_type, tokens)
 
 

@@ -208,9 +208,9 @@ def patch_tagged_frame_to_tokens(*_) -> Iterable[str]:
     return ["a", "b", "c"]
 
 
-@patch('penelope.pipeline.spacy.convert.tagged_frame_to_tokens', patch_tagged_frame_to_tokens)
+@patch('penelope.pipeline.convert.tagged_frame_to_tokens', patch_tagged_frame_to_tokens)
 def test_tagged_frame_to_tokens_succeeds():
-    task = spacy_tasks.TaggedFrameToTokens(
+    task = tasks.TaggedFrameToTokens(
         pipeline=Mock(spec=CorpusPipeline),
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
         filter_opts=TaggedTokensFilterOpts(is_punct=False, is_space=False),

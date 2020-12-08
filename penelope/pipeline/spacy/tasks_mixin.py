@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Union
 
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
-
 from . import tasks
 
 if TYPE_CHECKING:
@@ -29,8 +27,3 @@ class SpacyPipelineShortcutMixIn:
 
     def set_spacy_model(self: SpacyPipeline, language: Union[str, Language]) -> SpacyPipeline:
         return self.add(tasks.SetSpacyModel(lang_or_nlp=language))
-
-    def tagged_frame_to_tokens(
-        self: SpacyPipeline, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts
-    ) -> SpacyPipeline:
-        return self.add(tasks.TaggedFrameToTokens(extract_opts=extract_opts, filter_opts=filter_opts))

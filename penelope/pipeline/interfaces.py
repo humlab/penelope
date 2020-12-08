@@ -9,6 +9,7 @@ import pandas as pd
 from penelope.corpus import consolidate_document_index, load_document_index
 from penelope.corpus.readers import TextSource
 from penelope.utility import strip_path_and_extension
+from penelope.utility.pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -87,6 +88,7 @@ class PipelinePayload:
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
     pos_schema_name: str = field(default="Universal")
+    _pos_schema: str = field(default=None, init=False)
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
@@ -123,10 +125,11 @@ class PipelinePayload:
     def get(self, key: str, default=None):
         return self.memory_store.get(key, default)
 
-    def put(self, key: str, value: Any):
+    def put(self, key: str, value: Any) -> "PipelinePayload":
         self.memory_store[key] = value
+        return self
 
-    def set_reader_index(self, reader_index: pd.DataFrame):
+    def set_reader_index(self, reader_index: pd.DataFrame) -> "PipelinePayload":
         if self.document_index is None:
             self.document_index = reader_index
         else:
@@ -134,9 +137,20 @@ class PipelinePayload:
                 document_index=self.document_index,
                 reader_index=reader_index,
             )
+        return self
 
     def document_lookup(self, document_name: str) -> Dict[str, Any]:
         return self.document_index.loc[strip_path_and_extension(document_name)]
+
+    @property
+    def pos_schema(self) -> PoS_Tag_Scheme:
+
+        if self._pos_schema is None:
+            self._pos_schema = Known_PoS_Tag_Schemes.get(self.pos_schema_name, None)
+            if self._pos_schema is None:
+                raise PipelineError("expected PoS schema found None")
+
+        return self._pos_schema
 
 
 @dataclass

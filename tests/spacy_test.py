@@ -1,4 +1,5 @@
 import pandas as pd
+import penelope.pipeline.spacy.convert as convert
 import pytest
 import spacy
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
@@ -11,7 +12,7 @@ from penelope.corpus.readers import (
     streamify_text_source,
 )
 from penelope.pipeline import PipelinePayload, SpacyPipeline
-from penelope.pipeline.spacy.convert import tagged_frame_to_tokens, text_to_tagged_frame, texts_to_tagged_frames
+from penelope.pipeline.convert import tagged_frame_to_tokens
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -56,7 +57,9 @@ def en_nlp() -> Language:
 def df_doc(en_nlp) -> Language:
     # en_nlp = spacy.load("en_core_web_sm")
     attributes = ["text", "lemma_", "pos_", "is_space", "is_punct", "is_digit", "is_alpha", "is_stop"]
-    doc = text_to_tagged_frame(TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp)
+    doc = convert.text_to_tagged_frame(
+        TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp
+    )
     return doc
 
 
@@ -64,7 +67,7 @@ def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
 
     attributes = ["lemma_", "pos_"]
 
-    df = text_to_tagged_frame(
+    df = convert.text_to_tagged_frame(
         TEST_CORPUS[0][1],
         attributes=attributes,
         attribute_value_filters=None,
@@ -110,7 +113,7 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
 
     attributes = ["lemma_", "pos_"]
 
-    df = text_to_tagged_frame(
+    df = convert.text_to_tagged_frame(
         TEST_CORPUS[0][1],
         attributes=attributes,
         attribute_value_filters={'is_punct': False},
@@ -153,7 +156,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
     nlp = spacy.load("en_core_web_sm")
     attributes = ["i", "text", "lemma_", "pos_"]
 
-    dfs = texts_to_tagged_frames(
+    dfs = convert.texts_to_tagged_frames(
         [text for _, text in TEST_CORPUS],
         attributes=attributes,
         attribute_value_filters=None,
@@ -237,7 +240,7 @@ def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
 
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc):
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, target_override="lemma")
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, target_override="lemma_")
     filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars', 'be', 'once', 'home', 'to', 'sea', 'and', 'ocean', 'and', 'perhaps', 'even', 'life']
@@ -326,13 +329,13 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
     assert all([x.columns.tolist() == attributes for x in payloads])
 
 
-def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokensresolves(en_nlp):
+def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nlp):
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     transform_opts = TextTransformOpts()
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
-    payload = PipelinePayload(source=reader)
+    payload = PipelinePayload(source=reader).put("pos_column", "pos_")
     attributes = ['text', 'lemma_', 'pos_']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
@@ -376,7 +379,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
-    payload = PipelinePayload(source=reader)
+    payload = PipelinePayload(source=reader).put('pos_column', 'lemma_')
 
     pipeline = (
         SpacyPipeline(payload=payload)
@@ -409,7 +412,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
-    payload = PipelinePayload(source=reader)
+    payload = PipelinePayload(source=reader).put('pos_column', 'lemma_')
 
     pipeline = (
         SpacyPipeline(payload=payload)

@@ -1,11 +1,8 @@
 from typing import Any, Dict, Iterable, List, Union
 
-import numpy as np
 import pandas as pd
 import spacy
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.utility import deprecated, filter_dict
-from penelope.utility.pos_tags import PoS_Tag_Scheme
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -105,57 +102,6 @@ def texts_to_tagged_frames(
 
     for document in stream:
         yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)
-
-
-TARGET_MAP = {"lemma": "lemma_", "pos_": "pos_", "ent": "ent_"}
-
-
-# FIXME: Make generic (applicable to Sparv, Stanza tagging etc), sove this function out of spaCy
-def tagged_frame_to_tokens(
-    doc: pd.DataFrame, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts = None
-) -> Iterable[str]:
-
-    if extract_opts.lemmatize is None and extract_opts.target_override is None:
-        raise ValueError("a valid target not supplied (no lemmatize or target")
-
-    if extract_opts.target_override:
-        target = TARGET_MAP.get(extract_opts.target_override, extract_opts.target_override)
-    else:
-        target = "lemma_" if extract_opts.lemmatize else "text"
-
-    if target not in doc.columns:
-        raise ValueError(f"{extract_opts.target_override} is not valid target for given document (missing column)")
-
-    mask = np.repeat(True, len(doc.index))
-
-    if filter_opts is not None:
-        mask &= filter_opts.mask(doc)
-
-    # FIXME: Merge with filter_opts:
-    if "pos_" in doc.columns:
-
-        if len(extract_opts.get_pos_includes() or set()) > 0:
-            mask &= doc.pos_.isin(extract_opts.get_pos_includes())
-
-        if len(extract_opts.get_pos_excludes() or set()) > 0:
-            mask &= ~(doc.pos_.isin(extract_opts.get_pos_excludes()))
-
-    return doc.loc[mask][target].tolist()
-
-
-def tagged_frame_to_pos_statistics(
-    tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str
-) -> np.ndarray:
-    return (
-        tagged_frame.merge(
-            pos_schema.PD_PoS_tags,
-            how='inner',
-            left_on=pos_column,
-            right_index=True,
-        )
-        .groupby('tag_group_name')['tag']
-        .size()
-    )
 
 
 @deprecated
