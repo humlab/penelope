@@ -115,17 +115,17 @@ class CorpusVectorizer:
             vocabulary=vocabulary,
         )
 
-        seen_document_filenames = []
+        seen_document_names = []
 
         def terms_stream():
-            for filename, terms in corpus:  # document_terms_stream:
-                seen_document_filenames.append(filename)
+            for name, terms in corpus:  # document_terms_stream:
+                seen_document_names.append(name)
                 yield terms
 
         terms = terms_stream()
 
         # if verbose:
-        #     terms = tqdm(terms, total=_get_stream_length(corpus, documents))
+        #     terms = tqdm(terms, total=_get_stream_length(corpus, document_index))
 
         self.vectorizer = CountVectorizer(**vectorizer_opts)
         self.vectorizer_opts = vectorizer_opts
@@ -133,7 +133,7 @@ class CorpusVectorizer:
         bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
 
-        v_document_index = _set_monotonic_index_by_seen_documents(document_index, seen_document_filenames)
+        v_document_index = _set_monotonic_index_by_seen_documents(document_index, seen_document_names)
 
         v_corpus = VectorizedCorpus(bag_term_matrix, token2id, v_document_index)
 
@@ -141,33 +141,35 @@ class CorpusVectorizer:
 
 
 def _set_monotonic_index_by_seen_documents(
-    document_index: pd.DataFrame, seen_document_filenames: List[str]
+    document_index: pd.DataFrame, seen_document_names: List[str]
 ) -> pd.DataFrame:
 
     if document_index is None:
 
         logger.warning("vectorizer: no corpus document index supplied: generating from seen filenames")
-        seed_document_index: pd.DataFrame = pd.DataFrame(
+        seen_document_index: pd.DataFrame = pd.DataFrame(
             {
-                'filename': seen_document_filenames,
-                'document_name': [strip_path_and_extension(x) for x in seen_document_filenames],
+                'filename': seen_document_names,
+                'document_name': [strip_path_and_extension(x) for x in seen_document_names],
             }
         )
-        seed_document_index['document_id'] = seed_document_index.index
+        seen_document_index['document_id'] = seen_document_index.index
 
-        return seed_document_index
+        return seen_document_index
 
-    # remove duplicates (should only occur  if chunked data) but we must keep document sequence
-    seen_document_filenames = list_to_unique_list_with_preserved_order(seen_document_filenames)
+    # strp extension and remove duplicates (should only occur if chunked data) - we MUST keep document sequence
+    seen_document_names = [
+        strip_path_and_extension(x) for x in list_to_unique_list_with_preserved_order(seen_document_names)
+    ]
 
     # create {filename: sequence_id} map of the seen documents, ordered as they were seen/processed
-    _recode_map = {x: i for i, x in enumerate(seen_document_filenames)}
+    _recode_map = {x: i for i, x in enumerate(seen_document_names)}
 
     # filter out documents that wasn't processed
-    document_index = document_index[document_index.filename.isin(seen_document_filenames)]
+    document_index = document_index[document_index.document_name.isin(seen_document_names)]
 
     # recode document_id to sequence_id
-    document_index['document_id'] = document_index['filename'].apply(lambda x: _recode_map[x])
+    document_index['document_id'] = document_index['document_name'].apply(lambda x: _recode_map[x])
 
     # set 'document_id' as new index, and make sure it is sorted monotonic increasing
     document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
@@ -181,10 +183,10 @@ def _get_stream_length(
 ) -> int:
     if hasattr(corpus, '__len__'):
         return len(corpus)
-    if hasattr(corpus, 'documents') and corpus.documents is not None:
-        return len(corpus.documents)
+    if hasattr(corpus, 'documents') and corpus.document_index is not None:
+        return len(corpus.document_index)
     if hasattr(corpus, 'document_index') and corpus.document_index is not None:
-        return len(corpus.documents)
+        return len(corpus.document_index)
     if document_index is not None:
         return len(document_index)
     return None
