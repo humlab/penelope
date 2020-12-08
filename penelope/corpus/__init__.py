@@ -8,9 +8,12 @@ from .document_index import (
     load_document_index_from_str,
     metadata_to_document_index,
     store_document_index,
+    update_document_index_statistics,
+    update_document_index_token_counts,
 )
 from .interfaces import ICorpus, ITokenizedCorpus
-from .readers import TextTransformOpts
+from .readers.interfaces import TextReaderOpts
+from .readers.text_transformer import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (
     SparvTokenizedCsvCorpus,

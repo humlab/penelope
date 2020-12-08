@@ -1,12 +1,15 @@
 import logging
 import os
 from io import StringIO
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Mapping, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from penelope.pipeline.interfaces import PipelineError
 from penelope.utility import strip_path_and_extension
+
+
+class DocumentIndexError(ValueError):
+    pass
 
 
 def assert_is_monotonic_increasing_integer_series(series: pd.Series):
@@ -73,26 +76,28 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
         if key_column not in document_index.columns:
             raise ValueError(f"specified key column {key_column} not found in columns")
 
+    for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
+        if old_or_unnamed_index_column in document_index.columns:
+            document_index = document_index.drop(old_or_unnamed_index_column, axis=1)
+
     if 'filename' not in document_index.columns:
-        raise PipelineError("expected mandatry column `filename` in document index, found no such thing")
+        raise DocumentIndexError("expected mandatry column `filename` in document index, found no such thing")
 
     if 'document_id' not in document_index.columns and key_column is not None:
         if is_monotonic_increasing_integer_series(document_index[key_column]):
             document_index['document_id'] = document_index[key_column]
 
     if 'document_id' not in document_index.columns:
-
         if not is_monotonic_increasing_integer_series(document_index.index):
-            document_index.reset_index(inplace=True, drop=True)
-
+            document_index = document_index.reset_index(drop=True)
         document_index['document_id'] = document_index.index
-
-    if 'document_name' not in document_index.columns:
-        document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
 
     assert_is_monotonic_increasing_integer_series(document_index.document_id)
 
-    document_index.set_index('document_name', inplace=True, drop=False)
+    if 'document_name' not in document_index.columns or (document_index.document_name == document_index.filename).all():
+        document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
+
+    document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
     return document_index
 
@@ -170,3 +175,12 @@ def update_document_index_token_counts(
         logging.error(ex)
 
     return document_index
+
+
+def update_document_index_statistics(document_index, *, document_name: str, statistics: Mapping[str, int]):
+    statistics = { k: statistics[k] for k in statistics if k not in ['document_name'] }
+    for key in [k for k in statistics if k not in document_index.columns]:
+        document_index.insert(len(document_index.columns), key, np.nan)
+    document_index.update(
+        pd.DataFrame(data=statistics, index=[document_name], dtype=np.int64)
+    )

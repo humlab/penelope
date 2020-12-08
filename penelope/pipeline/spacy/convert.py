@@ -143,7 +143,9 @@ def tagged_frame_to_tokens(
     return doc.loc[mask][target].tolist()
 
 
-def tagged_frame_to_pos_statistics(tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> np.ndarray:
+def tagged_frame_to_pos_statistics(
+    tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str
+) -> np.ndarray:
     return (
         tagged_frame.merge(
             pos_schema.PD_PoS_tags,
@@ -154,6 +156,7 @@ def tagged_frame_to_pos_statistics(tagged_frame: pd.DataFrame, pos_schema: PoS_T
         .groupby('tag_group_name')['tag']
         .size()
     )
+
 
 @deprecated
 def filter_by_tags(doc, filter_opts, mask):

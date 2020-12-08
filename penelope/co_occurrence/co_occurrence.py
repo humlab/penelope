@@ -1,6 +1,6 @@
 import collections
 import itertools
-from dataclasses import asdict, dataclass, field
+co-occurenecefrom dataclasses import dataclass, field
 from typing import Iterable, Mapping, Set
 
 import pandas as pd
@@ -24,7 +24,7 @@ class ContextOpts:
 
     @property
     def props(self):
-        return asdict(self)
+        return dict(context_width=self.context_width, concept=list(self.concept), ignore_concept=self.ignore_concept)
 
 
 def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding='*'):
@@ -107,8 +107,9 @@ def corpus_co_occurrence(
 
     Parameters
     ----------
-    corpus : FilenameTokensTuples
-        Tokenized stream of (filename, tokens) tuples
+    stream : FilenameTokensTuples
+        If stream from TokenizedCorpus: Tokenized stream of (filename, tokens)
+        If stream from pipeline: sequence of document payloads
     context_opts : ContextOpts
         The co-occurrence opts (context width, optionally concept opts)
     threshold_count : int, optional
@@ -119,16 +120,19 @@ def corpus_co_occurrence(
     [type]
         [description]
     """
-
     if document_index is None:
         raise CoOccurrenceError("expected document index found None")
 
     if token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
 
-    windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad='*')
-    windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
-    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
+    if 'n_tokens' not in document_index.columns:
+        raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
+
+    if 'n_raw_tokens' not in document_index.columns:
+        raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
+
+    v_corpus = to_vectorized_windows_corpus(stream=stream, token2id=token2id, context_opts=context_opts)
 
     coo_matrix = v_corpus.co_occurrence_matrix()
 
@@ -137,3 +141,15 @@ def corpus_co_occurrence(
     )
 
     return df_coo
+
+
+def to_vectorized_windows_corpus(
+    *,
+    stream: FilenameTokensTuples,
+    token2id: Mapping[str, int],
+    context_opts: ContextOpts,
+):
+    windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad='*')
+    windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
+    return v_corpus

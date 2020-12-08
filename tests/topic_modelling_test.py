@@ -338,4 +338,3 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
     assert inferred_topic_data is not None
 
     shutil.rmtree(target_folder)
-

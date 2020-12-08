@@ -3,22 +3,25 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, List, Mapping, Optional
 
+import pandas as pd
+from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformer, TextTransformOpts
 from penelope.utility import to_text
 from tqdm.std import tqdm
 
-from . import checkpoint, convert, interfaces
-from .interfaces import ContentType
+from .checkpoint import CheckpointData, ContentSerializeOpts, load_checkpoint, store_checkpoint
+from .convert import to_vectorized_corpus
+from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
 
 
 class DefaultResolveMixIn:
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return payload
 
 
 @dataclass
-class LoadText(DefaultResolveMixIn, interfaces.ITask):
+class LoadText(DefaultResolveMixIn, ITask):
     """Loads a text source into the pipeline.
     Note that this task can handle more kinds of source than "Checkpoint"
     Also loads a document_index, and/or extracts value fields from filenames
@@ -34,9 +37,12 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
 
     def setup(self):
         super().setup()
+
         self.transform_opts = self.transform_opts or TextTransformOpts()
+
         if self.source is not None:
             self.pipeline.payload.source = self.source
+
         text_reader: TextReader = (
             self.pipeline.payload.source
             if isinstance(self.pipeline.payload.source, TextReader)
@@ -46,20 +52,21 @@ class LoadText(DefaultResolveMixIn, interfaces.ITask):
                 transform_opts=self.transform_opts,
             )
         )
-        self.pipeline.payload.secondary_document_index = text_reader.document_index
+
+        self.pipeline.payload.set_secondary_document_index(text_reader.document_index)
         self.pipeline.payload.metadata = text_reader.metadata
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
         self.pipeline.put("text_transform_opts", self.transform_opts.props)
 
         self.instream = (
-            interfaces.DocumentPayload(filename=filename, content_type=interfaces.ContentType.TEXT, content=text)
+            DocumentPayload(filename=filename, content_type=ContentType.TEXT, content=text)
             for filename, text in text_reader
         )
         return self
 
 
 @dataclass
-class Tqdm(interfaces.ITask):
+class Tqdm(ITask):
 
     tbar = None
 
@@ -76,46 +83,46 @@ class Tqdm(interfaces.ITask):
         )
         return self
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
+    def process_payload(self, payload: DocumentPayload) -> Any:
         self.tbar.update()
         return payload
 
 
 @dataclass
-class Passthrough(DefaultResolveMixIn, interfaces.ITask):
+class Passthrough(DefaultResolveMixIn, ITask):
     pass
 
 
 @dataclass
-class Project(interfaces.ITask):
+class Project(ITask):
 
-    project: Callable[[interfaces.DocumentPayload], Any] = None
+    project: Callable[[DocumentPayload], Any] = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
         self.out_content_type = ContentType.ANY
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
+    def process_payload(self, payload: DocumentPayload) -> Any:
         return self.project(payload)
 
 
 @dataclass
-class ToContent(interfaces.ITask):
+class ToContent(ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
         self.out_content_type = Any
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
+    def process_payload(self, payload: DocumentPayload) -> Any:
         return payload.content
 
 
 @dataclass
-class ToDocumentContentTuple(interfaces.ITask):
+class ToDocumentContentTuple(ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
         self.out_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> Any:
+    def process_payload(self, payload: DocumentPayload) -> Any:
         return payload.update(
             self.out_content_type,
             content=(
@@ -126,7 +133,7 @@ class ToDocumentContentTuple(interfaces.ITask):
 
 
 @dataclass
-class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
+class Checkpoint(DefaultResolveMixIn, ITask):
 
     filename: str = None
 
@@ -139,9 +146,9 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGEDFRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
-    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
+    def outstream(self) -> Iterable[DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+            checkpoint_data: CheckpointData = load_checkpoint(
                 self.filename, document_index_key_column=self.pipeline.payload.document_index_key
             )
             self.pipeline.payload.primary_document_index = checkpoint_data.document_index
@@ -150,12 +157,12 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
         else:
             prior_content_type = self.pipeline.get_prior_content_type(self)
             if prior_content_type == ContentType.NONE:
-                raise interfaces.PipelineError(
+                raise PipelineError(
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
-            payload_stream = checkpoint.store_checkpoint(
-                options=checkpoint.ContentSerializeOpts(
+            payload_stream = store_checkpoint(
+                options=ContentSerializeOpts(
                     content_type_code=int(self.out_content_type),
                     as_binary=False,  # should be True if ContentType.SPARV_XML
                 ),
@@ -168,7 +175,7 @@ class Checkpoint(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
-class SaveTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
+class SaveTaggedFrame(DefaultResolveMixIn, ITask):
     """Stores sequence of data frame documents. """
 
     filename: str = None
@@ -177,9 +184,9 @@ class SaveTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
         self.in_content_type = ContentType.TAGGEDFRAME
         self.out_content_type = ContentType.TAGGEDFRAME
 
-    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
-        for payload in checkpoint.store_checkpoint(
-            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
+    def outstream(self) -> Iterable[DocumentPayload]:
+        for payload in store_checkpoint(
+            options=ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -188,7 +195,7 @@ class SaveTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
-class LoadTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
+class LoadTaggedFrame(DefaultResolveMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     filename: str = None
@@ -198,9 +205,9 @@ class LoadTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TAGGEDFRAME
 
-    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
+    def outstream(self) -> Iterable[DocumentPayload]:
 
-        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+        checkpoint_data: CheckpointData = load_checkpoint(
             self.filename,
             document_index_key_column=self.pipeline.payload.document_index_key,
         )
@@ -211,7 +218,7 @@ class LoadTaggedFrame(DefaultResolveMixIn, interfaces.ITask):
 
 
 @dataclass
-class TextToTokens(interfaces.ITask):
+class TextToTokens(ITask):
     """Extracts tokens from payload.content, optinally transforming"""
 
     tokenize: Callable[[str], List[str]] = None
@@ -242,7 +249,7 @@ class TextToTokens(interfaces.ITask):
                 self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
             self.transformer.ingest(self.tokens_transform_opts)
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         if self.in_content_type == ContentType.TOKENS:
             tokens = payload.content
         else:
@@ -255,7 +262,7 @@ class TextToTokens(interfaces.ITask):
 
 
 @dataclass
-class TokensTransform(interfaces.ITask):
+class TokensTransform(ITask):
     """Transforms tokens payload.content"""
 
     tokens_transform_opts: TokensTransformOpts = None
@@ -271,7 +278,8 @@ class TokensTransform(interfaces.ITask):
         self.out_content_type = ContentType.TOKENS
         self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        # FIXME Must update n_tokens
         return payload.update(self.out_content_type, self.transformer.transform(payload.content))
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":
@@ -280,19 +288,19 @@ class TokensTransform(interfaces.ITask):
 
 
 @dataclass
-class TokensToText(interfaces.ITask):
+class TokensToText(ITask):
     """Extracts text from payload.content"""
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TEXT]
         self.out_content_type = ContentType.TEXT
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return payload.update(self.out_content_type, to_text(payload.content))
 
 
 @dataclass
-class TextToDTM(interfaces.ITask):
+class TextToDTM(ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
         self.out_content_type = ContentType.VECTORIZED_CORPUS
@@ -305,19 +313,19 @@ class TextToDTM(interfaces.ITask):
         return self
 
     def outstream(self) -> VectorizedCorpus:
-        corpus = convert.to_vectorized_corpus(
+        corpus = to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
         )
-        yield interfaces.DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
+        yield DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
 
 
 @dataclass
-class Vocabulary(interfaces.ITask):
+class Vocabulary(ITask):
 
     token2id: Mapping[str, int] = None
 
@@ -330,81 +338,93 @@ class Vocabulary(interfaces.ITask):
         self.token2id.default_factory = self.token2id.__len__
         self.pipeline.payload.token2id = self.token2id
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         # FIXME: reset to normal dict upon completion
         for token in payload.content:
             _ = self.token2id[token]
         return payload
 
 
-# @dataclass
-# class TextToCoOccurrence(interfaces.ITask):
-#     def __post_init__(self):
-#         self.in_content_type = ContentType.TOKENS
-#         self.out_content_type = ContentType.VECTORIZED_CORPUS
+@dataclass
+class ToCoOccurrence(ITask):
+    def __post_init__(self):
+        self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
+        self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
 
-#     windows_size: int = None
-#     co_occurrence_opts: Any = None
-#     vectorize_opts: VectorizeOpts = None
+    context_opts: ContextOpts = None
+    global_threshold_count: int = None
+    partition_column: str = field(default='year')
 
-#     def setup(self):
-#         super().setup()
-#         self.pipeline.put("co_occurrence_opts", self.co_occurrence_opts)
-#         self.pipeline.put("vectorize_opts", self.vectorize_opts)
-#         return self
+    def setup(self):
+        super().setup()
+        self.pipeline.put("context_opts", self.context_opts)
+        self.pipeline.put("global_threshold_count", self.global_threshold_count)
+        self.pipeline.put("partition_column", self.partition_column)
+        return self
 
-#     def outstream(self) -> VectorizedCorpus:
-#         """Creates a vectorized corpus of word-word co-occurences.
-#         1. Compute yearly co-occurrences
-#             - Split stream based on year. Have a look at more_itertools more_itertools.bucket(iterable, key, validator=None)
-#             - Use Glove.Corpus to computer term-term matrix for each year
-#             - Create yearly BoW Corpus where tokens are "word1-word2" pairs
-#             - Create document index where eeach item is a year
-#             - Create a DTM using CorpusVectorizer
-#             - Visualize using word-trends-gui notebook
+    def outstream(self) -> VectorizedCorpus:
 
-#         Returns
-#         -------
-#         VectorizedCorpus
-#             [description]
+        co_occurrence: pd.DataFrame = partitioned_corpus_co_occurrence(
+            stream=self.instream,
+            document_index=self.document_index,
+            token2id=self.pipeline.payload.token2id,
+            context_opts=self.context_opts,
+            global_threshold_count=self.global_threshold_count,
+            partition_column=self.partition_column,
+        )
+        yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=co_occurrence)
 
-#         Yields
-#         -------
-#         VectorizedCorpus
-#             [description]
-#         """
+        # """Creates a vectorized corpus of word-word co-occurences.
+        # 1. Compute yearly co-occurrences
+        #     - Split stream based on year. Have a look at more_itertools more_itertools.bucket(iterable, key, validator=None)
+        #     - Use Glove.Corpus to computer term-term matrix for each year
+        #     - Create yearly BoW Corpus where tokens are "word1-word2" pairs
+        #     - Create document index where eeach item is a year
+        #     - Create a DTM using CorpusVectorizer
+        #     - Visualize using word-trends-gui notebook
 
-#         def payload_year(payload: interfaces.DocumentPayload) -> int:
-#             return self.pipeline.payload.document_lookup(payload.filename)['year']
+        # Returns
+        # -------
+        # VectorizedCorpus
+        #     [description]
 
-#         yearly_streams = more_itertools.bucket(self.instream, key=payload_year, validator=None)
-#         yearly_keys = sorted(list(yearly_streams))
+        # Yields
+        # -------
+        # VectorizedCorpus
+        #     [description]
+        # """
+        # def payload_year(payload: DocumentPayload) -> int:
+        #     return self.pipeline.payload.document_lookup(payload.filename)['year']
 
-#         metadata = []
-#         for i, year in enumerate(yearly_keys):
-#             metadata.append(dict(document_id=i, filename='year_{year}.txt', document_name='year_{year}', year=year))
-#             instream = yearly_keys[year]
-#             corpus = glove.Corpus(dictionary=self.pipeline.token2id)
-#             tokens = (payload.content for payload in instream)
-#             corpus.fit(tokens, self.windows_size, ignore_missing=False)
-#             coo_occurrence_matrix = corpus.matrix
-#             coo_occurrence_dataframe = to_dataframe(
-#                 term_term_matrix,
-#                 id2token: Mapping[int, str],
-#                 catalogue: pd.DataFrame = None,
-#                 threshold_count: int = 1,
-#             )
-#             # TODO: Create BoW, new
+        # yearly_streams = more_itertools.bucket(self.instream, key=payload_year, validator=None)
+        # yearly_keys = sorted(list(yearly_streams))
 
-#         corpus = convert.to_vectorized_corpus(
-#             stream=self.instream,
-#             vectorize_opts=self.vectorize_opts,
-#             document_index=self.pipeline.payload.document_index,
-#         )
-#         yield interfaces.DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
+        # metadata = []
+        # for i, year in enumerate(yearly_keys):
+        #     metadata.append(dict(document_id=i, filename='year_{year}.txt', document_name='year_{year}', year=year))
+        #     instream = yearly_keys[year]
 
-#     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-#         return None
+        #     corpus = glove.Corpus(dictionary=self.pipeline.token2id)
+        #     tokens = (payload.content for payload in instream)
+        #     corpus.fit(tokens, self.windows_size, ignore_missing=False)
+        #     coo_occurrence_matrix = corpus.matrix
+        #     coo_occurrence_dataframe = to_dataframe(
+        #         term_term_matrix,
+        #         id2token: Mapping[int, str],
+        #         catalogue: pd.DataFrame = None,
+        #         threshold_count: int = 1,
+        #     )
+        #     # TODO: Create BoW, new
+
+        # corpus = to_vectorized_corpus(
+        #     stream=self.instream,
+        #     vectorize_opts=self.vectorize_opts,
+        #     document_index=self.pipeline.payload.document_index,
+        # )
+        # yield DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        return None
 
 
 # root_folder = (lambda x: os.path.join(os.getcwd().split(x)[0], x))("text_analytics")
@@ -426,7 +446,7 @@ class Vocabulary(interfaces.ITask):
 
 
 @dataclass
-class ChunkTokens(interfaces.ITask):
+class ChunkTokens(ITask):
     chunk_size: int = None
 
     def setup(self):
@@ -438,7 +458,7 @@ class ChunkTokens(interfaces.ITask):
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOKENS
 
-    def outstream(self) -> Iterable[interfaces.DocumentPayload]:
+    def outstream(self) -> Iterable[DocumentPayload]:
 
         for payload in self.instream:
             tokens = payload.content
@@ -446,7 +466,7 @@ class ChunkTokens(interfaces.ITask):
                 yield payload
             else:
                 for chunk_id, i in enumerate(range(0, len(tokens), self.chunk_size)):
-                    yield interfaces.DocumentPayload(
+                    yield DocumentPayload(
                         filename=payload.filename,
                         content_type=ContentType.TOKENS,
                         content=tokens[i : i + self.chunk_size],
@@ -455,7 +475,7 @@ class ChunkTokens(interfaces.ITask):
 
 
 # @dataclass
-# class TokensToTokenizedCorpus(interfaces.ITask):
+# class TokensToTokenizedCorpus(ITask):
 #     def __post_init__(self):
 #         self.in_content_type = [ContentType.DATAFRAME]
 #         self.out_content_type = ContentType.TOKENIZED_CORPUS
@@ -477,7 +497,7 @@ class ChunkTokens(interfaces.ITask):
 
 #     def __init__(self, pipeline: CorpusPipeline):
 #         if pipeline.tasks[-1].content_type != ContentType.TOKENS:
-#             raise interfaces.PipelineError("expected token stream")
+#             raise PipelineError("expected token stream")
 #         self.pipeline = pipeline
 #         # self.checkpoint = pipeline.
 
@@ -495,5 +515,5 @@ class ChunkTokens(interfaces.ITask):
 #         return None
 
 #     @property
-#     def documents(self) -> pd.DataFrame:
+#     def document_index(self) -> pd.DataFrame:
 #         return self.pipeline.payload.document_index

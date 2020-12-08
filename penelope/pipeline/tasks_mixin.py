@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable
 
-from penelope.corpus import TokensTransformOpts, VectorizeOpts
+from penelope.co_occurrence import ContextOpts
+from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import TextReaderOpts, TextTransformOpts
-from penelope.corpus.tokens_transformer import TokensTransformer
 
 from . import tasks
 
@@ -65,6 +65,21 @@ class PipelineShortcutMixIn:
         """ (filename, TEXT => DTM) """
         return self.add(tasks.TextToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
 
+    def to_co_occurrence(
+        self: pipelines.CorpusPipeline,
+        context_opts: ContextOpts = None,
+        partition_column: str = 'year',
+        global_threshold_count: int = None,
+    ) -> pipelines.CorpusPipeline:
+        """ (filename, DOCUMENT_CONTENT_TUPLES => DATAFRAME) """
+        return self.add(
+            tasks.ToCoOccurrence(
+                context_opts=context_opts,
+                partition_column=partition_column,
+                global_threshold_count=global_threshold_count,
+            )
+        )
+
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())
 
@@ -79,3 +94,6 @@ class PipelineShortcutMixIn:
 
     def project(self, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
         return self.add(tasks.Project(project=project))
+
+    def vocabulary(self) -> pipelines.CorpusPipeline:
+        return self.add(tasks.Vocabulary())

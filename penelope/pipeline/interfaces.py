@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, 
 import pandas as pd
 from penelope.corpus import consolidate_document_index, load_document_index
 from penelope.corpus.readers import TextSource
+from penelope.utility import strip_path_and_extension
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -29,23 +30,40 @@ class ContentType(IntEnum):
     ANY = 11
     PASSTHROUGH = 12
     DOCUMENT_CONTENT_TUPLE = 13
+    CO_OCCURRENCE_DATAFRAME = 14
 
 
 @dataclass
 class DocumentPayload:
 
     content_type: ContentType = ContentType.NONE
-    content: Any = None
     filename: str = None
+    content: Any = None
     filename_values: Mapping[str, Any] = None
     chunk_id = None
     previous_content_type: ContentType = field(default=ContentType.NONE, init=False)
+    statistics: Mapping[str, int] = field(default=None, init=False)
 
     def update(self, content_type: ContentType, content: Any):
         self.previous_content_type = self.content_type
         self.content_type = content_type
         self.content = content
         return self
+
+    def update_statistics(self, pos_statistics: Mapping[str, int], n_tokens: int):
+
+        self.statistics = {
+            'document_name': self.document_name,
+            **pos_statistics.to_dict(),
+            **dict(
+                n_raw_tokens=pos_statistics[~(pos_statistics.index == 'Delimiter')].sum(),
+                n_tokens=n_tokens,
+            ),
+        }
+
+    @property
+    def document_name(self):
+        return strip_path_and_extension(self.filename)
 
     def as_str(self):
         if self.content_type == ContentType.TEXT:
@@ -74,12 +92,22 @@ class PipelinePayload:
     metadata: List[Dict[str, Any]] = None
     token2id: Mapping[str, int] = None
 
+    document_index: pd.DataFrame = None
     # FIXME: Move to document_index_proxy object?
-    primary_document_index: pd.DataFrame = None  # Given index i.e. DataFrane or loaded given  filenames
-    secondary_document_index: pd.DataFrame = None  # Index reconstructed from source (filename, filename fields)
-    consolidated_document_index: pd.DataFrame = None  # Merged index (if both exists)
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
+
+    def __post_init__(self):
+
+        if self.document_index is None:
+            if isinstance(self.document_index_source, pd.DataFrame):
+                self.document_index = self.document_index_source
+            elif isinstance(self.document_index_source, str):
+                self.document_index = load_document_index(
+                    filename=self.document_index_source,
+                    key_column=self.document_index_key,
+                    sep=self.document_index_sep,
+                )
 
     @property
     def props(self) -> Dict[str, Any]:
@@ -98,49 +126,17 @@ class PipelinePayload:
     def put(self, key: str, value: Any):
         self.memory_store[key] = value
 
-    @property
-    def document_index(self) -> pd.DataFrame:
-
-        if self.primary_document_index is None:
-            if self.document_index_source is not None:
-                self.primary_document_index = self.load_primary_index()
-
-        if self.consolidated_document_index is None:
-            if self.primary_document_index is not None and self.secondary_document_index is not None:
-                self.consolidated_document_index = consolidate_document_index(
-                    index=self.primary_document_index,
-                    reader_index=self.secondary_document_index,
-                )
-
-        if self.consolidated_document_index is not None:
-            return self.consolidated_document_index
-
-        if self.primary_document_index is not None:
-            return self.primary_document_index
-
-        return self.secondary_document_index
-
-    def load_primary_index(self) -> pd.DataFrame:
-
-        if self.document_index_source is None:
-            return None
-
-        if isinstance(self.document_index_source, pd.DataFrame):
-            return self.document_index_source
-
-        if isinstance(self.document_index_source, str):
-            return load_document_index(
-                self.document_index_source,
-                key_column=self.document_index_key,
-                sep=self.document_index_sep,
+    def set_reader_index(self, reader_index: pd.DataFrame):
+        if self.document_index is None:
+            self.document_index = reader_index
+        else:
+            self.document_index = consolidate_document_index(
+                document_index=self.document_index,
+                reader_index=reader_index,
             )
 
-        return None
-
-    def document_lookup(self, filename: str) -> Dict[str, Any]:
-        if self._document_index_lookup is None:
-            self._document_index_lookup = {x['filename']: x for x in self.document_index.to_dict(orient='record')}
-        return self._document_index_lookup.get(filename, None)
+    def document_lookup(self, document_name: str) -> Dict[str, Any]:
+        return self.document_index.loc[strip_path_and_extension(document_name)]
 
 
 @dataclass
