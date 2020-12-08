@@ -94,6 +94,7 @@ class TabsGUI:
     def current_words(self):
         return ' '.join(self.words.value.split()).split()
 
+
 def update_plot(gui: TabsGUI, trend_data: WordTrendData):
 
     if trend_data.corpus is None:
@@ -106,9 +107,9 @@ def update_plot(gui: TabsGUI, trend_data: WordTrendData):
 
     corpus = trend_data.normalized_corpus if gui.normalize.value else trend_data.corpus
 
-    #pattern = re.compile("^.*tion$")
-    #corpus: VectorizedCorpus = sample_corpus()
-    #sliced_corpus = corpus.slice_by(px=pattern.match)
+    # pattern = re.compile("^.*tion$")
+    # corpus: VectorizedCorpus = sample_corpus()
+    # sliced_corpus = corpus.slice_by(px=pattern.match)
 
     words: List[str] = find_candidate_words(gui.current_words, corpus.token2id)
 

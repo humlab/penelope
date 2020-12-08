@@ -14,6 +14,7 @@ logger = getLogger("penelope")
 # debug_view = ipywidgets.Output(layout={'border': '1px solid black'})
 # display(debug_view)
 
+
 @dataclass
 class WordTrendsGUI:
 
