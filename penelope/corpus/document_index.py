@@ -178,9 +178,7 @@ def update_document_index_token_counts(
 
 
 def update_document_index_statistics(document_index, *, document_name: str, statistics: Mapping[str, int]):
-    statistics = { k: statistics[k] for k in statistics if k not in ['document_name'] }
+    statistics = {k: statistics[k] for k in statistics if k not in ['document_name']}
     for key in [k for k in statistics if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
-    document_index.update(
-        pd.DataFrame(data=statistics, index=[document_name], dtype=np.int64)
-    )
+    document_index.update(pd.DataFrame(data=statistics, index=[document_name], dtype=np.int64))

@@ -56,7 +56,7 @@ def partitioned_corpus_co_occurrence(
     metadata = []
     for i, key in tqdm(enumerate(keys), position=0, leave=True):
 
-        key_stream:FilenameTokensTuples = key_streams[key]
+        key_stream: FilenameTokensTuples = key_streams[key]
         keyed_document_index = document_index[document_index[partition_column] == key]
 
         metadata.append(

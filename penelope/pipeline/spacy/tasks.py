@@ -145,7 +145,9 @@ class TaggedFrameToTokens(interfaces.ITask):
         payload.update_statistics(pos_statistics=pos_statistics, n_tokens=len(tokens))
 
         update_document_index_statistics(
-            self.pipeline.payload.document_index, document_name=payload.document_name, statistics=payload.statistics,
+            self.pipeline.payload.document_index,
+            document_name=payload.document_name,
+            statistics=payload.statistics,
         )
 
         return payload.update(self.out_content_type, tokens)

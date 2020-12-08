@@ -38,20 +38,30 @@ tran_2019_03_test.txt	2019	3	tran_2019_03_test	2	Shining	173
 tran_2020_01_test.txt	2020	1	tran_2020_01_test	3	Ostinato	33
 tran_2020_02_test.txt	2020	2	tran_2020_02_test	4	Epilogue	44
 """
+
+
 def test_load_document_index():
 
     index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep='\t')
     assert isinstance(index, pd.DataFrame)
     assert len(index) == 5
     assert index.columns.tolist() == ['filename', 'year', 'year_id', 'document_name', 'document_id', 'title', 'n_terms']
-    assert index.document_id.tolist() == [0,1,2,3,4]
+    assert index.document_id.tolist() == [0, 1, 2, 3, 4]
     assert index.index.name == ''
 
     index2 = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), key_column=None, sep='\t')
     assert isinstance(index2, pd.DataFrame)
     assert len(index2) == 5
-    assert index2.columns.tolist() == ['filename', 'year', 'year_id', 'document_name', 'document_id', 'title', 'n_terms']
-    assert index2.document_id.tolist() == [0,1,2,3,4]
+    assert index2.columns.tolist() == [
+        'filename',
+        'year',
+        'year_id',
+        'document_name',
+        'document_id',
+        'title',
+        'n_terms',
+    ]
+    assert index2.document_id.tolist() == [0, 1, 2, 3, 4]
     assert index2.index.name == ''
     assert ((index == index2).all()).all()
 
@@ -61,17 +71,20 @@ def test_load_document_index():
     index4 = load_document_index_from_str(TEST_DOCUMENT_INDEX2, key_column=None, sep='\t')
     assert ((index == index4).all()).all()
 
+
 def test_assert_is_monotonic_increasing_integer_series():
-    assert_is_monotonic_increasing_integer_series(pd.Series([0,1,2], dtype=np.int))
+    assert_is_monotonic_increasing_integer_series(pd.Series([0, 1, 2], dtype=np.int))
     with pytest.raises(ValueError):
-        assert_is_monotonic_increasing_integer_series(pd.Series([0,-1,2], dtype=np.int))
+        assert_is_monotonic_increasing_integer_series(pd.Series([0, -1, 2], dtype=np.int))
     with pytest.raises(ValueError):
-        assert_is_monotonic_increasing_integer_series(pd.Series(['a','b', 'c']))
+        assert_is_monotonic_increasing_integer_series(pd.Series(['a', 'b', 'c']))
+
 
 def test_is_monotonic_increasing_integer_series():
-    assert is_monotonic_increasing_integer_series(pd.Series([0,1,2], dtype=np.int))
-    assert not is_monotonic_increasing_integer_series(pd.Series([0,-1,2], dtype=np.int))
-    assert not is_monotonic_increasing_integer_series(pd.Series(['a','b', 'c']))
+    assert is_monotonic_increasing_integer_series(pd.Series([0, 1, 2], dtype=np.int))
+    assert not is_monotonic_increasing_integer_series(pd.Series([0, -1, 2], dtype=np.int))
+    assert not is_monotonic_increasing_integer_series(pd.Series(['a', 'b', 'c']))
+
 
 def test_load_document_index_versions():
     filename = './tests/test_data/documents_index_doc_id.zip'
@@ -189,10 +202,11 @@ def test_load_document_index_versions():
 #         document_index.insert(len(document_index.columns), key, np.nan)
 #     document_index.update(pd.DataFrame(data=statistics, index=[document_name]))
 
+
 def test_update_document_index_statistics():
     index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep='\t')
 
-    statistics = {'extra_1':1, 'extra_2': 2}
+    statistics = {'extra_1': 1, 'extra_2': 2}
 
     assert not 'extra_1' in index.columns
     update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)
@@ -206,7 +220,7 @@ def test_update_document_index_statistics():
     assert index.extra_1.sum() == 1
     assert index.extra_2.sum() == 2
 
-    statistics = {'extra_1':10, 'extra_2': 22}
+    statistics = {'extra_1': 10, 'extra_2': 22}
     update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)
 
     assert int(index.loc['tran_2020_01_test'].extra_1) == 10
@@ -215,5 +229,5 @@ def test_update_document_index_statistics():
     assert index.extra_1.sum() == 10
     assert index.extra_2.sum() == 22
 
-    statistics = {'extra_1':10, 'extra_2': 22}
+    statistics = {'extra_1': 10, 'extra_2': 22}
     update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)

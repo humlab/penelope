@@ -57,9 +57,7 @@ class ContentSerializer:
 
 
 CHECKPOINT_SERIALIZERS = {
-    ContentType.TEXT: ContentSerializer(
-        serialize=ContentSerializer.identity, deserialize=ContentSerializer.identity
-    ),
+    ContentType.TEXT: ContentSerializer(serialize=ContentSerializer.identity, deserialize=ContentSerializer.identity),
     ContentType.TOKENS: ContentSerializer(
         serialize=ContentSerializer.token_to_text, deserialize=ContentSerializer.text_to_token
     ),

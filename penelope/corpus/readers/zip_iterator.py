@@ -7,7 +7,7 @@ from penelope.utility import create_iterator, extract_filenames_metadata, list_f
 from .interfaces import ICorpusReader
 from .text_reader import TextReaderOpts
 
-from..document_index import metadata_to_document_index
+from ..document_index import metadata_to_document_index
 
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
