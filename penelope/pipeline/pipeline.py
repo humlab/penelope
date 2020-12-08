@@ -2,7 +2,7 @@ import collections
 import functools
 from typing import Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
 
-from .interfaces import PipelinePayload, DocumentPayload, ITask, ContentType
+from .interfaces import ContentType, DocumentPayload, ITask, PipelinePayload
 
 _T_self = TypeVar("_T_self")
 _A = TypeVar("_A")

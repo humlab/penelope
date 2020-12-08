@@ -1,4 +1,4 @@
-from typing import Iterable, Mapping, Tuple, Union
+from typing import Iterable, Mapping, Tuple
 
 import more_itertools
 import pandas as pd

@@ -3,7 +3,7 @@ from typing import Iterable, List
 import pandas as pd
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, default_tokenizer
 
-from .interfaces import DocumentPayload, ContentType
+from .interfaces import ContentType, DocumentPayload
 
 
 def _payload_tokens(payload: DocumentPayload) -> List[str]:

@@ -1,10 +1,9 @@
-import base64
 from typing import Any
 
 import ipywidgets as widgets
 import pandas as pd
 import yaml
-from IPython.display import HTML, Javascript
+from IPython.display import Javascript
 from IPython.display import display as ipython_display
 from penelope.utility import getLogger
 

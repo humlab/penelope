@@ -1,10 +1,9 @@
 from dataclasses import dataclass, field
-from penelope.corpus.document_index import update_document_index_statistics
 from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
 import spacy
-from penelope import pipeline
+from penelope.corpus.document_index import update_document_index_statistics
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.utility.pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme
 from spacy.language import Language

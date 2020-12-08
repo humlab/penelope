@@ -1,6 +1,5 @@
 from typing import Dict, Sequence
 
-from .document_index import metadata_to_document_index
 from penelope.utility import (
     IndexOfSplitOrCallableOrRegExp,
     extract_filenames_metadata,
@@ -8,6 +7,7 @@ from penelope.utility import (
     tuple_of_lists_to_list_of_tuples,
 )
 
+from .document_index import metadata_to_document_index
 from .interfaces import ITokenizedCorpus
 from .tokenized_corpus import ReiterableTerms
 

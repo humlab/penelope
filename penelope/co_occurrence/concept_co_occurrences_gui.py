@@ -4,9 +4,8 @@ from typing import Callable
 
 import ipyfilechooser
 import ipywidgets as widgets
-from .co_occurrence import ContextOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus import TokensTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.utility import (
     PoS_TAGS_SCHEMES,
     default_data_folder,
@@ -17,6 +16,8 @@ from penelope.utility import (
 )
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 from penelope.workflows import concept_co_occurrence_workflow
+
+from .co_occurrence import ContextOpts
 
 logger = getLogger('penelope')
 

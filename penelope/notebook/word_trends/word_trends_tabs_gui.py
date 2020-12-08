@@ -4,8 +4,9 @@ from typing import Callable, List, Sequence
 import ipywidgets as widgets
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.utility import get_logger
-from .utils import find_n_top_words, find_candidate_words
+
 from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer, WordTrendData
+from .utils import find_candidate_words, find_n_top_words
 
 logger = get_logger()
 

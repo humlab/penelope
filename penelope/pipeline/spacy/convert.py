@@ -1,4 +1,3 @@
-from penelope.utility.pos_tags import PoS_Tag_Scheme
 from typing import Any, Dict, Iterable, List, Union
 
 import numpy as np
@@ -6,6 +5,7 @@ import pandas as pd
 import spacy
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.utility import deprecated, filter_dict
+from penelope.utility.pos_tags import PoS_Tag_Scheme
 from spacy.language import Language
 from spacy.tokens import Doc
 

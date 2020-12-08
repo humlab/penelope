@@ -13,9 +13,10 @@ import pandas as pd
 import scipy
 import sklearn.preprocessing
 import textacy
-from .document_index import is_monotonic_increasing_integer_series
 from penelope.utility import read_json, write_json
 from sklearn.feature_extraction.text import TfidfTransformer
+
+from .document_index import is_monotonic_increasing_integer_series
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods
 

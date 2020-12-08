@@ -5,10 +5,10 @@ from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope import utility
-from .document_index import metadata_to_document_index, update_document_index_token_counts
 from tqdm import tqdm
 
 from .corpus_mixins import PartitionMixIn
+from .document_index import metadata_to_document_index, update_document_index_token_counts
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
 from .tokens_transformer import TokensTransformer, TokensTransformOpts
