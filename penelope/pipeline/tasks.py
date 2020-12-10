@@ -388,7 +388,7 @@ class Vocabulary(ITask):
 @dataclass
 class ToCoOccurrence(ITask):
     def __post_init__(self):
-        self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
+        self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
 
     context_opts: ContextOpts = None
@@ -404,8 +404,13 @@ class ToCoOccurrence(ITask):
 
     def outstream(self) -> VectorizedCorpus:
 
+        # if self.pipeline.get_prior_content_type(self)  == ContentType.DOCUMENT_CONTENT_TUPLE:
+        instream = (x.content for x in self.instream)
+        # else:
+        #     instream = ((x.filename, x.content) for x in self.instream)
+
         co_occurrence: pd.DataFrame = partitioned_corpus_co_occurrence(
-            stream=self.instream,
+            stream=instream,
             document_index=self.document_index,
             token2id=self.pipeline.payload.token2id,
             context_opts=self.context_opts,
