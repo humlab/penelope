@@ -53,14 +53,6 @@ from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
 @click.option('-f', '--filename-field', default=None, help='Fields to extract from document name', multiple=True)
-@click.option(
-    '-v',
-    '--store-vectorized',
-    default=True,
-    is_flag=True,
-    help='Stores co-occurrence token-pairs as a vectorized corpus normalized by yearly total token count',
-    multiple=True,
-)
 def main(
     input_filename: str,
     output_filename: str,
@@ -80,7 +72,6 @@ def main(
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
     filename_field: Any = None,
-    store_vectorized: bool = True,
 ):
 
     tokens_transform_opts = TokensTransformOpts(
@@ -115,7 +106,6 @@ def main(
             output_filename=output_filename,
             count_threshold=count_threshold,
             filename_field=filename_field,
-            store_vectorized=store_vectorized,
             partition_keys=partition_key,
             context_opts=context_opts,
             extract_tokens_opts=extract_tokens_opts,

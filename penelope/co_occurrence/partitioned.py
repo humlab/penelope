@@ -6,7 +6,8 @@ from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import getLogger, strip_path_and_extension
 from tqdm.auto import tqdm
 
-from .co_occurrence import ContextOpts, CoOccurrenceError, corpus_co_occurrence
+from .co_occurrence import corpus_co_occurrence
+from .interface import ContextOpts, CoOccurrenceError
 
 logger = getLogger('penelope')
 

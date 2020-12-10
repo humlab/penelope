@@ -1,30 +1,14 @@
 import collections
 import itertools
-from dataclasses import dataclass, field
-from typing import Iterable, Mapping, Set
+from typing import Iterable, Mapping
 
 import pandas as pd
 from penelope.corpus import CorpusVectorizer
 from penelope.type_alias import FilenameTokensTuples
 
 from .convert import to_dataframe
+from .interface import ContextOpts, CoOccurrenceError
 from .windows_corpus import WindowsCorpus
-
-
-class CoOccurrenceError(ValueError):
-    pass
-
-
-@dataclass
-class ContextOpts:
-
-    context_width: int = 2
-    concept: Set[str] = field(default_factory=set)
-    ignore_concept: bool = False
-
-    @property
-    def props(self):
-        return dict(context_width=self.context_width, concept=list(self.concept), ignore_concept=self.ignore_concept)
 
 
 def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding='*'):

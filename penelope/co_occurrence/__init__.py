@@ -1,4 +1,4 @@
-from .co_occurrence import ContextOpts, corpus_co_occurrence, corpus_to_windows, tokens_to_windows
+from .co_occurrence import corpus_co_occurrence, corpus_to_windows, tokens_to_windows
 from .convert import (
     load_co_occurrences,
     store_co_occurrences,
@@ -7,5 +7,11 @@ from .convert import (
     to_vectorized_corpus,
 )
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
+from .interface import ContextOpts, CoOccurrenceError
 from .partitioned import partitioned_corpus_co_occurrence
 from .windows_corpus import WindowsCorpus, WindowsStream
+
+# tests/co_occurrence_test: from penelope.co_occurrence import WindowsCorpus, to_co_occurrence_matrix, to_dataframe
+# penelope/co_occurrence/__init__.py: from .co_occurrence import ContextOpts, corpus_co_occurrence, corpus_to_windows, tokens_to_windows
+# penelope/co_occurrence/co_occurrence.py: from .convert import to_dataframe
+# penelope/co_occurrence/convert.py: from .co_occurrence import ContextOpts

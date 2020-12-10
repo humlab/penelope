@@ -1,10 +1,14 @@
-from typing import Mapping, Union
+import json
+import os
+from typing import Mapping, Sequence, Union
 
 import pandas as pd
 import scipy
-from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, TokenizedCorpus, VectorizedCorpus
-from penelope.corpus.readers import ICorpusReader
-from penelope.utility import getLogger, strip_path_and_extension
+from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
+from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
+from penelope.utility import getLogger, replace_extension, strip_path_and_extension
+
+from .interface import ContextOpts
 
 logger = getLogger()
 
@@ -158,3 +162,40 @@ def to_dataframe(
     coo_df = coo_df[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
 
     return coo_df
+
+
+def store_bundle(
+    output_filename: str,
+    co_occurrences: pd.DataFrame,
+    corpus: VectorizedCorpus,
+    corpus_tag: str,
+    *,
+    input_filename: str,
+    partition_keys: Sequence[str],
+    count_threshold: int,
+    reader_opts: TextReaderOpts,
+    tokens_transform_opts: TokensTransformOpts,
+    context_opts: ContextOpts,
+    extract_tokens_opts: ExtractTaggedTokensOpts,
+):
+
+    store_co_occurrences(output_filename, co_occurrences)
+
+    if corpus is not None:
+        if corpus_tag is None:
+            corpus_tag = strip_path_and_extension(output_filename)
+        corpus_folder = os.path.split(output_filename)[0]
+        corpus.dump(tag=corpus_tag, folder=corpus_folder)
+
+    with open(replace_extension(output_filename, 'json'), 'w') as json_file:
+        store_options = {
+            'input_filename': input_filename,
+            'output_filename': output_filename,
+            'partition_keys': partition_keys,
+            'count_threshold': count_threshold,
+            'reader_opts': reader_opts.props,
+            'context_opts': context_opts.props,
+            'tokens_transform_opts': tokens_transform_opts.props,
+            'extract_tokens_opts': extract_tokens_opts.props,
+        }
+        json.dump(store_options, json_file, indent=4)

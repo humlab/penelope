@@ -1,17 +1,10 @@
-import json
-import os
-from typing import Any, Dict, Sequence
+from typing import Any, Sequence
 
 import pandas as pd
-from penelope.co_occurrence import (
-    ContextOpts,
-    partitioned_corpus_co_occurrence,
-    store_co_occurrences,
-    to_vectorized_corpus,
-)
+from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence, to_vectorized_corpus
+from penelope.co_occurrence.convert import store_bundle
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
-from penelope.utility import replace_extension, strip_path_and_extension
 
 from .utils import WorkflowException
 
@@ -28,7 +21,6 @@ def execute_workflow(
     count_threshold: int = None,
     partition_keys: Sequence[str],
     filename_field: Any = None,
-    store_vectorized: bool = False,
 ) -> pd.DataFrame:
     """Creates concept co-occurrence using specified options and stores a co-occurrence CSV file
     and optionally a vectorized corpus.
@@ -110,13 +102,16 @@ def execute_workflow(
         partition_column=partition_keys[0],
     )
 
-    store_concept_co_occurrence_bundle(
+    corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
+
+    store_bundle(
         output_filename,
-        store_vectorized=store_vectorized,
+        co_occurrences=co_occurrences,
+        corpus=corpus,
+        corpus_tag=None,
         input_filename=input_filename,
         partition_keys=partition_keys,
         count_threshold=count_threshold,
-        co_occurrences=co_occurrences,
         reader_opts=reader_opts,
         tokens_transform_opts=tokens_transform_opts,
         context_opts=context_opts,
@@ -124,38 +119,3 @@ def execute_workflow(
     )
 
     return co_occurrences
-
-
-def store_concept_co_occurrence_bundle(
-    output_filename: str,
-    *,
-    store_vectorized: bool,
-    input_filename: str,
-    partition_keys: Sequence[str],
-    count_threshold: int = None,
-    co_occurrences: pd.DataFrame,
-    reader_opts: Dict,
-    tokens_transform_opts: TokensTransformOpts,
-    context_opts: ContextOpts,
-    extract_tokens_opts: ExtractTaggedTokensOpts,
-):
-
-    store_co_occurrences(output_filename, co_occurrences)
-
-    if store_vectorized:
-        v_corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
-        v_corpus.dump(tag=strip_path_and_extension(output_filename), folder=os.path.split(output_filename)[0])
-
-    with open(replace_extension(output_filename, 'json'), 'w') as json_file:
-        store_options = {
-            'input_filename': input_filename,
-            'output_filename': output_filename,
-            'partition_keys': partition_keys,
-            'count_threshold': count_threshold,
-            'reader_opts': reader_opts.props,
-            'context_opts': context_opts.props,
-            'tokens_transform_opts': tokens_transform_opts.props,
-            'extract_tokens_opts': extract_tokens_opts.props,
-        }
-
-        json.dump(store_options, json_file, indent=4)
