@@ -70,6 +70,7 @@ class CorpusPipelineBase(Generic[_T_self]):
         return [x for x in self.resolve()]
 
     def single(self) -> List[DocumentPayload]:
+        """Resolves stream by returning the head of the tream"""
         return next(self.resolve())
 
     def value(self) -> Any:
