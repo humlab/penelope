@@ -127,7 +127,7 @@ class GUI:
         )
 
 
-def display_gui(
+def create_gui(
     *,
     corpus_folder: str,
     loaded_callback: Callable,

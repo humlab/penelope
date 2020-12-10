@@ -1,5 +1,8 @@
+import os
+import types
 from typing import Any
 
+import ipyfilechooser
 import ipywidgets as widgets
 import pandas as pd
 import yaml
@@ -133,3 +136,43 @@ class OutputsTabExt(widgets.Tab):
         _what = widgets.Textarea(value=yaml_text, layout=widgets.Layout(width=width, height=height))
         self.display_content(i, _what, clear=clear, plot=True)
         return self
+
+
+def shorten_path_with_ellipsis(path: str, max_length: int):
+    if len(path) > max_length:
+        path, filename = os.path.split(path)
+        path = f"{path[:max(0, max_length-len(filename))]}.../{filename}"
+    return path
+
+
+def shorten_filechooser_label(fc: ipyfilechooser.FileChooser, max_length: int):
+    try:
+        template = getattr(fc, '_LBL_TEMPLATE')
+        if not template or not hasattr(template, 'format'):
+            return
+        fake = types.SimpleNamespace(
+            format=lambda p, c: template.format(
+                shorten_path_with_ellipsis(p, max_length),
+                'green' if os.path.exists(p) else 'black',
+            )
+        )
+        setattr(fc, '_LBL_TEMPLATE', fake)
+        if len(fc.selected) > max_length:
+            getattr(fc, '_label').value = fake.format(None, fc.selected, 'green')
+    except:  # pylint: disable=bare-except
+        pass
+
+
+def dummy_context():
+    class DummyContext:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):  # pylint: disable=unused-argument
+            pass
+
+    return DummyContext()
+
+
+def default_done_callback(*_, **__):
+    print("Vectorization done!")
