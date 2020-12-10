@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     # from ..pipeline import T_self
     from spacy.language import Language
 
-    from ..pipelines import SpacyPipeline
+    from .pipelines import SpacyPipeline
 
 
 class SpacyPipelineShortcutMixIn:

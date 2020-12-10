@@ -32,5 +32,5 @@ class CorpusPipeline(
 AnyPipeline = CorpusPipeline
 
 
-class SpacyPipeline(CorpusPipeline):
-    pass
+# class SpacyPipeline(CorpusPipeline):
+#     pass
