@@ -51,6 +51,7 @@ ipyaggrid = "^0.2.1"
 jupyter_bokeh = "^2.0.4"
 openpyxl = "^3.0.5"
 cutter-ng = "^2.5"
+sidecar = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
