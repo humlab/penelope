@@ -747,6 +747,7 @@ def load_corpus(
     n_top: int = 100000,
     axis: Optional[int] = 1,
     keep_magnitude: bool = True,
+    group_by_year: bool = True,
 ) -> VectorizedCorpus:
     """Loads a previously saved vectorized corpus from disk. Easaly the best loader ever.
 
@@ -770,7 +771,10 @@ def load_corpus(
     VectorizedCorpus
         The loaded corpus
     """
-    v_corpus = VectorizedCorpus.load(tag=tag, folder=folder).group_by_year()
+    v_corpus = VectorizedCorpus.load(tag=tag, folder=folder)
+
+    if group_by_year:
+        v_corpus = v_corpus.group_by_year()
 
     if n_count is not None:
         v_corpus = v_corpus.slice_by_n_count(n_count)
