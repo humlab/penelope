@@ -1,66 +1,72 @@
 import glob
 import os
+from dataclasses import dataclass
+from typing import Callable, List
 
 import ipywidgets
 import penelope.utility as utility
 
-logger = utility.getLogger('corpus_text_analysis')
+logger = utility.getLogger('penelope')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
 
-class CoccurrenceUI:
-    def __init__(self, data_folder, corpus_pattern='*.tokenized.zip'):
+view = ipywidgets.Output()
 
-        self.data_folder = data_folder
-        self.corpus_pattern = corpus_pattern
 
-    def build(self, compute_handler):
-        def on_button_clicked(_):
+@dataclass
+class GUI:
 
-            if self.filepath.value is None:
-                return
+    distance_metric_options = [('linear', 0), ('inverse', 1), ('constant', 2)]
 
-            self.out.clear_output()
-            with self.out:
-                self.button.disabled = True
-                compute_handler(
-                    self.filepath.value,
-                    window_size=self.window_size.value,
-                    distance_metric=self.distance_metric.value,
-                    direction_sensitive=False,  # self.direction_sensitive.value,
-                    method=self.method.value,
-                )
-                self.button.disabled = False
+    filepath = ipywidgets.Dropdown(
+        description='Corpus', options=[], value=None, layout=ipywidgets.Layout(width='400px')
+    )
+    window_size = ipywidgets.IntSlider(
+        description='Window', min=2, max=40, value=5, layout=ipywidgets.Layout(width='250px')
+    )
+    method = ipywidgets.Dropdown(
+        description='Method', options=['HAL', 'Glove'], value='HAL', layout=ipywidgets.Layout(width='200px')
+    )
+    button = ipywidgets.Button(
+        description='Compute',
+        button_style='Success',
+        layout=ipywidgets.Layout(width='115px', background_color='blue'),
+    )
 
-        corpus_files = sorted(glob.glob(os.path.join(self.data_folder, self.corpus_pattern)))
-        distance_metric_options = [('linear', 0), ('inverse', 1), ('constant', 2)]
+    distance_metric = ipywidgets.Dropdown(
+        description='Dist.f.', options=distance_metric_options, value=2, layout=ipywidgets.Layout(width='200px')
+    )
 
-        self.filepath = ipywidgets.Dropdown(
-            description='Corpus', options=corpus_files, value=None, layout=ipywidgets.Layout(width='400px')
-        )
-        self.window_size = ipywidgets.IntSlider(
-            description='Window', min=2, max=40, value=5, layout=ipywidgets.Layout(width='250px')
-        )
-        self.method = ipywidgets.Dropdown(
-            description='Method', options=['HAL', 'Glove'], value='HAL', layout=ipywidgets.Layout(width='200px')
-        )
-        self.button = ipywidgets.Button(
-            description='Compute',
-            button_style='Success',
-            layout=ipywidgets.Layout(width='115px', background_color='blue'),
-        )
-        self.out = ipywidgets.Output()
+    compute_handler: Callable = None
 
-        self.distance_metric = ipywidgets.Dropdown(
-            description='Dist.f.', options=distance_metric_options, value=2, layout=ipywidgets.Layout(width='200px')
-        )
-        # self.direction_sensitive = widgets.ToggleButton(description='L/R', value=False, layout=widgets.Layout(width='115px',background_color='blue'))
-        # self.zero_diagonal       = widgets.ToggleButton(description='Zero Diag', value=False, layout=widgets.Layout(width='115px',background_color='blue'))
+    @view.capture(clear_output=True)
+    def _compute_handler(self, _):
 
-        self.button.on_click(on_button_clicked)
+        if self.filepath.value is None:
+            return
+        self.button.disabled = True
+        try:
+            self.compute_handler(
+                self.filepath.value,
+                window_size=self.window_size.value,
+                distance_metric=self.distance_metric.value,
+                direction_sensitive=False,  # direction_sensitive.value,
+                method=self.method.value,
+            )
+        finally:
+            self.button.disabled = False
 
-        return ipywidgets.VBox(
+    def setup(self, corpus_files: List[str], compute_handler: Callable) -> "GUI":
+        self.filepath.options = corpus_files
+        self.compute_handler = compute_handler
+        self.button.on_click(self._compute_handler)
+
+        return self
+
+    def layout(self):
+
+        layout = ipywidgets.VBox(
             [
                 ipywidgets.HBox(
                     [
@@ -74,6 +80,16 @@ class CoccurrenceUI:
                         ),
                     ]
                 ),
-                self.out,
+                view,
             ]
         )
+        return layout
+
+
+def create_gui(data_folder, corpus_pattern='*.tokenized.zip', compute_handler: Callable = None):
+
+    corpus_files = sorted(glob.glob(os.path.join(data_folder, corpus_pattern)))
+
+    gui = GUI().setup(corpus_files=corpus_files, compute_handler=compute_handler)
+
+    return gui
