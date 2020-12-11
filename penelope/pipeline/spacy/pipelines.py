@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from penelope.co_occurrence.co_occurrence import ContextOpts
+from penelope.corpus.readers.text_transformer import TextTransformOpts
 from penelope.utility import get_logger
 
 from ..pipelines import CorpusPipeline
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
-    from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextTransformOpts
+    from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 
     from ..config import CorpusConfig
 
