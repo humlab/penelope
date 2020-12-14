@@ -23,6 +23,7 @@ layout_algorithms = {
 
 
 def _layout_args(layout_algorithm, network, scale, weight_name='weight'):
+    args = None
     if layout_algorithm == 'Shell':
         if nx.is_bipartite(network):
             nodes, other_nodes = utility.get_bipartite_node_set(network, bipartite=0)
