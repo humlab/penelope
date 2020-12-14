@@ -138,6 +138,21 @@ class OutputsTabExt(widgets.Tab):
         return self
 
 
+def dummy_context():
+    class DummyContext:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):  # pylint: disable=unused-argument
+            pass
+
+    return DummyContext()
+
+
+def default_done_callback(*_, **__):
+    print("Vectorization done!")
+
+
 def shorten_path_with_ellipsis(path: str, max_length: int):
     if len(path) > max_length:
         path, filename = os.path.split(path)
@@ -163,16 +178,50 @@ def shorten_filechooser_label(fc: ipyfilechooser.FileChooser, max_length: int):
         pass
 
 
-def dummy_context():
-    class DummyContext:
-        def __enter__(self):
-            return self
+class FileChooserExt(ipyfilechooser.FileChooser):
 
-        def __exit__(self, exc_type, exc_val, exc_tb):  # pylint: disable=unused-argument
-            pass
+    label_max_length = 50
 
-    return DummyContext()
+    _LBL_TEMPLATE = types.SimpleNamespace(
+        format=lambda p, c: super()._LBL_TEMPLATE.format(
+            shorten_path_with_ellipsis(p, FileChooserExt.label_max_length),
+            'green' if os.path.exists(p) else 'black',
+        )
+    )
 
 
-def default_done_callback(*_, **__):
-    print("Vectorization done!")
+class FileChooserExt2(ipyfilechooser.FileChooser):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        path=os.getcwd(),
+        filename='',
+        title='',
+        select_desc='Select',
+        change_desc='Change',
+        show_hidden=False,
+        select_default=False,
+        use_dir_icons=False,
+        show_only_dirs=False,
+        filter_pattern=None,
+        label_max_length=50,
+        **kwargs,
+    ):
+        self._LBL_TEMPLATE = types.SimpleNamespace(
+            format=lambda p, c: ipyfilechooser.FileChooser._LBL_TEMPLATE.format(
+                shorten_path_with_ellipsis(p, label_max_length), c
+            )
+        )
+
+        super().__init__(
+            path=path,
+            filename=filename,
+            title=title,
+            select_desc=select_desc,
+            change_desc=change_desc,
+            show_hidden=show_hidden,
+            select_default=select_default,
+            use_dir_icons=use_dir_icons,
+            show_only_dirs=show_only_dirs,
+            filter_pattern=filter_pattern,
+            **kwargs,
+        )
