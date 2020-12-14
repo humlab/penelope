@@ -21,6 +21,15 @@ def compute_document_term_matrix(
 ):
     try:
 
+        if not args.corpus_tag:
+            raise ValueError("please specify CORPUS TAG")
+
+        if not args.target_folder:
+            raise ValueError("please specify OUTPUT FOLDER")
+
+        if not os.path.isfile(args.corpus_filename):
+            raise FileNotFoundError(f'file {args.corpus_filename} not found')
+
         checkpoint_filename: str = path_add_suffix(args.corpus_filename, '_pos_csv')
 
         pipeline: CorpusPipeline = pipeline_factory(
@@ -42,11 +51,9 @@ def compute_document_term_matrix(
         )
 
         (done_callback or default_done_callback)(
-            # pipeline=pipeline,
             corpus=corpus,
             corpus_tag=args.corpus_tag,
             corpus_folder=args.target_folder if persist else None,
-            # output=output,
         )
 
     except Exception as ex:

@@ -10,11 +10,6 @@ from ..gui_base import BaseGUI
 
 logger = get_logger('penelope')
 
-# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
-default_layout = widgets.Layout(width='200px')
-button_layout = widgets.Layout(width='140px')
-column_layout = widgets.Layout(width='400px')
-
 
 @dataclass
 class GUI(BaseGUI):
@@ -36,7 +31,7 @@ def create_gui(
     compute_document_term_matrix: Callable,
 ) -> GUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
-    corpus_config.set_folder(corpus_folder)
+    corpus_config.folder(corpus_folder)
     gui = GUI(
         default_corpus_path=corpus_folder,
         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),

@@ -3,56 +3,18 @@ from dataclasses import dataclass
 from typing import Callable
 
 import ipyfilechooser
-import ipywidgets
-from penelope.corpus import VectorizedCorpus
-from penelope.utility import default_data_folder, getLogger
+from ipywidgets import HTML, Button, HBox, Layout, Output, VBox
+from penelope.corpus import VectorizedCorpus, load_corpus
+from penelope.utility import default_data_folder, getLogger, right_chop
+
+from ..utility import shorten_filechooser_label
 
 logger = getLogger('penelope')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
-def right_chop(s: str, suffix: str) -> str:
-    """Returns `s` with `suffix` removed"""
-    return s[: -len(suffix)] if suffix != "" and s.endswith(suffix) else s
 
 
-def load_corpus(
-    folder: str, tag: str, min_word_count: int = None, n_top: int = None, norm_axis: int = None
-) -> VectorizedCorpus:
-    """Loads and returns a vectorized corpus from `folder` with tag `tag`
-
-    Parameters
-    ----------
-    folder : str
-        Folder in which the corpus files exist
-    tag : str
-        Corpus tag i.e. the prefix preceeding the suffix '_vectorizer_data.pickle'
-    min_word_count : int, optional
-        If specified then tokens below given threshold count are stripped away, by default None
-    n_top : int, optional
-        [description], by default 0
-    norm_axis : int, optional
-        Specifies normalization, 0: over year, 1: token, 2: both by default None
-
-    Returns
-    -------
-    VectorizedCorpus
-    """
-    # n_count, n_top, axis, keep_magnitude = None, None, 1, False
-    v_corpus = VectorizedCorpus.load(tag=tag, folder=folder).group_by_year()
-
-    if min_word_count is not None and min_word_count > 1:
-        v_corpus = v_corpus.slice_by_n_count(min_word_count)
-
-    if n_top is not None:
-        v_corpus = v_corpus.slice_by_n_top(n_top)
-
-    if norm_axis in (1, 2) and v_corpus.data.shape[1] > 0:
-        v_corpus = v_corpus.normalize(axis=1)
-
-    if norm_axis in (0, 2):
-        v_corpus = v_corpus.normalize(axis=0)
-
-    return v_corpus
+debug_view = Output(layout={'border': '1px solid black'})
 
 
 @dataclass
@@ -62,69 +24,76 @@ class GUI:
     filename_pattern: str
     load_callback: Callable
 
-    corpus_filename: ipyfilechooser.FileChooser = None
-
-    button = ipywidgets.Button(
+    _corpus_filename: ipyfilechooser.FileChooser = None
+    _alert: HTML = HTML('.')
+    _load_button = Button(
         description='Load',
         button_style='Success',
-        layout=ipywidgets.Layout(width='115px', background_color='blue'),
+        layout=Layout(width='115px', background_color='blue'),
+        disabled=True,
     )
 
+    @debug_view.capture(clear_output=True)
     def _load_handler(self, _):
+        try:
+            if not self.corpus_filename or not os.path.isfile(self.corpus_filename):
+                self.warn("👎Please select a valid corpus file 👎")
+                return
+            self.warn('✔')
+            self._load_button.disabled = True
+            input_folder, filename = os.path.split(self.corpus_filename)
+            corpus_tag = right_chop(filename, self.filename_pattern[1:])
+            self.load_callback(
+                corpus_folder=input_folder,
+                corpus_tag=corpus_tag,
+            )
+        except (ValueError, FileNotFoundError, Exception) as ex:
+            logger.error(ex)
+            self.warn(f"‼ ‼ {ex} ‼ ‼</b>")
+        finally:
+            self._load_button.disabled = False
 
-        # self.output.clear_output()
-
-        # with self.output:
-        #     try:
-
-        if (self.corpus_filename.selected or "") == "":
-            print("Please select a corpus")
-            return
-
-            # raise ValueError("Please select a corpus")
-        self.button.disabled = True
-
-        input_filename = self.corpus_filename.selected
-
-        if not os.path.isfile(input_filename):
-            print("Please sSelect a file")
-            return
-
-        input_folder, filename = os.path.split(input_filename)
-        corpus_tag = right_chop(filename, self.filename_pattern[1:])
-
-        self.load_callback(
-            corpus_folder=input_folder,
-            corpus_tag=corpus_tag,
-        )
-
-        # except (ValueError, FileNotFoundError, Exception) as ex:
-        #     logger.error(ex)
-        #     raise
-        # finally:
-        self.button.disabled = False
+    def file_select_callback(self, _: ipyfilechooser.FileChooser):
+        self._load_button.disabled = False
+        self.alert('✔')
 
     def setup(self):
-
-        self.corpus_filename: ipyfilechooser.FileChooser = ipyfilechooser.FileChooser(
+        self._corpus_filename: ipyfilechooser.FileChooser = ipyfilechooser.FileChooser(
             path=self.default_corpus_folder or default_data_folder(),
             filter_pattern=self.filename_pattern,
-            title='<b>Corpus file (vectorized corpus)</b>',
+            title='<b>Corpus file (*vectorizer_data.pickle)</b>',
             show_hidden=False,
             select_default=True,
             use_dir_icons=True,
             show_only_dirs=False,
         )
-        self.button.on_click(self._load_handler)
+        shorten_filechooser_label(self._corpus_filename, 50)
+        self._load_button.on_click(self._load_handler)
+        self._corpus_filename.register_callback(self.file_select_callback)
         return self
-        # shorten_filechooser_label(self.corpus_filename, 50)
 
     def layout(self):
-        return ipywidgets.VBox(
+        return VBox(
             [
-                ipywidgets.HBox([ipywidgets.VBox([self.corpus_filename]), self.button]),
+                HBox(
+                    [
+                        VBox([self._corpus_filename]),
+                        VBox([self._alert, self._load_button]),
+                    ]
+                ),
+                # view,
             ]
         )
+
+    @property
+    def corpus_filename(self):
+        return self._corpus_filename.selected
+
+    def alert(self, msg: str):
+        self._alert.value = msg
+
+    def warn(self, msg: str):
+        self.alert(f"<span style='color=red'>{msg}</span>")
 
 
 def create_gui(
@@ -132,12 +101,21 @@ def create_gui(
     corpus_folder: str,
     loaded_callback: Callable,
 ):
-    print("INSIDE vectorized_corpus_load_gui.display_gui")
 
     filename_pattern = '*_vectorizer_data.pickle'
 
+    # @view.capture(clear_output=True)
     def load_corpus_callback(corpus_folder: str, corpus_tag: str):
-        corpus = load_corpus(corpus_folder, corpus_tag, min_word_count=None, n_top=None, norm_axis=None)
+
+        corpus: VectorizedCorpus = load_corpus(
+            folder=corpus_folder,
+            tag=corpus_tag,
+            n_count=None,
+            n_top=None,
+            axis=None,
+            group_by_year=False,
+        )
+        # view.clear_output()
         loaded_callback(
             corpus_folder=corpus_folder,
             corpus_tag=corpus_tag,
