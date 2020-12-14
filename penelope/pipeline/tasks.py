@@ -74,6 +74,42 @@ class LoadText(DefaultResolveMixIn, ITask):
         return self
 
 
+# class Split(ITask):
+
+#     partioner: Callable = None
+
+#     def __post_init__(self):
+#         self.in_content_type = ContentType.ANY
+#         self.out_content_type = ContentType.STREAM
+
+#     def setup(self):
+#         super().setup()
+
+#     def process_payload(self, payload: DocumentPayload) -> Any:
+#         raise NotImplementedError()
+
+#     def outstream(self) -> Iterable[DocumentPayload]:
+#         raise NotImplementedError()
+
+# class Reduce(ITask):
+
+#     reducer: Callable = None
+#     reducer: Callable = None
+
+#     def __post_init__(self):
+#         self.in_content_type = ContentType.ANY
+#         self.out_content_type = ContentType.STREAM
+
+#     def setup(self):
+#         super().setup()
+
+#     def process_payload(self, payload: DocumentPayload) -> Any:
+#         raise NotImplementedError()
+
+#     def outstream(self) -> Iterable[DocumentPayload]:
+#         raise NotImplementedError()
+
+
 @dataclass
 class Tqdm(ITask):
 
