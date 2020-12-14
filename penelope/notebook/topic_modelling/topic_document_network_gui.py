@@ -147,7 +147,8 @@ def display_document_topic_network(  # pylint: disable=too-many-locals)
         bokeh.plotting.show(p)
 
     elif output_format == "table":
-        display_document_topics_as_grid(df)
+        g = display_document_topics_as_grid(df)
+        display(g)
 
     tick(0)
 
