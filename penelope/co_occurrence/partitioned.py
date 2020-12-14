@@ -70,7 +70,7 @@ def partitioned_corpus_co_occurrence(
             }
         )
 
-        logger.info(f'Processing{key}...')
+        logger.info(f'Processing {key}...')
 
         co_occurrence = corpus_co_occurrence(
             key_stream,
@@ -85,11 +85,14 @@ def partitioned_corpus_co_occurrence(
         # FIXME! #26  n_raw_tokens  n_tokens in document_index ARE EMPRY
         total_results.append(co_occurrence)
 
+    logger.info('Concatenating results...')
+
     co_occurrences = pd.concat(total_results, ignore_index=True)
 
     # FIXME: #13 Count threshold value should specify min inclusion value
+    logger.info('Filtering results...')
     co_occurrences = _filter_co_coccurrences_by_global_threshold(co_occurrences, global_threshold_count)
-
+    logger.info('Done computing co-occurrences')
     return co_occurrences
 
 
