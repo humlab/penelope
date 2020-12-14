@@ -128,10 +128,10 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'id2word': id2word,  # Dictionary
                 'default_mallet_home': '/usr/local/share/mallet-2.0.8/',  # MALLET_HOME
                 'num_topics': kwargs.get('n_topics', 100),  # Number of topics.
-                'iterations': kwargs.get('max_iter', 2000),  # Number of training iterations.
+                'iterations': kwargs.get('max_iter', 3000),  # Number of training iterations.
                 # 'alpha': int(kwargs.get('passes', 20))                     # Alpha parameter of LDA.
                 'prefix': kwargs.get('prefix', TEMP_PATH),
-                'workers': int(kwargs.get('workers', 4)),  # Number of threads that will be used for training.
+                'workers': int(kwargs.get('workers', 1)),  # Number of threads that will be used for training.
                 'optimize_interval': kwargs.get(
                     'optimize_interval', 10
                 ),  # Optimize hyperparameters every optimize_interval iterations
