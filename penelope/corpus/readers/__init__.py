@@ -1,3 +1,4 @@
+# type: ignore
 from .dataframe_text_tokenizer import DataFrameTextTokenizer
 from .in_memory_data_reader import InMemoryReader
 from .interfaces import ExtractTaggedTokensOpts, ICorpusReader, TaggedTokensFilterOpts, TextSource

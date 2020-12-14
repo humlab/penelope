@@ -1,3 +1,4 @@
+# type: ignore
 from .document_index import (
     add_document_index_attributes,
     assert_is_monotonic_increasing_integer_series,

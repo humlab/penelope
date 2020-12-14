@@ -1,6 +1,8 @@
+# type: ignore
 from .co_occurrence import corpus_co_occurrence, corpus_to_windows, tokens_to_windows
 from .convert import (
     load_co_occurrences,
+    store_bundle,
     store_co_occurrences,
     to_co_occurrence_matrix,
     to_dataframe,

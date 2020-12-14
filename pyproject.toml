@@ -52,6 +52,8 @@ jupyter_bokeh = "^2.0.4"
 openpyxl = "^3.0.5"
 cutter-ng = "^2.5"
 sidecar = "^0.4.0"
+toml = "^0.10.2"
+PyYAML = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -73,7 +75,7 @@ yapf = "==0.*,>=0.30.0"
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
-concept_cooccurrence = "penelope.scripts.concept_co_occurrence:main"
+co_occurrence = "penelope.scripts.co_occurrence:main"
 
 
 
