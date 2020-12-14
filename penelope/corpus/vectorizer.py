@@ -146,7 +146,7 @@ def _set_monotonic_index_by_seen_documents(
 
     if document_index is None:
 
-        logger.warning("vectorizer: no corpus document index supplied: generating from seen filenames")
+        # logger.warning("vectorizer: no corpus document index supplied: generating from seen filenames")
         seen_document_index: pd.DataFrame = pd.DataFrame(
             {
                 'filename': seen_document_names,
