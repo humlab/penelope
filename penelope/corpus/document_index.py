@@ -18,41 +18,29 @@ def assert_is_monotonic_increasing_integer_series(series: pd.Series):
 
 
 def is_monotonic_increasing_integer_series(series: pd.Series):
-    if not np.issubdtype(series.dtype, np.integer):
+    if len(series) > 0 and not np.issubdtype(series.dtype, np.integer):
         return False
-    if not series.is_monotonic_increasing:
+    if not series.sort_values().is_monotonic_increasing:
         return False
     if len(series) > 0 and series.min() != 0:
         return False
     return True
 
 
-def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = None) -> pd.DataFrame:
-    """Creates a document index with all collected metadata key as columns.
-    The data frame's index is set to `filename` by (default) or `index_field` if it is supplied.
-    The index is also added as a `document_id` column."""
+def _get_monotonic_document_id(document_index: pd.DataFrame, document_id_field: str) -> pd.Series:
 
-    if metadata is None or len(metadata) == 0:
-        metadata = {'filename': [], 'document_id': []}
+    if 'document_id' in document_index.columns:
+        if is_monotonic_increasing_integer_series(document_index.document_id):
+            return document_index.document_id
 
-    catalogue: pd.DataFrame = pd.DataFrame(metadata)
+    if document_id_field is not None and document_id_field in document_index.columns:
+        if is_monotonic_increasing_integer_series(document_index[document_id_field]):
+            return document_index[document_id_field]
 
-    if 'filename' not in catalogue.columns:
-        raise ValueError("metadata is missing mandatory field `filename`")
+    if is_monotonic_increasing_integer_series(document_index.index):
+        return document_index.index
 
-    if 'document_id' in catalogue.columns:
-        logging.warning("filename metadata already has a column named `document_id` (will be overwritten)")
-
-    if 'document_name' not in catalogue.columns:
-        catalogue['document_name'] = catalogue.filename.apply(strip_path_and_extension)
-
-    catalogue['document_id'] = catalogue[document_id_field] if document_id_field is not None else catalogue.index
-
-    assert_is_monotonic_increasing_integer_series(catalogue['document_id'])
-
-    catalogue = catalogue.set_index('document_name', drop=False)
-
-    return catalogue
+    return document_index.reset_index().index
 
 
 def store_document_index(document_index: pd.DataFrame, filename: str):
@@ -66,11 +54,9 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
         return None
 
     if isinstance(filename, pd.DataFrame):
-        return filename
-
-    attrs = dict(sep=sep)
-
-    document_index = pd.read_csv(filename, **attrs)
+        document_index = filename
+    else:
+        document_index: pd.DataFrame = pd.read_csv(filename, sep=sep)
 
     if key_column is not None:
         if key_column not in document_index.columns:
@@ -83,21 +69,23 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
     if 'filename' not in document_index.columns:
         raise DocumentIndexError("expected mandatry column `filename` in document index, found no such thing")
 
-    if 'document_id' not in document_index.columns and key_column is not None:
-        if is_monotonic_increasing_integer_series(document_index[key_column]):
-            document_index['document_id'] = document_index[key_column]
-
-    if 'document_id' not in document_index.columns:
-        if not is_monotonic_increasing_integer_series(document_index.index):
-            document_index = document_index.reset_index(drop=True)
-        document_index['document_id'] = document_index.index
-
-    assert_is_monotonic_increasing_integer_series(document_index.document_id)
+    document_index['document_id'] = _get_monotonic_document_id(document_index, key_column)
 
     if 'document_name' not in document_index.columns or (document_index.document_name == document_index.filename).all():
         document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
 
     document_index = document_index.set_index('document_name', drop=False).rename_axis('')
+
+    return document_index
+
+
+def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = None) -> pd.DataFrame:
+    """Creates a document index from collected filename fields metadata."""
+
+    if metadata is None or len(metadata) == 0:
+        metadata = {'filename': [], 'document_id': []}
+
+    document_index = load_document_index(pd.DataFrame(metadata), key_column=document_id_field, sep=None)
 
     return document_index
 
