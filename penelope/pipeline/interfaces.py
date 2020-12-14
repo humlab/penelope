@@ -32,6 +32,7 @@ class ContentType(IntEnum):
     PASSTHROUGH = 12
     DOCUMENT_CONTENT_TUPLE = 13
     CO_OCCURRENCE_DATAFRAME = 14
+    STREAM = 15
 
 
 @dataclass
@@ -94,22 +95,23 @@ class PipelinePayload:
     metadata: List[Dict[str, Any]] = None
     token2id: Mapping[str, int] = None
 
-    document_index: pd.DataFrame = None
+    _document_index: pd.DataFrame = None
     # FIXME: Move to document_index_proxy object?
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
 
-    def __post_init__(self):
-
-        if self.document_index is None:
+    @property
+    def document_index(self) -> pd.DataFrame:
+        if self._document_index is None:
             if isinstance(self.document_index_source, pd.DataFrame):
-                self.document_index = self.document_index_source
+                self._document_index = self.document_index_source
             elif isinstance(self.document_index_source, str):
-                self.document_index = load_document_index(
+                self._document_index = load_document_index(
                     filename=self.document_index_source,
                     key_column=self.document_index_key,
                     sep=self.document_index_sep,
                 )
+        return self._document_index
 
     @property
     def props(self) -> Dict[str, Any]:
@@ -130,11 +132,11 @@ class PipelinePayload:
         return self
 
     def set_reader_index(self, reader_index: pd.DataFrame) -> "PipelinePayload":
-        if self.document_index is None:
-            self.document_index = reader_index
+        if self._document_index is None:
+            self._document_index = reader_index
         else:
-            self.document_index = consolidate_document_index(
-                document_index=self.document_index,
+            self._document_index = consolidate_document_index(
+                document_index=self._document_index,
                 reader_index=reader_index,
             )
         return self
