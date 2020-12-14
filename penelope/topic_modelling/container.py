@@ -186,7 +186,6 @@ class InferredTopicsData:
             for (df, name) in data:
                 archive_name = jj(target_folder, filename_utils.replace_extension(name, ".zip"))
                 file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
-                # df.to_csv(jj(target_folder, filename_utils.replace_extension(name, ".zip")), '\t')
 
     @staticmethod
     def load(folder: str, pickled: bool = False):
@@ -201,7 +200,7 @@ class InferredTopicsData:
                 data = pickle.load(f)
 
             data = InferredTopicsData(
-                document_index=data.document_index if hasattr(data, 'document_index') else data.documents,
+                document_index=data.document_index if hasattr(data, 'document_index') else data.document,
                 dictionary=data.dictionary,
                 topic_token_weights=data.topic_token_weights,
                 topic_token_overview=data.topic_token_overview,
