@@ -71,6 +71,7 @@ pytest-cov = "==2.*,>=2.10.1"
 rope = "==0.*,>=0.17.0"
 taskipy = "==1.*,>=1.4.0"
 yapf = "==0.*,>=0.30.0"
+pynguin = "^0.6.3"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"

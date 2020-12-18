@@ -255,6 +255,9 @@ jmespath==0.10.0; python_version >= "3.5" and python_full_version < "3.0.0" or p
 joblib==0.17.0; python_version >= "3.6" \
     --hash=sha256:698c311779f347cf6b7e6b8a39bb682277b8ee4aba8cf9507bc0cf4cd4737b72 \
     --hash=sha256:9e284edd6be6b71883a63c9b7f124738a3c16195513ad940eae7e3438de885d5
+json5==0.9.5; python_version >= "3.5" \
+    --hash=sha256:af1a1b9a2850c7f62c23fde18be4749b3599fd302f494eebf957e2ada6b9e42c \
+    --hash=sha256:703cfee540790576b56a92e1c6aaa6c4b0d98971dc358ead83812aa4d06bdb96
 jsonschema==3.2.0; python_version >= "3.5" \
     --hash=sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163 \
     --hash=sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a
@@ -269,6 +272,12 @@ jupyter-core==4.6.3; python_version >= "3.6" \
 jupyterlab-pygments==0.1.2; python_version >= "3.6" \
     --hash=sha256:abfb880fd1561987efaefcb2d2ac75145d2a5d0139b1876d5be806e32f630008 \
     --hash=sha256:cfcda0873626150932f438eccf0f8bf22bfa92345b814890ab360d666b254146
+jupyterlab-server==1.2.0; python_version >= "3.5" \
+    --hash=sha256:55d256077bf13e5bc9e8fbd5aac51bef82f6315111cec6b712b9a5ededbba924 \
+    --hash=sha256:5431d9dde96659364b7cc877693d5d21e7b80cea7ae3959ecc2b87518e5f5d8c
+jupyterlab==2.2.9; python_version >= "3.5" \
+    --hash=sha256:59af02c26a15ec2d2862a15bc72e41ae304b406a0b0d3f4f705eeb7caf91902b \
+    --hash=sha256:3be8f8edea173753dd838c1b6d3bbcb6f5c801121f824a477025c1b6a1d33dc6
 kiwisolver==1.3.1; python_version >= "3.6" \
     --hash=sha256:fd34fbbfbc40628200730bc1febe30631347103fc8d3d4fa012c21ab9c11eca9 \
     --hash=sha256:d3155d828dec1d43283bd24d3d3e0d9c7c350cdfcc0bd06c0ad1209c1bbc36d0 \
@@ -652,7 +661,7 @@ pywinpty==0.5.7; os_name == "nt" and python_version >= "3.6" \
     --hash=sha256:dd22c8efacf600730abe4a46c1388355ce0d4ab75dc79b15d23a7bd87bf05b48 \
     --hash=sha256:8fc5019ff3efb4f13708bd3b5ad327589c1a554cb516d792527361525a7cb78c \
     --hash=sha256:2d7e9c881638a72ffdca3f5417dd1563b60f603e1b43e5895674c2a1b01f95a0
-pyyaml==5.3.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6" \
+pyyaml==5.3.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0") \
     --hash=sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f \
     --hash=sha256:240097ff019d7c70a4922b6869d8a86407758333f02203e0fc6ff79c5dcede76 \
     --hash=sha256:4f4b913ca1a7319b33cfb1369e91e50354d6f07a135f3b901aca02aa95940bd2 \
@@ -788,6 +797,9 @@ scipy==1.5.4; python_version >= "3.6" \
 send2trash==1.5.0; python_version >= "3.5" \
     --hash=sha256:f1691922577b6fa12821234aeb57599d887c4900b9ca537948d2dac34aea888b \
     --hash=sha256:60001cc07d707fe247c94f74ca6ac0d3255aabcb930529690897ca2a39db28b2
+sidecar==0.4.0 \
+    --hash=sha256:01647586789d0e87ddf018bb87670ba4cba15ac523e79afa120af9f06027d537 \
+    --hash=sha256:3e79de269ddd2c0eff1cb26025cb9f434cf9914b777cf03eeab8347f6de7160e
 simplejson==3.17.2; python_version >= "2.5" and python_full_version < "3.0.0" or python_full_version >= "3.3.0" \
     --hash=sha256:2d3eab2c3fe52007d703a26f71cf649a8c771fcdd949a3ae73041ba6797cfcf8 \
     --hash=sha256:813846738277729d7db71b82176204abc7fdae2f566e2d9fcf874f9b6472e3e6 \
@@ -907,6 +919,9 @@ thinc==7.4.1; python_version >= "3.6" and python_full_version < "3.0.0" or pytho
 threadpoolctl==2.1.0; python_version >= "3.6" \
     --hash=sha256:38b74ca20ff3bb42caca8b00055111d74159ee95c4370882bbff2b93d24da725 \
     --hash=sha256:ddc57c96a38beb63db45d6c159b5ab07b6bced12c45a1f07b2b92f272aebfa6b
+toml==0.10.2; (python_version >= "2.6" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0") \
+    --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
+    --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
 toolz==0.11.1; python_version >= "3.6" \
     --hash=sha256:1bc473acbf1a1db4e72a1ce587be347450e8f08324908b8a266b486f408f04d5 \
     --hash=sha256:c7a47921f07822fe534fb1c01c9931ab335a4390c782bd28c6bcc7c2f71f3fbf
