@@ -1,7 +1,10 @@
 import enum
 import json
+import os
+import pathlib
 from dataclasses import dataclass
-from typing import Any, Dict, Union
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 import yaml
@@ -22,10 +25,8 @@ class CorpusType(enum.IntEnum):
 
 
 @dataclass
-class CorpusConfig(yaml.YAMLObject):
+class CorpusConfig:
 
-    # def __init__(
-    #     self,
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
     corpus_pattern: str = "*.zip"
@@ -33,14 +34,6 @@ class CorpusConfig(yaml.YAMLObject):
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = "english"
-    # ):
-    #     self.corpus_name = corpus_name
-    #     self.corpus_type = corpus_type
-    #     self.corpus_pattern = corpus_pattern
-    #     self.text_reader_opts = text_reader_opts
-    #     self.tagged_tokens_filter_opts = tagged_tokens_filter_opts
-    #     self.pipeline_payload = pipeline_payload
-    #     self.language = language
 
     def folder(self, folder: str) -> "CorpusConfig":
 
@@ -87,10 +80,16 @@ class CorpusConfig(yaml.YAMLObject):
         """Reads and deserializes a CorpusConfig from `path`"""
         with open(path, "r") as fp:
             if path.endswith('yaml') or path.endswith('yml'):
-                config_dict: dict = yaml.load(fp)
+                config_dict: dict = yaml.load(fp, Loader=yaml.FullLoader)
             else:
                 config_dict: dict = json.load(fp)
         deserialized_config = CorpusConfig.dict_to_corpus_config(config_dict)
+        return deserialized_config
+
+    @staticmethod
+    def loads(data_str: str) -> "CorpusConfig":
+        """Reads and deserializes a CorpusConfig from `path`"""
+        deserialized_config = CorpusConfig.dict_to_corpus_config(yaml.load(data_str))
         return deserialized_config
 
     @staticmethod
@@ -109,3 +108,23 @@ class CorpusConfig(yaml.YAMLObject):
         deserialized_config: CorpusConfig = CorpusConfig(**config_dict)
         deserialized_config.corpus_type = CorpusType(deserialized_config.corpus_type)
         return deserialized_config
+
+    @staticmethod
+    def find(filename: str, folder: str) -> "CorpusConfig":
+        """Finds and returns a corpus config named `filename` in `folder`"""
+        if not os.path.isdir(folder):
+            raise FileNotFoundError(folder)
+
+        for extension in ['', '.yml', '.yaml', '.json']:
+            try_name: str = f"{filename}{extension}"
+            candidates: List[pathlib.Path] = list(pathlib.Path(folder).rglob(try_name))
+            try:
+                for candidate in candidates:
+                    config = CorpusConfig.load(str(candidate))
+                    return config
+            except:  # pylint: disable=bare-except
+                pass
+        FileNotFoundError(filename)
+
+    for path in Path('folder').rglob('*.c'):
+        print(path.name)

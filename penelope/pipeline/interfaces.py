@@ -82,6 +82,7 @@ class PipelineError(Exception):
 @dataclass
 class PipelinePayload:
 
+    source_folder: str = None
     source: TextSource = None
     document_index_source: Union[str, pd.DataFrame] = None
     document_index_key: str = None
