@@ -63,7 +63,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs):
                 'num_topics': int(kwargs.get('n_topics', 20)),
                 'id2word': id2word,  # id2word ({dict of (int, str), gensim.corpora.dictionary.Dictionary})
                 'iterations': kwargs.get(
-                    'max_iter', 1000
+                    'max_iter', 2000
                 ),  # Maximum number of iterations through the corpus when inferring the topic distribution of a corpus
                 'passes': int(kwargs.get('passes', 1)),  # Number of passes through the corpus during training.
                 'workers': kwargs.get(
