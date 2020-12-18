@@ -9,7 +9,7 @@ from .convert import (
     to_vectorized_corpus,
 )
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
-from .interface import ContextOpts, CoOccurrenceError
+from .interface import CO_OCCURRENCE_FILENAME_POSTFIX, ContextOpts, CoOccurrenceError
 from .partitioned import partitioned_corpus_co_occurrence
 from .windows_corpus import WindowsCorpus, WindowsStream
 

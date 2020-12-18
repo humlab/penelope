@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Set
 
+CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
+
 
 class CoOccurrenceError(ValueError):
     pass

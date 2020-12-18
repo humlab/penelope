@@ -2,15 +2,13 @@ import os
 from dataclasses import dataclass, field
 from typing import Callable
 
-import ipyfilechooser
 import ipywidgets as widgets
+import penelope.notebook.utility as notebook_utility
+import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import default_data_folder, flatten, get_logger, get_pos_schema
-from penelope.utility.pos_tags import PoS_Tag_Scheme
-
-from .utility import shorten_filechooser_label
+from penelope.utility import PoS_Tag_Scheme, default_data_folder, flatten, get_logger
 
 logger = get_logger('penelope')
 
@@ -18,7 +16,8 @@ logger = get_logger('penelope')
 
 default_layout = widgets.Layout(width='200px')
 button_layout = widgets.Layout(width='140px')
-column_layout = widgets.Layout(width='400px')
+
+# view: widgets.Output = widgets.Output()
 
 
 @dataclass
@@ -30,59 +29,70 @@ class BaseGUI:
 
     _config: CorpusConfig = None
 
-    _courpus_filename: ipyfilechooser.FileChooser = None
-    _target_folder: ipyfilechooser.FileChooser = None
+    _corpus_filename: notebook_utility.FileChooserExt2 = None
+    _target_folder: notebook_utility.FileChooserExt2 = None
 
-    _corpus_tag = widgets.Text(
+    _corpus_tag: widgets.Text = widgets.Text(
         value='',
         placeholder='Tag to prepend output files',
         description='',
         disabled=False,
-        layout=column_layout,
+        layout=default_layout,
     )
-    _pos_includes = widgets.SelectMultiple(
+    _pos_includes: widgets.SelectMultiple = widgets.SelectMultiple(
         options=[],
         value=[],
         rows=8,
         description='',
         disabled=False,
-        layout=column_layout,
+        layout=default_layout,
     )
-    _filename_fields = widgets.Text(
+    _filename_fields: widgets.Text = widgets.Text(
         value="",
         placeholder='Fields to extract from filename (regex)',
         description='',
         disabled=True,
-        layout=column_layout,
+        layout=default_layout,
     )
-    _create_subfolder = widgets.ToggleButton(
+    _create_subfolder: widgets.ToggleButton = widgets.ToggleButton(
         value=True, description='Create folder', icon='check', layout=button_layout
     )
-    _lemmatize = widgets.ToggleButton(value=True, description='Lemmatize', icon='check', layout=button_layout)
-    _to_lowercase = widgets.ToggleButton(value=True, description='To Lower', icon='check', layout=button_layout)
-    _remove_stopwords = widgets.ToggleButton(value=True, description='No Stopwords', icon='check', layout=button_layout)
-    _only_alphabetic = widgets.ToggleButton(value=False, description='Only Alpha', icon='', layout=button_layout)
-    _only_any_alphanumeric = widgets.ToggleButton(
-        value=False, description='Only Alphanum', icon='', layout=button_layout
+    _lemmatize: widgets.ToggleButton = widgets.ToggleButton(
+        value=True, description='Lemmatize', icon='check', layout=button_layout
     )
-    _extra_stopwords = widgets.Textarea(
+    _to_lowercase: widgets.ToggleButton = widgets.ToggleButton(
+        value=True, description='To lower', icon='check', layout=button_layout
+    )
+    _remove_stopwords: widgets.ToggleButton = widgets.ToggleButton(
+        value=True, description='No stopwords', icon='check', layout=button_layout
+    )
+    _only_alphabetic: widgets.ToggleButton = widgets.ToggleButton(
+        value=False, description='Only alphabetic', icon='', layout=button_layout
+    )
+    _only_any_alphanumeric: widgets.ToggleButton = widgets.ToggleButton(
+        value=False, description='Only alphanumeric', icon='', layout=button_layout
+    )
+    _extra_stopwords: widgets.Textarea = widgets.Textarea(
         value='örn',
         placeholder='Enter extra stop words',
         description='',
         disabled=False,
         rows=8,
-        layout=widgets.Layout(width='350px'),
+        layout=widgets.Layout(width='280px'),
     )
-    _count_threshold = widgets.IntSlider(description='', min=1, max=1000, step=1, value=1, layout=default_layout)
+    _count_threshold: widgets.IntSlider = widgets.IntSlider(
+        description='', min=1, max=1000, step=1, value=1, layout=default_layout
+    )
 
-    _vectorize_button = widgets.Button(
+    _vectorize_button: widgets.Button = widgets.Button(
         description='Compute!',
         button_style='Success',
         layout=button_layout,
     )
-    output = widgets.Output()
+    extra_placeholder: widgets.HBox = widgets.HBox()
+    buttons_placeholder: widgets.VBox = widgets.VBox()
 
-    _corpus_type = widgets.Dropdown(
+    _corpus_type: widgets.Dropdown = widgets.Dropdown(
         description='',
         options={
             'Text': CorpusType.Text,
@@ -95,89 +105,49 @@ class BaseGUI:
 
     compute_callback: Callable = None
 
-    def layout(self, hide_input=False, hide_output=False):
+    def layout(self, hide_input=False, hide_output=False) -> widgets.VBox:
 
         return widgets.VBox(
-            [
+            (
                 []
                 if hide_input
                 else [
                     widgets.HBox(
-                        [
-                            widgets.VBox(
-                                [
-                                    widgets.HTML("<b>Corpus type</b>"),
-                                    self._corpus_type,
-                                ]
-                            ),
-                            self._courpus_filename,
-                        ]
-                    ),
+                        [widgets.VBox([widgets.HTML("<b>Corpus type</b>"), self._corpus_type]), self._corpus_filename]
+                    )
                 ]
-            ]
-            + [
+            )
+            + (
                 []
                 if hide_output
                 else [
                     widgets.HBox(
-                        [
-                            widgets.VBox(
-                                [
-                                    widgets.HTML("<b>Output tag</b>"),
-                                    self._corpus_tag,
-                                ]
-                            ),
-                            self._target_folder,
-                        ]
+                        [widgets.VBox([widgets.HTML("<b>Output tag</b>"), self._corpus_tag]), self._target_folder]
                     ),
                 ]
-            ]
+            )
             + [
+                self.extra_placeholder,
                 widgets.HBox(
                     [
-                        widgets.VBox(
-                            [
-                                widgets.HTML("<b>Part-Of-Speech tags</b>"),
-                                self._pos_includes,
-                            ]
-                        ),
-                        widgets.VBox(
-                            [
-                                widgets.HTML("<b>Extra stopwords</b>"),
-                                self._extra_stopwords,
-                            ]
-                        ),
+                        widgets.VBox([widgets.HTML("<b>Part-Of-Speech tags</b>"), self._pos_includes]),
+                        widgets.VBox([widgets.HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
                     ]
                 ),
                 widgets.HBox(
                     [
                         widgets.VBox(
                             [
-                                widgets.VBox(
-                                    [
-                                        widgets.HTML("<b>Filename fields</b>"),
-                                        self._filename_fields,
-                                    ]
-                                ),
-                                widgets.VBox(
-                                    [
-                                        widgets.HTML("<b>Frequency threshold</b>"),
-                                        self._count_threshold,
-                                    ]
-                                ),
+                                widgets.VBox([widgets.HTML("<b>Filename fields</b>"), self._filename_fields]),
+                                widgets.VBox([widgets.HTML("<b>Frequency threshold</b>"), self._count_threshold]),
                             ]
                         ),
                         widgets.VBox(
                             [
                                 widgets.HBox(
                                     [
-                                        widgets.VBox(
-                                            [
-                                                self._lemmatize,
-                                                self._to_lowercase,
-                                                self._remove_stopwords,
-                                            ]
-                                        ),
+                                        widgets.VBox([self._lemmatize, self._to_lowercase, self._remove_stopwords]),
+                                        self.buttons_placeholder,
                                         widgets.VBox(
                                             [
                                                 self._only_alphabetic,
@@ -192,47 +162,42 @@ class BaseGUI:
                         ),
                     ]
                 ),
-                self.output,
+                # view,
             ]
         )
 
+    # @view.capture(clear_output=True)
     def _compute_handler(self, *_):
-        if self.compute_callback is not None:
-            self.output.clear_output()
-            with self.output:
-
-                self._vectorize_button.disabled = True
-                try:
-
-                    self.compute_callback(self)
-
-                except (ValueError, FileNotFoundError) as ex:
-                    print(ex)
-                except Exception as ex:
-                    logger.info(ex)
-                    raise
-                finally:
-                    self._vectorize_button.disabled = False
+        if self.compute_callback is None:
+            return
+        self._vectorize_button.disabled = True
+        try:
+            self.compute_callback(self)
+        except (ValueError, FileNotFoundError) as ex:
+            print(ex)
+        except Exception as ex:
+            logger.info(ex)
+            raise
+        finally:
+            self._vectorize_button.disabled = False
 
     def _corpus_type_changed(self, *_):
         self._pos_includes.disabled = self._corpus_type.value == 'text'
         self._lemmatize.disabled = self._corpus_type.value == 'text'
 
+    # @view.capture(clear_output=True)
     def _toggle_state_changed(self, event):
-        with self.output:
-            try:
-                event['owner'].icon = 'check' if event['new'] else ''
-            except Exception as ex:
-                logger.exception(ex)
+        try:
+            event['owner'].icon = 'check' if event['new'] else ''
+        except Exception as ex:
+            logger.exception(ex)
 
     def _remove_stopwords_state_changed(self, *_):
         self._extra_stopwords.disabled = not self._remove_stopwords.value
 
-    def setup(self, *, config: CorpusConfig, compute_callback: Callable):
+    def setup(self, *, config: CorpusConfig, compute_callback: Callable) -> "BaseGUI":
 
-        self._config = config
-
-        self._courpus_filename = ipyfilechooser.FileChooser(
+        self._corpus_filename = notebook_utility.FileChooserExt2(
             path=self.default_corpus_path or default_data_folder(),
             filename=self.default_corpus_filename,
             filter_pattern=config.corpus_pattern,
@@ -242,10 +207,9 @@ class BaseGUI:
             use_dir_icons=True,
             show_only_dirs=False,
         )
+        self._corpus_filename.refresh()
 
-        shorten_filechooser_label(self._courpus_filename, 50)
-
-        self._target_folder = ipyfilechooser.FileChooser(
+        self._target_folder = notebook_utility.FileChooserExt2(
             path=self.default_target_folder or default_data_folder(),
             title='<b>Output folder</b>',
             show_hidden=False,
@@ -253,15 +217,11 @@ class BaseGUI:
             use_dir_icons=True,
             show_only_dirs=True,
         )
+        self._target_folder.refresh()
 
-        pos_schema = get_pos_schema(self._config.pipeline_payload.pos_schema_name)
-
-        self._pos_includes.value = []
-        self._pos_includes.options = pos_schema.groups
-        self._pos_includes.value = [pos_schema.groups['Noun'], pos_schema.groups['Verb']]
         self._corpus_type.value = config.corpus_type
         self._corpus_type.disabled = True
-        self._courpus_filename.filter_pattern = config.corpus_pattern
+        self._corpus_filename.filter_pattern = config.corpus_pattern
         self._filename_fields.value = ';'.join(config.text_reader_opts.filename_fields)
         self._filename_fields.disabled = True
 
@@ -274,7 +234,20 @@ class BaseGUI:
         self._only_any_alphanumeric.observe(self._toggle_state_changed, 'value')
         self._vectorize_button.on_click(self._compute_handler)
 
+        self.update_config(config)
         self.compute_callback = compute_callback
+
+        return self
+
+    def update_config(self, __config: CorpusConfig) -> "BaseGUI":
+
+        self._config = __config
+
+        pos_schema = utility.get_pos_schema(self._config.pipeline_payload.pos_schema_name)
+
+        self._pos_includes.value = []
+        self._pos_includes.options = pos_schema.groups
+        self._pos_includes.value = [pos_schema.groups['Noun'], pos_schema.groups['Verb']]
 
         return self
 
@@ -305,10 +278,10 @@ class BaseGUI:
 
     @property
     def extract_tagged_tokens_opts(self) -> ExtractTaggedTokensOpts:
-        pos_schema = get_pos_schema(self._config.pipeline_payload.pos_schema_name)
+        pos_schema = utility.get_pos_schema(self._config.pipeline_payload.pos_schema_name)
         return ExtractTaggedTokensOpts(
             pos_includes=f"|{'|'.join(flatten(self._pos_includes.value))}|",
-            pos_excludes=f"|{'|'.join(flatten(pos_schema.groups.get('Delimiter', [])))}|",
+            pos_excludes=f"|{'|'.join(pos_schema.groups.get('Delimiter', []))}|",
             lemmatize=self._lemmatize.value,
             passthrough_tokens=list(),
         )
@@ -342,40 +315,12 @@ class BaseGUI:
 
     @property
     def corpus_folder(self):
-        return self._courpus_filename.selected_path
+        return self._corpus_filename.selected_path
 
     @property
     def corpus_filename(self):
-        return self._courpus_filename.selected
+        return self._corpus_filename.selected
 
     @property
     def count_threshold(self):
         return self._count_threshold.value
-
-
-# def create_gui(
-#     *,
-#     corpus_folder: str,
-#     corpus_config: CorpusConfig,
-#     pipeline_factory: Callable[[], CorpusPipeline],
-#     done_callback: Callable[[CorpusPipeline, VectorizedCorpus, str, str, widgets.Output], None],
-#     compute_document_term_matrix: Callable,
-# ) -> GUI:
-#     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
-#     corpus_config.set_folder(corpus_folder)
-#     gui = GUI(
-#         default_corpus_path=corpus_folder,
-#         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
-#         default_target_folder=corpus_folder,
-#     ).setup(
-#         config=corpus_config,
-#         compute_callback=lambda g: compute_document_term_matrix(
-#             corpus_config=corpus_config,
-#             pipeline_factory=pipeline_factory,
-#             args=g,
-#             done_callback=done_callback,
-#             persist=True,
-#         ),
-#     )
-
-#     return gui

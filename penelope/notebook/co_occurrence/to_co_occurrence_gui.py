@@ -1,44 +1,64 @@
-from dataclasses import dataclass
-from typing import Callable
+from dataclasses import dataclass, field
+from typing import Callable, Set
 
 import ipywidgets as widgets
 from penelope.co_occurrence import ContextOpts
-from penelope.corpus import VectorizedCorpus
-from penelope.pipeline import CorpusConfig, CorpusPipeline
+from penelope.pipeline import CorpusConfig
 from penelope.utility import get_logger
 
-from ..gui_base import BaseGUI
+from ..gui_base import BaseGUI, button_layout, default_layout
 
 logger = get_logger('penelope')
 
-# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
-default_layout = widgets.Layout(width='200px')
-button_layout = widgets.Layout(width='140px')
-column_layout = widgets.Layout(width='400px')
+tooltips = {
+    '_context_width': "Max distance to the midmost word, window size two times this value plus one",
+    '_ignore_concept': "If checked, the concept words (if specified) are filtered out",
+    '_concept': "If specified, then only windows having a focus word in the middle are considered.",
+}
+view = widgets.Output(layout={"border": "1px solid black"})
 
 
 @dataclass
 class GUI(BaseGUI):
 
-    _context_width = widgets.IntSlider(description='', min=1, max=20, step=1, value=2, layout=column_layout)
-    _no_concept = widgets.ToggleButton(value=True, description='No Concept', icon='check', layout=button_layout)
+    partition_key: str = field(default='year')
+
+    _context_width = widgets.IntSlider(
+        description='',
+        min=1,
+        max=40,
+        step=1,
+        value=2,
+        layout=default_layout,
+        tooltip=tooltips['_context_width'],
+    )
     _concept = widgets.Text(
         value='',
         placeholder='Use comma (,) as word delimiter',
         description='',
         disabled=False,
-        layout=column_layout,
+        layout=widgets.Layout(width='280px'),
+        tooltip=tooltips['_concept'],
+    )
+    _ignore_concept = widgets.ToggleButton(
+        value=False,
+        description='No Concept',
+        icon='check',
+        layout=button_layout,
+        tooltip=tooltips['_ignore_concept'],
     )
 
     def layout(self, hide_input=False, hide_output=False):
-        layout = widgets.VBox(
+
+        placeholder: widgets.VBox = super().extra_placeholder
+        extra_layout = widgets.HBox(
             [
-                super().layout(hide_input, hide_output),
-                self._no_concept,
-                widgets.VBox([widgets.HTML("Width (max distance to concept)"), self._context_width]),
-                widgets.VBox([widgets.HTML("Concept tokens"), self._concept]),
+                widgets.VBox([widgets.HTML("<b>Context distance</b>"), self._context_width]),
+                widgets.VBox([widgets.HTML("<b>Concept</b>"), self._concept, self._ignore_concept]),
             ]
         )
+        placeholder.children = [extra_layout]
+        layout = super().layout(hide_input, hide_output)
         return layout
 
     def setup(self, *, config: CorpusConfig, compute_callback: Callable):
@@ -47,27 +67,29 @@ class GUI(BaseGUI):
 
     @property
     def context_opts(self) -> ContextOpts:
-
         return ContextOpts(
-            concept=self.concept_tokens, context_width=self._context_width.value, ignore_concept=self._no_concept.value
+            concept=self.concept_tokens,
+            context_width=self._context_width.value,
+            ignore_concept=self._ignore_concept.value,
         )
 
     @property
-    def concept_tokens(self):
-
-        return set(map(str.strip, self._concept.value.split(',')))
+    def concept_tokens(self) -> Set[str]:
+        _concepts_str = [x.strip() for x in self._concept.value.strip().split(',') if len(x.strip()) > 1]
+        if len(_concepts_str) == 0:
+            return {}
+        return set(_concepts_str)
 
 
 def create_gui(
     *,
     corpus_folder: str,
     corpus_config: CorpusConfig,
-    pipeline_factory: Callable[[], CorpusPipeline],
-    done_callback: Callable[[CorpusPipeline, VectorizedCorpus, str, str, widgets.Output], None],
     compute_callback: Callable = None,
+    done_callback: Callable = None,
 ) -> GUI:
-    """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
-    corpus_config.set_folder(corpus_folder)
+    """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
+    corpus_config.folder(corpus_folder)
     gui = GUI(
         default_corpus_path=corpus_folder,
         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
@@ -76,10 +98,9 @@ def create_gui(
         config=corpus_config,
         compute_callback=lambda g: compute_callback(
             corpus_config=corpus_config,
-            pipeline_factory=pipeline_factory,
             args=g,
+            partition_key=gui.partition_key,
             done_callback=done_callback,
-            persist=True,
         ),
     )
 

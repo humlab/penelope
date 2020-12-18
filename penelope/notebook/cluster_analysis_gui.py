@@ -270,7 +270,7 @@ def display_gui(x_corpus, df_gof):
             token_clusters = container.data.token_clusters
             tokens = token_clusters[token_clusters.cluster == widgets.cluster_index.value].token.tolist()
             if len(tokens) > 0:
-                word_trend_plot_gui.word_trends_pick_gui(x_corpus, tokens, n_columns=3)
+                word_trend_plot_gui.create_word_trends_pick_gui(x_corpus, tokens, n_columns=3)
 
     def step_cluster(b):
 
