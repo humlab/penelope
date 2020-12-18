@@ -5,7 +5,7 @@ import click
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.workflows import WorkflowException, concept_co_occurrence_workflow
+from penelope.workflows import WorkflowException, co_occurrence_workflow
 
 # pylint: disable=too-many-arguments
 
@@ -101,9 +101,9 @@ def main(
     )
     try:
 
-        concept_co_occurrence_workflow(
-            input_filename=input_filename,
-            output_filename=output_filename,
+        co_occurrence_workflow(
+            corpus_filename=input_filename,
+            target_filename=output_filename,
             count_threshold=count_threshold,
             filename_field=filename_field,
             partition_keys=partition_key,

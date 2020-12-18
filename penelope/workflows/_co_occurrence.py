@@ -12,8 +12,9 @@ from .utils import WorkflowException
 
 
 def execute_workflow(
-    input_filename: str,
-    output_filename: str,
+    corpus_filename: str,
+    target_filename: str,
+    # corpus_config: CorpusConfig,
     *,
     context_opts: ContextOpts = None,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
@@ -21,6 +22,10 @@ def execute_workflow(
     count_threshold: int = None,
     partition_keys: Sequence[str],
     filename_field: Any = None,
+    # document_index_filename: str=None,
+    # document_index_sep: str='\t',
+    # pos_schema_name: str = "Universal",
+    # language: str = "english",
 ) -> pd.DataFrame:
     """Creates concept co-occurrence using specified options and stores a co-occurrence CSV file
     and optionally a vectorized corpus.
@@ -84,7 +89,7 @@ def execute_workflow(
     )
 
     corpus: SparvTokenizedCsvCorpus = SparvTokenizedCsvCorpus(
-        source=input_filename,
+        source=corpus_filename,
         reader_opts=reader_opts,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
@@ -93,7 +98,7 @@ def execute_workflow(
     token2id = corpus.token2id  # make one pass to create vocabulary and gather token counts
     document_index = corpus.document_index
 
-    co_occurrences = partitioned_corpus_co_occurrence(
+    co_occurrences: pd.DataFrame = partitioned_corpus_co_occurrence(
         stream=corpus,
         token2id=token2id,
         document_index=document_index,
@@ -105,11 +110,11 @@ def execute_workflow(
     corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
 
     store_bundle(
-        output_filename,
+        target_filename,
         co_occurrences=co_occurrences,
         corpus=corpus,
         corpus_tag=None,
-        input_filename=input_filename,
+        input_filename=corpus_filename,
         partition_keys=partition_keys,
         count_threshold=count_threshold,
         reader_opts=reader_opts,
