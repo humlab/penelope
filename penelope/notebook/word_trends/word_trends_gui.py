@@ -1,78 +1,158 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Sequence
 
-import penelope.common.goodness_of_fit as gof
-import penelope.notebook.utility as notebook_utility
-from penelope.corpus import VectorizedCorpus
-from penelope.notebook.ipyaggrid_utility import display_grid
-from penelope.utility import getLogger
+import ipywidgets as widgets
+from .word_trend_data import WordTrendData, TrendsOpts
+from penelope.utility import get_logger
 
-from .displayers import WordTrendData
-from .word_trends_tabs_gui import create_tabs_gui
+from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer
 
-logger = getLogger("penelope")
+logger = get_logger()
 
-# debug_view = ipywidgets.Output(layout={'border': '1px solid black'})
-# display(debug_view)
+BUTTON_LAYOUT = widgets.Layout(width='100px')
+OUTPUT_LAYOUT = widgets.Layout(width='600px')
 
 
 @dataclass
-class WordTrendsGUI:
+class TrendsGUI:
+    """GUI component that displays word trends"""
 
-    word_trend_data: WordTrendData
+    trend_data: WordTrendData = field(default=None, init=False)
 
-    def layout(self):
-        data = self.word_trend_data
-        tab_gui = create_tabs_gui(trend_data=data)
-        tab_gof = (
-            notebook_utility.OutputsTabExt(["GoF", "GoF (abs)", "Plots", "Slopes"])
-            .display_fx_result(0, display_grid, data.goodness_of_fit)
-            .display_fx_result(
-                1, display_grid, data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
+    _tab: widgets.Tab = widgets.Tab()
+    _normalize: widgets.ToggleButton = widgets.ToggleButton(
+        description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
+    )
+    _smooth: widgets.ToggleButton = widgets.ToggleButton(
+        description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT
+    )
+    _group_by: widgets.Dropdown = widgets.Dropdown(
+        options=['year', 'lustrum', 'decade'],
+        value='year',
+        description='',
+        disabled=False,
+        layout=widgets.Layout(width='75px'),
+    )
+    _status: widgets.Label = widgets.Label(layout=widgets.Layout(width='50%', border="0px transparent white"))
+    _words: widgets.Textarea = widgets.Textarea(
+        description="",
+        rows=2,
+        value="",
+        placeholder='Enter words and/or reg.exps. such as |.*ment$|',
+        layout=widgets.Layout(width='98%'),
+    )
+    _word_count: widgets.BoundedIntText = widgets.BoundedIntText(
+        value=10, min=3, max=100, step=1, description='Max words:', disabled=False
+    )
+    _displayers: Sequence[ITrendDisplayer] = field(default_factory=list)
+
+    # update_handler: Callable = field(default=None, init=False)
+
+    def layout(self) -> widgets.VBox:
+        return widgets.VBox(
+            [
+                widgets.HBox(
+                    [
+                        self._normalize,
+                        self._smooth,
+                        self._group_by,
+                        self._status,
+                    ]
+                ),
+                self._words,
+                self._tab,
+            ]
+        )
+
+    def _plot_trends(self, *_):
+
+        try:
+
+            if self.trend_data is None or self.trend_data.corpus is None:
+                self.alert("Please load a corpus!")
+                return
+
+            self.current_displayer.display(
+                corpus=self.trend_data.get_corpus(self.normalize, self.group_by),
+                indices=self.trend_data.find_indices(self.options),
+                smooth=self.smooth,
             )
-            .display_fx_result(2, gof.plot_metrics, data.goodness_of_fit, plot=False, lazy=True)
-            .display_fx_result(
-                3, gof.plot_slopes, data.corpus, data.most_deviating, "l2_norm", 600, 600, plot=False, lazy=True
-            )
-        )
-        _layout = (
-            notebook_utility.OutputsTabExt(["Trends", "GoF"])
-            .display_content(0, what=tab_gui.layout(), clear=True)
-            .display_content(1, what=tab_gof, clear=True)
-        )
 
-        return _layout
+            self.alert("✔")
 
+        except ValueError as ex:
+            self.alert(str(ex))
+        except Exception as ex:
+            logger.exception(ex)
+            self.warn(str(ex))
 
-def create_gui(
-    *,
-    corpus: VectorizedCorpus = None,
-    corpus_folder: str = None,
-    corpus_tag: str = None,
-    word_trend_data: WordTrendData = None,
-    **kwargs,
-):
-    if corpus is None:
-        logger.info("Please wait, loading corpus...")
-        corpus = VectorizedCorpus.load(tag=corpus_tag, folder=corpus_folder)
-    corpus = corpus.group_by_year()
+    def setup(self, *, displayers: Sequence[ITrendDisplayer] = None) -> "TrendsGUI":
 
-    try:
+        displayers = displayers or WORD_TREND_DISPLAYERS
 
-        word_trend_data = word_trend_data or WordTrendData().update(
-            corpus=corpus,
-            corpus_folder=corpus_folder,
-            corpus_tag=corpus_tag,
-            n_count=kwargs.get('n_count', 25000),
-            **kwargs,
-        )
+        for i, cls in enumerate(displayers):
+            displayer: ITrendDisplayer = cls()
+            self._displayers.append(displayer)
+            displayer.output = widgets.Output()
+            with displayer.output:
+                displayer.setup()
 
-        gui = WordTrendsGUI(word_trend_data=word_trend_data)
+        self._tab.children = [d.output for d in self._displayers]
+        for i, d in enumerate(self._displayers):
+            self._tab.set_title(i, d.name)
 
-        return gui
+        self._words.observe(self._plot_trends, names='value')
+        self._tab.observe(self._plot_trends, 'selected_index')
+        self._normalize.observe(self._plot_trends, names='value')
+        self._smooth.observe(self._plot_trends, names='value')
+        self._group_by.observe(self._plot_trends, names='value')
 
-    except gof.GoodnessOfFitComputeError as ex:
-        logger.info(f"Unable to compute GoF: {str(ex)}")
-        raise
-    except Exception as ex:
-        logger.exception(ex)
-        raise
+        return self
+
+    def display(self, *, trend_data: WordTrendData):
+        self.trend_data = trend_data
+        self._plot_trends()
+
+    @property
+    def current_displayer(self) -> ITrendDisplayer:
+        return self._displayers[self._tab.selected_index]
+
+    @property
+    def current_output(self):
+        return self.current_displayer.output
+
+    def alert(self, msg: str):
+        self._status.value = msg
+
+    def warn(self, msg: str):
+        self.alert(f"<span style='color=red'>{msg}</span>")
+
+    @property
+    def words(self):
+        return ' '.join(self._words.value.split()).split()
+
+    @property
+    def smooth(self) -> bool:
+        return self._smooth.value
+
+    @property
+    def normalize(self) -> bool:
+        return self._normalize.value
+
+    @property
+    def group_by(self) -> str:
+        return self._group_by.value
+
+    @property
+    def word_count(self) -> int:
+        return self._word_count.value
+
+    @property
+    def options(self) -> TrendsOpts:
+        return {
+            'normalize': self.normalize,
+            'smooth': self.smooth,
+            'group_by': self.group_by,
+            'word_count': self.word_count,
+            'words': self.words,
+        }

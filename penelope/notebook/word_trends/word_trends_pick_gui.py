@@ -250,7 +250,7 @@ class SelectMultipleTokensSelector(TokensSelector):
 
 
 @dataclass
-class GUI:
+class TrendsPickTokensGUI:
     token_selector: TokensSelector = None
     n_count = ipywidgets.IntSlider(
         description="Count",
@@ -283,7 +283,7 @@ class GUI:
         )
 
 
-def word_trends_pick_gui(
+def create_word_trends_pick_gui(
     x_corpus: VectorizedCorpus,
     tokens: pd.DataFrame,
     n_columns: int = 3,
@@ -291,7 +291,7 @@ def word_trends_pick_gui(
     display_widgets: bool = True,
 ) -> ipywidgets.Widget:
 
-    gui = GUI()
+    gui = TrendsPickTokensGUI()
     gui.token_selector = token_sector_cls(tokens)
 
     def update_plot(*_):
