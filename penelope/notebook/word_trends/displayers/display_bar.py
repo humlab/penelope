@@ -3,6 +3,7 @@ import math
 from dataclasses import dataclass, field
 
 import bokeh
+from penelope.corpus import VectorizedCorpus
 
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
@@ -16,11 +17,11 @@ class BarDisplayer(YearTokenDataMixin, ITrendDisplayer):
     def setup(self):
         return
 
-    def plot(self, data, **_):
+    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
 
-        tokens = [w for w in data.keys() if w != 'year']
+        tokens = [w for w in compiled_data.keys() if w != 'year']
 
-        source = bokeh.models.ColumnDataSource(data=data)
+        source = bokeh.models.ColumnDataSource(data=compiled_data)
 
         p = bokeh.plotting.figure(plot_height=400, plot_width=1000, title="Word frequecy by year")
 
@@ -35,7 +36,7 @@ class BarDisplayer(YearTokenDataMixin, ITrendDisplayer):
 
         p.x_range.range_padding = 0.04
         p.xaxis.major_label_orientation = math.pi / 4
-        p.xaxis.ticker = self._year_ticks()
+        p.xaxis.ticker = self._year_ticks(corpus)
 
         p.xgrid.grid_line_color = None
         p.ygrid.grid_line_color = None
@@ -49,8 +50,8 @@ class BarDisplayer(YearTokenDataMixin, ITrendDisplayer):
         with self.output:
             bokeh.io.show(p)
 
-    def _year_ticks(self):
-        year_min, year_max = self.data.corpus.year_range()
+    def _year_ticks(self, corpus: VectorizedCorpus):
+        year_min, year_max = corpus.year_range()
         y_min = year_min - (year_min % self.year_tick)
         y_max = year_max if year_max % self.year_tick == 0 else year_max + (self.year_tick - year_max % self.year_tick)
         return list(range(y_min, y_max + 1, self.year_tick))

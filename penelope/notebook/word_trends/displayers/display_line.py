@@ -1,11 +1,12 @@
 import math
 from dataclasses import dataclass, field
-from typing import Any, Dict, Sequence
+from typing import Any, Sequence
 
 import bokeh
 import bokeh.models
 import bokeh.plotting
 import ipywidgets
+from penelope.corpus import VectorizedCorpus
 
 from ._displayer import ITrendDisplayer, MultiLineDataMixin
 
@@ -70,17 +71,17 @@ class LineDisplayer(MultiLineDataMixin, ITrendDisplayer):
 
         return p
 
-    def plot(self, data: Dict, **_):
+    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
 
         if self.handle is None:
             self.handle = bokeh.plotting.show(self.figure, notebook_handle=True)
 
-        self.figure.xaxis.ticker = self._year_ticks()
-        self.data_source.data.update(data)
+        self.figure.xaxis.ticker = self._year_ticks(corpus)
+        self.data_source.data.update(compiled_data)
         bokeh.io.push_notebook(handle=self.handle)
 
-    def _year_ticks(self):
-        year_min, year_max = self.data.corpus.year_range()
+    def _year_ticks(self, corpus: VectorizedCorpus):
+        year_min, year_max = corpus.year_range()
         y_min = year_min - (year_min % self.year_tick)
         y_max = year_max if year_max % self.year_tick == 0 else year_max + (self.year_tick - year_max % self.year_tick)
         return list(range(y_min, y_max + 1, self.year_tick))

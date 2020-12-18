@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import pandas as pd
 from ipyaggrid import Grid
 from IPython.display import display
+from penelope.corpus import VectorizedCorpus
 
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
 
@@ -29,9 +30,9 @@ class GridDisplayer(YearTokenDataMixin, ITrendDisplayer):
         ]
         return column_defs
 
-    def plot(self, data, **_):
+    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
 
-        df = pd.DataFrame(data=data).set_index('year')
+        df = pd.DataFrame(data=compiled_data).set_index('year')
         column_defs = self.default_column_defs(df)
         grid_options = {
             'columnDefs': column_defs,

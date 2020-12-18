@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 import IPython.display
 import pandas as pd
+from penelope.corpus import VectorizedCorpus
 from penelope.notebook.ipyaggrid_utility import display_grid
 
 from ._displayer import ITrendDisplayer, YearTokenDataMixin
@@ -15,10 +16,10 @@ class TableDisplayer(YearTokenDataMixin, ITrendDisplayer):
     def setup(self, *_, **__):
         return
 
-    def plot(self, data, **_):
+    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
 
         with self.output:
-            df = pd.DataFrame(data=data)
+            df = pd.DataFrame(data=compiled_data)
             df = df[['year'] + [x for x in df.columns if x != 'year']].set_index('year')
             g = display_grid(df)
             IPython.display.display(g)

@@ -6,19 +6,18 @@ from typing import Callable, Dict, List, Sequence, TypeVar
 import bokeh
 import ipywidgets
 import scipy
+from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import take
 
-from ..word_trend_data import WordTrendData
-
 T = TypeVar('T', bound='ITrendDisplayer')
 
+DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 @dataclass
 class ITrendDisplayer(abc.ABC):
 
     output: ipywidgets.Output = None
-    data: WordTrendData = None
     name: str = "noname"
 
     @abc.abstractmethod
@@ -30,19 +29,30 @@ class ITrendDisplayer(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def plot(self, data: Dict, **_):  # pylint: disable=unused-argument
+    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
         return
 
     def clear(self):
         self.output.clear_output()
 
+    def display(self, *, corpus: VectorizedCorpus, indices: Sequence[int], smooth: bool):
+
+        if len(indices) == 0:
+            raise ValueError("Nothing to plot!")
+
+        self.output.clear()
+        with self.output:
+            plot_data = self.compile(
+                corpus=corpus, indices=indices, smoothers=DEFAULT_SMOOTHERS if smooth else []
+            )
+            self.plot(corpus, compiled_data=plot_data)
 
 class PenelopeBugCheck(Exception):
     pass
 
 
 class MultiLineDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: List[int], **kwargs) -> Dict:
+    def compile(self, corpus: VectorizedCorpus, indices: List[int], **kwargs) -> dict:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
         xs = corpus.xs_years()
         bag_term_matrix = corpus.bag_term_matrix
@@ -76,7 +86,7 @@ class MultiLineDataMixin:
 
 
 class YearTokenDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Dict:
+    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> dict:
         """Extracts token's vectors for tokens ´indices` and returns a dict keyed by token"""
         xs = corpus.xs_years()
         if len(xs) != corpus.data.shape[0]:
