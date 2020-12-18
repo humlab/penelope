@@ -1,7 +1,7 @@
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
 
-from . import utils as test_utils
+from tests import utils as test_utils
 
 
 def mock_corpus():

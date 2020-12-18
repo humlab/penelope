@@ -1,5 +1,4 @@
 import penelope.corpus.readers as readers
-import pytest  # pylint: disable=unused-import
 from penelope.corpus import (
     ICorpus,
     ITokenizedCorpus,
@@ -9,7 +8,7 @@ from penelope.corpus import (
     SparvTokenizedXmlCorpus,
     TokenizedCorpus,
 )
-from tests.sparv_xml_corpus_test import SPARV_XML_EXPORT_FILENAME_SMALL
+from tests.sparv.sparv_xml_corpus_test import SPARV_XML_EXPORT_FILENAME_SMALL
 
 
 def test_corpus_interface_subclassed():

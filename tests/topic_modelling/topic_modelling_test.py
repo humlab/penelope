@@ -5,12 +5,11 @@ import uuid
 import gensim
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
-import pytest  # pylint: disable=unused-import
+import pytest
 from penelope.scripts.compute_topic_model import run_model
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData, TrainingCorpus
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
-
-from .utils import OUTPUT_FOLDER
+from tests.utils import OUTPUT_FOLDER
 
 jj = os.path.join
 

@@ -1,10 +1,9 @@
 import pandas as pd
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ICorpusReader, TextReaderOpts
-
-from .sparv_csv_iterator_test import SPARV_CSV_EXPORT_FILENAME_SMALL
-from .sparv_xml_iterator_test import SPARV_XML_EXPORT_FILENAME_SMALL
-from .utils import TEST_CORPUS_FILENAME
+from tests.sparv.sparv_csv_iterator_test import SPARV_CSV_EXPORT_FILENAME_SMALL
+from tests.sparv.sparv_xml_iterator_test import SPARV_XML_EXPORT_FILENAME_SMALL
+from tests.utils import TEST_CORPUS_FILENAME
 
 
 def test_text_tokenizer_interface():

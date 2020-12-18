@@ -108,6 +108,25 @@ class Test_VectorizedCorpus(unittest.TestCase):
         expected_ytm = [[4, 3, 7, 1], [6, 7, 4, 2]]
         self.assertTrue(np.allclose(expected_ytm, c_data.bag_term_matrix.todense()))
 
+    def test_group_by_year_category_aggregates_DTM_to_PTM(self):
+
+        bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
+        token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
+        df = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
+        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+
+        # c_data = v_corpus.group_by_year_categories(categories='year')
+        # expected_ytm = [[4, 3, 7, 1], [6, 7, 4, 2]]
+        # self.assertTrue(np.allclose(expected_ytm, c_data.bag_term_matrix.todense()))
+
+        c_data = v_corpus.group_by_year_categories(category_specifier='lustrum')
+        expected_ytm = [[2, 1, 4, 1], [4, 5, 5, 0], [4, 4, 2, 2]]
+        self.assertTrue(np.allclose(expected_ytm, c_data.bag_term_matrix.todense()))
+
+        c_data = v_corpus.group_by_year_categories(category_specifier='decade')
+        expected_ytm = [[2, 1, 4, 1], [8, 9, 7, 2]]
+        self.assertTrue(np.allclose(expected_ytm, c_data.bag_term_matrix.todense()))
+
     def test_group_by_year2_sum_bag_term_matrix_to_year_term_matrix(self):
         v_corpus = self.create_vectorized_corpus()
         c_data = v_corpus.group_by_year2(aggregate_function='sum')

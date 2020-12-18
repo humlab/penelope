@@ -5,7 +5,7 @@ from penelope.co_occurrence import WindowsCorpus, to_co_occurrence_matrix, to_da
 from penelope.corpus import CorpusVectorizer
 from tests.utils import generate_token2id, very_simple_corpus
 
-from .test_data.corpus_fixtures import SAMPLE_WINDOW_STREAM, SIMPLE_CORPUS_ABCDE_5DOCS
+from ..test_data.corpus_fixtures import SAMPLE_WINDOW_STREAM, SIMPLE_CORPUS_ABCDE_5DOCS
 
 jj = os.path.join
 

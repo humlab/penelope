@@ -12,15 +12,15 @@ from penelope.co_occurrence import (
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
-from penelope.workflows import concept_co_occurrence_workflow
+from penelope.workflows import co_occurrence_workflow
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
-from .utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
+from tests.utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
 
 jj = os.path.join
 
 
-def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
+def test_co_occurrence_without_no_concept_and_threshold_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
@@ -35,7 +35,7 @@ def test_concept_co_occurrence_without_no_concept_and_threshold_succeeds():
     assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
 
 
-def test_concept_co_occurrence_with_no_concept_succeeds():
+def test_co_occurrence_with_no_concept_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
 
@@ -51,7 +51,7 @@ def test_concept_co_occurrence_with_no_concept_succeeds():
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
 
-def test_concept_co_occurrence_with_thresholdt_succeeds():
+def test_co_occurrence_with_thresholdt_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = {('g', 'a', 2)}
@@ -82,9 +82,9 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
         only_any_alphanumeric=False,
     )
 
-    concept_co_occurrence_workflow(
-        input_filename=TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
-        output_filename=output_filename,
+    co_occurrence_workflow(
+        corpus_filename=TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
+        target_filename=output_filename,
         partition_keys=['year'],
         filename_field=["year:_:1"],
         context_opts=context_opts,
@@ -146,10 +146,10 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
 
 def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
 
-    output_filename = jj(tmpdir, 'test_co_occurrence_bug_with_options_that_raises_an_exception.csv')
+    target_filename = jj(tmpdir, 'test_co_occurrence_bug_with_options_that_raises_an_exception.csv')
     options = {
-        'input_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
-        'output_filename': output_filename,
+        'corpus_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
+        'target_filename': target_filename,
         'partition_keys': ('year',),
         'filename_field': ('year:_:1',),
     }
@@ -164,14 +164,14 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
         only_alphabetic=False,
         only_any_alphanumeric=False,
     )
-    concept_co_occurrence_workflow(
+    co_occurrence_workflow(
         **options,
         context_opts=context_opts,
         extract_tokens_opts=extract_tokens_opts,
         tokens_transform_opts=tokens_transform_opts,
     )
 
-    assert os.path.isfile(output_filename)
+    assert os.path.isfile(target_filename)
 
 
 @pytest.mark.parametrize('filename', ['concept_co_occurrences_data.csv', 'concept_co_occurrences_data.zip'])

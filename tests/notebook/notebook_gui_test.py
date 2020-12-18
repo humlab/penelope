@@ -1,9 +1,11 @@
 import unittest
+from unittest import mock
 from unittest.mock import Mock
 
 import penelope.notebook.co_occurrence.load_co_occurrences_gui as load_co_occurrences_gui
 import penelope.notebook.co_occurrence.to_co_occurrence_gui as to_co_occurrence_gui
 import penelope.notebook.utility
+from penelope.notebook.word_trends.gof_and_trends_gui import GofTrendsGUI
 from penelope.pipeline.config import CorpusConfig, CorpusType
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 
@@ -56,3 +58,19 @@ def test_to_co_occurrences_gui_create_gui(z):  # pylint: disable=unused-argument
 
     # layout = gui.layout()
     # assert layout is not None
+
+
+@mock.patch(
+    'penelope.notebook.utility.OutputsTabExt',
+    mock.MagicMock(spec=penelope.notebook.utility.OutputsTabExt),
+)
+def test_trends_gui_create_gui():
+
+    # word_trend_data: WordTrendData = mock.MagicMock(
+    #     spec=WordTrendData, **{'most_deviating_overview.__getitem__': mock.Mock()}
+    # )
+
+    gui = GofTrendsGUI()
+
+    assert gui is not None
+    assert gui.layout() is not None

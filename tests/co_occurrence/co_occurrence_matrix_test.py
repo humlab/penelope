@@ -8,7 +8,7 @@ from penelope.utility import flatten, pretty_print_matrix
 from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .utils import very_simple_corpus
+from ..utils import very_simple_corpus
 
 
 def PPMI(C: scipy.sparse.csc_matrix) -> scipy.sparse.csc_matrix:
