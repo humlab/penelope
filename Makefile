@@ -122,7 +122,7 @@ nltk_data:
 	@poetry run python -m nltk.downloader -d $(NLTK_DATA) stopwords punkt sentiwordnet
 
 spacy_data:
-	@poetry run python -m spacy download en
+	@poetry run python -m spacy download en_core_web_sm
 
 gh:
 	@sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
