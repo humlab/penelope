@@ -24,5 +24,4 @@ def test_TrendsGUI_display():
     displayer = Mock(ITrendDisplayer)
     gui = TrendsGUI().setup(displayers=[displayer])
     gui.display(trend_data=trend_data)
-    assert gui.current_displayer.compile.call_count == 1
-    assert gui.current_displayer.plot.call_count == 1
+    assert gui.current_displayer.display.call_count == 1

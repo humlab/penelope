@@ -58,19 +58,3 @@ def test_to_co_occurrences_gui_create_gui(z):  # pylint: disable=unused-argument
 
     # layout = gui.layout()
     # assert layout is not None
-
-
-@mock.patch(
-    'penelope.notebook.utility.OutputsTabExt',
-    mock.MagicMock(spec=penelope.notebook.utility.OutputsTabExt),
-)
-def test_trends_gui_create_gui():
-
-    # word_trend_data: WordTrendData = mock.MagicMock(
-    #     spec=WordTrendData, **{'most_deviating_overview.__getitem__': mock.Mock()}
-    # )
-
-    gui = GofTrendsGUI()
-
-    assert gui is not None
-    assert gui.layout() is not None
