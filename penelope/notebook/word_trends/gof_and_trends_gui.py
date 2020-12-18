@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, List
+from typing import List
 
 import penelope.notebook.utility as notebook_utility
 from penelope.corpus import VectorizedCorpus
@@ -44,12 +44,12 @@ def update_plot(gui: TrendsGUI, trend_data: WordTrendData):
     gui.display(trend_data.corpus, indices=indices)
 
 
-def create_gof_and_trends_gui(trend_data: WordTrendData, update_handler: Callable):
+def create_gof_and_trends_gui(trend_data: WordTrendData):
 
     gui = GofTrendsGUI(
         trend_data=trend_data,
         gofs_gui=GoFsGUI().setup(),
-        trends_gui=TrendsGUI().setup(update_handler=update_handler),
+        trends_gui=TrendsGUI().setup(),
     )
 
     return gui

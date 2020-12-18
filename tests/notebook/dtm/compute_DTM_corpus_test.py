@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 from penelope.notebook.dtm.compute_DTM_corpus import compute_document_term_matrix
@@ -12,7 +12,7 @@ def dummy_config():
 
 
 @pytest.mark.skip('')
-def test_compute_document_term_matrix(dummy_config):
+def test_compute_document_term_matrix(dummy_config):  # pylint: disable=redefined-outer-name
 
     done_called = False
 

@@ -18,7 +18,7 @@ def dummy_config():
     return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yaml')
 
 
-def test_gui_base_create_and_setup(dummy_config):
+def test_gui_base_create_and_setup(dummy_config):  # pylint: disable=redefined-outer-name
     gui = BaseGUI().setup(config=dummy_config, compute_callback=None)
     assert isinstance(gui.tagged_tokens_filter_opts, TaggedTokensFilterOpts)
     assert isinstance(gui.tokens_transform_opts, TokensTransformOpts)

@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import flatten
 
