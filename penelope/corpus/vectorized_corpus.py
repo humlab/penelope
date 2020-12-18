@@ -3,10 +3,11 @@ from __future__ import annotations
 import logging
 import os
 import pickle
+import re
 import time
 from heapq import nlargest
 from pathlib import Path
-from typing import Dict, Iterable, Mapping, Optional, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -354,6 +355,77 @@ class VectorizedCorpus:
         )
 
         return v_corpus
+
+    def group_by_year_categories(self, category_specifier: Union[str, dict]) -> VectorizedCorpus:
+        """Returns a new corpus where documents have been grouped and summed up by year groups."""
+
+        if category_specifier == 'year':
+            return self.group_by_year()
+
+        def setup_categories(document_index: pd.DataFrame, specifier: Union[str, dict]) -> List[int]:
+            """Returns (document index) category series and (unique) category list for given specifier"""
+            if isinstance(specifier, str):
+                if specifier in ('decade', 'lustrum'):
+                    d = 5 if specifier == 'lustrum' else 10
+                    _category_series: pd.Series = document_index.year.apply(lambda x: x - int(x % d))
+                    _categories = list(range(_category_series.min(), _category_series.max() + 1, d))
+                else:
+                    raise ValueError(f"Category {specifier}")
+            else:
+                _category_series: pd.Series = document_index.year.apply(lambda x: specifier.get(x, None))
+                _categories = list(sorted(_category_series.unique()))
+
+            return _categories, _category_series
+
+        def reduce_dtm_by_categories(category_series: pd.Series, categories: List[int]) -> np.ndarray:
+            """Creates new DTM by reducing (summing) rows having same category"""
+            X = self.bag_term_matrix
+            df = self.document_index
+            df['category'] = category_series
+            Y: np.ndarray = np.zeros((len(categories), X.shape[1]), dtype=np.uint64)
+            for i in range(0, Y.shape[0]):  # pylint: disable=unsubscriptable-object
+                indices = list((df.loc[df.category == categories[i]].index))
+                if len(indices) > 0:
+                    Y[i, :] = X[indices, :].sum(axis=0)
+            return Y
+
+        def create_document_index(
+            document_index: pd.DataFrame, category_series: pd.Series, categories: List[int]
+        ) -> pd.DataFrame:
+            default_aggregates = {
+                'year': ['min', 'max', 'size'],
+                'value': 'sum',
+                'value_n_t': 'sum',
+                'value_n_d': 'sum',
+                'n_raw_tokens': 'sum',
+                'n_tokens': 'sum',
+            }
+            aggregates = {k: v for k, v in default_aggregates.items() if k in document_index.columns}
+
+            document_index['category'] = category_series
+            document_index = document_index.groupby('category').agg(aggregates)
+            document_index.columns = ['_'.join(col) for col in document_index.columns]
+
+            new_document_index = pd.DataFrame(
+                {'category': categories, 'filename': map(str, categories), 'document_name': map(str, categories)}
+            )
+            new_document_index = new_document_index.merge(
+                document_index, how='left', left_on='category', right_index=True
+            )
+
+            return new_document_index
+
+        categories, category_series = setup_categories(document_index=self.document_index, specifier=category_specifier)
+
+        dtm = reduce_dtm_by_categories(category_series, categories)
+
+        document_index: pd.DataFrame = create_document_index(self.document_index, category_series, categories)
+
+        corpus = VectorizedCorpus(
+            dtm, token2id=self.token2id, document_index=document_index, word_counts=self.word_counts
+        )
+
+        return corpus
 
     # CONSIDER: Refactor away function (make use of `collapse_by_category`)
     def group_by_year2(self, aggregate_function='sum', dtype=None) -> VectorizedCorpus:
@@ -737,6 +809,49 @@ class VectorizedCorpus:
         term_term_matrix = scipy.sparse.triu(term_term_matrix, 1)
 
         return term_term_matrix
+
+    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int) -> List[str]:
+        """Returns `tokens` in corpus that matches candidate tokens """
+        words = find_matching_words(word_or_regexp, self.token2id)
+        if len(words) > n_max_count:
+            words = self.pick_n_top_words(words, n_max_count)
+        return words
+
+    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int) -> List[int]:
+        """Returns `tokens´ indicies` in corpus that matches candidate tokens """
+        indices: List[int] = [
+            self.token2id[token]
+            for token in self.find_matching_words(word_or_regexp, n_max_count)
+            if token in self.token2id
+        ]
+        return indices
+
+    def pick_n_top_words(self, tokens: List[str], n_top: int) -> List[str]:
+        """Returns `n_top` most frequent tokens in corpus among given `tokens`"""
+        return pick_n_top_words(self.word_counts, tokens, n_top)
+
+
+def find_matching_words(candidate_words: List[str], token2id: Mapping[str, int]) -> List[str]:
+
+    word_exprs = [x for x in candidate_words if len(x) > 0 and x.startswith("|") and x.endswith("|")]
+
+    if len(word_exprs) == 0:
+        return candidate_words
+
+    words = [w for w in candidate_words if w not in word_exprs]
+
+    for expr in word_exprs:
+        pattern = re.compile(expr.strip('|'))  # "^.*tion$"
+        words.extend([x for x in token2id if pattern.match(x)])
+
+    return words
+
+
+def pick_n_top_words(word_counts: Mapping[str, int], tokens: List[str], n_top: int) -> List[str]:
+    """Returns the `n_top` most frequent word in `tokens`"""
+    token_counts = [word_counts.get(w, 0) for w in tokens]
+    most_frequent_words = [tokens[x] for x in np.argsort(token_counts)[-n_top:]]
+    return most_frequent_words
 
 
 def load_corpus(
