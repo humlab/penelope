@@ -1,7 +1,7 @@
 import abc
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
@@ -15,10 +15,10 @@ FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 @dataclass
 class TextReaderOpts:
     filename_pattern: str = field(default="*.txt")
-    filename_filter: FilenameOrCallableOrSequenceFilter = None
-    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None
-    index_field: str = None
-    as_binary: bool = False
+    filename_filter: Optional[FilenameOrCallableOrSequenceFilter] = None
+    filename_fields: Optional[Sequence[IndexOfSplitOrCallableOrRegExp]] = None
+    index_field: Optional[str] = None
+    as_binary: Optional[bool] = False
 
     @property
     def props(self):
