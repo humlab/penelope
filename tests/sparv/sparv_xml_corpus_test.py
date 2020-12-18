@@ -5,7 +5,6 @@ import penelope.corpus.sparv_corpus as sparv_corpus
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.utility import read_from_archive
-
 from tests.utils import OUTPUT_FOLDER
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'

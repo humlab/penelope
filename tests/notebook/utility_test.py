@@ -7,9 +7,10 @@ logger = getLogger()
 
 
 def test_create_js_download():
-    df = pd.DataFrame(data=dict(a=[1,2],b=[1,2]))
+    df = pd.DataFrame(data=dict(a=[1, 2], b=[1, 2]))
     w = create_js_download(df)
     assert isinstance(w, Javascript)
+
 
 def test_output_tabs_ext():
 
@@ -23,5 +24,3 @@ def test_shorten_path_with_ellipsis():
     path = '/abc/def/geh/ijk/mno'
     result = shorten_path_with_ellipsis(path, 10)
     assert len(result) <= 10 + len('.../')
-
-

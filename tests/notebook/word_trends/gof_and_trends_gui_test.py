@@ -8,12 +8,16 @@ from penelope.notebook.word_trends.gof_and_trends_gui import GoFsGUI
 
 
 def trend_data_mock():
-    return Mock(spec=WordTrendData, **{
-        'corpus': MagicMock(spec=VectorizedCorpus),
-        'goodness_of_fit': MagicMock(spec=pd.DataFrame),
-        'most_deviating_overview': MagicMock(spec=pd.DataFrame),
-        'most_deviating': MagicMock(spec=pd.DataFrame),
-    })
+    return Mock(
+        spec=WordTrendData,
+        **{
+            'corpus': MagicMock(spec=VectorizedCorpus),
+            'goodness_of_fit': MagicMock(spec=pd.DataFrame),
+            'most_deviating_overview': MagicMock(spec=pd.DataFrame),
+            'most_deviating': MagicMock(spec=pd.DataFrame),
+        },
+    )
+
 
 def test_GofsGUI_create():
     tab = Mock(OutputsTabExt)
@@ -48,10 +52,13 @@ def test_GoFsGUI_display(tab):
 def test_GofTrendsGUI_layout(tab):
 
     gui = GofTrendsGUI(
-        trend_data=Mock(spec=WordTrendData, **{
-            'goodness_of_fit': MagicMock(spec=pd.DataFrame),
-            'most_deviating_overview': MagicMock(spec=pd.DataFrame),
-        }),
+        trend_data=Mock(
+            spec=WordTrendData,
+            **{
+                'goodness_of_fit': MagicMock(spec=pd.DataFrame),
+                'most_deviating_overview': MagicMock(spec=pd.DataFrame),
+            },
+        ),
         gofs_gui=Mock(spec=GoFsGUI),
         trends_gui=Mock(spec=TrendsGUI),
     )

@@ -1,6 +1,5 @@
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
-
 from tests import utils as test_utils
 
 

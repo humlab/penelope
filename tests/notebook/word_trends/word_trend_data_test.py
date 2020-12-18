@@ -1,10 +1,11 @@
-
 import pandas as pd
-from tests.utils import OUTPUT_FOLDER, create_smaller_vectorized_corpus
 from penelope.notebook.word_trends import WordTrendData
+from tests.utils import OUTPUT_FOLDER, create_smaller_vectorized_corpus
+
 
 def test_WordTrendData_create():
     pass
+
 
 def test_WordTrendData_update():
 
@@ -23,8 +24,10 @@ def test_WordTrendData_update():
     assert isinstance(data.goodness_of_fit, pd.DataFrame)
     assert isinstance(data.most_deviating, pd.DataFrame)
 
+
 def test_WordTrendData_remember():
     pass
+
 
 def test_WordTrendData_get_corpus():
     pass

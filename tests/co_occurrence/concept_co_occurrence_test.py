@@ -14,7 +14,6 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
 from penelope.workflows import co_occurrence_workflow
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
-
 from tests.utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
 
 jj = os.path.join

@@ -14,6 +14,7 @@ T = TypeVar('T', bound='ITrendDisplayer')
 
 DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
+
 @dataclass
 class ITrendDisplayer(abc.ABC):
 
@@ -42,10 +43,9 @@ class ITrendDisplayer(abc.ABC):
 
         self.output.clear()
         with self.output:
-            plot_data = self.compile(
-                corpus=corpus, indices=indices, smoothers=DEFAULT_SMOOTHERS if smooth else []
-            )
+            plot_data = self.compile(corpus=corpus, indices=indices, smoothers=DEFAULT_SMOOTHERS if smooth else [])
             self.plot(corpus, compiled_data=plot_data)
+
 
 class PenelopeBugCheck(Exception):
     pass

@@ -5,9 +5,9 @@ import penelope.notebook.utility as notebook_utility
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import getLogger
 
+from .gofs_gui import GoFsGUI
 from .word_trend_data import WordTrendData
 from .word_trends_gui import TrendsGUI
-from .gofs_gui import GoFsGUI
 
 logger = getLogger("penelope")
 

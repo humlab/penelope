@@ -1,16 +1,15 @@
 import os
-from penelope.corpus.tokens_transformer import TokensTransformOpts
-
-import numpy as np
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 import random
 from collections import defaultdict
 from typing import Callable, Iterable, List, Mapping, Tuple
 
+import numpy as np
 import pandas as pd
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
+from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
+from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -156,6 +155,7 @@ def create_tokens_reader(
         chunk_size=chunk_size,
     )
     return reader
+
 
 def create_smaller_vectorized_corpus():
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])

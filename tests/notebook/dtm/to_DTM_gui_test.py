@@ -1,12 +1,14 @@
-import pytest
-from penelope.pipeline.pipelines import CorpusPipeline
 from unittest.mock import Mock
-from penelope.pipeline.config import CorpusConfig
+
+import pytest
 from penelope.notebook.dtm.to_DTM_gui import GUI, create_gui
+from penelope.pipeline.config import CorpusConfig
+from penelope.pipeline.pipelines import CorpusPipeline
 
 
-def dummy_callback(*_,**__):
+def dummy_callback(*_, **__):
     pass
+
 
 @pytest.mark.skip('')
 def test_gui_create():
@@ -14,6 +16,7 @@ def test_gui_create():
     gui = GUI()
 
     assert gui.layout() is not None
+
 
 @pytest.mark.skip('')
 def test_gui_setup():
@@ -23,6 +26,7 @@ def test_gui_setup():
     gui.setup(config=config, compute_callback=None)
 
     assert gui.layout() is not None
+
 
 @pytest.mark.skip('')
 def test_create_gui():

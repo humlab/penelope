@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from typing import Sequence
 
 import ipywidgets as widgets
-from .word_trend_data import WordTrendData, TrendsOpts
 from penelope.utility import get_logger
 
 from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer
+from .word_trend_data import TrendsOpts, WordTrendData
 
 logger = get_logger()
 
