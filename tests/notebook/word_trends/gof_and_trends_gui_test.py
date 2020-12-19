@@ -52,13 +52,6 @@ def test_GoFsGUI_display(tab):
 def test_GofTrendsGUI_layout(tab):
 
     gui = GofTrendsGUI(
-        trends_data=Mock(
-            spec=TrendsData,
-            **{
-                'goodness_of_fit': MagicMock(spec=pd.DataFrame),
-                'most_deviating_overview': MagicMock(spec=pd.DataFrame),
-            },
-        ),
         gofs_gui=Mock(spec=GoFsGUI),
         trends_gui=Mock(spec=TrendsGUI),
     )
@@ -70,11 +63,9 @@ def test_GofTrendsGUI_layout(tab):
 
 def test_GofTrendsGUI_display():
     trends_data = Mock(spec=TrendsData)
-    corpus = Mock(spec=VectorizedCorpus)
     gofs_gui = Mock(spec=GoFsGUI)
     trends_gui = Mock(spec=TrendsGUI)
     gui = GofTrendsGUI(
-        trends_data=trends_data,
         gofs_gui=gofs_gui,
         trends_gui=trends_gui,
     )
