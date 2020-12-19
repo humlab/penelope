@@ -78,7 +78,7 @@ def test_GofTrendsGUI_display():
         gofs_gui=gofs_gui,
         trends_gui=trends_gui,
     )
-    gui.display(trends_data, corpus=corpus, indices=[0, 1])
+    gui.display(trends_data)
 
     assert gui.gofs_gui.display.call_count == 1
     assert gui.trends_gui.display.call_count == 1

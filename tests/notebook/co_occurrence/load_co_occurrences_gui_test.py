@@ -1,11 +1,4 @@
-from unittest.mock import Mock, patch
-
 import penelope.notebook.co_occurrence.load_co_occurrences_gui as load_co_occurrences_gui
-import penelope.notebook.co_occurrence.to_co_occurrence_gui as to_co_occurrence_gui
-import penelope.notebook.utility
-from penelope.notebook.word_trends.gof_and_trends_gui import GofTrendsGUI
-from penelope.pipeline.config import CorpusConfig, CorpusType
-from penelope.utility.pos_tags import PoS_Tag_Scheme
 
 DATA_FOLDER = './tests/test_data'
 

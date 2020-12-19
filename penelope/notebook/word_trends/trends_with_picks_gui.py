@@ -304,7 +304,7 @@ class TrendsWithPickTokensGUI:
                 self.update_handler(self, tokens)
 
     def split_changed(self, *_):
-        self._update_plot()
+        self._update()
 
     def layout(self):
         return ipywidgets.VBox(
