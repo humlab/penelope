@@ -5,7 +5,7 @@ import ipywidgets as widgets
 from penelope.utility import get_logger
 
 from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer
-from .word_trend_data import TrendsOpts, WordTrendData
+from .trends_data import TrendsOpts, TrendsData
 
 logger = get_logger()
 
@@ -17,7 +17,7 @@ OUTPUT_LAYOUT = widgets.Layout(width='600px')
 class TrendsGUI:
     """GUI component that displays word trends"""
 
-    trend_data: WordTrendData = field(default=None, init=False)
+    trends_data: TrendsData = field(default=None, init=False)
 
     _tab: widgets.Tab = widgets.Tab()
     _normalize: widgets.ToggleButton = widgets.ToggleButton(
@@ -68,13 +68,13 @@ class TrendsGUI:
 
         try:
 
-            if self.trend_data is None or self.trend_data.corpus is None:
+            if self.trends_data is None or self.trends_data.corpus is None:
                 self.alert("Please load a corpus!")
                 return
 
             self.current_displayer.display(
-                corpus=self.trend_data.get_corpus(self.normalize, self.group_by),
-                indices=self.trend_data.find_indices(self.options),
+                corpus=self.trends_data.get_corpus(self.normalize, self.group_by),
+                indices=self.trends_data.find_indices(self.options),
                 smooth=self.smooth,
             )
 
@@ -109,8 +109,8 @@ class TrendsGUI:
 
         return self
 
-    def display(self, *, trend_data: WordTrendData):
-        self.trend_data = trend_data
+    def display(self, *, trends_data: TrendsData):
+        self.trends_data = trends_data
         self._plot_trends()
 
     @property
@@ -149,10 +149,10 @@ class TrendsGUI:
 
     @property
     def options(self) -> TrendsOpts:
-        return {
-            'normalize': self.normalize,
-            'smooth': self.smooth,
-            'group_by': self.group_by,
-            'word_count': self.word_count,
-            'words': self.words,
-        }
+        return TrendsOpts(
+            normalize=self.normalize,
+            smooth=self.smooth,
+            group_by=self.group_by,
+            word_count=self.word_count,
+            words=self.words,
+        )

@@ -1,12 +1,11 @@
 import abc
 from dataclasses import dataclass
-from typing import Any, List, Sequence
+from typing import Any, Callable, List, Sequence
 
 import ipywidgets
 import pandas as pd
 import qgrid
 from bokeh.plotting import show
-from IPython.display import display
 from penelope.corpus import VectorizedCorpus
 
 from .displayers import deprecated_plot as plotter
@@ -250,9 +249,12 @@ class SelectMultipleTokensSelector(TokensSelector):
 
 
 @dataclass
-class TrendsPickTokensGUI:
+class TrendsWithPickTokensGUI:
+
     token_selector: TokensSelector = None
-    n_count = ipywidgets.IntSlider(
+    update_handler: Callable = None
+
+    _page_size = ipywidgets.IntSlider(
         description="Count",
         min=0,
         max=100,
@@ -261,87 +263,101 @@ class TrendsPickTokensGUI:
         continuous_update=False,
         layout=ipywidgets.Layout(width="300px"),
     )
-    forward = ipywidgets.Button(
+    _forward = ipywidgets.Button(
         description=">>",
         button_style="Success",
         layout=ipywidgets.Layout(width="40px", color="green"),
     )
-    back = ipywidgets.Button(
+    _back = ipywidgets.Button(
         description="<<",
         button_style="Success",
         layout=ipywidgets.Layout(width="40px", color="green"),
     )
-    split = ipywidgets.ToggleButton(description="Split", layout=ipywidgets.Layout(width="80px", color="green"))
-    output = ipywidgets.Output(layout=ipywidgets.Layout(width="80%"))
+    _split = ipywidgets.ToggleButton(description="Split", layout=ipywidgets.Layout(width="80px", color="green"))
+    _output = ipywidgets.Output(layout=ipywidgets.Layout(width="80%"))
+
+    def setup(self):
+
+        self._page_size.observe(self._update, "value")
+        self._split.observe(self.split_changed, "value")
+        self._forward.on_click(self._stepper_clicked)
+        self._back.on_click(self._stepper_clicked)
+        self.token_selector.on_selection_change_handler(self._update)
+
+    def _stepper_clicked(self, b):
+
+        _selected_indices = self.token_selector.get_selected_indices()
+        _current_index = min(_selected_indices) if len(_selected_indices) > 0 else 0
+
+        if b.description == "<<":
+            _current_index = max(_current_index - self.page_size, 0)
+
+        if b.description == ">>":
+            _current_index = min(_current_index + self.page_size, len(self.token_selector) - self.page_size)
+
+        self.token_selector.set_selected_indices(list(range(_current_index, _current_index + self.page_size)))
+
+    def _update(self):
+        if self.update_handler is not None:
+            with self._output:
+                tokens = self.selected_tokens()
+                self.update_handler(self, tokens)
+
+    def split_changed(self, *_):
+        self._update_plot()
 
     def layout(self):
         return ipywidgets.VBox(
             [
-                ipywidgets.HBox([self.back, self.forward, self.n_count, self.split]),
-                ipywidgets.HBox([self.token_selector.widget, self.output], layout=ipywidgets.Layout(width="98%")),
+                ipywidgets.HBox([self._back, self._forward, self._page_size, self._split]),
+                ipywidgets.HBox([self.token_selector.widget, self._output], layout=ipywidgets.Layout(width="98%")),
             ]
         )
 
+    @property
+    def page_size(self) -> int:
+        return self._page_size.value
 
-def create_word_trends_pick_gui(
-    x_corpus: VectorizedCorpus,
-    tokens: pd.DataFrame,
-    n_columns: int = 3,
-    token_sector_cls: TokensSelector = SelectMultipleTokensSelector,
-    display_widgets: bool = True,
-) -> ipywidgets.Widget:
+    @property
+    def split(self) -> bool:
+        return self._split.value
 
-    gui = TrendsPickTokensGUI()
-    gui.token_selector = token_sector_cls(tokens)
+    @property
+    def selected_tokens(self) -> Sequence[str]:
+        tokens: Sequence[str] = self.token_selector.get_selected_tokens()
+        if len(tokens) == 0:
+            tokens = self.token_selector[: self.page_size]
+        return tokens
 
-    def update_plot(*_):
+    # FIXME: Make this a drop-in replacement for text entry i.e. no plotting of its own, just raise event with selected words
+    @staticmethod
+    def create(
+        corpus: VectorizedCorpus,
+        tokens: pd.DataFrame,
+        n_columns: int = 3,
+        token_sector_cls: TokensSelector = SelectMultipleTokensSelector,
+        tokens_selected=None,
+    ) -> "TrendsWithPickTokensGUI":
 
-        gui.output.clear_output()
+        gui = TrendsWithPickTokensGUI(
+            token_selector=token_sector_cls(tokens),
+            update_handler=lambda tokens, split: (tokens_selected or TrendsWithPickTokensGUI.default_tokens_plotter)(
+                tokens=tokens, corpus=corpus, n_columns=n_columns, split=split
+            ),
+        )
+        return gui
 
-        selected_tokens: Sequence[str] = gui.token_selector.get_selected_tokens()
-
-        if len(selected_tokens) == 0:
-            selected_tokens = gui.token_selector[: gui.n_count.value]
-
-        indices: List[int] = [x_corpus.token2id[token] for token in selected_tokens]
-
-        with gui.output:
-            x_columns: int = n_columns if gui.split.value else None
-            p = plotter.yearly_token_distribution_multiple_line_plot(
-                x_corpus, indices, width=1000, height=600, n_columns=x_columns
-            )
-            if p is None:
-                print(f"Nothing to plot! Length indices: {len(indices)}, corpus shape: {x_corpus.data.shape}")
-                return
-
-            show(p)
-
-    def stepper_clicked(b):
-
-        _selected_indices = gui.token_selector.get_selected_indices()
-        _current_index = min(_selected_indices) if len(_selected_indices) > 0 else 0
-
-        if b.description == "<<":
-            _current_index = max(_current_index - gui.n_count.value, 0)
-
-        if b.description == ">>":
-            _current_index = min(_current_index + gui.n_count.value, len(gui.token_selector) - gui.n_count.value)
-
-        gui.token_selector.set_selected_indices(list(range(_current_index, _current_index + gui.n_count.value)))
-
-    def split_changed(*_):
-        update_plot()
-
-    gui.n_count.observe(update_plot, "value")
-    gui.split.observe(split_changed, "value")
-    gui.forward.on_click(stepper_clicked)
-    gui.back.on_click(stepper_clicked)
-    gui.token_selector.on_selection_change_handler(update_plot)
-
-    layout = gui.layout()
-
-    if display_widgets:
-        display(layout)
-        update_plot()
-
-    return layout
+    @staticmethod
+    def default_tokens_plotter(tokens: Sequence[str], corpus: VectorizedCorpus, n_columns: int, split: bool):
+        indices: List[int] = [corpus.token2id[token] for token in tokens]
+        # FIXME: Switch to the one used in TrendsGUI???
+        p = plotter.yearly_token_distribution_multiple_line_plot(
+            corpus,
+            indices,
+            width=1000,
+            height=600,
+            n_columns=n_columns if split else None,
+        )
+        if p is None:
+            return
+        show(p)

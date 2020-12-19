@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import ipywidgets
 from penelope.notebook.word_trends import TrendsGUI
 from penelope.notebook.word_trends.displayers import ITrendDisplayer
-from penelope.notebook.word_trends.word_trend_data import WordTrendData
+from penelope.notebook.word_trends.trends_data import TrendsData
 
 
 def test_TrendsGUI_setup():
@@ -20,8 +20,8 @@ def test_TrendsGUI_layout():
 
 
 def test_TrendsGUI_display():
-    trend_data = Mock(spec=WordTrendData)
+    trends_data = Mock(spec=TrendsData)
     displayer = Mock(ITrendDisplayer)
     gui = TrendsGUI().setup(displayers=[displayer])
-    gui.display(trend_data=trend_data)
+    gui.display(trends_data=trends_data)
     assert gui.current_displayer.display.call_count == 1

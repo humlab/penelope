@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, TypedDict
+from typing import Dict, List
 
 import pandas as pd
 import penelope.common.goodness_of_fit as gof
 from penelope.corpus import VectorizedCorpus
 
 
-class TrendsOpts(TypedDict):
+@dataclass
+class TrendsOpts:
     normalize: bool
     smooth: bool
     group_by: str
@@ -15,7 +16,7 @@ class TrendsOpts(TypedDict):
 
 
 @dataclass
-class WordTrendData:
+class TrendsData:
 
     corpus: VectorizedCorpus = None
     corpus_folder: str = None
@@ -41,7 +42,7 @@ class WordTrendData:
         corpus_folder: str = None,
         corpus_tag: str = None,
         n_count: int = None,
-    ) -> "WordTrendData":
+    ) -> "TrendsData":
 
         self.n_count = n_count or self.n_count
         self.corpus = (corpus or self.corpus).group_by_year()
@@ -58,7 +59,7 @@ class WordTrendData:
         )
         return self
 
-    def remember(self, **kwargs) -> "WordTrendData":
+    def remember(self, **kwargs) -> "TrendsData":
         self.memory.update(**kwargs)
         return self
 

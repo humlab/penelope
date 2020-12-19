@@ -1,18 +1,18 @@
 import pandas as pd
-from penelope.notebook.word_trends import WordTrendData
+from penelope.notebook.word_trends import TrendsData
 from tests.utils import OUTPUT_FOLDER, create_smaller_vectorized_corpus
 
 
-def test_WordTrendData_create():
+def test_TrendsData_create():
     pass
 
 
-def test_WordTrendData_update():
+def test_TrendsData_update():
 
     corpus = create_smaller_vectorized_corpus()
     n_count = 10000
 
-    data = WordTrendData().update(
+    data = TrendsData().update(
         corpus=corpus,
         corpus_folder=OUTPUT_FOLDER,
         corpus_tag="dummy",
@@ -25,9 +25,9 @@ def test_WordTrendData_update():
     assert isinstance(data.most_deviating, pd.DataFrame)
 
 
-def test_WordTrendData_remember():
+def test_TrendsData_remember():
     pass
 
 
-def test_WordTrendData_get_corpus():
+def test_TrendsData_get_corpus():
     pass

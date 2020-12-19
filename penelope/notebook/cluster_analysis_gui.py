@@ -8,7 +8,7 @@ import ipywidgets
 import penelope.common.cluster_analysis as cluster_analysis
 import penelope.common.curve_fit as cf
 import penelope.common.goodness_of_fit as gof
-import penelope.notebook.word_trends.word_trends_pick_gui as word_trend_plot_gui
+import penelope.notebook.word_trends.trends_with_picks_gui as word_trend_plot_gui
 import penelope.plot.cluster_plot as cluster_plot
 from IPython.display import display
 from markdown import markdown as md
@@ -270,7 +270,7 @@ def display_gui(x_corpus, df_gof):
             token_clusters = container.data.token_clusters
             tokens = token_clusters[token_clusters.cluster == widgets.cluster_index.value].token.tolist()
             if len(tokens) > 0:
-                word_trend_plot_gui.create_word_trends_pick_gui(x_corpus, tokens, n_columns=3)
+                display(word_trend_plot_gui.TrendsWithPickTokensGUI.create(x_corpus, tokens, n_columns=3).layout())
 
     def step_cluster(b):
 
