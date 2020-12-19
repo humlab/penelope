@@ -5,7 +5,7 @@ import ipywidgets as widgets
 from penelope.utility import get_logger
 
 from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer
-from .trends_data import TrendsOpts, TrendsData
+from .trends_data import TrendsData, TrendsOpts
 
 logger = get_logger()
 

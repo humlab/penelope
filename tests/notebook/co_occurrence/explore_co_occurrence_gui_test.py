@@ -1,9 +1,9 @@
-import pandas as pd
-from penelope.corpus import VectorizedCorpus
 from unittest.mock import MagicMock, Mock, patch
 
-from penelope.notebook.word_trends import TrendsData
+import pandas as pd
+from penelope.corpus import VectorizedCorpus
 from penelope.notebook.co_occurrence.explore_co_occurrence_gui import ExploreCoOccurrencesGUI
+from penelope.notebook.word_trends import TrendsData
 
 
 def trends_data_mock() -> TrendsData:

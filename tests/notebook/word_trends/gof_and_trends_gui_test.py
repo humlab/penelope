@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.notebook.utility import OutputsTabExt
-from penelope.notebook.word_trends import GofTrendsGUI, TrendsGUI, TrendsData
+from penelope.notebook.word_trends import GofTrendsGUI, TrendsData, TrendsGUI
 from penelope.notebook.word_trends.gof_and_trends_gui import GoFsGUI
 
 

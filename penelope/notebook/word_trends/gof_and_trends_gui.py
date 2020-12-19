@@ -29,6 +29,6 @@ class GofTrendsGUI:
         return _layout
 
     def display(self, trends_data: TrendsData):
-        #self.trends_data = trends_data
+        # self.trends_data = trends_data
         self.gofs_gui.display(trends_data=trends_data)
         self.trends_gui.display(trends_data=trends_data)

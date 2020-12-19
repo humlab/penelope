@@ -45,7 +45,6 @@ def test_to_co_occurrence_create_gui(z):  # pylint: disable=unused-argument
 )
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
 def test_GUI_setup(z):  # pylint: disable=unused-argument
-
     def compute_callback(corpus_config, args, partition_key, done_callback):  # pylint: disable=unused-argument
         pass
 
