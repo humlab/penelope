@@ -1,0 +1,48 @@
+{
+    "input_filename": "./tests/test_data/legal_instrument_corpus.zip",
+    "output_filename": "./tests/test_data/VENUS/VENUS_co-occurrence.csv.zip",
+    "partition_keys": [
+        "year"
+    ],
+    "count_threshold": 1,
+    "reader_opts": {
+        "filename_pattern": "*.txt",
+        "filename_filter": null,
+        "filename_fields": [
+            "unesco_id:_:2",
+            "year:_:3",
+            "city:\\w+\\_\\d+\\_\\d+\\_\\d+\\_(.*)\\.txt"
+        ],
+        "index_field": null,
+        "as_binary": false
+    },
+    "context_opts": {
+        "context_width": 2,
+        "concept": [],
+        "ignore_concept": false
+    },
+    "tokens_transform_opts": {
+        "only_alphabetic": false,
+        "only_any_alphanumeric": false,
+        "to_lower": true,
+        "to_upper": false,
+        "min_len": 1,
+        "max_len": null,
+        "remove_accents": false,
+        "remove_stopwords": true,
+        "stopwords": null,
+        "extra_stopwords": [
+            "\u00f6rn"
+        ],
+        "language": "english",
+        "keep_numerals": true,
+        "keep_symbols": true
+    },
+    "extract_tokens_opts": {
+        "pos_includes": "|NOUN|PROPN|VERB|",
+        "pos_excludes": "|PUNCT|EOL|SPACE|",
+        "passthrough_tokens": [],
+        "lemmatize": true,
+        "append_pos": false
+    }
+}
