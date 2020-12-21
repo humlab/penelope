@@ -30,7 +30,7 @@ class GUI(BaseGUI):
         step=1,
         value=2,
         layout=default_layout,
-        tooltip=tooltips['_context_width'],
+        # tooltip=tooltips['_context_width'],
     )
     _concept = widgets.Text(
         value='',
@@ -38,14 +38,14 @@ class GUI(BaseGUI):
         description='',
         disabled=False,
         layout=widgets.Layout(width='280px'),
-        tooltip=tooltips['_concept'],
+        # tooltip=tooltips['_concept'],
     )
     _ignore_concept = widgets.ToggleButton(
         value=False,
         description='No Concept',
         icon='check',
         layout=button_layout,
-        tooltip=tooltips['_ignore_concept'],
+        # tooltip=tooltips['_ignore_concept'],
     )
 
     def layout(self, hide_input=False, hide_output=False):
