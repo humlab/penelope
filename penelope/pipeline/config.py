@@ -89,7 +89,7 @@ class CorpusConfig:
     @staticmethod
     def loads(data_str: str) -> "CorpusConfig":
         """Reads and deserializes a CorpusConfig from `path`"""
-        deserialized_config = CorpusConfig.dict_to_corpus_config(yaml.load(data_str))
+        deserialized_config = CorpusConfig.dict_to_corpus_config(yaml.load(data_str, Loader=yaml.FullLoader))
         return deserialized_config
 
     @staticmethod
