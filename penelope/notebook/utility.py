@@ -2,6 +2,7 @@ import os
 import types
 from typing import Any
 
+import bokeh.plotting
 import ipyfilechooser
 import ipywidgets as widgets
 import pandas as pd
@@ -73,8 +74,8 @@ def create_js_download(df: pd.DataFrame, **to_csv_opts) -> Javascript:
 
 
 class OutputsTabExt(widgets.Tab):
-    def __init__(self, names):
-        super().__init__()
+    def __init__(self, names, **kwargs):
+        super().__init__(**kwargs)
         self.children = [widgets.Output() for _ in range(0, len(names))]
         self.loaded = [False for _ in range(0, len(names))]
         self.updaters = [None for _ in range(0, len(names))]
@@ -91,6 +92,13 @@ class OutputsTabExt(widgets.Tab):
         ipython_display(self)
         return self
 
+    def selective_plot(self, what: Any):
+        that = what() if callable(what) else what
+        if isinstance(that, bokeh.plotting.Figure):
+            bokeh.plotting.show(that)
+        else:
+            ipython_display(that)
+
     def display_content(self, i: int, what: Any, clear: bool = False, plot=True):
 
         try:
@@ -104,8 +112,11 @@ class OutputsTabExt(widgets.Tab):
                 if not self.loaded[i]:
 
                     if plot:
-                        ipython_display(what if not callable(what) else what())
+
+                        self.selective_plot(what)
+
                     elif callable(what):
+
                         what()
 
                     self.loaded[i] = True
