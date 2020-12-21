@@ -10,6 +10,8 @@ from tqdm.auto import tqdm
 from .co_occurrence import corpus_co_occurrence
 from .interface import ContextOpts, CoOccurrenceError
 
+# pylint: disable=ungrouped-imports
+
 if TYPE_CHECKING:
     from penelope.pipeline import PipelinePayload
     from penelope.type_alias import FilenameTokensTuples
