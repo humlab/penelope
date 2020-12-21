@@ -575,38 +575,3 @@ class ChunkTokens(ITask):
                         content=tokens[i : i + self.chunk_size],
                         chunk_id=chunk_id,
                     )
-
-
-# @dataclass
-# class PartOfSpeechStatistics(DefaultResolveMixIn, ITask):
-
-#     category: str = 'year'
-#     include_pos: List[str] = None
-#     doc_frames = []
-
-#     def setup(self):
-#         super().setup()
-#         return self
-
-#     def __post_init__(self):
-#         self.in_content_type = ContentType.TAGGEDFRAME
-#         self.out_content_type = ContentType.TAGGEDFRAME
-
-#     def enter(self):
-#         super().enter()
-
-#     def outstream(self) -> Iterable[DocumentPayload]:
-
-#         doc_frames = []
-#         for payload in self.instream:
-#             doc_frames.append(payload.content)
-#             yield payload
-
-#         pos_statistics = statistics.compute_pos_statistics(
-#             df_docs=doc_frames,
-#             document_index=self.document_index,
-#             group_by_column=self.category,
-#             include_pos=self.include_pos,
-#         )
-
-#         self.pipeline.payload.put('pos_statistics', pos_statistics)
