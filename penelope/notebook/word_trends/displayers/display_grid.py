@@ -3,36 +3,41 @@ from dataclasses import dataclass, field
 import pandas as pd
 from ipyaggrid import Grid
 from IPython.display import display
-from penelope.corpus import VectorizedCorpus
 
-from ._displayer import ITrendDisplayer, YearTokenDataMixin
+from ._compile_mixins import CategoryDataMixin
+from ._displayer import ITrendDisplayer
 
 
 @dataclass
-class GridDisplayer(YearTokenDataMixin, ITrendDisplayer):
+class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
 
     name: str = field(default="Grid")
 
     def setup(self):
         return
 
-    def default_column_defs(self, df):
+    def default_column_defs(self, df: pd.DataFrame):
         column_defs = [
             {
                 'headerName': column.title(),
                 'field': column,
                 # 'rowGroup':False,
                 # 'hide':False,
-                'cellRenderer': ("function(params) { return params.value.toFixed(6); }" if column != 'year' else None),
+                'cellRenderer': (
+                    "function(params) { return params.value.toFixed(6); }"
+                    if column not in ('year', 'category')
+                    else None
+                ),
                 # 'type': 'numericColumn'
             }
             for column in df.columns
         ]
         return column_defs
 
-    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
 
-        df = pd.DataFrame(data=compiled_data).set_index('year')
+        df = pd.DataFrame(data=plot_data).set_index('category')
+
         column_defs = self.default_column_defs(df)
         grid_options = {
             'columnDefs': column_defs,

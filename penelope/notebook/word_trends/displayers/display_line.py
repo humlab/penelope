@@ -6,16 +6,17 @@ import bokeh
 import bokeh.models
 import bokeh.plotting
 import ipywidgets
-from penelope.corpus import VectorizedCorpus
 
-from ._displayer import ITrendDisplayer, MultiLineDataMixin
+from ._compile_mixins import LinesDataMixin
+from ._displayer import ITrendDisplayer
+from .utils import get_year_category_ticks
 
 PLOT_WIDTH = 800
 PLOT_HEIGHT = 500
 
 
 @dataclass
-class LineDisplayer(MultiLineDataMixin, ITrendDisplayer):
+class LineDisplayer(LinesDataMixin, ITrendDisplayer):
 
     name: str = field(default="Line")
     figure: bokeh.plotting.Figure = None
@@ -71,20 +72,16 @@ class LineDisplayer(MultiLineDataMixin, ITrendDisplayer):
 
         return p
 
-    def plot(self, corpus: VectorizedCorpus, compiled_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
 
         if self.handle is None:
             self.handle = bokeh.plotting.show(self.figure, notebook_handle=True)
 
-        self.figure.xaxis.ticker = self._year_ticks(corpus)
-        self.data_source.data.update(compiled_data)
-        bokeh.io.push_notebook(handle=self.handle)
+        if len(plot_data['xs']) > 0:
+            self.figure.xaxis.ticker = get_year_category_ticks(plot_data['xs'][0])
 
-    def _year_ticks(self, corpus: VectorizedCorpus):
-        year_min, year_max = corpus.year_range()
-        y_min = year_min - (year_min % self.year_tick)
-        y_max = year_max if year_max % self.year_tick == 0 else year_max + (self.year_tick - year_max % self.year_tick)
-        return list(range(y_min, y_max + 1, self.year_tick))
+        self.data_source.data.update(plot_data)
+        bokeh.io.push_notebook(handle=self.handle)
 
     def clear(self):
         return
