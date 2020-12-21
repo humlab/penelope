@@ -102,3 +102,7 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.TaggedFrameToTokens(extract_opts=extract_opts, filter_opts=filter_opts))
+
+    # def pos_statistics(self: pipelines.CorpusPipeline, category: str, pos_includes: List[str]=None) -> pipelines.CorpusPipeline:
+    #     """ [TAGGED_FRAME] => [TAGGED_FRAME] => PASSTHROUGH """
+    #     return self.add(tasks.PartOfSpeechStatistics(category=category, pos_includes=pos_includes))

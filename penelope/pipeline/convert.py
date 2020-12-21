@@ -6,7 +6,7 @@ from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, d
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 
-from .interfaces import ContentType, DocumentPayload
+from .interfaces import ContentType, DocumentPayload, PipelineError
 
 
 def _payload_tokens(payload: DocumentPayload) -> List[str]:
@@ -63,10 +63,15 @@ def tagged_frame_to_tokens(
     return doc.loc[mask][target].tolist()
 
 
-def tagged_frame_to_pos_statistics(
-    tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str
-) -> np.ndarray:
-    return (
+def tagged_frame_to_token_counts(tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
+
+    if tagged_frame is None or len(tagged_frame) == 0:
+        return {}
+
+    if not pos_column:
+        raise PipelineError("Name of PoS column in tagged frame MUST be specified (pipeline.payload.memory_store)")
+
+    pos_statistics = (
         tagged_frame.merge(
             pos_schema.PD_PoS_tags,
             how='inner',
@@ -76,3 +81,7 @@ def tagged_frame_to_pos_statistics(
         .groupby('tag_group_name')['tag']
         .size()
     )
+    n_raw_tokens = pos_statistics[~(pos_statistics.index == 'Delimiter')].sum()
+    token_counts = pos_statistics.to_dict()
+    token_counts.update(n_raw_tokens=n_raw_tokens)
+    return token_counts

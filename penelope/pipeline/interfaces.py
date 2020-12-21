@@ -3,13 +3,12 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
-from penelope.corpus import consolidate_document_index, load_document_index
+from penelope.corpus import consolidate_document_index, load_document_index, update_document_index_properties
 from penelope.corpus.readers import TextSource
-from penelope.utility import strip_path_and_extension
-from penelope.utility.pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme
+from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, strip_path_and_extension
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -44,24 +43,18 @@ class DocumentPayload:
     filename_values: Mapping[str, Any] = None
     chunk_id = None
     previous_content_type: ContentType = field(default=ContentType.NONE, init=False)
-    statistics: Mapping[str, int] = field(default=None, init=False)
+    property_bag: dict = field(default_factory=dict, init=False)
 
-    def update(self, content_type: ContentType, content: Any):
+    def update(self, content_type: ContentType, content: Any) -> "DocumentPayload":
         self.previous_content_type = self.content_type
         self.content_type = content_type
         self.content = content
         return self
 
-    def update_statistics(self, pos_statistics: Mapping[str, int], n_tokens: int):
-
-        self.statistics = {
-            'document_name': self.document_name,
-            **pos_statistics.to_dict(),
-            **dict(
-                n_raw_tokens=pos_statistics[~(pos_statistics.index == 'Delimiter')].sum(),
-                n_tokens=n_tokens,
-            ),
-        }
+    def update_properties(self, **properties) -> "DocumentPayload":
+        """Save document properties to property bag"""
+        self.property_bag.update(properties)
+        return self
 
     @property
     def document_name(self):
@@ -95,24 +88,24 @@ class PipelinePayload:
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
     token2id: Mapping[str, int] = None
+    effective_document_index: pd.DataFrame = None
 
-    _document_index: pd.DataFrame = None
     # FIXME: Move to document_index_proxy object?
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
 
     @property
     def document_index(self) -> pd.DataFrame:
-        if self._document_index is None:
+        if self.effective_document_index is None:
             if isinstance(self.document_index_source, pd.DataFrame):
-                self._document_index = self.document_index_source
+                self.effective_document_index = self.document_index_source
             elif isinstance(self.document_index_source, str):
-                self._document_index = load_document_index(
+                self.effective_document_index = load_document_index(
                     filename=self.document_index_source,
                     key_column=self.document_index_key,
                     sep=self.document_index_sep,
                 )
-        return self._document_index
+        return self.effective_document_index
 
     @property
     def props(self) -> Dict[str, Any]:
@@ -133,11 +126,11 @@ class PipelinePayload:
         return self
 
     def set_reader_index(self, reader_index: pd.DataFrame) -> "PipelinePayload":
-        if self._document_index is None:
-            self._document_index = reader_index
+        if self.document_index is None:
+            self.effective_document_index = reader_index
         else:
-            self._document_index = consolidate_document_index(
-                document_index=self._document_index,
+            self.effective_document_index = consolidate_document_index(
+                document_index=self.document_index,
                 reader_index=reader_index,
             )
         return self
@@ -154,6 +147,14 @@ class PipelinePayload:
                 raise PipelineError("expected PoS schema found None")
 
         return self._pos_schema
+
+    def store_document_properties(self, document_name: str, **properties):
+        """Updates document index with given property values"""
+        update_document_index_properties(
+            self.document_index,
+            document_name=document_name,
+            property_bag=properties,
+        )
 
 
 @dataclass
@@ -182,11 +183,20 @@ class ITask(abc.ABC):
         self.input_type_guard(payload.content_type)
         return self.process_payload(payload)
 
+    def enter(self):
+        return
+
+    def exit(self):
+        return
+
     def outstream(self) -> Iterable[DocumentPayload]:
         if self.instream is None:
             raise PipelineError("No instream specified. Have you loaded a corpus source?")
+
+        self.enter()
         for payload in self.instream:
             yield self.process(payload)
+        self.exit()
 
     def hookup(self, pipeline: pipelines.AnyPipeline) -> ITask:
         self.pipeline = pipeline
@@ -211,3 +221,11 @@ class ITask(abc.ABC):
             if content_type in self.in_content_type:
                 return
         raise PipelineError("content type not valid for task")
+
+    def store_document_properties(self, payload: DocumentPayload, **properties):
+        """Stores document properties to document index"""
+        payload.update_properties(**properties)
+        self.pipeline.payload.store_document_properties(payload.document_name, **properties)
+
+
+DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], pd.DataFrame]

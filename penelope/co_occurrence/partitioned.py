@@ -1,13 +1,19 @@
-from typing import Iterable, Mapping, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Iterable, Tuple
 
 import more_itertools
 import pandas as pd
-from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import getLogger, strip_path_and_extension
 from tqdm.auto import tqdm
 
 from .co_occurrence import corpus_co_occurrence
 from .interface import ContextOpts, CoOccurrenceError
+
+if TYPE_CHECKING:
+    from penelope.pipeline import PipelinePayload
+    from penelope.type_alias import FilenameTokensTuples
+
 
 logger = getLogger('penelope')
 
@@ -15,25 +21,24 @@ logger = getLogger('penelope')
 def partitioned_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
-    document_index: pd.DataFrame,
-    token2id: Mapping[str, int],
+    payload: PipelinePayload,
     context_opts: ContextOpts,
     global_threshold_count: int,
     partition_column: str = 'year',
 ) -> pd.DataFrame:
 
     # FIXME: #27 Adding document_index and token2id as parameters causes index updates not to be reflected
-    if token2id is None:
-        if not hasattr(stream, 'token2id'):
-            raise CoOccurrenceError("expected `token2id` found None")
-        token2id = stream.token2id
+    if payload.token2id is None:
+        # if not hasattr(stream, 'token2id'):
+        raise CoOccurrenceError("expected `token2id` found None")
+        # payload.token2id = stream.token2id
 
-    if document_index is None:
-        if not hasattr(stream, 'document_index'):
-            raise CoOccurrenceError("expected document index found None")
-        document_index = stream.document_index
+    if payload.document_index is None:
+        # if not hasattr(stream, 'document_index'):
+        raise CoOccurrenceError("expected document index found None")
+        # payload._document_index = stream.document_index
 
-    if partition_column not in document_index.columns:
+    if partition_column not in payload.document_index.columns:
         raise CoOccurrenceError(f"expected `{partition_column}` not found in document index")
 
     if not isinstance(global_threshold_count, int) or global_threshold_count < 1:
@@ -48,7 +53,7 @@ def partitioned_corpus_co_occurrence(
             raise CoOccurrenceError(f"expected filename (str) ound {type(item[0])}")
 
         document_name = strip_path_and_extension(item[0])
-        return int(document_index.loc[document_name][partition_column])
+        return int(payload.document_index.loc[document_name][partition_column])
 
     total_results = []
     key_streams = more_itertools.bucket(stream, key=get_bucket_key, validator=None)
@@ -58,7 +63,7 @@ def partitioned_corpus_co_occurrence(
     for i, key in tqdm(enumerate(keys), position=0, leave=True):
 
         key_stream: FilenameTokensTuples = key_streams[key]
-        keyed_document_index = document_index[document_index[partition_column] == key]
+        keyed_document_index = payload.document_index[payload.document_index[partition_column] == key]
 
         metadata.append(
             {
@@ -74,8 +79,7 @@ def partitioned_corpus_co_occurrence(
 
         co_occurrence = corpus_co_occurrence(
             key_stream,
-            document_index=keyed_document_index,
-            token2id=token2id,
+            payload=payload,
             context_opts=context_opts,
             threshold_count=1,
         )

@@ -8,7 +8,7 @@ from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, TokenizedCorpus,
 from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
 from penelope.utility import getLogger, replace_extension, strip_path_and_extension
 
-from .interface import ContextOpts
+from .interface import ContextOpts, CoOccurrenceError
 
 logger = getLogger()
 
@@ -105,7 +105,7 @@ def to_co_occurrence_matrix(
 def to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
-    catalogue: pd.DataFrame = None,
+    document_index: pd.DataFrame = None,
     threshold_count: int = 1,
 ):
     """Converts a TTM to a Pandas DataFrame
@@ -126,6 +126,13 @@ def to_dataframe(
     [type]
         [description]
     """
+
+    if 'n_tokens' not in document_index.columns:
+        raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
+
+    if 'n_raw_tokens' not in document_index.columns:
+        raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
+
     coo_df = (
         pd.DataFrame({'w1_id': term_term_matrix.row, 'w2_id': term_term_matrix.col, 'value': term_term_matrix.data})[
             ['w1_id', 'w2_id', 'value']
@@ -137,15 +144,15 @@ def to_dataframe(
     if threshold_count > 0:
         coo_df = coo_df[coo_df.value >= threshold_count]
 
-    if catalogue is not None:
+    if document_index is not None:
 
-        coo_df['value_n_d'] = coo_df.value / float(len(catalogue))
+        coo_df['value_n_d'] = coo_df.value / float(len(document_index))
 
         for n_token_count, target_field in [('n_tokens', 'value_n_t'), ('n_raw_tokens', 'value_n_r_t')]:
 
-            if n_token_count in catalogue.columns:
+            if n_token_count in document_index.columns:
                 try:
-                    coo_df[target_field] = coo_df.value / float(sum(catalogue[n_token_count].values))
+                    coo_df[target_field] = coo_df.value / float(sum(document_index[n_token_count].values))
                 except ZeroDivisionError:
                     coo_df[target_field] = 0.0
             else:

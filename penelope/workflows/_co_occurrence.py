@@ -1,10 +1,10 @@
 from typing import Any, Sequence
 
 import pandas as pd
-from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence, to_vectorized_corpus
-from penelope.co_occurrence.convert import store_bundle
+from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence, store_bundle, to_vectorized_corpus
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from penelope.pipeline import PipelinePayload
 
 from .utils import WorkflowException
 
@@ -100,8 +100,7 @@ def execute_workflow(
 
     co_occurrences: pd.DataFrame = partitioned_corpus_co_occurrence(
         stream=corpus,
-        token2id=token2id,
-        document_index=document_index,
+        payload=PipelinePayload(effective_document_index=document_index, token2id=token2id),
         context_opts=context_opts,
         global_threshold_count=count_threshold,
         partition_column=partition_keys[0],

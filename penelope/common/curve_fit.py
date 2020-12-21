@@ -56,6 +56,13 @@ def pchip_spline(xs, ys):
     return s_xs, s_ys
 
 
+def pchip_spliner(xs, ys):
+    if isinstance(ys, scipy.sparse.spmatrix):
+        ys = ys.todense().A1
+    spliner = scipy.interpolate.PchipInterpolator(xs, ys)
+    return spliner
+
+
 def fit_curve(fx, xs, ys, step=0.1):
     popt, _ = scipy.optimize.curve_fit(fx, xs, ys)  # pylint: disable=unbalanced-tuple-unpacking
     s_xs = np.arange(xs.min(), xs.max() + step, step)

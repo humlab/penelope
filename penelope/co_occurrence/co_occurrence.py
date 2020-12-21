@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import collections
 import itertools
-from typing import Iterable, Mapping
+from typing import TYPE_CHECKING, Iterable, Mapping
 
-import pandas as pd
 from penelope.corpus import CorpusVectorizer
 from penelope.type_alias import FilenameTokensTuples
 
 from .convert import to_dataframe
 from .interface import ContextOpts, CoOccurrenceError
 from .windows_corpus import WindowsCorpus
+
+if TYPE_CHECKING:
+    from penelope.pipeline.interfaces import PipelinePayload
 
 
 def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding='*'):
@@ -82,8 +86,7 @@ def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts
 def corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
-    document_index: pd.DataFrame,
-    token2id: Mapping[str, int],
+    payload: PipelinePayload,
     context_opts: ContextOpts,
     threshold_count: int = 1,
 ):
@@ -104,24 +107,21 @@ def corpus_co_occurrence(
     [type]
         [description]
     """
-    if document_index is None:
+    if payload.document_index is None:
         raise CoOccurrenceError("expected document index found None")
 
-    if token2id is None:
+    if payload.token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
 
-    if 'n_tokens' not in document_index.columns:
-        raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
-
-    if 'n_raw_tokens' not in document_index.columns:
-        raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
-
-    v_corpus = to_vectorized_windows_corpus(stream=stream, token2id=token2id, context_opts=context_opts)
+    v_corpus = to_vectorized_windows_corpus(stream=stream, token2id=payload.token2id, context_opts=context_opts)
 
     coo_matrix = v_corpus.co_occurrence_matrix()
 
     df_coo = to_dataframe(
-        coo_matrix, id2token=v_corpus.id2token, catalogue=document_index, threshold_count=threshold_count
+        coo_matrix,
+        id2token=v_corpus.id2token,
+        document_index=payload.document_index,
+        threshold_count=threshold_count,
     )
 
     return df_coo

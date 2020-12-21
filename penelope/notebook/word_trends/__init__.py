@@ -1,5 +1,14 @@
 # type: ignore
-from .displayers import WORD_TREND_DISPLAYERS, BarDisplayer, ITrendDisplayer, LineDisplayer, TableDisplayer
+from .displayers import (
+    WORD_TREND_DISPLAYERS,
+    BarDisplayer,
+    CategoryDataMixin,
+    ITrendDisplayer,
+    LineDisplayer,
+    LinesDataMixin,
+    PenelopeBugCheck,
+    TableDisplayer,
+)
 from .gof_and_trends_gui import GofTrendsGUI
 from .gofs_gui import GoFsGUI
 from .trends_data import TrendsData

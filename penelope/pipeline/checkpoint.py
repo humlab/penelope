@@ -109,12 +109,12 @@ def store_checkpoint(
 
         zf.writestr("options.json", json.dumps(asdict(options)).encode('utf8'))
 
-        if document_index is not None:
-            zf.writestr(options.document_index_name, data=document_index.to_csv(sep='\t', header=True))
-
         for payload in payload_stream:
             zf.writestr(payload.filename, data=serializer.serialize(payload.content))
             yield payload
+
+        if document_index is not None:
+            zf.writestr(options.document_index_name, data=document_index.to_csv(sep='\t', header=True))
 
 
 def load_checkpoint(source_filename: str, document_index_key_column: str) -> CheckpointData:

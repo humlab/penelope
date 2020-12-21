@@ -348,7 +348,9 @@ class VectorizedCorpus:
                 Y[i, :] = X[indices, :].sum(axis=0)
 
         years = list(range(min_value, max_value + 1))
-        document_index = pd.DataFrame({'year': years, 'filename': map(str, years), 'document_name': map(str, years)})
+        document_index = pd.DataFrame(
+            {'year': years, 'category': years, 'filename': map(str, years), 'document_name': map(str, years)}
+        )
 
         v_corpus = VectorizedCorpus(
             Y, token2id=self.token2id, document_index=document_index, word_counts=self.word_counts

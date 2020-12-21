@@ -1,7 +1,8 @@
+import logging
 import os
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 import pandas as pd
 from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence
@@ -19,9 +20,8 @@ from penelope.utility import to_text
 from tqdm.std import tqdm
 
 from . import checkpoint
-from .checkpoint import CheckpointData, ContentSerializeOpts
-from .convert import tagged_frame_to_tokens, to_vectorized_corpus
-from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
+from .convert import tagged_frame_to_token_counts, tagged_frame_to_tokens, to_vectorized_corpus
+from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 
 
 class DefaultResolveMixIn:
@@ -193,10 +193,10 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: CheckpointData = checkpoint.load_checkpoint(
+            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
                 self.filename, document_index_key_column=self.pipeline.payload.document_index_key
             )
-            self.pipeline.payload.primary_document_index = checkpoint_data.document_index
+            self.pipeline.payload.effective_document_index = checkpoint_data.document_index
             self.out_content_type = checkpoint_data.content_type
             payload_stream = checkpoint_data.payload_stream
         else:
@@ -207,7 +207,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
                 )
             self.out_content_type = prior_content_type
             payload_stream = checkpoint.store_checkpoint(
-                options=ContentSerializeOpts(
+                options=checkpoint.ContentSerializeOpts(
                     content_type_code=int(self.out_content_type),
                     as_binary=False,  # should be True if ContentType.SPARV_XML
                 ),
@@ -231,7 +231,7 @@ class SaveTaggedFrame(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
         for payload in checkpoint.store_checkpoint(
-            options=ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
+            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -252,11 +252,11 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
 
-        checkpoint_data: CheckpointData = checkpoint.load_checkpoint(
+        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
             self.filename,
             document_index_key_column=self.pipeline.payload.document_index_key,
         )
-        self.pipeline.payload.primary_document_index = checkpoint_data.document_index
+        self.pipeline.payload.effective_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
             yield payload
@@ -306,8 +306,51 @@ class TextToTokens(ITask):
         return payload.update(self.out_content_type, tokens)
 
 
+class UpdateDocumentPropertyMixIn:
+    def store_token_counts(self, payload: DocumentPayload, tagged_frame: pd.DataFrame):
+        """Computes token counts from the tagged frame, and adds them to the document index"""
+        try:
+            pos_column = self.pipeline.payload.get('pos_column')
+            token_counts = tagged_frame_to_token_counts(tagged_frame, self.pipeline.payload.pos_schema, pos_column)
+            self.store_document_properties(payload, **token_counts)
+        except Exception as ex:
+            logging.exception(ex)
+            raise
+
+
 @dataclass
-class TaggedFrameToTokens(ITask):
+class ToTaggedFrame(UpdateDocumentPropertyMixIn, ITask):
+
+    attributes: List[str] = None
+    attribute_value_filters: Dict[str, Any] = None
+    tagger: DocumentTagger = None
+
+    def setup(self):
+        self.pipeline.put("tagged_attributes", self.attributes)
+        return self
+
+    def __post_init__(self):
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
+        self.out_content_type = ContentType.TAGGEDFRAME
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        tagged_frame: pd.DataFrame = self.tagger(
+            payload=payload,
+            attributes=self.attributes,
+            attribute_value_filters=self.attribute_value_filters,
+        )
+
+        self.store_token_counts(payload, tagged_frame)
+
+        return payload.update(
+            self.out_content_type,
+            tagged_frame,
+        )
+
+
+@dataclass
+class TaggedFrameToTokens(UpdateDocumentPropertyMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
@@ -322,8 +365,6 @@ class TaggedFrameToTokens(ITask):
         if self.pipeline.get('pos_column', None) is None:
             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
 
-        tagged_frame: pd.DataFrame = payload.content
-
         tokens: Iterable[str] = tagged_frame_to_tokens(
             doc=payload.content,
             extract_opts=self.extract_opts,
@@ -332,7 +373,7 @@ class TaggedFrameToTokens(ITask):
 
         tokens = list(tokens)
 
-        self.pipeline.update_statistics(tagged_frame, payload, tokens)
+        self.store_document_properties(payload, n_tokens=len(tokens))
 
         return payload.update(self.out_content_type, tokens)
 
@@ -447,8 +488,7 @@ class ToCoOccurrence(ITask):
 
         co_occurrence: pd.DataFrame = partitioned_corpus_co_occurrence(
             stream=instream,
-            document_index=self.document_index,
-            token2id=self.pipeline.payload.token2id,
+            payload=self.pipeline.payload,
             context_opts=self.context_opts,
             global_threshold_count=self.global_threshold_count,
             partition_column=self.partition_column,
@@ -508,24 +548,6 @@ class ToCoOccurrence(ITask):
         return None
 
 
-# root_folder = (lambda x: os.path.join(os.getcwd().split(x)[0], x))("text_analytics")
-
-# corpus_folder = os.path.join(root_folder, "data")
-# corpus_path = os.path.join(corpus_folder, "legal_instrument_corpus_preprocessed.zip")
-
-# tokens_reader = TextTokenizer(
-#     source=corpus_path,
-#     reader_opts=TextReaderOpts(filename_pattern="*.txt", filename_fields=None),
-#     transform_opts=TextTransformOpts(fix_whitespaces=True, fix_hyphenation=True),
-# )
-
-# reader = (tokens for _, tokens in tokens_reader)
-
-# corpus = glove.Corpus()
-
-# corpus.fit(reader, 5, False)
-
-
 @dataclass
 class ChunkTokens(ITask):
     chunk_size: int = None
@@ -556,45 +578,35 @@ class ChunkTokens(ITask):
 
 
 # @dataclass
-# class TokensToTokenizedCorpus(ITask):
+# class PartOfSpeechStatistics(DefaultResolveMixIn, ITask):
+
+#     category: str = 'year'
+#     include_pos: List[str] = None
+#     doc_frames = []
+
+#     def setup(self):
+#         super().setup()
+#         return self
+
 #     def __post_init__(self):
-#         self.in_content_type = [ContentType.DATAFRAME]
-#         self.out_content_type = ContentType.TOKENIZED_CORPUS
+#         self.in_content_type = ContentType.TAGGEDFRAME
+#         self.out_content_type = ContentType.TAGGEDFRAME
 
-#     tokens_transform_opts: TokensTransformOpts = None
+#     def enter(self):
+#         super().enter()
 
-#     def outstream(self) -> ITokenizedCorpus:
+#     def outstream(self) -> Iterable[DocumentPayload]:
 
-#         reader: ICorpusReader = TextReader()
-#         tokenized_corpus = TokenizedCorpus(
-#             reader=reader,
-#             tokens_transform_opts=self.tokens_transform_opts,
+#         doc_frames = []
+#         for payload in self.instream:
+#             doc_frames.append(payload.content)
+#             yield payload
+
+#         pos_statistics = statistics.compute_pos_statistics(
+#             df_docs=doc_frames,
+#             document_index=self.document_index,
+#             group_by_column=self.category,
+#             include_pos=self.include_pos,
 #         )
-#         return tokenized_corpus
 
-
-# class TCorpus(ITokenizedCorpus):
-#     """Krav: Reitererbar """
-
-#     def __init__(self, pipeline: CorpusPipeline):
-#         if pipeline.tasks[-1].content_type != ContentType.TOKENS:
-#             raise PipelineError("expected token stream")
-#         self.pipeline = pipeline
-#         # self.checkpoint = pipeline.
-
-#     @property
-#     def terms(self) -> Iterator[Iterator[str]]:
-#         for payload in self.pipeline:
-#             yield payload.content
-
-#     @property
-#     def metadata(self) -> List[Dict[str, Any]]:
-#         return None
-
-#     @property
-#     def filenames(self) -> List[str]:
-#         return None
-
-#     @property
-#     def document_index(self) -> pd.DataFrame:
-#         return self.pipeline.payload.document_index
+#         self.pipeline.payload.put('pos_statistics', pos_statistics)

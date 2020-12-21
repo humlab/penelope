@@ -9,7 +9,7 @@ from .document_index import (
     load_document_index_from_str,
     metadata_to_document_index,
     store_document_index,
-    update_document_index_statistics,
+    update_document_index_properties,
     update_document_index_token_counts,
 )
 from .interfaces import ICorpus, ITokenizedCorpus

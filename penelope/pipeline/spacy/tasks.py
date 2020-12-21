@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 
+import pandas as pd
 import spacy
 from spacy.language import Language
 
 from .. import interfaces
-from ..interfaces import ContentType, PipelineError
-from ..tasks import DefaultResolveMixIn
+from ..interfaces import ContentType, DocumentPayload, PipelineError
+from ..tasks import DefaultResolveMixIn, ToTaggedFrame
 from . import convert
 
 DEFAULT_SPACY_DISABLES = ['vectors', 'textcat', 'dep', 'ner']
@@ -59,47 +60,36 @@ class ToSpacyDoc(interfaces.ITask):
 
 
 @dataclass
-class ToSpacyDocToTaggedFrame(interfaces.ITask):
-
-    attributes: List[str] = None
-    attribute_value_filters: Dict[str, Any] = None
-
-    def setup(self):
-        self.pipeline.put("spacy_attributes", self.attributes)
-        return self
-
+class SpacyDocToTaggedFrame(ToTaggedFrame):
     def __post_init__(self):
-        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.TAGGEDFRAME
+        super().__post_init__()
+        self.in_content_type = ContentType.SPACYDOC
+        self.tagger = self.spacy_tagger
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-        return payload.update(
-            self.out_content_type,
-            convert.text_to_tagged_frame(
-                document=payload.as_str(),
-                attributes=self.attributes,
-                attribute_value_filters=self.attribute_value_filters,
-                nlp=self.pipeline.get("spacy_nlp"),
-            ),
+    def spacy_tagger(
+        self, payload: DocumentPayload, attributes: List[str], attribute_value_filters: Dict[str, Any]
+    ) -> pd.DataFrame:
+        return convert.spacy_doc_to_tagged_frame(
+            spacy_doc=payload.content,
+            attributes=attributes,
+            attribute_value_filters=attribute_value_filters,
         )
 
 
 @dataclass
-class SpacyDocToTaggedFrame(interfaces.ITask):
-
-    attributes: List[str] = None
-    attribute_value_filters: Dict[str, Any] = None
-
+class ToSpacyDocToTaggedFrame(ToTaggedFrame):
     def __post_init__(self):
-        self.in_content_type = ContentType.SPACYDOC
+        super().__post_init__()
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
         self.out_content_type = ContentType.TAGGEDFRAME
+        self.tagger = self.spacy_tagger
 
-    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
-        return payload.update(
-            self.out_content_type,
-            convert.spacy_doc_to_tagged_frame(
-                spacy_doc=payload.content,
-                attributes=self.attributes,
-                attribute_value_filters=self.attribute_value_filters,
-            ),
+    def spacy_tagger(
+        self, payload: DocumentPayload, attributes: List[str], attribute_value_filters: Dict[str, Any]
+    ) -> pd.DataFrame:
+        return convert.text_to_tagged_frame(
+            document=payload.as_str(),
+            attributes=attributes,
+            attribute_value_filters=attribute_value_filters,
+            nlp=self.pipeline.get("spacy_nlp"),
         )
