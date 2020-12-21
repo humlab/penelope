@@ -11,6 +11,7 @@ from penelope.co_occurrence import (
 )
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from penelope.pipeline.interfaces import PipelinePayload
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
 from penelope.workflows import co_occurrence_workflow
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
@@ -26,8 +27,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
 
     coo_df = corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         threshold_count=0,
     )
@@ -42,8 +42,7 @@ def test_co_occurrence_with_no_concept_succeeds():
 
     coo_df = corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         threshold_count=1,
     )
@@ -57,8 +56,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
 
     coo_df = corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         threshold_count=2,
     )
@@ -107,8 +105,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
 
     coo_df = partitioned_corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={concept}, ignore_concept=False, context_width=context_width),
         global_threshold_count=threshold_count,
         partition_column='year',
@@ -132,8 +129,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
     )
     coo_df = partitioned_corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
         global_threshold_count=None,
         partition_column='year',
@@ -180,8 +176,7 @@ def test_store_when_co_occurrences_data_is_not_partitioned(filename):
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     coo_df = corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         threshold_count=1,
     )
@@ -216,8 +211,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     df = partitioned_corpus_co_occurrence(
         stream=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         global_threshold_count=1,
         partition_column='year',

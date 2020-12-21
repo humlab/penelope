@@ -189,19 +189,28 @@ def patch_spacy_doc_to_tagged_frame(
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_spacy_doc_to_tagged_frame)
 def test_text_to_tagged_frame_with_text_payload_succeeds():
-    task = spacy_tasks.ToSpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = spacy_tasks.ToSpacyDocToTaggedFrame(
+        pipeline=Mock(spec=CorpusPipeline),
+    ).setup()
+    task.tagger = MagicMock(name='tagger')
+    task.store_token_counts = MagicMock(name='store_token_counts')
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
+    assert task.tagger.call_count == 1
+    assert task.store_token_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_any_to_tagged_frame)
 def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     task = spacy_tasks.SpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task.tagger = MagicMock(name='tagger')
+    task.store_token_counts = MagicMock(name='store_token_counts')
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
+    assert task.tagger.call_count == 1
+    assert task.store_token_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGEDFRAME
-    assert next_payload.content.columns.tolist() == ['text', 'pos_', 'lemma_']
 
 
 def patch_tagged_frame_to_tokens(*_) -> Iterable[str]:
@@ -294,7 +303,7 @@ def test_spacy_pipeline():
         source=TEST_CORPUS,
         document_index_source=None,
         pos_schema_name="Universal",
-        memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
+        memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,', 'pos_column': 'pos_'},
     )
     pipeline = (
         CorpusPipeline(payload=pipeline_payload)

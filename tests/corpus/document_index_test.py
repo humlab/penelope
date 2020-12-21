@@ -9,7 +9,7 @@ from penelope.corpus.document_index import (
     is_monotonic_increasing_integer_series,
     load_document_index,
     load_document_index_from_str,
-    update_document_index_statistics,
+    update_document_index_properties,
 )
 
 TEST_FAULTY_DOCUMENT_INDEX = """
@@ -209,7 +209,7 @@ def test_update_document_index_statistics():
     statistics = {'extra_1': 1, 'extra_2': 2}
 
     assert 'extra_1' not in index.columns
-    update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)
+    update_document_index_properties(index, document_name='tran_2020_01_test', property_bag=statistics)
 
     assert 'extra_1' in index.columns
     assert 'extra_2' in index.columns
@@ -221,7 +221,7 @@ def test_update_document_index_statistics():
     assert index.extra_2.sum() == 2
 
     statistics = {'extra_1': 10, 'extra_2': 22}
-    update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)
+    update_document_index_properties(index, document_name='tran_2020_01_test', property_bag=statistics)
 
     assert int(index.loc['tran_2020_01_test'].extra_1) == 10
     assert int(index.loc['tran_2020_01_test'].extra_2) == 22
@@ -230,4 +230,4 @@ def test_update_document_index_statistics():
     assert index.extra_2.sum() == 22
 
     statistics = {'extra_1': 10, 'extra_2': 22}
-    update_document_index_statistics(index, document_name='tran_2020_01_test', statistics=statistics)
+    update_document_index_properties(index, document_name='tran_2020_01_test', property_bag=statistics)

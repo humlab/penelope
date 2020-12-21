@@ -6,7 +6,7 @@ from penelope.notebook.dtm.to_DTM_gui import GUI
 from penelope.pipeline.config import CorpusConfig
 
 
-@pytest.mark.fixture
+@pytest.fixture
 def dummy_config():
     return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yaml')
 

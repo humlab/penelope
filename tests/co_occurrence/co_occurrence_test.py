@@ -36,7 +36,10 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
     )
 
     df_coo = to_dataframe(
-        term_term_matrix=term_term_matrix, id2token=corpus.id2token, catalogue=corpus.document_index, threshold_count=1
+        term_term_matrix=term_term_matrix,
+        id2token=corpus.id2token,
+        document_index=corpus.document_index,
+        threshold_count=1,
     )
 
     assert df_coo.value.sum() == term_term_matrix.sum()

@@ -1,4 +1,3 @@
-import pytest  # pylint: disable=unused-import
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 

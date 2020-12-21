@@ -302,7 +302,7 @@ def test_spacy_pipeline_load_text_resolves():
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
-    payload = PipelinePayload(source=source)
+    payload = PipelinePayload(source=source).put("pos_column", "pos_")
     pipeline = SpacyPipeline(payload=payload).set_spacy_model(en_nlp).load_text(reader_opts=reader_opts).text_to_spacy()
 
     payloads = [x.content for x in pipeline.resolve()]
@@ -313,7 +313,7 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts)
-    payload = PipelinePayload(source=reader)
+    payload = PipelinePayload(source=reader).put("pos_column", "pos_")
     attributes = ['text', 'lemma_', 'pos_']
     pipeline = (
         SpacyPipeline(payload=payload)
@@ -363,6 +363,27 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
         ['eruption'],
         ['volcanos', 'erupt', 'surface', 'interval'],
     ]
+
+    assert set(list(pipeline.payload.document_index.columns)) == set(
+        [
+            'filename',
+            'year',
+            'document_id',
+            'document_name',
+            'Adverb',
+            'Conjunction',
+            'Delimiter',
+            'Noun',
+            'Other',
+            'Preposition',
+            'n_tokens',
+            'n_raw_tokens',
+            'Pronoun',
+            'Verb',
+            'Adjective',
+            'Numeral',
+        ]
+    )
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(en_nlp):

@@ -1,7 +1,9 @@
 import json
 
 import yaml
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.pipeline import CorpusConfig
+from penelope.pipeline.interfaces import PipelinePayload
 
 TEST_CONFIG = CorpusConfig.loads(
     """
@@ -57,7 +59,7 @@ def test_yaml_dumps_and_loads_of_corpus_config_succeeds():
     json_dump_str = json.dumps(TEST_CONFIG, default=vars)
     yaml_dump_str = yaml.dump(json_dump_str)
 
-    _ = yaml.load(yaml_dump_str)
+    _ = yaml.load(yaml_dump_str, Loader=yaml.FullLoader)
 
 
 def test_dump_and_load_of_corpus_config_succeeds():
@@ -75,3 +77,17 @@ def test_find_config():
     assert c is not None
     c = CorpusConfig.find("ssi_corpus_config.yml", './tests/test_data')
     assert c is not None
+
+
+def test_corpus_config_set_folder():
+
+    config: CorpusConfig = CorpusConfig(
+        text_reader_opts=TextReaderOpts(),
+        pipeline_payload=PipelinePayload(
+            source="corpus.zip",
+            document_index_source="document_index.csv",
+        ),
+    ).folder('/data')
+
+    assert config.pipeline_payload.source == '/data/corpus.zip'
+    assert config.pipeline_payload.document_index_source == '/data/document_index.csv'
