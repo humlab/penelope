@@ -18,7 +18,7 @@ class ExploreCoOccurrencesGUI:
     def layout(self):
 
         tab_gof = (
-            notebook_utility.OutputsTabExt(["GoF", "GoF (abs)", "Plots", "Slopes"])
+            notebook_utility.OutputsTabExt(["GoF", "GoF (abs)", "Plots", "Slopes"], layout={'width': '100%'})
             .display_fx_result(0, display_grid, self.trends_data.goodness_of_fit)
             .display_fx_result(
                 1, display_grid, self.trends_data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
@@ -47,7 +47,7 @@ class ExploreCoOccurrencesGUI:
         )
 
         layout = (
-            notebook_utility.OutputsTabExt(["Data", "Trends", "Explore", "Options", "GoF"])
+            notebook_utility.OutputsTabExt(["Data", "Trends", "Explore", "Options", "GoF"], layout={'width': '100%'})
             .display_fx_result(0, display_grid, self.trends_data.memory.get('co_occurrences'))
             .display_content(1, what=gof_and_trends_gui.layout(), clear=True)
             .display_content(2, what=trends_with_pick_gui.layout(), clear=True)

@@ -22,7 +22,7 @@ class GofTrendsGUI:
 
     def layout(self) -> notebook_utility.OutputsTabExt:
         _layout = (
-            notebook_utility.OutputsTabExt(["Trends", "GoF"])
+            notebook_utility.OutputsTabExt(["Trends", "GoF"], layout={'width': '100%'})
             .display_content(0, what=self.trends_gui.layout(), clear=True)
             .display_content(1, what=self.gofs_gui.layout(), clear=True)
         )
