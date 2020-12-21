@@ -48,7 +48,7 @@ def display_grid(data, column_defs=None, grid_options=None, grid_style=None):
     else:
         raise ValueError(f"Data must be dict or pandas.DataFrame not {type(data)}")
 
-    if os.environ.get('VSCODE_LOGS', None) is not None:
+    if os.environ.get('VSCODE_LOG_STACK', None) is not None:
         logging.warning("bug-check: vscode detected, aborting plot...")
         return df
 
