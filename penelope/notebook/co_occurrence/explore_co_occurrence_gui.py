@@ -42,8 +42,8 @@ class ExploreCoOccurrencesGUI:
             trends_gui=word_trends.TrendsGUI().setup(),
         )
 
-        trends_with_pick_gui = word_trends.TrendsWithPickTokensGUI(
-            self.trends_data.corpus, tokens=self.trends_data.most_deviating, display_widgets=False
+        trends_with_pick_gui = word_trends.TrendsWithPickTokensGUI.create(
+            self.trends_data.corpus, tokens=self.trends_data.most_deviating
         )
 
         layout = (
