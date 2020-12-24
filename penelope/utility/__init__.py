@@ -1,3 +1,4 @@
+# type: ignore
 from ._color_utility import (
     DEFAULT_ALL_PALETTES,
     DEFAULT_LINE_PALETTE,
@@ -60,6 +61,7 @@ from .utils import (
     LOG_FORMAT,
     DummyContext,
     ListOfDicts,
+    assert_is_monotonic_increasing_integer_series,
     chunks,
     clamp_values,
     complete_value_range,
@@ -80,6 +82,7 @@ from .utils import (
     ifextend,
     inspect_default_opts,
     inspect_filter_args,
+    is_monotonic_increasing_integer_series,
     is_platform_architecture,
     isint,
     iter_windows,
