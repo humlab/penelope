@@ -81,7 +81,7 @@ class BaseGUI:
         layout=widgets.Layout(width='280px'),
     )
     _count_threshold: widgets.IntSlider = widgets.IntSlider(
-        description='', min=1, max=1000, step=1, value=1, layout=default_layout
+        description='', min=1, max=1000, step=1, value=10, layout=default_layout
     )
 
     _vectorize_button: widgets.Button = widgets.Button(
