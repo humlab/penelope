@@ -10,7 +10,7 @@ import penelope.utility as utility
 import scipy
 from penelope.corpus.document_index import document_index_upgrade
 from penelope.utility import file_utility, filename_utils
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from .utility import add_document_metadata
 
