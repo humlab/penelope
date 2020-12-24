@@ -7,7 +7,7 @@ import pandas as pd
 from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .tokenized_corpus import TokenizedCorpus
+from ..tokenized_corpus import TokenizedCorpus
 from .vectorized_corpus import VectorizedCorpus
 
 logger = logging.getLogger("corpus_vectorizer")

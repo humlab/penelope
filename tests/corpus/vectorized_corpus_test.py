@@ -3,9 +3,9 @@ import unittest
 
 import numpy as np
 import pandas as pd
+import penelope.corpus.dtm as dtm
 import penelope.corpus.tokenized_corpus as corpora
 import scipy
-from penelope.corpus import TokensTransformOpts, vectorized_corpus, vectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER, create_tokens_reader
 
@@ -28,7 +28,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
     def create_corpus(self) -> corpora.TokenizedCorpus:
         reader = self.create_reader()
-        tokens_transform_opts = TokensTransformOpts(
+        tokens_transform_opts = dtm.TokensTransformOpts(
             only_any_alphanumeric=True,
             to_lower=True,
             remove_accents=False,
@@ -43,7 +43,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
         token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
         df = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+        v_corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
         return v_corpus
 
     def test_bag_term_matrix_to_bag_term_docs(self):
@@ -72,12 +72,12 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Arrange
         corpus = self.create_corpus()
-        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus, already_tokenized=True)
+        dumped_v_corpus = dtm.CorpusVectorizer().fit_transform(corpus, already_tokenized=True)
 
         dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
 
         # Act
-        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
+        loaded_v_corpus = dtm.VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
@@ -89,12 +89,12 @@ class Test_VectorizedCorpus(unittest.TestCase):
 
         # Arrange
         corpus = self.create_corpus()
-        dumped_v_corpus = vectorizer.CorpusVectorizer().fit_transform(corpus, already_tokenized=True)
+        dumped_v_corpus = dtm.CorpusVectorizer().fit_transform(corpus, already_tokenized=True)
 
         dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=True)
 
         # Act
-        loaded_v_corpus = vectorized_corpus.VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
+        loaded_v_corpus = dtm.VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
         # Assert
         self.assertEqual(dumped_v_corpus.word_counts, loaded_v_corpus.word_counts)
@@ -113,7 +113,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
         token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
         df = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+        v_corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
 
         # c_data = v_corpus.group_by_year_categories(categories='year')
         # expected_ytm = [[4, 3, 7, 1], [6, 7, 4, 2]]
@@ -196,9 +196,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         vec = CountVectorizer()
         bag_term_matrix = vec.fit_transform(corpus)
 
-        v_corpus = vectorized_corpus.VectorizedCorpus(
-            bag_term_matrix, token2id=vec.vocabulary_, document_index=document_index
-        )
+        v_corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id=vec.vocabulary_, document_index=document_index)
 
         self.assertTrue(np.allclose(expected_bag_term_matrix, bag_term_matrix.todense()))
 
@@ -217,14 +215,14 @@ class Test_VectorizedCorpus(unittest.TestCase):
         #     [2, 0, 1, 1]
         # ])
         # df = pd.DataFrame({'year': [ 2013, 2013, 2014, 2014, 2014 ]})
-        # v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+        # v_corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
         # return v_corpus
 
     def test_normalize_with_default_arguments_returns_matrix_normalized_by_l1_norm_for_each_row(self):
         bag_term_matrix = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
         token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
         df = pd.DataFrame({'year': [2013, 2014]})
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+        v_corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
         n_corpus = v_corpus.normalize()
         E = np.array([[4, 3, 7, 1], [6, 7, 4, 2]]) / (np.array([[15, 19]]).T)
         self.assertTrue((E == n_corpus.bag_term_matrix).all())
@@ -236,7 +234,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
         df = pd.DataFrame({'year': [2013, 2014]})
 
-        v_corpus = vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+        v_corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
         n_corpus = v_corpus.normalize(keep_magnitude=True)
 
         factor = 15.0 / 19.0
@@ -247,7 +245,7 @@ class Test_VectorizedCorpus(unittest.TestCase):
         bag_term_matrix = np.array([[1, 1, 4, 1], [0, 2, 3, 0], [0, 3, 2, 0], [0, 4, 1, 3], [2, 0, 1, 1]])
         token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
         df = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
-        return vectorized_corpus.VectorizedCorpus(bag_term_matrix, token2id, df)
+        return dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
 
     def test_slice_by_n_count_when_exists_tokens_below_count_returns_filtered_corpus(self):
 

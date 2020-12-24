@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.corpus.dtm import VectorizedCorpus
 from penelope.notebook.word_trends import TrendsData
 from tests.utils import OUTPUT_FOLDER
 

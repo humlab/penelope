@@ -1,0 +1,170 @@
+# type: ignore
+import abc
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple
+
+import pandas as pd
+import scipy
+
+
+class IVectorizedCorpus(abc.ABC):
+
+    __slots__ = ()
+
+    @property
+    @abc.abstractproperty
+    def id2token(self) -> Mapping[int, str]:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def vocabulary(self) -> List[str]:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def T(self) -> scipy.sparse.csr_matrix:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def data(self) -> scipy.sparse.csr_matrix:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def term_bag_matrix(self) -> scipy.sparse.csr_matrix:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def n_docs(self) -> int:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def n_terms(self) -> int:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def document_index(self) -> pd.DataFrame:
+        ...
+
+    @abc.abstractmethod
+    def todense(self) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def dump(self, *, tag: str, folder: str, compressed: bool = True) -> "IVectorizedCorpus":
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def dump_exists(*, tag: str, folder: str) -> bool:
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def remove(*, tag: str, folder: str):
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def load(*, tag: str, folder: str) -> "IVectorizedCorpus":
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def dump_options(*, tag: str, folder: str, options: dict):
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def load_options(*, tag: str, folder: str) -> dict:
+        ...
+
+    @abc.abstractmethod
+    def filter(self, px) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def n_top_tokens(self, n_top) -> Dict[str, int]:
+        ...
+
+    @abc.abstractmethod
+    def slice_by_n_count(self, n_count: int) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def slice_by_n_top(self, n_top) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def slice_by(self, px) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def stats(self):
+        ...
+
+    @abc.abstractmethod
+    def to_n_top_dataframe(self, n_top: int):
+        ...
+
+    @abc.abstractmethod
+    def year_range(self) -> Tuple[Optional[int], Optional[int]]:
+        ...
+
+    @abc.abstractmethod
+    def xs_years(self) -> Tuple[int, int]:
+        ...
+
+    @abc.abstractmethod
+    def token_indices(self, tokens: Iterable[str]):
+        ...
+
+    @abc.abstractmethod
+    def tf_idf(self, norm: str = 'l2', use_idf: bool = True, smooth_idf: bool = True) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def to_bag_of_terms(self, indicies: Optional[Iterable[int]] = None) -> Iterable[Iterable[str]]:
+        ...
+
+    @abc.abstractmethod
+    def get_top_n_words(self, n=1000, indices=None):
+        ...
+
+    @abc.abstractmethod
+    def co_occurrence_matrix(self) -> scipy.sparse.spmatrix:
+        ...
+
+    @abc.abstractmethod
+    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int) -> List[str]:
+        ...
+
+    @abc.abstractmethod
+    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int) -> List[int]:
+        ...
+
+    @abc.abstractmethod
+    def pick_n_top_words(self, tokens: List[str], n_top: int) -> List[str]:
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def create(
+        bag_term_matrix: scipy.sparse.csr_matrix,
+        token2id: Dict[str, int],
+        document_index: pd.DataFrame,
+        word_counts: Dict[str, int] = None,
+    ) -> "IVectorizedCorpus":
+        ...

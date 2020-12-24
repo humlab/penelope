@@ -4,7 +4,7 @@ from typing import Dict, Sequence, TypeVar
 
 import ipywidgets
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.corpus.dtm import VectorizedCorpus
 
 T = TypeVar('T', bound='ITrendDisplayer')
 

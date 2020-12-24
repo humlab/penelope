@@ -6,8 +6,8 @@ from typing import Callable, Iterable, List, Mapping, Tuple
 import numpy as np
 import pandas as pd
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
+from penelope.corpus.dtm import VectorizedCorpus
 from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'

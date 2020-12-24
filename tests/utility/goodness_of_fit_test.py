@@ -6,7 +6,7 @@ import penelope.utility as utility
 import pytest
 import scipy
 import statsmodels.api as sm
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 
 logger = utility.get_logger()
 

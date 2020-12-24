@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import logging
 import os
 import pickle
@@ -7,17 +8,18 @@ import re
 import time
 from heapq import nlargest
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Container, Dict, Iterable, List, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import scipy
 import sklearn.preprocessing
 import textacy
-from penelope.utility import read_json, write_json
+from penelope.utility import is_monotonic_increasing_integer_series, read_json, write_json
 from sklearn.feature_extraction.text import TfidfTransformer
 
-from .document_index import is_monotonic_increasing_integer_series
+from .group_or_reduce import GroupByCategoryMixIn, GroupByYearMixIn
+from .interface import IVectorizedCorpus
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods
 
@@ -25,7 +27,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("")
 
 
-class VectorizedCorpus:
+class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus):
     def __init__(
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
@@ -139,7 +141,7 @@ class VectorizedCorpus:
 
         return self
 
-    def dump(self, *, tag: str, folder: str, compressed: bool = True) -> VectorizedCorpus:
+    def dump(self, *, tag: str, folder: str, compressed: bool = True) -> IVectorizedCorpus:
         """Store corpus on disk.
 
         The file is stored as two files: one that contains the BoW matrix (.npy or .npz)
@@ -281,187 +283,6 @@ class VectorizedCorpus:
         """
         return self.bag_term_matrix[:, self.token2id[word]].todense().A1  # x.A1 == np.asarray(x).ravel()
 
-    def collapse_by_category(
-        self, column, X=None, df: pd.DataFrame = None, aggregate_function: str = 'sum', dtype=np.float
-    ):  # -> VectorizedCorpus:
-        """Sums ups all rows in based on each row's index having same value in column `column`in data frame `df`
-
-        Parameters
-        ----------
-        column : str
-            The categorical column in `df` to be used in the grouping of rows in `X`
-
-        X : np.ndarray(N, M), optional
-            Matrix of shape (N, M), by default None
-
-        df : DataFrame, optional
-            DataFrame of size N, where each row `ì` contains data that describes row `i` in `X`, by default None
-
-        aggregate_function : str, optional, values `sum` or `mean`
-            DataFrame of size N, where each row `ì` contains data that describes row `i` in `X`, by default None
-
-        Returns
-        -------
-        tuple: np.ndarray(K, M), List[Any]
-            A matrix of size K wherw K is the number of unique categorical values in `df[column]`
-            A list of length K of category values, where i:th value is category of i:th row in returned matrix
-        """
-
-        X = self.bag_term_matrix if X is None else X
-        df = self.document_index if df is None else df
-
-        assert aggregate_function in {'sum', 'mean'}
-        assert X.shape[0] == len(df)
-
-        categories = list(sorted(df[column].unique().tolist()))
-
-        Y = np.zeros((len(categories), X.shape[1]), dtype=(dtype or X.dtype))
-
-        for i, value in enumerate(categories):
-
-            indices = list((df.loc[df[column] == value].index))
-
-            if aggregate_function == 'mean':
-                Y[i, :] = X[indices, :].mean(axis=0)
-            else:
-                Y[i, :] = X[indices, :].sum(axis=0)
-
-        return Y, categories
-
-    # @jit
-    # CONSIDER: Refactor away function (make use of `collapse_by_category`)
-    def group_by_year(self) -> VectorizedCorpus:
-        """Returns a new corpus where documents have been grouped and summed up by year."""
-
-        X = self.bag_term_matrix  # if X is None else X
-        df = self.document_index  # if df is None else df
-
-        min_value, max_value = df.year.min(), df.year.max()
-
-        Y = np.zeros(((max_value - min_value) + 1, X.shape[1]))
-
-        for i in range(0, Y.shape[0]):  # pylint: disable=unsubscriptable-object
-
-            indices = list((df.loc[df.year == min_value + i].index))
-
-            if len(indices) > 0:
-                Y[i, :] = X[indices, :].sum(axis=0)
-
-        years = list(range(min_value, max_value + 1))
-        document_index = pd.DataFrame(
-            {'year': years, 'category': years, 'filename': map(str, years), 'document_name': map(str, years)}
-        )
-
-        v_corpus = VectorizedCorpus(
-            Y, token2id=self.token2id, document_index=document_index, word_counts=self.word_counts
-        )
-
-        return v_corpus
-
-    def group_by_year_categories(self, category_specifier: Union[str, dict]) -> VectorizedCorpus:
-        """Returns a new corpus where documents have been grouped and summed up by year groups."""
-
-        if category_specifier == 'year':
-            return self.group_by_year()
-
-        def setup_categories(document_index: pd.DataFrame, specifier: Union[str, dict]) -> List[int]:
-            """Returns (document index) category series and (unique) category list for given specifier"""
-            if isinstance(specifier, str):
-                if specifier in ('decade', 'lustrum'):
-                    d = 5 if specifier == 'lustrum' else 10
-                    _category_series: pd.Series = document_index.year.apply(lambda x: x - int(x % d))
-                    _categories = list(range(_category_series.min(), _category_series.max() + 1, d))
-                else:
-                    raise ValueError(f"Category {specifier}")
-            else:
-                _category_series: pd.Series = document_index.year.apply(lambda x: specifier.get(x, None))
-                _categories = list(sorted(_category_series.unique()))
-
-            return _categories, _category_series
-
-        def reduce_dtm_by_categories(category_series: pd.Series, categories: List[int]) -> np.ndarray:
-            """Creates new DTM by reducing (summing) rows having same category"""
-            X = self.bag_term_matrix
-            df = self.document_index
-            df['category'] = category_series
-            Y: np.ndarray = np.zeros((len(categories), X.shape[1]), dtype=np.uint64)
-            for i in range(0, Y.shape[0]):  # pylint: disable=unsubscriptable-object
-                indices = list((df.loc[df.category == categories[i]].index))
-                if len(indices) > 0:
-                    Y[i, :] = X[indices, :].sum(axis=0)
-            return Y
-
-        def create_document_index(
-            document_index: pd.DataFrame, category_series: pd.Series, categories: List[int]
-        ) -> pd.DataFrame:
-            default_aggregates = {
-                'year': ['min', 'max', 'size'],
-                'value': 'sum',
-                'value_n_t': 'sum',
-                'value_n_d': 'sum',
-                'n_raw_tokens': 'sum',
-                'n_tokens': 'sum',
-            }
-            aggregates = {k: v for k, v in default_aggregates.items() if k in document_index.columns}
-
-            document_index['category'] = category_series
-            document_index = document_index.groupby('category').agg(aggregates)
-            document_index.columns = ['_'.join(col) for col in document_index.columns]
-
-            new_document_index = pd.DataFrame(
-                {'category': categories, 'filename': map(str, categories), 'document_name': map(str, categories)}
-            )
-            new_document_index = new_document_index.merge(
-                document_index, how='left', left_on='category', right_index=True
-            )
-
-            return new_document_index
-
-        categories, category_series = setup_categories(document_index=self.document_index, specifier=category_specifier)
-
-        dtm = reduce_dtm_by_categories(category_series, categories)
-
-        document_index: pd.DataFrame = create_document_index(self.document_index, category_series, categories)
-
-        corpus = VectorizedCorpus(
-            dtm, token2id=self.token2id, document_index=document_index, word_counts=self.word_counts
-        )
-
-        return corpus
-
-    # CONSIDER: Refactor away function (make use of `collapse_by_category`)
-    def group_by_year2(self, aggregate_function='sum', dtype=None) -> VectorizedCorpus:
-        """Variant of `group_by_year` where aggregate function can be specified."""
-
-        assert aggregate_function in {'sum', 'mean'}
-
-        X = self.bag_term_matrix  # if X is None else X
-        df = self.document_index  # if df is None else df
-
-        min_value, max_value = df.year.min(), df.year.max()
-
-        Y = np.zeros(((max_value - min_value) + 1, X.shape[1]), dtype=(dtype or X.dtype))
-
-        for i in range(0, Y.shape[0]):  # pylint: disable=unsubscriptable-object
-
-            indices = list((df.loc[df.year == min_value + i].index))
-
-            if len(indices) > 0:
-                if aggregate_function == 'mean':
-                    Y[i, :] = X[indices, :].mean(axis=0)
-                else:
-                    Y[i, :] = X[indices, :].sum(axis=0)
-
-                # Y[i,:] = self._group_aggregate_functions[aggregate_function](X[indices,:], axis=0)
-
-        years = list(range(min_value, max_value + 1))
-
-        document_index = pd.DataFrame({'year': years, 'filename': map(str, years), 'document_name': map(str, years)})
-
-        v_corpus = VectorizedCorpus(Y, self.token2id, document_index, self.word_counts)
-
-        return v_corpus
-
     def filter(self, px) -> VectorizedCorpus:
         """Returns a new corpus that only contains docs for which `px` is true.
 
@@ -485,7 +306,7 @@ class VectorizedCorpus:
         return v_corpus
 
     # @jit
-    def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> VectorizedCorpus:
+    def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> IVectorizedCorpus:
         """Scale BoW matrix's rows or columns individually to unit norm:
 
             sklearn.preprocessing.normalize(self.bag_term_matrix, axis=axis, norm=norm)
@@ -532,7 +353,7 @@ class VectorizedCorpus:
         return tokens
 
     # @autojit
-    def slice_by_n_count(self, n_count: int) -> VectorizedCorpus:
+    def slice_by_n_count(self, n_count: int) -> IVectorizedCorpus:
         """Create a subset corpus where words having a count less than 'n_count' are removed
 
         Parameters
@@ -553,7 +374,7 @@ class VectorizedCorpus:
 
         return self.slice_by(_px)
 
-    def slice_by_n_top(self, n_top) -> VectorizedCorpus:
+    def slice_by_n_top(self, n_top) -> IVectorizedCorpus:
         """Create a subset corpus that only contains most frequent `n_top` words
 
         Parameters
@@ -593,7 +414,7 @@ class VectorizedCorpus:
     #     kept_indices = np.where(mask)[0]
     #     return (self.bag_term_matrix[:, kept_indices], token2id)
 
-    def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> VectorizedCorpus:
+    def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> IVectorizedCorpus:
         """Creates a subset corpus where common/rare terms are filtered out.
 
         Textacy util function filter_terms_by_df is used for the filtering.
@@ -619,7 +440,7 @@ class VectorizedCorpus:
         return v_corpus
 
     # @autojit
-    def slice_by(self, px) -> VectorizedCorpus:
+    def slice_by(self, px) -> IVectorizedCorpus:
         """Create a subset corpus based on predicate `px`
 
         Parameters
@@ -661,7 +482,7 @@ class VectorizedCorpus:
             logger.info('   {}: {}'.format(key, stats_data[key]))
         return stats_data
 
-    def to_n_top_dataframe(self, n_top: int):
+    def to_n_top_dataframe(self, n_top: int) -> pd.DataFrame:
         """Returns BoW as a Pandas dataframe with the `n_top` most common words.
 
         Parameters
@@ -719,7 +540,7 @@ class VectorizedCorpus:
         """
         return [self.token2id[token] for token in tokens]
 
-    def tf_idf(self, norm: str = 'l2', use_idf: bool = True, smooth_idf: bool = True) -> VectorizedCorpus:
+    def tf_idf(self, norm: str = 'l2', use_idf: bool = True, smooth_idf: bool = True) -> IVectorizedCorpus:
         """Returns a (nomalized) TF-IDF transformed version of the corpus
 
         Calls sklearn's TfidfTransformer
@@ -814,7 +635,7 @@ class VectorizedCorpus:
 
     def find_matching_words(self, word_or_regexp: List[str], n_max_count: int) -> List[str]:
         """Returns `tokens` in corpus that matches candidate tokens """
-        words = find_matching_words(word_or_regexp, self.token2id)
+        words = find_matching_words_in_vocabulary(word_or_regexp, self.token2id)
         if len(words) > n_max_count:
             words = self.pick_n_top_words(words, n_max_count)
         return words
@@ -832,19 +653,36 @@ class VectorizedCorpus:
         """Returns `n_top` most frequent tokens in corpus among given `tokens`"""
         return pick_n_top_words(self.word_counts, tokens, n_top)
 
+    @staticmethod
+    def create(
+        bag_term_matrix: scipy.sparse.csr_matrix,
+        token2id: Dict[str, int],
+        document_index: pd.DataFrame,
+        word_counts: Dict[str, int] = None,
+    ) -> "IVectorizedCorpus":
+        return VectorizedCorpus(
+            bag_term_matrix=bag_term_matrix, token2id=token2id, document_index=document_index, word_counts=word_counts
+        )
 
-def find_matching_words(candidate_words: List[str], token2id: Mapping[str, int]) -> List[str]:
 
-    word_exprs = [x for x in candidate_words if len(x) > 0 and x.startswith("|") and x.endswith("|")]
+def find_matching_words_in_vocabulary(candidate_words: List[str], token2id: Container[str]) -> List[str]:
+
+    words = {w for w in candidate_words if w in token2id}
+
+    remaining_words = [w for w in candidate_words if w not in words and len(w) > 0]
+
+    word_exprs = [x for x in remaining_words if "*" in x or (x.startswith("|") and x.endswith("|"))]
 
     if len(word_exprs) == 0:
-        return candidate_words
-
-    words = [w for w in candidate_words if w not in word_exprs]
+        return words
 
     for expr in word_exprs:
-        pattern = re.compile(expr.strip('|'))  # "^.*tion$"
-        words.extend([x for x in token2id if pattern.match(x)])
+
+        if expr.startswith("|") and expr.endswith("|"):
+            pattern = re.compile(expr.strip('|'))  # "^.*tion$"
+            words |= {x for x in token2id if x not in words and pattern.match(x)}
+        else:
+            words |= {x for x in token2id if x not in words and fnmatch.fnmatch(x, expr)}
 
     return words
 

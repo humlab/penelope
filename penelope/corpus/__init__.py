@@ -1,16 +1,22 @@
 # type: ignore
 from .document_index import (
+    DocumentIndex,
     add_document_index_attributes,
-    assert_is_monotonic_increasing_integer_series,
     consolidate_document_index,
     document_index_upgrade,
-    is_monotonic_increasing_integer_series,
     load_document_index,
     load_document_index_from_str,
     metadata_to_document_index,
     store_document_index,
     update_document_index_properties,
     update_document_index_token_counts,
+)
+from .dtm import (
+    CorpusVectorizer,
+    VectorizedCorpus,
+    VectorizeOpts,
+    load_cached_normalized_vectorized_corpus,
+    load_corpus,
 )
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers.interfaces import TextReaderOpts
@@ -42,5 +48,3 @@ from .transforms import (
     upper_transform,
 )
 from .utils import default_tokenizer, preprocess_text_corpus
-from .vectorized_corpus import VectorizedCorpus, load_cached_normalized_vectorized_corpus, load_corpus
-from .vectorizer import CorpusVectorizer, VectorizeOpts

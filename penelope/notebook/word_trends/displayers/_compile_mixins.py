@@ -4,7 +4,7 @@ from typing import Callable, List, Sequence
 import bokeh
 import scipy
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.corpus.dtm import VectorizedCorpus
 from penelope.utility import take
 
 
