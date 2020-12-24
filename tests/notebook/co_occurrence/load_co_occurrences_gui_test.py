@@ -1,14 +1,18 @@
-import penelope.notebook.co_occurrence.load_co_occurrences_gui as load_co_occurrences_gui
+import pandas as pd
+import penelope.co_occurrence as co_occurrence
+import penelope.notebook.co_occurrence as co_occurrences_gui
+from penelope.corpus import VectorizedCorpus
 
 DATA_FOLDER = './tests/test_data'
 
 
-def test_load_co_occurrences_gui_create_gui():
-    def load_callback(_: load_co_occurrences_gui.GUI):
+def test_create_load_co_occurrences_gui():
+    def load_callback(_: str):
         pass
 
-    gui = load_co_occurrences_gui.create_gui(data_folder=DATA_FOLDER)
-    gui = gui.setup(filename_pattern="*.zip", load_callback=load_callback)
+    gui = co_occurrences_gui.create_load_gui(data_folder=DATA_FOLDER)
+
+    gui = gui.setup(filename_pattern=co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN, load_callback=load_callback)
     assert gui is not None
 
     layout = gui.layout()
@@ -16,10 +20,15 @@ def test_load_co_occurrences_gui_create_gui():
     assert layout is not None
 
 
-# def test_GUI_setup_and_layout():
-#     pass
+def test_load_co_occurrence_bundle():
 
-# @patch('VectorizedCorpus')
-# def test_load_callback():
-#     args: load_co_occurrences_gui.GUI = Mock(spec=load_co_occurrences_gui.GUI)
-#     load_co_occurrences_gui.load_callback(args, loaded_callback=loaded_callback)
+    filename = './tests/test_data/VENUS/VENUS_co-occurrence.csv.zip'
+
+    bundle = co_occurrence.load_bundle(filename)
+
+    assert bundle is not None
+    assert isinstance(bundle.corpus, VectorizedCorpus)
+    assert isinstance(bundle.co_occurrences, pd.DataFrame)
+    assert isinstance(bundle.compute_options, dict)
+    assert bundle.corpus_folder == './tests/test_data/VENUS'
+    assert bundle.corpus_tag == 'VENUS'
