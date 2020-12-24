@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import scipy
 from pandas.core.frame import DataFrame
-from penelope.corpus.vectorized_corpus import VectorizedCorpus
+from penelope.corpus.dtm import VectorizedCorpus
 from penelope.utility import chunks
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from .distance_metrics import (
     earth_mover_distance,
@@ -153,7 +153,7 @@ def compute_goddness_of_fits_to_uniform(
         }
     )
 
-    metrics_iter = tqdm(metrics, position=0, leave=True) if verbose else metrics
+    metrics_iter = tqdm(metrics, desc="Computing metrics", position=0, leave=True) if verbose else metrics
     for metric in metrics_iter:
         if metric in METRIC_FUNCTIONS:
             if hasattr(metrics_iter, 'set_description'):
