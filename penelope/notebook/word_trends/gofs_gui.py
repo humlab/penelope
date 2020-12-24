@@ -19,7 +19,7 @@ class GoFsGUI:
 
     def setup(self) -> "GoFsGUI":
         self.tab_gof: notebook_utility.OutputsTabExt = notebook_utility.OutputsTabExt(
-            ["GoF", "GoF (abs)", "Plots", "Slopes"], layout={'width': '100%'}
+            ["GoF", "GoF (abs)", "Plots", "Slopes"], layout={'width': '98%'}
         )
         return self
 
