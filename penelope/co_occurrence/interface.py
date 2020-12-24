@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Set
 
-CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
+from penelope.utility import getLogger
+
+logger = getLogger('penelope')
 
 
 class CoOccurrenceError(ValueError):
