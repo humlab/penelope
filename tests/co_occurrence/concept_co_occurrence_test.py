@@ -9,7 +9,8 @@ from penelope.co_occurrence import (
     store_co_occurrences,
     to_vectorized_corpus,
 )
-from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
+from penelope.co_occurrence.partitioned import ComputeResult
+from penelope.corpus import DocumentIndex, SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline.interfaces import PipelinePayload
 from penelope.utility import dataframe_to_tuples, pretty_print_matrix
@@ -65,7 +66,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
 
 def test_co_occurrence_using_cli_succeeds(tmpdir):
 
-    output_filename = jj(tmpdir, 'test_co_occurrence_using_cli_succeeds.csv')
+    output_filename = jj(tmpdir, 'test_cli_co-occurrence.csv.zip')
     context_opts = ContextOpts(
         concept={'jag'},
         context_width=2,
@@ -103,7 +104,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
 
-    coo_df = partitioned_corpus_co_occurrence(
+    compute_result: ComputeResult = partitioned_corpus_co_occurrence(
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={concept}, ignore_concept=False, context_width=context_width),
@@ -111,8 +112,8 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         partition_column='year',
     )
 
-    assert coo_df is not None
-    assert len(coo_df) > 0
+    assert compute_result is not None
+    assert len(compute_result.co_occurrences) > 0
 
 
 @pytest.mark.skip("long running, used for bug fixes")
@@ -127,7 +128,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         ),
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
     )
-    coo_df = partitioned_corpus_co_occurrence(
+    compute_result: ComputeResult = partitioned_corpus_co_occurrence(
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
@@ -135,13 +136,13 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         partition_column='year',
     )
 
-    assert coo_df is not None
-    assert len(coo_df) > 0
+    assert compute_result is not None
+    assert len(compute_result.co_occurrences) > 0
 
 
 def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
 
-    target_filename = jj(tmpdir, 'test_co_occurrence_bug_with_options_that_raises_an_exception.csv')
+    target_filename = jj(tmpdir, 'test_co_occurrence_bug_with_options_co-occurrence.csv.zip')
     options = {
         'corpus_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
         'target_filename': target_filename,
@@ -169,7 +170,7 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     assert os.path.isfile(target_filename)
 
 
-@pytest.mark.parametrize('filename', ['concept_co_occurrences_data.csv', 'concept_co_occurrences_data.zip'])
+@pytest.mark.parametrize('filename', ['concept_data_co-occurrence.csv', 'concept_data_co-occurrence.csv.zip'])
 def test_store_when_co_occurrences_data_is_not_partitioned(filename):
 
     expected_filename = jj(OUTPUT_FOLDER, filename)
@@ -188,7 +189,7 @@ def test_store_when_co_occurrences_data_is_not_partitioned(filename):
     os.remove(expected_filename)
 
 
-@pytest.mark.parametrize('filename', ['concept_co_occurrences_data.csv', 'concept_co_occurrences_data.zip'])
+@pytest.mark.parametrize('filename', ['concept_data_co-occurrence.csv', 'concept_data_co-occurrence.csv.zip'])
 def test_load_when_co_occurrences_data_is_not_partitioned(filename):
 
     filename = jj(TEST_DATA_FOLDER, filename)
@@ -209,7 +210,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
 
     expected_filename = jj(OUTPUT_FOLDER, filename)
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    df = partitioned_corpus_co_occurrence(
+    compute_result: ComputeResult = partitioned_corpus_co_occurrence(
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
@@ -217,7 +218,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         partition_column='year',
     )
 
-    store_co_occurrences(expected_filename, df)
+    store_co_occurrences(expected_filename, compute_result.co_occurrences)
 
     assert os.path.isfile(expected_filename)
 
@@ -226,12 +227,14 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
 
 def test_vectorize_co_occurrences_data():
 
-    value_column = 'value_n_t'
-    filename = jj(TEST_DATA_FOLDER, 'partitioned_concept_co_occurrences_data.zip')
+    value_column = 'value'
+    filename = jj(TEST_DATA_FOLDER, './tests/test_data/VENUS/VENUS_co-occurrences.csv.zip')
+    index_filename = jj(TEST_DATA_FOLDER, './tests/test_data/VENUS/VENUS_document_index.csv')
 
     co_occurrences = load_co_occurrences(filename)
+    document_index = DocumentIndex.load(index_filename).document_index
 
-    v_corpus = to_vectorized_corpus(co_occurrences, value_column)
+    v_corpus = to_vectorized_corpus(co_occurrences, document_index, value_column)
 
     pretty_print_matrix(
         v_corpus.data.todense(),

@@ -1,12 +1,10 @@
 from typing import Sequence
 
-import pandas as pd
-from penelope.co_occurrence import ContextOpts, store_bundle, to_vectorized_corpus
+import penelope.co_occurrence as co_occurrence
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.notebook.co_occurrence import POS_CHECKPOINT_FILENAME_POSTFIX
-from penelope.pipeline.config import CorpusConfig
-from penelope.pipeline.pipelines import CorpusPipeline
+from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 
 from .utils import WorkflowException
@@ -19,7 +17,7 @@ def execute_workflow(
     target_filename: str,
     corpus_config: CorpusConfig,
     *,
-    context_opts: ContextOpts = None,
+    context_opts: co_occurrence.ContextOpts = None,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     count_threshold: int = None,
@@ -29,7 +27,7 @@ def execute_workflow(
     # document_index_sep: str='\t',
     # pos_schema_name: str = "Universal",
     # language: str = "english",
-) -> pd.DataFrame:
+) -> co_occurrence.ComputeResult:
     """Creates concept co-occurrence using specified options and stores a co-occurrence CSV file
     and optionally a vectorized corpus.
 
@@ -90,7 +88,7 @@ def execute_workflow(
 
     checkpoint_filename: str = f"{corpus_config.corpus_name}{POS_CHECKPOINT_FILENAME_POSTFIX}"
 
-    co_occurrences: pd.DataFrame = pipeline(
+    compute_result: co_occurrence.ComputeResult = pipeline(
         corpus_config=corpus_config,
         tokens_transform_opts=tokens_transform_opts,
         extract_tagged_tokens_opts=extract_tokens_opts,
@@ -101,20 +99,30 @@ def execute_workflow(
         checkpoint_filename=checkpoint_filename,
     ).value()
 
-    corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
-
-    store_bundle(
-        target_filename,
-        co_occurrences=co_occurrences,
-        corpus=corpus,
-        corpus_tag=None,
-        input_filename=corpus_filename,
-        partition_keys=partition_keys,
-        count_threshold=count_threshold,
-        reader_opts=corpus_config.reader_opts,
-        tokens_transform_opts=tokens_transform_opts,
-        context_opts=context_opts,
-        extract_tokens_opts=extract_tokens_opts,
+    corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
+        co_occurrences=compute_result.co_occurrences,
+        document_index=compute_result.document_index,
+        value_column='value',
     )
+    corpus_folder, corpus_tag = co_occurrence.filename_to_folder_and_tag(target_filename)
 
-    return co_occurrences
+    bundle = co_occurrence.Bundle(
+        corpus=corpus,
+        corpus_tag=corpus_tag,
+        corpus_folder=corpus_folder,
+        co_occurrences=compute_result.co_occurrences,
+        document_index=compute_result.document_index,
+        compute_options=co_occurrence.create_options_bundle(
+            reader_opts=corpus_config.reader_opts,
+            tokens_transform_opts=tokens_transform_opts,
+            context_opts=context_opts,
+            extract_tokens_opts=extract_tokens_opts,
+            input_filename=corpus_filename,
+            output_filename=target_filename,
+            partition_keys=partition_keys,
+            count_threshold=count_threshold,
+        ),
+    )
+    co_occurrence.store_bundle(target_filename, bundle)
+
+    return compute_result

@@ -1,16 +1,14 @@
 import os
 from typing import Callable, Optional
 
-import pandas as pd
-from penelope.co_occurrence import CO_OCCURRENCE_FILENAME_POSTFIX, store_bundle, to_vectorized_corpus
+import penelope.co_occurrence as co_occurrence
 from penelope.corpus import VectorizedCorpus
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import getLogger
-from penelope.utility.file_utility import pandas_to_csv_zip
 
 from ..utility import default_done_callback
-from .to_co_occurrence_gui import GUI
+from .to_co_occurrence_gui import ComputeGUI
 
 logger = getLogger('penelope')
 jj = os.path.join
@@ -21,7 +19,7 @@ POS_CHECKPOINT_FILENAME_POSTFIX = '_spaCy_pos_tagged_frame_csv.zip'
 # pylint: disable=unused-argument
 def compute_co_occurrence(
     corpus_config: CorpusConfig,
-    args: GUI,
+    args: ComputeGUI,
     partition_key: str,
     done_callback: Callable,
     checkpoint_file: Optional[str] = None,
@@ -49,7 +47,7 @@ def compute_co_occurrence(
             checkpoint_file or f"{corpus_config.corpus_name}_{POS_CHECKPOINT_FILENAME_POSTFIX}"
         )
 
-        co_occurrences: pd.DataFrame = spaCy_co_occurrence_pipeline(
+        compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
             corpus_config=corpus_config,
             tokens_transform_opts=args.tokens_transform_opts,
             extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
@@ -67,44 +65,40 @@ def compute_co_occurrence(
         # logger.debug(args.count_threshold)
         # logger.debug(args.partition_key)
 
-        if len(co_occurrences) == 0:
+        if len(compute_result.co_occurrences) == 0:
             raise ValueError("Computation ended up in ZERO records. Check settinsgs!")
 
-        co_occurrence_filename = jj(args.target_folder, f"{args.corpus_tag}{CO_OCCURRENCE_FILENAME_POSTFIX}")
-
-        pandas_to_csv_zip(
-            zip_filename=co_occurrence_filename,
-            dfs=(co_occurrences, 'co_occurrence.csv'),
-            extension='csv',
-            header=True,
-            sep="\t",
-            decimal=',',
-            quotechar='"',
+        co_occurrence_filename = co_occurrence.folder_and_tag_to_filename(
+            folder=args.target_folder, tag=args.corpus_tag
         )
 
-        corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
-
-        store_bundle(
-            co_occurrence_filename,
-            corpus=corpus,
-            corpus_tag=args.corpus_tag,
-            input_filename=args.corpus_filename,
-            partition_keys=[partition_key],
-            count_threshold=args.count_threshold,
-            co_occurrences=co_occurrences,
-            reader_opts=corpus_config.text_reader_opts,
-            tokens_transform_opts=args.tokens_transform_opts,
-            context_opts=args.context_opts,
-            extract_tokens_opts=args.extract_tagged_tokens_opts,
+        corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
+            co_occurrences=compute_result.co_occurrences,
+            document_index=compute_result.document_index,
+            value_column='value',
         )
 
-        (done_callback or default_done_callback)(
+        bundle = co_occurrence.Bundle(
             corpus=corpus,
             corpus_tag=args.corpus_tag,
             corpus_folder=args.target_folder,
-            co_occurrences=co_occurrences,
-            compute_options=None,
+            co_occurrences=compute_result.co_occurrences,
+            document_index=compute_result.document_index,
+            compute_options=co_occurrence.create_options_bundle(
+                reader_opts=corpus_config.text_reader_opts,
+                tokens_transform_opts=args.tokens_transform_opts,
+                context_opts=args.context_opts,
+                extract_tokens_opts=args.extract_tagged_tokens_opts,
+                input_filename=args.corpus_filename,
+                output_filename=co_occurrence_filename,
+                partition_keys=[partition_key],
+                count_threshold=args.count_threshold,
+            ),
         )
+
+        co_occurrence.store_bundle(co_occurrence_filename, bundle)
+
+        (done_callback or default_done_callback)(bundle=bundle)
 
     except (
         ValueError,
@@ -112,5 +106,7 @@ def compute_co_occurrence(
         PermissionError,
     ) as ex:
         logger.error(ex)
+        raise
     except Exception as ex:
         logger.error(ex)
+        raise

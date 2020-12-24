@@ -1,13 +1,12 @@
 import os
 
-import pandas as pd
-from penelope.co_occurrence import ContextOpts, store_bundle, to_vectorized_corpus
+import penelope.co_occurrence as co_occurrence
+from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.notebook.co_occurrence.compute_callback_pipeline import compute_co_occurrence
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
-from penelope.utility import pandas_to_csv_zip
 from penelope.utility.pos_tags import PoS_Tag_Scheme, PoS_Tag_Schemes, pos_tags_to_str
 
 from .fixtures import FakeGUI, FakeSSI
@@ -35,11 +34,11 @@ def test_spaCy_co_occurrence_pipeline():
         is_space=False,
         is_punct=False,
     )
-    context_opts: ContextOpts = ContextOpts(context_width=4)
+    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(context_width=4)
     global_threshold_count: int = 1
     partition_column: str = 'year'
 
-    co_occurrence = spaCy_co_occurrence_pipeline(
+    compute_result: ComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=ssi,
         tokens_transform_opts=tokens_transform_opts,
         extract_tagged_tokens_opts=extract_tagged_tokens_opts,
@@ -50,9 +49,8 @@ def test_spaCy_co_occurrence_pipeline():
         checkpoint_filename=checkpoint_filename,
     ).value()
 
-    co_occurrence.to_csv(target_filename, sep='\t')
+    compute_result.co_occurrences.to_csv(target_filename, sep='\t')
 
-    assert co_occurrence is not None
     assert os.path.isfile(target_filename)
 
     os.remove(target_filename)
@@ -71,12 +69,14 @@ def test_spaCy_co_occurrence_pipeline2():
         corpus_tag="VENUS",
         corpus_filename=corpus_config.pipeline_payload.source,
     )
-    args.context_opts = ContextOpts(context_width=4, ignore_concept=True)  # , concept={''}, ignore_concept=True)
+    args.context_opts = co_occurrence.ContextOpts(
+        context_width=4, ignore_concept=True
+    )  # , concept={''}, ignore_concept=True)
 
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    co_occurrences: pd.DataFrame = spaCy_co_occurrence_pipeline(
+    compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=corpus_config,
         tokens_transform_opts=args.tokens_transform_opts,
         extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
@@ -87,38 +87,34 @@ def test_spaCy_co_occurrence_pipeline2():
         checkpoint_filename=checkpoint_filename,
     ).value()
 
-    assert co_occurrences is not None
-    assert len(co_occurrences) > 0
+    assert compute_result.co_occurrences is not None
+    assert compute_result.document_index is not None
+    assert len(compute_result.co_occurrences) > 0
 
-    co_occurrence_filename = os.path.join(args.target_folder, f"{args.corpus_tag}_co-occurrence.csv.zip")
+    co_occurrence_filename = co_occurrence.folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
 
-    pandas_to_csv_zip(
-        zip_filename=co_occurrence_filename,
-        dfs=(co_occurrences, 'co_occurrence.csv'),
-        extension='csv',
-        header=True,
-        sep="\t",
-        decimal=',',
-        quotechar='"',
+    corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
+        co_occurrences=compute_result.co_occurrences, document_index=compute_result.document_index, value_column='value'
     )
 
-    assert os.path.isfile(co_occurrence_filename)
-
-    corpus: VectorizedCorpus = to_vectorized_corpus(co_occurrences=co_occurrences, value_column='value_n_t')
-
-    store_bundle(
-        co_occurrence_filename,
+    bundle = co_occurrence.Bundle(
         corpus=corpus,
         corpus_tag=args.corpus_tag,
-        input_filename=args.corpus_filename,
-        partition_keys=[partition_key],
-        count_threshold=args.count_threshold,
-        co_occurrences=co_occurrences,
-        reader_opts=corpus_config.text_reader_opts,
-        tokens_transform_opts=args.tokens_transform_opts,
-        context_opts=args.context_opts,
-        extract_tokens_opts=args.extract_tagged_tokens_opts,
+        corpus_folder=args.target_folder,
+        co_occurrences=compute_result.co_occurrences,
+        compute_options=co_occurrence.create_options_bundle(
+            reader_opts=corpus_config.text_reader_opts,
+            tokens_transform_opts=args.tokens_transform_opts,
+            context_opts=args.context_opts,
+            extract_tokens_opts=args.extract_tagged_tokens_opts,
+            input_filename=args.corpus_filename,
+            output_filename=co_occurrence_filename,
+            partition_keys=[partition_key],
+            count_threshold=args.count_threshold,
+        ),
     )
+
+    co_occurrence.store_bundle(co_occurrence_filename, bundle)
 
 
 def test_spaCy_co_occurrence_pipeline3():
