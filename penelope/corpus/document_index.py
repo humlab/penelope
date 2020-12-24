@@ -1,34 +1,194 @@
 import logging
 import os
 from io import StringIO
-from typing import Dict, List, Mapping, Tuple, Union
+from typing import Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
-from penelope.utility import strip_path_and_extension
+from penelope.utility import is_monotonic_increasing_integer_series, strip_path_and_extension
+from penelope.utility.pos_tags import PD_PoS_tag_groups
 
 
 class DocumentIndexError(ValueError):
     pass
 
 
-def assert_is_monotonic_increasing_integer_series(series: pd.Series):
-    if not is_monotonic_increasing_integer_series(series):
-        raise ValueError(f"series: {series.name} must be an integer typed, monotonic increasing series starting from 0")
+T = TypeVar("T", int, str)
+
+COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
 
 
-def is_monotonic_increasing_integer_series(series: pd.Series):
-    if len(series) > 0 and not np.issubdtype(series.dtype, np.integer):
-        return False
-    if not series.sort_values().is_monotonic_increasing:
-        return False
-    if len(series) > 0 and series.min() != 0:
-        return False
-    return True
+class DocumentIndex:
+    """Embryo to a document index class"""
+
+    def __init__(self, document_index):
+        self._document_index = document_index
+
+    @property
+    def document_index(self):
+        return self._document_index
+
+    def store(self, filename: str) -> "DocumentIndex":
+        store_document_index(self.document_index, filename)
+        return self
+
+    @staticmethod
+    def load(filename: Union[str, StringIO], *, key_column: str = None, sep: str = '\t') -> "DocumentIndex":
+        _index = load_document_index(filename, key_column=key_column, sep=sep)
+        return DocumentIndex(_index)
+
+    @staticmethod
+    def from_metadata(metadata: List[Dict], *, document_id_field: str = None) -> "DocumentIndex":
+        _index = metadata_to_document_index(metadata, document_id_field=document_id_field)
+        return DocumentIndex(_index)
+
+    @staticmethod
+    def from_str(data_str: str, key_column: str, sep: str) -> "DocumentIndex":
+        _index = load_document_index_from_str(data_str=data_str, key_column=key_column, sep=sep)
+        return DocumentIndex(_index)
+
+    def consolidate(self, reader_index: pd.DataFrame) -> "DocumentIndex":
+        self._document_index = consolidate_document_index(self._document_index, reader_index)
+        return self
+
+    def upgrade(self) -> "DocumentIndex":
+        self._document_index = document_index_upgrade(self._document_index)
+        return self
+
+    def update_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> "DocumentIndex":
+        self._document_index = update_document_index_token_counts(
+            self._document_index, doc_token_counts=doc_token_counts
+        )
+        return self
+
+    def add_attributes(self, other: pd.DataFrame) -> "DocumentIndex":
+        """ Adds other's document meta data (must have a document_id) """
+        self._document_index = self._document_index.merge(
+            other, how='inner', left_on='document_id', right_on='document_id'
+        )
+        return self
+
+    def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndex":
+        """Updates attributes for the specified document item"""
+        property_bag = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
+        for key in [k for k in property_bag if k not in self._document_index.columns]:
+            self._document_index.insert(len(self._document_index.columns), key, np.nan)
+        self._document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+        return self
+
+    def group_by_column(
+        self,
+        column_name: str = 'year',
+        transformer: Union[Callable[[T], T], Dict[T, T], None] = None,
+        index_values: Union[str, List[T]] = None,
+    ) -> "DocumentIndex":
+        """Returns a reduced document index grouped by specified column.
+
+        A new `category` column is added that by applying `transformer` to `column_name`.
+        If `transformer` is None then `category` will be same as `column_name`.
+        All count columns as specified in COUNT_COLUMNS will be summed up.
+        New `filename`, `document_name` and `document_id` columns are generated.
+        Both `filename` and `document_name` will be set to str(`category`)
+        If `index_values` is specified than the returned index will have _exactly_ those index
+        values, and can be used for instance if there are gaps n the index that needs to be filled.
+        For integer categories `index_values` can have the literal value `fill_gaps` in which case
+        a monotonic increasing index will be created  without gaps.
+
+        Args:
+            column_name (str): The column to group by, must exist, must be of int or str type
+            transformer (callable, dict, None): Transforms to apply to column before grouping
+            index_values (pd.Series, List[T]): pandas index of returned document index
+
+        Raises:
+            DocumentIndexError: [description]
+
+        Returns:
+            [type]: [description]
+        """
+
+        # Categrory column must exist (add before call if necessary)
+        if column_name not in self._document_index.columns:
+            raise DocumentIndexError(f"fatal: document index has no {column_name} column")
+
+        # Create `agg` dict that sums up all count variables (and span of years per group)
+        count_aggregates = {
+            **{
+                count_column: 'sum'
+                for count_column in COUNT_COLUMNS.items()
+                if count_column in self._document_index.columns
+            },
+            **({} if column_name == 'year' else {'year': ['min', 'max', 'size']}),
+        }
+
+        # Add a new and possibly transformed `category`column, group by column and apply aggreates
+        document_index = (
+            self._document_index.assign(
+                category=lambda df: (
+                    df[column_name]
+                    if transformer is None
+                    else df[column_name].apply(transformer)
+                    if callable(transformer)
+                    else df[column_name].apply(transformer.get)
+                    if isinstance(transformer, dict)
+                    else None
+                )
+            )
+            .groupby('category')
+            .agg(count_aggregates)
+        )
+
+        # Reset column index to a single level
+        document_index.columns = ['_'.join(col) for col in document_index.columns]
+
+        # Set new index `index_values` as new index if specified, or else index
+        if index_values is None:
+            # Use existing index values (results from group by)
+            index_values = document_index.index
+        elif isinstance(index_values, str) and index_values == 'fill_gaps':
+            # Create a monotonic increasing index (fills gaps, index must be of integer type)
+            if not np.issubdtype(document_index.dtype, np.integer):
+                raise DocumentIndexError(f"expected index of type int, found {type(document_index.dtype)}")
+
+            index_values = np.arange(document_index.index.min(), document_index.index.max() + 1, 1)
+
+        # Create new data frame with given index values, add columns and left join with grouped index
+        document_index = pd.merge(
+            pd.DataFrame(
+                {
+                    'category': index_values,
+                    'filename': map(str, index_values),
+                    'document_name': map(str, index_values),
+                }
+            ).set_index('category'),
+            document_index,
+            how='left',
+            left_index=True,
+            right_index=True,
+        )
+
+        # Add `year` column if grouping column was 'year`, set to index or min year based on grouping column
+        document_index['year'] = document_index.index if column_name == 'year' else document_index.min_year
+
+        # Add `document_id`
+        document_index = document_index.reset_index()
+        document_index['document_id'] = document_index.index
+
+        # Set `document_name` as index of result data frame
+        document_index = document_index.set_index('document_name', drop=False).rename_axis('')
+
+        return DocumentIndex(document_index)
 
 
 def _get_monotonic_document_id(document_index: pd.DataFrame, document_id_field: str) -> pd.Series:
+    """[summary]
 
+    Args:
+        document_index (pd.DataFrame): [description]
+        document_id_field (str): [description]
+
+    Returns:
+        pd.Series: [description]
+    """
     if 'document_id' in document_index.columns:
         if is_monotonic_increasing_integer_series(document_index.document_id):
             return document_index.document_id
@@ -44,6 +204,12 @@ def _get_monotonic_document_id(document_index: pd.DataFrame, document_id_field: 
 
 
 def store_document_index(document_index: pd.DataFrame, filename: str):
+    """[summary]
+
+    Args:
+        document_index (pd.DataFrame): [description]
+        filename (str): [description]
+    """
     document_index.to_csv(filename, sep='\t', header=True)
 
 
@@ -161,6 +327,13 @@ def update_document_index_token_counts(
 
 
 def update_document_index_properties(document_index, *, document_name: str, property_bag: Mapping[str, int]):
+    """[summary]
+
+    Args:
+        document_index ([type]): [description]
+        document_name (str): [description]
+        property_bag (Mapping[str, int]): [description]
+    """
     property_bag = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
     for key in [k for k in property_bag if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
