@@ -415,17 +415,27 @@ def pretty_print_matrix(
         print(df)
 
 
-# def read_data_frame_from_zip(zf, filename):
-#     data_str = zf.read(filename).decode('utf-8')
-#     data_source = StringIO(data_str)
-#     df = pd.read_csv(data_source, sep='\t', index_col=0)
-#     return df
+def assert_is_monotonic_increasing_integer_series(series: pd.Series):
+    """[summary]
+
+    Args:
+        series (pd.Series): [description]
+
+    Raises:
+        ValueError: [description]
+    """
+    if not is_monotonic_increasing_integer_series(series):
+        raise ValueError(f"series: {series.name} must be an integer typed, monotonic increasing series starting from 0")
 
 
-# def write_data_frame_to_zip(df: pd.DataFrame, filename: str, zf: zipfile.ZipFile):
-#     assert isinstance(df, (pd.DataFrame,))
-#     data_str: str = df.to_csv(sep='\t', header=True)
-#     zf.writestr(filename, data=data_str)
+def is_monotonic_increasing_integer_series(series: pd.Series):
+    if len(series) > 0 and not np.issubdtype(series.dtype, np.integer):
+        return False
+    if not series.sort_values().is_monotonic_increasing:
+        return False
+    if len(series) > 0 and series.min() != 0:
+        return False
+    return True
 
 
 class DummyContext:
