@@ -7,6 +7,7 @@ import pandas as pd
 import qgrid
 from bokeh.plotting import show
 from penelope.corpus import VectorizedCorpus
+from penelope.notebook.word_trends.trends_data import TrendsData
 
 from .displayers import deprecated_plot as plotter
 
@@ -16,15 +17,26 @@ class TokensSelector(abc.ABC):
 
         self.tokens = tokens
         self.token_column = token_column
-        if self.token_column in self.tokens.columns:
-            self.tokens = self.tokens.set_index(self.token_column)
-        _gof_value_columns = norms_columns or (
+        self.norms_columns = norms_columns or (
             'l2_norm',
             'abs_l2_norm',
         )
-        self.tokens = self.tokens.rename(columns={_gof_value_columns[0]: "GoF", _gof_value_columns[1]: "|GoF|"})
         self._widget = None
         self._on_selection_change_handler = None
+
+        self.display(tokens)
+
+    def display(self, tokens: pd.DataFrame) -> "TokensSelector":
+
+        if tokens is None:
+            return self
+
+        self.tokens = tokens
+        if self.token_column in self.tokens.columns:
+            self.tokens = self.tokens.set_index(self.token_column)
+        self.tokens = self.tokens.rename(columns={self.norms_columns[0]: "GoF", self.norms_columns[1]: "|GoF|"})
+        self._widget = None
+        return self
 
     @property
     def widget(self):
@@ -103,7 +115,7 @@ class QgridTokensSelector(TokensSelector):
             'autoEdit': False,
             # 'explicitInitialization': True,
             # Qgrid options
-            'maxVisibleRows': 30,
+            'maxVisibleRows': 20,
             'minVisibleRows': 20,
             'sortable': True,
             'filterable': True,
@@ -162,7 +174,7 @@ class QgridTokensSelector(TokensSelector):
             column_definitions=column_definitions,
         )
 
-        q.layout = ipywidgets.Layout(width="450px")
+        q.layout = ipywidgets.Layout(width="250px")
 
         q.on('selection_changed', self._on_selection_changed)
 
@@ -191,14 +203,19 @@ class QgridTokensSelector(TokensSelector):
 
 class SelectMultipleTokensSelector(TokensSelector):
     def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
-        super().__init__(tokens, token_column, norms_columns)
         self._text_widget: ipywidgets.Text = None
         self._tokens_widget: ipywidgets.SelectMultiple = None
-        self._token_to_index = self._rehash_token_to_index()
+        self._token_to_index = None
+        super().__init__(tokens, token_column, norms_columns)
+
+    def display(self, tokens: pd.DataFrame) -> "TokensSelector":
+        super().display(tokens)
+        if self.tokens is not None:
+            self._rehash_token_to_index()
+        return self
 
     def _rehash_token_to_index(self):
         self._token_to_index = {w: i for i, w in enumerate(self.tokens.index.tolist())}
-        return self._token_to_index
 
     def _create_widget(self) -> ipywidgets.SelectMultiple:
 
@@ -313,6 +330,9 @@ class TrendsWithPickTokensGUI:
                 ipywidgets.HBox([self.token_selector.widget, self._output], layout=ipywidgets.Layout(width="98%")),
             ]
         )
+
+    def display(self, trends_data: TrendsData):
+        self.token_selector.display(trends_data.most_deviating_overview)
 
     @property
     def page_size(self) -> int:
