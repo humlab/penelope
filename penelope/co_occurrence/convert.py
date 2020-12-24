@@ -1,16 +1,34 @@
 import json
 import os
-from typing import Mapping, Sequence, Union
+from dataclasses import dataclass
+from typing import Mapping, Tuple, Union
 
 import pandas as pd
 import scipy
 from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
+from penelope.corpus.document_index import DocumentIndex
 from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
-from penelope.utility import getLogger, replace_extension, strip_path_and_extension
+from penelope.notebook.word_trends import TrendsData
+from penelope.utility import getLogger, read_json, replace_extension, right_chop, strip_path_and_extension
 
 from .interface import ContextOpts, CoOccurrenceError
 
 logger = getLogger()
+
+
+CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
+CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
+
+
+def filename_to_folder_and_tag(co_occurrences_filename: str) -> Tuple[str, str]:
+    """Strips out corpus folder and tag from filename having CO_OCCURRENCE_FILENAME_POSTFIX ending"""
+    corpus_folder, corpus_basename = os.path.split(co_occurrences_filename)
+    corpus_tag = right_chop(corpus_basename, CO_OCCURRENCE_FILENAME_POSTFIX)
+    return corpus_folder, corpus_tag
+
+
+def folder_and_tag_to_filename(*, folder: str, tag: str) -> str:
+    return os.path.join(folder, f"{tag}{CO_OCCURRENCE_FILENAME_POSTFIX}")
 
 
 def store_co_occurrences(filename: str, df: pd.DataFrame):
@@ -24,6 +42,16 @@ def store_co_occurrences(filename: str, df: pd.DataFrame):
 
     df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
 
+    # pandas_to_csv_zip(
+    #     zip_filename=co_occurrence_filename,
+    #     dfs=(co_occurrences, 'co_occurrence.csv'),
+    #     extension='csv',
+    #     header=True,
+    #     sep="\t",
+    #     decimal=',',
+    #     quotechar='"',
+    # )
+
 
 def load_co_occurrences(filename: str) -> pd.DataFrame:
     """Load co-occurrences from CSV-file"""
@@ -32,18 +60,18 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
     return df
 
 
-def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> VectorizedCorpus:
+def to_vectorized_corpus(
+    co_occurrences: pd.DataFrame, document_index: pd.DataFrame, value_column: str = "value"
+) -> VectorizedCorpus:
 
     # Create new tokens from the co-occurring pairs
     tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
 
-    # Create a vocabulary
-    vocabulary = list(sorted([w for w in set(tokens)]))
+    # Create a vocabulary & token2id mapping
+    token2id = {w: i for i, w in enumerate(sorted([w for w in set(tokens)]))}
 
-    # Create token2id mapping
-    token2id = {w: i for i, w in enumerate(vocabulary)}
-    years = list(sorted(co_occurrences.year.unique()))
-    year2index = {year: i for i, year in enumerate(years)}
+    # Create a year to index mappaing (i.e. year to document_id)
+    year2index = document_index.set_index('year').document_id.to_dict()
 
     df_yearly_weights = pd.DataFrame(
         data={
@@ -57,18 +85,7 @@ def to_vectorized_corpus(co_occurrences: pd.DataFrame, value_column: str) -> Vec
         (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id))
     )
 
-    document_index = (
-        pd.DataFrame(
-            data={
-                'document_id': list(range(0, len(years))),
-                'filename': [f'{y}.coo' for y in years],
-                'document_name': [f'{y}' for y in years],
-                'year': years,
-            }
-        )
-        .set_index('document_id', drop=False)
-        .rename_axis('')
-    )
+    document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
 
     v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, document_index=document_index)
 
@@ -166,38 +183,104 @@ def to_dataframe(
     return coo_df
 
 
-def store_bundle(
-    output_filename: str,
-    co_occurrences: pd.DataFrame,
-    corpus: VectorizedCorpus,
-    corpus_tag: str,
+@dataclass
+class Bundle:
+
+    co_occurrences_filename: str = None
+    corpus_folder: str = None
+    corpus_tag: str = None
+
+    co_occurrences: pd.DataFrame = None
+    document_index: str = None
+    corpus: VectorizedCorpus = None
+    compute_options: dict = None
+
+
+def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
+
+    store_co_occurrences(output_filename, bundle.co_occurrences)
+
+    if bundle.corpus is not None:
+        if bundle.corpus_tag is None:
+            bundle.corpus_tag = strip_path_and_extension(output_filename)
+        bundle.corpus_folder = os.path.split(output_filename)[0]
+        bundle.corpus.dump(tag=bundle.corpus_tag, folder=bundle.corpus_folder)
+        DocumentIndex(bundle.document_index).store(
+            os.path.join(bundle.corpus_folder, f"{bundle.corpus_tag}_document_index.csv")
+        )
+
+    with open(replace_extension(output_filename, 'json'), 'w') as json_file:
+        json.dump(bundle.compute_options, json_file, indent=4)
+
+
+def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "Bundle":
+    """Loads bundle identified by given filename i.e. `corpus_folder`/`corpus_tag`_co-occurrence.csv.zip"""
+
+    corpus_folder, corpus_tag = filename_to_folder_and_tag(co_occurrences_filename)
+    co_occurrences = load_co_occurrences(co_occurrences_filename)
+    document_index = DocumentIndex.load(os.path.join(corpus_folder, f"{corpus_tag}_document_index.csv")).document_index
+    corpus = (
+        VectorizedCorpus.load(folder=corpus_folder, tag=corpus_tag)
+        if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)
+        else None
+    )
+    if corpus is None and compute_corpus:
+        corpus = to_vectorized_corpus(
+            co_occurrences=co_occurrences, document_index=document_index, value_column='value'
+        )
+
+    options = load_options(co_occurrences_filename)
+
+    bundle = Bundle(
+        co_occurrences_filename=co_occurrences_filename,
+        corpus_folder=corpus_folder,
+        corpus_tag=corpus_tag,
+        co_occurrences=co_occurrences,
+        document_index=document_index,
+        compute_options=options,
+        corpus=corpus,
+    )
+
+    return bundle
+
+
+def to_trends_data(bundle: Bundle, n_count=25000):
+
+    trends_data = TrendsData(
+        compute_options=bundle.compute_options,
+        corpus=bundle.corpus,
+        corpus_folder=bundle.corpus_folder,
+        corpus_tag=bundle.corpus_tag,
+        n_count=n_count,
+    ).remember(co_occurrences=bundle.co_occurrences, document_index=bundle.document_index)
+
+    return trends_data
+
+
+def load_options(co_occurrences_filename: str) -> dict:
+    """Loads options used when co-occurrence was computed"""
+
+    options_filename = replace_extension(co_occurrences_filename, 'json')
+    if os.path.isfile(options_filename):
+        return read_json(options_filename)
+    return {'not_found': options_filename}
+
+
+def create_options_bundle(
     *,
-    input_filename: str,
-    partition_keys: Sequence[str],
-    count_threshold: int,
     reader_opts: TextReaderOpts,
     tokens_transform_opts: TokensTransformOpts,
     context_opts: ContextOpts,
     extract_tokens_opts: ExtractTaggedTokensOpts,
+    **other_options,
 ):
-
-    store_co_occurrences(output_filename, co_occurrences)
-
-    if corpus is not None:
-        if corpus_tag is None:
-            corpus_tag = strip_path_and_extension(output_filename)
-        corpus_folder = os.path.split(output_filename)[0]
-        corpus.dump(tag=corpus_tag, folder=corpus_folder)
-
-    with open(replace_extension(output_filename, 'json'), 'w') as json_file:
-        store_options = {
-            'input_filename': input_filename,
-            'output_filename': output_filename,
-            'partition_keys': partition_keys,
-            'count_threshold': count_threshold,
+    options = {
+        **{
             'reader_opts': reader_opts.props,
             'context_opts': context_opts.props,
             'tokens_transform_opts': tokens_transform_opts.props,
             'extract_tokens_opts': extract_tokens_opts.props,
-        }
-        json.dump(store_options, json_file, indent=4)
+        },
+        **other_options,
+    }
+    return options
