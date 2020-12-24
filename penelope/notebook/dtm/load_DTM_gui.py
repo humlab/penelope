@@ -18,7 +18,7 @@ debug_view = Output(layout={'border': '1px solid black'})
 
 
 @dataclass
-class GUI:
+class LoadGUI:
 
     default_corpus_folder: str
     filename_pattern: str
@@ -122,7 +122,7 @@ def create_gui(
             corpus=corpus,
         )
 
-    gui = GUI(
+    gui = LoadGUI(
         default_corpus_folder=corpus_folder,
         filename_pattern=filename_pattern,
         load_callback=load_corpus_callback,

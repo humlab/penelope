@@ -23,7 +23,7 @@ def trends_data_mock() -> TrendsData:
 
 #     trends_data: TrendsData = trends_data_mock()
 
-#     gui: ExploreCoOccurrencesGUI = ExploreCoOccurrencesGUI(trends_data=trends_data)
+#     gui: ExploreGUI = ExploreGUI(trends_data=trends_data)
 
 #     layout = gui.layout()
 

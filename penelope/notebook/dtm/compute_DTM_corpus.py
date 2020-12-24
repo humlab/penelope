@@ -5,14 +5,14 @@ from penelope.pipeline.config import CorpusConfig
 from penelope.workflows import vectorize_corpus_workflow
 
 from ..utility import default_done_callback
-from .to_DTM_gui import GUI
+from .to_DTM_gui import ComputeGUI
 
 
 # pylint: disable=unused-argument
 def compute_document_term_matrix(
     corpus_config: CorpusConfig,
     pipeline_factory: Callable,
-    args: GUI,
+    args: ComputeGUI,
     done_callback: Callable,
     persist: bool = False,
 ):

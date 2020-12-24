@@ -19,7 +19,7 @@ view = widgets.Output(layout={"border": "1px solid black"})
 
 
 @dataclass
-class GUI(BaseGUI):
+class ComputeGUI(BaseGUI):
 
     partition_key: str = field(default='year')
 
@@ -80,28 +80,28 @@ class GUI(BaseGUI):
             return {}
         return set(_concepts_str)
 
+    @staticmethod
+    def create(
+        *,
+        corpus_folder: str,
+        corpus_config: CorpusConfig,
+        compute_callback: Callable = None,
+        done_callback: Callable = None,
+    ) -> "ComputeGUI":
+        """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
+        corpus_config.folder(corpus_folder)
+        gui = ComputeGUI(
+            default_corpus_path=corpus_folder,
+            default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
+            default_target_folder=corpus_folder,
+        ).setup(
+            config=corpus_config,
+            compute_callback=lambda g: compute_callback(
+                corpus_config=corpus_config,
+                args=g,
+                partition_key=gui.partition_key,
+                done_callback=done_callback,
+            ),
+        )
 
-def create_gui(
-    *,
-    corpus_folder: str,
-    corpus_config: CorpusConfig,
-    compute_callback: Callable = None,
-    done_callback: Callable = None,
-) -> GUI:
-    """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
-    corpus_config.folder(corpus_folder)
-    gui = GUI(
-        default_corpus_path=corpus_folder,
-        default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
-        default_target_folder=corpus_folder,
-    ).setup(
-        config=corpus_config,
-        compute_callback=lambda g: compute_callback(
-            corpus_config=corpus_config,
-            args=g,
-            partition_key=gui.partition_key,
-            done_callback=done_callback,
-        ),
-    )
-
-    return gui
+        return gui

@@ -12,7 +12,7 @@ logger = get_logger('penelope')
 
 
 @dataclass
-class GUI(BaseGUI):
+class ComputeGUI(BaseGUI):
     def layout(self, hide_input=False, hide_output=False):
         layout = super().layout(hide_input, hide_output)
         return layout
@@ -29,10 +29,10 @@ def create_gui(
     pipeline_factory: Callable[[], CorpusPipeline],
     done_callback: Callable[[CorpusPipeline, VectorizedCorpus, str, str, widgets.Output], None],
     compute_document_term_matrix: Callable,
-) -> GUI:
+) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
     corpus_config.folder(corpus_folder)
-    gui = GUI(
+    gui = ComputeGUI(
         default_corpus_path=corpus_folder,
         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
         default_target_folder=corpus_folder,

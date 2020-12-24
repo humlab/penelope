@@ -15,7 +15,7 @@ view = ipywidgets.Output()
 
 
 @dataclass
-class GUI:
+class ComputeGUI:
 
     distance_metric_options = [('linear', 0), ('inverse', 1), ('constant', 2)]
 
@@ -57,7 +57,7 @@ class GUI:
         finally:
             self.button.disabled = False
 
-    def setup(self, corpus_files: List[str], compute_handler: Callable) -> "GUI":
+    def setup(self, corpus_files: List[str], compute_handler: Callable) -> "ComputeGUI":
         self.filepath.options = corpus_files
         self.compute_handler = compute_handler
         self.button.on_click(self._compute_handler)
@@ -90,6 +90,6 @@ def create_gui(data_folder, corpus_pattern='*.tokenized.zip', compute_handler: C
 
     corpus_files = sorted(glob.glob(os.path.join(data_folder, corpus_pattern)))
 
-    gui = GUI().setup(corpus_files=corpus_files, compute_handler=compute_handler)
+    gui = ComputeGUI().setup(corpus_files=corpus_files, compute_handler=compute_handler)
 
     return gui

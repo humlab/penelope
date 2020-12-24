@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 from penelope.notebook.dtm.compute_DTM_corpus import compute_document_term_matrix
-from penelope.notebook.dtm.to_DTM_gui import GUI
+from penelope.notebook.dtm.to_DTM_gui import ComputeGUI
 from penelope.pipeline.config import CorpusConfig
 
 
@@ -21,6 +21,6 @@ def test_compute_document_term_matrix(dummy_config):  # pylint: disable=redefine
         done_called = True
 
     compute_document_term_matrix(
-        dummy_config, pipeline_factory=None, args=Mock(spec=GUI), done_callback=done_callback, persist=False
+        dummy_config, pipeline_factory=None, args=Mock(spec=ComputeGUI), done_callback=done_callback, persist=False
     )
     assert done_called

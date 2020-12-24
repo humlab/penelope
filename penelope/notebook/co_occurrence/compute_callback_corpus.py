@@ -6,14 +6,14 @@ from penelope.pipeline.config import CorpusConfig
 from penelope.utility import getLogger, replace_extension
 from penelope.workflows import co_occurrence_workflow
 
-from .to_co_occurrence_gui import GUI
+from .to_co_occurrence_gui import ComputeGUI
 
 logger = getLogger('penelope')
 
 
 def compute_co_occurrence(
     corpus_config: CorpusConfig,
-    args: GUI,
+    args: ComputeGUI,
     partition_key: str,
     done_callback: Callable,
     checkpoint_file: Optional[str] = None,  # pylint: disable=unused-argument

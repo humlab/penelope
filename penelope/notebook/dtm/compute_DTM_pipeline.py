@@ -7,7 +7,7 @@ from penelope.pipeline.pipelines import CorpusPipeline
 from penelope.utility import get_logger, path_add_suffix
 
 from ..utility import default_done_callback
-from .to_DTM_gui import GUI
+from .to_DTM_gui import ComputeGUI
 
 logger = get_logger()
 
@@ -15,7 +15,7 @@ logger = get_logger()
 def compute_document_term_matrix(
     corpus_config: CorpusConfig,
     pipeline_factory: Callable,
-    args: GUI,
+    args: ComputeGUI,
     done_callback: Callable,
     persist: bool = False,
 ):
