@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 import pandas as pd
-from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence
+import penelope.co_occurrence as co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
@@ -17,7 +17,7 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.utility import to_text
-from tqdm.std import tqdm
+from tqdm.auto import tqdm
 
 from . import checkpoint
 from .convert import tagged_frame_to_token_counts, tagged_frame_to_tokens, to_vectorized_corpus
@@ -468,7 +468,7 @@ class ToCoOccurrence(ITask):
         self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
 
-    context_opts: ContextOpts = None
+    context_opts: co_occurrence.ContextOpts = None
     global_threshold_count: int = None
     partition_column: str = field(default='year')
 
@@ -486,14 +486,14 @@ class ToCoOccurrence(ITask):
         # else:
         #     instream = ((x.filename, x.content) for x in self.instream)
 
-        co_occurrence: pd.DataFrame = partitioned_corpus_co_occurrence(
+        compute_result: co_occurrence.ComputeResult = co_occurrence.partitioned_corpus_co_occurrence(
             stream=instream,
             payload=self.pipeline.payload,
             context_opts=self.context_opts,
             global_threshold_count=self.global_threshold_count,
             partition_column=self.partition_column,
         )
-        yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=co_occurrence)
+        yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=compute_result)
 
         # """Creates a vectorized corpus of word-word co-occurences.
         # 1. Compute yearly co-occurrences
