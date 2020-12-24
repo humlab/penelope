@@ -19,7 +19,10 @@ class TrendsGUI:
 
     trends_data: TrendsData = field(default=None, init=False)
 
-    _tab: widgets.Tab = widgets.Tab()
+    _tab: widgets.Tab = widgets.Tab(layout={'width': '98%'})
+    _picker: widgets.SelectMultiple = widgets.SelectMultiple(
+        description="", options=[], value=[], rows=30, layout={'width': '250px'}
+    )
     _normalize: widgets.ToggleButton = widgets.ToggleButton(
         description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
     )
@@ -38,11 +41,11 @@ class TrendsGUI:
         description="",
         rows=2,
         value="",
-        placeholder='Enter words and/or reg.exps. such as |.*ment$|',
+        placeholder='Enter words, wildcards and/or regexps such as "information", "info*", "*ment",  "|.*tion$|"',
         layout=widgets.Layout(width='98%'),
     )
     _word_count: widgets.BoundedIntText = widgets.BoundedIntText(
-        value=10, min=3, max=100, step=1, description='Max words:', disabled=False
+        value=500, min=3, max=50000, step=10, description='Max words:', disabled=False, layout={'width': '140px'}
     )
     _displayers: Sequence[ITrendDisplayer] = field(default_factory=list)
 
@@ -56,25 +59,31 @@ class TrendsGUI:
                         self._normalize,
                         self._smooth,
                         self._group_by,
+                        self._word_count,
                         self._status,
                     ]
                 ),
                 self._words,
-                self._tab,
+                widgets.HBox([self._picker, self._tab], layout={'width': '98%'}),
             ]
         )
 
     def _plot_trends(self, *_):
 
         try:
-
-            if self.trends_data is None or self.trends_data.corpus is None:
-                self.alert("Please load a corpus!")
+            if self.trends_data is None:
+                self.alert("Please load a corpus (no trends data) !")
                 return
 
+            if self.trends_data is None or self.trends_data.corpus is None:
+                self.alert("Please load a corpus (no corpus in trends data) !")
+                return
+
+            corpus = self.trends_data.get_corpus(self.normalize, self.group_by)
+
             self.current_displayer.display(
-                corpus=self.trends_data.get_corpus(self.normalize, self.group_by),
-                indices=self.trends_data.find_indices(self.options),
+                corpus=corpus,
+                indices=corpus.token_indices(self._picker.value),
                 smooth=self.smooth,
             )
 
@@ -85,6 +94,14 @@ class TrendsGUI:
         except Exception as ex:
             logger.exception(ex)
             self.warn(str(ex))
+            raise
+
+    def _update_picker(self, *_):
+
+        words = self.trends_data.find_words(self.options)
+
+        self._picker.value = [w for w in self._picker.value if w in words]
+        self._picker.options = words
 
     def setup(self, *, displayers: Sequence[ITrendDisplayer] = None) -> "TrendsGUI":
 
@@ -101,15 +118,23 @@ class TrendsGUI:
         for i, d in enumerate(self._displayers):
             self._tab.set_title(i, d.name)
 
-        self._words.observe(self._plot_trends, names='value')
+        self._words.observe(self._update_picker, names='value')
         self._tab.observe(self._plot_trends, 'selected_index')
         self._normalize.observe(self._plot_trends, names='value')
         self._smooth.observe(self._plot_trends, names='value')
         self._group_by.observe(self._plot_trends, names='value')
+        self._picker.observe(self._plot_trends, names='value')
 
         return self
 
     def display(self, *, trends_data: TrendsData):
+        if trends_data is None:
+            raise ValueError("No trends data supplied!")
+        if trends_data.corpus is None:
+            raise ValueError("No corpus supplied!")
+        if self._picker is not None:
+            self._picker.values = []
+            self._picker.options = []
         self.trends_data = trends_data
         self._plot_trends()
 
@@ -128,8 +153,12 @@ class TrendsGUI:
         self.alert(f"<span style='color=red'>{msg}</span>")
 
     @property
-    def words(self):
+    def words_or_regexp(self):
         return ' '.join(self._words.value.split()).split()
+
+    @property
+    def words(self):
+        return self._picker.value
 
     @property
     def smooth(self) -> bool:
@@ -154,5 +183,5 @@ class TrendsGUI:
             smooth=self.smooth,
             group_by=self.group_by,
             word_count=self.word_count,
-            words=self.words,
+            words=self.words_or_regexp,
         )

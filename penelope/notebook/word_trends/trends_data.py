@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import Dict, List
 
@@ -44,6 +45,9 @@ class TrendsData:
         n_count: int = None,
     ) -> "TrendsData":
 
+        if (corpus or self.corpus) is None:
+            raise ValueError("TrendsData: Corpus is NOT LOADED!")
+
         self.n_count = n_count or self.n_count
         self.corpus = (corpus or self.corpus).group_by_year()
         self.corpus_folder = corpus_folder or self.corpus_folder
@@ -79,11 +83,30 @@ class TrendsData:
 
         return self._transformed_corpus
 
-    def find_indices(self, opts: TrendsOpts) -> List[int]:
+    def normalize(self, corpus: VectorizedCorpus) -> VectorizedCorpus:
+
+        document_index: pd.DataFrame = corpus.document_index
+
+        if 'n_raw_tokens' not in document_index.columns:
+            logging.warning("Normalizing using DTM counts (not actual corpus counts)")
+            return corpus.normalize()
+
+        n_raw_tokens = document_index.n_raw_tokens
+
+        bag_term_matrix = corpus.data / n_raw_tokens
+        return VectorizedCorpus(bag_term_matrix, corpus.token2id, corpus.document_index, corpus.word_counts)
+
+    def find_word_indices(self, opts: TrendsOpts) -> List[int]:
         indices: List[int] = self.get_corpus(
             group_by=opts.group_by, normalize=opts.normalize
         ).find_matching_words_indices(opts.words, opts.word_count)
         return indices
+
+    def find_words(self, opts: TrendsOpts) -> List[str]:
+        words: List[int] = self.get_corpus(group_by=opts.group_by, normalize=opts.normalize).find_matching_words(
+            opts.words, opts.word_count
+        )
+        return words
 
 
 # words: List[str], n_count: int, group_by: str, normalize: bool)
