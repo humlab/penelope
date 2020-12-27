@@ -1,23 +1,51 @@
 # type: ignore
 import abc
-from typing import Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Protocol, Tuple
 
+import numpy as np
 import pandas as pd
 import scipy
 
 
-class IVectorizedCorpus(abc.ABC):
+class VectorizedCorpusError(ValueError):
+    ...
 
-    __slots__ = ()
+
+# pylint: disable=too-many-public-methods
+class IVectorizedCorpus(abc.ABC):
+    @property
+    @abc.abstractproperty
+    def token2id(self) -> Mapping[int, str]:
+        ...
 
     @property
     @abc.abstractproperty
-    def id2token(self) -> Mapping[int, str]:
+    def bag_term_matrix(self) -> scipy.sparse.csr_matrix:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def id2token(self) -> Mapping[str, int]:
         ...
 
     @property
     @abc.abstractproperty
     def vocabulary(self) -> List[str]:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def token_counter(self) -> Dict[str, int]:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def corpus_token_counts(self) -> np.ndarray:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def document_token_counts(self) -> np.ndarray:
         ...
 
     @property
@@ -28,11 +56,6 @@ class IVectorizedCorpus(abc.ABC):
     @property
     @abc.abstractproperty
     def data(self) -> scipy.sparse.csr_matrix:
-        ...
-
-    @property
-    @abc.abstractproperty
-    def term_bag_matrix(self) -> scipy.sparse.csr_matrix:
         ...
 
     @property
@@ -89,6 +112,10 @@ class IVectorizedCorpus(abc.ABC):
 
     @abc.abstractmethod
     def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
+    def normalize_by_raw_counts(self) -> "IVectorizedCorpus":
         ...
 
     @abc.abstractmethod
@@ -165,6 +192,31 @@ class IVectorizedCorpus(abc.ABC):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: pd.DataFrame,
-        word_counts: Dict[str, int] = None,
+        token_counter: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
+        ...
+
+
+class IVectorizedCorpusProtocol(Protocol):
+    ...
+
+    @staticmethod
+    def create(
+        bag_term_matrix: scipy.sparse.csr_matrix,
+        token2id: Dict[str, int],
+        document_index: pd.DataFrame,
+        token_counter: Dict[str, int] = None,
+    ) -> IVectorizedCorpus:
+        ...
+
+    @property
+    def document_index(self) -> pd.DataFrame:
+        ...
+
+    @property
+    def bag_term_matrix(self) -> scipy.sparse.csr_matrix:
+        ...
+
+    @property
+    def id2token(self) -> Mapping[int, str]:
         ...

@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass, field
 from typing import Dict, List
 
@@ -75,26 +74,13 @@ class TrendsData:
             self._transformed_is_normalized = False
 
         if group_by != self._transformed_grouped_by or normalize != self._transformed_is_normalized:
-            self._transformed_corpus = self.corpus.group_by_year_categories(group_by)
+            self._transformed_corpus = self.corpus.group_by_period(period=group_by)
             if normalize:
-                self._transformed_corpus = self._transformed_corpus.normalize()
+                self._transformed_corpus = self._transformed_corpus.normalize_by_raw_counts()
             self._transformed_grouped_by = group_by
             self._transformed_is_normalized = normalize
 
         return self._transformed_corpus
-
-    def normalize(self, corpus: VectorizedCorpus) -> VectorizedCorpus:
-
-        document_index: pd.DataFrame = corpus.document_index
-
-        if 'n_raw_tokens' not in document_index.columns:
-            logging.warning("Normalizing using DTM counts (not actual corpus counts)")
-            return corpus.normalize()
-
-        n_raw_tokens = document_index.n_raw_tokens
-
-        bag_term_matrix = corpus.data / n_raw_tokens
-        return VectorizedCorpus(bag_term_matrix, corpus.token2id, corpus.document_index, corpus.word_counts)
 
     def find_word_indices(self, opts: TrendsOpts) -> List[int]:
         indices: List[int] = self.get_corpus(

@@ -1,4 +1,6 @@
-from .group_or_reduce import GroupByCategoryMixIn, GroupByYearMixIn
+from .group import GroupByMixIn
 from .interface import IVectorizedCorpus
-from .vectorized_corpus import VectorizedCorpus, load_cached_normalized_vectorized_corpus, load_corpus
+from .slice import SliceMixIn
+from .store import StoreMixIn, load_corpus
+from .vectorized_corpus import VectorizedCorpus
 from .vectorizer import CorpusVectorizer, VectorizeOpts

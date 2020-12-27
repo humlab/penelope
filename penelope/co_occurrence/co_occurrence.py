@@ -113,18 +113,18 @@ def corpus_co_occurrence(
     if payload.token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
 
-    v_corpus = to_vectorized_windows_corpus(stream=stream, token2id=payload.token2id, context_opts=context_opts)
+    windowed_corpus = to_vectorized_windows_corpus(stream=stream, token2id=payload.token2id, context_opts=context_opts)
 
-    coo_matrix = v_corpus.co_occurrence_matrix()
+    co_occurrence_matrix = windowed_corpus.co_occurrence_matrix()
 
-    df_coo = to_dataframe(
-        coo_matrix,
-        id2token=v_corpus.id2token,
+    co_occurrences = to_dataframe(
+        co_occurrence_matrix,
+        id2token=windowed_corpus.id2token,
         document_index=payload.document_index,
         threshold_count=threshold_count,
     )
 
-    return df_coo
+    return co_occurrences
 
 
 def to_vectorized_windows_corpus(
@@ -135,5 +135,5 @@ def to_vectorized_windows_corpus(
 ):
     windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad='*')
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
-    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
-    return v_corpus
+    corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
+    return corpus

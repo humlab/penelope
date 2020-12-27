@@ -5,24 +5,32 @@ from typing import Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
-from penelope.utility import is_monotonic_increasing_integer_series, strip_path_and_extension
+from penelope.utility import is_strictly_increasing, strip_path_and_extension
 from penelope.utility.pos_tags import PD_PoS_tag_groups
 
 
 class DocumentIndexError(ValueError):
-    pass
+    ...
 
 
 T = TypeVar("T", int, str)
 
-COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
+DOCUMENT_INDEX_COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
 
 
 class DocumentIndex:
-    """Embryo to a document index class"""
+    def __init__(self, document_index: Union[pd.DataFrame, List[dict], str], **kwargs):
 
-    def __init__(self, document_index):
-        self._document_index = document_index
+        if not isinstance(document_index, (pd.DataFrame, list, str)):
+            raise DocumentIndexError("expected document index data but found None")
+
+        self._document_index: pd.DataFrame = (
+            document_index
+            if isinstance(document_index, pd.DataFrame)
+            else metadata_to_document_index(metadata=document_index, document_id_field=None)
+            if isinstance(document_index, list)
+            else load_document_index_from_str(data_str=document_index, key_column=None, sep=kwargs.get('sep', '\t'))
+        )
 
     @property
     def document_index(self):
@@ -92,7 +100,7 @@ class DocumentIndex:
         If `index_values` is specified than the returned index will have _exactly_ those index
         values, and can be used for instance if there are gaps n the index that needs to be filled.
         For integer categories `index_values` can have the literal value `fill_gaps` in which case
-        a monotonic increasing index will be created  without gaps.
+        a strictly increasing index will be created without gaps.
 
         Args:
             column_name (str): The column to group by, must exist, must be of int or str type
@@ -112,40 +120,42 @@ class DocumentIndex:
 
         # Create `agg` dict that sums up all count variables (and span of years per group)
         count_aggregates = {
+            column_name: 'size',
             **{
                 count_column: 'sum'
-                for count_column in COUNT_COLUMNS.items()
+                for count_column in DOCUMENT_INDEX_COUNT_COLUMNS
                 if count_column in self._document_index.columns
             },
             **({} if column_name == 'year' else {'year': ['min', 'max', 'size']}),
         }
 
+        transform = lambda df: (
+            df[column_name]
+            if transformer is None
+            else df[column_name].apply(transformer)
+            if callable(transformer)
+            else df[column_name].apply(transformer.get)
+            if isinstance(transformer, dict)
+            else None
+        )
+
         # Add a new and possibly transformed `category`column, group by column and apply aggreates
         document_index = (
-            self._document_index.assign(
-                category=lambda df: (
-                    df[column_name]
-                    if transformer is None
-                    else df[column_name].apply(transformer)
-                    if callable(transformer)
-                    else df[column_name].apply(transformer.get)
-                    if isinstance(transformer, dict)
-                    else None
-                )
-            )
+            self._document_index.assign(category=transform)
             .groupby('category')
             .agg(count_aggregates)
+            .rename(columns={column_name: 'n_docs'})
         )
 
         # Reset column index to a single level
-        document_index.columns = ['_'.join(col) for col in document_index.columns]
+        document_index.columns = [col if isinstance(col, str) else '_'.join(col) for col in document_index.columns]
 
         # Set new index `index_values` as new index if specified, or else index
         if index_values is None:
             # Use existing index values (results from group by)
             index_values = document_index.index
         elif isinstance(index_values, str) and index_values == 'fill_gaps':
-            # Create a monotonic increasing index (fills gaps, index must be of integer type)
+            # Create a strictly increasing index (fills gaps, index must be of integer type)
             if not np.issubdtype(document_index.dtype, np.integer):
                 raise DocumentIndexError(f"expected index of type int, found {type(document_index.dtype)}")
 
@@ -156,8 +166,8 @@ class DocumentIndex:
             pd.DataFrame(
                 {
                     'category': index_values,
-                    'filename': map(str, index_values),
-                    'document_name': map(str, index_values),
+                    'filename': [f"{column_name}_{value}.txt" for value in index_values],
+                    'document_name': [f"{column_name}_{value}" for value in index_values],
                 }
             ).set_index('category'),
             document_index,
@@ -167,7 +177,7 @@ class DocumentIndex:
         )
 
         # Add `year` column if grouping column was 'year`, set to index or min year based on grouping column
-        document_index['year'] = document_index.index if column_name == 'year' else document_index.min_year
+        document_index['year'] = document_index.index if column_name == 'year' else document_index.year_min
 
         # Add `document_id`
         document_index = document_index.reset_index()
@@ -178,8 +188,15 @@ class DocumentIndex:
 
         return DocumentIndex(document_index)
 
+    def set_strictly_increasing_index(self) -> "DocumentIndex":
+        self._document_index['document_id'] = get_strictly_increasing_document_id(
+            self._document_index, document_id_field=None
+        )
+        self._document_index = self._document_index.set_index('document_id', drop=False).rename_axis('')
+        return self
 
-def _get_monotonic_document_id(document_index: pd.DataFrame, document_id_field: str) -> pd.Series:
+
+def get_strictly_increasing_document_id(document_index: pd.DataFrame, document_id_field: str) -> pd.Series:
     """[summary]
 
     Args:
@@ -190,14 +207,14 @@ def _get_monotonic_document_id(document_index: pd.DataFrame, document_id_field: 
         pd.Series: [description]
     """
     if 'document_id' in document_index.columns:
-        if is_monotonic_increasing_integer_series(document_index.document_id):
+        if is_strictly_increasing(document_index.document_id):
             return document_index.document_id
 
     if document_id_field is not None and document_id_field in document_index.columns:
-        if is_monotonic_increasing_integer_series(document_index[document_id_field]):
+        if is_strictly_increasing(document_index[document_id_field]):
             return document_index[document_id_field]
 
-    if is_monotonic_increasing_integer_series(document_index.index):
+    if is_strictly_increasing(document_index.index):
         return document_index.index
 
     return document_index.reset_index().index
@@ -233,9 +250,9 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
             document_index = document_index.drop(old_or_unnamed_index_column, axis=1)
 
     if 'filename' not in document_index.columns:
-        raise DocumentIndexError("expected mandatry column `filename` in document index, found no such thing")
+        raise DocumentIndexError("expected mandatory column `filename` in document index, found no such thing")
 
-    document_index['document_id'] = _get_monotonic_document_id(document_index, key_column)
+    document_index['document_id'] = get_strictly_increasing_document_id(document_index, key_column)
 
     if 'document_name' not in document_index.columns or (document_index.document_name == document_index.filename).all():
         document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)

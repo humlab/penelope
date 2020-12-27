@@ -9,6 +9,7 @@ from .convert import (
     folder_and_tag_to_filename,
     load_bundle,
     load_co_occurrences,
+    load_options,
     store_bundle,
     store_co_occurrences,
     to_co_occurrence_matrix,

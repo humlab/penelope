@@ -80,9 +80,11 @@ def to_vectorized_corpus(
             'weight': co_occurrences[value_column],
         }
     )
-
+    # Make certain  matrix gets right shape (otherwise empty documents at the end reduces row count)
+    shape = (len(year2index), len(token2id))
     coo_matrix = scipy.sparse.coo_matrix(
-        (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id))
+        (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id)),
+        shape=shape,
     )
 
     document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
@@ -112,10 +114,8 @@ def to_co_occurrence_matrix(
         corpus_or_reader = TokenizedCorpus(reader=corpus_or_reader)
 
     vocabulary = vocabulary or corpus_or_reader.token2id
-    vectorizer = CorpusVectorizer()
-    v_corpus = vectorizer.fit_transform(corpus_or_reader, already_tokenized=True, vocabulary=vocabulary)
-    term_term_matrix = v_corpus.co_occurrence_matrix()
-
+    dtm_corpus = CorpusVectorizer().fit_transform(corpus_or_reader, already_tokenized=True, vocabulary=vocabulary)
+    term_term_matrix = dtm_corpus.co_occurrence_matrix()
     return term_term_matrix
 
 
@@ -191,7 +191,7 @@ class Bundle:
     corpus_tag: str = None
 
     co_occurrences: pd.DataFrame = None
-    document_index: str = None
+    document_index: pd.DataFrame = None
     corpus: VectorizedCorpus = None
     compute_options: dict = None
 

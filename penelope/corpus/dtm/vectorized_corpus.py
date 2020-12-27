@@ -1,39 +1,35 @@
 from __future__ import annotations
 
 import fnmatch
-import logging
-import os
-import pickle
 import re
-import time
 from heapq import nlargest
-from pathlib import Path
 from typing import Container, Dict, Iterable, List, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import scipy
 import sklearn.preprocessing
-import textacy
-from penelope.utility import is_monotonic_increasing_integer_series, read_json, write_json
+from penelope import utility
+from penelope.utility import getLogger, is_strictly_increasing
 from sklearn.feature_extraction.text import TfidfTransformer
 
-from .group_or_reduce import GroupByCategoryMixIn, GroupByYearMixIn
-from .interface import IVectorizedCorpus
+from .group import GroupByMixIn
+from .interface import IVectorizedCorpus, VectorizedCorpusError
+from .slice import SliceMixIn
+from .store import StoreMixIn
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("")
+logger = getLogger("penelope")
 
 
-class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus):
+class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
     def __init__(
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: pd.DataFrame,
-        word_counts: Dict[str, int] = None,
+        token_counter: Dict[str, int] = None,
     ):
         """Class that encapsulates a bag-of-word matrix.
 
@@ -45,7 +41,7 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
             Token to token id translation i.e. translates token to column index
         document_index : pd.DataFrame
             Corpus document metadata (bag-of-word row metadata)
-        word_counts : dict(str,int), optional
+        token_counter : dict(str,int), optional
             Total corpus word counts, by default None, computed if None
         """
 
@@ -55,42 +51,44 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
         elif not scipy.sparse.isspmatrix_csr(bag_term_matrix):
             bag_term_matrix = bag_term_matrix.tocsr()
 
-        self.bag_term_matrix: scipy.sparse.csr_matrix = bag_term_matrix
+        self._bag_term_matrix: scipy.sparse.csr_matrix = bag_term_matrix
 
         assert scipy.sparse.issparse(self.bag_term_matrix), "only sparse data allowed"
 
-        self.token2id = token2id
-        self.id2token_ = None
+        self._token2id = token2id
+        self._id2token = None
 
-        if not is_monotonic_increasing_integer_series(document_index.index):
+        self._document_index = self.ingest_document_index(document_index=document_index)
+        self._token_counter = token_counter
+
+    def ingest_document_index(self, document_index: pd.DataFrame):
+        if not is_strictly_increasing(document_index.index):
             raise ValueError(
-                "supplied `document index` must have an integer typed, monotonic increasing index starting from 0"
+                "supplied `document index` must have an integer typed, strictly increasing index starting from 0"
+            )
+        if len(document_index) != self._bag_term_matrix.shape[0]:
+            raise ValueError(
+                f"expected `document index` to have length {self._bag_term_matrix.shape[0]} but found length {len(document_index)}"
             )
 
-        self._document_index = document_index
-        #     self._documents = document_index.sort_values('document_id', ignore_index=True)
+        if 'n_raw_tokens' not in document_index.columns:
+            document_index['n_raw_tokens'] = self.document_token_counts
 
-        self.word_counts = word_counts
+        return document_index
 
-        if self.word_counts is None:
+    @property
+    def bag_term_matrix(self) -> scipy.sparse.csr_matrix:
+        return self._bag_term_matrix
 
-            # Compute word counts
-            Xsum = self.bag_term_matrix.sum(axis=0)
-            Xsum = np.ravel(Xsum)
-
-            self.word_counts = {w: Xsum[i] for w, i in self.token2id.items()}
-            # self.id2token = { i: t for t,i in self.token2id.items()}
-
-        # n_bags = self.bag_term_matrix.shape[0]
-        # n_vocabulary = self.bag_term_matrix.shape[1]
-        # n_tokens = sum(self.word_counts.values())
-        # logger.info('#bags: {}, #vocab: {}, #tokens: {}'.format(n_bags, n_vocabulary, n_tokens))
+    @property
+    def token2id(self) -> Dict[str, int]:
+        return self._token2id
 
     @property
     def id2token(self) -> Mapping[int, str]:
-        if self.id2token_ is None and self.token2id is not None:
-            self.id2token_ = {i: t for t, i in self.token2id.items()}
-        return self.id2token_
+        if self._id2token is None and self.token2id is not None:
+            self._id2token = {i: t for t, i in self.token2id.items()}
+        return self._id2token
 
     @property
     def vocabulary(self):
@@ -103,14 +101,23 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
         return self.bag_term_matrix.T
 
     @property
+    def token_counter(self) -> Dict[str, int]:
+        if self._token_counter is None:
+            self._token_counter = {self.id2token[i]: c for i, c in enumerate(self.corpus_token_counts)}
+        return self._token_counter
+
+    @property
+    def corpus_token_counts(self) -> np.ndarray:
+        return self.bag_term_matrix.sum(axis=0).A1
+
+    @property
+    def document_token_counts(self) -> np.ndarray:
+        return self.bag_term_matrix.sum(axis=1).A1
+
+    @property
     def data(self) -> scipy.sparse.csr_matrix:
         """Returns BoW matrix """
         return self.bag_term_matrix
-
-    @property
-    def term_bag_matrix(self) -> scipy.sparse.csr_matrix:
-        """Returns transpose of BoW matrix """
-        return self.bag_term_matrix.T
 
     @property
     def n_docs(self) -> int:
@@ -137,137 +144,9 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
         if isinstance(dtm, np.matrix):
             dtm = np.asarray(dtm)
 
-        self.bag_term_matrix = dtm
+        self._bag_term_matrix = dtm
 
         return self
-
-    def dump(self, *, tag: str, folder: str, compressed: bool = True) -> IVectorizedCorpus:
-        """Store corpus on disk.
-
-        The file is stored as two files: one that contains the BoW matrix (.npy or .npz)
-        and a pickled file that contains dictionary, word counts and the document index
-
-        The two files are stored in files with names based on the specified `tag`:
-
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `word_counts`
-            {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
-
-
-        Parameters
-        ----------
-        tag : str, optional
-            String to be prepended to file name, set to timestamp if None
-        folder : str, optional
-            Target folder, by default './output'
-        compressed : bool, optional
-            Specifies if matrix is store as .npz or .npy, by default .npz
-
-        """
-        tag = tag or time.strftime("%Y%m%d_%H%M%S")
-
-        data = {
-            'token2id': self.token2id,
-            'word_counts': self.word_counts,
-            'document_index': self.document_index,
-        }
-        data_filename = VectorizedCorpus._data_filename(tag, folder)
-
-        with open(data_filename, 'wb') as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-
-        matrix_filename = VectorizedCorpus._matrix_filename(tag, folder)
-
-        if compressed:
-            assert scipy.sparse.issparse(self.bag_term_matrix)
-            scipy.sparse.save_npz(matrix_filename, self.bag_term_matrix, compressed=True)
-        else:
-            np.save(matrix_filename + '.npy', self.bag_term_matrix, allow_pickle=True)
-
-        return self
-
-    # FIXME: #15 Make arguments naming mandatory to avoid mixups
-    @staticmethod
-    def dump_exists(*, tag: str, folder: str) -> bool:
-        """Checks if corpus with tag `tag` exists in folder `folder`
-
-        Parameters
-        ----------
-        tag : str
-            Corpus prefix tag
-        folder : str, optional
-            Corpus folder to look in, by default './output'
-        """
-        return os.path.isfile(VectorizedCorpus._data_filename(tag, folder))
-
-    @staticmethod
-    def remove(*, tag: str, folder: str):
-        Path(os.path.join(folder, f'{tag}_vector_data.npz')).unlink(missing_ok=True)
-        Path(os.path.join(folder, f'{tag}_vector_data.npy')).unlink(missing_ok=True)
-        Path(os.path.join(folder, f'{tag}_vectorizer_data.pickle')).unlink(missing_ok=True)
-        Path(os.path.join(folder, f'{tag}_vectorizer_data.json')).unlink(missing_ok=True)
-
-    @staticmethod
-    def load(*, tag: str, folder: str) -> VectorizedCorpus:
-        """Loads corpus with tag `tag` in folder `folder`
-
-        Raises `FileNotFoundError` if any of the two files containing metadata and matrix doesn't exist.
-
-        Two files are loaded based on specified `tag`:
-
-            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `word_counts`
-            {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
-
-
-        Parameters
-        ----------
-        tag : str
-            Corpus prefix tag
-        folder : str, optional
-            Corpus folder to look in, by default './output'
-
-        Returns
-        -------
-        VectorizedCorpus
-            Loaded corpus
-        """
-        data_filename = VectorizedCorpus._data_filename(tag, folder)
-        with open(data_filename, 'rb') as f:
-            data = pickle.load(f)
-
-        token2id: Mapping = data["token2id"]
-        document_index: pd.DataFrame = data.get("document_index", data.get("document_index", None))
-
-        matrix_basename = VectorizedCorpus._matrix_filename(tag, folder)
-
-        if os.path.isfile(matrix_basename + '.npz'):
-            bag_term_matrix = scipy.sparse.load_npz(matrix_basename + '.npz')
-        else:
-            bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
-
-        return VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
-
-    @staticmethod
-    def dump_options(*, tag: str, folder: str, options: Dict):
-        json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
-        write_json(json_filename, options)
-
-    @staticmethod
-    def load_options(*, tag: str, folder: str) -> Dict:
-        """Loads vectrize options if they exists"""
-        json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
-        if os.path.isfile(json_filename):
-            return read_json(json_filename)
-        return dict()
-
-    @staticmethod
-    def _data_filename(tag: str, folder: str) -> str:
-        """Returns pickled basename for given tag and folder"""
-        return os.path.join(folder, f"{tag}_vectorizer_data.pickle")
-
-    @staticmethod
-    def _matrix_filename(tag: str, folder: str) -> str:
-        """Returns BoW matrix basename for given tag and folder"""
-        return os.path.join(folder, f"{tag}_vector_data")
 
     def get_word_vector(self, word: str):
         """Extracts vector (i.e. BoW matrix column for word's id) for word `word`
@@ -305,7 +184,6 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
 
         return v_corpus
 
-    # @jit
     def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> IVectorizedCorpus:
         """Scale BoW matrix's rows or columns individually to unit norm:
 
@@ -325,15 +203,28 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
         VectorizedCorpus
             New corpus normalized in given `axis`
         """
-        normalized_bag_term_matrix = sklearn.preprocessing.normalize(self.bag_term_matrix, axis=axis, norm=norm)
+        btm = sklearn.preprocessing.normalize(self.bag_term_matrix, axis=axis, norm=norm)
 
         if keep_magnitude is True:
-            factor = self.bag_term_matrix[0, :].sum() / normalized_bag_term_matrix[0, :].sum()
-            normalized_bag_term_matrix = normalized_bag_term_matrix * factor
+            factor = self.bag_term_matrix[0, :].sum() / btm[0, :].sum()
+            btm = btm * factor
 
-        v_corpus = VectorizedCorpus(normalized_bag_term_matrix, self.token2id, self.document_index, self.word_counts)
+        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.token_counter)
 
-        return v_corpus
+        return corpus
+
+    def normalize_by_raw_counts(self):
+
+        if 'n_raw_tokens' not in self.document_index.columns:
+            # logging.warning("Normalizing using DTM counts (not actual self counts)")
+            # return self.normalize()
+            raise VectorizedCorpusError("raw count normalize attempted but no n_raw_tokens in document index")
+
+        token_counts = self.document_index.n_raw_tokens.values
+        btm = utility.normalize_sparse_matrix_by_vector(self.bag_term_matrix, token_counts)
+        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.token_counter)
+
+        return corpus
 
     def n_top_tokens(self, n_top) -> Dict[str, int]:
         """Returns `n_top` most frequent words.
@@ -346,124 +237,11 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
         Returns
         -------
         Dict[str, int]
-            Most frequent words and their counts, subset of dict `word_counts`
+            Most frequent words and their counts, subset of dict `token_counter`
 
         """
-        tokens = {w: self.word_counts[w] for w in nlargest(n_top, self.word_counts, key=self.word_counts.get)}
+        tokens = {w: self.token_counter[w] for w in nlargest(n_top, self.token_counter, key=self.token_counter.get)}
         return tokens
-
-    # @autojit
-    def slice_by_n_count(self, n_count: int) -> IVectorizedCorpus:
-        """Create a subset corpus where words having a count less than 'n_count' are removed
-
-        Parameters
-        ----------
-        n_count : int
-            Specifies min word count to keep.
-
-        Returns
-        -------
-        VectorizedCorpus
-            Subset of self where words having a count less than 'n_count' are removed
-        """
-
-        tokens = set(w for w, c in self.word_counts.items() if c >= n_count)
-
-        def _px(w):
-            return w in tokens
-
-        return self.slice_by(_px)
-
-    def slice_by_n_top(self, n_top) -> IVectorizedCorpus:
-        """Create a subset corpus that only contains most frequent `n_top` words
-
-        Parameters
-        ----------
-        n_top : int
-            Specifies specifies number of top words to keep.
-
-        Returns
-        -------
-        VectorizedCorpus
-            Subset of self where words having a count less than 'n_count' are removed
-        """
-        tokens = set(nlargest(n_top, self.word_counts, key=self.word_counts.get))
-
-        def _px(w):
-            return w in tokens
-
-        return self.slice_by(_px)
-
-    # def doc_freqs(self):
-    #     """ Count number of occurrences of each value in array of non-negative ints. """
-    #     return np.bincount(self.doc_term_matrix.indices, minlength=self.n_terms)
-
-    # def slice_by_document_frequency(self, min_df, max_df):
-    #     min_doc_count = min_df if isinstance(min_df, int) else int(min_df * self.n_docs)
-    #     dfs = self.doc_freqs()
-    #     mask = np.ones(self.n_terms, dtype=bool)
-    #     if min_doc_count > 1:
-    #         mask &= dfs >= min_doc_count
-    #     # map old term indices to new ones
-    #     new_indices = np.cumsum(mask) - 1
-    #     token2id = {
-    #         term: new_indices[old_index]
-    #         for term, old_index in self.token2id.items()
-    #             if mask[old_index]
-    #     }
-    #     kept_indices = np.where(mask)[0]
-    #     return (self.bag_term_matrix[:, kept_indices], token2id)
-
-    def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> IVectorizedCorpus:
-        """Creates a subset corpus where common/rare terms are filtered out.
-
-        Textacy util function filter_terms_by_df is used for the filtering.
-
-        See https://chartbeat-labs.github.io/textacy/build/html/api_reference/vsm_and_tm.html.
-
-        Parameters
-        ----------
-        max_df : float, optional
-            Max number of docs or fraction of total number of docs, by default 1.0
-        min_df : int, optional
-            Max number of docs or fraction of total number of docs, by default 1
-        max_n_terms : in optional
-            [description], by default None
-        """
-        sliced_bag_term_matrix, token2id = textacy.vsm.matrix_utils.filter_terms_by_df(
-            self.bag_term_matrix, self.token2id, max_df=max_df, min_df=min_df, max_n_terms=max_n_terms
-        )
-        word_counts = {w: c for w, c in self.word_counts.items() if w in token2id}
-
-        v_corpus = VectorizedCorpus(sliced_bag_term_matrix, token2id, self.document_index, word_counts)
-
-        return v_corpus
-
-    # @autojit
-    def slice_by(self, px) -> IVectorizedCorpus:
-        """Create a subset corpus based on predicate `px`
-
-        Parameters
-        ----------
-        px : str -> bool
-            Predicate that tests if a word should be kept.
-
-        Returns
-        -------
-        VectorizedCorpus
-            Subset containing words for which `px` evaluates to true.
-        """
-        indices = [self.token2id[w] for w in self.token2id.keys() if px(w)]
-
-        indices.sort()
-
-        sliced_bag_term_matrix = self.bag_term_matrix[:, indices]
-        token2id = {self.id2token[indices[i]]: i for i in range(0, len(indices))}
-        word_counts = {w: c for w, c in self.word_counts.items() if w in token2id}
-
-        v_corpus = VectorizedCorpus(sliced_bag_term_matrix, token2id, self.document_index, word_counts)
-
-        return v_corpus
 
     def stats(self):
         """Returns (and prints) some corpus status
@@ -563,7 +341,7 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
 
         tfidf_bag_term_matrix = transformer.fit_transform(self.bag_term_matrix)
 
-        n_corpus = VectorizedCorpus(tfidf_bag_term_matrix, self.token2id, self.document_index, self.word_counts)
+        n_corpus = VectorizedCorpus(tfidf_bag_term_matrix, self.token2id, self.document_index, self.token_counter)
 
         return n_corpus
 
@@ -651,17 +429,20 @@ class VectorizedCorpus(GroupByYearMixIn, GroupByCategoryMixIn, IVectorizedCorpus
 
     def pick_n_top_words(self, tokens: List[str], n_top: int) -> List[str]:
         """Returns `n_top` most frequent tokens in corpus among given `tokens`"""
-        return pick_n_top_words(self.word_counts, tokens, n_top)
+        return pick_n_top_words(self.token_counter, tokens, n_top)
 
     @staticmethod
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: pd.DataFrame,
-        word_counts: Dict[str, int] = None,
+        token_counter: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         return VectorizedCorpus(
-            bag_term_matrix=bag_term_matrix, token2id=token2id, document_index=document_index, word_counts=word_counts
+            bag_term_matrix=bag_term_matrix,
+            token2id=token2id,
+            document_index=document_index,
+            token_counter=token_counter,
         )
 
 
@@ -687,80 +468,8 @@ def find_matching_words_in_vocabulary(candidate_words: List[str], token2id: Cont
     return words
 
 
-def pick_n_top_words(word_counts: Mapping[str, int], tokens: List[str], n_top: int) -> List[str]:
+def pick_n_top_words(token_counter: Mapping[str, int], tokens: List[str], n_top: int) -> List[str]:
     """Returns the `n_top` most frequent word in `tokens`"""
-    token_counts = [word_counts.get(w, 0) for w in tokens]
+    token_counts = [token_counter.get(w, 0) for w in tokens]
     most_frequent_words = [tokens[x] for x in np.argsort(token_counts)[-n_top:]]
     return most_frequent_words
-
-
-def load_corpus(
-    *,
-    tag: str,
-    folder: str,
-    n_count: int = 10000,
-    n_top: int = 100000,
-    axis: Optional[int] = 1,
-    keep_magnitude: bool = True,
-    group_by_year: bool = True,
-) -> VectorizedCorpus:
-    """Loads a previously saved vectorized corpus from disk. Easaly the best loader ever.
-
-    Parameters
-    ----------
-    tag : str
-        Corpus filename prefix
-    folder : str
-        Source folder where corpus reside
-    n_count : int, optional
-        Words having a (global) count below this limit are discarded, by default 10000
-    n_top : int, optional
-        Only the 'n_top' words sorted by word counts should be loaded, by default 100000
-    axis : int, optional
-        Axis used to normalize the data along. 1 normalizes each row (bag/document), 0 normalizes each column (word).
-    keep_magnitude : bool, optional
-        Scales result matrix so that sum equals input matrix sum, by default True
-
-    Returns
-    -------
-    VectorizedCorpus
-        The loaded corpus
-    """
-    v_corpus = VectorizedCorpus.load(tag=tag, folder=folder)
-
-    if group_by_year:
-        v_corpus = v_corpus.group_by_year()
-
-    if n_count is not None:
-        v_corpus = v_corpus.slice_by_n_count(n_count)
-
-    if n_top is not None:
-        v_corpus = v_corpus.slice_by_n_top(n_top)
-
-    if axis is not None and v_corpus.data.shape[1] > 0:
-        v_corpus = v_corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
-
-    return v_corpus
-
-
-def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=100000, keep_magnitude=True):
-
-    year_cache_tag = "cached_year_{}_{}".format(tag, "km" if keep_magnitude else "")
-
-    v_corpus = None
-
-    if not VectorizedCorpus.dump_exists(tag=year_cache_tag, folder=folder):
-        logger.info("Caching corpus grouped by year...")
-        v_corpus = (
-            VectorizedCorpus.load(tag=tag, folder=folder)
-            .group_by_year()
-            .normalize(axis=1, keep_magnitude=keep_magnitude)
-            .dump(tag=year_cache_tag, folder=folder)
-        )
-
-    if v_corpus is None:
-        v_corpus = (
-            VectorizedCorpus.load(tag=year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
-        )
-
-    return v_corpus

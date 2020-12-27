@@ -1,5 +1,6 @@
 # type: ignore
 from .document_index import (
+    DOCUMENT_INDEX_COUNT_COLUMNS,
     DocumentIndex,
     add_document_index_attributes,
     consolidate_document_index,
@@ -11,13 +12,7 @@ from .document_index import (
     update_document_index_properties,
     update_document_index_token_counts,
 )
-from .dtm import (
-    CorpusVectorizer,
-    VectorizedCorpus,
-    VectorizeOpts,
-    load_cached_normalized_vectorized_corpus,
-    load_corpus,
-)
+from .dtm import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, load_corpus
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers.interfaces import TextReaderOpts
 from .readers.text_transformer import TextTransformOpts
