@@ -18,17 +18,3 @@ def test_create_load_co_occurrences_gui():
     layout = gui.layout()
 
     assert layout is not None
-
-
-def test_load_co_occurrence_bundle():
-
-    filename = './tests/test_data/VENUS/VENUS_co-occurrence.csv.zip'
-
-    bundle = co_occurrence.load_bundle(filename)
-
-    assert bundle is not None
-    assert isinstance(bundle.corpus, VectorizedCorpus)
-    assert isinstance(bundle.co_occurrences, pd.DataFrame)
-    assert isinstance(bundle.compute_options, dict)
-    assert bundle.corpus_folder == './tests/test_data/VENUS'
-    assert bundle.corpus_tag == 'VENUS'

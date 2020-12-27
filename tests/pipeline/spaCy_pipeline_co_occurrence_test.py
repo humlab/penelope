@@ -102,6 +102,7 @@ def test_spaCy_co_occurrence_pipeline2():
         corpus_tag=args.corpus_tag,
         corpus_folder=args.target_folder,
         co_occurrences=compute_result.co_occurrences,
+        document_index=compute_result.document_index,
         compute_options=co_occurrence.create_options_bundle(
             reader_opts=corpus_config.text_reader_opts,
             tokens_transform_opts=args.tokens_transform_opts,
@@ -129,4 +130,10 @@ def test_spaCy_co_occurrence_pipeline3():
         corpus_tag="VENUS",
         corpus_filename=corpus_config.pipeline_payload.source,
     )
-    compute_co_occurrence(corpus_config=corpus_config, partition_key=partition_key, args=args, done_callback=None)
+    compute_co_occurrence(
+        corpus_config=corpus_config,
+        partition_key=partition_key,
+        args=args,
+        done_callback=None,
+        checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',
+    )

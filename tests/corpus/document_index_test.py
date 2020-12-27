@@ -10,7 +10,7 @@ from penelope.corpus import (
     load_document_index_from_str,
     update_document_index_properties,
 )
-from penelope.utility import assert_is_monotonic_increasing_integer_series, is_monotonic_increasing_integer_series
+from penelope.utility import assert_is_strictly_increasing, is_strictly_increasing
 
 TEST_DOCUMENT_INDEX = """
 ;filename;year;year_id;document_name;document_id;title;n_raw_tokens
@@ -58,7 +58,7 @@ def test_store():
     index.store('./tests/output/test_store_index.csv')
     with open('./tests/output/test_store_index.csv', 'r') as fp:
         data_str = fp.read()
-    data_str.replace('\t', ';')
+    data_str = data_str.replace('\t', ';')
     assert TEST_DOCUMENT_INDEX[1:] == data_str
 
 
@@ -125,7 +125,7 @@ def test_consolidate():
 def test_upgrade():
     filename = './tests/test_data/documents_index_doc_id.zip'
     document_index = pd.read_csv(filename, '\t', header=0, index_col=0, na_filter=False)
-    document_index = DocumentIndex(document_index).upgrade()
+    document_index = DocumentIndex(document_index).upgrade().document_index
     expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_raw_tokens'])
     assert set(document_index.columns.tolist()).intersection(expected_columns) == expected_columns
 
@@ -168,23 +168,37 @@ def test_update_properties():
     pass
 
 
-def test_collapse_by_integer_column():
+def test_group_by_category():
     index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), key_column=None, sep=';')
-    result: pd.DataFrame = DocumentIndex(index).group_by_column(column_name='year', transformer=None, index_values=None)
+    result: pd.DataFrame = (
+        DocumentIndex(index).group_by_column(column_name='year', transformer=None, index_values=None).document_index
+    )
 
-    assert result.category.tolist() == [2019, 2022]
-    assert result.year.tolist() == [2019, 2022]
+    assert result.category.tolist() == [2019, 2020]
+    assert result.year.tolist() == [2019, 2020]
 
 
-def test_assert_is_monotonic_increasing_integer_series():
-    assert_is_monotonic_increasing_integer_series(pd.Series([0, 1, 2], dtype=np.int))
+def test_assert_is_strictly_increasing():
+    assert_is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int))
     with pytest.raises(ValueError):
-        assert_is_monotonic_increasing_integer_series(pd.Series([0, -1, 2], dtype=np.int))
+        assert_is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int))
     with pytest.raises(ValueError):
-        assert_is_monotonic_increasing_integer_series(pd.Series(['a', 'b', 'c']))
+        assert_is_strictly_increasing(pd.Series(['a', 'b', 'c']))
 
 
-def test_is_monotonic_increasing_integer_series():
-    assert is_monotonic_increasing_integer_series(pd.Series([0, 1, 2], dtype=np.int))
-    assert not is_monotonic_increasing_integer_series(pd.Series([0, -1, 2], dtype=np.int))
-    assert not is_monotonic_increasing_integer_series(pd.Series(['a', 'b', 'c']))
+def test_is_strictly_increasing():
+    assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=1)
+    assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=1, start_value=0, sort_values=False)
+    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=2, start_value=0, sort_values=False)
+    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=1, start_value=1, sort_values=False)
+    assert not is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int), by_value=1, start_value=0, sort_values=False)
+    assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int), by_value=1, start_value=1, sort_values=False)
+    assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int), by_value=1, start_value=None, sort_values=False)
+    assert not is_strictly_increasing(
+        pd.Series([3, 2, 1], dtype=np.int), by_value=1, start_value=None, sort_values=False
+    )
+    assert is_strictly_increasing(pd.Series([3, 2, 1], dtype=np.int), by_value=1, start_value=None, sort_values=True)
+    assert is_strictly_increasing(pd.Series([0, 10, 20], dtype=np.int), by_value=10, start_value=0, sort_values=True)
+
+    assert not is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int))
+    assert not is_strictly_increasing(pd.Series(['a', 'b', 'c']))

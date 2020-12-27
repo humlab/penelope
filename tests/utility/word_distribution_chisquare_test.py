@@ -21,7 +21,7 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_corpus(self):
         reader = self.create_reader()
-        tokens_transform_opts = dtm.TokensTransformOpts(
+        tokens_transform_opts = corpora.TokensTransformOpts(
             only_any_alphanumeric=True,
             to_lower=True,
             remove_accents=False,
@@ -37,9 +37,9 @@ class Test_ChiSquare(unittest.TestCase):
         v = dtm.CorpusVectorizer()
         v_corpus = v.fit_transform(corpus, already_tokenized=True).group_by_year().slice_by_n_count(0)
         _ = scipy.stats.chisquare(
-            v_corpus.term_bag_matrix.todense(), f_exp=None, ddof=0, axis=0
+            v_corpus.bag_term_matrix.T.todense(), f_exp=None, ddof=0, axis=0
         )  # pylint: disable=unused-variable
-        _ = linkage(v_corpus.term_bag_matrix, 'ward')  # pylint: disable=unused-variable
+        _ = linkage(v_corpus.bag_term_matrix.T, 'ward')  # pylint: disable=unused-variable
         results = None
         expected = None
         self.assertEqual(expected, results)

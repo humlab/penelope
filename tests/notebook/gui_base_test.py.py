@@ -1,8 +1,8 @@
 import ipywidgets
 import pytest
+from penelope.corpus import VectorizeOpts
 from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts
-from penelope.corpus.vectorizer import VectorizeOpts
 from penelope.notebook.gui_base import BaseGUI
 from penelope.pipeline.config import CorpusConfig
 

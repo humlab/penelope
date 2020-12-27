@@ -4,12 +4,13 @@ import numpy as np
 import pandas as pd
 from penelope.corpus.dtm import VectorizedCorpus
 from penelope.notebook.word_trends import TrendsData
+from penelope.notebook.word_trends.trends_data import TrendsOpts
 from tests.utils import OUTPUT_FOLDER
 
 
 def simple_corpus():
     corpus = VectorizedCorpus(
-        np.array(
+        bag_term_matrix=np.array(
             [
                 [2, 1, 4, 1],
                 [2, 2, 3, 0],
@@ -18,8 +19,8 @@ def simple_corpus():
                 [2, 0, 1, 1],
             ]
         ),
-        {'a': 0, 'b': 1, 'c': 2, 'd': 3},
-        pd.DataFrame(
+        token2id={'a': 0, 'b': 1, 'c': 2, 'd': 3},
+        document_index=pd.DataFrame(
             {
                 'year': [2009, 2013, 2014, 2017, 2017],
                 'document_id': [0, 1, 2, 3, 4],
@@ -77,7 +78,19 @@ def test_TrendsData_get_corpus():
     assert 'year' in corpus.document_index.columns
     assert 'category' in corpus.document_index.columns
 
-    expected_columns = ['category', 'filename', 'document_name', 'year_min', 'year_max', 'year_size']
+    expected_columns = [
+        'category',
+        'filename',
+        'document_name',
+        'n_docs_size',
+        'n_raw_tokens_sum',
+        'year_min',
+        'year_max',
+        'year_size',
+        'year',
+        'document_id',
+        'n_raw_tokens',
+    ]
 
     corpus: VectorizedCorpus = trends_data.get_corpus(False, 'lustrum')
     assert corpus.data.shape == (3, 4)
@@ -118,3 +131,21 @@ def test_group_by_year():
     ).update()
 
     assert trends_data is not None
+
+
+def test_remember():
+    trends_data = TrendsData().update(corpus=simple_corpus(), corpus_folder='.', corpus_tag='dummy')
+    trends_data.remember(worth="yes")
+    assert trends_data.memory.get('worth') == "yes"
+
+
+def test_find_word_indices():
+    trends_data = TrendsData().update(corpus=simple_corpus(), corpus_folder='.', corpus_tag='dummy')
+    indices = trends_data.find_word_indices(
+        TrendsOpts(group_by='year', normalize=False, smooth=False, words=["c"], word_count=2)
+    )
+    assert indices == [2]
+
+
+def test_find_words():
+    pass

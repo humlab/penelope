@@ -4,19 +4,17 @@ import pytest
 from penelope.co_occurrence import (
     ContextOpts,
     corpus_co_occurrence,
-    load_co_occurrences,
     partitioned_corpus_co_occurrence,
     store_co_occurrences,
-    to_vectorized_corpus,
 )
 from penelope.co_occurrence.partitioned import ComputeResult
-from penelope.corpus import DocumentIndex, SparvTokenizedCsvCorpus, TokensTransformOpts
+from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline.interfaces import PipelinePayload
-from penelope.utility import dataframe_to_tuples, pretty_print_matrix
+from penelope.utility import dataframe_to_tuples
 from penelope.workflows import co_occurrence_workflow
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
-from tests.utils import OUTPUT_FOLDER, TEST_DATA_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
+from tests.utils import OUTPUT_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
 
 jj = os.path.join
 
@@ -93,7 +91,7 @@ def test_co_occurrence_using_cli_succeeds(tmpdir):
     assert os.path.isfile(output_filename)
 
 
-@pytest.mark.parametrize("concept, threshold_count, context_width", [('fråga', 0, 2), ('fråga', 2, 2)])
+@pytest.mark.parametrize("concept, threshold_count, context_width", [({}, 0, 2), ({'fråga'}, 0, 2), ({'fråga'}, 2, 2)])
 def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, context_width):
 
     corpus = SparvTokenizedCsvCorpus(
@@ -107,7 +105,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
     compute_result: ComputeResult = partitioned_corpus_co_occurrence(
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
-        context_opts=ContextOpts(concept={concept}, ignore_concept=False, context_width=context_width),
+        context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=context_width),
         global_threshold_count=threshold_count,
         partition_column='year',
     )
@@ -170,39 +168,6 @@ def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
     assert os.path.isfile(target_filename)
 
 
-@pytest.mark.parametrize('filename', ['concept_data_co-occurrence.csv', 'concept_data_co-occurrence.csv.zip'])
-def test_store_when_co_occurrences_data_is_not_partitioned(filename):
-
-    expected_filename = jj(OUTPUT_FOLDER, filename)
-    corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    coo_df = corpus_co_occurrence(
-        stream=corpus,
-        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
-        context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
-        threshold_count=1,
-    )
-
-    store_co_occurrences(expected_filename, coo_df)
-
-    assert os.path.isfile(expected_filename)
-
-    os.remove(expected_filename)
-
-
-@pytest.mark.parametrize('filename', ['concept_data_co-occurrence.csv', 'concept_data_co-occurrence.csv.zip'])
-def test_load_when_co_occurrences_data_is_not_partitioned(filename):
-
-    filename = jj(TEST_DATA_FOLDER, filename)
-
-    df = load_co_occurrences(filename)
-
-    assert df is not None
-    assert 13 == len(df)
-    assert 18 == df.value.sum()
-    assert 3 == int(df[(df.w1 == 'g') & (df.w2 == 'a')]['value'])
-    assert (['w1', 'w2', 'value', 'value_n_d', 'value_n_t'] == df.columns).all()
-
-
 @pytest.mark.parametrize(
     'filename', ['partitioned_concept_co_occurrences_data.csv', 'partitioned_concept_co_occurrences_data.zip']
 )
@@ -223,25 +188,3 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
     assert os.path.isfile(expected_filename)
 
     os.remove(expected_filename)
-
-
-def test_vectorize_co_occurrences_data():
-
-    value_column = 'value'
-    filename = jj(TEST_DATA_FOLDER, './tests/test_data/VENUS/VENUS_co-occurrences.csv.zip')
-    index_filename = jj(TEST_DATA_FOLDER, './tests/test_data/VENUS/VENUS_document_index.csv')
-
-    co_occurrences = load_co_occurrences(filename)
-    document_index = DocumentIndex.load(index_filename).document_index
-
-    v_corpus = to_vectorized_corpus(co_occurrences, document_index, value_column)
-
-    pretty_print_matrix(
-        v_corpus.data.todense(),
-        row_labels=[str(i) for i in v_corpus.document_index.year],
-        column_labels=v_corpus.vocabulary,
-        dtype=float,
-        float_fmt="{0:.04f}",
-    )
-
-    assert v_corpus is not None
