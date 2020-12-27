@@ -20,8 +20,6 @@ test:
 	@mkdir -p ./tests/output
 	@poetry run pytest --verbose --durations=0 \
 		--cov=$(PACKAGE_FOLDER) \
-		--cov-report=term \
-		--cov-report=xml \
 		--cov-report=html \
 		tests
 	@rm -rf ./tests/output/*
