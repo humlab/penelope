@@ -14,8 +14,11 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Seque
 import gensim.utils
 import numpy as np
 import pandas as pd
+import scipy
 
 T = TypeVar('T')
+K = TypeVar('K')
+V = TypeVar('V')
 
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
@@ -236,6 +239,10 @@ def dict_of_lists_to_list_of_dicts(dl: Mapping[str, List[Any]]) -> List[Mapping[
     return [dict(zip(dl, t)) for t in zip(*dl.values())]
 
 
+def dict_of_key_values_inverted_to_dict_of_value_key(d: Dict[K, List[V]]) -> Dict[V, K]:
+    return {value: key for key in d for value in d[key]}
+
+
 ListOfDicts = List[Mapping[str, Any]]
 
 
@@ -415,7 +422,7 @@ def pretty_print_matrix(
         print(df)
 
 
-def assert_is_monotonic_increasing_integer_series(series: pd.Series):
+def assert_is_strictly_increasing(series: pd.Series):
     """[summary]
 
     Args:
@@ -424,18 +431,52 @@ def assert_is_monotonic_increasing_integer_series(series: pd.Series):
     Raises:
         ValueError: [description]
     """
-    if not is_monotonic_increasing_integer_series(series):
-        raise ValueError(f"series: {series.name} must be an integer typed, monotonic increasing series starting from 0")
+    if not is_strictly_increasing(series):
+        raise ValueError(f"series: {series.name} must be an integer typed, strictly increasing series starting from 0")
 
 
-def is_monotonic_increasing_integer_series(series: pd.Series):
-    if len(series) > 0 and not np.issubdtype(series.dtype, np.integer):
+def is_strictly_increasing(series: pd.Series, by_value=1, start_value: int = 0, sort_values: bool = True):
+
+    if len(series) == 0:
+        return True
+
+    if not np.issubdtype(series.dtype, np.integer):
         return False
-    if not series.sort_values().is_monotonic_increasing:
+
+    if sort_values:
+        series = series.sort_values()
+
+    if start_value is not None:
+        if series[0] != start_value:
+            return False
+
+    if not series.is_monotonic_increasing:
         return False
-    if len(series) > 0 and series.min() != 0:
-        return False
+
+    if by_value is not None:
+        if not np.all((series[1:].values - series[:-1].values) == by_value):
+            return False
+
     return True
+
+
+def normalize_sparse_matrix_by_vector(spm: scipy.sparse.spmatrix, vector: np.ndarray = None) -> scipy.sparse.spmatrix:
+    # https://stackoverflow.com/questions/42225269/scipy-sparse-matrix-division
+    # diagonal matrix from the reciprocals of vector x sparse matrix
+    vector = vector if vector is not None else spm.sum(axis=1).A1
+    nspm = scipy.sparse.diags(1.0 / vector) @ spm
+    nspm.data[(np.isnan(nspm.data) | np.isposinf(nspm.data))] = 0.0
+    return nspm
+
+
+# def sparse_normalize(spm: scipy.sparse.spmatrix) -> scipy.sparse.spmatrix:
+#     # https://stackoverflow.com/questions/42225269/scipy-sparse-matrix-division
+#     row_sums = spm.sum(axis=1).A1
+#     # diagonal matrix from the reciprocals of row sums:
+#     row_sum_reciprocals_diagonal = scipy.sparse.diags(1. / row_sums)
+#     nspm = row_sum_reciprocals_diagonal @ spm
+#     nspm.data[(np.isnan(nspm.data)|np.isposinf(nspm.data))] = 0.0
+#     return nspm
 
 
 class DummyContext:
