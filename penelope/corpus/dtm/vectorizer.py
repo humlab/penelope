@@ -80,7 +80,7 @@ class CorpusVectorizer:
                     Rare words filter, sklearn: "ignore terms that have a document frequency strictly lower than the given threshold"
                 Returns
                 -------
-                vectorized_corpus.VectorizedCorpus
+                dtm.VectorizedCorpus
                     [description]
         """
         if document_index is None:
@@ -133,14 +133,14 @@ class CorpusVectorizer:
         bag_term_matrix = self.vectorizer.fit_transform(terms)
         token2id = self.vectorizer.vocabulary_
 
-        v_document_index = _set_monotonic_index_by_seen_documents(document_index, seen_document_names)
+        v_document_index = _set_strictly_increasing_index_by_seen_documents(document_index, seen_document_names)
 
         v_corpus = VectorizedCorpus(bag_term_matrix, token2id, v_document_index)
 
         return v_corpus
 
 
-def _set_monotonic_index_by_seen_documents(
+def _set_strictly_increasing_index_by_seen_documents(
     document_index: pd.DataFrame, seen_document_names: List[str]
 ) -> pd.DataFrame:
 
@@ -171,7 +171,7 @@ def _set_monotonic_index_by_seen_documents(
     # recode document_id to sequence_id
     document_index['document_id'] = document_index['document_name'].apply(lambda x: _recode_map[x])
 
-    # set 'document_id' as new index, and make sure it is sorted monotonic increasing
+    # set 'document_id' as new index, and make sure it is sorted strictly increasing
     document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
 
     return document_index

@@ -7,7 +7,7 @@ logger = getLogger('penelope')
 
 
 class CoOccurrenceError(ValueError):
-    pass
+    ...
 
 
 @dataclass

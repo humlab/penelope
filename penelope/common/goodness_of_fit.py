@@ -22,7 +22,7 @@ from .distance_metrics import (
 
 
 class GoodnessOfFitComputeError(ValueError):
-    pass
+    ...
 
 
 def get_gof_by_l2_norms(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
@@ -149,7 +149,7 @@ def compute_goddness_of_fits_to_uniform(
     df_gof = pd.DataFrame(
         {
             'token': [corpus.id2token[i] for i in range(0, dtm.shape[1])],
-            'word_count': [corpus.word_counts[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
+            'word_count': [corpus.token_counter[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
         }
     )
 

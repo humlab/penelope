@@ -53,7 +53,7 @@ class CategoryDataMixin:
     def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> dict:
         """Extracts token's vectors for tokens ´indices` and returns a dict keyed by token"""
         if 'category' not in corpus.document_index.columns:
-            raise PenelopeBugCheck("Supplied corpus HAS NOT been prepeared with call to 'group_by_year_category'")
+            raise PenelopeBugCheck("Supplied corpus HAS NOT been prepeared with call to 'group_by_period'")
         categories = corpus.document_index.category
         if len(categories) != corpus.data.shape[0]:
             raise PenelopeBugCheck(
