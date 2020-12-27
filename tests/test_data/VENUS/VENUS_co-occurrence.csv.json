@@ -1,10 +1,4 @@
 {
-    "input_filename": "./tests/test_data/legal_instrument_corpus.zip",
-    "output_filename": "./tests/test_data/VENUS/VENUS_co-occurrence.csv.zip",
-    "partition_keys": [
-        "year"
-    ],
-    "count_threshold": 1,
     "reader_opts": {
         "filename_pattern": "*.txt",
         "filename_filter": null,
@@ -17,7 +11,7 @@
         "as_binary": false
     },
     "context_opts": {
-        "context_width": 2,
+        "context_width": 4,
         "concept": [],
         "ignore_concept": false
     },
@@ -31,9 +25,7 @@
         "remove_accents": false,
         "remove_stopwords": true,
         "stopwords": null,
-        "extra_stopwords": [
-            "\u00f6rn"
-        ],
+        "extra_stopwords": [],
         "language": "english",
         "keep_numerals": true,
         "keep_symbols": true
@@ -44,5 +36,11 @@
         "passthrough_tokens": [],
         "lemmatize": true,
         "append_pos": false
-    }
+    },
+    "input_filename": "./tests/test_data/legal_instrument_five_docs_test.zip",
+    "output_filename": "./tests/output/VENUS_co-occurrence.csv.zip",
+    "partition_keys": [
+        "year"
+    ],
+    "count_threshold": 1
 }
