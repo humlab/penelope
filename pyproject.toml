@@ -72,6 +72,7 @@ rope = "==0.*,>=0.17.0"
 taskipy = "==1.*,>=1.4.0"
 yapf = "==0.*,>=0.30.0"
 pynguin = "^0.6.3"
+pytest-xdist = "^2.2.0"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
@@ -88,6 +89,7 @@ addopts = [
     "-rfE", # Show extra info as specified by chars: (f)ailed, (E)rror, (s)kipped, (x)failed, (X)passed, (p)assed, (P)assed with output, (a)ll except passed (p/P), or (A)ll
     "-q",
     "-s",
+    # "-n4",
 ]
 log_cli = "False"
 testpaths = [
@@ -144,16 +146,29 @@ src_paths = [ "penelope", "tests" ]
 [tool.coverage]
 # https://github.com/nedbat/coveragepy
 
-    [tool.coverage.run]
-    source = ["penelope"]
-    branch = true
-    omit = ['']
+[tool.coverage.run]
+source = ["penelope"]
+branch = true
+omit = [
+    "__init__.py",
+    "tests/*",
+    "interfaces.py",
+    "interface.py",
+    "penelope/notebook/*",    # FIXME! temporary omission"
+    "*_gui.py"      # FIXME! temporary omission"
+]
 
-    [tool.coverage.report]
-    exclude_lines = [
-        "pragma: no cover",
-        "raise NotImplementedError"
-    ]
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError"
+]
+
+#fail_under = 72.5
+show_missing = true
+# skip_covered = true
+# skip_empty = true
+sort = "Name"
 
 [build-system]
 requires = ["poetry>=0.12"]
