@@ -47,10 +47,10 @@ def test_dict_of_key_values_to_dict_of_value_key():
     y = {k: v for k, v in utility.flatten([[(v, k) for v in l] for k, l in x.items()])}
     assert y == {1: 'a', 2: 'a', 3: 'b', 4: 'b'}
 
-    from itertools import chain
+    # from itertools import chain
 
-    y = dict(chain(*[[(v, k) for v in l] for k, l in x.items()]))
-    assert y == {1: 'a', 2: 'a', 3: 'b', 4: 'b'}
+    # y = dict(chain(*[[(v, k) for v in l] for k, l in x.items()]))
+    # assert y == {1: 'a', 2: 'a', 3: 'b', 4: 'b'}
 
     y = {value: key for key in x for value in x[key]}
     assert y == {1: 'a', 2: 'a', 3: 'b', 4: 'b'}

@@ -1,7 +1,5 @@
-import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.notebook.co_occurrence as co_occurrences_gui
-from penelope.corpus import VectorizedCorpus
 
 DATA_FOLDER = './tests/test_data'
 
