@@ -184,5 +184,5 @@ class TrendsGUI:
             group_by=self.group_by,
             word_count=self.word_count,
             words=self.words_or_regexp,
-            descending=True
+            descending=True,
         )

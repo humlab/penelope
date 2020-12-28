@@ -408,7 +408,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         )
         return words
 
-    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int, descending: bool = False) -> List[int]:
+    def find_matching_words_indices(
+        self, word_or_regexp: List[str], n_max_count: int, descending: bool = False
+    ) -> List[int]:
         """Returns `tokens´ indicies` in corpus that matches candidate tokens """
         indices: List[int] = [
             self.token2id[token]
