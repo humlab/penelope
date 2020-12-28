@@ -2,6 +2,7 @@
 SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
 PACKAGE_FOLDER=penelope
+SPACY_MODEL=en_core_web_sm
 
 fast-release: clean tidy build guard_clean_working_repository bump.patch tag
 
@@ -120,8 +121,9 @@ nltk_data:
 	@poetry run python -m nltk.downloader -d $(NLTK_DATA) stopwords punkt sentiwordnet
 
 spacy_data:
-	@poetry run python -m spacy download en_core_web_sm
-
+	@poetry run python -m spacy download $(SPACY_MODEL)
+	@poetry run python -m spacy link $(SPACY_MODEL) en --force
+	
 gh:
 	@sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
 	@sudo apt-add-repository https://cli.github.com/packages
