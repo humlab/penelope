@@ -13,6 +13,7 @@ class TrendsOpts:
     group_by: str
     word_count: int
     words: List[str]
+    descending: bool = False
 
 
 @dataclass
@@ -85,12 +86,12 @@ class TrendsData:
     def find_word_indices(self, opts: TrendsOpts) -> List[int]:
         indices: List[int] = self.get_corpus(
             group_by=opts.group_by, normalize=opts.normalize
-        ).find_matching_words_indices(opts.words, opts.word_count)
+        ).find_matching_words_indices(opts.words, opts.word_count, descending=opts.descending)
         return indices
 
     def find_words(self, opts: TrendsOpts) -> List[str]:
         words: List[int] = self.get_corpus(group_by=opts.group_by, normalize=opts.normalize).find_matching_words(
-            opts.words, opts.word_count
+            opts.words, opts.word_count, descending=opts.descending
         )
         return words
 

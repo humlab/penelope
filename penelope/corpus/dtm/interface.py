@@ -175,11 +175,11 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int) -> List[str]:
+    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int, descending: bool) -> List[str]:
         ...
 
     @abc.abstractmethod
-    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int) -> List[int]:
+    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int, descending: bool) -> List[int]:
         ...
 
     @abc.abstractmethod

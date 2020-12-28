@@ -153,13 +153,13 @@ def compute_goddness_of_fits_to_uniform(
         }
     )
 
-    metrics_iter = tqdm(metrics, desc="Computing metrics", position=0, leave=True) if verbose else metrics
+    metrics_iter = tqdm(metrics, desc="Computing metrics", position=0, leave=False) if verbose else metrics
     for metric in metrics_iter:
         if metric in METRIC_FUNCTIONS:
             if hasattr(metrics_iter, 'set_description'):
                 metrics_iter.set_description(metric)
             df_gof = df_gof.join(METRIC_FUNCTIONS[metric](dtm))
-
+    metrics_iter.close()
     df_gof.sort_values(['l2_norm'], ascending=False, inplace=True)
 
     if (n_top_count or 0) > 0:

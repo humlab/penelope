@@ -45,7 +45,7 @@ class TrendsGUI:
         layout=widgets.Layout(width='98%'),
     )
     _word_count: widgets.BoundedIntText = widgets.BoundedIntText(
-        value=500, min=3, max=50000, step=10, description='Max words:', disabled=False, layout={'width': '140px'}
+        value=500, min=3, max=50000, step=10, description='Max words:', disabled=False, layout={'width': '180px'}
     )
     _displayers: Sequence[ITrendDisplayer] = field(default_factory=list)
 
@@ -184,4 +184,5 @@ class TrendsGUI:
             group_by=self.group_by,
             word_count=self.word_count,
             words=self.words_or_regexp,
+            descending=True
         )

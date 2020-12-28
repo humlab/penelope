@@ -35,7 +35,9 @@ class LoadGUI:
         if self.load_callback is None:
             return
 
+        self._load_button.description = "Loading"
         self._load_button.disabled = True
+        self._filename.disabled = True
         try:
             self.load_callback(self.filename)
         except (ValueError, FileNotFoundError) as ex:
@@ -45,6 +47,8 @@ class LoadGUI:
             raise
         finally:
             self._load_button.disabled = False
+            self._filename.disabled = False
+            self._load_button.description = "Load"
 
     def file_selected(self, *_):
         self._load_button.disabled = not self._filename.selected

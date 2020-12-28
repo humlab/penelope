@@ -399,19 +399,20 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
 
         return term_term_matrix
 
-    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int) -> List[str]:
+    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int, descending: bool = False) -> List[str]:
         """Returns words in corpus that matches candidate tokens """
         words = self.pick_n_top_words(
             find_matching_words_in_vocabulary(self.token2id, word_or_regexp),
             n_max_count,
+            descending=descending,
         )
         return words
 
-    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int) -> List[int]:
+    def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int, descending: bool = False) -> List[int]:
         """Returns `tokens´ indicies` in corpus that matches candidate tokens """
         indices: List[int] = [
             self.token2id[token]
-            for token in self.find_matching_words(word_or_regexp, n_max_count)
+            for token in self.find_matching_words(word_or_regexp, n_max_count, descending=descending)
             if token in self.token2id
         ]
         return indices

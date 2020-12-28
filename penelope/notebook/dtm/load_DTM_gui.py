@@ -37,9 +37,10 @@ class LoadGUI:
     def _load_handler(self, _):
         try:
             if not self.corpus_filename or not os.path.isfile(self.corpus_filename):
-                self.warn("👎Please select a valid corpus file 👎")
+                self.warn("👎 Please select a valid corpus file 👎")
                 return
-            self.warn('✔')
+            self.warn('Please wait')
+            self._load_button.description = "Loading..."
             self._load_button.disabled = True
             input_folder, filename = os.path.split(self.corpus_filename)
             corpus_tag = right_chop(filename, self.filename_pattern[1:])
@@ -51,7 +52,9 @@ class LoadGUI:
             logger.error(ex)
             self.warn(f"‼ ‼ {ex} ‼ ‼</b>")
         finally:
+            self.warn('✔')
             self._load_button.disabled = False
+            self._load_button.description = "Load"
 
     def file_select_callback(self, _: ipyfilechooser.FileChooser):
         self._load_button.disabled = False
