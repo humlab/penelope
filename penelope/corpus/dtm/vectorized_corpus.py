@@ -3,7 +3,7 @@ from __future__ import annotations
 import fnmatch
 import re
 from heapq import nlargest
-from typing import Container, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Container, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -58,10 +58,10 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         self._token2id = token2id
         self._id2token = None
 
-        self._document_index = self.ingest_document_index(document_index=document_index)
+        self._document_index = self._ingest_document_index(document_index=document_index)
         self._token_counter = token_counter
 
-    def ingest_document_index(self, document_index: pd.DataFrame):
+    def _ingest_document_index(self, document_index: pd.DataFrame):
         if not is_strictly_increasing(document_index.index):
             raise ValueError(
                 "supplied `document index` must have an integer typed, strictly increasing index starting from 0"
@@ -122,12 +122,12 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
     @property
     def n_docs(self) -> int:
         """Returns number of documents """
-        return self.bag_term_matrix.shape[1]
+        return self.bag_term_matrix.shape[0]
 
     @property
     def n_terms(self) -> int:
         """Returns number of types (unique words) """
-        return self.bag_term_matrix.shape[0]
+        return self.bag_term_matrix.shape[1]
 
     @property
     def document_index(self) -> pd.DataFrame:
@@ -275,8 +275,11 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         """
         v_n_corpus = self.slice_by_n_top(n_top)
         data = v_n_corpus.bag_term_matrix.T
-        columns = list(v_n_corpus.bag_term_matrix.index)
-        df = pd.DataFrame(data=data, index=[v_n_corpus.id2token[i] for i in range(0, n_top)], columns=columns)
+        df = pd.DataFrame(
+            data=data.todense(),
+            index=[v_n_corpus.id2token[i] for i in range(0, n_top)],
+            columns=range(0, v_n_corpus.n_docs),
+        )
         return df
 
     def year_range(self) -> Tuple[Optional[int], Optional[int]]:
@@ -369,22 +372,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         )
 
     def get_top_n_words(self, n=1000, indices=None):
-        """Returns a document token stream that
-
-        Parameters
-        ----------
-        indicies : Iterable[int], optional
-            [description], by default None
-
-        Returns
-        -------
-        Iterable[Iterable[str]]
-            [description]
-        """
-        """
-        List the top n words in a subset of the corpus sorted according to occurrence.
-
-        """
+        """Returns the top n words in a subset of the corpus sorted according to occurrence. """
         if indices is None:
             sum_words = self.bag_term_matrix.sum(axis=0)
         else:
@@ -412,10 +400,11 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         return term_term_matrix
 
     def find_matching_words(self, word_or_regexp: List[str], n_max_count: int) -> List[str]:
-        """Returns `tokens` in corpus that matches candidate tokens """
-        words = find_matching_words_in_vocabulary(word_or_regexp, self.token2id)
-        if len(words) > n_max_count:
-            words = self.pick_n_top_words(words, n_max_count)
+        """Returns words in corpus that matches candidate tokens """
+        words = self.pick_n_top_words(
+            find_matching_words_in_vocabulary(self.token2id, word_or_regexp),
+            n_max_count,
+        )
         return words
 
     def find_matching_words_indices(self, word_or_regexp: List[str], n_max_count: int) -> List[int]:
@@ -427,9 +416,16 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         ]
         return indices
 
-    def pick_n_top_words(self, tokens: List[str], n_top: int) -> List[str]:
-        """Returns `n_top` most frequent tokens in corpus among given `tokens`"""
-        return pick_n_top_words(self.token_counter, tokens, n_top)
+    def pick_n_top_words(self, words: Container[str], n_top: int, descending: bool = False) -> List[str]:
+        """Returns the `n_top` most frequent word in `tokens`"""
+        words = list(words)
+        if len(words) < n_top:
+            return words
+        token_counts = [self.token_counter.get(w, 0) for w in words]
+        most_frequent_words = [words[x] for x in np.argsort(token_counts)[-n_top:]]
+        if descending:
+            most_frequent_words = list(sorted(most_frequent_words, reverse=descending))
+        return most_frequent_words
 
     @staticmethod
     def create(
@@ -446,16 +442,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         )
 
 
-def find_matching_words_in_vocabulary(candidate_words: List[str], token2id: Container[str]) -> List[str]:
+def find_matching_words_in_vocabulary(token2id: Container[str], candidate_words: Set[str]) -> Set[str]:
 
     words = {w for w in candidate_words if w in token2id}
 
     remaining_words = [w for w in candidate_words if w not in words and len(w) > 0]
 
     word_exprs = [x for x in remaining_words if "*" in x or (x.startswith("|") and x.endswith("|"))]
-
-    if len(word_exprs) == 0:
-        return words
 
     for expr in word_exprs:
 
@@ -466,10 +459,3 @@ def find_matching_words_in_vocabulary(candidate_words: List[str], token2id: Cont
             words |= {x for x in token2id if x not in words and fnmatch.fnmatch(x, expr)}
 
     return words
-
-
-def pick_n_top_words(token_counter: Mapping[str, int], tokens: List[str], n_top: int) -> List[str]:
-    """Returns the `n_top` most frequent word in `tokens`"""
-    token_counts = [token_counter.get(w, 0) for w in tokens]
-    most_frequent_words = [tokens[x] for x in np.argsort(token_counts)[-n_top:]]
-    return most_frequent_words

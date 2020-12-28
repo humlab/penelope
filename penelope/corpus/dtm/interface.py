@@ -183,7 +183,7 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def pick_n_top_words(self, tokens: List[str], n_top: int) -> List[str]:
+    def pick_n_top_words(self, words: List[str], n_top: int, descending: bool) -> List[str]:
         ...
 
     @staticmethod
