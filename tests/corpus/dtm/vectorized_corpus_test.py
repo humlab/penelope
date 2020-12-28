@@ -156,8 +156,7 @@ def test_load_of_compressed_corpus(text_corpus):
 
 
 def test_group_by_year_aggregates_bag_term_matrix_to_year_term_matrix(vectorized_corpus):
-    v_corpus: dtm.VectorizedCorpus = create_vectorized_corpus()
-    c_data = v_corpus.group_by_year()
+    c_data = vectorized_corpus.group_by_year()
     expected_ytm = [[4, 3, 7, 1], [6, 7, 4, 2]]
     assert np.allclose(expected_ytm, c_data.bag_term_matrix.todense())
 
