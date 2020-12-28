@@ -159,7 +159,7 @@ def compute_goddness_of_fits_to_uniform(
             if hasattr(metrics_iter, 'set_description'):
                 metrics_iter.set_description(metric)
             df_gof = df_gof.join(METRIC_FUNCTIONS[metric](dtm))
-    metrics_iter.close()
+
     df_gof.sort_values(['l2_norm'], ascending=False, inplace=True)
 
     if (n_top_count or 0) > 0:
