@@ -21,6 +21,7 @@ test:
 	@mkdir -p ./tests/output
 	@poetry run pytest --verbose --durations=0 \
 		--cov=$(PACKAGE_FOLDER) \
+		--cov-report=xml \
 		--cov-report=html \
 		tests
 	@rm -rf ./tests/output/*
@@ -123,7 +124,7 @@ nltk_data:
 spacy_data:
 	@poetry run python -m spacy download $(SPACY_MODEL)
 	@poetry run python -m spacy link $(SPACY_MODEL) en --force
-	
+
 gh:
 	@sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
 	@sudo apt-add-repository https://cli.github.com/packages
