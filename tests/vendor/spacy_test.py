@@ -55,7 +55,6 @@ def en_nlp() -> Language:
 
 @pytest.fixture(scope="module")
 def df_doc(en_nlp) -> Language:
-    # en_nlp = spacy.load("en_core_web_sm")
     attributes = ["text", "lemma_", "pos_", "is_space", "is_punct", "is_digit", "is_alpha", "is_stop"]
     doc = convert.text_to_tagged_frame(
         TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp

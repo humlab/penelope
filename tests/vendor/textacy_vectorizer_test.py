@@ -18,7 +18,7 @@ def mary_had_a_little_lamb_corpus() -> textacy.Corpus:
         "Why does the lamb love Mary so? The eager children cry.",
         "Mary loves the lamb, you know, the teacher did reply.",
     ]
-    corpus = textacy.Corpus("en", data=texts)
+    corpus = textacy.Corpus("en_core_web_sm", data=texts)
     return corpus
 
 
