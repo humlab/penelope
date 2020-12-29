@@ -8,6 +8,8 @@ fast-release: clean tidy build guard_clean_working_repository bump.patch tag
 
 release: ready guard_clean_working_repository bump.patch tag
 
+#gh release create v0.2.35 --title "INIDUN release" --notes "Update that facilitates INIDUN release"
+
 ready: tools clean tidy test lint build
 
 build: requirements.txt
