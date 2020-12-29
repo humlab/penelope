@@ -4,6 +4,7 @@ import pytest
 from penelope.co_occurrence import (
     ContextOpts,
     corpus_co_occurrence,
+    folder_and_tag_to_filename,
     partitioned_corpus_co_occurrence,
     store_co_occurrences,
 )
@@ -64,7 +65,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
 
 def test_co_occurrence_using_cli_succeeds(tmpdir):
 
-    output_filename = jj(tmpdir, 'test_cli_co-occurrence.csv.zip')
+    output_filename = folder_and_tag_to_filename(folder=tmpdir, tag='test_cli')
     context_opts = ContextOpts(
         concept={'jag'},
         context_width=2,
@@ -140,7 +141,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
 
 def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
 
-    target_filename = jj(tmpdir, 'test_co_occurrence_bug_with_options_co-occurrence.csv.zip')
+    target_filename = folder_and_tag_to_filename(folder=tmpdir, tag='test_co_occurrence_bug_with_option')
     options = {
         'corpus_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
         'target_filename': target_filename,

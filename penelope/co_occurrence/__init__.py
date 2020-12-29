@@ -6,6 +6,7 @@ from .convert import (
     Bundle,
     create_options_bundle,
     filename_to_folder_and_tag,
+    tag_to_filename,
     folder_and_tag_to_filename,
     load_bundle,
     load_co_occurrences,

@@ -2,8 +2,9 @@ import os
 from typing import Callable, Optional
 
 import pandas as pd
+from penelope.co_occurrence import folder_and_tag_to_filename
 from penelope.pipeline.config import CorpusConfig
-from penelope.utility import getLogger, replace_extension
+from penelope.utility import getLogger
 from penelope.workflows import co_occurrence_workflow
 
 from .to_co_occurrence_gui import ComputeGUI
@@ -37,10 +38,8 @@ def compute_co_occurrence(
 
         os.makedirs(args.target_folder, exist_ok=True)
 
-        output_filename = os.path.join(
-            args.target_folder,
-            replace_extension(args.corpus_tag, '.co_occurrence.csv.zip'),
-        )
+        output_filename = folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
+
 
         co_occurrences: pd.DataFrame = co_occurrence_workflow(
             corpus_filename=args.corpus_filename,
@@ -49,7 +48,7 @@ def compute_co_occurrence(
             count_threshold=args.count_threshold,
             partition_keys=[partition_key],
             filename_field=corpus_config.text_reader_opts.filename_fields,
-            extract_tokens_opts=args.extract_tokens_opts,
+            extract_tokens_opts=args.extract_tagged_tokens_opts,
             tokens_transform_opts=args.tokens_transform_opts,
         )
 
