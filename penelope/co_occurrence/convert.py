@@ -31,7 +31,7 @@ def tag_to_filename(*, tag: str) -> str:
 
 
 def folder_and_tag_to_filename(*, folder: str, tag: str) -> str:
-    return os.path.join(folder, tag_to_filename(tag))
+    return os.path.join(folder=folder, tag=tag_to_filename(tag))
 
 
 def store_co_occurrences(filename: str, df: pd.DataFrame):
