@@ -1,6 +1,6 @@
 import os
 import types
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple
 
 import pandas as pd
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
@@ -8,7 +8,7 @@ import textacy
 from penelope.corpus import TextTransformOpts
 from penelope.corpus.readers.interfaces import ICorpusReader, TextReaderOpts
 from penelope.utility import (
-    IndexOfSplitOrCallableOrRegExp,
+    FilenameFieldSpecs,
     extract_filename_metadata,
     getLogger,
     lists_of_dicts_merged_by_key,
@@ -119,7 +119,7 @@ def _get_document_metadata(
     metadata: Dict[str, Any] = None,
     document_index: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: FilenameFieldSpecs = None,
 ) -> Mapping[str, Any]:
     """Extract document metadata from filename and document index"""
     metadata = metadata or {}
@@ -153,7 +153,7 @@ def _extend_stream_with_metadata(
     tokens_reader: text_tokenizer.TextTokenizer,
     document_index: pd.DataFrame = None,
     document_columns: List[str] = None,
-    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: FilenameFieldSpecs = None,
 ) -> Iterable[Tuple[str, str, Dict]]:
     """Extract and adds document meta data to stream
 
@@ -165,7 +165,7 @@ def _extend_stream_with_metadata(
         Document index, by default None
     document_columns : List[str], optional
         Columns in document index, by default None
-    filename_fields : Sequence[IndexOfSplitOrCallableOrRegExp], optional
+    filename_fields : FilenameFieldSpecs, optional
         Filename fields to extract, by default None
 
     Yields
@@ -197,7 +197,7 @@ def load_or_create(
     binary_format: bool = True,
     use_compression: bool = True,
     disabled_pipes: List[str] = None,
-    filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
+    filename_fields: FilenameFieldSpecs = None,
     document_columns: List[str] = None,
     tick=noop,
 ) -> Dict[str, Any]:
@@ -220,7 +220,7 @@ def load_or_create(
         Use compression, by default True
     disabled_pipes : List[str], optional
         SpaCy pipes that should be disabled, by default None
-    filename_fields : Sequence[file_IndexOfSplitOrCallableOrRegExp], optional
+    filename_fields : FilenameFieldSpecs, optional
         Specifies metadata that should be extracted from filename, by default None
     document_columns : List[str], optional
         Columns in `document_index` to add to metadata, all columns will be added if None, by default None

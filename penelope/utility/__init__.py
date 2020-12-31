@@ -35,17 +35,25 @@ from .file_utility import (
     zip_get_filenames,
     zip_get_text,
 )
-from .filename_fields import IndexOfSplitOrCallableOrRegExp, extract_filename_metadata, extract_filenames_metadata
+from .filename_fields import (
+    FilenameFieldSpec,
+    FilenameFieldSpecs,
+    extract_filename_metadata,
+    extract_filenames_metadata,
+)
 from .filename_utils import (
     VALID_CHARS,
+    assert_that_path_exists,
     data_path_ts,
     filename_satisfied_by,
     filename_whitelist,
+    filter_names_by_pattern,
     now_timestamp,
     path_add_date,
     path_add_sequence,
     path_add_suffix,
     path_add_timestamp,
+    path_of,
     replace_extension,
     replace_path,
     strip_path_and_add_counter,
