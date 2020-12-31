@@ -26,12 +26,13 @@ def filename_to_folder_and_tag(co_occurrences_filename: str) -> Tuple[str, str]:
     corpus_tag = right_chop(corpus_basename, CO_OCCURRENCE_FILENAME_POSTFIX)
     return corpus_folder, corpus_tag
 
+
 def tag_to_filename(*, tag: str) -> str:
     return f"{tag}{CO_OCCURRENCE_FILENAME_POSTFIX}"
 
 
 def folder_and_tag_to_filename(*, folder: str, tag: str) -> str:
-    return os.path.join(folder=folder, tag=tag_to_filename(tag))
+    return os.path.join(folder, tag_to_filename(tag=tag))
 
 
 def store_co_occurrences(filename: str, df: pd.DataFrame):

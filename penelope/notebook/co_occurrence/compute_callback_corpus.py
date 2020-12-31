@@ -40,7 +40,6 @@ def compute_co_occurrence(
 
         output_filename = folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
 
-
         co_occurrences: pd.DataFrame = co_occurrence_workflow(
             corpus_filename=args.corpus_filename,
             target_filename=output_filename,

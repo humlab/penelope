@@ -72,7 +72,6 @@ def test_load_text_returns_payload_with_expected_document_index(config: CorpusCo
         'document_name',
     ]
     assert all([x.split(':')[0] in columns for x in config.text_reader_opts.filename_fields])
-    # assert pipeline.payload.document_index.index.name == config.pipeline_payload.document_index_key
     assert pipeline.payload.document_lookup('RECOMMENDATION_0201_049455_2017.txt')['unesco_id'] == 49455
 
 

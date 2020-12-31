@@ -27,7 +27,9 @@ def test_folder_and_tag_to_filename():
     assert filename == expected_filename
 
 
-@pytest.mark.parametrize('filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}'])
+@pytest.mark.parametrize(
+    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}']
+)
 def test_load_co_occurrences(filename):
 
     filename = jj('./tests/test_data', filename)
@@ -41,7 +43,9 @@ def test_load_co_occurrences(filename):
     assert (['w1', 'w2', 'value', 'value_n_d', 'value_n_t'] == co_occurrences.columns).all()
 
 
-@pytest.mark.parametrize('filename', ['concept_data_co-occurrence.csv', 'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}'])
+@pytest.mark.parametrize(
+    'filename', ['concept_data_co-occurrence.csv', 'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}']
+)
 def test_store_co_occurrences(filename):
 
     source_filename = jj('./tests/test_data', filename)
