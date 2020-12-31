@@ -1,11 +1,12 @@
 import abc
+import csv
 import zipfile
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
-from penelope.utility import IndexOfSplitOrCallableOrRegExp
+from penelope.utility import FilenameFieldSpecs
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
@@ -16,9 +17,11 @@ FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 class TextReaderOpts:
     filename_pattern: str = field(default="*.txt")
     filename_filter: Optional[FilenameOrCallableOrSequenceFilter] = None
-    filename_fields: Optional[Sequence[IndexOfSplitOrCallableOrRegExp]] = None
+    filename_fields: Optional[FilenameFieldSpecs] = None
     index_field: Optional[str] = None
     as_binary: Optional[bool] = False
+    sep: Optional[str] = field(default='\t')
+    quoting: Optional[int] = csv.QUOTE_NONE
 
     @property
     def props(self):

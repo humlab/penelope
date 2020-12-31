@@ -3,7 +3,6 @@ corpus_pattern: '*.zip'
 corpus_type: 1
 language: english
 pipeline_payload:
-  document_index_key: null
   document_index_sep: ;
   document_index_source: legal_instrument_index.csv
   filenames: null

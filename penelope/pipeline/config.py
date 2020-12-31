@@ -2,8 +2,7 @@ import enum
 import json
 import os
 import pathlib
-from dataclasses import dataclass
-from pathlib import Path
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Union
 
 import pandas as pd
@@ -22,6 +21,29 @@ class CorpusType(enum.IntEnum):
     SparvCSV = 3
     SpacyCSV = 4
     Pipeline = 5
+
+
+@dataclass
+class CorpusSerializeOpts:
+
+    content_type_code: int = 0
+
+    document_index_name: str = field(default="document_index.csv")
+    document_index_sep: str = field(default='\t')
+
+    reader_opts: TextReaderOpts = None
+
+    @property
+    def content_type(self) -> interfaces.ContentType:
+        return interfaces.ContentType(self.content_type_code)
+
+    @content_type.setter
+    def content_type(self, value: interfaces.ContentType):
+        self.content_type_code = int(value)
+
+    def as_type(self, value: interfaces.ContentType) -> "CorpusSerializeOpts":
+        self.content_type = value
+        return self
 
 
 @dataclass
@@ -126,5 +148,11 @@ class CorpusConfig:
                 pass
         FileNotFoundError(filename)
 
-    for path in Path('folder').rglob('*.c'):
-        print(path.name)
+    @property
+    def serialize_opts(self) -> CorpusSerializeOpts:
+        opts = CorpusSerializeOpts(
+            document_index_name=self.pipeline_payload.document_index_source,
+            document_index_sep=self.pipeline_payload.document_index_sep,
+            reader_opts=self.text_reader_opts,
+        )
+        return opts

@@ -25,7 +25,6 @@
     "pipeline_payload": {
         "source": "legal_instrument_corpus.zip",
         "document_index_source": "legal_instrument_index.csv",
-        "document_index_key": null,
         "document_index_sep": ";",
         "memory_store": {
             "tagger": "spaCy",

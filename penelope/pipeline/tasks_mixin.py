@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
+from penelope.pipeline import CorpusSerializeOpts
 
 from . import tasks
 
@@ -24,12 +25,16 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
-    def save_dataframe(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
-        return self.add(tasks.SaveTaggedFrame(filename=filename))
+    def save_tagged_frame(
+        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.SaveTaggedFrame(filename=filename, options=options))
 
-    def load_dataframe(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
+    def load_tagged_frame(
+        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+    ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
-        return self.add(tasks.LoadTaggedFrame(filename=filename))
+        return self.add(tasks.LoadTaggedFrame(filename=filename, options=options))
 
     def checkpoint(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """

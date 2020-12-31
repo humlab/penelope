@@ -13,9 +13,9 @@ from penelope.corpus import load_document_index
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (
     CheckpointData,
-    ContentSerializeOpts,
     ContentType,
     CorpusPipeline,
+    CorpusSerializeOpts,
     DocumentPayload,
     PipelinePayload,
     SpacyPipeline,
@@ -241,7 +241,7 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
         content_type=ContentType.TAGGEDFRAME,
         document_index=None,
         payload_stream=fake_data_frame_stream(1),
-        serialize_opts=ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
+        serialize_opts=CorpusSerializeOpts().as_type(ContentType.TAGGEDFRAME),
     )
 
 
@@ -342,7 +342,7 @@ def test_spacy_pipeline_load_checkpoint():
 def test_load_primary_document_index():
 
     filename = './tests/test_data/legal_instrument_five_docs_test.csv'
-    df = load_document_index(filename, key_column=None, sep=';')
+    df = load_document_index(filename, sep=';')
 
     assert df is not None
     assert 'unesco_id' in df.columns

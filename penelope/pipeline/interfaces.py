@@ -78,7 +78,6 @@ class PipelinePayload:
     source_folder: str = None
     source: TextSource = None
     document_index_source: Union[str, pd.DataFrame] = None
-    document_index_key: str = None
     document_index_sep: str = '\t'
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
@@ -102,7 +101,6 @@ class PipelinePayload:
             elif isinstance(self.document_index_source, str):
                 self.effective_document_index = load_document_index(
                     filename=self.document_index_source,
-                    key_column=self.document_index_key,
                     sep=self.document_index_sep,
                 )
         return self.effective_document_index
@@ -114,7 +112,6 @@ class PipelinePayload:
             document_index_source=self.document_index_source
             if isinstance(self.document_index_source, str)
             else 'object',
-            document_index_key=self.document_index_key,
             pos_schema_name=self.pos_schema_name,
         )
 

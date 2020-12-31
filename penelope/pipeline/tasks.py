@@ -181,6 +181,7 @@ class ToDocumentContentTuple(ITask):
 class Checkpoint(DefaultResolveMixIn, ITask):
 
     filename: str = None
+    options: checkpoint.CorpusSerializeOpts = None
 
     def setup(self):
         super().setup()
@@ -193,9 +194,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
-                self.filename, document_index_key_column=self.pipeline.payload.document_index_key
-            )
+            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename, options=self.options)
             self.pipeline.payload.effective_document_index = checkpoint_data.document_index
             self.out_content_type = checkpoint_data.content_type
             payload_stream = checkpoint_data.payload_stream
@@ -206,11 +205,9 @@ class Checkpoint(DefaultResolveMixIn, ITask):
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
+            options = checkpoint.CorpusSerializeOpts().as_type(self.out_content_type)
             payload_stream = checkpoint.store_checkpoint(
-                options=checkpoint.ContentSerializeOpts(
-                    content_type_code=int(self.out_content_type),
-                    as_binary=False,  # should be True if ContentType.SPARV_XML
-                ),
+                options=options,
                 target_filename=self.filename,
                 document_index=self.document_index,
                 payload_stream=self.instream,
@@ -221,17 +218,19 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
 @dataclass
 class SaveTaggedFrame(DefaultResolveMixIn, ITask):
-    """Stores sequence of data frame documents. """
+    """Stores sequence of tagged data frame documents to archive. """
 
     filename: str = None
+    options: checkpoint.CorpusSerializeOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGEDFRAME
         self.out_content_type = ContentType.TAGGEDFRAME
 
     def outstream(self) -> Iterable[DocumentPayload]:
+        options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(ContentType.TAGGEDFRAME)
         for payload in checkpoint.store_checkpoint(
-            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
+            options=options,
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -241,10 +240,10 @@ class SaveTaggedFrame(DefaultResolveMixIn, ITask):
 
 @dataclass
 class LoadTaggedFrame(DefaultResolveMixIn, ITask):
-    """Extracts text from payload.content based on annotations etc. """
+    """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
-    document_index_name: str = field(default="document_index.csv")
+    options: checkpoint.CorpusSerializeOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -252,10 +251,7 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
 
-        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
-            self.filename,
-            document_index_key_column=self.pipeline.payload.document_index_key,
-        )
+        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename, options=self.options)
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:

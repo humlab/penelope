@@ -25,7 +25,6 @@ def FakeSSI(source: str, index_source: str) -> CorpusConfig:
         pipeline_payload=PipelinePayload(
             source=None,
             document_index_source=None,
-            document_index_key=None,
             document_index_sep=';',
             pos_schema_name="Universal",
             memory_store={
