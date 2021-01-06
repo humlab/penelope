@@ -1,6 +1,5 @@
 # type: ignore
 from .dataframe_text_tokenizer import DataFrameTextTokenizer
-from .in_memory_data_reader import InMemoryReader
 from .interfaces import ExtractTaggedTokensOpts, ICorpusReader, TaggedTokensFilterOpts, TextSource
 from .sparv_csv_tokenizer import SparvCsvTokenizer
 from .sparv_xml_tokenizer import Sparv3XmlTokenizer, SparvXmlTokenizer
