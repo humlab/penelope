@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import abc
 import os
+import zipfile
 from typing import List, Sequence, Union
 
 import pandas as pd
 import penelope.vendor.textacy as textacy_utility
 import textacy
-from penelope.corpus import preprocess_text_corpus
-from penelope.corpus.readers import TextReaderOpts, ZipTextIterator
-from penelope.utility import path_add_suffix
+from penelope.corpus.readers import TextReaderOpts, TextTransformer, ZipTextIterator
+from penelope.utility import create_iterator, path_add_suffix
 from spacy.language import Language as SpacyLanguage
+from tqdm.auto import tqdm
 
 
 class PipelineError(Exception):
@@ -80,11 +81,24 @@ class CreateTask(ITask):
 
 
 class PreprocessTask(ITask):
+    def preprocess(self, source_filename: str, target_filename: str, filename_pattern: str = '*.txt', _tqdm=tqdm):
+        """Creates a preprocessed version of an archive"""
+
+        transformer = TextTransformer().fix_hyphenation().fix_unicode().fix_whitespaces().fix_ftfy()
+        source = create_iterator(source_filename, filename_pattern=filename_pattern)
+        if _tqdm is not None:
+            source = _tqdm(source, desc='Preparing text corpus')
+
+        with zipfile.ZipFile(target_filename, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+            for filename, text in source:
+                text = transformer.transform(text)
+                zf.writestr(filename, text)
+
     def execute(self, pipeline: TextacyCorpusPipeline):
-        prepped_source_path = path_add_suffix(pipeline.filename, pipeline.suffix)
-        if not os.path.isfile(prepped_source_path) or pipeline.force:
-            preprocess_text_corpus(pipeline.filename, prepped_source_path)
-        pipeline.filename = prepped_source_path
+        target_filename = path_add_suffix(pipeline.filename, pipeline.suffix)
+        if not os.path.isfile(target_filename) or pipeline.force:
+            self.preprocess(pipeline.filename, target_filename)
+        pipeline.filename = target_filename
         return pipeline
 
 
