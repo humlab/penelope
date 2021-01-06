@@ -2,7 +2,7 @@ import abc
 import csv
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
@@ -31,6 +31,8 @@ class TextReaderOpts:
             filename_fields=self.filename_fields,
             index_field=self.index_field,
             as_binary=self.as_binary,
+            sep=self.sep,
+            quoting=self.quoting,
         )
 
     def copy(self, **kwargs):
@@ -184,10 +186,3 @@ class ICorpusReader(abc.ABC):
     @abc.abstractmethod
     def __iter__(self) -> "ICorpusReader":
         return self
-
-    # FIXME; Implement __getitem__
-    # def __getitem__(self, document_name: str):
-    #     return None
-
-    def lookup_document(self, document_name: str) -> Mapping[str, Any]:
-        return self.document_index.loc[document_name].to_dict()
