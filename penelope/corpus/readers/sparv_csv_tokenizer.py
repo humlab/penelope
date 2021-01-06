@@ -35,7 +35,7 @@ class SparvCsvTokenizer(TextTokenizer):
         super().__init__(
             source,
             reader_opts=reader_opts.copy(filename_pattern='*.csv'),
-            transform_opts=TextTransformOpts.no_transforms(),
+            transform_opts=TextTransformOpts.empty(),
             tokenize=lambda x: x.split(),
             chunk_size=chunk_size,
         )

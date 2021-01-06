@@ -34,7 +34,7 @@ class TextTransformOpts:
         return self
 
     @staticmethod
-    def no_transforms():
+    def empty():
         return TextTransformOpts().clear()
 
     extra_transforms: List[Callable] = field(default_factory=list)
