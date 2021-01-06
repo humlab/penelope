@@ -44,7 +44,7 @@ def test_load_co_occurrences(filename):
 
 
 @pytest.mark.parametrize(
-    'filename', ['concept_data_co-occurrence.csv', 'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}']
+    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}']
 )
 def test_store_co_occurrences(filename):
 
@@ -66,7 +66,7 @@ def test_store_co_occurrences(filename):
 def test_to_vectorized_corpus():
 
     value_column = 'value'
-    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data', tag='VENUS')
+    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
 
     index_filename = './tests/test_data/VENUS/VENUS_document_index.csv'
 
@@ -118,7 +118,7 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
 
 def test_load_and_store_bundle():
 
-    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data', tag='VENUS')
+    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
 
     bundle = co_occurrence.load_bundle(filename)
 
@@ -137,7 +137,7 @@ def test_load_and_store_bundle():
 
 
 def test_to_trends_data():
-    filename: str = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data', tag='VENUS')
+    filename: str = './tests/test_data/VENUS/VENUS_co-occurrence.csv.zip'
     bundle = co_occurrence.load_bundle(filename, compute_corpus=False)
 
     trends_data = co_occurrence.to_trends_data(bundle).update()
@@ -146,7 +146,7 @@ def test_to_trends_data():
 
 
 def test_load_options():
-    filename: str = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data', tag='VENUS')
+    filename: str = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
     opts = co_occurrence.load_options(filename)
     assert opts is not None
 
