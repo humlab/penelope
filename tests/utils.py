@@ -5,9 +5,10 @@ from typing import Callable, Iterable, List, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
+import penelope.corpus.readers.tng as tng
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -40,7 +41,19 @@ def generate_token2id(terms: Iterable[str]) -> Mapping[str, int]:
 
 def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
 
-    reader = InMemoryReader(data, reader_opts=TextReaderOpts(filename_fields="year:_:1"))
+    reader = tng.CorpusReader(
+        source=tng.InMemorySource(data),
+        reader_opts=TextReaderOpts(filename_fields="year:_:1"),
+        transformer=None, # already tokenized
+        # transformer=tng.TextTransformer(
+        #     text_transform_opts=tng.TextTransformOpts(
+        #         transforms=[
+        #             tng.KnownTransformType.fix_hyphenation,
+        #             tng.KnownTransformType.fix_whitespaces,
+        #         ]
+        #     )
+        # ),
+    )
     corpus = TokenizedCorpus(reader=reader)
     return corpus
 
