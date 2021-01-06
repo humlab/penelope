@@ -22,6 +22,10 @@ def replace_path(filepath: str, path: str) -> str:
     return os.path.join(path, strip_paths(filepath))
 
 
+def replace_paths(folder: str, filenames: List[str]) -> List[str]:
+    return [os.path.join(folder, name) for name in strip_paths(filenames)]
+
+
 def filename_satisfied_by(
     filename: str, filename_filter: Union[List[str], Callable], filename_pattern: str = None
 ) -> bool:
