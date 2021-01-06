@@ -1,39 +1,16 @@
-import zipfile
+from collections import defaultdict
+from typing import Iterator
 
-import nltk
-from penelope.utility import create_iterator
-from tqdm.auto import tqdm
-
-from .readers import TextTransformer
+from tqdm import tqdm
 
 
-def preprocess_text_corpus(source_filename: str, target_filename: str, filename_pattern: str = '*.txt', _tqdm=tqdm):
-    """Creates a preprocessed version of an archive
+def generate_token2id(terms: Iterator[Iterator[str]], n_docs=None):
 
-    Parameters
-    ----------
-    source_filename : str
-        [description]
-    target_filename : str
-        [description]
-    filename_pattern : str, optional
-        [description], by default '*.txt'
-    _tqdm : [type], optional
-        [description], by default tqdm.tqdm
-    """
-
-    transformer = TextTransformer().fix_hyphenation().fix_unicode().fix_whitespaces().fix_ftfy()
-
-    source = create_iterator(source_filename, filename_pattern=filename_pattern)
-
-    if _tqdm is not None:
-        source = _tqdm(source, desc='Preparing text corpus')
-
-    with zipfile.ZipFile(target_filename, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for filename, text in source:
-            text = transformer.transform(text)
-            zf.writestr(filename, text)
-
-
-default_tokenizer = nltk.word_tokenize
-# nltk.regexp_tokenize
+    token2id = defaultdict()
+    token2id.default_factory = token2id.__len__
+    tokens_iter = tqdm(terms, desc="Vocab", total=n_docs, position=0, leave=True) if n_docs > 0 else terms
+    for tokens in tokens_iter:
+        for token in tokens:
+            _ = token2id[token]
+        tokens_iter.set_description(f"Vocab #{len(token2id)}")
+    return dict(token2id)
