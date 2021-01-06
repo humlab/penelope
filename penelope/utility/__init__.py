@@ -11,7 +11,6 @@ from ._color_utility import (
 from ._decorators import ExpectException, deprecated, try_catch
 from .file_utility import (
     DataFrameFilenameTuple,
-    compress_file,
     create_iterator,
     default_data_folder,
     excel_to_csv,
@@ -24,20 +23,17 @@ from .file_utility import (
     pickle_compressed_to_file,
     pickle_to_file,
     read_excel,
-    read_from_archive,
     read_json,
     read_textfile,
     save_excel,
-    store_to_archive,
     unpickle_compressed_from_file,
     unpickle_from_file,
     write_json,
-    zip_get_filenames,
-    zip_get_text,
 )
 from .filename_fields import (
     FilenameFieldSpec,
     FilenameFieldSpecs,
+    NameFieldSpecs,
     extract_filename_metadata,
     extract_filenames_metadata,
 )
@@ -123,3 +119,4 @@ from .utils import (
     tuple_of_lists_to_list_of_tuples,
     uniquify,
 )
+from .zip_utils import compress, namelist, read, read_iterator, store
