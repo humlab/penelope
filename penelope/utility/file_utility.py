@@ -9,13 +9,13 @@ import pickle
 import zipfile
 from io import StringIO
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
-import gensim
 import pandas as pd
 
 from . import filename_utils as utils
-from .filename_utils import filename_satisfied_by
+from . import zip_utils
+from .filename_utils import filename_satisfied_by, replace_paths
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -30,10 +30,16 @@ def default_data_folder():
     return str(home)
 
 
+def folder_read_iterator(folder: str, filenames: List[str]) -> Iterable[Tuple[str, str]]:
+    for filename in replace_paths(folder, filenames):
+        data = read_textfile(filename)
+        yield os.path.basename(filename), data
+
+
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
 def create_iterator(
     folder_or_zip: str, filenames: List[str] = None, filename_pattern: str = '*.txt', as_binary: bool = False
-) -> Tuple[str, Iterator[str]]:
+) -> Iterable[Tuple[str, str]]:
 
     filenames = filenames or list_filenames(folder_or_zip, filename_pattern=filename_pattern)
 
@@ -41,22 +47,36 @@ def create_iterator(
         raise ValueError("folder_or_zip argument must be a path")
 
     if os.path.isfile(folder_or_zip):
-        with zipfile.ZipFile(folder_or_zip) as zip_file:
+        return zip_utils.read_iterator(path=folder_or_zip, filenames=filenames, as_binary=as_binary)
 
-            for filename in filenames:
+    if os.path.isdir(folder_or_zip):
+        return folder_read_iterator(folder=folder_or_zip, filenames=filenames)
 
-                with zip_file.open(filename, 'r') as text_file:
+    raise FileNotFoundError(folder_or_zip)
 
-                    content = text_file.read() if as_binary else text_file.read().decode('utf-8')
 
-                yield os.path.basename(filename), content
+# def read_from_archive(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=False) -> str:
 
-    elif os.path.isdir(folder_or_zip):
-        for filename in filenames:
-            content = read_textfile(filename)
-            yield os.path.basename(filename), content
-    else:
-        raise FileNotFoundError(folder_or_zip)
+#     if isinstance(folder_or_zip, zipfile.ZipFile):
+#         with folder_or_zip.open(filename, 'r') as f:
+#             return f.read() if as_binary else f.read().decode('utf-8')
+
+#     if os.path.isdir(folder_or_zip):
+
+#         path = os.path.join(folder_or_zip, filename)
+
+#         if os.path.isfile(path):
+#             with open(path, 'r') as f:
+#                 return gensim.utils.to_unicode(f.read(), 'utf8', errors='ignore')
+
+#     if os.path.isfile(folder_or_zip):
+
+#         if zipfile.is_zipfile(folder_or_zip):
+#             return zip_utils.read(zip_or_name=folder_or_zip, filename=filename, as_binary=as_binary)
+
+#         return read_textfile(folder_or_zip)
+
+#     raise IOError("File not found")
 
 
 def list_filenames(
@@ -119,72 +139,6 @@ def list_filenames(
     ]
 
 
-def store_to_archive(archive_name: str, stream: Iterable[Tuple[str, Iterable[str]]]):
-    """Stores stream of text [(name, tokens), (name, tokens), ..., (name, tokens)] as text files in a new zip-file
-
-    Parameters
-    ----------
-    archive_name : str
-        Target filename
-    stream : List[Tuple[str, Union[List[str], str]]]
-        Documents [(name, tokens), (name, tokens), ..., (name, tokens)]
-    """
-    with zipfile.ZipFile(archive_name, 'w', compresslevel=zipfile.ZIP_DEFLATED) as out:
-
-        for (filename, document) in stream:
-
-            data = document if isinstance(document, str) else ' '.join(document)
-            out.writestr(filename, data, compresslevel=zipfile.ZIP_DEFLATED)
-
-
-def read_from_archive(folder_or_zip: Union[str, zipfile.ZipFile], filename: str, as_binary=False) -> str:
-    """Returns content in file `filename` that exists in folder or zip `folder_or_zip`
-
-    Parameters
-    ----------
-    folder_or_zip : Union[str, zipfile.ZipFile]
-        Folder (if `filename` is file in folder) or ZIP-filename
-    filename : str
-        Filename in folder or ZIP-file
-    as_binary : bool, optional
-        Opens file in binary mode, by default False
-
-    Returns
-    -------
-    str
-        File content
-
-    Raises
-    ------
-    IOError
-        If file not found or cannot be read
-    """
-    if isinstance(folder_or_zip, zipfile.ZipFile):
-        with folder_or_zip.open(filename, 'r') as f:
-            return f.read() if as_binary else f.read().decode('utf-8')
-
-    if os.path.isdir(folder_or_zip):
-
-        path = os.path.join(folder_or_zip, filename)
-
-        if os.path.isfile(path):
-            with open(path, 'r') as f:
-                return gensim.utils.to_unicode(f.read(), 'utf8', errors='ignore')
-
-    if os.path.isfile(folder_or_zip):
-
-        if zipfile.is_zipfile(folder_or_zip):
-
-            with zipfile.ZipFile(folder_or_zip) as zf:
-                with zf.open(filename, 'r') as f:
-                    return f.read() if as_binary else f.read().decode('utf-8')
-
-        else:
-            return read_textfile(folder_or_zip)
-
-    raise IOError("File not found")
-
-
 def read_textfile(filename: str, as_binary: bool = False) -> str:
 
     opts = {'mode': 'rb'} if as_binary else {'mode': 'r', 'encoding': 'utf-8'}
@@ -242,27 +196,6 @@ def save_excel(data: pd.DataFrame, filename: str):
         writer.save()
 
 
-def compress_file(path: str):
-    if not os.path.exists(path):
-        raise FileNotFoundError(path)
-    folder, filename = os.path.split(path)
-    name, _ = os.path.splitext(filename)
-    zip_name = os.path.join(folder, name + '.zip')
-    with zipfile.ZipFile(zip_name, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-        zf.write(path)
-    os.remove(path)
-
-
-def zip_get_filenames(zip_filename: str, extension: str = '.txt') -> List[str]:
-    with zipfile.ZipFile(zip_filename, mode='r') as zf:
-        return [x for x in zf.namelist() if x.endswith(extension)]
-
-
-def zip_get_text(zip_filename: str, filename: str) -> str:
-    with zipfile.ZipFile(zip_filename, mode='r') as zf:
-        return zf.read(filename).decode(encoding='utf-8')
-
-
 def read_json(path: str) -> Dict:
     """Reads JSON from file"""
     if not os.path.isfile(path):
@@ -282,13 +215,7 @@ DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
 def pandas_to_csv_zip(
     zip_filename: str, dfs: Union[DataFrameFilenameTuple, List[DataFrameFilenameTuple]], extension='csv', **to_csv_opts
 ):
-    if not isinstance(
-        dfs,
-        (
-            list,
-            tuple,
-        ),
-    ):
+    if not isinstance(dfs, (list, tuple)):
         raise ValueError("expected tuple or list of tuples")
 
     if isinstance(dfs, (tuple,)):
