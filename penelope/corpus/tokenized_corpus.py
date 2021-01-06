@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope import utility
-from tqdm.auto import tqdm
 
 from .corpus_mixins import PartitionMixIn
 from .document_index import metadata_to_document_index, update_document_index_token_counts
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
 from .tokens_transformer import TokensTransformer, TokensTransformOpts
+from .utils import generate_token2id
 
 logger = utility.getLogger("__penelope__")
 
@@ -57,18 +56,12 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
         self._token2id = None
 
     def _create_document_tokens_stream(self):
-
         token_counts = []
-
         for filename, tokens in self.reader:
-
             raw_tokens = [x for x in tokens]
             cooked_tokens = [x for x in self.transformer.transform(raw_tokens)]
-
             token_counts.append((filename, len(raw_tokens), len(cooked_tokens)))
-
             yield filename, cooked_tokens
-
         self._document_index = update_document_index_token_counts(self._document_index, token_counts)
 
     def _create_iterator(self):
@@ -114,20 +107,10 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
     def __len__(self):
         return len(self.document_index)
 
-    def _generate_token2id(self):
-        token2id = defaultdict()
-        token2id.default_factory = token2id.__len__
-        tokens_iter = tqdm(self.terms, desc="Vocab", total=len(self), position=0, leave=True)
-        for tokens in tokens_iter:
-            for token in tokens:
-                _ = token2id[token]
-            tokens_iter.set_description(f"Vocab #{len(token2id)}")
-        return dict(token2id)
-
     @property
     def token2id(self):
         if self._token2id is None:
-            self._token2id = self._generate_token2id()
+            self._token2id = generate_token2id(self.terms, len(self))
         return self._token2id
 
     @property
