@@ -1,12 +1,13 @@
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 from .filename_utils import strip_paths
 
 FilenameFieldSpec = Union[List[str], Dict[str, Union[Callable, str]]]
 FilenameFieldSpecs = Sequence[FilenameFieldSpec]
+NameFieldSpecs = Optional[FilenameFieldSpecs]
 
 
 def _parse_indexed_fields(filename_fields: List[str]):
