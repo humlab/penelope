@@ -1,4 +1,5 @@
 [MASTER]
+#ignore-patterns=**/deprecated/**/*.py
 ignore-patterns=deprecated
 
 # Python code to execute, usually for sys.path manipulation such as

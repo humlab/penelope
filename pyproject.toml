@@ -102,7 +102,9 @@ python_files = "*_test.py"
 python_functions = "test_*"
 filterwarnings = [
 #   "ignore",
-  "ignore::_pytest.warning_types.PytestCollectionWarning"
+  "ignore::_pytest.warning_types.PytestCollectionWarning",
+  "ignore::DeprecationWarning"
+  # "ignore::PendingDeprecationWarning:",
 ]
 
 [tool.dephell.main]
@@ -120,6 +122,7 @@ exclude = '''
   | \.pypy_cache
   | \.pytest_cache
   | deprecated
+  | legacy
 )
 '''
 
