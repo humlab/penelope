@@ -20,7 +20,7 @@ from penelope.utility import to_text
 from tqdm.auto import tqdm
 
 from . import checkpoint
-from .convert import tagged_frame_to_token_counts, tagged_frame_to_tokens, to_vectorized_corpus
+from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 
 
@@ -244,6 +244,7 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
 
     filename: str = None
     options: checkpoint.CorpusSerializeOpts = None
+    extra_reader_opts: TextReaderOpts = None    # Use if e.g. document index  should be created
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -251,7 +252,9 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
 
-        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename, options=self.options)
+        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+            self.filename, options=self.options, reader_opts=self.extra_reader_opts
+        )
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
@@ -307,7 +310,7 @@ class UpdateDocumentPropertyMixIn:
         """Computes token counts from the tagged frame, and adds them to the document index"""
         try:
             pos_column = self.pipeline.payload.get('pos_column')
-            token_counts = tagged_frame_to_token_counts(tagged_frame, self.pipeline.payload.pos_schema, pos_column)
+            token_counts = convert.tagged_frame_to_token_counts(tagged_frame, self.pipeline.payload.pos_schema, pos_column)
             self.store_document_properties(payload, **token_counts)
         except Exception as ex:
             logging.exception(ex)
@@ -361,7 +364,7 @@ class TaggedFrameToTokens(UpdateDocumentPropertyMixIn, ITask):
         if self.pipeline.get('pos_column', None) is None:
             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
 
-        tokens: Iterable[str] = tagged_frame_to_tokens(
+        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
             doc=payload.content,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
@@ -426,7 +429,7 @@ class TextToDTM(ITask):
         return self
 
     def outstream(self) -> VectorizedCorpus:
-        corpus = to_vectorized_corpus(
+        corpus = convert.to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
