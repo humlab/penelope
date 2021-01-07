@@ -27,12 +27,12 @@ class Test_DataFrameVectorize(unittest.TestCase):
         corpus = TokenizedCorpus(reader)
         result = [x for x in corpus]
         expected = [
-            ('0', ['A', 'B', 'C']),
-            ('1', ['B', 'C', 'D']),
-            ('2', ['C', 'B']),
-            ('3', ['A', 'B', 'F']),
-            ('4', ['E', 'B']),
-            ('5', ['F', 'E', 'E']),
+            ('document_0.txt', ['A', 'B', 'C']),
+            ('document_1.txt', ['B', 'C', 'D']),
+            ('document_2.txt', ['C', 'B']),
+            ('document_3.txt', ['A', 'B', 'F']),
+            ('document_4.txt', ['E', 'B']),
+            ('document_5.txt', ['F', 'E', 'E']),
         ]
         self.assertEqual(expected, result)
 
@@ -42,12 +42,12 @@ class Test_DataFrameVectorize(unittest.TestCase):
         corpus = TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts())
         result = [x for x in corpus]
         expected = [
-            ('0', ['A', 'B', 'C']),
-            ('1', ['B', 'C', 'D']),
-            ('2', ['C', 'B']),
-            ('3', ['A', 'B', 'F']),
-            ('4', ['E', 'B']),
-            ('5', ['F', 'E', 'E']),
+            ('document_0.txt', ['A', 'B', 'C']),
+            ('document_1.txt', ['B', 'C', 'D']),
+            ('document_2.txt', ['C', 'B']),
+            ('document_3.txt', ['A', 'B', 'F']),
+            ('document_4.txt', ['E', 'B']),
+            ('document_5.txt', ['F', 'E', 'E']),
         ]
         self.assertEqual(expected, result)
 
@@ -77,8 +77,8 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         result = [x for x in corpus]
         expected = [
-            ('0', ['Detta', 'är', 'en', 'mening', 'med', '14', 'token', '3', 'siffror', 'och', '2', 'symboler']),
-            ('1', ['Är', 'det', 'i', 'denna', 'mening', 'en', 'mening']),
+            ('document_0.txt', ['Detta', 'är', 'en', 'mening', 'med', '14', 'token', '3', 'siffror', 'och', '2', 'symboler']),
+            ('document_1.txt', ['Är', 'det', 'i', 'denna', 'mening', 'en', 'mening']),
         ]
         self.assertEqual(expected, result)
 
@@ -97,8 +97,8 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         result = [x for x in corpus]
         expected = [
-            ('0', ['Detta', 'är', 'en', 'mening', 'med', 'token', 'siffror', 'och', 'symboler']),
-            ('1', ['Är', 'det', 'i', 'denna', 'mening', 'en', 'mening']),
+            ('document_0.txt', ['Detta', 'är', 'en', 'mening', 'med', 'token', 'siffror', 'och', 'symboler']),
+            ('document_1.txt', ['Är', 'det', 'i', 'denna', 'mening', 'en', 'mening']),
         ]
         self.assertEqual(expected, result)
 
@@ -117,8 +117,8 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         result = [x for x in corpus]
         expected = [
-            ('0', ['detta', 'är', 'en', 'mening', 'med', 'token', 'siffror', 'och', 'symboler']),
-            ('1', ['är', 'det', 'denna', 'mening', 'en', 'mening']),
+            ('document_0.txt', ['detta', 'är', 'en', 'mening', 'med', 'token', 'siffror', 'och', 'symboler']),
+            ('document_1.txt', ['är', 'det', 'denna', 'mening', 'en', 'mening']),
         ]
         self.assertEqual(expected, result)
 
@@ -140,8 +140,8 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         result = [x for x in corpus]
         expected = [
-            ('0', ['mening', 'token', 'siffror', 'symboler']),
-            ('1', ['mening', 'mening']),
+            ('document_0.txt', ['mening', 'token', 'siffror', 'symboler']),
+            ('document_1.txt', ['mening', 'mening']),
         ]
         self.assertEqual(expected, result)
 
