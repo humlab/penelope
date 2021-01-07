@@ -1,3 +1,4 @@
+import csv
 import enum
 import json
 import os
@@ -31,7 +32,8 @@ class CorpusSerializeOpts:
     document_index_name: str = field(default="document_index.csv")
     document_index_sep: str = field(default='\t')
 
-    reader_opts: TextReaderOpts = None
+    sep: str = '\t'
+    quoting: int = csv.QUOTE_NONE
 
     @property
     def content_type(self) -> interfaces.ContentType:
@@ -45,6 +47,14 @@ class CorpusSerializeOpts:
         self.content_type = value
         return self
 
+
+    @staticmethod
+    def load(data: dict) -> "CorpusSerializeOpts":
+        opts = CorpusSerializeOpts()
+        for key in data.keys():
+            if hasattr(opts, key):
+                setattr(opts, key, data[key])
+        return opts
 
 @dataclass
 class CorpusConfig:
@@ -153,6 +163,5 @@ class CorpusConfig:
         opts = CorpusSerializeOpts(
             document_index_name=self.pipeline_payload.document_index_source,
             document_index_sep=self.pipeline_payload.document_index_sep,
-            reader_opts=self.text_reader_opts,
         )
         return opts
