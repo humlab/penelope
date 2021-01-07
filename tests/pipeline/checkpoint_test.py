@@ -1,7 +1,7 @@
-
 import os
-from penelope.pipeline.config import CorpusSerializeOpts
+
 import penelope.pipeline.checkpoint as checkpoint
+from penelope.pipeline.config import CorpusSerializeOpts
 
 
 def test_spaCy_load_tagged_frame_checkpoint():
@@ -11,8 +11,7 @@ def test_spaCy_load_tagged_frame_checkpoint():
 
     checkpoint_filename: str = "./tests/test_data/SSI_tagged_frame_pos_csv.zip"
 
-    options: checkpoint.CorpusSerializeOpts = None # CorpusSerializeOpts()
+    options: checkpoint.CorpusSerializeOpts = None  # CorpusSerializeOpts()
     data = checkpoint.load_checkpoint(source_name=checkpoint_filename, options=options, reader_opts=None)
 
     assert data is not None
-    

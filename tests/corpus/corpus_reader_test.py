@@ -62,6 +62,7 @@ def test_transformer():
     result = transformer.transform("mål    vakt")
     assert result == "mål vakt"
 
+
 def create_test_source_info(filenames: List[str]) -> cr.SourceInfo:
     basenames = [strip_paths(x) for x in filenames]
     return cr.SourceInfo(

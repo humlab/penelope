@@ -77,7 +77,10 @@ class Test_DataFrameVectorize(unittest.TestCase):
         )
         result = [x for x in corpus]
         expected = [
-            ('document_0.txt', ['Detta', 'är', 'en', 'mening', 'med', '14', 'token', '3', 'siffror', 'och', '2', 'symboler']),
+            (
+                'document_0.txt',
+                ['Detta', 'är', 'en', 'mening', 'med', '14', 'token', '3', 'siffror', 'och', '2', 'symboler'],
+            ),
             ('document_1.txt', ['Är', 'det', 'i', 'denna', 'mening', 'en', 'mening']),
         ]
         self.assertEqual(expected, result)

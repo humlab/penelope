@@ -19,8 +19,7 @@ from penelope.corpus.readers import (
 from penelope.utility import to_text
 from tqdm.auto import tqdm
 
-from . import checkpoint
-from . import convert
+from . import checkpoint, convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 
 
@@ -244,7 +243,7 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
 
     filename: str = None
     options: checkpoint.CorpusSerializeOpts = None
-    extra_reader_opts: TextReaderOpts = None    # Use if e.g. document index  should be created
+    extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index  should be created
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -310,7 +309,9 @@ class UpdateDocumentPropertyMixIn:
         """Computes token counts from the tagged frame, and adds them to the document index"""
         try:
             pos_column = self.pipeline.payload.get('pos_column')
-            token_counts = convert.tagged_frame_to_token_counts(tagged_frame, self.pipeline.payload.pos_schema, pos_column)
+            token_counts = convert.tagged_frame_to_token_counts(
+                tagged_frame, self.pipeline.payload.pos_schema, pos_column
+            )
             self.store_document_properties(payload, **token_counts)
         except Exception as ex:
             logging.exception(ex)

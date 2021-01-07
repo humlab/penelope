@@ -7,11 +7,15 @@ from . import tng
 class DataFrameTextTokenizer(tng.CorpusReader):
     def __init__(self, data: pd.DataFrame, text_column='txt', **column_filters):
         text_transformer = tng.TextTransformer(
-            transform_opts=tng.TextTransformOpts().clear().add([
-                tng.KnownTransformType.fix_unicode,
-                tng.KnownTransformType.fix_whitespaces,
-                tng.KnownTransformType.fix_hyphenation
-            ])
+            transform_opts=tng.TextTransformOpts()
+            .clear()
+            .add(
+                [
+                    tng.KnownTransformType.fix_unicode,
+                    tng.KnownTransformType.fix_whitespaces,
+                    tng.KnownTransformType.fix_hyphenation,
+                ]
+            )
         )
         super().__init__(
             source=tng.PandasSource(data, text_column=text_column, filename_column='filename', **column_filters),

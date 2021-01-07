@@ -47,7 +47,6 @@ class CorpusSerializeOpts:
         self.content_type = value
         return self
 
-
     @staticmethod
     def load(data: dict) -> "CorpusSerializeOpts":
         opts = CorpusSerializeOpts()
@@ -55,6 +54,7 @@ class CorpusSerializeOpts:
             if hasattr(opts, key):
                 setattr(opts, key, data[key])
         return opts
+
 
 @dataclass
 class CorpusConfig:

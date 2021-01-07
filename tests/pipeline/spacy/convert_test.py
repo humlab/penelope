@@ -23,6 +23,7 @@ def nlp() -> Doc:
 def looking_back(nlp) -> Doc:
     return nlp(SAMPLE_TEXT)
 
+
 def test_filter_tokens_by_attribute_values(looking_back: Doc):  # pylint: disable=unused-argument
 
     words = SAMPLE_TEXT.replace('.', ' .').split()

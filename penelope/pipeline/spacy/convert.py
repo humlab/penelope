@@ -31,7 +31,7 @@ def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: d
         tokens = (t for t in tokens if t.is_punct == value)
         keys.discard('is_punct')
 
-    keys = { k for k in keys if attribute_value_filters[k] is not None}
+    keys = {k for k in keys if attribute_value_filters[k] is not None}
 
     if len(keys) > 0:
         tokens = (t for t in tokens if all([getattr(t, attr) == attribute_value_filters[attr] for attr in keys]))
@@ -111,6 +111,7 @@ def texts_to_tagged_frames(
     for document in stream:
         yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)
 
+
 def _get_disables(attributes):
     disable = ['vectors', 'textcat']
     if not any('ent' in x for x in attributes):
@@ -119,4 +120,3 @@ def _get_disables(attributes):
     if not any('dep' in x for x in attributes):
         disable.append('parser')
     return disable
-

@@ -19,6 +19,7 @@ def nlp() -> Doc:
 def looking_back(nlp) -> Doc:
     return nlp(SAMPLE_TEXT)
 
+
 POS_ATTRIBUTES = ['text', 'pos_', 'lemma_']
 MEMORY_STORE = {
     'lang': 'en',
@@ -35,8 +36,10 @@ def test_payload():
     mock = Mock(spec=PipelinePayload, memory_store=MEMORY_STORE)  # document_index=MagicMock(pd.DataFrame),
     return mock
 
+
 def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
     return MagicMock(spec=spacy.language.Language, return_value=Mock(spec=spacy.tokens.Doc))
+
 
 def patch_spacy_pipeline(payload: PipelinePayload):
     pipeline = SpacyPipeline(payload=payload, tasks=[]).setup()
@@ -78,6 +81,7 @@ def test_to_spacy_doc_to_tagged_frame(test_payload):
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGEDFRAME
+
 
 # @patch('spacy.load', patch_spacy_load)
 # @patch('penelope.pipeline.convert.tagged_frame_to_token_counts', return_value={})

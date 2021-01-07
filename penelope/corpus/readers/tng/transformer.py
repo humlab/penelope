@@ -42,6 +42,7 @@ TransformTypeArg = Union[KnownTransformType, List[KnownTransformType], str, List
 
 T = TypeVar("T", str, List[str])
 
+
 class TextTransformOpts:
     def __init__(self, transforms: List[TransformTypeArg] = None):
         self.opts = []
@@ -52,8 +53,18 @@ class TextTransformOpts:
         )
 
     def as_known_types(self, ys: TransformTypeArg) -> List[KnownTransformType]:
-        ys = ys if isinstance(ys, (list, tuple, )) else [ys]
-        return [(KnownTransformType[y] if isinstance(y, str) else y) for y in ys ]
+        ys = (
+            ys
+            if isinstance(
+                ys,
+                (
+                    list,
+                    tuple,
+                ),
+            )
+            else [ys]
+        )
+        return [(KnownTransformType[y] if isinstance(y, str) else y) for y in ys]
 
     def add(self, ys: TransformTypeArg) -> TextTransformOpts:
         for y in self.as_known_types(ys):

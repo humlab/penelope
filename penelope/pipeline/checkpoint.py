@@ -1,6 +1,5 @@
 import abc
 import json
-from penelope.corpus.readers.interfaces import TextReaderOpts
 import zipfile
 from dataclasses import asdict, dataclass
 from io import StringIO
@@ -9,7 +8,9 @@ from typing import Iterable, Iterator, List, Sequence, Union
 import pandas as pd
 import penelope.utility.zip_utils as zip_utils
 from penelope.corpus import DocumentIndex, load_document_index
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import assert_that_path_exists, getLogger, path_of
+
 from .config import CorpusSerializeOpts
 from .interfaces import ContentType, DocumentPayload, PipelineError
 

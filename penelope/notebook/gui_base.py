@@ -289,9 +289,7 @@ class BaseGUI:
     @property
     def tagged_tokens_filter_opts(self) -> TaggedTokensFilterOpts:
 
-        return TaggedTokensFilterOpts(
-            is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None
-        )
+        return TaggedTokensFilterOpts(is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None)
 
     def set_PoS_scheme(self, pos_scheme: PoS_Tag_Scheme):
 

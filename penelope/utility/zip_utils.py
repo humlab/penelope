@@ -21,7 +21,9 @@ def zipfile_or_filename(**zipargs):
                 return func(zip_or_filename=zip_or_filename, **kwargs)
             with zipfile.ZipFile(zip_or_filename, **zipargs) as zf:
                 return func(zip_or_filename=zf, **kwargs)
+
         return zipfile_or_str_inner
+
     return zipfile_or_str_outer
 
 
@@ -85,12 +87,16 @@ def unpack(path: str, target_folder: str, create_sub_folder: bool = True):
     with zipfile.ZipFile(path, "r") as z:
         z.extractall(target_folder)
 
-@zipfile_or_filename(mode='r')
-def read_json(*, zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool=False) -> dict:
-    return json.loads(read(zip_or_filename=zip_or_filename, filename=filename, as_binary=as_binary))
 
 @zipfile_or_filename(mode='r')
-def read_dataframe(*, zip_or_filename: zipfile.ZipFile, filename: str, sep: str='\t', quoting: int=csv.QUOTE_NONE) -> pd.DataFrame:
+def read_json(*, zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool = False) -> dict:
+    return json.loads(read(zip_or_filename=zip_or_filename, filename=filename, as_binary=as_binary))
+
+
+@zipfile_or_filename(mode='r')
+def read_dataframe(
+    *, zip_or_filename: zipfile.ZipFile, filename: str, sep: str = '\t', quoting: int = csv.QUOTE_NONE
+) -> pd.DataFrame:
     data_str = read(zip_or_filename=zip_or_filename, filename=filename, as_binary=False)
     df = pd.read_csv(StringIO(data_str), sep=sep, quoting=quoting, index_col=0)
     return df

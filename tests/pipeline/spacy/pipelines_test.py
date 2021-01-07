@@ -11,6 +11,7 @@ from penelope.utility.pos_tags import PoS_Tag_Scheme, PoS_Tag_Schemes, pos_tags_
 
 from ..fixtures import FakeGUI, FakeSSI
 
+
 def test_spaCy_co_occurrence_pipeline():
 
     os.makedirs('./tests/output', exist_ok=True)
@@ -135,4 +136,3 @@ def test_spaCy_co_occurrence_pipeline3():
         done_callback=None,
         checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',
     )
-
