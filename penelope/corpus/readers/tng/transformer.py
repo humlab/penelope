@@ -40,6 +40,7 @@ class KnownTransformType(IntEnum):
 
 TransformTypeArg = Union[KnownTransformType, List[KnownTransformType], str, List[str], Callable[[str], str]]
 
+T = TypeVar("T", str, List[str])
 
 class TextTransformOpts:
     def __init__(self, transforms: List[TransformTypeArg] = None):
@@ -68,11 +69,13 @@ class TextTransformOpts:
         self.opts.clear()
         return self
 
-    def __add__(self, ys: TransformTypeArg):
+    def __add__(self, ys: TransformTypeArg) -> TextTransformOpts:
         self.add(ys)
+        return self
 
-    def __sub__(self, ys: TransformTypeArg):
+    def __sub__(self, ys: TransformTypeArg) -> TextTransformOpts:
         self.remove(ys)
+        return self
 
     def __iter__(self):
         return iter(self.opts)
@@ -95,46 +98,49 @@ class TextTransformOpts:
             object.__setattr__(self, key, value)
 
 
-T = TypeVar("T", str, List[str])
-
-
-class Transformer:
-    """Transforms applied on tokenized text"""
-
-    def __init__(self):
-        self.transforms = []
-
-    def add(self, transform: Callable[[T], str], add_only_if: bool = True) -> Transformer:
-        if add_only_if:
-            self.transforms.append(transform)
-        return self
-
-    def transform(self, data: T) -> Transformer:
-
-        for ft in self.transforms:
-            data = [x for x in ft(data)]
-
-        return data
-
-
-class TextTransformer(Transformer):
+class TextTransformer:
     """Transforms applied on non-tokenized text"""
 
-    def __init__(self, *, text_transform_opts: TextTransformOpts = None):
-        super().__init__()
-        self.ingest(text_transform_opts)
+    def __init__(self, *, transform_opts: TextTransformOpts = None):
+        self.transform_opts = transform_opts or TextTransformOpts()
 
-    def ingest(self, opts: TextTransformOpts) -> TextTransformer:
-        for t in opts or []:
-            self.add(t.transform)
-        return self
-
-    def transform(self, data: T) -> Transformer:
+    def transform(self, data: T) -> T:
 
         if isinstance(data, list):
             raise ValueError("text transforms cannot be applied on tokenized data!")
 
-        for ft in self.transforms:
-            data = [x for x in ft(data)]
+        for ft in self.transform_opts.opts:
+            data = ft.transform(data)
 
         return data
+
+    # def fix_hyphenation(self) -> TextTransformer:
+    #     return self.add(KnownTransformType.fix_hyphenation)
+
+    # def fix_unicode(self) -> TextTransformer:
+    #     return self.add(KnownTransformType.fix_unicode)
+
+    # def fix_whitespaces(self) -> TextTransformer:
+    #     return self.add(KnownTransformType.fix_whitespaces)
+
+    # def fix_ftfy(self) -> TextTransformer:
+    #     return self.add(KnownTransformType.fix_ftfy_text)
+
+    # def fix_accents(self) -> TextTransformer:
+    #     return self.add(KnownTransformType.fix_accents)
+
+    # def add(self, ys: TransformTypeArg) -> TextTransformer:
+    #     self.transform_opts += ys
+    #     return self
+
+    # def remove(self, ys: TransformTypeArg) -> TextTransformOpts:
+    #     self.transform_opts -= ys
+    #     return self
+
+    # def __add__(self, ys: TransformTypeArg) -> TextTransformOpts:
+    #     self.add(ys)
+    #     return self
+
+    # def __sub__(self, ys: TransformTypeArg) -> TextTransformOpts:
+    #     self.remove(ys)
+    #     return self
