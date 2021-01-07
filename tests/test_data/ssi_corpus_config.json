@@ -16,7 +16,6 @@
     "tagged_tokens_filter_opts": {
         "data": {
             "is_alpha": null,
-            "is_space": false,
             "is_punct": false,
             "is_digit": null,
             "is_stop": null

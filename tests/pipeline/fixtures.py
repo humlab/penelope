@@ -77,7 +77,6 @@ class FakeGUI:  # pylint: disable=too-many-instance-attributes)
     )
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(
         is_alpha=False,
-        is_space=False,
         is_punct=False,
         is_digit=None,
         is_stop=None,

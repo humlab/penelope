@@ -26,24 +26,41 @@ def test_zip_wrapper():
     filename = './tests/test_data/legal_instrument_five_docs_test.zip'
     with zipfile.ZipFile(filename, 'r') as zf:
         names = zf.namelist()
-        names_zip = zip_utils.namelist(zip_or_str=zf)
-    names_str = zip_utils.namelist(zip_or_str=filename)
+        names_zip = zip_utils.namelist(zip_or_filename=zf)
+    names_str = zip_utils.namelist(zip_or_filename=filename)
     assert names == names_zip == names_str
 
 
 def test_transformer():
 
     transform_opts = tt.TextTransformOpts().clear()
+
     transform_opts += tt.KnownTransformType.fix_accents
     assert transform_opts.opts == [tt.KnownTransformType.fix_accents]
+
     transform_opts -= tt.KnownTransformType.fix_accents
     assert transform_opts.opts == []
 
-    transformer = tt.TextTransformer()
-    transformer.add(tt.KnownTransformType.fix_accents)
+    transform_opts = tt.TextTransformOpts().clear()
+    transform_opts += tt.KnownTransformType.fix_accents
+
+    transformer = tt.TextTransformer(transform_opts=transform_opts)
     result = transformer.transform("Rågér")
     assert result == "Rager"
 
+    transformer.transform_opts -= tt.KnownTransformType.fix_accents
+    result = transformer.transform("Rågér")
+    assert result == "Rågér"
+
+    transformer.transform_opts.clear()
+    transformer.transform_opts += tt.KnownTransformType.fix_hyphenation
+    result = transformer.transform("mål-\nvakt")
+    assert result == "målvakt"
+
+    transformer.transform_opts.clear()
+    transformer.transform_opts += tt.KnownTransformType.fix_whitespaces
+    result = transformer.transform("mål    vakt")
+    assert result == "mål vakt"
 
 def create_test_source_info(filenames: List[str]) -> cr.SourceInfo:
     basenames = [strip_paths(x) for x in filenames]

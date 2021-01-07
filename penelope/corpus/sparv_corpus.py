@@ -112,7 +112,7 @@ def sparv_xml_extract_and_store(
         chunk_size=chunk_size,
     )
 
-    zip_util.store(zip_or_str=target, stream=corpus)
+    zip_util.store(zip_or_filename=target, stream=corpus)
 
 
 def sparv_csv_extract_and_store(
@@ -157,4 +157,4 @@ def sparv_csv_extract_and_store(
         chunk_size=chunk_size,
     )
 
-    zip_util.store(zip_or_str=target, stream=corpus)
+    zip_util.store(zip_or_filename=target, stream=corpus)

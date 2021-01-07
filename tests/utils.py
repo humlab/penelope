@@ -45,14 +45,6 @@ def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
         source=tng.InMemorySource(data),
         reader_opts=TextReaderOpts(filename_fields="year:_:1"),
         transformer=None, # already tokenized
-        # transformer=tng.TextTransformer(
-        #     text_transform_opts=tng.TextTransformOpts(
-        #         transforms=[
-        #             tng.KnownTransformType.fix_hyphenation,
-        #             tng.KnownTransformType.fix_whitespaces,
-        #         ]
-        #     )
-        # ),
     )
     corpus = TokenizedCorpus(reader=reader)
     return corpus

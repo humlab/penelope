@@ -29,7 +29,6 @@ tagged_tokens_filter_opts:
     is_alpha: null
     is_digit: null
     is_punct: false
-    is_space: false
     is_stop: null
 text_reader_opts:
   as_binary: false

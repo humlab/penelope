@@ -35,7 +35,7 @@ def test_reader_store_result():
 
     for i in range(0, len(expected_names)):
 
-        content = zip_utils.read(zip_or_str=target_filename, filename=expected_names[i], as_binary=False)
+        content = zip_utils.read(zip_or_filename=target_filename, filename=expected_names[i], as_binary=False)
 
         assert ' '.join(expected_documents[i]) == content
 
@@ -60,7 +60,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     test_filename = "sou_1945_1.txt"
 
-    content = zip_utils.read(zip_or_str=target_filename, filename=test_filename, as_binary=False)
+    content = zip_utils.read(zip_or_filename=target_filename, filename=test_filename, as_binary=False)
 
     assert content.startswith(expected_document_start)
 

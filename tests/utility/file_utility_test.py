@@ -170,7 +170,7 @@ def test_pandas_to_csv_zip():
     pandas_to_csv_zip(filename, dfs=data, extension='csv', sep='\t')
 
     assert os.path.isfile(filename)
-    assert set(namelist(filename, pattern="*.csv")) == set({'df1.csv', 'df2.csv'})
+    assert set(namelist(zip_or_filename=filename, pattern="*.csv")) == set({'df1.csv', 'df2.csv'})
 
 
 def test_pandas_read_csv_zip():

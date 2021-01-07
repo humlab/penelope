@@ -115,7 +115,7 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_space=False, is_punct=False)
+    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
     tagged_payload = next(SpacyPipeline(payload=config.pipeline_payload).checkpoint(checkpoint_filename).resolve())
 
@@ -135,7 +135,7 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_space=False, is_punct=False)
+    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
     tagged_payload = next(SpacyPipeline(payload=config.pipeline_payload).checkpoint(checkpoint_filename).resolve())
 
@@ -156,7 +156,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_space=False, is_punct=False)
+    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
     payloads = (
         SpacyPipeline(payload=config.pipeline_payload)
@@ -178,7 +178,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_space=False, is_punct=False)
+    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
     corpus: VectorizedCorpus = (
         (
@@ -227,7 +227,6 @@ class MockGUI:
     )
     transform_opts: TextTransformOpts = TextTransformOpts()
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(
-        is_space=False,
         is_punct=False,
     )
     vectorize_opts: VectorizeOpts = VectorizeOpts()

@@ -213,7 +213,7 @@ def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
-def patch_tagged_frame_to_tokens(*_) -> Iterable[str]:
+def patch_tagged_frame_to_tokens(*_, **__) -> Iterable[str]:
     return ["a", "b", "c"]
 
 
@@ -222,7 +222,7 @@ def test_tagged_frame_to_tokens_succeeds():
     task = tasks.TaggedFrameToTokens(
         pipeline=Mock(spec=CorpusPipeline),
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
-        filter_opts=TaggedTokensFilterOpts(is_punct=False, is_space=False),
+        filter_opts=TaggedTokensFilterOpts(is_punct=False),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))
     next_payload = task.process(current_payload)
