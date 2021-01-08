@@ -18,7 +18,7 @@ class CorpusReader(ICorpusReader):
     """Gateway/proxy for a file store that can be filtered, streamed and indexed.
     Applying a filter creates a view of a subset of the source files that affects all retrieval methods.
     Note that the source must be able to retrive data by index (name or integer)
-    The data can be indexed even when filters are app:
+    The data can be indexed even when filters are applied:
         filenames[i]    the i:th filename in the store
         metadata[i]     collected metadata fot i:th file
         self[i]         content of i:th file, or content of named file
