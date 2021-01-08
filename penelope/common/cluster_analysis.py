@@ -1,55 +1,64 @@
 import itertools
 import types
+from dataclasses import dataclass
+from typing import Dict, Iterable, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
+import penelope.corpus.dtm as dtm
 import scipy
 import sklearn
 import sklearn.cluster
 from scipy.cluster.hierarchy import linkage
 
 
+@dataclass
+class KMeansResult:
+    centroids: np.ndarray  # A ‘k’ by ‘N’ array of centroids found at the last iteration of k-means.
+    labels: np.ndarray  # label[i] is the code or index of the centroid the ith observation is closest to.
+
+
 class CorpusClusters:
-    def __init__(self, corpus, tokens):
-        self._token_clusters = None
-        self.corpus = corpus
-        self.tokens = tokens
+    def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str]):
+        self._token_clusters: pd.DataFrame = None
+        self.corpus: dtm.VectorizedCorpus = corpus
+        self.tokens: List[str] = tokens
         self.cluster_labels = []
 
     @property
-    def n_clusters(self):
+    def n_clusters(self) -> int:
         return len(self.cluster_labels)
 
     @property
-    def token_clusters(self):
+    def token_clusters(self) -> pd.DataFrame:
         return self._token_clusters
 
     @token_clusters.setter
-    def token_clusters(self, value):
+    def token_clusters(self, value: pd.DataFrame):
         self._token_clusters = value
         self.cluster_labels = (
             [] if self.token_clusters is None else sorted(self.token_clusters.cluster.unique().tolist())
         )
 
-    def cluster_token_ids(self, n_cluster):
-        return self.token_clusters[self.token_clusters.cluster == n_cluster].index.tolist()
+    def cluster_token_ids(self, label: str) -> List[int]:
+        return self.token_clusters[self.token_clusters.cluster == label : str].index.tolist()
 
-    def clusters_token_ids(self):
+    def clusters_token_ids(self) -> Iterable[Tuple[str, List[int]]]:
 
-        for n_cluster in self.cluster_labels:
-            yield n_cluster, self.cluster_token_ids(n_cluster)
+        for label in self.cluster_labels:
+            yield label, self.cluster_token_ids(label)
 
-    def cluster_means(self):
+    def cluster_means(self) -> np.ndarray:
 
-        cluster_means = np.array(
+        cluster_means: np.ndarray = np.array(
             [self.corpus.data[:, token_ids].mean(axis=1) for _, token_ids in self.clusters_token_ids()]
         )
 
         return cluster_means
 
-    def cluster_medians(self):
+    def cluster_medians(self) -> np.ndarray:
 
-        cluster_medians = np.array(
+        cluster_medians: np.ndarray = np.array(
             [np.median(self.corpus.data[:, token_ids], axis=1) for _, token_ids in self.clusters_token_ids()]
         )
 
@@ -57,28 +66,28 @@ class CorpusClusters:
 
 
 class HCACorpusClusters(CorpusClusters):
-    def __init__(self, corpus, tokens, linkage_matrix, threshold=0.5):
+    def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str], linkage_matrix, threshold: float = 0.5):
 
         super().__init__(corpus, tokens)
 
         self.key = 'hca'
 
-        self.token2id = corpus.token2id
+        self.token2id: Dict[str, int] = corpus.token2id
         self.linkage_matrix = linkage_matrix
         self.cluster_distances = self._compile_cluster_distances(linkage_matrix)
-        self.threshold = threshold
-        self.cluster2tokens = None
+        self.threshold: float = threshold
+        self.cluster2tokens: Dict[str, Set[str]] = None
         self.set_threshold(threshold=self.threshold)
 
-    def set_threshold(self, threshold):
+    def set_threshold(self, threshold: float):
 
-        self.cluster2tokens = self._reduce_to_threshold(threshold)
+        self.cluster2tokens: Dict[str, Set[str]] = self._reduce_to_threshold(threshold)
         self.token_clusters = self._compile_token_clusters(self.cluster2tokens)
         self.cluster2tokens = self.cluster2tokens
         self.threshold = threshold
 
-    def _compile_cluster_distances(self, linkage_matrix):
-
+    def _compile_cluster_distances(self, linkage_matrix) -> pd.DataFrame:
+        """Returns a data frame with cluster distances"""
         N = len(self.tokens)
 
         df = pd.DataFrame(data=linkage_matrix, columns=['a_id', 'b_id', 'distance', 'n_obs']).astype(
@@ -92,8 +101,8 @@ class HCACorpusClusters(CorpusClusters):
         df = df[['a_cluster', 'b_cluster', 'distance', 'cluster']]  # , 'a_id', 'b_id', 'n_obs']]
         return df
 
-    def _reduce_to_threshold(self, threshold):
-
+    def _reduce_to_threshold(self, threshold: float) -> Dict[str, Set[str]]:
+        """Reduces clusters to given threshold"""
         cluster2tokens = {x: set([x]) for x in self.tokens}
         for _, r in self.cluster_distances.iterrows():
             if r['distance'] > threshold:
@@ -104,30 +113,32 @@ class HCACorpusClusters(CorpusClusters):
 
         return cluster2tokens
 
-    def _compile_token_clusters(self, clusters):
+    def _compile_token_clusters(self, clusters: Dict[str, Set[str]]) -> pd.DataFrame:
         cluster_lists = [[(x, y, i) for x, y in itertools.product([k], clusters[k])] for i, k in enumerate(clusters)]
-        df = pd.DataFrame(data=[x for ws in cluster_lists for x in ws], columns=["cluster_name", "token", "cluster"])
+        df: pd.DataFrame = pd.DataFrame(
+            data=[x for ws in cluster_lists for x in ws], columns=["cluster_name", "token", "cluster"]
+        )
         df['token_id'] = df.token.apply(lambda w: self.token2id[w])
         return df.set_index('token_id')
 
 
 class KMeansCorpusClusters(CorpusClusters):
-    def __init__(self, corpus, tokens, compute_result):
+    def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str], kmean_result: KMeansResult):
 
         super().__init__(corpus, tokens)
 
         self.key = 'k_means'
         self.token2id = corpus.token2id
-        self.compute_result = compute_result
-        self.token2cluster = self._compile_token2cluster_map(compute_result.labels_)
-        self.token_clusters = self._compile_token_clusters(self.token2cluster)
-        self.centroids = compute_result.cluster_centers_
+        # self.kmean_result = kmean_result
+        self.token2cluster = self.create_token2cluster(kmean_result.labels)
+        self.token_clusters = self.creater_cluster_data_frame(self.token2cluster)
+        self.centroids = kmean_result.centroids
 
-    def _compile_token2cluster_map(self, labels):
+    def create_token2cluster(self, labels):
         token2cluster = {self.tokens[i]: label for i, label in enumerate(labels)}
         return token2cluster
 
-    def _compile_token_clusters(self, token2cluster):
+    def creater_cluster_data_frame(self, token2cluster):
 
         df = pd.DataFrame({'token': list(token2cluster.keys()), 'cluster': list(token2cluster.values())})
 
@@ -136,22 +147,22 @@ class KMeansCorpusClusters(CorpusClusters):
         return df.set_index('token_id')
 
 
-def compute_kmeans(x_corpus, tokens=None, n_clusters=8, **kwargs):
+def compute_kmeans(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
+    """Computes KMeans clusters using `sklearn.cluster.KMeans`(https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)"""
+    data: scipy.sparse.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
 
-    data = x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)]
+    km = sklearn.cluster.KMeans(n_clusters=n_clusters, **kwargs).fit(data.T)
 
-    compute_result = sklearn.cluster.KMeans(n_clusters=n_clusters, **kwargs).fit(data.T)
-
-    return KMeansCorpusClusters(x_corpus, tokens, compute_result)
+    return KMeansCorpusClusters(corpus, tokens, KMeansResult(centroids=km.cluster_centers_, labels=km.labels_))
 
 
-def compute_kmeans2(x_corpus, tokens=None, n_clusters=8, **kwargs):
-
-    data = x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)]
+def compute_kmeans2(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
+    """Computes KMeans clusters using `scipy.cluster.vq.kmeans2` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html"""
+    data: scipy.sparse.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
 
     centroids, labels = scipy.cluster.vq.kmeans2(data.T, n_clusters, **kwargs)
 
-    return KMeansCorpusClusters(x_corpus, tokens, types.SimpleNamespace(cluster_centers_=centroids, labels_=labels))
+    return KMeansCorpusClusters(corpus, tokens, KMeansResult(centroids=centroids, labels=labels))
 
 
 LINKAGE_METHODS = ['single', 'complete', 'average', 'weighted', 'centroid', 'median', 'ward']
@@ -172,9 +183,11 @@ LINKAGE_METRICS = {
 }
 
 
-def compute_hca(x_corpus, tokens, linkage_method='ward', linkage_metric='euclidean'):
-
-    data = x_corpus.data if tokens is None else x_corpus.data[:, x_corpus.token_indices(tokens)]
+def compute_hca(
+    corpus: dtm.VectorizedCorpus, tokens: List[str], linkage_method: str = 'ward', linkage_metric: str = 'euclidean'
+) -> HCACorpusClusters:
+    """Computes HCA clusters using `scipy.cluster.hierarchy.linkage` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html"""
+    data = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
 
     linkage_matrix = linkage(data.T, method=linkage_method, metric=linkage_metric)
     """ from documentation
@@ -186,4 +199,4 @@ def compute_hca(x_corpus, tokens, linkage_method='ward', linkage_metric='euclide
 
     """
 
-    return HCACorpusClusters(x_corpus, tokens, linkage_matrix)
+    return HCACorpusClusters(corpus, tokens, linkage_matrix)
