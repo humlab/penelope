@@ -1,5 +1,5 @@
 # type: ignore
-from .dataframe_text_tokenizer import PandasCorpusReader
+from .pandas_reader import PandasCorpusReader
 from .interfaces import ExtractTaggedTokensOpts, ICorpusReader, TaggedTokensFilterOpts, TextSource
 from .sparv_csv_tokenizer import SparvCsvTokenizer
 from .sparv_xml_tokenizer import Sparv3XmlTokenizer, SparvXmlTokenizer
