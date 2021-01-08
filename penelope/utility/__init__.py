@@ -67,6 +67,7 @@ from .utils import (
     ListOfDicts,
     assert_is_strictly_increasing,
     chunks,
+    clamp,
     clamp_values,
     complete_value_range,
     dataframe_to_tuples,

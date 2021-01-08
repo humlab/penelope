@@ -1,13 +1,24 @@
+import itertools
+from typing import Iterable
+
 import bokeh
+import bokeh.models as bm
+import bokeh.plotting as bp
 import holoviews as hv
+import IPython.display as display
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import penelope.common.curve_fit as cf
-from bokeh.models import HoverTool, TapTool
 from penelope.common import distance_metrics
 from penelope.corpus import VectorizedCorpus
-from scipy.cluster.hierarchy import dendrogram
+from penelope.utility import nth
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+
+def default_palette(index: int) -> Iterable[str]:
+
+    return nth(itertools.cycle(bokeh.palettes.Category20[20]), index)
 
 
 def noop(x=None, p=None, max=None):  # pylint: disable=redefined-builtin, unused-argument
@@ -15,7 +26,9 @@ def noop(x=None, p=None, max=None):  # pylint: disable=redefined-builtin, unused
 
 
 # pylint: disable=too-many-locals
-def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noop, **kwargs):
+def create_cluster_plot(
+    x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, tick=noop, **kwargs
+) -> bp.Figure:
 
     # palette = itertools.cycle(bokeh.palettes.Category20[20])
     assert n_cluster <= token_clusters.cluster.max()
@@ -26,9 +39,9 @@ def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noo
 
     tick(1, max=len(token_ids))
 
-    title = kwargs.get('title', 'Cluster #{}'.format(n_cluster))
+    title: str = kwargs.get('title', 'Cluster #{}'.format(n_cluster))
 
-    p = bokeh.plotting.figure(
+    p: bp.Figure = bp.figure(
         title=title,
         plot_width=kwargs.get('plot_width', 900),
         plot_height=kwargs.get('plot_height', 600),
@@ -79,7 +92,13 @@ def plot_cluster(x_corpus: VectorizedCorpus, token_clusters, n_cluster, tick=noo
     return p
 
 
-def plot_cluster_boxplot(x_corpus: VectorizedCorpus, token_clusters, n_cluster, color):
+def render_cluster_plot(figure: bp.Figure):
+    bp.show(figure)
+
+
+def create_cluster_boxplot(
+    x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, color: str
+) -> hv.opts:
 
     xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
 
@@ -91,8 +110,7 @@ def plot_cluster_boxplot(x_corpus: VectorizedCorpus, token_clusters, n_cluster, 
 
     data = pd.DataFrame(data={'year': xsr, 'frequency': ysr})
 
-    kind = hv.BoxWhisker  # hv.Violin
-    violin = kind(data, ('year', 'Year'), ('frequency', 'Frequency'))
+    violin: hv.BoxWhisker = hv.BoxWhisker(data, ('year', 'Year'), ('frequency', 'Frequency'))
 
     violin_opts = {
         'height': 600,
@@ -104,7 +122,13 @@ def plot_cluster_boxplot(x_corpus: VectorizedCorpus, token_clusters, n_cluster, 
     return violin.opts(**violin_opts)
 
 
-def plot_clusters_count(source):
+def render_cluster_boxplot(p: hv.opts):
+    p = hv.render(p)
+    bp.show(p)
+    return p
+
+
+def plot_clusters_count(source: bm.ColumnDataSource):
 
     figure_opts = dict(plot_width=500, plot_height=600, title="Cluster token count")
 
@@ -123,7 +147,7 @@ def plot_clusters_count(source):
         height=0.75,
     )
 
-    p = bokeh.plotting.figure(tools=[HoverTool(**hover_opts), TapTool()], **figure_opts)
+    p = bp.figure(tools=[bm.HoverTool(**hover_opts), bm.TapTool()], **figure_opts)
 
     # y_range=source.data['clusters'],
     p.yaxis.major_label_orientation = 1
@@ -137,7 +161,7 @@ def plot_clusters_count(source):
     return p
 
 
-def plot_clusters_mean(source, filter_source=None):
+def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict = None) -> bm.Box:
 
     figure_opts = dict(plot_width=600, plot_height=620, title="Cluster mean trends (pchip spline)")
     hover_opts = dict(tooltips=[('Cluster', '@legend')], show_arrow=False, line_policy='next')
@@ -151,7 +175,7 @@ def plot_clusters_mean(source, filter_source=None):
         hover_line_alpha=1.0,
     )
 
-    p = bokeh.plotting.figure(tools=[HoverTool(**hover_opts), TapTool()], **figure_opts)
+    p: bp.Figure = bp.figure(tools=[bm.HoverTool(**hover_opts), bm.TapTool()], **figure_opts)
 
     p.xaxis.major_label_orientation = 1
     p.xgrid.grid_line_color = None
@@ -167,9 +191,9 @@ def plot_clusters_mean(source, filter_source=None):
 
     if filter_source is not None:
 
-        callback = create_multiline_multiselect_callback(source)
+        callback: bm.CustomJS = _create_multiline_multiselect_callback(source)
 
-        multi_select = bokeh.models.MultiSelect(
+        multi_select: bm.MultiSelect = bm.MultiSelect(
             title='Show/hide',
             options=filter_source['options'],
             value=filter_source['values'],
@@ -178,16 +202,20 @@ def plot_clusters_mean(source, filter_source=None):
 
         multi_select.js_on_change('value', callback)
 
-        p = bokeh.layouts.row(p, multi_select)
+        p: bm.Box = bokeh.layouts.row(p, multi_select)
 
     return p
 
 
-def create_multiline_multiselect_callback(source):
+def render_clusters_mean_plot(figure: bm.Box):
+    bp.show(figure)
 
-    full_source = bokeh.models.ColumnDataSource(source.data)
 
-    callback = bokeh.models.CustomJS(
+def _create_multiline_multiselect_callback(source: bm.ColumnDataSource) -> bm.CustomJS:
+
+    full_source = bm.ColumnDataSource(source.data)
+
+    callback: bm.CustomJS = bm.CustomJS(
         args=dict(source=source, full_source=full_source),
         code="""
         const indices = cb_obj.value.map(x => parseInt(x));
@@ -203,6 +231,10 @@ def create_multiline_multiselect_callback(source):
         """,
     )
     return callback
+
+
+def render_dendogram(linkage_matrix):
+    dendrogram(linkage(linkage_matrix, 'ward'))
 
 
 def plot_dendogram(linkage_matrix, labels):
@@ -223,26 +255,5 @@ def plot_dendogram(linkage_matrix, labels):
     plt.show()
 
 
-# from ipywidgets import interact, interactive, fixed, interact_manual
-# import ipywidgets as widgets
-
-# def plot_seaborn_clustermap(x_corpus, token_clusters, n_cluster=0):
-
-#     token_ids          = list(token_clusters[token_clusters.cluster==n_cluster].index)
-#     tokens             = [ x_corpus.id2token[token_id] for token_id in token_ids ]
-#     word_distributions = x_corpus.data[:,token_ids].T
-#     xs                 = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
-#     df                 = pd.DataFrame(data=word_distributions[:,:], index=tokens, columns=[str(x) for x in xs])
-
-#     sns.clustermap(df, metric="correlation", method="single", cmap="Blues", standard_scale=1) #, row_colors=row_colors)
-
-# token_clusters = cluster_analysis_gui.DEBUG_CONTAINER['data'].token_clusters
-
-# interact(
-#     plot_seaborn_clustermap,
-#     x_corpus=fixed(n_corpus),
-#     token_clusters=fixed(token_clusters),
-#     n_cluster=token_clusters.cluster.unique().tolist()
-# )
-
-# #plot_seaborn_clustermap(n_corpus, cluster_analysis_gui.CURRENT_CLUSTER.clusters.token_clusters)
+def render_pandas_frame(df: pd.DataFrame):
+    display.display(df)

@@ -1,10 +1,11 @@
+import abc
 import itertools
-import types
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
+import penelope.common.goodness_of_fit as gof
 import penelope.corpus.dtm as dtm
 import scipy
 import sklearn
@@ -18,7 +19,7 @@ class KMeansResult:
     labels: np.ndarray  # label[i] is the code or index of the centroid the ith observation is closest to.
 
 
-class CorpusClusters:
+class CorpusClusters(abc.ABC):
     def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str]):
         self._token_clusters: pd.DataFrame = None
         self.corpus: dtm.VectorizedCorpus = corpus
@@ -64,27 +65,41 @@ class CorpusClusters:
 
         return cluster_medians
 
+    @property
+    @abc.abstractproperty
+    def threshold(self) -> float:
+        ...
+
+    @threshold.setter
+    @abc.abstractproperty
+    def threshold(self, value: float):
+        ...
+
 
 class HCACorpusClusters(CorpusClusters):
     def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str], linkage_matrix, threshold: float = 0.5):
 
         super().__init__(corpus, tokens)
 
-        self.key = 'hca'
+        self._threshold = 0.0
 
+        self.key = 'hca'
         self.token2id: Dict[str, int] = corpus.token2id
         self.linkage_matrix = linkage_matrix
         self.cluster_distances = self._compile_cluster_distances(linkage_matrix)
-        self.threshold: float = threshold
         self.cluster2tokens: Dict[str, Set[str]] = None
-        self.set_threshold(threshold=self.threshold)
+        self.threshold = threshold
 
-    def set_threshold(self, threshold: float):
+    @property
+    def threshold(self) -> float:
+        return self._threshold
 
-        self.cluster2tokens: Dict[str, Set[str]] = self._reduce_to_threshold(threshold)
+    @threshold.setter
+    def threshold(self, value: float):
+        self._threshold = value
+        self.cluster2tokens: Dict[str, Set[str]] = self._reduce_to_threshold(self._threshold)
         self.token_clusters = self._compile_token_clusters(self.cluster2tokens)
         self.cluster2tokens = self.cluster2tokens
-        self.threshold = threshold
 
     def _compile_cluster_distances(self, linkage_matrix) -> pd.DataFrame:
         """Returns a data frame with cluster distances"""
@@ -146,6 +161,14 @@ class KMeansCorpusClusters(CorpusClusters):
 
         return df.set_index('token_id')
 
+    @property
+    def threshold(self) -> float:
+        raise ValueError("kmeans: threshold not supported")
+
+    @threshold.setter
+    def threshold(self, _: float):
+        raise ValueError("kmeans: threshold not supported")
+
 
 def compute_kmeans(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
     """Computes KMeans clusters using `sklearn.cluster.KMeans`(https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)"""
@@ -158,9 +181,11 @@ def compute_kmeans(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clu
 
 def compute_kmeans2(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
     """Computes KMeans clusters using `scipy.cluster.vq.kmeans2` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html"""
-    data: scipy.sparse.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
-
-    centroids, labels = scipy.cluster.vq.kmeans2(data.T, n_clusters, **kwargs)
+    data: scipy.sparsdae.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
+    data = data.T.todense()
+    if not np.issubdtype(data.dtype, np.floating):
+        data = data.astype(np.float64)
+    centroids, labels = scipy.cluster.vq.kmeans2(data, n_clusters, **kwargs)
 
     return KMeansCorpusClusters(corpus, tokens, KMeansResult(centroids=centroids, labels=labels))
 
@@ -200,3 +225,50 @@ def compute_hca(
     """
 
     return HCACorpusClusters(corpus, tokens, linkage_matrix)
+
+
+def smooth_array(xs, ys, smoothers):
+    _xs = xs
+    _ys = ys.copy()
+    for smoother in smoothers or []:
+        _xs, _ys = smoother(_xs, _ys)
+    return _xs, _ys
+
+
+def smooth_matrix(xs, ys_m, smoothers):
+
+    return zip(*[smooth_array(xs, ys_m[:, i], smoothers) for i in range(0, ys_m.shape[1])])
+
+
+def get_top_tokens_by_metric(
+    *, metric: str, n_metric_top: int, corpus: dtm.VectorizedCorpus, df_gof: pd.DataFrame
+) -> Tuple[List[int], List[str]]:
+    """Computes most deviating tokens by metric"""
+    df_top = gof.get_most_deviating_words(df_gof, metric, n_count=n_metric_top, ascending=False, abs_value=False)
+    tokens = df_top[metric + '_token'].tolist()
+    indices = [corpus.token2id[w] for w in tokens]
+    return indices, tokens
+
+
+def compute_clusters(
+    *,
+    method_key: str,
+    n_clusters: int,
+    metric: str,
+    n_metric_top: int,
+    corpus: dtm.VectorizedCorpus,
+    df_gof: pd.DataFrame,
+) -> CorpusClusters:
+    """Computes cluster analysis data from specified parameters on `corpus` using distance metrics in df_god"""
+    _, tokens = get_top_tokens_by_metric(metric=metric, n_metric_top=n_metric_top, corpus=corpus, df_gof=df_gof)
+
+    if method_key == 'k_means++':
+        cluster_data = compute_kmeans(corpus, tokens, n_clusters, n_jobs=2, init='k-means++')
+    elif method_key == 'k_means':
+        cluster_data = compute_kmeans(corpus, tokens, n_clusters, n_jobs=2, init='random')
+    elif method_key == 'k_means2':
+        cluster_data = compute_kmeans2(corpus, tokens, n_clusters)
+    else:
+        cluster_data = compute_hca(corpus, tokens, linkage_method='ward', linkage_metric='euclidean')
+
+    return cluster_data

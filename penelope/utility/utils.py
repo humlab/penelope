@@ -163,6 +163,11 @@ def clamp_values(values: Sequence[Number], low_high: Tuple[Number, Number]) -> S
     return [project_to_range(w / mw, low_high[0], low_high[1]) for w in values]
 
 
+def clamp(n: int, smallest: int, largest: int) -> int:
+    """Clamps integers to a range"""
+    return max(smallest, min(n, largest))
+
+
 @functools.lru_cache(maxsize=512)
 def _get_signature(func: Callable) -> inspect.Signature:
     return inspect.signature(func)
