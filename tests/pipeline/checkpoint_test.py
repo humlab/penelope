@@ -1,7 +1,6 @@
 import os
 
 import penelope.pipeline.checkpoint as checkpoint
-from penelope.pipeline.config import CorpusSerializeOpts
 
 
 def test_spaCy_load_tagged_frame_checkpoint():

@@ -9,6 +9,8 @@ from spacy.tokens import Doc
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
 
+# pylint: disable=redefined-outer-name
+
 
 @pytest.fixture
 def nlp() -> Doc:

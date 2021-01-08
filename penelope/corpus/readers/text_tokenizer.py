@@ -66,11 +66,11 @@ class TextTokenizer(TextReader):
         Tuple[str,List[str]]
             Filename and tokens
         """
-        for ubername, text in super().process(filename, content):
+        for chunkname, text in super().process(filename, content):
 
             tokens = self._tokenize(text)
 
-            filename = f"{strip_path_and_extension(ubername)}.txt"
+            filename = f"{strip_path_and_extension(chunkname)}.txt"
 
             if self.chunk_size is None:
                 yield filename, tokens
