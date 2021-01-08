@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 from penelope.co_occurrence import to_dataframe
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
-from penelope.corpus.readers import DataFrameTextTokenizer
+from penelope.corpus.readers import PandasCorpusReader
 
 
 class Test_DataFrameVectorize(unittest.TestCase):
@@ -17,13 +17,13 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def create_corpus(self):
         df = self.create_test_dataframe()
-        reader = DataFrameTextTokenizer(df)
+        reader = PandasCorpusReader(df)
         corpus = TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts())
         return corpus
 
     def test_corpus_token_stream(self):
         df = self.create_test_dataframe()
-        reader = DataFrameTextTokenizer(df)
+        reader = PandasCorpusReader(df)
         corpus = TokenizedCorpus(reader)
         result = [x for x in corpus]
         expected = [
@@ -38,7 +38,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_processed_corpus_token_stream(self):
         df = self.create_test_dataframe()
-        reader = DataFrameTextTokenizer(df)
+        reader = PandasCorpusReader(df)
         corpus = TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts())
         result = [x for x in corpus]
         expected = [
@@ -57,7 +57,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
             (2000, 'Är det i denna mening en mening?'),
         ]
         df = pd.DataFrame(data, columns=['year', 'txt'])
-        reader = DataFrameTextTokenizer(df)
+        reader = PandasCorpusReader(df)
         corpus = TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
         return corpus
 
@@ -150,7 +150,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_fit_transform_gives_document_term_matrix(self):
         # Arrange
-        reader = DataFrameTextTokenizer(self.create_test_dataframe())
+        reader = PandasCorpusReader(self.create_test_dataframe())
         corpus = TokenizedCorpus(
             reader,
             tokens_transform_opts=TokensTransformOpts(
@@ -173,7 +173,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     def test_to_dataframe_of_term_matrix_gives_expected_result(self):
 
         # Arrange
-        reader = DataFrameTextTokenizer(self.create_test_dataframe())
+        reader = PandasCorpusReader(self.create_test_dataframe())
         corpus = TokenizedCorpus(
             reader,
             tokens_transform_opts=TokensTransformOpts(

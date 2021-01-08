@@ -18,10 +18,10 @@ def test_text_tokenizer_interface():
 
 def test_dataframe_text_tokenizer_interface():
 
-    assert issubclass(readers.DataFrameTextTokenizer, ICorpusReader)
+    assert issubclass(readers.PandasCorpusReader, ICorpusReader)
 
     source = pd.DataFrame(data={'filename': [], 'txt': []})
-    instance = readers.DataFrameTextTokenizer(source)
+    instance = readers.PandasCorpusReader(source)
     assert isinstance(instance, ICorpusReader)
 
 

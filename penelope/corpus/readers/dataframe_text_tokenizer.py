@@ -4,7 +4,7 @@ from penelope.vendor.nltk import word_tokenize
 from . import tng
 
 
-class DataFrameTextTokenizer(tng.CorpusReader):
+class PandasCorpusReader(tng.CorpusReader):
     def __init__(self, data: pd.DataFrame, text_column='txt', **column_filters):
         text_transformer = tng.TextTransformer(
             transform_opts=tng.TextTransformOpts()

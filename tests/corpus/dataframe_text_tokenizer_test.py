@@ -27,7 +27,7 @@ TEST_DATA_02 = [
 ]
 
 
-class Test_DataFrameTextTokenizer(unittest.TestCase):
+class Test_PandasCorpusReader(unittest.TestCase):
     def create_test_dataframe(self):
         df = pd.DataFrame(TEST_DATA_01, columns=['year', 'txt', 'filename'])
         return df
@@ -45,7 +45,7 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
 
     def test_reader_with_all_documents(self):
         df = self.create_test_dataframe()
-        reader = readers.DataFrameTextTokenizer(df)
+        reader = readers.PandasCorpusReader(df)
         result = [x for x in reader]
         expected = [(name, doc.split()) for (_, doc, name) in TEST_DATA_01]
 
@@ -62,7 +62,7 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
 
         expected_indices = [3, 4, 5, 9, 10, 11]
 
-        reader = readers.DataFrameTextTokenizer(df, year=2003)
+        reader = readers.PandasCorpusReader(df, year=2003)
 
         expected_filenames = [f'document_{i}.txt' for i in expected_indices]
         self.assertEqual(sorted(expected_filenames), sorted(reader.filenames))
