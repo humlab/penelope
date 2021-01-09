@@ -22,7 +22,7 @@ def test_utils():
     assert utility.split(['_'], 'slim_title') == ['slim', 'title']
     assert utility.ls_sorted('/tmp/*')
     assert utility.dict_of_key_values_inverted_to_dict_of_value_key({'a': [1, 2]}) == {1: 'a', 2: 'a'}
-    assert utility.dict_to_list_of_tuples({'a': 1, 'b':2}) == [('a',1),('b',2)]
+    assert utility.dict_to_list_of_tuples({'a': 1, 'b': 2}) == [('a', 1), ('b', 2)]
 
 
 @pytest.mark.parametrize(
