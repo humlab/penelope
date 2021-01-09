@@ -20,7 +20,7 @@ logger = get_logger()
 
 DEBUG_CONTAINER = {'data': None}
 
- # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 
 CLUSTER_OUTPUT_TYPES = [('Scatter', 'scatter'), ('Boxplot', 'boxplot')]
 CLUSTERS_OUTPUT_TYPES = [('Bar', 'count'), ('Dendogram', 'dendrogram'), ('Table', 'table')]
