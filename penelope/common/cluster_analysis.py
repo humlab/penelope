@@ -184,7 +184,7 @@ def compute_kmeans(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clu
 
 def compute_kmeans2(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
     """Computes KMeans clusters using `scipy.cluster.vq.kmeans2` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html"""
-    data: scipy.sparsdae.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
+    data: scipy.sparse.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
     data = data.T.todense()
     if not np.issubdtype(data.dtype, np.floating):
         data = data.astype(np.float64)
