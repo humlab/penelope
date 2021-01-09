@@ -42,7 +42,7 @@ class CorpusClusters(abc.ABC):
         )
 
     def cluster_token_ids(self, label: str) -> List[int]:
-        return self.token_clusters[self.token_clusters.cluster == label : str].index.tolist()
+        return self.token_clusters[self.token_clusters.cluster == label].index.tolist()
 
     def clusters_token_ids(self) -> Iterable[Tuple[str, List[int]]]:
 
@@ -58,12 +58,15 @@ class CorpusClusters(abc.ABC):
         return cluster_means
 
     def cluster_medians(self) -> np.ndarray:
+        try:
+            data = self.corpus.data.todense()
+            cluster_medians: np.ndarray = np.array(
+                [np.median(data[:, token_ids], axis=1) for _, token_ids in self.clusters_token_ids()]
+            )
 
-        cluster_medians: np.ndarray = np.array(
-            [np.median(self.corpus.data[:, token_ids], axis=1) for _, token_ids in self.clusters_token_ids()]
-        )
-
-        return cluster_medians
+            return cluster_medians
+        except np.AxisError:
+            return None
 
     @property
     @abc.abstractproperty
@@ -214,7 +217,7 @@ def compute_hca(
     """Computes HCA clusters using `scipy.cluster.hierarchy.linkage` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html"""
     data = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
 
-    linkage_matrix = linkage(data.T, method=linkage_method, metric=linkage_metric)
+    linkage_matrix = linkage(data.T.todense(), method=linkage_method, metric=linkage_metric)
     """ from documentation
 
         A (n-1) by 4 matrix Z is returned. At the i-th iteration, clusters with token_ids Z[i, 0] and Z[i, 1] are combined to form cluster n + i.
@@ -263,9 +266,9 @@ def compute_clusters(
     _, tokens = get_top_tokens_by_metric(metric=metric, n_metric_top=n_metric_top, corpus=corpus, df_gof=df_gof)
 
     if method_key == 'k_means++':
-        cluster_data = compute_kmeans(corpus, tokens, n_clusters, n_jobs=2, init='k-means++')
+        cluster_data = compute_kmeans(corpus, tokens, n_clusters, init='k-means++')
     elif method_key == 'k_means':
-        cluster_data = compute_kmeans(corpus, tokens, n_clusters, n_jobs=2, init='random')
+        cluster_data = compute_kmeans(corpus, tokens, n_clusters, init='random')
     elif method_key == 'k_means2':
         cluster_data = compute_kmeans2(corpus, tokens, n_clusters)
     else:
