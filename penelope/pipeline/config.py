@@ -144,6 +144,9 @@ class CorpusConfig:
     @staticmethod
     def find(filename: str, folder: str) -> "CorpusConfig":
         """Finds and returns a corpus config named `filename` in `folder`"""
+        if isinstance(filename, CorpusConfig):
+            return filename
+
         if not os.path.isdir(folder):
             raise FileNotFoundError(folder)
 
