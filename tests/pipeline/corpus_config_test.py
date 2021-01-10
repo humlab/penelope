@@ -73,8 +73,6 @@ def test_find_config():
 
     c = CorpusConfig.find("ssi_corpus_config.yaml", './tests/test_data')
     assert c is not None
-    c = CorpusConfig.find("ssi_corpus_config.yml", './tests/test_data')
-    assert c is not None
 
 
 def test_corpus_config_set_folder():
