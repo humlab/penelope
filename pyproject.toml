@@ -50,10 +50,10 @@ ipyfilechooser = "^0.4.0"
 ipyaggrid = "^0.2.1"
 jupyter_bokeh = "^2.0.4"
 openpyxl = "^3.0.5"
-cutter-ng = "^2.5"
 sidecar = "^0.4.0"
 toml = "^0.10.2"
 PyYAML = "^5.3.1"
+# cutter-ng = "^2.5"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -155,7 +155,7 @@ src_paths = [ "penelope", "tests" ]
 source = ["penelope"]
 branch = true
 omit = [
-    "__init__.py",
+    "**/__init__.py",
     "tests/*",
     "interfaces.py",
     "interface.py",
