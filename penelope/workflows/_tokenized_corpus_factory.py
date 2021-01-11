@@ -1,10 +1,12 @@
 from penelope.corpus import SparvTokenizedCsvCorpus, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextTokenizer
 from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.pipeline.config import CorpusType
 
 
 def create_corpus(
-    corpus_type: str,
+    *,
+    corpus_type: CorpusType,
     input_filename: str,
     tokens_transform_opts: TokensTransformOpts,
     reader_opts: TextReaderOpts,
@@ -22,13 +24,14 @@ def create_corpus(
 
 class NullCorpusFactory:
     @staticmethod
-    def create(*_):
+    def create(*_, **__):
         raise ValueError("Abstract factory: unknown corpus type")
 
 
 class TextTokenizedCorpusFactory:
     @staticmethod
     def create(
+        *,
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
         reader_opts: TextReaderOpts,
@@ -53,6 +56,7 @@ class TextTokenizedCorpusFactory:
 class SparvTokenizedCsvCorpusFactory:
     @staticmethod
     def create(
+        *,
         input_filename: str,
         tokens_transform_opts: TokensTransformOpts,
         reader_opts: TextReaderOpts,
@@ -69,4 +73,7 @@ class SparvTokenizedCsvCorpusFactory:
         return corpus
 
 
-_ABSTRACT_FACTORY = {"text": TextTokenizedCorpusFactory, "sparv4-csv": SparvTokenizedCsvCorpusFactory}
+_ABSTRACT_FACTORY = {
+    CorpusType.Text: TextTokenizedCorpusFactory,
+    CorpusType.SparvCSV: SparvTokenizedCsvCorpusFactory,
+}
