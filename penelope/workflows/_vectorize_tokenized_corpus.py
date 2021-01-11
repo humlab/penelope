@@ -4,6 +4,7 @@ from typing import Any
 from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.pipeline import CorpusType
 from penelope.utility import getLogger
 
 from ._tokenized_corpus_factory import create_corpus
@@ -16,7 +17,7 @@ logger = getLogger("penelope")
 
 def execute_workflow(
     *,
-    corpus_type: str,
+    corpus_type: CorpusType,
     input_filename: str,
     output_folder: str,
     output_tag: str,
@@ -39,7 +40,8 @@ def execute_workflow(
         raise WorkflowException("please specify output tag")
 
     if create_subfolder:
-        output_folder = os.path.join(output_folder, output_tag)
+        if os.path.split(output_folder)[1] != output_tag:
+            output_folder = os.path.join(output_folder, output_tag)
         os.makedirs(output_folder, exist_ok=True)
 
     if VectorizedCorpus.dump_exists(tag=output_tag, folder=output_folder):
