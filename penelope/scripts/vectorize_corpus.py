@@ -1,3 +1,4 @@
+from penelope.pipeline.config import CorpusType
 from typing import Any
 
 import click
@@ -22,8 +23,8 @@ def split_filename(filename, sep='_'):
 @click.option(
     '--corpus-type',
     default=None,
-    type=click.Choice(['text', 'sparv4-csv']),
-    help='Corpus type, only text and Sparv4 CSV currently supported',
+    type=click.Choice(['Text', 'SparvCSV']),
+    help='Corpus type, only Text and SparvCSV currently supported',
 )
 @click.option(
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
@@ -62,7 +63,7 @@ def main(
     output_folder: str = None,
     output_tag: str = None,
     create_subfolder: bool = True,
-    corpus_type: str = 'text',
+    corpus_type: str = 'Text',
     pos_includes: str = None,
     pos_excludes: str = '|MAD|MID|PAD|',
     lemmatize: bool = True,
@@ -97,7 +98,7 @@ def main(
     )
 
     extract_tokens_opts = None
-    if corpus_type == 'sparv4-csv':
+    if CorpusType[corpus_type] == CorpusType.SparvCSV:
         file_pattern = '*.csv'
         extract_tokens_opts = ExtractTaggedTokensOpts(
             pos_includes=pos_includes,
@@ -108,7 +109,7 @@ def main(
         logger.info("PoS filter and lemmatize options not avaliable for raw text corpus")
 
     vectorize_corpus_workflow(
-        corpus_type=corpus_type,
+        corpus_type=CorpusType[corpus_type],
         input_filename=input_filename,
         output_folder=output_folder,
         output_tag=output_tag,
