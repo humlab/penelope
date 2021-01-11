@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import sys
@@ -40,9 +41,10 @@ def _parse_indexed_fields(filename_fields: List[str]):
 
         return filename_fields
 
-    except:  # pylint: disable=bare-except
+    except Exception as ex:  # pylint: disable=bare-except
+        logging.exception(ex)
         print("parse error: meta-fields, must be in format 'name:regexp'")
-        sys.exit(-1)
+        raise
 
 
 def extract_filename_metadata(filename: str, filename_fields: FilenameFieldSpec) -> Mapping[str, Any]:
