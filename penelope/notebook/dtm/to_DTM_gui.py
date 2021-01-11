@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Union
 
 import ipywidgets as widgets
 from penelope.corpus import VectorizedCorpus
@@ -25,13 +25,13 @@ class ComputeGUI(BaseGUI):
 def create_gui(
     *,
     corpus_folder: str,
-    corpus_config: CorpusConfig,
+    corpus_config: Union[str, CorpusConfig],
     pipeline_factory: Callable[[], CorpusPipeline],
     done_callback: Callable[[CorpusPipeline, VectorizedCorpus, str, str, widgets.Output], None],
     compute_document_term_matrix: Callable,
 ) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
-    corpus_config.folder(corpus_folder)
+    corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folder(corpus_folder)
     gui = ComputeGUI(
         default_corpus_path=corpus_folder,
         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
