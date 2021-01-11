@@ -84,11 +84,12 @@ class ComputeGUI(BaseGUI):
     def create(
         *,
         corpus_folder: str,
-        corpus_config: CorpusConfig,
+        corpus_config_name: str,
         compute_callback: Callable = None,
         done_callback: Callable = None,
     ) -> "ComputeGUI":
         """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
+        corpus_config: CorpusConfig = CorpusConfig.find(corpus_config_name, corpus_folder).folder(corpus_folder)
         corpus_config.folder(corpus_folder)
         gui = ComputeGUI(
             default_corpus_path=corpus_folder,
