@@ -61,7 +61,6 @@ def spaCy_DTM_pipeline(
 ):
     try:
 
-        # checkpoint_filename: str = path_add_suffix(corpus_filename, '_pos_csv')
         pipeline: SpacyPipeline = (
             spaCy_to_pos_tagged_frame_pipeline(
                 corpus_config=corpus_config,
@@ -69,7 +68,6 @@ def spaCy_DTM_pipeline(
             )
             .tagged_frame_to_tokens(extract_opts=extract_tagged_tokens_opts, filter_opts=tagged_tokens_filter_opts)
             .tokens_transform(tokens_transform_opts=tokens_transform_opts)
-            # .tokens_to_text()
             .to_document_content_tuple()
             .tqdm()
             .to_dtm(vectorize_opts=vectorize_opts)
