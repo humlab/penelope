@@ -302,23 +302,35 @@ class BaseGUI:
         return VectorizeOpts(already_tokenized=True, lowercase=False, max_df=1.0, min_df=1, verbose=False)
 
     @property
-    def corpus_tag(self):
+    def corpus_type(self) -> CorpusType:
+        return self._corpus_type.value
+
+    @property
+    def corpus_tag(self) -> str:
         return self._corpus_tag.value.strip()
 
     @property
-    def target_folder(self):
+    def target_folder(self) -> str:
         if self._create_subfolder:
             return os.path.join(self._target_folder.selected_path, self.corpus_tag)
         return self._target_folder.selected_path
 
     @property
-    def corpus_folder(self):
+    def corpus_folder(self) -> str:
         return self._corpus_filename.selected_path
 
     @property
-    def corpus_filename(self):
+    def corpus_filename(self) -> str:
         return self._corpus_filename.selected
 
     @property
-    def count_threshold(self):
+    def count_threshold(self) -> int:
         return self._count_threshold.value
+
+    @property
+    def create_subfolder(self) -> bool:
+        return self._create_subfolder.value
+
+    @property
+    def filename_fields(self) -> str:
+        return self._filename_fields.value
