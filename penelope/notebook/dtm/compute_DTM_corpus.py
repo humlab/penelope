@@ -8,13 +8,12 @@ from ..utility import default_done_callback
 from .to_DTM_gui import ComputeGUI
 
 
-# pylint: disable=unused-argument
 def compute_document_term_matrix(
-    corpus_config: CorpusConfig,
-    pipeline_factory: Callable,
+    corpus_config: CorpusConfig,  # pylint: disable=unused-argument
+    pipeline_factory: Callable,  # pylint: disable=unused-argument
     args: ComputeGUI,
     done_callback: Callable,
-    persist: bool = False,
+    persist: bool = False,  # pylint: disable=unused-argument
 ):
 
     try:
@@ -28,15 +27,15 @@ def compute_document_term_matrix(
         if not os.path.isfile(args.corpus_filename):
             raise FileNotFoundError(args.corpus_filename)
 
-        # FIXME: #23 Addindex field to vectorize workflow (index_field)
+        # FIXME: #23 Add index field to vectorize workflow (index_field)
         corpus = vectorize_corpus_workflow(
-            corpus_type=args.corpus_type.value,
+            corpus_type=args.corpus_type,
             input_filename=args.corpus_filename,
             output_folder=args.target_folder,
-            output_tag=args.target_folder,
-            create_subfolder=args.create_subfolder.value,
-            filename_field=args.filename_fields.value,
-            count_threshold=args.count_threshold.value,
+            output_tag=args.corpus_tag,
+            create_subfolder=args.create_subfolder,
+            filename_field=corpus_config.text_reader_opts.filename_fields,
+            count_threshold=args.count_threshold,
             extract_tokens_opts=args.extract_tagged_tokens_opts,
             tokens_transform_opts=args.tokens_transform_opts,
         )
