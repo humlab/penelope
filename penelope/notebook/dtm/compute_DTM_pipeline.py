@@ -1,7 +1,7 @@
 import os
 from typing import Callable
 
-from penelope.corpus import TokensTransformOpts, VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.pipelines import CorpusPipeline
 from penelope.utility import get_logger, path_add_suffix
@@ -30,6 +30,7 @@ def compute_document_term_matrix(
         if not os.path.isfile(args.corpus_filename):
             raise FileNotFoundError(f'file {args.corpus_filename} not found')
 
+        # FIXME: This isn't necessarily a PoS CSB file!
         checkpoint_filename: str = path_add_suffix(args.corpus_filename, '_pos_csv')
 
         pipeline: CorpusPipeline = pipeline_factory(
@@ -61,7 +62,7 @@ def compute_document_term_matrix(
 
 
 def resolve_DTM_pipeline(
-    pipeline: TokensTransformOpts = None,
+    pipeline: CorpusPipeline = None,
     corpus_folder: str = None,
     corpus_filename: str = None,
     corpus_tag: str = None,
