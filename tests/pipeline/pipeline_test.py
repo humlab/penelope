@@ -5,12 +5,15 @@ from typing import List
 
 import pandas as pd
 import pytest
-from penelope.corpus import TokensTransformOpts, VectorizedCorpus, VectorizeOpts
+from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextTransformOpts
-from penelope.notebook.dtm.compute_DTM_pipeline import compute_document_term_matrix
+from penelope.notebook.dtm.compute_DTM_pipeline import compute_document_term_matrix as compute_dtm
 from penelope.pipeline import CorpusConfig, DocumentPayload, SpacyPipeline
 from penelope.pipeline.spacy.pipelines import spaCy_DTM_pipeline
 from sklearn.feature_extraction.text import CountVectorizer
+from tests.utils import OUTPUT_FOLDER
+
+from .fixtures import FakeComputeOptsSpacyCSV
 
 CORPUS_FOLDER = './tests/test_data'
 OUTPUT_FOLDER = './tests/output'
@@ -201,79 +204,24 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
     assert len(corpus.token2id) == corpus.data.shape[1]
 
 
-class MockGUI:
-    corpus_tag: str = "SSI-test"
-    corpus_filename: str = "./tests/test_data/legal_instrument_five_docs_test.zip"
-    corpus_folder: str = './tests/test_data'
-    target_folder: str = './tests/output'
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
-        lemmatize=True,
-        pos_includes='|NOUN|',
-    )
-    tokens_transform_opts: TokensTransformOpts = TokensTransformOpts(
-        only_alphabetic=False,
-        only_any_alphanumeric=False,
-        to_lower=True,
-        to_upper=False,
-        min_len=1,
-        max_len=None,
-        remove_accents=False,
-        remove_stopwords=True,
-        stopwords=None,
-        extra_stopwords=None,
-        language="english",
-        keep_numerals=True,
-        keep_symbols=True,
-    )
-    transform_opts: TextTransformOpts = TextTransformOpts()
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(
-        is_punct=False,
-    )
-    vectorize_opts: VectorizeOpts = VectorizeOpts()
-
-
 # pylint: disable=too-many-locals
-def test_compute_document_term_matrix_when_persist_is_false(config: CorpusConfig):
+def test_compute_dtm_when_persist_is_false(config: CorpusConfig):
 
-    args: MockGUI = MockGUI()
+    args = FakeComputeOptsSpacyCSV(corpus_tag='compute_dtm_when_persist_is_false')
 
-    done_callback_is_called = False
-    done_corpus = None
-
-    def done_callback(
-        corpus: VectorizedCorpus,
-        corpus_tag: str,
-        corpus_folder: str,
-    ):
-        nonlocal done_callback_is_called, done_corpus, config
-
-        assert corpus is not None
-        assert corpus_tag == args.corpus_tag
-        assert corpus_folder is None
-
-        done_callback_is_called = True
-        done_corpus = corpus
-
-        corpus.remove(tag=args.corpus_tag, folder=args.corpus_folder)
-        corpus.dump(tag=args.corpus_tag, folder=args.corpus_folder)
-
-    compute_document_term_matrix(
+    corpus = compute_dtm(
         corpus_config=config,
         pipeline_factory=spaCy_DTM_pipeline,
         args=args,
-        persist=False,
-        done_callback=done_callback,
     )
+    corpus.remove(tag=args.corpus_tag, folder=args.target_folder)
+    corpus.dump(tag=args.corpus_tag, folder=args.target_folder)
 
-    assert done_callback_is_called
+    assert VectorizedCorpus.dump_exists(tag=args.corpus_tag, folder=args.target_folder)
 
-    assert VectorizedCorpus.dump_exists(tag=args.corpus_tag, folder=args.corpus_folder)
+    corpus_loaded = VectorizedCorpus.load(tag=args.corpus_tag, folder=args.target_folder)
 
-    corpus = VectorizedCorpus.load(tag=args.corpus_tag, folder=args.corpus_folder)
-
-    assert corpus is not None
-
-    assert corpus.data.shape == done_corpus.data.shape
+    assert corpus_loaded is not None
 
     y_corpus = corpus.group_by_year()
 

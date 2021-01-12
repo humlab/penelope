@@ -14,12 +14,12 @@ from penelope.corpus import VectorizedCorpus
 view = widgets.Output(layout={'border': '2px solid green'})
 
 
-def compute_DTM(corpus_type: pipeline.CorpusType) -> Callable:
-    if corpus_type == pipeline.CorpusType.SparvCSV:
+def compute_dtm_factory(corpus_config: pipeline.CorpusConfig) -> Callable:
+    if corpus_config.corpus_type == pipeline.CorpusType.SparvCSV:
         return compute_DTM_corpus.compute_document_term_matrix
-    if corpus_type == pipeline.CorpusType.SpacyCSV:
+    if corpus_config.corpus_type == pipeline.CorpusType.SpacyCSV:
         return compute_DTM_pipeline.compute_document_term_matrix
-    raise ValueError(f"Unsupported (not implemented) corpus type for DTM: {corpus_type} ")
+    raise ValueError(f"Unsupported (not implemented) corpus type for DTM: {corpus_config.corpus_type} ")
 
 
 @view.capture(clear_output=True)
@@ -46,27 +46,24 @@ def corpus_loaded_callback(
 
 
 @view.capture(clear_output=True)
-def compute_dtm(compute_dtm, *args, **kwargs):
-    compute_dtm.compute_document_term_matrix(*args, **kwargs)
+def compute_dtm_callback(dtm_module, *args, **kwargs):
+    dtm_module.compute_document_term_matrix(*args, **kwargs)
 
 
 def create_to_dtm_gui(
     corpus_folder: str,
     corpus_config: str,
     resources_folder: str = None,
-    dtm_pipeline: Callable = None
+    dtm_pipeline: Callable = None,
 ) -> widgets.CoreWidget:
 
     resources_folder = resources_folder or corpus_folder
-    config: pipeline.CorpusConfig = pipeline.CorpusConfig.find(corpus_config, resources_folder).folder(
-        corpus_folder
-    )
-    compute_dtm_fx = compute_DTM(config.corpus_type)
+    config: pipeline.CorpusConfig = pipeline.CorpusConfig.find(corpus_config, resources_folder).folder(corpus_folder)
     gui_compute: to_DTM_gui.ComputeGUI = to_DTM_gui.create_gui(
         corpus_folder=corpus_folder,
         corpus_config=config,
         pipeline_factory=dtm_pipeline,
-        compute_document_term_matrix=partial(compute_dtm, compute_dtm_fx),
+        compute_callback=partial(compute_dtm_callback, compute_dtm_factory(config)),
         done_callback=corpus_loaded_callback,
     )
 

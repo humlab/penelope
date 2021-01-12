@@ -1,50 +1,41 @@
-import os
 from typing import Callable
 
-from penelope.pipeline.config import CorpusConfig
-from penelope.workflows import vectorize_corpus_workflow
+import penelope.corpus as corpora
+import penelope.corpus.dtm as dtm
+import penelope.pipeline as pipeline
+from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
-from ..utility import default_done_callback
-from .to_DTM_gui import ComputeGUI
+from ..interface import ComputeOpts
+from . import factory as corpus_factory
+from .store import store_corpus_bundle
 
 
 def compute_document_term_matrix(
-    corpus_config: CorpusConfig,  # pylint: disable=unused-argument
+    corpus_config: pipeline.CorpusConfig,  # pylint: disable=unused-argument
     pipeline_factory: Callable,  # pylint: disable=unused-argument
-    args: ComputeGUI,
-    done_callback: Callable,
-    persist: bool = False,  # pylint: disable=unused-argument
-):
+    args: ComputeOpts,
+) -> dtm.VectorizedCorpus:
 
     try:
 
-        if not args.corpus_filename:
-            raise ValueError("please specify corpus file")
+        assert args.is_satisfied()
 
-        if not args.target_folder:
-            raise ValueError("please specify output folder")
-
-        if not os.path.isfile(args.corpus_filename):
-            raise FileNotFoundError(args.corpus_filename)
-
-        # FIXME: #23 Add index field to vectorize workflow (index_field)
-        corpus = vectorize_corpus_workflow(
+        tokenized_corpus: corpora.TokenizedCorpus = corpus_factory.create_corpus(
             corpus_type=args.corpus_type,
             input_filename=args.corpus_filename,
-            output_folder=args.target_folder,
-            output_tag=args.corpus_tag,
-            create_subfolder=args.create_subfolder,
-            filename_field=corpus_config.text_reader_opts.filename_fields,
-            count_threshold=args.count_threshold,
-            extract_tokens_opts=args.extract_tagged_tokens_opts,
             tokens_transform_opts=args.tokens_transform_opts,
+            extract_tokens_opts=args.extract_tagged_tokens_opts,
+            reader_opts=args.text_reader_opts,
         )
+        corpus: VectorizedCorpus = dtm.CorpusVectorizer().fit_transform(tokenized_corpus, **args.vectorize_opts.props)
 
-        (done_callback or default_done_callback)(
-            corpus=corpus,
-            corpus_tag=args.corpus_tag,
-            corpus_folder=args.target_folder,
-        )
+        if (args.count_threshold or 1) > 1:
+            corpus = corpus.slice_by_n_count(args.count_threshold)
+
+        if args.persist:
+            store_corpus_bundle(corpus, args)
+
+        return corpus
 
     except Exception as ex:
         raise ex

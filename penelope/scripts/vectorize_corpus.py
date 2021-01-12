@@ -1,11 +1,11 @@
-from penelope.pipeline.config import CorpusType
 from typing import Any
 
 import click
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+import penelope.notebook.dtm.compute_DTM_corpus as compute_DTM_corpus
+import penelope.notebook.interface as interface
+from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
+from penelope.pipeline.config import CorpusType
 from penelope.utility import getLogger
-from penelope.workflows import vectorize_corpus_workflow
 
 logger = getLogger("penelope")
 # pylint: disable=too-many-arguments, unused-argument
@@ -81,45 +81,53 @@ def main(
     filename_field: Any = None,
 ):
 
-    tokens_transform_opts = TokensTransformOpts(
-        to_lower=to_lowercase,
-        to_upper=False,
-        min_len=min_word_length,
-        max_len=max_word_length,
-        remove_accents=False,
-        remove_stopwords=(remove_stopwords is not None),
-        stopwords=None,
-        extra_stopwords=None,
-        language=remove_stopwords,
-        keep_numerals=keep_numerals,
-        keep_symbols=keep_symbols,
-        only_alphabetic=only_alphabetic,
-        only_any_alphanumeric=only_any_alphanumeric,
-    )
+    if CorpusType[corpus_type] != CorpusType.SparvCSV:
+        logger.info("PoS filter and lemmatize options not avaliable for raw text corpus")
 
-    extract_tokens_opts = None
-    if CorpusType[corpus_type] == CorpusType.SparvCSV:
-        file_pattern = '*.csv'
-        extract_tokens_opts = ExtractTaggedTokensOpts(
+    args: interface.ComputeOpts = interface.ComputeOpts(
+        corpus_type=corpus_type,
+        corpus_filename=input_filename,
+        target_folder=output_folder,
+        corpus_tag=output_tag,
+        tokens_transform_opts=TokensTransformOpts(
+            to_lower=to_lowercase,
+            to_upper=False,
+            min_len=min_word_length,
+            max_len=max_word_length,
+            remove_accents=False,
+            remove_stopwords=(remove_stopwords is not None),
+            stopwords=None,
+            extra_stopwords=None,
+            language=remove_stopwords,
+            keep_numerals=keep_numerals,
+            keep_symbols=keep_symbols,
+            only_alphabetic=only_alphabetic,
+            only_any_alphanumeric=only_any_alphanumeric,
+        ),
+        text_reader_opts=TextReaderOpts(
+            filename_pattern='*.csv',
+            filename_fields=filename_field,
+            index_field=None,  # use filename
+            as_binary=False,
+        ),
+        extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes=pos_includes,
             pos_excludes=pos_excludes,
             lemmatize=lemmatize,
-        )
-    else:
-        logger.info("PoS filter and lemmatize options not avaliable for raw text corpus")
-
-    vectorize_corpus_workflow(
-        corpus_type=CorpusType[corpus_type],
-        input_filename=input_filename,
-        output_folder=output_folder,
-        output_tag=output_tag,
-        create_subfolder=create_subfolder,
-        filename_field=filename_field,
-        filename_pattern=file_pattern,
+        ),
+        vectorize_opts=VectorizeOpts(already_tokenized=True),
         count_threshold=count_threshold,
-        extract_tokens_opts=extract_tokens_opts,
-        tokens_transform_opts=tokens_transform_opts,
+        create_subfolder=create_subfolder,
+        persist=True,
     )
+
+    compute_DTM_corpus.compute_document_term_matrix(
+        corpus_config=None,
+        pipeline_factory=None,
+        args=args,
+    )
+
+    logger.info('Done!')
 
 
 if __name__ == "__main__":

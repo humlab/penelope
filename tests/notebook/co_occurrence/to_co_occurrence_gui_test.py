@@ -2,19 +2,13 @@ from unittest.mock import Mock, patch
 
 import penelope.notebook.co_occurrence.to_co_occurrence_gui as to_co_occurrence_gui
 import penelope.notebook.utility as notebook_utility
+import pytest
 from penelope.pipeline.config import CorpusConfig, CorpusType
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 
 
 def dummy_config():
-    return Mock(
-        spec=CorpusConfig,
-        **{
-            'pipeline_payload.source': 'dummy',
-            'corpus_type': CorpusType.Pipeline,
-            'text_reader_opts.filename_fields': [],
-        },
-    )
+    return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yaml')
 
 
 @patch(
@@ -45,7 +39,10 @@ def test_to_co_occurrence_create_gui(z):  # pylint: disable=unused-argument
 )
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
 def test_GUI_setup(z):  # pylint: disable=unused-argument
-    def compute_callback(corpus_config, args, partition_key, done_callback):  # pylint: disable=unused-argument
+    def done_callback(*_, **__):
+        pass
+
+    def compute_callback(corpus_config, args, partition_key):  # pylint: disable=unused-argument
         pass
 
     corpus_config = dummy_config()
@@ -56,6 +53,7 @@ def test_GUI_setup(z):  # pylint: disable=unused-argument
     ).setup(
         config=corpus_config,
         compute_callback=compute_callback,
+        done_callback=done_callback,
     )
 
     # layout = gui.layout()

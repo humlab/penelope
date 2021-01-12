@@ -4,12 +4,12 @@ import penelope.co_occurrence as co_occurrence
 from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
-from penelope.notebook.co_occurrence.compute_callback_pipeline import compute_co_occurrence
+from penelope.notebook.co_occurrence.compute_pipeline import compute_co_occurrence
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility.pos_tags import PoS_Tag_Scheme, PoS_Tag_Schemes, pos_tags_to_str
 
-from ..fixtures import FakeGUI, FakeSSI
+from ..fixtures import FakeComputeOptsSpacyCSV, FakeSSI
 
 
 def test_spaCy_co_occurrence_pipeline():
@@ -64,7 +64,7 @@ def test_spaCy_co_occurrence_pipeline2():
         # source='./tests/test_data/legal_instrument_corpus.zip',
         # index_source='./tests/test_data/legal_instrument_index.csv',
     )
-    args = FakeGUI(
+    args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=corpus_config.pipeline_payload.source,
     )
@@ -118,20 +118,20 @@ def test_spaCy_co_occurrence_pipeline2():
 
 
 def test_spaCy_co_occurrence_pipeline3():
-    partition_key: str = 'year'
+    corpus_filename = './tests/test_data/legal_instrument_five_docs_test.zip'
     corpus_config: CorpusConfig = FakeSSI(
-        source='./tests/test_data/legal_instrument_five_docs_test.zip',
+        source=corpus_filename,
         index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
         # source='./tests/test_data/legal_instrument_corpus.zip',
         # index_source='./tests/test_data/legal_instrument_index.csv',
     )
-    args = FakeGUI(
-        corpus_tag="VENUS",
-        corpus_filename=corpus_config.pipeline_payload.source,
+    args = FakeComputeOptsSpacyCSV(
+        corpus_filename=corpus_filename,
+        corpus_tag="SATURNUS",
     )
+
     compute_co_occurrence(
         corpus_config=corpus_config,
-        partition_key=partition_key,
         args=args,
         done_callback=None,
         checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',

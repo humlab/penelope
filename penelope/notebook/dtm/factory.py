@@ -1,7 +1,7 @@
 from penelope.corpus import SparvTokenizedCsvCorpus, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextTokenizer
 from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.pipeline.config import CorpusType
+from penelope.pipeline import CorpusType
 
 
 def create_corpus(

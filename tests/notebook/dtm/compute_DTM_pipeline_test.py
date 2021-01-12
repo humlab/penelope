@@ -1,4 +1,4 @@
-def test_compute_document_term_matrix():
+def test_compute_DTM():
     pass
 
 

@@ -14,7 +14,7 @@ from .document_index import (
 )
 from .dtm import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, load_corpus
 from .interfaces import ICorpus, ITokenizedCorpus
-from .readers.interfaces import TextReaderOpts
+from .readers.interfaces import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts
 from .readers.text_transformer import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (

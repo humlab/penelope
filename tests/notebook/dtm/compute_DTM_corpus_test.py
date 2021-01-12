@@ -1,8 +1,8 @@
 from unittest.mock import Mock
 
 import pytest
-from penelope.notebook.dtm.compute_DTM_corpus import compute_document_term_matrix
-from penelope.notebook.dtm.to_DTM_gui import ComputeGUI
+from penelope.notebook.dtm.compute_DTM_corpus import compute_document_term_matrix as compute_dtm
+from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusConfig
 
 
@@ -12,15 +12,7 @@ def dummy_config():
 
 
 @pytest.mark.skip('')
-def test_compute_document_term_matrix(dummy_config):  # pylint: disable=redefined-outer-name
+def test_compute_dtm(dummy_config):  # pylint: disable=redefined-outer-name
 
-    done_called = False
-
-    def done_callback(*_, **__):
-        nonlocal done_called
-        done_called = True
-
-    compute_document_term_matrix(
-        dummy_config, pipeline_factory=None, args=Mock(spec=ComputeGUI), done_callback=done_callback, persist=False
-    )
-    assert done_called
+    corpus = compute_dtm(dummy_config, pipeline_factory=None, args=Mock(spec=ComputeOpts))
+    assert corpus is not None

@@ -2,10 +2,11 @@ import sys
 from typing import Any, List, Sequence
 
 import click
-from penelope.co_occurrence import ContextOpts
-from penelope.corpus import TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.workflows import WorkflowException, co_occurrence_workflow
+import penelope.notebook.co_occurrence.compute_corpus as workflow
+import penelope.notebook.interface as interface
+import penelope.pipeline as pipeline
+from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
+from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 
 # pylint: disable=too-many-arguments
 
@@ -74,45 +75,54 @@ def main(
     filename_field: Any = None,
 ):
 
-    tokens_transform_opts = TokensTransformOpts(
-        to_lower=to_lowercase,
-        to_upper=False,
-        min_len=min_word_length,
-        max_len=None,
-        remove_accents=False,
-        remove_stopwords=(remove_stopwords is not None),
-        stopwords=None,
-        extra_stopwords=None,
-        language=remove_stopwords,
-        keep_numerals=keep_numerals,
-        keep_symbols=keep_symbols,
-        only_alphabetic=only_alphabetic,
-        only_any_alphanumeric=only_any_alphanumeric,
-    )
-    extract_tokens_opts = ExtractTaggedTokensOpts(
-        pos_includes=pos_includes,
-        pos_excludes=pos_excludes,
-        lemmatize=lemmatize,
-    )
-    context_opts = ContextOpts(
-        context_width=context_width,
-        concept=(concept or []),
-        ignore_concept=no_concept,
-    )
     try:
+        corpus_folder, corpus_tag = filename_to_folder_and_tag(output_filename)
 
-        co_occurrence_workflow(
+        args: interface.ComputeOpts = interface.ComputeOpts(
+            corpus_type=pipeline.CorpusType.SparvCSV,
             corpus_filename=input_filename,
-            target_filename=output_filename,
+            target_folder=corpus_folder,
+            corpus_tag=corpus_tag,
+            tokens_transform_opts=TokensTransformOpts(
+                to_lower=to_lowercase,
+                to_upper=False,
+                min_len=min_word_length,
+                max_len=None,
+                remove_accents=False,
+                remove_stopwords=(remove_stopwords is not None),
+                stopwords=None,
+                extra_stopwords=None,
+                language=remove_stopwords,
+                keep_numerals=keep_numerals,
+                keep_symbols=keep_symbols,
+                only_alphabetic=only_alphabetic,
+                only_any_alphanumeric=only_any_alphanumeric,
+            ),
+            text_reader_opts=TextReaderOpts(
+                filename_pattern='*.csv',
+                filename_fields=filename_field,
+                index_field=None,  # use filename
+                as_binary=False,
+            ),
+            extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+                pos_includes=pos_includes,
+                pos_excludes=pos_excludes,
+                lemmatize=lemmatize,
+            ),
             count_threshold=count_threshold,
-            filename_field=filename_field,
+            create_subfolder=True,
+            persist=True,
+            context_opts=ContextOpts(
+                context_width=context_width,
+                concept=(concept or []),
+                ignore_concept=no_concept,
+            ),
             partition_keys=partition_key,
-            context_opts=context_opts,
-            extract_tokens_opts=extract_tokens_opts,
-            tokens_transform_opts=tokens_transform_opts,
         )
 
-    except WorkflowException as ex:
+        workflow.compute_co_occurrence(args)
+
+    except Exception as ex:
         click.echo(ex)
         sys.exit(1)
 

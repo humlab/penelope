@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-import sys
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 from .filename_utils import strip_paths

@@ -9,13 +9,14 @@ from penelope.co_occurrence import (
     store_co_occurrences,
 )
 from penelope.co_occurrence.partitioned import ComputeResult
-from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
+from penelope.notebook import interface
+from penelope.notebook.co_occurrence import compute_corpus
 from penelope.pipeline.interfaces import PipelinePayload
 from penelope.utility import dataframe_to_tuples
-from penelope.workflows import co_occurrence_workflow
+from tests.pipeline.fixtures import FakeComputeOptsSparvCSV
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
-from tests.utils import OUTPUT_FOLDER, TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME, very_simple_corpus
+from tests.utils import OUTPUT_FOLDER, very_simple_corpus
 
 jj = os.path.join
 
@@ -61,35 +62,6 @@ def test_co_occurrence_with_thresholdt_succeeds():
         threshold_count=2,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
-
-
-def test_co_occurrence_using_cli_succeeds(tmpdir):
-
-    output_filename = folder_and_tag_to_filename(folder=tmpdir, tag='test_cli')
-    context_opts = ContextOpts(
-        concept={'jag'},
-        context_width=2,
-    )
-    extract_tokens_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=True)
-    tokens_transform_opts = TokensTransformOpts(
-        remove_stopwords=None,
-        keep_symbols=True,
-        keep_numerals=True,
-        only_alphabetic=False,
-        only_any_alphanumeric=False,
-    )
-
-    co_occurrence_workflow(
-        corpus_filename=TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME,
-        target_filename=output_filename,
-        partition_keys=['year'],
-        filename_field=["year:_:1"],
-        context_opts=context_opts,
-        extract_tokens_opts=extract_tokens_opts,
-        tokens_transform_opts=tokens_transform_opts,
-    )
-
-    assert os.path.isfile(output_filename)
 
 
 @pytest.mark.parametrize("concept, threshold_count, context_width", [({}, 0, 2), ({'fråga'}, 0, 2), ({'fråga'}, 2, 2)])
@@ -139,32 +111,15 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
     assert len(compute_result.co_occurrences) > 0
 
 
-def test_co_occurrence_bug_with_options_that_raises_an_exception(tmpdir):
+def test_co_occurrence_bug_with_options_that_raises_an_exception():
 
-    target_filename = folder_and_tag_to_filename(folder=tmpdir, tag='test_co_occurrence_bug_with_option')
-    options = {
-        'corpus_filename': './tests/test_data/tranströmer_corpus_export.csv.zip',
-        'target_filename': target_filename,
-        'partition_keys': ('year',),
-        'filename_field': ('year:_:1',),
-    }
-    context_opts = ContextOpts(concept=('jag',), context_width=2)
-    extract_tokens_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='|MAD|MID|PAD|', lemmatize=False)
-    tokens_transform_opts = TokensTransformOpts(
-        to_lower=True,
-        min_len=1,
-        remove_stopwords=None,
-        keep_symbols=True,
-        keep_numerals=True,
-        only_alphabetic=False,
-        only_any_alphanumeric=False,
-    )
-    co_occurrence_workflow(
-        **options,
-        context_opts=context_opts,
-        extract_tokens_opts=extract_tokens_opts,
-        tokens_transform_opts=tokens_transform_opts,
-    )
+    target_folder = './tests/output'
+    corpus_tag = 'test_co_occurrence_bug_with_option'
+    target_filename = folder_and_tag_to_filename(folder=target_folder, tag=corpus_tag)
+
+    args: interface.ComputeOpts = FakeComputeOptsSparvCSV(corpus_tag=corpus_tag)
+
+    compute_corpus.compute_co_occurrence(args=args)
 
     assert os.path.isfile(target_filename)
 

@@ -3,12 +3,15 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 import ipywidgets as widgets
+import penelope.corpus.dtm as dtm
 import penelope.notebook.utility as notebook_utility
 import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.utility import PoS_Tag_Scheme, default_data_folder, flatten, get_logger
+
+from . import interface
 
 logger = get_logger('penelope')
 
@@ -103,7 +106,8 @@ class BaseGUI:
         layout=default_layout,
     )
 
-    compute_callback: Callable = None
+    compute_callback: Callable[[interface.ComputeOpts], None] = None
+    done_callback: Callable[[dtm.VectorizedCorpus, str, str], None] = None
 
     def layout(self, hide_input=False, hide_output=False) -> widgets.VBox:
 
@@ -172,7 +176,16 @@ class BaseGUI:
             return
         self._vectorize_button.disabled = True
         try:
-            self.compute_callback(self)
+
+            corpus = self.compute_callback(self.compute_opts)
+
+            if self.done_callback is not None:
+                self.done_callback(
+                    corpus=corpus,
+                    corpus_tag=self.corpus_tag,
+                    corpus_folder=self.target_folder,
+                )
+
         except (ValueError, FileNotFoundError) as ex:
             print(ex)
         except Exception as ex:
@@ -195,7 +208,7 @@ class BaseGUI:
     def _remove_stopwords_state_changed(self, *_):
         self._extra_stopwords.disabled = not self._remove_stopwords.value
 
-    def setup(self, *, config: CorpusConfig, compute_callback: Callable) -> "BaseGUI":
+    def setup(self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable) -> "BaseGUI":
 
         self._corpus_filename = notebook_utility.FileChooserExt2(
             path=self.default_corpus_path or default_data_folder(),
@@ -236,6 +249,7 @@ class BaseGUI:
 
         self.update_config(config)
         self.compute_callback = compute_callback
+        self.done_callback = done_callback
 
         return self
 
@@ -334,3 +348,26 @@ class BaseGUI:
     @property
     def filename_fields(self) -> str:
         return self._filename_fields.value
+
+    @property
+    def corpus_config(self) -> CorpusConfig:
+        return self._config
+
+    @property
+    def compute_opts(self) -> interface.ComputeOpts:
+        args: interface.ComputeOpts = interface.ComputeOpts(
+            corpus_type=self.corpus_type,
+            corpus_filename=self.corpus_filename,
+            target_folder=self.target_folder,
+            corpus_tag=self.corpus_tag,
+            tokens_transform_opts=self.tokens_transform_opts,
+            text_reader_opts=self.corpus_config.text_reader_opts,
+            extract_tagged_tokens_opts=self.extract_tagged_tokens_opts,
+            tagged_tokens_filter_opts=self.tagged_tokens_filter_opts,
+            count_threshold=self.count_threshold,
+            create_subfolder=self.create_subfolder,
+            vectorize_opts=self.vectorize_opts,
+            persist=True,
+            context_opts=None,
+        )
+        return args
