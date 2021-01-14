@@ -28,13 +28,19 @@ class PipelineShortcutMixIn:
     def save_tagged_frame(
         self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
     ) -> pipelines.CorpusPipeline:
-        return self.add(tasks.SaveTaggedFrame(filename=filename, options=options))
+        return self.add(tasks.SaveTaggedCSV(filename=filename, options=options))
 
     def load_tagged_frame(
         self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
-        return self.add(tasks.LoadTaggedFrame(filename=filename, options=options))
+        return self.add(tasks.LoadTaggedCSV(filename=filename, options=options))
+
+    def load_tagged_xml(
+        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+    ) -> pipelines.CorpusPipeline:
+        """ SparvXML => DATAFRAME """
+        return self.add(tasks.LoadTaggedXML(filename=filename, options=options))
 
     def checkpoint(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
@@ -94,16 +100,23 @@ class PipelineShortcutMixIn:
     def passthrough(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.Passthrough())
 
-    def to_document_content_tuple(self) -> pipelines.CorpusPipeline:
+    def to_document_content_tuple(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToDocumentContentTuple())
 
-    def project(self, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
+    def project(self: pipelines.CorpusPipeline, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
         return self.add(tasks.Project(project=project))
 
-    def vocabulary(self) -> pipelines.CorpusPipeline:
+    def vocabulary(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.Vocabulary())
 
     def tagged_frame_to_tokens(
-        self: pipelines.CorpusPipeline, extract_opts: ExtractTaggedTokensOpts, filter_opts: TaggedTokensFilterOpts
+        self: pipelines.CorpusPipeline,
+        extract_opts: ExtractTaggedTokensOpts,
+        filter_opts: TaggedTokensFilterOpts,
     ) -> pipelines.CorpusPipeline:
-        return self.add(tasks.TaggedFrameToTokens(extract_opts=extract_opts, filter_opts=filter_opts))
+        return self.add(
+            tasks.TaggedFrameToTokens(
+                extract_opts=extract_opts,
+                filter_opts=filter_opts,
+            )
+        )

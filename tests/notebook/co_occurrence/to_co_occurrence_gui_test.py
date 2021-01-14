@@ -2,8 +2,7 @@ from unittest.mock import Mock, patch
 
 import penelope.notebook.co_occurrence.to_co_occurrence_gui as to_co_occurrence_gui
 import penelope.notebook.utility as notebook_utility
-import pytest
-from penelope.pipeline.config import CorpusConfig, CorpusType
+from penelope.pipeline.config import CorpusConfig
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 
 
@@ -19,7 +18,7 @@ def test_to_co_occurrence_create_gui(z):  # pylint: disable=unused-argument
     def done_callback(_: to_co_occurrence_gui.ComputeGUI):
         pass
 
-    def compute_callback(corpus_config, args, partition_key, done_callback):  # pylint: disable=unused-argument
+    def compute_callback(args, corpus_config):  # pylint: disable=unused-argument
         pass
 
     corpus_config = dummy_config()
@@ -42,7 +41,7 @@ def test_GUI_setup(z):  # pylint: disable=unused-argument
     def done_callback(*_, **__):
         pass
 
-    def compute_callback(corpus_config, args, partition_key):  # pylint: disable=unused-argument
+    def compute_callback(args, corpus_config):  # pylint: disable=unused-argument
         pass
 
     corpus_config = dummy_config()

@@ -2,25 +2,23 @@ import os
 from typing import Callable, Optional
 
 import penelope.co_occurrence as co_occurrence
+import penelope.pipeline as pipeline
 from penelope.corpus import VectorizedCorpus
-from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import getLogger
 
 from .. import interface
-from ..utility import default_done_callback
 
 logger = getLogger('penelope')
-jj = os.path.join
 
 POS_CHECKPOINT_FILENAME_POSTFIX = '_spaCy_pos_tagged_frame_csv.zip'
 
 
 # pylint: disable=unused-argument
 def compute_co_occurrence(
-    corpus_config: CorpusConfig,
     args: interface.ComputeOpts,
-    done_callback: Callable,
+    *,
+    corpus_config: pipeline.CorpusConfig = None,
     checkpoint_file: Optional[str] = None,
 ) -> co_occurrence.ComputeResult:
     """Creates and stored a concept co-occurrence bundle using specified options."""
@@ -76,8 +74,6 @@ def compute_co_occurrence(
         )
 
         co_occurrence.store_bundle(target_filename, bundle)
-
-        (done_callback or default_done_callback)(bundle=bundle)
 
         return compute_result
 

@@ -18,7 +18,6 @@ from penelope.pipeline import (
     CorpusSerializeOpts,
     DocumentPayload,
     PipelinePayload,
-    SpacyPipeline,
 )
 from tests.utils import TEST_DATA_FOLDER
 
@@ -97,7 +96,7 @@ def patch_spacy_doc(*x, **y):  # pylint: disable=unused-argument
 
 
 def patch_spacy_pipeline(task):
-    pipeline = SpacyPipeline(
+    pipeline = CorpusPipeline(
         payload=PipelinePayload(memory_store=dict(spacy_nlp=patch_spacy_load())),
         tasks=[task],
     ).setup()
@@ -106,7 +105,7 @@ def patch_spacy_pipeline(task):
 
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
-    pipeline = SpacyPipeline(payload=PipelinePayload())
+    pipeline = CorpusPipeline(payload=PipelinePayload())
     _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, lang_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
 
@@ -219,8 +218,9 @@ def patch_tagged_frame_to_tokens(*_, **__) -> Iterable[str]:
 
 @patch('penelope.pipeline.convert.tagged_frame_to_tokens', patch_tagged_frame_to_tokens)
 def test_tagged_frame_to_tokens_succeeds():
+    pipeline = Mock(spec=CorpusPipeline, payload=Mock(spec=PipelinePayload, tagged_columns_names={}))
     task = tasks.TaggedFrameToTokens(
-        pipeline=Mock(spec=CorpusPipeline),
+        pipeline=pipeline,
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
         filter_opts=TaggedTokensFilterOpts(is_punct=False),
     ).setup()
@@ -247,7 +247,7 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
 
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 def test_save_data_frame_succeeds():
-    task = tasks.SaveTaggedFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
+    task = tasks.SaveTaggedCSV(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -255,7 +255,7 @@ def test_save_data_frame_succeeds():
 
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_load_data_frame_succeeds():
-    task = tasks.LoadTaggedFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
+    task = tasks.LoadTaggedCSV(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -333,7 +333,7 @@ def test_spacy_pipeline_load_checkpoint():
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
     )
-    pipeline = SpacyPipeline(payload=pipeline_payload).checkpoint(checkpoint_filename).to_content()
+    pipeline = CorpusPipeline(payload=pipeline_payload).checkpoint(checkpoint_filename).to_content()
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None

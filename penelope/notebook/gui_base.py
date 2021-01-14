@@ -172,12 +172,14 @@ class BaseGUI:
 
     # @view.capture(clear_output=True)
     def _compute_handler(self, *_):
+
         if self.compute_callback is None:
             return
+
         self._vectorize_button.disabled = True
         try:
 
-            corpus = self.compute_callback(self.compute_opts)
+            corpus = self.compute_callback(self.compute_opts, self.corpus_config)
 
             if self.done_callback is not None:
                 self.done_callback(

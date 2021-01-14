@@ -25,7 +25,6 @@ def to_vectorized_corpus(
     return corpus
 
 
-# FIXME: Make generic (applicable to Sparv, Stanza tagging etc), sove this function out of spaCy
 def tagged_frame_to_tokens(
     doc: pd.DataFrame,
     extract_opts: ExtractTaggedTokensOpts,

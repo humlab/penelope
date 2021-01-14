@@ -6,12 +6,7 @@ from typing import Callable, Iterable, List, Mapping, Tuple
 import numpy as np
 import pandas as pd
 import penelope.corpus.readers.tng as tng
-from penelope.corpus import (
-    ITokenizedCorpus,
-    TextTransformOpts,
-    TokenizedCorpus,
-    metadata_to_document_index,
-)
+from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.dtm import VectorizedCorpus
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
 from penelope.utility import flatten

@@ -133,6 +133,5 @@ def test_spaCy_co_occurrence_pipeline3():
     compute_co_occurrence(
         corpus_config=corpus_config,
         args=args,
-        done_callback=None,
         checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',
     )

@@ -138,11 +138,11 @@ def load_checkpoint(
             document_index = DocumentIndex.from_filenames(
                 filenames=filenames,
                 filename_fields=reader_opts.filename_fields,
-            )
+            ).document_index
 
     data: CheckpointData = CheckpointData(
         content_type=options.content_type,
-        payload_stream=_deserialized_payload_stream(source_name, options, filenames),
+        payload_stream=deserialized_payload_stream(source_name, options, filenames),
         document_index=document_index,
         serialize_opts=options,
     )
@@ -150,7 +150,7 @@ def load_checkpoint(
     return data
 
 
-def _deserialized_payload_stream(
+def deserialized_payload_stream(
     source_name: str, options: CorpusSerializeOpts, filenames: List[str]
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
