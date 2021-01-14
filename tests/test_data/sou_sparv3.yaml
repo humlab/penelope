@@ -1,0 +1,32 @@
+corpus_name: statens-offentliga-utredningar
+corpus_pattern: '*xml.zip'
+corpus_type: 6
+language: swedish
+pipelines:
+  tagged_frame: penelope.pipeline.sparv.pipelines/to_tagged_frame_pipeline
+  document_term_matrix: penelope.pipelines/wildcard_to_DTM_pipeline
+  co_occurrence:  penelope.pipelines/wildcard_to_co_occurrence_pipeline
+pipeline_payload:
+  document_index_sep: \t
+  document_index_source: null
+  filenames: null
+  memory_store:
+    lang: se
+    tagger: Sparv
+    sparv_version: 3
+    text_column: text
+    lemma_column: lemma
+    pos_column: pos
+  pos_schema_name: SUC
+  source: sou_sparv3_3files_xml.zip
+tagged_tokens_filter_opts:
+text_reader_opts:
+  as_binary: false
+  filename_fields:
+   - year:_:1
+   - number:_:2
+  filename_filter: null
+  filename_pattern: '*.xml'
+  index_field: null
+  sep: \t
+  quoting: \t
