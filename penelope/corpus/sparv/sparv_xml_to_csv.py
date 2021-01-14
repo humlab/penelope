@@ -30,10 +30,21 @@ XSLT_DOCUMENT = """<?xml version="1.0"?>
 </xsl:stylesheet>
 """
 
-class SparvXml2CSV:
-    def __init__(self, delimiter: str = '\t', version: int=4):
 
-        args = ("token", "@baseform",) if version == 4 else ("w", "@lemma",)
+class SparvXml2CSV:
+    def __init__(self, delimiter: str = '\t', version: int = 4):
+
+        args = (
+            (
+                "token",
+                "@baseform",
+            )
+            if version == 4
+            else (
+                "w",
+                "@lemma",
+            )
+        )
 
         self.xslt = etree.XML(XSLT_DOCUMENT.format(*args))  # pylint: disable=I1101
         self.xslt_transformer = etree.XSLT(self.xslt)  # pylint: disable=I1101

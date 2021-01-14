@@ -86,7 +86,7 @@ class ComputeGUI(BaseGUI):
         *,
         corpus_folder: str,
         corpus_config: Union[str, CorpusConfig],
-        compute_callback: Callable = None,
+        compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], None] = None,
         done_callback: Callable = None,
     ) -> "ComputeGUI":
         """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
@@ -97,10 +97,9 @@ class ComputeGUI(BaseGUI):
             default_target_folder=corpus_folder,
         ).setup(
             config=corpus_config,
-            compute_callback=lambda g: compute_callback(
-                corpus_config=corpus_config,
-                args=g,
-                partition_key=gui.partition_key,
+            compute_callback=lambda args, cfg: compute_callback(
+                args=args,
+                corpus_config=cfg,
             ),
             done_callback=done_callback,
         )

@@ -27,7 +27,7 @@ def create_gui(
     corpus_folder: str,
     corpus_config: Union[str, CorpusConfig],
     pipeline_factory: Callable[[], CorpusPipeline],
-    compute_callback: Callable[[CorpusConfig, Callable, ComputeGUI, bool], None],
+    compute_callback: Callable[[ComputeGUI, CorpusConfig, Callable], None],
     done_callback: Callable[[CorpusPipeline, VectorizedCorpus, str, str, widgets.Output], None],
 ) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
@@ -38,11 +38,10 @@ def create_gui(
         default_target_folder=corpus_folder,
     ).setup(
         config=corpus_config,
-        compute_callback=lambda g: compute_callback(
-            corpus_config=corpus_config,
+        compute_callback=lambda args, cfg: compute_callback(
+            args=args,
+            corpus_config=cfg,
             pipeline_factory=pipeline_factory,
-            args=g,
-            persist=True,
         ),
         done_callback=done_callback,
     )
