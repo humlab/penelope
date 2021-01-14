@@ -64,7 +64,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
     assert expected == result
 
 
-def test_reader_when_lemmatized_nn_vb_pos_appendedreturns_lemmatized_nn_vb_pos():
+def test_reader_when_lemmatized_nn_vb_pos_appended_returns_lemmatized_nn_vb_pos():
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(

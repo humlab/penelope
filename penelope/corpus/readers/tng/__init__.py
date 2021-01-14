@@ -3,3 +3,4 @@ from .interfaces import ContentFilter, ISource, SourceInfo, StoreItemMetaData, S
 from .reader import CorpusReader
 from .sources import FolderSource, InMemorySource, PandasSource, ZipSource
 from .transformer import KnownTransformType, TextTransformer, TextTransformOpts
+from .factory import create_sparv_xml_corpus_reader
