@@ -174,7 +174,7 @@ class BaseGUI:
     def _compute_handler(self, *_):
 
         if self.compute_callback is None:
-            return
+            raise ValueError("fatal: cannot compute (callback is not specified)")
 
         self._vectorize_button.disabled = True
         try:
