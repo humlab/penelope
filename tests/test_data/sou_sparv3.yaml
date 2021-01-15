@@ -3,9 +3,7 @@ corpus_pattern: '*xml.zip'
 corpus_type: 6
 language: swedish
 pipelines:
-  tagged_frame: penelope.pipeline.sparv.pipelines/to_tagged_frame_pipeline
-  document_term_matrix: penelope.pipelines/wildcard_to_DTM_pipeline
-  co_occurrence:  penelope.pipelines/wildcard_to_co_occurrence_pipeline
+  tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
   document_index_sep: \t
   document_index_source: null
