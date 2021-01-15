@@ -58,6 +58,7 @@ def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['b']
 
+
 def test_tagged_tokens_filter_apply_when_boolean_attribute_succeeds():
 
     doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True, False, True]))
