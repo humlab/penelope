@@ -135,7 +135,11 @@ class TaggedTokensFilterOpts:
 
             value_serie: pd.Series = doc[attr_name]
             if isinstance(attr_value, bool):
-                mask &= (value_serie == attr_value)
+                if value_serie.isna().sum() > 0:
+                    breakpoint()
+                    raise ValueError(f"data error: boolean column {attr_name} contains np.nan")
+
+                mask &= value_serie == attr_value
                 # if attr_value:
                 #     mask &= value_serie
                 # else:
