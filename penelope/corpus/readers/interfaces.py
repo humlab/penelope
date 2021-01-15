@@ -135,10 +135,11 @@ class TaggedTokensFilterOpts:
 
             value_serie: pd.Series = doc[attr_name]
             if isinstance(attr_value, bool):
-                if attr_value:
-                    mask &= value_serie
-                else:
-                    mask &= ~(value_serie)
+                mask &= (value_serie == attr_value)
+                # if attr_value:
+                #     mask &= value_serie
+                # else:
+                #     mask &= ~(value_serie)
             elif isinstance(attr_value, (list, set)):
                 if attr_value_sign:
                     mask &= value_serie.isin(attr_value)
