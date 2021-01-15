@@ -122,6 +122,11 @@ class PipelinePayload:
         self.memory_store[key] = value
         return self
 
+    def put2(self, **kwargs) -> "PipelinePayload":
+        for key, value in kwargs.items():
+            self.memory_store[key] = value
+        return self
+
     def set_reader_index(self, reader_index: pd.DataFrame) -> "PipelinePayload":
         if self.document_index is None:
             self.effective_document_index = reader_index
@@ -152,6 +157,14 @@ class PipelinePayload:
             document_name=document_name,
             property_bag=properties,
         )
+
+    @property
+    def tagged_columns_names(self):
+        return {k: v for k, v in self.memory_store.items() if k in ['text_column', 'pos_column', 'lemma_column']}
+
+    def extend(self, _: DocumentPayload):
+        """Add properties of `other` to self. Used when combining two pipelines"""
+        ...
 
 
 @dataclass

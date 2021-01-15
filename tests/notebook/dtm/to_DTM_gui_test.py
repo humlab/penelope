@@ -1,9 +1,8 @@
 from unittest.mock import Mock
 
 import pytest
-from penelope.notebook.dtm.to_DTM_gui import ComputeGUI, create_gui
+from penelope.notebook.dtm import ComputeGUI, create_compute_gui
 from penelope.pipeline.config import CorpusConfig
-from penelope.pipeline.pipelines import CorpusPipeline
 
 
 def dummy_callback(*_, **__):
@@ -36,10 +35,9 @@ def test_gui_setup():
 def test_create_gui():
 
     config = Mock(spec=CorpusConfig)
-    gui: ComputeGUI = create_gui(
+    gui: ComputeGUI = create_compute_gui(
         corpus_folder='./tests/test_data',
         corpus_config=config,
-        pipeline_factory=Mock(spec=CorpusPipeline),
         compute_callback=dummy_callback,
         done_callback=dummy_callback,
     )

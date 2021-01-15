@@ -1,25 +1,13 @@
-from functools import partial
-from typing import Callable
-
 import ipywidgets as widgets
-import penelope.notebook.dtm.compute_DTM_corpus as compute_DTM_corpus
-import penelope.notebook.dtm.compute_DTM_pipeline as compute_DTM_pipeline
-import penelope.notebook.dtm.load_DTM_gui as load_DTM_gui
-import penelope.notebook.dtm.to_DTM_gui as to_DTM_gui
+import penelope.notebook.dtm as dtm_gui
 import penelope.notebook.word_trends as word_trends
 import penelope.pipeline as pipeline
+import penelope.workflows as workflows
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
+from penelope.notebook.interface import ComputeOpts
 
 view = widgets.Output(layout={'border': '2px solid green'})
-
-
-def compute_dtm_factory(corpus_config: pipeline.CorpusConfig) -> Callable:
-    if corpus_config.corpus_type == pipeline.CorpusType.SparvCSV:
-        return compute_DTM_corpus.compute_document_term_matrix
-    if corpus_config.corpus_type == pipeline.CorpusType.SpacyCSV:
-        return compute_DTM_pipeline.compute_document_term_matrix
-    raise ValueError(f"Unsupported (not implemented) corpus type for DTM: {corpus_config.corpus_type} ")
 
 
 @view.capture(clear_output=True)
@@ -46,28 +34,26 @@ def corpus_loaded_callback(
 
 
 @view.capture(clear_output=True)
-def compute_dtm_callback(dtm_module, *args, **kwargs):
-    dtm_module.compute_document_term_matrix(*args, **kwargs)
+def compute_callback(args: ComputeOpts, corpus_config: pipeline.CorpusConfig):
+    workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
 
 
 def create_to_dtm_gui(
     corpus_folder: str,
     corpus_config: str,
     resources_folder: str = None,
-    dtm_pipeline: Callable = None,
 ) -> widgets.CoreWidget:
 
     resources_folder = resources_folder or corpus_folder
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.find(corpus_config, resources_folder).folder(corpus_folder)
-    gui_compute: to_DTM_gui.ComputeGUI = to_DTM_gui.create_gui(
+    gui_compute: dtm_gui.ComputeGUI = dtm_gui.create_compute_gui(
         corpus_folder=corpus_folder,
         corpus_config=config,
-        pipeline_factory=dtm_pipeline,
-        compute_callback=partial(compute_dtm_callback, compute_dtm_factory(config)),
+        compute_callback=compute_callback,
         done_callback=corpus_loaded_callback,
     )
 
-    gui_load: load_DTM_gui.LoadGUI = load_DTM_gui.create_gui(
+    gui_load: dtm_gui.LoadGUI = dtm_gui.create_load_gui(
         corpus_folder=corpus_folder,
         loaded_callback=corpus_loaded_callback,
     )

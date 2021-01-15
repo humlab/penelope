@@ -14,6 +14,7 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterO
 from penelope.pipeline import (
     CheckpointData,
     ContentType,
+    CorpusConfig,
     CorpusPipeline,
     CorpusSerializeOpts,
     DocumentPayload,
@@ -95,17 +96,18 @@ def patch_spacy_doc(*x, **y):  # pylint: disable=unused-argument
     return m
 
 
+def fake_config():
+    return Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(memory_store=dict(spacy_nlp=patch_spacy_load())))
+
+
 def patch_spacy_pipeline(task):
-    pipeline = CorpusPipeline(
-        payload=PipelinePayload(memory_store=dict(spacy_nlp=patch_spacy_load())),
-        tasks=[task],
-    ).setup()
+    pipeline = CorpusPipeline(config=fake_config(), tasks=[task]).setup()
     return pipeline
 
 
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
-    pipeline = CorpusPipeline(payload=PipelinePayload())
+    pipeline = CorpusPipeline(config=fake_config())
     _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, lang_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
 
@@ -134,7 +136,9 @@ def test_tqdm_task():
 
 
 def test_passthrough_process_succeeds():
-    task = tasks.Passthrough(pipeline=CorpusPipeline(payload=PipelinePayload())).setup()
+    task = tasks.Passthrough(
+        pipeline=CorpusPipeline(config=Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload()))
+    ).setup()
     current_payload = DocumentPayload()
     next_payload = task.process(current_payload)
     assert current_payload == next_payload
@@ -305,8 +309,9 @@ def test_spacy_pipeline():
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,', 'pos_column': 'pos_'},
     )
+    config = Mock(spec=CorpusConfig, pipeline_payload=pipeline_payload)
     pipeline = (
-        CorpusPipeline(payload=pipeline_payload)
+        CorpusPipeline(config=config)
         .set_spacy_model(pipeline_payload.memory_store['spacy_model'])
         .load_text(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
         .text_to_spacy()
@@ -333,7 +338,8 @@ def test_spacy_pipeline_load_checkpoint():
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
     )
-    pipeline = CorpusPipeline(payload=pipeline_payload).checkpoint(checkpoint_filename).to_content()
+    config = Mock(spec=CorpusConfig, payload=pipeline_payload)
+    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename).to_content()
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None

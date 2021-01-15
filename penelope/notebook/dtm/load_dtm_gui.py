@@ -99,7 +99,7 @@ class LoadGUI:
         self.alert(f"<span style='color=red'>{msg}</span>")
 
 
-def create_gui(
+def create_load_gui(
     *,
     corpus_folder: str,
     loaded_callback: Callable,

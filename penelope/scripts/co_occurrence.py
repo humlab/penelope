@@ -1,17 +1,20 @@
 import sys
-from typing import Any, List, Sequence
+from typing import List, Sequence
 
 import click
-import penelope.notebook.co_occurrence.compute_corpus as workflow
 import penelope.notebook.interface as interface
-import penelope.pipeline as pipeline
+import penelope.workflows as workflows
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
-from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
+from penelope.pipeline import CorpusConfig
+from penelope.utility import getLogger
 
+logger = getLogger("penelope")
 # pylint: disable=too-many-arguments
 
 
 @click.command()
+@click.argument('corpus_config', type=click.STRING)  # , help='Model name.')
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
@@ -45,6 +48,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTrans
     help='Remove stopwords using given language',
 )
 @click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
+@click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
 @click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
 @click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
 @click.option(
@@ -53,41 +57,43 @@ from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTrans
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
-@click.option('-f', '--filename-field', default=None, help='Fields to extract from document name', multiple=True)
 def main(
-    input_filename: str,
-    output_filename: str,
-    count_threshold: int,
-    concept: List[str],
-    no_concept: bool,
-    context_width: int,
-    partition_key: Sequence[str],
-    pos_includes: str,
-    pos_excludes: str,
-    lemmatize: bool,
+    corpus_config: str = None,
+    input_filename: str = None,
+    output_filename: str = None,
+    concept: List[str] = None,
+    no_concept: bool = None,
+    context_width: int = None,
+    partition_key: Sequence[str] = None,
+    create_subfolder: bool = True,
+    pos_includes: str = None,
+    pos_excludes: str = '|MAD|MID|PAD|',
     to_lowercase: bool = True,
+    lemmatize: bool = True,
     remove_stopwords: str = None,
     min_word_length: int = 2,
+    max_word_length: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
-    filename_field: Any = None,
+    count_threshold: int = None,
 ):
 
     try:
-        corpus_folder, corpus_tag = filename_to_folder_and_tag(output_filename)
+        output_folder, output_tag = filename_to_folder_and_tag(output_filename)
+        corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
-            corpus_type=pipeline.CorpusType.SparvCSV,
+            corpus_type=corpus_config.corpus_type,
             corpus_filename=input_filename,
-            target_folder=corpus_folder,
-            corpus_tag=corpus_tag,
+            target_folder=output_folder,
+            corpus_tag=output_tag,
             tokens_transform_opts=TokensTransformOpts(
                 to_lower=to_lowercase,
                 to_upper=False,
                 min_len=min_word_length,
-                max_len=None,
+                max_len=max_word_length,
                 remove_accents=False,
                 remove_stopwords=(remove_stopwords is not None),
                 stopwords=None,
@@ -98,19 +104,15 @@ def main(
                 only_alphabetic=only_alphabetic,
                 only_any_alphanumeric=only_any_alphanumeric,
             ),
-            text_reader_opts=TextReaderOpts(
-                filename_pattern='*.csv',
-                filename_fields=filename_field,
-                index_field=None,  # use filename
-                as_binary=False,
-            ),
+            text_reader_opts=corpus_config.text_reader_opts,
             extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
             ),
+            vectorize_opts=VectorizeOpts(already_tokenized=True),
             count_threshold=count_threshold,
-            create_subfolder=True,
+            create_subfolder=create_subfolder,
             persist=True,
             context_opts=ContextOpts(
                 context_width=context_width,
@@ -120,7 +122,12 @@ def main(
             partition_keys=partition_key,
         )
 
-        workflow.compute_co_occurrence(args)
+        workflows.co_occurrence.compute(
+            args=args,
+            corpus_config=corpus_config,
+        )
+
+        logger.info('Done!')
 
     except Exception as ex:
         click.echo(ex)

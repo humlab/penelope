@@ -1,17 +1,29 @@
+from __future__ import annotations
+
 import csv
 import enum
 import json
 import os
 import pathlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import pandas as pd
 import yaml
 from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts, TextSource
-from penelope.utility import get_pos_schema, replace_path
+from penelope.utility import create_instance, get_pos_schema, replace_path
 
 from . import interfaces
+
+if TYPE_CHECKING:
+    from .pipelines import CorpusPipeline
+
+
+def create_pipeline_factory(
+    class_or_function_name: str,
+) -> Union[Callable[[CorpusConfig], CorpusPipeline], Type[CorpusPipeline]]:
+    factory = create_instance(class_or_function_name)
+    return factory
 
 
 @enum.unique
@@ -22,6 +34,7 @@ class CorpusType(enum.IntEnum):
     SparvCSV = 3
     SpacyCSV = 4
     Pipeline = 5
+    SparvXML = 6
 
 
 @dataclass
@@ -62,10 +75,19 @@ class CorpusConfig:
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
     corpus_pattern: str = "*.zip"
+    # Used when corpus data needs to be deserialized (e.g. zipped csv data etc)
+    content_deserialize_opts: Optional[CorpusSerializeOpts] = None
     text_reader_opts: TextReaderOpts = None
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None
+    pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = "english"
+
+    def get_pipeline(self, pipeline_key: str, *args, **kwargs) -> Union[Callable, Type]:
+        if pipeline_key not in self.pipelines:
+            raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
+        factory = create_pipeline_factory(self.pipelines[pipeline_key])
+        return factory(self, *args, **kwargs)
 
     def folder(self, folder: str) -> "CorpusConfig":
 
@@ -98,7 +120,7 @@ class CorpusConfig:
         )
 
     def dump(self, path: str):
-        """Seserializes and writes a CorpusConfig to `path`"""
+        """Serializes and writes a CorpusConfig to `path`"""
         with open(path, "w") as fp:
             if path.endswith("json"):
                 json.dump(self, fp, default=vars, indent=4)
@@ -136,9 +158,16 @@ class CorpusConfig:
                 config_dict['tagged_tokens_filter_opts'] = TaggedTokensFilterOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
+        config_dict['content_deserialize_opts'] = CorpusSerializeOpts(
+            **(config_dict.get('content_deserialize_opts', {}) or {})
+        )
+        config_dict['pipelines'] = config_dict.get(
+            'pipelines', {}
+        )  # CorpusConfig.dict_to_pipeline_config(config_dict.get('pipelines', {}))
 
         deserialized_config: CorpusConfig = CorpusConfig(**config_dict)
         deserialized_config.corpus_type = CorpusType(deserialized_config.corpus_type)
+
         return deserialized_config
 
     @staticmethod
@@ -168,3 +197,11 @@ class CorpusConfig:
             document_index_sep=self.pipeline_payload.document_index_sep,
         )
         return opts
+
+    # @staticmethod
+    # def dict_to_pipeline_config(pipelines_factories: dict) -> CorpusPipelineConfig:
+    #     pipeline_config = CorpusPipelineConfig()
+    #     for k, v in pipelines_factories.items():
+    #         factory = create_pipeline_factory(v)
+    #         setattr(pipeline_config, k, factory)
+    #     return pipeline_config

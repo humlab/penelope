@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 
 from penelope.co_occurrence.co_occurrence import ContextOpts
 from penelope.corpus.readers.text_transformer import TextTransformOpts
-from penelope.utility import get_logger
+from penelope.utility import get_logger, path_add_suffix
 
-from ..pipelines import CorpusPipeline
+from .. import pipelines
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
@@ -19,24 +19,22 @@ logger = get_logger()
 # pylint: disable=too-many-locals
 
 
-class SpacyPipeline(CorpusPipeline):
-    pass
-
-
 def default_done_callback(*_, **__):
     print("Vectorization done!")
 
 
-def spaCy_to_pos_tagged_frame_pipeline(
+def to_tagged_frame_pipeline(
     corpus_config: CorpusConfig,
     checkpoint_filename: str = None,
 ):
     try:
 
-        # checkpoint_filename: str = path_add_suffix(corpus_filename, '_pos_csv')
+        checkpoint_filename: str = checkpoint_filename or path_add_suffix(
+            corpus_config.pipeline_payload.source, '_pos_csv'
+        )
 
-        pipeline: SpacyPipeline = (
-            SpacyPipeline(payload=corpus_config.pipeline_payload)
+        pipeline: pipelines.CorpusPipeline = (
+            pipelines.CorpusPipeline(config=corpus_config)
             .set_spacy_model(corpus_config.pipeline_payload.memory_store['spacy_model'])
             .load_text(reader_opts=corpus_config.text_reader_opts, transform_opts=TextTransformOpts())
             .text_to_spacy()
@@ -53,26 +51,23 @@ def spaCy_to_pos_tagged_frame_pipeline(
 
 def spaCy_DTM_pipeline(
     corpus_config: CorpusConfig,
-    tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
+    tokens_transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     checkpoint_filename: str = None,
 ):
     try:
-
-        pipeline: SpacyPipeline = (
-            spaCy_to_pos_tagged_frame_pipeline(
-                corpus_config=corpus_config,
-                checkpoint_filename=checkpoint_filename,
-            )
-            .tagged_frame_to_tokens(extract_opts=extract_tagged_tokens_opts, filter_opts=tagged_tokens_filter_opts)
-            .tokens_transform(tokens_transform_opts=tokens_transform_opts)
-            .to_document_content_tuple()
-            .tqdm()
-            .to_dtm(vectorize_opts=vectorize_opts)
+        p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
+            corpus_config=corpus_config,
+            checkpoint_filename=checkpoint_filename,
+        ) + pipelines.wildcard_to_DTM_pipeline(
+            extract_tagged_tokens_opts=extract_tagged_tokens_opts,
+            tagged_tokens_filter_opts=tagged_tokens_filter_opts,
+            tokens_transform_opts=tokens_transform_opts,
+            vectorize_opts=vectorize_opts,
         )
-        return pipeline
+        return p
 
     except Exception as ex:
         raise ex
@@ -89,23 +84,18 @@ def spaCy_co_occurrence_pipeline(
     checkpoint_filename: str = None,
 ):
     try:
-        pipeline: SpacyPipeline = (
-            spaCy_to_pos_tagged_frame_pipeline(
-                corpus_config=corpus_config,
-                checkpoint_filename=checkpoint_filename,
-            )
-            .tagged_frame_to_tokens(extract_opts=extract_tagged_tokens_opts, filter_opts=tagged_tokens_filter_opts)
-            .tokens_transform(tokens_transform_opts=tokens_transform_opts)
-            .vocabulary()
-            .to_document_content_tuple()
-            .to_co_occurrence(
-                context_opts=context_opts,
-                global_threshold_count=global_threshold_count,
-                partition_column=partition_column,
-            )
-            .tqdm()
+        p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
+            corpus_config=corpus_config,
+            checkpoint_filename=checkpoint_filename,
+        ) + pipelines.wildcard_to_co_occurrence_pipeline(
+            context_opts=context_opts,
+            tokens_transform_opts=tokens_transform_opts,
+            extract_tagged_tokens_opts=extract_tagged_tokens_opts,
+            tagged_tokens_filter_opts=tagged_tokens_filter_opts,
+            global_threshold_count=global_threshold_count,
+            partition_column=partition_column,
         )
-        return pipeline
+        return p
 
     except Exception as ex:
         raise ex

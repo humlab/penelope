@@ -4,7 +4,6 @@ import pandas as pd
 import penelope.corpus.sparv.sparv_xml_to_csv as sparv
 from penelope.corpus import TextReaderOpts
 from penelope.corpus.readers import tng
-from penelope.pipeline import CorpusConfig
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export_small.xml'
 
@@ -77,13 +76,12 @@ def test_xml_to_csv_corpus_reader():
 
 def test_create_sparv_xml_corpus_reader():
 
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/sou_sparv3.yaml')
     filename = './tests/test_data/sou_sparv3_3files_xml.zip'
-    reader_opts = TextReaderOpts(filename_pattern='*.xml', as_binary=True)
+    reader_opts = TextReaderOpts(filename_pattern='*.xml', as_binary=True, sep='\t')
     reader = tng.create_sparv_xml_corpus_reader(
         source_path=filename,
         reader_opts=reader_opts,
-        sparv_version=4,
+        sparv_version=3,
         content_type="pandas",
     )
     data = [x for x in reader]

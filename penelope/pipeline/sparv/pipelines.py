@@ -3,7 +3,7 @@ from .. import config, interfaces, pipelines, tasks
 
 def to_tagged_frame_pipeline(corpus_config: config.CorpusConfig):
     """Loads a teagged data frame"""
-    p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(payload=corpus_config.pipeline_payload)
+    p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config)
 
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
         task: interfaces.ITask = tasks.LoadTaggedCSV(
@@ -13,11 +13,7 @@ def to_tagged_frame_pipeline(corpus_config: config.CorpusConfig):
         )
 
     elif corpus_config.corpus_type == config.CorpusType.SparvXML:
-        task: interfaces.ITask = tasks.LoadTaggedXML(
-            filename=corpus_config.pipeline_payload.source,
-            sparv_version=int(corpus_config.pipeline_payload.get("sparv_version", 0)),
-            reader_opts=corpus_config.text_reader_opts,
-        )
+        task: interfaces.ITask = tasks.LoadTaggedXML()
     else:
         raise ValueError("fatal: corpus type is not (yet) supported")
 

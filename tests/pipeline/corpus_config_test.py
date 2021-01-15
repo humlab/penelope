@@ -11,6 +11,8 @@ corpus_name: ssi_unesco
 corpus_pattern: '*.zip'
 corpus_type: 1
 language: english
+pipelines:
+  tagged_frame_pipeline: penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
   document_index_sep: ;
   document_index_source: legal_instrument_index.csv

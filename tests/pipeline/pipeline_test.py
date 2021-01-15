@@ -4,12 +4,12 @@ import re
 from typing import List
 
 import pandas as pd
+import penelope.workflows as workflows
 import pytest
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextTransformOpts
-from penelope.notebook.dtm.compute_DTM_pipeline import compute_document_term_matrix as compute_dtm
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
-from penelope.pipeline.spacy.pipelines import spaCy_DTM_pipeline
+from penelope.pipeline.config import create_pipeline_factory
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER
 
@@ -46,7 +46,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: CorpusCo
 
     transform_opts = TextTransformOpts()
 
-    pipeline = CorpusPipeline(payload=config.pipeline_payload).load_text(
+    pipeline = CorpusPipeline(config=config).load_text(
         reader_opts=config.text_reader_opts, transform_opts=transform_opts
     )
     assert pipeline is not None
@@ -88,7 +88,7 @@ def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: CorpusConfi
     pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
     _ = (
-        CorpusPipeline(payload=config.pipeline_payload)
+        CorpusPipeline(config=config)
         .set_spacy_model(config.pipeline_payload.memory_store['spacy_model'])
         .load_text(reader_opts=config.text_reader_opts, transform_opts=transform_opts)
         .text_to_spacy()
@@ -104,7 +104,7 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
-    pipeline = CorpusPipeline(payload=config.pipeline_payload).checkpoint(checkpoint_filename)
+    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename)
 
     payloads: List[DocumentPayload] = pipeline.to_list()
 
@@ -120,10 +120,10 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
     filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
-    tagged_payload = next(CorpusPipeline(payload=config.pipeline_payload).checkpoint(checkpoint_filename).resolve())
+    tagged_payload = next(CorpusPipeline(config=config).checkpoint(checkpoint_filename).resolve())
 
     tokens_payload = next(
-        CorpusPipeline(payload=config.pipeline_payload)
+        CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
         .resolve()
@@ -140,10 +140,10 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
     filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
-    tagged_payload = next(CorpusPipeline(payload=config.pipeline_payload).checkpoint(checkpoint_filename).resolve())
+    tagged_payload = next(CorpusPipeline(config=config).checkpoint(checkpoint_filename).resolve())
 
     text_payload = next(
-        CorpusPipeline(payload=config.pipeline_payload)
+        CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
         .tokens_to_text()
@@ -162,7 +162,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
     filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
 
     payloads = (
-        CorpusPipeline(payload=config.pipeline_payload)
+        CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
         .tokens_to_text()
@@ -185,7 +185,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
 
     corpus: VectorizedCorpus = (
         (
-            CorpusPipeline(payload=config.pipeline_payload)
+            CorpusPipeline(config=config)
             .checkpoint(checkpoint_filename)
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
             .tokens_transform(tokens_transform_opts=TokensTransformOpts())
@@ -209,11 +209,8 @@ def test_compute_dtm_when_persist_is_false(config: CorpusConfig):
 
     args = FakeComputeOptsSpacyCSV(corpus_tag='compute_dtm_when_persist_is_false')
 
-    corpus = compute_dtm(
-        corpus_config=config,
-        pipeline_factory=spaCy_DTM_pipeline,
-        args=args,
-    )
+    corpus = workflows.document_term_matrix.compute(args=args, corpus_config=config)
+
     corpus.remove(tag=args.corpus_tag, folder=args.target_folder)
     corpus.dump(tag=args.corpus_tag, folder=args.target_folder)
 
@@ -271,3 +268,11 @@ def test_slice_py_regular_expressions():
     assert sliced_corpus.data.shape == (8, 1)
     assert len(sliced_corpus.token2id) == 1
     assert 'information' in sliced_corpus.token2id
+
+
+def test_create_pipeline_by_string(config: CorpusConfig):
+    cls_str = 'penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline'
+    factory = create_pipeline_factory(cls_str)
+    assert factory is not None
+    p: CorpusPipeline = factory(config)
+    assert p is not None

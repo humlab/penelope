@@ -1,8 +1,43 @@
 import os
 
 import penelope.corpus.dtm as dtm
+from penelope.notebook.interface import ComputeOpts
+from penelope.pipeline.config import CorpusConfig
+from penelope.pipeline.pipelines import wildcard_to_DTM_pipeline
 
-from ..interface import ComputeOpts
+CheckpointPath = str
+
+
+def compute(
+    *,
+    args: ComputeOpts,
+    corpus_config: CorpusConfig,
+) -> dtm.VectorizedCorpus:
+
+    try:
+
+        assert args.is_satisfied()
+
+        corpus: dtm.VectorizedCorpus = (
+            corpus_config.get_pipeline("tagged_frame_pipeline")
+            + wildcard_to_DTM_pipeline(
+                tokens_transform_opts=args.tokens_transform_opts,
+                extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
+                tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
+                vectorize_opts=args.vectorize_opts,
+            )
+        ).value()
+
+        if (args.count_threshold or 1) > 1:
+            corpus = corpus.slice_by_n_count(args.count_threshold)
+
+        if args.persist:
+            store_corpus_bundle(corpus, args)
+
+        return corpus
+
+    except Exception as ex:
+        raise ex
 
 
 def store_corpus_bundle(corpus: dtm.VectorizedCorpus, args: ComputeOpts):

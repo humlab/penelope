@@ -44,7 +44,7 @@ def test_read_sparv_csv_zip_using_tng_reader_and_zip_source(corpus_config: pipel
 
 def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
 
-    p = pipeline.CorpusPipeline(payload=corpus_config.pipeline_payload)
+    p = pipeline.CorpusPipeline(config=corpus_config)
 
     load = tasks.LoadTaggedCSV(
         filename=corpus_config.pipeline_payload.source,
@@ -66,7 +66,7 @@ def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
     assert all([isinstance(x.content, list) for x in payloads])
     assert len(payloads) == 3
 
-    # p = pipeline.CorpusPipeline(payload=corpus_config.pipeline_payload).load_tagged_frame(
+    # p = pipeline.CorpusPipeline(config=corpus_config).load_tagged_frame(
     #     corpus_config.pipeline_payload.source,
     #     options=corpus_config.content_deserialize_opts,
     # )

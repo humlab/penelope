@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 import collections
 import functools
-from typing import Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
 
 from .interfaces import ContentType, DocumentPayload, ITask, PipelinePayload
+
+if TYPE_CHECKING:
+    from penelope.pipeline import CorpusConfig
+
 
 _T_self = TypeVar("_T_self")
 _A = TypeVar("_A")
@@ -12,16 +18,26 @@ class CorpusPipelineBase(Generic[_T_self]):
     def __init__(
         self,
         *,
-        payload: PipelinePayload,
+        config: CorpusConfig = None,
+        payload: PipelinePayload = None,
         tasks: Sequence[ITask] = None,
     ):
-        self._payload = payload
+        self._config = config
+        self._payload = payload if payload else config.pipeline_payload if config else None
         self._tasks: List[ITask] = []
         self.add(tasks or [])
 
     @property
+    def config(self) -> CorpusConfig:
+        return self._config
+
+    @property
     def payload(self) -> PipelinePayload:
         return self._payload
+
+    @payload.setter
+    def payload(self, value: PipelinePayload):
+        self._payload = value
 
     @property
     def tasks(self) -> List[ITask]:
@@ -51,6 +67,7 @@ class CorpusPipelineBase(Generic[_T_self]):
         return self.tasks[-1].outstream()
 
     def exhaust(self) -> _T_self:
+        """Exhaust the entire pipeline, disregarding items"""
         collections.deque(self.resolve(), maxlen=0)
         return self
 

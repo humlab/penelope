@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import spacy
-from penelope.pipeline import ContentType, DocumentPayload, PipelinePayload
-from penelope.pipeline.spacy.pipelines import SpacyPipeline
+from penelope.pipeline import ContentType, CorpusPipeline, DocumentPayload, PipelinePayload
+from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.tasks import SetSpacyModel, SpacyDocToTaggedFrame, ToSpacyDoc, ToSpacyDocToTaggedFrame
 from spacy.tokens import Doc
 
@@ -44,7 +44,8 @@ def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
 
 
 def patch_spacy_pipeline(payload: PipelinePayload):
-    pipeline = SpacyPipeline(payload=payload, tasks=[]).setup()
+    config = Mock(spec=CorpusConfig, pipeline_payload=payload)
+    pipeline = CorpusPipeline(config=config, tasks=[]).setup()
     return pipeline
 
 

@@ -1,15 +1,31 @@
 import os
 
 import penelope.co_occurrence as co_occurrence
+import penelope.workflows as workflows
+import pytest
 from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
-from penelope.notebook.co_occurrence.compute_pipeline import compute_co_occurrence
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility.pos_tags import PoS_Tag_Scheme, PoS_Tag_Schemes, pos_tags_to_str
 
-from ..fixtures import FakeComputeOptsSpacyCSV, FakeSSI
+from ..fixtures import FakeComputeOptsSpacyCSV
+
+# pylint: disable=redefined-outer-name
+
+
+def fake_config() -> CorpusConfig:
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml').files(
+        source='./tests/test_data/legal_instrument_five_docs_test.zip',
+        index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
+    )
+    return corpus_config
+
+
+@pytest.fixture(scope='module')
+def config():
+    return fake_config()
 
 
 def test_spaCy_co_occurrence_pipeline():
@@ -55,18 +71,12 @@ def test_spaCy_co_occurrence_pipeline():
     os.remove(target_filename)
 
 
-def test_spaCy_co_occurrence_pipeline2():
+def test_spaCy_co_occurrence_workflow(config):
 
     partition_key: str = 'year'
-    corpus_config: CorpusConfig = FakeSSI(
-        source='./tests/test_data/legal_instrument_five_docs_test.zip',
-        index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
-        # source='./tests/test_data/legal_instrument_corpus.zip',
-        # index_source='./tests/test_data/legal_instrument_index.csv',
-    )
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
-        corpus_filename=corpus_config.pipeline_payload.source,
+        corpus_filename=config.pipeline_payload.source,
     )
     args.context_opts = co_occurrence.ContextOpts(
         context_width=4, ignore_concept=True
@@ -76,7 +86,7 @@ def test_spaCy_co_occurrence_pipeline2():
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
     compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
-        corpus_config=corpus_config,
+        corpus_config=config,
         tokens_transform_opts=args.tokens_transform_opts,
         extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
@@ -103,7 +113,7 @@ def test_spaCy_co_occurrence_pipeline2():
         co_occurrences=compute_result.co_occurrences,
         document_index=compute_result.document_index,
         compute_options=co_occurrence.create_options_bundle(
-            reader_opts=corpus_config.text_reader_opts,
+            reader_opts=config.text_reader_opts,
             tokens_transform_opts=args.tokens_transform_opts,
             context_opts=args.context_opts,
             extract_tokens_opts=args.extract_tagged_tokens_opts,
@@ -117,21 +127,15 @@ def test_spaCy_co_occurrence_pipeline2():
     co_occurrence.store_bundle(co_occurrence_filename, bundle)
 
 
-def test_spaCy_co_occurrence_pipeline3():
+def test_spaCy_co_occurrence_pipeline3(config):
     corpus_filename = './tests/test_data/legal_instrument_five_docs_test.zip'
-    corpus_config: CorpusConfig = FakeSSI(
-        source=corpus_filename,
-        index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
-        # source='./tests/test_data/legal_instrument_corpus.zip',
-        # index_source='./tests/test_data/legal_instrument_index.csv',
-    )
     args = FakeComputeOptsSpacyCSV(
         corpus_filename=corpus_filename,
         corpus_tag="SATURNUS",
     )
 
-    compute_co_occurrence(
-        corpus_config=corpus_config,
+    workflows.co_occurrence.compute(
         args=args,
+        corpus_config=config,
         checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',
     )

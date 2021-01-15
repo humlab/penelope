@@ -16,6 +16,7 @@ from penelope.corpus.readers import (
     TextTransformer,
     TextTransformOpts,
 )
+from penelope.corpus.readers.tng.factory import create_sparv_xml_corpus_reader
 from penelope.utility import to_text
 from tqdm.auto import tqdm
 
@@ -216,7 +217,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class SaveTaggedFrame(DefaultResolveMixIn, ITask):
+class SaveTaggedCSV(DefaultResolveMixIn, ITask):
     """Stores sequence of tagged data frame documents to archive. """
 
     filename: str = None
@@ -238,12 +239,12 @@ class SaveTaggedFrame(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedFrame(DefaultResolveMixIn, ITask):
+class LoadTaggedCSV(DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
     options: checkpoint.CorpusSerializeOpts = None
-    extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index  should be created
+    extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index should be created
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -257,6 +258,37 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
+            yield payload
+
+
+@dataclass
+class LoadTaggedXML(DefaultResolveMixIn, ITask):
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+
+    filename: str = None
+    reader_opts: TextReaderOpts = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TAGGEDFRAME
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+
+        corpus_reader = create_sparv_xml_corpus_reader(
+            source_path=self.filename or self.pipeline.payload.source,
+            reader_opts=self.reader_opts or self.pipeline.config.text_reader_opts,
+            sparv_version=int(self.pipeline.payload.get("sparv_version", 0)),
+            content_type="pandas",
+        )
+        self.pipeline.payload.effective_document_index = corpus_reader.document_index
+
+        for document, content in corpus_reader:
+            payload = DocumentPayload(
+                content_type=ContentType.TAGGEDFRAME,
+                filename=document,
+                content=content,
+                filename_values=None,
+            )
             yield payload
 
 
@@ -369,6 +401,7 @@ class TaggedFrameToTokens(UpdateDocumentPropertyMixIn, ITask):
             doc=payload.content,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
+            **(self.pipeline.payload.tagged_columns_names or {}),
         )
 
         tokens = list(tokens)
@@ -575,3 +608,19 @@ class ChunkTokens(ITask):
                         content=tokens[i : i + self.chunk_size],
                         chunk_id=chunk_id,
                     )
+
+
+@dataclass
+class WildcardTask(ITask):
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.NONE
+
+    def abort(self):
+        raise PipelineError("fatal: ninstantiated wildcard task encountered. Please check configuration!")
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+        self.abort()
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        self.abort()

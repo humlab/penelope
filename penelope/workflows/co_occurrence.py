@@ -1,24 +1,22 @@
 import os
-from typing import Callable, Optional
+from typing import Optional
 
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from penelope.corpus import VectorizedCorpus
-from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
+from penelope.notebook import interface
 from penelope.utility import getLogger
-
-from .. import interface
 
 logger = getLogger('penelope')
 
-POS_CHECKPOINT_FILENAME_POSTFIX = '_spaCy_pos_tagged_frame_csv.zip'
+POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
 
 # pylint: disable=unused-argument
-def compute_co_occurrence(
-    args: interface.ComputeOpts,
+def compute(
     *,
-    corpus_config: pipeline.CorpusConfig = None,
+    args: interface.ComputeOpts,
+    corpus_config: pipeline.CorpusConfig,
     checkpoint_file: Optional[str] = None,
 ) -> co_occurrence.ComputeResult:
     """Creates and stored a concept co-occurrence bundle using specified options."""
@@ -34,16 +32,19 @@ def compute_co_occurrence(
         checkpoint_filename: Optional[str] = (
             checkpoint_file or f"{corpus_config.corpus_name}_{POS_CHECKPOINT_FILENAME_POSTFIX}"
         )
-
-        compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
-            corpus_config=corpus_config,
-            tokens_transform_opts=args.tokens_transform_opts,
-            extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
-            tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
-            context_opts=args.context_opts,
-            global_threshold_count=args.count_threshold,
-            partition_column=args.partition_keys[0],
-            checkpoint_filename=checkpoint_filename,
+        tagged_frame_pipeline = corpus_config.get_pipeline(
+            "tagged_frame_pipeline", checkpoint_filename=checkpoint_filename
+        )
+        compute_result: co_occurrence.ComputeResult = (
+            tagged_frame_pipeline
+            + pipeline.wildcard_to_co_occurrence_pipeline(
+                tokens_transform_opts=args.tokens_transform_opts,
+                extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
+                tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
+                context_opts=args.context_opts,
+                global_threshold_count=args.count_threshold,
+                partition_column=args.partition_keys[0],
+            )
         ).value()
 
         if len(compute_result.co_occurrences) == 0:
