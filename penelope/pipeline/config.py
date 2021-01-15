@@ -57,8 +57,14 @@ class CorpusSerializeOpts:
         self.content_type_code = int(value)
 
     def as_type(self, value: interfaces.ContentType) -> "CorpusSerializeOpts":
-        self.content_type = value
-        return self
+        opts = CorpusSerializeOpts(
+            content_type_code=int(value),
+            document_index_name=self.document_index_name,
+            document_index_sep=self.document_index_sep,
+            sep=self.sep,
+            quoting=self.quoting,
+        )
+        return opts
 
     @staticmethod
     def load(data: dict) -> "CorpusSerializeOpts":
