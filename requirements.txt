@@ -113,9 +113,6 @@ click==7.1.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (py
 colorama==0.4.4; python_version >= "3.7" and python_full_version < "3.0.0" and sys_platform == "win32" or sys_platform == "win32" and python_version >= "3.7" and python_full_version >= "3.5.0" \
     --hash=sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2 \
     --hash=sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b
-cutter-ng==2.5 \
-    --hash=sha256:686033a2ae796da93a2239c9ea5ee2ba39dc6c6f1acf5b7e8b2341253a193c43 \
-    --hash=sha256:10508c3a1b651ffa570516c0aaabd5e9d98a477967e1d3f720ba90fa659e708d
 cycler==0.10.0; python_version >= "3.6" \
     --hash=sha256:1d8a5ae1ff6c5cf9b93e8811e581232ad8920aeec647c37316ceac982b08cb2d \
     --hash=sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8
