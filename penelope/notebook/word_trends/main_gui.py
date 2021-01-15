@@ -1,4 +1,5 @@
 import ipywidgets as widgets
+import penelope.corpus.dtm as dtm
 import penelope.notebook.dtm as dtm_gui
 import penelope.notebook.word_trends as word_trends
 import penelope.pipeline as pipeline
@@ -9,18 +10,23 @@ from penelope.notebook.interface import ComputeOpts
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
+LAST_ARGS = None
+LAST_CORPUS_CONFIG = None
+LAST_CORPUS = None
+
 
 @view.capture(clear_output=True)
 def corpus_loaded_callback(
     corpus: VectorizedCorpus,
-    corpus_tag: str,
-    corpus_folder: str,
+    args: ComputeOpts,
     **_,
 ):
+    global LAST_CORPUS
+    LAST_CORPUS = corpus
     trends_data: word_trends.TrendsData = word_trends.TrendsData(
         corpus=corpus,
-        corpus_folder=corpus_folder,
-        corpus_tag=corpus_tag,
+        corpus_folder=args.corpus_folder,
+        corpus_tag=args.corpus_tag,
         n_count=25000,
     ).update()
 
@@ -34,8 +40,12 @@ def corpus_loaded_callback(
 
 
 @view.capture(clear_output=True)
-def compute_callback(args: ComputeOpts, corpus_config: pipeline.CorpusConfig):
-    workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
+def compute_callback(args: ComputeOpts, corpus_config: pipeline.CorpusConfig) -> dtm.VectorizedCorpus:
+    global LAST_ARGS, LAST_CORPUS_CONFIG
+    LAST_ARGS = args
+    LAST_CORPUS_CONFIG = corpus_config
+    corpus: dtm.VectorizedCorpus = workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
+    return corpus
 
 
 def create_to_dtm_gui(

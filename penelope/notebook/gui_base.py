@@ -1,9 +1,8 @@
 import os
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Any, Callable
 
 import ipywidgets as widgets
-import penelope.corpus.dtm as dtm
 import penelope.notebook.utility as notebook_utility
 import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
@@ -106,8 +105,8 @@ class BaseGUI:
         layout=default_layout,
     )
 
-    compute_callback: Callable[[interface.ComputeOpts], None] = None
-    done_callback: Callable[[dtm.VectorizedCorpus, str, str], None] = None
+    compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any] = None
+    done_callback: Callable[[Any, interface.ComputeOpts], None] = None
 
     def layout(self, hide_input=False, hide_output=False) -> widgets.VBox:
 
@@ -179,14 +178,10 @@ class BaseGUI:
         self._vectorize_button.disabled = True
         try:
 
-            corpus = self.compute_callback(self.compute_opts, self.corpus_config)
+            result: Any = self.compute_callback(self.compute_opts, self.corpus_config)
 
             if self.done_callback is not None:
-                self.done_callback(
-                    corpus=corpus,
-                    corpus_tag=self.corpus_tag,
-                    corpus_folder=self.target_folder,
-                )
+                self.done_callback(result, self.compute_opts)
 
         except (ValueError, FileNotFoundError) as ex:
             print(ex)
@@ -210,7 +205,13 @@ class BaseGUI:
     def _remove_stopwords_state_changed(self, *_):
         self._extra_stopwords.disabled = not self._remove_stopwords.value
 
-    def setup(self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable) -> "BaseGUI":
+    def setup(
+        self,
+        *,
+        config: CorpusConfig,
+        compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any],
+        done_callback: Callable[[Any, interface.ComputeOpts], None],
+    ) -> "BaseGUI":
 
         self._corpus_filename = notebook_utility.FileChooserExt2(
             path=self.default_corpus_path or default_data_folder(),
