@@ -16,7 +16,6 @@ from tests.utils import OUTPUT_FOLDER
 from .fixtures import FakeComputeOptsSpacyCSV
 
 CORPUS_FOLDER = './tests/test_data'
-OUTPUT_FOLDER = './tests/output'
 
 # pylint: disable=redefined-outer-name
 
