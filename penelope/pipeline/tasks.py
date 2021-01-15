@@ -205,7 +205,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
-            options = checkpoint.CorpusSerializeOpts().as_type(self.out_content_type)
+            options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(self.out_content_type)
             payload_stream = checkpoint.store_checkpoint(
                 options=options,
                 target_filename=self.filename,
