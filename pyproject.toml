@@ -122,7 +122,6 @@ exclude = '''
   | \.pypy_cache
   | \.pytest_cache
   | deprecated
-  | legacy
 )
 '''
 
