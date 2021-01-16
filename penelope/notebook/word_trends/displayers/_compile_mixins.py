@@ -1,5 +1,5 @@
 import itertools
-from typing import Callable, List, Sequence
+from typing import Any, Callable, List, Sequence
 
 import bokeh
 import scipy
@@ -16,8 +16,10 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
 class LinesDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: List[int], **kwargs) -> dict:
+
+    def compile(self, corpus: VectorizedCorpus, indices: List[int], **kwargs) -> Any:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
+        
         categories = corpus.document_index.category
         bag_term_matrix = corpus.bag_term_matrix
 
@@ -50,17 +52,23 @@ class LinesDataMixin:
 
 
 class CategoryDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> dict:
+    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Any:
         """Extracts token's vectors for tokens ´indices` and returns a dict keyed by token"""
+
         if 'category' not in corpus.document_index.columns:
             raise PenelopeBugCheck("Supplied corpus HAS NOT been prepeared with call to 'group_by_period'")
+
         categories = corpus.document_index.category
+
         if len(categories) != corpus.data.shape[0]:
             raise PenelopeBugCheck(
                 f"DTM shape {corpus.data.shape} is not compatible with categories {corpus.categories}"
             )
+
         if not isinstance(corpus.bag_term_matrix, scipy.sparse.spmatrix):
             raise PenelopeBugCheck(f"Expected sparse matrix, found {type(corpus.data)}")
+
         data = {corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).A.ravel() for token_id in indices}
         data['category'] = categories
+
         return data
