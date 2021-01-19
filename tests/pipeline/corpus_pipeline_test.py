@@ -13,12 +13,12 @@ from penelope.corpus import load_document_index
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (
     CheckpointData,
-    ContentSerializeOpts,
     ContentType,
+    CorpusConfig,
     CorpusPipeline,
+    CorpusSerializeOpts,
     DocumentPayload,
     PipelinePayload,
-    SpacyPipeline,
 )
 from tests.utils import TEST_DATA_FOLDER
 
@@ -96,17 +96,18 @@ def patch_spacy_doc(*x, **y):  # pylint: disable=unused-argument
     return m
 
 
+def fake_config():
+    return Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(memory_store=dict(spacy_nlp=patch_spacy_load())))
+
+
 def patch_spacy_pipeline(task):
-    pipeline = SpacyPipeline(
-        payload=PipelinePayload(memory_store=dict(spacy_nlp=patch_spacy_load())),
-        tasks=[task],
-    ).setup()
+    pipeline = CorpusPipeline(config=fake_config(), tasks=[task]).setup()
     return pipeline
 
 
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
-    pipeline = SpacyPipeline(payload=PipelinePayload())
+    pipeline = CorpusPipeline(config=fake_config())
     _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, lang_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
 
@@ -135,7 +136,9 @@ def test_tqdm_task():
 
 
 def test_passthrough_process_succeeds():
-    task = tasks.Passthrough(pipeline=CorpusPipeline(payload=PipelinePayload())).setup()
+    task = tasks.Passthrough(
+        pipeline=CorpusPipeline(config=Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload()))
+    ).setup()
     current_payload = DocumentPayload()
     next_payload = task.process(current_payload)
     assert current_payload == next_payload
@@ -213,16 +216,17 @@ def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
-def patch_tagged_frame_to_tokens(*_) -> Iterable[str]:
+def patch_tagged_frame_to_tokens(*_, **__) -> Iterable[str]:
     return ["a", "b", "c"]
 
 
 @patch('penelope.pipeline.convert.tagged_frame_to_tokens', patch_tagged_frame_to_tokens)
 def test_tagged_frame_to_tokens_succeeds():
+    pipeline = Mock(spec=CorpusPipeline, payload=Mock(spec=PipelinePayload, tagged_columns_names={}))
     task = tasks.TaggedFrameToTokens(
-        pipeline=Mock(spec=CorpusPipeline),
+        pipeline=pipeline,
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
-        filter_opts=TaggedTokensFilterOpts(is_punct=False, is_space=False),
+        filter_opts=TaggedTokensFilterOpts(is_punct=False),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))
     next_payload = task.process(current_payload)
@@ -241,13 +245,13 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
         content_type=ContentType.TAGGEDFRAME,
         document_index=None,
         payload_stream=fake_data_frame_stream(1),
-        serialize_opts=ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
+        serialize_opts=CorpusSerializeOpts().as_type(ContentType.TAGGEDFRAME),
     )
 
 
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 def test_save_data_frame_succeeds():
-    task = tasks.SaveTaggedFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
+    task = tasks.SaveTaggedCSV(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -255,7 +259,7 @@ def test_save_data_frame_succeeds():
 
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_load_data_frame_succeeds():
-    task = tasks.LoadTaggedFrame(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
+    task = tasks.LoadTaggedCSV(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -305,8 +309,9 @@ def test_spacy_pipeline():
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,', 'pos_column': 'pos_'},
     )
+    config = Mock(spec=CorpusConfig, pipeline_payload=pipeline_payload)
     pipeline = (
-        CorpusPipeline(payload=pipeline_payload)
+        CorpusPipeline(config=config)
         .set_spacy_model(pipeline_payload.memory_store['spacy_model'])
         .load_text(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
         .text_to_spacy()
@@ -333,7 +338,8 @@ def test_spacy_pipeline_load_checkpoint():
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
     )
-    pipeline = SpacyPipeline(payload=pipeline_payload).checkpoint(checkpoint_filename).to_content()
+    config = Mock(spec=CorpusConfig, payload=pipeline_payload)
+    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename).to_content()
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None
@@ -342,7 +348,7 @@ def test_spacy_pipeline_load_checkpoint():
 def test_load_primary_document_index():
 
     filename = './tests/test_data/legal_instrument_five_docs_test.csv'
-    df = load_document_index(filename, key_column=None, sep=';')
+    df = load_document_index(filename, sep=';')
 
     assert df is not None
     assert 'unesco_id' in df.columns

@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import ipyaggrid
 import numpy as np
@@ -21,7 +21,11 @@ DEFAULT_GRID_STYLE = dict(
 )
 
 DEFAULT_GRID_OPTIONS = dict(
-    enableSorting=True, enableFilter=True, enableColResize=True, enableRangeSelection=False, rowSelection='multiple'
+    enableSorting=True,
+    enableFilter=True,
+    enableColResize=True,
+    enableRangeSelection=False,
+    rowSelection='multiple',
 )
 
 
@@ -39,7 +43,12 @@ def default_column_defs(df: pd.DataFrame, precision: int = 6) -> List[Dict]:
     return column_defs
 
 
-def display_grid(data, column_defs=None, grid_options=None, grid_style=None):
+def display_grid(
+    data: Union[dict, pd.DataFrame],
+    column_defs: List[dict] = None,
+    grid_options: dict = None,
+    grid_style: dict = None,
+):
 
     if isinstance(data, dict):
         df = pd.DataFrame(data=data)  # .set_index('year')

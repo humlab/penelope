@@ -78,7 +78,6 @@ class PipelinePayload:
     source_folder: str = None
     source: TextSource = None
     document_index_source: Union[str, pd.DataFrame] = None
-    document_index_key: str = None
     document_index_sep: str = '\t'
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
@@ -102,7 +101,6 @@ class PipelinePayload:
             elif isinstance(self.document_index_source, str):
                 self.effective_document_index = load_document_index(
                     filename=self.document_index_source,
-                    key_column=self.document_index_key,
                     sep=self.document_index_sep,
                 )
         return self.effective_document_index
@@ -114,7 +112,6 @@ class PipelinePayload:
             document_index_source=self.document_index_source
             if isinstance(self.document_index_source, str)
             else 'object',
-            document_index_key=self.document_index_key,
             pos_schema_name=self.pos_schema_name,
         )
 
@@ -123,6 +120,11 @@ class PipelinePayload:
 
     def put(self, key: str, value: Any) -> "PipelinePayload":
         self.memory_store[key] = value
+        return self
+
+    def put2(self, **kwargs) -> "PipelinePayload":
+        for key, value in kwargs.items():
+            self.memory_store[key] = value
         return self
 
     def set_reader_index(self, reader_index: pd.DataFrame) -> "PipelinePayload":
@@ -155,6 +157,14 @@ class PipelinePayload:
             document_name=document_name,
             property_bag=properties,
         )
+
+    @property
+    def tagged_columns_names(self):
+        return {k: v for k, v in self.memory_store.items() if k in ['text_column', 'pos_column', 'lemma_column']}
+
+    def extend(self, _: DocumentPayload):
+        """Add properties of `other` to self. Used when combining two pipelines"""
+        ...
 
 
 @dataclass

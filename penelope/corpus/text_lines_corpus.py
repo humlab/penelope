@@ -1,7 +1,7 @@
-from typing import Dict, Sequence
+from typing import Dict
 
 from penelope.utility import (
-    IndexOfSplitOrCallableOrRegExp,
+    FilenameFieldSpecs,
     extract_filenames_metadata,
     list_of_dicts_to_dict_of_lists,
     tuple_of_lists_to_list_of_tuples,
@@ -19,7 +19,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         self,
         filename: str,
         fields: Dict[str, int],
-        filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp] = None,
+        filename_fields: FilenameFieldSpecs = None,
         index_field: str = None,
         sep: str = ' # ',
     ):

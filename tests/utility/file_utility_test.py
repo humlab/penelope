@@ -8,12 +8,12 @@ from penelope.utility import (
     extract_filename_metadata,
     filename_satisfied_by,
     list_filenames,
+    namelist,
     pandas_read_csv_zip,
     pandas_to_csv_zip,
     strip_path_and_add_counter,
     strip_path_and_extension,
     strip_paths,
-    zip_get_filenames,
 )
 from penelope.utility.filename_utils import strip_extensions
 from tests.utils import TEST_CORPUS_FILENAME
@@ -170,7 +170,7 @@ def test_pandas_to_csv_zip():
     pandas_to_csv_zip(filename, dfs=data, extension='csv', sep='\t')
 
     assert os.path.isfile(filename)
-    assert set(zip_get_filenames(filename, extension="csv")) == set({'df1.csv', 'df2.csv'})
+    assert set(namelist(zip_or_filename=filename, pattern="*.csv")) == set({'df1.csv', 'df2.csv'})
 
 
 def test_pandas_read_csv_zip():

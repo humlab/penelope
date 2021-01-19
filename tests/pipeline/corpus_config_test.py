@@ -11,8 +11,9 @@ corpus_name: ssi_unesco
 corpus_pattern: '*.zip'
 corpus_type: 1
 language: english
+pipelines:
+  tagged_frame_pipeline: penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
-  document_index_key: null
   document_index_sep: ;
   document_index_source: legal_instrument_index.csv
   filenames: null
@@ -30,7 +31,6 @@ tagged_tokens_filter_opts:
     is_alpha: null
     is_digit: null
     is_punct: false
-    is_space: false
     is_stop: null
 text_reader_opts:
   as_binary: false
@@ -74,8 +74,6 @@ def test_dump_and_load_of_corpus_config_succeeds():
 def test_find_config():
 
     c = CorpusConfig.find("ssi_corpus_config.yaml", './tests/test_data')
-    assert c is not None
-    c = CorpusConfig.find("ssi_corpus_config.yml", './tests/test_data')
     assert c is not None
 
 

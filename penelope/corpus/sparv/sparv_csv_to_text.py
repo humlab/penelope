@@ -29,11 +29,11 @@ class SparvCsvToText:
         reader = csv.reader(content.splitlines(), delimiter=self.delimiter, quoting=csv.QUOTE_NONE)
         return self._transform(reader)
 
-    def read_transform(self, filename: str):
+    def read_transform(self, filename: str) -> str:
         reader = csv.reader(filename, delimiter=self.delimiter, quoting=csv.QUOTE_NONE)
         return self._transform(reader)
 
-    def _transform(self, reader: Any):  # Any = csv._reader
+    def _transform(self, reader: Any) -> str:  # Any = csv._reader
         _opts = self.extract_tokens_opts
         _lemmatize: bool = _opts.lemmatize
         _pos_includes: str = _opts.get_pos_includes()

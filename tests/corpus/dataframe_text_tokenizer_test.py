@@ -3,29 +3,37 @@ import unittest
 import pandas as pd
 import penelope.corpus.readers as readers
 
+TEST_DATA_01 = [
+    (2000, 'A B C', 'doc_01.txt'),
+    (2000, 'B C D', 'doc_02.txt'),
+    (2001, 'C B', 'doc_03.txt'),
+    (2003, 'A B F', 'doc_04.txt'),
+    (2003, 'E B', 'doc_05.txt'),
+    (2003, 'F E E', 'doc_06.txt'),
+]
+TEST_DATA_02 = [
+    (2000, 'AB', 'A B C'),
+    (2000, 'AB', 'B C D'),
+    (2001, 'AB', 'C B'),
+    (2003, 'AB', 'A B F'),
+    (2003, 'AB', 'E B'),
+    (2003, 'AB', 'F E E'),
+    (2000, 'EX', 'A B C'),
+    (2000, 'EX', 'B C D'),
+    (2001, 'EX', 'C B'),
+    (2003, 'EX', 'A A B'),
+    (2003, 'EX', 'B B'),
+    (2003, 'EX', 'A E'),
+]
 
-class Test_DataFrameTextTokenizer(unittest.TestCase):
+
+class Test_PandasCorpusReader(unittest.TestCase):
     def create_test_dataframe(self):
-        data = [(2000, 'A B C'), (2000, 'B C D'), (2001, 'C B'), (2003, 'A B F'), (2003, 'E B'), (2003, 'F E E')]
-        df = pd.DataFrame(data, columns=['year', 'txt'])
+        df = pd.DataFrame(TEST_DATA_01, columns=['year', 'txt', 'filename'])
         return df
 
     def create_triple_meta_dataframe(self):
-        data = [
-            (2000, 'AB', 'A B C'),
-            (2000, 'AB', 'B C D'),
-            (2001, 'AB', 'C B'),
-            (2003, 'AB', 'A B F'),
-            (2003, 'AB', 'E B'),
-            (2003, 'AB', 'F E E'),
-            (2000, 'EX', 'A B C'),
-            (2000, 'EX', 'B C D'),
-            (2001, 'EX', 'C B'),
-            (2003, 'EX', 'A A B'),
-            (2003, 'EX', 'B B'),
-            (2003, 'EX', 'A E'),
-        ]
-        df = pd.DataFrame(data, columns=['year', 'newspaper', 'txt'])
+        df = pd.DataFrame(TEST_DATA_02, columns=['year', 'newspaper', 'txt'])
         return df
 
     def test_extract_metadata_when_sourcefile_has_year_and_newspaper(self):
@@ -37,52 +45,40 @@ class Test_DataFrameTextTokenizer(unittest.TestCase):
 
     def test_reader_with_all_documents(self):
         df = self.create_test_dataframe()
-        reader = readers.DataFrameTextTokenizer(df)
+        reader = readers.PandasCorpusReader(df)
         result = [x for x in reader]
-        expected = [
-            ('0', 'A B C'.split()),
-            ('1', 'B C D'.split()),
-            ('2', 'C B'.split()),
-            ('3', 'A B F'.split()),
-            ('4', 'E B'.split()),
-            ('5', 'F E E'.split()),
-        ]
+        expected = [(name, doc.split()) for (_, doc, name) in TEST_DATA_01]
+
         self.assertEqual(expected, result)
-        self.assertEqual(['0', '1', '2', '3', '4', '5'], reader.filenames)
+        self.assertEqual([f'doc_0{i+1}.txt' for i in range(0, 6)], reader.filenames)
         self.assertEqual(
-            [
-                dict(filename='0', year=2000),
-                dict(filename='1', year=2000),
-                dict(filename='2', year=2001),
-                dict(filename='3', year=2003),
-                dict(filename='4', year=2003),
-                dict(filename='5', year=2003),
-            ],
+            [{'filename': name, 'year': year} for (year, _, name) in TEST_DATA_01],
             reader.metadata,
         )
 
     def test_reader_with_given_year(self):
+
         df = self.create_triple_meta_dataframe()
-        reader = readers.DataFrameTextTokenizer(df, year=2003)
+
+        expected_indices = [3, 4, 5, 9, 10, 11]
+
+        reader = readers.PandasCorpusReader(df, year=2003)
+
+        expected_filenames = [f'document_{i}.txt' for i in expected_indices]
+        self.assertEqual(sorted(expected_filenames), sorted(reader.filenames))
+
         result = [x for x in reader]
-        expected = [
-            ('3', ['A', 'B', 'F']),
-            ('4', ['E', 'B']),
-            ('5', ['F', 'E', 'E']),
-            ('9', ['A', 'A', 'B']),
-            ('10', ['B', 'B']),
-            ('11', ['A', 'E']),
-        ]
-        self.assertEqual(expected, result)
-        self.assertEqual(['3', '4', '5', '9', '10', '11'], reader.filenames)
+
+        expected_name_docs = [(f'document_{i}.txt', TEST_DATA_02[i][2].split()) for i in expected_indices]
+        self.assertEqual(sorted(expected_name_docs, key=lambda x: x[0]), result)
+
         self.assertEqual(
-            [
-                dict(filename='3', newspaper='AB', year=2003),
-                dict(filename='4', newspaper='AB', year=2003),
-                dict(filename='5', newspaper='AB', year=2003),
-                dict(filename='9', newspaper='EX', year=2003),
-                dict(filename='10', newspaper='EX', year=2003),
-                dict(filename='11', newspaper='EX', year=2003),
-            ],
+            sorted(
+                [
+                    dict(filename=f'document_{i}.txt', newspaper=TEST_DATA_02[i][1], year=TEST_DATA_02[i][0])
+                    for i in expected_indices
+                ],
+                key=lambda x: x['filename'],
+            ),
             reader.metadata,
         )

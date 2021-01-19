@@ -1,6 +1,7 @@
 # type: ignore
 import abc
-from typing import Dict, Iterable, List, Mapping, Optional, Protocol, Tuple
+from numbers import Number
+from typing import Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -119,7 +120,7 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def n_top_tokens(self, n_top) -> Dict[str, int]:
+    def n_global_top_tokens(self, n_top: int) -> Dict[str, int]:
         ...
 
     @abc.abstractmethod
@@ -167,7 +168,26 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_top_n_words(self, n=1000, indices=None):
+    def get_top_n_words(self, n: int = 1000, indices: Sequence[int] = None) -> Sequence[Tuple[str, Number]]:
+        ...
+
+    @abc.abstractmethod
+    def get_partitioned_top_n_words(
+        self,
+        category_column: str = 'category',
+        n_count: int = 100,
+        pad: str = None,
+        keep_empty: bool = False,
+    ) -> dict:
+        ...
+
+    @abc.abstractmethod
+    def get_top_terms(
+        self,
+        category_column: str = 'category',
+        n_count: int = 100,
+        kind: str = 'token',
+    ) -> pd.DataFrame:
         ...
 
     @abc.abstractmethod

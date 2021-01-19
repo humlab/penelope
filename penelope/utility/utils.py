@@ -8,8 +8,9 @@ import os
 import platform
 import re
 import time
+from importlib import import_module
 from numbers import Number
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
 
 import gensim.utils
 import numpy as np
@@ -161,6 +162,11 @@ def clamp_values(values: Sequence[Number], low_high: Tuple[Number, Number]) -> S
     """Clamps value to supplied interval."""
     mw = max(values)
     return [project_to_range(w / mw, low_high[0], low_high[1]) for w in values]
+
+
+def clamp(n: int, smallest: int, largest: int) -> int:
+    """Clamps integers to a range"""
+    return max(smallest, min(n, largest))
 
 
 @functools.lru_cache(maxsize=512)
@@ -485,3 +491,12 @@ class DummyContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
+
+
+def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
+    try:
+        module_path, cls_or_function_name = class_or_function_path.rsplit('.', 1)
+        module = import_module(module_path)
+        return getattr(module, cls_or_function_name)
+    except (ImportError, AttributeError) as e:
+        raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e

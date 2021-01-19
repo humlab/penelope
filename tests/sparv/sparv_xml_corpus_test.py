@@ -2,9 +2,9 @@ import os
 import uuid
 
 import penelope.corpus.sparv_corpus as sparv_corpus
+import penelope.utility.zip_utils as zip_utils
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.utility import read_from_archive
 from tests.utils import OUTPUT_FOLDER
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
@@ -35,7 +35,7 @@ def test_reader_store_result():
 
     for i in range(0, len(expected_names)):
 
-        content = read_from_archive(target_filename, expected_names[i], as_binary=False)
+        content = zip_utils.read(zip_or_filename=target_filename, filename=expected_names[i], as_binary=False)
 
         assert ' '.join(expected_documents[i]) == content
 
@@ -60,7 +60,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
 
     test_filename = "sou_1945_1.txt"
 
-    content = read_from_archive(target_filename, test_filename, as_binary=False)
+    content = zip_utils.read(zip_or_filename=target_filename, filename=test_filename, as_binary=False)
 
     assert content.startswith(expected_document_start)
 

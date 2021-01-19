@@ -8,22 +8,29 @@ if TYPE_CHECKING:
     # from ..pipeline import T_self
     from spacy.language import Language
 
-    from .pipelines import SpacyPipeline
+    from ..pipelines import CorpusPipeline
 
 
 class SpacyPipelineShortcutMixIn:
-    def text_to_spacy(self: SpacyPipeline) -> SpacyPipeline:
+    def text_to_spacy(self: CorpusPipeline) -> CorpusPipeline:
         return self.add(tasks.ToSpacyDoc())
 
-    def spacy_to_tagged_frame(self: SpacyPipeline, attributes: List[str] = None) -> SpacyPipeline:
+    def spacy_to_tagged_frame(self: CorpusPipeline, attributes: List[str] = None) -> CorpusPipeline:
         return self.add(tasks.SpacyDocToTaggedFrame(attributes=attributes))
 
-    def spacy_to_pos_tagged_frame(self: SpacyPipeline) -> SpacyPipeline:
+    def spacy_to_pos_tagged_frame(self: CorpusPipeline) -> CorpusPipeline:
         return self.add(
             tasks.SpacyDocToTaggedFrame(
-                attributes=['text', 'lemma_', 'pos_', 'is_space', 'is_punct'],
+                attributes=['text', 'lemma_', 'pos_', 'is_punct', 'is_stop'],
             ),
         )
 
-    def set_spacy_model(self: SpacyPipeline, language: Union[str, Language]) -> SpacyPipeline:
+    def text_to_spacy_to_tagged_frame(self: CorpusPipeline) -> CorpusPipeline:
+        return self.add(
+            tasks.ToSpacyDocToTaggedFrame(
+                attributes=['text', 'lemma_', 'pos_', 'is_punct', 'is_stop'],
+            ),
+        )
+
+    def set_spacy_model(self: CorpusPipeline, language: Union[str, Language]) -> CorpusPipeline:
         return self.add(tasks.SetSpacyModel(lang_or_nlp=language))

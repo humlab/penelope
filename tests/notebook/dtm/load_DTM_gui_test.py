@@ -1,5 +1,5 @@
 import pytest
-from penelope.notebook.dtm.load_DTM_gui import LoadGUI, create_gui
+from penelope.notebook.dtm import LoadGUI, create_load_gui
 
 
 def dummy_callback(*_, **__):
@@ -25,7 +25,7 @@ def test_gui_setup():
 @pytest.mark.skip('')
 def test_create_gui():
 
-    gui = create_gui(
+    gui = create_load_gui(
         corpus_folder='./tests/test_data',
         loaded_callback=dummy_callback,
     )

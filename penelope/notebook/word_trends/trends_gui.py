@@ -26,6 +26,9 @@ class TrendsGUI:
     _normalize: widgets.ToggleButton = widgets.ToggleButton(
         description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
     )
+    _tf_idf: widgets.ToggleButton = widgets.ToggleButton(
+        description="TF-IDF", icon='check', value=False, layout=BUTTON_LAYOUT
+    )
     _smooth: widgets.ToggleButton = widgets.ToggleButton(
         description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT
     )
@@ -56,6 +59,7 @@ class TrendsGUI:
             [
                 widgets.HBox(
                     [
+                        self._tf_idf,
                         self._normalize,
                         self._smooth,
                         self._group_by,
@@ -79,7 +83,7 @@ class TrendsGUI:
                 self.alert("Please load a corpus (no corpus in trends data) !")
                 return
 
-            corpus = self.trends_data.get_corpus(self.normalize, self.group_by)
+            corpus = self.trends_data.get_corpus(self.options)
 
             self.current_displayer.display(
                 corpus=corpus,
@@ -121,6 +125,7 @@ class TrendsGUI:
         self._words.observe(self._update_picker, names='value')
         self._tab.observe(self._plot_trends, 'selected_index')
         self._normalize.observe(self._plot_trends, names='value')
+        self._tf_idf.observe(self._plot_trends, names='value')
         self._smooth.observe(self._plot_trends, names='value')
         self._group_by.observe(self._plot_trends, names='value')
         self._picker.observe(self._plot_trends, names='value')
@@ -165,6 +170,10 @@ class TrendsGUI:
         return self._smooth.value
 
     @property
+    def tf_idf(self) -> bool:
+        return self._tf_idf.value
+
+    @property
     def normalize(self) -> bool:
         return self._normalize.value
 
@@ -181,6 +190,7 @@ class TrendsGUI:
         return TrendsOpts(
             normalize=self.normalize,
             smooth=self.smooth,
+            tf_idf=self.tf_idf,
             group_by=self.group_by,
             word_count=self.word_count,
             words=self.words_or_regexp,

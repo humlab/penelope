@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from penelope.utility import store_to_archive
+import penelope.utility.zip_utils as zip_util
 
 from . import readers
 from .readers import ExtractTaggedTokensOpts, TextReaderOpts
@@ -112,7 +112,7 @@ def sparv_xml_extract_and_store(
         chunk_size=chunk_size,
     )
 
-    store_to_archive(target, corpus)
+    zip_util.store(zip_or_filename=target, stream=corpus)
 
 
 def sparv_csv_extract_and_store(
@@ -157,4 +157,4 @@ def sparv_csv_extract_and_store(
         chunk_size=chunk_size,
     )
 
-    store_to_archive(target, corpus)
+    zip_util.store(zip_or_filename=target, stream=corpus)

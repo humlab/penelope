@@ -5,9 +5,10 @@ from typing import Callable, Iterable, List, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
+import penelope.corpus.readers.tng as tng
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.corpus.readers import InMemoryReader, TextReader, TextReaderOpts, TextTokenizer
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
 from penelope.utility import flatten
 
 OUTPUT_FOLDER = './tests/output'
@@ -40,7 +41,11 @@ def generate_token2id(terms: Iterable[str]) -> Mapping[str, int]:
 
 def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
 
-    reader = InMemoryReader(data, reader_opts=TextReaderOpts(filename_fields="year:_:1"))
+    reader = tng.CorpusReader(
+        source=tng.InMemorySource(data),
+        reader_opts=TextReaderOpts(filename_fields="year:_:1"),
+        transformer=None,  # already tokenized
+    )
     corpus = TokenizedCorpus(reader=reader)
     return corpus
 
@@ -161,49 +166,3 @@ def create_smaller_vectorized_corpus():
     document_index = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
     v_corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
     return v_corpus
-
-
-# def create_bigger_vectorized_corpus(
-#     corpus_filename: str,
-#     output_tag: str = "xyz_nnvb_lemma",
-#     output_folder: str = "./tests/output",
-#     count_threshold: int = 5,
-# ):
-#     filename_field = r"year:prot\_(\d{4}).*"
-#     count_threshold = 5
-#     output_tag = f"{output_tag}_nnvb_lemma"
-#     extract_tokens_opts = ExtractTaggedTokensOpts(
-#         pos_includes="|NN|PM|UO|PC|VB|",
-#         pos_excludes="|MAD|MID|PAD|",
-#         passthrough_tokens=[],
-#         lemmatize=True,
-#         append_pos=False,
-#     )
-#     tokens_transform_opts = TokensTransformOpts(
-#         only_alphabetic=False,
-#         only_any_alphanumeric=False,
-#         to_lower=True,
-#         to_upper=False,
-#         min_len=1,
-#         max_len=None,
-#         remove_accents=False,
-#         remove_stopwords=True,
-#         stopwords=None,
-#         extra_stopwords=["Örn"],
-#         language="swedish",
-#         keep_numerals=True,
-#         keep_symbols=True,
-#     )
-#     corpus = vectorize_corpus_workflow(
-#         corpus_type="sparv4-csv",
-#         input_filename=corpus_filename,
-#         output_folder=output_folder,
-#         output_tag=output_tag,
-#         create_subfolder=True,
-#         filename_field=filename_field,
-#         count_threshold=count_threshold,
-#         extract_tokens_opts=extract_tokens_opts,
-#         tokens_transform_opts=tokens_transform_opts,
-#     )
-
-#     return corpus

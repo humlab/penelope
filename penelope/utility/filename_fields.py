@@ -1,11 +1,13 @@
+import logging
 import os
 import re
-import sys
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 from .filename_utils import strip_paths
 
-IndexOfSplitOrCallableOrRegExp = Union[List[str], Dict[str, Union[Callable, str]]]
+FilenameFieldSpec = Union[List[str], Dict[str, Union[Callable, str]]]
+FilenameFieldSpecs = Sequence[FilenameFieldSpec]
+NameFieldSpecs = Optional[FilenameFieldSpecs]
 
 
 def _parse_indexed_fields(filename_fields: List[str]):
@@ -38,12 +40,13 @@ def _parse_indexed_fields(filename_fields: List[str]):
 
         return filename_fields
 
-    except:  # pylint: disable=bare-except
+    except Exception as ex:  # pylint: disable=bare-except
+        logging.exception(ex)
         print("parse error: meta-fields, must be in format 'name:regexp'")
-        sys.exit(-1)
+        raise
 
 
-def extract_filename_metadata(filename: str, filename_fields: IndexOfSplitOrCallableOrRegExp) -> Mapping[str, Any]:
+def extract_filename_metadata(filename: str, filename_fields: FilenameFieldSpec) -> Mapping[str, Any]:
     """Extracts metadata from filename
 
     The extractor in kwargs must be either a regular expression that extracts the single value
@@ -108,9 +111,7 @@ def extract_filename_metadata(filename: str, filename_fields: IndexOfSplitOrCall
     return data
 
 
-def extract_filenames_metadata(
-    *, filenames: List[str], filename_fields: Sequence[IndexOfSplitOrCallableOrRegExp]
-) -> List[Mapping[str, Any]]:
+def extract_filenames_metadata(*, filenames: List[str], filename_fields: FilenameFieldSpecs) -> List[Mapping[str, Any]]:
     return [
         {'filename': filename, **extract_filename_metadata(filename, filename_fields)}
         for filename in strip_paths(filenames)

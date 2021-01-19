@@ -1,7 +1,7 @@
 # type: ignore
-from .compute_callback_corpus import compute_co_occurrence as corpus_compute_co_occurrence
-from .compute_callback_pipeline import POS_CHECKPOINT_FILENAME_POSTFIX
-from .compute_callback_pipeline import compute_co_occurrence as pipeline_compute_co_occurrence
+from penelope.pipeline.config import CorpusType
+
 from .explore_co_occurrence_gui import ExploreGUI
 from .load_co_occurrences_gui import LoadGUI, create_load_gui
-from .to_co_occurrence_gui import ComputeGUI
+from .main_gui import MainGUI
+from .to_co_occurrence_gui import ComputeGUI, create_compute_gui

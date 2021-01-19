@@ -16,11 +16,11 @@ from penelope.corpus.readers import (
     TextTransformer,
     TextTransformOpts,
 )
+from penelope.corpus.readers.tng.factory import create_sparv_xml_corpus_reader
 from penelope.utility import to_text
 from tqdm.auto import tqdm
 
-from . import checkpoint
-from .convert import tagged_frame_to_token_counts, tagged_frame_to_tokens, to_vectorized_corpus
+from . import checkpoint, convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 
 
@@ -181,6 +181,7 @@ class ToDocumentContentTuple(ITask):
 class Checkpoint(DefaultResolveMixIn, ITask):
 
     filename: str = None
+    options: checkpoint.CorpusSerializeOpts = None
 
     def setup(self):
         super().setup()
@@ -193,9 +194,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
-                self.filename, document_index_key_column=self.pipeline.payload.document_index_key
-            )
+            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename, options=self.options)
             self.pipeline.payload.effective_document_index = checkpoint_data.document_index
             self.out_content_type = checkpoint_data.content_type
             payload_stream = checkpoint_data.payload_stream
@@ -206,11 +205,9 @@ class Checkpoint(DefaultResolveMixIn, ITask):
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
+            options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(self.out_content_type)
             payload_stream = checkpoint.store_checkpoint(
-                options=checkpoint.ContentSerializeOpts(
-                    content_type_code=int(self.out_content_type),
-                    as_binary=False,  # should be True if ContentType.SPARV_XML
-                ),
+                options=options,
                 target_filename=self.filename,
                 document_index=self.document_index,
                 payload_stream=self.instream,
@@ -220,18 +217,20 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class SaveTaggedFrame(DefaultResolveMixIn, ITask):
-    """Stores sequence of data frame documents. """
+class SaveTaggedCSV(DefaultResolveMixIn, ITask):
+    """Stores sequence of tagged data frame documents to archive. """
 
     filename: str = None
+    options: checkpoint.CorpusSerializeOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGEDFRAME
         self.out_content_type = ContentType.TAGGEDFRAME
 
     def outstream(self) -> Iterable[DocumentPayload]:
+        options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(ContentType.TAGGEDFRAME)
         for payload in checkpoint.store_checkpoint(
-            options=checkpoint.ContentSerializeOpts(content_type_code=int(ContentType.TAGGEDFRAME)),
+            options=options,
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
@@ -240,11 +239,12 @@ class SaveTaggedFrame(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedFrame(DefaultResolveMixIn, ITask):
-    """Extracts text from payload.content based on annotations etc. """
+class LoadTaggedCSV(DefaultResolveMixIn, ITask):
+    """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
-    document_index_name: str = field(default="document_index.csv")
+    options: checkpoint.CorpusSerializeOpts = None
+    extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index should be created
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -253,12 +253,42 @@ class LoadTaggedFrame(DefaultResolveMixIn, ITask):
     def outstream(self) -> Iterable[DocumentPayload]:
 
         checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
-            self.filename,
-            document_index_key_column=self.pipeline.payload.document_index_key,
+            self.filename, options=self.options, reader_opts=self.extra_reader_opts
         )
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
+            yield payload
+
+
+@dataclass
+class LoadTaggedXML(DefaultResolveMixIn, ITask):
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+
+    filename: str = None
+    reader_opts: TextReaderOpts = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TAGGEDFRAME
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+
+        corpus_reader = create_sparv_xml_corpus_reader(
+            source_path=self.filename or self.pipeline.payload.source,
+            reader_opts=self.reader_opts or self.pipeline.config.text_reader_opts,
+            sparv_version=int(self.pipeline.payload.get("sparv_version", 0)),
+            content_type="pandas",
+        )
+        self.pipeline.payload.effective_document_index = corpus_reader.document_index
+
+        for document, content in corpus_reader:
+            payload = DocumentPayload(
+                content_type=ContentType.TAGGEDFRAME,
+                filename=document,
+                content=content,
+                filename_values=None,
+            )
             yield payload
 
 
@@ -311,7 +341,9 @@ class UpdateDocumentPropertyMixIn:
         """Computes token counts from the tagged frame, and adds them to the document index"""
         try:
             pos_column = self.pipeline.payload.get('pos_column')
-            token_counts = tagged_frame_to_token_counts(tagged_frame, self.pipeline.payload.pos_schema, pos_column)
+            token_counts = convert.tagged_frame_to_token_counts(
+                tagged_frame, self.pipeline.payload.pos_schema, pos_column
+            )
             self.store_document_properties(payload, **token_counts)
         except Exception as ex:
             logging.exception(ex)
@@ -365,10 +397,11 @@ class TaggedFrameToTokens(UpdateDocumentPropertyMixIn, ITask):
         if self.pipeline.get('pos_column', None) is None:
             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
 
-        tokens: Iterable[str] = tagged_frame_to_tokens(
+        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
             doc=payload.content,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
+            **(self.pipeline.payload.tagged_columns_names or {}),
         )
 
         tokens = list(tokens)
@@ -430,7 +463,7 @@ class TextToDTM(ITask):
         return self
 
     def outstream(self) -> VectorizedCorpus:
-        corpus = to_vectorized_corpus(
+        corpus = convert.to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,
             document_index=self.pipeline.payload.document_index,
@@ -575,3 +608,19 @@ class ChunkTokens(ITask):
                         content=tokens[i : i + self.chunk_size],
                         chunk_id=chunk_id,
                     )
+
+
+@dataclass
+class WildcardTask(ITask):
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.NONE
+
+    def abort(self):
+        raise PipelineError("fatal: ninstantiated wildcard task encountered. Please check configuration!")
+
+    def outstream(self) -> Iterable[DocumentPayload]:
+        self.abort()
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        self.abort()

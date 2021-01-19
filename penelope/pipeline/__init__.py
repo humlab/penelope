@@ -1,15 +1,18 @@
+from . import spacy, sparv
+
 # type: ignore
 from .checkpoint import (
-    CHECKPOINT_SERIALIZERS,
     CheckpointData,
-    ContentSerializeOpts,
-    ContentSerializer,
+    CorpusSerializeOpts,
+    IContentSerializer,
+    TaggedFrameContentSerializer,
+    TextContentSerializer,
+    TokensContentSerializer,
     load_checkpoint,
     store_checkpoint,
 )
 from .config import CorpusConfig, CorpusType
 from .convert import tagged_frame_to_token_counts, tagged_frame_to_tokens, to_vectorized_corpus
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, PipelinePayload
-from .pipelines import CorpusPipeline
-from .spacy.pipelines import SpacyPipeline
+from .pipelines import CorpusPipeline, wildcard, wildcard_to_co_occurrence_pipeline, wildcard_to_DTM_pipeline
 from .tasks_mixin import PipelineShortcutMixIn

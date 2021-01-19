@@ -14,7 +14,7 @@ from .document_index import (
 )
 from .dtm import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, load_corpus
 from .interfaces import ICorpus, ITokenizedCorpus
-from .readers.interfaces import TextReaderOpts
+from .readers.interfaces import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts
 from .readers.text_transformer import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (
@@ -28,6 +28,7 @@ from .text_lines_corpus import SimpleTextLinesCorpus
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
 from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer, TokensTransformOpts
 from .transforms import (
+    default_tokenizer,
     has_alpha_filter,
     lower_transform,
     max_chars_filter,
@@ -42,4 +43,3 @@ from .transforms import (
     remove_symbols,
     upper_transform,
 )
-from .utils import default_tokenizer, preprocess_text_corpus

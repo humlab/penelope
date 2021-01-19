@@ -16,12 +16,12 @@ def test_text_tokenizer_interface():
     # assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [ x for x in corpus ]
 
 
-def test_dataframe_text_tokenizer_interface():
+def test_pandas_reader_interface():
 
-    assert issubclass(readers.DataFrameTextTokenizer, ICorpusReader)
+    assert issubclass(readers.PandasCorpusReader, ICorpusReader)
 
     source = pd.DataFrame(data={'filename': [], 'txt': []})
-    instance = readers.DataFrameTextTokenizer(source)
+    instance = readers.PandasCorpusReader(source)
     assert isinstance(instance, ICorpusReader)
 
 

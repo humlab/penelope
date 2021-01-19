@@ -6,6 +6,7 @@ from typing import Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 import numpy as np
 import pandas as pd
 from penelope.utility import is_strictly_increasing, strip_path_and_extension
+from penelope.utility.filename_fields import FilenameFieldSpecs, extract_filenames_metadata
 from penelope.utility.pos_tags import PD_PoS_tag_groups
 
 
@@ -29,7 +30,7 @@ class DocumentIndex:
             if isinstance(document_index, pd.DataFrame)
             else metadata_to_document_index(metadata=document_index, document_id_field=None)
             if isinstance(document_index, list)
-            else load_document_index_from_str(data_str=document_index, key_column=None, sep=kwargs.get('sep', '\t'))
+            else load_document_index_from_str(data_str=document_index, sep=kwargs.get('sep', '\t'))
         )
 
     @property
@@ -41,8 +42,10 @@ class DocumentIndex:
         return self
 
     @staticmethod
-    def load(filename: Union[str, StringIO], *, key_column: str = None, sep: str = '\t') -> "DocumentIndex":
-        _index = load_document_index(filename, key_column=key_column, sep=sep)
+    def load(
+        filename: Union[str, StringIO], *, sep: str = '\t', document_id_field: str = 'document_id'
+    ) -> "DocumentIndex":
+        _index = load_document_index(filename, sep=sep, document_id_field=document_id_field)
         return DocumentIndex(_index)
 
     @staticmethod
@@ -51,8 +54,14 @@ class DocumentIndex:
         return DocumentIndex(_index)
 
     @staticmethod
-    def from_str(data_str: str, key_column: str, sep: str) -> "DocumentIndex":
-        _index = load_document_index_from_str(data_str=data_str, key_column=key_column, sep=sep)
+    def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndex":
+        _metadata = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
+        _index = metadata_to_document_index(_metadata)
+        return DocumentIndex(_index)
+
+    @staticmethod
+    def from_str(data_str: str, sep: str = '\t', document_id_field: str = 'document_id') -> "DocumentIndex":
+        _index = load_document_index_from_str(data_str=data_str, sep=sep, document_id_field=document_id_field)
         return DocumentIndex(_index)
 
     def consolidate(self, reader_index: pd.DataFrame) -> "DocumentIndex":
@@ -196,7 +205,9 @@ class DocumentIndex:
         return self
 
 
-def get_strictly_increasing_document_id(document_index: pd.DataFrame, document_id_field: str) -> pd.Series:
+def get_strictly_increasing_document_id(
+    document_index: pd.DataFrame, document_id_field: str = 'document_id'
+) -> pd.Series:
     """[summary]
 
     Args:
@@ -206,11 +217,8 @@ def get_strictly_increasing_document_id(document_index: pd.DataFrame, document_i
     Returns:
         pd.Series: [description]
     """
-    if 'document_id' in document_index.columns:
-        if is_strictly_increasing(document_index.document_id):
-            return document_index.document_id
 
-    if document_id_field is not None and document_id_field in document_index.columns:
+    if document_id_field in document_index.columns:
         if is_strictly_increasing(document_index[document_id_field]):
             return document_index[document_id_field]
 
@@ -230,8 +238,10 @@ def store_document_index(document_index: pd.DataFrame, filename: str):
     document_index.to_csv(filename, sep='\t', header=True)
 
 
-def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep: str) -> pd.DataFrame:
-    """Loads a document index and sets `key_column` as index column. Also adds `document_id`"""
+def load_document_index(
+    filename: Union[str, StringIO], *, sep: str, document_id_field: str = 'document_id'
+) -> pd.DataFrame:
+    """Loads a document index and sets `document_name` as index column. Also adds `document_id`"""
 
     if filename is None:
         return None
@@ -241,10 +251,6 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
     else:
         document_index: pd.DataFrame = pd.read_csv(filename, sep=sep)
 
-    if key_column is not None:
-        if key_column not in document_index.columns:
-            raise ValueError(f"specified key column {key_column} not found in columns")
-
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
         if old_or_unnamed_index_column in document_index.columns:
             document_index = document_index.drop(old_or_unnamed_index_column, axis=1)
@@ -252,7 +258,7 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
     if 'filename' not in document_index.columns:
         raise DocumentIndexError("expected mandatory column `filename` in document index, found no such thing")
 
-    document_index['document_id'] = get_strictly_increasing_document_id(document_index, key_column)
+    document_index['document_id'] = get_strictly_increasing_document_id(document_index, document_id_field)
 
     if 'document_name' not in document_index.columns or (document_index.document_name == document_index.filename).all():
         document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
@@ -262,19 +268,19 @@ def load_document_index(filename: Union[str, StringIO], *, key_column: str, sep:
     return document_index
 
 
-def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = None) -> pd.DataFrame:
+def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = 'document_id') -> pd.DataFrame:
     """Creates a document index from collected filename fields metadata."""
 
     if metadata is None or len(metadata) == 0:
         metadata = {'filename': [], 'document_id': []}
 
-    document_index = load_document_index(pd.DataFrame(metadata), key_column=document_id_field, sep=None)
+    document_index = load_document_index(pd.DataFrame(metadata), sep=None, document_id_field=document_id_field)
 
     return document_index
 
 
-def load_document_index_from_str(data_str: str, key_column: str, sep: str) -> pd.DataFrame:
-    df = load_document_index(StringIO(data_str), key_column=key_column, sep=sep)
+def load_document_index_from_str(data_str: str, sep: str, document_id_field: str = 'document_id') -> pd.DataFrame:
+    df = load_document_index(StringIO(data_str), sep=sep, document_id_field=document_id_field)
     return df
 
 

@@ -1,86 +1,22 @@
+import abc
 import json
-import os
 import zipfile
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from io import StringIO
-from typing import Any, Callable, Dict, Iterable, Iterator, Union
+from typing import Iterable, Iterator, List, Sequence, Union
 
 import pandas as pd
-from penelope.corpus import load_document_index
+import penelope.utility.zip_utils as zip_utils
+from penelope.corpus import DocumentIndex, load_document_index
+from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.utility import assert_that_path_exists, getLogger, path_of
 
+from .config import CorpusSerializeOpts
 from .interfaces import ContentType, DocumentPayload, PipelineError
 
 SerializableContent = Union[str, Iterable[str], pd.core.api.DataFrame]
 
-
-@dataclass
-class ContentSerializer:
-
-    serialize: Callable[[SerializableContent], str] = None
-    deserialize: Callable[[str], SerializableContent] = None
-
-    @staticmethod
-    def identity(content: Any):
-        return content
-
-    @staticmethod
-    def token_to_text(content: Iterable[str]) -> str:
-        return ' '.join(content)
-
-    @staticmethod
-    def text_to_token(content: str) -> Iterable[str]:
-        return content.split(' ')
-
-    @staticmethod
-    def df_to_text(content: pd.DataFrame) -> str:
-        return content.to_csv(sep='\t', header=True)
-
-    @staticmethod
-    def text_to_df(content: str) -> pd.DataFrame:
-        return pd.read_csv(StringIO(content), sep='\t', index_col=0)
-
-    @staticmethod
-    def read_text(zf: zipfile.ZipFile, filename: str) -> str:
-        return zf.read(filename).decode('utf-8')
-
-    @staticmethod
-    def read_binary(zf: zipfile.ZipFile, filename: str) -> bytes:
-        return zf.read(filename)
-
-    @staticmethod
-    def read_json(zf: zipfile.ZipFile, filename: str) -> Dict:
-        return json.loads(ContentSerializer.read_text(zf, filename))
-
-    @staticmethod
-    def read_dataframe(zf: zipfile.ZipFile, filename: str) -> pd.DataFrame:
-        return pd.read_csv(StringIO(ContentSerializer.read_text(zf, filename)), sep='\t', index_col=0)
-
-
-CHECKPOINT_SERIALIZERS = {
-    ContentType.TEXT: ContentSerializer(serialize=ContentSerializer.identity, deserialize=ContentSerializer.identity),
-    ContentType.TOKENS: ContentSerializer(
-        serialize=ContentSerializer.token_to_text, deserialize=ContentSerializer.text_to_token
-    ),
-    ContentType.TAGGEDFRAME: ContentSerializer(
-        serialize=ContentSerializer.df_to_text, deserialize=ContentSerializer.text_to_df
-    ),
-    # FIXME: ADD SPARV XML with as_binary
-}
-
-
-@dataclass
-class ContentSerializeOpts:
-    content_type_code: int = 0
-    document_index_name: str = field(default="document_index.csv")
-    as_binary: bool = False
-
-    @property
-    def content_type(self) -> ContentType:
-        return ContentType(self.content_type_code)
-
-    @content_type.setter
-    def content_type(self, value: ContentType):
-        self.content_type_code = int(value)
+logger = getLogger("penelope")
 
 
 @dataclass
@@ -88,71 +24,144 @@ class CheckpointData:
     content_type: ContentType = ContentType.NONE
     document_index: pd.DataFrame = None
     payload_stream: Iterable[DocumentPayload] = None
-    serialize_opts: ContentSerializeOpts = None
+    serialize_opts: CorpusSerializeOpts = None
+
+
+class IContentSerializer(abc.ABC):
+    @abc.abstractmethod
+    def serialize(self, content: SerializableContent, options: CorpusSerializeOpts) -> str:
+        ...
+
+    @abc.abstractmethod
+    def deserialize(self, content: str, options: CorpusSerializeOpts) -> SerializableContent:
+        ...
+
+    @staticmethod
+    def create(content_type: ContentType) -> "IContentSerializer":
+
+        if content_type == ContentType.TEXT:
+            return TextContentSerializer()
+
+        if content_type == ContentType.TOKENS:
+            return TokensContentSerializer()
+
+        if content_type == ContentType.TAGGEDFRAME:
+            return TaggedFrameContentSerializer()
+
+        raise ValueError(f"non-serializable content type: {content_type}")
+
+
+class TextContentSerializer(IContentSerializer):
+    def serialize(self, content: str, options: CorpusSerializeOpts) -> str:
+        return content
+
+    def deserialize(self, content: str, options: CorpusSerializeOpts) -> str:
+        return content
+
+
+class TokensContentSerializer(IContentSerializer):
+    def serialize(self, content: Sequence[str], options: CorpusSerializeOpts) -> str:
+        return ' '.join(content)
+
+    def deserialize(self, content: str, options: CorpusSerializeOpts) -> Sequence[str]:
+        return content.split(' ')
+
+
+class TaggedFrameContentSerializer(IContentSerializer):
+    def serialize(self, content: pd.DataFrame, options: CorpusSerializeOpts) -> str:
+        return content.to_csv(sep=options.sep, header=True)
+
+    def deserialize(self, content: str, options: CorpusSerializeOpts) -> pd.DataFrame:
+        return pd.read_csv(StringIO(content), sep=options.sep, quoting=options.quoting, index_col=0)
+
+
+SERIALIZE_OPT_FILENAME = "options.json"
 
 
 def store_checkpoint(
     *,
-    options: ContentSerializeOpts,
+    options: CorpusSerializeOpts,
     target_filename: str,
     document_index: pd.DataFrame,
     payload_stream: Iterator[DocumentPayload],
 ) -> Iterable[DocumentPayload]:
 
-    serializer = CHECKPOINT_SERIALIZERS[options.content_type]
+    serializer: IContentSerializer = IContentSerializer.create(options.content_type)
 
-    store_path = os.path.split(target_filename)[0]
-    if store_path and not os.path.isdir(store_path):
-        raise FileNotFoundError(f"target folder {store_path} does not exist")
+    assert_that_path_exists(path_of(target_filename))
 
     with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
 
-        zf.writestr("options.json", json.dumps(asdict(options)).encode('utf8'))
+        zf.writestr(SERIALIZE_OPT_FILENAME, json.dumps(asdict(options)).encode('utf8'))
 
         for payload in payload_stream:
-            zf.writestr(payload.filename, data=serializer.serialize(payload.content))
+            data = serializer.serialize(payload.content, options)
+            zf.writestr(payload.filename, data=data)
             yield payload
 
         if document_index is not None:
-            zf.writestr(options.document_index_name, data=document_index.to_csv(sep='\t', header=True))
+            zf.writestr(
+                options.document_index_name,
+                data=document_index.to_csv(sep=options.document_index_sep, header=True),
+            )
 
 
-def load_checkpoint(source_filename: str, document_index_key_column: str) -> CheckpointData:
+def load_checkpoint(
+    source_name: str, options: CorpusSerializeOpts = None, reader_opts: TextReaderOpts = None
+) -> CheckpointData:
 
-    with zipfile.ZipFile(source_filename, mode="r") as zf:
+    # FIXME: Currently reader_opts is only used when pandas doc index should be created.  Might also be used to filter files.
+    with zipfile.ZipFile(source_name, mode="r") as zf:
 
         filenames = zf.namelist()
 
-        if "options.json" not in filenames:
-            raise PipelineError("Checkpoint file is not valid (has no options.json")
+        if options is None:
 
-        serialize_opts = ContentSerializeOpts(**ContentSerializer.read_json(zf, "options.json"))
+            if SERIALIZE_OPT_FILENAME not in filenames:
+                raise PipelineError("options not supplied and not found in archive (missing options.json)")
+
+            stored_opts = zip_utils.read_json(zip_or_filename=zf, filename=SERIALIZE_OPT_FILENAME)
+            options = CorpusSerializeOpts.load(stored_opts)
+
+            filenames.remove(SERIALIZE_OPT_FILENAME)
 
         document_index = None
-        if serialize_opts.document_index_name in filenames:
-            data_str = ContentSerializer.read_text(zf, serialize_opts.document_index_name)
-            document_index = load_document_index(StringIO(data_str), key_column=document_index_key_column, sep='\t')
-            filenames.remove(serialize_opts.document_index_name)
 
-        filenames.remove("options.json")
+        if options.document_index_name and options.document_index_name in filenames:
 
-    content_reader = ContentSerializer.read_binary if serialize_opts.as_binary else ContentSerializer.read_text
-    serializer = CHECKPOINT_SERIALIZERS[serialize_opts.content_type]
+            data_str = zip_utils.read(zip_or_filename=zf, filename=options.document_index_name, as_binary=False)
+            document_index = load_document_index(StringIO(data_str), sep=options.document_index_sep)
 
-    def payload_stream():
-        with zipfile.ZipFile(source_filename, mode="r") as zf:
-            for filename in filenames:
-                yield DocumentPayload(
-                    content_type=serialize_opts.content_type,
-                    content=serializer.deserialize(content_reader(zf, filename)),
-                    filename=filename,
-                )
+            filenames.remove(options.document_index_name)
+
+        elif reader_opts and reader_opts.filename_fields is not None:
+            document_index = DocumentIndex.from_filenames(
+                filenames=filenames,
+                filename_fields=reader_opts.filename_fields,
+            ).document_index
 
     data: CheckpointData = CheckpointData(
-        content_type=serialize_opts.content_type,
-        payload_stream=payload_stream(),
+        content_type=options.content_type,
+        payload_stream=deserialized_payload_stream(source_name, options, filenames),
         document_index=document_index,
-        serialize_opts=serialize_opts,
+        serialize_opts=options,
     )
 
     return data
+
+
+def deserialized_payload_stream(
+    source_name: str, options: CorpusSerializeOpts, filenames: List[str]
+) -> Iterable[DocumentPayload]:
+    """Yields a deserialized payload stream read from given source"""
+
+    serializer: IContentSerializer = IContentSerializer.create(options.content_type)
+
+    with zipfile.ZipFile(source_name, mode="r") as zf:
+        for filename in filenames:
+            content = zip_utils.read(zip_or_filename=zf, filename=filename, as_binary=False)
+            yield DocumentPayload(
+                content_type=options.content_type,
+                content=serializer.deserialize(content, options),
+                filename=filename,
+            )

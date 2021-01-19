@@ -49,7 +49,7 @@ tran_2020_02_test.txt;2020;2;tran_2020_02_test;4;Epilogue;44
 
 
 def load_test_index(data_str: str) -> DocumentIndex:
-    index = DocumentIndex(load_document_index(filename=StringIO(data_str), key_column=None, sep=';'))
+    index = DocumentIndex(load_document_index(filename=StringIO(data_str), sep=';'))
     return index
 
 
@@ -64,7 +64,7 @@ def test_store():
 
 def test_load():
 
-    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep=';')
+    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), sep=';')
     assert isinstance(index, pd.DataFrame)
     assert len(index) == 5
     assert index.columns.tolist() == [
@@ -79,7 +79,7 @@ def test_load():
     assert index.document_id.tolist() == [0, 1, 2, 3, 4]
     assert index.index.name == ''
 
-    index2 = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), key_column=None, sep=';')
+    index2 = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), sep=';')
     assert isinstance(index2, pd.DataFrame)
     assert len(index2) == 5
     assert index2.columns.tolist() == [
@@ -95,10 +95,10 @@ def test_load():
     assert index2.index.name == ''
     assert ((index == index2).all()).all()
 
-    index3 = load_document_index_from_str(TEST_DOCUMENT_INDEX, key_column=None, sep=';')
+    index3 = load_document_index_from_str(TEST_DOCUMENT_INDEX, sep=';')
     assert ((index == index3).all()).all()
 
-    index4 = load_document_index_from_str(TEST_DOCUMENT_INDEX2, key_column=None, sep=';')
+    index4 = load_document_index_from_str(TEST_DOCUMENT_INDEX2, sep=';')
     assert ((index == index4).all()).all()
 
 
@@ -131,7 +131,7 @@ def test_upgrade():
 
 
 def test_update_counts():
-    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), key_column=None, sep=';')
+    index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), sep=';')
 
     statistics = {'extra_1': 1, 'extra_2': 2}
 
@@ -169,7 +169,7 @@ def test_update_properties():
 
 
 def test_group_by_category():
-    index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), key_column=None, sep=';')
+    index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), sep=';')
     result: pd.DataFrame = (
         DocumentIndex(index).group_by_column(column_name='year', transformer=None, index_values=None).document_index
     )

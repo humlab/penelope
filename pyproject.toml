@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.2.35"
+version = "0.3.2"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -50,10 +50,10 @@ ipyfilechooser = "^0.4.0"
 ipyaggrid = "^0.2.1"
 jupyter_bokeh = "^2.0.4"
 openpyxl = "^3.0.5"
-cutter-ng = "^2.5"
 sidecar = "^0.4.0"
 toml = "^0.10.2"
 PyYAML = "^5.3.1"
+# cutter-ng = "^2.5"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -85,6 +85,8 @@ co_occurrence = "penelope.scripts.co_occurrence:main"
 
 
 
+
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
@@ -102,7 +104,9 @@ python_files = "*_test.py"
 python_functions = "test_*"
 filterwarnings = [
 #   "ignore",
-  "ignore::_pytest.warning_types.PytestCollectionWarning"
+  "ignore::_pytest.warning_types.PytestCollectionWarning",
+  "ignore::DeprecationWarning"
+  # "ignore::PendingDeprecationWarning:",
 ]
 
 [tool.dephell.main]
@@ -152,7 +156,7 @@ src_paths = [ "penelope", "tests" ]
 source = ["penelope"]
 branch = true
 omit = [
-    "__init__.py",
+    "**/__init__.py",
     "tests/*",
     "interfaces.py",
     "interface.py",

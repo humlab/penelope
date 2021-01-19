@@ -11,7 +11,6 @@ from ._color_utility import (
 from ._decorators import ExpectException, deprecated, try_catch
 from .file_utility import (
     DataFrameFilenameTuple,
-    compress_file,
     create_iterator,
     default_data_folder,
     excel_to_csv,
@@ -24,28 +23,33 @@ from .file_utility import (
     pickle_compressed_to_file,
     pickle_to_file,
     read_excel,
-    read_from_archive,
     read_json,
     read_textfile,
     save_excel,
-    store_to_archive,
     unpickle_compressed_from_file,
     unpickle_from_file,
     write_json,
-    zip_get_filenames,
-    zip_get_text,
 )
-from .filename_fields import IndexOfSplitOrCallableOrRegExp, extract_filename_metadata, extract_filenames_metadata
+from .filename_fields import (
+    FilenameFieldSpec,
+    FilenameFieldSpecs,
+    NameFieldSpecs,
+    extract_filename_metadata,
+    extract_filenames_metadata,
+)
 from .filename_utils import (
     VALID_CHARS,
+    assert_that_path_exists,
     data_path_ts,
     filename_satisfied_by,
     filename_whitelist,
+    filter_names_by_pattern,
     now_timestamp,
     path_add_date,
     path_add_sequence,
     path_add_suffix,
     path_add_timestamp,
+    path_of,
     replace_extension,
     replace_path,
     strip_path_and_add_counter,
@@ -63,8 +67,10 @@ from .utils import (
     ListOfDicts,
     assert_is_strictly_increasing,
     chunks,
+    clamp,
     clamp_values,
     complete_value_range,
+    create_instance,
     dataframe_to_tuples,
     dict_of_key_values_inverted_to_dict_of_value_key,
     dict_of_lists_to_list_of_dicts,
@@ -115,3 +121,4 @@ from .utils import (
     tuple_of_lists_to_list_of_tuples,
     uniquify,
 )
+from .zip_utils import compress, namelist, read, read_iterator, store

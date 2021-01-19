@@ -6,7 +6,7 @@ from penelope.utility import getLogger, path_add_sequence
 logger = getLogger("")
 
 
-# TODO: Check for duplicate store elsewhere, e.g. file_utility.store_to_archive
+# TODO: Check for duplicate store elsewhere, e.g. zip_util.store
 def store_tokenized_corpus_as_archive(tokenized_docs, target_filename):
     """Stores a tokenized (string) corpus to a zip archive
 

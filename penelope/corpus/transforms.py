@@ -3,6 +3,7 @@ import logging
 import re
 import string
 
+import nltk
 import penelope.vendor.nltk as nltk_utility
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
@@ -11,6 +12,7 @@ ALPHABETIC_LOWER_CHARS = string.ascii_lowercase + "åäöéàáâãäåæèéê�
 ALPHABETIC_CHARS = set(ALPHABETIC_LOWER_CHARS + ALPHABETIC_LOWER_CHARS.upper())
 SYMBOLS_CHARS = set("'\\¢£¥§©®°±øæç•›€™").union(set('!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'))
 SYMBOLS_TRANSLATION = dict.fromkeys(map(ord, SYMBOLS_CHARS), None)
+default_tokenizer = nltk.word_tokenize
 
 # pylint: disable=W0601,E0602
 

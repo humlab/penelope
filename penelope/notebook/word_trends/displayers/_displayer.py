@@ -1,6 +1,6 @@
 import abc
 from dataclasses import dataclass
-from typing import Dict, Sequence, TypeVar
+from typing import Any, Sequence, TypeVar
 
 import ipywidgets
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
@@ -22,7 +22,7 @@ class ITrendDisplayer(abc.ABC):
         return
 
     @abc.abstractmethod
-    def compile(self, *, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Dict:
+    def compile(self, *, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Any:
         return None
 
     @abc.abstractmethod

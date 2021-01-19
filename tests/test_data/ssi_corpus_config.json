@@ -16,7 +16,6 @@
     "tagged_tokens_filter_opts": {
         "data": {
             "is_alpha": null,
-            "is_space": false,
             "is_punct": false,
             "is_digit": null,
             "is_stop": null
@@ -25,7 +24,6 @@
     "pipeline_payload": {
         "source": "legal_instrument_corpus.zip",
         "document_index_source": "legal_instrument_index.csv",
-        "document_index_key": null,
         "document_index_sep": ";",
         "memory_store": {
             "tagger": "spaCy",

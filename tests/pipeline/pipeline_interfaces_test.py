@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from penelope.corpus.readers import TaggedTokensFilterOpts
@@ -22,7 +23,13 @@ def test_tagged_tokens_filter_props_is_as_expected():
 
 
 def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
-    doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True, False, True]))
+    doc = pd.DataFrame(
+        data=dict(
+            text=['a', 'b', 'c', 'd'],
+            is_stop=[True, False, True, np.nan],
+            is_punct=[False, False, True, False],
+        )
+    )
 
     filter_opts = TaggedTokensFilterOpts(is_stop=True)
     mask = filter_opts.mask(doc)
@@ -31,10 +38,23 @@ def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
     assert new_doc['text'].to_list() == ['a', 'c']
 
     new_doc = doc[TaggedTokensFilterOpts(is_stop=None).mask(doc)]
-    assert len(new_doc) == 3
-    assert new_doc['text'].to_list() == ['a', 'b', 'c']
+    assert len(new_doc) == 4
+    assert new_doc['text'].to_list() == ['a', 'b', 'c', 'd']
 
+    new_doc = doc[TaggedTokensFilterOpts(is_stop=True, is_punct=True).mask(doc)]
+    assert len(new_doc) == 1
+    assert new_doc['text'].to_list() == ['c']
+
+    new_doc = doc[TaggedTokensFilterOpts(is_stop=True, is_punct=False).mask(doc)]
+    assert len(new_doc) == 1
+    assert new_doc['text'].to_list() == ['a']
+
+    # FIXME: Consider equating np.nan withFalse, in such a case 'd' should be returned:
     new_doc = doc[TaggedTokensFilterOpts(is_stop=False).mask(doc)]
+    assert len(new_doc) == 1
+    assert new_doc['text'].to_list() == ['b']
+
+    new_doc = doc[TaggedTokensFilterOpts(is_stop=[False]).mask(doc)]
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['b']
 

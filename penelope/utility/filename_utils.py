@@ -9,8 +9,21 @@ from .utils import now_timestamp
 VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
 
 
+def path_of(path: str):
+    return os.path.split(path)[0]
+
+
+def assert_that_path_exists(path: str):
+    if path and not os.path.isdir(path):
+        raise FileNotFoundError(f"folder {path} does not exist")
+
+
 def replace_path(filepath: str, path: str) -> str:
     return os.path.join(path, strip_paths(filepath))
+
+
+def replace_paths(folder: str, filenames: List[str]) -> List[str]:
+    return [os.path.join(folder, name) for name in strip_paths(filenames)]
 
 
 def filename_satisfied_by(
@@ -109,3 +122,9 @@ def replace_extension(filename: str, extension: str) -> str:
 
 def timestamp_filename(filename: str) -> str:
     return suffix_filename(filename, now_timestamp())
+
+
+def filter_names_by_pattern(filenames: List[str], filename_pattern: str) -> List[str]:
+    return [
+        filename for filename in filenames if (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+    ]

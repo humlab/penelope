@@ -2,10 +2,12 @@ corpus_name: ssi_unesco
 corpus_pattern: '*.zip'
 corpus_type: 1
 language: english
+pipelines:
+  tagged_frame_pipeline: penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
-  document_index_key: null
-  document_index_sep: ;
+  source: legal_instrument_corpus.zip
   document_index_source: legal_instrument_index.csv
+  document_index_sep: ;
   filenames: null
   memory_store:
     lang: en
@@ -15,13 +17,11 @@ pipeline_payload:
     tagger: spaCy
     text_column: text
   pos_schema_name: Universal
-  source: legal_instrument_corpus.zip
 tagged_tokens_filter_opts:
   data:
     is_alpha: null
     is_digit: null
     is_punct: false
-    is_space: false
     is_stop: null
 text_reader_opts:
   as_binary: false

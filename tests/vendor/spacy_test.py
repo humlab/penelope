@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pandas as pd
 import penelope.pipeline.spacy.convert as convert
 import pytest
@@ -11,8 +13,7 @@ from penelope.corpus.readers import (
     TextTransformOpts,
     streamify_text_source,
 )
-from penelope.pipeline import PipelinePayload, SpacyPipeline
-from penelope.pipeline.convert import tagged_frame_to_tokens
+from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -217,7 +218,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
 def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True)
-    filter_opts = TaggedTokensFilterOpts(is_punct=None, is_space=None)
+    filter_opts = TaggedTokensFilterOpts(is_punct=None)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == [
         'Mars',
@@ -240,35 +241,35 @@ def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc):
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, target_override="lemma_")
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars', 'be', 'once', 'home', 'to', 'sea', 'and', 'ocean', 'and', 'perhaps', 'even', 'life']
 
 
 def test_extract_tokens_target_text_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False)
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ["Mars", "was", "once", "home", "to", "seas", "and", "oceans", "and", "perhaps", "even", "life"]
 
 
 def test_extract_tokens_lemma_no_stops_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True)
-    filter_opts = TaggedTokensFilterOpts(is_stop=False, is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_stop=False, is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars', 'home', 'sea', 'ocean', 'life']
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|PROPN|')
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='|VERB|NOUN|')
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['seas', 'oceans', 'life']
 
@@ -288,8 +289,8 @@ def dummy_source():
 def test_spacy_pipeline_load_text_resolves():
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
-    payload = PipelinePayload(source=source)
-    pipeline = SpacyPipeline(payload=payload).load_text(reader_opts=reader_opts)
+    config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=source))
+    pipeline = CorpusPipeline(config=config).load_text(reader_opts=reader_opts)
 
     payloads = [x.content for x in pipeline.resolve()]
 
@@ -301,8 +302,8 @@ def test_spacy_pipeline_load_text_resolves():
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
-    payload = PipelinePayload(source=source).put("pos_column", "pos_")
-    pipeline = SpacyPipeline(payload=payload).set_spacy_model(en_nlp).load_text(reader_opts=reader_opts).text_to_spacy()
+    config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=source).put2(pos_column="pos_"))
+    pipeline = CorpusPipeline(config=config).set_spacy_model(en_nlp).load_text(reader_opts=reader_opts).text_to_spacy()
 
     payloads = [x.content for x in pipeline.resolve()]
 
@@ -312,10 +313,10 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts)
-    payload = PipelinePayload(source=reader).put("pos_column", "pos_")
+    config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
     attributes = ['text', 'lemma_', 'pos_']
     pipeline = (
-        SpacyPipeline(payload=payload)
+        CorpusPipeline(config=config)
         .set_spacy_model(en_nlp)
         .load_text(reader_opts=reader_opts)
         .text_to_spacy()
@@ -334,15 +335,15 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     transform_opts = TextTransformOpts()
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
-    payload = PipelinePayload(source=reader).put("pos_column", "pos_")
+    config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
     attributes = ['text', 'lemma_', 'pos_']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
     )
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     pipeline = (
-        SpacyPipeline(payload=payload)
+        CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts)
         .set_spacy_model(en_nlp)
         .text_to_spacy()
@@ -391,18 +392,18 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     transform_opts = TextTransformOpts()
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
-    attributes = ['text', 'lemma_', 'pos_']
+    attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
     )
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
-    payload = PipelinePayload(source=reader).put('pos_column', 'lemma_')
+    config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column='pos_'))
 
     pipeline = (
-        SpacyPipeline(payload=payload)
+        CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts, transform_opts=transform_opts)
         .set_spacy_model(en_nlp)
         .text_to_spacy()
@@ -424,18 +425,19 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     transform_opts = TextTransformOpts()
     reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
 
-    attributes = ['text', 'lemma_', 'pos_']
+    attributes = ['text', 'lemma_', 'pos_', 'is_punct']
+    tagged_columns = {'text_column': 'text', 'lemma_column': 'lemma_', 'pos_column': 'pos_'}
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
     )
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
-    payload = PipelinePayload(source=reader).put('pos_column', 'lemma_')
+    config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(**tagged_columns))
 
     pipeline = (
-        SpacyPipeline(payload=payload)
+        CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts, transform_opts=transform_opts)
         .set_spacy_model(en_nlp)
         .text_to_spacy()

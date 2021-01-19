@@ -17,7 +17,7 @@ def test_mask_punct_space_when_no_space():
 """
     doc: pd.DataFrame = pd.read_csv(io.StringIO(data), sep='\t', index_col=0)
 
-    filter_opts = TaggedTokensFilterOpts(is_punct=False, is_space=False)
+    filter_opts = TaggedTokensFilterOpts(is_punct=False)
     mask = filter_opts.mask(doc)
 
     assert mask is not None
@@ -41,16 +41,16 @@ def test_mask_punct_space_when_no_space_or_punct():
 
     doc = pd.DataFrame(**data)
 
-    assert TaggedTokensFilterOpts(is_punct=False, is_space=False).mask(doc).sum() == 7
+    assert TaggedTokensFilterOpts(is_punct=False, is_stop=True).mask(doc).sum() == 7
 
 
 def test_mask_when_empty_document_succeeds():
     data = {
         'index': [],
-        'columns': ['text', 'lemma_', 'pos_', 'is_space', 'is_punct'],
+        'columns': ['text', 'lemma_', 'pos_', 'is_punct'],
         'data': [],
     }
 
     doc = pd.DataFrame(**data)
 
-    assert TaggedTokensFilterOpts(is_punct=False, is_space=False).mask(doc).sum() == 0
+    assert TaggedTokensFilterOpts(is_punct=False).mask(doc).sum() == 0

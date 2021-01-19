@@ -1,0 +1,76 @@
+import penelope.corpus.readers.tng as tng
+import penelope.pipeline as pipeline
+import pytest
+from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+from penelope.pipeline import tasks
+
+# pylint: disable=redefined-outer-name
+
+
+@pytest.fixture
+def corpus_config():
+    config = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml').files(
+        source='./tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip',
+        index_source=None,
+    )
+    return config
+
+
+def test_read_sparv_csv_zip_using_tng_zip_source(corpus_config: pipeline.CorpusConfig):
+
+    with tng.ZipSource(source_path=corpus_config.pipeline_payload.source) as source:
+
+        names = source.namelist()
+        texts = [source.read(filename) for filename in source.namelist()]
+
+    assert names == ['prot_197677__25.csv', 'prot_197677__26.csv', 'prot_197677__27.csv']
+    assert len(texts) == 3
+
+
+def test_read_sparv_csv_zip_using_tng_reader_and_zip_source(corpus_config: pipeline.CorpusConfig):
+
+    corpus_reader = tng.CorpusReader(
+        source=tng.ZipSource(source_path=corpus_config.pipeline_payload.source),
+        reader_opts=corpus_config.text_reader_opts,
+        transformer=None,
+        preprocess=None,
+        tokenizer=None,
+    )
+    assert corpus_reader is not None
+    names = [x[0] for x in corpus_reader]
+
+    assert names == ['prot_197677__25.csv', 'prot_197677__26.csv', 'prot_197677__27.csv']
+
+
+def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
+
+    p = pipeline.CorpusPipeline(config=corpus_config)
+
+    load = tasks.LoadTaggedCSV(
+        filename=corpus_config.pipeline_payload.source,
+        options=corpus_config.content_deserialize_opts,
+        extra_reader_opts=corpus_config.text_reader_opts,
+    )
+
+    extract = tasks.TaggedFrameToTokens(
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
+        filter_opts=TaggedTokensFilterOpts(is_punct=False),
+    )
+
+    p.add([load, extract])
+
+    payloads = [p for p in p.resolve()]
+
+    assert [x.document_name for x in payloads] == ['prot_197677__26', 'prot_197677__27', 'prot_197677__25']
+    assert all([x.content_type == pipeline.ContentType.TOKENS for x in payloads])
+    assert all([isinstance(x.content, list) for x in payloads])
+    assert len(payloads) == 3
+
+    # p = pipeline.CorpusPipeline(config=corpus_config).load_tagged_frame(
+    #     corpus_config.pipeline_payload.source,
+    #     options=corpus_config.content_deserialize_opts,
+    # )
+    # payloads = [p for p in p.resolve()]
+    # assert [ x.document_name for x in payloads] == ['prot_197677__26', 'prot_197677__27', 'prot_197677__25']
+    # assert all([ x.content_type == pipeline.ContentType.TAGGEDFRAME for x in payloads])
+    # assert all([ isinstance(x.content, pd.DataFrame) for x in payloads])

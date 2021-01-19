@@ -1,11 +1,12 @@
 import abc
+import csv
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
-from penelope.utility import IndexOfSplitOrCallableOrRegExp
+from penelope.utility import FilenameFieldSpecs, pandas_utils
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
@@ -16,9 +17,11 @@ FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 class TextReaderOpts:
     filename_pattern: str = field(default="*.txt")
     filename_filter: Optional[FilenameOrCallableOrSequenceFilter] = None
-    filename_fields: Optional[Sequence[IndexOfSplitOrCallableOrRegExp]] = None
+    filename_fields: Optional[FilenameFieldSpecs] = None
     index_field: Optional[str] = None
     as_binary: Optional[bool] = False
+    sep: Optional[str] = field(default='\t')
+    quoting: Optional[int] = csv.QUOTE_NONE
 
     @property
     def props(self):
@@ -28,6 +31,8 @@ class TextReaderOpts:
             filename_fields=self.filename_fields,
             index_field=self.index_field,
             as_binary=self.as_binary,
+            sep=self.sep,
+            quoting=self.quoting,
         )
 
     def copy(self, **kwargs):
@@ -100,49 +105,7 @@ class TaggedTokensFilterOpts:
 
     def mask(self, doc: pd.DataFrame) -> np.ndarray:
 
-        mask = np.repeat(True, len(doc.index))
-
-        if doc is None or len(doc) == 0:
-            return mask
-
-        for attr_name, attr_value in self.data.items():
-
-            attr_value_sign = True
-            if attr_value is None:
-                continue
-
-            if attr_name not in doc.columns:
-                # FIXME: Warn if attribute not in colums!
-                continue
-
-            if isinstance(attr_value, tuple):
-                # if LIST and tuple is passed, then first element indicates if mask should be negated
-                if (
-                    len(attr_value) != 2
-                    or not isinstance(attr_value[0], bool)
-                    or not isinstance(attr_value[1], (list, set))
-                ):
-                    raise ValueError(
-                        "when tuple is passed: length must be 2 and first element must be boolean and second must be a list"
-                    )
-                attr_value_sign = attr_value[0]
-                attr_value = attr_value[1]
-
-            value_serie: pd.Series = doc[attr_name]
-            if isinstance(attr_value, bool):
-                if attr_value:
-                    mask &= value_serie
-                else:
-                    mask &= ~(value_serie)
-            elif isinstance(attr_value, (list, set)):
-                if attr_value_sign:
-                    mask &= value_serie.isin(attr_value)
-                else:
-                    mask &= ~value_serie.isin(attr_value)
-            else:
-                mask &= value_serie == attr_value
-
-        return mask
+        return pandas_utils.create_mask(doc, self.data)
 
     def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
         if len(self.hot_attributes(doc)) == 0:
@@ -181,10 +144,3 @@ class ICorpusReader(abc.ABC):
     @abc.abstractmethod
     def __iter__(self) -> "ICorpusReader":
         return self
-
-    # FIXME; Implement __getitem__
-    # def __getitem__(self, document_name: str):
-    #     return None
-
-    def lookup_document(self, document_name: str) -> Mapping[str, Any]:
-        return self.document_index.loc[document_name].to_dict()

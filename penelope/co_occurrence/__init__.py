@@ -12,6 +12,7 @@ from .convert import (
     load_options,
     store_bundle,
     store_co_occurrences,
+    tag_to_filename,
     to_co_occurrence_matrix,
     to_dataframe,
     to_trends_data,

@@ -242,27 +242,29 @@ def plot_metrics(df_gof, bins=100):
     bokeh.plotting.show(gp)
 
 
+def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
+
+    min_year = x_corpus.document_index.year.min()
+    max_year = x_corpus.document_index.year.max()
+    xs = np.arange(min_year, max_year + 1, 1)
+    token_ids = [x_corpus.token2id[token] for token in most_deviating[metric + '_token']]
+    data = collections.defaultdict(list)
+    # plyfit of all columns: kx_m = np.polyfit(x=xs, y=x_corpus.data[:,token_ids], deg=1)
+    for token_id in token_ids:
+        ys = x_corpus.data[:, token_id]
+        data["token_id"].append(token_id)
+        data["token"].append(x_corpus.id2token[token_id])
+        _, k, p, lx, ly = fit_ordinary_least_square(ys, xs)
+        data['k'].append(k)
+        data['p'].append(p)
+        data['xs'].append(np.array(lx))
+        data['ys'].append(np.array(ly))
+    return data
+
+
 def plot_slopes(
     x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str, plot_height=300, plot_width=300
 ) -> Dict:
-    def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
-
-        min_year = x_corpus.document_index.year.min()
-        max_year = x_corpus.document_index.year.max()
-        xs = np.arange(min_year, max_year + 1, 1)
-        token_ids = [x_corpus.token2id[token] for token in most_deviating[metric + '_token']]
-        data = collections.defaultdict(list)
-        # plyfit of all columns: kx_m = np.polyfit(x=xs, y=x_corpus.data[:,token_ids], deg=1)
-        for token_id in token_ids:
-            ys = x_corpus.data[:, token_id]
-            data["token_id"].append(token_id)
-            data["token"].append(x_corpus.id2token[token_id])
-            _, k, p, lx, ly = fit_ordinary_least_square(ys, xs)
-            data['k'].append(k)
-            data['p'].append(p)
-            data['xs'].append(np.array(lx))
-            data['ys'].append(np.array(ly))
-        return data
 
     data = generate_slopes(x_corpus, most_deviating, metric)
 

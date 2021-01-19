@@ -15,10 +15,13 @@
 
 import logging
 import operator
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
 from memoization import cached
+from penelope.corpus.dtm import IVectorizedCorpus
+from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
 from textacy import vsm
 
 logger = logging.getLogger("")
@@ -27,30 +30,58 @@ logger.setLevel(logging.INFO)
 # pylint: disable=too-many-locals
 
 
+class MDWMixIn:
+    def most_discriminating_terms(
+        self: IVectorizedCorpusProtocol,
+        *,
+        group1_indices: Sequence[int],
+        group2_indices: Sequence[int],
+        top_n_terms: int = 25,
+        max_n_terms: int = 1000,
+    ) -> pd.DataFrame:
+
+        return compute_most_discriminating_terms(
+            self,
+            group1_indices=group1_indices,
+            group2_indices=group2_indices,
+            top_n_terms=top_n_terms,
+            max_n_terms=max_n_terms,
+        )
+
+
 def compute_most_discriminating_terms(
-    x_corpus, top_n_terms=25, max_n_terms=1000, group1_indices=None, group2_indices=None
-):
+    corpus: IVectorizedCorpus,
+    *,
+    group1_indices: Sequence[int],
+    group2_indices: Sequence[int],
+    top_n_terms: int = 25,
+    max_n_terms: int = 1000,
+) -> pd.DataFrame:
+
+    """Computes most discriminating words between corpus sub-groups defined by `groupX_indicies`
+
+    Args:
+        group1_indices (Sequence[int]): [description]
+        group2_indices (Sequence[int]): [description]
+        top_n_terms (int, optional): [description]. Defaults to 25.
+        max_n_terms (int, optional): [description]. Defaults to 1000.
+
+    Returns:
+        pd.DataFrame: [description]
+    """
 
     if len(group1_indices) == 0 or len(group2_indices) == 0:
         return None
 
-    if len(set(group1_indices.values).intersection(set(group2_indices.values))) > 0:
-        logger.error("The two groups are overlapping. That is NOT okey!")
+    if len(set(group1_indices).intersection(set(group2_indices))) > 0:
         return None
 
     indices = group1_indices.append(group2_indices)
 
     in_group1 = [True] * group1_indices.size + [False] * group2_indices.size
 
-    dtm = x_corpus.data[indices, :]
-
-    logger.info("Corpus size after GROUP filter %s x %s.", *dtm.shape)
-
-    logger.info("Computing MDW (this might take some time)...")
-
-    terms = most_discriminating_terms(
-        dtm, x_corpus.id2token, in_group1, top_n_terms=top_n_terms, max_n_terms=max_n_terms
-    )
+    dtm = corpus.data[indices, :]
+    terms = most_discriminating_terms(dtm, corpus.id2token, in_group1, top_n_terms=top_n_terms, max_n_terms=max_n_terms)
     min_terms = min(len(terms[0]), len(terms[1]))
     df = pd.DataFrame({'Group 1': terms[0][:min_terms], 'Group 2': terms[1][:min_terms]})
 
