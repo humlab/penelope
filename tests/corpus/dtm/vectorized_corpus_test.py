@@ -445,7 +445,7 @@ def test_xs_years(vectorized_corpus):
 
 
 def test_token_indices(vectorized_corpus):
-    assert vectorized_corpus.token_indices(['a', 'c']) == [0, 2]
+    assert vectorized_corpus.token_indices(['a', 'c', 'z']) == [0, 2]
 
 
 def test_tf_idf(vectorized_corpus):

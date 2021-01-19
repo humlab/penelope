@@ -59,6 +59,7 @@ class TrendsGUI:
             [
                 widgets.HBox(
                     [
+                        self._tf_idf,
                         self._normalize,
                         self._smooth,
                         self._group_by,
@@ -124,6 +125,7 @@ class TrendsGUI:
         self._words.observe(self._update_picker, names='value')
         self._tab.observe(self._plot_trends, 'selected_index')
         self._normalize.observe(self._plot_trends, names='value')
+        self._tf_idf.observe(self._plot_trends, names='value')
         self._smooth.observe(self._plot_trends, names='value')
         self._group_by.observe(self._plot_trends, names='value')
         self._picker.observe(self._plot_trends, names='value')

@@ -262,7 +262,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
         Iterable[str]
             Input words' column indices in the BoW matrix
         """
-        return [self.token2id[token] for token in tokens]
+        return [self.token2id[token] for token in tokens if token in self.token2id]
 
     def tf_idf(self, norm: str = 'l2', use_idf: bool = True, smooth_idf: bool = True) -> IVectorizedCorpus:
         """Returns a (nomalized) TF-IDF transformed version of the corpus

@@ -89,13 +89,12 @@ class TrendsData:
 
         if self.current_trends_opts.invalidates_corpus(opts):
 
-            # Compute TF-IDF on documents - before ANY grouping!!!
-            transformed_corpus = self.corpus
+            transformed_corpus: VectorizedCorpus = self.corpus
 
             if opts.tf_idf:
                 transformed_corpus = transformed_corpus.tf_idf()
 
-            transformed_corpus: VectorizedCorpus = self.corpus.group_by_period(period=opts.group_by)
+            transformed_corpus = transformed_corpus.group_by_period(period=opts.group_by)
 
             if opts.normalize:
                 transformed_corpus = transformed_corpus.normalize_by_raw_counts()
