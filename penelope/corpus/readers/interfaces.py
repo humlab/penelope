@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
-from penelope.utility import FilenameFieldSpecs
+from penelope.utility import FilenameFieldSpecs, pandas_utils
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
@@ -105,53 +105,7 @@ class TaggedTokensFilterOpts:
 
     def mask(self, doc: pd.DataFrame) -> np.ndarray:
 
-        mask = np.repeat(True, len(doc.index))
-
-        if doc is None or len(doc) == 0:
-            return mask
-
-        for attr_name, attr_value in self.data.items():
-
-            attr_value_sign = True
-            if attr_value is None:
-                continue
-
-            if attr_name not in doc.columns:
-                # FIXME: Warn if attribute not in colums!
-                continue
-
-            if isinstance(attr_value, tuple):
-                # if LIST and tuple is passed, then first element indicates if mask should be negated
-                if (
-                    len(attr_value) != 2
-                    or not isinstance(attr_value[0], bool)
-                    or not isinstance(attr_value[1], (list, set))
-                ):
-                    raise ValueError(
-                        "when tuple is passed: length must be 2 and first element must be boolean and second must be a list"
-                    )
-                attr_value_sign = attr_value[0]
-                attr_value = attr_value[1]
-
-            value_serie: pd.Series = doc[attr_name]
-            if isinstance(attr_value, bool):
-                # if value_serie.isna().sum() > 0:
-                #     raise ValueError(f"data error: boolean column {attr_name} contains np.nan")
-
-                mask &= value_serie == attr_value
-                # if attr_value:
-                #     mask &= value_serie
-                # else:
-                #     mask &= ~(value_serie)
-            elif isinstance(attr_value, (list, set)):
-                if attr_value_sign:
-                    mask &= value_serie.isin(attr_value)
-                else:
-                    mask &= ~value_serie.isin(attr_value)
-            else:
-                mask &= value_serie == attr_value
-
-        return mask
+        return pandas_utils.create_mask(doc, self.data)
 
     def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
         if len(self.hot_attributes(doc)) == 0:

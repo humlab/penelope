@@ -424,8 +424,8 @@ def test_filter(vectorized_corpus):
     assert len(vectorized_corpus.filter(lambda x: x['year'] == 2013).document_index) == 2
 
 
-def test_n_top_tokens(vectorized_corpus):
-    assert vectorized_corpus.n_top_tokens(2) == {'a': 10, 'c': 11}
+def test_n_global_top_tokens(vectorized_corpus):
+    assert vectorized_corpus.n_global_top_tokens(2) == {'a': 10, 'c': 11}
 
 
 def test_stats(vectorized_corpus):

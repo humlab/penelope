@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Dict, List
 
 import pandas as pd
@@ -8,12 +8,28 @@ from penelope.corpus import VectorizedCorpus
 
 @dataclass
 class TrendsOpts:
+
     normalize: bool
-    smooth: bool
+    tf_idf: bool
     group_by: str
-    word_count: int
-    words: List[str]
+
+    smooth: bool = None
+    word_count: int = None
+    words: List[str] = None
     descending: bool = False
+
+    @property
+    def clone(self) -> "TrendsOpts":
+        return TrendsOpts(**asdict(self))
+
+    def invalidates_corpus(self, other: "TrendsOpts") -> bool:
+        if self.normalize != other.normalize:
+            return True
+        if self.tf_idf != other.tf_idf:
+            return True
+        if self.group_by != other.group_by:
+            return True
+        return False
 
 
 @dataclass
@@ -28,9 +44,8 @@ class TrendsData:
     most_deviating_overview: pd.DataFrame = None
     most_deviating: pd.DataFrame = None
 
-    _transformed_corpus: VectorizedCorpus = None
-    _transformed_is_normalized = False
-    _transformed_grouped_by = 'year'
+    current_trends_opts: TrendsOpts = TrendsOpts(normalize=False, tf_idf=False, group_by='year')
+    transformed_corpus: VectorizedCorpus = None
 
     n_count: int = 25000
 
@@ -67,33 +82,41 @@ class TrendsData:
         self.memory.update(**kwargs)
         return self
 
-    def get_corpus(self, normalize: bool, group_by: str) -> VectorizedCorpus:
+    def get_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
 
-        if self._transformed_corpus is None:
-            self._transformed_corpus = self.corpus
-            self._transformed_grouped_by = 'year'
-            self._transformed_is_normalized = False
+        if self.transformed_corpus is None:
+            self.transformed_corpus = self.corpus
 
-        if group_by != self._transformed_grouped_by or normalize != self._transformed_is_normalized:
-            self._transformed_corpus = self.corpus.group_by_period(period=group_by)
-            if normalize:
-                self._transformed_corpus = self._transformed_corpus.normalize_by_raw_counts()
-            self._transformed_grouped_by = group_by
-            self._transformed_is_normalized = normalize
+        if self.current_trends_opts.invalidates_corpus(opts):
 
-        return self._transformed_corpus
+            # Compute TF-IDF on documents - before ANY grouping!!!
+            transformed_corpus = self.corpus
+
+            if opts.tf_idf:
+                transformed_corpus = transformed_corpus.tf_idf()
+
+            transformed_corpus: VectorizedCorpus = self.corpus.group_by_period(period=opts.group_by)
+
+            if opts.normalize:
+                transformed_corpus = transformed_corpus.normalize_by_raw_counts()
+
+            self.transformed_corpus = transformed_corpus
+            self.current_trends_opts = opts.clone
+
+        return self.transformed_corpus
 
     def find_word_indices(self, opts: TrendsOpts) -> List[int]:
-        indices: List[int] = self.get_corpus(
-            group_by=opts.group_by, normalize=opts.normalize
-        ).find_matching_words_indices(opts.words, opts.word_count, descending=opts.descending)
+        indices: List[int] = self.get_corpus(opts).find_matching_words_indices(
+            opts.words, opts.word_count, descending=opts.descending
+        )
         return indices
 
     def find_words(self, opts: TrendsOpts) -> List[str]:
-        words: List[int] = self.get_corpus(group_by=opts.group_by, normalize=opts.normalize).find_matching_words(
+        words: List[int] = self.get_corpus(opts).find_matching_words(
             opts.words, opts.word_count, descending=opts.descending
         )
         return words
 
-
-# words: List[str], n_count: int, group_by: str, normalize: bool)
+    def get_top_terms(self, n_count: int = 100, kind='token+count') -> pd.DataFrame:
+        top_terms = self.transformed_corpus.get_top_terms(category_column='category', n_count=n_count, kind=kind)
+        return top_terms

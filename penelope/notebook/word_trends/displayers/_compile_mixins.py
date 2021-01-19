@@ -16,10 +16,9 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
 class LinesDataMixin:
-
     def compile(self, corpus: VectorizedCorpus, indices: List[int], **kwargs) -> Any:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
-        
+
         categories = corpus.document_index.category
         bag_term_matrix = corpus.bag_term_matrix
 

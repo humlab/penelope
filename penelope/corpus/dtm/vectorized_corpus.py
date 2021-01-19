@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import fnmatch
 import re
-from heapq import nlargest
 from typing import Container, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
@@ -10,20 +9,20 @@ import pandas as pd
 import scipy
 import sklearn.preprocessing
 from penelope import utility
-from penelope.utility import getLogger, is_strictly_increasing
 from sklearn.feature_extraction.text import TfidfTransformer
 
 from .group import GroupByMixIn
 from .interface import IVectorizedCorpus, VectorizedCorpusError
 from .slice import SliceMixIn
+from .stats import StatsMixIn
 from .store import StoreMixIn
 
-# pylint: disable=logging-format-interpolation, too-many-public-methods
+# pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
 
-logger = getLogger("penelope")
+logger = utility.getLogger("penelope")
 
 
-class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
+class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVectorizedCorpus):
     def __init__(
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
@@ -62,7 +61,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
         self._token_counter = token_counter
 
     def _ingest_document_index(self, document_index: pd.DataFrame):
-        if not is_strictly_increasing(document_index.index):
+        if not utility.is_strictly_increasing(document_index.index):
             raise ValueError(
                 "supplied `document index` must have an integer typed, strictly increasing index starting from 0"
             )
@@ -226,62 +225,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
 
         return corpus
 
-    def n_top_tokens(self, n_top) -> Dict[str, int]:
-        """Returns `n_top` most frequent words.
-
-        Parameters
-        ----------
-        n_top : int
-            Number of words to return
-
-        Returns
-        -------
-        Dict[str, int]
-            Most frequent words and their counts, subset of dict `token_counter`
-
-        """
-        tokens = {w: self.token_counter[w] for w in nlargest(n_top, self.token_counter, key=self.token_counter.get)}
-        return tokens
-
-    def stats(self):
-        """Returns (and prints) some corpus status
-        Returns
-        -------
-        dict
-            Corpus stats
-        """
-        stats_data = {
-            'bags': self.bag_term_matrix.shape[0],
-            'vocabulay_size': self.bag_term_matrix.shape[1],
-            'sum_over_bags': self.bag_term_matrix.sum(),
-            '10_top_tokens': ' '.join(self.n_top_tokens(10).keys()),
-        }
-        for key in stats_data:
-            logger.info('   {}: {}'.format(key, stats_data[key]))
-        return stats_data
-
-    def to_n_top_dataframe(self, n_top: int) -> pd.DataFrame:
-        """Returns BoW as a Pandas dataframe with the `n_top` most common words.
-
-        Parameters
-        ----------
-        n_top : int
-            Number of top words to return.
-
-        Returns
-        -------
-        DataFrame
-            BoW for top `n_top` words
-        """
-        v_n_corpus = self.slice_by_n_top(n_top)
-        data = v_n_corpus.bag_term_matrix.T
-        df = pd.DataFrame(
-            data=data.todense(),
-            index=[v_n_corpus.id2token[i] for i in range(0, n_top)],
-            columns=range(0, v_n_corpus.n_docs),
-        )
-        return df
-
     def year_range(self) -> Tuple[Optional[int], Optional[int]]:
         """Returns document's year range
 
@@ -371,21 +314,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
             for doc_id in indicies
         )
 
-    def get_top_n_words(self, n=1000, indices=None):
-        """Returns the top n words in a subset of the corpus sorted according to occurrence. """
-        if indices is None:
-            sum_words = self.bag_term_matrix.sum(axis=0)
-        else:
-            sum_words = self.bag_term_matrix[indices, :].sum(axis=0)
-
-        id2token = self.id2token
-        token_ids = sum_words.nonzero()[1]
-        words_freq = [(id2token[i], sum_words[0, i]) for i in token_ids]
-
-        words_freq = sorted(words_freq, key=lambda x: x[1], reverse=True)
-
-        return words_freq[:n]
-
     def co_occurrence_matrix(self) -> scipy.sparse.spmatrix:
         """Computes (document) cooccurence matrix
 
@@ -418,17 +346,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, IVectorizedCorpus):
             if token in self.token2id
         ]
         return indices
-
-    def pick_n_top_words(self, words: Container[str], n_top: int, descending: bool = False) -> List[str]:
-        """Returns the `n_top` most frequent word in `tokens`"""
-        words = list(words)
-        if len(words) < n_top:
-            return words
-        token_counts = [self.token_counter.get(w, 0) for w in words]
-        most_frequent_words = [words[x] for x in np.argsort(token_counts)[-n_top:]]
-        if descending:
-            most_frequent_words = list(sorted(most_frequent_words, reverse=descending))
-        return most_frequent_words
 
     @staticmethod
     def create(
