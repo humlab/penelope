@@ -27,7 +27,8 @@ class LoadGUI:
         description='Load', button_style='Success', layout=Layout(width='120px'), disabled=True
     )
 
-    load_callback: Callable = None
+    load_callback: Callable[[str], None] = None
+    loaded_callback: Callable[[co_occurrence.Bundle], None] = None
 
     # @view.capture(clear_output=True)
     def _load_handler(self, *_):
@@ -39,7 +40,9 @@ class LoadGUI:
         self._load_button.disabled = True
         self._filename.disabled = True
         try:
-            self.load_callback(self.filename)
+            bundle = self.load_callback(self.filename)
+            if self.loaded_callback is not None:
+                self.loaded_callback(bundle)
         except (ValueError, FileNotFoundError) as ex:
             print(ex)
         except Exception as ex:
@@ -53,7 +56,12 @@ class LoadGUI:
     def file_selected(self, *_):
         self._load_button.disabled = not self._filename.selected
 
-    def setup(self, filename_pattern: str, load_callback: str) -> "LoadGUI":  # pylint: disable=redefined-outer-name)
+    def setup(
+        self,
+        filename_pattern: str,
+        load_callback: Callable[[str], None],
+        loaded_callback: Callable[[co_occurrence.Bundle], None],
+    ) -> "LoadGUI":  # pylint: disable=redefined-outer-name)
 
         self.filename_pattern = filename_pattern
 
@@ -71,6 +79,8 @@ class LoadGUI:
         self._filename.register_callback(self.file_selected)
         self._load_button.on_click(self._load_handler)
         self.load_callback = load_callback
+        self.loaded_callback = loaded_callback
+
         return self
 
     def layout(self):
@@ -100,28 +110,24 @@ def create_load_gui(
     filename_pattern: str = co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> "LoadGUI":
-    @debug_view.capture(clear_output=True)
-    def load_callback(filename: str):
-        load_co_occurrence_bundle(filename, loaded_callback)
 
     gui: LoadGUI = LoadGUI(default_path=data_folder).setup(
-        filename_pattern=filename_pattern, load_callback=load_callback
+        filename_pattern=filename_pattern,
+        load_callback=load_co_occurrence_bundle,
+        loaded_callback=loaded_callback,
     )
+
     return gui
 
 
 @debug_view.capture(clear_output=True)
-def load_co_occurrence_bundle(filename: str, loaded_callback: Callable[[co_occurrence.Bundle], None]):
+def load_co_occurrence_bundle(filename: str) -> co_occurrence.Bundle:
     try:
-
         if not filename or not os.path.isfile(filename):
             raise ValueError("Please select co-occurrence file")
 
         bundle = co_occurrence.load_bundle(filename)
-
-        if loaded_callback is not None:
-            loaded_callback(bundle)
-
+        return bundle
     except (ValueError, FileNotFoundError, PermissionError) as ex:
         logger.error(ex)
         raise

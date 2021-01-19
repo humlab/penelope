@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
-import ipywidgets as widgets
-from penelope.corpus import VectorizedCorpus
-from penelope.pipeline import CorpusConfig, CorpusPipeline
+from penelope.pipeline import CorpusConfig
 from penelope.utility import get_logger
 
+from .. import interface
 from ..gui_base import BaseGUI
 
 logger = get_logger('penelope')
@@ -17,7 +16,9 @@ class ComputeGUI(BaseGUI):
         layout = super().layout(hide_input, hide_output)
         return layout
 
-    def setup(self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable):
+    def setup(
+        self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable[[Any, "ComputeGUI"], None]
+    ):
         super().setup(config=config, compute_callback=compute_callback, done_callback=done_callback)
         return self
 
@@ -27,7 +28,7 @@ def create_compute_gui(
     corpus_folder: str,
     corpus_config: Union[str, CorpusConfig],
     compute_callback: Callable[[ComputeGUI, CorpusConfig], None],
-    done_callback: Callable[[CorpusPipeline, VectorizedCorpus, str, str, widgets.Output], None],
+    done_callback: Callable[[Any, interface.ComputeOpts], None],
 ) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
     corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folder(corpus_folder)

@@ -18,7 +18,7 @@ def compute(
     args: interface.ComputeOpts,
     corpus_config: pipeline.CorpusConfig,
     checkpoint_file: Optional[str] = None,
-) -> co_occurrence.ComputeResult:
+) -> co_occurrence.Bundle:
     """Creates and stored a concept co-occurrence bundle using specified options."""
 
     try:
@@ -76,7 +76,7 @@ def compute(
 
         co_occurrence.store_bundle(target_filename, bundle)
 
-        return compute_result
+        return bundle
 
     except (
         ValueError,

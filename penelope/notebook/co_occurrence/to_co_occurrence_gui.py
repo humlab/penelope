@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Set, Union
 
 import ipywidgets as widgets
-from penelope.co_occurrence import ContextOpts
+from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.pipeline import CorpusConfig
 from penelope.utility import get_logger
 
@@ -81,34 +81,34 @@ class ComputeGUI(BaseGUI):
             return {}
         return set(_concepts_str)
 
-    @staticmethod
-    def create(
-        *,
-        corpus_folder: str,
-        corpus_config: Union[str, CorpusConfig],
-        compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], None] = None,
-        done_callback: Callable = None,
-    ) -> "ComputeGUI":
-        """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
-        corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folder(corpus_folder)
-        gui = ComputeGUI(
-            default_corpus_path=corpus_folder,
-            default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
-            default_target_folder=corpus_folder,
-        ).setup(
-            config=corpus_config,
-            compute_callback=lambda args, cfg: compute_callback(
-                args=args,
-                corpus_config=cfg,
-            ),
-            done_callback=done_callback,
-        )
-
-        return gui
-
     @property
     def compute_opts(self) -> interface.ComputeOpts:
         args: interface.ComputeOpts = super().compute_opts
         args.context_opts = self.context_opts
         args.partition_keys = [self.partition_key]
         return args
+
+
+def create_compute_gui(
+    *,
+    corpus_folder: str,
+    corpus_config: Union[str, CorpusConfig],
+    compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Bundle] = None,
+    done_callback: Callable[[Bundle, interface.ComputeOpts], None] = None,
+) -> "ComputeGUI":
+    """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
+    corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folder(corpus_folder)
+    gui = ComputeGUI(
+        default_corpus_path=corpus_folder,
+        default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
+        default_target_folder=corpus_folder,
+    ).setup(
+        config=corpus_config,
+        compute_callback=lambda args, cfg: compute_callback(
+            args=args,
+            corpus_config=cfg,
+        ),
+        done_callback=done_callback,
+    )
+
+    return gui

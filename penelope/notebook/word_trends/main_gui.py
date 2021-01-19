@@ -6,6 +6,7 @@ import penelope.pipeline as pipeline
 import penelope.workflows as workflows
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
+from penelope.notebook import interface
 from penelope.notebook.interface import ComputeOpts
 
 view = widgets.Output(layout={'border': '2px solid green'})
@@ -16,17 +17,17 @@ LAST_CORPUS = None
 
 
 @view.capture(clear_output=True)
-def corpus_loaded_callback(
+def loaded_callback(
     corpus: VectorizedCorpus,
-    args: ComputeOpts,
-    **_,
+    corpus_folder: str,
+    corpus_tag: str,
 ):
     global LAST_CORPUS
     LAST_CORPUS = corpus
     trends_data: word_trends.TrendsData = word_trends.TrendsData(
         corpus=corpus,
-        corpus_folder=args.corpus_folder,
-        corpus_tag=args.corpus_tag,
+        corpus_folder=corpus_folder,
+        corpus_tag=corpus_tag,
         n_count=25000,
     ).update()
 
@@ -37,6 +38,15 @@ def corpus_loaded_callback(
 
     display(gui.layout())
     gui.display(trends_data=trends_data)
+
+
+@view.capture(clear_output=True)
+def computed_callback(
+    corpus: VectorizedCorpus,
+    opts: interface.ComputeOpts,
+):
+
+    loaded_callback(corpus=corpus, corpus_folder=opts.target_folder, corpus_tag=opts.corpus_tag)
 
 
 @view.capture(clear_output=True)
@@ -60,12 +70,12 @@ def create_to_dtm_gui(
         corpus_folder=corpus_folder,
         corpus_config=config,
         compute_callback=compute_callback,
-        done_callback=corpus_loaded_callback,
+        done_callback=computed_callback,
     )
 
     gui_load: dtm_gui.LoadGUI = dtm_gui.create_load_gui(
         corpus_folder=corpus_folder,
-        loaded_callback=corpus_loaded_callback,
+        loaded_callback=loaded_callback,
     )
 
     accordion = widgets.Accordion(

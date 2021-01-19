@@ -2,11 +2,9 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Union
 
 import ipywidgets as widgets
-import penelope.co_occurrence as co_occurrence
 import penelope.notebook.co_occurrence as co_occurrence_gui
-import penelope.pipeline as pipeline
-import penelope.workflows as workflows
 from IPython.core.display import display
+from penelope import co_occurrence, pipeline, workflows
 from penelope.notebook.interface import ComputeOpts
 from penelope.notebook.word_trends.trends_data import TrendsData
 
@@ -19,12 +17,8 @@ def create(
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> co_occurrence_gui.LoadGUI:
 
-    # @debug_view.capture(clear_output=True)
-    def load_callback(filename: str):
-        co_occurrence.load_bundle(filename, loaded_callback)
-
     gui: co_occurrence_gui.LoadGUI = co_occurrence_gui.LoadGUI(default_path=data_folder).setup(
-        filename_pattern=filename_pattern, load_callback=load_callback
+        filename_pattern=filename_pattern, load_callback=co_occurrence.load_bundle, loaded_callback=loaded_callback
     )
     return gui
 
@@ -34,13 +28,13 @@ def compute_co_occurrence_callback(
     corpus_config: pipeline.CorpusConfig,
     args: ComputeOpts,
     checkpoint_file: Optional[str] = None,
-) -> co_occurrence.ComputeResult:
-    compute_result = workflows.co_occurrence.compute(
+) -> co_occurrence.Bundle:
+    bundle = workflows.co_occurrence.compute(
         args=args,
         corpus_config=corpus_config,
         checkpoint_file=checkpoint_file,
     )
-    return compute_result
+    return bundle
 
 
 @dataclass
@@ -59,7 +53,7 @@ class MainGUI:
             else pipeline.CorpusConfig.find(corpus_config, resources_folder).folder(corpus_folder)
         )
 
-        self.gui_compute: co_occurrence_gui.ComputeGUI = co_occurrence_gui.ComputeGUI.create(
+        self.gui_compute: co_occurrence_gui.ComputeGUI = co_occurrence_gui.create_compute_gui(
             corpus_folder=corpus_folder,
             corpus_config=self.config,
             compute_callback=compute_co_occurrence_callback,

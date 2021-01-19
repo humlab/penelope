@@ -22,7 +22,8 @@ class LoadGUI:
 
     default_corpus_folder: str
     filename_pattern: str
-    load_callback: Callable
+    load_callback: Callable[[str, str], VectorizedCorpus]
+    done_callback: Callable[[VectorizedCorpus, str, str], None]
 
     _corpus_filename: ipyfilechooser.FileChooser = None
     _alert: HTML = HTML('.')
@@ -42,12 +43,10 @@ class LoadGUI:
             self.warn('Please wait')
             self._load_button.description = "Loading..."
             self._load_button.disabled = True
-            input_folder, filename = os.path.split(self.corpus_filename)
-            corpus_tag = right_chop(filename, self.filename_pattern[1:])
-            self.load_callback(
-                corpus_folder=input_folder,
-                corpus_tag=corpus_tag,
-            )
+            folder, filename = os.path.split(self.corpus_filename)
+            tag = right_chop(filename, self.filename_pattern[1:])
+            corpus = self.load_callback(folder=folder, tag=tag)
+            self.done_callback(corpus, corpus_folder=folder, corpus_tag=tag)
         except (ValueError, FileNotFoundError, Exception) as ex:
             logger.error(ex)
             self.warn(f"‼ ‼ {ex} ‼ ‼</b>")
@@ -102,33 +101,25 @@ class LoadGUI:
 def create_load_gui(
     *,
     corpus_folder: str,
-    loaded_callback: Callable,
+    loaded_callback: Callable[[VectorizedCorpus, str, str], None],
 ):
 
     filename_pattern = '*_vectorizer_data.pickle'
 
     # @view.capture(clear_output=True)
-    def load_corpus_callback(corpus_folder: str, corpus_tag: str):
+    def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:
 
         corpus: VectorizedCorpus = load_corpus(
-            folder=corpus_folder,
-            tag=corpus_tag,
-            n_count=None,
-            n_top=None,
-            axis=None,
-            group_by_year=False,
+            folder=folder, tag=tag, n_count=None, n_top=None, axis=None, group_by_year=False
         )
-        # view.clear_output()
-        loaded_callback(
-            corpus_folder=corpus_folder,
-            corpus_tag=corpus_tag,
-            corpus=corpus,
-        )
+
+        return corpus
 
     gui = LoadGUI(
         default_corpus_folder=corpus_folder,
         filename_pattern=filename_pattern,
         load_callback=load_corpus_callback,
+        done_callback=loaded_callback,
     ).setup()
 
     return gui
