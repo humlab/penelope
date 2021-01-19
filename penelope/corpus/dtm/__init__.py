@@ -1,3 +1,4 @@
+# type: ignore
 from .group import GroupByMixIn
 from .interface import IVectorizedCorpus
 from .slice import SliceMixIn
