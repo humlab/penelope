@@ -181,7 +181,7 @@ def test_trends_data_top_terms():
     assert df is not None
     assert df.columns.tolist() == ['2000', '2000/Count', '2010', '2010/Count']
     assert np.allclose(
-        df['2010/Count'].tolist(), [0.34615384615384615, 0.3076923076923077, 0.2692307692307693, 0.07692307692307693]
+        df['2010/Count'].tolist(), [0.3427448893375985, 0.29717678877203213, 0.2852926960827151, 0.07478562580765426]
     )
 
 
