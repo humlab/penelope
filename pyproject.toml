@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.3.2"
+version = "0.3.3"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -20,40 +20,40 @@ homepage = "https://github.com/humlab/penelope"
 repository = "https://github.com/humlab/penelope"
 
 [tool.poetry.dependencies]
+# cutter-ng = "^2.5"
+# glove-python-binary = { version = "*", markers = "sys_platform != 'darwin'"}
 alive-progress = "^1.6.1"
-bokeh = "^2.2.1"
+bokeh = "==2.2.3"
 click = "^7.1.2"
 ftfy = "^5.8"
 gensim = "^3.8.3"
-# glove-python-binary = { version = "*", markers = "sys_platform != 'darwin'"}
 holoviews = "^1.13.5"
-ipywidgets = "^7.5.1"
+ipyaggrid = "==0.2.1"
+ipyfilechooser = "^0.4.0"
+ipywidgets = "==7.5.1"
+jupyter_bokeh = "==2.0.4"
 lxml = "^4.5.2"
 memoization = "^0.3.1"
 more_itertools = "^8.5.0"
 nltk = "^3.5"
 numpy = "==1.19.3"
+openpyxl = "^3.0.5"
 pandas = "^1.1.2"
 pydotplus = "^2.0.2"
 python = "==3.*,>=3.8.0"
 python-louvain = "^0.14"
+PyYAML = "^5.3.1"
+qgrid = "^1.3.1"
 requests = "^2.24.0"
 scipy = "^1.5.2"
+sidecar = "^0.4.0"
 sklearn = "*"
 smart_open = "^2.2.1"
 spacy = "^2.3.2"
 statsmodels = "^0.12.0"
 textacy = "^0.10.1"
-wordcloud = "^1.8.0"
-qgrid = "^1.3.1"
-ipyfilechooser = "^0.4.0"
-ipyaggrid = "^0.2.1"
-jupyter_bokeh = "^2.0.4"
-openpyxl = "^3.0.5"
-sidecar = "^0.4.0"
 toml = "^0.10.2"
-PyYAML = "^5.3.1"
-# cutter-ng = "^2.5"
+wordcloud = "^1.8.0"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -78,6 +78,7 @@ pytest-xdist = "==2.*,>=2.2.0"
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 co_occurrence = "penelope.scripts.co_occurrence:main"
+
 
 
 

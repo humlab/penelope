@@ -1,7 +1,7 @@
 from .. import config, interfaces, pipelines, tasks
 
 
-def to_tagged_frame_pipeline(corpus_config: config.CorpusConfig):
+def to_tagged_frame_pipeline(corpus_config: config.CorpusConfig, **_):
     """Loads a teagged data frame"""
     p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config)
 

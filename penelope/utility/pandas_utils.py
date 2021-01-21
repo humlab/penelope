@@ -5,6 +5,16 @@ import numpy as np
 import pandas as pd
 
 
+def set_default_options():
+
+    set_options(max_rows=None, max_columns=None, colheader_justify='left', max_colwidth=300)
+
+
+def set_options(**kwargs):
+    for k, v in kwargs.items():
+        pd.set_option(k, v)
+
+
 def _create_mask(df: pd.DataFrame, name: str, value: Any, sign: bool = True) -> np.ndarray:
     if isinstance(
         value,

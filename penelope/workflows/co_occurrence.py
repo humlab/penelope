@@ -14,7 +14,6 @@ POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
 # pylint: disable=unused-argument
 def compute(
-    *,
     args: interface.ComputeOpts,
     corpus_config: pipeline.CorpusConfig,
     checkpoint_file: Optional[str] = None,
