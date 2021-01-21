@@ -1,10 +1,11 @@
 from collections import defaultdict
-from typing import Iterator
+from typing import Dict, Iterator, List, Tuple
 
+from penelope.utility import flatten
 from tqdm import tqdm
 
 
-def generate_token2id(terms: Iterator[Iterator[str]], n_docs=None):
+def generate_token2id(terms: Iterator[Iterator[str]], n_docs: int = None) -> dict:
 
     token2id = defaultdict()
     token2id.default_factory = token2id.__len__
@@ -14,3 +15,7 @@ def generate_token2id(terms: Iterator[Iterator[str]], n_docs=None):
             _ = token2id[token]
         tokens_iter.set_description(f"Vocab #{len(token2id)}")
     return dict(token2id)
+
+
+def bow_to_text(document: List[Tuple[int, int]], id2token: Dict[int, str]) -> str:
+    return ' '.join(flatten([f * [id2token[token_id]] for token_id, f in document]))
