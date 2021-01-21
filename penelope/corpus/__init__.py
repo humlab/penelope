@@ -43,3 +43,4 @@ from .transforms import (
     remove_symbols,
     upper_transform,
 )
+from .utils import bow_to_text, generate_token2id
