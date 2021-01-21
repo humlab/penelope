@@ -249,7 +249,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
         xs = np.arange(low, high + 1, 1)
         return xs
 
-    def token_indices(self, tokens: Iterable[str]):
+    def token_indices(self, tokens: Iterable[str]) -> List[int]:
         """Returns token (column) indices for words `tokens`
 
         Parameters
@@ -327,7 +327,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
 
         return term_term_matrix
 
-    def find_matching_words(self, word_or_regexp: List[str], n_max_count: int, descending: bool = False) -> List[str]:
+    def find_matching_words(self, word_or_regexp: Set[str], n_max_count: int, descending: bool = False) -> List[str]:
         """Returns words in corpus that matches candidate tokens """
         words = self.pick_n_top_words(
             find_matching_words_in_vocabulary(self.token2id, word_or_regexp),
@@ -362,7 +362,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
         )
 
 
-def find_matching_words_in_vocabulary(token2id: Container[str], candidate_words: Set[str]) -> Set[str]:
+def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: Set[str]) -> Set[str]:
 
     words = {w for w in candidate_words if w in token2id}
 
