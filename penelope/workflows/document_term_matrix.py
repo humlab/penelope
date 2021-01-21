@@ -9,7 +9,6 @@ CheckpointPath = str
 
 
 def compute(
-    *,
     args: ComputeOpts,
     corpus_config: CorpusConfig,
 ) -> dtm.VectorizedCorpus:
