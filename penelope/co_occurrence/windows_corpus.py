@@ -29,7 +29,7 @@ class WindowsCorpus(ITokenizedCorpus):
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> Tuple[str, List[str]]:
         try:
             filename, _, tokens = next(self.windows)
             _stats = self.statistics[filename]

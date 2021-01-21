@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import collections
 import itertools
-from typing import TYPE_CHECKING, Iterable, Mapping
+from typing import List, TYPE_CHECKING, Iterable, Mapping
 
-from penelope.corpus import CorpusVectorizer
+import pandas as pd
+
+from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 from penelope.type_alias import FilenameTokensTuples
 
 from .convert import to_dataframe
@@ -15,7 +17,7 @@ if TYPE_CHECKING:
     from penelope.pipeline.interfaces import PipelinePayload
 
 
-def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding='*'):
+def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding: str='*') -> Iterable[List[str]]:
     """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens`
 
 
@@ -73,7 +75,7 @@ def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, paddi
                 yield concept_window
 
 
-def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts, pad: str = "*"):
+def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts, pad: str = "*") -> Iterable[List]:
 
     win_iter = (
         [filename, i, window]
@@ -89,7 +91,7 @@ def corpus_co_occurrence(
     payload: PipelinePayload,
     context_opts: ContextOpts,
     threshold_count: int = 1,
-):
+) -> pd.DataFrame:
     """Computes a concept co-occurrence dataframe for given arguments
 
     Parameters
@@ -117,7 +119,7 @@ def corpus_co_occurrence(
 
     co_occurrence_matrix = windowed_corpus.co_occurrence_matrix()
 
-    co_occurrences = to_dataframe(
+    co_occurrences: pd.DataFrame = to_dataframe(
         co_occurrence_matrix,
         id2token=windowed_corpus.id2token,
         document_index=payload.document_index,
@@ -132,8 +134,8 @@ def to_vectorized_windows_corpus(
     stream: FilenameTokensTuples,
     token2id: Mapping[str, int],
     context_opts: ContextOpts,
-):
+) -> VectorizedCorpus:
     windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad='*')
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
-    corpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
     return corpus
