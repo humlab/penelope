@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from penelope.co_occurrence.co_occurrence import ContextOpts
 from penelope.corpus.readers.text_transformer import TextTransformOpts
@@ -19,17 +19,17 @@ logger = get_logger()
 # pylint: disable=too-many-locals
 
 
-def default_done_callback(*_, **__):
+def default_done_callback(*_: Any, **__: Any) -> None:
     print("Vectorization done!")
 
 
 def to_tagged_frame_pipeline(
     corpus_config: CorpusConfig,
     checkpoint_filename: str = None,
-):
+) -> pipelines.CorpusPipeline:
     try:
 
-        checkpoint_filename: str = checkpoint_filename or path_add_suffix(
+        _checkpoint_filename: str = checkpoint_filename or path_add_suffix(
             corpus_config.pipeline_payload.source, '_pos_csv'
         )
 
@@ -41,7 +41,7 @@ def to_tagged_frame_pipeline(
             .tqdm()
             .passthrough()
             .spacy_to_pos_tagged_frame()
-            .checkpoint(checkpoint_filename)
+            .checkpoint(_checkpoint_filename)
         )
         return pipeline
 
@@ -56,7 +56,7 @@ def spaCy_DTM_pipeline(
     tokens_transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     checkpoint_filename: str = None,
-):
+) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
@@ -82,7 +82,7 @@ def spaCy_co_occurrence_pipeline(
     global_threshold_count: int = None,
     partition_column: str = 'year',
     checkpoint_filename: str = None,
-):
+) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
