@@ -7,7 +7,6 @@ import penelope.workflows as workflows
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
-from penelope.notebook.interface import ComputeOpts
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
@@ -44,13 +43,13 @@ def loaded_callback(
 def computed_callback(
     corpus: VectorizedCorpus,
     opts: interface.ComputeOpts,
-):
+) -> None:
 
     loaded_callback(corpus=corpus, corpus_folder=opts.target_folder, corpus_tag=opts.corpus_tag)
 
 
 @view.capture(clear_output=True)
-def compute_callback(args: ComputeOpts, corpus_config: pipeline.CorpusConfig) -> dtm.VectorizedCorpus:
+def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.CorpusConfig) -> dtm.VectorizedCorpus:
     global LAST_ARGS, LAST_CORPUS_CONFIG
     LAST_ARGS = args
     LAST_CORPUS_CONFIG = corpus_config

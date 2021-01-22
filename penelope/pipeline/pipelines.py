@@ -5,7 +5,7 @@ from penelope.pipeline.tasks import WildcardTask
 
 from .pipeline import CorpusPipelineBase
 from .spacy.tasks_mixin import SpacyPipelineShortcutMixIn
-from .tasks_mixin import PipelineShortcutMixIn
+from .pipeline_mixin import PipelineShortcutMixIn
 
 
 class CorpusPipeline(

@@ -349,7 +349,12 @@ def update_document_index_token_counts(
     return document_index
 
 
-def update_document_index_properties(document_index, *, document_name: str, property_bag: Mapping[str, int]):
+def update_document_index_properties(
+    document_index: pd.DataFrame,
+    *,
+    document_name: str,
+    property_bag: Mapping[str, int],
+) -> None:
     """[summary]
 
     Args:
@@ -357,7 +362,7 @@ def update_document_index_properties(document_index, *, document_name: str, prop
         document_name (str): [description]
         property_bag (Mapping[str, int]): [description]
     """
-    property_bag = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
+    property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
     for key in [k for k in property_bag if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
     document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))

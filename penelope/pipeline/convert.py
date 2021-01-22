@@ -63,7 +63,7 @@ def tagged_frame_to_tokens(
 
 
 def tagged_frame_to_token_counts(tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
-
+    """Computes word counts (total and per part-of-speech) given tagged_frame"""
     if tagged_frame is None or len(tagged_frame) == 0:
         return {}
 
