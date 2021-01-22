@@ -1,11 +1,10 @@
-import logging
 import os
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 import pandas as pd
-import penelope.co_occurrence as co_occurrence
+from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
@@ -17,16 +16,11 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.corpus.readers.tng.factory import create_sparv_xml_corpus_reader
-from penelope.utility import to_text
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
-
-
-class DefaultResolveMixIn:
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return payload
+from .tasks_mixin import DefaultResolveMixIn, UpdateDocumentPropertyMixIn
 
 
 @dataclass
@@ -44,7 +38,7 @@ class LoadText(DefaultResolveMixIn, ITask):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TEXT
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
 
         self.transform_opts = self.transform_opts or TextTransformOpts()
@@ -82,7 +76,7 @@ class LoadText(DefaultResolveMixIn, ITask):
 #         self.in_content_type = ContentType.ANY
 #         self.out_content_type = ContentType.STREAM
 
-#     def setup(self):
+#     def setup(self) -> ITask:
 #         super().setup()
 
 #     def process_payload(self, payload: DocumentPayload) -> Any:
@@ -100,7 +94,7 @@ class LoadText(DefaultResolveMixIn, ITask):
 #         self.in_content_type = ContentType.ANY
 #         self.out_content_type = ContentType.STREAM
 
-#     def setup(self):
+#     def setup(self) -> ITask:
 #         super().setup()
 
 #     def process_payload(self, payload: DocumentPayload) -> Any:
@@ -119,7 +113,7 @@ class Tqdm(ITask):
         self.in_content_type = ContentType.ANY
         self.out_content_type = ContentType.ANY
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.tbar = tqdm(
             position=0,
@@ -183,7 +177,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
     filename: str = None
     options: checkpoint.CorpusSerializeOpts = None
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("checkpoint_file", self.filename)
         return self
@@ -239,7 +233,7 @@ class SaveTaggedCSV(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedCSV(DefaultResolveMixIn, ITask):
+class LoadTaggedCSV(UpdateDocumentPropertyMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
@@ -258,11 +252,12 @@ class LoadTaggedCSV(DefaultResolveMixIn, ITask):
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
 
         for payload in checkpoint_data.payload_stream:
+            self.store_token_counts(payload, payload.content)
             yield payload
 
 
 @dataclass
-class LoadTaggedXML(DefaultResolveMixIn, ITask):
+class LoadTaggedXML(UpdateDocumentPropertyMixIn, DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     filename: str = None
@@ -289,6 +284,7 @@ class LoadTaggedXML(DefaultResolveMixIn, ITask):
                 content=content,
                 filename_values=None,
             )
+            self.store_token_counts(payload, payload.content)
             yield payload
 
 
@@ -304,7 +300,7 @@ class TextToTokens(ITask):
 
     _text_transformer: TextTransformer = field(init=False)
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("text_transform_opts", self.text_transform_opts)
         self.pipeline.put("tokens_transform_opts_text", self.tokens_transform_opts)
@@ -336,20 +332,6 @@ class TextToTokens(ITask):
         return payload.update(self.out_content_type, tokens)
 
 
-class UpdateDocumentPropertyMixIn:
-    def store_token_counts(self, payload: DocumentPayload, tagged_frame: pd.DataFrame):
-        """Computes token counts from the tagged frame, and adds them to the document index"""
-        try:
-            pos_column = self.pipeline.payload.get('pos_column')
-            token_counts = convert.tagged_frame_to_token_counts(
-                tagged_frame, self.pipeline.payload.pos_schema, pos_column
-            )
-            self.store_document_properties(payload, **token_counts)
-        except Exception as ex:
-            logging.exception(ex)
-            raise
-
-
 @dataclass
 class ToTaggedFrame(UpdateDocumentPropertyMixIn, ITask):
 
@@ -357,7 +339,7 @@ class ToTaggedFrame(UpdateDocumentPropertyMixIn, ITask):
     attribute_value_filters: Dict[str, Any] = None
     tagger: DocumentTagger = None
 
-    def setup(self):
+    def setup(self) -> ITask:
         self.pipeline.put("tagged_attributes", self.attributes)
         return self
 
@@ -418,7 +400,7 @@ class TokensTransform(ITask):
     tokens_transform_opts: TokensTransformOpts = None
     transformer: TokensTransformer = None
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("tokens_transform_opts", self.tokens_transform_opts)
         return self
@@ -446,7 +428,7 @@ class TokensToText(ITask):
         self.out_content_type = ContentType.TEXT
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return payload.update(self.out_content_type, to_text(payload.content))
+        return payload.update(self.out_content_type, utility.to_text(payload.content))
 
 
 @dataclass
@@ -457,7 +439,7 @@ class TextToDTM(ITask):
 
     vectorize_opts: VectorizeOpts = None
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("vectorize_opts", self.vectorize_opts)
         return self
@@ -483,7 +465,7 @@ class Vocabulary(ITask):
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOKENS
 
-    def setup(self):
+    def setup(self) -> ITask:
         self.token2id = defaultdict()
         self.token2id.default_factory = self.token2id.__len__
         self.pipeline.payload.token2id = self.token2id
@@ -505,7 +487,7 @@ class ToCoOccurrence(ITask):
     global_threshold_count: int = None
     partition_column: str = field(default='year')
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("context_opts", self.context_opts)
         self.pipeline.put("global_threshold_count", self.global_threshold_count)
@@ -528,55 +510,6 @@ class ToCoOccurrence(ITask):
         )
         yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=compute_result)
 
-        # """Creates a vectorized corpus of word-word co-occurences.
-        # 1. Compute yearly co-occurrences
-        #     - Split stream based on year. Have a look at more_itertools more_itertools.bucket(iterable, key, validator=None)
-        #     - Use Glove.Corpus to computer term-term matrix for each year
-        #     - Create yearly BoW Corpus where tokens are "word1-word2" pairs
-        #     - Create document index where eeach item is a year
-        #     - Create a DTM using CorpusVectorizer
-        #     - Visualize using word-trends-gui notebook
-
-        # Returns
-        # -------
-        # VectorizedCorpus
-        #     [description]
-
-        # Yields
-        # -------
-        # VectorizedCorpus
-        #     [description]
-        # """
-        # def payload_year(payload: DocumentPayload) -> int:
-        #     return self.pipeline.payload.document_lookup(payload.filename)['year']
-
-        # yearly_streams = more_itertools.bucket(self.instream, key=payload_year, validator=None)
-        # yearly_keys = sorted(list(yearly_streams))
-
-        # metadata = []
-        # for i, year in enumerate(yearly_keys):
-        #     metadata.append(dict(document_id=i, filename='year_{year}.txt', document_name='year_{year}', year=year))
-        #     instream = yearly_keys[year]
-
-        #     corpus = glove.Corpus(dictionary=self.pipeline.token2id)
-        #     tokens = (payload.content for payload in instream)
-        #     corpus.fit(tokens, self.windows_size, ignore_missing=False)
-        #     coo_occurrence_matrix = corpus.matrix
-        #     coo_occurrence_dataframe = to_dataframe(
-        #         term_term_matrix,
-        #         id2token: Mapping[int, str],
-        #         catalogue: pd.DataFrame = None,
-        #         threshold_count: int = 1,
-        #     )
-        #     # TODO: Create BoW, new
-
-        # corpus = to_vectorized_corpus(
-        #     stream=self.instream,
-        #     vectorize_opts=self.vectorize_opts,
-        #     document_index=self.pipeline.payload.document_index,
-        # )
-        # yield DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
-
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
 
@@ -585,7 +518,7 @@ class ToCoOccurrence(ITask):
 class ChunkTokens(ITask):
     chunk_size: int = None
 
-    def setup(self):
+    def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("chunk_size", self.chunk_size)
         return self
@@ -617,7 +550,7 @@ class WildcardTask(ITask):
         self.out_content_type = ContentType.NONE
 
     def abort(self):
-        raise PipelineError("fatal: ninstantiated wildcard task encountered. Please check configuration!")
+        raise PipelineError("fatal: not instantiated wildcard task encountered. Please check configuration!")
 
     def outstream(self) -> Iterable[DocumentPayload]:
         self.abort()
