@@ -48,6 +48,7 @@ class CorpusSerializeOpts:
 
     sep: str = '\t'
     quoting: int = csv.QUOTE_NONE
+    custom_serializer_classname: str = None
 
     @property
     def content_type(self) -> interfaces.ContentType:
@@ -75,6 +76,11 @@ class CorpusSerializeOpts:
                 setattr(opts, key, data[key])
         return opts
 
+    @property
+    def custom_serializer(self) -> type:
+        if not self.custom_serializer_classname:
+            return None
+        return create_instance(self.custom_serializer_classname)
 
 @dataclass
 class CorpusConfig:

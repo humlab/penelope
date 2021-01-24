@@ -122,3 +122,4 @@ from .utils import (
     uniquify,
 )
 from .zip_utils import compress, namelist, read, read_iterator, store
+from . import zip_utils
