@@ -1,3 +1,4 @@
+import itertools
 import os
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -445,10 +446,11 @@ class TextToDTM(ITask):
         return self
 
     def outstream(self) -> VectorizedCorpus:
+        # FIXME: #30 [Bug] Index not set since pipeline is not exhaused at this point:
         corpus = convert.to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,
-            document_index=self.pipeline.payload.document_index,
+            document_index=lambda: self.pipeline.payload.document_index,
         )
         yield DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
 
@@ -462,19 +464,28 @@ class Vocabulary(ITask):
     token2id: Mapping[str, int] = None
 
     def __post_init__(self):
-        self.in_content_type = ContentType.TOKENS
-        self.out_content_type = ContentType.TOKENS
+        self.in_content_type = [ContentType.TOKENS, ContentType.TAGGEDFRAME]
+        self.out_content_type = ContentType.PASSTHROUGH
 
     def setup(self) -> ITask:
         self.token2id = defaultdict()
         self.token2id.default_factory = self.token2id.__len__
         self.pipeline.payload.token2id = self.token2id
+        return self
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        # FIXME: reset to normal dict upon completion
-        for token in payload.content:
+        for token in self.tokens_iter(payload.content):
             _ = self.token2id[token]
         return payload
+
+    def tokens_iter(self, tagged_frame: pd.DataFrame) -> Iterable[str]:
+        if self.in_content_type == ContentType.TOKENS:
+            return tagged_frame
+        column_names = self.pipeline.payload.tagged_columns_names
+        return itertools.chain(
+            tagged_frame[column_names['token_column']],
+            tagged_frame[column_names['lemma_column']],
+        )
 
 
 @dataclass
