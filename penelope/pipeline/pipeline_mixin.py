@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable
 
-from penelope.co_occurrence import ContextOpts
+from penelope import co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
-from penelope.pipeline import CorpusSerializeOpts
 
 from . import tasks
+from .checkpoint import CorpusSerializeOpts
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -78,7 +78,7 @@ class PipelineShortcutMixIn:
 
     def to_co_occurrence(
         self: pipelines.CorpusPipeline,
-        context_opts: ContextOpts = None,
+        context_opts: co_occurrence.ContextOpts = None,
         partition_column: str = 'year',
         global_threshold_count: int = None,
     ) -> pipelines.CorpusPipeline:
