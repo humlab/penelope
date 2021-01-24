@@ -210,12 +210,12 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     checkpoint_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
 
-    p: pipeline.CorpusPipeline = corpus_config.get_pipeline("tagged_frame_pipeline", checkpoint_filename=checkpoint_filename)
+    p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
+        "tagged_frame_pipeline",
+        checkpoint_filename=checkpoint_filename,
+    ).exhaust()
 
     document_index: pd.DataFrame = p.payload.document_index
-
-    p.exhaust()
-
     if 'n_raw_tokens' not in document_index.columns:
         raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")
 
