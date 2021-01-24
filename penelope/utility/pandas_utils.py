@@ -5,6 +5,14 @@ import numpy as np
 import pandas as pd
 
 
+def setup_pandas():
+
+    pd.set_option("max_rows", None)
+    pd.set_option("max_columns", None)
+    pd.set_option('colheader_justify', 'left')
+    pd.set_option('max_colwidth', 300)
+
+
 def set_default_options():
 
     set_options(max_rows=None, max_columns=None, colheader_justify='left', max_colwidth=300)
