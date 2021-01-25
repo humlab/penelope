@@ -18,7 +18,7 @@ class SparvCsvSerializer(TaggedFrameContentSerializer):
             sep=options.sep,
             quoting=options.quoting,
             index_col=False,
-            skiprows=[1], # XML <text> tag
+            skiprows=[1],  # XML <text> tag
             # converters={
             # 'baseform': lambda x: '' if (x or '').strip('|') == '' else x.strip('|').split('|')[0]
             # }
