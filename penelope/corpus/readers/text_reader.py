@@ -25,6 +25,8 @@ class TextReader(ICorpusReader):
     def create(
         source: TextSource, *, reader_opts: TextReaderOpts, transform_opts: TextTransformOpts = None
     ) -> "TextReader":
+        if isinstance(source, TextReader):
+            return source
         return TextReader(source=source, reader_opts=reader_opts, transform_opts=transform_opts)
 
     def __init__(
