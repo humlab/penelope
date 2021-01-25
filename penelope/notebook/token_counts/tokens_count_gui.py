@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from penelope.utility.filename_utils import strip_path_and_extension
 from typing import Callable, List
 
 import ipywidgets as widgets
 import pandas as pd
 from bokeh.io import output_notebook
+from penelope import pipeline
 from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.notebook.utility import OutputsTabExt
-from penelope import pipeline
 from penelope.pipeline import interfaces
 from penelope.utility import PoS_Tag_Scheme, getLogger, path_add_suffix
+from penelope.utility.filename_utils import strip_path_and_extension
 
 from .plot import plot_by_bokeh as plot_dataframe
 

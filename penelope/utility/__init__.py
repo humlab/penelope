@@ -1,4 +1,5 @@
 # type: ignore
+from . import zip_utils
 from ._color_utility import (
     DEFAULT_ALL_PALETTES,
     DEFAULT_LINE_PALETTE,
@@ -122,4 +123,3 @@ from .utils import (
     uniquify,
 )
 from .zip_utils import compress, namelist, read, read_iterator, store
-from . import zip_utils

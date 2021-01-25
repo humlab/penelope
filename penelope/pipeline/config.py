@@ -82,6 +82,7 @@ class CorpusSerializeOpts:
             return None
         return create_instance(self.custom_serializer_classname)
 
+
 @dataclass
 class CorpusConfig:
 
@@ -141,7 +142,6 @@ class CorpusConfig:
                 yaml.dump(
                     json.loads(json.dumps(self, default=vars)), fp, indent=4, default_flow_style=False, sort_keys=False
                 )
-
 
     @staticmethod
     def list(folder: str) -> List[str]:

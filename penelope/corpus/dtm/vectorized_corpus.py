@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import fnmatch
 import re
-from typing import Container, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd

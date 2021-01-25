@@ -2,7 +2,6 @@ import pytest
 from penelope import pipeline
 from penelope.pipeline.sparv import pipelines
 
-
 # pylint: disable=redefined-outer-name
 
 

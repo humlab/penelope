@@ -1,6 +1,5 @@
 # type: ignore
 from . import spacy, sparv
-
 from .checkpoint import (
     CheckpointData,
     CorpusSerializeOpts,

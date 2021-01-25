@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import collections
 import itertools
-from typing import List, TYPE_CHECKING, Iterable, Mapping
+from typing import TYPE_CHECKING, Iterable, List, Mapping
 
 import pandas as pd
-
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 from penelope.type_alias import FilenameTokensTuples
 
@@ -17,7 +16,7 @@ if TYPE_CHECKING:
     from penelope.pipeline.interfaces import PipelinePayload
 
 
-def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding: str='*') -> Iterable[List[str]]:
+def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding: str = '*') -> Iterable[List[str]]:
     """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens`
 
 
@@ -137,5 +136,7 @@ def to_vectorized_windows_corpus(
 ) -> VectorizedCorpus:
     windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad='*')
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
-    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(windows_corpus, vocabulary=token2id, already_tokenized=True)
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
+        windows_corpus, vocabulary=token2id, already_tokenized=True
+    )
     return corpus
