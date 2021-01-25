@@ -36,6 +36,10 @@ TEST_CORPUS = [
 TEST_OUTPUT_FOLDER = './tests/output'
 
 
+def monkey_patch(*_, **__):
+    return Mock()
+
+
 @pytest.fixture(scope="module")
 def mary_had_a_little_lamb_corpus() -> Iterable[Tuple[str, str]]:
     return TEST_CORPUS
@@ -53,12 +57,11 @@ def reader_opts():
 
 
 def fake_data_frame_stream(n: int = 1):
-    df_dummy = pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']})
     for i in range(1, n + 1):
         yield DocumentPayload(
             filename=f'dummy_{i}.csv',
             content_type=ContentType.TAGGEDFRAME,
-            content=df_dummy,
+            content=pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']}),
         )
 
 
@@ -196,11 +199,11 @@ def test_text_to_tagged_frame_with_text_payload_succeeds():
         pipeline=Mock(spec=CorpusPipeline),
     ).setup()
     task.tagger = MagicMock(name='tagger')
-    task.store_token_counts = MagicMock(name='store_token_counts')
+    task.register_token_counts = MagicMock(name='register_token_counts')
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert task.tagger.call_count == 1
-    assert task.store_token_counts.call_count == 1
+    assert task.register_token_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
@@ -208,11 +211,11 @@ def test_text_to_tagged_frame_with_text_payload_succeeds():
 def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     task = spacy_tasks.SpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     task.tagger = MagicMock(name='tagger')
-    task.store_token_counts = MagicMock(name='store_token_counts')
+    task.register_token_counts = MagicMock(name='register_token_counts')
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
     assert task.tagger.call_count == 1
-    assert task.store_token_counts.call_count == 1
+    assert task.register_token_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGEDFRAME
 
 
@@ -251,7 +254,8 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
 
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 def test_save_data_frame_succeeds():
-    task = tasks.SaveTaggedCSV(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip")
+    pipeline = Mock(spec=CorpusPipeline, **{'payload.set_reader_index': monkey_patch})
+    task = tasks.SaveTaggedCSV(pipeline=pipeline, filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME
@@ -259,7 +263,14 @@ def test_save_data_frame_succeeds():
 
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_load_data_frame_succeeds():
-    task = tasks.LoadTaggedCSV(pipeline=Mock(spec=CorpusPipeline), filename="dummy.zip").setup()
+    pipeline = Mock(
+        spec=CorpusPipeline,
+        **{
+            'payload.set_reader_index': monkey_patch,
+        },
+    )
+    task = tasks.LoadTaggedCSV(pipeline=pipeline, filename="dummy.zip", extra_reader_opts=TextReaderOpts()).setup()
+    task.register_token_counts = lambda _: task
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGEDFRAME

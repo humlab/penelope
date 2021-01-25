@@ -96,7 +96,9 @@ def test_sparv_csv_serializer():
 
 def test_sparv_csv_create_token2id():
 
-    pipeline = Mock(spec=CorpusPipeline, **{'payload.tagged_columns_names': {'token_column': 'token', 'lemma_column': 'baseform'}})
+    pipeline = Mock(
+        spec=CorpusPipeline, **{'payload.tagged_columns_names': {'text_column': 'token', 'lemma_column': 'baseform'}}
+    )
     instream = MagicMock(spec=Iterable[DocumentPayload])
     task: Vocabulary = Vocabulary(pipeline=pipeline, instream=instream).setup()
 
@@ -105,10 +107,11 @@ def test_sparv_csv_create_token2id():
         config.CorpusSerializeOpts(),
     )
 
-    expected_tokens = tagged_frame.token.tolist() + tagged_frame.baseform.tolist()
-    assert expected_tokens == [x for x in task.tokens_iter(tagged_frame)]
-
     payload = DocumentPayload(content_type=ContentType.TAGGEDFRAME, content=tagged_frame)
+
+    expected_tokens = tagged_frame.token.tolist() + tagged_frame.baseform.tolist()
+    assert expected_tokens == [x for x in task.tokens_iter(payload)]
+
     payload_next = task.process_payload(payload=payload)
 
     assert payload_next is not None

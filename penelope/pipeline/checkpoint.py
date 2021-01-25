@@ -86,7 +86,7 @@ def store_checkpoint(
     payload_stream: Iterator[DocumentPayload],
 ) -> Iterable[DocumentPayload]:
 
-    serializer: IContentSerializer = IContentSerializer.create(options.content_type)
+    serializer: IContentSerializer = IContentSerializer.create(options)
 
     assert_that_path_exists(path_of(target_filename))
 
