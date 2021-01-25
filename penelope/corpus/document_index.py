@@ -87,10 +87,11 @@ class DocumentIndex:
 
     def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndex":
         """Updates attributes for the specified document item"""
-        property_bag = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
-        for key in [k for k in property_bag if k not in self._document_index.columns]:
-            self._document_index.insert(len(self._document_index.columns), key, np.nan)
-        self._document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+        # property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
+        # for key in [k for k in property_bag if k not in self._document_index.columns]:
+        #     self._document_index.insert(len(self._document_index.columns), key, np.nan)
+        # self._document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+        update_document_index_properties(self._document_index, document_name=document_name, property_bag=property_bag)
         return self
 
     def group_by_column(
