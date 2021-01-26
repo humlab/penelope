@@ -325,6 +325,7 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
         workers=2,
         max_iter=2000,
         store_corpus=True,
+        filename_field="year:_:1",
     )
 
     run_model(**options)
