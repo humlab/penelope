@@ -8,11 +8,9 @@ import gensim
 import pandas as pd
 import penelope.utility as utility
 import scipy
-from penelope.corpus.document_index import document_index_upgrade
+from penelope.corpus import load_document_index, DocumentIndex
 from penelope.utility import file_utility, filename_utils
 from tqdm.auto import tqdm
-
-from .utility import add_document_metadata
 
 logger = utility.getLogger('corpus_text_analysis')
 
@@ -122,15 +120,11 @@ class InferredTopicsData:
         document_topic_weights : pd.DataFrame
             Document topic weights
         """
-        self.dictionary = dictionary
-        self.document_index = document_index
-        self.topic_token_weights = topic_token_weights
-        self.topic_token_overview = topic_token_overview
-        self.document_topic_weights = document_topic_weights
-
-        # Ensure that `year` column exists
-
-        self.document_topic_weights = add_document_metadata(self.document_topic_weights, 'year', document_index)
+        self.dictionary: Any = dictionary
+        self.document_index: pd.DataFrame = document_index
+        self.topic_token_weights: pd.DataFrame = topic_token_weights
+        self.topic_token_overview: pd.DataFrame = topic_token_overview
+        self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(document_topic_weights, 'year')
 
     @property
     def year_period(self) -> Tuple[int, int]:
@@ -144,7 +138,7 @@ class InferredTopicsData:
         """Returns unique topic ids """
         return list(self.document_topic_weights.topic_id.unique())
 
-    def store(self, target_folder, pickled=False):
+    def store(self, target_folder: str, pickled: bool=False):
         """Stores aggregate in `target_folder` as individual zipped files
 
         Parameters
@@ -162,7 +156,7 @@ class InferredTopicsData:
 
         if pickled:
 
-            filename = os.path.join(target_folder, "inferred_topics.pickle")
+            filename: str = os.path.join(target_folder, "inferred_topics.pickle")
 
             c_data = types.SimpleNamespace(
                 documents=self.document_index,
@@ -194,12 +188,12 @@ class InferredTopicsData:
 
         if pickled:
 
-            filename = os.path.join(folder, "inferred_topics.pickle")
+            filename: str = os.path.join(folder, "inferred_topics.pickle")
 
             with open(filename, 'rb') as f:
                 data = pickle.load(f)
 
-            data = InferredTopicsData(
+            data: InferredTopicsData = InferredTopicsData(
                 document_index=data.document_index if hasattr(data, 'document_index') else data.document,
                 dictionary=data.dictionary,
                 topic_token_weights=data.topic_token_weights,
@@ -208,9 +202,9 @@ class InferredTopicsData:
             )
 
         else:
-            data = InferredTopicsData(
-                document_index=pd.read_csv(
-                    os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False
+            data: InferredTopicsData = InferredTopicsData(
+                document_index=load_document_index(
+                    os.path.join(folder, 'documents.zip'), sep='\t', header=0, index_col=0, na_filter=False
                 ),
                 dictionary=pd.read_csv(
                     os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False
@@ -226,7 +220,7 @@ class InferredTopicsData:
                 ),
             )
 
-            data.document_index = document_index_upgrade(data.document_index)
+            # data.document_index = document_index_upgrade(data.document_index)
 
         return data
 
@@ -243,3 +237,16 @@ class InferredTopicsData:
     @property
     def term2id(self):
         return {v: k for k, v in self.id2term.items()}
+
+    @property
+    def topic_proportions(self) -> pd.DataFrame:
+
+        doc_topic_dists:pd.DataFrame = self.document_topic_weights[['document_id', 'topic_id', 'weight', 'n_raw_tokens']]
+        # compute sum of (topic weight x document lengths)
+        topic_freqs:pd.DataFrame = doc_topic_dists.assign(t_weight=lambda df: df.weight * df.n_raw_tokens).groupby('topic_id')['t_weight'].sum()
+        # normalize on total sum
+        topic_proportion: pd.Series = (topic_freqs / topic_freqs.sum()).sort_values(ascending=False)
+        # return global topic proportion
+        topic_proportion = pd.DataFrame(data={'topic_proportion': 100.0 * topic_proportion})
+
+        return topic_proportion

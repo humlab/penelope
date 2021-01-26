@@ -1,5 +1,6 @@
 import types
 import warnings
+from contextlib import suppress
 from os.path import join as jj
 from typing import Any, Dict, List
 
@@ -61,6 +62,10 @@ def load_model(
     state.set_data(inferred_model, inferred_topics)
 
     topics = inferred_topics.topic_token_overview
+
+    with suppress(BaseException):
+        topics = topics.merge(inferred_topics.topic_token_overview, left_index=True, right_index=True)
+
     # topics.style.set_properties(**{'text-align': 'left'}).set_table_styles(
     #     [dict(selector='td', props=[('text-align', 'left')])]
     # )
