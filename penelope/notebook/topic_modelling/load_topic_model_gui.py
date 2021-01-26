@@ -88,7 +88,7 @@ class LoadGUI:
 
 
 @utility.try_catch
-def display_gui(corpus_folder: str, state: TopicModelContainer) -> MainGUI:
+def create_load_topic_model_gui(corpus_folder: str, state: TopicModelContainer) -> MainGUI:
 
     model_infos: List[dict] = topic_modelling.find_models(corpus_folder)
     model_names: List[str] = list(x["name"] for x in model_infos)
@@ -97,7 +97,5 @@ def display_gui(corpus_folder: str, state: TopicModelContainer) -> MainGUI:
         load_model(corpus_folder, state, model_name, model_infos)
 
     gui = LoadGUI().setup(model_names, load_callback=load_callback)
-
-    display(gui.layout())
 
     return gui
