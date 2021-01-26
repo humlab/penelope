@@ -6,12 +6,12 @@ from typing import Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 import numpy as np
 import pandas as pd
 from penelope.utility import (
+    FilenameFieldSpecs,
+    PD_PoS_tag_groups,
+    deprecated,
+    extract_filenames_metadata,
     is_strictly_increasing,
     strip_path_and_extension,
-    deprecated,
-    FilenameFieldSpecs,
-    extract_filenames_metadata,
-    PD_PoS_tag_groups,
 )
 
 
@@ -100,8 +100,8 @@ class DocumentIndex:
         update_document_index_properties(self._document_index, document_name=document_name, property_bag=property_bag)
         return self
 
-    def overload(self, df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
-        return overload_by_document_index_properties(self._document_index, df=df, columns=columns)
+    def overload(self, df: pd.DataFrame, column_names: List[str]) -> pd.DataFrame:
+        return overload_by_document_index_properties(self._document_index, df=df, column_names=column_names)
 
     def group_by_column(
         self,
@@ -334,12 +334,6 @@ def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.Da
     return reader_index
 
 
-def add_document_index_attributes(*, catalogue: pd.DataFrame, target: pd.DataFrame) -> pd.DataFrame:
-    """ Adds document meta data to given data frame (must have a document_id) """
-    df = target.merge(catalogue, how='inner', left_on='document_id', right_on='document_id')
-    return df
-
-
 def update_document_index_token_counts(
     document_index: pd.DataFrame, doc_token_counts: List[Tuple[str, int, int]]
 ) -> pd.DataFrame:
@@ -390,7 +384,7 @@ def update_document_index_properties(
 
 
 def overload_by_document_index_properties(
-    document_index: pd.DataFrame, df: pd.DataFrame, columns: List[str]
+    document_index: pd.DataFrame, df: pd.DataFrame, column_names: List[str] = None
 ) -> pd.DataFrame:
     """Add document `columns` to `df` if columns not already exists.
 
@@ -409,17 +403,20 @@ def overload_by_document_index_properties(
         `df` extended with `columns` data
     """
 
+    if column_names is None:
+        column_names = document_index.columns.tolist()
+
     if document_index is None:
         return df
 
     if 'document_id' not in df.columns:
         return df
 
-    if isinstance(columns, str):
-        columns = [columns]
+    if isinstance(column_names, str):
+        column_names = [column_names]
 
-    columns = ['document_id'] + [c for c in columns if c not in df.columns and c in document_index.columns]
+    column_names = ['document_id'] + [c for c in column_names if c not in df.columns and c in document_index.columns]
 
-    df = df.merge(document_index[columns], how='inner', left_on='document_id', right_on='document_id')
+    df = df.merge(document_index[column_names], how='inner', left_on='document_id', right_on='document_id')
 
     return df
