@@ -2,16 +2,15 @@
 from .document_index import (
     DOCUMENT_INDEX_COUNT_COLUMNS,
     DocumentIndex,
-    add_document_index_attributes,
     consolidate_document_index,
     document_index_upgrade,
     load_document_index,
     load_document_index_from_str,
     metadata_to_document_index,
+    overload_by_document_index_properties,
     store_document_index,
     update_document_index_properties,
     update_document_index_token_counts,
-    overload_by_document_index_properties,
 )
 from .dtm import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, load_corpus
 from .interfaces import ICorpus, ITokenizedCorpus
