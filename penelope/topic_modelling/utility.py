@@ -218,40 +218,6 @@ def id2word_to_dataframe(id2word: Dict) -> pd.DataFrame:
     return dictionary
 
 
-def add_document_metadata(df: pd.DataFrame, columns: List[str], document_index: pd.DataFrame) -> pd.DataFrame:
-    """Add document `columns` to `df` if columns not already exists.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Data of interest
-    columns : Union[str,List[str]]
-        Columns in `document_index` that should be added to `df`
-    document_index : pd.DataFrame
-        Corpus document index, by default None
-
-    Returns
-    -------
-    pd.DataFrame
-        `df` extended with `columns` data
-    """
-
-    if document_index is None:
-        return df
-
-    if 'document_id' not in df.columns:
-        return df
-
-    if isinstance(columns, str):
-        columns = [columns]
-
-    columns = ['document_id'] + [c for c in columns if c not in df.columns and c in document_index.columns]
-
-    df = df.merge(document_index[columns], how='inner', left_on='document_id', right_on='document_id')
-
-    return df
-
-
 def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
     """Returns a DataFrame containing a string of `n_tokens` most probable words per topic"""
 

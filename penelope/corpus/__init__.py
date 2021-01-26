@@ -11,6 +11,7 @@ from .document_index import (
     store_document_index,
     update_document_index_properties,
     update_document_index_token_counts,
+    overload_by_document_index_properties,
 )
 from .dtm import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, load_corpus
 from .interfaces import ICorpus, ITokenizedCorpus
