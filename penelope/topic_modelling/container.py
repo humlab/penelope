@@ -8,7 +8,7 @@ import gensim
 import pandas as pd
 import penelope.utility as utility
 import scipy
-from penelope.corpus import load_document_index, DocumentIndex
+from penelope.corpus import DocumentIndex, load_document_index
 from penelope.utility import file_utility, filename_utils
 from tqdm.auto import tqdm
 
@@ -124,7 +124,9 @@ class InferredTopicsData:
         self.document_index: pd.DataFrame = document_index
         self.topic_token_weights: pd.DataFrame = topic_token_weights
         self.topic_token_overview: pd.DataFrame = topic_token_overview
-        self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(document_topic_weights, 'year')
+        self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(
+            document_topic_weights, 'year'
+        )
 
     @property
     def year_period(self) -> Tuple[int, int]:
@@ -138,7 +140,7 @@ class InferredTopicsData:
         """Returns unique topic ids """
         return list(self.document_topic_weights.topic_id.unique())
 
-    def store(self, target_folder: str, pickled: bool=False):
+    def store(self, target_folder: str, pickled: bool = False):
         """Stores aggregate in `target_folder` as individual zipped files
 
         Parameters
@@ -220,7 +222,10 @@ class InferredTopicsData:
                 ),
             )
 
-            # data.document_index = document_index_upgrade(data.document_index)
+        assert "year" in data.document_index.columns
+
+        # if "year" not in data.document_index.columns:
+        #     data.document_index["year"] = data.document_index.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
 
         return data
 
@@ -241,9 +246,15 @@ class InferredTopicsData:
     @property
     def topic_proportions(self) -> pd.DataFrame:
 
-        doc_topic_dists:pd.DataFrame = self.document_topic_weights[['document_id', 'topic_id', 'weight', 'n_raw_tokens']]
+        doc_topic_dists: pd.DataFrame = self.document_topic_weights[
+            ['document_id', 'topic_id', 'weight', 'n_raw_tokens']
+        ]
         # compute sum of (topic weight x document lengths)
-        topic_freqs:pd.DataFrame = doc_topic_dists.assign(t_weight=lambda df: df.weight * df.n_raw_tokens).groupby('topic_id')['t_weight'].sum()
+        topic_freqs: pd.DataFrame = (
+            doc_topic_dists.assign(t_weight=lambda df: df.weight * df.n_raw_tokens)
+            .groupby('topic_id')['t_weight']
+            .sum()
+        )
         # normalize on total sum
         topic_proportion: pd.Series = (topic_freqs / topic_freqs.sum()).sort_values(ascending=False)
         # return global topic proportion
