@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=too-many-arguments, super-with-arguments, too-many-instance-attributes
 
 
-class SparvXmlTokenizer(TextTokenizer):
+class SparvXmlReader(TextTokenizer):
     def __init__(
         self,
         source: TextSource,
@@ -59,7 +59,7 @@ class SparvXmlTokenizer(TextTokenizer):
         return self.parser.transform(content)
 
 
-class Sparv3XmlTokenizer(SparvXmlTokenizer):
+class Sparv3XmlReader(SparvXmlReader):
     def __init__(
         self,
         source: TextSource,

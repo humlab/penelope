@@ -35,17 +35,17 @@ def test_sparv_csv_tokenizer_interface():
 
 def test_sparv_xml3_tokenizer_interface():
 
-    assert issubclass(readers.Sparv3XmlTokenizer, ICorpusReader)
+    assert issubclass(readers.Sparv3XmlReader, ICorpusReader)
 
-    instance = readers.Sparv3XmlTokenizer('./tests/test_data/sou_test_sparv3_xml.zip')
+    instance = readers.Sparv3XmlReader('./tests/test_data/sou_test_sparv3_xml.zip')
     assert isinstance(instance, ICorpusReader)
 
 
 def test_sparv_xml_tokenizer_interface():
 
-    assert issubclass(readers.SparvXmlTokenizer, ICorpusReader)
+    assert issubclass(readers.SparvXmlReader, ICorpusReader)
 
-    instance = readers.SparvXmlTokenizer(SPARV_XML_EXPORT_FILENAME_SMALL)
+    instance = readers.SparvXmlReader(SPARV_XML_EXPORT_FILENAME_SMALL)
     assert isinstance(instance, ICorpusReader)
 
 
