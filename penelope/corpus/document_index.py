@@ -1,10 +1,6 @@
-import contextlib
 import logging
 import os
 from io import StringIO
-from penelope.topic_modelling.container import TrainingCorpus
-from penelope.utility.utils import list_of_dicts_to_dict_of_lists
-from penelope.utility.filename_utils import strip_paths
 from typing import Any, Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 
 import numpy as np
@@ -15,7 +11,9 @@ from penelope.utility import (
     deprecated,
     extract_filenames_metadata,
     is_strictly_increasing,
+    list_of_dicts_to_dict_of_lists,
     strip_path_and_extension,
+    strip_paths,
 )
 
 
