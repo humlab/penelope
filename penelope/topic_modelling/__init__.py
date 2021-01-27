@@ -1,3 +1,4 @@
+# type: ignore
 from .compute import infer_model
 from .container import InferredModel, InferredTopicsData, TrainingCorpus
 from .io import load_model, store_model
