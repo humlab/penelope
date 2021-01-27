@@ -13,7 +13,7 @@ TEMP_PATH = './tmp/'
 
 
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
-def engine_options(algorithm: str, corpus, id2word, kwargs):
+def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
 
     if algorithm == 'LSI':
         return {
