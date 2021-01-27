@@ -1,7 +1,11 @@
+import contextlib
 import logging
 import os
 from io import StringIO
-from typing import Callable, Dict, List, Mapping, Tuple, TypeVar, Union
+from penelope.topic_modelling.container import TrainingCorpus
+from penelope.utility.utils import list_of_dicts_to_dict_of_lists
+from penelope.utility.filename_utils import strip_paths
+from typing import Any, Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -102,6 +106,9 @@ class DocumentIndex:
 
     def overload(self, df: pd.DataFrame, column_names: List[str]) -> pd.DataFrame:
         return overload_by_document_index_properties(self._document_index, df=df, column_names=column_names)
+
+    def apply_filename_fields(self, filename_fields: FilenameFieldSpecs):
+        apply_filename_fields(self._document_index, filename_fields=filename_fields)
 
     def group_by_column(
         self,
@@ -259,6 +266,7 @@ def load_document_index(
     *,
     sep: str,
     document_id_field: str = 'document_id',
+    filename_fields: FilenameFieldSpecs=None,
     **read_csv_kwargs,
 ) -> pd.DataFrame:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -285,8 +293,10 @@ def load_document_index(
 
     document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
-    return document_index
+    if filename_fields is not None:
+        document_index = apply_filename_fields(document_index, filename_fields)
 
+    return document_index
 
 @deprecated
 def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
@@ -313,6 +323,18 @@ def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str =
 
     document_index = load_document_index(pd.DataFrame(metadata), sep=None, document_id_field=document_id_field)
 
+    return document_index
+
+
+def apply_filename_fields(document_index: pd.DataFrame, filename_fields: FilenameFieldSpecs):
+    """Extends document index with filename fields defined by `filename_fields`"""
+    if 'filename' not in document_index.columns:
+        raise DocumentIndexError("filename not in document index")
+    filenames = [ strip_paths(filename) for filename in document_index.filename.tolist()]
+    metadata:  List[Mapping[str, Any]] = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
+    for key, values in list_of_dicts_to_dict_of_lists(metadata).items():
+        if key not in document_index.columns:
+            document_index[key] = values
     return document_index
 
 

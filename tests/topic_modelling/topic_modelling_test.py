@@ -257,7 +257,7 @@ def test_load_inferred_topics_data(method):
     test_inferred_topics_data.store(target_folder)
 
     # Act
-    inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(target_folder)
+    inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(folder=target_folder, filename_fields=None)
 
     # Assert
     assert inferred_topics_data is not None
@@ -331,7 +331,7 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
     run_model(**options)
 
     inferred_model = topic_modelling.load_model(target_folder)
-    inferred_topic_data = InferredTopicsData.load(target_folder)
+    inferred_topic_data = InferredTopicsData.load(folder=target_folder, filename_fields=None)
 
     assert inferred_model is not None
     assert inferred_topic_data is not None

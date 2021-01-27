@@ -5,9 +5,7 @@ from os.path import join as jj
 from typing import Any, Callable, Dict, List
 
 import ipywidgets as widgets
-import penelope.topic_modelling as topic_modelling
-import penelope.utility as utility
-from IPython.display import display
+from penelope import topic_modelling, utility, pipeline
 from penelope.notebook.co_occurrence.main_gui import MainGUI
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 
@@ -22,6 +20,7 @@ logger = utility.get_logger()
 
 
 def load_model(
+    corpus_config: pipeline.CorpusConfig,
     corpus_folder: str,
     state: TopicModelContainer,
     model_name: str,
@@ -32,14 +31,17 @@ def load_model(
     model_info = next(x for x in model_infos if x["name"] == model_name)
 
     inferred_model: InferredModel = topic_modelling.load_model(model_info["folder"], lazy=True)
-    inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(jj(corpus_folder, model_info["name"]))
+    inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(
+        folder=jj(corpus_folder, model_info["name"]),
+        filename_fields=corpus_config.text_reader_opts.filename_fields,
+    )
 
     state.set_data(inferred_model, inferred_topics)
 
     topics = inferred_topics.topic_token_overview
 
-    with suppress(BaseException):
-        topics = topics.merge(inferred_topics.topic_token_overview, left_index=True, right_index=True)
+    # with suppress(BaseException):
+    #     topics = topics.merge(inferred_topics.topic_proportions, left_index=True, right_index=True)
 
     # topics.style.set_properties(**{'text-align': 'left'}).set_table_styles(
     #     [dict(selector='td', props=[('text-align', 'left')])]
@@ -88,13 +90,15 @@ class LoadGUI:
 
 
 @utility.try_catch
-def create_load_topic_model_gui(corpus_folder: str, state: TopicModelContainer) -> MainGUI:
+def create_load_topic_model_gui(
+    corpus_config: pipeline.CorpusConfig, corpus_folder: str, state: TopicModelContainer
+) -> MainGUI:
 
     model_infos: List[dict] = topic_modelling.find_models(corpus_folder)
     model_names: List[str] = list(x["name"] for x in model_infos)
 
     def load_callback(model_name: str):
-        load_model(corpus_folder, state, model_name, model_infos)
+        load_model(corpus_config, corpus_folder, state, model_name, model_infos)
 
     gui = LoadGUI().setup(model_names, load_callback=load_callback)
 

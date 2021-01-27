@@ -6,7 +6,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import gensim
 import pandas as pd
-import penelope.utility as utility
+from penelope import pipeline, utility
 import scipy
 from penelope.corpus import DocumentIndex, load_document_index
 from penelope.utility import file_utility, filename_utils
@@ -123,10 +123,10 @@ class InferredTopicsData:
         self.dictionary: Any = dictionary
         self.document_index: pd.DataFrame = document_index
         self.topic_token_weights: pd.DataFrame = topic_token_weights
-        self.topic_token_overview: pd.DataFrame = topic_token_overview
         self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(
             document_topic_weights, 'year'
         )
+        self.topic_token_overview: pd.DataFrame = topic_token_overview
 
     @property
     def year_period(self) -> Tuple[int, int]:
@@ -184,7 +184,7 @@ class InferredTopicsData:
                 file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     @staticmethod
-    def load(folder: str, pickled: bool = False):
+    def load(*, folder: str, filename_fields: pipeline.CorpusConfig, pickled: bool = False):
         """Loads previously stored aggregate"""
         data = None
 
@@ -206,7 +206,7 @@ class InferredTopicsData:
         else:
             data: InferredTopicsData = InferredTopicsData(
                 document_index=load_document_index(
-                    os.path.join(folder, 'documents.zip'), sep='\t', header=0, index_col=0, na_filter=False
+                    os.path.join(folder, 'documents.zip'), filename_fields=filename_fields, sep='\t', header=0, index_col=0, na_filter=False
                 ),
                 dictionary=pd.read_csv(
                     os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False
