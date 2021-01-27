@@ -15,7 +15,7 @@ TEMP_PATH = './tmp/'
 engines = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
 
 
-def _find_engine(method):
+def _find_engine(method: str):
     for key in engines:
         if method.startswith(key):
             return engines[key]
@@ -25,7 +25,7 @@ def _find_engine(method):
 def infer_model(
     train_corpus: TrainingCorpus,
     method: str = 'sklearn_lda',
-    engine_args=None,
+    engine_args: dict=None,
     **kwargs,
 ) -> InferredModel:
 
