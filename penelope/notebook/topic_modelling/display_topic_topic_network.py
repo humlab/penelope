@@ -83,7 +83,7 @@ def display_topic_topic_network(
                 scale=scale,
                 threshold=0.0,
                 node_description=titles,
-                node_proportions=topic_proportions,
+                node_proportions=(topic_proportions or 10),
                 weight_scale=1.0,
                 normalize_weights=False,
                 element_id=text_id,
