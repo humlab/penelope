@@ -29,11 +29,11 @@ def load_model(
 
     model_infos = model_infos or topic_modelling.find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
-
+    filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
     inferred_model: InferredModel = topic_modelling.load_model(model_info["folder"], lazy=True)
     inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(
         folder=jj(corpus_folder, model_info["name"]),
-        filename_fields=corpus_config.text_reader_opts.filename_fields,
+        filename_fields=filename_fields,
     )
 
     state.set_data(inferred_model, inferred_topics)
