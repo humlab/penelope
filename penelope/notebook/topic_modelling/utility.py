@@ -1,5 +1,7 @@
+import functools
 from typing import Any, Dict
 
+import numpy as np
 import pandas as pd
 import penelope.utility as utility
 
@@ -62,11 +64,48 @@ def filter_document_topic_weights(
     return df.copy()
 
 
+# def reduce_topic_tokens_overview(topics: pd.DataFrame, n_count: int, search: str) -> pd.DataFrame:
+
+#     reduced_topics = topics[topics.tokens.str.contains(search)] if search else topics
+
+#     tokens: pd.Series = reduced_topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))
+
+#     if search:
+#         tokens = reduced_topics.tokens.apply(
+#             lambda x: x.replace(search, f'<b style="color:green;font-size:14px">{search}</b>')
+#         )
+
+#     reduced_topics['tokens'] = tokens
+
+#     return reduced_topics
+
+
+def conjunction(*conditions):
+    return functools.reduce(np.logical_and, conditions)
+
+
+def _highlight(x: str, t: str) -> str:
+    return x.replace(t, f'<b style="color:green;font-size:14px">{t}</b>')
+
+
 def reduce_topic_tokens_overview(topics: pd.DataFrame, n_count: int, search: str) -> pd.DataFrame:
-    reduced_topics = pd.DataFrame(
-        data={'tokens': topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))},
-        index=topics.index,
-    )
-    if search:
-        reduced_topics = reduced_topics[reduced_topics.tokens.str.contains(search)]
+
+    tokens: pd.Series = topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))
+
+    terms = search.split() if search.strip() else None
+
+    if not terms is None:
+
+        conditions = [tokens.str.contains(t) for t in terms]
+        reduced_topics = topics[conjunction(*conditions)]
+
+        fx = lambda orig_toks: functools.reduce(_highlight, terms, orig_toks)
+        tokens = tokens.apply(fx)
+
+    else:
+
+        reduced_topics = topics.copy(deep=False)
+
+    reduced_topics['tokens'] = tokens
+
     return reduced_topics

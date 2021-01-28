@@ -43,7 +43,7 @@ def load_model(
     with suppress(BaseException):
         topic_proportions = inferred_topics.compute_topic_proportions()
         if topic_proportions is not None:
-            topics = topics.merge(topic_proportions, left_index=True, right_index=True)
+            topics['score'] = topic_proportions
 
     # topics.style.set_properties(**{'text-align': 'left'}).set_table_styles(
     #     [dict(selector='td', props=[('text-align', 'left')])]
@@ -91,7 +91,7 @@ class LoadGUI:
             self.load.disabled = False
 
 
-@utility.try_catch
+# @utility.try_catch
 def create_load_topic_model_gui(
     corpus_config: pipeline.CorpusConfig, corpus_folder: str, state: TopicModelContainer
 ) -> MainGUI:

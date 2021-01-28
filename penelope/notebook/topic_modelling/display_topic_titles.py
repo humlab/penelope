@@ -121,26 +121,12 @@ class DisplayPandasGUI:  # pylint: disable=too-many-instance-attributes
 
         with self.output:
 
-            reduced_topics = reduce_topic_tokens_overview(
-                self.topics,
-                self.count_slider.value,
-                self.search_text.value,
+            self.reduced_topics = reduce_topic_tokens_overview(
+                self.topics, self.count_slider.value, self.search_text.value
             )
 
-            self.reduced_topics = reduced_topics
+            styled_reduced_topics = self.reduced_topics.style.set_table_styles(PANDAS_TABLE_STYLE)
 
-            if len(self.search_text.value) > 1:
-                reduced_topics = pd.DataFrame(
-                    reduced_topics.apply(
-                        lambda x: x['tokens'].replace(
-                            self.search_text.value,
-                            f'<b style="color:green;font-size:14px">{self.search_text.value}</b>',
-                        ),
-                        axis=1,
-                    )
-                )
-
-            styled_reduced_topics = reduced_topics.style.set_table_styles(PANDAS_TABLE_STYLE)
             IPython_display(styled_reduced_topics)
 
     def display(self, topics: pd.DataFrame, callback: Callable = None):
