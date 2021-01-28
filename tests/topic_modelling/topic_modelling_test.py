@@ -257,7 +257,9 @@ def test_load_inferred_topics_data(method):
     test_inferred_topics_data.store(target_folder)
 
     # Act
-    inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(folder=target_folder, filename_fields=None)
+    inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(
+        folder=target_folder, filename_fields=None
+    )
 
     # Assert
     assert inferred_topics_data is not None

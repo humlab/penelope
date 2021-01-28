@@ -264,7 +264,7 @@ def load_document_index(
     *,
     sep: str,
     document_id_field: str = 'document_id',
-    filename_fields: FilenameFieldSpecs=None,
+    filename_fields: FilenameFieldSpecs = None,
     **read_csv_kwargs,
 ) -> pd.DataFrame:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -295,6 +295,7 @@ def load_document_index(
         document_index = apply_filename_fields(document_index, filename_fields)
 
     return document_index
+
 
 @deprecated
 def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
@@ -328,8 +329,8 @@ def apply_filename_fields(document_index: pd.DataFrame, filename_fields: Filenam
     """Extends document index with filename fields defined by `filename_fields`"""
     if 'filename' not in document_index.columns:
         raise DocumentIndexError("filename not in document index")
-    filenames = [ strip_paths(filename) for filename in document_index.filename.tolist()]
-    metadata:  List[Mapping[str, Any]] = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
+    filenames = [strip_paths(filename) for filename in document_index.filename.tolist()]
+    metadata: List[Mapping[str, Any]] = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
     for key, values in list_of_dicts_to_dict_of_lists(metadata).items():
         if key not in document_index.columns:
             document_index[key] = values

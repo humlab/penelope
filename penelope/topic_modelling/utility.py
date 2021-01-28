@@ -11,6 +11,7 @@ import scipy
 
 logger = utility.getLogger('corpus_text_analysis')
 
+
 def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_series: np.ndarray):
     """Computes topic proportations as LDAvis. Fast version
     Parameters

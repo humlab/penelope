@@ -6,10 +6,10 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import gensim
 import pandas as pd
-from penelope import pipeline, utility
 import scipy
-from penelope.topic_modelling import compute_topic_proportions
+from penelope import pipeline, utility
 from penelope.corpus import DocumentIndex, load_document_index
+from penelope.topic_modelling import compute_topic_proportions
 from penelope.utility import file_utility, filename_utils
 from tqdm.auto import tqdm
 

@@ -25,7 +25,7 @@ def _find_engine(method: str):
 def infer_model(
     train_corpus: TrainingCorpus,
     method: str = 'sklearn_lda',
-    engine_args: dict=None,
+    engine_args: dict = None,
     **kwargs,
 ) -> InferredModel:
 

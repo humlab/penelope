@@ -55,4 +55,3 @@ class TopicModelContainer:
     @property
     def num_topics(self) -> int:
         return int(self.inferred_topics.topic_token_overview.index.max()) + 1
-

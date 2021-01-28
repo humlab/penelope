@@ -5,7 +5,7 @@ from os.path import join as jj
 from typing import Any, Callable, Dict, List
 
 import ipywidgets as widgets
-from penelope import topic_modelling, utility, pipeline
+from penelope import pipeline, topic_modelling, utility
 from penelope.notebook.co_occurrence.main_gui import MainGUI
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 
