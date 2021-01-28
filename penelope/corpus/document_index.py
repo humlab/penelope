@@ -437,6 +437,11 @@ def overload_by_document_index_properties(
 
     column_names = ['document_id'] + [c for c in column_names if c not in df.columns and c in document_index.columns]
 
-    df = df.merge(document_index[column_names], how='inner', left_on='document_id', right_on='document_id')
+    if len(column_names) == 1:
+        return df
+
+    overload_data = document_index[column_names].set_index('document_id')
+
+    df = df.merge(overload_data, how='inner', left_on='document_id', right_index=True)
 
     return df
