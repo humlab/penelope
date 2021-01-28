@@ -94,7 +94,7 @@ def reduce_topic_tokens_overview(topics: pd.DataFrame, n_count: int, search: str
 
     terms = search.split() if search.strip() else None
 
-    if not terms is None:
+    if terms is not None:
 
         conditions = [tokens.str.contains(t) for t in terms]
         reduced_topics = topics[conjunction(*conditions)]
