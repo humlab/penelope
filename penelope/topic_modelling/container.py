@@ -9,9 +9,10 @@ import pandas as pd
 import scipy
 from penelope import pipeline, utility
 from penelope.corpus import DocumentIndex, load_document_index
-from penelope.topic_modelling import compute_topic_proportions
 from penelope.utility import file_utility, filename_utils
 from tqdm.auto import tqdm
+
+from .utility import compute_topic_proportions
 
 logger = utility.getLogger('corpus_text_analysis')
 
