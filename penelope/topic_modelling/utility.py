@@ -11,7 +11,6 @@ import scipy
 
 logger = utility.getLogger('corpus_text_analysis')
 
-
 def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_series: np.ndarray):
     """Computes topic proportations as LDAvis. Fast version
     Parameters
@@ -31,6 +30,26 @@ def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_s
     topic_frequency = theta_mult_doc_length.sum(axis=0).A1
     topic_proportion = topic_frequency / topic_frequency.sum()
     return topic_proportion
+
+
+# def compute_topic_proportions2(document_topic_weights: pd.DataFrame) -> pd.DataFrame:
+#     """Computes topic proportions (used by InferedTopicsData)"""
+
+#     if 'n_raw_tokens' not in document_topic_weights.columns:
+#         logger.info("warning: unable to compute topic proportions ('n_raw_tokens' not found in document_topic_weights)")
+#         return None
+
+#     doc_topic_dists: pd.DataFrame = document_topic_weights[['document_id', 'topic_id', 'weight', 'n_raw_tokens']]
+#     # compute sum of (topic weight x document lengths)
+#     topic_freqs: pd.DataFrame = (
+#         doc_topic_dists.assign(t_weight=lambda df: df.weight * df.n_raw_tokens).groupby('topic_id')['t_weight'].sum()
+#     )
+#     # normalize on total sum
+#     topic_proportion: pd.Series = (topic_freqs / topic_freqs.sum()).sort_values(ascending=False)
+#     # return global topic proportion
+#     topic_proportion = pd.DataFrame(data={'topic_proportion': 100.0 * topic_proportion})
+
+#     return topic_proportion
 
 
 def malletmodel2ldamodel(
@@ -164,6 +183,7 @@ def normalize_weights(df):
     return df
 
 
+# FIXME Consider consolidating this to DocumentIndex
 def document_terms_count(corpus):
 
     n_terms = None

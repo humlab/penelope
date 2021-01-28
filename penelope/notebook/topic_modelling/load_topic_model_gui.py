@@ -40,8 +40,10 @@ def load_model(
 
     topics = inferred_topics.topic_token_overview
 
-    # with suppress(BaseException):
-    #     topics = topics.merge(inferred_topics.topic_proportions, left_index=True, right_index=True)
+    with suppress(BaseException):
+        topic_proportions = inferred_topics.compute_topic_proportions()
+        if topic_proportions is not None:
+            topics = topics.merge(topic_proportions, left_index=True, right_index=True)
 
     # topics.style.set_properties(**{'text-align': 'left'}).set_table_styles(
     #     [dict(selector='td', props=[('text-align', 'left')])]

@@ -7,6 +7,7 @@ from .saliency import compute_KL_divergence, compute_term_frequency, compute_ter
 from .utility import (
     YEARLY_MEAN_COMPUTE_METHODS,
     compute_topic_proportions,
+    # compute_topic_proportions2,
     compute_topic_yearly_means,
     display_termite_plot,
     document_terms_count,

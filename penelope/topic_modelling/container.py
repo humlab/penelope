@@ -8,6 +8,7 @@ import gensim
 import pandas as pd
 from penelope import pipeline, utility
 import scipy
+from penelope.topic_modelling import compute_topic_proportions
 from penelope.corpus import DocumentIndex, load_document_index
 from penelope.utility import file_utility, filename_utils
 from tqdm.auto import tqdm
@@ -79,7 +80,7 @@ class InferredModel:
     @property
     def topic_model(self):
         if callable(self._topic_model):
-            tbar = tqdm(desc="Lazy Loading model...", position=0, leave=True)
+            tbar = tqdm(desc="Lazy loading topic model...", position=0, leave=True)
             self._topic_model = self._topic_model()
             tbar.close()
         return self._topic_model
@@ -87,7 +88,7 @@ class InferredModel:
     @property
     def train_corpus(self):
         if callable(self._train_corpus):
-            tbar = tqdm(desc="Lazy corpus...", position=0, leave=True)
+            tbar = tqdm(desc="Lazy loading corpus...", position=0, leave=True)
             self._train_corpus = self._train_corpus()
             tbar.close()
         return self._train_corpus
@@ -95,7 +96,7 @@ class InferredModel:
 
 class InferredTopicsData:
     """The result of applying a topic model on a corpus.
-    The content, a generic set of pd.DataFrames, is common to all types model engines.
+    The content, a generic set of pd.DataFrames, is common to all types of model engines.
     """
 
     def __init__(
@@ -206,7 +207,12 @@ class InferredTopicsData:
         else:
             data: InferredTopicsData = InferredTopicsData(
                 document_index=load_document_index(
-                    os.path.join(folder, 'documents.zip'), filename_fields=filename_fields, sep='\t', header=0, index_col=0, na_filter=False
+                    os.path.join(folder, 'documents.zip'),
+                    filename_fields=filename_fields,
+                    sep='\t',
+                    header=0,
+                    index_col=0,
+                    na_filter=False,
                 ),
                 dictionary=pd.read_csv(
                     os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False
@@ -224,9 +230,6 @@ class InferredTopicsData:
 
         assert "year" in data.document_index.columns
 
-        # if "year" not in data.document_index.columns:
-        #     data.document_index["year"] = data.document_index.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
-
         return data
 
     def info(self):
@@ -243,21 +246,18 @@ class InferredTopicsData:
     def term2id(self):
         return {v: k for k, v in self.id2term.items()}
 
-    @property
-    def topic_proportions(self) -> pd.DataFrame:
+    # @property
+    # def topic_proportions(self) -> pd.DataFrame:
+    #     return compute_topic_proportions2(self.document_topic_weights)
 
-        doc_topic_dists: pd.DataFrame = self.document_topic_weights[
-            ['document_id', 'topic_id', 'weight', 'n_raw_tokens']
-        ]
-        # compute sum of (topic weight x document lengths)
-        topic_freqs: pd.DataFrame = (
-            doc_topic_dists.assign(t_weight=lambda df: df.weight * df.n_raw_tokens)
-            .groupby('topic_id')['t_weight']
-            .sum()
+    def compute_topic_proportions(self) -> pd.DataFrame:
+
+        if 'n_terms' not in self.document_index.columns:
+            return None
+
+        _topic_proportions = compute_topic_proportions(
+            self.document_topic_weights,
+            self.document_index.n_terms.values,
         )
-        # normalize on total sum
-        topic_proportion: pd.Series = (topic_freqs / topic_freqs.sum()).sort_values(ascending=False)
-        # return global topic proportion
-        topic_proportion = pd.DataFrame(data={'topic_proportion': 100.0 * topic_proportion})
 
-        return topic_proportion
+        return _topic_proportions
