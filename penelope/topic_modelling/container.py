@@ -31,6 +31,7 @@ class TrainingCorpus:
         id2word: Mapping[int, str] = None,
         vectorizer_args: Mapping[str, Any] = None,
         corpus: gensim.matutils.Sparse2Corpus = None,
+        corpus_options: dict = None,
     ):
         """A container for the corpus data used during learning/inference
 
@@ -57,6 +58,7 @@ class TrainingCorpus:
         self.documents = document_index
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
         self.corpus = corpus
+        self.corpus_options = corpus_options
 
     @property
     def document_index(self):
@@ -129,6 +131,10 @@ class InferredTopicsData:
             document_topic_weights, 'year'
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview
+
+    @property
+    def num_topics(self) -> int:
+        return int(self.topic_token_overview.index.max()) + 1
 
     @property
     def year_period(self) -> Tuple[int, int]:

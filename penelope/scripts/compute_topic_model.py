@@ -120,15 +120,18 @@ def run_model(
     )
 
     # if SparvTokenizer opts = ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True, chunk_size=None)
+    reader_opts = TextReaderOpts(
+        filename_pattern="*.txt",
+        filename_filter=None,
+        filename_fields=filename_field,
+    )
+
+    transform_opts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
 
     tokens_reader = text_tokenizer.TextTokenizer(
         source=corpus_filename,
-        transform_opts=TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True),
-        reader_opts=TextReaderOpts(
-            filename_pattern="*.txt",
-            filename_filter=None,
-            filename_fields=filename_field,
-        ),
+        transform_opts=transform_opts,
+        reader_opts=reader_opts,
         chunk_size=None,
     )
 
@@ -139,6 +142,10 @@ def run_model(
         doc_term_matrix=None,
         id2word=None,
         document_index=corpus.document_index,
+        corpus_options=dict(
+            reader_opts=reader_opts.props,
+            tokens_transform_opts=transformer_opts.props,
+        ),
     )
 
     inferred_model = topic_modelling.infer_model(
@@ -154,6 +161,7 @@ def run_model(
     inferred_topics = topic_modelling.compile_inferred_topics_data(
         inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.document_index
     )
+
     inferred_topics.store(target_folder)
 
 

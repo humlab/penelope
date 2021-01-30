@@ -35,8 +35,27 @@ def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compres
         document_index=train_corpus.document_index,
         id2word=train_corpus.id2word,
         vectorizer_args=train_corpus.vectorizer_args,
+        corpus_options=train_corpus.corpus_options,
     )
     pickle_to_file(filename, _train_corpus)
+
+    if _train_corpus.corpus_options is not None:
+        store_corpus_options(folder=folder, options=_train_corpus.corpus_options)
+
+
+def store_corpus_options(folder: str, options: Dict[str, Any]):
+    filename = os.path.join(folder, "train_corpus_options.json")
+    with open(filename, 'w') as fp:
+        json.dump(options, fp, indent=4, default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>")
+
+
+def load_corpus_options(folder: str) -> Dict[str, Any]:
+    filename = os.path.join(folder, "train_corpus_options.json")
+    if not os.path.isfile(filename):
+        return None
+    with open(filename, 'r') as f:
+        options = json.load(f)
+    return options
 
 
 def _load_train_corpus(folder: str) -> TrainingCorpus:
