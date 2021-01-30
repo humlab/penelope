@@ -22,8 +22,10 @@ layout_algorithms = {
 }
 
 
-def _layout_args(layout_algorithm, network, scale, weight_name='weight'):
+def _layout_args(layout_algorithm: str, network, scale: float, weight_name: str = 'weight'):
+
     args = None
+
     if layout_algorithm == 'Shell':
         if nx.is_bipartite(network):
             nodes, other_nodes = utility.get_bipartite_node_set(network, bipartite=0)
@@ -35,6 +37,9 @@ def _layout_args(layout_algorithm, network, scale, weight_name='weight'):
 
     if layout_algorithm == 'Kamada-Kawai':
         args = dict(dim=2, weight=weight_name, scale=1.0)
+
+    if layout_algorithm == "Circular":
+        args = dict(dim=2, center=None, scale=1.0)
 
     return args
 
@@ -147,11 +152,11 @@ def _plot_network(
     return p
 
 
-def layout_args(layout_algorithm, network, scale):
+def layout_args(layout_algorithm: str, network: nx.Graph, scale: float):
     return _layout_args(layout_algorithm, network, scale)
 
 
-def get_layout_algorithm(layout_algorithm):
+def get_layout_algorithm(layout_algorithm: str):
     return _get_layout_algorithm(layout_algorithm)
 
 
