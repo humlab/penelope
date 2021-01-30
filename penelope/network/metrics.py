@@ -1,3 +1,5 @@
+from typing import List
+
 import community as community_louvain
 import networkx as nx
 
@@ -18,7 +20,7 @@ DISTANCE_METRICS = {
 }
 
 
-def compute_centrality(network):
+def compute_centrality(network: nx.Graph):
     centrality = nx.algorithms.centrality.betweenness_centrality(network)
     _, nodes_centrality = zip(*sorted(centrality.items()))
     max_centrality = max(nodes_centrality)
@@ -32,7 +34,7 @@ def compute_partition(network):
     return nodes_community
 
 
-def partition_colors(nodes_community, color_palette=None):
+def partition_colors(nodes_community, color_palette: List[str] = None):
     if color_palette is None:
         color_palette = [
             '#e41a1c',
@@ -62,7 +64,7 @@ def partition_colors(nodes_community, color_palette=None):
     return community_colors
 
 
-def compute_alpha_vector(value_vector):
-    max_value = max(value_vector)
-    alphas = list(map(lambda h: 0.1 + 0.6 * (h / max_value), value_vector))
+def compute_alpha_vector(value_vector: List[float]) -> List[float]:
+    max_value: float = max(value_vector)
+    alphas: List[float] = list(map(lambda h: 0.1 + 0.6 * (h / max_value), value_vector))
     return alphas

@@ -32,7 +32,7 @@ def get_filtered_network_data(
     filters: Dict[str, Any],
     threshold: float,
     ignores: List[int],
-    period: Union[int, Tuple[int,int]],
+    period: Union[int, Tuple[int, int]],
     n_docs: int,
 ) -> pd.DataFrame:
 
@@ -63,7 +63,7 @@ def get_filtered_network_data(
 def display_topic_topic_network(
     inferred_topics: InferredTopicsData,
     filters: Dict[str, Any],
-    period: Union[int, Tuple[int,int]]=None,
+    period: Union[int, Tuple[int, int]] = None,
     ignores: List[int] = None,
     threshold: float = 0.10,
     layout: str = 'Fruchterman-Reingold',
