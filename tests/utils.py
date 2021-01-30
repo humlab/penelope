@@ -5,11 +5,12 @@ from typing import Callable, Iterable, List, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
-import penelope.corpus.readers.tng as tng
+import penelope.topic_modelling as topic_modelling
 from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer, tng
 from penelope.utility import flatten
+from tests.test_data.tranströmer_corpus import TranströmerCorpus
 
 OUTPUT_FOLDER = './tests/output'
 TEST_DATA_FOLDER = './tests/test_data'
@@ -166,3 +167,33 @@ def create_smaller_vectorized_corpus():
     document_index = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
     v_corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
     return v_corpus
+
+
+TOPIC_MODELING_OPTS = {
+    'n_topics': 4,
+    'passes': 1,
+    'random_seed': 42,
+    'alpha': 'auto',
+    'workers': 1,
+    'max_iter': 100,
+    'prefix': '',
+}
+
+
+def create_inferred_model(method="gensim_lda-multicore") -> topic_modelling.InferredModel:
+
+    corpus: TranströmerCorpus = TranströmerCorpus()
+    train_corpus: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
+        terms=corpus.terms,
+        document_index=corpus.document_index,
+    )
+
+    inferred_model: topic_modelling.InferredModel = topic_modelling.infer_model(
+        train_corpus=train_corpus,
+        method=method,
+        engine_args=TOPIC_MODELING_OPTS,
+    )
+    return inferred_model
+
+
+PERSISTED_INFERRED_MODEL_SOURCE_FOLDER: str = './tests/test_data/tranströmer_inferred_model'

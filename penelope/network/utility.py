@@ -3,7 +3,6 @@ import bokeh.models as bm
 from .networkx import utility as nx_utils
 
 
-# FIXA Merge these two methods, return dict instead (lose bokeh dependency)
 def get_edges_source(
     network, layout, scale=1.0, normalize=False, weight='weight', project_range=None, discrete_divisor=None
 ):
@@ -29,7 +28,7 @@ def get_edges_source(
     return lines_source
 
 
-def get_node_subset_source(network, layout, node_list=None):  # pylint: disable=unused-argument
+def get_node_subset_source(network, layout, node_list=None, color_map=None):  # pylint: disable=unused-argument
 
     layout_items = layout.items() if node_list is None else [x for x in layout.items() if x[0] in node_list]
 
@@ -37,12 +36,14 @@ def get_node_subset_source(network, layout, node_list=None):  # pylint: disable=
     xs, ys = list(zip(*nodes_coordinates))
 
     nodes_source = bm.ColumnDataSource(dict(x=xs, y=ys, name=nodes, node_id=nodes))
+    if color_map is not None:
+        nodes_source.add([color_map[x] for x in nodes], "colors")
     return nodes_source
 
 
 def create_nodes_data_source(network, layout):  # pylint: disable=unused-argument
 
-    nodes, nodes_coordinates = zip(*sorted([x for x in layout.items()]))  # if x[0] in line_nodes]))
+    nodes, nodes_coordinates = zip(*sorted([x for x in layout.items()]))
     nodes_xs, nodes_ys = list(zip(*nodes_coordinates))
     nodes_source = bm.ColumnDataSource(dict(x=nodes_xs, y=nodes_ys, name=nodes, node_id=nodes))
     return nodes_source
