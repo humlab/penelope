@@ -46,18 +46,27 @@ def main(
     store_corpus,
     compressed,
 ):
+
+    topic_modeling_opts = {
+        k: v
+        for k, v in {
+            'n_topics': n_topics,
+            'passes': passes,
+            'random_seed': random_seed,
+            'alpha': alpha,
+            'workers': workers,
+            'max_iter': max_iter,
+            'prefix': prefix,
+        }.items()
+        if v is not None
+    }
+
     run_model(
         name=name,
-        n_topics=n_topics,
         corpus_folder=corpus_folder,
         corpus_filename=corpus_filename,
         engine=engine,
-        passes=passes,
-        random_seed=random_seed,
-        alpha=alpha,
-        workers=workers,
-        max_iter=max_iter,
-        prefix=prefix,
+        topic_modeling_opts=topic_modeling_opts,
         filename_field=filename_field,
         store_corpus=store_corpus,
         compressed=compressed,
@@ -65,20 +74,14 @@ def main(
 
 
 def run_model(
-    name=None,
-    n_topics=50,
-    corpus_folder=None,
-    corpus_filename=None,
-    engine="gensim_lda-multicore",
-    passes=None,
-    random_seed=None,
-    alpha='asymmetric',
-    workers=None,
-    max_iter=None,
-    prefix=None,
-    filename_field=None,
-    store_corpus=False,
-    compressed=True,
+    name: str = None,
+    corpus_folder: str = None,
+    corpus_filename: str = None,
+    engine: str = "gensim_lda-multicore",
+    topic_modeling_opts: dict = None,
+    filename_field: str = None,
+    store_corpus: bool = False,
+    compressed: bool = True,
 ):
     """ runner """
 
@@ -87,9 +90,8 @@ def run_model(
         sys.exit(1)
 
     if len(filename_field or []) == 0:
-        click.echo("warning: no filename metadata fields specified (use option --filename-field")
-
-    call_arguments = dict(locals())
+        click.echo("warning: no filename metadata fields specified (use option --filename-field)")
+        # sys.exit(1)
 
     if corpus_folder is None:
         corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
@@ -97,12 +99,6 @@ def run_model(
     target_folder = jj(corpus_folder, name)
 
     os.makedirs(target_folder, exist_ok=True)
-
-    topic_modeling_opts = {
-        k: v
-        for k, v in call_arguments.items()
-        if k in ['n_topics', 'passes', 'random_seed', 'alpha', 'workers', 'max_iter', 'prefix'] and v is not None
-    }
 
     transformer_opts = TokensTransformOpts(
         only_alphabetic=False,
