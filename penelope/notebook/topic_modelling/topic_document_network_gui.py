@@ -293,4 +293,4 @@ def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer):
 
     gui: GUI = GUI(plot_mode=plot_mode).setup(inferred_topics=state.inferred_topics)
     display.display(gui.layout())
-    gui.update_handler()
+    # gui.update_handler()

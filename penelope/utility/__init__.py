@@ -9,7 +9,7 @@ from ._color_utility import (
     get_static_color_map,
     static_color_map,
 )
-from ._decorators import ExpectException, deprecated, try_catch
+from ._decorators import ExpectException, deprecated, try_catch, suppress_error
 from .file_utility import (
     DataFrameFilenameTuple,
     create_iterator,

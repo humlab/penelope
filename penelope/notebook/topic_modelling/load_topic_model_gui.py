@@ -91,7 +91,6 @@ class LoadGUI:
             self.load.disabled = False
 
 
-# @utility.try_catch
 def create_load_topic_model_gui(
     corpus_config: pipeline.CorpusConfig, corpus_folder: str, state: TopicModelContainer
 ) -> MainGUI:
