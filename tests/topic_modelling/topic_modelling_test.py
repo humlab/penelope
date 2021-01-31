@@ -276,16 +276,13 @@ def test_run_cli():
 
     kwargs = {
         'name': f"{uuid.uuid1()}",
-        'n_topics': 5,
         'corpus_folder': OUTPUT_FOLDER,
         'corpus_filename': './tests/test_data/test_corpus.zip',
         'engine': 'gensim_lda-multicore',
-        # 'passes': None,
-        # 'random_seed': None,
-        'alpha': 'asymmetric',
-        # 'workers': None,
-        # 'max_iter': None,
-        # 'prefix': None,
+        'topic_modeling_opts':{
+            'n_topics': 5,
+            'alpha': 'asymmetric',
+        },
         'filename_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
@@ -306,12 +303,14 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
     target_folder = jj(OUTPUT_FOLDER, name)
     options = dict(
         name=name,
-        n_topics=5,
         corpus_folder=OUTPUT_FOLDER,
         corpus_filename='./tests/test_data/test_corpus.zip',
         engine="gensim_lda-multicore",
-        workers=2,
-        max_iter=2000,
+        topic_modeling_opts=dict(
+            n_topics=5,
+            workers=2,
+            max_iter=2000,
+        ),
         store_corpus=True,
         filename_field="year:_:1",
     )
