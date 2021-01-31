@@ -95,7 +95,7 @@ def predict_document_topics(
 
 
 def compile_inferred_topics_data(
-    topic_model: Any, corpus: Any, id2word: Any, document_index: pd.DataFrame, n_tokens=200
+    topic_model: Any, corpus: Any, id2word: Any, document_index: pd.DataFrame, n_tokens: int=200
 ) -> InferredTopicsData:
 
     dictionary = id2word_to_dataframe(id2word)
