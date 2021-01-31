@@ -14,34 +14,6 @@ from .utility import add_document_terms_count, id2word_to_dataframe
 logger = utility.get_logger('corpus_text_analysis')
 
 
-def _infer_document_topics_iter(model, corpus, minimum_probability=0.0):
-
-    if isinstance(model, gensim.models.LsiModel):
-        # Gensim LSI Model
-        data_iter = enumerate(model[corpus])
-    elif hasattr(model, 'get_document_topics'):
-        # Gensim LDA Model
-        data_iter = enumerate(model.get_document_topics(corpus, minimum_probability=minimum_probability))
-    elif hasattr(model, 'load_document_topics'):
-        # Gensim MALLET wrapper
-        # FIXME: Must do topic inference on corpus!
-        data_iter = enumerate(model.load_document_topics())
-    elif hasattr(model, 'top_doc_topics'):
-        # scikit-learn, not that the corpus DTM is tored as a Gensim sparse corpus
-        assert isinstance(corpus, Sparse2Corpus), "Only Sparse2Corpus valid for inference!"
-        data_iter = model.top_doc_topics(corpus.sparse, docs=-1, top_n=1000, weights=True)
-    else:
-        data_iter = ((document_id, model[corpus[document_id]]) for document_id in range(0, len(corpus)))
-
-        # assert False, 'compile_document_topics: Unknown topic model'
-
-    for document_id, topic_weights in data_iter:
-        for (topic_id, weight) in (
-            (topic_id, weight) for (topic_id, weight) in topic_weights if weight >= minimum_probability
-        ):
-            yield (document_id, topic_id, weight)
-
-
 def predict_document_topics(
     model: Any,
     corpus: Any,
