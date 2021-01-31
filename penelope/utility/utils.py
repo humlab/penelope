@@ -160,6 +160,8 @@ def project_to_range(value: Sequence[Number], low: Number, high: Number) -> Sequ
 
 def clamp_values(values: Sequence[Number], low_high: Tuple[Number, Number]) -> Sequence[Number]:
     """Clamps value to supplied interval."""
+    if not values:
+        return values
     mw = max(values)
     return [project_to_range(w / mw, low_high[0], low_high[1]) for w in values]
 
