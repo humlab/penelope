@@ -1,9 +1,13 @@
+from typing import Any, Callable, Dict, Sequence, Tuple, Union
+
 import bokeh.models as bm
 import bokeh.palettes
 import networkx as nx
-import penelope.network.utility as utility
+import pandas as pd
 import penelope.notebook.widgets_utils as widgets_utils
 from bokeh.plotting import figure
+from penelope.network import layout_source
+from penelope.network.networkx import utility as network_utility
 
 from . import metrics
 
@@ -22,13 +26,13 @@ layout_algorithms = {
 }
 
 
-def _layout_args(layout_algorithm: str, network, scale: float, weight_name: str = 'weight'):
+def _layout_args(layout_algorithm: str, network: nx.Graph, scale: float, weight_name: str = 'weight') -> Dict[str, Any]:
 
     args = None
 
     if layout_algorithm == 'Shell':
         if nx.is_bipartite(network):
-            nodes, other_nodes = utility.get_bipartite_node_set(network, bipartite=0)
+            nodes, other_nodes = network_utility.get_bipartite_node_set(network, bipartite=0)
             args = dict(nlist=[nodes, other_nodes])
 
     if layout_algorithm == 'Fruchterman-Reingold':
@@ -44,43 +48,43 @@ def _layout_args(layout_algorithm: str, network, scale: float, weight_name: str 
     return args
 
 
-def _get_layout_algorithm(layout_algorithm):
+def _get_layout_algorithm(layout_algorithm: str) -> Callable:
     if layout_algorithm not in layout_algorithms:
         raise Exception("Unknown algorithm {}".format(layout_algorithm))
     return layout_algorithms.get(layout_algorithm, None)
 
 
-def _project_series_to_range(series, low, high):
+def _project_series_to_range(series: pd.Series, low: float, high: float) -> pd.Series:
     norm_series = series / series.max()
     return norm_series.apply(lambda x: low + (high - low) * x)
 
 
-def project_to_range(value, low, high):
-    """Project a singlevalue to a range (low, high)"""
+def project_to_range(value: float, low: float, high:  float) -> float:
+    """Project a single value to a range (low, high)"""
     return low + (high - low) * value
 
 
-def project_values_to_range(values, low, high):
+def project_values_to_range(values: Sequence[float], low: float, high: float) -> Sequence[float]:
     w_max = max(values)
     return [low + (high - low) * (x / w_max) for x in values]
 
 
 def _plot_network(
-    network,
-    layout_algorithm=None,
-    scale=1.0,
-    threshold=0.0,
-    node_description=None,
-    node_proportions=None,
-    weight_name='weight',
-    weight_scale=5.0,
-    normalize_weights=True,
+    network: nx.Graph,
+    layout_algorithm: str=None,
+    scale: float=1.0,
+    threshold: float=0.0,
+    node_description: pd.Series=None,
+    node_proportions: Union[int, str]=None,
+    weight_name: str='weight',
+    weight_scale: float=5.0,
+    normalize_weights: bool=True,
     node_opts=None,
     line_opts=None,
-    element_id='nx_id3',
-    figsize=(900, 900),
-    node_range=(20, 60),
-    edge_range=(1.0, 5.0),
+    element_id: str='nx_id3',
+    figsize: Tuple[int,int]=(900, 900),
+    node_range: Tuple[int,int]=(20, 60),
+    edge_range: Tuple[int,int]=(1.0, 5.0),
 ):
     if threshold > 0:
 
@@ -98,7 +102,7 @@ def _plot_network(
 
     args = _layout_args(layout_algorithm, sub_network, scale)
     layout = (_get_layout_algorithm(layout_algorithm))(sub_network, **args)
-    lines_source = utility.get_edges_source(
+    lines_source = layout_source.create_edges_layout_data_source(
         sub_network,
         layout,
         weight=weight_name,
@@ -107,7 +111,7 @@ def _plot_network(
         project_range=edge_range,
     )
 
-    nodes_source = utility.create_nodes_data_source(sub_network, layout)
+    nodes_source = layout_source.create_nodes_data_source(sub_network, layout)
     nodes_community = metrics.compute_partition(sub_network)
     community_colors = metrics.partition_colors(nodes_community, bokeh.palettes.Category20[20])
 
@@ -152,20 +156,17 @@ def _plot_network(
     return p
 
 
-def layout_args(layout_algorithm: str, network: nx.Graph, scale: float):
+def layout_args(layout_algorithm: str, network: nx.Graph, scale: float) -> Dict[str, Any]:
     return _layout_args(layout_algorithm, network, scale)
 
 
-def get_layout_algorithm(layout_algorithm: str):
+def get_layout_algorithm(layout_algorithm: str) -> Callable:
     return _get_layout_algorithm(layout_algorithm)
 
 
-def project_series_to_range(series, low, high):
+def project_series_to_range(series: pd.Series, low: float, high: float) -> pd.Series:
     return _project_series_to_range(series, low, high)
 
 
 plot_network = _plot_network
-# layout_args = _layout_args
-# get_layout_algorithm = _get_layout_algorithm
-# project_series_to_range = _project_series_to_range
 plot_network = _plot_network

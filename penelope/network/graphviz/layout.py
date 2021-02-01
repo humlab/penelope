@@ -1,6 +1,6 @@
-from types import SimpleNamespace as bunch
-
 import networkx as nx
+
+from ..interface import LayoutAlgorithm
 
 engines = ['neato', 'dot', 'circo', 'fdp', 'sfdp']
 
@@ -21,7 +21,7 @@ def layout_network(G, layout_algorithm, **kwargs):
 
 
 layout_setups = [
-    bunch(
+    LayoutAlgorithm(
         key='graphviz_{}'.format(engine),
         package='graphviz',
         name='graphviz_{}'.format(engine),

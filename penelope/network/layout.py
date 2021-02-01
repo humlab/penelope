@@ -1,15 +1,19 @@
 import math
+import types
+from typing import List
+
+import networkx as nx
 
 from .graphtool.layout import layout_setups as gt_layout_setups
 from .graphviz.layout import layout_setups as gv_layout_setups
 from .networkx.layout import layout_setups as nx_layout_setups
 
-layout_setups = nx_layout_setups + gv_layout_setups + gt_layout_setups
+layout_setups: List[types.SimpleNamespace] = nx_layout_setups + gv_layout_setups + gt_layout_setups
 
 layouts = {x.key: x for x in layout_setups}
 
 
-def layout_network(G, layout_algorithm, **kwargs):
+def layout_network(G: nx.Graph, layout_algorithm, **kwargs):
 
     return layouts[layout_algorithm].layout_network(G, layout_algorithm=layout_algorithm, **kwargs)
 

@@ -1,5 +1,4 @@
-from types import SimpleNamespace as bunch
-
+from ..interface import LayoutAlgorithm
 from penelope.network.graphtool.utility import nx2gt
 
 try:
@@ -54,7 +53,7 @@ layout_setups = (
     []
     if gt is None
     else [
-        bunch(
+        LayoutAlgorithm(
             key='graphtool_arf',
             package='graphtool',
             name='graph-tool (arf)',
@@ -62,7 +61,7 @@ layout_setups = (
             layout_function=gt_draw.arf_layout,
             layout_args=arf_args,
         ),
-        bunch(
+        LayoutAlgorithm(
             key='graphtool_sfdp',
             package='graphtool',
             name='graph-tool (sfdp)',
@@ -70,7 +69,7 @@ layout_setups = (
             layout_function=gt_draw.sfdp_layout,
             layout_args=sfdp_args,
         ),
-        bunch(
+        LayoutAlgorithm(
             key='graphtool_fr',
             package='graphtool',
             name='graph-tool (FR)',
