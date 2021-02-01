@@ -9,12 +9,12 @@ import networkx as nx
 import pandas as pd
 import penelope.network.metrics as network_metrics
 import penelope.network.plot_utility as network_plot
-from penelope.network import layout_source
-from penelope.network.networkx import utility as network_utility
 import penelope.notebook.widgets_utils as widget_utils
 from bokeh.models.sources import ColumnDataSource
 from IPython import display
 from penelope import topic_modelling, utility
+from penelope.network import layout_source
+from penelope.network.networkx import utility as network_utility
 from penelope.topic_modelling.container import InferredTopicsData
 
 from .display_utility import display_document_topics_as_grid
@@ -45,11 +45,15 @@ def plot_document_topic_network(
     )
     color_specifier: str = "colors" if highlight_topic_ids is not None else "skyblue"
 
-    document_source: ColumnDataSource = layout_source.create_nodes_subset_data_source(network, layout_data, document_nodes)
+    document_source: ColumnDataSource = layout_source.create_nodes_subset_data_source(
+        network, layout_data, document_nodes
+    )
     topic_source: ColumnDataSource = layout_source.create_nodes_subset_data_source(
         network, layout_data, topic_nodes, color_map=color_map
     )
-    lines_source: ColumnDataSource = layout_source.create_edges_layout_data_source(network, layout_data, scale=6.0, normalize=False)
+    lines_source: ColumnDataSource = layout_source.create_edges_layout_data_source(
+        network, layout_data, scale=6.0, normalize=False
+    )
 
     edges_alphas: List[float] = network_metrics.compute_alpha_vector(lines_source.data["weights"])
 

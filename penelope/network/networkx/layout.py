@@ -42,5 +42,7 @@ layout_setups = [
     LayoutAlgorithm(key='nx_spectral_layout', package='nx', name='nx_spectral', layout_network=nx_spectral_layout),
     LayoutAlgorithm(key='nx_circular_layout', package='nx', name='nx_circular', layout_network=nx_circular_layout),
     LayoutAlgorithm(key='nx_shell_layout', package='nx', name='nx_shell', layout_network=nx_shell_layout),
-    LayoutAlgorithm(key='nx_kamada_kawai_layout', package='nx', name='nx_kamada_kawai', layout_network=nx_kamada_kawai_layout),
+    LayoutAlgorithm(
+        key='nx_kamada_kawai_layout', package='nx', name='nx_kamada_kawai', layout_network=nx_kamada_kawai_layout
+    ),
 ]

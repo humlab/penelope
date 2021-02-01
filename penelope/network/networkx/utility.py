@@ -1,11 +1,13 @@
 from numbers import Number
 from typing import Any, Dict, List, Sequence, Tuple
+
 import networkx as nx
 import pandas as pd
 from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
 
 EdgesLayout = List[Any, Any, Number, Sequence[Number, Number, Number, Number]]
 NodesLayout = Dict[str, Sequence[Number, Number]]
+
 
 def layout_edges(network: nx.Graph, layout: NodesLayout, weight: str = 'weight') -> EdgesLayout:
     """Extracts edges´layout data
@@ -128,9 +130,7 @@ def get_sub_network(G: nx.Graph, attribute: str = 'weight', threshold: float = 0
     return tng
 
 
-def get_positioned_nodes(
-    network: nx.Graph, layout: NodesLayout, nodes: List[str] = None
-) -> Dict[List]:
+def get_positioned_nodes(network: nx.Graph, layout: NodesLayout, nodes: List[str] = None) -> Dict[List]:
     """Returns nodes layout data as a dict  of lists.
 
     Args:

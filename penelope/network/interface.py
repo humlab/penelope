@@ -13,4 +13,4 @@ class LayoutAlgorithm:
 
     engine: Any = None
     layout_function: Any = nx.nx_pydot.pydot_layout
-    layout_args: Callable=lambda **_: {}
+    layout_args: Callable = lambda **_: {}

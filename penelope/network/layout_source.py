@@ -1,12 +1,20 @@
 from typing import Tuple
+
 import bokeh.models as bm
 import networkx as nx
+
 from .networkx.utility import layout_edges
 
 
 def create_edges_layout_data_source(
-    network: nx.Graph, layout, scale: float=1.0, normalize: bool=False, weight: str='weight', project_range: Tuple[float, float]=None, discrete_divisor=None
-)-> bm.ColumnDataSource:
+    network: nx.Graph,
+    layout,
+    scale: float = 1.0,
+    normalize: bool = False,
+    weight: str = 'weight',
+    project_range: Tuple[float, float] = None,
+    discrete_divisor=None,
+) -> bm.ColumnDataSource:
 
     _, _, weights, xs, ys = layout_edges(network, layout, weight=weight)
     if isinstance(discrete_divisor, int):
@@ -29,7 +37,9 @@ def create_edges_layout_data_source(
     return lines_source
 
 
-def create_nodes_subset_data_source(network: nx.Graph, layout, node_list=None, color_map=None) -> bm.ColumnDataSource:  # pylint: disable=unused-argument
+def create_nodes_subset_data_source(
+    network: nx.Graph, layout, node_list=None, color_map=None
+) -> bm.ColumnDataSource:  # pylint: disable=unused-argument
 
     layout_items = layout.items() if node_list is None else [x for x in layout.items() if x[0] in node_list]
 
@@ -48,4 +58,3 @@ def create_nodes_data_source(network: nx.Graph, layout) -> bm.ColumnDataSource: 
     nodes_xs, nodes_ys = list(zip(*nodes_coordinates))
     nodes_source = bm.ColumnDataSource(dict(x=nodes_xs, y=nodes_ys, name=nodes, node_id=nodes))
     return nodes_source
-

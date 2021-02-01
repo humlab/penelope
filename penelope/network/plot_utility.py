@@ -59,7 +59,7 @@ def _project_series_to_range(series: pd.Series, low: float, high: float) -> pd.S
     return norm_series.apply(lambda x: low + (high - low) * x)
 
 
-def project_to_range(value: float, low: float, high:  float) -> float:
+def project_to_range(value: float, low: float, high: float) -> float:
     """Project a single value to a range (low, high)"""
     return low + (high - low) * value
 
@@ -71,20 +71,20 @@ def project_values_to_range(values: Sequence[float], low: float, high: float) ->
 
 def _plot_network(
     network: nx.Graph,
-    layout_algorithm: str=None,
-    scale: float=1.0,
-    threshold: float=0.0,
-    node_description: pd.Series=None,
-    node_proportions: Union[int, str]=None,
-    weight_name: str='weight',
-    weight_scale: float=5.0,
-    normalize_weights: bool=True,
+    layout_algorithm: str = None,
+    scale: float = 1.0,
+    threshold: float = 0.0,
+    node_description: pd.Series = None,
+    node_proportions: Union[int, str] = None,
+    weight_name: str = 'weight',
+    weight_scale: float = 5.0,
+    normalize_weights: bool = True,
     node_opts=None,
     line_opts=None,
-    element_id: str='nx_id3',
-    figsize: Tuple[int,int]=(900, 900),
-    node_range: Tuple[int,int]=(20, 60),
-    edge_range: Tuple[int,int]=(1.0, 5.0),
+    element_id: str = 'nx_id3',
+    figsize: Tuple[int, int] = (900, 900),
+    node_range: Tuple[int, int] = (20, 60),
+    edge_range: Tuple[int, int] = (1.0, 5.0),
 ):
     if threshold > 0:
 

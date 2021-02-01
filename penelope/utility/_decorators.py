@@ -37,6 +37,7 @@ def suppress_error(func, exceptions=(Exception,), suppress=True, nice=True):
 
     return wrapper
 
+
 class ExpectException:
     def __init__(self, exception_class):
         self.exception_class = exception_class

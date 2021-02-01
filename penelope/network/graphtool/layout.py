@@ -1,5 +1,6 @@
-from ..interface import LayoutAlgorithm
 from penelope.network.graphtool.utility import nx2gt
+
+from ..interface import LayoutAlgorithm
 
 try:
     import graph_tool.all as gt

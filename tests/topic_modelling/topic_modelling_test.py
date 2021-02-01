@@ -279,7 +279,7 @@ def test_run_cli():
         'corpus_folder': OUTPUT_FOLDER,
         'corpus_filename': './tests/test_data/test_corpus.zip',
         'engine': 'gensim_lda-multicore',
-        'topic_modeling_opts':{
+        'topic_modeling_opts': {
             'n_topics': 5,
             'alpha': 'asymmetric',
         },
