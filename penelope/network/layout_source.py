@@ -38,8 +38,8 @@ def create_edges_layout_data_source(
 
 
 def create_nodes_subset_data_source(
-    network: nx.Graph, layout, node_list=None, color_map=None
-) -> bm.ColumnDataSource:  # pylint: disable=unused-argument
+    network: nx.Graph, layout, node_list=None, color_map=None  # pylint: disable=unused-argument
+) -> bm.ColumnDataSource:
 
     layout_items = layout.items() if node_list is None else [x for x in layout.items() if x[0] in node_list]
 

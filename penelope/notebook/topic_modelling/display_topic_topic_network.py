@@ -4,11 +4,10 @@ from typing import Any, Dict, List, Tuple, Union
 import bokeh
 import bokeh.plotting
 import pandas as pd
-import penelope.network.plot_utility as plot_utility
-import penelope.network.utility as network_utility
-import penelope.utility as utility
+import penelope.network.networkx.utility as network_utility
 from IPython.display import display
-from penelope.topic_modelling import InferredTopicsData
+from penelope import topic_modelling, utility
+from penelope.network import plot_utility
 
 from .utility import filter_document_topic_weights
 
@@ -28,7 +27,7 @@ def get_topic_titles(topic_token_weights, topic_id=None, n_words=100):
 
 
 def get_filtered_network_data(
-    inferred_topics: InferredTopicsData,
+    inferred_topics: topic_modelling.InferredTopicsData,
     filters: Dict[str, Any],
     threshold: float,
     ignores: List[int],
@@ -61,7 +60,7 @@ def get_filtered_network_data(
 
 # pylint: disable=too-many-arguments, too-many-locals
 def display_topic_topic_network(
-    inferred_topics: InferredTopicsData,
+    inferred_topics: topic_modelling.InferredTopicsData,
     filters: Dict[str, Any],
     period: Union[int, Tuple[int, int]] = None,
     ignores: List[int] = None,

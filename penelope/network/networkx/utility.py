@@ -1,12 +1,12 @@
 from numbers import Number
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Tuple
 
 import networkx as nx
 import pandas as pd
 from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
 
-EdgesLayout = List[Any, Any, Number, Sequence[Number, Number, Number, Number]]
-NodesLayout = Dict[str, Sequence[Number, Number]]
+EdgesLayout = Tuple[Any, Any, Number, Tuple[Number, Number, Number, Number]]
+NodesLayout = Dict[str, Tuple[Number, Number]]
 
 
 def layout_edges(network: nx.Graph, layout: NodesLayout, weight: str = 'weight') -> EdgesLayout:
@@ -130,7 +130,7 @@ def get_sub_network(G: nx.Graph, attribute: str = 'weight', threshold: float = 0
     return tng
 
 
-def get_positioned_nodes(network: nx.Graph, layout: NodesLayout, nodes: List[str] = None) -> Dict[List]:
+def get_positioned_nodes(network: nx.Graph, layout: NodesLayout, nodes: List[str] = None) -> Dict[str, List]:
     """Returns nodes layout data as a dict  of lists.
 
     Args:
@@ -201,7 +201,7 @@ def get_positioned_edges(network: nx.Graph, layout: NodesLayout, sort_attr: str 
     return list_of_dicts
 
 
-def get_positioned_edges2(network: nx.Graph, layout: NodesLayout, sort_attr=None) -> Dict[List]:
+def get_positioned_edges_as_dict(network: nx.Graph, layout: NodesLayout, sort_attr=None) -> Dict[str, List]:
     """Returns positioned edges and all associated attributes.
     Is simply a reformat of result from get_positioned_edges
     Args:
