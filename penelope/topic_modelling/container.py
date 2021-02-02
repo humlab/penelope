@@ -10,6 +10,7 @@ import scipy
 from penelope import pipeline, utility
 from penelope.corpus import DocumentIndex, load_document_index
 from penelope.utility import file_utility, filename_utils
+from penelope.utility.filename_fields import FilenameFieldSpecs
 from tqdm.auto import tqdm
 
 from .utility import compute_topic_proportions
@@ -131,6 +132,7 @@ class InferredTopicsData:
             document_topic_weights, 'year'
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview
+        self._id2token = None
 
     @property
     def num_topics(self) -> int:
@@ -192,7 +194,7 @@ class InferredTopicsData:
                 file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     @staticmethod
-    def load(*, folder: str, filename_fields: pipeline.CorpusConfig, pickled: bool = False):
+    def load(*, folder: str, filename_fields: FilenameFieldSpecs, pickled: bool = False):
         """Loads previously stored aggregate"""
         data = None
 
@@ -247,7 +249,10 @@ class InferredTopicsData:
 
     @property
     def id2term(self):
-        return self.dictionary.token.to_dict()
+        if self._id2token is None:
+            # id2token = inferred_topics.dictionary.to_dict()['token']
+            self._id2token = self.dictionary.token.to_dict()
+        return self._id2token
 
     @property
     def term2id(self):
@@ -268,3 +273,11 @@ class InferredTopicsData:
         )
 
         return _topic_proportions
+
+    def n_largest_topic_token_weights(self, n_count: int) -> pd.DataFrame:
+        id2token = self.id2term
+        _largest = self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']].apply(
+            lambda x: x.nlargest(n_count, columns=['weight'])
+        )
+        _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
+        return _largest.set_index('topic_id')
