@@ -192,12 +192,12 @@ def compute_token_count_data(args: TokenCountsGUI, document_index: pd.DataFrame)
     if len(args.categories or []) > 0:
         count_columns = list(args.categories)
     else:
-        count_columns = [x for x in document_index.columns if x not in TOKEN_COUNT_GROUPINGS]
+        count_columns = [x for x in document_index.columns if x not in TOKEN_COUNT_GROUPINGS + ['#Tokens']]
 
+    total = document_index.groupby(args.grouping)['#Tokens'].sum()
     data = document_index.groupby(args.grouping).sum()[count_columns]
     if args.normalize:
-        data = data / data.sum(axis=0)
-    # args.smooth
+        data = data.div(total, axis=0)
 
     if args.smooth:
         data = data.interpolate(method='index')
