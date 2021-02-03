@@ -7,7 +7,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple
 import gensim
 import pandas as pd
 import scipy
-from penelope import pipeline, utility
+from penelope import utility
 from penelope.corpus import DocumentIndex, load_document_index
 from penelope.utility import file_utility, filename_utils
 from penelope.utility.filename_fields import FilenameFieldSpecs
