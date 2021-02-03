@@ -1,12 +1,19 @@
 from numbers import Number
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx
 import pandas as pd
 from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
 
-EdgesLayout = Tuple[Any, Any, Number, Tuple[Number, Number, Number, Number]]
-NodesLayout = Dict[str, Tuple[Number, Number]]
+Attributes = Dict[str, Any]
+
+Node = Any
+Edge = Tuple[Node, Node, Attributes]
+Weight = float
+Point = Tuple[Number, Number]
+EdgeEndPoints = Tuple[Number, Number, Number, Number]
+EdgesLayout = Tuple[Node, Node, Weight, EdgeEndPoints]
+NodesLayout = Dict[Node, Point]
 
 
 def layout_edges(network: nx.Graph, layout: NodesLayout, weight: str = 'weight') -> EdgesLayout:
@@ -28,9 +35,7 @@ def layout_edges(network: nx.Graph, layout: NodesLayout, weight: str = 'weight')
     return zip(*data)
 
 
-def df_to_nx_edges_list(
-    df: pd.DataFrame, source: str = 'source', target: str = 'target', **edge_attributes
-) -> List[Tuple[Any, Any, Dict]]:
+def pandas_to_edges(df: pd.DataFrame, source: str = 'source', target: str = 'target', **edge_attributes) -> List[Edge]:
     """Transform a dataframe's edge data into nx style representation i.e. as a list of (source, target, attributes) triplets
     Any other column are stored as attributes in an attr dictionary
 
@@ -40,7 +45,7 @@ def df_to_nx_edges_list(
         target (str, optional): Target column. Defaults to 'target'.
 
     Returns:
-        List[Tuple[Any,Any, Dict]]:  Edges represented in nx style as a list of (source, target, attributes) triplets
+        List[Tuple[Node, Node, Attributes]]:  Edges represented in nx style as a list of (source, target, attributes) triplets
             i.e [ ('source-node', 'target-node', { 'attr_1': value, ...., 'attr-n': value })]
 
     """
@@ -89,7 +94,7 @@ def df_to_nx(
     else:
         G.add_nodes_from(list(set(df[source]).union(set(df[target]))))
 
-    edges = df_to_nx_edges_list(df, source=source, target=target, **edge_attributes)
+    edges = pandas_to_edges(df, source=source, target=target, **edge_attributes)
 
     G.add_edges_from(edges)
 
@@ -246,7 +251,9 @@ def get_positioned_edges_as_dict(network: nx.Graph, layout: NodesLayout, sort_at
     return dict_of_lists
 
 
-def get_positioned_nodes_as_dict(G: nx.Graph, layout: NodesLayout, node_size, node_size_range):
+def get_positioned_nodes_as_dict(
+    G: nx.Graph, layout: NodesLayout, node_size: str, node_size_range: Optional[Tuple[Number, Number]]
+) -> dict:
 
     nodes = get_positioned_nodes(G, layout)
 
