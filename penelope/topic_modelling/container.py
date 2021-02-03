@@ -274,10 +274,21 @@ class InferredTopicsData:
 
         return _topic_proportions
 
-    def n_largest_topic_token_weights(self, n_count: int) -> pd.DataFrame:
+    def top_topic_token_weights_old(self, n_count: int) -> pd.DataFrame:
         id2token = self.id2term
         _largest = self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']].apply(
             lambda x: x.nlargest(n_count, columns=['weight'])
         )
         _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
+        return _largest.set_index('topic_id')
+
+    def top_topic_token_weights(self, n_count: int) -> pd.DataFrame:
+        id2token = self.id2term
+        _largest = (
+            self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']]
+            .apply(lambda x: x.nlargest(n_count, columns=['weight']))
+            .reset_index(drop=True)
+        )
+        _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
+        _largest['position'] = _largest.groupby('topic_id').cumcount() + 1
         return _largest.set_index('topic_id')
