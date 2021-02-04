@@ -61,8 +61,8 @@ def test_to_dict(inferred_topics_data: InferredTopicsData):
     edges = graph['edges']
     assert len(nodes) == 4
     assert len(edges) == 3
-    assert set([x['data']['id'] for x in nodes]) == set({'valv', 'i', 'Topic #0', 'och'})
-    assert set([x['data']['id'] for x in edges]) == set({'0_valv', '0_i', '0_och'})
+    assert {x['data']['id'] for x in nodes} == {'valv', 'i', 'Topic #0', 'och'}
+    assert {x['data']['id'] for x in edges} == {'0_valv', '0_i', '0_och'}
 
 
 def test_create_network(inferred_topics_data: InferredTopicsData):
