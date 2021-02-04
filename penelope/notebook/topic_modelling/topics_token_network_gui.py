@@ -160,7 +160,7 @@ class ViewModel:
             self._topics_data = data
 
         if self._topics_data is None:
-            return
+            return self
 
         self._top_topic_tokens = self._topics_data.top_topic_token_weights(MAX_TOPIC_TOKEN_COUNT)
 
