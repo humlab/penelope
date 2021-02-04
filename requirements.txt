@@ -216,6 +216,9 @@ idna==2.10; python_version >= "3.5" and python_full_version < "3.0.0" or python_
 ipyaggrid==0.2.1 \
     --hash=sha256:3b10762f82615de17de0261c2090c8081f82826affcdd6f8d877f78f111f3ad2 \
     --hash=sha256:8919f6ad97f0d02a7d89a912f99d7c0153eafa5181f385c63767c2a56d9ec01c
+ipycytoscape==1.1.0 \
+    --hash=sha256:79efd7ab83d9619cd4ef64302fa8e0c1e792472b3d803a1e38b76854f3f92db4 \
+    --hash=sha256:6c94c95abb5c0d0128445f5bde10c5bc1604207eb80ac87d08dcbe660ce8d0bb
 ipyfilechooser==0.4.0 \
     --hash=sha256:6f47a9c26cad6bcab62eda307619f87ccbda52cbd728ab12cdedceaa672654a6 \
     --hash=sha256:ceae3b40faa9ad3b5b4cbad739884128c8b1b770154f50a88296aacc3c372299
@@ -861,6 +864,9 @@ spacy==2.3.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (py
     --hash=sha256:3bafcc134c340c5d7556612344d2844522d452b99a21f2b0a9b640f6c55f1110 \
     --hash=sha256:4944a1118f6dbb49201749d72527b749f74032e1026ddf387bc3a7e172ff0300 \
     --hash=sha256:818de26e0e383f64ccbe3db185574920de05923d8deac8bbb12113b9e33cee1f
+spectate==1.0.0; python_version >= "3.6" \
+    --hash=sha256:f715f7b184c94df6c8de5031ffb8f3eb5685ebad2f62bc1b11af408b3856e35e \
+    --hash=sha256:a7eb2d4d5c2d64cd8b9614f8590a5d1816be88f6e3572963e9f02f7c43502709
 srsly==1.0.4; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6" \
     --hash=sha256:39a8bd6b383b4ea5c3a6793d790e1356e236701f421badef278a0ea80bc95d30 \
     --hash=sha256:02acfa09769380023e9bbed5c63f5f41b04dbc13ff392a7284df685127d224ae \
