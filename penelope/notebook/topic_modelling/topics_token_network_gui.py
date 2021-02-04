@@ -154,7 +154,7 @@ class ViewModel:
     def top_topic_tokens(self) -> pd.DataFrame:
         return self._top_topic_tokens
 
-    def update(self, data: topic_modelling.InferredTopicsData = None) -> None:
+    def update(self, data: topic_modelling.InferredTopicsData = None) -> "ViewModel":
 
         if data is not None:
             self._topics_data = data
@@ -163,6 +163,8 @@ class ViewModel:
             return
 
         self._top_topic_tokens = self._topics_data.top_topic_token_weights(MAX_TOPIC_TOKEN_COUNT)
+
+        return self
 
     def get_topics_tokens(self, topic_ids: List[int], top_count: int) -> pd.DataFrame:
         topics_tokens = self.top_topic_tokens[

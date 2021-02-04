@@ -44,17 +44,25 @@ def test_view_model(inferred_topics_data: InferredTopicsData):
     assert len(model.get_topics_tokens([0, 1, 2, 3], 1)) == 4
     assert len(model.get_topics_tokens([0, 1, 2, 3], 3)) == 12
 
-    assert model.get_topics_tokens([0, 1], 1).columns.tolist() == ['topic_id', 'token', 'weight']
+    assert model.get_topics_tokens([0, 1], 1).columns.tolist() == ['topic', 'token', 'weight', 'topic_id', 'position']
     assert list(model.get_topics_tokens([0, 1], 1).topic_id.unique()) == [0, 1]
 
 
-def test_to_dict():
+def test_to_dict(inferred_topics_data: InferredTopicsData):
 
-    topics_tokens_str = """;topic_id;token;weight\n0;1;och;0.024\n1;1;som;0.020"""
-    topics_tokens = pd.read_csv(io.StringIO(topics_tokens_str), sep=';', index_col=0)
-    data = ttn_gui.to_dict(topics_tokens)
+    model = ttn_gui.ViewModel(filename_fields="year:_:1").update(inferred_topics_data)
 
-    assert isinstance(data, dict)
+    topics_tokens = model.get_topics_tokens([0], 3)
+    graph = ttn_gui.to_dict(topics_tokens)
+
+    assert isinstance(graph, dict) and 'nodes' in graph and 'edges' in graph
+
+    nodes = graph['nodes']
+    edges = graph['edges']
+    assert len(nodes) == 4
+    assert len(edges) == 3
+    assert set([x['data']['id'] for x in nodes]) == set({'valv', 'i', 'Topic #0', 'och'})
+    assert set([x['data']['id'] for x in edges]) == set({'0_valv', '0_i', '0_och'})
 
 
 def test_create_network(inferred_topics_data: InferredTopicsData):
@@ -70,74 +78,14 @@ def test_create_network(inferred_topics_data: InferredTopicsData):
 
     assert w is not None
 
-    assert len(w.graph.nodes) == 4
-    assert len([node for node in w.graph.nodes if node.classes == 'source_class']) == 1
-    assert len([node for node in w.graph.nodes if node.classes == 'target_class']) == 3
-
-    assert len([node.classes == 'source_class' and node.data['id'] == "1" for node in w.graph.nodes]) == 1
-
-    # [
-    #     ipycytoscape.Node(classes='source_class', data={'id': '1', 'label': '1'}, position={}),
-    #     ipycytoscape.Node(classes='target_class', data={'id': 'och', 'label': 'och'}, position={}),
-    #     ipycytoscape.Node(classes='target_class', data={'id': 'som', 'label': 'som'}, position={}),
-    #     ipycytoscape.Node(data={'id': 1}, position={}),
-    # ]
+    assert len(w.graph.nodes) == 3
+    assert len([node for node in w.graph.nodes if node.data['node_type'] == 'topic']) == 1
+    assert len([node for node in w.graph.nodes if node.data['node_type'] == 'token']) == 2
 
 
 def test_create_network2():
 
-    topics_tokens_str = """;topic_id;token;weight
-0;2;barn;0.12300785397955755
-1;2;förälder;0.02780568784132421
-2;2;familj;0.013902092415585314
-3;2;år;0.01278234985116442
-4;2;behov;0.011685903944124094
-5;2;kommun;0.010614257704617923
-6;2;förskola;0.010506792478636591
-7;2;skola;0.009617761972791006
-8;2;hem;0.008996267274283572
-9;2;ungdom;0.0084589411443769
-10;2;personal;0.008186144801501207
-11;2;verksamhet;0.007076923308155408
-12;2;dag;0.0066838861529929065
-13;2;daghem;0.0065824329676259135
-14;2;samhälle;0.006129275406320007
-15;2;ålder;0.005966198804656025
-16;2;arbete;0.0058489640126763885
-17;2;kontakt;0.0056520696825567394
-18;2;grupp;0.005506277697658986
-19;2;skall;0.005404824512291993
-20;2;får;0.005071156258196102
-21;2;utredning;0.00491108567683929
-22;2;möjlighet;0.004867498382385322
-23;2;moder;0.0046668465268817115
-24;2;del;0.004642046859347558
-25;2;institution;0.004413589316002624
-26;2;människa;0.004393298678929226
-27;2;tid;0.004386535133238093
-28;2;vård;0.004357226435243183
-29;2;barnomsorg;0.004333178272785822
-30;2;plats;0.004051363868988617
-31;2;utveckling;0.003711683574278386
-32;2;socialstyrelse;0.0032968527718889003
-33;2;erfarenhet;0.003160078847912657
-34;2;antal;0.003160078847912657
-35;2;situation;0.0030714012488511373
-36;2;vårdnadshavare;0.0030488560965473603
-37;2;miljö;0.002902312606572814
-38;2;form;0.002895549060881681
-39;2;omsorg;0.002824907583663181
-40;2;utbildning;0.0027738052384412887
-41;2;barnavårdsnämnd;0.002674606568304673
-42;2;stöd;0.002661830981999199
-43;2;tillsyn;0.0026460493753865553
-44;2;fritidshem;0.002613734657084476
-45;2;samarbete;0.002590437999703907
-46;2;problem;0.002531820603714089
-47;2;sou;0.0024807182584921953
-48;2;hand;0.0024739547128010625
-49;2;stockholm;0.0024205978523487914
-"""
+    topics_tokens_str = ';topic;token;weight;topic_id;position\n0;Topic #0;och;0.04476533457636833;0;1\n1;Topic #0;valv;0.02178177796304226;0;2\n2;Topic #0;i;0.02060970477759838;0;3\n3;Topic #1;och;0.02447959966957569;1;1\n4;Topic #1;som;0.02074943669140339;1;2\n5;Topic #1;av;0.020712170749902725;1;3\n6;Topic #2;som;0.02533087506890297;2;1\n7;Topic #2;en;0.023466676473617557;2;2\n8;Topic #2;är;0.022432737052440643;2;3\n9;Topic #3;de;0.02712307684123516;3;1\n10;Topic #3;är;0.023767853155732155;3;2\n11;Topic #3;i;0.019748181104660038;3;3\n'
     topics_tokens = pd.read_csv(io.StringIO(topics_tokens_str), sep=';', index_col=0)
     opts = types.SimpleNamespace(network_layout="cola")
     network = ttn_gui.create_network(topics_tokens, opts)
