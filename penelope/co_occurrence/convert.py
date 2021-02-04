@@ -67,14 +67,14 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
 def to_vectorized_corpus(
     co_occurrences: pd.DataFrame, document_index: pd.DataFrame, value_column: str = "value"
 ) -> VectorizedCorpus:
-
+    """Creates a DTM corpus from a co-occurrence result set that was partitioned by year."""
     # Create new tokens from the co-occurring pairs
     tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
 
     # Create a vocabulary & token2id mapping
     token2id = {w: i for i, w in enumerate(sorted([w for w in set(tokens)]))}
 
-    # Create a year to index mappaing (i.e. year to document_id)
+    # Create a year to index mapping (i.e. year to document_id)
     year2index = document_index.set_index('year').document_id.to_dict()
 
     df_yearly_weights = pd.DataFrame(
