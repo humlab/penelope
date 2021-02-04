@@ -6,13 +6,14 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import gensim
 import pandas as pd
-import penelope.utility as utility
 import scipy
-from penelope.corpus.document_index import document_index_upgrade
+from penelope import utility
+from penelope.corpus import DocumentIndex, load_document_index
 from penelope.utility import file_utility, filename_utils
+from penelope.utility.filename_fields import FilenameFieldSpecs
 from tqdm.auto import tqdm
 
-from .utility import add_document_metadata
+from .utility import compute_topic_proportions
 
 logger = utility.getLogger('corpus_text_analysis')
 
@@ -31,6 +32,7 @@ class TrainingCorpus:
         id2word: Mapping[int, str] = None,
         vectorizer_args: Mapping[str, Any] = None,
         corpus: gensim.matutils.Sparse2Corpus = None,
+        corpus_options: dict = None,
     ):
         """A container for the corpus data used during learning/inference
 
@@ -57,6 +59,7 @@ class TrainingCorpus:
         self.documents = document_index
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(vectorizer_args or {})}
         self.corpus = corpus
+        self.corpus_options = corpus_options
 
     @property
     def document_index(self):
@@ -81,7 +84,7 @@ class InferredModel:
     @property
     def topic_model(self):
         if callable(self._topic_model):
-            tbar = tqdm(desc="Lazy Loading model...", position=0, leave=True)
+            tbar = tqdm(desc="Lazy loading topic model...", position=0, leave=True)
             self._topic_model = self._topic_model()
             tbar.close()
         return self._topic_model
@@ -89,7 +92,7 @@ class InferredModel:
     @property
     def train_corpus(self):
         if callable(self._train_corpus):
-            tbar = tqdm(desc="Lazy corpus...", position=0, leave=True)
+            tbar = tqdm(desc="Lazy loading corpus...", position=0, leave=True)
             self._train_corpus = self._train_corpus()
             tbar.close()
         return self._train_corpus
@@ -97,7 +100,7 @@ class InferredModel:
 
 class InferredTopicsData:
     """The result of applying a topic model on a corpus.
-    The content, a generic set of pd.DataFrames, is common to all types model engines.
+    The content, a generic set of pd.DataFrames, is common to all types of model engines.
     """
 
     def __init__(
@@ -122,15 +125,18 @@ class InferredTopicsData:
         document_topic_weights : pd.DataFrame
             Document topic weights
         """
-        self.dictionary = dictionary
-        self.document_index = document_index
-        self.topic_token_weights = topic_token_weights
-        self.topic_token_overview = topic_token_overview
-        self.document_topic_weights = document_topic_weights
+        self.dictionary: Any = dictionary
+        self.document_index: pd.DataFrame = document_index
+        self.topic_token_weights: pd.DataFrame = topic_token_weights
+        self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(
+            document_topic_weights, 'year'
+        )
+        self.topic_token_overview: pd.DataFrame = topic_token_overview
+        self._id2token = None
 
-        # Ensure that `year` column exists
-
-        self.document_topic_weights = add_document_metadata(self.document_topic_weights, 'year', document_index)
+    @property
+    def num_topics(self) -> int:
+        return int(self.topic_token_overview.index.max()) + 1
 
     @property
     def year_period(self) -> Tuple[int, int]:
@@ -144,7 +150,7 @@ class InferredTopicsData:
         """Returns unique topic ids """
         return list(self.document_topic_weights.topic_id.unique())
 
-    def store(self, target_folder, pickled=False):
+    def store(self, target_folder: str, pickled: bool = False):
         """Stores aggregate in `target_folder` as individual zipped files
 
         Parameters
@@ -162,7 +168,7 @@ class InferredTopicsData:
 
         if pickled:
 
-            filename = os.path.join(target_folder, "inferred_topics.pickle")
+            filename: str = os.path.join(target_folder, "inferred_topics.pickle")
 
             c_data = types.SimpleNamespace(
                 documents=self.document_index,
@@ -188,18 +194,18 @@ class InferredTopicsData:
                 file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     @staticmethod
-    def load(folder: str, pickled: bool = False):
+    def load(*, folder: str, filename_fields: FilenameFieldSpecs, pickled: bool = False):
         """Loads previously stored aggregate"""
         data = None
 
         if pickled:
 
-            filename = os.path.join(folder, "inferred_topics.pickle")
+            filename: str = os.path.join(folder, "inferred_topics.pickle")
 
             with open(filename, 'rb') as f:
                 data = pickle.load(f)
 
-            data = InferredTopicsData(
+            data: InferredTopicsData = InferredTopicsData(
                 document_index=data.document_index if hasattr(data, 'document_index') else data.document,
                 dictionary=data.dictionary,
                 topic_token_weights=data.topic_token_weights,
@@ -208,9 +214,14 @@ class InferredTopicsData:
             )
 
         else:
-            data = InferredTopicsData(
-                document_index=pd.read_csv(
-                    os.path.join(folder, 'documents.zip'), '\t', header=0, index_col=0, na_filter=False
+            data: InferredTopicsData = InferredTopicsData(
+                document_index=load_document_index(
+                    os.path.join(folder, 'documents.zip'),
+                    filename_fields=filename_fields,
+                    sep='\t',
+                    header=0,
+                    index_col=0,
+                    na_filter=False,
                 ),
                 dictionary=pd.read_csv(
                     os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False
@@ -226,7 +237,7 @@ class InferredTopicsData:
                 ),
             )
 
-            data.document_index = document_index_upgrade(data.document_index)
+        assert "year" in data.document_index.columns
 
         return data
 
@@ -238,8 +249,46 @@ class InferredTopicsData:
 
     @property
     def id2term(self):
-        return self.dictionary.token.to_dict()
+        if self._id2token is None:
+            # id2token = inferred_topics.dictionary.to_dict()['token']
+            self._id2token = self.dictionary.token.to_dict()
+        return self._id2token
 
     @property
     def term2id(self):
         return {v: k for k, v in self.id2term.items()}
+
+    # @property
+    # def topic_proportions(self) -> pd.DataFrame:
+    #     return compute_topic_proportions2(self.document_topic_weights)
+
+    def compute_topic_proportions(self) -> pd.DataFrame:
+
+        if 'n_terms' not in self.document_index.columns:
+            return None
+
+        _topic_proportions = compute_topic_proportions(
+            self.document_topic_weights,
+            self.document_index.n_terms.values,
+        )
+
+        return _topic_proportions
+
+    def top_topic_token_weights_old(self, n_count: int) -> pd.DataFrame:
+        id2token = self.id2term
+        _largest = self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']].apply(
+            lambda x: x.nlargest(n_count, columns=['weight'])
+        )
+        _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
+        return _largest.set_index('topic_id')
+
+    def top_topic_token_weights(self, n_count: int) -> pd.DataFrame:
+        id2token = self.id2term
+        _largest = (
+            self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']]
+            .apply(lambda x: x.nlargest(n_count, columns=['weight']))
+            .reset_index(drop=True)
+        )
+        _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
+        _largest['position'] = _largest.groupby('topic_id').cumcount() + 1
+        return _largest.set_index('topic_id')

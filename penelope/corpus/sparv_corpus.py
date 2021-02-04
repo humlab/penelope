@@ -21,10 +21,10 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
     ):
         reader_opts = reader_opts or TextReaderOpts()
 
-        if isinstance(source, readers.SparvXmlTokenizer):
+        if isinstance(source, readers.SparvXmlReader):
             tokens_reader = source
         else:
-            tokens_reader = readers.SparvXmlTokenizer(
+            tokens_reader = readers.SparvXmlReader(
                 source,
                 extract_tokens_opts=extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True),
                 xslt_filename=None,

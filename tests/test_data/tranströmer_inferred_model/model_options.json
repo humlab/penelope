@@ -1,0 +1,17 @@
+{
+    "method": "gensim_lda-multicore",
+    "perplexity_score": 0.01593404592458313,
+    "coherence_score": -3.6959965285043177,
+    "engine_options": {
+        "n_topics": 4,
+        "passes": 1,
+        "random_seed": 42,
+        "alpha": "auto",
+        "workers": 1,
+        "max_iter": 100,
+        "prefix": ""
+    },
+    "extra_options": {
+        "tfidf_weiging": false
+    }
+}

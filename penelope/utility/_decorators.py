@@ -22,6 +22,22 @@ def try_catch(func, exceptions=None, suppress=False, nice=False):
     return wrapper
 
 
+def suppress_error(func, exceptions=(Exception,), suppress=True, nice=True):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except exceptions as e:
+            if nice:
+                logging.error(str(e))
+            else:
+                logging.exception('[{}]'.format(e))
+            if not suppress:
+                raise
+
+    return wrapper
+
+
 class ExpectException:
     def __init__(self, exception_class):
         self.exception_class = exception_class

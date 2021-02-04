@@ -23,9 +23,8 @@ def display_gui(state: TopicModelContainer):
     ignore_options = [('', None)] + [('Topic #' + str(i), i) for i in range(0, n_topics)]
     year_min, year_max = state.inferred_topics.year_period
 
-    topic_proportions = topic_modelling.compute_topic_proportions(
-        state.inferred_topics.document_topic_weights, state.inferred_topics.document_index.n_terms.values
-    )
+    topic_proportions = state.inferred_topics.compute_topic_proportions()
+
     titles = topic_modelling.get_topic_titles(state.inferred_topics.topic_token_weights)
 
     gui = types.SimpleNamespace(

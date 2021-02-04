@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import enum
+import glob
 import json
 import os
 import pathlib
@@ -47,6 +48,7 @@ class CorpusSerializeOpts:
 
     sep: str = '\t'
     quoting: int = csv.QUOTE_NONE
+    custom_serializer_classname: str = None
 
     @property
     def content_type(self) -> interfaces.ContentType:
@@ -73,6 +75,12 @@ class CorpusSerializeOpts:
             if hasattr(opts, key):
                 setattr(opts, key, data[key])
         return opts
+
+    @property
+    def custom_serializer(self) -> type:
+        if not self.custom_serializer_classname:
+            return None
+        return create_instance(self.custom_serializer_classname)
 
 
 @dataclass
@@ -134,6 +142,12 @@ class CorpusConfig:
                 yaml.dump(
                     json.loads(json.dumps(self, default=vars)), fp, indent=4, default_flow_style=False, sort_keys=False
                 )
+
+    @staticmethod
+    def list(folder: str) -> List[str]:
+        """Return YAML filenames in `folder`"""
+        filenames = sorted(glob.glob(os.path.join(folder, '*.yml')) + glob.glob(os.path.join(folder, '*.yaml')))
+        return filenames
 
     @staticmethod
     def load(path: str) -> "CorpusConfig":

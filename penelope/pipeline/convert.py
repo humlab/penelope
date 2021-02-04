@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Callable, Iterable, List, Union
 
 import numpy as np
 import pandas as pd
@@ -16,12 +16,18 @@ def _payload_tokens(payload: DocumentPayload) -> List[str]:
 
 
 def to_vectorized_corpus(
-    stream: Iterable[DocumentPayload], vectorize_opts: VectorizeOpts, document_index: pd.DataFrame
+    stream: Iterable[DocumentPayload],
+    vectorize_opts: VectorizeOpts,
+    document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame],
 ) -> VectorizedCorpus:
     vectorizer = CorpusVectorizer()
     vectorize_opts.already_tokenized = True
     terms = (_payload_tokens(payload) for payload in stream)
-    corpus = vectorizer.fit_transform_(terms, document_index=document_index, vectorize_opts=vectorize_opts)
+    corpus = vectorizer.fit_transform_(
+        terms,
+        document_index=document_index,
+        vectorize_opts=vectorize_opts,
+    )
     return corpus
 
 
@@ -32,8 +38,10 @@ def tagged_frame_to_tokens(
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
     pos_column: str = 'pos_',
+    verbose: bool = True,  # pylint: disable=unused-argument
 ) -> Iterable[str]:
 
+    # FIXME: #31 Verify that blank LEMMAS are replaced  by TOKEN
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
 
@@ -63,9 +71,13 @@ def tagged_frame_to_tokens(
 
 
 def tagged_frame_to_token_counts(tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
+    """Computes word counts (total and per part-of-speech) given tagged_frame"""
 
     if tagged_frame is None or len(tagged_frame) == 0:
         return {}
+
+    if not isinstance(tagged_frame, pd.DataFrame):
+        raise PipelineError(f"Expected tagged dataframe, found {type(tagged_frame)}")
 
     if not pos_column:
         raise PipelineError("Name of PoS column in tagged frame MUST be specified (pipeline.payload.memory_store)")

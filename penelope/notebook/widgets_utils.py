@@ -264,7 +264,7 @@ def button_with_callback(description, style=None, callback=None):
     return btn
 
 
-def text_widget(element_id=None, default_value=''):
+def text_widget(element_id=None, default_value='') -> widgets.HTML:
     value = "<span class='{}'>{}</span>".format(element_id, default_value) if element_id is not None else ''
     return widgets.HTML(value=value, placeholder='', description='')
 

@@ -1,11 +1,11 @@
 import penelope.corpus.dtm as dtm
 from penelope.co_occurrence.interface import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TokensTransformOpts
-from penelope.pipeline.tasks import WildcardTask
 
 from .pipeline import CorpusPipelineBase
+from .pipeline_mixin import PipelineShortcutMixIn
 from .spacy.tasks_mixin import SpacyPipelineShortcutMixIn
-from .tasks_mixin import PipelineShortcutMixIn
+from .tasks import WildcardTask
 
 
 class CorpusPipeline(

@@ -1,14 +1,12 @@
-import types
 import warnings
+from contextlib import suppress
+from dataclasses import dataclass
 from os.path import join as jj
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 import ipywidgets as widgets
-import numpy as np
-import penelope.topic_modelling as topic_modelling
-import penelope.utility as utility
-from IPython.display import display
-from penelope.corpus import add_document_index_attributes
+from penelope import pipeline, topic_modelling, utility
+from penelope.notebook.co_occurrence.main_gui import MainGUI
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 
 from . import display_topic_titles
@@ -21,29 +19,8 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 logger = utility.get_logger()
 
 
-# FIXME: #94 Column 'year' is missing in `document_index` in model metadata (InferredTopicsData)
-def temporary_bug_fixupdate_documents(inferred_topics):
-
-    logger.info("applying temporary bug fix of missing year in document_index...done!")
-    document_index = inferred_topics.document_index
-    document_topic_weights = inferred_topics.document_topic_weights
-
-    if "year" not in document_index.columns:
-        document_index["year"] = document_index.filename.str.split("_").apply(lambda x: x[1]).astype(np.int)
-
-    if "year" not in document_topic_weights.columns:
-        document_topic_weights = add_document_index_attributes(catalogue=document_index, target=document_topic_weights)
-
-    inferred_topics.document_index = document_index
-    inferred_topics.document_topic_weights = document_topic_weights
-
-    assert "year" in inferred_topics.document_index.columns
-    assert "year" in inferred_topics.document_topic_weights.columns
-
-    return inferred_topics
-
-
 def load_model(
+    corpus_config: pipeline.CorpusConfig,
     corpus_folder: str,
     state: TopicModelContainer,
     model_name: str,
@@ -52,15 +29,22 @@ def load_model(
 
     model_infos = model_infos or topic_modelling.find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
-
+    filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
     inferred_model: InferredModel = topic_modelling.load_model(model_info["folder"], lazy=True)
-    inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(jj(corpus_folder, model_info["name"]))
-
-    inferred_topics = temporary_bug_fixupdate_documents(inferred_topics)
+    inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(
+        folder=jj(corpus_folder, model_info["name"]),
+        filename_fields=filename_fields,
+    )
 
     state.set_data(inferred_model, inferred_topics)
 
     topics = inferred_topics.topic_token_overview
+
+    with suppress(BaseException):
+        topic_proportions = inferred_topics.compute_topic_proportions()
+        if topic_proportions is not None:
+            topics['score'] = topic_proportions
+
     # topics.style.set_properties(**{'text-align': 'left'}).set_table_styles(
     #     [dict(selector='td', props=[('text-align', 'left')])]
     # )
@@ -71,34 +55,52 @@ def load_model(
     display_topic_titles.display_gui(topics, DisplayPandasGUI)
 
 
-@utility.try_catch
-def display_gui(corpus_folder: str, state: TopicModelContainer):
+@dataclass
+class LoadGUI:
 
-    model_infos = topic_modelling.find_models(corpus_folder)
-    model_names = list(x["name"] for x in model_infos)
+    model_name = widgets.Dropdown(description="Model", options=[], layout=widgets.Layout(width="40%"))
 
-    gui = types.SimpleNamespace(
-        model_name=widgets.Dropdown(description="Model", options=model_names, layout=widgets.Layout(width="40%")),
-        load=widgets.Button(
-            description="Load",
-            button_style="Success",
-            layout=widgets.Layout(width="80px"),
-        ),
-        output=widgets.Output(),
-    )
+    load = widgets.Button(description="Load", button_style="Success", layout=widgets.Layout(width="80px"))
 
-    def load_handler(*_):  # pylint: disable=unused-argument
-        gui.output.clear_output()
+    output = widgets.Output()
+
+    load_callback: Callable = None
+
+    def setup(self, model_names: List[str], load_callback: Callable = None) -> "LoadGUI":
+        self.model_name.options = model_names
+        self.load_callback = load_callback
+        self.load.on_click(self._load_handler)
+        return self
+
+    def layout(self) -> widgets.VBox:
+        _layout = widgets.VBox([widgets.HBox([self.model_name, self.load]), widgets.VBox([self.output])])
+        return _layout
+
+    def _load_handler(self, *_):
+
+        if self.model_name.value is None:
+            print("Please specify which model to load.")
+            return
+
+        self.output.clear_output()
         try:
-            gui.load.disabled = True
-            with gui.output:
-                if gui.model_name.value is None:
-                    print("Please specify which model to load.")
-                    return
-                load_model(corpus_folder, state, gui.model_name.value, model_infos)
+            self.load.disabled = True
+            with self.output:
+                self.load_callback(self.model_name.value)
         finally:
-            gui.load.disabled = False
+            self.load.disabled = False
 
-    gui.load.on_click(load_handler)
 
-    display(widgets.VBox([widgets.HBox([gui.model_name, gui.load]), widgets.VBox([gui.output])]))
+def create_load_topic_model_gui(
+    corpus_config: pipeline.CorpusConfig, corpus_folder: str, state: TopicModelContainer
+) -> MainGUI:
+
+    model_infos: List[dict] = topic_modelling.find_models(corpus_folder)
+    model_names: List[str] = list(x["name"] for x in model_infos)
+
+    def load_callback(model_name: str):
+        load_model(corpus_config, corpus_folder, state, model_name, model_infos)
+
+    gui = LoadGUI().setup(model_names, load_callback=load_callback)
+
+    return gui

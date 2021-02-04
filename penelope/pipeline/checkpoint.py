@@ -6,15 +6,15 @@ from io import StringIO
 from typing import Iterable, Iterator, List, Sequence, Union
 
 import pandas as pd
-import penelope.utility.zip_utils as zip_utils
 from penelope.corpus import DocumentIndex, load_document_index
 from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.utility import assert_that_path_exists, getLogger, path_of
+from penelope.utility import assert_that_path_exists, getLogger, path_of, zip_utils
 
 from .config import CorpusSerializeOpts
 from .interfaces import ContentType, DocumentPayload, PipelineError
 
 SerializableContent = Union[str, Iterable[str], pd.core.api.DataFrame]
+SERIALIZE_OPT_FILENAME = "options.json"
 
 logger = getLogger("penelope")
 
@@ -37,18 +37,21 @@ class IContentSerializer(abc.ABC):
         ...
 
     @staticmethod
-    def create(content_type: ContentType) -> "IContentSerializer":
+    def create(options: CorpusSerializeOpts) -> "IContentSerializer":
 
-        if content_type == ContentType.TEXT:
+        if options.custom_serializer:
+            return options.custom_serializer()
+
+        if options.content_type == ContentType.TEXT:
             return TextContentSerializer()
 
-        if content_type == ContentType.TOKENS:
+        if options.content_type == ContentType.TOKENS:
             return TokensContentSerializer()
 
-        if content_type == ContentType.TAGGEDFRAME:
+        if options.content_type == ContentType.TAGGEDFRAME:
             return TaggedFrameContentSerializer()
 
-        raise ValueError(f"non-serializable content type: {content_type}")
+        raise ValueError(f"non-serializable content type: {options.content_type}")
 
 
 class TextContentSerializer(IContentSerializer):
@@ -75,9 +78,6 @@ class TaggedFrameContentSerializer(IContentSerializer):
         return pd.read_csv(StringIO(content), sep=options.sep, quoting=options.quoting, index_col=0)
 
 
-SERIALIZE_OPT_FILENAME = "options.json"
-
-
 def store_checkpoint(
     *,
     options: CorpusSerializeOpts,
@@ -86,7 +86,7 @@ def store_checkpoint(
     payload_stream: Iterator[DocumentPayload],
 ) -> Iterable[DocumentPayload]:
 
-    serializer: IContentSerializer = IContentSerializer.create(options.content_type)
+    serializer: IContentSerializer = IContentSerializer.create(options)
 
     assert_that_path_exists(path_of(target_filename))
 
@@ -155,11 +155,11 @@ def deserialized_payload_stream(
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 
-    serializer: IContentSerializer = IContentSerializer.create(options.content_type)
+    serializer: IContentSerializer = IContentSerializer.create(options)
 
     with zipfile.ZipFile(source_name, mode="r") as zf:
         for filename in filenames:
-            content = zip_utils.read(zip_or_filename=zf, filename=filename, as_binary=False)
+            content: str = zip_utils.read(zip_or_filename=zf, filename=filename, as_binary=False)
             yield DocumentPayload(
                 content_type=options.content_type,
                 content=serializer.deserialize(content, options),

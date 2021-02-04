@@ -1,4 +1,5 @@
 # type: ignore
+from . import zip_utils
 from ._color_utility import (
     DEFAULT_ALL_PALETTES,
     DEFAULT_LINE_PALETTE,
@@ -8,7 +9,7 @@ from ._color_utility import (
     get_static_color_map,
     static_color_map,
 )
-from ._decorators import ExpectException, deprecated, try_catch
+from ._decorators import ExpectException, deprecated, suppress_error, try_catch
 from .file_utility import (
     DataFrameFilenameTuple,
     create_iterator,
@@ -60,7 +61,14 @@ from .filename_utils import (
     ts_data_path,
 )
 from .mixins import PropsMixIn
-from .pos_tags import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, PoS_Tag_Schemes, PoS_TAGS_SCHEMES, get_pos_schema
+from .pos_tags import (
+    Known_PoS_Tag_Schemes,
+    PD_PoS_tag_groups,
+    PoS_Tag_Scheme,
+    PoS_Tag_Schemes,
+    PoS_TAGS_SCHEMES,
+    get_pos_schema,
+)
 from .utils import (
     LOG_FORMAT,
     DummyContext,

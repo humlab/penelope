@@ -7,38 +7,20 @@ import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.scripts.compute_topic_model import run_model
-from penelope.topic_modelling.container import InferredModel, InferredTopicsData, TrainingCorpus
+from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
+from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, TOPIC_MODELING_OPTS, create_inferred_model
+
 jj = os.path.join
 
-TOPIC_MODELING_OPTS = {
-    'n_topics': 4,
-    'passes': 1,
-    'random_seed': 42,
-    'alpha': 'auto',
-    'workers': 1,
-    'max_iter': 100,
-    'prefix': '',
-}
-# pylint: disable=protected-access
+# pylint: disable=protected-access,redefined-outer-name)
 
 
-def compute_inferred_model(method="gensim_lda-multicore") -> InferredModel:
-
-    corpus = TranströmerCorpus()
-    train_corpus = TrainingCorpus(
-        terms=corpus.terms,
-        document_index=corpus.document_index,
-    )
-
-    inferred_model: InferredModel = topic_modelling.infer_model(
-        train_corpus=train_corpus,
-        method=method,
-        engine_args=TOPIC_MODELING_OPTS,
-    )
-    return inferred_model
+@pytest.fixture
+def inferred_model() -> InferredModel:
+    return create_inferred_model()
 
 
 def test_tranströmers_corpus():
@@ -52,7 +34,7 @@ def test_tranströmers_corpus():
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_infer_model(method):
 
-    inferred_model = compute_inferred_model(method)
+    inferred_model = create_inferred_model(method)
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
@@ -65,12 +47,17 @@ def test_infer_model(method):
     assert inferred_model.train_corpus.corpus is not None
 
 
-def test_store_compressed_inferred_model():
+def test_load_inferred_model_fixture():
+
+    inferred_model: InferredModel = topic_modelling.load_model(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
+    assert inferred_model is not None
+
+
+def test_store_compressed_inferred_model(inferred_model: InferredModel):
 
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
-    inferred_model = compute_inferred_model()
 
     # Act
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=True)
@@ -83,12 +70,11 @@ def test_store_compressed_inferred_model():
     shutil.rmtree(target_folder)
 
 
-def test_store_uncomressed_inferred_model():
+def test_store_uncompressed_inferred_model(inferred_model):
 
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
-    inferred_model = compute_inferred_model()
 
     # Act
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=False)
@@ -107,12 +93,12 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
-    test_inferred_model = compute_inferred_model(method)
+    test_inferred_model = create_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=True, store_compressed=True)
 
     # Act
 
-    inferred_model = topic_modelling.load_model(target_folder)
+    inferred_model: InferredModel = topic_modelling.load_model(target_folder)
 
     # Assert
     assert inferred_model is not None
@@ -135,7 +121,7 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, name)
-    test_inferred_model = compute_inferred_model(method)
+    test_inferred_model = create_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
 
     # Act
@@ -158,7 +144,7 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     # Arrange
     name = f"{uuid.uuid1()}"
     target_folder = jj(OUTPUT_FOLDER, name)
-    test_inferred_model = compute_inferred_model(method)
+    test_inferred_model = create_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
 
     # Act
@@ -185,7 +171,7 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 def test_infer_topics_data(method):
 
     # Arrange
-    inferred_model = compute_inferred_model(method)
+    inferred_model = create_inferred_model(method)
 
     # Act
 
@@ -216,7 +202,7 @@ def test_infer_topics_data(method):
 def test_store_inferred_topics_data(method):
 
     # Arrange
-    inferred_model = compute_inferred_model(method)
+    inferred_model = create_inferred_model(method)
 
     inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
         topic_model=inferred_model.topic_model,
@@ -244,7 +230,7 @@ def test_store_inferred_topics_data(method):
 def test_load_inferred_topics_data(method):
 
     # Arrange
-    inferred_model = compute_inferred_model(method)
+    inferred_model = create_inferred_model(method)
 
     test_inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
         topic_model=inferred_model.topic_model,
@@ -257,7 +243,9 @@ def test_load_inferred_topics_data(method):
     test_inferred_topics_data.store(target_folder)
 
     # Act
-    inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(target_folder)
+    inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(
+        folder=target_folder, filename_fields=None
+    )
 
     # Assert
     assert inferred_topics_data is not None
@@ -288,16 +276,13 @@ def test_run_cli():
 
     kwargs = {
         'name': f"{uuid.uuid1()}",
-        'n_topics': 5,
         'corpus_folder': OUTPUT_FOLDER,
         'corpus_filename': './tests/test_data/test_corpus.zip',
         'engine': 'gensim_lda-multicore',
-        # 'passes': None,
-        # 'random_seed': None,
-        'alpha': 'asymmetric',
-        # 'workers': None,
-        # 'max_iter': None,
-        # 'prefix': None,
+        'topic_modeling_opts': {
+            'n_topics': 5,
+            'alpha': 'asymmetric',
+        },
         'filename_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
@@ -318,19 +303,22 @@ def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
     target_folder = jj(OUTPUT_FOLDER, name)
     options = dict(
         name=name,
-        n_topics=5,
         corpus_folder=OUTPUT_FOLDER,
         corpus_filename='./tests/test_data/test_corpus.zip',
         engine="gensim_lda-multicore",
-        workers=2,
-        max_iter=2000,
+        topic_modeling_opts=dict(
+            n_topics=5,
+            workers=2,
+            max_iter=2000,
+        ),
         store_corpus=True,
+        filename_field="year:_:1",
     )
 
     run_model(**options)
 
     inferred_model = topic_modelling.load_model(target_folder)
-    inferred_topic_data = InferredTopicsData.load(target_folder)
+    inferred_topic_data = InferredTopicsData.load(folder=target_folder, filename_fields=None)
 
     assert inferred_model is not None
     assert inferred_topic_data is not None

@@ -221,7 +221,7 @@ def plot_df(df, source='source', target='target', weight='weight', layout_opts=N
 
     layout, _ = network_layout.layout_network(g, layout_opts['algorithm'], **layout_opts['args'])
 
-    edges = networkx_utility.get_positioned_edges2(g, layout)
+    edges = networkx_utility.get_positioned_edges_as_dict(g, layout)
     nodes = networkx_utility.get_positioned_nodes(g, layout)
 
     plot_data = plot_network(nodes=nodes, edges=edges, plot_opts=plot_opts, fig_opts=fig_opts)

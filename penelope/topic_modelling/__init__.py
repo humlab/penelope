@@ -1,11 +1,11 @@
+# type: ignore
 from .compute import infer_model
 from .container import InferredModel, InferredTopicsData, TrainingCorpus
-from .io import load_model, store_model
+from .persist import load_model, store_model
 from .predict import compile_inferred_topics_data, predict_document_topics
 from .saliency import compute_KL_divergence, compute_term_frequency, compute_term_info, compute_topic_metrics
-from .utility import (
+from .utility import (  # compute_topic_proportions2,
     YEARLY_MEAN_COMPUTE_METHODS,
-    add_document_metadata,
     compute_topic_proportions,
     compute_topic_yearly_means,
     display_termite_plot,

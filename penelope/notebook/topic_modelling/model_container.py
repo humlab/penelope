@@ -50,22 +50,8 @@ class TopicModelContainer:
 
     @property
     def id2term(self):
-        # return self.inferred_model.train_corpus.id2word
         return self.inferred_topics.id2word
 
     @property
     def num_topics(self) -> int:
-        return int(self.inferred_topics.topic_token_overview.index.max()) + 1
-        # model = self.inferred_model.topic_model
-        # if model is None:
-        #     return 0
-        # if hasattr(model, 'num_topics'):
-        #     return model.num_topics
-        # if hasattr(model, 'n_topics'):
-        #     return model.n_topics
-
-        # return 0
-
-    # @property
-    # def relevant_topics(self):
-    #     return self._inferred_topics.relevant_topic_ids
+        return self.inferred_topics.num_topics

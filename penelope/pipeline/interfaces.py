@@ -150,7 +150,7 @@ class PipelinePayload:
 
         return self._pos_schema
 
-    def store_document_properties(self, document_name: str, **properties):
+    def update_document_properties(self, document_name: str, **properties):
         """Updates document index with given property values"""
         update_document_index_properties(
             self.document_index,
@@ -159,7 +159,7 @@ class PipelinePayload:
         )
 
     @property
-    def tagged_columns_names(self):
+    def tagged_columns_names(self) -> dict:
         return {k: v for k, v in self.memory_store.items() if k in ['text_column', 'pos_column', 'lemma_column']}
 
     def extend(self, _: DocumentPayload):
@@ -176,13 +176,13 @@ class ITask(abc.ABC):
     in_content_type: Union[ContentType, Sequence[ContentType]] = field(init=False, default=None)
     out_content_type: ContentType = field(init=False, default=None)
 
-    def chain(self) -> "ITask":
-        prior_task = self.pipeline.get_prior_to(self)
+    def chain(self) -> ITask:
+        prior_task: ITask = self.pipeline.get_prior_to(self)
         if prior_task is not None:
             self.instream = prior_task.outstream()
         return self
 
-    def setup(self):
+    def setup(self) -> ITask:
         return self
 
     @abc.abstractmethod
@@ -216,7 +216,7 @@ class ITask(abc.ABC):
     def document_index(self) -> pd.DataFrame:
         return self.pipeline.payload.document_index
 
-    def input_type_guard(self, content_type):
+    def input_type_guard(self, content_type) -> None:
         if self.in_content_type is None or self.in_content_type == ContentType.NONE:
             return
         if isinstance(self.in_content_type, ContentType):
@@ -232,10 +232,10 @@ class ITask(abc.ABC):
                 return
         raise PipelineError("content type not valid for task")
 
-    def store_document_properties(self, payload: DocumentPayload, **properties):
+    def update_document_properties(self, payload: DocumentPayload, **properties) -> None:
         """Stores document properties to document index"""
         payload.update_properties(**properties)
-        self.pipeline.payload.store_document_properties(payload.document_name, **properties)
+        self.pipeline.payload.update_document_properties(payload.document_name, **properties)
 
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], pd.DataFrame]

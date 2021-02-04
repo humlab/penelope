@@ -9,7 +9,7 @@ from . import options
 logger = utility.getLogger("")
 
 
-def compute_score(id2word, model, corpus):
+def compute_score(id2word, model, corpus) -> float:
     try:
         dictionary = gensim_utility.create_dictionary(id2word)
         coherence_model = gensim.models.CoherenceModel(

@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Iterable, List, Mapping, Tuple, Union
+from typing import Callable, Iterable, List, Mapping, Tuple, Union
 
 import more_itertools
 import pandas as pd
@@ -44,7 +44,7 @@ class CorpusVectorizer:
         corpus: Union[TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
-        document_index: pd.DataFrame = None,
+        document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame] = None,
         vectorize_opts: VectorizeOpts,
     ) -> VectorizedCorpus:
         """Same as `fit_transform` but with a parameter object """
@@ -56,7 +56,7 @@ class CorpusVectorizer:
         *,
         already_tokenized: bool = True,
         vocabulary: Mapping[str, int] = None,
-        document_index: pd.DataFrame = None,
+        document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame] = None,
         lowercase: bool = False,
         stop_words: str = None,
         max_df: float = 1.0,
@@ -64,29 +64,30 @@ class CorpusVectorizer:
         verbose: bool = True,  # pylint: disable=unused-argument
     ) -> VectorizedCorpus:
         """Returns a `VectorizedCorpus` (document-term-matrix, bag-of-word) by applying sklearn's `CountVecorizer` on `corpus`
+        If `already_tokenized` is True then the input stream is expected to be tokenized.
+        Input stream sort order __MUST__ be the same as document_index sort order.
+        Passed `document_index` can be a callable that returns a pd.DataFrame. This is necessary
+        for instance when document index isn't avaliable until pipeline is exhausted.
 
-                Note:
-        `
-                  - If `already_tokenized` is True then the input stream is expected to be tokenized
-                  - Input stream sort order __MUST__ be the same as document_index sort order
+        Args:
+            corpus (Union[TokenizedCorpus, DocumentTermsStream]): Stream of text or stream of tokens
+            already_tokenized (bool, optional): Specifies if stream is tokens. Defaults to True.
+            vocabulary (Mapping[str, int], optional): Predefined vocabulary. Defaults to None.
+            document_index (Union[Callable[[], pd.DataFrame], pd.DataFrame], optional): If callable, then resolved after the stream has been exhausted. Defaults to None.
+            lowercase (bool, optional): Let vectorizer lowercase text. Defaults to False.
+            stop_words (str, optional): Let vectorizer remove stopwords. Defaults to None.
+            max_df (float, optional): Max document frequency (see CountVecorizer). Defaults to 1.0.
+            min_df (int, optional): Min document frequency (see CountVecorizer). Defaults to 1.
 
-                Parameters
-                ----------
-                corpus : tokenized_corpus.TokenizedCorpus
-                    [description]
-                max_df: Union[int,float], float in range [0.0, 1.0] or int, default=1.0
-                    Frequent words filter. sklearn: "Ignore terms that have a document frequency strictly higher than the given threshold"
-                min_df: Union[int,float], float in range [0.0, 1.0] or int, default=1
-                    Rare words filter, sklearn: "ignore terms that have a document frequency strictly lower than the given threshold"
-                Returns
-                -------
-                dtm.VectorizedCorpus
-                    [description]
+        Raises:
+            ValueError: [description]
+
+        Returns:
+            VectorizedCorpus: [description]
+
+        Yields:
+            Iterator[VectorizedCorpus]: [description]
         """
-        if document_index is None:
-            for attr in ['documents', 'document_index']:
-                if hasattr(corpus, attr) and getattr(corpus, attr) is not None:
-                    document_index = getattr(corpus, attr)
 
         if vocabulary is None:
             if hasattr(corpus, 'vocabulary'):
@@ -106,7 +107,7 @@ class CorpusVectorizer:
         else:
             tokenizer = None
 
-        vectorizer_opts = dict(
+        vectorizer_opts: dict = dict(
             tokenizer=tokenizer,
             lowercase=lowercase,
             stop_words=stop_words,
@@ -115,33 +116,51 @@ class CorpusVectorizer:
             vocabulary=vocabulary,
         )
 
-        seen_document_names = []
+        seen_document_names: List[str] = []
 
         def terms_stream():
-            for name, terms in corpus:  # document_terms_stream:
+            for name, terms in corpus:
                 seen_document_names.append(name)
                 yield terms
-
-        terms = terms_stream()
-
-        # if verbose:
-        #     terms = tqdm(terms, total=_get_stream_length(corpus, document_index))
 
         self.vectorizer = CountVectorizer(**vectorizer_opts)
         self.vectorizer_opts = vectorizer_opts
 
-        bag_term_matrix = self.vectorizer.fit_transform(terms)
-        token2id = self.vectorizer.vocabulary_
+        bag_term_matrix = self.vectorizer.fit_transform(terms_stream())
+        token2id: dict = self.vectorizer.vocabulary_
 
-        v_document_index = _set_strictly_increasing_index_by_seen_documents(document_index, seen_document_names)
+        document_index_: pd.DataFrame = resolve_document_index(corpus, document_index, seen_document_names)
 
-        v_corpus = VectorizedCorpus(bag_term_matrix, token2id, v_document_index)
+        dtm_corpus: VectorizedCorpus = VectorizedCorpus(
+            bag_term_matrix,
+            token2id,
+            document_index_,
+        )
 
-        return v_corpus
+        return dtm_corpus
+
+
+def resolve_document_index(
+    source: Union[TokenizedCorpus, DocumentTermsStream],
+    document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame],
+    seen_document_names: List[str],
+) -> pd.DataFrame:
+
+    if document_index is None:
+        for attr in ['documents', 'document_index']:
+            if hasattr(source, attr) and getattr(source, attr) is not None:
+                document_index = getattr(source, attr)
+
+    _document_index = _set_strictly_increasing_index_by_seen_documents(
+        document_index() if callable(document_index) else document_index,
+        seen_document_names,
+    )
+    return _document_index
 
 
 def _set_strictly_increasing_index_by_seen_documents(
-    document_index: pd.DataFrame, seen_document_names: List[str]
+    document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame],
+    seen_document_names: List[str],
 ) -> pd.DataFrame:
 
     if document_index is None:
@@ -157,8 +176,8 @@ def _set_strictly_increasing_index_by_seen_documents(
 
         return seen_document_index
 
-    # strp extension and remove duplicates (should only occur if chunked data) - we MUST keep document sequence
-    seen_document_names = [
+    # strip extension and remove duplicates (should only occur if chunked data) - we MUST keep document sequence
+    seen_document_names: List[str] = [
         strip_path_and_extension(x) for x in list_to_unique_list_with_preserved_order(seen_document_names)
     ]
 
@@ -166,7 +185,7 @@ def _set_strictly_increasing_index_by_seen_documents(
     _recode_map = {x: i for i, x in enumerate(seen_document_names)}
 
     # filter out documents that wasn't processed
-    document_index = document_index[document_index.document_name.isin(seen_document_names)]
+    document_index: pd.DataFrame = document_index[document_index.document_name.isin(seen_document_names)]
 
     # recode document_id to sequence_id
     document_index['document_id'] = document_index['document_name'].apply(lambda x: _recode_map[x])
@@ -177,16 +196,16 @@ def _set_strictly_increasing_index_by_seen_documents(
     return document_index
 
 
-def _get_stream_length(
-    corpus: Union[TokenizedCorpus, DocumentTermsStream],
-    document_index: pd.DataFrame,
-) -> int:
-    if hasattr(corpus, '__len__'):
-        return len(corpus)
-    if hasattr(corpus, 'documents') and corpus.document_index is not None:
-        return len(corpus.document_index)
-    if hasattr(corpus, 'document_index') and corpus.document_index is not None:
-        return len(corpus.document_index)
-    if document_index is not None:
-        return len(document_index)
-    return None
+# def _get_stream_length(
+#     corpus: Union[TokenizedCorpus, DocumentTermsStream],
+#     document_index: pd.DataFrame,
+# ) -> int:
+#     if hasattr(corpus, '__len__'):
+#         return len(corpus)
+#     if hasattr(corpus, 'documents') and corpus.document_index is not None:
+#         return len(corpus.document_index)
+#     if hasattr(corpus, 'document_index') and corpus.document_index is not None:
+#         return len(corpus.document_index)
+#     if document_index is not None:
+#         return len(document_index)
+#     return None

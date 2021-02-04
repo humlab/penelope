@@ -1,14 +1,22 @@
+from typing import Tuple
+
 import bokeh.models as bm
+import networkx as nx
 
-from .networkx import utility as nx_utils
+from .networkx.utility import layout_edges
 
 
-# FIXA Merge these two methods, return dict instead (lose bokeh dependency)
-def get_edges_source(
-    network, layout, scale=1.0, normalize=False, weight='weight', project_range=None, discrete_divisor=None
-):
+def create_edges_layout_data_source(
+    network: nx.Graph,
+    layout,
+    scale: float = 1.0,
+    normalize: bool = False,
+    weight: str = 'weight',
+    project_range: Tuple[float, float] = None,
+    discrete_divisor=None,
+) -> bm.ColumnDataSource:
 
-    _, _, weights, xs, ys = get_edge_layout_data(network, layout, weight=weight)
+    _, _, weights, xs, ys = layout_edges(network, layout, weight=weight)
     if isinstance(discrete_divisor, int):
         weights = [max(1, x // discrete_divisor) for x in weights]
     # elif project_range is not None:
@@ -29,7 +37,9 @@ def get_edges_source(
     return lines_source
 
 
-def get_node_subset_source(network, layout, node_list=None):  # pylint: disable=unused-argument
+def create_nodes_subset_data_source(
+    network: nx.Graph, layout, node_list=None, color_map=None  # pylint: disable=unused-argument
+) -> bm.ColumnDataSource:
 
     layout_items = layout.items() if node_list is None else [x for x in layout.items() if x[0] in node_list]
 
@@ -37,20 +47,14 @@ def get_node_subset_source(network, layout, node_list=None):  # pylint: disable=
     xs, ys = list(zip(*nodes_coordinates))
 
     nodes_source = bm.ColumnDataSource(dict(x=xs, y=ys, name=nodes, node_id=nodes))
+    if color_map is not None:
+        nodes_source.add([color_map[x] for x in nodes], "colors")
     return nodes_source
 
 
-def create_nodes_data_source(network, layout):  # pylint: disable=unused-argument
+def create_nodes_data_source(network: nx.Graph, layout) -> bm.ColumnDataSource:  # pylint: disable=unused-argument
 
-    nodes, nodes_coordinates = zip(*sorted([x for x in layout.items()]))  # if x[0] in line_nodes]))
+    nodes, nodes_coordinates = zip(*sorted([x for x in layout.items()]))
     nodes_xs, nodes_ys = list(zip(*nodes_coordinates))
     nodes_source = bm.ColumnDataSource(dict(x=nodes_xs, y=nodes_ys, name=nodes, node_id=nodes))
     return nodes_source
-
-
-# FIXME; #4 Consolidate network utility functions (utiity vs networkx.utility)
-create_bipartite_network = nx_utils.create_bipartite_network
-get_bipartite_node_set = nx_utils.get_bipartite_node_set
-create_network = nx_utils.create_network
-create_network_from_xyw_list = nx_utils.create_nx_graph_from_weighted_edges
-get_edge_layout_data = nx_utils.get_edge_layout_data

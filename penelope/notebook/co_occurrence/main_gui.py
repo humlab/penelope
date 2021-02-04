@@ -10,6 +10,10 @@ from penelope.notebook.word_trends.trends_data import TrendsData
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
+LAST_BUNDLE = None
+LAST_ARGS = None
+LAST_CONFIG = None
+
 
 def create(
     data_folder: str,
@@ -29,11 +33,15 @@ def compute_co_occurrence_callback(
     args: ComputeOpts,
     checkpoint_file: Optional[str] = None,
 ) -> co_occurrence.Bundle:
+    global LAST_BUNDLE, LAST_ARGS, LAST_CONFIG
+    LAST_ARGS = args
+    LAST_CONFIG = corpus_config
     bundle = workflows.co_occurrence.compute(
         args=args,
         corpus_config=corpus_config,
         checkpoint_file=checkpoint_file,
     )
+    LAST_BUNDLE = bundle
     return bundle
 
 

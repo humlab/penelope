@@ -128,7 +128,7 @@ def to_dataframe(
     id2token: Mapping[int, str],
     document_index: pd.DataFrame = None,
     threshold_count: int = 1,
-):
+) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
 
     Parameters

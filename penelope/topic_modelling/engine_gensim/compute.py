@@ -37,7 +37,7 @@ def compute(
             engine_ptions       Passed engine options (not the interpreted algorithm specific options)
             extra_options       Any other compute option passed as a kwarg
     """
-    algorithm_name = method.split('_')[1].upper()
+    algorithm_name: str = method.split('_')[1].upper()
 
     if train_corpus.doc_term_matrix is None:
         train_corpus.id2word = gensim.corpora.Dictionary(train_corpus.terms)
@@ -53,7 +53,7 @@ def compute(
     if kwargs.get('tfidf_weiging', False):
         train_corpus.corpus = _tfi_idf_model(train_corpus.corpus)
 
-    algorithm = options.engine_options(algorithm_name, train_corpus.corpus, train_corpus.id2word, engine_args)
+    algorithm: dict = options.engine_options(algorithm_name, train_corpus.corpus, train_corpus.id2word, engine_args)
 
     engine = algorithm['engine']
     engine_options = algorithm['options']

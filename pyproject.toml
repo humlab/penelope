@@ -54,6 +54,7 @@ statsmodels = "^0.12.0"
 textacy = "^0.10.1"
 toml = "^0.10.2"
 wordcloud = "^1.8.0"
+ipycytoscape = "1.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -73,6 +74,7 @@ taskipy = "==1.*,>=1.4.0"
 yapf = "==0.*,>=0.30.0"
 pynguin = "==0.*,>=0.6.3"
 pytest-xdist = "==2.*,>=2.2.0"
+mypy = "^0.790"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
@@ -124,6 +126,7 @@ exclude = '''
   \.git
   | \.pypy_cache
   | \.pytest_cache
+  | \.mypy_cache
   | deprecated
 )
 '''

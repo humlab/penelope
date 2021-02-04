@@ -1,13 +1,20 @@
 import logging
 import os
 from io import StringIO
-from typing import Callable, Dict, List, Mapping, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Mapping, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
-from penelope.utility import is_strictly_increasing, strip_path_and_extension
-from penelope.utility.filename_fields import FilenameFieldSpecs, extract_filenames_metadata
-from penelope.utility.pos_tags import PD_PoS_tag_groups
+from penelope.utility import (
+    FilenameFieldSpecs,
+    PD_PoS_tag_groups,
+    deprecated,
+    extract_filenames_metadata,
+    is_strictly_increasing,
+    list_of_dicts_to_dict_of_lists,
+    strip_path_and_extension,
+    strip_paths,
+)
 
 
 class DocumentIndexError(ValueError):
@@ -34,7 +41,7 @@ class DocumentIndex:
         )
 
     @property
-    def document_index(self):
+    def document_index(self) -> pd.DataFrame:
         return self._document_index
 
     def store(self, filename: str) -> "DocumentIndex":
@@ -43,9 +50,9 @@ class DocumentIndex:
 
     @staticmethod
     def load(
-        filename: Union[str, StringIO], *, sep: str = '\t', document_id_field: str = 'document_id'
+        filename: Union[str, StringIO], *, sep: str = '\t', document_id_field: str = 'document_id', **read_csv_kwargs
     ) -> "DocumentIndex":
-        _index = load_document_index(filename, sep=sep, document_id_field=document_id_field)
+        _index = load_document_index(filename, sep=sep, document_id_field=document_id_field, **read_csv_kwargs)
         return DocumentIndex(_index)
 
     @staticmethod
@@ -68,6 +75,7 @@ class DocumentIndex:
         self._document_index = consolidate_document_index(self._document_index, reader_index)
         return self
 
+    @deprecated
     def upgrade(self) -> "DocumentIndex":
         self._document_index = document_index_upgrade(self._document_index)
         return self
@@ -87,11 +95,18 @@ class DocumentIndex:
 
     def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndex":
         """Updates attributes for the specified document item"""
-        property_bag = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
-        for key in [k for k in property_bag if k not in self._document_index.columns]:
-            self._document_index.insert(len(self._document_index.columns), key, np.nan)
-        self._document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+        # property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
+        # for key in [k for k in property_bag if k not in self._document_index.columns]:
+        #     self._document_index.insert(len(self._document_index.columns), key, np.nan)
+        # self._document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+        update_document_index_properties(self._document_index, document_name=document_name, property_bag=property_bag)
         return self
+
+    def overload(self, df: pd.DataFrame, column_names: List[str]) -> pd.DataFrame:
+        return overload_by_document_index_properties(self._document_index, df=df, column_names=column_names)
+
+    def apply_filename_fields(self, filename_fields: FilenameFieldSpecs):
+        apply_filename_fields(self._document_index, filename_fields=filename_fields)
 
     def group_by_column(
         self,
@@ -225,10 +240,16 @@ def get_strictly_increasing_document_id(
     if is_strictly_increasing(document_index.index):
         return document_index.index
 
+    if document_index.index.dtype == np.dtype('int64'):
+        # Logic from deprecated document_index_upgrade() should never happen
+        raise ValueError("Integer index encountered that are not strictly increasing!")
+        # if 'document_id' not in document_index.columns:
+        #     document_index['document_id'] = document_index.index
+
     return document_index.reset_index().index
 
 
-def store_document_index(document_index: pd.DataFrame, filename: str):
+def store_document_index(document_index: pd.DataFrame, filename: str) -> None:
     """[summary]
 
     Args:
@@ -239,9 +260,14 @@ def store_document_index(document_index: pd.DataFrame, filename: str):
 
 
 def load_document_index(
-    filename: Union[str, StringIO], *, sep: str, document_id_field: str = 'document_id'
+    filename: Union[str, StringIO, pd.DataFrame],
+    *,
+    sep: str,
+    document_id_field: str = 'document_id',
+    filename_fields: FilenameFieldSpecs = None,
+    **read_csv_kwargs,
 ) -> pd.DataFrame:
-    """Loads a document index and sets `document_name` as index column. Also adds `document_id`"""
+    """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
 
     if filename is None:
         return None
@@ -249,7 +275,7 @@ def load_document_index(
     if isinstance(filename, pd.DataFrame):
         document_index = filename
     else:
-        document_index: pd.DataFrame = pd.read_csv(filename, sep=sep)
+        document_index: pd.DataFrame = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
         if old_or_unnamed_index_column in document_index.columns:
@@ -262,6 +288,26 @@ def load_document_index(
 
     if 'document_name' not in document_index.columns or (document_index.document_name == document_index.filename).all():
         document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
+
+    document_index = document_index.set_index('document_name', drop=False).rename_axis('')
+
+    if filename_fields is not None:
+        document_index = apply_filename_fields(document_index, filename_fields)
+
+    return document_index
+
+
+@deprecated
+def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
+    """Fixes older versions of document indexes"""
+
+    if 'document_name' not in document_index.columns:
+        document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
+
+    if document_index.index.dtype == np.dtype('int64'):
+
+        if 'document_id' not in document_index.columns:
+            document_index['document_id'] = document_index.index
 
     document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
@@ -279,12 +325,24 @@ def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str =
     return document_index
 
 
+def apply_filename_fields(document_index: pd.DataFrame, filename_fields: FilenameFieldSpecs):
+    """Extends document index with filename fields defined by `filename_fields`"""
+    if 'filename' not in document_index.columns:
+        raise DocumentIndexError("filename not in document index")
+    filenames = [strip_paths(filename) for filename in document_index.filename.tolist()]
+    metadata: List[Mapping[str, Any]] = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
+    for key, values in list_of_dicts_to_dict_of_lists(metadata).items():
+        if key not in document_index.columns:
+            document_index[key] = values
+    return document_index
+
+
 def load_document_index_from_str(data_str: str, sep: str, document_id_field: str = 'document_id') -> pd.DataFrame:
     df = load_document_index(StringIO(data_str), sep=sep, document_id_field=document_id_field)
     return df
 
 
-def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.DataFrame):
+def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.DataFrame) -> pd.DataFrame:
     """Returns a consolidated document index from an existing index, if exists,
     and the reader index."""
 
@@ -295,28 +353,6 @@ def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.Da
         return document_index
 
     return reader_index
-
-
-def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
-    """Fixes older versions of document indexes"""
-
-    if 'document_name' not in document_index.columns:
-        document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
-
-    if document_index.index.dtype == np.dtype('int64'):
-
-        if 'document_id' not in document_index.columns:
-            document_index['document_id'] = document_index.index
-
-    document_index = document_index.set_index('document_name', drop=False).rename_axis('')
-
-    return document_index
-
-
-def add_document_index_attributes(*, catalogue: pd.DataFrame, target: pd.DataFrame) -> pd.DataFrame:
-    """ Adds document meta data to given data frame (must have a document_id) """
-    df = target.merge(catalogue, how='inner', left_on='document_id', right_on='document_id')
-    return df
 
 
 def update_document_index_token_counts(
@@ -349,7 +385,12 @@ def update_document_index_token_counts(
     return document_index
 
 
-def update_document_index_properties(document_index, *, document_name: str, property_bag: Mapping[str, int]):
+def update_document_index_properties(
+    document_index: pd.DataFrame,
+    *,
+    document_name: str,
+    property_bag: Mapping[str, int],
+) -> None:
     """[summary]
 
     Args:
@@ -357,7 +398,51 @@ def update_document_index_properties(document_index, *, document_name: str, prop
         document_name (str): [description]
         property_bag (Mapping[str, int]): [description]
     """
-    property_bag = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
+    property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
     for key in [k for k in property_bag if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
     document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+
+
+def overload_by_document_index_properties(
+    document_index: pd.DataFrame, df: pd.DataFrame, column_names: List[str] = None
+) -> pd.DataFrame:
+    """Add document `columns` to `df` if columns not already exists.
+
+    Parameters
+    ----------
+    document_index : pd.DataFrame
+        Corpus document index, by default None
+    df : pd.DataFrame
+        Data of interest
+    columns : Union[str,List[str]]
+        Columns in `document_index` that should be added to `df`
+
+    Returns
+    -------
+    pd.DataFrame
+        `df` extended with `columns` data
+    """
+
+    if column_names is None:
+        column_names = document_index.columns.tolist()
+
+    if document_index is None:
+        return df
+
+    if 'document_id' not in df.columns:
+        return df
+
+    if isinstance(column_names, str):
+        column_names = [column_names]
+
+    column_names = ['document_id'] + [c for c in column_names if c not in df.columns and c in document_index.columns]
+
+    if len(column_names) == 1:
+        return df
+
+    overload_data = document_index[column_names].set_index('document_id')
+
+    df = df.merge(overload_data, how='inner', left_on='document_id', right_index=True)
+
+    return df
