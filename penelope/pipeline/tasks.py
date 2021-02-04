@@ -214,7 +214,8 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
             self.filename, options=self.options, reader_opts=self.extra_reader_opts
         )
         self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
-        self.pipeline.put("text_reader_opts", self.extra_reader_opts.props)
+        if self.extra_reader_opts:
+            self.pipeline.put("text_reader_opts", self.extra_reader_opts.props)
 
         self.instream = (payload for payload in self.checkpoint_data.payload_stream)
 

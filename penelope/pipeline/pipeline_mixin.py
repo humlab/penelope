@@ -31,10 +31,10 @@ class PipelineShortcutMixIn:
         return self.add(tasks.SaveTaggedCSV(filename=filename, options=options))
 
     def load_tagged_frame(
-        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts, extra_reader_opts: TextReaderOpts
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
-        return self.add(tasks.LoadTaggedCSV(filename=filename, options=options))
+        return self.add(tasks.LoadTaggedCSV(filename=filename, options=options, extra_reader_opts=extra_reader_opts))
 
     def load_tagged_xml(
         self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
