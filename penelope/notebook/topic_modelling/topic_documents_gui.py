@@ -84,12 +84,12 @@ class GUI:
 
 def get_topic_documents(
     document_topic_weights: pd.DataFrame,
+    document_index: pd.DataFrame,
     threshold: float = 0.0,
     n_top: int = 500,
     **filters,
 ) -> pd.DataFrame:
     topic_documents = filter_document_topic_weights(document_topic_weights, filters=filters, threshold=threshold)
-
     if len(topic_documents) == 0:
         return None
 
@@ -98,6 +98,10 @@ def get_topic_documents(
         .set_index('document_id')
         .sort_values('weight', ascending=False)
         .head(n_top)
+    )
+    additional_columns = [x for x in document_index.columns.tolist() if x not in ['year', 'document_name']]
+    topic_documents = topic_documents.merge(
+        document_index[additional_columns], left_index=True, right_on='document_id', how='inner'
     )
     topic_documents.index.name = 'id'
     return topic_documents
@@ -117,6 +121,7 @@ def display_gui(state: TopicModelContainer):
 
     topic_token_weights = state.inferred_topics.topic_token_weights
     document_topic_weights = state.inferred_topics.document_topic_weights
+    document_index = state.inferred_topics.document_index
 
     def display_callback(gui: GUI):
 
@@ -131,6 +136,7 @@ def display_gui(state: TopicModelContainer):
 
             topic_documents = get_topic_documents(
                 document_topic_weights=document_topic_weights,
+                document_index=document_index,
                 threshold=gui.threshold.value,
                 n_top=gui.n_top.value,
                 topic_id=gui.topic_id.value,
