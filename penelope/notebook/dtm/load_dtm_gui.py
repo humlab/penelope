@@ -82,7 +82,7 @@ class LoadGUI:
                         VBox([self._corpus_filename]),
                         VBox([self._alert, self._load_button]),
                     ]
-                ),
+                )
                 # view,
             ]
         )

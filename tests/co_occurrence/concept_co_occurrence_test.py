@@ -1,13 +1,8 @@
 import os
 
 import pytest
-from penelope.co_occurrence import (
-    ContextOpts,
-    corpus_co_occurrence,
-    partitioned_corpus_co_occurrence,
-    store_co_occurrences,
-)
-from penelope.co_occurrence.convert import Bundle, store_bundle, to_co_occurrence_matrix, to_vectorized_corpus
+from penelope.co_occurrence import ContextOpts, corpus_co_occurrence, partitioned_corpus_co_occurrence
+from penelope.co_occurrence.convert import Bundle, store_bundle, to_vectorized_corpus
 from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from penelope.pipeline.interfaces import PipelinePayload

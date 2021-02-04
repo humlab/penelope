@@ -1,4 +1,3 @@
-import pytest
 from penelope.notebook.dtm import LoadGUI, create_load_gui
 
 
@@ -6,23 +5,20 @@ def dummy_callback(*_, **__):
     pass
 
 
-@pytest.mark.skip('')
-def test_gui_create():
-    assert (
-        LoadGUI(default_corpus_folder='./tests/test_data', filename_pattern='*.*', load_callback=None).layout()
-        is not None
-    )
-
-
-@pytest.mark.skip('')
 def test_gui_setup():
-    assert (
-        LoadGUI(default_corpus_folder='./tests/test_data', filename_pattern='*.*', load_callback=None).setup()
-        is not None
+    gui = LoadGUI(
+        default_corpus_folder='./tests/test_data', filename_pattern='*.*', load_callback=None, done_callback=None
     )
+    assert gui.setup() is not None
 
 
-@pytest.mark.skip('')
+def test_gui_layout():
+    gui = LoadGUI(
+        default_corpus_folder='./tests/test_data', filename_pattern='*.*', load_callback=None, done_callback=None
+    )
+    assert gui.setup().layout() is not None
+
+
 def test_create_gui():
 
     gui = create_load_gui(

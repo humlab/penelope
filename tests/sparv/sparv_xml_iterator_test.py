@@ -1,4 +1,5 @@
 import penelope.corpus.readers as readers
+import pytest
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
@@ -163,6 +164,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
         assert expected_names[i] == filename
 
 
+@pytest.mark.skip('Long running')
 def test_reader_when_source_is_sparv3_succeeds():
 
     sparv_zipped_xml_export_v3_filename = './tests/test_data/sou_test_sparv3_xml.zip'

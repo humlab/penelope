@@ -2,6 +2,7 @@ import io
 
 import pandas as pd
 import penelope.corpus.sparv.sparv_xml_to_csv as sparv
+import pytest
 from penelope.corpus import TextReaderOpts
 from penelope.corpus.readers import tng
 
@@ -38,6 +39,7 @@ def test_extract_to_tsv():
     assert result == '\r'.join(expected) + '\r'
 
 
+@pytest.mark.skip('Long running')
 def test_xml_to_csv_corpus_reader():
 
     source_path = './tests/test_data/sou_test_sparv3_xml.zip'

@@ -3,6 +3,7 @@ import uuid
 
 import penelope.corpus.sparv_corpus as sparv_corpus
 import penelope.utility.zip_utils as zip_utils
+import pytest
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from tests.utils import OUTPUT_FOLDER
@@ -42,6 +43,7 @@ def test_reader_store_result():
     os.remove(target_filename)
 
 
+@pytest.mark.skip('Long running')
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
