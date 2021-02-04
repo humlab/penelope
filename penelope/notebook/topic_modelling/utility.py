@@ -5,6 +5,8 @@ import penelope.utility as utility
 
 logger = utility.getLogger('corpus_text_analysis')
 
+pd.options.mode.chained_assignment = None
+
 
 def filter_by_key_value(df: pd.DataFrame, filters: Dict[str, Any] = None) -> pd.DataFrame:
     """Returns filtered dataframe based custom key/value equality filters`.
