@@ -15,4 +15,5 @@ from .topic_trends_gui import display_gui as display_topic_trends_gui
 from .topic_trends_overview_gui import display_gui as display_topic_trends_overview_gui
 from .topic_word_distribution_gui import display_gui as display_topic_word_distribution_gui
 from .topic_wordcloud_gui import display_gui as display_topic_wordcloud_gui
+from .topics_token_network_gui import create_gui as create_topics_token_network_gui
 from .utility import filter_by_key_value, filter_document_topic_weights, reduce_topic_tokens_overview

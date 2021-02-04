@@ -506,6 +506,24 @@ pandas = "*"
 simplejson = ">=3.13.2"
 
 [[package]]
+name = "ipycytoscape"
+version = "1.1.0"
+description = "Python implementation of the graph visualization tool Cytoscape."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ipywidgets = ">=7.0.0"
+networkx = "*"
+spectate = ">=0.4.1"
+
+[package.extras]
+docs = ["sphinx", "sphinx-rtd-theme", "sphinx-autobuild (>=2020.9.1)", "jupyter-sphinx (>=0.3.1)", "sphinx-copybutton", "nbsphinx", "nbsphinx-link", "networkx", "pandas"]
+examples = ["pandas"]
+test = ["pytest (>4.6)", "pytest-cov", "nbval", "pandas"]
+
+[[package]]
 name = "ipyfilechooser"
 version = "0.4.0"
 description = "Python file chooser widget for use in Jupyter/IPython in conjunction with ipywidgets"
@@ -1801,6 +1819,14 @@ lookups = ["spacy-lookups-data (>=0.3.2,<0.4.0)"]
 th = ["pythainlp (>=2.0)"]
 
 [[package]]
+name = "spectate"
+version = "1.0.0"
+description = "Track changes to mutable data types."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "srsly"
 version = "1.0.4"
 description = "Modern high-performance serialization utilities for Python"
@@ -2085,7 +2111,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "==3.*,>=3.8.0"
-content-hash = "43c323e391de61df3c18f4089ca7b29107dc24b156ebbb6e21acf1c996263760"
+content-hash = "440740062d6115624c981f57fe28c9cf002affe8603409f935b55ff623d9826b"
 
 [metadata.files]
 alive-progress = [
@@ -2427,6 +2453,10 @@ iniconfig = [
 ipyaggrid = [
     {file = "ipyaggrid-0.2.1-py2.py3-none-any.whl", hash = "sha256:3b10762f82615de17de0261c2090c8081f82826affcdd6f8d877f78f111f3ad2"},
     {file = "ipyaggrid-0.2.1.tar.gz", hash = "sha256:8919f6ad97f0d02a7d89a912f99d7c0153eafa5181f385c63767c2a56d9ec01c"},
+]
+ipycytoscape = [
+    {file = "ipycytoscape-1.1.0-py2.py3-none-any.whl", hash = "sha256:79efd7ab83d9619cd4ef64302fa8e0c1e792472b3d803a1e38b76854f3f92db4"},
+    {file = "ipycytoscape-1.1.0.tar.gz", hash = "sha256:6c94c95abb5c0d0128445f5bde10c5bc1604207eb80ac87d08dcbe660ce8d0bb"},
 ]
 ipyfilechooser = [
     {file = "ipyfilechooser-0.4.0-py3-none-any.whl", hash = "sha256:6f47a9c26cad6bcab62eda307619f87ccbda52cbd728ab12cdedceaa672654a6"},
@@ -3273,6 +3303,10 @@ spacy = [
     {file = "spacy-2.3.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:3bafcc134c340c5d7556612344d2844522d452b99a21f2b0a9b640f6c55f1110"},
     {file = "spacy-2.3.2-cp38-cp38-win_amd64.whl", hash = "sha256:4944a1118f6dbb49201749d72527b749f74032e1026ddf387bc3a7e172ff0300"},
     {file = "spacy-2.3.2.tar.gz", hash = "sha256:818de26e0e383f64ccbe3db185574920de05923d8deac8bbb12113b9e33cee1f"},
+]
+spectate = [
+    {file = "spectate-1.0.0-py2.py3-none-any.whl", hash = "sha256:f715f7b184c94df6c8de5031ffb8f3eb5685ebad2f62bc1b11af408b3856e35e"},
+    {file = "spectate-1.0.0.tar.gz", hash = "sha256:a7eb2d4d5c2d64cd8b9614f8590a5d1816be88f6e3572963e9f02f7c43502709"},
 ]
 srsly = [
     {file = "srsly-1.0.4-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:39a8bd6b383b4ea5c3a6793d790e1356e236701f421badef278a0ea80bc95d30"},
