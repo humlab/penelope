@@ -7,6 +7,7 @@ from penelope.co_occurrence import (
     partitioned_corpus_co_occurrence,
     store_co_occurrences,
 )
+from penelope.co_occurrence.convert import Bundle, store_bundle, to_co_occurrence_matrix, to_vectorized_corpus
 from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from penelope.pipeline.interfaces import PipelinePayload
@@ -122,8 +123,20 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         partition_column='year',
     )
 
-    store_co_occurrences(expected_filename, compute_result.co_occurrences)
+    dtm_corpus = to_vectorized_corpus(compute_result.co_occurrences, compute_result.document_index)
+
+    bundle: Bundle = Bundle(
+        co_occurrences=compute_result.co_occurrences,
+        document_index=compute_result.document_index,
+        co_occurrences_filename=expected_filename,
+        compute_options={},
+        corpus=dtm_corpus,
+        corpus_folder='./tests/output',
+        corpus_tag='partitioned_concept_co_occurrences_data',
+    )
+
+    store_bundle(expected_filename, bundle)
 
     assert os.path.isfile(expected_filename)
 
-    os.remove(expected_filename)
+    # os.remove(expected_filename)
