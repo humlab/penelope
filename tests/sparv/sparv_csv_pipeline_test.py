@@ -65,12 +65,3 @@ def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
     assert all([x.content_type == pipeline.ContentType.TOKENS for x in payloads])
     assert all([isinstance(x.content, list) for x in payloads])
     assert len(payloads) == 3
-
-    # p = pipeline.CorpusPipeline(config=corpus_config).load_tagged_frame(
-    #     corpus_config.pipeline_payload.source,
-    #     options=corpus_config.content_deserialize_opts,
-    # )
-    # payloads = [p for p in p.resolve()]
-    # assert [ x.document_name for x in payloads] == ['prot_197677__26', 'prot_197677__27', 'prot_197677__25']
-    # assert all([ x.content_type == pipeline.ContentType.TAGGEDFRAME for x in payloads])
-    # assert all([ isinstance(x.content, pd.DataFrame) for x in payloads])
