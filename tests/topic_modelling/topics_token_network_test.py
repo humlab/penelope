@@ -73,8 +73,7 @@ def test_create_network(inferred_topics_data: InferredTopicsData):
     model.update(inferred_topics_data)
     topics_tokens = model.get_topics_tokens(topics_ids, n_top_count)
 
-    opts = types.SimpleNamespace(network_layout="cola")
-    w = ttn_gui.create_network(topics_tokens, opts)
+    w = ttn_gui.create_network(topics_tokens)
 
     assert w is not None
 
@@ -87,8 +86,7 @@ def test_create_network2():
 
     topics_tokens_str = ';topic;token;weight;topic_id;position\n0;Topic #0;och;0.04476533457636833;0;1\n1;Topic #0;valv;0.02178177796304226;0;2\n2;Topic #0;i;0.02060970477759838;0;3\n3;Topic #1;och;0.02447959966957569;1;1\n4;Topic #1;som;0.02074943669140339;1;2\n5;Topic #1;av;0.020712170749902725;1;3\n6;Topic #2;som;0.02533087506890297;2;1\n7;Topic #2;en;0.023466676473617557;2;2\n8;Topic #2;är;0.022432737052440643;2;3\n9;Topic #3;de;0.02712307684123516;3;1\n10;Topic #3;är;0.023767853155732155;3;2\n11;Topic #3;i;0.019748181104660038;3;3\n'
     topics_tokens = pd.read_csv(io.StringIO(topics_tokens_str), sep=';', index_col=0)
-    opts = types.SimpleNamespace(network_layout="cola")
-    network = ttn_gui.create_network(topics_tokens, opts)
+    network = ttn_gui.create_network(topics_tokens)
     assert network is not None
     source_network_data = ttn_gui.to_dict(topics_tokens=topics_tokens)
     w = ipycytoscape.CytoscapeWidget(cytoscape_layout={'name': 'euler'})

@@ -9,20 +9,31 @@ import pandas as pd
 from IPython.display import display
 from penelope import topic_modelling
 from penelope.notebook.ipyaggrid_utility import display_grid
+from penelope.plot import get_color_palette
 from penelope.utility.filename_fields import FilenameFieldSpecs
-
-from .utility import get_color_palette
 
 view = widgets.Output()
 
-# TODO: #125 Add topic - token network feature
 
-
-DEFAULT_LAYOUT_ARGUMENTS = {'cola': {'maxSimulationTime': 16000}}
+DEFAULT_LAYOUT_ARGUMENTS = {
+    'cola': {'maxSimulationTime': 60000},
+    'springy': {'stiffness': 400, 'repulsion': 400, 'damping': 0.5},
+    'ngraph.forcelayout': {
+        'springLength': 100,
+        'springCoeff': 0.0008,
+        'gravity': -1.2,
+        'theta': 0.8,
+        'dragCoeff': 0.02,
+        'timeStep': 20,
+        'iterations': 10000,
+        'fit': True,
+        'stableThreshold': 0.000009,
+    },
+}
 MAX_TOPIC_TOKEN_COUNT = 500
 
 
-def css_styles(topic_ids: List[int]) -> dict:
+def css_styles(topic_ids: List[int], curve_style: str = 'unbundled-bezier') -> dict:
     styles = [
         {
             'selector': 'node[node_type = "topic"]',
@@ -57,7 +68,7 @@ def css_styles(topic_ids: List[int]) -> dict:
             'selector': 'edge',
             'style': {
                 'width': 2,
-                'curve-style': 'unbundled-bezier',
+                'curve-style': curve_style,
                 'z-index': 0,
                 'overlay-opacity': 0,
             },
@@ -123,21 +134,12 @@ def to_dict(topics_tokens: pd.DataFrame) -> dict:
     return source_network_data
 
 
-def create_network(topics_tokens: pd.DataFrame, opts: "GUI") -> ipycytoscape.CytoscapeWidget:
+def create_network(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
     source_network_data = to_dict(topics_tokens=topics_tokens)
     w = ipycytoscape.CytoscapeWidget(layout={'height': '800px'})
     w.min_zoom = 0.2
     w.max_zoom = 1.5
     w.graph.add_graph_from_json(source_network_data)
-    w.set_layout(
-        name=opts.network_layout,
-        **DEFAULT_LAYOUT_ARGUMENTS.get(opts.network_layout, {})
-        # nodeSpacing=opts.node_spacing,
-        # edgeLengthVal=opts.edge_length_val,
-        # padding=opts.padding
-        # animate=Faöse
-    )
-    w.set_style(css_styles(topics_tokens.topic_id.unique()))
     return w
 
 
@@ -202,8 +204,11 @@ def default_displayer(opts: "GUI") -> None:
     topics_tokens = opts.model.get_topics_tokens(opts.topics_ids, opts.top_count)
 
     if opts.output_format == "network":
-        network = create_network(topics_tokens, opts)
+        network = create_network(topics_tokens)
         opts.network = network
+        opts.set_layout()
+        style = css_styles(topics_tokens.topic_id.unique(), opts.curve_style)
+        network.set_style(style)
         display(network)
         return
 
@@ -250,7 +255,9 @@ class GUI:
             'klay',
             'circle',
             'concentric',
-            'cise',
+            # 'cise',
+            # 'springy',
+            # 'ngraph.forcelayout',
             # 'cose-bilkent', 'cose', 'euler', 'fcose', 'spread', 'elk', 'stress', 'force', 'avsdf',
         ],
         value='cola',
@@ -261,6 +268,16 @@ class GUI:
     )
     _relayout = widgets.Button(
         description="Continue", button_style='Info', layout=widgets.Layout(width='115px', background_color='blue')
+    )
+    _animate: widgets.Checkbox = widgets.Checkbox(description='Animate', value=False)
+    _curve_style = widgets.Dropdown(
+        description='',
+        options=[
+            'haystack',
+            'unbundled-bezier',
+        ],
+        value='haystack',
+        layout={'width': '115px'},
     )
     model: ViewModel = None
 
@@ -296,15 +313,20 @@ class GUI:
         if self.network:
             self.network.relayout()
 
+    def set_layout(self):
+        if not self.network:
+            return
+        self.network.set_layout(
+            name=self.network_layout,
+            animate=self.animate,
+            **DEFAULT_LAYOUT_ARGUMENTS.get(self.network_layout, {}),
+            # nodeSpacing=self.node_spacing,
+            # edgeLengthVal=self.edge_length_val,
+            # padding=self.padding
+        )
+
     def _layout_handler(self, *_):
-        if self.network:
-            self.network.set_layout(
-                name=self.network_layout,
-                **DEFAULT_LAYOUT_ARGUMENTS.get(self.network_layout, {}),
-                # nodeSpacing=self.node_spacing,
-                # edgeLengthVal=self.edge_length_val,
-                # padding=self.padding
-            )
+        self.set_layout()
 
     def lock(self, value: bool = True) -> None:
         self._source_folder.disabled = value
@@ -366,6 +388,8 @@ class GUI:
                         widgets.VBox(
                             [
                                 self._label,
+                                self._animate,
+                                self._curve_style,
                                 # elf._node_spacing,
                                 # self._edge_length_val,
                                 # self._padding,
@@ -396,6 +420,14 @@ class GUI:
     @property
     def network_layout(self) -> List[int]:
         return self._network_layout.value
+
+    @property
+    def curve_style(self) -> str:
+        return self._curve_style.value
+
+    @property
+    def animate(self) -> bool:
+        return self._animate.value
 
     # @property
     # def node_spacing(self) -> int:
