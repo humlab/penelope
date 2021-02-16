@@ -16,7 +16,7 @@ view = widgets.Output()
 
 
 DEFAULT_LAYOUT_ARGUMENTS = {
-    'cola': {'maxSimulationTime': 60000},
+    'cola': {'maxSimulationTime': 20000},
     'springy': {'stiffness': 400, 'repulsion': 400, 'damping': 0.5},
     'ngraph.forcelayout': {
         'springLength': 100,
@@ -32,47 +32,52 @@ DEFAULT_LAYOUT_ARGUMENTS = {
 }
 MAX_TOPIC_TOKEN_COUNT = 500
 
+DEFAULT_TOPIC_NODE_STYLE = {
+    'content': 'data(id)',
+    'text-valign': 'center',
+}
 
-def css_styles(topic_ids: List[int], curve_style: str = 'unbundled-bezier') -> dict:
+DEFAULT_TOKEN_NODE_STYLE = {
+    'content': 'data(label)',
+    'width': 1,
+    'height': 1,
+    'opacity': 1,  # default 0.8, perf.
+    'font-size': 9,
+    'font-weight': 'bold',
+    'min-zoomed-font-size': 5,  # default 5, higher value gives better performance
+    'text-wrap': 'wrap',
+    'text-max-width': 50,
+    'text-valign': 'center',
+    'text-halign': 'center',
+    'text-events': 'no',  # default yes
+    'color': 'black',
+    'text-outline-width': 1,  # default 1
+    'text-outline-color': '#fff',
+    'text-outline-opacity': 1,
+    'overlay-color': '#fff',
+}
+
+DEFAULT_EDGE_STYLE = {
+    'width': 2,
+    'curve-style': 'unbundled-bezier',
+    'z-index': 0,
+    'overlay-opacity': 0,
+}
+
+
+def css_styles(topic_ids: List[int], custom_styles: dict) -> dict:
+
+    custom_styles = custom_styles or {}
     styles = [
         {
             'selector': 'node[node_type = "topic"]',
-            'css': {
-                'content': 'data(id)',
-                'text-valign': 'center',
-            },
+            'css': {**DEFAULT_TOPIC_NODE_STYLE, **custom_styles.get('topic_nodes', {})},
         },
         {
             'selector': 'node[node_type = "token"]',
-            'css': {
-                'content': 'data(label)',
-                'width': 1,
-                'height': 1,
-                'opacity': 0.8,
-                'font-size': 9,
-                'font-weight': 'bold',
-                'min-zoomed-font-size': 4,
-                'text-wrap': 'wrap',
-                'text-max-width': 50,
-                'text-valign': 'center',
-                'text-halign': 'center',
-                'text-events': 'yes',
-                'color': 'black',
-                'text-outline-width': 1,
-                'text-outline-color': '#fff',
-                'text-outline-opacity': 1,
-                'overlay-color': '#fff',
-            },
+            'css': {**DEFAULT_TOKEN_NODE_STYLE, **custom_styles.get('token_nodes', {})},
         },
-        {
-            'selector': 'edge',
-            'style': {
-                'width': 2,
-                'curve-style': curve_style,
-                'z-index': 0,
-                'overlay-opacity': 0,
-            },
-        },
+        {'selector': 'edge', 'style': {**DEFAULT_EDGE_STYLE, **custom_styles.get('edges', {})}},
     ]
 
     colors = get_color_palette()
@@ -135,12 +140,126 @@ def to_dict(topics_tokens: pd.DataFrame) -> dict:
 
 
 def create_network(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
+
+    unique_topics = topics_tokens.groupby(['topic', 'topic_id']).size().reset_index()[['topic', 'topic_id']]
+    unique_tokens = topics_tokens.groupby('token')['topic_id'].apply(list)
+    topic_nodes = [
+        ipycytoscape.Node(
+            data={
+                "id": node['topic'],
+                "label": node['topic'],
+                "node_type": "topic",
+                "topic_id": str(node['topic_id']),
+            }
+        )
+        for node in unique_topics.to_dict('records')
+    ]
+    token_nodes = [
+        ipycytoscape.Node(
+            data={
+                "id": w,
+                "label": w,
+                "node_type": "token",
+                "topic_id": str(unique_tokens[w][0]) if len(unique_tokens[w]) == 1 else "",
+            }
+        )
+        for w in unique_tokens.index
+    ]
+    edges = [
+        ipycytoscape.Edge(
+            data={
+                "id": f"{edge['topic_id']}_{edge['token']}",
+                "source": edge['topic'],
+                "target": edge['token'],
+                "weight": 10.0 * edge['weight'],
+                "topic_id": str(edge['topic_id']),
+            }
+        )
+        for edge in topics_tokens[['topic', 'token', 'topic_id', 'weight']].to_dict('records')
+    ]
+    w = ipycytoscape.CytoscapeWidget(
+        layout={'height': '800px'},
+        pixelRatio=1.0,
+    )
+    w.graph.add_nodes(topic_nodes)
+    w.graph.add_nodes(token_nodes)
+    w.graph.add_edges(edges)
+    return w
+
+
+def create_network2(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
     source_network_data = to_dict(topics_tokens=topics_tokens)
-    w = ipycytoscape.CytoscapeWidget(layout={'height': '800px'})
+    w = ipycytoscape.CytoscapeWidget(
+        layout={'height': '800px'},
+        pixelRatio=1.0,
+    )
     w.min_zoom = 0.2
     w.max_zoom = 1.5
     w.graph.add_graph_from_json(source_network_data)
     return w
+
+
+def create_network3(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
+    source_network_data = to_dict(topics_tokens=topics_tokens)
+    w = ipycytoscape.CytoscapeWidget(
+        layout={'height': '800px'},
+        pixelRatio=1.0,
+    )
+    w.min_zoom = 0.2
+    w.max_zoom = 1.5
+    w.graph.add_graph_from_json(source_network_data)
+    return w
+
+
+import networkx as nx
+
+
+def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
+
+    unique_topics = topics_tokens.groupby(['topic', 'topic_id']).size().reset_index()[['topic', 'topic_id']]
+    unique_tokens = topics_tokens.groupby('token')['topic_id'].apply(list)
+
+    topic_nodes = [
+        (
+            node['topic'],
+            {
+                "id": node['topic'],
+                "label": node['topic'],
+                "node_type": "topic",
+                "topic_id": str(node['topic_id']),
+            },
+        )
+        for node in unique_topics.to_dict('records')
+    ]
+    token_nodes = [
+        (
+            w,
+            {
+                "id": w,
+                "label": w,
+                "node_type": "token",
+                "topic_id": str(unique_tokens[w][0]) if len(unique_tokens[w]) == 1 else "",
+            },
+        )
+        for w in unique_tokens.index
+    ]
+    edges = [
+        (
+            edge['topic'],
+            edge['token'],
+            {
+                "id": f"{edge['topic_id']}_{edge['token']}",
+                "weight": 10.0 * edge['weight'],
+                "topic_id": str(edge['topic_id']),
+            },
+        )
+        for edge in topics_tokens[['topic', 'token', 'topic_id', 'weight']].to_dict('records')
+    ]
+    g: nx.Graph = nx.Graph()
+    g.add_nodes_from(topic_nodes)
+    g.add_nodes_from(token_nodes)
+    g.add_edges_from(edges)
+    return g
 
 
 @dataclass
@@ -169,9 +288,11 @@ class ViewModel:
         return self
 
     def get_topics_tokens(self, topic_ids: List[int], top_count: int) -> pd.DataFrame:
-        topics_tokens = self.top_topic_tokens[
-            (self.top_topic_tokens.index.isin(topic_ids) & (self.top_topic_tokens.position <= top_count))
+        topics_tokens: pd.DataFrame = self._top_topic_tokens
+        topics_tokens = topics_tokens[
+            (topics_tokens.index.isin(topic_ids) & (topics_tokens.position <= top_count))
         ].reset_index()
+
         topics_tokens['topic'] = topics_tokens.topic_id.apply(lambda x: f"Topic #{x}")
         return topics_tokens[['topic', 'token', 'weight', 'topic_id', 'position']]
 
@@ -191,6 +312,8 @@ def find_inferred_models(folder: str) -> List[str]:
 
 @view.capture(clear_output=False)
 def default_loader(folder: str, filename_fields: Any = None) -> topic_modelling.InferredTopicsData:
+    if folder is None:
+        return None
     data = topic_modelling.InferredTopicsData.load(folder=folder, filename_fields=filename_fields)
     return data
 
@@ -207,8 +330,8 @@ def default_displayer(opts: "GUI") -> None:
         network = create_network(topics_tokens)
         opts.network = network
         opts.set_layout()
-        style = css_styles(topics_tokens.topic_id.unique(), opts.curve_style)
-        network.set_style(style)
+        css_style = css_styles(topics_tokens.topic_id.unique(), opts.custom_styles)
+        network.set_style(css_style)
         display(network)
         return
 
@@ -228,10 +351,11 @@ def default_displayer(opts: "GUI") -> None:
 class GUI:
 
     network: ipycytoscape.CytoscapeWidget = None
+    model: ViewModel = None
 
     _source_folder: widgets.Dropdown = widgets.Dropdown(layout={'width': '200px'})
     _topic_ids: widgets.SelectMultiple = widgets.SelectMultiple(
-        description="", options=[], value=[], rows=8, layout={'width': '100px'}
+        description="", options=[], value=[], rows=9, layout={'width': '100px'}
     )
     _top_count: widgets.IntSlider = widgets.IntSlider(
         description='', min=3, max=200, value=50, layout={'width': '200px'}
@@ -269,20 +393,26 @@ class GUI:
     _relayout = widgets.Button(
         description="Continue", button_style='Info', layout=widgets.Layout(width='115px', background_color='blue')
     )
-    _animate: widgets.Checkbox = widgets.Checkbox(description='Animate', value=False)
+    _animate: widgets.Checkbox = widgets.ToggleButton(
+        description="Animate",
+        icon='check',
+        value=True,
+        layout={'width': '115px'},
+    )
     _curve_style = widgets.Dropdown(
         description='',
         options=[
-            'haystack',
-            'unbundled-bezier',
+            ('Straight line', 'haystack'),
+            ('Curve, Bezier', 'bezier'),
+            ('Curve, Bezier*', 'unbundled-bezier'),
         ],
         value='haystack',
         layout={'width': '115px'},
     )
-    model: ViewModel = None
 
     loader: Callable[[str], topic_modelling.InferredTopicsData] = None
     displayer: Callable[["GUI"], None] = None
+    _custom_styles: dict = None
 
     @view.capture(clear_output=False)
     def _displayer(self, *_):
@@ -292,15 +422,27 @@ class GUI:
         self.displayer(self)
         self.alert('')
 
+    _buzy: bool = field(init=False, default=False)
+
     @view.capture(clear_output=False)
     def _load_handler(self, *_):
 
         if self.loader is None:
             return
 
-        self.alert('Loading...')
+        if self.source_folder is None:
+            return
+
+        if self._buzy:
+            return
+
+        self.alert('<b>Loading</b>...')
         self.lock(True)
-        self.model.update(data=self.loader(self._source_folder.value, filename_fields=self.model.filename_fields))
+
+        data = self.loader(self.source_folder, filename_fields=self.model.filename_fields)
+
+        self.model.update(data=data)
+
         self._topic_ids.value = []
         self._topic_ids.options = [("Topic #" + str(i), i) for i in range(0, self.model.num_topics)]
 
@@ -314,6 +456,7 @@ class GUI:
             self.network.relayout()
 
     def set_layout(self):
+        self.alert("Layout: " + self.network_layout)
         if not self.network:
             return
         self.network.set_layout(
@@ -329,29 +472,39 @@ class GUI:
         self.set_layout()
 
     def lock(self, value: bool = True) -> None:
+        self._buzy = not value
+
         self._source_folder.disabled = value
         self._topic_ids.disabled = value
         self._button.disabled = value
-        if value:
-            self._source_folder.unobserve(self._load_handler, names='value')
-        else:
-            self._source_folder.observe(self._load_handler, names='value')
+        self._relayout.disabled = value
+        self._curve_style.disabled = value
+        self._top_count.disabled = value
+        self._output_format.disabled = value
+        self._network_layout.disabled = value
+        self._animate.disabled = value
 
     def alert(self, msg: str = '&nbsp;') -> None:
         self._label.value = msg or '&nbsp;'
+
+    def _toggle_state_changed(self, event):
+        event['owner'].icon = 'check' if event['new'] else ''
 
     def setup(
         self,
         folders: str,
         loader: Callable[[str], topic_modelling.InferredTopicsData],
         displayer: Callable[["GUI"], None],
+        custom_styles: dict = None,
     ) -> "GUI":
         self.loader = loader
         self.displayer = displayer
+        self._custom_styles = custom_styles
         self._source_folder.options = {os.path.split(folder)[1]: folder for folder in folders}
         self._source_folder.value = None
         self._source_folder.observe(self._load_handler, names='value')
         self._network_layout.observe(self._layout_handler, names='value')
+        self._animate.observe(self._toggle_state_changed, 'value')
         self._relayout.on_click(self._relayout_handler)
         self._button.on_click(self._displayer)
         return self
@@ -381,20 +534,24 @@ class GUI:
                             [
                                 widgets.HTML("<b>Layout</b>"),
                                 self._network_layout,
-                                self._relayout,
-                                self._button,
+                                widgets.HTML("<b>Curve style</b>"),
+                                self._curve_style,
+                                self._animate,
                             ]
                         ),
                         widgets.VBox(
                             [
                                 self._label,
-                                self._animate,
-                                self._curve_style,
+                                widgets.HTML("&nbsp;"),
+                                widgets.HTML("&nbsp;"),
+                                self._relayout,
+                                self._button,
                                 # elf._node_spacing,
                                 # self._edge_length_val,
                                 # self._padding,
                             ]
                         ),
+                        widgets.VBox([]),
                     ]
                 ),
                 view,
@@ -429,6 +586,14 @@ class GUI:
     def animate(self) -> bool:
         return self._animate.value
 
+    @property
+    def custom_styles(self):
+        style = self._custom_styles or {}
+        if style.get('edges', None) is None:
+            style['edges'] = {}
+        style['edges']['curve-style'] = self.curve_style
+        return style
+
     # @property
     # def node_spacing(self) -> int:
     #     return self._node_spacing.value
@@ -442,10 +607,11 @@ class GUI:
     #     return self._padding.value
 
 
-def create_gui(data_folder: str):
+def create_gui(data_folder: str, custom_styles: dict = None):
     gui = GUI(model=ViewModel(filename_fields=['year:_:1', 'sequence_id:_:2'])).setup(
         folders=find_inferred_models(data_folder),
         loader=default_loader,
         displayer=default_displayer,
+        custom_styles=custom_styles,
     )
     return gui
