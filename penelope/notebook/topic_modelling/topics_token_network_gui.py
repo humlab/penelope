@@ -5,6 +5,7 @@ from typing import Any, Callable, List
 
 import ipycytoscape
 import ipywidgets as widgets
+import networkx as nx
 import pandas as pd
 from IPython.display import display
 from penelope import topic_modelling
@@ -211,7 +212,6 @@ def create_network3(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget
     return w
 
 
-import networkx as nx
 
 
 def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
