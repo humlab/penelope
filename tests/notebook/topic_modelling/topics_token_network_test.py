@@ -206,4 +206,5 @@ def test_create_network_5():
 
     g = ttn_gui.create_networkx(topic_tokens)
 
+    assert g is not None
     assert w is not None

@@ -212,8 +212,6 @@ def create_network3(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget
     return w
 
 
-
-
 def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
 
     unique_topics = topics_tokens.groupby(['topic', 'topic_id']).size().reset_index()[['topic', 'topic_id']]
