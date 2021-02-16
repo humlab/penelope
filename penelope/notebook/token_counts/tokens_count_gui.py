@@ -134,7 +134,7 @@ class TokenCountsGUI:
         self._normalize.observe(self._plot_counts, names='value')
         self._smooth.observe(self._plot_counts, names='value')
         self._grouping.observe(self._plot_counts, names='value')
-        self._corpus_configs.observe(self.display, names='value')
+        self._corpus_configs.observe(self._display, names='value')
 
         return self
 
