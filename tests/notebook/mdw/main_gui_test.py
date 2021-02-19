@@ -1,4 +1,3 @@
-
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -11,11 +10,13 @@ from tests.utils import TEST_DATA_FOLDER
 def monkey_patch(*_, **__):
     ...
 
+
 def test_create_main_gui():
 
     gui = main_gui.create_main_gui(corpus_folder=TEST_DATA_FOLDER, loaded_callback=monkey_patch)
 
     assert isinstance(gui, VBox)
+
 
 @patch('IPython.display.display', monkey_patch)
 @patch('penelope.notebook.ipyaggrid_utility.display_grid', monkey_patch)
