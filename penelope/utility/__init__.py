@@ -128,5 +128,6 @@ from .utils import (
     trunc_year_by,
     tuple_of_lists_to_list_of_tuples,
     uniquify,
+    multiple_replace,
 )
 from .zip_utils import compress, namelist, read, read_iterator, store
