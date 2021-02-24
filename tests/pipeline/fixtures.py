@@ -75,7 +75,7 @@ def FakeComputeOptsSpacyCSV(
 def FakeComputeOptsSparvCSV(
     *,
     corpus_tag: str = 'TELLUS',
-    corpus_filename: str = './tests/test_data/tranströmer_corpus_export.csv.zip',
+    corpus_filename: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
 
     return ComputeOpts(
