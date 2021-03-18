@@ -6,7 +6,7 @@ from typing import Mapping, Tuple, Union
 import pandas as pd
 import scipy
 from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.document_index import DocumentIndex
+from penelope.corpus.document_index import DocumentIndexHelper
 from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
 from penelope.notebook.word_trends import TrendsData
 from penelope.utility import getLogger, read_json, replace_extension, right_chop, strip_path_and_extension
@@ -209,7 +209,7 @@ def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
             bundle.corpus_tag = strip_path_and_extension(output_filename)
         bundle.corpus_folder = os.path.split(output_filename)[0]
         bundle.corpus.dump(tag=bundle.corpus_tag, folder=bundle.corpus_folder)
-        DocumentIndex(bundle.document_index).store(
+        DocumentIndexHelper(bundle.document_index).store(
             os.path.join(bundle.corpus_folder, f"{bundle.corpus_tag}_document_index.csv")
         )
 
@@ -222,7 +222,7 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
 
     corpus_folder, corpus_tag = filename_to_folder_and_tag(co_occurrences_filename)
     co_occurrences = load_co_occurrences(co_occurrences_filename)
-    document_index = DocumentIndex.load(os.path.join(corpus_folder, f"{corpus_tag}_document_index.csv")).document_index
+    document_index = DocumentIndexHelper.load(os.path.join(corpus_folder, f"{corpus_tag}_document_index.csv")).document_index
     corpus = (
         VectorizedCorpus.load(folder=corpus_folder, tag=corpus_tag)
         if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)

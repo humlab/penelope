@@ -8,7 +8,7 @@ import gensim
 import pandas as pd
 import scipy
 from penelope import utility
-from penelope.corpus import DocumentIndex, load_document_index
+from penelope.corpus import DocumentIndexHelper, load_document_index
 from penelope.utility import file_utility, filename_utils
 from penelope.utility.filename_fields import FilenameFieldSpecs
 from tqdm.auto import tqdm
@@ -128,7 +128,7 @@ class InferredTopicsData:
         self.dictionary: Any = dictionary
         self.document_index: pd.DataFrame = document_index
         self.topic_token_weights: pd.DataFrame = topic_token_weights
-        self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(
+        self.document_topic_weights: pd.DataFrame = DocumentIndexHelper(document_index).overload(
             document_topic_weights, 'year'
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterable, Tuple
 
 import more_itertools
 import pandas as pd
-from penelope.corpus import DocumentIndex
+from penelope.corpus import DocumentIndexHelper
 from penelope.utility import getLogger, strip_path_and_extension
 from tqdm.auto import tqdm
 
@@ -91,10 +91,10 @@ def partitioned_corpus_co_occurrence(
 
     co_occurrences = pd.concat(total_results, ignore_index=True)
 
-    # metadata_document_index: pd.DataFrame = DocumentIndex.from_metadata(metadata).document_index
+    # metadata_document_index: pd.DataFrame = DocumentIndexHelper.from_metadata(metadata).document_index
 
     index: pd.DataFrame = (
-        DocumentIndex(payload.document_index).group_by_column(column_name=partition_column, index_values=keys)
+        DocumentIndexHelper(payload.document_index).group_by_column(column_name=partition_column, index_values=keys)
     ).document_index
 
     # FIXME: #13 Count threshold value should specify min inclusion value

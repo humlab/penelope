@@ -25,8 +25,9 @@ T = TypeVar("T", int, str)
 
 DOCUMENT_INDEX_COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
 
+DocIndex = pd.core.api.DataFrame
 
-class DocumentIndex:
+class DocumentIndexHelper:
     def __init__(self, document_index: Union[pd.DataFrame, List[dict], str], **kwargs):
 
         if not isinstance(document_index, (pd.DataFrame, list, str)):
@@ -44,56 +45,56 @@ class DocumentIndex:
     def document_index(self) -> pd.DataFrame:
         return self._document_index
 
-    def store(self, filename: str) -> "DocumentIndex":
+    def store(self, filename: str) -> "DocumentIndexHelper":
         store_document_index(self.document_index, filename)
         return self
 
     @staticmethod
     def load(
         filename: Union[str, StringIO], *, sep: str = '\t', document_id_field: str = 'document_id', **read_csv_kwargs
-    ) -> "DocumentIndex":
+    ) -> "DocumentIndexHelper":
         _index = load_document_index(filename, sep=sep, document_id_field=document_id_field, **read_csv_kwargs)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
     @staticmethod
-    def from_metadata(metadata: List[Dict], *, document_id_field: str = None) -> "DocumentIndex":
+    def from_metadata(metadata: List[Dict], *, document_id_field: str = None) -> "DocumentIndexHelper":
         _index = metadata_to_document_index(metadata, document_id_field=document_id_field)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
     @staticmethod
-    def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndex":
+    def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndexHelper":
         _metadata = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
         _index = metadata_to_document_index(_metadata)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
     @staticmethod
-    def from_str(data_str: str, sep: str = '\t', document_id_field: str = 'document_id') -> "DocumentIndex":
+    def from_str(data_str: str, sep: str = '\t', document_id_field: str = 'document_id') -> "DocumentIndexHelper":
         _index = load_document_index_from_str(data_str=data_str, sep=sep, document_id_field=document_id_field)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
-    def consolidate(self, reader_index: pd.DataFrame) -> "DocumentIndex":
+    def consolidate(self, reader_index: pd.DataFrame) -> "DocumentIndexHelper":
         self._document_index = consolidate_document_index(self._document_index, reader_index)
         return self
 
     @deprecated
-    def upgrade(self) -> "DocumentIndex":
+    def upgrade(self) -> "DocumentIndexHelper":
         self._document_index = document_index_upgrade(self._document_index)
         return self
 
-    def update_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> "DocumentIndex":
+    def update_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> "DocumentIndexHelper":
         self._document_index = update_document_index_token_counts(
             self._document_index, doc_token_counts=doc_token_counts
         )
         return self
 
-    def add_attributes(self, other: pd.DataFrame) -> "DocumentIndex":
+    def add_attributes(self, other: pd.DataFrame) -> "DocumentIndexHelper":
         """ Adds other's document meta data (must have a document_id) """
         self._document_index = self._document_index.merge(
             other, how='inner', left_on='document_id', right_on='document_id'
         )
         return self
 
-    def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndex":
+    def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndexHelper":
         """Updates attributes for the specified document item"""
         # property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
         # for key in [k for k in property_bag if k not in self._document_index.columns]:
@@ -113,7 +114,7 @@ class DocumentIndex:
         column_name: str = 'year',
         transformer: Union[Callable[[T], T], Dict[T, T], None] = None,
         index_values: Union[str, List[T]] = None,
-    ) -> "DocumentIndex":
+    ) -> "DocumentIndexHelper":
         """Returns a reduced document index grouped by specified column.
 
         A new `category` column is added that by applying `transformer` to `column_name`.
@@ -210,9 +211,9 @@ class DocumentIndex:
         # Set `document_name` as index of result data frame
         document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
-        return DocumentIndex(document_index)
+        return DocumentIndexHelper(document_index)
 
-    def set_strictly_increasing_index(self) -> "DocumentIndex":
+    def set_strictly_increasing_index(self) -> "DocumentIndexHelper":
         self._document_index['document_id'] = get_strictly_increasing_document_id(
             self._document_index, document_id_field=None
         )

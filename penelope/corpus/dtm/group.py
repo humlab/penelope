@@ -7,7 +7,7 @@ import pandas as pd
 import scipy
 from penelope.utility import dict_of_key_values_inverted_to_dict_of_value_key
 
-from ..document_index import DocumentIndex
+from ..document_index import DocumentIndexHelper
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol, VectorizedCorpusError
 
 T = TypeVar("T", int, str)
@@ -52,8 +52,8 @@ class GroupByMixIn:
             aggregate=aggregate,
         )
 
-        document_index: DocumentIndex = (
-            DocumentIndex(self.document_index)
+        document_index: DocumentIndexHelper = (
+            DocumentIndexHelper(self.document_index)
             .group_by_column(column_name=column_name, index_values=categories)
             .set_strictly_increasing_index()
             .document_index

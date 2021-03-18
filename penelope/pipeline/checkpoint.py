@@ -6,14 +6,15 @@ from io import StringIO
 from typing import Iterable, Iterator, List, Sequence, Union
 
 import pandas as pd
-from penelope.corpus import DocumentIndex, load_document_index
+from penelope.corpus import DocumentIndexHelper, load_document_index
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import assert_that_path_exists, getLogger, path_of, zip_utils
 
 from .config import CorpusSerializeOpts
 from .interfaces import ContentType, DocumentPayload, PipelineError
+from .tagged_frame import TaggedFrame
 
-SerializableContent = Union[str, Iterable[str], pd.core.api.DataFrame]
+SerializableContent = Union[str, Iterable[str], TaggedFrame]
 SERIALIZE_OPT_FILENAME = "options.json"
 
 logger = getLogger("penelope")
@@ -135,7 +136,7 @@ def load_checkpoint(
             filenames.remove(options.document_index_name)
 
         elif reader_opts and reader_opts.filename_fields is not None:
-            document_index = DocumentIndex.from_filenames(
+            document_index = DocumentIndexHelper.from_filenames(
                 filenames=filenames,
                 filename_fields=reader_opts.filename_fields,
             ).document_index

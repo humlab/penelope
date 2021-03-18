@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import penelope.utility as utility
 from gensim.matutils import Sparse2Corpus
-from penelope.corpus import DocumentIndex
+from penelope.corpus import DocumentIndexHelper
 from penelope.topic_modelling.container import InferredTopicsData
 from penelope.topic_modelling.extract import extract_topic_token_overview, extract_topic_token_weights
 
@@ -83,7 +83,7 @@ def predict_document_topics(
         df_doc_topics['document_id'] = df_doc_topics.document_id.astype(np.uint32)
         df_doc_topics['topic_id'] = df_doc_topics.topic_id.astype(np.uint16)
 
-        df_doc_topics = DocumentIndex(document_index).overload(df_doc_topics, 'year')
+        df_doc_topics = DocumentIndexHelper(document_index).overload(df_doc_topics, 'year')
 
         logger.info('  DONE!')
 
