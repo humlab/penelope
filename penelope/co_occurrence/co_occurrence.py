@@ -105,8 +105,8 @@ def corpus_co_occurrence(
 
     Returns
     -------
-    [type]
-        [description]
+    pd.DataFrame
+        Co-occurrence matrix represented via a data frame
     """
     if payload.document_index is None:
         raise CoOccurrenceError("expected document index found None")
