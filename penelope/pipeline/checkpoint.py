@@ -6,7 +6,7 @@ from io import StringIO
 from typing import Iterable, Iterator, List, Sequence, Union
 
 import pandas as pd
-from penelope.corpus import DocumentIndexHelper, load_document_index
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import assert_that_path_exists, getLogger, path_of, zip_utils
 
@@ -23,7 +23,7 @@ logger = getLogger("penelope")
 @dataclass
 class CheckpointData:
     content_type: ContentType = ContentType.NONE
-    document_index: pd.DataFrame = None
+    document_index: DocumentIndex = None
     payload_stream: Iterable[DocumentPayload] = None
     serialize_opts: CorpusSerializeOpts = None
 
@@ -83,7 +83,7 @@ def store_checkpoint(
     *,
     options: CorpusSerializeOpts,
     target_filename: str,
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     payload_stream: Iterator[DocumentPayload],
 ) -> Iterable[DocumentPayload]:
 

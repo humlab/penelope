@@ -20,7 +20,7 @@ def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compres
 
     """Stores the corpus used in training. If not pickled, then stored as separate files
     terms: Iterable[Iterable[str]]                               Never stored
-    document_index: pd.DataFrame                                 TODO Stored as csv.zip
+    document_index: DocumentIndex                                 TODO Stored as csv.zip
     doc_term_matrix: scipy.sparse.csr_matrix                     Never stored
     id2word: Union[gensim.corpora.Dictionary, Dict[int, str]]    TODO Stored compressed as gensim.Dictionar
     vectorizer_args: Dict[str, Any]                              TODO Stored as json

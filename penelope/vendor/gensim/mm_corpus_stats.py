@@ -22,25 +22,25 @@ class MmCorpusStatisticsService:
                 freqencies[i] += f
         return freqencies
 
-    def get_document_token_frequencies(self):
+    def get_document_token_frequencies(self) -> pd.DataFrame:
         """
         Returns a DataFrame with per document token frequencies i.e. "melts" doc-term matrix
         """
         data = ((document_id, x[0], x[1]) for document_id, values in enumerate(self.corpus) for x in values)
-        df = pd.DataFrame(list(zip(*data)), columns=['document_id', 'token_id', 'count'])
+        df: pd.DataFrame = pd.DataFrame(list(zip(*data)), columns=['document_id', 'token_id', 'count'])
         # FIXME: Possible bug, right_index=True => right_on='document_id'
         df = df.merge(self.corpus.document_names, left_on='document_id', right_index=True)
 
         return df
 
-    def compute_word_frequencies(self, remove_stopwords):
+    def compute_word_frequencies(self, remove_stopwords: bool) -> pd.DataFrame:
         id2token = self.dictionary.id2token
         term_freqencies = np.zeros(len(id2token))
         for document in self.corpus:
             for i, f in document:
                 term_freqencies[i] += f
         stopwords = set(self.stopwords).intersection(set(id2token.values()))
-        df = pd.DataFrame(
+        df: pd.DataFrame = pd.DataFrame(
             {
                 'token_id': list(id2token.keys()),
                 'token': list(id2token.values()),
@@ -55,10 +55,10 @@ class MmCorpusStatisticsService:
         df = df[['token_id', 'token', 'frequency', 'dfs', 'is_stopword']].sort_values('frequency', ascending=False)
         return df.set_index('token_id')
 
-    def compute_document_stats(self):
+    def compute_document_stats(self) -> pd.DataFrame:
         id2token = self.dictionary.id2token
         stopwords = set(self.stopwords).intersection(set(id2token.values()))
-        df = pd.DataFrame(
+        df: pd.DataFrame = pd.DataFrame(
             {
                 'document_id': self.corpus.index,
                 'document_name': self.corpus.document_names.document_name,
@@ -70,7 +70,7 @@ class MmCorpusStatisticsService:
         df[['size', 'stopwords']] = df[['size', 'stopwords']].astype('int')
         return df
 
-    def compute_word_stats(self):
+    def compute_word_stats(self) -> pd.DataFrame:
         df = self.compute_document_stats()[['size', 'stopwords']]
         df_agg = df.agg(['count', 'mean', 'std', 'min', 'median', 'max', 'sum']).reset_index()
         legend_map = {

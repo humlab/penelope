@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from penelope.utility import FilenameFieldSpecs, pandas_utils
 
+from ..document_index import DocumentIndex
+
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
@@ -133,7 +135,7 @@ class ICorpusReader(abc.ABC):
         return None
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return None
 
     @abc.abstractmethod

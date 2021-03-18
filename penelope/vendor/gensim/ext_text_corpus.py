@@ -1,8 +1,9 @@
 import logging
-from typing import Iterable, Tuple
+from typing import Callable, Iterable, List, Tuple
 
 import pandas as pd
 from gensim.corpora.textcorpus import TextCorpus
+from penelope.corpus import DocumentIndex
 from penelope.corpus.readers import streamify_text_source
 
 logger = logging.getLogger(__name__)
@@ -13,10 +14,10 @@ class ExtTextCorpus(TextCorpus):
     def __init__(
         self,
         stream: Iterable[Tuple[str, str]],
-        dictionary=None,
+        dictionary: dict = None,
         metadata=False,
         character_filters=None,
-        tokenizer=None,
+        tokenizer: Callable = None,
         token_filters=None,
         bigram_transform=False,  # pylint: disable=unused-argument
     ):
@@ -72,8 +73,8 @@ class ExtTextCorpus(TextCorpus):
             document_infos.append({'document_name': filename})
 
         self.length = len(document_infos)
-        self.document_index = pd.DataFrame(document_infos)
-        self.filenames = list(self.document_index.document_name.values)
+        self.document_index: DocumentIndex = pd.DataFrame(document_infos)
+        self.filenames: List[str] = list(self.document_index.document_name.values)
 
     def get_texts(self):
         """
@@ -82,7 +83,7 @@ class ExtTextCorpus(TextCorpus):
         for document in self.getstream():
             yield self.preprocess_text(document)
 
-    def preprocess_text(self, text):
+    def preprocess_text(self, text) -> List[str]:
         """Apply `self.character_filters`, `self.tokenizer`, `self.token_filters` to a single text document.
 
         Parameters
@@ -99,7 +100,7 @@ class ExtTextCorpus(TextCorpus):
         for character_filter in self.character_filters:
             text = character_filter(text)
 
-        tokens = self.tokenizer(text)
+        tokens: List[str] = self.tokenizer(text)
         for token_filter in self.token_filters:
             tokens = token_filter(tokens)
 
@@ -114,7 +115,7 @@ class ExtTextCorpus(TextCorpus):
 
         document_data = map(self.__get_document_info, self.filenames)
 
-        document_index = pd.DataFrame(list(document_data))
+        document_index: DocumentIndex = pd.DataFrame(list(document_data))
         document_index.index.names = ['document_id']
 
         return document_index
@@ -131,7 +132,7 @@ class SimpleExtTextCorpus(ExtTextCorpus):
 
         super().__init__(self.reader)
 
-    def default_token_filters(self):
+    def default_token_filters(self) -> List[Callable]:
 
         token_filters = [
             (lambda tokens: [x.strip('_') for x in tokens]),
@@ -142,5 +143,5 @@ class SimpleExtTextCorpus(ExtTextCorpus):
 
         return token_filters
 
-    def preprocess_text(self, text: str):
+    def preprocess_text(self, text: str) -> List[str]:
         return self.tokenizer(text)

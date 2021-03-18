@@ -7,6 +7,7 @@ import penelope.topic_modelling as topic_modelling
 import penelope.utility as utility
 from IPython.display import display
 from ipywidgets import HTML, Button, FloatSlider, HBox, IntSlider, Label, Layout, Output, VBox
+from penelope.corpus import DocumentIndex
 
 from .model_container import TopicModelContainer
 from .utility import filter_document_topic_weights
@@ -84,7 +85,7 @@ class GUI:
 
 def get_topic_documents(
     document_topic_weights: pd.DataFrame,
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     threshold: float = 0.0,
     n_top: int = 500,
     **filters,

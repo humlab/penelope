@@ -5,12 +5,12 @@ import re
 from typing import Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
-import pandas as pd
 import scipy
 import sklearn.preprocessing
 from penelope import utility
 from sklearn.feature_extraction.text import TfidfTransformer
 
+from ..document_index import DocumentIndex
 from .group import GroupByMixIn
 from .interface import IVectorizedCorpus, VectorizedCorpusError
 from .slice import SliceMixIn
@@ -27,7 +27,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
-        document_index: pd.DataFrame,
+        document_index: DocumentIndex,
         token_counter: Dict[str, int] = None,
     ):
         """Class that encapsulates a bag-of-word matrix.
@@ -38,7 +38,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
             The bag-of-word matrix
         token2id : dict(str, int)
             Token to token id translation i.e. translates token to column index
-        document_index : pd.DataFrame
+        document_index : DocumentIndex
             Corpus document metadata (bag-of-word row metadata)
         token_counter : dict(str,int), optional
             Total corpus word counts, by default None, computed if None
@@ -60,7 +60,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
         self._document_index = self._ingest_document_index(document_index=document_index)
         self._token_counter = token_counter
 
-    def _ingest_document_index(self, document_index: pd.DataFrame):
+    def _ingest_document_index(self, document_index: DocumentIndex):
         if not utility.is_strictly_increasing(document_index.index):
             raise ValueError(
                 "supplied `document index` must have an integer typed, strictly increasing index starting from 0"
@@ -129,7 +129,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
         return self.bag_term_matrix.shape[1]
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         """Returns number document index (part of interface) """
         return self._document_index
 
@@ -351,7 +351,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVector
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
-        document_index: pd.DataFrame,
+        document_index: DocumentIndex,
         token_counter: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         return VectorizedCorpus(

@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import scipy
 
+from ..document_index import DocumentIndex
+
 
 class VectorizedCorpusError(ValueError):
     ...
@@ -71,7 +73,7 @@ class IVectorizedCorpus(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         ...
 
     @abc.abstractmethod
@@ -211,7 +213,7 @@ class IVectorizedCorpus(abc.ABC):
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
-        document_index: pd.DataFrame,
+        document_index: DocumentIndex,
         token_counter: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         ...
@@ -224,13 +226,13 @@ class IVectorizedCorpusProtocol(Protocol):
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
-        document_index: pd.DataFrame,
+        document_index: DocumentIndex,
         token_counter: Dict[str, int] = None,
     ) -> IVectorizedCorpus:
         ...
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         ...
 
     @property

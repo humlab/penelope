@@ -5,11 +5,11 @@ import ipywidgets as widgets
 import pandas as pd
 from bokeh.io import output_notebook
 from penelope import pipeline
+from penelope.corpus import DocumentIndex
 from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.notebook.utility import OutputsTabExt
 from penelope.pipeline import interfaces
-from penelope.utility import PoS_Tag_Scheme, getLogger, path_add_suffix
-from penelope.utility.filename_utils import strip_path_and_extension
+from penelope.utility import PoS_Tag_Scheme, getLogger, path_add_suffix, strip_path_and_extension
 
 from .plot import plot_by_bokeh as plot_dataframe
 
@@ -25,12 +25,12 @@ debug_view = widgets.Output()
 class TokenCountsGUI:
     """GUI component that displays word trends"""
 
-    compute_callback: Callable[["TokenCountsGUI", pd.DataFrame], pd.DataFrame]
+    compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame]
 
-    load_document_index_callback: Callable[[pipeline.CorpusConfig], pd.DataFrame]
+    load_document_index_callback: Callable[[pipeline.CorpusConfig], DocumentIndex]
     load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig]
 
-    document_index: pd.DataFrame = None
+    document_index: DocumentIndex = None
 
     _corpus_configs: widgets.Dropdown = widgets.Dropdown(
         description='', options=[], value=None, layout={'width': '200px'}
@@ -148,7 +148,7 @@ class TokenCountsGUI:
 
         self.set_schema(corpus_config.pos_schema)
 
-        self.document_index = self.load_document_index_callback(corpus_config)
+        self.document_index: DocumentIndex = self.load_document_index_callback(corpus_config)
 
         debug_view.clear_output()
         self._output.clear_output()
@@ -187,7 +187,7 @@ class TokenCountsGUI:
 
 
 @debug_view.capture()
-def compute_token_count_data(args: TokenCountsGUI, document_index: pd.DataFrame) -> pd.DataFrame:
+def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex) -> pd.DataFrame:
 
     if len(args.categories or []) > 0:
         count_columns = list(args.categories)
@@ -215,7 +215,7 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
         checkpoint_filename=checkpoint_filename,
     ).exhaust()
 
-    document_index: pd.DataFrame = p.payload.document_index
+    document_index: DocumentIndex = p.payload.document_index
     if 'n_raw_tokens' not in document_index.columns:
         raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")
 

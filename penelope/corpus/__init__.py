@@ -1,6 +1,7 @@
 # type: ignore
 from .document_index import (
     DOCUMENT_INDEX_COUNT_COLUMNS,
+    DocumentIndex,
     DocumentIndexHelper,
     consolidate_document_index,
     document_index_upgrade,

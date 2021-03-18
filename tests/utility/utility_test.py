@@ -98,7 +98,6 @@ def test_multiple_replace():
 
     assert utility.multiple_replace(tokens_str, replace_map) == "a b c d_e_f g h i_j"
 
-
     replace_map = {
         "d e": "x_y",
         "d e f": "d_e_f",

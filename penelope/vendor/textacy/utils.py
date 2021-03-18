@@ -8,6 +8,7 @@ import pandas as pd
 import penelope.utility as utility
 import spacy.tokens
 import textacy
+from penelope.corpus import DocumentIndex
 from spacy import attrs
 from textacy.vsm import Vectorizer
 
@@ -62,7 +63,7 @@ def count_documents_by_pivot(corpus: textacy.Corpus, attribute: str) -> List[int
     return [len(list(g)) for _, g in itertools.groupby(corpus, fx_key)]
 
 
-def count_documents_in_index_by_pivot(document_index: pd.DataFrame, attribute: str) -> List[int]:
+def count_documents_in_index_by_pivot(document_index: DocumentIndex, attribute: str) -> List[int]:
     """Return a list of document counts per group defined by attribute
     Assumes documents are sorted by attribute!
     Same as count_documents_by_pivot but uses document index instead of (spaCy) corpus
@@ -182,7 +183,7 @@ def get_pos_statistics(doc: spacy.tokens.Doc):
 
 
 def get_corpus_data(
-    corpus: textacy.Corpus, document_index: pd.DataFrame, title: str, columns_of_interest: List[str] = None
+    corpus: textacy.Corpus, document_index: DocumentIndex, title: str, columns_of_interest: List[str] = None
 ) -> pd.DataFrame:
     metadata = [
         utility.extend({}, dict(document_id=doc._.meta['document_id']), get_pos_statistics(doc)) for doc in corpus
@@ -196,7 +197,7 @@ def get_corpus_data(
     return df
 
 
-def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: str = ';', vocab=None):
+def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: str = ';', vocab=None) -> dict:
 
     substitutions = {}
 
@@ -223,7 +224,7 @@ def load_term_substitutions(filepath: str, default_term: str = '_gpe_', delim: s
     return substitutions
 
 
-def term_substitutions(data_folder: str, filename: str = 'term_substitutions.txt', vocab=None):
+def term_substitutions(data_folder: str, filename: str = 'term_substitutions.txt', vocab=None) -> dict:
     path = os.path.join(data_folder, filename)
     logger.info('Loading term substitution mappings...')
     data = load_term_substitutions(path, default_term='_masked_', delim=';', vocab=vocab)
@@ -253,7 +254,7 @@ def _doc_token_stream(doc: spacy.tokens.Doc) -> Iterable[Dict[str, Any]]:
 
 def store_tokens(corpus: textacy.Corpus, filename: str):
 
-    tokens = pd.DataFrame(list(itertools.chain.from_iterable(_doc_token_stream(d) for d in corpus)))
+    tokens: pd.DataFrame = pd.DataFrame(list(itertools.chain.from_iterable(_doc_token_stream(d) for d in corpus)))
 
     if filename.endswith('.xlxs'):
         tokens.to_excel(filename)

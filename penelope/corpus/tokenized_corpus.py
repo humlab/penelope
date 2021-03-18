@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
 
-import pandas as pd
 from penelope import utility
 
 from .corpus_mixins import PartitionMixIn
-from .document_index import metadata_to_document_index, update_document_index_token_counts
+from .document_index import DocumentIndex, metadata_to_document_index, update_document_index_token_counts
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
 from .tokens_transformer import TokensTransformer, TokensTransformOpts
@@ -50,7 +49,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
             raise TypeError(f"Corpus reader {type(reader)} has no `filenames` property")
 
         self.reader: ICorpusReader = reader
-        self._document_index: pd.DataFrame = metadata_to_document_index(reader.metadata)
+        self._document_index: DocumentIndex = metadata_to_document_index(reader.metadata)
         self.transformer = TokensTransformer(tokens_transform_opts=(tokens_transform_opts or TokensTransformOpts()))
         self.iterator = None
         self._token2id = None
@@ -72,7 +71,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
         return ReiterableTerms(self)
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return self._document_index
 
     @property

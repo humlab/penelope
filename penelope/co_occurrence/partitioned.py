@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterable, Tuple
 
 import more_itertools
 import pandas as pd
-from penelope.corpus import DocumentIndexHelper
+from penelope.corpus import DocumentIndex, DocumentIndexHelper
 from penelope.utility import getLogger, strip_path_and_extension
 from tqdm.auto import tqdm
 
@@ -25,7 +25,7 @@ logger = getLogger('penelope')
 @dataclass
 class ComputeResult:
     co_occurrences: pd.DataFrame = None
-    document_index: pd.DataFrame = None
+    document_index: DocumentIndex = None
 
 
 def partitioned_corpus_co_occurrence(
@@ -74,7 +74,7 @@ def partitioned_corpus_co_occurrence(
 
         key_stream: FilenameTokensTuples = key_streams[key]
 
-        # keyed_document_index: pd.DataFrame = payload.document_index[payload.document_index[partition_column] == key]
+        # keyed_document_index: DocumentIndex= payload.document_index[payload.document_index[partition_column] == key]
         # metadata.append(_group_metadata(keyed_document_index, i, partition_column, key))
 
         co_occurrence = corpus_co_occurrence(
@@ -91,9 +91,9 @@ def partitioned_corpus_co_occurrence(
 
     co_occurrences = pd.concat(total_results, ignore_index=True)
 
-    # metadata_document_index: pd.DataFrame = DocumentIndexHelper.from_metadata(metadata).document_index
+    # metadata_document_index: DocumentIndex = DocumentIndexHelper.from_metadata(metadata).document_index
 
-    index: pd.DataFrame = (
+    index: DocumentIndex = (
         DocumentIndexHelper(payload.document_index).group_by_column(column_name=partition_column, index_values=keys)
     ).document_index
 
@@ -103,7 +103,7 @@ def partitioned_corpus_co_occurrence(
     return ComputeResult(co_occurrences=co_occurrences, document_index=index)
 
 
-# def _group_metadata(keyed_document_index: pd.DataFrame, i: int, column_name: str, value: Union[int,str]) -> dict:
+# def _group_metadata(keyed_document_index: DocumentIndex, i: int, column_name: str, value: Union[int,str]) -> dict:
 #     return {
 #         **{
 #             'document_id': i,

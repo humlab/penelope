@@ -5,9 +5,9 @@ import os
 import zipfile
 from typing import List, Sequence, Union
 
-import pandas as pd
 import penelope.vendor.textacy as textacy_utility
 import textacy
+from penelope.corpus import DocumentIndex
 from penelope.corpus.readers import TextReaderOpts, TextTransformer, ZipTextIterator
 from penelope.utility import create_iterator, path_add_suffix
 from spacy.language import Language as SpacyLanguage
@@ -24,7 +24,7 @@ class TextacyCorpusPipeline:
         *,
         filename: str,
         lang: str,
-        document_index: pd.DataFrame,
+        document_index: DocumentIndex,
         tasks: Sequence[ITask] = None,
         disables: str = "ner,",
         force: bool = False,

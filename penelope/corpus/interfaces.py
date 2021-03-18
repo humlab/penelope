@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Callable, Dict, Iterator, List, Tuple, Union
 
-import pandas as pd
+from .document_index import DocumentIndex
 
 
 class ICorpus(abc.ABC):
@@ -36,7 +36,7 @@ class ITokenizedCorpus(ICorpus):
 
     @property
     @abc.abstractproperty
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return None
 
 

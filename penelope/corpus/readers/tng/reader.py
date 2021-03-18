@@ -1,9 +1,8 @@
 from typing import Callable, Iterable, Iterator, List, Union
 
-import pandas as pd
 from penelope.utility import getLogger
 
-from ...document_index import metadata_to_document_index
+from ...document_index import DocumentIndex, metadata_to_document_index
 from ..interfaces import ICorpusReader, TextReaderOpts
 from .interfaces import ContentFilter, ISource, StoreItemPair
 from .sources import SourceInfo
@@ -66,8 +65,8 @@ class CorpusReader(ICorpusReader):
             return (self.item(name) for name in self.filenames)
 
     @property
-    def document_index(self) -> pd.DataFrame:
-        index: pd.DataFrame = metadata_to_document_index(
+    def document_index(self) -> DocumentIndex:
+        index: DocumentIndex = metadata_to_document_index(
             self.metadata,
             document_id_field=self.reader_opts.index_field,
         )

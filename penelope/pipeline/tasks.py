@@ -4,7 +4,6 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
-import pandas as pd
 from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
@@ -22,6 +21,7 @@ from tqdm.auto import tqdm
 
 from . import checkpoint, convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
+from .tagged_frame import TaggedFrame
 from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn
 
 
@@ -323,7 +323,7 @@ class ToTaggedFrame(CountTokensMixIn, ITask):
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
-        tagged_frame: pd.DataFrame = self.tagger(
+        tagged_frame: TaggedFrame = self.tagger(
             payload=payload,
             attributes=self.attributes,
             attribute_value_filters=self.attribute_value_filters,
@@ -455,7 +455,7 @@ class Vocabulary(ITask):
         if payload.content_type == ContentType.TOKENS:
             return payload.content
 
-        tagged_frame: pd.DataFrame = payload.content
+        tagged_frame: TaggedFrame = payload.content
         column_names = self.pipeline.payload.tagged_columns_names
         return itertools.chain(
             tagged_frame[column_names['text_column']],

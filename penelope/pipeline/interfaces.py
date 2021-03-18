@@ -5,8 +5,12 @@ from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
 
-import pandas as pd
-from penelope.corpus import consolidate_document_index, load_document_index, update_document_index_properties
+from penelope.corpus import (
+    DocumentIndex,
+    consolidate_document_index,
+    load_document_index,
+    update_document_index_properties,
+)
 from penelope.corpus.readers import TextSource
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, strip_path_and_extension
 
@@ -77,7 +81,7 @@ class PipelinePayload:
 
     source_folder: str = None
     source: TextSource = None
-    document_index_source: Union[str, pd.DataFrame] = None
+    document_index_source: Union[str, DocumentIndex] = None
     document_index_sep: str = '\t'
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
@@ -87,16 +91,16 @@ class PipelinePayload:
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
     token2id: Mapping[str, int] = None
-    effective_document_index: pd.DataFrame = None
+    effective_document_index: DocumentIndex = None
 
     # FIXME: Move to document_index_proxy object?
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         if self.effective_document_index is None:
-            if isinstance(self.document_index_source, pd.DataFrame):
+            if isinstance(self.document_index_source, DocumentIndex):
                 self.effective_document_index = self.document_index_source
             elif isinstance(self.document_index_source, str):
                 self.effective_document_index = load_document_index(
@@ -127,7 +131,7 @@ class PipelinePayload:
             self.memory_store[key] = value
         return self
 
-    def set_reader_index(self, reader_index: pd.DataFrame) -> "PipelinePayload":
+    def set_reader_index(self, reader_index: DocumentIndex) -> "PipelinePayload":
         if self.document_index is None:
             self.effective_document_index = reader_index
         else:
@@ -213,7 +217,7 @@ class ITask(abc.ABC):
         return self
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return self.pipeline.payload.document_index
 
     def input_type_guard(self, content_type) -> None:
@@ -238,4 +242,4 @@ class ITask(abc.ABC):
         self.pipeline.payload.update_document_properties(payload.document_name, **properties)
 
 
-DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], pd.DataFrame]
+DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]

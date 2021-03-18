@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 
-import pandas as pd
 import spacy
 from spacy.language import Language
 
 from .. import interfaces
 from ..interfaces import ContentType, DocumentPayload, PipelineError
+from ..tagged_frame import TaggedFrame
 from ..tasks import DefaultResolveMixIn, ToTaggedFrame
 from . import convert
 
@@ -68,7 +68,7 @@ class SpacyDocToTaggedFrame(ToTaggedFrame):
 
     def spacy_tagger(
         self, payload: DocumentPayload, attributes: List[str], attribute_value_filters: Dict[str, Any]
-    ) -> pd.DataFrame:
+    ) -> TaggedFrame:
         return convert.spacy_doc_to_tagged_frame(
             spacy_doc=payload.content,
             attributes=attributes,
@@ -86,7 +86,7 @@ class ToSpacyDocToTaggedFrame(ToTaggedFrame):
 
     def spacy_tagger(
         self, payload: DocumentPayload, attributes: List[str], attribute_value_filters: Dict[str, Any]
-    ) -> pd.DataFrame:
+    ) -> TaggedFrame:
         return convert.text_to_tagged_frame(
             document=payload.as_str(),
             attributes=attributes,

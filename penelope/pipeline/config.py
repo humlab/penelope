@@ -9,8 +9,8 @@ import pathlib
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
-import pandas as pd
 import yaml
+from penelope.corpus import DocumentIndex
 from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts, TextSource
 from penelope.utility import create_instance, get_pos_schema, replace_path
 
@@ -114,7 +114,7 @@ class CorpusConfig:
 
         return self
 
-    def files(self, source: TextSource, index_source: Union[str, pd.DataFrame]) -> "CorpusConfig":
+    def files(self, source: TextSource, index_source: Union[str, DocumentIndex]) -> "CorpusConfig":
         self.pipeline_payload.source = source
         self.pipeline_payload.document_index_source = index_source
         return self

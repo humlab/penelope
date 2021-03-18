@@ -5,8 +5,15 @@ from typing import Mapping, Tuple, Union
 
 import pandas as pd
 import scipy
-from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.document_index import DocumentIndexHelper
+from penelope.corpus import (
+    CorpusVectorizer,
+    DocumentIndex,
+    DocumentIndexHelper,
+    ITokenizedCorpus,
+    TokenizedCorpus,
+    TokensTransformOpts,
+    VectorizedCorpus,
+)
 from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
 from penelope.notebook.word_trends import TrendsData
 from penelope.utility import getLogger, read_json, replace_extension, right_chop, strip_path_and_extension
@@ -65,7 +72,7 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
 
 
 def to_vectorized_corpus(
-    co_occurrences: pd.DataFrame, document_index: pd.DataFrame, value_column: str = "value"
+    co_occurrences: pd.DataFrame, document_index: DocumentIndex, value_column: str = "value"
 ) -> VectorizedCorpus:
     """Creates a DTM corpus from a co-occurrence result set that was partitioned by year."""
     # Create new tokens from the co-occurring pairs
@@ -126,7 +133,7 @@ def to_co_occurrence_matrix(
 def to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
-    document_index: pd.DataFrame = None,
+    document_index: DocumentIndex = None,
     threshold_count: int = 1,
 ) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
@@ -137,7 +144,7 @@ def to_dataframe(
         [description]
     id2token : Mapping[int,str]
         [description]
-    document_index : pd.DataFrame, optional
+    document_index : DocumentIndex, optional
         [description], by default None
     threshold_count : int, optional
         Min count (`value`) to include in result, by default 1
@@ -195,7 +202,7 @@ class Bundle:
     corpus_tag: str = None
 
     co_occurrences: pd.DataFrame = None
-    document_index: pd.DataFrame = None
+    document_index: DocumentIndex = None
     corpus: VectorizedCorpus = None
     compute_options: dict = None
 
@@ -222,7 +229,9 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
 
     corpus_folder, corpus_tag = filename_to_folder_and_tag(co_occurrences_filename)
     co_occurrences = load_co_occurrences(co_occurrences_filename)
-    document_index = DocumentIndexHelper.load(os.path.join(corpus_folder, f"{corpus_tag}_document_index.csv")).document_index
+    document_index = DocumentIndexHelper.load(
+        os.path.join(corpus_folder, f"{corpus_tag}_document_index.csv")
+    ).document_index
     corpus = (
         VectorizedCorpus.load(folder=corpus_folder, tag=corpus_tag)
         if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)

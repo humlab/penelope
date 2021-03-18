@@ -7,6 +7,7 @@ import pandas as pd
 from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 from sklearn.feature_extraction.text import CountVectorizer
 
+from ..document_index import DocumentIndex
 from ..tokenized_corpus import TokenizedCorpus
 from .vectorized_corpus import VectorizedCorpus
 
@@ -44,7 +45,7 @@ class CorpusVectorizer:
         corpus: Union[TokenizedCorpus, DocumentTermsStream],
         *,
         vocabulary: Mapping[str, int] = None,
-        document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame] = None,
+        document_index: Union[Callable[[], DocumentIndex], DocumentIndex] = None,
         vectorize_opts: VectorizeOpts,
     ) -> VectorizedCorpus:
         """Same as `fit_transform` but with a parameter object """
@@ -56,7 +57,7 @@ class CorpusVectorizer:
         *,
         already_tokenized: bool = True,
         vocabulary: Mapping[str, int] = None,
-        document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame] = None,
+        document_index: Union[Callable[[], DocumentIndex], DocumentIndex] = None,
         lowercase: bool = False,
         stop_words: str = None,
         max_df: float = 1.0,
@@ -66,14 +67,14 @@ class CorpusVectorizer:
         """Returns a `VectorizedCorpus` (document-term-matrix, bag-of-word) by applying sklearn's `CountVecorizer` on `corpus`
         If `already_tokenized` is True then the input stream is expected to be tokenized.
         Input stream sort order __MUST__ be the same as document_index sort order.
-        Passed `document_index` can be a callable that returns a pd.DataFrame. This is necessary
+        Passed `document_index` can be a callable that returns a DocumentIndex. This is necessary
         for instance when document index isn't avaliable until pipeline is exhausted.
 
         Args:
             corpus (Union[TokenizedCorpus, DocumentTermsStream]): Stream of text or stream of tokens
             already_tokenized (bool, optional): Specifies if stream is tokens. Defaults to True.
             vocabulary (Mapping[str, int], optional): Predefined vocabulary. Defaults to None.
-            document_index (Union[Callable[[], pd.DataFrame], pd.DataFrame], optional): If callable, then resolved after the stream has been exhausted. Defaults to None.
+            document_index (Union[Callable[[], DocumentIndex], DocumentIndex], optional): If callable, then resolved after the stream has been exhausted. Defaults to None.
             lowercase (bool, optional): Let vectorizer lowercase text. Defaults to False.
             stop_words (str, optional): Let vectorizer remove stopwords. Defaults to None.
             max_df (float, optional): Max document frequency (see CountVecorizer). Defaults to 1.0.
@@ -129,7 +130,7 @@ class CorpusVectorizer:
         bag_term_matrix = self.vectorizer.fit_transform(terms_stream())
         token2id: dict = self.vectorizer.vocabulary_
 
-        document_index_: pd.DataFrame = resolve_document_index(corpus, document_index, seen_document_names)
+        document_index_: DocumentIndex = resolve_document_index(corpus, document_index, seen_document_names)
 
         dtm_corpus: VectorizedCorpus = VectorizedCorpus(
             bag_term_matrix,
@@ -142,9 +143,9 @@ class CorpusVectorizer:
 
 def resolve_document_index(
     source: Union[TokenizedCorpus, DocumentTermsStream],
-    document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame],
+    document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
     seen_document_names: List[str],
-) -> pd.DataFrame:
+) -> DocumentIndex:
 
     if document_index is None:
         for attr in ['documents', 'document_index']:
@@ -159,14 +160,14 @@ def resolve_document_index(
 
 
 def _set_strictly_increasing_index_by_seen_documents(
-    document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame],
+    document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
     seen_document_names: List[str],
-) -> pd.DataFrame:
+) -> DocumentIndex:
 
     if document_index is None:
 
         # logger.warning("vectorizer: no corpus document index supplied: generating from seen filenames")
-        seen_document_index: pd.DataFrame = pd.DataFrame(
+        seen_document_index: DocumentIndex = pd.DataFrame(
             {
                 'filename': seen_document_names,
                 'document_name': [strip_path_and_extension(x) for x in seen_document_names],
@@ -185,7 +186,7 @@ def _set_strictly_increasing_index_by_seen_documents(
     _recode_map = {x: i for i, x in enumerate(seen_document_names)}
 
     # filter out documents that wasn't processed
-    document_index: pd.DataFrame = document_index[document_index.document_name.isin(seen_document_names)]
+    document_index: DocumentIndex = document_index[document_index.document_name.isin(seen_document_names)]
 
     # recode document_id to sequence_id
     document_index['document_id'] = document_index['document_name'].apply(lambda x: _recode_map[x])
@@ -198,7 +199,7 @@ def _set_strictly_increasing_index_by_seen_documents(
 
 # def _get_stream_length(
 #     corpus: Union[TokenizedCorpus, DocumentTermsStream],
-#     document_index: pd.DataFrame,
+#     document_index: DocumentIndex,
 # ) -> int:
 #     if hasattr(corpus, '__len__'):
 #         return len(corpus)

@@ -3,9 +3,8 @@ from __future__ import annotations
 import os
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
-import pandas as pd
 import penelope.utility as utility
-from penelope.corpus import CorpusVectorizer, TokensTransformOpts
+from penelope.corpus import CorpusVectorizer, DocumentIndex, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from spacy.tokens import Doc
 from textacy.spacier.doc_extensions import to_terms_list
@@ -331,7 +330,7 @@ class FrequentWordsFilter(StopwordFilter):
 def extract_document_tokens(
     *,
     spacy_docs: Iterable[Doc],
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
@@ -354,7 +353,7 @@ def extract_document_tokens(
 def vectorize_textacy_corpus(
     *,
     spacy_docs: Iterable[Doc],
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,

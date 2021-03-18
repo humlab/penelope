@@ -504,7 +504,7 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
-def multiple_replace(text: str, replace_map: dict, ignore_case: bool=False) -> str:
+def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) -> str:
     # Create a regular expression  from the dictionary keys
     opts = dict(flags=re.IGNORECASE) if ignore_case else {}
     sorted_keys = sorted(replace_map.keys(), key=lambda k: len(replace_map[k]), reverse=True)
