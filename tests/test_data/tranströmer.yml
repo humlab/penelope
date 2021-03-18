@@ -1,0 +1,41 @@
+corpus_name: riksdagens-protokoll
+corpus_pattern: '*sparv4.csv.zip'
+corpus_type: 3
+language: swedish
+content_deserialize_opts:
+    content_type_code: 1
+    sep: "\t"
+    quoting: 3
+    document_index_name: null
+    document_index_sep: null
+pipelines:
+  tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
+pipeline_payload:
+  source: tranströmer_corpus_export.sparv4.csv.zip
+  document_index_source: null
+  document_index_sep: "\t"
+  filenames: null
+  memory_store:
+    lang: se
+    tagger: Sparv
+    text_column: token
+    lemma_column: baseform
+    pos_column: pos
+    sparv_version: 4
+  pos_schema_name: SUC
+tagged_tokens_filter_opts:
+  data:
+    is_alpha: null
+    is_digit: null
+    is_punct: false
+    is_stop: null
+text_reader_opts:
+  as_binary: false
+  filename_fields:
+   - "year:_:1"
+   - "number:_:2"
+  filename_filter: null
+  filename_pattern: '*.csv'
+  index_field: null
+  sep: "\t"
+  quoting: "\t"
