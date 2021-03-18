@@ -75,6 +75,8 @@ yapf = "==0.*,>=0.30.0"
 pynguin = "==0.*,>=0.6.3"
 pytest-xdist = "==2.*,>=2.2.0"
 mypy = "==0.*,>=0.790.0"
+Sphinx = "^3.5.1"
+recommonmark = "^0.7.1"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
@@ -82,33 +84,19 @@ compute_topic_model = "penelope.scripts.compute_topic_model:main"
 co_occurrence = "penelope.scripts.co_occurrence:main"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
-    "-rfE", # Show extra info as specified by chars: (f)ailed, (E)rror, (s)kipped, (x)failed, (X)passed, (p)assed, (P)assed with output, (a)ll except passed (p/P), or (A)ll
-    "-q",
-    "-s",
-    # "-n4",
+     "-rfE", # Show extra info as specified by chars: (f)ailed, (E)rror, (s)kipped, (x)failed, (X)passed, (p)assed, (P)assed with output, (a)ll except passed (p/P), or (A)ll
+     "-q",
+     "-s",
+     "-n4",
 ]
 log_cli = "False"
 testpaths = [
     "tests",
 ]
-norecursedirs = ['penelope', '.git', 'data', 'output', 'deprecated', '__pycache__', 'tmp']
+# norecursedirs = ['penelope', 'dist', 'docs', 'htmlcov', 'tmp', 'coverage', '.git', 'data', 'output', 'deprecated', '__pycache__', 'tmp', 'test-data']
 python_files = "*_test.py"
 python_functions = "test_*"
 filterwarnings = [
@@ -179,11 +167,7 @@ exclude_lines = [
     "pragma: no cover",
     "raise NotImplementedError"
 ]
-
-#fail_under = 72.5
 show_missing = true
-# skip_covered = true
-# skip_empty = true
 sort = "Name"
 
 [build-system]
