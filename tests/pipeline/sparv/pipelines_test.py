@@ -1,4 +1,5 @@
 import os
+
 import pytest
 from penelope import pipeline
 from penelope.pipeline.sparv import pipelines
@@ -31,14 +32,13 @@ def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
     assert p.payload.document_index is not None
     assert 'year' in p.payload.document_index.columns
 
+
 def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
 
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
     target_filename = './tests/output/tranströmer_corpus_pos_csv.zip'
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(
-        config_filename,
-    ).files(
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename,).files(
         source=source_filename,
         index_source=None,
     )
@@ -65,10 +65,13 @@ def test_to_numeric_tagged_frame_pipeline():
 
     document_tuples = p.to_document_content_tuple().to_list()
 
-    token2id = generate_token2id()
+    assert document_tuples is not None
 
-    for _, document in document_tuples:
-        document = document_tuples[0][1]
+    raise NotImplementedError()
 
-    assert document is not None
+    # token2id = generate_token2id()
 
+    # for _, document in document_tuples:
+    #     document = document_tuples[0][1]
+
+    # assert document is not None
