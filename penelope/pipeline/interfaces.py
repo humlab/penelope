@@ -14,6 +14,8 @@ from penelope.corpus import (
 from penelope.corpus.readers import TextSource
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, strip_path_and_extension
 
+from .tagged_frame import TaggedFrame
+
 if TYPE_CHECKING:
     from . import pipelines
 

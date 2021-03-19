@@ -2,8 +2,8 @@ import csv
 import io
 
 import pandas as pd
-import penelope.corpus.sparv.sparv_xml_to_csv as sparv
 
+from ...sparv import sparv_xml_to_csv as sparv
 from ..interfaces import TextReaderOpts
 from .reader import CorpusReader
 from .sources import ZipSource

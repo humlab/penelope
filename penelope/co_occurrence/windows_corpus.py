@@ -1,7 +1,6 @@
 from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Mapping, Tuple
 
-import pandas as pd
 from penelope.corpus import ITokenizedCorpus, metadata_to_document_index
 from penelope.corpus.document_index import DocumentIndex
 

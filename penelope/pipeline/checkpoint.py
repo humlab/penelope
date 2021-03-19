@@ -7,7 +7,7 @@ from typing import Iterable, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.corpus.readers import TextReaderOpts
 from penelope.utility import assert_that_path_exists, getLogger, path_of, zip_utils
 
 from .config import CorpusSerializeOpts

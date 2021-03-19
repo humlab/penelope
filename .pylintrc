@@ -32,7 +32,8 @@ disable=invalid-name,
         too-many-locals,
         wrong-import-order,
         wrong-spelling-in-comment,
-        wrong-spelling-in-docstring
+        wrong-spelling-in-docstring,
+        duplicate-code
         # apply-builtin,
         # backtick,
         # bad-inline-option,

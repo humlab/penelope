@@ -32,7 +32,7 @@ def to_vectorized_corpus(
     return corpus
 
 
-def tagged_frame_to_tokens(
+def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     doc: TaggedFrame,
     extract_opts: ExtractTaggedTokensOpts,
     filter_opts: TaggedTokensFilterOpts = None,
