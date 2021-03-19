@@ -73,12 +73,17 @@ pylint:
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
+pylint_diff:
+	@time poetry run pylint -j 2 `git diff --name-only --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
+
 # https://nerderati.com/speed-up-pylint-by-reducing-the-files-it-examines/
+# delta_files=`git diff --name-only --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
+# delta_files=`git diff --name-only --staged --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
 .ONESHELL: pylint_diff_only
 pylint_diff_only:
 	@delta_files=$$(git status --porcelain | awk '{print $$2}' | grep -E '\.py$$' | tr '\n' ' ')
 	@if [[ "$$delta_files" != "" ]]; then
-		pylint $$delta_files
+		time poetry run pylint -j 2 $$delta_files
 	fi
 
 pylint_by_file:
@@ -171,6 +176,7 @@ help:
 	@echo " make bump.patch       Bumps version (patch), pushes to origin"
 	@echo " make pytest           Runs teets without code coverage"
 	@echo " make pylint           Runs pylint"
+	@echo " make pylint_diff_only Runs pylint on changed files only (git status --porcelain)"
 	@echo " make pytest2          Runs pylint on a per-file basis"
 	@echo " make flake8           Runs flake8 (black, flake8-pytest-style, mccabe, naming, pycodestyle, pyflakes)"
 	@echo " make isort            Runs isort"
