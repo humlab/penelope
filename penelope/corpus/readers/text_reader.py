@@ -2,10 +2,9 @@ import logging
 import os
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
-import pandas as pd
 from penelope.utility import extract_filenames_metadata, filename_satisfied_by, list_filenames, strip_paths
 
-from ..document_index import metadata_to_document_index
+from ..document_index import DocumentIndex, metadata_to_document_index
 from .interfaces import FilenameOrCallableOrSequenceFilter, ICorpusReader, TextReaderOpts, TextSource
 from .streamify_text_source import streamify_text_source
 from .text_transformer import TextTransformer, TextTransformOpts
@@ -100,8 +99,8 @@ class TextReader(ICorpusReader):
         return self._get_metadata(strip_paths(self._get_filenames()))
 
     @property
-    def document_index(self) -> pd.DataFrame:
-        _document_index: pd.DataFrame = metadata_to_document_index(
+    def document_index(self) -> DocumentIndex:
+        _document_index: DocumentIndex = metadata_to_document_index(
             self.metadata, document_id_field=self.reader_opts.index_field
         )
         return _document_index

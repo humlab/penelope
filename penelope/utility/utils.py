@@ -502,3 +502,15 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         return getattr(module, cls_or_function_name)
     except (ImportError, AttributeError) as e:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
+
+
+def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) -> str:
+    # Create a regular expression  from the dictionary keys
+    opts = dict(flags=re.IGNORECASE) if ignore_case else {}
+    sorted_keys = sorted(replace_map.keys(), key=lambda k: len(replace_map[k]), reverse=True)
+    regex = re.compile(f"({'|'.join(map(re.escape, sorted_keys))})", **opts)
+    if ignore_case:
+        fx = lambda mo: replace_map[(mo.string[mo.start() : mo.end()]).lower()]
+    else:
+        fx = lambda mo: replace_map[mo.string[mo.start() : mo.end()]]
+    return regex.sub(fx, text)

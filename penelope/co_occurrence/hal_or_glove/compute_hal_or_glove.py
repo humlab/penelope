@@ -4,6 +4,7 @@ import more_itertools
 import numpy as np
 import pandas as pd
 import penelope.utility as utility
+from penelope.corpus import DocumentIndex
 from penelope.type_alias import FilenameTokensTuple
 from tqdm.auto import tqdm
 
@@ -20,7 +21,7 @@ class CoOccurrenceError(ValueError):
 def compute_hal_or_glove_co_occurrences(
     instream: Iterable[Tuple[str, Iterable[str]]],
     *,
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     token2id: Mapping[str, int],
     window_size: int,
     distance_metric: int,  # 0, 1, 2
@@ -38,7 +39,7 @@ def compute_hal_or_glove_co_occurrences(
     ----------
     corpus : Iterable[str,Iterable[str]]
         Sequence of tokens
-    document_index : pd.DataFrame
+    document_index : DocumentIndex
         Document catalogue
     window_size : int
         [description]

@@ -1,12 +1,13 @@
 from typing import Callable, Iterable, List, Union
 
 import numpy as np
-import pandas as pd
-from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, default_tokenizer
+from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
 from penelope.utility.pos_tags import PoS_Tag_Scheme
+from penelope.utility.utils import multiple_replace
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
+from .tagged_frame import TaggedFrame
 
 
 def _payload_tokens(payload: DocumentPayload) -> List[str]:
@@ -18,7 +19,7 @@ def _payload_tokens(payload: DocumentPayload) -> List[str]:
 def to_vectorized_corpus(
     stream: Iterable[DocumentPayload],
     vectorize_opts: VectorizeOpts,
-    document_index: Union[Callable[[], pd.DataFrame], pd.DataFrame],
+    document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
 ) -> VectorizedCorpus:
     vectorizer = CorpusVectorizer()
     vectorize_opts.already_tokenized = True
@@ -31,13 +32,15 @@ def to_vectorized_corpus(
     return corpus
 
 
-def tagged_frame_to_tokens(
-    doc: pd.DataFrame,
+def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
+    doc: TaggedFrame,
     extract_opts: ExtractTaggedTokensOpts,
     filter_opts: TaggedTokensFilterOpts = None,
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
     pos_column: str = 'pos_',
+    phrases: List[List[str]] = None,
+    ignore_case: bool = False,
     verbose: bool = True,  # pylint: disable=unused-argument
 ) -> Iterable[str]:
 
@@ -67,16 +70,44 @@ def tagged_frame_to_tokens(
         if len(extract_opts.get_pos_excludes() or set()) > 0:
             mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
+    if phrases is not None:
+
+        tokens_str = ' '.join(doc.loc[mask][target].tolist())
+        phrased_tokens = multiple_replace(tokens_str, phrases, ignore_case=ignore_case).split()
+        # phrases = [p for p in phrases if len(p) > 1]
+
+        # phrases_dicts = {
+        #     start: sorted([p for p in phrases if p[0] == start], key=len, reverse=True)
+        #     for start in { p[0] for p in phrases}
+        # }
+
+        # tokens = doc.loc[mask][target].tolist()
+        # phrased_tokens = []
+        # i = 0
+        # while i < len(tokens):
+
+        #     if tokens[i] in phrases_dicts:
+        #         for phrase in phrases_dicts[tokens[i]]:
+        #             if tokens[i : i + len(phrase)] == phrase:
+        #                 phrased_tokens.append('_'.join(phrase))
+        #                 i += len(phrase)
+        #                 continue
+
+        #     phrased_tokens.append(tokens[i])
+        #     i += 1
+
+        return phrased_tokens
+
     return doc.loc[mask][target].tolist()
 
 
-def tagged_frame_to_token_counts(tagged_frame: pd.DataFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
+def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
     """Computes word counts (total and per part-of-speech) given tagged_frame"""
 
     if tagged_frame is None or len(tagged_frame) == 0:
         return {}
 
-    if not isinstance(tagged_frame, pd.DataFrame):
+    if not isinstance(tagged_frame, TaggedFrame):
         raise PipelineError(f"Expected tagged dataframe, found {type(tagged_frame)}")
 
     if not pos_column:

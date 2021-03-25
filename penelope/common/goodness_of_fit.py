@@ -263,7 +263,7 @@ def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, me
 
 
 def plot_slopes(
-    x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str, plot_height=300, plot_width=300
+    x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str, plot_height: int = 300, plot_width: int = 300
 ) -> Dict:
 
     data = generate_slopes(x_corpus, most_deviating, metric)

@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Dict, Mapping, Optional
 
 import numpy as np
-import pandas as pd
 import scipy
 from penelope.utility import getLogger, read_json, write_json
 
+from ..document_index import DocumentIndex
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
 logger = getLogger("penelope")
@@ -18,7 +18,7 @@ logger = getLogger("penelope")
 def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
     token2id: Dict[str, int],
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     token_counter: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
@@ -127,7 +127,7 @@ class StoreMixIn:
             data = pickle.load(f)
 
         token2id: Mapping = data["token2id"]
-        document_index: pd.DataFrame = data.get("document_index", data.get("document_index", None))
+        document_index: DocumentIndex = data.get("document_index", data.get("document_index", None))
         token_counter: dict = data.get("word_counts", data.get("token_counter", None))
         matrix_basename = StoreMixIn._matrix_filename(tag, folder)
 

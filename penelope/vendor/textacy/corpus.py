@@ -2,11 +2,10 @@ import os
 import types
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple
 
-import pandas as pd
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import textacy
-from penelope.corpus import TextTransformOpts
-from penelope.corpus.readers.interfaces import ICorpusReader, TextReaderOpts
+from penelope.corpus import DocumentIndex, TextTransformOpts
+from penelope.corpus.readers import ICorpusReader, TextReaderOpts
 from penelope.utility import (
     FilenameFieldSpecs,
     extract_filename_metadata,
@@ -117,7 +116,7 @@ def generate_corpus_filename(
 def _get_document_metadata(
     filename: str,
     metadata: Dict[str, Any] = None,
-    document_index: pd.DataFrame = None,
+    document_index: DocumentIndex = None,
     document_columns: List[str] = None,
     filename_fields: FilenameFieldSpecs = None,
 ) -> Mapping[str, Any]:
@@ -151,7 +150,7 @@ def _get_document_metadata(
 
 def _extend_stream_with_metadata(
     tokens_reader: text_tokenizer.TextTokenizer,
-    document_index: pd.DataFrame = None,
+    document_index: DocumentIndex = None,
     document_columns: List[str] = None,
     filename_fields: FilenameFieldSpecs = None,
 ) -> Iterable[Tuple[str, str, Dict]]:
@@ -161,7 +160,7 @@ def _extend_stream_with_metadata(
     ----------
     tokens_reader : text_tokenizer.TextTokenizer
         Reader, returns stream of filename and tokens
-    document_index : pd.DataFrame, optional
+    document_index : DocumentIndex, optional
         Document index, by default None
     document_columns : List[str], optional
         Columns in document index, by default None
@@ -191,7 +190,7 @@ def load_or_create(
     source_path: Any,
     language: str,
     *,
-    document_index: pd.DataFrame = None,  # data_frame or lambda corpus: corpus_index
+    document_index: DocumentIndex = None,  # data_frame or lambda corpus: corpus_index
     merge_entities: bool = False,
     overwrite: bool = False,
     binary_format: bool = True,
@@ -210,7 +209,7 @@ def load_or_create(
         Corpus path name.
     language : str
         The spaCy language designator.
-    document_index : pd.DataFrame, optional
+    document_index : DocumentIndex, optional
         A document index (if specified, then must include a `filename` column), by default None
     overwrite : bool, optional
         Force recreate of corpus if it exists on disk, by default False

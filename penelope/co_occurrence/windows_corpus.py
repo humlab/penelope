@@ -1,8 +1,8 @@
 from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Mapping, Tuple
 
-import pandas as pd
 from penelope.corpus import ITokenizedCorpus, metadata_to_document_index
+from penelope.corpus.document_index import DocumentIndex
 
 WindowsStream = Iterator[Tuple[str, int, Iterator[str]]]
 
@@ -22,7 +22,7 @@ class WindowsCorpus(ITokenizedCorpus):
         """
         self.statistics = defaultdict(lambda: {'n_windows': 0, 'n_tokens': 0})
         self.windows = iter(windows)
-        self._document_index: pd.DataFrame = None
+        self._document_index: DocumentIndex = None
         self._metadata = []
         self._vocabulary = vocabulary
 
@@ -42,7 +42,7 @@ class WindowsCorpus(ITokenizedCorpus):
             raise
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return self._document_index
 
     @property

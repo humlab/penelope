@@ -5,6 +5,8 @@ import spacy
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 
+from ..tagged_frame import TaggedFrame
+
 
 def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: dict) -> Iterable[Token]:
     """Filters out tokens based on given attribute value (dict[attribute, bool])
@@ -44,11 +46,11 @@ def spacy_doc_to_tagged_frame(
     spacy_doc: Doc,
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
-) -> pd.DataFrame:
+) -> TaggedFrame:
     """Returns a data frame with given attributes as columns"""
     tokens = filter_tokens_by_attribute_values(spacy_doc, attribute_value_filters)
 
-    df = pd.DataFrame(
+    df: TaggedFrame = pd.DataFrame(
         data=[tuple(getattr(token, x, None) for x in attributes) for token in tokens],
         columns=attributes,
     )
@@ -60,7 +62,7 @@ def text_to_tagged_frame(
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
     nlp: Language,
-) -> pd.DataFrame:
+) -> TaggedFrame:
     """Loads a single text into a spacy doc and returns a data frame with given token attributes columns
     Whitespace tokens are removed."""
     return spacy_doc_to_tagged_frame(
@@ -75,7 +77,7 @@ def texts_to_tagged_frames(
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
     language: Union[Language, str] = "en_core_web_sm",
-) -> Iterable[pd.DataFrame]:
+) -> Iterable[TaggedFrame]:
     """[summary]
 
     Parameters
@@ -97,12 +99,12 @@ def texts_to_tagged_frames(
 
     Returns
     -------
-    pd.DataFrame
+    TaggedFrame
         A data frame with columns corresponding to each given attribute
 
     Yields
     -------
-    Iterator[pd.DataFrame]
+    Iterator[TaggedFrame]
         Seqence of documents represented as data frames
     """
 

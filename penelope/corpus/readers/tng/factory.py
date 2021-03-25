@@ -2,11 +2,13 @@ import csv
 import io
 
 import pandas as pd
-import penelope.corpus.sparv.sparv_xml_to_csv as sparv
 
+from ...sparv import sparv_xml_to_csv as sparv
 from ..interfaces import TextReaderOpts
 from .reader import CorpusReader
 from .sources import ZipSource
+
+TaggedFrame = pd.core.api.DataFrame
 
 
 def create_sparv_xml_corpus_reader(
@@ -31,7 +33,7 @@ def create_sparv_xml_corpus_reader(
         csv_doc = parser.transform(xml_doc)
         return csv_doc
 
-    def xml_to_tagged_frame(xml_doc: bytes) -> pd.DataFrame:
+    def xml_to_tagged_frame(xml_doc: bytes) -> TaggedFrame:
         csv_doc = xml_to_csv_str(xml_doc)
         df = pd.read_csv(io.StringIO(csv_doc), sep='\t', quoting=csv.QUOTE_NONE)
         # FIXME: Read names from Config.payload.memory_store

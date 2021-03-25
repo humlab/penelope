@@ -84,3 +84,24 @@ def test_normalize_sparse_matrix_by_vector():
     normalized_matrix = utility.normalize_sparse_matrix_by_vector(csr)
     expected = np.nan_to_num(data / data.sum(axis=1, keepdims=True), copy=False, nan=0.0, posinf=0.0, neginf=0.0)
     assert np.allclose(normalized_matrix.todense(), expected)
+
+
+def test_multiple_replace():
+
+    tokens = [chr(ord('a') + i) for i in range(0, 10)]
+    tokens_str = ' '.join(tokens)
+
+    replace_map = {
+        "d e f": "d_e_f",
+        "i j": "i_j",
+    }
+
+    assert utility.multiple_replace(tokens_str, replace_map) == "a b c d_e_f g h i_j"
+
+    replace_map = {
+        "d e": "x_y",
+        "d e f": "d_e_f",
+        "i j": "i_j",
+    }
+
+    assert utility.multiple_replace(tokens_str, replace_map) == "a b c d_e_f g h i_j"

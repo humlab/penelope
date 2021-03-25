@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import pandas as pd
 from penelope.utility import create_iterator, extract_filenames_metadata, list_filenames
 
-from ..document_index import metadata_to_document_index
+from ..document_index import DocumentIndex, metadata_to_document_index
 from .interfaces import ICorpusReader
 from .text_reader import TextReaderOpts
 
@@ -50,7 +49,7 @@ class ZipTextIterator(ICorpusReader):
         return self._metadata
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return metadata_to_document_index(self.metadata, document_id_field=self.reader_opts.index_field)
 
     def __iter__(self):

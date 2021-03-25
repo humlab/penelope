@@ -25,84 +25,86 @@ T = TypeVar("T", int, str)
 
 DOCUMENT_INDEX_COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
 
+DocumentIndex = pd.core.api.DataFrame
 
-class DocumentIndex:
-    def __init__(self, document_index: Union[pd.DataFrame, List[dict], str], **kwargs):
 
-        if not isinstance(document_index, (pd.DataFrame, list, str)):
+class DocumentIndexHelper:
+    def __init__(self, document_index: Union[DocumentIndex, List[dict], str], **kwargs):
+
+        if not isinstance(document_index, (DocumentIndex, list, str)):
             raise DocumentIndexError("expected document index data but found None")
 
-        self._document_index: pd.DataFrame = (
+        self._document_index: DocumentIndex = (
             document_index
-            if isinstance(document_index, pd.DataFrame)
+            if isinstance(document_index, DocumentIndex)
             else metadata_to_document_index(metadata=document_index, document_id_field=None)
             if isinstance(document_index, list)
             else load_document_index_from_str(data_str=document_index, sep=kwargs.get('sep', '\t'))
         )
 
     @property
-    def document_index(self) -> pd.DataFrame:
+    def document_index(self) -> DocumentIndex:
         return self._document_index
 
-    def store(self, filename: str) -> "DocumentIndex":
+    def store(self, filename: str) -> "DocumentIndexHelper":
         store_document_index(self.document_index, filename)
         return self
 
     @staticmethod
     def load(
         filename: Union[str, StringIO], *, sep: str = '\t', document_id_field: str = 'document_id', **read_csv_kwargs
-    ) -> "DocumentIndex":
+    ) -> "DocumentIndexHelper":
         _index = load_document_index(filename, sep=sep, document_id_field=document_id_field, **read_csv_kwargs)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
     @staticmethod
-    def from_metadata(metadata: List[Dict], *, document_id_field: str = None) -> "DocumentIndex":
+    def from_metadata(metadata: List[Dict], *, document_id_field: str = None) -> "DocumentIndexHelper":
         _index = metadata_to_document_index(metadata, document_id_field=document_id_field)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
     @staticmethod
-    def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndex":
+    def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndexHelper":
         _metadata = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
         _index = metadata_to_document_index(_metadata)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
     @staticmethod
-    def from_str(data_str: str, sep: str = '\t', document_id_field: str = 'document_id') -> "DocumentIndex":
+    def from_str(data_str: str, sep: str = '\t', document_id_field: str = 'document_id') -> "DocumentIndexHelper":
         _index = load_document_index_from_str(data_str=data_str, sep=sep, document_id_field=document_id_field)
-        return DocumentIndex(_index)
+        return DocumentIndexHelper(_index)
 
-    def consolidate(self, reader_index: pd.DataFrame) -> "DocumentIndex":
+    def consolidate(self, reader_index: DocumentIndex) -> "DocumentIndexHelper":
         self._document_index = consolidate_document_index(self._document_index, reader_index)
         return self
 
     @deprecated
-    def upgrade(self) -> "DocumentIndex":
+    def upgrade(self) -> "DocumentIndexHelper":
         self._document_index = document_index_upgrade(self._document_index)
         return self
 
-    def update_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> "DocumentIndex":
+    def update_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> "DocumentIndexHelper":
         self._document_index = update_document_index_token_counts(
             self._document_index, doc_token_counts=doc_token_counts
         )
         return self
 
-    def add_attributes(self, other: pd.DataFrame) -> "DocumentIndex":
+    def add_attributes(self, other: DocumentIndex) -> "DocumentIndexHelper":
         """ Adds other's document meta data (must have a document_id) """
         self._document_index = self._document_index.merge(
             other, how='inner', left_on='document_id', right_on='document_id'
         )
         return self
 
-    def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndex":
+    def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndexHelper":
         """Updates attributes for the specified document item"""
         # property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
         # for key in [k for k in property_bag if k not in self._document_index.columns]:
         #     self._document_index.insert(len(self._document_index.columns), key, np.nan)
-        # self._document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+        # self._document_index.update(DocumentIndex(data=property_bag, index=[document_name], dtype=np.int64))
         update_document_index_properties(self._document_index, document_name=document_name, property_bag=property_bag)
         return self
 
-    def overload(self, df: pd.DataFrame, column_names: List[str]) -> pd.DataFrame:
+    def overload(self, df: DocumentIndex, column_names: List[str]) -> DocumentIndex:
         return overload_by_document_index_properties(self._document_index, df=df, column_names=column_names)
 
     def apply_filename_fields(self, filename_fields: FilenameFieldSpecs):
@@ -113,7 +115,7 @@ class DocumentIndex:
         column_name: str = 'year',
         transformer: Union[Callable[[T], T], Dict[T, T], None] = None,
         index_values: Union[str, List[T]] = None,
-    ) -> "DocumentIndex":
+    ) -> "DocumentIndexHelper":
         """Returns a reduced document index grouped by specified column.
 
         A new `category` column is added that by applying `transformer` to `column_name`.
@@ -164,7 +166,7 @@ class DocumentIndex:
         )
 
         # Add a new and possibly transformed `category`column, group by column and apply aggreates
-        document_index = (
+        document_index: DocumentIndex = (
             self._document_index.assign(category=transform)
             .groupby('category')
             .agg(count_aggregates)
@@ -210,9 +212,9 @@ class DocumentIndex:
         # Set `document_name` as index of result data frame
         document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
-        return DocumentIndex(document_index)
+        return DocumentIndexHelper(document_index)
 
-    def set_strictly_increasing_index(self) -> "DocumentIndex":
+    def set_strictly_increasing_index(self) -> "DocumentIndexHelper":
         self._document_index['document_id'] = get_strictly_increasing_document_id(
             self._document_index, document_id_field=None
         )
@@ -221,12 +223,12 @@ class DocumentIndex:
 
 
 def get_strictly_increasing_document_id(
-    document_index: pd.DataFrame, document_id_field: str = 'document_id'
+    document_index: DocumentIndex, document_id_field: str = 'document_id'
 ) -> pd.Series:
     """[summary]
 
     Args:
-        document_index (pd.DataFrame): [description]
+        document_index (DocumentIndex): [description]
         document_id_field (str): [description]
 
     Returns:
@@ -249,33 +251,33 @@ def get_strictly_increasing_document_id(
     return document_index.reset_index().index
 
 
-def store_document_index(document_index: pd.DataFrame, filename: str) -> None:
+def store_document_index(document_index: DocumentIndex, filename: str) -> None:
     """[summary]
 
     Args:
-        document_index (pd.DataFrame): [description]
+        document_index (DocumentIndex): [description]
         filename (str): [description]
     """
     document_index.to_csv(filename, sep='\t', header=True)
 
 
 def load_document_index(
-    filename: Union[str, StringIO, pd.DataFrame],
+    filename: Union[str, StringIO, DocumentIndex],
     *,
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
     **read_csv_kwargs,
-) -> pd.DataFrame:
+) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
 
     if filename is None:
         return None
 
-    if isinstance(filename, pd.DataFrame):
-        document_index = filename
+    if isinstance(filename, DocumentIndex):
+        document_index: DocumentIndex = filename
     else:
-        document_index: pd.DataFrame = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
+        document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
         if old_or_unnamed_index_column in document_index.columns:
@@ -298,7 +300,7 @@ def load_document_index(
 
 
 @deprecated
-def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
+def document_index_upgrade(document_index: DocumentIndex) -> DocumentIndex:
     """Fixes older versions of document indexes"""
 
     if 'document_name' not in document_index.columns:
@@ -314,18 +316,18 @@ def document_index_upgrade(document_index: pd.DataFrame) -> pd.DataFrame:
     return document_index
 
 
-def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = 'document_id') -> pd.DataFrame:
+def metadata_to_document_index(metadata: List[Dict], *, document_id_field: str = 'document_id') -> DocumentIndex:
     """Creates a document index from collected filename fields metadata."""
 
     if metadata is None or len(metadata) == 0:
         metadata = {'filename': [], 'document_id': []}
 
-    document_index = load_document_index(pd.DataFrame(metadata), sep=None, document_id_field=document_id_field)
+    document_index = load_document_index(DocumentIndex(metadata), sep=None, document_id_field=document_id_field)
 
     return document_index
 
 
-def apply_filename_fields(document_index: pd.DataFrame, filename_fields: FilenameFieldSpecs):
+def apply_filename_fields(document_index: DocumentIndex, filename_fields: FilenameFieldSpecs):
     """Extends document index with filename fields defined by `filename_fields`"""
     if 'filename' not in document_index.columns:
         raise DocumentIndexError("filename not in document index")
@@ -337,12 +339,12 @@ def apply_filename_fields(document_index: pd.DataFrame, filename_fields: Filenam
     return document_index
 
 
-def load_document_index_from_str(data_str: str, sep: str, document_id_field: str = 'document_id') -> pd.DataFrame:
+def load_document_index_from_str(data_str: str, sep: str, document_id_field: str = 'document_id') -> DocumentIndex:
     df = load_document_index(StringIO(data_str), sep=sep, document_id_field=document_id_field)
     return df
 
 
-def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.DataFrame) -> pd.DataFrame:
+def consolidate_document_index(document_index: DocumentIndex, reader_index: DocumentIndex) -> DocumentIndex:
     """Returns a consolidated document index from an existing index, if exists,
     and the reader index."""
 
@@ -356,8 +358,8 @@ def consolidate_document_index(document_index: pd.DataFrame, reader_index: pd.Da
 
 
 def update_document_index_token_counts(
-    document_index: pd.DataFrame, doc_token_counts: List[Tuple[str, int, int]]
-) -> pd.DataFrame:
+    document_index: DocumentIndex, doc_token_counts: List[Tuple[str, int, int]]
+) -> DocumentIndex:
     """Updates or adds fields `n_raw_tokens` and `n_tokens` to document index from collected during a corpus read pass
     Only updates values that don't already exist in the document index"""
     try:
@@ -386,7 +388,7 @@ def update_document_index_token_counts(
 
 
 def update_document_index_properties(
-    document_index: pd.DataFrame,
+    document_index: DocumentIndex,
     *,
     document_name: str,
     property_bag: Mapping[str, int],
@@ -405,13 +407,13 @@ def update_document_index_properties(
 
 
 def overload_by_document_index_properties(
-    document_index: pd.DataFrame, df: pd.DataFrame, column_names: List[str] = None
-) -> pd.DataFrame:
+    document_index: DocumentIndex, df: pd.DataFrame, column_names: List[str] = None
+) -> DocumentIndex:
     """Add document `columns` to `df` if columns not already exists.
 
     Parameters
     ----------
-    document_index : pd.DataFrame
+    document_index : DocumentIndex
         Corpus document index, by default None
     df : pd.DataFrame
         Data of interest
@@ -420,7 +422,7 @@ def overload_by_document_index_properties(
 
     Returns
     -------
-    pd.DataFrame
+    DocumentIndex
         `df` extended with `columns` data
     """
 

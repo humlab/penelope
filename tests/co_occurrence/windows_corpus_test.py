@@ -5,7 +5,7 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
 from tests.test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
-SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.csv.zip'
+SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
 
 
 def log_json(filename, d):

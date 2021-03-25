@@ -1,8 +1,8 @@
 {
     "peacock.remoteColor": "#4e673c",
     "python.formatting.provider": "black",
-    "python.linting.pylintEnabled": true,
     "python.linting.lintOnSave": true,
+    "python.linting.pylintEnabled": true,
     "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/python",
     "python.sortImports.path": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/isort",
     "python.testing.nosetestsEnabled": false,

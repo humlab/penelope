@@ -107,6 +107,7 @@ from .utils import (
     list_to_unique_list_with_preserved_order,
     lists_of_dicts_merged_by_key,
     ls_sorted,
+    multiple_replace,
     noop,
     normalize_array,
     normalize_sparse_matrix_by_vector,

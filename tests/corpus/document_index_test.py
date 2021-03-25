@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from penelope.corpus import (
-    DocumentIndex,
+    DocumentIndexHelper,
     document_index_upgrade,
     load_document_index,
     load_document_index_from_str,
@@ -48,8 +48,8 @@ tran_2020_02_test.txt;2020;2;tran_2020_02_test;4;Epilogue;44
 """
 
 
-def load_test_index(data_str: str) -> DocumentIndex:
-    index = DocumentIndex(load_document_index(filename=StringIO(data_str), sep=';'))
+def load_test_index(data_str: str) -> DocumentIndexHelper:
+    index = DocumentIndexHelper(load_document_index(filename=StringIO(data_str), sep=';'))
     return index
 
 
@@ -125,7 +125,7 @@ def test_consolidate():
 def test_upgrade():
     filename = './tests/test_data/documents_index_doc_id.zip'
     document_index = pd.read_csv(filename, '\t', header=0, index_col=0, na_filter=False)
-    document_index = DocumentIndex(document_index).upgrade().document_index
+    document_index = DocumentIndexHelper(document_index).upgrade().document_index
     expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_raw_tokens'])
     assert set(document_index.columns.tolist()).intersection(expected_columns) == expected_columns
 
@@ -171,7 +171,9 @@ def test_update_properties():
 def test_group_by_category():
     index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), sep=';')
     result: pd.DataFrame = (
-        DocumentIndex(index).group_by_column(column_name='year', transformer=None, index_values=None).document_index
+        DocumentIndexHelper(index)
+        .group_by_column(column_name='year', transformer=None, index_values=None)
+        .document_index
     )
 
     assert result.category.tolist() == [2019, 2020]

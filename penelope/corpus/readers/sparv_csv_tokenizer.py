@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
-
+from ..sparv.sparv_csv_to_text import SparvCsvToText
 from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from .text_tokenizer import TextTokenizer
 from .text_transformer import TextTransformOpts

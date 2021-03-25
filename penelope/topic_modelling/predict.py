@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import penelope.utility as utility
 from gensim.matutils import Sparse2Corpus
-from penelope.corpus import DocumentIndex
+from penelope.corpus import DocumentIndex, DocumentIndexHelper
 from penelope.topic_modelling.container import InferredTopicsData
 from penelope.topic_modelling.extract import extract_topic_token_overview, extract_topic_token_weights
 
@@ -17,7 +17,7 @@ logger = utility.get_logger('corpus_text_analysis')
 def predict_document_topics(
     model: Any,
     corpus: Any,
-    document_index: pd.DataFrame = None,
+    document_index: DocumentIndex = None,
     minimum_probability: float = 0.001,
 ) -> pd.DataFrame:
     """Applies a the topic model on `corpus` and returns a document-topic dataframe
@@ -28,7 +28,7 @@ def predict_document_topics(
         The topic model
     corpus : Any
         The corpus
-    document_index : pd.DataFrame, optional
+    document_index : DocumentIndex, optional
         The document index, by default None
     minimum_probability : float, optional
         Threshold, by default 0.001
@@ -83,7 +83,7 @@ def predict_document_topics(
         df_doc_topics['document_id'] = df_doc_topics.document_id.astype(np.uint32)
         df_doc_topics['topic_id'] = df_doc_topics.topic_id.astype(np.uint16)
 
-        df_doc_topics = DocumentIndex(document_index).overload(df_doc_topics, 'year')
+        df_doc_topics = DocumentIndexHelper(document_index).overload(df_doc_topics, 'year')
 
         logger.info('  DONE!')
 
@@ -95,7 +95,7 @@ def predict_document_topics(
 
 
 def compile_inferred_topics_data(
-    topic_model: Any, corpus: Any, id2word: Any, document_index: pd.DataFrame, n_tokens: int = 200
+    topic_model: Any, corpus: Any, id2word: Any, document_index: DocumentIndex, n_tokens: int = 200
 ) -> InferredTopicsData:
 
     dictionary = id2word_to_dataframe(id2word)

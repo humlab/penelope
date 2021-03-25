@@ -107,7 +107,7 @@ def test_sparv_csv_create_token2id():
         config.CorpusSerializeOpts(),
     )
 
-    payload = DocumentPayload(content_type=ContentType.TAGGEDFRAME, content=tagged_frame)
+    payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)
 
     expected_tokens = tagged_frame.token.tolist() + tagged_frame.baseform.tolist()
     assert expected_tokens == [x for x in task.tokens_iter(payload)]
@@ -115,7 +115,7 @@ def test_sparv_csv_create_token2id():
     payload_next = task.process_payload(payload=payload)
 
     assert payload_next is not None
-    assert payload_next.content_type == ContentType.TAGGEDFRAME
+    assert payload_next.content_type == ContentType.TAGGED_FRAME
     assert payload_next.content is tagged_frame
     assert len(set(expected_tokens)) == len(task.token2id)
     assert task.token2id is pipeline.payload.token2id

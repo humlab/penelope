@@ -18,7 +18,7 @@ TEST_DATA_FOLDER = './tests/test_data'
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 TEST_CORPUS_FILENAME = os.path.join(TEST_DATA_FOLDER, 'test_corpus.zip')
-TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = os.path.join(TEST_DATA_FOLDER, 'tranströmer_corpus_export.csv.zip')
+TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = os.path.join(TEST_DATA_FOLDER, 'tranströmer_corpus_export.sparv4.csv.zip')
 
 # pylint: disable=too-many-arguments
 

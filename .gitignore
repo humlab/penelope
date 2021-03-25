@@ -146,3 +146,4 @@ nlu_samples
 coverage.xml
 htmlcov
 *.sav
+export

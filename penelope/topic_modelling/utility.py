@@ -184,7 +184,6 @@ def normalize_weights(df):
     return df
 
 
-# FIXME Consider consolidating this to DocumentIndex
 def document_terms_count(corpus):
 
     n_terms = None

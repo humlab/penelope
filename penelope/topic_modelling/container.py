@@ -8,9 +8,8 @@ import gensim
 import pandas as pd
 import scipy
 from penelope import utility
-from penelope.corpus import DocumentIndex, load_document_index
-from penelope.utility import file_utility, filename_utils
-from penelope.utility.filename_fields import FilenameFieldSpecs
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
+from penelope.utility import FilenameFieldSpecs, file_utility, filename_utils
 from tqdm.auto import tqdm
 
 from .utility import compute_topic_proportions
@@ -27,7 +26,7 @@ class TrainingCorpus:
     def __init__(
         self,
         terms: Iterable[Iterable[str]] = None,
-        document_index: pd.DataFrame = None,
+        document_index: DocumentIndex = None,
         doc_term_matrix: scipy.sparse.csr_matrix = None,
         id2word: Mapping[int, str] = None,
         vectorizer_args: Mapping[str, Any] = None,
@@ -44,7 +43,7 @@ class TrainingCorpus:
         ----------
         terms : Iterable[Iterable[str]], optional
             Document tokens stream, by default None
-        document_index : pd.DataFrame, optional
+        document_index : DocumentIndex, optional
             Documents metadata, by default None
         doc_term_matrix : scipy.sparse.csr_sparse, optional
             DTM BoW, by default None
@@ -105,7 +104,7 @@ class InferredTopicsData:
 
     def __init__(
         self,
-        document_index: pd.DataFrame,  # document_index (training, shuould be predicted?)
+        document_index: DocumentIndex,  # document_index (training, shuould be predicted?)
         dictionary: Any,  # dictionary
         topic_token_weights: pd.DataFrame,  # model data
         topic_token_overview: pd.DataFrame,  # model data
@@ -114,7 +113,7 @@ class InferredTopicsData:
         """A container for compiled data as generic pandas dataframes suitable for analysi and visualisation
         Parameters
         ----------
-        document_index : pd.DataFrame
+        document_index : DocumentIndex
             Corpus document index
         dictionary : Any
             Corpus dictionary
@@ -126,9 +125,9 @@ class InferredTopicsData:
             Document topic weights
         """
         self.dictionary: Any = dictionary
-        self.document_index: pd.DataFrame = document_index
+        self.document_index: DocumentIndex = document_index
         self.topic_token_weights: pd.DataFrame = topic_token_weights
-        self.document_topic_weights: pd.DataFrame = DocumentIndex(document_index).overload(
+        self.document_topic_weights: pd.DataFrame = DocumentIndexHelper(document_index).overload(
             document_topic_weights, 'year'
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview
