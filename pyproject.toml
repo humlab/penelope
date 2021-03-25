@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.3.9"
+version = "0.3.10"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -72,13 +72,14 @@ rope = "==0.*,>=0.17.0"
 yapf = "==0.*,>=0.30.0"
 pytest-xdist = "==2.*,>=2.2.0"
 mypy = "==0.*,>=0.790.0"
-Sphinx = "^3.5.1"
-recommonmark = "^0.7.1"
+Sphinx = "==3.*,>=3.5.1"
+recommonmark = "==0.*,>=0.7.1"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 co_occurrence = "penelope.scripts.co_occurrence:main"
+
 
 
 [tool.pytest.ini_options]
