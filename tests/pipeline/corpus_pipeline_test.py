@@ -60,7 +60,7 @@ def fake_data_frame_stream(n: int = 1):
     for i in range(1, n + 1):
         yield DocumentPayload(
             filename=f'dummy_{i}.csv',
-            content_type=ContentType.TAGGEDFRAME,
+            content_type=ContentType.TAGGED_FRAME,
             content=pd.DataFrame(data={'text': ['bil'], 'pos_': ['NOUN'], 'lemma_': ['bil']}),
         )
 
@@ -204,7 +204,7 @@ def test_text_to_tagged_frame_with_text_payload_succeeds():
     next_payload = task.process(current_payload)
     assert task.tagger.call_count == 1
     assert task.register_token_counts.call_count == 1
-    assert next_payload.content_type == ContentType.TAGGEDFRAME
+    assert next_payload.content_type == ContentType.TAGGED_FRAME
 
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_any_to_tagged_frame)
@@ -216,7 +216,7 @@ def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     next_payload = task.process(current_payload)
     assert task.tagger.call_count == 1
     assert task.register_token_counts.call_count == 1
-    assert next_payload.content_type == ContentType.TAGGEDFRAME
+    assert next_payload.content_type == ContentType.TAGGED_FRAME
 
 
 def patch_tagged_frame_to_tokens(*_, **__) -> Iterable[str]:
@@ -245,10 +245,10 @@ def patch_store_checkpoint(
 
 def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
     return CheckpointData(
-        content_type=ContentType.TAGGEDFRAME,
+        content_type=ContentType.TAGGED_FRAME,
         document_index=None,
         payload_stream=fake_data_frame_stream(1),
-        serialize_opts=CorpusSerializeOpts().as_type(ContentType.TAGGEDFRAME),
+        serialize_opts=CorpusSerializeOpts().as_type(ContentType.TAGGED_FRAME),
     )
 
 
@@ -258,7 +258,7 @@ def test_save_data_frame_succeeds():
     task = tasks.SaveTaggedCSV(pipeline=pipeline, filename="dummy.zip")
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
-        assert payload.content_type == ContentType.TAGGEDFRAME
+        assert payload.content_type == ContentType.TAGGED_FRAME
 
 
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
@@ -273,17 +273,17 @@ def test_load_data_frame_succeeds():
     task.register_token_counts = lambda _: task
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
-        assert payload.content_type == ContentType.TAGGEDFRAME
+        assert payload.content_type == ContentType.TAGGED_FRAME
 
 
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_checkpoint_data_frame_succeeds():
-    attrs = {'get_prior_content_type.return_value': ContentType.TAGGEDFRAME}
+    attrs = {'get_prior_content_type.return_value': ContentType.TAGGED_FRAME}
     task = tasks.Checkpoint(pipeline=Mock(spec=CorpusPipeline, **attrs), filename="dummy.zip").setup()
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
-        assert payload.content_type == ContentType.TAGGEDFRAME
+        assert payload.content_type == ContentType.TAGGED_FRAME
 
 
 def test_tokens_to_text_when_tokens_instream_succeeds():

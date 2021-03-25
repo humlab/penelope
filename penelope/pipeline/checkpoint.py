@@ -49,7 +49,7 @@ class IContentSerializer(abc.ABC):
         if options.content_type == ContentType.TOKENS:
             return TokensContentSerializer()
 
-        if options.content_type == ContentType.TAGGEDFRAME:
+        if options.content_type == ContentType.TAGGED_FRAME:
             return TaggedFrameContentSerializer()
 
         raise ValueError(f"non-serializable content type: {options.content_type}")

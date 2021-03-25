@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import abc
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
+from typing import Iterator, TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 @unique
 class ContentType(IntEnum):
     NONE = 0
-    TAGGEDFRAME = 1
+    TAGGED_FRAME = 1
     TEXT = 2
     TOKENS = 3
     SPACYDOC = 4
@@ -38,6 +39,7 @@ class ContentType(IntEnum):
     DOCUMENT_CONTENT_TUPLE = 13
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
+    ID_TAGGED_FRAME = 16
 
 
 @dataclass
@@ -245,3 +247,22 @@ class ITask(abc.ABC):
 
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
+
+
+class Token2Id(defaultdict):
+
+    def __init__(self, *args):
+        self.default_factory = self.__len__
+        super().__init__(*args)
+
+    def ingest(self, tokens: Iterator[str]) -> "Token2Id":
+        for token in tokens:
+            _ = self[token]
+        return self
+
+    def open(self) -> "Token2Id":
+        self.default_factory = None
+
+    def close(self) -> "Token2Id":
+        self.default_factory = self.__len__
+        return self

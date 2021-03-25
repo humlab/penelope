@@ -81,7 +81,7 @@ class ToSpacyDocToTaggedFrame(ToTaggedFrame):
     def __post_init__(self):
         super().__post_init__()
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.TAGGEDFRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
         self.tagger = self.spacy_tagger
 
     def spacy_tagger(

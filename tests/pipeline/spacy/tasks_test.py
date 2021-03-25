@@ -73,7 +73,7 @@ def test_spacy_doc_to_tagged_frame(looking_back, test_payload):
     task = SpacyDocToTaggedFrame(instream=[payload], attributes=POS_ATTRIBUTES)
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
-    assert payload_next.content_type == ContentType.TAGGEDFRAME
+    assert payload_next.content_type == ContentType.TAGGED_FRAME
 
 
 @patch('spacy.load', patch_spacy_load)
@@ -83,7 +83,7 @@ def test_to_spacy_doc_to_tagged_frame(test_payload):
     task = ToSpacyDocToTaggedFrame(instream=[payload], attributes=POS_ATTRIBUTES)
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
-    assert payload_next.content_type == ContentType.TAGGEDFRAME
+    assert payload_next.content_type == ContentType.TAGGED_FRAME
 
 
 # @patch('spacy.load', patch_spacy_load)
@@ -93,4 +93,4 @@ def test_to_spacy_doc_to_tagged_frame(test_payload):
 #     pipeline = patch_spacy_pipeline(test_payload).set_spacy_model(language=nlp).text_to_spacy_to_tagged_frame().setup()
 #     pipeline.tasks[1].instream = [payload]
 #     payload_next = pipeline.tasks[-1].process_payload(payload)
-#     assert payload_next.content_type == ContentType.TAGGEDFRAME
+#     assert payload_next.content_type == ContentType.TAGGED_FRAME
