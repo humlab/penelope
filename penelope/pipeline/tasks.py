@@ -145,7 +145,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         return self
 
     def __post_init__(self):
-        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGEDFRAME]
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
     def outstream(self) -> Iterable[DocumentPayload]:
@@ -180,11 +180,11 @@ class SaveTaggedCSV(DefaultResolveMixIn, ITask):
     options: checkpoint.CorpusSerializeOpts = None
 
     def __post_init__(self):
-        self.in_content_type = ContentType.TAGGEDFRAME
-        self.out_content_type = ContentType.TAGGEDFRAME
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
 
     def outstream(self) -> Iterable[DocumentPayload]:
-        options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(ContentType.TAGGEDFRAME)
+        options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(ContentType.TAGGED_FRAME)
         for payload in checkpoint.store_checkpoint(
             options=options,
             target_filename=self.filename,
@@ -206,7 +206,7 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
-        self.out_content_type = ContentType.TAGGEDFRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
 
     def setup(self) -> ITask:
         super().setup()
@@ -236,7 +236,7 @@ class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
-        self.out_content_type = ContentType.TAGGEDFRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
 
     def setup(self) -> ITask:
         super().setup()
@@ -249,7 +249,7 @@ class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):
         self.pipeline.payload.set_reader_index(self.corpus_reader.document_index)
         self.instream = (
             DocumentPayload(
-                content_type=ContentType.TAGGEDFRAME,
+                content_type=ContentType.TAGGED_FRAME,
                 filename=document,
                 content=content,
                 filename_values=None,
@@ -319,7 +319,7 @@ class ToTaggedFrame(CountTokensMixIn, ITask):
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.TAGGEDFRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
@@ -344,7 +344,7 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
     filter_opts: TaggedTokensFilterOpts = None
 
     def __post_init__(self):
-        self.in_content_type = ContentType.TAGGEDFRAME
+        self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TOKENS
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
@@ -436,7 +436,7 @@ class Vocabulary(ITask):
     token2id: Mapping[str, int] = None
 
     def __post_init__(self):
-        self.in_content_type = [ContentType.TOKENS, ContentType.TAGGEDFRAME]
+        self.in_content_type = [ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
     def setup(self) -> ITask:
