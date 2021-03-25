@@ -31,7 +31,7 @@ def test_phrased_tagged_frame():
         payload.content,
         ExtractTaggedTokensOpts(lemmatize=False),
     )
-
+    assert tokens is not None
     phrases = {'United Nations': 'United_Nations', 'United': 'United'}
     phrased_tokens = tagged_frame_to_tokens(
         payload.content,

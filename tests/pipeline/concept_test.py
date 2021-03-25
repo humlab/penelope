@@ -1,10 +1,8 @@
-
-
 import os
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
-from penelope.pipeline.convert import tagged_frame_to_tokens
-from penelope.pipeline import checkpoint
 
+from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.pipeline import checkpoint
+from penelope.pipeline.convert import tagged_frame_to_tokens
 
 
 def test_phrased_tagged_frame():
@@ -20,7 +18,7 @@ def test_phrased_tagged_frame():
         payload.content,
         ExtractTaggedTokensOpts(lemmatize=False),
     )
-
+    assert tokens is not None
     phrases = {'United Nations': 'United_Nations', 'United': 'United'}
     phrased_tokens = tagged_frame_to_tokens(
         payload.content,
