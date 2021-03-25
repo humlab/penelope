@@ -54,6 +54,7 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     assert 'year' in p.payload.document_index.columns
 
 
+@pytest.mark.skip(reason="NotImplemented")
 def test_to_numeric_tagged_frame_pipeline():
 
     config_filename = './tests/test_data/tranströmer.yml'

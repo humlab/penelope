@@ -1,9 +1,9 @@
 # from collections import defaultdict
 # from typing import Any,  Iterator
 # from penelope.corpus import DocumentIndex
-# import pandas as pd
+import pandas as pd
 
-# TaggedFrame = pd.core.api.DataFrame
+TaggedFrame = pd.core.api.DataFrame
 # IdTaggedFrame = pd.core.api.DataFrame
 
 # class TaggedFrameCorpora:

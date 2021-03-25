@@ -4,7 +4,7 @@ import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.corpus.dtm as dtm
 import pytest
-from penelope.corpus import DocumentIndex
+from penelope.corpus import DocumentIndexHelper
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDE_5DOCS
 from tests.utils import very_simple_corpus
 
@@ -71,7 +71,7 @@ def test_to_vectorized_corpus():
     index_filename = './tests/test_data/VENUS/VENUS_document_index.csv'
 
     co_occurrences = co_occurrence.load_co_occurrences(filename)
-    document_index = DocumentIndex.load(index_filename).document_index
+    document_index = DocumentIndexHelper.load(index_filename).document_index
     corpus = co_occurrence.to_vectorized_corpus(co_occurrences, document_index, value_column)
 
     assert corpus.data.shape[0] == len(document_index)
