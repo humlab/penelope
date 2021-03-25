@@ -4,7 +4,7 @@ import abc
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import Iterator, TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -250,7 +250,6 @@ DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFr
 
 
 class Token2Id(defaultdict):
-
     def __init__(self, *args):
         self.default_factory = self.__len__
         super().__init__(*args)

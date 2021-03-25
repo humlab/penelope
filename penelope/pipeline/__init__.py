@@ -16,4 +16,4 @@ from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, Pipe
 from .pipeline_mixin import PipelineShortcutMixIn
 from .pipelines import CorpusPipeline, wildcard, wildcard_to_co_occurrence_pipeline, wildcard_to_DTM_pipeline
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import DefaultResolveMixIn, CountTokensMixIn
+from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn

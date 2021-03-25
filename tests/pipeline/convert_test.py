@@ -1,11 +1,13 @@
 import pytest
 
+
 @pytest.mark.skip(reason="Not implemented")
 def test_to_vectorized_corpus():
     pass
 
+
 @pytest.mark.skip(reason="Not implemented")
-def test_tagged_frame_to_tokens() :
+def test_tagged_frame_to_tokens():
     pass
 
 
