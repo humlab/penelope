@@ -2,7 +2,7 @@ from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
 import spacy
-from penelope.pipeline import TaggedFrame
+from ..tagged_frame import TaggedFrame
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 
