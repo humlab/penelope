@@ -55,6 +55,7 @@ def test_spaCy_co_occurrence_pipeline():
 
     compute_result: ComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=ssi,
+        corpus_filename=ssi.pipeline_payload.source,
         tokens_transform_opts=tokens_transform_opts,
         extract_tagged_tokens_opts=extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=tagged_tokens_filter_opts,
@@ -87,6 +88,7 @@ def test_spaCy_co_occurrence_workflow(config):
 
     compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
+        corpus_filename=None,
         tokens_transform_opts=args.tokens_transform_opts,
         extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,

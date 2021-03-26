@@ -18,7 +18,10 @@ def compute(
         assert args.is_satisfied()
 
         corpus: dtm.VectorizedCorpus = (
-            corpus_config.get_pipeline("tagged_frame_pipeline")
+            corpus_config.get_pipeline(
+                "tagged_frame_pipeline",
+                corpus_filename=args.corpus_filename,
+            )
             + wildcard_to_DTM_pipeline(
                 tokens_transform_opts=args.tokens_transform_opts,
                 extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,

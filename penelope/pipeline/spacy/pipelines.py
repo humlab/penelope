@@ -25,6 +25,7 @@ def default_done_callback(*_: Any, **__: Any) -> None:
 
 def to_tagged_frame_pipeline(
     corpus_config: CorpusConfig,
+    corpus_filename: str = None,
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
@@ -36,7 +37,11 @@ def to_tagged_frame_pipeline(
         pipeline: pipelines.CorpusPipeline = (
             pipelines.CorpusPipeline(config=corpus_config)
             .set_spacy_model(corpus_config.pipeline_payload.memory_store['spacy_model'])
-            .load_text(reader_opts=corpus_config.text_reader_opts, transform_opts=TextTransformOpts())
+            .load_text(
+                reader_opts=corpus_config.text_reader_opts,
+                transform_opts=TextTransformOpts(),
+                source=corpus_filename,
+            )
             .text_to_spacy()
             .tqdm()
             .passthrough()
@@ -55,12 +60,12 @@ def spaCy_DTM_pipeline(
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
+    corpus_filename: str = None,
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
-            corpus_config=corpus_config,
-            checkpoint_filename=checkpoint_filename,
+            corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename
         ) + pipelines.wildcard_to_DTM_pipeline(
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,
             tagged_tokens_filter_opts=tagged_tokens_filter_opts,
@@ -73,8 +78,10 @@ def spaCy_DTM_pipeline(
         raise ex
 
 
+# pylint: disable=too-many-arguments
 def spaCy_co_occurrence_pipeline(
     corpus_config: CorpusConfig,
+    corpus_filename: str,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
@@ -86,6 +93,7 @@ def spaCy_co_occurrence_pipeline(
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
+            corpus_filename=corpus_filename,
             checkpoint_filename=checkpoint_filename,
         ) + pipelines.wildcard_to_co_occurrence_pipeline(
             context_opts=context_opts,

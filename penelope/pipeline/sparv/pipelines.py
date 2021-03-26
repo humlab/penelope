@@ -1,13 +1,18 @@
 from .. import config, interfaces, pipelines, tasks
 
 
-def to_tagged_frame_pipeline(corpus_config: config.CorpusConfig, **_):
-    """Loads a teagged data frame"""
+def to_tagged_frame_pipeline(
+    corpus_config: config.CorpusConfig,
+    corpus_filename: str = None,
+    **_,
+):
+    """Loads a tagged data frame"""
     p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config)
 
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
+
         task: interfaces.ITask = tasks.LoadTaggedCSV(
-            filename=corpus_config.pipeline_payload.source,
+            filename=(corpus_filename or corpus_config.pipeline_payload.source),
             options=corpus_config.content_deserialize_opts,
             extra_reader_opts=corpus_config.text_reader_opts,
         )

@@ -25,7 +25,10 @@ def config():
 def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
 
     """Loads a tagged data frame"""
-    p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(config)
+    p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
+        config,
+        corpus_filename=config.pipeline_payload.source,
+    )
 
     p.exhaust()
 
@@ -44,7 +47,10 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     )
     assert corpus_config is not None
 
-    p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(corpus_config).checkpoint(target_filename)
+    p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
+        corpus_config,
+        corpus_filename=source_filename,
+    ).checkpoint(target_filename)
 
     p.exhaust()
 
