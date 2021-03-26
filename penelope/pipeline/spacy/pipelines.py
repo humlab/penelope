@@ -60,14 +60,12 @@ def spaCy_DTM_pipeline(
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
-    corpus_filename: str=None,
+    corpus_filename: str = None,
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
-            corpus_config=corpus_config,
-            checkpoint_filename=checkpoint_filename,
-            corpus_filename=corpus_filename
+            corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename
         ) + pipelines.wildcard_to_DTM_pipeline(
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,
             tagged_tokens_filter_opts=tagged_tokens_filter_opts,
