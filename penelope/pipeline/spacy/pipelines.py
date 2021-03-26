@@ -78,6 +78,7 @@ def spaCy_DTM_pipeline(
         raise ex
 
 
+# pylint: disable=too-many-arguments
 def spaCy_co_occurrence_pipeline(
     corpus_config: CorpusConfig,
     corpus_filename: str,
