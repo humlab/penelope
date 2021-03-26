@@ -13,9 +13,10 @@ view = widgets.Output(layout={'border': '2px solid green'})
 LAST_ARGS = None
 LAST_CORPUS_CONFIG = None
 LAST_CORPUS = None
+CLEAR_OUTPUT = True
 
 
-@view.capture(clear_output=True)
+@view.capture(clear_output=CLEAR_OUTPUT)
 def loaded_callback(
     corpus: VectorizedCorpus,
     corpus_folder: str,
@@ -39,7 +40,7 @@ def loaded_callback(
     gui.display(trends_data=trends_data)
 
 
-@view.capture(clear_output=True)
+@view.capture(clear_output=CLEAR_OUTPUT)
 def computed_callback(
     corpus: VectorizedCorpus,
     opts: interface.ComputeOpts,
@@ -48,11 +49,12 @@ def computed_callback(
     loaded_callback(corpus=corpus, corpus_folder=opts.target_folder, corpus_tag=opts.corpus_tag)
 
 
-@view.capture(clear_output=True)
+@view.capture(clear_output=CLEAR_OUTPUT)
 def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.CorpusConfig) -> dtm.VectorizedCorpus:
     global LAST_ARGS, LAST_CORPUS_CONFIG
     LAST_ARGS = args
     LAST_CORPUS_CONFIG = corpus_config
+    # FIXME: #41 Compute uses coråus name from config instead of GUI opts
     corpus: dtm.VectorizedCorpus = workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
     return corpus
 
