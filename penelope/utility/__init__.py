@@ -27,6 +27,7 @@ from .file_utility import (
     read_json,
     read_textfile,
     save_excel,
+    symlink_files,
     unpickle_compressed_from_file,
     unpickle_from_file,
     write_json,

@@ -8,6 +8,7 @@ import pathlib
 import pickle
 import zipfile
 from io import StringIO
+from os.path import basename, exists, isdir, isfile, join
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple, Union
 
@@ -22,10 +23,10 @@ logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=lo
 
 def default_data_folder():
     home = Path.home()
-    home_data = os.path.join(str(home), "data")
-    if os.path.isdir(home_data):
+    home_data = join(str(home), "data")
+    if isdir(home_data):
         return home_data
-    if os.path.isdir('/data'):
+    if isdir('/data'):
         return '/data'
     return str(home)
 
@@ -33,7 +34,7 @@ def default_data_folder():
 def folder_read_iterator(folder: str, filenames: List[str]) -> Iterable[Tuple[str, str]]:
     for filename in replace_paths(folder, filenames):
         data = read_textfile(filename)
-        yield os.path.basename(filename), data
+        yield basename(filename), data
 
 
 # TODO: Merge with penelope.corpus.readers.streamify_text_source?
@@ -46,10 +47,10 @@ def create_iterator(
     if not isinstance(folder_or_zip, str):
         raise ValueError("folder_or_zip argument must be a path")
 
-    if os.path.isfile(folder_or_zip):
+    if isfile(folder_or_zip):
         return zip_utils.read_iterator(path=folder_or_zip, filenames=filenames, as_binary=as_binary)
 
-    if os.path.isdir(folder_or_zip):
+    if isdir(folder_or_zip):
         return folder_read_iterator(folder=folder_or_zip, filenames=filenames)
 
     raise FileNotFoundError(folder_or_zip)
@@ -61,15 +62,15 @@ def create_iterator(
 #         with folder_or_zip.open(filename, 'r') as f:
 #             return f.read() if as_binary else f.read().decode('utf-8')
 
-#     if os.path.isdir(folder_or_zip):
+#     if isdir(folder_or_zip):
 
-#         path = os.path.join(folder_or_zip, filename)
+#         path = join(folder_or_zip, filename)
 
-#         if os.path.isfile(path):
+#         if isfile(path):
 #             with open(path, 'r') as f:
 #                 return gensim.utils.to_unicode(f.read(), 'utf8', errors='ignore')
 
-#     if os.path.isfile(folder_or_zip):
+#     if isfile(folder_or_zip):
 
 #         if zipfile.is_zipfile(folder_or_zip):
 #             return zip_utils.read(zip_or_name=folder_or_zip, filename=filename, as_binary=as_binary)
@@ -103,7 +104,7 @@ def list_filenames(
 
     elif isinstance(text_source, str):
 
-        if os.path.isfile(text_source):
+        if isfile(text_source):
 
             if zipfile.is_zipfile(text_source):
 
@@ -113,9 +114,9 @@ def list_filenames(
             else:
                 filenames = [text_source]
 
-        elif os.path.isdir(text_source):
+        elif isdir(text_source):
 
-            filenames = glob.glob(os.path.join(text_source, filename_pattern))
+            filenames = glob.glob(join(text_source, filename_pattern))
 
     elif isinstance(text_source, list):
 
@@ -162,15 +163,15 @@ def excel_to_csv(excel_file: str, text_file: str, sep: str = '\t') -> pd.DataFra
 
 def find_parent_folder(name: str) -> str:
     path = pathlib.Path(os.getcwd())
-    folder = os.path.join(*path.parts[: path.parts.index(name) + 1])
+    folder = join(*path.parts[: path.parts.index(name) + 1])
     return folder
 
 
 def find_parent_folder_with_child(folder: str, target: str) -> pathlib.Path:
     path = pathlib.Path(folder).resolve()
     while path is not None:
-        name = os.path.join(path, target)
-        if os.path.isfile(name) or os.path.isdir(name):
+        name = join(path, target)
+        if isfile(name) or isdir(name):
             return path
         if path in ('', '/'):
             break
@@ -179,11 +180,11 @@ def find_parent_folder_with_child(folder: str, target: str) -> pathlib.Path:
 
 
 def find_folder(folder: str, parent: str) -> str:
-    return os.path.join(folder.split(parent)[0], parent)
+    return join(folder.split(parent)[0], parent)
 
 
 def read_excel(filename: str, sheet: str) -> pd.DataFrame:
-    if not os.path.isfile(filename):
+    if not isfile(filename):
         raise Exception("File {0} does not exist!".format(filename))
     with pd.ExcelFile(filename) as xls:
         return pd.read_excel(xls, sheet)
@@ -198,7 +199,7 @@ def save_excel(data: pd.DataFrame, filename: str):
 
 def read_json(path: str) -> Dict:
     """Reads JSON from file"""
-    if not os.path.isfile(path):
+    if not isfile(path):
         raise FileNotFoundError(path)
     with open(path) as fp:
         return json.load(fp)
@@ -273,3 +274,11 @@ def unpickle_from_file(filename: str) -> Any:
         with open(filename, 'rb') as f:
             thing = pickle.load(f)
     return thing
+
+
+def symlink_files(source_pattern: str, target_folder: str) -> None:
+    os.makedirs(target_folder, exist_ok=True)
+    for f in glob.glob(source_pattern):
+        t = join(target_folder, basename(f))
+        if not exists(t):
+            os.symlink(f, t)
