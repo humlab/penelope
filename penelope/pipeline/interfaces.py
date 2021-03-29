@@ -4,6 +4,8 @@ import abc
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
+import os
+from os.path import join
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
 
 from penelope.corpus import (
@@ -14,6 +16,7 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import TextSource
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, strip_path_and_extension
+from penelope.utility.filename_utils import replace_path
 
 from .tagged_frame import TaggedFrame
 
@@ -83,7 +86,7 @@ class PipelineError(Exception):
 @dataclass
 class PipelinePayload:
 
-    source_folder: str = None
+    # source_folder: str = None
     source: TextSource = None
     document_index_source: Union[str, DocumentIndex] = None
     document_index_sep: str = '\t'
@@ -173,6 +176,31 @@ class PipelinePayload:
     def extend(self, _: DocumentPayload):
         """Add properties of `other` to self. Used when combining two pipelines"""
         ...
+
+    @staticmethod
+    def update_path(new_path: str, old_path: str, method: str) -> str:
+        """Updates folder path or old_path, either by replacing existing path or by joining"""
+        if method not in {"join", "replace"}:
+            raise ValueError("only strategies `merge` or `replace` are allowed")
+        if method == "join":
+            return os.path.join(new_path, old_path)
+        return replace_path(old_path, new_path)
+
+    def folders(self, path: str, method: str = "replace") -> "PipelinePayload":
+        """Replaces (any) existing source path specification for corpus/index to `path`"""
+
+        if isinstance(self.document_index_source, str):
+            self.document_index_source = self.update_path(path, self.document_index_source, method)
+        if isinstance(self.source, str):
+            self.source = self.update_path(path, self.source, method)
+
+        return self
+
+    def files(self, source: TextSource, index_source: Union[str, DocumentIndex]) -> "PipelinePayload":
+        """Sets file specification for corpus/index to `source` and `index_source`"""
+        self.source = source
+        self.document_index_source = index_source
+        return self
 
 
 @dataclass

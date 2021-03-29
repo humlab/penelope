@@ -10,9 +10,8 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import yaml
-from penelope.corpus import DocumentIndex
-from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts, TextSource
-from penelope.utility import create_instance, get_pos_schema, replace_path
+from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts
+from penelope.utility import create_instance, get_pos_schema
 
 from . import interfaces
 
@@ -102,22 +101,6 @@ class CorpusConfig:
             raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
         factory = create_pipeline_factory(self.pipelines[pipeline_key])
         return factory(self, *args, **kwargs)
-
-    def folder(self, folder: str) -> "CorpusConfig":
-
-        if isinstance(self.pipeline_payload.document_index_source, str):
-            self.pipeline_payload.document_index_source = replace_path(
-                self.pipeline_payload.document_index_source, folder
-            )
-        if isinstance(self.pipeline_payload.source, str):
-            self.pipeline_payload.source = replace_path(self.pipeline_payload.source, folder)
-
-        return self
-
-    def files(self, source: TextSource, index_source: Union[str, DocumentIndex]) -> "CorpusConfig":
-        self.pipeline_payload.source = source
-        self.pipeline_payload.document_index_source = index_source
-        return self
 
     @property
     def pos_schema(self):
@@ -217,6 +200,11 @@ class CorpusConfig:
             document_index_sep=self.pipeline_payload.document_index_sep,
         )
         return opts
+
+    def folders(self, path: str, method: str = "join") -> "CorpusConfig":
+        """Replaces (any) existing source path specification for corpus/index to `path`"""
+        self.pipeline_payload.folders(path, method=method)
+        return self
 
     # @staticmethod
     # def dict_to_pipeline_config(pipelines_factories: dict) -> CorpusPipelineConfig:
