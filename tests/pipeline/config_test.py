@@ -1,7 +1,6 @@
 import json
 
 import yaml
-from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.interfaces import PipelinePayload
 

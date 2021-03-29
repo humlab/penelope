@@ -27,6 +27,7 @@ def test_to_co_occurrence_create_gui(z):  # pylint: disable=unused-argument
 
     gui = to_co_occurrence_gui.create_compute_gui(
         corpus_folder='./tests/test_data',
+        data_folder='./tests/test_data',
         corpus_config=corpus_config,
         compute_callback=compute_callback,
         done_callback=done_callback,

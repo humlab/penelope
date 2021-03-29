@@ -5,7 +5,6 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from os.path import join
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
 
 from penelope.corpus import (
