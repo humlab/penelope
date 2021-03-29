@@ -27,7 +27,7 @@ class BaseGUI:
 
     default_corpus_path: str = None
     default_corpus_filename: str = field(default='')
-    default_target_folder: str = None
+    default_data_folder: str = None
 
     _config: CorpusConfig = None
 
@@ -226,7 +226,7 @@ class BaseGUI:
         self._corpus_filename.refresh()
 
         self._target_folder = notebook_utility.FileChooserExt2(
-            path=self.default_target_folder or default_data_folder(),
+            path=self.default_data_folder or default_data_folder(),
             title='<b>Output folder</b>',
             show_hidden=False,
             select_default=True,
