@@ -26,16 +26,17 @@ class ComputeGUI(BaseGUI):
 def create_compute_gui(
     *,
     corpus_folder: str,
+    data_folder: str,
     corpus_config: Union[str, CorpusConfig],
     compute_callback: Callable[[ComputeGUI, CorpusConfig], None],
     done_callback: Callable[[Any, interface.ComputeOpts], None],
 ) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
-    corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folder(corpus_folder)
+    corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folders(corpus_folder)
     gui = ComputeGUI(
         default_corpus_path=corpus_folder,
         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
-        default_target_folder=corpus_folder,
+        default_data_folder=data_folder,
     ).setup(
         config=corpus_config,
         compute_callback=compute_callback,

@@ -51,6 +51,7 @@ class MainGUI:
         self,
         corpus_config: Union[pipeline.CorpusConfig, str],
         corpus_folder: str,
+        data_folder: str,
         resources_folder: str,
     ) -> widgets.VBox:
 
@@ -58,18 +59,19 @@ class MainGUI:
         self.config = (
             corpus_config
             if isinstance(corpus_config, pipeline.CorpusConfig)
-            else pipeline.CorpusConfig.find(corpus_config, resources_folder).folder(corpus_folder)
+            else pipeline.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
         )
 
         self.gui_compute: co_occurrence_gui.ComputeGUI = co_occurrence_gui.create_compute_gui(
             corpus_folder=corpus_folder,
+            data_folder=data_folder,
             corpus_config=self.config,
             compute_callback=compute_co_occurrence_callback,
             done_callback=self.display_explorer,
         )
 
         self.gui_load: co_occurrence_gui.LoadGUI = co_occurrence_gui.create_load_gui(
-            data_folder=corpus_folder,
+            data_folder=data_folder,
             filename_pattern=co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
             loaded_callback=self.display_explorer,
         )

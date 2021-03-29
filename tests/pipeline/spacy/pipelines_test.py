@@ -16,10 +16,11 @@ from ..fixtures import FakeComputeOptsSpacyCSV
 
 
 def fake_config() -> CorpusConfig:
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml').files(
-        source='./tests/test_data/legal_instrument_five_docs_test.zip',
-        index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
-    )
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
+
+    corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+
     return corpus_config
 
 
@@ -36,10 +37,11 @@ def test_spaCy_co_occurrence_pipeline():
     if os.path.isfile(target_filename):
         os.remove(target_filename)
 
-    ssi: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml').files(
-        source='./tests/test_data/legal_instrument_five_docs_test.zip',
-        index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
-    )
+    ssi: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
+
+    ssi.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    ssi.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+
     # .folder(folder='./tests/test_data')
     pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
     tokens_transform_opts: TokensTransformOpts = TokensTransformOpts()

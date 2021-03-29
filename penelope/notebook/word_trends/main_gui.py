@@ -1,3 +1,5 @@
+from typing import Union
+
 import ipywidgets as widgets
 import penelope.corpus.dtm as dtm
 import penelope.notebook.dtm as dtm_gui
@@ -60,22 +62,29 @@ def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.Corpus
 
 
 def create_to_dtm_gui(
+    *,
     corpus_folder: str,
-    corpus_config: str,
+    data_folder: str,
+    corpus_config: Union[pipeline.CorpusConfig, str],
     resources_folder: str = None,
 ) -> widgets.CoreWidget:
 
     resources_folder = resources_folder or corpus_folder
-    config: pipeline.CorpusConfig = pipeline.CorpusConfig.find(corpus_config, resources_folder).folder(corpus_folder)
+    config: pipeline.CorpusConfig = (
+        pipeline.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
+        if isinstance(corpus_config, str)
+        else corpus_config
+    )
     gui_compute: dtm_gui.ComputeGUI = dtm_gui.create_compute_gui(
         corpus_folder=corpus_folder,
+        data_folder=data_folder,
         corpus_config=config,
         compute_callback=compute_callback,
         done_callback=computed_callback,
     )
 
     gui_load: dtm_gui.LoadGUI = dtm_gui.create_load_gui(
-        corpus_folder=corpus_folder,
+        corpus_folder=data_folder,
         loaded_callback=loaded_callback,
     )
 
