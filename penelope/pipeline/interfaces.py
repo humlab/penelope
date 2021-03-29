@@ -195,10 +195,10 @@ class PipelinePayload:
 
         return self
 
-    def files(self, source: TextSource, index_source: Union[str, DocumentIndex]) -> "PipelinePayload":
-        """Sets file specification for corpus/index to `source` and `index_source`"""
+    def files(self, source: TextSource, document_index_source: Union[str, DocumentIndex]) -> "PipelinePayload":
+        """Sets corpus source to `source` and document index source to `document_index_source`"""
         self.source = source
-        self.document_index_source = index_source
+        self.document_index_source = document_index_source
         return self
 
 

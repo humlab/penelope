@@ -12,7 +12,7 @@ def fake_config() -> pipeline.CorpusConfig:
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
-    corpus_config.pipeline_payload.index_source = None
+    corpus_config.pipeline_payload.document_index_source = None
 
     return corpus_config
 
@@ -44,7 +44,7 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename)
 
     corpus_config.pipeline_payload.source = source_filename
-    corpus_config.pipeline_payload.index_source = None
+    corpus_config.pipeline_payload.document_index_source = None
 
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config,
