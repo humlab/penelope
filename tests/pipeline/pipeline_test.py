@@ -21,10 +21,12 @@ CORPUS_FOLDER = './tests/test_data'
 
 
 def fake_config() -> CorpusConfig:
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml').files(
-        source='./tests/test_data/legal_instrument_five_docs_test.zip',
-        index_source='./tests/test_data/legal_instrument_five_docs_test.csv',
-    )
+
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
+
+    corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_config.pipeline_payload.index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+
     return corpus_config
 
 

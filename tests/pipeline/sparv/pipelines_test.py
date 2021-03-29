@@ -8,12 +8,12 @@ from penelope.pipeline.sparv import pipelines
 
 
 def fake_config() -> pipeline.CorpusConfig:
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(
-        './tests/test_data/riksdagens-protokoll.yml'
-    ).files(
-        source='./tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip',
-        index_source=None,
-    )
+
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
+
+    corpus_config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
+    corpus_config.pipeline_payload.index_source = None
+
     return corpus_config
 
 
@@ -41,11 +41,10 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
     target_filename = './tests/output/tranströmer_corpus_pos_csv.zip'
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename,).files(
-        source=source_filename,
-        index_source=None,
-    )
-    assert corpus_config is not None
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename)
+
+    corpus_config.pipeline_payload.source = source_filename
+    corpus_config.pipeline_payload.index_source = None
 
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config,

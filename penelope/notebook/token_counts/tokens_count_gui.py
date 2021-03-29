@@ -237,9 +237,9 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
     return document_index
 
 
-def create_token_count_gui(data_folder: str, resources_folder: str) -> TokenCountsGUI:
+def create_token_count_gui(corpus_folder: str, resources_folder: str) -> TokenCountsGUI:
     def load_corpus_config_callback(config_filename: str) -> pipeline.CorpusConfig:
-        return pipeline.CorpusConfig.load(config_filename).folder(data_folder)
+        return pipeline.CorpusConfig.load(config_filename).folders(corpus_folder)
 
     output_notebook()
 

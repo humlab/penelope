@@ -77,15 +77,23 @@ def test_find_config():
     assert c is not None
 
 
-def test_corpus_config_set_folder():
+def test_corpus_config_set_folders():
 
-    config: CorpusConfig = CorpusConfig(
-        text_reader_opts=TextReaderOpts(),
-        pipeline_payload=PipelinePayload(
-            source="corpus.zip",
-            document_index_source="document_index.csv",
-        ),
-    ).folder('/data')
+    payload=PipelinePayload(
+        source="corpus.zip",
+        document_index_source="document_index.csv",
+    )
+    payload.files("corpus.zip", "document_index.csv").folders('/data', method="replace")
 
-    assert config.pipeline_payload.source == '/data/corpus.zip'
-    assert config.pipeline_payload.document_index_source == '/data/document_index.csv'
+    assert payload.source == '/data/corpus.zip'
+    assert payload.document_index_source == '/data/document_index.csv'
+
+    payload.files("/tmp/corpus.zip", "/tmp/document_index.csv").folders('/data', method="replace")
+
+    assert payload.source == '/data/corpus.zip'
+    assert payload.document_index_source == '/data/document_index.csv'
+
+    payload.files("apa/corpus.zip", "apa/document_index.csv").folders('/data', method="join")
+
+    assert payload.source == '/data/apa/corpus.zip'
+    assert payload.document_index_source == '/data/apa/document_index.csv'
