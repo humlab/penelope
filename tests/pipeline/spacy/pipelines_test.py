@@ -39,8 +39,8 @@ def test_spaCy_co_occurrence_pipeline():
 
     ssi: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
 
-    ssi.pipeline_payload.source='./tests/test_data/legal_instrument_five_docs_test.zip'
-    ssi.pipeline_payload.index_source='./tests/test_data/legal_instrument_five_docs_test.csv'
+    ssi.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    ssi.pipeline_payload.index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
 
     # .folder(folder='./tests/test_data')
     pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal

@@ -79,7 +79,7 @@ def test_find_config():
 
 def test_corpus_config_set_folders():
 
-    payload=PipelinePayload(
+    payload = PipelinePayload(
         source="corpus.zip",
         document_index_source="document_index.csv",
     )

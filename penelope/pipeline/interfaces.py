@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import abc
+import os
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-import os
 from os.path import join
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
 
