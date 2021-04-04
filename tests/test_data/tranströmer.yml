@@ -2,13 +2,16 @@ corpus_name: riksdagens-protokoll
 corpus_pattern: '*sparv4.csv.zip'
 corpus_type: 3
 language: swedish
-content_deserialize_opts:
+checkpoint_opts:
     content_type_code: 1
     sep: "\t"
     quoting: 3
     document_index_name: null
     document_index_sep: null
-pipelines:
+    text_column: token
+    lemma_column: baseform
+    pos_column: pos
+  pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
   source: tranströmer_corpus_export.sparv4.csv.zip

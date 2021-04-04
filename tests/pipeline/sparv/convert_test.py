@@ -78,7 +78,7 @@ def test_sparv_csv_serializer():
         'penelope.pipeline.sparv.SparvCsvSerializer'
     )
     serializer: sparv.SparvCsvSerializer = serializer_cls()
-    options: config.CheckpointSerializeOpts = config.CheckpointSerializeOpts()
+    options: config.CheckpointOpts = config.CheckpointOpts()
     content: str = create_test_content()
 
     tagged_frame: pd.DataFrame = serializer.deserialize(content, options)
@@ -104,7 +104,7 @@ def test_sparv_csv_create_token2id():
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         create_test_content(),
-        config.CheckpointSerializeOpts(),
+        config.CheckpointOpts(),
     )
 
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)

@@ -10,7 +10,7 @@ from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_in
 from penelope.corpus.readers import TextReaderOpts
 from penelope.utility import assert_that_path_exists, getLogger, path_of, zip_utils
 
-from .config import CheckpointSerializeOpts
+from .config import CheckpointOpts
 from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
 
@@ -25,20 +25,20 @@ class CheckpointData:
     content_type: ContentType = ContentType.NONE
     document_index: DocumentIndex = None
     payload_stream: Iterable[DocumentPayload] = None
-    serialize_opts: CheckpointSerializeOpts = None
+    serialize_opts: CheckpointOpts = None
 
 
 class IContentSerializer(abc.ABC):
     @abc.abstractmethod
-    def serialize(self, content: SerializableContent, options: CheckpointSerializeOpts) -> str:
+    def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
         ...
 
     @abc.abstractmethod
-    def deserialize(self, content: str, options: CheckpointSerializeOpts) -> SerializableContent:
+    def deserialize(self, content: str, options: CheckpointOpts) -> SerializableContent:
         ...
 
     @staticmethod
-    def create(options: CheckpointSerializeOpts) -> "IContentSerializer":
+    def create(options: CheckpointOpts) -> "IContentSerializer":
 
         if options.custom_serializer:
             return options.custom_serializer()
@@ -56,32 +56,32 @@ class IContentSerializer(abc.ABC):
 
 
 class TextContentSerializer(IContentSerializer):
-    def serialize(self, content: str, options: CheckpointSerializeOpts) -> str:
+    def serialize(self, content: str, options: CheckpointOpts) -> str:
         return content
 
-    def deserialize(self, content: str, options: CheckpointSerializeOpts) -> str:
+    def deserialize(self, content: str, options: CheckpointOpts) -> str:
         return content
 
 
 class TokensContentSerializer(IContentSerializer):
-    def serialize(self, content: Sequence[str], options: CheckpointSerializeOpts) -> str:
+    def serialize(self, content: Sequence[str], options: CheckpointOpts) -> str:
         return ' '.join(content)
 
-    def deserialize(self, content: str, options: CheckpointSerializeOpts) -> Sequence[str]:
+    def deserialize(self, content: str, options: CheckpointOpts) -> Sequence[str]:
         return content.split(' ')
 
 
 class TaggedFrameContentSerializer(IContentSerializer):
-    def serialize(self, content: pd.DataFrame, options: CheckpointSerializeOpts) -> str:
+    def serialize(self, content: pd.DataFrame, options: CheckpointOpts) -> str:
         return content.to_csv(sep=options.sep, header=True)
 
-    def deserialize(self, content: str, options: CheckpointSerializeOpts) -> pd.DataFrame:
+    def deserialize(self, content: str, options: CheckpointOpts) -> pd.DataFrame:
         return pd.read_csv(StringIO(content), sep=options.sep, quoting=options.quoting, index_col=0)
 
 
 def store_checkpoint(
     *,
-    options: CheckpointSerializeOpts,
+    options: CheckpointOpts,
     target_filename: str,
     document_index: DocumentIndex,
     payload_stream: Iterator[DocumentPayload],
@@ -108,7 +108,7 @@ def store_checkpoint(
 
 
 def load_checkpoint(
-    source_name: str, options: CheckpointSerializeOpts = None, reader_opts: TextReaderOpts = None
+    source_name: str, checkpoint_opts: CheckpointOpts = None, reader_opts: TextReaderOpts = None
 ) -> CheckpointData:
     """Load a tagged frame checkpoint stored in a zipped file with CSV-filed and optionally a document index
 
@@ -116,7 +116,7 @@ def load_checkpoint(
 
     Args:
         source_name (str): [description]
-        options (CheckpointSerializeOpts, optional): Deserialize oprs. Defaults to None.
+        options (CheckpointOpts, optional): Deserialize oprs. Defaults to None.
         reader_opts (TextReaderOpts, optional): Create document index options (if specified). Defaults to None.
 
     Raises:
@@ -129,24 +129,24 @@ def load_checkpoint(
 
         filenames = zf.namelist()
 
-        if options is None:
+        if checkpoint_opts is None:
 
             if SERIALIZE_OPT_FILENAME not in filenames:
                 raise PipelineError("options not supplied and not found in archive (missing options.json)")
 
             stored_opts = zip_utils.read_json(zip_or_filename=zf, filename=SERIALIZE_OPT_FILENAME)
-            options = CheckpointSerializeOpts.load(stored_opts)
+            checkpoint_opts = CheckpointOpts.load(stored_opts)
 
             filenames.remove(SERIALIZE_OPT_FILENAME)
 
         document_index = None
 
-        if options.document_index_name and options.document_index_name in filenames:
+        if checkpoint_opts.document_index_name and checkpoint_opts.document_index_name in filenames:
 
-            data_str = zip_utils.read(zip_or_filename=zf, filename=options.document_index_name, as_binary=False)
-            document_index = load_document_index(StringIO(data_str), sep=options.document_index_sep)
+            data_str = zip_utils.read(zip_or_filename=zf, filename=checkpoint_opts.document_index_name, as_binary=False)
+            document_index = load_document_index(StringIO(data_str), sep=checkpoint_opts.document_index_sep)
 
-            filenames.remove(options.document_index_name)
+            filenames.remove(checkpoint_opts.document_index_name)
 
         elif reader_opts and reader_opts.filename_fields is not None:
             document_index = DocumentIndexHelper.from_filenames(
@@ -155,17 +155,17 @@ def load_checkpoint(
             ).document_index
 
     data: CheckpointData = CheckpointData(
-        content_type=options.content_type,
-        payload_stream=deserialized_payload_stream(source_name, options, filenames),
+        content_type=checkpoint_opts.content_type,
+        payload_stream=deserialized_payload_stream(source_name, checkpoint_opts, filenames),
         document_index=document_index,
-        serialize_opts=options,
+        serialize_opts=checkpoint_opts,
     )
 
     return data
 
 
 def deserialized_payload_stream(
-    source_name: str, options: CheckpointSerializeOpts, filenames: List[str]
+    source_name: str, options: CheckpointOpts, filenames: List[str]
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 

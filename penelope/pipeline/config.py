@@ -38,7 +38,7 @@ class CorpusType(enum.IntEnum):
 
 
 @dataclass
-class CheckpointSerializeOpts:
+class CheckpointOpts:
 
     content_type_code: int = 0
 
@@ -49,6 +49,11 @@ class CheckpointSerializeOpts:
     quoting: int = csv.QUOTE_NONE
     custom_serializer_classname: str = None
 
+    text_column: str = field(default="text")
+    lemma_column: str = field(default="lemma")
+    pos_column: str = field(default="pos")
+    extra_columns: List[str] = field(default_factory=list)
+
     @property
     def content_type(self) -> interfaces.ContentType:
         return interfaces.ContentType(self.content_type_code)
@@ -57,8 +62,8 @@ class CheckpointSerializeOpts:
     def content_type(self, value: interfaces.ContentType):
         self.content_type_code = int(value)
 
-    def as_type(self, value: interfaces.ContentType) -> "CheckpointSerializeOpts":
-        opts = CheckpointSerializeOpts(
+    def as_type(self, value: interfaces.ContentType) -> "CheckpointOpts":
+        opts = CheckpointOpts(
             content_type_code=int(value),
             document_index_name=self.document_index_name,
             document_index_sep=self.document_index_sep,
@@ -68,8 +73,8 @@ class CheckpointSerializeOpts:
         return opts
 
     @staticmethod
-    def load(data: dict) -> "CheckpointSerializeOpts":
-        opts = CheckpointSerializeOpts()
+    def load(data: dict) -> "CheckpointOpts":
+        opts = CheckpointOpts()
         for key in data.keys():
             if hasattr(opts, key):
                 setattr(opts, key, data[key])
@@ -89,7 +94,7 @@ class CorpusConfig:
     corpus_type: CorpusType = CorpusType.Undefined
     corpus_pattern: str = "*.zip"
     # Used when corpus data needs to be deserialized (e.g. zipped csv data etc)
-    checkpoint_serialize_opts: Optional[CheckpointSerializeOpts] = None
+    checkpoint_opts: Optional[CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None
     pipelines: dict = None
@@ -161,8 +166,8 @@ class CorpusConfig:
                 config_dict['tagged_tokens_filter_opts'] = TaggedTokensFilterOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
-        config_dict['checkpoint_serialize_opts'] = CheckpointSerializeOpts(
-            **(config_dict.get('checkpoint_serialize_opts', {}) or {})
+        config_dict['checkpoint_opts'] = CheckpointOpts(
+            **(config_dict.get('checkpoint_opts', {}) or {})
         )
         config_dict['pipelines'] = config_dict.get(
             'pipelines', {}
@@ -194,8 +199,8 @@ class CorpusConfig:
         FileNotFoundError(filename)
 
     @property
-    def serialize_opts(self) -> CheckpointSerializeOpts:
-        opts = CheckpointSerializeOpts(
+    def serialize_opts(self) -> CheckpointOpts:
+        opts = CheckpointOpts(
             document_index_name=self.pipeline_payload.document_index_source,
             document_index_sep=self.pipeline_payload.document_index_sep,
         )
