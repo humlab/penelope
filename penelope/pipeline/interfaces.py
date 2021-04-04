@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List,
 
 from penelope.corpus import (
     DocumentIndex,
+    DocumentIndexHelper,
     consolidate_document_index,
     load_document_index,
     update_document_index_properties,
@@ -175,6 +176,15 @@ class PipelinePayload:
     def extend(self, _: DocumentPayload):
         """Add properties of `other` to self. Used when combining two pipelines"""
         ...
+
+    def extend_document_index(self, other_index: DocumentIndex) -> "PipelinePayload":
+        if self.effective_document_index is None:
+            self.effective_document_index = other_index
+        else:
+            self.effective_document_index = (
+                DocumentIndexHelper(self.effective_document_index).extend_document_index(other_index).docuement_index
+            )
+        return self
 
     @staticmethod
     def update_path(new_path: str, old_path: str, method: str) -> str:
