@@ -110,8 +110,21 @@ def store_checkpoint(
 def load_checkpoint(
     source_name: str, options: CorpusSerializeOpts = None, reader_opts: TextReaderOpts = None
 ) -> CheckpointData:
+    """Load a tagged frame checkpoint stored in a zipped file with CSV-filed and optionally a document index
 
-    # FIXME: Currently reader_opts is only used when pandas doc index should be created.  Might also be used to filter files.
+    Currently reader_opts is only used when pandas doc index should be created (might also be used to filter files).
+
+    Args:
+        source_name (str): [description]
+        options (CorpusSerializeOpts, optional): Deserialize oprs. Defaults to None.
+        reader_opts (TextReaderOpts, optional): Create document index options (if specified). Defaults to None.
+
+    Raises:
+        PipelineError: [description]
+
+    Returns:
+        CheckpointData: [description]
+    """
     with zipfile.ZipFile(source_name, mode="r") as zf:
 
         filenames = zf.namelist()
