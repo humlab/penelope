@@ -69,6 +69,9 @@ class CheckpointOpts:
             return None
         return create_instance(self.custom_serializer_classname)
 
+    @property
+    def columns(self) -> List[str]:
+        return [self.text_column, self.lemma_column, self.pos_column] + (self.extra_columns or [])
 
 @dataclass
 class CheckpointData:
@@ -126,34 +129,37 @@ class TaggedFrameContentSerializer(IContentSerializer):
         return content.to_csv(sep=options.sep, header=True)
 
     def deserialize(self, content: str, options: CheckpointOpts) -> pd.DataFrame:
-        return pd.read_csv(StringIO(content), sep=options.sep, quoting=options.quoting, index_col=0)
+        data: pd.DataFrame = pd.read_csv(StringIO(content), sep=options.sep, quoting=options.quoting, index_col=0)
+        if any(x not in data.columns for x in options.columns):
+            raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
+        return data[options.columns]
 
 
 def store_checkpoint(
     *,
-    options: CheckpointOpts,
+    checkpoint_opts: CheckpointOpts,
     target_filename: str,
     document_index: DocumentIndex,
     payload_stream: Iterator[DocumentPayload],
 ) -> Iterable[DocumentPayload]:
 
-    serializer: IContentSerializer = IContentSerializer.create(options)
+    serializer: IContentSerializer = IContentSerializer.create(checkpoint_opts)
 
     assert_that_path_exists(path_of(target_filename))
 
     with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
 
-        zf.writestr(SERIALIZE_OPT_FILENAME, json.dumps(asdict(options)).encode('utf8'))
+        zf.writestr(SERIALIZE_OPT_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
 
         for payload in payload_stream:
-            data = serializer.serialize(payload.content, options)
+            data = serializer.serialize(payload.content, checkpoint_opts)
             zf.writestr(payload.filename, data=data)
             yield payload
 
         if document_index is not None:
             zf.writestr(
-                options.document_index_name,
-                data=document_index.to_csv(sep=options.document_index_sep, header=True),
+                checkpoint_opts.document_index_name,
+                data=document_index.to_csv(sep=checkpoint_opts.document_index_sep, header=True),
             )
 
 
@@ -215,17 +221,17 @@ def load_checkpoint(
 
 
 def deserialized_payload_stream(
-    source_name: str, options: CheckpointOpts, filenames: List[str],
+    source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str],
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 
-    serializer: IContentSerializer = IContentSerializer.create(options)
+    serializer: IContentSerializer = IContentSerializer.create(checkpoint_opts)
 
     with zipfile.ZipFile(source_name, mode="r") as zf:
         for filename in filenames:
             content: str = zip_utils.read(zip_or_filename=zf, filename=filename, as_binary=False)
             yield DocumentPayload(
-                content_type=options.content_type,
-                content=serializer.deserialize(content, options),
+                content_type=checkpoint_opts.content_type,
+                content=serializer.deserialize(content, checkpoint_opts),
                 filename=filename,
             )

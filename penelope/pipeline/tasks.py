@@ -163,7 +163,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
             self.out_content_type = prior_content_type
             options = (self.options or checkpoint.CheckpointOpts()).as_type(self.out_content_type)
             payload_stream = checkpoint.store_checkpoint(
-                options=options,
+                checkpoint_opts=options,
                 target_filename=self.filename,
                 document_index=self.document_index,
                 payload_stream=self.instream,
@@ -186,7 +186,7 @@ class SaveTaggedCSV(DefaultResolveMixIn, ITask):
     def outstream(self) -> Iterable[DocumentPayload]:
         options = (self.options or checkpoint.CheckpointOpts()).as_type(ContentType.TAGGED_FRAME)
         for payload in checkpoint.store_checkpoint(
-            options=options,
+            checkpoint_opts=options,
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.instream,
