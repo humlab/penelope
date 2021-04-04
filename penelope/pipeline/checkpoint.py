@@ -1,23 +1,73 @@
 import abc
+import csv
 import json
 import zipfile
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from io import StringIO
 from typing import Iterable, Iterator, List, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
 from penelope.corpus.readers import TextReaderOpts
-from penelope.utility import assert_that_path_exists, getLogger, path_of, zip_utils
+from penelope.utility import assert_that_path_exists, create_instance, getLogger, path_of, zip_utils
 
-from .config import CheckpointOpts
-from .interfaces import ContentType, DocumentPayload, PipelineError
+from . import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
 SERIALIZE_OPT_FILENAME = "options.json"
 
 logger = getLogger("penelope")
+
+
+@dataclass
+class CheckpointOpts:
+
+    content_type_code: int = 0
+
+    document_index_name: str = field(default="document_index.csv")
+    document_index_sep: str = field(default='\t')
+
+    sep: str = '\t'
+    quoting: int = csv.QUOTE_NONE
+    custom_serializer_classname: str = None
+
+    text_column: str = field(default="text")
+    lemma_column: str = field(default="lemma")
+    pos_column: str = field(default="pos")
+    extra_columns: List[str] = field(default_factory=list)
+
+    @property
+    def content_type(self) -> ContentType:
+        return ContentType(self.content_type_code)
+
+    @content_type.setter
+    def content_type(self, value: ContentType):
+        self.content_type_code = int(value)
+
+    def as_type(self, value: ContentType) -> "CheckpointOpts":
+        opts = CheckpointOpts(
+            content_type_code=int(value),
+            document_index_name=self.document_index_name,
+            document_index_sep=self.document_index_sep,
+            sep=self.sep,
+            quoting=self.quoting,
+        )
+        return opts
+
+    @staticmethod
+    def load(data: dict) -> "CheckpointOpts":
+        opts = CheckpointOpts()
+        for key in data.keys():
+            if hasattr(opts, key):
+                setattr(opts, key, data[key])
+        return opts
+
+    @property
+    def custom_serializer(self) -> type:
+        if not self.custom_serializer_classname:
+            return None
+        return create_instance(self.custom_serializer_classname)
 
 
 @dataclass
@@ -165,7 +215,7 @@ def load_checkpoint(
 
 
 def deserialized_payload_stream(
-    source_name: str, options: CheckpointOpts, filenames: List[str]
+    source_name: str, options: CheckpointOpts, filenames: List[str],
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 

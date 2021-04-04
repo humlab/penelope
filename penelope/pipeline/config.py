@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-import csv
 import enum
 import glob
 import json
 import os
 import pathlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import yaml
 from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts
 from penelope.utility import create_instance, get_pos_schema
 
-from . import interfaces
+from . import checkpoint, interfaces
 
 if TYPE_CHECKING:
     from .pipelines import CorpusPipeline
@@ -38,63 +37,12 @@ class CorpusType(enum.IntEnum):
 
 
 @dataclass
-class CheckpointOpts:
-
-    content_type_code: int = 0
-
-    document_index_name: str = field(default="document_index.csv")
-    document_index_sep: str = field(default='\t')
-
-    sep: str = '\t'
-    quoting: int = csv.QUOTE_NONE
-    custom_serializer_classname: str = None
-
-    text_column: str = field(default="text")
-    lemma_column: str = field(default="lemma")
-    pos_column: str = field(default="pos")
-    extra_columns: List[str] = field(default_factory=list)
-
-    @property
-    def content_type(self) -> interfaces.ContentType:
-        return interfaces.ContentType(self.content_type_code)
-
-    @content_type.setter
-    def content_type(self, value: interfaces.ContentType):
-        self.content_type_code = int(value)
-
-    def as_type(self, value: interfaces.ContentType) -> "CheckpointOpts":
-        opts = CheckpointOpts(
-            content_type_code=int(value),
-            document_index_name=self.document_index_name,
-            document_index_sep=self.document_index_sep,
-            sep=self.sep,
-            quoting=self.quoting,
-        )
-        return opts
-
-    @staticmethod
-    def load(data: dict) -> "CheckpointOpts":
-        opts = CheckpointOpts()
-        for key in data.keys():
-            if hasattr(opts, key):
-                setattr(opts, key, data[key])
-        return opts
-
-    @property
-    def custom_serializer(self) -> type:
-        if not self.custom_serializer_classname:
-            return None
-        return create_instance(self.custom_serializer_classname)
-
-
-@dataclass
 class CorpusConfig:
 
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
     corpus_pattern: str = "*.zip"
-    # Used when corpus data needs to be deserialized (e.g. zipped csv data etc)
-    checkpoint_opts: Optional[CheckpointOpts] = None
+    checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
     tagged_tokens_filter_opts: TaggedTokensFilterOpts = None
     pipelines: dict = None
@@ -166,7 +114,7 @@ class CorpusConfig:
                 config_dict['tagged_tokens_filter_opts'] = TaggedTokensFilterOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
-        config_dict['checkpoint_opts'] = CheckpointOpts(
+        config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(
             **(config_dict.get('checkpoint_opts', {}) or {})
         )
         config_dict['pipelines'] = config_dict.get(
@@ -199,8 +147,8 @@ class CorpusConfig:
         FileNotFoundError(filename)
 
     @property
-    def serialize_opts(self) -> CheckpointOpts:
-        opts = CheckpointOpts(
+    def serialize_opts(self) -> checkpoint.CheckpointOpts:
+        opts = checkpoint.CheckpointOpts(
             document_index_name=self.pipeline_payload.document_index_source,
             document_index_sep=self.pipeline_payload.document_index_sep,
         )
