@@ -7,7 +7,7 @@ from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpt
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
 
 from . import tasks
-from .checkpoint import CorpusSerializeOpts
+from .checkpoint import CheckpointSerializeOpts
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -26,21 +26,21 @@ class PipelineShortcutMixIn:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
     def save_tagged_frame(
-        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+        self: pipelines.CorpusPipeline, filename: str, options: CheckpointSerializeOpts
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.SaveTaggedCSV(filename=filename, options=options))
 
     def load_tagged_frame(
         self: pipelines.CorpusPipeline,
         filename: str,
-        options: CorpusSerializeOpts,
+        options: CheckpointSerializeOpts,
         extra_reader_opts: TextReaderOpts = None,
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
         return self.add(tasks.LoadTaggedCSV(filename=filename, options=options, extra_reader_opts=extra_reader_opts))
 
     def load_tagged_xml(
-        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+        self: pipelines.CorpusPipeline, filename: str, options: CheckpointSerializeOpts
     ) -> pipelines.CorpusPipeline:
         """ SparvXML => DATAFRAME """
         return self.add(tasks.LoadTaggedXML(filename=filename, options=options))

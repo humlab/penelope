@@ -12,7 +12,7 @@ def test_spaCy_load_tagged_frame_checkpoint():
 
     checkpoint_filename: str = "./tests/test_data/SSI_tagged_frame_pos_csv.zip"
 
-    options: checkpoint.CorpusSerializeOpts = None  # CorpusSerializeOpts()
+    options: checkpoint.CheckpointSerializeOpts = None  # CheckpointSerializeOpts()
     data = checkpoint.load_checkpoint(source_name=checkpoint_filename, options=options, reader_opts=None)
 
     assert data is not None
@@ -23,7 +23,7 @@ def test_phrased_tagged_frame():
     os.makedirs('./tests/output', exist_ok=True)
 
     checkpoint_filename: str = "./tests/test_data/SSI_tagged_frame_pos_csv.zip"
-    options: checkpoint.CorpusSerializeOpts = None  # CorpusSerializeOpts()
+    options: checkpoint.CheckpointSerializeOpts = None  # CheckpointSerializeOpts()
     data = checkpoint.load_checkpoint(source_name=checkpoint_filename, options=options, reader_opts=None)
     payload = next(data.payload_stream)
 

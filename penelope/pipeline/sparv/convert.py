@@ -2,7 +2,7 @@ from io import StringIO
 
 import pandas as pd
 
-from ..checkpoint import CorpusSerializeOpts, TaggedFrameContentSerializer
+from ..checkpoint import CheckpointSerializeOpts, TaggedFrameContentSerializer
 from ..tagged_frame import TaggedFrame
 
 
@@ -12,7 +12,7 @@ def extract_lemma(token: str, baseform: str) -> str:
 
 
 class SparvCsvSerializer(TaggedFrameContentSerializer):
-    def deserialize(self, content: str, options: CorpusSerializeOpts) -> TaggedFrame:
+    def deserialize(self, content: str, options: CheckpointSerializeOpts) -> TaggedFrame:
         """Extracts first part of baseform (format of baseform is `|lemma|xyz|`"""
         df: TaggedFrame = pd.read_csv(
             StringIO(content),

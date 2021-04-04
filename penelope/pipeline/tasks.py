@@ -137,7 +137,7 @@ class ToDocumentContentTuple(ITask):
 class Checkpoint(DefaultResolveMixIn, ITask):
 
     filename: str = None
-    options: checkpoint.CorpusSerializeOpts = None
+    options: checkpoint.CheckpointSerializeOpts = None
 
     def setup(self) -> ITask:
         super().setup()
@@ -161,7 +161,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
                     "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
                 )
             self.out_content_type = prior_content_type
-            options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(self.out_content_type)
+            options = (self.options or checkpoint.CheckpointSerializeOpts()).as_type(self.out_content_type)
             payload_stream = checkpoint.store_checkpoint(
                 options=options,
                 target_filename=self.filename,
@@ -177,14 +177,14 @@ class SaveTaggedCSV(DefaultResolveMixIn, ITask):
     """Stores sequence of tagged data frame documents to archive. """
 
     filename: str = None
-    options: checkpoint.CorpusSerializeOpts = None
+    options: checkpoint.CheckpointSerializeOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def outstream(self) -> Iterable[DocumentPayload]:
-        options = (self.options or checkpoint.CorpusSerializeOpts()).as_type(ContentType.TAGGED_FRAME)
+        options = (self.options or checkpoint.CheckpointSerializeOpts()).as_type(ContentType.TAGGED_FRAME)
         for payload in checkpoint.store_checkpoint(
             options=options,
             target_filename=self.filename,
@@ -199,7 +199,7 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
-    options: checkpoint.CorpusSerializeOpts = None
+    options: checkpoint.CheckpointSerializeOpts = None
     extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index should be created
 
     checkpoint_data: checkpoint.CheckpointData = field(default=None, init=None, repr=None)
