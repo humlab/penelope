@@ -146,13 +146,6 @@ class CorpusConfig:
                 pass
         FileNotFoundError(filename)
 
-    @property
-    def serialize_opts(self) -> checkpoint.CheckpointOpts:
-        opts = checkpoint.CheckpointOpts(
-            document_index_name=self.pipeline_payload.document_index_source,
-            document_index_sep=self.pipeline_payload.document_index_sep,
-        )
-        return opts
 
     def folders(self, path: str, method: str = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""
