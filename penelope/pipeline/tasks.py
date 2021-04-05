@@ -150,7 +150,9 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def outstream(self) -> Iterable[DocumentPayload]:
         if os.path.isfile(self.filename):
-            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(self.filename, checkpoint_opts=self.options)
+            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+                self.filename, checkpoint_opts=self.options
+            )
             self.pipeline.payload.effective_document_index = checkpoint_data.document_index
             self.out_content_type = checkpoint_data.content_type
             payload_stream = checkpoint_data.payload_stream

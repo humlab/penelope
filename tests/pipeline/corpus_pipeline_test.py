@@ -13,10 +13,10 @@ from penelope.corpus import load_document_index
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (
     CheckpointData,
+    CheckpointOpts,
     ContentType,
     CorpusConfig,
     CorpusPipeline,
-    CheckpointOpts,
     DocumentPayload,
     PipelinePayload,
 )

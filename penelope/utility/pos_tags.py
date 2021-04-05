@@ -202,7 +202,7 @@ class PoS_Tag_Scheme:
         self.PD_PoS_tags: pd.DataFrame = df
         self.PD_PoS_groups: pd.DataFrame = df.groupby('tag_group_name')['tag'].agg(list)
         self.pos_to_id: dict = df['pos_id'].to_dict()
-        self.id_to_pos: dict = {v:k for k,v in self.pos_to_id.items()}
+        self.id_to_pos: dict = {v: k for k, v in self.pos_to_id.items()}
 
     @property
     def tags(self) -> List[str]:

@@ -221,7 +221,6 @@ class DocumentIndexHelper:
         self._document_index = self._document_index.set_index('document_id', drop=False).rename_axis('')
         return self
 
-
     def extend(self, other_index: DocumentIndex) -> "DocumentIndexHelper":
         if self._document_index is None:
             self._document_index = other_index
@@ -231,6 +230,7 @@ class DocumentIndexHelper:
             self._document_index.append(other_index, ignore_index=False)
             self._document_index['document_index'] = self._document_index.reset_index().index
         return self
+
 
 def get_strictly_increasing_document_id(
     document_index: DocumentIndex, document_id_field: str = 'document_id'

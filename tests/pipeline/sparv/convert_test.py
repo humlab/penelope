@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 from penelope import utility
-from penelope.pipeline import config, sparv
+from penelope.pipeline import checkpoint, config, sparv
 from penelope.pipeline.interfaces import ContentType, DocumentPayload
 from penelope.pipeline.pipelines import CorpusPipeline
 from penelope.pipeline.tasks import Vocabulary
@@ -104,7 +104,7 @@ def test_sparv_csv_create_token2id():
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         create_test_content(),
-        config.CheckpointOpts(),
+        checkpoint.CheckpointOpts(),
     )
 
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)
