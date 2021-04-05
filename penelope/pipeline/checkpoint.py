@@ -11,7 +11,7 @@ from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_in
 from penelope.corpus.readers import TextReaderOpts
 from penelope.utility import assert_that_path_exists, create_instance, getLogger, path_of, zip_utils
 
-from . import ContentType, DocumentPayload, PipelineError
+from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
@@ -73,12 +73,16 @@ class CheckpointOpts:
     def columns(self) -> List[str]:
         return [self.text_column, self.lemma_column, self.pos_column] + (self.extra_columns or [])
 
+    def get_text_column_name(self, lemmatized: bool = False):
+        return self.lemma_column if lemmatized else self.text_column
+
+
 @dataclass
 class CheckpointData:
     content_type: ContentType = ContentType.NONE
     document_index: DocumentIndex = None
     payload_stream: Iterable[DocumentPayload] = None
-    serialize_opts: CheckpointOpts = None
+    checkpoint_opts: CheckpointOpts = None
 
 
 class IContentSerializer(abc.ABC):
@@ -214,14 +218,16 @@ def load_checkpoint(
         content_type=checkpoint_opts.content_type,
         payload_stream=deserialized_payload_stream(source_name, checkpoint_opts, filenames),
         document_index=document_index,
-        serialize_opts=checkpoint_opts,
+        checkpoint_opts=checkpoint_opts,
     )
 
     return data
 
 
 def deserialized_payload_stream(
-    source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str],
+    source_name: str,
+    checkpoint_opts: CheckpointOpts,
+    filenames: List[str],
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 
