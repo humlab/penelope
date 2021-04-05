@@ -50,7 +50,7 @@ TaggedFrame = pd.core.api.DataFrame
 
 #     def __post_init__(self):
 #         self.in_content_type = [ContentType.TAGGED_FRAME]
-#         self.out_content_type = ContentType.ID_TAGGED_FRAME
+#         self.out_content_type = ContentType.TAGGED_ID_FRAME
 
 #     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
