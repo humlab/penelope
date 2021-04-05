@@ -114,9 +114,7 @@ class CorpusConfig:
                 config_dict['tagged_tokens_filter_opts'] = TaggedTokensFilterOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
-        config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(
-            **(config_dict.get('checkpoint_opts', {}) or {})
-        )
+        config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
         config_dict['pipelines'] = config_dict.get(
             'pipelines', {}
         )  # CorpusConfig.dict_to_pipeline_config(config_dict.get('pipelines', {}))
@@ -145,7 +143,6 @@ class CorpusConfig:
             except:  # pylint: disable=bare-except
                 pass
         FileNotFoundError(filename)
-
 
     def folders(self, path: str, method: str = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""

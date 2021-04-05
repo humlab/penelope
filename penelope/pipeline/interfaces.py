@@ -183,7 +183,7 @@ class PipelinePayload:
             self.effective_document_index = other_index
         else:
             self.effective_document_index = (
-                DocumentIndexHelper(self.effective_document_index).extend_document_index(other_index).docuement_index
+                DocumentIndexHelper(self.effective_document_index).extend(other_index).docuement_index
             )
         return self
 
