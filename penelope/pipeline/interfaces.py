@@ -42,7 +42,8 @@ class ContentType(IntEnum):
     DOCUMENT_CONTENT_TUPLE = 13
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
-    ID_TAGGED_FRAME = 16
+    TAGGED_ID_FRAME = 16
+    TAGGED_CSV = 17
 
 
 @dataclass
