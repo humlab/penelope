@@ -248,7 +248,7 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
         content_type=ContentType.TAGGED_FRAME,
         document_index=None,
         payload_stream=fake_data_frame_stream(1),
-        serialize_opts=CheckpointOpts().as_type(ContentType.TAGGED_FRAME),
+        checkpoint_opts=CheckpointOpts().as_type(ContentType.TAGGED_FRAME),
     )
 
 
