@@ -93,6 +93,8 @@ PD_SUC_PoS_tags = (
         ],
         columns=['tag', 'tag_group_name', 'description'],
     )
+    .rename_axis('pos_id')
+    .reset_index()
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
@@ -123,6 +125,8 @@ PD_Universal_PoS_tags = (
         ],
         columns=['tag', 'tag_group_name', 'description'],
     )
+    .rename_axis('pos_id')
+    .reset_index()
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
@@ -186,6 +190,8 @@ PD_PennTree_O5_PoS_tags = (
         ],
         columns=['tag', 'tag_group_name', 'universal_tag', 'description'],
     )
+    .rename_axis('pos_id')
+    .reset_index()
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
@@ -195,6 +201,8 @@ class PoS_Tag_Scheme:
     def __init__(self, df: pd.DataFrame) -> None:
         self.PD_PoS_tags: pd.DataFrame = df
         self.PD_PoS_groups: pd.DataFrame = df.groupby('tag_group_name')['tag'].agg(list)
+        self.pos_to_id: dict = df['pos_id'].to_dict()
+        self.id_to_pos: dict = {v:k for k,v in self.pos_to_id.items()}
 
     @property
     def tags(self) -> List[str]:
