@@ -45,6 +45,7 @@ from .filename_utils import (
     data_path_ts,
     filename_satisfied_by,
     filename_whitelist,
+    filenames_satisfied_by,
     filter_names_by_pattern,
     now_timestamp,
     path_add_date,

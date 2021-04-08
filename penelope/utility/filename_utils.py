@@ -30,7 +30,7 @@ def filename_satisfied_by(
     filename: str, filename_filter: Union[List[str], Callable], filename_pattern: str = None
 ) -> bool:
 
-    """Returns all filenames that are satisfied by filename filter, and that matchers pattern"""
+    """Returns true if filename is satisfied by filename filter, and matches pattern"""
 
     if filename_pattern is not None:
         if not fnmatch.fnmatch(filename, filename_pattern):
@@ -53,6 +53,15 @@ def filename_satisfied_by(
 
     return True
 
+def filenames_satisfied_by(
+    filenames: List[str], filename_filter: Union[List[str], Callable], filename_pattern: str = None
+) -> List[str]:
+    return [
+        filename
+        for filename in sorted(filenames)
+        if filename_satisfied_by(filename, filename_filter)
+        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+    ]
 
 def filename_whitelist(filename: str) -> str:
     """Removes invalid characters from filename"""
