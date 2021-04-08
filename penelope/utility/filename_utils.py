@@ -39,7 +39,7 @@ def filename_satisfied_by(
     if filename_filter is None:
         return True
 
-    if isinstance(filename_filter, list):
+    if isinstance(filename_filter, (list, set, tuple, dict,)):
 
         # Try both with and without extension
         if filename not in filename_filter and strip_path_and_extension(filename) not in filename_filter:
