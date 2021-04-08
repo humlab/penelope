@@ -70,35 +70,15 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         if len(extract_opts.get_pos_excludes() or set()) > 0:
             mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
+    tokens: List[str] = doc.loc[mask][target].tolist()
+
     if phrases is not None:
 
-        tokens_str = ' '.join(doc.loc[mask][target].tolist())
-        phrased_tokens = multiple_replace(tokens_str, phrases, ignore_case=ignore_case).split()
-        # phrases = [p for p in phrases if len(p) > 1]
-
-        # phrases_dicts = {
-        #     start: sorted([p for p in phrases if p[0] == start], key=len, reverse=True)
-        #     for start in { p[0] for p in phrases}
-        # }
-
-        # tokens = doc.loc[mask][target].tolist()
-        # phrased_tokens = []
-        # i = 0
-        # while i < len(tokens):
-
-        #     if tokens[i] in phrases_dicts:
-        #         for phrase in phrases_dicts[tokens[i]]:
-        #             if tokens[i : i + len(phrase)] == phrase:
-        #                 phrased_tokens.append('_'.join(phrase))
-        #                 i += len(phrase)
-        #                 continue
-
-        #     phrased_tokens.append(tokens[i])
-        #     i += 1
+        phrased_tokens = multiple_replace(' '.join(tokens), phrases, ignore_case=ignore_case).split()
 
         return phrased_tokens
 
-    return doc.loc[mask][target].tolist()
+    return tokens
 
 
 def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
