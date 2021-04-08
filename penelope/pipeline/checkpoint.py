@@ -5,7 +5,7 @@ import json
 import zipfile
 from dataclasses import asdict, dataclass, field
 from io import StringIO
-from os import basename
+from os.path import basename
 from typing import Any, Iterable, Iterator, List, Optional, Sequence, Union
 
 import pandas as pd
