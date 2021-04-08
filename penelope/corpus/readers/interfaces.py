@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import abc
 import csv
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
 import numpy as np
 import pandas as pd
 from penelope.utility import FilenameFieldSpecs, pandas_utils
 
-from ..document_index import DocumentIndex
+if TYPE_CHECKING:
+    from ..document_index import DocumentIndex
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
