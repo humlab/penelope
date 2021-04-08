@@ -1,8 +1,8 @@
 import itertools
 import os
-from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
+from enum import IntEnum
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
@@ -20,7 +20,7 @@ from penelope.corpus.readers.tng.reader import CorpusReader
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
-from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
+from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError, Token2Id
 from .tagged_frame import TaggedFrame
 from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn
 
@@ -137,11 +137,12 @@ class ToDocumentContentTuple(ITask):
 class Checkpoint(DefaultResolveMixIn, ITask):
 
     filename: str = None
-    options: checkpoint.CheckpointOpts = None
+    checkpoint_opts: checkpoint.CheckpointOpts = None
 
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("checkpoint_file", self.filename)
+        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         return self
 
     def __post_init__(self):
@@ -149,61 +150,72 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         self.out_content_type = ContentType.PASSTHROUGH
 
     def outstream(self) -> Iterable[DocumentPayload]:
+
         if os.path.isfile(self.filename):
-            checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
-                self.filename, checkpoint_opts=self.options
-            )
-            self.pipeline.payload.effective_document_index = checkpoint_data.document_index
-            self.out_content_type = checkpoint_data.content_type
-            payload_stream = checkpoint_data.payload_stream
+            payload_stream = self._load_payload_stream()
         else:
-            prior_content_type = self.pipeline.get_prior_content_type(self)
-            if prior_content_type == ContentType.NONE:
-                raise PipelineError(
-                    "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
-                )
-            self.out_content_type = prior_content_type
-            options = (self.options or checkpoint.CheckpointOpts()).as_type(self.out_content_type)
-            payload_stream = checkpoint.store_checkpoint(
-                checkpoint_opts=options,
-                target_filename=self.filename,
-                document_index=self.document_index,
-                payload_stream=self.instream,
-            )
+            payload_stream = self._store_payload_stream()
+
         for payload in payload_stream:
             yield payload
 
+    def _load_payload_stream(self):
+        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+            self.filename, checkpoint_opts=self.checkpoint_opts
+        )
+        self.pipeline.payload.effective_document_index = checkpoint_data.document_index
+        self.out_content_type = checkpoint_data.content_type
+
+        payload_stream = checkpoint_data.payload_stream
+        return payload_stream
+
+    def _store_payload_stream(self):
+        self.out_content_type = self.get_out_content_type()
+        checkpoint_opts = self.checkpoint_opts.as_type(self.out_content_type)
+        payload_stream = checkpoint.store_checkpoint(
+            checkpoint_opts=checkpoint_opts,
+            target_filename=self.filename,
+            document_index=self.document_index,
+            payload_stream=self.instream,
+        )
+        return payload_stream
+
+    def get_out_content_type(self):
+        prior_content_type = self.pipeline.get_prior_content_type(self)
+        if prior_content_type == ContentType.NONE:
+            raise PipelineError(
+                "Checkpoint file removed OR pipeline setup error. Checkpoint file does not exist AND checkpoint task has no prior task"
+            )
+        return prior_content_type
+
 
 @dataclass
-class SaveTaggedCSV(DefaultResolveMixIn, ITask):
+class SaveTaggedCSV(Checkpoint):
     """Stores sequence of tagged data frame documents to archive. """
 
     filename: str = None
-    options: checkpoint.CheckpointOpts = None
+    checkpoint_opts: checkpoint.CheckpointOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def outstream(self) -> Iterable[DocumentPayload]:
-        options = (self.options or checkpoint.CheckpointOpts()).as_type(ContentType.TAGGED_FRAME)
-        for payload in checkpoint.store_checkpoint(
-            checkpoint_opts=options,
-            target_filename=self.filename,
-            document_index=self.document_index,
-            payload_stream=self.instream,
-        ):
+        for payload in self._store_payload_stream():
             yield payload
+
+    def get_out_content_type(self):
+        return self.out_content_type
 
 
 @dataclass
 class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
+    # FIXME; Consolidate with Checkpoint
     filename: str = None
-    options: checkpoint.CheckpointOpts = None
+    checkpoint_opts: checkpoint.CheckpointOpts = None
     extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index should be created
-
     checkpoint_data: checkpoint.CheckpointData = field(default=None, init=None, repr=None)
 
     def __post_init__(self):
@@ -212,8 +224,9 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
+        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.checkpoint_data = checkpoint.load_checkpoint(
-            self.filename, checkpoint_opts=self.options, reader_opts=self.extra_reader_opts
+            self.filename, checkpoint_opts=self.checkpoint_opts, reader_opts=self.extra_reader_opts
         )
         self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
         if self.extra_reader_opts:
@@ -434,22 +447,25 @@ class TextToDTM(ITask):
 
 @dataclass
 class Vocabulary(ITask):
+    class TokenType(IntEnum):
+        Text = (1,)
+        Lemma = (2,)
+        Both = 3
 
-    token2id: Mapping[str, int] = None
+    token2id: Token2Id = None
+    token_type: TokenType = TokenType.Both
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
     def setup(self) -> ITask:
-        self.token2id = defaultdict()
-        self.token2id.default_factory = self.token2id.__len__
+        self.token2id = Token2Id()
         self.pipeline.payload.token2id = self.token2id
         return self
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        for token in self.tokens_iter(payload):
-            _ = self.token2id[token]
+        self.token2id.ingest(self.tokens_iter(payload))
         return payload
 
     def tokens_iter(self, payload: DocumentPayload) -> Iterable[str]:
@@ -457,12 +473,19 @@ class Vocabulary(ITask):
         if payload.content_type == ContentType.TOKENS:
             return payload.content
 
-        tagged_frame: TaggedFrame = payload.content
-        column_names = self.pipeline.payload.tagged_columns_names
-        return itertools.chain(
-            tagged_frame[column_names['text_column']],
-            tagged_frame[column_names['lemma_column']],
-        )
+        text_tokens = payload.content[self.get_name('text_column')]
+        lemma_tokens = payload.content[self.get_name('lemma_column')]
+
+        if self.token_type == Vocabulary.TokenType.Text:
+            return text_tokens
+
+        if self.token_type == Vocabulary.TokenType.Lemma:
+            return lemma_tokens
+
+        return itertools.chain(text_tokens, lemma_tokens)
+
+    def get_name(self, token_column: str) -> str:
+        return self.pipeline.payload.memory_store.get(token_column)
 
 
 @dataclass
