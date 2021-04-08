@@ -43,7 +43,6 @@ class ContentType(IntEnum):
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
     TAGGED_ID_FRAME = 16
-    TAGGED_CSV = 17
 
 
 @dataclass
@@ -183,7 +182,7 @@ class PipelinePayload:
             self.effective_document_index = other_index
         else:
             self.effective_document_index = (
-                DocumentIndexHelper(self.effective_document_index).extend(other_index).docuement_index
+                DocumentIndexHelper(self.effective_document_index).extend(other_index).document_index
             )
         return self
 
@@ -270,10 +269,7 @@ class ITask(abc.ABC):
                 return
             if self.in_content_type == content_type:
                 return
-        if isinstance(
-            self.in_content_type,
-            (list, tuple),
-        ):
+        if isinstance(self.in_content_type, (list, tuple)):
             if content_type in self.in_content_type:
                 return
         raise PipelineError("content type not valid for task")
@@ -286,20 +282,23 @@ class ITask(abc.ABC):
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
 
-
+# FIXME #46 Token2Id raises KeyError
 class Token2Id(defaultdict):
     def __init__(self, *args):
-        self.default_factory = self.__len__
         super().__init__(*args)
+        self.default_factory = self.__len__
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
         for token in tokens:
             _ = self[token]
         return self
 
-    def open(self) -> "Token2Id":
+    def close(self) -> "Token2Id":
         self.default_factory = None
 
-    def close(self) -> "Token2Id":
+    def open(self) -> "Token2Id":
         self.default_factory = self.__len__
         return self
+
+    def id2token(self) -> dict:
+        return {v: k for k, v in self.items()}
