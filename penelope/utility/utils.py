@@ -8,6 +8,7 @@ import os
 import platform
 import re
 import time
+import uuid
 from importlib import import_module
 from numbers import Number
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
@@ -24,6 +25,11 @@ V = TypeVar('V')
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
 
+def fn_name(default=None):
+    try:
+        return inspect.stack()[1][3]
+    except Exception:
+        return default or str(uuid.uuid1())
 
 def get_logger(
     name: str = "penelope",

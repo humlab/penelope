@@ -92,6 +92,7 @@ from .utils import (
     filter_dict,
     filter_kwargs,
     flatten,
+    fn_name,
     get_func_args,
     get_logger,
     getLogger,
