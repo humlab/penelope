@@ -43,7 +43,20 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     ignore_case: bool = False,
     verbose: bool = True,  # pylint: disable=unused-argument
 ) -> Iterable[str]:
+    """Extracts tokens from a tagged document represented as a Pandas data frame.
 
+    Args:
+        extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
+        filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+        text_column (str, optional): Name of text column in data frame. Defaults to 'text'.
+        lemma_column (str, optional): Name of `lemma` column in data frame. Defaults to 'lemma_'.
+        pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
+        phrases (List[List[str]], optional): Phrases in tokens equence that should be merged into a single token. Defaults to None.
+        ignore_case (bool, optional): Ignore case or not. Defaults to False.
+
+    Returns:
+        Iterable[str]: Sequence of extracted tokens
+    """
     # FIXME: #31 Verify that blank LEMMAS are replaced  by TOKEN
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
@@ -61,7 +74,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if filter_opts is not None:
         mask &= filter_opts.mask(doc)
 
-    # FIXME: Merge with filter_opts:
     if pos_column in doc.columns:
 
         if len(extract_opts.get_pos_includes() or set()) > 0:
