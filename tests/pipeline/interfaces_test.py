@@ -1,7 +1,10 @@
+from tokenize import Token
+
 import numpy as np
 import pandas as pd
 import pytest
 from penelope.corpus.readers import TaggedTokensFilterOpts
+from penelope.pipeline.interfaces import Token2Id
 
 
 def test_tagged_tokens_filter_opts_set_of_new_field_succeeds():
