@@ -53,15 +53,30 @@ def filename_satisfied_by(
 
     return True
 
+
 def filenames_satisfied_by(
-    filenames: List[str], filename_filter: Union[List[str], Callable], filename_pattern: str = None
+    filenames: List[str], filename_filter: Union[List[str], Callable] = None, filename_pattern: str = None, sort=False
 ) -> List[str]:
+    """Filters list of filenames based on `filename_pattern` and `filename_filter`
+
+    Args:
+        filenames (List[str]): Filenames to filter
+        filename_filter (Union[List[str], Callable]): Predicate or list of filenames
+        filename_pattern (str, optional): Glob pattern. Defaults to None.
+
+    Returns:
+        List[str]: [description]
+    """
+    if filename_filter is None and filename_pattern is None:
+        return filenames
+
     return [
         filename
-        for filename in sorted(filenames)
+        for filename in (sorted(filenames) if sort else filenames)
         if filename_satisfied_by(filename, filename_filter)
         and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]
+
 
 def filename_whitelist(filename: str) -> str:
     """Removes invalid characters from filename"""
