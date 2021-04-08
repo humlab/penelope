@@ -4,11 +4,11 @@ from io import StringIO
 import pandas as pd
 
 import penelope.pipeline.checkpoint as checkpoint
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
+from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline.convert import tagged_frame_to_tokens
 
 
-def test_spaCy_load_tagged_frame_checkpoint():
+def test_load_tagged_frame_checkpoint():
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     os.makedirs('./tests/output', exist_ok=True)
@@ -22,18 +22,46 @@ def test_spaCy_load_tagged_frame_checkpoint():
 
     assert data is not None
 
+    assert data.source_name == "legal_instrument_five_docs_test_pos_csv.zip"
+    assert len(data.document_index) == 5
+
+    payloads = [x for x in data.payload_stream]
+    assert len(payloads) == 5
+    assert all(x.filename in data.document_index.filename.to_list() for x in payloads)
+
+    """Test reader_opts filter by list of filenames"""
+    whitelist = {'RECOMMENDATION_0201_049455_2017.txt', 'DECLARATION_0201_013178_1997.txt'}
+    data = checkpoint.load_checkpoint(
+        source_name=checkpoint_filename,
+        checkpoint_opts=checkpoint_opts,
+        reader_opts=TextReaderOpts(filename_filter=whitelist),
+    )
+    assert {x.filename for x in data.payload_stream} == whitelist
+    assert {x for x in data.document_index.filename.to_list()} == whitelist
+
+    """Test reader_opts filter by a predicate"""
+    years = [1958, 1945]
+    expected_documents = { 'CONSTITUTION_0201_015244_1945_london.txt', 'CONVENTION_0201_015395_1958_paris.txt' }
+    whitelister = lambda x: x.split('_')[3] in map(str, years)
+    data = checkpoint.load_checkpoint(
+        source_name=checkpoint_filename,
+        checkpoint_opts=checkpoint_opts,
+        reader_opts=TextReaderOpts(filename_filter=whitelister),
+    )
+    assert {x.filename for x in data.payload_stream} == expected_documents
+    assert {x for x in data.document_index.filename.to_list()} == expected_documents
 
 def test_phrased_tagged_frame():
 
     os.makedirs('./tests/output', exist_ok=True)
     opts = dict(
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False),
-        filter_opts = None,
-        text_column= 'text',
-        lemma_column = 'lemma_',
-        pos_column = 'pos_',
-        ignore_case = False,
-        verbose = True
+        filter_opts=None,
+        text_column='text',
+        lemma_column='lemma_',
+        pos_column='pos_',
+        ignore_case=False,
+        verbose=True,
     )
     data_str: str = """	text	lemma_	pos_	is_punct	is_stop
 0	Constitution	constitution	NOUN	False	False
@@ -63,9 +91,7 @@ def test_phrased_tagged_frame():
 
     phrases = {'united nations': 'United_Nations'}
 
-    phrased_tokens = tagged_frame_to_tokens(
-        tagged_frame, phrases=phrases, **{**opts, **{'ignore_case': True}}
-    )
+    phrased_tokens = tagged_frame_to_tokens(tagged_frame, phrases=phrases, **{**opts, **{'ignore_case': True}})
     assert phrased_tokens[:9] == 'Constitution of the United_Nations Educational , Scientific and Cultural'.split(' ')
 
 
