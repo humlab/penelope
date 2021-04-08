@@ -50,7 +50,7 @@ def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
 
     load = tasks.LoadTaggedCSV(
         filename=corpus_config.pipeline_payload.source,
-        options=corpus_config.checkpoint_opts,
+        checkpoint_opts=corpus_config.checkpoint_opts,
         extra_reader_opts=corpus_config.text_reader_opts,
     )
 

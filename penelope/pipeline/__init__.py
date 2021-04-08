@@ -3,8 +3,8 @@ from . import spacy, sparv
 from .checkpoint import (
     CheckpointData,
     CheckpointOpts,
+    CsvContentSerializer,
     IContentSerializer,
-    TaggedFrameContentSerializer,
     TextContentSerializer,
     TokensContentSerializer,
     load_checkpoint,

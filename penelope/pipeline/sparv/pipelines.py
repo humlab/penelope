@@ -13,7 +13,7 @@ def to_tagged_frame_pipeline(
 
         task: interfaces.ITask = tasks.LoadTaggedCSV(
             filename=(corpus_filename or corpus_config.pipeline_payload.source),
-            options=corpus_config.checkpoint_opts,
+            checkpoint_opts=corpus_config.checkpoint_opts,
             extra_reader_opts=corpus_config.text_reader_opts,
         )
 

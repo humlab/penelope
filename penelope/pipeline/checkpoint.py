@@ -1,21 +1,23 @@
 import abc
+import copy
 import csv
 import json
 import zipfile
 from dataclasses import asdict, dataclass, field
 from io import StringIO
-from typing import Iterable, Iterator, List, Sequence, Union
+from typing import Any, Iterable, Iterator, List, Optional, Sequence, Union
 
 import pandas as pd
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
-from penelope.corpus.readers import TextReaderOpts
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index
 from penelope.utility import assert_that_path_exists, create_instance, getLogger, path_of, zip_utils
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
-SERIALIZE_OPT_FILENAME = "options.json"
+
+CHECKPOINT_OPTS_FILENAME = "options.json"
+DOCUMENT_INDEX_FILENAME = "document_index.csv"
 
 logger = getLogger("penelope")
 
@@ -36,6 +38,7 @@ class CheckpointOpts:
     lemma_column: str = field(default="lemma")
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
+    index_column: Union[int, None] = 0
 
     @property
     def content_type(self) -> ContentType:
@@ -46,13 +49,9 @@ class CheckpointOpts:
         self.content_type_code = int(value)
 
     def as_type(self, value: ContentType) -> "CheckpointOpts":
-        opts = CheckpointOpts(
-            content_type_code=int(value),
-            document_index_name=self.document_index_name,
-            document_index_sep=self.document_index_sep,
-            sep=self.sep,
-            quoting=self.quoting,
-        )
+        # FIXME #45 Not all member properties are copies in type cast
+        opts = copy.copy(self)
+        opts.content_type_code = int(value)
         return opts
 
     @staticmethod
@@ -73,7 +72,7 @@ class CheckpointOpts:
     def columns(self) -> List[str]:
         return [self.text_column, self.lemma_column, self.pos_column] + (self.extra_columns or [])
 
-    def get_text_column_name(self, lemmatized: bool = False):
+    def text_column_name(self, lemmatized: bool = False):
         return self.lemma_column if lemmatized else self.text_column
 
 
@@ -107,7 +106,7 @@ class IContentSerializer(abc.ABC):
             return TokensContentSerializer()
 
         if options.content_type == ContentType.TAGGED_FRAME:
-            return TaggedFrameContentSerializer()
+            return CsvContentSerializer()
 
         raise ValueError(f"non-serializable content type: {options.content_type}")
 
@@ -128,12 +127,14 @@ class TokensContentSerializer(IContentSerializer):
         return content.split(' ')
 
 
-class TaggedFrameContentSerializer(IContentSerializer):
+class CsvContentSerializer(IContentSerializer):
     def serialize(self, content: pd.DataFrame, options: CheckpointOpts) -> str:
         return content.to_csv(sep=options.sep, header=True)
 
     def deserialize(self, content: str, options: CheckpointOpts) -> pd.DataFrame:
-        data: pd.DataFrame = pd.read_csv(StringIO(content), sep=options.sep, quoting=options.quoting, index_col=0)
+        data: pd.DataFrame = pd.read_csv(
+            StringIO(content), sep=options.sep, quoting=options.quoting, index_col=options.index_column
+        )
         if any(x not in data.columns for x in options.columns):
             raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
         return data[options.columns]
@@ -153,7 +154,7 @@ def store_checkpoint(
 
     with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
 
-        zf.writestr(SERIALIZE_OPT_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
+        zf.writestr(CHECKPOINT_OPTS_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
 
         for payload in payload_stream:
             data = serializer.serialize(payload.content, checkpoint_opts)
@@ -167,8 +168,57 @@ def store_checkpoint(
             )
 
 
+class CheckpointZipFile(zipfile.ZipFile):
+    def __init__(
+        self,
+        file: Any,
+        mode: str,
+        checkpoint_opts: CheckpointOpts = None,
+        document_index_name=DOCUMENT_INDEX_FILENAME,
+    ) -> None:
+
+        super().__init__(file, mode=mode, compresslevel=zipfile.ZIP_DEFLATED)
+
+        self.checkpoint_opts = checkpoint_opts or self._checkpoint_opts()
+
+        if self.checkpoint_opts is None:
+            raise PipelineError(
+                f"Checkpoint options not supplied and file {CHECKPOINT_OPTS_FILENAME} not found in archive."
+            )
+
+        self.document_index_name = document_index_name or self.checkpoint_opts.document_index_name
+        self.document_index = self._document_index()
+
+    def _checkpoint_opts(self) -> Optional[CheckpointOpts]:
+        """Returns checkpoint options stored in archive, or None if not found in archive"""
+
+        if CHECKPOINT_OPTS_FILENAME not in self.namelist():
+            return None
+
+        _opts_dict: dict = zip_utils.read_json(zip_or_filename=self, filename=CHECKPOINT_OPTS_FILENAME)
+        _opts = CheckpointOpts.load(_opts_dict)
+
+        return _opts
+
+    def _document_index(self) -> Optional[DocumentIndex]:
+        """Returns the document index stored in archive, or None if not exists"""
+        if self.document_index_name not in self.namelist():
+            return None
+
+        data_str = zip_utils.read(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
+        document_index = load_document_index(StringIO(data_str), sep=self.checkpoint_opts.document_index_sep)
+        return document_index
+
+    @property
+    def document_filenames(self) -> List[str]:
+        filenames = [f for f in self.namelist() if f not in [self.document_index_name, CHECKPOINT_OPTS_FILENAME]]
+        return filenames
+
+
 def load_checkpoint(
-    source_name: str, checkpoint_opts: CheckpointOpts = None, reader_opts: TextReaderOpts = None
+    source_name: str,
+    checkpoint_opts: CheckpointOpts = None,
+    reader_opts: TextReaderOpts = None,
 ) -> CheckpointData:
     """Load a tagged frame checkpoint stored in a zipped file with CSV-filed and optionally a document index
 
@@ -176,7 +226,7 @@ def load_checkpoint(
 
     Args:
         source_name (str): [description]
-        options (CheckpointOpts, optional): Deserialize oprs. Defaults to None.
+        options (CheckpointOpts, optional): deserialize opts. Defaults to None.
         reader_opts (TextReaderOpts, optional): Create document index options (if specified). Defaults to None.
 
     Raises:
@@ -185,38 +235,35 @@ def load_checkpoint(
     Returns:
         CheckpointData: [description]
     """
-    with zipfile.ZipFile(source_name, mode="r") as zf:
 
-        filenames = zf.namelist()
+    with CheckpointZipFile(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
 
-        if checkpoint_opts is None:
+        filenames: List[str] = zf.document_filenames
+        document_index: DocumentIndex = zf.document_index
+        checkpoint_opts: CheckpointOpts = zf.checkpoint_opts
 
-            if SERIALIZE_OPT_FILENAME not in filenames:
-                raise PipelineError("options not supplied and not found in archive (missing options.json)")
+        if document_index is None:
+            document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
 
-            stored_opts = zip_utils.read_json(zip_or_filename=zf, filename=SERIALIZE_OPT_FILENAME)
-            checkpoint_opts = CheckpointOpts.load(stored_opts)
+    if document_index is None:
 
-            filenames.remove(SERIALIZE_OPT_FILENAME)
+        logger.warning(f"Checkpoint {source_name} has not document index (I hope you have one separately")
 
-        document_index = None
+    elif filenames != document_index.filename.to_list():
 
-        if checkpoint_opts.document_index_name and checkpoint_opts.document_index_name in filenames:
+        """ Check that filenames and document index are in sync """
+        if set(filenames) != set(document_index.filename.to_list()):
+            raise Exception(f"{source_name} archive filenames and document index filenames differs")
 
-            data_str = zip_utils.read(zip_or_filename=zf, filename=checkpoint_opts.document_index_name, as_binary=False)
-            document_index = load_document_index(StringIO(data_str), sep=checkpoint_opts.document_index_sep)
+        logger.warning(f"{source_name} filename sort order mismatch (using document index sort order)")
 
-            filenames.remove(checkpoint_opts.document_index_name)
+        filenames = document_index.filename.to_list()
 
-        elif reader_opts and reader_opts.filename_fields is not None:
-            document_index = DocumentIndexHelper.from_filenames(
-                filenames=filenames,
-                filename_fields=reader_opts.filename_fields,
-            ).document_index
+    payload_stream = deserialized_payload_stream(source_name, checkpoint_opts, filenames)
 
     data: CheckpointData = CheckpointData(
         content_type=checkpoint_opts.content_type,
-        payload_stream=deserialized_payload_stream(source_name, checkpoint_opts, filenames),
+        payload_stream=payload_stream,
         document_index=document_index,
         checkpoint_opts=checkpoint_opts,
     )
@@ -225,9 +272,7 @@ def load_checkpoint(
 
 
 def deserialized_payload_stream(
-    source_name: str,
-    checkpoint_opts: CheckpointOpts,
-    filenames: List[str],
+    source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str]
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 

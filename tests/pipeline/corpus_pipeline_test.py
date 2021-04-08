@@ -1,3 +1,4 @@
+import csv
 import os
 import pathlib
 from typing import Iterable, Optional, Tuple
@@ -92,6 +93,22 @@ def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
     m = MagicMock(spec=spacy.language.Language)
     m.return_value = mock_doc
     return m
+
+
+@pytest.fixture(scope="module")
+def checkpoint_opts() -> CheckpointOpts:
+    opts = CheckpointOpts(
+        content_type_code=1,
+        document_index_name='document_index.csv',
+        document_index_sep='\t',
+        index_column=0,
+        text_column='text',
+        lemma_column='lemma_',
+        pos_column='pos_',
+        sep='\t',
+        quoting=csv.QUOTE_NONE,
+    )
+    return opts
 
 
 def patch_spacy_doc(*x, **y):  # pylint: disable=unused-argument
@@ -237,7 +254,7 @@ def test_tagged_frame_to_tokens_succeeds():
 
 
 def patch_store_checkpoint(
-    *, options, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
+    *, checkpoint_opts, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
 ):
     for p in payload_stream:
         yield p
@@ -255,7 +272,8 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
 @patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
 def test_save_data_frame_succeeds():
     pipeline = Mock(spec=CorpusPipeline, **{'payload.set_reader_index': monkey_patch})
-    task = tasks.SaveTaggedCSV(pipeline=pipeline, filename="dummy.zip")
+    opts = Mock(spec=CheckpointOpts)
+    task = tasks.SaveTaggedCSV(pipeline=pipeline, filename="dummy.zip", checkpoint_opts=opts)
     task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGED_FRAME
@@ -300,9 +318,9 @@ def test_tokens_to_text_when_text_instream_succeeds():
     assert next_payload.content_type == ContentType.TEXT
 
 
-def test_spacy_pipeline():
+def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 
-    checkpoint_filename = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_dataframe_pos_csv.zip")
+    checkpoint_filename = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
@@ -328,7 +346,7 @@ def test_spacy_pipeline():
         .text_to_spacy()
         .passthrough()
         .spacy_to_pos_tagged_frame()
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, checkpoint_opts=checkpoint_opts)
         .to_content()
     )
 
@@ -339,9 +357,9 @@ def test_spacy_pipeline():
     # pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
 
-def test_spacy_pipeline_load_checkpoint():
+def test_spacy_pipeline_load_checkpoint(checkpoint_opts: CheckpointOpts):
 
-    checkpoint_filename = os.path.join(TEST_DATA_FOLDER, "checkpoint_dataframe_pos_csv.zip")
+    checkpoint_filename = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pipeline_payload = PipelinePayload(
         source=TEST_CORPUS,
@@ -349,8 +367,15 @@ def test_spacy_pipeline_load_checkpoint():
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
     )
-    config = Mock(spec=CorpusConfig, payload=pipeline_payload)
-    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename).to_content()
+    config = MagicMock(spec=CorpusConfig, payload=pipeline_payload)
+    pipeline = (
+        CorpusPipeline(config=config)
+        .checkpoint(
+            checkpoint_filename,
+            checkpoint_opts=checkpoint_opts,
+        )
+        .to_content()
+    )
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None

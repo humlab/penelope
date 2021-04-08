@@ -26,18 +26,20 @@ class PipelineShortcutMixIn:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
     def save_tagged_frame(
-        self: pipelines.CorpusPipeline, filename: str, options: CheckpointOpts
+        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts
     ) -> pipelines.CorpusPipeline:
-        return self.add(tasks.SaveTaggedCSV(filename=filename, options=options))
+        return self.add(tasks.SaveTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts))
 
     def load_tagged_frame(
         self: pipelines.CorpusPipeline,
         filename: str,
-        options: CheckpointOpts,
+        checkpoint_opts: CheckpointOpts,
         extra_reader_opts: TextReaderOpts = None,
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
-        return self.add(tasks.LoadTaggedCSV(filename=filename, options=options, extra_reader_opts=extra_reader_opts))
+        return self.add(
+            tasks.LoadTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts, extra_reader_opts=extra_reader_opts)
+        )
 
     def load_tagged_xml(
         self: pipelines.CorpusPipeline, filename: str, options: CheckpointOpts
@@ -45,9 +47,11 @@ class PipelineShortcutMixIn:
         """ SparvXML => DATAFRAME """
         return self.add(tasks.LoadTaggedXML(filename=filename, options=options))
 
-    def checkpoint(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
+    def checkpoint(
+        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts = None
+    ) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
-        return self.add(tasks.Checkpoint(filename=filename))
+        return self.add(tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts))
 
     def tokens_to_text(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         """ [TOKEN] => TEXT """
