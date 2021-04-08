@@ -10,7 +10,14 @@ from typing import Any, Iterable, Iterator, List, Optional, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index
-from penelope.utility import assert_that_path_exists, create_instance, getLogger, path_of, zip_utils
+from penelope.utility import (
+    assert_that_path_exists,
+    create_instance,
+    filenames_satisfied_by,
+    getLogger,
+    path_of,
+    zip_utils,
+)
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
@@ -229,7 +236,7 @@ def load_checkpoint(
     Args:
         source_name (str): [description]
         options (CheckpointOpts, optional): deserialize opts. Defaults to None.
-        reader_opts (TextReaderOpts, optional): Create document index options (if specified). Defaults to None.
+        reader_opts (TextReaderOpts, optional): Settings for creatin a document index or filtering files. Defaults to None.
 
     Raises:
         PipelineError: [description]
@@ -248,7 +255,6 @@ def load_checkpoint(
             document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
 
     if document_index is None:
-
         logger.warning(f"Checkpoint {source_name} has not document index (I hope you have one separately")
 
     elif filenames != document_index.filename.to_list():
@@ -260,6 +266,13 @@ def load_checkpoint(
         logger.warning(f"{source_name} filename sort order mismatch (using document index sort order)")
 
         filenames = document_index.filename.to_list()
+
+    if reader_opts:
+
+        filenames = filenames_satisfied_by(filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern)
+        
+        if document_index is not None:
+            document_index = document_index[document_index.filename.isin(filenames)]
 
     payload_stream = deserialized_payload_stream(source_name, checkpoint_opts, filenames)
 
