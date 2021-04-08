@@ -10,7 +10,7 @@ def test_spaCy_load_tagged_frame_checkpoint():
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    checkpoint_filename: str = "./tests/test_data/SSI_tagged_frame_pos_csv.zip"
+    checkpoint_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
 
     checkpoint_opts: checkpoint.CheckpointOpts = None  # CheckpointOpts()
     data = checkpoint.load_checkpoint(
@@ -24,7 +24,7 @@ def test_phrased_tagged_frame():
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    checkpoint_filename: str = "./tests/test_data/SSI_tagged_frame_pos_csv.zip"
+    checkpoint_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
     checkpoint_opts: checkpoint.CheckpointOpts = None  # CheckpointOpts()
     data = checkpoint.load_checkpoint(
         source_name=checkpoint_filename, checkpoint_opts=checkpoint_opts, reader_opts=None

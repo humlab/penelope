@@ -16,7 +16,7 @@ from ..fixtures import FakeComputeOptsSpacyCSV
 
 
 def fake_config() -> CorpusConfig:
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
@@ -29,18 +29,13 @@ def config():
     return fake_config()
 
 
-def test_spaCy_co_occurrence_pipeline():
+def test_spaCy_co_occurrence_pipeline(config):
 
     os.makedirs('./tests/output', exist_ok=True)
-    checkpoint_filename: str = "./tests/test_data/SSI_tagged_frame_pos_csv.zip"
+    checkpoint_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
     target_filename = './tests/output/SSI-co-occurrence-JJVBNN-window-9.csv'
     if os.path.isfile(target_filename):
         os.remove(target_filename)
-
-    ssi: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
-
-    ssi.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    ssi.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
 
     # .folder(folder='./tests/test_data')
     pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
@@ -56,8 +51,8 @@ def test_spaCy_co_occurrence_pipeline():
     partition_column: str = 'year'
 
     compute_result: ComputeResult = spaCy_co_occurrence_pipeline(
-        corpus_config=ssi,
-        corpus_filename=ssi.pipeline_payload.source,
+        corpus_config=config,
+        corpus_filename=config.pipeline_payload.source,
         tokens_transform_opts=tokens_transform_opts,
         extract_tagged_tokens_opts=extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=tagged_tokens_filter_opts,

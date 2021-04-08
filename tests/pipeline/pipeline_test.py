@@ -22,7 +22,7 @@ CORPUS_FOLDER = './tests/test_data'
 
 def fake_config() -> CorpusConfig:
 
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yaml')
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
@@ -81,7 +81,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: CorpusCo
 
 def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: CorpusConfig):
 
-    checkpoint_filename: str = os.path.join(OUTPUT_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    checkpoint_filename: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     transform_opts = TextTransformOpts()
 
@@ -99,11 +99,12 @@ def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: CorpusConfi
     ).exhaust()
 
     assert os.path.isfile(checkpoint_filename)
+    pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
 
 def test_pipeline_can_load_pos_tagged_checkpoint(config: CorpusConfig):
 
-    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename)
 
@@ -116,7 +117,7 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: CorpusConfig):
 
 def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
 
-    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
     filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)

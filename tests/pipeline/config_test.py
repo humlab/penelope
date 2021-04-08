@@ -72,7 +72,7 @@ def test_dump_and_load_of_corpus_config_succeeds():
 
 def test_find_config():
 
-    c = CorpusConfig.find("ssi_corpus_config.yaml", './tests/test_data')
+    c = CorpusConfig.find("ssi_corpus_config.yml", './tests/test_data')
     assert c is not None
 
 
