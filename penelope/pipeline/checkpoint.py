@@ -78,6 +78,7 @@ class CheckpointOpts:
 
 @dataclass
 class CheckpointData:
+    source_name: Any = None
     content_type: ContentType = ContentType.NONE
     document_index: DocumentIndex = None
     payload_stream: Iterable[DocumentPayload] = None
@@ -266,6 +267,7 @@ def load_checkpoint(
         payload_stream=payload_stream,
         document_index=document_index,
         checkpoint_opts=checkpoint_opts,
+        source_name=source_name,
     )
 
     return data
