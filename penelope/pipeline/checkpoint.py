@@ -5,6 +5,7 @@ import json
 import zipfile
 from dataclasses import asdict, dataclass, field
 from io import StringIO
+from os import basename
 from typing import Any, Iterable, Iterator, List, Optional, Sequence, Union
 
 import pandas as pd
@@ -267,7 +268,7 @@ def load_checkpoint(
         payload_stream=payload_stream,
         document_index=document_index,
         checkpoint_opts=checkpoint_opts,
-        source_name=source_name,
+        source_name=basename(source_name),
     )
 
     return data
