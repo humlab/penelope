@@ -81,7 +81,7 @@ class ExtractTaggedTokensOpts:
             append_pos=self.append_pos,
         )
 
-
+# TODO #49 Cobsider deprecating class
 class TaggedTokensFilterOpts:
     """Used for filtering tagged data that are stored as Pandas data frames.
     A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
