@@ -506,7 +506,7 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         module_path, cls_or_function_name = class_or_function_path.rsplit('.', 1)
         module = import_module(module_path)
         return getattr(module, cls_or_function_name)
-    except (ImportError, AttributeError) as e:
+    except (ImportError, AttributeError, ValueError) as e:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
