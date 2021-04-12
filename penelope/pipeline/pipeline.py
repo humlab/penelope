@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import functools
+import itertools
 from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
 
 from .interfaces import ContentType, DocumentPayload, ITask, PipelinePayload
@@ -66,6 +67,10 @@ class CorpusPipelineBase(Generic[_T_self]):
     def resolve(self) -> Iterator[DocumentPayload]:
         """Resolves the pipeline by calling outstream on last task"""
         return self.setup().tasks[-1].outstream()
+
+    def take(self, n_count: int=1) -> Iterator[DocumentPayload]:
+        """Resolves the pipeline by calling outstream on last task"""
+        return [ x for x in itertools.islice(self.resolve(), n_count)]
 
     def exhaust(self) -> CorpusPipelineBase:
         """Exhaust the entire pipeline, disregarding items"""
