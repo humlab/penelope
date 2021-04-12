@@ -305,7 +305,7 @@ class BaseGUI:
 
     @property
     def tagged_tokens_filter_opts(self) -> TaggedTokensFilterOpts:
-
+        # FIXME #48 Check if _only_alphabetic is valid for Stanza & Sparv (or ignored)
         return TaggedTokensFilterOpts(is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None)
 
     def set_PoS_scheme(self, pos_scheme: PoS_Tag_Scheme):
