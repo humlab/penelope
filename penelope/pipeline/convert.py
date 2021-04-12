@@ -162,3 +162,40 @@ def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_
     token_counts = pos_statistics.to_dict()
     token_counts.update(n_raw_tokens=n_raw_tokens)
     return token_counts
+
+
+def filter_tagged_frame(  # pylint: disable=too-many-arguments
+    doc: TaggedFrame,
+    extract_opts: ExtractTaggedTokensOpts,
+    filter_opts: TaggedTokensFilterOpts = None,
+    pos_column: str = 'pos_',
+) -> TaggedFrame:
+    """Filteras a tagged document represented as a Pandas data frame.
+
+    Args:
+        extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
+        filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+        pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
+
+    Returns:
+        TaggedFrame: Filtered TaggedFrame
+    """
+    if extract_opts.lemmatize is None and extract_opts.target_override is None:
+        raise ValueError("a valid target not supplied (no lemmatize or target")
+
+    mask = np.repeat(True, len(doc.index))
+
+    if filter_opts is not None:
+        mask &= filter_opts.mask(doc)
+
+    if pos_column in doc.columns:
+
+        if len(extract_opts.get_pos_includes() or set()) > 0:
+            mask &= doc[pos_column].isin(extract_opts.get_pos_includes())
+
+        if len(extract_opts.get_pos_excludes() or set()) > 0:
+            mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
+
+    doc = doc.loc[mask]
+
+    return doc
