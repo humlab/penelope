@@ -6,7 +6,7 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterO
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 from penelope.utility.utils import multiple_replace
 
-from .interfaces import ContentType, DocumentPayload, PipelineError, Token2Id
+from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
 
 

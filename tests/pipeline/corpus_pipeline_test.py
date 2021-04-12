@@ -23,6 +23,8 @@ from penelope.pipeline import (
 )
 from tests.utils import TEST_DATA_FOLDER
 
+# pylint: disable=redefined-outer-name
+
 TEST_CORPUS = [
     ('mary_1859_01.txt', 'Mary had a little lamb. Its fleece was white as snow.'),
     ('mary_1859_02.txt', 'Everywhere that Mary went the lamb was sure to go.'),
