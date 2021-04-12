@@ -93,47 +93,47 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     return tokens
 
 
-def tagged_idframe_to_tokens(  # pylint: disable=too-many-arguments
-    doc: TaggedFrame,
-    token2id: Token2Id,
-    extract_opts: ExtractTaggedTokensOpts,
-    filter_opts: TaggedTokensFilterOpts = None,
-    phrases: List[List[int]] = None,
-    ignore_case: bool = False,
-) -> Iterable[int]:
-    """Extracts tokens from a tagged document represented as a Pandas data frame.
+# def tagged_idframe_to_tokens(  # pylint: disable=too-many-arguments
+#     doc: TaggedFrame,
+#     token2id: Token2Id,
+#     extract_opts: ExtractTaggedTokensOpts,
+#     filter_opts: TaggedTokensFilterOpts = None,
+#     phrases: List[List[int]] = None,
+#     ignore_case: bool = False,
+# ) -> Iterable[int]:
+#     """Extracts tokens from a tagged document represented as a Pandas data frame.
 
-    Args:
-        extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-        filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
-        phrases (List[List[str]], optional): Phrases in tokens equence that should be merged into a single token. Defaults to None.
-        ignore_case (bool, optional): Ignore case or not. Defaults to False.
+#     Args:
+#         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
+#         filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+#         phrases (List[List[str]], optional): Phrases in tokens equence that should be merged into a single token. Defaults to None.
+#         ignore_case (bool, optional): Ignore case or not. Defaults to False.
 
-    Returns:
-        Iterable[str]: Sequence of extracted tokens
-    """
+#     Returns:
+#         Iterable[str]: Sequence of extracted tokens
+#     """
 
-    mask = np.repeat(True, len(doc.index))
+#     mask = np.repeat(True, len(doc.index))
 
-    if filter_opts is not None:
-        mask &= filter_opts.mask(doc)
+#     if filter_opts is not None:
+#         mask &= filter_opts.mask(doc)
 
-    if len(extract_opts.get_pos_includes() or set()) > 0:
-        mask &= doc.pos_id.isin(extract_opts.get_pos_includes())
+#     if len(extract_opts.get_pos_includes() or set()) > 0:
+#         mask &= doc.pos_id.isin(extract_opts.get_pos_includes())
 
-    if len(extract_opts.get_pos_excludes() or set()) > 0:
-        mask &= ~(doc.pos_id.isin(extract_opts.get_pos_excludes()))
+#     if len(extract_opts.get_pos_excludes() or set()) > 0:
+#         mask &= ~(doc.pos_id.isin(extract_opts.get_pos_excludes()))
 
-    token_ids: List[int] = doc.loc[mask].token_id.tolist()
+#     token_ids: List[int] = doc.loc[mask].token_id.tolist()
 
-    if phrases is not None:
-        # FIXME:
-        raise NotImplementedError()
-        # phrased_tokens = multiple_replace(' '.join(tokens), phrases, ignore_case=ignore_case).split()
+#     if phrases is not None:
+#         # FIXME:
+#         raise NotImplementedError()
+#         # phrased_tokens = multiple_replace(' '.join(tokens), phrases, ignore_case=ignore_case).split()
 
-        # return phrased_tokens
+#         # return phrased_tokens
 
-    return token_ids
+#     return token_ids
 
 
 def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
