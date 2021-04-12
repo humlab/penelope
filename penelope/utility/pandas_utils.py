@@ -54,7 +54,7 @@ def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
 def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     """Creates a mask based on key-values in `criterias`
 
-    Each key-value in `criterias` specifies a filter. The filters are combined using boelean `and`.
+    Each key-value in `criterias` specifies a filter. The filters are combined using boolean `and`.
 
     Args:
         doc (pd.DataFrame): Data frame to mask
