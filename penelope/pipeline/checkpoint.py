@@ -6,7 +6,7 @@ import zipfile
 from dataclasses import asdict, dataclass, field
 from io import StringIO
 from os.path import basename
-from typing import Any, Iterable, Iterator, List, Optional, Sequence, Union
+from typing import Any, Callable, Iterable, Iterator, List, Optional, Sequence, Union
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index
@@ -144,6 +144,7 @@ class CsvContentSerializer(IContentSerializer):
         data: pd.DataFrame = pd.read_csv(
             StringIO(content), sep=options.sep, quoting=options.quoting, index_col=options.index_column
         )
+        data.fillna("", inplace=True)
         if any(x not in data.columns for x in options.columns):
             raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
         return data[options.columns]
@@ -228,6 +229,7 @@ def load_checkpoint(
     source_name: str,
     checkpoint_opts: CheckpointOpts = None,
     reader_opts: TextReaderOpts = None,
+    deserialize_stream: Callable[[str, CheckpointOpts, List[str]], Iterable[DocumentPayload]] = None,
 ) -> CheckpointData:
     """Load a tagged frame checkpoint stored in a zipped file with CSV-filed and optionally a document index
 
@@ -244,7 +246,7 @@ def load_checkpoint(
     Returns:
         CheckpointData: [description]
     """
-
+    deserialized_stream = deserialize_stream or deserialized_payload_stream
     with CheckpointZipFile(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
 
         filenames: List[str] = zf.document_filenames
@@ -255,7 +257,7 @@ def load_checkpoint(
             document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
 
     if document_index is None:
-        logger.warning(f"Checkpoint {source_name} has not document index (I hope you have one separately")
+        logger.warning(f"Checkpoint {source_name} has no document index (I hope you have one separately")
 
     elif filenames != document_index.filename.to_list():
 
@@ -269,12 +271,14 @@ def load_checkpoint(
 
     if reader_opts:
 
-        filenames = filenames_satisfied_by(filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern)
-        
+        filenames = filenames_satisfied_by(
+            filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern
+        )
+
         if document_index is not None:
             document_index = document_index[document_index.filename.isin(filenames)]
 
-    payload_stream = deserialized_payload_stream(source_name, checkpoint_opts, filenames)
+    payload_stream = deserialized_stream(source_name, checkpoint_opts, filenames)
 
     data: CheckpointData = CheckpointData(
         content_type=checkpoint_opts.content_type,
@@ -296,9 +300,10 @@ def deserialized_payload_stream(
 
     with zipfile.ZipFile(source_name, mode="r") as zf:
         for filename in filenames:
-            content: str = zip_utils.read(zip_or_filename=zf, filename=filename, as_binary=False)
+            content: str = zf.read(filename).decode(encoding='utf-8')
+            tagged_frame: TaggedFrame = serializer.deserialize(content, checkpoint_opts)
             yield DocumentPayload(
                 content_type=checkpoint_opts.content_type,
-                content=serializer.deserialize(content, checkpoint_opts),
+                content=tagged_frame,  # serializer.deserialize(content, checkpoint_opts),
                 filename=filename,
             )
