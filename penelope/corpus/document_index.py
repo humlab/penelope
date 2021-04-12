@@ -251,10 +251,10 @@ class DocumentIndexHelper:
         if self._document_index is None:
             self._document_index = other_index
         else:
-            if self._document_index.columns != other_index.columns:
-                raise ValueError("Document index columns mismatch")
-            self._document_index.append(other_index, ignore_index=False)
-            self._document_index['document_index'] = self._document_index.reset_index().index
+            # if not self._document_index.columns.equals(self._document_index.columns):
+            #     raise ValueError("Document index columns mismatch")
+            self._document_index = self._document_index.append(other_index, ignore_index=False)
+            self._document_index['document_id'] = range(0, len(self._document_index))
         return self
 
 
