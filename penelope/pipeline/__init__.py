@@ -3,10 +3,13 @@ from . import spacy, sparv
 from .checkpoint import (
     CheckpointData,
     CheckpointOpts,
+    CheckpointZipFile,
     CsvContentSerializer,
     IContentSerializer,
     TextContentSerializer,
     TokensContentSerializer,
+    create_serializer,
+    deserialized_payload_stream,
     load_checkpoint,
     store_checkpoint,
 )

@@ -1,153 +1,24 @@
-import abc
-import copy
-import csv
 import json
 import zipfile
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict
 from io import StringIO
 from os.path import basename
-from typing import Any, Callable, Iterable, Iterator, List, Optional, Sequence, Union
+from typing import Any, Callable, Iterable, Iterator, List, Optional
 
-import pandas as pd
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index
-from penelope.utility import (
-    assert_that_path_exists,
-    create_instance,
-    filenames_satisfied_by,
-    getLogger,
-    path_of,
-    zip_utils,
+from penelope.utility import assert_that_path_exists, filenames_satisfied_by, getLogger, path_of, zip_utils
+
+from ..interfaces import DocumentPayload, PipelineError
+from .interface import (
+    CHECKPOINT_OPTS_FILENAME,
+    DOCUMENT_INDEX_FILENAME,
+    CheckpointData,
+    CheckpointOpts,
+    IContentSerializer,
 )
-
-from .interfaces import ContentType, DocumentPayload, PipelineError
-from .tagged_frame import TaggedFrame
-
-SerializableContent = Union[str, Iterable[str], TaggedFrame]
-
-CHECKPOINT_OPTS_FILENAME = "options.json"
-DOCUMENT_INDEX_FILENAME = "document_index.csv"
+from .serialize import create_serializer, deserialized_payload_stream
 
 logger = getLogger("penelope")
-
-
-@dataclass
-class CheckpointOpts:
-
-    content_type_code: int = 0
-
-    document_index_name: str = field(default="document_index.csv")
-    document_index_sep: str = field(default='\t')
-
-    sep: str = '\t'
-    quoting: int = csv.QUOTE_NONE
-    custom_serializer_classname: str = None
-
-    text_column: str = field(default="text")
-    lemma_column: str = field(default="lemma")
-    pos_column: str = field(default="pos")
-    extra_columns: List[str] = field(default_factory=list)
-    index_column: Union[int, None] = 0
-
-    @property
-    def content_type(self) -> ContentType:
-        return ContentType(self.content_type_code)
-
-    @content_type.setter
-    def content_type(self, value: ContentType):
-        self.content_type_code = int(value)
-
-    def as_type(self, value: ContentType) -> "CheckpointOpts":
-        # FIXME #45 Not all member properties are copies in type cast
-        opts = copy.copy(self)
-        opts.content_type_code = int(value)
-        return opts
-
-    @staticmethod
-    def load(data: dict) -> "CheckpointOpts":
-        opts = CheckpointOpts()
-        for key in data.keys():
-            if hasattr(opts, key):
-                setattr(opts, key, data[key])
-        return opts
-
-    @property
-    def custom_serializer(self) -> type:
-        if not self.custom_serializer_classname:
-            return None
-        return create_instance(self.custom_serializer_classname)
-
-    @property
-    def columns(self) -> List[str]:
-        return [self.text_column, self.lemma_column, self.pos_column] + (self.extra_columns or [])
-
-    def text_column_name(self, lemmatized: bool = False):
-        return self.lemma_column if lemmatized else self.text_column
-
-
-@dataclass
-class CheckpointData:
-    source_name: Any = None
-    content_type: ContentType = ContentType.NONE
-    document_index: DocumentIndex = None
-    payload_stream: Iterable[DocumentPayload] = None
-    checkpoint_opts: CheckpointOpts = None
-
-
-class IContentSerializer(abc.ABC):
-    @abc.abstractmethod
-    def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
-        ...
-
-    @abc.abstractmethod
-    def deserialize(self, content: str, options: CheckpointOpts) -> SerializableContent:
-        ...
-
-    @staticmethod
-    def create(options: CheckpointOpts) -> "IContentSerializer":
-
-        if options.custom_serializer:
-            return options.custom_serializer()
-
-        if options.content_type == ContentType.TEXT:
-            return TextContentSerializer()
-
-        if options.content_type == ContentType.TOKENS:
-            return TokensContentSerializer()
-
-        if options.content_type == ContentType.TAGGED_FRAME:
-            return CsvContentSerializer()
-
-        raise ValueError(f"non-serializable content type: {options.content_type}")
-
-
-class TextContentSerializer(IContentSerializer):
-    def serialize(self, content: str, options: CheckpointOpts) -> str:
-        return content
-
-    def deserialize(self, content: str, options: CheckpointOpts) -> str:
-        return content
-
-
-class TokensContentSerializer(IContentSerializer):
-    def serialize(self, content: Sequence[str], options: CheckpointOpts) -> str:
-        return ' '.join(content)
-
-    def deserialize(self, content: str, options: CheckpointOpts) -> Sequence[str]:
-        return content.split(' ')
-
-
-class CsvContentSerializer(IContentSerializer):
-    def serialize(self, content: pd.DataFrame, options: CheckpointOpts) -> str:
-        return content.to_csv(sep=options.sep, header=True)
-
-    def deserialize(self, content: str, options: CheckpointOpts) -> pd.DataFrame:
-        data: pd.DataFrame = pd.read_csv(
-            StringIO(content), sep=options.sep, quoting=options.quoting, index_col=options.index_column
-        )
-        data.fillna("", inplace=True)
-        if any(x not in data.columns for x in options.columns):
-            raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
-        return data[options.columns]
 
 
 def store_checkpoint(
@@ -158,7 +29,7 @@ def store_checkpoint(
     payload_stream: Iterator[DocumentPayload],
 ) -> Iterable[DocumentPayload]:
 
-    serializer: IContentSerializer = IContentSerializer.create(checkpoint_opts)
+    serializer: IContentSerializer = create_serializer(checkpoint_opts)
 
     assert_that_path_exists(path_of(target_filename))
 
@@ -289,21 +160,3 @@ def load_checkpoint(
     )
 
     return data
-
-
-def deserialized_payload_stream(
-    source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str]
-) -> Iterable[DocumentPayload]:
-    """Yields a deserialized payload stream read from given source"""
-
-    serializer: IContentSerializer = IContentSerializer.create(checkpoint_opts)
-
-    with zipfile.ZipFile(source_name, mode="r") as zf:
-        for filename in filenames:
-            content: str = zf.read(filename).decode(encoding='utf-8')
-            tagged_frame: TaggedFrame = serializer.deserialize(content, checkpoint_opts)
-            yield DocumentPayload(
-                content_type=checkpoint_opts.content_type,
-                content=tagged_frame,  # serializer.deserialize(content, checkpoint_opts),
-                filename=filename,
-            )
