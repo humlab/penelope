@@ -105,6 +105,7 @@ class CorpusConfig:
     @staticmethod
     def dict_to_corpus_config(config_dict: dict) -> "CorpusConfig":
 
+        # FIXME #47 Check if logic needs to be updated
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
 
