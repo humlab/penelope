@@ -53,10 +53,8 @@ class ExtractTaggedTokensOpts:
     target_override: str = None
 
     pos_includes: str = ''
-    # FIXME: Changed default, investigate use, force in Sparv extracts
-    pos_excludes: str = ''  # "|MAD|MID|PAD|"
+    pos_excludes: str = ''
 
-    # FIXME: Implement in spaCy extract
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
 
@@ -82,7 +80,7 @@ class ExtractTaggedTokensOpts:
         )
 
 
-# TODO #49 Cobsider deprecating class
+# TODO #49 Consider deprecating class
 class TaggedTokensFilterOpts:
     """Used for filtering tagged data that are stored as Pandas data frames.
     A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
