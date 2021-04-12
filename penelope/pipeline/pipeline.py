@@ -68,9 +68,9 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Resolves the pipeline by calling outstream on last task"""
         return self.setup().tasks[-1].outstream()
 
-    def take(self, n_count: int=1) -> Iterator[DocumentPayload]:
+    def take(self, n_count: int = 1) -> Iterator[DocumentPayload]:
         """Resolves the pipeline by calling outstream on last task"""
-        return [ x for x in itertools.islice(self.resolve(), n_count)]
+        return [x for x in itertools.islice(self.resolve(), n_count)]
 
     def exhaust(self) -> CorpusPipelineBase:
         """Exhaust the entire pipeline, disregarding items"""

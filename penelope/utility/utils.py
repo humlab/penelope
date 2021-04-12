@@ -25,11 +25,13 @@ V = TypeVar('V')
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
 
+
 def fn_name(default=None):
     try:
         return inspect.stack()[1][3]
     except Exception:
         return default or str(uuid.uuid1())
+
 
 def get_logger(
     name: str = "penelope",

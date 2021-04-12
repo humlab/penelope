@@ -2,7 +2,6 @@ import os
 from io import StringIO
 
 import pandas as pd
-
 import penelope.pipeline.checkpoint as checkpoint
 from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline.convert import tagged_frame_to_tokens
@@ -41,7 +40,7 @@ def test_load_tagged_frame_checkpoint():
 
     """Test reader_opts filter by a predicate"""
     years = [1958, 1945]
-    expected_documents = { 'CONSTITUTION_0201_015244_1945_london.txt', 'CONVENTION_0201_015395_1958_paris.txt' }
+    expected_documents = {'CONSTITUTION_0201_015244_1945_london.txt', 'CONVENTION_0201_015395_1958_paris.txt'}
     whitelister = lambda x: x.split('_')[3] in map(str, years)
     data = checkpoint.load_checkpoint(
         source_name=checkpoint_filename,
@@ -50,6 +49,7 @@ def test_load_tagged_frame_checkpoint():
     )
     assert {x.filename for x in data.payload_stream} == expected_documents
     assert {x for x in data.document_index.filename.to_list()} == expected_documents
+
 
 def test_phrased_tagged_frame():
 
