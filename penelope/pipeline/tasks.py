@@ -382,6 +382,36 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
 
 
 @dataclass
+class FilterTaggedFrame(CountTokensMixIn, ITask):
+    """Extracts text from payload.content based on annotations etc. """
+
+    extract_opts: ExtractTaggedTokensOpts = None
+    filter_opts: TaggedTokensFilterOpts = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TOKENS
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        if self.pipeline.get('pos_column', None) is None:
+            raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
+
+        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
+            doc=payload.content,
+            extract_opts=self.extract_opts,
+            filter_opts=self.filter_opts,
+            **(self.pipeline.payload.tagged_columns_names or {}),
+        )
+
+        tokens = list(tokens)
+
+        self.update_document_properties(payload, n_tokens=len(tokens))
+
+        return payload.update(self.out_content_type, tokens)
+
+
+@dataclass
 class TokensTransform(ITask):
     """Transforms tokens payload.content"""
 

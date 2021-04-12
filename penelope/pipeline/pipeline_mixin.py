@@ -127,3 +127,15 @@ class PipelineShortcutMixIn:
                 filter_opts=filter_opts,
             )
         )
+
+    def filter_tagged_frame(
+        self: pipelines.CorpusPipeline,
+        extract_opts: ExtractTaggedTokensOpts,
+        filter_opts: TaggedTokensFilterOpts,
+    ) -> pipelines.CorpusPipeline:
+        return self.add(
+            tasks.FilterTaggedFrame(
+                extract_opts=extract_opts,
+                filter_opts=filter_opts,
+            )
+        )
