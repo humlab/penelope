@@ -155,6 +155,22 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     assert tagged_payload.filename == text_payload.filename
     assert len(tagged_payload.content[tagged_payload.content.pos_ == 'NOUN']) == len(text_payload.content.split())
 
+def test_pipeline_takt_succeeds(config: CorpusConfig):
+
+    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+
+    extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True)
+    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
+
+    take_payloads = (CorpusPipeline(config=config)
+        .checkpoint(checkpoint_filename)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tokens_to_text()
+        .take(2)
+    )
+
+    assert len(take_payloads) == 2
+
 
 def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
 
