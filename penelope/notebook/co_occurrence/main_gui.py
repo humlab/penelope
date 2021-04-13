@@ -13,7 +13,7 @@ view = widgets.Output(layout={'border': '2px solid green'})
 LAST_BUNDLE = None
 LAST_ARGS = None
 LAST_CONFIG = None
-
+CLEAR_OUTPUT = True
 
 def create(
     data_folder: str,
@@ -27,7 +27,7 @@ def create(
     return gui
 
 
-@view.capture(clear_output=True)
+@view.capture(clear_output=CLEAR_OUTPUT)
 def compute_co_occurrence_callback(
     corpus_config: pipeline.CorpusConfig,
     args: ComputeOpts,
@@ -104,7 +104,7 @@ class MainGUI:
 
         return widgets.VBox([accordion, view])
 
-    @view.capture(clear_output=True)
+    @view.capture(clear_output=CLEAR_OUTPUT)
     def display_explorer(self, bundle: co_occurrence.Bundle, *_, **__):
 
         self.trends_data = co_occurrence.to_trends_data(bundle).update()
