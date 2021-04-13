@@ -9,13 +9,14 @@ from typing import Any, Iterable, List, Union
 from penelope.corpus import DocumentIndex
 from penelope.utility import create_instance
 
-from ..interfaces import ContentType, DocumentPayload
+from ..interfaces import ContentType, DocumentPayload, Token2Id
 from ..tagged_frame import TaggedFrame
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
 
 CHECKPOINT_OPTS_FILENAME = "options.json"
 DOCUMENT_INDEX_FILENAME = "document_index.csv"
+DICTIONARY_FILENAME = "dictionary.csv"
 
 
 @dataclass
@@ -45,7 +46,7 @@ class CheckpointOpts:
         self.content_type_code = int(value)
 
     def as_type(self, value: ContentType) -> "CheckpointOpts":
-        # FIXME #45 Not all member properties are copies in type cast
+        # FIXME #45 Not all member properties are copied in type cast
         opts = copy.copy(self)
         opts.content_type_code = int(value)
         return opts
@@ -77,6 +78,7 @@ class CheckpointData:
     source_name: Any = None
     content_type: ContentType = ContentType.NONE
     document_index: DocumentIndex = None
+    token2id: Token2Id = None
     payload_stream: Iterable[DocumentPayload] = None
     checkpoint_opts: CheckpointOpts = None
 
