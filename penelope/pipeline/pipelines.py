@@ -71,12 +71,12 @@ def wildcard_to_co_occurrence_pipeline(
             .tokens_transform(tokens_transform_opts=tokens_transform_opts)
             .vocabulary()
             .to_document_content_tuple()
+            .tqdm()
             .to_co_occurrence(
                 context_opts=context_opts,
                 global_threshold_count=global_threshold_count,
                 partition_column=partition_column,
             )
-            .tqdm()
         )
 
         return pipeline
