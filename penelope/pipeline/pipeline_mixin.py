@@ -12,7 +12,7 @@ from .checkpoint import CheckpointOpts
 if TYPE_CHECKING:
     from . import pipelines
 
-# FIXME:  pipelines.CorpusPipeline => pipeline.T_self
+
 class PipelineShortcutMixIn:
     """Shortcuts for specific tasks that can be injected to derived pipelines"""
 
