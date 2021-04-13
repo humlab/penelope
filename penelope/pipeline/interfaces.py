@@ -3,9 +3,10 @@ from __future__ import annotations
 import abc
 import os
 from collections import defaultdict
+from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
+from typing import Optional, TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -283,22 +284,47 @@ class ITask(abc.ABC):
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
 
 # FIXME #46 Token2Id raises KeyError
-class Token2Id(defaultdict):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.default_factory = self.__len__
+class Token2Id(MutableMapping):
+    """A token-to-id mapping (dictionary)"""
+
+    def __init__(self, store: Optional[Union[dict, defaultdict]]=None):
+        if isinstance(store, defaultdict):
+            self.store = store
+        elif isinstance(store, dict):
+            self.store = defaultdict(int, self.store)
+        else:
+            self.store = store or defaultdict()
+        self.store.default_factory = self.store.__len__
+
+    def __getitem__(self, key):
+        return self.store[self._keytransform(key)]
+
+    def __setitem__(self, key, value):
+        self.store[self._keytransform(key)] = value
+
+    def __delitem__(self, key):
+        del self.store[self._keytransform(key)]
+
+    def __iter__(self):
+        return iter(self.store)
+
+    def __len__(self):
+        return len(self.store)
+
+    def _keytransform(self, key):
+        return key
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
         for token in tokens:
-            _ = self[token]
+            _ = self.store[token]
         return self
 
     def close(self) -> "Token2Id":
-        self.default_factory = None
+        self.store.default_factory = None
 
     def open(self) -> "Token2Id":
-        self.default_factory = self.__len__
+        self.store.default_factory = self.__len__
         return self
 
     def id2token(self) -> dict:
-        return {v: k for k, v in self.items()}
+        return {v: k for k, v in self.store.items()}
