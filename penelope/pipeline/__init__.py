@@ -3,7 +3,7 @@ from . import spacy, sparv
 from .checkpoint import (
     CheckpointData,
     CheckpointOpts,
-    CheckpointZipFile,
+    CheckpointReader,
     CsvContentSerializer,
     IContentSerializer,
     TextContentSerializer,
