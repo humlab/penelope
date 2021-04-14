@@ -6,11 +6,14 @@ checkpoint_opts:
     content_type_code: 1
     sep: "\t"
     quoting: 3
-    document_index_name: document_index.csv
-    document_index_sep: "\t"
+    document_index_name: null
+    document_index_sep: null
     text_column: token
     lemma_column: baseform
     pos_column: pos
+    extra_columns: []
+    custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
+    deserialize_in_parallel: true
     index_column: null
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
