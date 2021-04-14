@@ -56,6 +56,7 @@ wordcloud = "^1.8.0"
 ipycytoscape = "1.1.0"
 dephell = "^0.8.3"
 pyarrow = "^3.0.0"
+loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"

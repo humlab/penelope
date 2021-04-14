@@ -4,13 +4,12 @@ from typing import List, Sequence
 import click
 import penelope.notebook.interface as interface
 import penelope.workflows as workflows
+from loguru import logger
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers.interfaces import TaggedTokensFilterOpts
 from penelope.pipeline import CorpusConfig
-from penelope.utility import getLogger
 
-logger = getLogger("penelope")
 # pylint: disable=too-many-arguments
 
 
@@ -177,9 +176,9 @@ def process_co_ocurrence(
         logger.info('Done!')
 
     except Exception as ex:  # pylint: disable=try-except-raise
-        raise
-        # click.echo(ex)
-        # sys.exit(1)
+        logger.exception(ex)
+        click.echo(ex)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
