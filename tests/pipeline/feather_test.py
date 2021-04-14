@@ -1,9 +1,8 @@
 import os
-from typing import List
 
 import pandas as pd
 import pytest
-from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
+from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.utility import replace_extension
 
 CORPUS_FOLDER = './tests/test_data'

@@ -1,4 +1,3 @@
-import os
 import zipfile
 from io import StringIO
 from multiprocessing import Pool

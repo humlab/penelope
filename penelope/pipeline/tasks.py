@@ -272,7 +272,7 @@ class WriteFeather(ITask):
 
 
 @dataclass
-class ReadFeather(ITask):
+class ReadFeather(DefaultResolveMixIn, ITask):
     """Stores sequence of tagged data frame documents to archive. """
 
     folder: str = None

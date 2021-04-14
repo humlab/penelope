@@ -176,10 +176,10 @@ def process_co_ocurrence(
 
         logger.info('Done!')
 
-    except Exception as ex:
+    except Exception as ex:  # pylint: disable=try-except-raise
         raise
-        click.echo(ex)
-        sys.exit(1)
+        # click.echo(ex)
+        # sys.exit(1)
 
 
 if __name__ == '__main__':
