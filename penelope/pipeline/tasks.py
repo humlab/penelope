@@ -246,6 +246,7 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
         self.register_token_counts(payload)
         return payload
 
+
 @dataclass
 class WriteFeather(ITask):
     """Stores sequence of tagged data frame documents to archive. """
@@ -259,12 +260,16 @@ class WriteFeather(ITask):
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         tagged_frame: TaggedFrame = payload.content
         filename = os.path.join(self.folder, replace_extension(payload.filename, ".feather"))
-        tagged_frame.to_feather(filename, compression="lz4", )
+        tagged_frame.to_feather(
+            filename,
+            compression="lz4",
+        )
         return payload
 
     def exit(self):
         if self.document_index is not None:
             self.document_index.to_feather(os.path.join(self.folder, 'document_index.feather'))
+
 
 @dataclass
 class ReadFeather(ITask):

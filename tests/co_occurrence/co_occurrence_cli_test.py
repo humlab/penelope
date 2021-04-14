@@ -1,5 +1,6 @@
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
+
 def test_process_co_ocurrence():
 
     args: dict = dict(
@@ -26,6 +27,7 @@ def test_process_co_ocurrence():
     )
 
     process_co_ocurrence(**args)
+
 
 if __name__ == "__main__":
     test_process_co_ocurrence()

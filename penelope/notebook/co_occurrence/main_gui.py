@@ -15,6 +15,7 @@ LAST_ARGS = None
 LAST_CONFIG = None
 CLEAR_OUTPUT = True
 
+
 def create(
     data_folder: str,
     filename_pattern: str = co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,

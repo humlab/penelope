@@ -6,7 +6,7 @@ from collections import defaultdict
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import Optional, TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -297,7 +297,7 @@ DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFr
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
-    def __init__(self, store: Optional[Union[dict, defaultdict]]=None):
+    def __init__(self, store: Optional[Union[dict, defaultdict]] = None):
         if isinstance(store, defaultdict):
             self.store = store
         elif isinstance(store, dict):

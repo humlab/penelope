@@ -138,6 +138,7 @@ def parallel_deserialized_payload_stream_read_ahead_with_chunks(
                 for payload in payloads_futures:
                     yield payload
 
+
 def _process_document_with_read(args: List[Tuple]) -> DocumentPayload:
     filename, source_name, serializer, checkpoint_opts = args
     # print(f"{os.getpid()}: {filename}")
@@ -149,6 +150,7 @@ def _process_document_with_read(args: List[Tuple]) -> DocumentPayload:
             filename=filename,
         )
 
+
 def parallel_deserialized_payload_stream(
     source_name: str,
     checkpoint_opts: CheckpointOpts,
@@ -159,10 +161,7 @@ def parallel_deserialized_payload_stream(
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
 
     with Pool(processes=12) as executor:
-        args: str = [
-            (filename, source_name, serializer, checkpoint_opts)
-            for filename in filenames
-        ]
+        args: str = [(filename, source_name, serializer, checkpoint_opts) for filename in filenames]
         payloads_futures: Iterable[DocumentPayload] = executor.imap(_process_document_with_read, args, chunksize=4)
 
         for payload in payloads_futures:

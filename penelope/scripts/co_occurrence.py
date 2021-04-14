@@ -1,4 +1,3 @@
-from penelope.corpus.readers.interfaces import TaggedTokensFilterOpts
 import sys
 from typing import List, Sequence
 
@@ -7,6 +6,7 @@ import penelope.notebook.interface as interface
 import penelope.workflows as workflows
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
+from penelope.corpus.readers.interfaces import TaggedTokensFilterOpts
 from penelope.pipeline import CorpusConfig
 from penelope.utility import getLogger
 
