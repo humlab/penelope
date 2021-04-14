@@ -28,7 +28,7 @@ logger = getLogger("penelope")
     help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
     type=click.INT,
 )
-@click.option('-p', '--partition-key', default=None, help='Pertition key(s)', multiple=True, type=click.STRING)
+@click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
 @click.option(
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
 )
