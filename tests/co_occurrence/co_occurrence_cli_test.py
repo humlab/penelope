@@ -1,6 +1,8 @@
+import pytest
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 
+@pytest.skip(reason="Long running")
 def test_process_co_ocurrence():
 
     args: dict = dict(
