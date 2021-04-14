@@ -246,6 +246,54 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
         self.register_token_counts(payload)
         return payload
 
+@dataclass
+class WriteFeather(ITask):
+    """Stores sequence of tagged data frame documents to archive. """
+
+    folder: str = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        tagged_frame: TaggedFrame = payload.content
+        filename = os.path.join(self.folder, replace_extension(payload.filename, ".feather"))
+        tagged_frame.to_feather(filename, compression="lz4", )
+        return payload
+
+    def exit(self):
+        if self.document_index is not None:
+            self.document_index.to_feather(os.path.join(self.folder, 'document_index.feather'))
+
+@dataclass
+class ReadFeather(ITask):
+    """Stores sequence of tagged data frame documents to archive. """
+
+    folder: str = None
+
+    document_index_filename: str = field(init=False, default=None)
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TAGGED_FRAME
+        self.document_index_filename = os.path.join(self.folder, "document_index.feather")
+
+    def process_stream(self) -> DocumentPayload:
+        pattern: str = os.path.join(self.folder, "*.feather")
+        for path in sorted(glob.glob(pattern)):
+            tagged_frame = pd.read_feather(path)
+            filename = strip_paths(path)
+            yield DocumentPayload(
+                content_type=ContentType.TAGGED_FRAME,
+                content=tagged_frame,
+                filename=replace_extension(filename, ".csv"),
+            )
+
+    def enter(self):
+        if os.path.isfile(self.document_index_filename):
+            self.pipeline.payload.effective_document_index = pd.read_feather(self.document_index_filename)
+
 
 @dataclass
 class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):

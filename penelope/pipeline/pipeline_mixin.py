@@ -25,6 +25,12 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
+    def write_feather(self, folder: str):
+        return self.add(tasks.WriteFeather(folder=folder))
+
+    def read_feather(self, folder: str):
+        return self.add(tasks.ReadFeather(folder=folder))
+
     def save_tagged_frame(
         self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts
     ) -> pipelines.CorpusPipeline:
