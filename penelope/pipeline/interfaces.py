@@ -249,15 +249,16 @@ class ITask(abc.ABC):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
         """Generates stream of payloads. Overridable. """
+
+        if self.instream is None:
+            raise PipelineError("No instream specified. Have you loaded a corpus source?")
+
         for payload in self.instream:
             yield self.process(payload)
 
     # FIXME #50 Make outstream non-overridable
     def outstream(self) -> Iterable[DocumentPayload]:
         """Returns stream of payloads. Non-overridable! """
-
-        if self.instream is None:
-            raise PipelineError("No instream specified. Have you loaded a corpus source?")
 
         self.enter()
         for payload in self.process_stream():
