@@ -8,4 +8,5 @@ from .serialize import (
     TokensContentSerializer,
     create_serializer,
     deserialized_payload_stream,
+    parallel_deserialized_payload_stream,
 )
