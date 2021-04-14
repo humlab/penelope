@@ -32,7 +32,9 @@ def compute(
             checkpoint_file or f"{corpus_config.corpus_name}_{POS_CHECKPOINT_FILENAME_POSTFIX}"
         )
         tagged_frame_pipeline = corpus_config.get_pipeline(
-            "tagged_frame_pipeline", checkpoint_filename=checkpoint_filename
+            "tagged_frame_pipeline",
+            corpus_filename=args.corpus_filename,
+            checkpoint_filename=checkpoint_filename,
         )
         compute_result: co_occurrence.ComputeResult = (
             tagged_frame_pipeline
