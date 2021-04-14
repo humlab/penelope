@@ -240,18 +240,28 @@ class ITask(abc.ABC):
         return self.process_payload(payload)
 
     def enter(self):
+        """Called prior to stream generation."""
         return
 
     def exit(self):
+        """Called after stream has been generated."""
         return
 
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        """Generates stream of payloads. Overridable. """
+        for payload in self.instream:
+            yield self.process(payload)
+
+    # FIXME #50 Make outstream non-overridable
     def outstream(self) -> Iterable[DocumentPayload]:
+        """Returns stream of payloads. Non-overridable! """
+
         if self.instream is None:
             raise PipelineError("No instream specified. Have you loaded a corpus source?")
 
         self.enter()
-        for payload in self.instream:
-            yield self.process(payload)
+        for payload in self.process_stream():
+            yield payload
         self.exit()
 
     def hookup(self, pipeline: pipelines.AnyPipeline) -> ITask:

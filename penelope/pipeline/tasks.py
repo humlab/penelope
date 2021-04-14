@@ -1,9 +1,11 @@
+import glob
 import itertools
 import os
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
+import pandas as pd
 from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
@@ -17,6 +19,7 @@ from penelope.corpus.readers import (
 )
 from penelope.corpus.readers.tng.factory import create_sparv_xml_corpus_reader
 from penelope.corpus.readers.tng.reader import CorpusReader
+from penelope.utility.filename_utils import replace_extension, strip_paths
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
@@ -149,7 +152,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
-    def outstream(self) -> Iterable[DocumentPayload]:
+    def process_stream(self) -> Iterable[DocumentPayload]:
 
         if os.path.isfile(self.filename):
             payload_stream = self._load_payload_stream()
@@ -161,7 +164,8 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def _load_payload_stream(self):
         checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
-            self.filename, checkpoint_opts=self.checkpoint_opts
+            self.filename,
+            checkpoint_opts=self.checkpoint_opts,
         )
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
         self.out_content_type = checkpoint_data.content_type
@@ -200,7 +204,7 @@ class SaveTaggedCSV(Checkpoint):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
-    def outstream(self) -> Iterable[DocumentPayload]:
+    def process_stream(self) -> Iterable[DocumentPayload]:
         for payload in self._store_payload_stream():
             yield payload
 
@@ -226,7 +230,9 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
         super().setup()
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.checkpoint_data = checkpoint.load_checkpoint(
-            self.filename, checkpoint_opts=self.checkpoint_opts, reader_opts=self.extra_reader_opts
+            self.filename,
+            checkpoint_opts=self.checkpoint_opts,
+            reader_opts=self.extra_reader_opts,
         )
         self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
         if self.extra_reader_opts:
@@ -462,7 +468,7 @@ class TextToDTM(ITask):
         self.pipeline.put("vectorize_opts", self.vectorize_opts)
         return self
 
-    def outstream(self) -> VectorizedCorpus:
+    def process_stream(self) -> VectorizedCorpus:
         # FIXME: #30 [Bug] Index not set since pipeline is not exhaused at this point:
         corpus = convert.to_vectorized_corpus(
             stream=self.instream,
@@ -535,7 +541,7 @@ class ToCoOccurrence(ITask):
         self.pipeline.put("partition_column", self.partition_column)
         return self
 
-    def outstream(self) -> VectorizedCorpus:
+    def process_stream(self) -> VectorizedCorpus:
 
         # if self.pipeline.get_prior_content_type(self)  == ContentType.DOCUMENT_CONTENT_TUPLE:
         instream = (x.content for x in self.instream)
@@ -568,7 +574,7 @@ class ChunkTokens(ITask):
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOKENS
 
-    def outstream(self) -> Iterable[DocumentPayload]:
+    def process_stream(self) -> Iterable[DocumentPayload]:
 
         for payload in self.instream:
             tokens = payload.content
@@ -593,7 +599,7 @@ class WildcardTask(ITask):
     def abort(self):
         raise PipelineError("fatal: not instantiated wildcard task encountered. Please check configuration!")
 
-    def outstream(self) -> Iterable[DocumentPayload]:
+    def process_stream(self) -> Iterable[DocumentPayload]:
         self.abort()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
@@ -614,7 +620,7 @@ class WildcardTask(ITask):
 #     def process_payload(self, payload: DocumentPayload) -> Any:
 #         raise NotImplementedError()
 
-#     def outstream(self) -> Iterable[DocumentPayload]:
+#     def process_stream(self) -> Iterable[DocumentPayload]:
 #         raise NotImplementedError()
 
 # class Reduce(ITask):
@@ -632,5 +638,5 @@ class WildcardTask(ITask):
 #     def process_payload(self, payload: DocumentPayload) -> Any:
 #         raise NotImplementedError()
 
-#     def outstream(self) -> Iterable[DocumentPayload]:
+#     def process_stream(self) -> Iterable[DocumentPayload]:
 #         raise NotImplementedError()
