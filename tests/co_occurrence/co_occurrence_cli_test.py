@@ -3,13 +3,13 @@ from penelope.scripts.co_occurrence import process_co_ocurrence
 def test_process_co_ocurrence():
 
     args: dict = dict(
-        corpus_config="./tests/test_data/",
+        corpus_config="./tests/test_data/riksdagens-protokoll.yml",
         input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.test.zip",
         output_filename="./tests/output/APA",
         concept="medium",
         no_concept=False,
         context_width=6,
-        partition_key="year",
+        partition_key=["year"],
         create_subfolder=True,
         pos_includes="|NN|PM|UO|",
         pos_excludes="|MAD|MID|PAD|",
@@ -25,4 +25,7 @@ def test_process_co_ocurrence():
         count_threshold=10,
     )
 
-    process_co_ocurrence(**dict)
+    process_co_ocurrence(**args)
+
+if __name__ == "__main__":
+    test_process_co_ocurrence()
