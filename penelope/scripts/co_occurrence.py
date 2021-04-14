@@ -1,3 +1,4 @@
+from penelope.corpus.readers.interfaces import TaggedTokensFilterOpts
 import sys
 from typing import List, Sequence
 
@@ -79,7 +80,52 @@ def main(
     only_alphabetic: bool = False,
     count_threshold: int = None,
 ):
+    process_co_ocurrence(
+        corpus_config=corpus_config,
+        input_filename=input_filename,
+        output_filename=output_filename,
+        concept=concept,
+        no_concept=no_concept,
+        context_width=context_width,
+        partition_key=partition_key,
+        create_subfolder=create_subfolder,
+        pos_includes=pos_includes,
+        pos_excludes=pos_excludes,
+        to_lowercase=to_lowercase,
+        lemmatize=lemmatize,
+        remove_stopwords=remove_stopwords,
+        min_word_length=min_word_length,
+        max_word_length=max_word_length,
+        keep_symbols=keep_symbols,
+        keep_numerals=keep_numerals,
+        only_any_alphanumeric=only_any_alphanumeric,
+        only_alphabetic=only_alphabetic,
+        count_threshold=count_threshold,
+    )
 
+
+def process_co_ocurrence(
+    corpus_config: str = None,
+    input_filename: str = None,
+    output_filename: str = None,
+    concept: List[str] = None,
+    no_concept: bool = None,
+    context_width: int = None,
+    partition_key: Sequence[str] = None,
+    create_subfolder: bool = True,
+    pos_includes: str = None,
+    pos_excludes: str = '|MAD|MID|PAD|',
+    to_lowercase: bool = True,
+    lemmatize: bool = True,
+    remove_stopwords: str = None,
+    min_word_length: int = 2,
+    max_word_length: int = None,
+    keep_symbols: bool = False,
+    keep_numerals: bool = False,
+    only_any_alphanumeric: bool = False,
+    only_alphabetic: bool = False,
+    count_threshold: int = None,
+):
     try:
         output_folder, output_tag = filename_to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
@@ -119,6 +165,7 @@ def main(
                 concept=(concept or []),
                 ignore_concept=no_concept,
             ),
+            tagged_tokens_filter_opts=TaggedTokensFilterOpts(),
             partition_keys=partition_key,
         )
 
@@ -130,6 +177,7 @@ def main(
         logger.info('Done!')
 
     except Exception as ex:
+        raise
         click.echo(ex)
         sys.exit(1)
 
