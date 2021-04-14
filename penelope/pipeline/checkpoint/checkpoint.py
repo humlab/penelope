@@ -17,7 +17,7 @@ from .interface import (
     CheckpointOpts,
     IContentSerializer,
 )
-from .serialize import create_serializer, deserialized_payload_stream
+from .serialize import create_serializer, deserialized_payload_stream, parallel_deserialized_payload_stream
 
 logger = getLogger("penelope")
 
@@ -133,7 +133,10 @@ def load_checkpoint(
     Returns:
         CheckpointData: [description]
     """
-    deserialized_stream = deserialize_stream or deserialized_payload_stream
+    deserialized_stream = deserialize_stream or (
+        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
+    )
+
     with CheckpointReader(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
 
         filenames: List[str] = zf.document_filenames

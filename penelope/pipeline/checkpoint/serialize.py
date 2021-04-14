@@ -1,6 +1,8 @@
+import os
 import zipfile
 from io import StringIO
-from typing import Iterable, List, Sequence
+from multiprocessing import Pool
+from typing import Any, Iterable, List, Sequence, Tuple
 
 import pandas as pd
 from penelope.utility import getLogger
@@ -65,6 +67,7 @@ def deserialized_payload_stream(
     """Yields a deserialized payload stream read from given source"""
 
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
+    logger.info("Using sequential serialization")
 
     with zipfile.ZipFile(source_name, mode="r") as zf:
         for filename in filenames:
@@ -75,3 +78,92 @@ def deserialized_payload_stream(
                 content=tagged_frame,
                 filename=filename,
             )
+
+
+def _process_document_file(args: List[Tuple]) -> DocumentPayload:
+
+    filename, content, serializer, checkpoint_opts = args
+    return DocumentPayload(
+        content_type=checkpoint_opts.content_type,
+        content=serializer.deserialize(content, checkpoint_opts),
+        filename=filename,
+    )
+
+
+def parallel_deserialized_payload_stream_read_ahead_without_chunks(
+    source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str]
+) -> Iterable[DocumentPayload]:
+    """Yields a deserialized payload stream read from given source"""
+
+    logger.info("Using parallel serialization")
+    serializer: IContentSerializer = create_serializer(checkpoint_opts)
+
+    with zipfile.ZipFile(source_name, mode="r") as zf:
+        args: str = [
+            (filename, zf.read(filename).decode(encoding='utf-8'), serializer, checkpoint_opts)
+            for filename in filenames
+        ]
+
+    with Pool(processes=4) as executor:
+        payloads_futures: Iterable[DocumentPayload] = executor.map(_process_document_file, args)
+
+        for payload in payloads_futures:
+            yield payload
+
+
+def chunker(seq: Sequence[Any], size: int) -> Sequence[Any]:
+    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
+
+
+def parallel_deserialized_payload_stream_read_ahead_with_chunks(
+    source_name: str,
+    checkpoint_opts: CheckpointOpts,
+    filenames: List[str],
+    n_chunks: int = 100,
+) -> Iterable[DocumentPayload]:
+    """Yields a deserialized payload stream read from given source"""
+
+    logger.info("Using parallel serialization")
+    serializer: IContentSerializer = create_serializer(checkpoint_opts)
+
+    with zipfile.ZipFile(source_name, mode="r") as zf:
+        with Pool(processes=4) as executor:
+            for filenames_chunk in chunker(filenames, n_chunks):
+                args: str = [
+                    (filename, zf.read(filename).decode(encoding='utf-8'), serializer, checkpoint_opts)
+                    for filename in filenames_chunk
+                ]
+                payloads_futures: Iterable[DocumentPayload] = executor.map(_process_document_file, args)
+
+                for payload in payloads_futures:
+                    yield payload
+
+def _process_document_with_read(args: List[Tuple]) -> DocumentPayload:
+    filename, source_name, serializer, checkpoint_opts = args
+    # print(f"{os.getpid()}: {filename}")
+    with zipfile.ZipFile(source_name, mode="r") as zf:
+        content = zf.read(filename).decode(encoding='utf-8')
+        return DocumentPayload(
+            content_type=checkpoint_opts.content_type,
+            content=serializer.deserialize(content, checkpoint_opts),
+            filename=filename,
+        )
+
+def parallel_deserialized_payload_stream(
+    source_name: str,
+    checkpoint_opts: CheckpointOpts,
+    filenames: List[str],
+) -> Iterable[DocumentPayload]:
+
+    logger.info("Using parallel serialization")
+    serializer: IContentSerializer = create_serializer(checkpoint_opts)
+
+    with Pool(processes=12) as executor:
+        args: str = [
+            (filename, source_name, serializer, checkpoint_opts)
+            for filename in filenames
+        ]
+        payloads_futures: Iterable[DocumentPayload] = executor.imap(_process_document_with_read, args, chunksize=4)
+
+        for payload in payloads_futures:
+            yield payload

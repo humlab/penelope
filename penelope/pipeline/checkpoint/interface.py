@@ -30,7 +30,7 @@ class CheckpointOpts:
     sep: str = '\t'
     quoting: int = csv.QUOTE_NONE
     custom_serializer_classname: str = None
-
+    deserialize_in_parallel: bool = False
     text_column: str = field(default="text")
     lemma_column: str = field(default="lemma")
     pos_column: str = field(default="pos")
