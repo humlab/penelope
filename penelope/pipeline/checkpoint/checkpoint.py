@@ -133,9 +133,6 @@ def load_checkpoint(
     Returns:
         CheckpointData: [description]
     """
-    deserialized_stream = deserialize_stream or (
-        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
-    )
 
     with CheckpointReader(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
 
@@ -169,6 +166,10 @@ def load_checkpoint(
 
         if document_index is not None:
             document_index = document_index[document_index.filename.isin(filenames)]
+
+    deserialized_stream = deserialize_stream or (
+        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
+    )
 
     payload_stream = deserialized_stream(source_name, checkpoint_opts, filenames)
 
