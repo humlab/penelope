@@ -1,6 +1,7 @@
 import glob
 import itertools
 import os
+import shutil
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Dict, Iterable, List, Optional
@@ -253,10 +254,18 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     """Creates a feather checkpoint. """
 
     folder: str = None
+    force: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
+
+    def enter(self):
+        if self.force:
+            try:
+                shutil.rmtree(self.folder, ignore_errors=True)
+            except:  # pylint: disable=bare-except
+                pass
 
     def process_stream(self) -> Iterable[DocumentPayload]:
 

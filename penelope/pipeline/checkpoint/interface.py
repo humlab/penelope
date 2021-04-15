@@ -31,6 +31,9 @@ class CheckpointOpts:
     quoting: int = csv.QUOTE_NONE
     custom_serializer_classname: str = None
     deserialize_in_parallel: bool = False
+    deserialize_processes: int = 4
+    deserialize_chunksize: int = 4
+
     text_column: str = field(default="text")
     lemma_column: str = field(default="lemma")
     pos_column: str = field(default="pos")

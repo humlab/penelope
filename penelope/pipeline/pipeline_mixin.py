@@ -64,9 +64,10 @@ class PipelineShortcutMixIn:
     def checkpoint_feather(
         self: pipelines.CorpusPipeline,
         folder: str,
+        force: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ [DATAFRAME] => [CHECKPOINT] => PASSTHROUGH """
-        return self.add(tasks.CheckpointFeather(folder=folder))
+        return self.add(tasks.CheckpointFeather(folder=folder, force=force))
 
     def tokens_to_text(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         """ [TOKEN] => TEXT """
@@ -143,14 +144,14 @@ class PipelineShortcutMixIn:
             )
         )
 
-    def filter_tagged_frame(
-        self: pipelines.CorpusPipeline,
-        extract_opts: ExtractTaggedTokensOpts,
-        filter_opts: PropertyValueMaskingOpts,
-    ) -> pipelines.CorpusPipeline:
-        return self.add(
-            tasks.FilterTaggedFrame(
-                extract_opts=extract_opts,
-                filter_opts=filter_opts,
-            )
-        )
+    # def filter_tagged_frame(
+    #     self: pipelines.CorpusPipeline,
+    #     extract_opts: ExtractTaggedTokensOpts,
+    #     filter_opts: PropertyValueMaskingOpts,
+    # ) -> pipelines.CorpusPipeline:
+    #     return self.add(
+    #         tasks.FilterTaggedFrame(
+    #             extract_opts=extract_opts,
+    #             filter_opts=filter_opts,
+    #         )
+    #     )
