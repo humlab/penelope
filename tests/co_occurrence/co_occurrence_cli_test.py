@@ -2,14 +2,14 @@ import pytest
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 
-@pytest.skip(reason="Long running")
+# @pytest.mark.skip(reason="Long running")
 def test_process_co_ocurrence():
 
     args: dict = dict(
         corpus_config="./tests/test_data/riksdagens-protokoll.yml",
         input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.test.zip",
-        output_filename="./tests/output/APA",
-        concept="medium",
+        output_filename="./tests/output/test_process_co_ocurrence",
+        concept=["information"],
         no_concept=False,
         context_width=6,
         partition_key=["year"],
