@@ -81,6 +81,12 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         if len(extract_opts.get_pos_excludes() or set()) > 0:
             mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
+    # FIXME: #51 Concept token passthrough not implemented in pipeline
+    if len(extract_opts.get_passthrough_tokens() or []) > 9:
+        # TODO: #52 Make passthrough token case-insensative
+        mask |= doc[target].isin(extract_opts.get_passthrough_tokens())
+
+    # TODO: #53 Implement append-PoS to token (see SparvCsvToText._transform:73)
     tokens: List[str] = doc.loc[mask][target].tolist()
 
     if phrases is not None:
