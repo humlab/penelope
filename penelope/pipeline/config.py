@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Uni
 
 import yaml
 from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts
-from penelope.utility import create_instance, get_pos_schema
+from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema
 
 from . import checkpoint, interfaces
 
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 def create_pipeline_factory(
     class_or_function_name: str,
 ) -> Union[Callable[[CorpusConfig], CorpusPipeline], Type[CorpusPipeline]]:
+    """Returns a CorpusPipeline type (class or callable that return instance) by name"""
     factory = create_instance(class_or_function_name)
     return factory
 
@@ -50,13 +51,15 @@ class CorpusConfig:
     language: str = "english"
 
     def get_pipeline(self, pipeline_key: str, *args, **kwargs) -> Union[Callable, Type]:
+        """Returns a pipeline class by key from `pipelines` section"""
         if pipeline_key not in self.pipelines:
             raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
         factory = create_pipeline_factory(self.pipelines[pipeline_key])
         return factory(self, *args, **kwargs)
 
     @property
-    def pos_schema(self):
+    def pos_schema(self) -> PoS_Tag_Scheme:
+        """Returns the part-of-speech schema"""
         return get_pos_schema(self.pipeline_payload.pos_schema_name)
 
     @property
@@ -81,7 +84,7 @@ class CorpusConfig:
 
     @staticmethod
     def list(folder: str) -> List[str]:
-        """Return YAML filenames in `folder`"""
+        """Return YAML filenames in given `folder`"""
         filenames = sorted(glob.glob(os.path.join(folder, '*.yml')) + glob.glob(os.path.join(folder, '*.yaml')))
         return filenames
 
@@ -98,13 +101,13 @@ class CorpusConfig:
 
     @staticmethod
     def loads(data_str: str) -> "CorpusConfig":
-        """Reads and deserializes a CorpusConfig from `path`"""
+        """Deserializes a CorpusConfig from `data_str`"""
         deserialized_config = CorpusConfig.dict_to_corpus_config(yaml.load(data_str, Loader=yaml.FullLoader))
         return deserialized_config
 
     @staticmethod
     def dict_to_corpus_config(config_dict: dict) -> "CorpusConfig":
-
+        """Maps a dict read from file to a CorpusConfig instance"""
         # FIXME #47 Check if logic needs to be updated
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
