@@ -99,7 +99,8 @@ def compute(
         logger.error(ex)
         raise
 
+
 def _feather_folder_name(args):
     folder, filename = os.path.split(args.corpus_filename)
-    feather_folder = os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather' )
+    feather_folder = os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
     return feather_folder

@@ -3,7 +3,6 @@ import itertools
 import os
 from dataclasses import dataclass, field
 from enum import IntEnum
-from penelope.utility.filename_fields import extract_filenames_metadata
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import pandas as pd
@@ -20,6 +19,7 @@ from penelope.corpus.readers import (
 )
 from penelope.corpus.readers.tng.factory import create_sparv_xml_corpus_reader
 from penelope.corpus.readers.tng.reader import CorpusReader
+from penelope.utility.filename_fields import extract_filenames_metadata
 from penelope.utility.filename_utils import replace_extension, strip_paths
 from tqdm.auto import tqdm
 
