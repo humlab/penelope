@@ -59,6 +59,13 @@ class PipelineShortcutMixIn:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
         return self.add(tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts))
 
+    def checkpoint_feather(
+        self: pipelines.CorpusPipeline,
+        folder: str,
+    ) -> pipelines.CorpusPipeline:
+        """ [DATAFRAME] => [CHECKPOINT] => PASSTHROUGH """
+        return self.add(tasks.CheckpointFeather(folder=folder))
+
     def tokens_to_text(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         """ [TOKEN] => TEXT """
         return self.add(tasks.TokensToText())

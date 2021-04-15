@@ -3,6 +3,7 @@ import itertools
 import os
 from dataclasses import dataclass, field
 from enum import IntEnum
+from penelope.utility.filename_fields import extract_filenames_metadata
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import pandas as pd
@@ -247,6 +248,26 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
         return payload
 
 
+FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
+
+
+@dataclass
+class CheckpointFeather(DefaultResolveMixIn, ITask):
+    """Creates a feather checkpoint. """
+
+    folder: str = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+
+        task_cls = ReadFeather if os.path.isdir(self.folder) else WriteFeather
+        task: ITask = task_cls(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
+        return task.outstream()
+
+
 @dataclass
 class WriteFeather(ITask):
     """Stores sequence of tagged data frame documents to archive. """
@@ -257,8 +278,9 @@ class WriteFeather(ITask):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+    def process_payload(self, payload: DocumentPayload) -> Iterable[DocumentPayload]:
         tagged_frame: TaggedFrame = payload.content
+        os.makedirs(self.folder, exist_ok=True)
         filename = os.path.join(self.folder, replace_extension(payload.filename, ".feather"))
         tagged_frame.to_feather(
             filename,
@@ -268,7 +290,10 @@ class WriteFeather(ITask):
 
     def exit(self):
         if self.document_index is not None:
-            self.document_index.to_feather(os.path.join(self.folder, 'document_index.feather'))
+            self.document_index.reset_index().to_feather(os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME))
+
+        if self.pipeline.payload.token2id is not None:
+            pass
 
 
 @dataclass
@@ -282,9 +307,9 @@ class ReadFeather(DefaultResolveMixIn, ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TAGGED_FRAME
-        self.document_index_filename = os.path.join(self.folder, "document_index.feather")
+        self.document_index_filename = os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME)
 
-    def process_stream(self) -> DocumentPayload:
+    def process_stream(self) -> Iterable[DocumentPayload]:
         pattern: str = os.path.join(self.folder, "*.feather")
         for path in sorted(glob.glob(pattern)):
             tagged_frame = pd.read_feather(path)
@@ -297,7 +322,9 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
     def enter(self):
         if os.path.isfile(self.document_index_filename):
-            self.pipeline.payload.effective_document_index = pd.read_feather(self.document_index_filename)
+            self.pipeline.payload.effective_document_index = pd.read_feather(self.document_index_filename).set_index(
+                'document_name', drop=False
+            )
 
 
 @dataclass
@@ -442,7 +469,7 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
 
 @dataclass
 class FilterTaggedFrame(CountTokensMixIn, ITask):
-    """Extracts text from payload.content based on annotations etc. """
+    """Filters tagged frame text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
     filter_opts: TaggedTokensFilterOpts = None
