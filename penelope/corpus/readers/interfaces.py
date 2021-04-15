@@ -47,8 +47,7 @@ class TextReaderOpts:
 @dataclass
 class ExtractTaggedTokensOpts:
 
-    # FIXME: Removed optional, change default to False if optional
-    lemmatize: bool  # = True
+    lemmatize: bool
 
     target_override: str = None
 
