@@ -1,7 +1,7 @@
 import penelope.corpus.readers.tng as tng
 import penelope.pipeline as pipeline
 import pytest
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
 from penelope.pipeline import tasks
 
 # pylint: disable=redefined-outer-name
@@ -56,7 +56,7 @@ def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
 
     extract = tasks.TaggedFrameToTokens(
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
-        filter_opts=TaggedTokensFilterOpts(is_punct=False),
+        filter_opts=PropertyValueMaskingOpts(is_punct=False),
     )
 
     p.add([load, extract])

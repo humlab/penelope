@@ -1,6 +1,6 @@
 import penelope.corpus.dtm as dtm
 from penelope.co_occurrence.interface import ContextOpts
-from penelope.corpus import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TokensTransformOpts
+from penelope.corpus import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TokensTransformOpts
 
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
@@ -33,7 +33,7 @@ def wildcard() -> CorpusPipeline:
 def wildcard_to_DTM_pipeline(
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     vectorize_opts: dtm.VectorizeOpts = None,
 ):
     try:
@@ -56,7 +56,7 @@ def wildcard_to_DTM_pipeline(
 def wildcard_to_co_occurrence_pipeline(
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     partition_column: str = 'year',

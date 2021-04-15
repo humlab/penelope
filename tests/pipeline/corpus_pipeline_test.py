@@ -11,7 +11,7 @@ import pytest
 import spacy.language
 import spacy.tokens
 from penelope.corpus import load_document_index
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (
     CheckpointData,
     CheckpointOpts,
@@ -248,7 +248,7 @@ def test_tagged_frame_to_tokens_succeeds():
     task = tasks.TaggedFrameToTokens(
         pipeline=pipeline,
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
-        filter_opts=TaggedTokensFilterOpts(is_punct=False),
+        filter_opts=PropertyValueMaskingOpts(is_punct=False),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))
     next_payload = task.process(current_payload)

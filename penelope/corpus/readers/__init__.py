@@ -1,5 +1,5 @@
 # type: ignore
-from .interfaces import ExtractTaggedTokensOpts, ICorpusReader, TaggedTokensFilterOpts, TextSource
+from .interfaces import ExtractTaggedTokensOpts, ICorpusReader, PropertyValueMaskingOpts, TextSource
 from .pandas_reader import PandasCorpusReader
 from .sparv_csv_tokenizer import SparvCsvTokenizer
 from .sparv_xml_tokenizer import Sparv3XmlReader, SparvXmlReader

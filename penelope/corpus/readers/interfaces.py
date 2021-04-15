@@ -80,7 +80,7 @@ class ExtractTaggedTokensOpts:
 
 
 # TODO #49 Consider deprecating class
-class TaggedTokensFilterOpts:
+class PropertyValueMaskingOpts:
     """Used for filtering tagged data that are stored as Pandas data frames.
     A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
 

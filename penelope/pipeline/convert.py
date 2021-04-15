@@ -2,7 +2,7 @@ from typing import Callable, Iterable, List, Union
 
 import numpy as np
 from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
 from penelope.utility.pos_tags import PoS_Tag_Scheme
 from penelope.utility.utils import multiple_replace
 
@@ -35,7 +35,7 @@ def to_vectorized_corpus(
 def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     doc: TaggedFrame,
     extract_opts: ExtractTaggedTokensOpts,
-    filter_opts: TaggedTokensFilterOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
     pos_column: str = 'pos_',
@@ -47,7 +47,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
     Args:
         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-        filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
         text_column (str, optional): Name of text column in data frame. Defaults to 'text'.
         lemma_column (str, optional): Name of `lemma` column in data frame. Defaults to 'lemma_'.
         pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
@@ -97,7 +97,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 #     doc: TaggedFrame,
 #     token2id: Token2Id,
 #     extract_opts: ExtractTaggedTokensOpts,
-#     filter_opts: TaggedTokensFilterOpts = None,
+#     filter_opts: PropertyValueMaskingOpts = None,
 #     phrases: List[List[int]] = None,
 #     ignore_case: bool = False,
 # ) -> Iterable[int]:
@@ -105,7 +105,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
 #     Args:
 #         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-#         filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+#         filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
 #         phrases (List[List[str]], optional): Phrases in tokens equence that should be merged into a single token. Defaults to None.
 #         ignore_case (bool, optional): Ignore case or not. Defaults to False.
 
@@ -167,14 +167,14 @@ def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_
 def filter_tagged_frame(  # pylint: disable=too-many-arguments
     doc: TaggedFrame,
     extract_opts: ExtractTaggedTokensOpts,
-    filter_opts: TaggedTokensFilterOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
     pos_column: str = 'pos_',
 ) -> TaggedFrame:
     """Filteras a tagged document represented as a Pandas data frame.
 
     Args:
         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-        filter_opts (TaggedTokensFilterOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
         pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
 
     Returns:

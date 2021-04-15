@@ -5,7 +5,7 @@ from typing import List
 from penelope.co_occurrence.interface import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
-from penelope.corpus.readers.interfaces import TaggedTokensFilterOpts
+from penelope.corpus.readers.interfaces import PropertyValueMaskingOpts
 from penelope.pipeline import CorpusType
 
 
@@ -23,7 +23,7 @@ class ComputeOpts:
     tokens_transform_opts: TokensTransformOpts
     text_reader_opts: TextReaderOpts
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts
     vectorize_opts: VectorizeOpts
     count_threshold: int
     create_subfolder: bool

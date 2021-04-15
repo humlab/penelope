@@ -10,7 +10,7 @@ from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
-    TaggedTokensFilterOpts,
+    PropertyValueMaskingOpts,
     TextReader,
     TextReaderOpts,
     TextSource,
@@ -442,7 +442,7 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
-    filter_opts: TaggedTokensFilterOpts = None
+    filter_opts: PropertyValueMaskingOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -472,7 +472,7 @@ class FilterTaggedFrame(CountTokensMixIn, ITask):
     """Filters tagged frame text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
-    filter_opts: TaggedTokensFilterOpts = None
+    filter_opts: PropertyValueMaskingOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME

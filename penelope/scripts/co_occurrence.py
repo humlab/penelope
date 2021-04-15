@@ -7,7 +7,7 @@ import penelope.workflows as workflows
 from loguru import logger
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers.interfaces import TaggedTokensFilterOpts
+from penelope.corpus.readers.interfaces import PropertyValueMaskingOpts
 from penelope.pipeline import CorpusConfig
 
 # pylint: disable=too-many-arguments
@@ -168,7 +168,7 @@ def process_co_ocurrence(
                 concept=(concept or []),
                 ignore_concept=no_concept,
             ),
-            tagged_tokens_filter_opts=TaggedTokensFilterOpts(),
+            tagged_tokens_filter_opts=PropertyValueMaskingOpts(),
             partition_keys=partition_key,
             force=force,
         )

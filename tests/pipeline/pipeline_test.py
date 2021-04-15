@@ -7,7 +7,7 @@ import pandas as pd
 import penelope.workflows as workflows
 import pytest
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
 from penelope.pipeline.config import create_pipeline_factory
 from sklearn.feature_extraction.text import CountVectorizer
@@ -120,7 +120,7 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
     tagged_payload = next(CorpusPipeline(config=config).checkpoint(checkpoint_filename).resolve())
 
@@ -140,7 +140,7 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
     tagged_payload = next(CorpusPipeline(config=config).checkpoint(checkpoint_filename).resolve())
 
@@ -161,7 +161,7 @@ def test_pipeline_takt_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True)
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
     take_payloads = (
         CorpusPipeline(config=config)
@@ -179,7 +179,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
     payloads = (
         CorpusPipeline(config=config)
@@ -201,7 +201,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NOUN|')
-    filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
     corpus: VectorizedCorpus = (
         (

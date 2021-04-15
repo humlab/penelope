@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import yaml
-from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts
+from penelope.corpus.readers import PropertyValueMaskingOpts, TextReaderOpts
 from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema
 
 from . import checkpoint, interfaces
@@ -45,7 +45,7 @@ class CorpusConfig:
     corpus_pattern: str = "*.zip"
     checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = None
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None
     pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = "english"
@@ -115,7 +115,7 @@ class CorpusConfig:
         if config_dict.get('tagged_tokens_filter_opts', None) is not None:
             opts = config_dict['tagged_tokens_filter_opts']
             if opts.get('data', None) is not None:
-                config_dict['tagged_tokens_filter_opts'] = TaggedTokensFilterOpts(**opts['data'])
+                config_dict['tagged_tokens_filter_opts'] = PropertyValueMaskingOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))

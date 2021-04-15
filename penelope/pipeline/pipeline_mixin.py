@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from penelope import co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextReaderOpts, TextTransformOpts
 
 from . import tasks
 from .checkpoint import CheckpointOpts
@@ -132,7 +132,7 @@ class PipelineShortcutMixIn:
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
         extract_opts: ExtractTaggedTokensOpts,
-        filter_opts: TaggedTokensFilterOpts,
+        filter_opts: PropertyValueMaskingOpts,
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.TaggedFrameToTokens(
@@ -144,7 +144,7 @@ class PipelineShortcutMixIn:
     def filter_tagged_frame(
         self: pipelines.CorpusPipeline,
         extract_opts: ExtractTaggedTokensOpts,
-        filter_opts: TaggedTokensFilterOpts,
+        filter_opts: PropertyValueMaskingOpts,
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.FilterTaggedFrame(

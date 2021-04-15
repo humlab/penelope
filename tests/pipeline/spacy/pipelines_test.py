@@ -5,7 +5,7 @@ import penelope.workflows as workflows
 import pytest
 from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility.pos_tags import PoS_Tag_Scheme, PoS_Tag_Schemes, pos_tags_to_str
@@ -43,7 +43,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes=pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun)
     )
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = TaggedTokensFilterOpts(
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
         is_punct=False,
     )
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(context_width=4)
