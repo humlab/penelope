@@ -55,6 +55,7 @@ from .filename_utils import (
     path_of,
     replace_extension,
     replace_path,
+    strip_extensions,
     strip_path_and_add_counter,
     strip_path_and_extension,
     strip_paths,
