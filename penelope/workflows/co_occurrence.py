@@ -38,8 +38,12 @@ def compute(
             checkpoint_filename=checkpoint_filename,
         )
 
+        # FIXME: #55 No passthrough of co-occurrence concept words
+        args.extract_tagged_tokens_opts.passthrough_tokens = list(args.context_opts.concept)
+
         compute_result: co_occurrence.ComputeResult = (
             tagged_frame_pipeline
+            # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
             + pipeline.wildcard_to_co_occurrence_pipeline(
                 tokens_transform_opts=args.tokens_transform_opts,
                 extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
