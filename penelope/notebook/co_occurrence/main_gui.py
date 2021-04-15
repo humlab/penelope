@@ -13,7 +13,7 @@ view = widgets.Output(layout={'border': '2px solid green'})
 LAST_BUNDLE = None
 LAST_ARGS = None
 LAST_CONFIG = None
-CLEAR_OUTPUT = True
+CLEAR_OUTPUT = False
 
 
 def create(
