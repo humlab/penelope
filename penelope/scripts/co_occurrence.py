@@ -57,6 +57,7 @@ from penelope.pipeline import CorpusConfig
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
+@click.option('-f', '--force/--no-force', default=False, is_flag=True, help='Ignore checkpoints')
 def main(
     corpus_config: str = None,
     input_filename: str = None,
@@ -78,6 +79,7 @@ def main(
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
     count_threshold: int = None,
+    force: bool = False,
 ):
     process_co_ocurrence(
         corpus_config=corpus_config,
@@ -100,6 +102,7 @@ def main(
         only_any_alphanumeric=only_any_alphanumeric,
         only_alphabetic=only_alphabetic,
         count_threshold=count_threshold,
+        force=force,
     )
 
 
@@ -124,6 +127,7 @@ def process_co_ocurrence(
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
     count_threshold: int = None,
+    force: bool = False,
 ):
     try:
         output_folder, output_tag = filename_to_folder_and_tag(output_filename)
@@ -166,6 +170,7 @@ def process_co_ocurrence(
             ),
             tagged_tokens_filter_opts=TaggedTokensFilterOpts(),
             partition_keys=partition_key,
+            force=force,
         )
 
         workflows.co_occurrence.compute(

@@ -28,6 +28,7 @@ class ComputeOpts:
     count_threshold: int
     create_subfolder: bool
     persist: bool
+    force: bool = False
 
     context_opts: ContextOpts = None
     partition_keys: List[str] = None
