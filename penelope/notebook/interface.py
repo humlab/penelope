@@ -5,8 +5,10 @@ from typing import List
 from penelope.co_occurrence.interface import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
-from penelope.corpus.readers.interfaces import PropertyValueMaskingOpts
 from penelope.pipeline import CorpusType
+from penelope.utility import PropertyValueMaskingOpts
+
+# pylint: disable=too-many-instance-attributes
 
 
 class WorkflowException(Exception):

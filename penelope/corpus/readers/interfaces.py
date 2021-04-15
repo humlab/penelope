@@ -6,9 +6,7 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
-import numpy as np
-import pandas as pd
-from penelope.utility import FilenameFieldSpecs, pandas_utils
+from penelope.utility import FilenameFieldSpecs
 
 if TYPE_CHECKING:
     from ..document_index import DocumentIndex
@@ -77,51 +75,6 @@ class ExtractTaggedTokensOpts:
             lemmatize=self.lemmatize,
             append_pos=self.append_pos,
         )
-
-
-# TODO #49 Consider deprecating class
-class PropertyValueMaskingOpts:
-    """Used for filtering tagged data that are stored as Pandas data frames.
-    A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
-
-    def __init__(self, **kwargs):
-        super().__setattr__('data', kwargs or dict())
-
-    def __getitem__(self, key: int):
-        return self.data[key]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __setattr__(self, k, v):
-        self.data[k] = v
-
-    def __getattr__(self, k):
-        try:
-            return self.data[k]
-        except KeyError:
-            return None
-
-    @property
-    def props(self) -> Dict:
-        return self.data
-
-    def mask(self, doc: pd.DataFrame) -> np.ndarray:
-
-        return pandas_utils.create_mask(doc, self.data)
-
-    def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
-        if len(self.hot_attributes(doc)) == 0:
-            return doc
-        return doc[self.mask(doc)]
-
-    def hot_attributes(self, doc: pd.DataFrame) -> List[str]:
-        """Returns attributes that __might__ filter tagged frame"""
-        return [
-            (attr_name, attr_value)
-            for attr_name, attr_value in self.data.items()
-            if attr_name in doc.columns and attr_value is not None
-        ]
 
 
 class ICorpusReader(abc.ABC):

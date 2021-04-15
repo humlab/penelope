@@ -4,13 +4,15 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from penelope import co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
+from penelope.utility import PropertyValueMaskingOpts
 
 from . import tasks
 from .checkpoint import CheckpointOpts
 
 if TYPE_CHECKING:
     from . import pipelines
+# pylint: disable=too-many-public-methods
 
 
 class PipelineShortcutMixIn:

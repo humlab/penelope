@@ -7,8 +7,8 @@ import penelope.workflows as workflows
 from loguru import logger
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers.interfaces import PropertyValueMaskingOpts
 from penelope.pipeline import CorpusConfig
+from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=too-many-arguments
 

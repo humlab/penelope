@@ -2,9 +2,8 @@ from typing import Callable, Iterable, List, Union
 
 import numpy as np
 from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
-from penelope.utility.pos_tags import PoS_Tag_Scheme
-from penelope.utility.utils import multiple_replace
+from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, multiple_replace
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame

@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any
 
 from penelope.co_occurrence.co_occurrence import ContextOpts
 from penelope.corpus.readers.text_transformer import TextTransformOpts
-from penelope.utility import get_logger, path_add_suffix
+from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
 
 from .. import pipelines
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
-    from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
+    from penelope.corpus.readers import ExtractTaggedTokensOpts
 
     from ..config import CorpusConfig
 

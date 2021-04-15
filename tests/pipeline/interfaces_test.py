@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from penelope.corpus.readers import PropertyValueMaskingOpts
+from penelope.utility import PropertyValueMaskingOpts
 
 
 def test_tagged_tokens_filter_opts_set_of_new_field_succeeds():

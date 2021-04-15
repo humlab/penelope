@@ -7,13 +7,13 @@ import spacy
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
-    PropertyValueMaskingOpts,
     TextReader,
     TextReaderOpts,
     TextTransformOpts,
     streamify_text_source,
 )
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
+from penelope.utility import PropertyValueMaskingOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 

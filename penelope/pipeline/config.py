@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import yaml
-from penelope.corpus.readers import PropertyValueMaskingOpts, TextReaderOpts
-from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema
+from penelope.corpus.readers import TextReaderOpts
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, create_instance, get_pos_schema
 
 from . import checkpoint, interfaces
 

@@ -10,17 +10,14 @@ from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
-    PropertyValueMaskingOpts,
     TextReader,
     TextReaderOpts,
     TextSource,
     TextTransformer,
     TextTransformOpts,
 )
-from penelope.corpus.readers.tng.factory import create_sparv_xml_corpus_reader
-from penelope.corpus.readers.tng.reader import CorpusReader
-from penelope.utility.filename_fields import extract_filenames_metadata
-from penelope.utility.filename_utils import replace_extension, strip_paths
+from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
+from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_paths
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
@@ -278,9 +275,11 @@ class WriteFeather(ITask):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
+    def enter(self):
+        os.makedirs(self.folder, exist_ok=True)
+
     def process_payload(self, payload: DocumentPayload) -> Iterable[DocumentPayload]:
         tagged_frame: TaggedFrame = payload.content
-        os.makedirs(self.folder, exist_ok=True)
         filename = os.path.join(self.folder, replace_extension(payload.filename, ".feather"))
         tagged_frame.to_feather(
             filename,
@@ -467,34 +466,34 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
         return payload.update(self.out_content_type, tokens)
 
 
-@dataclass
-class FilterTaggedFrame(CountTokensMixIn, ITask):
-    """Filters tagged frame text from payload.content based on annotations etc. """
+# @dataclass
+# class FilterTaggedFrame(CountTokensMixIn, ITask):
+#     """Filters tagged frame text from payload.content based on annotations etc. """
 
-    extract_opts: ExtractTaggedTokensOpts = None
-    filter_opts: PropertyValueMaskingOpts = None
+#     extract_opts: ExtractTaggedTokensOpts = None
+#     filter_opts: PropertyValueMaskingOpts = None
 
-    def __post_init__(self):
-        self.in_content_type = ContentType.TAGGED_FRAME
-        self.out_content_type = ContentType.TOKENS
+#     def __post_init__(self):
+#         self.in_content_type = ContentType.TAGGED_FRAME
+#         self.out_content_type = ContentType.TOKENS
 
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+#     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
-        if self.pipeline.get('pos_column', None) is None:
-            raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
+#         if self.pipeline.get('pos_column', None) is None:
+#             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
 
-        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
-            doc=payload.content,
-            extract_opts=self.extract_opts,
-            filter_opts=self.filter_opts,
-            **(self.pipeline.payload.tagged_columns_names or {}),
-        )
+#         tokens: Iterable[str] = convert.tagged_frame_to_tokens(
+#             doc=payload.content,
+#             extract_opts=self.extract_opts,
+#             filter_opts=self.filter_opts,
+#             **(self.pipeline.payload.tagged_columns_names or {}),
+#         )
 
-        tokens = list(tokens)
+#         tokens = list(tokens)
 
-        self.update_document_properties(payload, n_tokens=len(tokens))
+#         self.update_document_properties(payload, n_tokens=len(tokens))
 
-        return payload.update(self.out_content_type, tokens)
+#         return payload.update(self.out_content_type, tokens)
 
 
 @dataclass

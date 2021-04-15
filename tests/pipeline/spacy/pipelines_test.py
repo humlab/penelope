@@ -5,10 +5,10 @@ import penelope.workflows as workflows
 import pytest
 from penelope.co_occurrence.partitioned import ComputeResult
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
-from penelope.utility.pos_tags import PoS_Tag_Scheme, PoS_Tag_Schemes, pos_tags_to_str
+from penelope.utility import PoS_Tag_Scheme, PoS_Tag_Schemes, PropertyValueMaskingOpts, pos_tags_to_str
 
 from ..fixtures import FakeComputeOptsSpacyCSV
 

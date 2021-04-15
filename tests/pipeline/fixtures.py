@@ -1,8 +1,9 @@
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextReaderOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusType
+from penelope.utility import PropertyValueMaskingOpts
 
 
 def FakeComputeOptsSpacyCSV(

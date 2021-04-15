@@ -6,9 +6,9 @@ import ipywidgets as widgets
 import penelope.notebook.utility as notebook_utility
 import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import PoS_Tag_Scheme, default_data_folder, flatten, get_logger
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, default_data_folder, flatten, get_logger
 
 from . import interface
 
@@ -306,7 +306,9 @@ class BaseGUI:
     @property
     def tagged_tokens_filter_opts(self) -> PropertyValueMaskingOpts:
         # FIXME #48 Check if _only_alphabetic is valid for Stanza & Sparv (or ignored)
-        return PropertyValueMaskingOpts(is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None)
+        return PropertyValueMaskingOpts(
+            is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None
+        )
 
     def set_PoS_scheme(self, pos_scheme: PoS_Tag_Scheme):
 

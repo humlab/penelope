@@ -1,8 +1,9 @@
 import penelope.corpus.readers.tng as tng
 import penelope.pipeline as pipeline
 import pytest
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts, PropertyValueMaskingOpts
+from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 from penelope.pipeline import tasks
+from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=redefined-outer-name
 

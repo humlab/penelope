@@ -1,6 +1,7 @@
 import penelope.corpus.dtm as dtm
 from penelope.co_occurrence.interface import ContextOpts
-from penelope.corpus import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TokensTransformOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.utility import PropertyValueMaskingOpts
 
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn

@@ -11,7 +11,7 @@ import pytest
 import spacy.language
 import spacy.tokens
 from penelope.corpus import load_document_index
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (
     CheckpointData,
     CheckpointOpts,
@@ -21,6 +21,7 @@ from penelope.pipeline import (
     DocumentPayload,
     PipelinePayload,
 )
+from penelope.utility import PropertyValueMaskingOpts
 from tests.utils import TEST_DATA_FOLDER
 
 # pylint: disable=redefined-outer-name

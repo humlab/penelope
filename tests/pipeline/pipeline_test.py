@@ -7,9 +7,10 @@ import pandas as pd
 import penelope.workflows as workflows
 import pytest
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PropertyValueMaskingOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
 from penelope.pipeline.config import create_pipeline_factory
+from penelope.utility import PropertyValueMaskingOpts
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER
 

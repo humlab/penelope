@@ -63,6 +63,7 @@ from .filename_utils import (
     ts_data_path,
 )
 from .mixins import PropsMixIn
+from .pandas_utils import PropertyValueMaskingOpts, create_mask, create_mask2, setup_pandas
 from .pos_tags import (
     Known_PoS_Tag_Schemes,
     PD_PoS_tag_groups,
@@ -70,6 +71,7 @@ from .pos_tags import (
     PoS_Tag_Schemes,
     PoS_TAGS_SCHEMES,
     get_pos_schema,
+    pos_tags_to_str,
 )
 from .utils import (
     LOG_FORMAT,

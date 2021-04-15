@@ -1,7 +1,7 @@
 import io
 
 import pandas as pd
-from penelope.corpus.readers import PropertyValueMaskingOpts
+from penelope.utility import PropertyValueMaskingOpts
 
 
 def test_mask_punct_space_when_no_space():

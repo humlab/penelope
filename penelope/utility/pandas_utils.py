@@ -106,6 +106,7 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
 
     return mask
 
+
 class PropertyValueMaskingOpts:
     """A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
 
