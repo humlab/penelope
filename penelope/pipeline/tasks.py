@@ -2,11 +2,14 @@ import glob
 import itertools
 import os
 import shutil
+import zipfile
+from contextlib import suppress
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import pandas as pd
+from loguru import logger
 from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import (
@@ -473,6 +476,56 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
         self.update_document_properties(payload, n_tokens=len(tokens))
 
         return payload.update(self.out_content_type, tokens)
+
+
+@dataclass
+class TapStream(CountTokensMixIn, ITask):
+    """Taps content into zink. """
+
+    target: str = None
+    tag: str = None
+    enabled: bool = False
+    zink: zipfile.ZipFile = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def enter(self):
+        logger.info(f"Tapping stream to {self.target}")
+        self.zink = zipfile.ZipFile(self.target, "w")
+
+    def exit(self):
+        self.zink.close()
+
+    def store(self, payload: DocumentPayload) -> DocumentPayload:
+
+        with suppress(Exception):
+            content: str = somewhat_generic_serializer(payload.content)
+            if content is not None:
+                self.zink.writestr(f"{self.tag}__{payload.filename}", content)
+
+        return payload
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        return self.store(payload)
+
+
+def somewhat_generic_serializer(content: Any) -> Optional[str]:
+
+    if isinstance(content, pd.core.api.DataFrame):
+        return content.to_csv(sep='\t')
+
+    if isinstance(content, list):
+        return ' '.join(content)
+
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, tuple) and len(content) == 2:
+        return somewhat_generic_serializer(content[1])
+
+    return None
 
 
 # @dataclass

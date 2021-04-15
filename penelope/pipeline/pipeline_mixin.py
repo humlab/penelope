@@ -144,6 +144,10 @@ class PipelineShortcutMixIn:
             )
         )
 
+    def tap_stream(self: pipelines.CorpusPipeline, target: str, tag: str) -> pipelines.CorpusPipeline:
+        """Taps the stream into a debug zink."""
+        return self.add(tasks.TapStream(target=target, tag=tag, enabled=True))
+
     # def filter_tagged_frame(
     #     self: pipelines.CorpusPipeline,
     #     extract_opts: ExtractTaggedTokensOpts,
