@@ -1,5 +1,4 @@
 import os
-import shutil
 from typing import Optional
 
 import penelope.co_occurrence as co_occurrence
@@ -7,7 +6,6 @@ import penelope.pipeline as pipeline
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
 from penelope.utility import getLogger
-from penelope.utility.filename_utils import strip_extensions
 
 logger = getLogger('penelope')
 
@@ -34,16 +32,11 @@ def compute(
             checkpoint_file or f"{corpus_config.corpus_name}_{POS_CHECKPOINT_FILENAME_POSTFIX}"
         )
 
-        feather_folder = _feather_folder_name(args)
-
         tagged_frame_pipeline: pipeline.CorpusPipeline = corpus_config.get_pipeline(
             "tagged_frame_pipeline",
             corpus_filename=args.corpus_filename,
             checkpoint_filename=checkpoint_filename,
-        ).checkpoint_feather(feather_folder)
-
-        if args.force:
-            shutil.rmtree(feather_folder, ignore_errors=True)
+        )
 
         compute_result: co_occurrence.ComputeResult = (
             tagged_frame_pipeline
@@ -98,9 +91,3 @@ def compute(
     except Exception as ex:
         logger.error(ex)
         raise
-
-
-def _feather_folder_name(args):
-    folder, filename = os.path.split(args.corpus_filename)
-    feather_folder = os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
-    return feather_folder

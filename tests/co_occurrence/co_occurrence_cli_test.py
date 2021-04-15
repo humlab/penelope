@@ -1,4 +1,4 @@
-import pytest
+# import pytest
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 
