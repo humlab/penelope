@@ -3,7 +3,7 @@ from __future__ import annotations
 import collections
 import functools
 import itertools
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, Type, TypeVar, Union
 
 from .interfaces import ContentType, DocumentPayload, ITask, PipelinePayload
 
@@ -81,6 +81,11 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Add one or more tasks to the pipeline. Hooks up a reference to pipeline for each task"""
         tasks = [task] if isinstance(task, ITask) else task
         self.tasks.extend(map(lambda x: x.hookup(self), tasks))
+        return self
+
+    def addif(self, flag: bool, task_cls: Type[ITask], *args, **kwargs) -> _T_self:
+        if flag:
+            self.add(task_cls(*args, **kwargs))
         return self
 
     def get(self, key: str, default: Any = None) -> Any:
