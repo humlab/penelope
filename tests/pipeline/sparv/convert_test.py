@@ -68,5 +68,3 @@ def test_sparv_csv_serializer():
 #     assert all(~tagged_frame.token.isna())
 #     assert all(~tagged_frame.baseform.isna())
 #     assert all(~tagged_frame.pos.isna())
-
-
