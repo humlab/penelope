@@ -109,12 +109,39 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
         id2token=text_corpus.id2token,
         document_index=text_corpus.document_index,
         threshold_count=1,
+        ignore_pad=None,
     )
 
     assert co_occurrences.value.sum() == term_term_matrix.sum()
     assert 4 == int(co_occurrences[((co_occurrences.w1 == 'a') & (co_occurrences.w2 == 'c'))].value)
     assert 1 == int(co_occurrences[((co_occurrences.w1 == 'b') & (co_occurrences.w2 == 'd'))].value)
 
+def test_to_dataframe_coocurrence_matrix_when_paddins():
+
+    text_corpus = very_simple_corpus(data=[
+        ('tran_2019_01_test.txt', ['*', 'b', 'c', 'c']),
+        ('tran_2019_02_test.txt', ['a', '*', '*', 'd']),
+        ('tran_2019_03_test.txt', ['a', 'e', 'e', 'b']),
+        ('tran_2020_01_test.txt', ['*', 'c', 'd', 'a']),
+        ('tran_2020_02_test.txt', ['a', 'b', '*', '*']),
+    ])
+
+    term_term_matrix = (
+        dtm.CorpusVectorizer()
+        .fit_transform(text_corpus, already_tokenized=True, vocabulary=text_corpus.token2id)
+        .co_occurrence_matrix()
+    )
+
+    co_occurrences = co_occurrence.to_dataframe(
+        term_term_matrix=term_term_matrix,
+        id2token=text_corpus.id2token,
+        document_index=text_corpus.document_index,
+        threshold_count=1,
+        ignore_pad='*',
+    )
+
+    assert not (co_occurrences.w1 == '*').any()
+    assert not (co_occurrences.w2 == '*').any()
 
 def test_load_and_store_bundle():
 

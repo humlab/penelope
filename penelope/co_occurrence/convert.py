@@ -135,6 +135,7 @@ def to_dataframe(
     id2token: Mapping[int, str],
     document_index: DocumentIndex = None,
     threshold_count: int = 1,
+    ignore_pad: str = None,
 ) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
 
@@ -188,6 +189,10 @@ def to_dataframe(
 
     coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
     coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
+
+
+    if ignore_pad is not None:
+        coo_df = coo_df[((coo_df.w1 != ignore_pad) & (coo_df.w2 != ignore_pad))]
 
     coo_df = coo_df[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
 

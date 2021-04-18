@@ -35,6 +35,7 @@ def partitioned_corpus_co_occurrence(
     context_opts: ContextOpts,
     global_threshold_count: int,
     partition_column: str = 'year',
+    ignore_pad: str = None,
 ) -> ComputeResult:
 
     # FIXME: #27 Adding document_index and token2id as parameters causes index updates not to be reflected
@@ -82,6 +83,7 @@ def partitioned_corpus_co_occurrence(
             payload=payload,
             context_opts=context_opts,
             threshold_count=1,
+            ignore_pad=ignore_pad,
         )
 
         co_occurrence[partition_column] = key

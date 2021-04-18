@@ -189,7 +189,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
-        coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.document_index)
+        coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.document_index, ignore_pad=None)
 
         # Assert
         assert 2 == int(coo_df[((coo_df.w1 == 'A') & (coo_df.w2 == 'B'))].value)

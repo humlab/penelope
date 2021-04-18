@@ -23,6 +23,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         threshold_count=0,
+        ignore_pad=None
     )
     assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
 
@@ -38,6 +39,7 @@ def test_co_occurrence_with_no_concept_succeeds():
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         threshold_count=1,
+        ignore_pad=None
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -52,6 +54,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         threshold_count=2,
+        ignore_pad=None
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -73,6 +76,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=context_width),
         global_threshold_count=threshold_count,
         partition_column='year',
+        ignore_pad=None,
     )
 
     assert compute_result is not None
@@ -97,6 +101,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
         global_threshold_count=None,
         partition_column='year',
+        ignore_pad=None,
     )
 
     assert compute_result is not None
@@ -116,6 +121,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         global_threshold_count=1,
         partition_column='year',
+        ignore_pad=None,
     )
 
     dtm_corpus = to_vectorized_corpus(compute_result.co_occurrences, compute_result.document_index)

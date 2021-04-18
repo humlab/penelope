@@ -667,6 +667,7 @@ class Vocabulary(ITask):
 
 @dataclass
 class ToCoOccurrence(ITask):
+    """Computes a windows co-occurrence data."""
     def __post_init__(self):
         self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
@@ -674,6 +675,7 @@ class ToCoOccurrence(ITask):
     context_opts: co_occurrence.ContextOpts = None
     global_threshold_count: int = None
     partition_column: str = field(default='year')
+    ignore_pad: str = field(default='*')
 
     def setup(self) -> ITask:
         super().setup()
@@ -695,6 +697,7 @@ class ToCoOccurrence(ITask):
             context_opts=self.context_opts,
             global_threshold_count=self.global_threshold_count,
             partition_column=self.partition_column,
+            ignore_pad=self.ignore_pad,
         )
         yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=compute_result)
 

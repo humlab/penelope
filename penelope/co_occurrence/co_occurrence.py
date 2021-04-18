@@ -23,7 +23,7 @@ def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, paddi
     If `context_opts.concept` is specified then **only windows centered** on any of the
     specified  token stored in `concept` are yielded. All other windows are skipped.
 
-    `context_opts.context_width` is the the number of tokens to either side of the docus word, i.e.
+    `context_opts.context_width` is the the number of tokens to either side of the focus word, i.e.
     the total size of the window is (n_window + 1 + n_window).
 
 
@@ -41,7 +41,7 @@ def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, paddi
         concept : Sequence[str]
             The token(s) in focus.
         ignore_concept: bool
-            If to then filter ut the foxus word.
+            If to then filter ut the focus word.
 
     Yields
     -------
@@ -90,6 +90,7 @@ def corpus_co_occurrence(
     payload: PipelinePayload,
     context_opts: ContextOpts,
     threshold_count: int = 1,
+    ignore_pad: str = None,
 ) -> pd.DataFrame:
     """Computes a concept co-occurrence dataframe for given arguments
 
@@ -123,6 +124,7 @@ def corpus_co_occurrence(
         id2token=windowed_corpus.id2token,
         document_index=payload.document_index,
         threshold_count=threshold_count,
+        ignore_pad=ignore_pad,
     )
 
     return co_occurrences
@@ -133,8 +135,9 @@ def to_vectorized_windows_corpus(
     stream: FilenameTokensTuples,
     token2id: Mapping[str, int],
     context_opts: ContextOpts,
+    pad: str = "*",
 ) -> VectorizedCorpus:
-    windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad='*')
+    windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad=pad)
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
     corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
         windows_corpus, vocabulary=token2id, already_tokenized=True
