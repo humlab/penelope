@@ -261,14 +261,14 @@ def test_extract_tokens_lemma_no_stops_succeeds(df_doc):
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc):
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|PROPN|')
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|PROPN|', pos_paddings=None)
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc):
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='|VERB|NOUN|')
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='|VERB|NOUN|', pos_paddings=None)
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['seas', 'oceans', 'life']
@@ -340,6 +340,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
+        pos_paddings='|ADJ|',
     )
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     pipeline = (
@@ -395,7 +396,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
-        pos_includes='|VERB|NOUN|',
+        pos_includes='|VERB|NOUN|', pos_paddings=None,
     )
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
@@ -429,7 +430,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     tagged_columns = {'text_column': 'text', 'lemma_column': 'lemma_', 'pos_column': 'pos_'}
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
-        pos_includes='|VERB|NOUN|',
+        pos_includes='|VERB|NOUN|', pos_paddings=None,
     )
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
