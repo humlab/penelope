@@ -61,7 +61,6 @@ def test_phrased_tagged_frame():
         lemma_column='lemma_',
         pos_column='pos_',
         ignore_case=False,
-        verbose=True,
     )
     data_str: str = """	text	lemma_	pos_	is_punct	is_stop
 0	Constitution	constitution	NOUN	False	False
