@@ -213,7 +213,7 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
     p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
         "tagged_frame_pipeline",
         checkpoint_filename=checkpoint_filename,
-    ).exhaust()
+    ).tqdm().exhaust()
 
     document_index: DocumentIndex = p.payload.document_index
     if 'n_raw_tokens' not in document_index.columns:
