@@ -810,6 +810,22 @@ traitlets = ">=4.1.0"
 test = ["pytest (!=5.3.4)", "pytest-cov", "flaky", "nose"]
 
 [[package]]
+name = "ipyregulartable"
+version = "0.2.0"
+description = "ipywidgets wrapper around regular-table"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ipywidgets = ">=7.5.1"
+numpy = "*"
+pandas = ">=0.22"
+
+[package.extras]
+dev = ["ipywidgets (>=7.5.1)", "numpy", "pandas (>=0.22)", "black (>=20)", "bump2version (>=1.0.0)", "flake8 (>=3.7.8)", "flake8-black (>=0.2.1)", "jupyter-packaging", "mock", "pytest (>=4.3.0)", "pytest-cov (>=2.6.1)", "Sphinx (>=1.8.4)", "sphinx-markdown-builder (>=0.5.2)"]
+
+[[package]]
 name = "ipython"
 version = "7.19.0"
 description = "IPython: Productive Interactive Computing"
@@ -2488,7 +2504,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "==3.*,>=3.8.0"
-content-hash = "970bad1ee0da896e650adaf2fc771446cfbbebcb0b5b431fd2c5badc8ed48c2d"
+content-hash = "4d3c093a9ba2b1b5a834490679bed09e818743ec38dcc3b4918657e260e9795c"
 
 [metadata.files]
 aiohttp = [
@@ -2957,6 +2973,10 @@ ipyfilechooser = [
 ipykernel = [
     {file = "ipykernel-5.3.4-py3-none-any.whl", hash = "sha256:d6fbba26dba3cebd411382bc484f7bc2caa98427ae0ddb4ab37fe8bfeb5c7dd3"},
     {file = "ipykernel-5.3.4.tar.gz", hash = "sha256:9b2652af1607986a1b231c62302d070bc0534f564c393a5d9d130db9abbbe89d"},
+]
+ipyregulartable = [
+    {file = "ipyregulartable-0.2.0-py2.py3-none-any.whl", hash = "sha256:ce84ee1005ccd37c8c24364ca4a64cad42195d6214608cd618ace879b289438c"},
+    {file = "ipyregulartable-0.2.0.tar.gz", hash = "sha256:4efe0428c76baefd549274db29697dd3ec520280f90fde67654b103d92cce5da"},
 ]
 ipython = [
     {file = "ipython-7.19.0-py3-none-any.whl", hash = "sha256:c987e8178ced651532b3b1ff9965925bfd445c279239697052561a9ab806d28f"},
