@@ -33,14 +33,15 @@ SUC_tags = {
 
 SUC_PoS_tag_groups = {
     'Pronoun': ['DT', 'HD', 'HP', 'HS', 'PS', 'PN'],
-    'Noun': ['NN', 'PM', 'UO'],
-    'Verb': ['PC', 'VB'],
+    'Noun': ['NN', 'PM'],
+    'Verb': ['VB'],
     'Adverb': ['AB', 'HA', 'IE', 'IN', 'PL'],
     'Numeral': ['RG', 'RO'],
     'Adjective': ['JJ'],
     'Preposition': ['PP'],
     'Conjunction': ['KN', 'SN'],
     'Delimiter': ['MAD', 'MID', 'PAD'],
+    'Other': ['PC', 'UO'],
 }
 
 
@@ -85,7 +86,7 @@ PD_SUC_PoS_tags = (
             ('RG', 'Numeral', 'Numeral'),
             ('RO', 'Numeral', 'Numeral'),
             ('SN', 'Conjunction', 'Subjuncion'),
-            ('UO', 'Noun', 'Foreign ord'),
+            ('UO', 'Other', 'Foreign ord'),
             ('VB', 'Verb', 'Verb'),
             ('MAD', 'Delimiter', 'Delimiter'),
             ('MID', 'Delimiter', 'Delimiter'),
@@ -130,6 +131,7 @@ PD_Universal_PoS_tags = (
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
+
 
 PD_PennTree_O5_PoS_tags = (
     pd.DataFrame(
