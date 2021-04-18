@@ -43,6 +43,7 @@ def FakeComputeOptsSpacyCSV(
             lemmatize=True,
             target_override=None,
             pos_includes='|NOUN|PROPN|VERB|',
+            pos_paddings=None,
             pos_excludes='|PUNCT|EOL|SPACE|',
             passthrough_tokens=[],
             append_pos=False,
@@ -102,6 +103,7 @@ def FakeComputeOptsSparvCSV(
         extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes=None,
             pos_excludes='|MAD|MID|PAD|',
+            pos_paddings=None,
             lemmatize=False,
         ),
         tagged_tokens_filter_opts=PropertyValueMaskingOpts(

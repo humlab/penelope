@@ -13,6 +13,7 @@ from .utils import frequent_document_words, infrequent_words, load_term_substitu
 
 logger = utility.getLogger('corpus_text_analysis')
 
+# FIXME: PoS-replace (dummy marker) not fully implemented
 
 def chunks(lst, n):
     '''Returns list l in n-sized chunks'''
@@ -116,8 +117,13 @@ class ExtractPipeline:
     def infrequent_word_filter(self, min_freq: int = 100, target: str = 'lemma') -> ExtractPipeline:
         return self.add(InfrequentWordsFilter(min_global_count=min_freq, target=target))
 
-    def pos(self, include_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None) -> ExtractPipeline:
-        return self.add(PoSFilter(include_pos=include_pos, exclude_pos=exclude_pos))
+    def pos(
+        self,
+        include_pos: Sequence[str] = None,
+        replace_pos: Sequence[str] = None,
+        exclude_pos: Sequence[str] = None,
+    ) -> ExtractPipeline:
+        return self.add(PoSFilter(include_pos=include_pos, replace_pos=replace_pos, exclude_pos=exclude_pos))
 
     def ingest_transform_opts(self, tokens_transform_opts: TokensTransformOpts) -> ExtractPipeline:
 
@@ -175,17 +181,20 @@ class StopwordFilter:
 
 
 class PoSFilter:
-    def __init__(self, include_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None):
+    def __init__(self, include_pos: Sequence[str] = None, replace_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None):
         self.include_pos = include_pos
+        self.replace_pos = replace_pos
         self.exclude_pos = exclude_pos
 
         universal_tags = utility.PoS_TAGS_SCHEMES.Universal.tags
 
         assert all([x in universal_tags for x in (self.include_pos or [])])
         assert all([x in universal_tags for x in (self.exclude_pos or [])])
+        assert all([x in universal_tags for x in (self.replace_pos or [])])
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
         pipeline.to_terms_list_kwargs['include_pos'] = self.include_pos
+        pipeline.to_terms_list_kwargs['replace_pos'] = self.replace_pos
         pipeline.to_terms_list_kwargs['exclude_pos'] = self.exclude_pos
         return pipeline
 
@@ -337,10 +346,14 @@ def extract_document_tokens(
 ) -> Iterable[Tuple[str, Iterable[str]]]:
 
     target = "lemma" if extract_tokens_opts.lemmatize else "text"
-
+    # FIXME: Implement pos_paddings
     tokens_stream = (
         ExtractPipeline.build(corpus=spacy_docs, target=target)
-        .pos(include_pos=extract_tokens_opts.pos_includes, exclude_pos=extract_tokens_opts.pos_excludes)
+        .pos(
+            include_pos=extract_tokens_opts.pos_includes,
+            replace_pos=extract_tokens_opts.replace_pos,
+            exclude_pos=extract_tokens_opts.pos_excludes,
+        )
         .ingest_transform_opts(tokens_transform_opts)
         .ingest(**extract_args)
         .process()

@@ -68,6 +68,8 @@ def main(
     partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
+    pos_paddings: str = None,
+    # FIXME: #58 Make defaults imdependent of PoS schema (read from corpus_config)
     pos_excludes: str = '|MAD|MID|PAD|',
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -91,6 +93,7 @@ def main(
         partition_key=partition_key,
         create_subfolder=create_subfolder,
         pos_includes=pos_includes,
+        pos_paddings=pos_paddings,
         pos_excludes=pos_excludes,
         to_lowercase=to_lowercase,
         lemmatize=lemmatize,
@@ -116,6 +119,7 @@ def process_co_ocurrence(
     partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
+    pos_paddings: str = None,
     pos_excludes: str = '|MAD|MID|PAD|',
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -156,6 +160,7 @@ def process_co_ocurrence(
             text_reader_opts=corpus_config.text_reader_opts,
             extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
+                pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
             ),

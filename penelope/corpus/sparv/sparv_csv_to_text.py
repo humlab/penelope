@@ -1,7 +1,7 @@
 import csv
 import logging
 import os
-from typing import Any, Dict, Set
+from typing import Any, Dict, List, Set
 
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 
@@ -36,10 +36,12 @@ class SparvCsvToText:
     def _transform(self, reader: Any) -> str:  # Any = csv._reader
         _opts = self.extract_tokens_opts
         _lemmatize: bool = _opts.lemmatize
-        _pos_includes: str = _opts.get_pos_includes()
-        _pos_excludes: str = _opts.get_pos_excludes()
+        _pos_includes: Set[str] = _opts.get_pos_includes()
+        _pos_paddings: Set[str] = _opts.get_pos_paddings()
+        _pos_excludes: Set[str] = _opts.get_pos_excludes()
         _passthrough_tokens: Set[str] = _opts.get_passthrough_tokens()
         _append_pos: bool = _opts.append_pos
+        _pad: str = "*"
 
         _pos = self.fields_index['pos']
         _tok = self.fields_index['token']
@@ -49,14 +51,16 @@ class SparvCsvToText:
 
         next(data)
 
-        if _pos_includes is not None:
+        _pos_all_includes: Set[str] = _pos_includes.union(_pos_paddings)
+
+        if len(_pos_all_includes) > 0:
             if len(_passthrough_tokens) == 0:
-                data = (x for x in data if x[_pos] in _pos_includes)
+                data = (x for x in data if x[_pos] in _pos_all_includes)
             else:
                 if _lemmatize:
-                    data = (x for x in data if x[_lem] in _passthrough_tokens or x[_pos] in _pos_includes)
+                    data = (x for x in data if x[_lem] in _passthrough_tokens or x[_pos] in _pos_all_includes)
                 else:
-                    data = (x for x in data if x[_tok] in _passthrough_tokens or x[_pos] in _pos_includes)
+                    data = (x for x in data if x[_tok] in _passthrough_tokens or x[_pos] in _pos_all_includes)
 
         if _pos_excludes is not None:
             data = (x for x in data if x[_pos] not in _pos_excludes)
@@ -68,11 +72,26 @@ class SparvCsvToText:
                     for x in data
                 )
             else:
-                data = ((x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]) for x in data)
+                if len(_pos_paddings) > 0:
+                    data = (
+                        (
+                            _pad
+                            if x[_pos] in _pos_paddings
+                            else x[_tok]
+                            if x[_lem].strip('|') == ''
+                            else x[_lem].strip('|').split('|')[0]
+                        )
+                        for x in data
+                    )
+                else:
+                    data = ((x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]) for x in data)
         else:
             if _append_pos:
                 data = (f"{x[_tok]}|x{_pos}" for x in data)
             else:
-                data = (x[_tok] for x in data)
+                if len(_pos_paddings) > 0:
+                    data = (_pad if x[_pos] in _pos_paddings else x[_tok] for x in data)
+                else:
+                    data = (x[_tok] for x in data)
 
-        return ' '.join([x for x in data])
+        return ' '.join([x.replace(" ", "_") for x in data])

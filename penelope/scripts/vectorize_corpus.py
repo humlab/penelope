@@ -25,6 +25,9 @@ def split_filename(filename, sep='_'):
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
 )
 @click.option(
+    '-m', '--pos-paddings', default=None, help='List of POS tags to replace with a padding marker.', type=click.STRING
+)
+@click.option(
     '-x',
     '--pos-excludes',
     default='|MAD|MID|PAD|',
@@ -58,6 +61,8 @@ def main(
     output_tag: str = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
+    pos_paddings: str = None,
+    # FIXME: pos_excludes PoS-exclude default cannot be PoS-schema dependent
     pos_excludes: str = '|MAD|MID|PAD|',
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -99,6 +104,7 @@ def main(
             text_reader_opts=corpus_config.text_reader_opts,
             extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
+                pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
             ),

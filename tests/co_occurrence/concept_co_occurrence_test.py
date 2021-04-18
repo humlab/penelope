@@ -64,7 +64,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
     compute_result: ComputeResult = partitioned_corpus_co_occurrence(
@@ -89,7 +89,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', lemmatize=False),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
     compute_result: ComputeResult = partitioned_corpus_co_occurrence(
         stream=corpus,

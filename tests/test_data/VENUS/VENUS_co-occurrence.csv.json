@@ -32,6 +32,7 @@
     },
     "extract_tokens_opts": {
         "pos_includes": "|NOUN|PROPN|VERB|",
+        "pos_paddings": null,
         "pos_excludes": "|PUNCT|EOL|SPACE|",
         "passthrough_tokens": [],
         "lemmatize": true,

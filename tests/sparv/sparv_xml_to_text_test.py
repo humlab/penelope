@@ -16,7 +16,7 @@ def test_extract_when_no_filter_or_lemmatize_returns_original_text():
     parser = sparv.SparvXml2Text(
         delimiter=" ",
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes='', lemmatize=False, append_pos=False, pos_excludes=''
+            pos_includes='', pos_paddings=None, lemmatize=False, append_pos=False, pos_excludes=''
         ),
     )
 
@@ -47,7 +47,7 @@ def test_extract_when_lemmatized_returns_baseform():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', lemmatize=True, append_pos=False, pos_excludes=''),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', pos_paddings=None, lemmatize=True, append_pos=False, pos_excludes=''),
     )
 
     result = parser.transform(content)
@@ -62,7 +62,7 @@ def test_extract_when_lemmatized_and_filter_nouns_returns_nouns_in_baseform():
     parser = sparv.SparvXml2Text(
         delimiter=" ",
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes="|NN|", lemmatize=True, append_pos=False, pos_excludes="|MAD|MID|PAD|"
+            pos_includes="|NN|", pos_paddings=None, lemmatize=True, append_pos=False, pos_excludes="|MAD|MID|PAD|"
         ),
     )
 
@@ -78,7 +78,7 @@ def test_extract_when_lemmatized_and_filter_nouns_returns_nouns_in_baseform_with
     parser = sparv.SparvXml2Text(
         delimiter="|",
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes="|NN|", lemmatize=True, append_pos=False, pos_excludes="|MAD|MID|PAD|"
+            pos_includes="|NN|", pos_paddings=None, lemmatize=True, append_pos=False, pos_excludes="|MAD|MID|PAD|"
         ),
     )
 

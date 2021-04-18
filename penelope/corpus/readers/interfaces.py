@@ -49,17 +49,27 @@ class ExtractTaggedTokensOpts:
 
     target_override: str = None
 
+    """ These PoS define the tokens of interest """
     pos_includes: str = ''
+
+    """ These PoS are always removed """
     pos_excludes: str = ''
+
+    """ The PoS define tokens that are replaced with a dummy marker `*` """
+    pos_paddings: str = None
+    pos_replace_marker: str = '*'
 
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
 
-    def get_pos_includes(self):
-        return self.pos_includes.strip('|').split('|') if self.pos_includes else None
+    def get_pos_includes(self) -> Set[str]:
+        return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
 
-    def get_pos_excludes(self):
-        return self.pos_excludes.strip('|').split('|') if self.pos_excludes is not None else None
+    def get_pos_excludes(self) -> Set[str]:
+        return set(self.pos_excludes.strip('|').split('|')) if self.pos_excludes is not None else set()
+
+    def get_pos_paddings(self) -> Set[str]:
+        return set(self.pos_paddings.strip('|').split('|')) if self.pos_paddings is not None else set()
 
     def get_passthrough_tokens(self) -> Set[str]:
         if self.passthrough_tokens is None:
@@ -71,6 +81,7 @@ class ExtractTaggedTokensOpts:
         return dict(
             pos_includes=self.pos_includes,
             pos_excludes=self.pos_excludes,
+            pos_paddings=self.pos_paddings,
             passthrough_tokens=(self.passthrough_tokens or []),
             lemmatize=self.lemmatize,
             append_pos=self.append_pos,

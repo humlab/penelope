@@ -217,7 +217,7 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NN|'),
+        extract_tokens_opts=ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NN|', pos_paddings=None),
         tokens_transform_opts=TokensTransformOpts(
             min_len=2,
             to_upper=True,

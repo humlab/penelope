@@ -1,9 +1,10 @@
-from typing import Callable, Iterable, List, Union
+from typing import Callable, Iterable, List, Set, Tuple, Union
 
 import numpy as np
+import pandas as pd
 from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, multiple_replace
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
 from .tagged_frame import TaggedFrame
@@ -40,7 +41,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     pos_column: str = 'pos_',
     phrases: List[List[str]] = None,
     ignore_case: bool = False,
-    verbose: bool = True,  # pylint: disable=unused-argument
 ) -> Iterable[str]:
     """Extracts tokens from a tagged document represented as a Pandas data frame.
 
@@ -56,9 +56,14 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     Returns:
         Iterable[str]: Sequence of extracted tokens
     """
+    pad: str = "*"
+
     # FIXME: #31 Verify that blank LEMMAS are replaced  by TOKEN
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
+
+    if pos_column not in doc.columns:
+        raise ValueError(f"configuration error: {pos_column} not in document")
 
     if extract_opts.target_override:
         target = extract_opts.target_override
@@ -68,35 +73,91 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if target not in doc.columns:
         raise ValueError(f"{target} is not valid target for given document (missing column)")
 
-    mask = np.repeat(True, len(doc.index))
+    passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
+    pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
+    if ignore_case:
+        doc[target] = doc[target].str.lower()
+        passthroughs = [x.lower() for x in passthroughs]
+        if phrases:
+            phrases = [[x.lower() for x in phrase] for phrase in phrases]
+
+    """ Phrase detection """
+    if phrases is not None:
+        found_phrases = detect_phrases(doc, phrases, target)
+        if found_phrases:
+            doc = merge_phrases(doc, found_phrases, target_column=target, pad=pad)
+            passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
+
+    mask = np.repeat(True, len(doc.index))
     if filter_opts is not None:
         mask &= filter_opts.mask(doc)
 
-    if pos_column in doc.columns:
+    if len(extract_opts.get_pos_includes()) > 0:
+        """Don't filter if PoS-include is empty - and don't filter out PoS tokens that should be padded"""
+        mask &= doc[pos_column].isin(extract_opts.get_pos_includes().union(extract_opts.get_pos_paddings()))
 
-        if len(extract_opts.get_pos_includes() or set()) > 0:
-            mask &= doc[pos_column].isin(extract_opts.get_pos_includes())
+    if len(extract_opts.get_pos_excludes()) > 0:
+        mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
-        if len(extract_opts.get_pos_excludes() or set()) > 0:
-            mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
-
-    # FIXME: #51 Concept token passthrough not implemented in pipeline
-    # FIXME: #56 Concept token masking fails
-    if len(extract_opts.get_passthrough_tokens() or []) > 0:
+    if len(passthroughs) > 0:
         # TODO: #52 Make passthrough token case-insensative
-        mask |= doc[target].isin(extract_opts.get_passthrough_tokens())
+        mask |= doc[target].isin(passthroughs)
 
     # TODO: #53 Implement append-PoS to token (see SparvCsvToText._transform:73)
-    tokens: List[str] = doc.loc[mask][target].tolist()
+    # FIXME: #57 Merge tokens if phrase
 
-    if phrases is not None:
+    token_pos_tuples = doc.loc[mask][[target, pos_column]].to_records(index=False)
 
-        phrased_tokens = multiple_replace(' '.join(tokens), phrases, ignore_case=ignore_case).split()
+    if len(pos_paddings) > 0:
+        token_pos_tuples = map(
+            lambda x: (pad, x[1]) if x[1] in pos_paddings and x[0] not in passthroughs else x, token_pos_tuples
+        )
 
-        return phrased_tokens
+    if extract_opts.append_pos:
+        tokens = [pad if x[0] == pad else f"{x[0].replace(' ', '_')}@{x[1]}" for x in token_pos_tuples]
+    else:
+        tokens = [x[0].replace(' ', '_') for x in token_pos_tuples]
 
     return tokens
+
+
+def detect_phrases(
+    doc: pd.core.api.DataFrame, phrases: List[List[str]], target: str = None
+) -> List[Tuple[int,]]:
+    """Detects and updates phrases on document `doc`.
+
+    Args:
+        phrases (List[List[str]]): [description]
+        doc (pd.core.api.DataFrame): [description]
+        target (str): [description]
+    """
+
+    found_phrases = []
+    for phrase in phrases:
+        if len(phrase) < 2:
+            continue
+
+        candidates_indicies = doc[doc[target] == phrase[0]].index
+        for idx in candidates_indicies:
+
+            if (doc[idx : idx + len(phrase)][target] == phrase).all():
+                found_phrases.append((idx, phrase))
+
+    return found_phrases
+
+
+def merge_phrases(
+    doc: pd.DataFrame, phrases: List[Tuple[int, List[str]]], target_column: str, pad: str = "*",
+) -> pd.DataFrame:
+    """Returns (same) document with found phrases merged into a single token.
+    The first word in phrase is replaced by entire phrase, and consequtive words are replaced by `pad`.
+    Note that the phrase will have the same PoS tag as the first word."""
+    for idx, phrase in phrases:
+        doc.loc[idx, target_column] = '_'.join(phrase)
+        doc.loc[idx + 1 : idx + len(phrase) - 1, target_column] = pad
+        # doc.loc[idx+1:len(phrase) + 1, pos_column] = 'MID'
+    return doc
 
 
 # def tagged_idframe_to_tokens(  # pylint: disable=too-many-arguments
@@ -170,38 +231,38 @@ def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_
     return token_counts
 
 
-def filter_tagged_frame(  # pylint: disable=too-many-arguments
-    doc: TaggedFrame,
-    extract_opts: ExtractTaggedTokensOpts,
-    filter_opts: PropertyValueMaskingOpts = None,
-    pos_column: str = 'pos_',
-) -> TaggedFrame:
-    """Filteras a tagged document represented as a Pandas data frame.
+# def filter_tagged_frame(  # pylint: disable=too-many-arguments
+#     doc: TaggedFrame,
+#     extract_opts: ExtractTaggedTokensOpts,
+#     filter_opts: PropertyValueMaskingOpts = None,
+#     pos_column: str = 'pos_',
+# ) -> TaggedFrame:
+#     """Filteras a tagged document represented as a Pandas data frame.
 
-    Args:
-        extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
-        pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
+#     Args:
+#         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
+#         filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+#         pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
 
-    Returns:
-        TaggedFrame: Filtered TaggedFrame
-    """
-    if extract_opts.lemmatize is None and extract_opts.target_override is None:
-        raise ValueError("a valid target not supplied (no lemmatize or target")
+#     Returns:
+#         TaggedFrame: Filtered TaggedFrame
+#     """
+#     if extract_opts.lemmatize is None and extract_opts.target_override is None:
+#         raise ValueError("a valid target not supplied (no lemmatize or target")
 
-    mask = np.repeat(True, len(doc.index))
+#     mask = np.repeat(True, len(doc.index))
 
-    if filter_opts is not None:
-        mask &= filter_opts.mask(doc)
+#     if filter_opts is not None:
+#         mask &= filter_opts.mask(doc)
 
-    if pos_column in doc.columns:
+#     if pos_column in doc.columns:
 
-        if len(extract_opts.get_pos_includes() or set()) > 0:
-            mask &= doc[pos_column].isin(extract_opts.get_pos_includes())
+#         if len(extract_opts.get_pos_includes() or set()) > 0:
+#             mask &= doc[pos_column].isin(extract_opts.get_pos_includes())
 
-        if len(extract_opts.get_pos_excludes() or set()) > 0:
-            mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
+#         if len(extract_opts.get_pos_excludes() or set()) > 0:
+#             mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
-    doc = doc.loc[mask]
+#     doc = doc.loc[mask]
 
-    return doc
+#     return doc

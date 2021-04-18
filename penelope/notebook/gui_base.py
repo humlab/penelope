@@ -49,6 +49,14 @@ class BaseGUI:
         disabled=False,
         layout=default_layout,
     )
+    _pos_paddings: widgets.SelectMultiple = widgets.SelectMultiple(
+        options=[],
+        value=[],
+        rows=8,
+        description='',
+        disabled=False,
+        layout=default_layout,
+    )
     _filename_fields: widgets.Text = widgets.Text(
         value="",
         placeholder='Fields to extract from filename (regex)',
@@ -133,7 +141,8 @@ class BaseGUI:
                 self.extra_placeholder,
                 widgets.HBox(
                     [
-                        widgets.VBox([widgets.HTML("<b>Part-Of-Speech tags</b>"), self._pos_includes]),
+                        widgets.VBox([widgets.HTML("<b>Include PoS</b>"), self._pos_includes]),
+                        widgets.VBox([widgets.HTML("<b>Replace PoS</b>"), self._pos_paddings]),
                         widgets.VBox([widgets.HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
                     ]
                 ),
@@ -193,6 +202,7 @@ class BaseGUI:
 
     def _corpus_type_changed(self, *_):
         self._pos_includes.disabled = self._corpus_type.value == 'text'
+        self._pos_paddings.disabled = self._corpus_type.value == 'text'
         self._lemmatize.disabled = self._corpus_type.value == 'text'
 
     # @view.capture(clear_output=True)
@@ -266,6 +276,10 @@ class BaseGUI:
         self._pos_includes.options = pos_schema.groups
         self._pos_includes.value = [pos_schema.groups['Noun'], pos_schema.groups['Verb']]
 
+        self._pos_paddings.value = []
+        self._pos_paddings.options = pos_schema.groups
+        self._pos_paddings.value = []
+
         return self
 
     @property
@@ -298,6 +312,7 @@ class BaseGUI:
         pos_schema = utility.get_pos_schema(self._config.pipeline_payload.pos_schema_name)
         return ExtractTaggedTokensOpts(
             pos_includes=f"|{'|'.join(flatten(self._pos_includes.value))}|",
+            pos_paddings=f"|{'|'.join(flatten(self._pos_paddings.value))}|",
             pos_excludes=f"|{'|'.join(pos_schema.groups.get('Delimiter', []))}|",
             lemmatize=self._lemmatize.value,
             passthrough_tokens=list(),
@@ -315,6 +330,10 @@ class BaseGUI:
         self._pos_includes.value = None
         self._pos_includes.options = pos_scheme.groups
         self._pos_includes.value = [pos_scheme.groups['Noun'], pos_scheme.groups['Verb']]
+
+        self._pos_paddings.value = None
+        self._pos_paddings.options = pos_scheme.groups
+        self._pos_paddings.value = []
 
     @property
     def vectorize_opts(self) -> VectorizeOpts:
