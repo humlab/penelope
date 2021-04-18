@@ -82,6 +82,21 @@ def deserialized_payload_stream(
 def _process_document_file(args: List[Tuple]) -> DocumentPayload:
 
     filename, content, serializer, checkpoint_opts = args
+
+    return DocumentPayload(
+        content_type=checkpoint_opts.content_type,
+        content=serializer.deserialize(content, checkpoint_opts),
+        filename=filename,
+    )
+
+
+def _process_document_with_read(args: List[Tuple]) -> DocumentPayload:
+
+    filename, source, serializer, checkpoint_opts = args
+
+    with zipfile.ZipFile(source, mode="r") as zf:
+        content = zf.read(filename).decode(encoding='utf-8')
+
     return DocumentPayload(
         content_type=checkpoint_opts.content_type,
         content=serializer.deserialize(content, checkpoint_opts),
@@ -137,18 +152,6 @@ def parallel_deserialized_payload_stream_read_ahead_with_chunks(
 
                 for payload in payloads_futures:
                     yield payload
-
-
-def _process_document_with_read(args: List[Tuple]) -> DocumentPayload:
-    filename, source_name, serializer, checkpoint_opts = args
-    # print(f"{os.getpid()}: {filename}")
-    with zipfile.ZipFile(source_name, mode="r") as zf:
-        content = zf.read(filename).decode(encoding='utf-8')
-        return DocumentPayload(
-            content_type=checkpoint_opts.content_type,
-            content=serializer.deserialize(content, checkpoint_opts),
-            filename=filename,
-        )
 
 
 def parallel_deserialized_payload_stream(
