@@ -668,6 +668,7 @@ class Vocabulary(ITask):
 @dataclass
 class ToCoOccurrence(ITask):
     """Computes a windows co-occurrence data."""
+
     def __post_init__(self):
         self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME

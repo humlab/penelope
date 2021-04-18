@@ -190,7 +190,6 @@ def to_dataframe(
     coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
     coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
 
-
     if ignore_pad is not None:
         coo_df = coo_df[((coo_df.w1 != ignore_pad) & (coo_df.w2 != ignore_pad))]
 

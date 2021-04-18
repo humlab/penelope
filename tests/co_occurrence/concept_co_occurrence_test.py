@@ -23,7 +23,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         threshold_count=0,
-        ignore_pad=None
+        ignore_pad=None,
     )
     assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
 
@@ -39,7 +39,7 @@ def test_co_occurrence_with_no_concept_succeeds():
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         threshold_count=1,
-        ignore_pad=None
+        ignore_pad=None,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -54,7 +54,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         threshold_count=2,
-        ignore_pad=None
+        ignore_pad=None,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
