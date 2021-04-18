@@ -396,7 +396,8 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
-        pos_includes='|VERB|NOUN|', pos_paddings=None,
+        pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
     )
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
@@ -430,7 +431,8 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     tagged_columns = {'text_column': 'text', 'lemma_column': 'lemma_', 'pos_column': 'pos_'}
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
-        pos_includes='|VERB|NOUN|', pos_paddings=None,
+        pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
     )
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
