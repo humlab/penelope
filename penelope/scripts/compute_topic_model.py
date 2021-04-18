@@ -115,7 +115,6 @@ def run_model(
         keep_symbols=False,
     )
 
-    # if SparvTokenizer opts = ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True, chunk_size=None)
     reader_opts = TextReaderOpts(
         filename_pattern="*.txt",
         filename_filter=None,
