@@ -47,7 +47,9 @@ def test_extract_when_lemmatized_returns_baseform():
     content = sparv_xml_test_file()
     parser = sparv.SparvXml2Text(
         delimiter=" ",
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='', pos_paddings=None, lemmatize=True, append_pos=False, pos_excludes=''),
+        extract_tokens_opts=ExtractTaggedTokensOpts(
+            pos_includes='', pos_paddings=None, lemmatize=True, append_pos=False, pos_excludes=''
+        ),
     )
 
     result = parser.transform(content)

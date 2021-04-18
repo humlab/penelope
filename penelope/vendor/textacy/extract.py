@@ -15,6 +15,7 @@ logger = utility.getLogger('corpus_text_analysis')
 
 # FIXME: PoS-replace (dummy marker) not fully implemented
 
+
 def chunks(lst, n):
     '''Returns list l in n-sized chunks'''
     if (n or 0) == 0:
@@ -181,7 +182,9 @@ class StopwordFilter:
 
 
 class PoSFilter:
-    def __init__(self, include_pos: Sequence[str] = None, replace_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None):
+    def __init__(
+        self, include_pos: Sequence[str] = None, replace_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None
+    ):
         self.include_pos = include_pos
         self.replace_pos = replace_pos
         self.exclude_pos = exclude_pos

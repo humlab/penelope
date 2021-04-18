@@ -148,7 +148,10 @@ def detect_phrases(
 
 
 def merge_phrases(
-    doc: pd.DataFrame, phrases: List[Tuple[int, List[str]]], target_column: str, pad: str = "*",
+    doc: pd.DataFrame,
+    phrases: List[Tuple[int, List[str]]],
+    target_column: str,
+    pad: str = "*",
 ) -> pd.DataFrame:
     """Returns (same) document with found phrases merged into a single token.
     The first word in phrase is replaced by entire phrase, and consequtive words are replaced by `pad`.

@@ -210,10 +210,14 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     checkpoint_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
 
-    p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
-        "tagged_frame_pipeline",
-        checkpoint_filename=checkpoint_filename,
-    ).tqdm().exhaust()
+    p: pipeline.CorpusPipeline = (
+        corpus_config.get_pipeline(
+            "tagged_frame_pipeline",
+            checkpoint_filename=checkpoint_filename,
+        )
+        .tqdm()
+        .exhaust()
+    )
 
     document_index: DocumentIndex = p.payload.document_index
     if 'n_raw_tokens' not in document_index.columns:

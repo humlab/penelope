@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts
-from penelope.pipeline.convert import tagged_frame_to_tokens, detect_phrases, merge_phrases
 from penelope.pipeline.checkpoint import CheckpointOpts
+from penelope.pipeline.convert import detect_phrases, merge_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
 
 TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
@@ -119,7 +119,9 @@ def test_tagged_frame_to_tokens_with_passthrough(tagged_frame: pd.DataFrame):
 
     opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='VB', pos_excludes=None, passthrough_tokens=['kyrkan', 'ljuslågor'])
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False, pos_includes='VB', pos_excludes=None, passthrough_tokens=['kyrkan', 'ljuslågor']
+    )
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == ['kyrkan', 'trängdes', 'gapade', 'ljuslågor', 'fladdrade']
 

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from penelope.notebook.ipyrtable import display_table
 
 import penelope.notebook.utility as notebook_utility
 import penelope.notebook.word_trends as word_trends
 from penelope.notebook.ipyaggrid_utility import display_grid
+from penelope.notebook.ipyrtable import display_table
 from penelope.notebook.word_trends.trends_data import TrendsData
 from penelope.utility import getLogger
 
