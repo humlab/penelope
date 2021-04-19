@@ -123,7 +123,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
 
 def detect_phrases(
-    doc: pd.core.api.DataFrame, phrases: List[List[str]], target: str = None
+    doc: pd.core.api.DataFrame, phrases: List[List[str]], target: str = None, ignore_case: str=False,
 ) -> List[Tuple[int,]]:
     """Detects and updates phrases on document `doc`.
 
@@ -133,15 +133,21 @@ def detect_phrases(
         target (str): [description]
     """
 
+    target_series = doc[target]
+
+    if ignore_case:
+        target_series = doc[target].str.lower()
+        phrases = [[x.lower() for x in phrase] for phrase in phrases]
+
     found_phrases = []
     for phrase in phrases:
+
         if len(phrase) < 2:
             continue
 
-        candidates_indicies = doc[doc[target] == phrase[0]].index
-        for idx in candidates_indicies:
+        for idx in target_series[target_series == phrase[0]].index:
 
-            if (doc[idx : idx + len(phrase)][target] == phrase).all():
+            if (target_series[idx : idx + len(phrase)] == phrase).all():
                 found_phrases.append((idx, phrase))
 
     return found_phrases
