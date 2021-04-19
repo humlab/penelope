@@ -1,4 +1,3 @@
-from dataclasses import replace
 from typing import Callable, Iterable, List, Set, Tuple, Union
 
 import numpy as np
@@ -104,9 +103,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if len(passthroughs) > 0:
         # TODO: #52 Make passthrough token case-insensative
         mask |= doc[target].isin(passthroughs)
-
-    # TODO: #53 Implement append-PoS to token (see SparvCsvToText._transform:73)
-    # FIXME: #57 Merge tokens if phrase
 
     token_pos_tuples = doc.loc[mask][[target, pos_column]].to_records(index=False)
 
