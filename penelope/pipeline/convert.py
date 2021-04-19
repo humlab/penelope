@@ -1,3 +1,4 @@
+from dataclasses import replace
 from typing import Callable, Iterable, List, Set, Tuple, Union
 
 import numpy as np
@@ -123,7 +124,10 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
 
 def detect_phrases(
-    doc: pd.core.api.DataFrame, phrases: List[List[str]], target: str = None, ignore_case: str=False,
+    doc: pd.core.api.DataFrame,
+    phrases: List[List[str]],
+    target: str = None,
+    ignore_case: str = False,
 ) -> List[Tuple[int,]]:
     """Detects and updates phrases on document `doc`.
 
@@ -135,12 +139,18 @@ def detect_phrases(
 
     target_series = doc[target]
 
+    phrases = (
+        {'_'.join(phrase): phrase for phrase in phrases}
+        if isinstance(phrases, list)
+        else {token.replace(' ', ''): phrase for token, phrase in phrases.items()}
+    )
+
     if ignore_case:
         target_series = doc[target].str.lower()
-        phrases = [[x.lower() for x in phrase] for phrase in phrases]
+        phrases = {key: [x.lower() for x in phrase] for key, phrase in phrases}
 
     found_phrases = []
-    for phrase in phrases:
+    for replace_token, phrase in phrases.items():
 
         if len(phrase) < 2:
             continue
@@ -148,23 +158,23 @@ def detect_phrases(
         for idx in target_series[target_series == phrase[0]].index:
 
             if (target_series[idx : idx + len(phrase)] == phrase).all():
-                found_phrases.append((idx, phrase))
+                found_phrases.append((idx, replace_token, len(phrase)))
 
     return found_phrases
 
 
 def merge_phrases(
     doc: pd.DataFrame,
-    phrases: List[Tuple[int, List[str]]],
+    phrase_positions: List[Tuple[int, List[str]]],
     target_column: str,
     pad: str = "*",
 ) -> pd.DataFrame:
     """Returns (same) document with found phrases merged into a single token.
     The first word in phrase is replaced by entire phrase, and consequtive words are replaced by `pad`.
     Note that the phrase will have the same PoS tag as the first word."""
-    for idx, phrase in phrases:
-        doc.loc[idx, target_column] = '_'.join(phrase)
-        doc.loc[idx + 1 : idx + len(phrase) - 1, target_column] = pad
+    for idx, token, n_tokens in phrase_positions:
+        doc.loc[idx, target_column] = token
+        doc.loc[idx + 1 : idx + n_tokens - 1, target_column] = pad
         # doc.loc[idx+1:len(phrase) + 1, pos_column] = 'MID'
     return doc
 

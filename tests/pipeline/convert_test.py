@@ -5,7 +5,7 @@ from penelope.pipeline.checkpoint import CheckpointOpts
 from penelope.pipeline.convert import detect_phrases, merge_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
 
-# pylint: disable=redefined-outer-name 
+# pylint: disable=redefined-outer-name
 
 TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
 # text
@@ -196,24 +196,24 @@ def test_detect_phrases(tagged_frame: pd.DataFrame):
     assert found_phrases == []
 
     found_phrases = detect_phrases(doc=tagged_frame, phrases=[["romansk", "kyrka"]], target="baseform")
-    assert found_phrases == [(4, ["romansk", "kyrka"])]
+    assert found_phrases == [(4, "romansk_kyrka", 2)]
 
     found_phrases = detect_phrases(
         doc=tagged_frame, phrases=[["väldig", "romansk"], ["romansk", "kyrka"]], target="baseform"
     )
-    assert found_phrases == [(3, ["väldig", "romansk"]), (4, ["romansk", "kyrka"])]
+    assert found_phrases == [(3, "väldig_romansk", 2), (4, "romansk_kyrka", 2)]
 
 
 def test_merge_phrases_with_empty_list():
     tagged_frame: pd.DataFrame = create_tagged_frame()
     expected_tokens = tagged_frame.baseform.tolist()
     opts = dict(target_column="baseform", pad="*")  # pos_column="pos",
-    tagged_frame = merge_phrases(doc=tagged_frame, phrases=[], **opts)
+    tagged_frame = merge_phrases(doc=tagged_frame, phrase_positions=[], **opts)
     assert (tagged_frame.baseform == expected_tokens).all()
 
 
 def test_merge_phrases_with_a_single_phrase():
     tagged_frame: pd.DataFrame = create_tagged_frame()
     opts = dict(target_column="baseform", pad="*")  # pos_column="pos",
-    tagged_frame = merge_phrases(doc=tagged_frame, phrases=[(4, ["romansk", "kyrka"])], **opts)
+    tagged_frame = merge_phrases(doc=tagged_frame, phrase_positions=[(4, "romansk_kyrka", 2)], **opts)
     assert (tagged_frame[3 : 6 + 1].baseform == ['väldig', 'romansk_kyrka', '*', 'tränga']).all()
