@@ -148,7 +148,7 @@ def detect_phrases(
 
     if ignore_case:
         target_series = doc[target].str.lower()
-        phrases = {key: [x.lower() for x in phrase] for key, phrase in phrases}
+        phrases = {key: [x.lower() for x in phrase] for key, phrase in phrases.items()}
 
     found_phrases = []
     for replace_token, phrase in phrases.items():

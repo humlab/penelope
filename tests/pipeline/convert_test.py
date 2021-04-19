@@ -162,8 +162,8 @@ def test_tagged_frame_to_tokens_detect_phrases(tagged_frame: pd.DataFrame):
     opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
 
     expected_tokens = tagged_frame.baseform[:4].tolist() + ['romansk_kyrka'] + tagged_frame.baseform[6:].tolist()
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts, phrases=[["romansk", "kyrka"]])
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, phrases=[["romansk", "kyrka"]])
+    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == expected_tokens
 
     # TODO: Test ignore_case argument
@@ -226,7 +226,6 @@ def test_to_tagged_frame_with_phrase_detection():
 
     os.makedirs('./tests/output', exist_ok=True)
     opts = dict(
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=False),
         filter_opts=None,
         text_column='text',
         lemma_column='lemma_',
@@ -248,11 +247,12 @@ def test_to_tagged_frame_with_phrase_detection():
 
     tagged_frame: pd.date_range1 = pd.read_csv(StringIO(data_str), sep='\t', index_col=0)
 
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=ExtractTaggedTokensOpts(lemmatize=True))
     assert tokens is not None
 
     phrases = {'United_Nations': 'United Nations'.split(), 'United': ['United']}
-    phrased_tokens = tagged_frame_to_tokens(tagged_frame, **opts, phrases=phrases)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases)
+    phrased_tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert phrased_tokens[:9] == 'Constitution of the United_Nations Educational , Scientific and Cultural'.split(' ')
 
     # FIXME: #60 Regressed logic when prioritizing phrases (longer should apply=)
@@ -261,6 +261,8 @@ def test_to_tagged_frame_with_phrase_detection():
     # assert phrased_tokens[:8] == 'Constitution of the_United_Nations Educational , Scientific and Cultural'.split(' ')
 
     phrases = {'United_Nations': 'united nations'.split()}
-
-    phrased_tokens = tagged_frame_to_tokens(tagged_frame, phrases=phrases, **{**opts, **{'ignore_case': True}})
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases)
+    phrased_tokens = tagged_frame_to_tokens(
+        tagged_frame, **{**opts, **{'ignore_case': True}}, extract_opts=extract_opts
+    )
     assert phrased_tokens[:9] == 'constitution of the united_nations educational , scientific and cultural'.split(' ')
