@@ -57,6 +57,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         Iterable[str]: Sequence of extracted tokens
     """
     pad: str = "*"
+    phrase_pad: str = "(*)"
 
     # FIXME: #31 Verify that blank LEMMAS are replaced  by TOKEN
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
@@ -86,7 +87,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if phrases is not None:
         found_phrases = detect_phrases(doc, phrases, target)
         if found_phrases:
-            doc = merge_phrases(doc, found_phrases, target_column=target, pad=pad)
+            doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
             passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
 
     mask = np.repeat(True, len(doc.index))
@@ -112,9 +113,9 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         )
 
     if extract_opts.append_pos:
-        tokens = [pad if x[0] == pad else f"{x[0].replace(' ', '_')}@{x[1]}" for x in token_pos_tuples]
+        tokens = [pad if x[0] == pad else f"{x[0].replace(' ', '_')}@{x[1]}" for x in token_pos_tuples if x[0] != phrase_pad]
     else:
-        tokens = [x[0].replace(' ', '_') for x in token_pos_tuples]
+        tokens = [x[0].replace(' ', '_') for x in token_pos_tuples if x[0] != phrase_pad]
 
     return tokens
 
