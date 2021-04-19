@@ -161,7 +161,7 @@ def test_tagged_frame_to_tokens_detect_phrases(tagged_frame: pd.DataFrame):
 
     opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
 
-    expected_tokens = tagged_frame.baseform[:4].tolist() + ['romansk_kyrka', '*'] + tagged_frame.baseform[6:].tolist()
+    expected_tokens = tagged_frame.baseform[:4].tolist() + ['romansk_kyrka'] + tagged_frame.baseform[6:].tolist()
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None)
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts, phrases=[["romansk", "kyrka"]])
     assert tokens == expected_tokens
