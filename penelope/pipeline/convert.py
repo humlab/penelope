@@ -113,7 +113,9 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         )
 
     if extract_opts.append_pos:
-        tokens = [pad if x[0] == pad else f"{x[0].replace(' ', '_')}@{x[1]}" for x in token_pos_tuples if x[0] != phrase_pad]
+        tokens = [
+            pad if x[0] == pad else f"{x[0].replace(' ', '_')}@{x[1]}" for x in token_pos_tuples if x[0] != phrase_pad
+        ]
     else:
         tokens = [x[0].replace(' ', '_') for x in token_pos_tuples if x[0] != phrase_pad]
 
