@@ -5,6 +5,8 @@ from penelope.pipeline.checkpoint import CheckpointOpts
 from penelope.pipeline.convert import detect_phrases, merge_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
 
+# pylint: disable=redefined-outer-name
+
 TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
 # text
 Inne	AB	|inne|
