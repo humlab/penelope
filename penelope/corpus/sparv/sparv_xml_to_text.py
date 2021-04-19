@@ -52,7 +52,7 @@ class SparvXml2Text:
         _target = "'lemma'" if _opts.lemmatize is True else "'content'"
         _pos_includes = snuttify(_opts.pos_includes or "")
         _pos_excludes = snuttify(_opts.pos_excludes or "")
-        _pos_paddings = snuttify(_opts.pos_paddings or "")
+        # _pos_paddings = snuttify(_opts.pos_paddings or "")
         # FIXME: Implement pos_paddings/pos_replace_marker
         _append_pos = snuttify("|" if _opts.append_pos else "")
         text = self.xslt_transformer(
