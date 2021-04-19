@@ -35,7 +35,7 @@ def test_reader_when_only_nn_returns_only_nn():
         )
     )
 
-    expected = "Rödräven hunddjur utbredning halvklotet"
+    expected = "Rödräven * hunddjur * utbredning halvklotet"
 
     result = reader.transform(TEST_DATA)
 
@@ -50,7 +50,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
         )
     )
 
-    expected = "rödräv hunddjur utbredning halvklot"
+    expected = "rödräv * hunddjur * utbredning halvklot"
 
     result = reader.transform(TEST_DATA)
 
@@ -65,7 +65,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
         )
     )
 
-    expected = "rödräv vara hunddjur ha utbredning halvklot"
+    expected = "rödräv vara hunddjur ha * utbredning * halvklot"
 
     result = reader.transform(TEST_DATA)
 
@@ -76,11 +76,11 @@ def test_reader_when_lemmatized_nn_vb_pos_appended_returns_lemmatized_nn_vb_pos(
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN|VB', pos_paddings='VB', pos_excludes='', lemmatize=True, append_pos=True
+            pos_includes='NN|VB', pos_paddings='JJ', pos_excludes='', lemmatize=True, append_pos=True
         )
     )
 
-    expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN"
+    expected = "rödräv@NN vara@VB hunddjur@NN ha@VB * utbredning@NN * halvklot@NN"
 
     result = reader.transform(TEST_DATA)
 

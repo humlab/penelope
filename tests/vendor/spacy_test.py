@@ -357,12 +357,12 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     assert payloads == [
         ['sea', 'ocean', 'life'],
         ['atmosphere', 'blow'],
-        ['activity', 'surface', 'cease'],
-        ['planet'],
+        ['*', 'activity', 'surface', 'cease'],
+        ['*', 'planet'],
         ['volcano', 'erupt', 'year'],
         ['eruption', 'occur', 'year', 'region', 'call'],
-        ['eruption'],
-        ['volcanos', 'erupt', 'surface', 'interval'],
+        ['*', '*', 'eruption'],
+        ['volcanos', 'erupt', 'surface', '*', 'interval'],
     ]
 
     assert set(list(pipeline.payload.document_index.columns)) == set(

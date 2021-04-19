@@ -100,7 +100,7 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
         ),
     )
 
-    expected = "rödräv|NN vara|VB hunddjur|NN ha|VB utbredning|NN halvklot|NN".split()
+    expected = "rödräv@NN vara@VB hunddjur@NN ha@VB utbredning@NN halvklot@NN".split()
 
     filename, tokens = next(tokens_reader)
 

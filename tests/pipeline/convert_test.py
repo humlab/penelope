@@ -1,3 +1,6 @@
+import os
+from io import StringIO
+
 import pandas as pd
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts
@@ -217,3 +220,47 @@ def test_merge_phrases_with_a_single_phrase():
     opts = dict(target_column="baseform", pad="*")  # pos_column="pos",
     tagged_frame = merge_phrases(doc=tagged_frame, phrase_positions=[(4, "romansk_kyrka", 2)], **opts)
     assert (tagged_frame[3 : 6 + 1].baseform == ['väldig', 'romansk_kyrka', '*', 'tränga']).all()
+
+
+def test_to_tagged_frame_with_phrase_detection():
+
+    os.makedirs('./tests/output', exist_ok=True)
+    opts = dict(
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False),
+        filter_opts=None,
+        text_column='text',
+        lemma_column='lemma_',
+        pos_column='pos_',
+        ignore_case=False,
+    )
+    data_str: str = """	text	lemma_	pos_	is_punct	is_stop
+0	Constitution	constitution	NOUN	False	False
+1	of	of	ADP	False	True
+2	the	the	DET	False	True
+3	United	United	PROPN	False	False
+4	Nations	Nations	PROPN	False	False
+5	Educational	Educational	PROPN	False	False
+6	,	,	PUNCT	True	False
+7	Scientific	Scientific	PROPN	False	False
+8	and	and	CCONJ	False	True
+9	Cultural	Cultural	PROPN	False	False
+10	Organization	Organization	PROPN	False	False"""
+
+    tagged_frame: pd.date_range1 = pd.read_csv(StringIO(data_str), sep='\t', index_col=0)
+
+    tokens = tagged_frame_to_tokens(tagged_frame, **opts)
+    assert tokens is not None
+
+    phrases = {'United_Nations': 'United Nations'.split(), 'United': ['United']}
+    phrased_tokens = tagged_frame_to_tokens(tagged_frame, **opts, phrases=phrases)
+    assert phrased_tokens[:9] == 'Constitution of the United_Nations Educational , Scientific and Cultural'.split(' ')
+
+    # FIXME: #60 Regressed logic when prioritizing phrases (longer should apply=)
+    # phrases = {'United_Nations': 'United Nations'.split(), 'the_United_Nations': 'the United Nations'.split()}
+    # phrased_tokens = tagged_frame_to_tokens(tagged_frame, **opts, phrases=phrases)
+    # assert phrased_tokens[:8] == 'Constitution of the_United_Nations Educational , Scientific and Cultural'.split(' ')
+
+    phrases = {'United_Nations': 'united nations'.split()}
+
+    phrased_tokens = tagged_frame_to_tokens(tagged_frame, phrases=phrases, **{**opts, **{'ignore_case': True}})
+    assert phrased_tokens[:9] == 'constitution of the united_nations educational , scientific and cultural'.split(' ')
