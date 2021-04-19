@@ -11,7 +11,7 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 
 # pylint: disable=too-many-instance-attributes
 
-
+# TODO: Consolidate with tagged_frame_to_tokens? Samek business logic.
 class SparvCsvToText:
     """Reads a Sparv CSV-file, applies filters and returns it as text"""
 
@@ -53,22 +53,21 @@ class SparvCsvToText:
 
         _pos_all_includes: Set[str] = _pos_includes.union(_pos_paddings)
 
-        if len(_pos_all_includes) > 0:
+        if len(_pos_includes) > 0:
+            """Don't filter if PoS-include is empty - and don't filter out PoS tokens that should be padded"""
             if len(_passthrough_tokens) == 0:
                 data = (x for x in data if x[_pos] in _pos_all_includes)
-            else:
-                if _lemmatize:
-                    data = (x for x in data if x[_lem] in _passthrough_tokens or x[_pos] in _pos_all_includes)
-                else:
-                    data = (x for x in data if x[_tok] in _passthrough_tokens or x[_pos] in _pos_all_includes)
+            data = (x for x in data if x[_lem] in _passthrough_tokens or x[_pos] in _pos_all_includes)
 
         if _pos_excludes is not None:
-            data = (x for x in data if x[_pos] not in _pos_excludes)
+            data = (x for x in data if (x[_pos] not in _pos_excludes or x[_lem] in _passthrough_tokens))
 
         if _lemmatize:
             if _append_pos:
                 data = (
-                    (f"{x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]}|{x[_pos]}")
+                    _pad
+                    if x[_pos] in _pos_paddings
+                    else f"{x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]}@{x[_pos]}"
                     for x in data
                 )
             else:
@@ -86,12 +85,10 @@ class SparvCsvToText:
                 else:
                     data = ((x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]) for x in data)
         else:
-            if _append_pos:
-                data = (f"{x[_tok]}|x{_pos}" for x in data)
-            else:
-                if len(_pos_paddings) > 0:
-                    data = (_pad if x[_pos] in _pos_paddings else x[_tok] for x in data)
-                else:
-                    data = (x[_tok] for x in data)
+            data = (
+                (_pad if x[_pos] in _pos_paddings else f"{x[_tok]}@x{_pos}" for x in data)
+                if _append_pos
+                else (_pad if x[_pos] in _pos_paddings else x[_tok] for x in data)
+            )
 
         return ' '.join([x.replace(" ", "_") for x in data])
