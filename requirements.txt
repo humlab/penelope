@@ -315,6 +315,9 @@ ipyfilechooser==0.4.0 \
 ipykernel==5.3.4; python_version >= "3.5" \
     --hash=sha256:d6fbba26dba3cebd411382bc484f7bc2caa98427ae0ddb4ab37fe8bfeb5c7dd3 \
     --hash=sha256:9b2652af1607986a1b231c62302d070bc0534f564c393a5d9d130db9abbbe89d
+ipyregulartable==0.2.0 \
+    --hash=sha256:ce84ee1005ccd37c8c24364ca4a64cad42195d6214608cd618ace879b289438c \
+    --hash=sha256:4efe0428c76baefd549274db29697dd3ec520280f90fde67654b103d92cce5da
 ipython-genutils==0.2.0; python_version >= "3.7" \
     --hash=sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8 \
     --hash=sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8
