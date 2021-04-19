@@ -1,7 +1,7 @@
 import csv
 import logging
 import os
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, Set
 
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 
