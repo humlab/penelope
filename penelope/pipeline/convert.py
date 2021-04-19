@@ -3,7 +3,7 @@ from typing import Callable, Iterable, List, Set, Tuple, Union
 import numpy as np
 import pandas as pd
 from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, PhraseSubstitutions
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
@@ -39,7 +39,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
     pos_column: str = 'pos_',
-    phrases: List[List[str]] = None,
     ignore_case: bool = False,
 ) -> Iterable[str]:
     """Extracts tokens from a tagged document represented as a Pandas data frame.
@@ -50,7 +49,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         text_column (str, optional): Name of text column in data frame. Defaults to 'text'.
         lemma_column (str, optional): Name of `lemma` column in data frame. Defaults to 'lemma_'.
         pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
-        phrases (List[List[str]], optional): Phrases in tokens equence that should be merged into a single token. Defaults to None.
         ignore_case (bool, optional): Ignore case or not. Defaults to False.
 
     Returns:
@@ -80,12 +78,10 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if ignore_case:
         doc[target] = doc[target].str.lower()
         passthroughs = [x.lower() for x in passthroughs]
-        if phrases:
-            phrases = [[x.lower() for x in phrase] for phrase in phrases]
 
     """ Phrase detection """
-    if phrases is not None:
-        found_phrases = detect_phrases(doc, phrases, target)
+    if extract_opts.phrases is not None:
+        found_phrases = detect_phrases(doc, extract_opts.phrases, target, ignore_case=ignore_case)
         if found_phrases:
             doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
             passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
@@ -124,10 +120,10 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
 def detect_phrases(
     doc: pd.core.api.DataFrame,
-    phrases: List[List[str]],
+    phrases: PhraseSubstitutions,
     target: str = None,
     ignore_case: str = False,
-) -> List[Tuple[int,]]:
+) -> List[Tuple[int, str, int]]:
     """Detects and updates phrases on document `doc`.
 
     Args:
@@ -135,6 +131,12 @@ def detect_phrases(
         doc (pd.core.api.DataFrame): [description]
         target (str): [description]
     """
+
+    if phrases is None:
+        return []
+
+    if not isinstance(phrases, (list, dict)):
+        raise TypeError("phrase must be dict ot list")
 
     target_series = doc[target]
 

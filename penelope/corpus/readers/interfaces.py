@@ -42,6 +42,9 @@ class TextReaderOpts:
         return TextReaderOpts(**{**self.props, **kwargs})
 
 
+PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
+
+
 @dataclass
 class ExtractTaggedTokensOpts:
 
@@ -61,6 +64,8 @@ class ExtractTaggedTokensOpts:
 
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
+
+    phrases: PhraseSubstitutions = None
 
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
