@@ -8,6 +8,7 @@ from loguru import logger
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
+from penelope.pipeline.convert import parse_phrases
 from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=too-many-arguments
@@ -27,6 +28,8 @@ from penelope.utility import PropertyValueMaskingOpts
     help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
     type=click.INT,
 )
+@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
+@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
 @click.option(
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
@@ -65,6 +68,8 @@ def main(
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
+    phrase: Sequence[str] = None,
+    phrase_file: str = None,
     partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
@@ -90,6 +95,8 @@ def main(
         concept=concept,
         no_concept=no_concept,
         context_width=context_width,
+        phrase=phrase,
+        phrase_file=phrase_file,
         partition_key=partition_key,
         create_subfolder=create_subfolder,
         pos_includes=pos_includes,
@@ -116,6 +123,8 @@ def process_co_ocurrence(
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
+    phrase: Sequence[str] = None,
+    phrase_file: str = None,
     partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
@@ -136,6 +145,8 @@ def process_co_ocurrence(
     try:
         output_folder, output_tag = filename_to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
+
+        phrases = parse_phrases(phrase_file, phrase)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
@@ -163,6 +174,7 @@ def process_co_ocurrence(
                 pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
+                phrases=phrases,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
             count_threshold=count_threshold,

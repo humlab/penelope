@@ -1,11 +1,12 @@
 import os
 from io import StringIO
+from typing import List
 
 import pandas as pd
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts
 from penelope.pipeline.checkpoint import CheckpointOpts
-from penelope.pipeline.convert import detect_phrases, merge_phrases, tagged_frame_to_tokens
+from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
 
 # pylint: disable=redefined-outer-name
@@ -220,6 +221,22 @@ def test_merge_phrases_with_a_single_phrase():
     opts = dict(target_column="baseform", pad="*")  # pos_column="pos",
     tagged_frame = merge_phrases(doc=tagged_frame, phrase_positions=[(4, "romansk_kyrka", 2)], **opts)
     assert (tagged_frame[3 : 6 + 1].baseform == ['väldig', 'romansk_kyrka', '*', 'tränga']).all()
+
+
+def test_parse_phrases():
+
+    phrases_in_file_format: str = (
+        "trazan_apansson; Trazan Apansson\nvery_good_gummisnodd;Very Good Gummisnodd\nkalle kula;Kalle Kula"
+    )
+    phrases_adhocs: List[str] = ["James Bond"]
+    phrase_specification = parse_phrases(phrases_in_file_format, phrases_adhocs)
+
+    assert phrase_specification == {
+        "trazan_apansson": ["Trazan", "Apansson"],
+        "very_good_gummisnodd": ["Very", "Good", "Gummisnodd"],
+        "James_Bond": ["James", "Bond"],
+        "kalle_kula": ["Kalle", "Kula"],
+    }
 
 
 def test_to_tagged_frame_with_phrase_detection():

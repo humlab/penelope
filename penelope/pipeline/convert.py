@@ -1,7 +1,9 @@
+import os
 from typing import Callable, Iterable, List, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
 from penelope.corpus.readers import ExtractTaggedTokensOpts, PhraseSubstitutions
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
@@ -178,6 +180,46 @@ def merge_phrases(
         doc.loc[idx + 1 : idx + n_tokens - 1, target_column] = pad
         # doc.loc[idx+1:len(phrase) + 1, pos_column] = 'MID'
     return doc
+
+
+def parse_phrases(phrase_file: str, phrases: List[str]):
+
+    try:
+        phrase_specification = {}
+
+        if phrases:
+            phrases = [p.split() for p in phrases]
+            phrase_specification.update({'_'.join(phrase).replace(' ', '_'): phrase for phrase in (phrases or [])})
+
+        if phrase_file:
+            """Expect file to be lines with format:
+            ...
+            replace_string; the phrase to replace
+            ...
+            """
+            if os.path.isfile(phrase_file):
+                with open(phrase_file, "r") as fp:
+                    data_str: str = fp.read()
+            else:
+                data_str: str = phrase_file
+
+            phrase_lines: List[str] = [line for line in data_str.splitlines() if line.strip() != ""]
+
+            phrase_specification.update(
+                {
+                    key.strip().replace(' ', '_'): phrase.strip().split()
+                    for key, phrase in [line.split(";") for line in phrase_lines]
+                }
+            )
+
+        if len(phrase_specification) == 0:
+            return None
+
+        return phrase_specification
+
+    except Exception as ex:
+        logger.error(ex)
+        raise ValueError("failed to decode phrases. please review file and/or arguments") from ex
 
 
 # def tagged_idframe_to_tokens(  # pylint: disable=too-many-arguments
