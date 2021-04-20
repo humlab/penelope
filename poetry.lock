@@ -677,6 +677,14 @@ python-versions = ">=3.5"
 wcwidth = "*"
 
 [[package]]
+name = "future"
+version = "0.18.2"
+description = "Clean single-source support for Python 3 and 2"
+category = "main"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "gensim"
 version = "3.8.3"
 description = "Python framework for fast Vector Space Modelling"
@@ -1474,6 +1482,28 @@ python-versions = "*"
 
 [package.dependencies]
 flake8-polyfill = ">=1.0.2,<2"
+
+[[package]]
+name = "perspective-python"
+version = "0.6.2"
+description = "Python bindings and JupyterLab integration for Perspective"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+future = ">=0.16.0"
+ipywidgets = ">=7.5.1"
+numpy = ">=1.13.1"
+pandas = ">=0.22.0"
+python-dateutil = ">=2.8.0"
+six = ">=1.11.0"
+tornado = ">=4.5.3"
+traitlets = ">=4.3.2"
+
+[package.extras]
+dev = ["flake8-black (>=0.2.0)", "black (==20.8b1)", "Faker (>=1.0.0)", "flake8 (>=3.7.8)", "mock", "pybind11 (>=2.4.0)", "pyarrow (>=0.16.0)", "pytest (>=4.3.0)", "pytest-cov (>=2.6.1)", "pytest-check-links", "pytest-tornado", "pytz (>=2018.9)", "Sphinx (>=1.8.4)", "sphinx-markdown-builder (>=0.5.2)", "ipywidgets (>=7.5.1)", "future (>=0.16.0)", "numpy (>=1.13.1)", "pandas (>=0.22.0)", "python-dateutil (>=2.8.0)", "six (>=1.11.0)", "tornado (>=4.5.3)", "traitlets (>=4.3.2)"]
+devpy2 = ["Faker (>=1.0.0)", "flake8 (>=3.7.8)", "mock", "pybind11 (>=2.4.0)", "pyarrow (>=0.16.0)", "pytest (>=4.3.0)", "pytest-cov (>=2.6.1)", "pytest-check-links", "pytest-tornado", "pytz (>=2018.9)", "Sphinx (>=1.8.4)", "sphinx-markdown-builder (>=0.5.2)", "ipywidgets (>=7.5.1)", "future (>=0.16.0)", "numpy (>=1.13.1)", "pandas (>=0.22.0)", "python-dateutil (>=2.8.0)", "six (>=1.11.0)", "tornado (>=4.5.3)", "traitlets (>=4.3.2)"]
 
 [[package]]
 name = "pexpect"
@@ -2504,7 +2534,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "==3.*,>=3.8.0"
-content-hash = "4d3c093a9ba2b1b5a834490679bed09e818743ec38dcc3b4918657e260e9795c"
+content-hash = "b20e31fc368add3e09f50da14dc236de74700c39364aaa3465e85f3991a65dbc"
 
 [metadata.files]
 aiohttp = [
@@ -2911,6 +2941,9 @@ flake8-pytest-style = [
 ]
 ftfy = [
     {file = "ftfy-5.8.tar.gz", hash = "sha256:51c7767f8c4b47d291fcef30b9625fb5341c06a31e6a3b627039c706c42f3720"},
+]
+future = [
+    {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
 ]
 gensim = [
     {file = "gensim-3.8.3-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:61eed1d6b5fbe6dda0586ea447ebc2dc7890a7f70c2ed953d5abc3fe3cfb94bb"},
@@ -3445,6 +3478,17 @@ patsy = [
 pep8-naming = [
     {file = "pep8-naming-0.11.1.tar.gz", hash = "sha256:a1dd47dd243adfe8a83616e27cf03164960b507530f155db94e10b36a6cd6724"},
     {file = "pep8_naming-0.11.1-py2.py3-none-any.whl", hash = "sha256:f43bfe3eea7e0d73e8b5d07d6407ab47f2476ccaeff6937c84275cd30b016738"},
+]
+perspective-python = [
+    {file = "perspective-python-0.6.2.tar.gz", hash = "sha256:84ea8fa427dbcc1b2acf4be029d3983632d3639ae2ad8cae05dd4ca061f83afc"},
+    {file = "perspective_python-0.6.2-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:dc7a1e47e9d8de48b0f310d2e618e424c37fea1b430318a8b7c86b19707218cb"},
+    {file = "perspective_python-0.6.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:cb48612937eb070b370a546bd8577258fe2397b1ec109a3e6780869d063643e5"},
+    {file = "perspective_python-0.6.2-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:0280d3f422414888eae736c3306ae7b59ade6da592f2ff48b9f5a8a593be058b"},
+    {file = "perspective_python-0.6.2-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:ea15da99648e9676bfa262ec0446d27500360e71729e8a3d71ed5d9700fe0f3b"},
+    {file = "perspective_python-0.6.2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:21e1cf9f132d817680bff70093d9ccc9d64d97b01ef180f2b7a7c0061a420f2a"},
+    {file = "perspective_python-0.6.2-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:a54486d76a353cfd33d52b9882c59c66998ea592624aed9ee6ef6314b6372cf4"},
+    {file = "perspective_python-0.6.2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:45050578cceb7d8fca45fe61470ef86fc659c704cc396fa536e9de4a7d5fb554"},
+    {file = "perspective_python-0.6.2-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:19723587d6aa76fef5b1dddce4549851624cae50ed96830aafe576f7cffeb752"},
 ]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},
