@@ -307,7 +307,7 @@ class BaseGUI:
 
     def update_pos_schema(self, *_) -> "BaseGUI":
 
-        pos_schema: utility.PoS_Tag_Scheme  = self._config.pos_schema
+        pos_schema: utility.PoS_Tag_Scheme = self._config.pos_schema
 
         tags: Dict[str, str] = {f"{tag}/{description}": tag for tag, description in pos_schema.description.items()}
 

@@ -6,6 +6,7 @@ from penelope.scripts.co_occurrence import process_co_ocurrence
 def monkey_patch(*_, **__):
     pass
 
+
 @patch('penelope.co_occurrence.convert.store_co_occurrences', monkey_patch)
 def test_process_co_ocurrence():
 

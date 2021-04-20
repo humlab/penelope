@@ -61,6 +61,7 @@ def store_co_occurrences(filename: str, df: pd.DataFrame):
         logger.info("store as FEATHER file failed")
         logger.error(ex)
 
+
 def load_co_occurrences(filename: str) -> pd.DataFrame:
     """Load co-occurrences from CSV-file"""
 
