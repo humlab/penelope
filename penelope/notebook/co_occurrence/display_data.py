@@ -22,7 +22,7 @@ def truncate_to_threshold(co_occurrences: pd.DataFrame, threshold: int = 25) -> 
     return co_occurrences
 
 
-class CoOccurrenceTable(VBox, ValueWidget):
+class CoOccurrenceTable(VBox, ValueWidget):  # pylint: disable=too-many-ancestors
     def __init__(
         self,
         co_occurrences: pd.DataFrame,

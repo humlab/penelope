@@ -18,7 +18,7 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
 from penelope.notebook.word_trends import TrendsData
-from penelope.utility import getLogger, read_json, replace_extension, right_chop, strip_path_and_extension
+from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
 from .interface import ContextOpts, CoOccurrenceError
 
@@ -53,9 +53,13 @@ def store_co_occurrences(filename: str, df: pd.DataFrame):
     logger.info("storing CSV file")
     df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
 
-    logger.info("storing FEATHER file")
-    df.to_feather(replace_extension(filename, ".feather"), compression="lz4")
-
+    # with contextlib.suppress(Exception):
+    try:
+        logger.info("storing FEATHER file")
+        df.reset_index(drop=True).to_feather(replace_extension(filename, ".feather"), compression="lz4")
+    except Exception as ex:
+        logger.info("store as FEATHER file failed")
+        logger.error(ex)
 
 def load_co_occurrences(filename: str) -> pd.DataFrame:
     """Load co-occurrences from CSV-file"""
@@ -63,9 +67,6 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
     feather_filename: str = replace_extension(filename, ".feather")
 
     """ Read FEATHER if exists """
-    logger.info(f"CSV file: {filename}")
-    logger.info(f"FEATHER file: {feather_filename}")
-
     if os.path.isfile(feather_filename):
         logger.info("loading FEATHER file")
         df = pd.read_feather(feather_filename)
@@ -73,9 +74,9 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
 
     df = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
 
-    # with contextlib.suppress(Exception):
-    #     logger.info("caching to FEATHER file")
-    store_feather(feather_filename, df)
+    with contextlib.suppress(Exception):
+        logger.info("caching to FEATHER file")
+        store_feather(feather_filename, df)
 
     return df
 

@@ -9,7 +9,7 @@ import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, better_flatten, default_data_folder, get_logger
+from penelope.utility import PropertyValueMaskingOpts, better_flatten, default_data_folder, get_logger
 
 from . import interface
 
@@ -307,7 +307,7 @@ class BaseGUI:
 
     def update_pos_schema(self, *_) -> "BaseGUI":
 
-        pos_schema = utility.get_pos_schema(self._config.pipeline_payload.pos_schema_name)
+        pos_schema: utility.PoS_Tag_Scheme  = self._config.pos_schema
 
         tags: Dict[str, str] = {f"{tag}/{description}": tag for tag, description in pos_schema.description.items()}
 
