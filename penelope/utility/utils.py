@@ -150,8 +150,8 @@ def flatten(lofl: List[List[T]]) -> List[T]:
     return [item for sublist in lofl for item in sublist]
 
 
-def better_flatten2(l) -> Iterable[Any]:
-    for el in l:
+def better_flatten2(lst) -> Iterable[Any]:
+    for el in lst:
         if isinstance(el, (Iterable,)) and not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
             el, (str, bytes)
         ):
@@ -160,10 +160,10 @@ def better_flatten2(l) -> Iterable[Any]:
             yield el
 
 
-def better_flatten(l: Iterable[Any]) -> List[Any]:
-    if isinstance(l, (str, bytes)):
-        return l
-    return [x for x in better_flatten2(l)]
+def better_flatten(lst: Iterable[Any]) -> List[Any]:
+    if isinstance(lst, (str, bytes)):
+        return lst
+    return [x for x in better_flatten2(lst)]
 
 
 def project_series_to_range(series: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:

@@ -336,7 +336,7 @@ class BaseGUI:
                 if _pos_widget is event['owner']:
                     continue
                 _pos_widget.unobserve(self.pos_select_update, 'value')
-                _pos_widget.value = [x for x in _pos_widget.value if not x in event['new']]
+                _pos_widget.value = [x for x in _pos_widget.value if x not in event['new']]
                 _pos_widget.observe(self.pos_select_update, 'value')
 
     @property
