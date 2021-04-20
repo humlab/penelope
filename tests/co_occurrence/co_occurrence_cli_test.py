@@ -1,21 +1,27 @@
-import pytest
+from unittest.mock import patch
+
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 
-@pytest.mark.skip(reason="Long running")
+def monkey_patch(*_, **__):
+    pass
+
+@patch('penelope.co_occurrence.convert.store_co_occurrences', monkey_patch)
 def test_process_co_ocurrence():
 
     args: dict = dict(
         corpus_config="./tests/test_data/riksdagens-protokoll.yml",
-        input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.test.zip",
+        input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip",
         output_filename="./tests/output/test_process_co_ocurrence",
-        concept=["information"],
+        concept=None,
         no_concept=False,
         context_width=6,
         partition_key=["year"],
+        phrase=None,
+        phrase_file=None,
         create_subfolder=True,
-        pos_includes="|NN|PM|",
-        pos_paddings="|JJ|VB|UO|",
+        pos_includes="|NN|PM|VB|JJ|",
+        pos_paddings="|UO|",
         pos_excludes="|MAD|MID|PAD|",
         to_lowercase=True,
         lemmatize=True,
@@ -27,6 +33,7 @@ def test_process_co_ocurrence():
         only_any_alphanumeric=False,
         only_alphabetic=False,
         count_threshold=10,
+        force=False,
     )
 
     process_co_ocurrence(**args)

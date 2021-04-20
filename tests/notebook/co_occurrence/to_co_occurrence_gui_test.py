@@ -5,16 +5,12 @@ import penelope.notebook.co_occurrence.to_co_occurrence_gui as to_co_occurrence_
 import penelope.notebook.utility as notebook_utility
 from penelope.notebook import interface
 from penelope.pipeline.config import CorpusConfig
-from penelope.utility.pos_tags import PoS_Tag_Scheme
 
 
 def dummy_config():
     return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yml')
 
 
-@patch(
-    'penelope.utility.get_pos_schema', return_value=Mock(spec=PoS_Tag_Scheme, **{'groups': {'Noun': [], 'Verb': []}})
-)
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
 def test_to_co_occurrence_create_gui(z):  # pylint: disable=unused-argument
     def done_callback(_: Any, __: interface.ComputeOpts):  # pylint: disable=unused-argument
@@ -36,9 +32,6 @@ def test_to_co_occurrence_create_gui(z):  # pylint: disable=unused-argument
     assert gui is not None
 
 
-@patch(
-    'penelope.utility.get_pos_schema', return_value=Mock(spec=PoS_Tag_Scheme, **{'groups': {'Noun': [], 'Verb': []}})
-)
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
 def test_GUI_setup(z):  # pylint: disable=unused-argument
     def done_callback(*_, **__):
