@@ -70,10 +70,12 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
     """ Read FEATHER if exists """
     if os.path.isfile(feather_filename):
         logger.info("loading FEATHER file")
-        df = pd.read_feather(feather_filename)
+        df: pd.DataFrame = pd.read_feather(feather_filename)
+        if 'index' in df.columns:
+            df.drop(columns='index', inplace=True)
         return df
 
-    df = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
+    df: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
 
     with contextlib.suppress(Exception):
         logger.info("caching to FEATHER file")
