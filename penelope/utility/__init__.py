@@ -79,6 +79,7 @@ from .utils import (
     DummyContext,
     ListOfDicts,
     assert_is_strictly_increasing,
+    better_flatten,
     chunks,
     clamp,
     clamp_values,
