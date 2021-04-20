@@ -1,12 +1,12 @@
 import contextlib
 from typing import List
+
 import IPython.display as IPython_display
 import pandas as pd
-from ipywidgets import Button, HBox, Layout, Text, ValueWidget, VBox, Dropdown, Output
+from ipywidgets import Button, Dropdown, HBox, Layout, Output, Text, ValueWidget, VBox
 from penelope.co_occurrence.convert import store_co_occurrences
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
-
 from perspective import PerspectiveWidget, Sort
 
 

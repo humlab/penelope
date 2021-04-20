@@ -78,6 +78,8 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
     store_feather(feather_filename, df)
 
     return df
+
+
 # 2021-04-20 09:24:49.546 | INFO     | penelope.co_occurrence.convert:store_feather:95 - COLUMNS: w1, w2, value, value_n_d, value_n_t, year
 # 2021-04-20 09:24:49.655 | INFO     | penelope.co_occurrence.convert:store_feather:98 - COLUMNS (after reset): index, w1, w2, value, value_n_d, value_n_t, year
 def load_feather(filename: str) -> pd.DataFrame:
@@ -90,6 +92,7 @@ def load_feather(filename: str) -> pd.DataFrame:
     logger.info("FEATHER load FAILED")
     return None
 
+
 def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
     feather_filename: str = replace_extension(filename, ".feather")
     # with contextlib.suppress(Exception):
@@ -98,6 +101,7 @@ def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
     co_occurrence = co_occurrence.reset_index()
     co_occurrence.to_feather(feather_filename, compression="lz4")
     logger.info(f"COLUMNS (after reset): {', '.join(co_occurrence.columns.tolist())}")
+
 
 def to_vectorized_corpus(
     co_occurrences: pd.DataFrame, document_index: DocumentIndex, value_column: str = "value"

@@ -258,6 +258,7 @@ class PoS_Tag_Scheme:
     def description(self) -> Dict[str, str]:
         return self.PD_PoS_tags.set_index('tag')['description'].to_dict()
 
+
 Known_PoS_Tag_Schemes = dict(
     SUC=PoS_Tag_Scheme(PD_SUC_PoS_tags),
     Universal=PoS_Tag_Scheme(PD_Universal_PoS_tags),

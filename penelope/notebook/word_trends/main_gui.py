@@ -15,7 +15,7 @@ view = widgets.Output(layout={'border': '2px solid green'})
 LAST_ARGS = None
 LAST_CORPUS_CONFIG = None
 LAST_CORPUS = None
-CLEAR_OUTPUT = True
+CLEAR_OUTPUT = False
 
 
 @view.capture(clear_output=CLEAR_OUTPUT)
@@ -56,7 +56,7 @@ def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.Corpus
     global LAST_ARGS, LAST_CORPUS_CONFIG
     LAST_ARGS = args
     LAST_CORPUS_CONFIG = corpus_config
-    # FIXME: #41 Compute uses coråus name from config instead of GUI opts
+    # FIXME: #41 Compute uses corpus name from config instead of GUI opts
     corpus: dtm.VectorizedCorpus = workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
     return corpus
 

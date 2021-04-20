@@ -159,10 +159,12 @@ def better_flatten2(l) -> Iterable[Any]:
         else:
             yield el
 
+
 def better_flatten(l: Iterable[Any]) -> List[Any]:
     if isinstance(l, (str, bytes)):
         return l
-    return [ x for x in better_flatten2(l) ]
+    return [x for x in better_flatten2(l)]
+
 
 def project_series_to_range(series: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
     """Project a sequence of elements to a range defined by (low, high)"""

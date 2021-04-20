@@ -4,9 +4,9 @@ from typing import Callable
 
 import penelope.co_occurrence as co_occurrence
 from ipywidgets import Button, HBox, Label, Layout, Output, VBox
+from loguru import logger
 from penelope.notebook.utility import FileChooserExt2
 from penelope.utility import default_data_folder
-from loguru import logger
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 

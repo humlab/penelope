@@ -9,7 +9,7 @@ import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, default_data_folder, better_flatten, get_logger
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, better_flatten, default_data_folder, get_logger
 
 from . import interface
 

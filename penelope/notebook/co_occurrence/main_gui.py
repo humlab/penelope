@@ -10,7 +10,7 @@ from penelope.notebook.word_trends.trends_data import TrendsData
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
-LAST_BUNDLE = None
+LAST_BUNDLE: co_occurrence.Bundle = None
 LAST_ARGS = None
 LAST_CONFIG = None
 CLEAR_OUTPUT = False
@@ -37,7 +37,7 @@ def compute_co_occurrence_callback(
     global LAST_BUNDLE, LAST_ARGS, LAST_CONFIG
     LAST_ARGS = args
     LAST_CONFIG = corpus_config
-    bundle = workflows.co_occurrence.compute(
+    bundle: co_occurrence.Bundle = workflows.co_occurrence.compute(
         args=args,
         corpus_config=corpus_config,
         checkpoint_file=checkpoint_file,
@@ -54,6 +54,7 @@ class MainGUI:
         corpus_folder: str,
         data_folder: str,
         resources_folder: str,
+        global_count_threshold: int = 25,
     ) -> widgets.VBox:
 
         self.trends_data: TrendsData = None
@@ -78,6 +79,8 @@ class MainGUI:
         )
 
         self.gui_explore: co_occurrence_gui.ExploreGUI = None
+
+        self.global_count_threshold = global_count_threshold
 
     def layout(self):
 
@@ -107,8 +110,13 @@ class MainGUI:
 
     @view.capture(clear_output=CLEAR_OUTPUT)
     def display_explorer(self, bundle: co_occurrence.Bundle, *_, **__):
-
+        global LAST_BUNDLE
+        LAST_BUNDLE = bundle
         self.trends_data = co_occurrence.to_trends_data(bundle).update()
-        self.gui_explore = co_occurrence_gui.ExploreGUI().setup().display(trends_data=self.trends_data)
+        self.gui_explore = (
+            co_occurrence_gui.ExploreGUI(global_tokens_count_threshold=self.global_count_threshold)
+            .setup()
+            .display(trends_data=self.trends_data)
+        )
 
         display(self.gui_explore.layout())
