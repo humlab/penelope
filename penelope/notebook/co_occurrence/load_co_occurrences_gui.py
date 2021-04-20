@@ -5,13 +5,12 @@ from typing import Callable
 import penelope.co_occurrence as co_occurrence
 from ipywidgets import Button, HBox, Label, Layout, Output, VBox
 from penelope.notebook.utility import FileChooserExt2
-from penelope.utility import default_data_folder, getLogger
-
-logger = getLogger('penelope')
+from penelope.utility import default_data_folder
+from loguru import logger
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
-CLEAR_OUTPUT = True
+CLEAR_OUTPUT = False
 
 debug_view = Output(layout={"border": "1px solid black"})
 
@@ -128,6 +127,7 @@ def load_co_occurrence_bundle(filename: str) -> co_occurrence.Bundle:
             raise ValueError("Please select co-occurrence file")
 
         bundle = co_occurrence.load_bundle(filename)
+        logger.info("co-occurrence loaded")
         return bundle
     except (ValueError, FileNotFoundError, PermissionError) as ex:
         logger.error(ex)
