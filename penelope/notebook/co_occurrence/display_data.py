@@ -7,23 +7,40 @@ from penelope.co_occurrence.convert import store_co_occurrences
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
 
-# from ipyregulartable import RegularTableWidget
-from perspective import PerspectiveWidget
+from perspective import PerspectiveWidget, Sort
+
+
+def truncate_to_threshold(co_occurrences: pd.DataFrame, threshold: int = 25) -> pd.DataFrame:
+
+    co_occurrences["tokens"] = co_occurrences.w1 + "/" + co_occurrences.w2
+
+    global_tokens_counts: pd.Series = co_occurrences.groupby(['tokens'])['value'].sum()
+    threshold_tokens: pd.Index = global_tokens_counts[global_tokens_counts >= threshold].index
+
+    co_occurrences = co_occurrences.set_index('tokens').loc[threshold_tokens][['year', 'value', 'value_n_t']]
+    co_occurrences['co_occurrences'] = co_occurrences.value_n_t.apply(lambda x: f'{x:.8f}')
+    return co_occurrences
 
 
 class CoOccurrenceTable(VBox, ValueWidget):
-    def __init__(self, data: pd.DataFrame, default_token_filter: str = None, default_count_filte: int=25, **kwargs):
+    def __init__(
+        self,
+        co_occurrences: pd.DataFrame,
+        global_tokens_count_threshold: int = 25,
+        default_token_filter: str = None,
+        default_count_filter: int = 25,
+        **kwargs,
+    ):
 
-        if isinstance(data, dict):
-            self._data: pd.DataFrame = pd.DataFrame(data)
-        elif isinstance(data, pd.DataFrame):
-            self._data: pd.DataFrame = data
+        if isinstance(co_occurrences, dict):
+            self._data: pd.DataFrame = pd.DataFrame(co_occurrences)
+        elif isinstance(co_occurrences, pd.DataFrame):
+            self._data: pd.DataFrame = co_occurrences
         else:
-            raise ValueError(f"Data must be dict or pandas.DataFrame not {type(data)}")
+            raise ValueError(f"Data must be dict or pandas.DataFrame not {type(co_occurrences)}")
 
-        self._data["tokens"] = data.w1 + "/" + data.w2
-        #self._data.drop(["w1", "w2"])
-        self._data: pd.DataFrame = pd.DataFrame(data=data)  # .set_index('year')
+        self._data = truncate_to_threshold(co_occurrences, threshold=global_tokens_count_threshold)
+
         self._output: Output = Output(Layout=Layout(width='auto'))
         self._token_filter = Text(value=default_token_filter, placeholder='token filter', layout=Layout(width='auto'))
         self._value_filter = Dropdown(
@@ -41,24 +58,23 @@ class CoOccurrenceTable(VBox, ValueWidget):
                 'value >= 25': 25,
                 'value >= 100': 100,
             },
-            value=default_count_filte,
+            value=default_count_filter,
             placeholder='value filter',
             layout=Layout(width='auto'),
         )
         self._filter = Button(description='Filter', layout=Layout(width='auto'))
         self._save = Button(description='Save', layout=Layout(width='auto'))
         self._download = Button(description='Download', layout=Layout(width='auto'))
-        # self._table: RegularTableWidget = RegularTableWidget(data)
-        self._table: PerspectiveWidget = PerspectiveWidget(data, filters=self._get_filters())
+
+        self._table: PerspectiveWidget = PerspectiveWidget(
+            self._data, filters=self._get_filters(), aggregates={}, sort=[["index", Sort.ASC]]
+        )
         self._button_bar = HBox(
             children=[self._token_filter, self._value_filter, self._filter, self._save, self._download, self._output],
             layout=Layout(width='auto'),
         )
 
         super().__init__(children=[self._button_bar, self._table], layout=Layout(width='auto'), **kwargs)
-
-        # self._token_filter.observe(self.filter, names='value')
-        # self._value_filter.observe(self.filter, names='value')
 
         self._filter.on_click(self.filter)
         self._save.on_click(self.save)
@@ -69,9 +85,12 @@ class CoOccurrenceTable(VBox, ValueWidget):
         # NUMBER_FILTERS = ["<", ">", "==", "<=", ">=", "!=", "is null", "is not null"]
         # STRING_FILTERS = ["==", "contains", "!=", "in", "not in", "begins with", "ends with"]
         # DATETIME_FILTERS = ["<", ">", "==", "<=", ">=", "!="]
+        self._button_bar.disabled = True
         filters = self._get_filters()
-        if self._table.filters != filters:
-            self._table.filters = filters
+        with contextlib.suppress(Exception):
+            if self._table.filters != filters:
+                self._table.filters = filters
+        self._button_bar.disabled = False
 
     def _get_filters(self) -> List[List[str]]:
 

@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 
+import pandas as pd
 import penelope.notebook.utility as notebook_utility
 import penelope.notebook.word_trends as word_trends
-from penelope.notebook.ipyaggrid_utility import display_grid
-from penelope.notebook.ipyrtable import display_table
+
 from penelope.notebook.word_trends.trends_data import TrendsData
 from penelope.utility import getLogger
+
+from penelope.notebook.co_occurrence.display_data import CoOccurrenceTable
+
 
 logger = getLogger()
 
@@ -20,6 +23,7 @@ class ExploreGUI:
     trends_gui: word_trends.TrendsGUI = None
     gofs_gui: word_trends.GoFsGUI = None
     gofs_enabled: bool = False
+    global_tokens_count_threshold: int = 25
 
     def setup(self) -> "ExploreGUI":
 
@@ -39,7 +43,13 @@ class ExploreGUI:
             self.gofs_gui.display(trends_data=trends_data)
 
         # self.tab_main.display_fx_result(0, display_grid, trends_data.memory.get('co_occurrences'), clear=True)
-        # self.tab_main.display_fx_result(0, display_table, trends_data.memory.get('co_occurrences'), clear=True)
+        # self.tab_main.display_fx_result(
+        #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
+        # )
+
+        data: pd.DataFrame = trends_data.memory.get('co_occurrences')
+
+        self.tab_main.display_content(0, CoOccurrenceTable(data, global_tokens_count_threshold=self.global_tokens_count_threshold), clear=True)
         self.tab_main.display_as_yaml(2, trends_data.compute_options, clear=True, width='800px', height='600px')
 
         return self
