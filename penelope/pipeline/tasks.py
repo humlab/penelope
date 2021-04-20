@@ -301,7 +301,7 @@ class WriteFeather(ITask):
 
     def exit(self):
         if self.document_index is not None:
-            self.document_index.reset_index().to_feather(os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME))
+            self.document_index.reset_index().to_feather(os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME), compression="lz4")
 
         if self.pipeline.payload.token2id is not None:
             pass
