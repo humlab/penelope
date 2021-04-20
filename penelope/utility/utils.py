@@ -150,6 +150,20 @@ def flatten(lofl: List[List[T]]) -> List[T]:
     return [item for sublist in lofl for item in sublist]
 
 
+def better_flatten2(l) -> Iterable[Any]:
+    for el in l:
+        if isinstance(el, (Iterable,)) and not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
+            el, (str, bytes)
+        ):
+            yield from better_flatten2(el)
+        else:
+            yield el
+
+def better_flatten(l: Iterable[Any]) -> List[Any]:
+    if isinstance(l, (str, bytes)):
+        return l
+    return [ x for x in better_flatten2(l) ]
+
 def project_series_to_range(series: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
     """Project a sequence of elements to a range defined by (low, high)"""
     norm_series = series / series.max()
