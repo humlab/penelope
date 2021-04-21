@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 from typing import Callable, List
 
 import ipywidgets as widgets
@@ -18,7 +18,7 @@ logger = getLogger("penelope")
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']
 
-CLEAR_OUTPUT=True
+CLEAR_OUTPUT = True
 debug_view = widgets.Output()
 # pylint: disable=too-many-instance-attributes
 

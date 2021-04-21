@@ -1,4 +1,3 @@
-
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -21,8 +20,10 @@ def fake_config() -> corpus_config.CorpusConfig:
 def config():
     return fake_config()
 
+
 def monkey_patch(*_, **__):
     pass
+
 
 @patch('penelope.notebook.token_counts.tokens_count_gui.compute_token_count_data', monkey_patch)
 @patch('penelope.notebook.token_counts.tokens_count_gui.load_document_index', monkey_patch)
@@ -35,9 +36,11 @@ def test_create_token_count_gui_succeeds():
 
     assert gui is not None
 
+
 def test_create_token_count_gui_create_succeeds():
 
     load_corpus_config_callback_is_called = False
+
     def load_corpus_config_callback(*_) -> corpus_config.CorpusConfig:
         nonlocal load_corpus_config_callback_is_called
         load_corpus_config_callback_is_called = True
@@ -46,17 +49,20 @@ def test_create_token_count_gui_create_succeeds():
     def load_document_index_callback(_: corpus_config.CorpusConfig) -> pd.DataFrame:
         return MagicMock(spec=pd.DataFrame)
 
-
     resources_folder: str = './tests/test_data'
-    gui: tokens_count_gui.TokenCountsGUI = tokens_count_gui.TokenCountsGUI(
-        compute_callback=monkey_patch,
-        load_document_index_callback=load_document_index_callback,
-        load_corpus_config_callback=load_corpus_config_callback,
-    ).setup(corpus_config.CorpusConfig.list(resources_folder)).display()
-
+    gui: tokens_count_gui.TokenCountsGUI = (
+        tokens_count_gui.TokenCountsGUI(
+            compute_callback=monkey_patch,
+            load_document_index_callback=load_document_index_callback,
+            load_corpus_config_callback=load_corpus_config_callback,
+        )
+        .setup(corpus_config.CorpusConfig.list(resources_folder))
+        .display()
+    )
 
     assert gui is not None
     assert load_corpus_config_callback_is_called == True
+
 
 def test_load_document_index(config: corpus_config.CorpusConfig):
 
