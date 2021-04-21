@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-import csv
 import enum
 import glob
 import json
 import os
 import pathlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import yaml
-from penelope.corpus.readers import TaggedTokensFilterOpts, TextReaderOpts
-from penelope.utility import create_instance, get_pos_schema
+from penelope.corpus.readers import TextReaderOpts
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, create_instance, get_pos_schema
 
-from . import interfaces
+from . import checkpoint, interfaces
 
 if TYPE_CHECKING:
     from .pipelines import CorpusPipeline
@@ -22,6 +21,7 @@ if TYPE_CHECKING:
 def create_pipeline_factory(
     class_or_function_name: str,
 ) -> Union[Callable[[CorpusConfig], CorpusPipeline], Type[CorpusPipeline]]:
+    """Returns a CorpusPipeline type (class or callable that return instance) by name"""
     factory = create_instance(class_or_function_name)
     return factory
 
@@ -38,72 +38,28 @@ class CorpusType(enum.IntEnum):
 
 
 @dataclass
-class CorpusSerializeOpts:
-
-    content_type_code: int = 0
-
-    document_index_name: str = field(default="document_index.csv")
-    document_index_sep: str = field(default='\t')
-
-    sep: str = '\t'
-    quoting: int = csv.QUOTE_NONE
-    custom_serializer_classname: str = None
-
-    @property
-    def content_type(self) -> interfaces.ContentType:
-        return interfaces.ContentType(self.content_type_code)
-
-    @content_type.setter
-    def content_type(self, value: interfaces.ContentType):
-        self.content_type_code = int(value)
-
-    def as_type(self, value: interfaces.ContentType) -> "CorpusSerializeOpts":
-        opts = CorpusSerializeOpts(
-            content_type_code=int(value),
-            document_index_name=self.document_index_name,
-            document_index_sep=self.document_index_sep,
-            sep=self.sep,
-            quoting=self.quoting,
-        )
-        return opts
-
-    @staticmethod
-    def load(data: dict) -> "CorpusSerializeOpts":
-        opts = CorpusSerializeOpts()
-        for key in data.keys():
-            if hasattr(opts, key):
-                setattr(opts, key, data[key])
-        return opts
-
-    @property
-    def custom_serializer(self) -> type:
-        if not self.custom_serializer_classname:
-            return None
-        return create_instance(self.custom_serializer_classname)
-
-
-@dataclass
 class CorpusConfig:
 
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
     corpus_pattern: str = "*.zip"
-    # Used when corpus data needs to be deserialized (e.g. zipped csv data etc)
-    content_deserialize_opts: Optional[CorpusSerializeOpts] = None
+    checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = None
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None
     pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = "english"
 
-    def get_pipeline(self, pipeline_key: str, *args, **kwargs) -> Union[Callable, Type]:
+    def get_pipeline(self, pipeline_key: str, *args, **kwargs) -> CorpusPipeline:
+        """Returns a pipeline class by key from `pipelines` section"""
         if pipeline_key not in self.pipelines:
             raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
-        factory = create_pipeline_factory(self.pipelines[pipeline_key])
+        factory: Type[CorpusPipeline] = create_pipeline_factory(self.pipelines[pipeline_key])
         return factory(self, *args, **kwargs)
 
     @property
-    def pos_schema(self):
+    def pos_schema(self) -> PoS_Tag_Scheme:
+        """Returns the part-of-speech schema"""
         return get_pos_schema(self.pipeline_payload.pos_schema_name)
 
     @property
@@ -128,7 +84,7 @@ class CorpusConfig:
 
     @staticmethod
     def list(folder: str) -> List[str]:
-        """Return YAML filenames in `folder`"""
+        """Return YAML filenames in given `folder`"""
         filenames = sorted(glob.glob(os.path.join(folder, '*.yml')) + glob.glob(os.path.join(folder, '*.yaml')))
         return filenames
 
@@ -145,25 +101,24 @@ class CorpusConfig:
 
     @staticmethod
     def loads(data_str: str) -> "CorpusConfig":
-        """Reads and deserializes a CorpusConfig from `path`"""
+        """Deserializes a CorpusConfig from `data_str`"""
         deserialized_config = CorpusConfig.dict_to_corpus_config(yaml.load(data_str, Loader=yaml.FullLoader))
         return deserialized_config
 
     @staticmethod
     def dict_to_corpus_config(config_dict: dict) -> "CorpusConfig":
-
+        """Maps a dict read from file to a CorpusConfig instance"""
+        # FIXME #47 Check if logic needs to be updated
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
 
         if config_dict.get('tagged_tokens_filter_opts', None) is not None:
             opts = config_dict['tagged_tokens_filter_opts']
             if opts.get('data', None) is not None:
-                config_dict['tagged_tokens_filter_opts'] = TaggedTokensFilterOpts(**opts['data'])
+                config_dict['tagged_tokens_filter_opts'] = PropertyValueMaskingOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
-        config_dict['content_deserialize_opts'] = CorpusSerializeOpts(
-            **(config_dict.get('content_deserialize_opts', {}) or {})
-        )
+        config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
         config_dict['pipelines'] = config_dict.get(
             'pipelines', {}
         )  # CorpusConfig.dict_to_pipeline_config(config_dict.get('pipelines', {}))
@@ -193,23 +148,7 @@ class CorpusConfig:
                 pass
         FileNotFoundError(filename)
 
-    @property
-    def serialize_opts(self) -> CorpusSerializeOpts:
-        opts = CorpusSerializeOpts(
-            document_index_name=self.pipeline_payload.document_index_source,
-            document_index_sep=self.pipeline_payload.document_index_sep,
-        )
-        return opts
-
     def folders(self, path: str, method: str = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""
         self.pipeline_payload.folders(path, method=method)
         return self
-
-    # @staticmethod
-    # def dict_to_pipeline_config(pipelines_factories: dict) -> CorpusPipelineConfig:
-    #     pipeline_config = CorpusPipelineConfig()
-    #     for k, v in pipelines_factories.items():
-    #         factory = create_pipeline_factory(v)
-    #         setattr(pipeline_config, k, factory)
-    #     return pipeline_config

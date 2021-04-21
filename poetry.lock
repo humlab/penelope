@@ -677,6 +677,14 @@ python-versions = ">=3.5"
 wcwidth = "*"
 
 [[package]]
+name = "future"
+version = "0.18.2"
+description = "Clean single-source support for Python 3 and 2"
+category = "main"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "gensim"
 version = "3.8.3"
 description = "Python framework for fast Vector Space Modelling"
@@ -808,6 +816,22 @@ traitlets = ">=4.1.0"
 
 [package.extras]
 test = ["pytest (!=5.3.4)", "pytest-cov", "flaky", "nose"]
+
+[[package]]
+name = "ipyregulartable"
+version = "0.2.0"
+description = "ipywidgets wrapper around regular-table"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ipywidgets = ">=7.5.1"
+numpy = "*"
+pandas = ">=0.22"
+
+[package.extras]
+dev = ["ipywidgets (>=7.5.1)", "numpy", "pandas (>=0.22)", "black (>=20)", "bump2version (>=1.0.0)", "flake8 (>=3.7.8)", "flake8-black (>=0.2.1)", "jupyter-packaging", "mock", "pytest (>=4.3.0)", "pytest-cov (>=2.6.1)", "Sphinx (>=1.8.4)", "sphinx-markdown-builder (>=0.5.2)"]
 
 [[package]]
 name = "ipython"
@@ -1025,6 +1049,21 @@ description = "A fast and thorough lazy object proxy."
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
+name = "loguru"
+version = "0.5.3"
+description = "Python logging made (stupidly) simple"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+colorama = {version = ">=0.3.4", markers = "sys_platform == \"win32\""}
+win32-setctime = {version = ">=1.0.0", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+dev = ["codecov (>=2.0.15)", "colorama (>=0.3.4)", "flake8 (>=3.7.7)", "tox (>=3.9.0)", "tox-travis (>=0.12)", "pytest (>=4.6.2)", "pytest-cov (>=2.7.1)", "Sphinx (>=2.2.1)", "sphinx-autobuild (>=0.7.1)", "sphinx-rtd-theme (>=0.4.3)", "black (>=19.10b0)", "isort (>=5.1.1)"]
 
 [[package]]
 name = "lxml"
@@ -1445,6 +1484,28 @@ python-versions = "*"
 flake8-polyfill = ">=1.0.2,<2"
 
 [[package]]
+name = "perspective-python"
+version = "0.6.2"
+description = "Python bindings and JupyterLab integration for Perspective"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+future = ">=0.16.0"
+ipywidgets = ">=7.5.1"
+numpy = ">=1.13.1"
+pandas = ">=0.22.0"
+python-dateutil = ">=2.8.0"
+six = ">=1.11.0"
+tornado = ">=4.5.3"
+traitlets = ">=4.3.2"
+
+[package.extras]
+dev = ["flake8-black (>=0.2.0)", "black (==20.8b1)", "Faker (>=1.0.0)", "flake8 (>=3.7.8)", "mock", "pybind11 (>=2.4.0)", "pyarrow (>=0.16.0)", "pytest (>=4.3.0)", "pytest-cov (>=2.6.1)", "pytest-check-links", "pytest-tornado", "pytz (>=2018.9)", "Sphinx (>=1.8.4)", "sphinx-markdown-builder (>=0.5.2)", "ipywidgets (>=7.5.1)", "future (>=0.16.0)", "numpy (>=1.13.1)", "pandas (>=0.22.0)", "python-dateutil (>=2.8.0)", "six (>=1.11.0)", "tornado (>=4.5.3)", "traitlets (>=4.3.2)"]
+devpy2 = ["Faker (>=1.0.0)", "flake8 (>=3.7.8)", "mock", "pybind11 (>=2.4.0)", "pyarrow (>=0.16.0)", "pytest (>=4.3.0)", "pytest-cov (>=2.6.1)", "pytest-check-links", "pytest-tornado", "pytz (>=2018.9)", "Sphinx (>=1.8.4)", "sphinx-markdown-builder (>=0.5.2)", "ipywidgets (>=7.5.1)", "future (>=0.16.0)", "numpy (>=1.13.1)", "pandas (>=0.22.0)", "python-dateutil (>=2.8.0)", "six (>=1.11.0)", "tornado (>=4.5.3)", "traitlets (>=4.3.2)"]
+
+[[package]]
 name = "pexpect"
 version = "4.8.0"
 description = "Pexpect allows easy control of interactive console applications."
@@ -1541,6 +1602,17 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
+name = "pyarrow"
+version = "3.0.0"
+description = "Python library for Apache Arrow"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+numpy = ">=1.16.6"
+
+[[package]]
 name = "pycodestyle"
 version = "2.6.0"
 description = "Python style guide checker"
@@ -1610,6 +1682,25 @@ description = "Pygments is a syntax highlighting package written in Python."
 category = "main"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "pyinstrument"
+version = "3.4.1"
+description = "Call stack profiler for Python. Shows you why your code is slow!"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pyinstrument-cext = ">=0.2.2"
+
+[[package]]
+name = "pyinstrument-cext"
+version = "0.2.4"
+description = "A CPython extension supporting pyinstrument"
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pylint"
@@ -2381,6 +2472,17 @@ python-versions = "*"
 notebook = ">=4.4.1"
 
 [[package]]
+name = "win32-setctime"
+version = "1.0.3"
+description = "A small Python utility to set file creation time on Windows"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.extras]
+dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
+
+[[package]]
 name = "wordcloud"
 version = "1.8.1"
 description = "A little word cloud generator"
@@ -2432,7 +2534,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "==3.*,>=3.8.0"
-content-hash = "95e99521534edba36aeebea57ad0a6ba514d1e16baa9b64a5899609a802f4859"
+content-hash = "b20e31fc368add3e09f50da14dc236de74700c39364aaa3465e85f3991a65dbc"
 
 [metadata.files]
 aiohttp = [
@@ -2840,6 +2942,9 @@ flake8-pytest-style = [
 ftfy = [
     {file = "ftfy-5.8.tar.gz", hash = "sha256:51c7767f8c4b47d291fcef30b9625fb5341c06a31e6a3b627039c706c42f3720"},
 ]
+future = [
+    {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
+]
 gensim = [
     {file = "gensim-3.8.3-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:61eed1d6b5fbe6dda0586ea447ebc2dc7890a7f70c2ed953d5abc3fe3cfb94bb"},
     {file = "gensim-3.8.3-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:3af62709369331c85552fd26caa21504baa64accc426dc094172f5c688750013"},
@@ -2901,6 +3006,10 @@ ipyfilechooser = [
 ipykernel = [
     {file = "ipykernel-5.3.4-py3-none-any.whl", hash = "sha256:d6fbba26dba3cebd411382bc484f7bc2caa98427ae0ddb4ab37fe8bfeb5c7dd3"},
     {file = "ipykernel-5.3.4.tar.gz", hash = "sha256:9b2652af1607986a1b231c62302d070bc0534f564c393a5d9d130db9abbbe89d"},
+]
+ipyregulartable = [
+    {file = "ipyregulartable-0.2.0-py2.py3-none-any.whl", hash = "sha256:ce84ee1005ccd37c8c24364ca4a64cad42195d6214608cd618ace879b289438c"},
+    {file = "ipyregulartable-0.2.0.tar.gz", hash = "sha256:4efe0428c76baefd549274db29697dd3ec520280f90fde67654b103d92cce5da"},
 ]
 ipython = [
     {file = "ipython-7.19.0-py3-none-any.whl", hash = "sha256:c987e8178ced651532b3b1ff9965925bfd445c279239697052561a9ab806d28f"},
@@ -3020,6 +3129,10 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:a6ae12d08c0bf9909ce12385803a543bfe99b95fe01e752536a60af2b7797c62"},
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-win32.whl", hash = "sha256:5541cada25cd173702dbd99f8e22434105456314462326f06dba3e180f203dfd"},
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-win_amd64.whl", hash = "sha256:59f79fef100b09564bc2df42ea2d8d21a64fdcda64979c0fa3db7bdaabaf6239"},
+]
+loguru = [
+    {file = "loguru-0.5.3-py3-none-any.whl", hash = "sha256:f8087ac396b5ee5f67c963b495d615ebbceac2796379599820e324419d53667c"},
+    {file = "loguru-0.5.3.tar.gz", hash = "sha256:b28e72ac7a98be3d28ad28570299a393dfcd32e5e3f6a353dec94675767b6319"},
 ]
 lxml = [
     {file = "lxml-4.6.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:4b7572145054330c8e324a72d808c8c8fbe12be33368db28c39a255ad5f7fb51"},
@@ -3366,6 +3479,17 @@ pep8-naming = [
     {file = "pep8-naming-0.11.1.tar.gz", hash = "sha256:a1dd47dd243adfe8a83616e27cf03164960b507530f155db94e10b36a6cd6724"},
     {file = "pep8_naming-0.11.1-py2.py3-none-any.whl", hash = "sha256:f43bfe3eea7e0d73e8b5d07d6407ab47f2476ccaeff6937c84275cd30b016738"},
 ]
+perspective-python = [
+    {file = "perspective-python-0.6.2.tar.gz", hash = "sha256:84ea8fa427dbcc1b2acf4be029d3983632d3639ae2ad8cae05dd4ca061f83afc"},
+    {file = "perspective_python-0.6.2-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:dc7a1e47e9d8de48b0f310d2e618e424c37fea1b430318a8b7c86b19707218cb"},
+    {file = "perspective_python-0.6.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:cb48612937eb070b370a546bd8577258fe2397b1ec109a3e6780869d063643e5"},
+    {file = "perspective_python-0.6.2-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:0280d3f422414888eae736c3306ae7b59ade6da592f2ff48b9f5a8a593be058b"},
+    {file = "perspective_python-0.6.2-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:ea15da99648e9676bfa262ec0446d27500360e71729e8a3d71ed5d9700fe0f3b"},
+    {file = "perspective_python-0.6.2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:21e1cf9f132d817680bff70093d9ccc9d64d97b01ef180f2b7a7c0061a420f2a"},
+    {file = "perspective_python-0.6.2-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:a54486d76a353cfd33d52b9882c59c66998ea592624aed9ee6ef6314b6372cf4"},
+    {file = "perspective_python-0.6.2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:45050578cceb7d8fca45fe61470ef86fc659c704cc396fa536e9de4a7d5fb554"},
+    {file = "perspective_python-0.6.2-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:19723587d6aa76fef5b1dddce4549851624cae50ed96830aafe576f7cffeb752"},
+]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},
     {file = "pexpect-4.8.0.tar.gz", hash = "sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c"},
@@ -3447,6 +3571,29 @@ py = [
     {file = "py-1.9.0-py2.py3-none-any.whl", hash = "sha256:366389d1db726cd2fcfc79732e75410e5fe4d31db13692115529d34069a043c2"},
     {file = "py-1.9.0.tar.gz", hash = "sha256:9ca6883ce56b4e8da7e79ac18787889fa5206c79dcc67fb065376cd2fe03f342"},
 ]
+pyarrow = [
+    {file = "pyarrow-3.0.0-cp36-cp36m-macosx_10_13_x86_64.whl", hash = "sha256:03e2435da817bc2b5d0fad6f2e53305eb36c24004ddfcb2b30e4217a1a80cf22"},
+    {file = "pyarrow-3.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:2be3a9eab4bfd00024dc3c83fa03de1c1d04a0f47ebaf3dc483cd100546eacbf"},
+    {file = "pyarrow-3.0.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:a76031ef19d11db2fef79a97cc69997c97bea35aa07efbe042a177c7e3b1a390"},
+    {file = "pyarrow-3.0.0-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:a07e286e81ceb20f8f0c45f69760d2ebc434fe83794d5f9b44f89fc2dc6dc24d"},
+    {file = "pyarrow-3.0.0-cp36-cp36m-win_amd64.whl", hash = "sha256:cfea99a01d844c3db5e25374a6cdcf3b5ba1698bfe95d41272c295a4581e884c"},
+    {file = "pyarrow-3.0.0-cp37-cp37m-macosx_10_13_x86_64.whl", hash = "sha256:d5666a7fa2668f3ff95df028c2072d59e8b17e73d682068e8505dafa2688f3cc"},
+    {file = "pyarrow-3.0.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:3ea6574d1ae2d9bff7e6e1715f64c31bdc01b42387a5c78311a8ce9c09cfe135"},
+    {file = "pyarrow-3.0.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:2d5c95eb04a3d2e786e097b53534893eade6c8b3faf10f53a06143384b4446b1"},
+    {file = "pyarrow-3.0.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:31e6fc0868963aba4e6b8a3e218c9a5ff347bca870d622da0b3d58269d0c5398"},
+    {file = "pyarrow-3.0.0-cp37-cp37m-win_amd64.whl", hash = "sha256:960a9b0fd599601ddac42f16d5acf049637ec08957359c6741d6eb2bf0dbae97"},
+    {file = "pyarrow-3.0.0-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:2c3353d38d137f1158595b3b18dcef711f3d8fdb57cf7ae2d861d07235064bc1"},
+    {file = "pyarrow-3.0.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:72206cde1857d5420601feae75f53921cffab4326b42262a858c7b8be67982b7"},
+    {file = "pyarrow-3.0.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:dec007a0f7adba86bd170252140ede01646b45c3a470d5862ce00d8e40cd29bd"},
+    {file = "pyarrow-3.0.0-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:bf6684fe9e38f8ddb696e38901461eab783ec1d565974ebd5862270320b3e27f"},
+    {file = "pyarrow-3.0.0-cp38-cp38-win_amd64.whl", hash = "sha256:3b46487c45faaea8d1a5aa65002e2832ae2e1c9e68ecb461cda4fa59891cf490"},
+    {file = "pyarrow-3.0.0-cp39-cp39-macosx_10_13_x86_64.whl", hash = "sha256:978bbe8ec9090d1133a25f00f32ed92600f9d315fbfa29a17952bee01f0d7fe5"},
+    {file = "pyarrow-3.0.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:b7a8903f2b8a80498725ef5d4a35cd7dd5a98b74e080d42692545e61a6cbfbe4"},
+    {file = "pyarrow-3.0.0-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:b1cf92df9f336f31706249e543dc0ffce3c67a78204ce540f1173c6c07dfafec"},
+    {file = "pyarrow-3.0.0-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:b08c119cc2b9fcd1567797fedb245a2f4352a3084a22b7298272afe7cf7a4730"},
+    {file = "pyarrow-3.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:5faa2dc73444bdcf042f121383965a47362be1f946303d46e8fd80f8d26cd90c"},
+    {file = "pyarrow-3.0.0.tar.gz", hash = "sha256:4bf8cc43e1db1e0517466209ee8e8f459d9b5e1b4074863317f2a965cf59889e"},
+]
 pycodestyle = [
     {file = "pycodestyle-2.6.0-py2.py3-none-any.whl", hash = "sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367"},
     {file = "pycodestyle-2.6.0.tar.gz", hash = "sha256:c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e"},
@@ -3473,6 +3620,60 @@ pyflakes = [
 pygments = [
     {file = "Pygments-2.7.2-py3-none-any.whl", hash = "sha256:88a0bbcd659fcb9573703957c6b9cff9fab7295e6e76db54c9d00ae42df32773"},
     {file = "Pygments-2.7.2.tar.gz", hash = "sha256:381985fcc551eb9d37c52088a32914e00517e57f4a21609f48141ba08e193fa0"},
+]
+pyinstrument = [
+    {file = "pyinstrument-3.4.1-py2.py3-none-any.whl", hash = "sha256:716302e6727514ea2c61639c4e749a637fd3d63986a9203df15f4669ea1963a8"},
+    {file = "pyinstrument-3.4.1.tar.gz", hash = "sha256:d421fcf458f10926fbbaff701d11ffc42b06240294a3d0ee96299af7aca9b5fe"},
+]
+pyinstrument-cext = [
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c60e519708e9d493de16589e1d48a4641a4dc8cbddfe3bc49b3746f99e530b95"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:0709aa81b51195b2d638efd0432597bfb02a45df25a933e739342fc655ed677d"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:46ac6235604520f30f0c55214beeb687a8a13e9abc5306fcd797a77bef3a233f"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:fe2eaf64e09b59c7579c775fd3ec075a0728d9be55eef673b2cdb35531b4005b"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:f94a731013010e72beee0f8c9277a23da896427600a320ee619051a97e81533e"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-win32.whl", hash = "sha256:1c1478a276324e760bf6fd7f5cd27068b93e53b8b2aa1bb007fa67cde18cb533"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27m-win_amd64.whl", hash = "sha256:514088c158e334a48e6c5bd1d598a9da58997d511b570b4af165b74c82e9b641"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:7f891fe73d6b48dc74a6bce0d354e5342b6462ac464f130d5e9df97849ff39bb"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:9a975ee1e20766c9946314594adab09f7454e69e5d49908500cf5cec3b430d32"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:0496c65daa9602d6397a57be3d8493131019db9c47b0e171933d4d7bd723142f"},
+    {file = "pyinstrument_cext-0.2.4-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:84c64a07dc5309ba518d2a49ad60d037a7eaeb5d369a2101059b611f3de49f22"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:12ff14b7612903db6649fb86915dc043c1bdae443cc0e35655675517ed7f93cf"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:1484d4a9087f53eb06b4a5e8be7513a19d5078367b0349dd4506eded4f274c69"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:8cb752a55ba6568a2184b6e0661a5568241f2e77b7b62ee0689bb83d22780a2b"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:007bdf955d79fdc44b29bf10e21a411c600d11bbf9c4a3539ca1d94f5c9887e8"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:1cb5ca06672951bee9f88c0758ba43110d0bb30a37225dbc1900cefccb3d7928"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-win32.whl", hash = "sha256:7976f462f00d4de1caaf11dfd0535dbbe8db86b4c2cc900e4b53a7b123777e73"},
+    {file = "pyinstrument_cext-0.2.4-cp35-cp35m-win_amd64.whl", hash = "sha256:4e048fb074c232d3ac1de94c10a220a5ad4a7467e80074f7c79643264f6e1084"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:a36abcc4d05367911a84347b1702495ddbc926497c9a8a3478e228aa4865ece5"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:7fca6caf9591cd2e82dee5c859034b65bad1a58e231164099dbbd8c8dec8a2c1"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:c917947de242cd6aaece2740033e1cf6a214177b52632fa21163a656ed3b1ce5"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:b0c6cc84f221853235f51f32dceaaa7753a9e95d47cd5820862fd1ed170a9e02"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:ad9a268c4aade6c12146bb24fcdf80e4f014446845428f206c77327b274d7a44"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-win32.whl", hash = "sha256:e692afe758e6cd20f4bcb3bc0cac7ccdc67e3963d8d953ec27336614fa5d6552"},
+    {file = "pyinstrument_cext-0.2.4-cp36-cp36m-win_amd64.whl", hash = "sha256:2352abfe89152050ad6637924de9d00a5e7be1173598a8322e0372d2aa1b9acf"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a3c74954a4ae618e4f4fe8fc3817c6e4f97f8fe3f2991cac602314ebbae60db2"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:a6ee06f68c0e7fad5088c658d99b4711a8119b554940514e53239f3f24b5b1c1"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:a9a99d3ff1715f320f676c59d71b32624fd30c07b5c3fca559e042f2efe6492d"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:4bbd2f99d70834a72cd1f4afdaf7150c36212e2db625add00bcdec738984acf8"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:0f14f3d57ffeffa7f297dad14bc411463de6c1af5309abeb12ba8911c1ab91ec"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-win32.whl", hash = "sha256:931d8d0b5eeac63771fbef056fbe595615dab370fab2f0cc713ad2ce4b249166"},
+    {file = "pyinstrument_cext-0.2.4-cp37-cp37m-win_amd64.whl", hash = "sha256:a94d60d4ceb168ce9564a95e837430f4de55faf3af7a831e644627c0ce3f3716"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:a5ff7cb9a349f1b97d89e1ecbcfb4bc8945d8dac7372ecfb9c40270b3806e45c"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-manylinux1_i686.whl", hash = "sha256:2ed6a661fc0626f6e29929b4ef7ec8d8e90ce1874fa5fe046b57949a09c47f45"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:de6584e4ec0ec3fb7f6340c7ab02944b2d6eaff4bfbd0202badf17fc0b5d0dea"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:6a0dda3b9daca75646d4bcfbfb45c1ce97dab77c1beaa1e53289149519da6384"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:ca1e78c35cf187db0aaa1492cfd8d64d28195953d591cd5c43ab4bf68086433d"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-win32.whl", hash = "sha256:6ee514618d88e66f44878dd52c52f6060ceaf06b74892ceb67a11b3670cf7117"},
+    {file = "pyinstrument_cext-0.2.4-cp38-cp38-win_amd64.whl", hash = "sha256:77856dbe676a379eab84ea9a3b02fcffeeb7775d5085b3960f3ec215c4ce4126"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:f21cd1a16aee568246b53793cc4647ea717d1412f5d9ca08fd4d36d4230a702b"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0d5d7d24e4f1ea965b9e0d5a41da8ea0aa5231519a161052e1eda26750f5cb78"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-manylinux1_i686.whl", hash = "sha256:fca2bb43ca64ce7802acb0fd59a64e519362419592b596dd573c09c5434ced7a"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:39599fc80c4e64e12b1866582fbe92e31d7b0bd74a6a76b9a2e1a9341335960b"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:efcb68318c5a36ac9780f5481f4ac0b1e0e449b4033b9366d4c85bea3343d3b1"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:486d94fca17aa7d2eb36033859a3e75102ea28e98fa8ca37ce044f348ca30656"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-win32.whl", hash = "sha256:59f3b50cc6754e6e96c829aa8fd8c4675cd53a45036934818a6a2722009b49c4"},
+    {file = "pyinstrument_cext-0.2.4-cp39-cp39-win_amd64.whl", hash = "sha256:fe611732306651d0a10e99bbd1f174d4e0a0572b68b74f0673a5665146507a26"},
+    {file = "pyinstrument_cext-0.2.4.tar.gz", hash = "sha256:79b29797209eebd441a8596accfa8b617445d9252fbf7ce75d3a4a0eb46cb877"},
 ]
 pylint = [
     {file = "pylint-2.6.0-py3-none-any.whl", hash = "sha256:bfe68f020f8a0fece830a22dd4d5dddb4ecc6137db04face4c3420a46a52239f"},
@@ -4032,6 +4233,10 @@ webencodings = [
 widgetsnbextension = [
     {file = "widgetsnbextension-3.5.1-py2.py3-none-any.whl", hash = "sha256:bd314f8ceb488571a5ffea6cc5b9fc6cba0adaf88a9d2386b93a489751938bcd"},
     {file = "widgetsnbextension-3.5.1.tar.gz", hash = "sha256:079f87d87270bce047512400efd70238820751a11d2d8cb137a5a5bdbaf255c7"},
+]
+win32-setctime = [
+    {file = "win32_setctime-1.0.3-py3-none-any.whl", hash = "sha256:dc925662de0a6eb987f0b01f599c01a8236cb8c62831c22d9cada09ad958243e"},
+    {file = "win32_setctime-1.0.3.tar.gz", hash = "sha256:4e88556c32fdf47f64165a2180ba4552f8bb32c1103a2fafd05723a0bd42bd4b"},
 ]
 wordcloud = [
     {file = "wordcloud-1.8.1-cp27-cp27m-macosx_10_6_x86_64.whl", hash = "sha256:2e85b1a6b8211436d47f902837c866c682c5d00046706f1d8e72cc0cd9210d64"},

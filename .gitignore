@@ -147,3 +147,4 @@ coverage.xml
 htmlcov
 *.sav
 export
+checkpoints

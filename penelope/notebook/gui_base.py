@@ -1,14 +1,15 @@
+import contextlib
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List
 
 import ipywidgets as widgets
 import penelope.notebook.utility as notebook_utility
 import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import PoS_Tag_Scheme, default_data_folder, flatten, get_logger
+from penelope.utility import PropertyValueMaskingOpts, better_flatten, default_data_folder, get_logger
 
 from . import interface
 
@@ -47,7 +48,23 @@ class BaseGUI:
         rows=8,
         description='',
         disabled=False,
-        layout=default_layout,
+        layout=widgets.Layout(width='160px'),
+    )
+    _pos_paddings: widgets.SelectMultiple = widgets.SelectMultiple(
+        options=[],
+        value=[],
+        rows=8,
+        description='',
+        disabled=False,
+        layout=widgets.Layout(width='160px'),
+    )
+    _pos_excludes: widgets.SelectMultiple = widgets.SelectMultiple(
+        options=[],
+        value=[],
+        rows=8,
+        description='',
+        disabled=False,
+        layout=widgets.Layout(width='160px'),
     )
     _filename_fields: widgets.Text = widgets.Text(
         value="",
@@ -66,7 +83,7 @@ class BaseGUI:
         value=True, description='To lower', icon='check', layout=button_layout
     )
     _remove_stopwords: widgets.ToggleButton = widgets.ToggleButton(
-        value=True, description='No stopwords', icon='check', layout=button_layout
+        value=False, description='No stopwords', icon='check', layout=button_layout
     )
     _only_alphabetic: widgets.ToggleButton = widgets.ToggleButton(
         value=False, description='Only alphabetic', icon='', layout=button_layout
@@ -80,10 +97,20 @@ class BaseGUI:
         description='',
         disabled=False,
         rows=8,
-        layout=widgets.Layout(width='280px'),
+        layout=widgets.Layout(width='100px'),
     )
     _count_threshold: widgets.IntSlider = widgets.IntSlider(
         description='', min=1, max=1000, step=1, value=10, layout=default_layout
+    )
+    _use_pos_groupings: widgets.ToggleButton = widgets.ToggleButton(
+        value=True, description='PoS groups', icon='', layout=button_layout
+    )
+    _phrases = widgets.Text(
+        value='',
+        placeholder='Enther phrases, use comma (,) as phrase delimiter',
+        description='',
+        disabled=False,
+        layout=widgets.Layout(width='480px'),
     )
 
     _vectorize_button: widgets.Button = widgets.Button(
@@ -133,10 +160,13 @@ class BaseGUI:
                 self.extra_placeholder,
                 widgets.HBox(
                     [
-                        widgets.VBox([widgets.HTML("<b>Part-Of-Speech tags</b>"), self._pos_includes]),
+                        widgets.VBox([widgets.HTML("<b>Target PoS</b>"), self._pos_includes]),
+                        widgets.VBox([widgets.HTML("<b>Padding PoS</b>"), self._pos_paddings]),
+                        widgets.VBox([widgets.HTML("<b>Exclude PoS</b>"), self._pos_excludes]),
                         widgets.VBox([widgets.HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
                     ]
                 ),
+                widgets.HBox([widgets.VBox([widgets.HTML("<b>Phrases</b>"), self._phrases])]),
                 widgets.HBox(
                     [
                         widgets.VBox(
@@ -149,7 +179,14 @@ class BaseGUI:
                             [
                                 widgets.HBox(
                                     [
-                                        widgets.VBox([self._lemmatize, self._to_lowercase, self._remove_stopwords]),
+                                        widgets.VBox(
+                                            [
+                                                self._use_pos_groupings,
+                                                self._lemmatize,
+                                                self._to_lowercase,
+                                                self._remove_stopwords,
+                                            ]
+                                        ),
                                         self.buttons_placeholder,
                                         widgets.VBox(
                                             [
@@ -193,6 +230,7 @@ class BaseGUI:
 
     def _corpus_type_changed(self, *_):
         self._pos_includes.disabled = self._corpus_type.value == 'text'
+        self._pos_paddings.disabled = self._corpus_type.value == 'text'
         self._lemmatize.disabled = self._corpus_type.value == 'text'
 
     # @view.capture(clear_output=True)
@@ -249,6 +287,11 @@ class BaseGUI:
         self._only_alphabetic.observe(self._toggle_state_changed, 'value')
         self._only_any_alphanumeric.observe(self._toggle_state_changed, 'value')
         self._vectorize_button.on_click(self._compute_handler)
+        self._use_pos_groupings.observe(self.update_pos_schema, 'value')
+
+        self._pos_includes.observe(self.pos_select_update, 'value')
+        self._pos_paddings.observe(self.pos_select_update, 'value')
+        self._pos_excludes.observe(self.pos_select_update, 'value')
 
         self.update_config(config)
         self.compute_callback = compute_callback
@@ -259,14 +302,42 @@ class BaseGUI:
     def update_config(self, __config: CorpusConfig) -> "BaseGUI":
 
         self._config = __config
+        self.update_pos_schema({})
+        return self
 
-        pos_schema = utility.get_pos_schema(self._config.pipeline_payload.pos_schema_name)
+    def update_pos_schema(self, *_) -> "BaseGUI":
 
-        self._pos_includes.value = []
-        self._pos_includes.options = pos_schema.groups
-        self._pos_includes.value = [pos_schema.groups['Noun'], pos_schema.groups['Verb']]
+        pos_schema: utility.PoS_Tag_Scheme = self._config.pos_schema
+
+        tags: Dict[str, str] = {f"{tag}/{description}": tag for tag, description in pos_schema.description.items()}
+
+        for _pos_widget in [self._pos_includes, self._pos_paddings, self._pos_excludes]:
+            _pos_widget.value = []
+            _pos_widget.options = pos_schema.groups if self._use_pos_groupings.value else tags
+
+        if self._use_pos_groupings.value:
+            self._pos_includes.value = [pos_schema.groups['Noun'], pos_schema.groups['Verb']]
+            self._pos_paddings.value = []
+            self._pos_excludes.value = [pos_schema.groups['Delimiter']]
+        else:
+            self._pos_includes.value = pos_schema.groups['Noun'] + pos_schema.groups['Verb']
+            self._pos_paddings.value = []
+            self._pos_excludes.value = pos_schema.groups['Delimiter']
 
         return self
+
+    def pos_select_update(self, event):
+        with contextlib.suppress(Exception):
+
+            if event['name'] != 'value' or len(event['new']) < len(event['old']):
+                return
+
+            for _pos_widget in [self._pos_includes, self._pos_paddings, self._pos_excludes]:
+                if _pos_widget is event['owner']:
+                    continue
+                _pos_widget.unobserve(self.pos_select_update, 'value')
+                _pos_widget.value = [x for x in _pos_widget.value if x not in event['new']]
+                _pos_widget.observe(self.pos_select_update, 'value')
 
     @property
     def tokens_transform_opts(self) -> TokensTransformOpts:
@@ -295,24 +366,21 @@ class BaseGUI:
 
     @property
     def extract_tagged_tokens_opts(self) -> ExtractTaggedTokensOpts:
-        pos_schema = utility.get_pos_schema(self._config.pipeline_payload.pos_schema_name)
         return ExtractTaggedTokensOpts(
-            pos_includes=f"|{'|'.join(flatten(self._pos_includes.value))}|",
-            pos_excludes=f"|{'|'.join(pos_schema.groups.get('Delimiter', []))}|",
+            pos_includes=f"|{'|'.join(better_flatten(self._pos_includes.value))}|",
+            pos_paddings=f"|{'|'.join(better_flatten(self._pos_paddings.value))}|",
+            pos_excludes=f"|{'|'.join(better_flatten(self._pos_excludes.value))}|",
             lemmatize=self._lemmatize.value,
             passthrough_tokens=list(),
+            phrases=self.phrases,
         )
 
     @property
-    def tagged_tokens_filter_opts(self) -> TaggedTokensFilterOpts:
-
-        return TaggedTokensFilterOpts(is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None)
-
-    def set_PoS_scheme(self, pos_scheme: PoS_Tag_Scheme):
-
-        self._pos_includes.value = None
-        self._pos_includes.options = pos_scheme.groups
-        self._pos_includes.value = [pos_scheme.groups['Noun'], pos_scheme.groups['Verb']]
+    def tagged_tokens_filter_opts(self) -> PropertyValueMaskingOpts:
+        # FIXME #48 Check if _only_alphabetic is valid for Stanza & Sparv (or ignored)
+        return PropertyValueMaskingOpts(
+            is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None
+        )
 
     @property
     def vectorize_opts(self) -> VectorizeOpts:
@@ -355,6 +423,13 @@ class BaseGUI:
     @property
     def corpus_config(self) -> CorpusConfig:
         return self._config
+
+    @property
+    def phrases(self) -> List[List[str]]:
+        if not self._phrases.value.strip():
+            return None
+        _phrases = [phrase.split() for phrase in self._phrases.value.strip().split(',')]
+        return _phrases
 
     @property
     def compute_opts(self) -> interface.ComputeOpts:

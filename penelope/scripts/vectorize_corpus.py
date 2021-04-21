@@ -1,10 +1,12 @@
 import sys
+from typing import Sequence
 
 import click
 import penelope.notebook.interface as interface
 import penelope.workflows as workflows
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
+from penelope.pipeline.convert import parse_phrases
 from penelope.utility import getLogger
 
 logger = getLogger("penelope")
@@ -25,12 +27,17 @@ def split_filename(filename, sep='_'):
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
 )
 @click.option(
+    '-m', '--pos-paddings', default=None, help='List of POS tags to replace with a padding marker.', type=click.STRING
+)
+@click.option(
     '-x',
     '--pos-excludes',
     default='|MAD|MID|PAD|',
     help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
     type=click.STRING,
 )
+@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
+@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words')
 @click.option(
@@ -57,7 +64,11 @@ def main(
     output_folder: str = None,
     output_tag: str = None,
     create_subfolder: bool = True,
+    phrase: Sequence[str] = None,
+    phrase_file: str = None,
     pos_includes: str = None,
+    pos_paddings: str = None,
+    # FIXME: pos_excludes PoS-exclude default cannot be PoS-schema dependent
     pos_excludes: str = '|MAD|MID|PAD|',
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -75,6 +86,7 @@ def main(
     try:
 
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
+        phrases = parse_phrases(phrase_file, phrase)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
@@ -99,8 +111,10 @@ def main(
             text_reader_opts=corpus_config.text_reader_opts,
             extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
+                pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
+                phrases=phrases,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
             count_threshold=count_threshold,

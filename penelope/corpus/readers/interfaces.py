@@ -1,14 +1,15 @@
+from __future__ import annotations
+
 import abc
 import csv
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
-import numpy as np
-import pandas as pd
-from penelope.utility import FilenameFieldSpecs, pandas_utils
+from penelope.utility import FilenameFieldSpecs
 
-from ..document_index import DocumentIndex
+if TYPE_CHECKING:
+    from ..document_index import DocumentIndex
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
@@ -41,27 +42,39 @@ class TextReaderOpts:
         return TextReaderOpts(**{**self.props, **kwargs})
 
 
+PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
+
+
 @dataclass
 class ExtractTaggedTokensOpts:
 
-    # FIXME: Removed optional, change default to False if optional
-    lemmatize: bool  # = True
+    lemmatize: bool
 
     target_override: str = None
 
+    """ These PoS define the tokens of interest """
     pos_includes: str = ''
-    # FIXME: Changed default, investigate use, force in Sparv extracts
-    pos_excludes: str = ''  # "|MAD|MID|PAD|"
 
-    # FIXME: Implement in spaCy extract
+    """ These PoS are always removed """
+    pos_excludes: str = ''
+
+    """ The PoS define tokens that are replaced with a dummy marker `*` """
+    pos_paddings: str = None
+    pos_replace_marker: str = '*'
+
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
 
-    def get_pos_includes(self):
-        return self.pos_includes.strip('|').split('|') if self.pos_includes else None
+    phrases: PhraseSubstitutions = None
 
-    def get_pos_excludes(self):
-        return self.pos_excludes.strip('|').split('|') if self.pos_excludes is not None else None
+    def get_pos_includes(self) -> Set[str]:
+        return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
+
+    def get_pos_excludes(self) -> Set[str]:
+        return set(self.pos_excludes.strip('|').split('|')) if self.pos_excludes is not None else set()
+
+    def get_pos_paddings(self) -> Set[str]:
+        return set(self.pos_paddings.strip('|').split('|')) if self.pos_paddings is not None else set()
 
     def get_passthrough_tokens(self) -> Set[str]:
         if self.passthrough_tokens is None:
@@ -73,54 +86,11 @@ class ExtractTaggedTokensOpts:
         return dict(
             pos_includes=self.pos_includes,
             pos_excludes=self.pos_excludes,
+            pos_paddings=self.pos_paddings,
             passthrough_tokens=(self.passthrough_tokens or []),
             lemmatize=self.lemmatize,
             append_pos=self.append_pos,
         )
-
-
-class TaggedTokensFilterOpts:
-    """Used for filtering tagged data that are stored as Pandas data frames.
-    A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
-
-    def __init__(self, **kwargs):
-        super().__setattr__('data', kwargs or dict())
-
-    def __getitem__(self, key: int):
-        return self.data[key]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __setattr__(self, k, v):
-        self.data[k] = v
-
-    def __getattr__(self, k):
-        try:
-            return self.data[k]
-        except KeyError:
-            return None
-
-    @property
-    def props(self) -> Dict:
-        return self.data
-
-    def mask(self, doc: pd.DataFrame) -> np.ndarray:
-
-        return pandas_utils.create_mask(doc, self.data)
-
-    def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
-        if len(self.hot_attributes(doc)) == 0:
-            return doc
-        return doc[self.mask(doc)]
-
-    def hot_attributes(self, doc: pd.DataFrame) -> List[str]:
-        """Returns attributes that __might__ filter tagged frame"""
-        return [
-            (attr_name, attr_value)
-            for attr_name, attr_value in self.data.items()
-            if attr_name in doc.columns and attr_value is not None
-        ]
 
 
 class ICorpusReader(abc.ABC):

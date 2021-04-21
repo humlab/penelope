@@ -2,12 +2,21 @@ corpus_name: riksdagens-protokoll
 corpus_pattern: '*sparv4.csv.zip'
 corpus_type: 3
 language: swedish
-content_deserialize_opts:
+checkpoint_opts:
     content_type_code: 1
     sep: "\t"
     quoting: 3
     document_index_name: null
     document_index_sep: null
+    text_column: token
+    lemma_column: baseform
+    pos_column: pos
+    extra_columns: []
+    custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
+    deserialize_in_parallel: true
+    deserialize_processes: 6
+    deserialize_chunksize: 4
+    index_column: null
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
@@ -18,25 +27,20 @@ pipeline_payload:
   memory_store:
     lang: se
     tagger: Sparv
+    sparv_version: 4
     text_column: token
     lemma_column: baseform
     pos_column: pos
-    sparv_version: 4
   pos_schema_name: SUC
 tagged_tokens_filter_opts:
-  data:
-    is_alpha: null
-    is_digit: null
-    is_punct: false
-    is_stop: null
 text_reader_opts:
   as_binary: false
   filename_fields:
    - "year:prot\\_(\\d{4}).*"
    - "year2:prot_\\d{4}(\\d{2})__*"
-   - "number:prot_\\d+__(\\d+).*"
+   - "number:prot_\\d+[afk_]{0,4}__(\\d+).*"
   filename_filter: null
   filename_pattern: '*.csv'
   index_field: null
   sep: "\t"
-  quoting: "\t"
+  quoting: 3

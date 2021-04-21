@@ -18,7 +18,7 @@ def compute(
     corpus_config: pipeline.CorpusConfig,
     checkpoint_file: Optional[str] = None,
 ) -> co_occurrence.Bundle:
-    """Creates and stored a concept co-occurrence bundle using specified options."""
+    """Creates and stores a concept co-occurrence bundle using specified options."""
 
     try:
 
@@ -31,11 +31,19 @@ def compute(
         checkpoint_filename: Optional[str] = (
             checkpoint_file or f"{corpus_config.corpus_name}_{POS_CHECKPOINT_FILENAME_POSTFIX}"
         )
-        tagged_frame_pipeline = corpus_config.get_pipeline(
-            "tagged_frame_pipeline", checkpoint_filename=checkpoint_filename
+
+        tagged_frame_pipeline: pipeline.CorpusPipeline = corpus_config.get_pipeline(
+            "tagged_frame_pipeline",
+            corpus_filename=args.corpus_filename,
+            checkpoint_filename=checkpoint_filename,
         )
+
+        # FIXME: #55 No passthrough of co-occurrence concept words
+        args.extract_tagged_tokens_opts.passthrough_tokens = list(args.context_opts.concept)
+
         compute_result: co_occurrence.ComputeResult = (
             tagged_frame_pipeline
+            # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
             + pipeline.wildcard_to_co_occurrence_pipeline(
                 tokens_transform_opts=args.tokens_transform_opts,
                 extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,

@@ -30,7 +30,7 @@ def filename_satisfied_by(
     filename: str, filename_filter: Union[List[str], Callable], filename_pattern: str = None
 ) -> bool:
 
-    """Returns all filenames that are satisfied by filename filter, and that matchers pattern"""
+    """Returns true if filename is satisfied by filename filter, and matches pattern"""
 
     if filename_pattern is not None:
         if not fnmatch.fnmatch(filename, filename_pattern):
@@ -39,7 +39,15 @@ def filename_satisfied_by(
     if filename_filter is None:
         return True
 
-    if isinstance(filename_filter, list):
+    if isinstance(
+        filename_filter,
+        (
+            list,
+            set,
+            tuple,
+            dict,
+        ),
+    ):
 
         # Try both with and without extension
         if filename not in filename_filter and strip_path_and_extension(filename) not in filename_filter:
@@ -52,6 +60,30 @@ def filename_satisfied_by(
             return False
 
     return True
+
+
+def filenames_satisfied_by(
+    filenames: List[str], filename_filter: Union[List[str], Callable] = None, filename_pattern: str = None, sort=False
+) -> List[str]:
+    """Filters list of filenames based on `filename_pattern` and `filename_filter`
+
+    Args:
+        filenames (List[str]): Filenames to filter
+        filename_filter (Union[List[str], Callable]): Predicate or list of filenames
+        filename_pattern (str, optional): Glob pattern. Defaults to None.
+
+    Returns:
+        List[str]: [description]
+    """
+    if filename_filter is None and filename_pattern is None:
+        return filenames
+
+    return [
+        filename
+        for filename in (sorted(filenames) if sort else filenames)
+        if filename_satisfied_by(filename, filename_filter)
+        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+    ]
 
 
 def filename_whitelist(filename: str) -> str:

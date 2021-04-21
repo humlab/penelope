@@ -1,7 +1,7 @@
 import io
 
 import pandas as pd
-from penelope.corpus.readers import TaggedTokensFilterOpts
+from penelope.utility import PropertyValueMaskingOpts
 
 
 def test_mask_punct_space_when_no_space():
@@ -17,7 +17,7 @@ def test_mask_punct_space_when_no_space():
 """
     doc: pd.DataFrame = pd.read_csv(io.StringIO(data), sep='\t', index_col=0)
 
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     mask = filter_opts.mask(doc)
 
     assert mask is not None
@@ -41,7 +41,7 @@ def test_mask_punct_space_when_no_space_or_punct():
 
     doc = pd.DataFrame(**data)
 
-    assert TaggedTokensFilterOpts(is_punct=False, is_stop=True).mask(doc).sum() == 7
+    assert PropertyValueMaskingOpts(is_punct=False, is_stop=True).mask(doc).sum() == 7
 
 
 def test_mask_when_empty_document_succeeds():
@@ -53,4 +53,4 @@ def test_mask_when_empty_document_succeeds():
 
     doc = pd.DataFrame(**data)
 
-    assert TaggedTokensFilterOpts(is_punct=False).mask(doc).sum() == 0
+    assert PropertyValueMaskingOpts(is_punct=False).mask(doc).sum() == 0

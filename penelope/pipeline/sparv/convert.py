@@ -2,7 +2,7 @@ from io import StringIO
 
 import pandas as pd
 
-from ..checkpoint import CorpusSerializeOpts, TaggedFrameContentSerializer
+from ..checkpoint import CheckpointOpts, CsvContentSerializer
 from ..tagged_frame import TaggedFrame
 
 
@@ -11,8 +11,8 @@ def extract_lemma(token: str, baseform: str) -> str:
     return lemma
 
 
-class SparvCsvSerializer(TaggedFrameContentSerializer):
-    def deserialize(self, content: str, options: CorpusSerializeOpts) -> TaggedFrame:
+class SparvCsvSerializer(CsvContentSerializer):
+    def deserialize(self, content: str, options: CheckpointOpts) -> TaggedFrame:
         """Extracts first part of baseform (format of baseform is `|lemma|xyz|`"""
         df: TaggedFrame = pd.read_csv(
             StringIO(content),
@@ -20,9 +20,6 @@ class SparvCsvSerializer(TaggedFrameContentSerializer):
             quoting=options.quoting,
             index_col=False,
             skiprows=[1],  # XML <text> tag
-            # converters={
-            # 'baseform': lambda x: '' if (x or '').strip('|') == '' else x.strip('|').split('|')[0]
-            # }
         ).fillna('')
         df['baseform'] = df.apply(lambda x: extract_lemma(x['token'], x['baseform']), axis=1)
         return df

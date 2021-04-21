@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import Any, Sequence
+from typing import Any, Dict, List, Sequence
 
 import numpy as np
 import pandas as pd
@@ -54,7 +54,7 @@ def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
 def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     """Creates a mask based on key-values in `criterias`
 
-    Each key-value in `criterias` specifies a filter. The filters are combined using boelean `and`.
+    Each key-value in `criterias` specifies a filter. The filters are combined using boolean `and`.
 
     Args:
         doc (pd.DataFrame): Data frame to mask
@@ -105,3 +105,46 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
             mask &= value_serie == attr_value
 
     return mask
+
+
+class PropertyValueMaskingOpts:
+    """A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
+
+    def __init__(self, **kwargs):
+        super().__setattr__('data', kwargs or dict())
+
+    def __getitem__(self, key: int):
+        return self.data[key]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __setattr__(self, k, v):
+        self.data[k] = v
+
+    def __getattr__(self, k):
+        try:
+            return self.data[k]
+        except KeyError:
+            return None
+
+    @property
+    def props(self) -> Dict:
+        return self.data
+
+    def mask(self, doc: pd.DataFrame) -> np.ndarray:
+
+        return create_mask(doc, self.data)
+
+    def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
+        if len(self.hot_attributes(doc)) == 0:
+            return doc
+        return doc[self.mask(doc)]
+
+    def hot_attributes(self, doc: pd.DataFrame) -> List[str]:
+        """Returns attributes that __might__ filter tagged frame"""
+        return [
+            (attr_name, attr_value)
+            for attr_name, attr_value in self.data.items()
+            if attr_name in doc.columns and attr_value is not None
+        ]

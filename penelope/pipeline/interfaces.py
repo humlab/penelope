@@ -3,12 +3,14 @@ from __future__ import annotations
 import abc
 import os
 from collections import defaultdict
+from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Union
 
 from penelope.corpus import (
     DocumentIndex,
+    DocumentIndexHelper,
     consolidate_document_index,
     load_document_index,
     update_document_index_properties,
@@ -41,7 +43,7 @@ class ContentType(IntEnum):
     DOCUMENT_CONTENT_TUPLE = 13
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
-    ID_TAGGED_FRAME = 16
+    TAGGED_ID_FRAME = 16
 
 
 @dataclass
@@ -176,6 +178,15 @@ class PipelinePayload:
         """Add properties of `other` to self. Used when combining two pipelines"""
         ...
 
+    def extend_document_index(self, other_index: DocumentIndex) -> "PipelinePayload":
+        if self.effective_document_index is None:
+            self.effective_document_index = other_index
+        else:
+            self.effective_document_index = (
+                DocumentIndexHelper(self.effective_document_index).extend(other_index).document_index
+            )
+        return self
+
     @staticmethod
     def update_path(new_path: str, old_path: str, method: str) -> str:
         """Updates folder path or old_path, either by replacing existing path or by joining"""
@@ -229,18 +240,29 @@ class ITask(abc.ABC):
         return self.process_payload(payload)
 
     def enter(self):
+        """Called prior to stream generation."""
         return
 
     def exit(self):
+        """Called after stream has been generated."""
         return
 
-    def outstream(self) -> Iterable[DocumentPayload]:
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        """Generates stream of payloads. Overridable. """
+
         if self.instream is None:
             raise PipelineError("No instream specified. Have you loaded a corpus source?")
 
-        self.enter()
         for payload in self.instream:
             yield self.process(payload)
+
+    # FIXME #50 Make outstream non-overridable
+    def outstream(self) -> Iterable[DocumentPayload]:
+        """Returns stream of payloads. Non-overridable! """
+
+        self.enter()
+        for payload in self.process_stream():
+            yield payload
         self.exit()
 
     def hookup(self, pipeline: pipelines.AnyPipeline) -> ITask:
@@ -259,10 +281,7 @@ class ITask(abc.ABC):
                 return
             if self.in_content_type == content_type:
                 return
-        if isinstance(
-            self.in_content_type,
-            (list, tuple),
-        ):
+        if isinstance(self.in_content_type, (list, tuple)):
             if content_type in self.in_content_type:
                 return
         raise PipelineError("content type not valid for task")
@@ -275,20 +294,48 @@ class ITask(abc.ABC):
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
 
+# FIXME #46 Token2Id raises KeyError
+class Token2Id(MutableMapping):
+    """A token-to-id mapping (dictionary)"""
 
-class Token2Id(defaultdict):
-    def __init__(self, *args):
-        self.default_factory = self.__len__
-        super().__init__(*args)
+    def __init__(self, store: Optional[Union[dict, defaultdict]] = None):
+        if isinstance(store, defaultdict):
+            self.store = store
+        elif isinstance(store, dict):
+            self.store = defaultdict(int, self.store)
+        else:
+            self.store = store or defaultdict()
+        self.store.default_factory = self.store.__len__
+
+    def __getitem__(self, key):
+        return self.store[self._keytransform(key)]
+
+    def __setitem__(self, key, value):
+        self.store[self._keytransform(key)] = value
+
+    def __delitem__(self, key):
+        del self.store[self._keytransform(key)]
+
+    def __iter__(self):
+        return iter(self.store)
+
+    def __len__(self):
+        return len(self.store)
+
+    def _keytransform(self, key):
+        return key
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
         for token in tokens:
-            _ = self[token]
+            _ = self.store[token]
         return self
-
-    def open(self) -> "Token2Id":
-        self.default_factory = None
 
     def close(self) -> "Token2Id":
-        self.default_factory = self.__len__
+        self.store.default_factory = None
+
+    def open(self) -> "Token2Id":
+        self.store.default_factory = self.__len__
         return self
+
+    def id2token(self) -> dict:
+        return {v: k for k, v in self.store.items()}

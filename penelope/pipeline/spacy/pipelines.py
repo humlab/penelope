@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any
 
 from penelope.co_occurrence.co_occurrence import ContextOpts
 from penelope.corpus.readers.text_transformer import TextTransformOpts
-from penelope.utility import get_logger, path_add_suffix
+from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
 
 from .. import pipelines
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
-    from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts
+    from penelope.corpus.readers import ExtractTaggedTokensOpts
 
     from ..config import CorpusConfig
 
@@ -57,7 +57,7 @@ def to_tagged_frame_pipeline(
 def spaCy_DTM_pipeline(
     corpus_config: CorpusConfig,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     tokens_transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     corpus_filename: str = None,
@@ -84,7 +84,7 @@ def spaCy_co_occurrence_pipeline(
     corpus_filename: str,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: TaggedTokensFilterOpts = None,
+    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     partition_column: str = 'year',

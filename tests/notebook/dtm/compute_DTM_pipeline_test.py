@@ -8,7 +8,7 @@ from penelope.pipeline.config import CorpusConfig
 
 @pytest.fixture
 def dummy_config():
-    return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yaml')
+    return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yml')
 
 
 def test_compute_DTM():

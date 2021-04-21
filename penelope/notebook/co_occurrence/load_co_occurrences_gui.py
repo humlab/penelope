@@ -4,13 +4,13 @@ from typing import Callable
 
 import penelope.co_occurrence as co_occurrence
 from ipywidgets import Button, HBox, Label, Layout, Output, VBox
+from loguru import logger
 from penelope.notebook.utility import FileChooserExt2
-from penelope.utility import default_data_folder, getLogger
-
-logger = getLogger('penelope')
+from penelope.utility import default_data_folder
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
+CLEAR_OUTPUT = True
 
 debug_view = Output(layout={"border": "1px solid black"})
 
@@ -104,7 +104,7 @@ class LoadGUI:
         return self._filename.selected
 
 
-@debug_view.capture(clear_output=True)
+@debug_view.capture(clear_output=CLEAR_OUTPUT)
 def create_load_gui(
     data_folder: str,
     filename_pattern: str = co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
@@ -120,13 +120,14 @@ def create_load_gui(
     return gui
 
 
-@debug_view.capture(clear_output=True)
+@debug_view.capture(clear_output=CLEAR_OUTPUT)
 def load_co_occurrence_bundle(filename: str) -> co_occurrence.Bundle:
     try:
         if not filename or not os.path.isfile(filename):
             raise ValueError("Please select co-occurrence file")
 
         bundle = co_occurrence.load_bundle(filename)
+        logger.info("co-occurrence loaded")
         return bundle
     except (ValueError, FileNotFoundError, PermissionError) as ex:
         logger.error(ex)

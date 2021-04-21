@@ -55,6 +55,10 @@ toml = "^0.10.2"
 wordcloud = "^1.8.0"
 ipycytoscape = "1.1.0"
 dephell = "^0.8.3"
+pyarrow = "^3.0.0"
+loguru = "^0.5.3"
+ipyregulartable = "^0.2.0"
+perspective-python = "^0.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -75,15 +79,12 @@ pytest-xdist = "==2.*,>=2.2.0"
 mypy = "==0.*,>=0.790.0"
 Sphinx = "==3.*,>=3.5.1"
 recommonmark = "==0.*,>=0.7.1"
+pyinstrument = "^3.4.1"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 co_occurrence = "penelope.scripts.co_occurrence:main"
-
-
-
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -91,7 +92,7 @@ addopts = [
      "-rfE", # Show extra info as specified by chars: (f)ailed, (E)rror, (s)kipped, (x)failed, (X)passed, (p)assed, (P)assed with output, (a)ll except passed (p/P), or (A)ll
      "-q",
      "-s",
-     "-n4",
+    #"-n4",
 ]
 log_cli = "False"
 testpaths = [

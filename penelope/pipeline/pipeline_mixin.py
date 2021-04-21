@@ -4,15 +4,17 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from penelope import co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
+from penelope.utility import PropertyValueMaskingOpts
 
 from . import tasks
-from .checkpoint import CorpusSerializeOpts
+from .checkpoint import CheckpointOpts
 
 if TYPE_CHECKING:
     from . import pipelines
+# pylint: disable=too-many-public-methods
 
-# FIXME:  pipelines.CorpusPipeline => pipeline.T_self
+
 class PipelineShortcutMixIn:
     """Shortcuts for specific tasks that can be injected to derived pipelines"""
 
@@ -25,29 +27,47 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
+    def write_feather(self, folder: str):
+        return self.add(tasks.WriteFeather(folder=folder))
+
+    def read_feather(self, folder: str):
+        return self.add(tasks.ReadFeather(folder=folder))
+
     def save_tagged_frame(
-        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts
     ) -> pipelines.CorpusPipeline:
-        return self.add(tasks.SaveTaggedCSV(filename=filename, options=options))
+        return self.add(tasks.SaveTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts))
 
     def load_tagged_frame(
         self: pipelines.CorpusPipeline,
         filename: str,
-        options: CorpusSerializeOpts,
+        checkpoint_opts: CheckpointOpts,
         extra_reader_opts: TextReaderOpts = None,
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
-        return self.add(tasks.LoadTaggedCSV(filename=filename, options=options, extra_reader_opts=extra_reader_opts))
+        return self.add(
+            tasks.LoadTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts, extra_reader_opts=extra_reader_opts)
+        )
 
     def load_tagged_xml(
-        self: pipelines.CorpusPipeline, filename: str, options: CorpusSerializeOpts
+        self: pipelines.CorpusPipeline, filename: str, options: CheckpointOpts
     ) -> pipelines.CorpusPipeline:
         """ SparvXML => DATAFRAME """
         return self.add(tasks.LoadTaggedXML(filename=filename, options=options))
 
-    def checkpoint(self: pipelines.CorpusPipeline, filename: str) -> pipelines.CorpusPipeline:
+    def checkpoint(
+        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts = None
+    ) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
-        return self.add(tasks.Checkpoint(filename=filename))
+        return self.add(tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts))
+
+    def checkpoint_feather(
+        self: pipelines.CorpusPipeline,
+        folder: str,
+        force: bool = False,
+    ) -> pipelines.CorpusPipeline:
+        """ [DATAFRAME] => [CHECKPOINT] => PASSTHROUGH """
+        return self.add(tasks.CheckpointFeather(folder=folder, force=force))
 
     def tokens_to_text(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         """ [TOKEN] => TEXT """
@@ -115,7 +135,7 @@ class PipelineShortcutMixIn:
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
         extract_opts: ExtractTaggedTokensOpts,
-        filter_opts: TaggedTokensFilterOpts,
+        filter_opts: PropertyValueMaskingOpts,
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.TaggedFrameToTokens(
@@ -123,3 +143,19 @@ class PipelineShortcutMixIn:
                 filter_opts=filter_opts,
             )
         )
+
+    def tap_stream(self: pipelines.CorpusPipeline, target: str, tag: str) -> pipelines.CorpusPipeline:
+        """Taps the stream into a debug zink."""
+        return self.add(tasks.TapStream(target=target, tag=tag, enabled=True))
+
+    # def filter_tagged_frame(
+    #     self: pipelines.CorpusPipeline,
+    #     extract_opts: ExtractTaggedTokensOpts,
+    #     filter_opts: PropertyValueMaskingOpts,
+    # ) -> pipelines.CorpusPipeline:
+    #     return self.add(
+    #         tasks.FilterTaggedFrame(
+    #             extract_opts=extract_opts,
+    #             filter_opts=filter_opts,
+    #         )
+    #     )

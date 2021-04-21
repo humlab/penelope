@@ -1,8 +1,9 @@
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TaggedTokensFilterOpts, TextReaderOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusType
+from penelope.utility import PropertyValueMaskingOpts
 
 
 def FakeComputeOptsSpacyCSV(
@@ -42,11 +43,12 @@ def FakeComputeOptsSpacyCSV(
             lemmatize=True,
             target_override=None,
             pos_includes='|NOUN|PROPN|VERB|',
+            pos_paddings=None,
             pos_excludes='|PUNCT|EOL|SPACE|',
             passthrough_tokens=[],
             append_pos=False,
         ),
-        tagged_tokens_filter_opts=TaggedTokensFilterOpts(
+        tagged_tokens_filter_opts=PropertyValueMaskingOpts(
             is_alpha=False,
             is_punct=False,
             is_digit=None,
@@ -101,9 +103,10 @@ def FakeComputeOptsSparvCSV(
         extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes=None,
             pos_excludes='|MAD|MID|PAD|',
+            pos_paddings=None,
             lemmatize=False,
         ),
-        tagged_tokens_filter_opts=TaggedTokensFilterOpts(
+        tagged_tokens_filter_opts=PropertyValueMaskingOpts(
             is_alpha=False,
             is_punct=False,
             is_digit=None,

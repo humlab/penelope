@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import collections
 import functools
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, TypeVar, Union
+import itertools
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, Type, TypeVar, Union
 
 from .interfaces import ContentType, DocumentPayload, ITask, PipelinePayload
 
@@ -67,15 +68,24 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Resolves the pipeline by calling outstream on last task"""
         return self.setup().tasks[-1].outstream()
 
-    def exhaust(self) -> CorpusPipelineBase:
+    def take(self, n_count: int = 1) -> Iterator[DocumentPayload]:
+        """Resolves the pipeline by calling outstream on last task"""
+        return [x for x in itertools.islice(self.resolve(), n_count)]
+
+    def exhaust(self, n_count=0) -> CorpusPipelineBase:
         """Exhaust the entire pipeline, disregarding items"""
-        collections.deque(self.resolve(), maxlen=0)
+        collections.deque(self.resolve(), maxlen=n_count)
         return self
 
     def add(self, task: Union[ITask, List[ITask]]) -> _T_self:
         """Add one or more tasks to the pipeline. Hooks up a reference to pipeline for each task"""
         tasks = [task] if isinstance(task, ITask) else task
         self.tasks.extend(map(lambda x: x.hookup(self), tasks))
+        return self
+
+    def addif(self, flag: bool, task_cls: Type[ITask], *args, **kwargs) -> _T_self:
+        if flag:
+            self.add(task_cls(*args, **kwargs))
         return self
 
     def get(self, key: str, default: Any = None) -> Any:

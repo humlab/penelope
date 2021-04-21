@@ -33,14 +33,15 @@ SUC_tags = {
 
 SUC_PoS_tag_groups = {
     'Pronoun': ['DT', 'HD', 'HP', 'HS', 'PS', 'PN'],
-    'Noun': ['NN', 'PM', 'UO'],
-    'Verb': ['PC', 'VB'],
+    'Noun': ['NN', 'PM'],
+    'Verb': ['VB'],
     'Adverb': ['AB', 'HA', 'IE', 'IN', 'PL'],
     'Numeral': ['RG', 'RO'],
     'Adjective': ['JJ'],
     'Preposition': ['PP'],
     'Conjunction': ['KN', 'SN'],
     'Delimiter': ['MAD', 'MID', 'PAD'],
+    'Other': ['PC', 'UO'],
 }
 
 
@@ -67,11 +68,11 @@ PD_SUC_PoS_tags = (
         data=[
             ('AB', 'Adverb', 'Adverb'),
             ('DT', 'Pronoun', 'Determinator'),
-            ('HA', 'Adverb', 'Adverbs for inquire'),
-            ('HD', 'Pronoun', 'Determinator for inquire'),
-            ('HP', 'Pronoun', 'Pronoun for inquire'),
-            ('HS', 'Pronoun', 'Pronoun for inquire'),
-            ('IE', 'Adverb', 'Infinitive mark'),
+            ('HA', 'Adverb', 'Adverbs (inq.)'),
+            ('HD', 'Pronoun', 'Det. (inq.)'),
+            ('HP', 'Pronoun', 'Pronoun (inq.)'),
+            ('HS', 'Pronoun', 'Pronoun (inq.)'),
+            ('IE', 'Adverb', 'Inf. mark'),
             ('IN', 'Adverb', 'Interjection'),
             ('JJ', 'Adjective', 'Adjectiv'),
             ('KN', 'Conjunction', 'Conjunction'),
@@ -81,11 +82,11 @@ PD_SUC_PoS_tags = (
             ('PM', 'Noun', 'Proper noun'),
             ('PN', 'Pronoun', 'Pronoun'),
             ('PP', 'Preposition', 'Preposition'),
-            ('PS', 'Pronoun', 'Possesive pronoun'),
+            ('PS', 'Pronoun', 'Poss. pron.'),
             ('RG', 'Numeral', 'Numeral'),
             ('RO', 'Numeral', 'Numeral'),
             ('SN', 'Conjunction', 'Subjuncion'),
-            ('UO', 'Noun', 'Foreign ord'),
+            ('UO', 'Other', 'Foreign ord'),
             ('VB', 'Verb', 'Verb'),
             ('MAD', 'Delimiter', 'Delimiter'),
             ('MID', 'Delimiter', 'Delimiter'),
@@ -93,6 +94,8 @@ PD_SUC_PoS_tags = (
         ],
         columns=['tag', 'tag_group_name', 'description'],
     )
+    .rename_axis('pos_id')
+    .reset_index()
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
@@ -123,9 +126,12 @@ PD_Universal_PoS_tags = (
         ],
         columns=['tag', 'tag_group_name', 'description'],
     )
+    .rename_axis('pos_id')
+    .reset_index()
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
+
 
 PD_PennTree_O5_PoS_tags = (
     pd.DataFrame(
@@ -186,6 +192,8 @@ PD_PennTree_O5_PoS_tags = (
         ],
         columns=['tag', 'tag_group_name', 'universal_tag', 'description'],
     )
+    .rename_axis('pos_id')
+    .reset_index()
     .set_index('tag')
     .assign(tag=lambda x: x.index)
 )
@@ -195,6 +203,8 @@ class PoS_Tag_Scheme:
     def __init__(self, df: pd.DataFrame) -> None:
         self.PD_PoS_tags: pd.DataFrame = df
         self.PD_PoS_groups: pd.DataFrame = df.groupby('tag_group_name')['tag'].agg(list)
+        self.pos_to_id: dict = df['pos_id'].to_dict()
+        self.id_to_pos: dict = {v: k for k, v in self.pos_to_id.items()}
 
     @property
     def tags(self) -> List[str]:
@@ -243,6 +253,10 @@ class PoS_Tag_Scheme:
     @property
     def Other(self) -> List[str]:
         return self.groups.get('Other', [])
+
+    @property
+    def description(self) -> Dict[str, str]:
+        return self.PD_PoS_tags.set_index('tag')['description'].to_dict()
 
 
 Known_PoS_Tag_Schemes = dict(

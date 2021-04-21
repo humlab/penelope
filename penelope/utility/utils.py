@@ -8,6 +8,7 @@ import os
 import platform
 import re
 import time
+import uuid
 from importlib import import_module
 from numbers import Number
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
@@ -23,6 +24,13 @@ V = TypeVar('V')
 
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
+
+
+def fn_name(default=None):
+    try:
+        return inspect.stack()[1][3]
+    except Exception:
+        return default or str(uuid.uuid1())
 
 
 def get_logger(
@@ -140,6 +148,22 @@ def flatten(lofl: List[List[T]]) -> List[T]:
     """Returns a flat single list out of supplied list of lists."""
 
     return [item for sublist in lofl for item in sublist]
+
+
+def better_flatten2(lst) -> Iterable[Any]:
+    for el in lst:
+        if isinstance(el, (Iterable,)) and not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
+            el, (str, bytes)
+        ):
+            yield from better_flatten2(el)
+        else:
+            yield el
+
+
+def better_flatten(lst: Iterable[Any]) -> List[Any]:
+    if isinstance(lst, (str, bytes)):
+        return lst
+    return [x for x in better_flatten2(lst)]
 
 
 def project_series_to_range(series: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
@@ -500,7 +524,7 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         module_path, cls_or_function_name = class_or_function_path.rsplit('.', 1)
         module = import_module(module_path)
         return getattr(module, cls_or_function_name)
-    except (ImportError, AttributeError) as e:
+    except (ImportError, AttributeError, ValueError) as e:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 

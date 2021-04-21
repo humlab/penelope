@@ -46,7 +46,7 @@ def display_grid(
     column_defs: List[dict] = None,
     grid_options: dict = None,
     grid_style: dict = None,
-):
+) -> ipyaggrid.Grid:
 
     if isinstance(data, dict):
         df = pd.DataFrame(data=data)  # .set_index('year')

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 import os
 from io import StringIO
-from typing import Any, Callable, Dict, List, Mapping, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -15,6 +17,9 @@ from penelope.utility import (
     strip_path_and_extension,
     strip_paths,
 )
+
+if TYPE_CHECKING:
+    from .readers.interfaces import TextReaderOpts
 
 
 class DocumentIndexError(ValueError):
@@ -64,9 +69,30 @@ class DocumentIndexHelper:
 
     @staticmethod
     def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndexHelper":
+
+        if filename_fields is None:
+            return None
+
+        if hasattr(filename_fields, 'filename_fields'):
+            """Is actually a TextReaderOpts"""
+            filename_fields = filename_fields.filename_fields
+
         _metadata = extract_filenames_metadata(filenames=filenames, filename_fields=filename_fields)
         _index = metadata_to_document_index(_metadata)
+
         return DocumentIndexHelper(_index)
+
+    @staticmethod
+    def from_filenames2(filenames: List[str], reader_opts: TextReaderOpts) -> Optional[DocumentIndex]:
+
+        if not reader_opts or reader_opts.filename_fields is None:
+            return None
+
+        _index: DocumentIndex = DocumentIndexHelper.from_filenames(
+            filenames=filenames, filename_fields=reader_opts.filename_fields
+        ).document_index
+
+        return _index
 
     @staticmethod
     def from_str(data_str: str, sep: str = '\t', document_id_field: str = 'document_id') -> "DocumentIndexHelper":
@@ -219,6 +245,16 @@ class DocumentIndexHelper:
             self._document_index, document_id_field=None
         )
         self._document_index = self._document_index.set_index('document_id', drop=False).rename_axis('')
+        return self
+
+    def extend(self, other_index: DocumentIndex) -> "DocumentIndexHelper":
+        if self._document_index is None:
+            self._document_index = other_index
+        else:
+            # if not self._document_index.columns.equals(self._document_index.columns):
+            #     raise ValueError("Document index columns mismatch")
+            self._document_index = self._document_index.append(other_index, ignore_index=False)
+            self._document_index['document_id'] = range(0, len(self._document_index))
         return self
 
 

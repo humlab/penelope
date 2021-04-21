@@ -7,13 +7,13 @@ import spacy
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
-    TaggedTokensFilterOpts,
     TextReader,
     TextReaderOpts,
     TextTransformOpts,
     streamify_text_source,
 )
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
+from penelope.utility import PropertyValueMaskingOpts
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -218,7 +218,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
 def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True)
-    filter_opts = TaggedTokensFilterOpts(is_punct=None)
+    filter_opts = PropertyValueMaskingOpts(is_punct=None)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == [
         'Mars',
@@ -241,35 +241,35 @@ def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc):
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, target_override="lemma_")
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars', 'be', 'once', 'home', 'to', 'sea', 'and', 'ocean', 'and', 'perhaps', 'even', 'life']
 
 
 def test_extract_tokens_target_text_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False)
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ["Mars", "was", "once", "home", "to", "seas", "and", "oceans", "and", "perhaps", "even", "life"]
 
 
 def test_extract_tokens_lemma_no_stops_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True)
-    filter_opts = TaggedTokensFilterOpts(is_stop=False, is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_stop=False, is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars', 'home', 'sea', 'ocean', 'life']
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc):
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|PROPN|')
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|PROPN|', pos_paddings=None)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['Mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc):
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='|VERB|NOUN|')
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='|VERB|NOUN|', pos_paddings=None)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == ['seas', 'oceans', 'life']
 
@@ -340,8 +340,9 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
+        pos_paddings='|ADJ|',
     )
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     pipeline = (
         CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts)
@@ -356,12 +357,12 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     assert payloads == [
         ['sea', 'ocean', 'life'],
         ['atmosphere', 'blow'],
-        ['activity', 'surface', 'cease'],
-        ['planet'],
+        ['*', 'activity', 'surface', 'cease'],
+        ['*', 'planet'],
         ['volcano', 'erupt', 'year'],
         ['eruption', 'occur', 'year', 'region', 'call'],
-        ['eruption'],
-        ['volcanos', 'erupt', 'surface', 'interval'],
+        ['*', '*', 'eruption'],
+        ['volcanos', 'erupt', 'surface', '*', 'interval'],
     ]
 
     assert set(list(pipeline.payload.document_index.columns)) == set(
@@ -396,8 +397,9 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
     )
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column='pos_'))
@@ -430,8 +432,9 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
     )
-    filter_opts = TaggedTokensFilterOpts(is_punct=False)
+    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(**tagged_columns))

@@ -22,6 +22,7 @@ def snuttify(token):
     return "'{}'".format(token)
 
 
+# FIXME Implement pos_paddings
 class SparvXml2Text:
     def __init__(
         self,
@@ -51,10 +52,13 @@ class SparvXml2Text:
         _target = "'lemma'" if _opts.lemmatize is True else "'content'"
         _pos_includes = snuttify(_opts.pos_includes or "")
         _pos_excludes = snuttify(_opts.pos_excludes or "")
+        # _pos_paddings = snuttify(_opts.pos_paddings or "")
+        # FIXME: Implement pos_paddings/pos_replace_marker
         _append_pos = snuttify("|" if _opts.append_pos else "")
         text = self.xslt_transformer(
             xml,
             pos_includes=_pos_includes,
+            # pos_paddings=_pos_paddings,
             delimiter=self.delimiter,
             target=_target,
             append_pos=_append_pos,

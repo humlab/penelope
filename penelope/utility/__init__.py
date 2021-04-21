@@ -45,6 +45,7 @@ from .filename_utils import (
     data_path_ts,
     filename_satisfied_by,
     filename_whitelist,
+    filenames_satisfied_by,
     filter_names_by_pattern,
     now_timestamp,
     path_add_date,
@@ -54,6 +55,7 @@ from .filename_utils import (
     path_of,
     replace_extension,
     replace_path,
+    strip_extensions,
     strip_path_and_add_counter,
     strip_path_and_extension,
     strip_paths,
@@ -62,6 +64,7 @@ from .filename_utils import (
     ts_data_path,
 )
 from .mixins import PropsMixIn
+from .pandas_utils import PropertyValueMaskingOpts, create_mask, create_mask2, setup_pandas
 from .pos_tags import (
     Known_PoS_Tag_Schemes,
     PD_PoS_tag_groups,
@@ -69,12 +72,14 @@ from .pos_tags import (
     PoS_Tag_Schemes,
     PoS_TAGS_SCHEMES,
     get_pos_schema,
+    pos_tags_to_str,
 )
 from .utils import (
     LOG_FORMAT,
     DummyContext,
     ListOfDicts,
     assert_is_strictly_increasing,
+    better_flatten,
     chunks,
     clamp,
     clamp_values,
@@ -92,6 +97,7 @@ from .utils import (
     filter_dict,
     filter_kwargs,
     flatten,
+    fn_name,
     get_func_args,
     get_logger,
     getLogger,

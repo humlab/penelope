@@ -4,12 +4,13 @@ from typing import List, Sequence
 import click
 import penelope.notebook.interface as interface
 import penelope.workflows as workflows
+from loguru import logger
 from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
-from penelope.utility import getLogger
+from penelope.pipeline.convert import parse_phrases
+from penelope.utility import PropertyValueMaskingOpts
 
-logger = getLogger("penelope")
 # pylint: disable=too-many-arguments
 
 
@@ -27,7 +28,9 @@ logger = getLogger("penelope")
     help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
     type=click.INT,
 )
-@click.option('-p', '--partition-key', default=None, help='Pertition key(s)', multiple=True, type=click.STRING)
+@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
+@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
+@click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
 @click.option(
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
 )
@@ -57,6 +60,7 @@ logger = getLogger("penelope")
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
+@click.option('-f', '--force/--no-force', default=False, is_flag=True, help='Ignore checkpoints')
 def main(
     corpus_config: str = None,
     input_filename: str = None,
@@ -64,9 +68,13 @@ def main(
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
+    phrase: Sequence[str] = None,
+    phrase_file: str = None,
     partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
+    pos_paddings: str = None,
+    # FIXME: #58 Make defaults imdependent of PoS schema (read from corpus_config)
     pos_excludes: str = '|MAD|MID|PAD|',
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -78,11 +86,67 @@ def main(
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
     count_threshold: int = None,
+    force: bool = False,
 ):
+    process_co_ocurrence(
+        corpus_config=corpus_config,
+        input_filename=input_filename,
+        output_filename=output_filename,
+        concept=concept,
+        no_concept=no_concept,
+        context_width=context_width,
+        phrase=phrase,
+        phrase_file=phrase_file,
+        partition_key=partition_key,
+        create_subfolder=create_subfolder,
+        pos_includes=pos_includes,
+        pos_paddings=pos_paddings,
+        pos_excludes=pos_excludes,
+        to_lowercase=to_lowercase,
+        lemmatize=lemmatize,
+        remove_stopwords=remove_stopwords,
+        min_word_length=min_word_length,
+        max_word_length=max_word_length,
+        keep_symbols=keep_symbols,
+        keep_numerals=keep_numerals,
+        only_any_alphanumeric=only_any_alphanumeric,
+        only_alphabetic=only_alphabetic,
+        count_threshold=count_threshold,
+        force=force,
+    )
 
+
+def process_co_ocurrence(
+    corpus_config: str = None,
+    input_filename: str = None,
+    output_filename: str = None,
+    concept: List[str] = None,
+    no_concept: bool = None,
+    context_width: int = None,
+    phrase: Sequence[str] = None,
+    phrase_file: str = None,
+    partition_key: Sequence[str] = None,
+    create_subfolder: bool = True,
+    pos_includes: str = None,
+    pos_paddings: str = None,
+    pos_excludes: str = '|MAD|MID|PAD|',
+    to_lowercase: bool = True,
+    lemmatize: bool = True,
+    remove_stopwords: str = None,
+    min_word_length: int = 2,
+    max_word_length: int = None,
+    keep_symbols: bool = False,
+    keep_numerals: bool = False,
+    only_any_alphanumeric: bool = False,
+    only_alphabetic: bool = False,
+    count_threshold: int = None,
+    force: bool = False,
+):
     try:
         output_folder, output_tag = filename_to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
+
+        phrases = parse_phrases(phrase_file, phrase)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
@@ -107,8 +171,10 @@ def main(
             text_reader_opts=corpus_config.text_reader_opts,
             extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
+                pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
+                phrases=phrases,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
             count_threshold=count_threshold,
@@ -119,7 +185,9 @@ def main(
                 concept=(concept or []),
                 ignore_concept=no_concept,
             ),
+            tagged_tokens_filter_opts=PropertyValueMaskingOpts(),
             partition_keys=partition_key,
+            force=force,
         )
 
         workflows.co_occurrence.compute(
@@ -129,7 +197,8 @@ def main(
 
         logger.info('Done!')
 
-    except Exception as ex:
+    except Exception as ex:  # pylint: disable=try-except-raise
+        logger.exception(ex)
         click.echo(ex)
         sys.exit(1)
 

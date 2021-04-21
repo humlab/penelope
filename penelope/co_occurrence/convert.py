@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 from dataclasses import dataclass
@@ -5,6 +6,7 @@ from typing import Mapping, Tuple, Union
 
 import pandas as pd
 import scipy
+from loguru import logger
 from penelope.corpus import (
     CorpusVectorizer,
     DocumentIndex,
@@ -16,12 +18,9 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import ExtractTaggedTokensOpts, ICorpusReader, TextReaderOpts
 from penelope.notebook.word_trends import TrendsData
-from penelope.utility import getLogger, read_json, replace_extension, right_chop, strip_path_and_extension
+from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
 from .interface import ContextOpts, CoOccurrenceError
-
-logger = getLogger()
-
 
 CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
@@ -51,24 +50,61 @@ def store_co_occurrences(filename: str, df: pd.DataFrame):
     else:
         compression = 'infer'
 
+    logger.info("storing CSV file")
     df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
 
-    # pandas_to_csv_zip(
-    #     zip_filename=co_occurrence_filename,
-    #     dfs=(co_occurrences, 'co_occurrence.csv'),
-    #     extension='csv',
-    #     header=True,
-    #     sep="\t",
-    #     decimal=',',
-    #     quotechar='"',
-    # )
+    # with contextlib.suppress(Exception):
+    try:
+        logger.info("storing FEATHER file")
+        df.reset_index(drop=True).to_feather(replace_extension(filename, ".feather"), compression="lz4")
+    except Exception as ex:
+        logger.info("store as FEATHER file failed")
+        logger.error(ex)
 
 
 def load_co_occurrences(filename: str) -> pd.DataFrame:
     """Load co-occurrences from CSV-file"""
-    df = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
+
+    feather_filename: str = replace_extension(filename, ".feather")
+
+    """ Read FEATHER if exists """
+    if os.path.isfile(feather_filename):
+        logger.info("loading FEATHER file")
+        df: pd.DataFrame = pd.read_feather(feather_filename)
+        if 'index' in df.columns:
+            df.drop(columns='index', inplace=True)
+        return df
+
+    df: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
+
+    with contextlib.suppress(Exception):
+        logger.info("caching to FEATHER file")
+        store_feather(feather_filename, df)
 
     return df
+
+
+# 2021-04-20 09:24:49.546 | INFO     | penelope.co_occurrence.convert:store_feather:95 - COLUMNS: w1, w2, value, value_n_d, value_n_t, year
+# 2021-04-20 09:24:49.655 | INFO     | penelope.co_occurrence.convert:store_feather:98 - COLUMNS (after reset): index, w1, w2, value, value_n_d, value_n_t, year
+def load_feather(filename: str) -> pd.DataFrame:
+    feather_filename: str = replace_extension(filename, ".feather")
+    if os.path.isfile(feather_filename):
+        logger.info("loading FEATHER file")
+        co_occurrence: pd.DataFrame = pd.read_feather(feather_filename)
+        logger.info(f"COLUMNS (after load): {', '.join(co_occurrence.columns.tolist())}")
+        return co_occurrence
+    logger.info("FEATHER load FAILED")
+    return None
+
+
+def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
+    feather_filename: str = replace_extension(filename, ".feather")
+    # with contextlib.suppress(Exception):
+    #     logger.info("caching to FEATHER file")
+    logger.info(f"COLUMNS: {', '.join(co_occurrence.columns.tolist())}")
+    co_occurrence = co_occurrence.reset_index()
+    co_occurrence.to_feather(feather_filename, compression="lz4")
+    logger.info(f"COLUMNS (after reset): {', '.join(co_occurrence.columns.tolist())}")
 
 
 def to_vectorized_corpus(
@@ -135,6 +171,7 @@ def to_dataframe(
     id2token: Mapping[int, str],
     document_index: DocumentIndex = None,
     threshold_count: int = 1,
+    ignore_pad: str = None,
 ) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
 
@@ -188,6 +225,9 @@ def to_dataframe(
 
     coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
     coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
+
+    if ignore_pad is not None:
+        coo_df = coo_df[((coo_df.w1 != ignore_pad) & (coo_df.w2 != ignore_pad))]
 
     coo_df = coo_df[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
 

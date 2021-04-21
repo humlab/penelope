@@ -163,7 +163,7 @@ def test_tokenize_when_nn_lemmatized_lower_returns_correct_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
         tokens_transform_opts=TokensTransformOpts(to_lower=True),
     )
 
@@ -280,7 +280,7 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|VB|', lemmatize=True),
+        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|VB|', pos_paddings=None, lemmatize=True),
         reader_opts=TextReaderOpts(),
         chunk_size=None,
         tokens_transform_opts=TokensTransformOpts(
