@@ -5,8 +5,7 @@ PACKAGE_FOLDER=penelope
 SPACY_MODEL=en_core_web_sm
 PYTEST_ARGS=--durations=0 --cov=$(PACKAGE_FOLDER) --cov-report=xml --cov-report=html tests
 
-faster-release: guard_clean_working_repository bump.patch tag
-fast-release: clean tidy build guard_clean_working_repository bump.patch tag
+fast-release: clean tidy build guard_clean_working_repository bump.patch tag publish
 
 release: ready guard_clean_working_repository bump.patch tag
 
@@ -16,6 +15,9 @@ ready: tools clean tidy test lint build
 
 build: requirements.txt
 	@poetry build
+
+publish:
+	@poetry publish
 
 lint: tidy pylint flake8
 
