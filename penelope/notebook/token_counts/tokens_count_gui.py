@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 from typing import Callable, List
 
 import ipywidgets as widgets
@@ -17,6 +18,7 @@ logger = getLogger("penelope")
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']
 
+CLEAR_OUTPUT=True
 debug_view = widgets.Output()
 # pylint: disable=too-many-instance-attributes
 
@@ -56,11 +58,10 @@ class TokenCountsGUI:
         layout=widgets.Layout(width='120px'),
     )
 
-    _output = widgets.Output()
-
     _tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
 
     def layout(self) -> widgets.HBox:
+        global debug_view
         return widgets.HBox(
             [
                 widgets.VBox(
@@ -87,6 +88,7 @@ class TokenCountsGUI:
                             ],
                             layout={'width': '98%'},
                         ),
+                        debug_view,
                     ],
                     layout={'width': '98%'},
                 ),
@@ -126,6 +128,7 @@ class TokenCountsGUI:
     def setup(self, config_filenames: List[str]) -> "TokenCountsGUI":
 
         self._corpus_configs.options = {strip_path_and_extension(path): path for path in config_filenames}
+        self._corpus_configs.value = None
 
         if len(config_filenames) > 0:
             self._corpus_configs.value = config_filenames[0]
@@ -141,6 +144,7 @@ class TokenCountsGUI:
     def _display(self, _):
         self.display()
 
+    @debug_view.capture(clear_output=CLEAR_OUTPUT)
     def display(self) -> "TokenCountsGUI":
         global debug_view
 
@@ -150,10 +154,7 @@ class TokenCountsGUI:
 
         self.document_index: DocumentIndex = self.load_document_index_callback(corpus_config)
 
-        debug_view.clear_output()
-        self._output.clear_output()
-
-        with self._output:
+        if isinstance(self.document_index, pd.DataFrame):
             self._plot_counts()
 
         return self
@@ -186,7 +187,7 @@ class TokenCountsGUI:
         self._categories.values = ['#Tokens']
 
 
-@debug_view.capture()
+@debug_view.capture(clear_output=False)
 def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex) -> pd.DataFrame:
 
     if len(args.categories or []) > 0:
@@ -205,8 +206,16 @@ def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex
     return data.reset_index()
 
 
-@debug_view.capture()
+@debug_view.capture(clear_output=CLEAR_OUTPUT)
 def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
+
+    if not corpus_config.pipeline_payload.source:
+        logger.info("corpus filename is undefined. please check configuration")
+        return None
+
+    if not os.path.isfile(corpus_config.pipeline_payload.source):
+        logger.info(f"corpus file {corpus_config.pipeline_payload.source} not found. please check configuration.")
+        return None
 
     checkpoint_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
 
