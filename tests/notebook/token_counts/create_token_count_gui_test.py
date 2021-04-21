@@ -5,6 +5,8 @@ import pytest
 from penelope.notebook.token_counts import tokens_count_gui
 from penelope.pipeline import config as corpus_config
 
+# pylint: disable=redefined-outer-name
+
 
 def fake_config() -> corpus_config.CorpusConfig:
 
@@ -61,9 +63,10 @@ def test_create_token_count_gui_create_succeeds():
     )
 
     assert gui is not None
-    assert load_corpus_config_callback_is_called == True
+    assert load_corpus_config_callback_is_called
 
 
+@pytest.mark.skip(reason="long running")
 def test_load_document_index(config: corpus_config.CorpusConfig):
 
     config.pipeline_payload.source = 'riksdagens-protokoll.1920-2019.sparv4.csv.zip'
