@@ -13,7 +13,7 @@ view = widgets.Output(layout={'border': '2px solid green'})
 LAST_BUNDLE: co_occurrence.Bundle = None
 LAST_ARGS = None
 LAST_CONFIG = None
-CLEAR_OUTPUT = False
+CLEAR_OUTPUT = True
 
 
 def create(

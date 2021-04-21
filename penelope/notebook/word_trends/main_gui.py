@@ -15,7 +15,7 @@ view = widgets.Output(layout={'border': '2px solid green'})
 LAST_ARGS = None
 LAST_CORPUS_CONFIG = None
 LAST_CORPUS = None
-CLEAR_OUTPUT = False
+CLEAR_OUTPUT = True
 
 
 @view.capture(clear_output=CLEAR_OUTPUT)

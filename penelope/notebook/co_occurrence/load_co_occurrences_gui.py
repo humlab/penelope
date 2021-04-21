@@ -10,7 +10,7 @@ from penelope.utility import default_data_folder
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
-CLEAR_OUTPUT = False
+CLEAR_OUTPUT = True
 
 debug_view = Output(layout={"border": "1px solid black"})
 
