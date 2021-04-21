@@ -35,6 +35,9 @@ from penelope.utility import PropertyValueMaskingOpts
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
 )
 @click.option(
+    '-m', '--pos-paddings', default=None, help='List of POS tags to replace with a padding marker.', type=click.STRING
+)
+@click.option(
     '-x',
     '--pos-excludes',
     default='|MAD|MID|PAD|',
