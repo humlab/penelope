@@ -105,9 +105,13 @@ class BaseGUI:
     _use_pos_groupings: widgets.ToggleButton = widgets.ToggleButton(
         value=True, description='PoS groups', icon='', layout=button_layout
     )
+    # FIXME: #63 Append PoS togge button missing in GUI
+    _append_pos_tag: widgets.ToggleButton = widgets.ToggleButton(
+        value=False, description='Append PoS', icon='', layout=button_layout
+    )
     _phrases = widgets.Text(
         value='',
-        placeholder='Enther phrases, use comma (,) as phrase delimiter',
+        placeholder='Enter phrases, use semicoloon (;) as phrase delimiter',
         description='',
         disabled=False,
         layout=widgets.Layout(width='480px'),
@@ -190,9 +194,17 @@ class BaseGUI:
                                         self.buttons_placeholder,
                                         widgets.VBox(
                                             [
+                                                self._append_pos_tag,
                                                 self._only_alphabetic,
                                                 self._only_any_alphanumeric,
                                                 self._create_subfolder,
+                                            ]
+                                        ),
+                                        widgets.VBox(
+                                            [
+                                                widgets.HTML("&nbsp;"),
+                                                widgets.HTML("&nbsp;"),
+                                                widgets.HTML("&nbsp;"),
                                                 self._vectorize_button,
                                             ]
                                         ),
@@ -373,6 +385,7 @@ class BaseGUI:
             lemmatize=self._lemmatize.value,
             passthrough_tokens=list(),
             phrases=self.phrases,
+            append_pos=self._append_pos_tag.value,
         )
 
     @property
@@ -428,7 +441,7 @@ class BaseGUI:
     def phrases(self) -> List[List[str]]:
         if not self._phrases.value.strip():
             return None
-        _phrases = [phrase.split() for phrase in self._phrases.value.strip().split(',')]
+        _phrases = [phrase.split() for phrase in self._phrases.value.strip().split(';')]
         return _phrases
 
     @property
