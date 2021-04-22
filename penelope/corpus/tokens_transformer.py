@@ -60,7 +60,7 @@ class TokensTransformerBase:
         self.transforms.append(transform)
         return self
 
-    def transform(self, tokens: List[str]) -> TokensTransformer:
+    def transform(self, tokens: List[str]) -> List[str]:
 
         for ft in self.transforms:
             tokens = [x for x in ft(tokens)]

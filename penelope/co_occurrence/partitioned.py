@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterable, Tuple
 
 import more_itertools
 import pandas as pd
-from penelope.corpus import DocumentIndex, DocumentIndexHelper
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, TokensTransformOpts
 from penelope.utility import getLogger, strip_path_and_extension
 from tqdm.auto import tqdm
 
@@ -33,6 +33,7 @@ def partitioned_corpus_co_occurrence(
     *,
     payload: PipelinePayload,
     context_opts: ContextOpts,
+    transform_opts: TokensTransformOpts,
     global_threshold_count: int,
     partition_column: str = 'year',
     ignore_pad: str = None,
@@ -84,6 +85,7 @@ def partitioned_corpus_co_occurrence(
             context_opts=context_opts,
             threshold_count=1,
             ignore_pad=ignore_pad,
+            transform_opts=transform_opts,
         )
 
         co_occurrence[partition_column] = key

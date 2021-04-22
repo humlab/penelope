@@ -1,4 +1,6 @@
-import typing
+# type: ignore
+
+from typing import Set
 
 import nltk
 from nltk.tokenize import casual_tokenize, sent_tokenize, word_tokenize
@@ -13,8 +15,15 @@ for package in ['punkt', 'stopwords']:
 
 stopwords = nltk.corpus.stopwords
 
+STOPWORDS_CACHE = {}
 
-def extended_stopwords(language: str = 'swedish', extra_stopwords: typing.Set[str] = None) -> typing.Set[str]:
+
+def extended_stopwords(language: str = 'swedish', extra_stopwords: Set[str] = None) -> Set[str]:
     """Returns NLTK stopwords for given lanuage extended with specified extra stopwords"""
-    extra_stopwords = extra_stopwords or EXTRA_SWEDISH_STOPWORDS
-    return set(stopwords.words(language)).union(set(extra_stopwords or []))
+
+    if language not in STOPWORDS_CACHE:
+        STOPWORDS_CACHE[language] = (
+            set(stopwords.words(language)).union(EXTRA_STOPWORDS.get(language, {})).union(set(extra_stopwords or []))
+        )
+
+    return STOPWORDS_CACHE.get(language, {})

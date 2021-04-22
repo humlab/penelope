@@ -4,7 +4,7 @@ import pytest
 from penelope.co_occurrence import ContextOpts, corpus_co_occurrence, partitioned_corpus_co_occurrence
 from penelope.co_occurrence.convert import Bundle, store_bundle, to_vectorized_corpus
 from penelope.co_occurrence.partitioned import ComputeResult
-from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
+from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts, TokensTransformOpts
 from penelope.pipeline.interfaces import PipelinePayload
 from penelope.utility import dataframe_to_tuples
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
@@ -24,6 +24,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         threshold_count=0,
         ignore_pad=None,
+        transform_opts=None,
     )
     assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
 
@@ -40,6 +41,7 @@ def test_co_occurrence_with_no_concept_succeeds():
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         threshold_count=1,
         ignore_pad=None,
+        transform_opts=None,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -55,6 +57,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         threshold_count=2,
         ignore_pad=None,
+        transform_opts=None,
     )
     assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
 
@@ -74,6 +77,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=context_width),
+        transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True),
         global_threshold_count=threshold_count,
         partition_column='year',
         ignore_pad=None,
@@ -99,6 +103,7 @@ def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
+        transform_opts=None,
         global_threshold_count=None,
         partition_column='year',
         ignore_pad=None,
@@ -119,6 +124,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         stream=corpus,
         payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
+        transform_opts=None,
         global_threshold_count=1,
         partition_column='year',
         ignore_pad=None,

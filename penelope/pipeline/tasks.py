@@ -687,6 +687,7 @@ class ToCoOccurrence(ITask):
         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
 
     context_opts: co_occurrence.ContextOpts = None
+    transform_opts: TokensTransformOpts = None
     global_threshold_count: int = None
     partition_column: str = field(default='year')
     ignore_pad: str = field(default='*')
@@ -709,6 +710,7 @@ class ToCoOccurrence(ITask):
             stream=instream,
             payload=self.pipeline.payload,
             context_opts=self.context_opts,
+            transform_opts=self.transform_opts,
             global_threshold_count=self.global_threshold_count,
             partition_column=self.partition_column,
             ignore_pad=self.ignore_pad,

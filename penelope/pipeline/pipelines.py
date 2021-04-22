@@ -53,7 +53,6 @@ def wildcard_to_DTM_pipeline(
     except Exception as ex:
         raise ex
 
-
 def wildcard_to_co_occurrence_pipeline(
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
@@ -70,7 +69,11 @@ def wildcard_to_co_occurrence_pipeline(
                 filter_opts=tagged_tokens_filter_opts,
             )
             # .tap_stream("./tests/output/tapped_stream__tagged_frame_to_tokens.zip",  "tap_2_tagged_frame_to_tokens")
-            .tokens_transform(tokens_transform_opts=tokens_transform_opts)
+            .tokens_transform(
+                tokens_transform_opts=TokensTransformOpts(
+                    to_lower=tokens_transform_opts.to_lower,
+                ),
+            )
             # .tap_stream("./tests/output/tapped_stream__tokens_transform.zip",  "tap_3_tokens_transform")
             .vocabulary()
             .to_document_content_tuple()
@@ -78,6 +81,7 @@ def wildcard_to_co_occurrence_pipeline(
             # .tap_stream("./tests/output/tapped_stream__prior_to_co_occurrence.zip",  "tap_4_prior_to_co_occurrence")
             .to_co_occurrence(
                 context_opts=context_opts,
+                transform_opts=tokens_transform_opts,
                 global_threshold_count=global_threshold_count,
                 partition_column=partition_column,
             )

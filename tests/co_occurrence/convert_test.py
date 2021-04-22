@@ -4,7 +4,7 @@ import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.corpus.dtm as dtm
 import pytest
-from penelope.corpus import DocumentIndexHelper
+from penelope.corpus import DocumentIndexHelper, TokensTransformOpts
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDE_5DOCS
 from tests.utils import very_simple_corpus
 
@@ -141,10 +141,23 @@ def test_to_dataframe_coocurrence_matrix_when_paddins():
         document_index=text_corpus.document_index,
         threshold_count=1,
         ignore_pad='*',
+        transform_opts=None,
     )
 
     assert not (co_occurrences.w1 == '*').any()
     assert not (co_occurrences.w2 == '*').any()
+
+    co_occurrences = co_occurrence.to_dataframe(
+        term_term_matrix=term_term_matrix,
+        id2token=text_corpus.id2token,
+        document_index=text_corpus.document_index,
+        threshold_count=1,
+        ignore_pad='*',
+        transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"a"}),
+    )
+
+    assert not (co_occurrences.w1 == 'a').any()
+    assert not (co_occurrences.w2 == 'a').any()
 
 
 def test_load_and_store_bundle():

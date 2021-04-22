@@ -13,6 +13,7 @@ from penelope.corpus import (
     DocumentIndexHelper,
     ITokenizedCorpus,
     TokenizedCorpus,
+    TokensTransformer,
     TokensTransformOpts,
     VectorizedCorpus,
 )
@@ -172,6 +173,7 @@ def to_dataframe(
     document_index: DocumentIndex = None,
     threshold_count: int = 1,
     ignore_pad: str = None,
+    transform_opts: TokensTransformOpts = None,
 ) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
 
@@ -229,7 +231,13 @@ def to_dataframe(
     if ignore_pad is not None:
         coo_df = coo_df[((coo_df.w1 != ignore_pad) & (coo_df.w2 != ignore_pad))]
 
-    coo_df = coo_df[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
+    coo_df: pd.DataFrame = coo_df[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
+
+    if transform_opts is not None:
+        unique_tokens = set(coo_df.w1.unique().tolist()).union(coo_df.w2.unique().tolist())
+        transform: TokensTransformer = TokensTransformer(transform_opts)
+        keep_tokens = set(transform.transform(unique_tokens))
+        coo_df = coo_df[(coo_df.w1.isin(keep_tokens)) & (coo_df.w2.isin(keep_tokens))]
 
     return coo_df
 

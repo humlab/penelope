@@ -5,7 +5,7 @@ import itertools
 from typing import TYPE_CHECKING, Iterable, List, Mapping
 
 import pandas as pd
-from penelope.corpus import CorpusVectorizer, VectorizedCorpus
+from penelope.corpus import CorpusVectorizer, TokensTransformOpts, VectorizedCorpus
 from penelope.type_alias import FilenameTokensTuples
 
 from .convert import to_dataframe
@@ -91,6 +91,7 @@ def corpus_co_occurrence(
     context_opts: ContextOpts,
     threshold_count: int = 1,
     ignore_pad: str = None,
+    transform_opts: TokensTransformOpts = None,
 ) -> pd.DataFrame:
     """Computes a concept co-occurrence dataframe for given arguments
 
@@ -125,6 +126,7 @@ def corpus_co_occurrence(
         document_index=payload.document_index,
         threshold_count=threshold_count,
         ignore_pad=ignore_pad,
+        transform_opts=transform_opts,
     )
 
     return co_occurrences

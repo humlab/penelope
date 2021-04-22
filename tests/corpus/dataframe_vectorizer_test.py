@@ -176,6 +176,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         reader = PandasCorpusReader(self.create_test_dataframe())
         corpus = TokenizedCorpus(
             reader,
+            # Pre-compute transform options:
             tokens_transform_opts=TokensTransformOpts(
                 only_any_alphanumeric=False,
                 to_lower=False,
@@ -189,11 +190,24 @@ class Test_DataFrameVectorize(unittest.TestCase):
         term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
-        coo_df = to_dataframe(term_term_matrix, corpus.id2token, corpus.document_index, ignore_pad=None)
+        coo_df = to_dataframe(
+            term_term_matrix, corpus.id2token, corpus.document_index, ignore_pad=None, transform_opts=None
+        )
 
         # Assert
         assert 2 == int(coo_df[((coo_df.w1 == 'A') & (coo_df.w2 == 'B'))].value)
         assert 0 == len(coo_df[((coo_df.w1 == 'C') & (coo_df.w2 == 'F'))])
+
+        coo_df2 = to_dataframe(
+            term_term_matrix,
+            corpus.id2token,
+            corpus.document_index,
+            ignore_pad=None,
+            # Post-compute transform options:
+            transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"A"}),
+        )
+
+        assert len(coo_df2) < len(coo_df)
 
     def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted(self):
         corpus = self.create_simple_test_corpus(
