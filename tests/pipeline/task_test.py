@@ -47,7 +47,7 @@ def test_task_vocabulary_token2id():
 
 
 def test_CheckpointFeather_write_document_index():
-    folder = './test/output'
+    folder = './tests/output'
     expected_filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
 
     os.makedirs(folder, exist_ok=True)
