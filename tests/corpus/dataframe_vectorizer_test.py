@@ -207,7 +207,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
             transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"A"}),
         )
 
-        assert len(coo_df2) < len(coo_df)
+        assert len(coo_df2) <= len(coo_df)
 
     def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted(self):
         corpus = self.create_simple_test_corpus(
