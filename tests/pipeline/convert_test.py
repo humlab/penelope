@@ -193,17 +193,17 @@ def test_tagged_frame_to_token_counts():
 
 def test_detect_phrases(tagged_frame: pd.DataFrame):
 
-    found_phrases = detect_phrases(doc=tagged_frame, phrases=[], target="baseform")
+    found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[], ignore_case=True)
     assert found_phrases == []
 
-    found_phrases = detect_phrases(doc=tagged_frame, phrases=[["romansk"]], target="baseform")
+    found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[["romansk"]], ignore_case=True)
     assert found_phrases == []
 
-    found_phrases = detect_phrases(doc=tagged_frame, phrases=[["romansk", "kyrka"]], target="baseform")
+    found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[["romansk", "kyrka"]], ignore_case=True)
     assert found_phrases == [(4, "romansk_kyrka", 2)]
 
     found_phrases = detect_phrases(
-        doc=tagged_frame, phrases=[["väldig", "romansk"], ["romansk", "kyrka"]], target="baseform"
+        tagged_frame["baseform"], phrases=[["väldig", "romansk"], ["romansk", "kyrka"]], ignore_case=True
     )
     assert found_phrases == [(3, "väldig_romansk", 2), (4, "romansk_kyrka", 2)]
 
@@ -239,47 +239,42 @@ def test_parse_phrases():
     }
 
 
-def test_to_tagged_frame_with_phrase_detection():
+def test_to_tagged_frame_SUC_pos_with_phrase_detection():
 
     os.makedirs('./tests/output', exist_ok=True)
-    opts = dict(
-        filter_opts=None,
-        text_column='text',
-        lemma_column='lemma_',
-        pos_column='pos_',
-        ignore_case=False,
-    )
-    data_str: str = """	text	lemma_	pos_	is_punct	is_stop
-0	Constitution	constitution	NOUN	False	False
-1	of	of	ADP	False	True
-2	the	the	DET	False	True
-3	United	United	PROPN	False	False
-4	Nations	Nations	PROPN	False	False
-5	Educational	Educational	PROPN	False	False
-6	,	,	PUNCT	True	False
-7	Scientific	Scientific	PROPN	False	False
-8	and	and	CCONJ	False	True
-9	Cultural	Cultural	PROPN	False	False
-10	Organization	Organization	PROPN	False	False"""
+    data_str: str = """token	pos	baseform
+Herr	NN	|herr|
+talman	NN	|talman|
+!	MAD	|
+Jag	PN	|jag|
+ber	VB	|be|
+få	VB	|få|
+hemställa	VB	|hemställa|
+,	MID	|
+att	IE	|att|
+kammaren	NN	|kammare|
+måtte	VB	|må|
+besluta	VB	|besluta|
+att	IE	|att|
+välja	VB	|välja|
+suppleanter	NN	|suppleant|
+i	PL	|
+de	PN	|de|
+ständiga	JJ	|ständig|
+utskotten	NN	|utskott|
+.	MAD	|
+"""
 
-    tagged_frame: pd.date_range1 = pd.read_csv(StringIO(data_str), sep='\t', index_col=0)
+    tagged_frame: pd.DataFrame = pd.read_csv(StringIO(data_str), sep='\t', index_col=None)
 
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=ExtractTaggedTokensOpts(lemmatize=True))
-    assert tokens is not None
-
-    phrases = {'United_Nations': 'United Nations'.split(), 'United': ['United']}
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases)
-    phrased_tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
-    assert phrased_tokens[:9] == 'Constitution of the United_Nations Educational , Scientific and Cultural'.split(' ')
-
-    # FIXME: #60 Regressed logic when prioritizing phrases (longer should apply=)
-    # phrases = {'United_Nations': 'United Nations'.split(), 'the_United_Nations': 'the United Nations'.split()}
-    # phrased_tokens = tagged_frame_to_tokens(tagged_frame, **opts, phrases=phrases)
-    # assert phrased_tokens[:8] == 'Constitution of the_United_Nations Educational , Scientific and Cultural'.split(' ')
-
-    phrases = {'United_Nations': 'united nations'.split()}
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases)
+    phrases = {'herr_talman': 'herr talman'.split()}
     phrased_tokens = tagged_frame_to_tokens(
-        tagged_frame, **{**opts, **{'ignore_case': True}}, extract_opts=extract_opts
+        tagged_frame,
+        filter_opts=None,
+        text_column='token',
+        lemma_column='pos',
+        pos_column='baseform',
+        ignore_case=True,
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases),
     )
-    assert phrased_tokens[:9] == 'constitution of the united_nations educational , scientific and cultural'.split(' ')
+    assert phrased_tokens[:9] == ['herr_talman', '!', 'jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']

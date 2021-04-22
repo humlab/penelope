@@ -79,11 +79,11 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
     if ignore_case:
         doc[target] = doc[target].str.lower()
-        passthroughs = [x.lower() for x in passthroughs]
+        passthroughs = {x.lower() for x in passthroughs}
 
     """ Phrase detection """
     if extract_opts.phrases is not None:
-        found_phrases = detect_phrases(doc, extract_opts.phrases, target, ignore_case=ignore_case)
+        found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=ignore_case)
         if found_phrases:
             doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
             passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
@@ -121,9 +121,8 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
 
 def detect_phrases(
-    doc: pd.core.api.DataFrame,
+    target_series: pd.core.api.Series,
     phrases: PhraseSubstitutions,
-    target: str = None,
     ignore_case: str = False,
 ) -> List[Tuple[int, str, int]]:
     """Detects and updates phrases on document `doc`.
@@ -140,8 +139,6 @@ def detect_phrases(
     if not isinstance(phrases, (list, dict)):
         raise TypeError("phrase must be dict ot list")
 
-    target_series = doc[target]
-
     phrases = (
         {'_'.join(phrase): phrase for phrase in phrases}
         if isinstance(phrases, list)
@@ -149,7 +146,6 @@ def detect_phrases(
     )
 
     if ignore_case:
-        target_series = doc[target].str.lower()
         phrases = {key: [x.lower() for x in phrase] for key, phrase in phrases.items()}
 
     found_phrases = []
