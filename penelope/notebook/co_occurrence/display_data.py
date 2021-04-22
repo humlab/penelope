@@ -18,7 +18,7 @@ def truncate_to_threshold(co_occurrences: pd.DataFrame, threshold: int = 25) -> 
     threshold_tokens: pd.Index = global_tokens_counts[global_tokens_counts >= threshold].index
 
     co_occurrences = co_occurrences.set_index('tokens').loc[threshold_tokens][['year', 'value', 'value_n_t']]
-    co_occurrences['co_occurrences'] = co_occurrences.value_n_t.apply(lambda x: f'{x:.8f}')
+    co_occurrences['value_n_t'] = co_occurrences.value_n_t.apply(lambda x: f'{x:.8f}')
     return co_occurrences
 
 
