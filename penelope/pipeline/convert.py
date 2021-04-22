@@ -41,7 +41,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
     pos_column: str = 'pos_',
-    ignore_case: bool = False,
 ) -> Iterable[str]:
     """Extracts tokens from a tagged document represented as a Pandas data frame.
 
@@ -51,7 +50,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         text_column (str, optional): Name of text column in data frame. Defaults to 'text'.
         lemma_column (str, optional): Name of `lemma` column in data frame. Defaults to 'lemma_'.
         pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
-        ignore_case (bool, optional): Ignore case or not. Defaults to False.
 
     Returns:
         Iterable[str]: Sequence of extracted tokens
@@ -77,13 +75,14 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
     pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
-    if ignore_case:
+    if extract_opts.to_lowercase:
         doc[target] = doc[target].str.lower()
         passthroughs = {x.lower() for x in passthroughs}
 
     """ Phrase detection """
     if extract_opts.phrases is not None:
-        found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=ignore_case)
+        # FIXME #66 Lowercasing of extract tokens not consistent with phrase detection
+        found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=extract_opts.to_lowercase)
         if found_phrases:
             doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
             passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})

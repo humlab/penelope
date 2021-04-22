@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import collections
 import functools
 import itertools
 from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, Type, TypeVar, Union
@@ -81,7 +80,7 @@ class CorpusPipelineBase(Generic[_T_self]):
     def exhaust(self, n_count=0) -> CorpusPipelineBase:
         """Exhaust the entire pipeline, disregarding items"""
         for i in enumerate(self.resolve()):
-            if n_count > 0 and i >= n_count:
+            if 0 < n_count <= i:
                 break
         # collections.deque(self.resolve(), maxlen=n_count)
         return self

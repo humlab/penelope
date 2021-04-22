@@ -115,6 +115,7 @@ def main(
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
                 phrases=phrases,
+                to_lowercase=to_lowercase,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
             count_threshold=count_threshold,

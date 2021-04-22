@@ -385,6 +385,7 @@ class BaseGUI:
             lemmatize=self._lemmatize.value,
             passthrough_tokens=list(),
             phrases=self.phrases,
+            to_lowercase=self._to_lowercase.value,
             append_pos=self._append_pos_tag.value,
         )
 

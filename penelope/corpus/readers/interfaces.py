@@ -67,6 +67,8 @@ class ExtractTaggedTokensOpts:
 
     phrases: PhraseSubstitutions = None
 
+    to_lowercase: bool = False
+
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
 
