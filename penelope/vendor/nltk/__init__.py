@@ -22,8 +22,9 @@ def extended_stopwords(language: str = 'swedish', extra_stopwords: Set[str] = No
     """Returns NLTK stopwords for given lanuage extended with specified extra stopwords"""
 
     if language not in STOPWORDS_CACHE:
-        STOPWORDS_CACHE[language] = (
+        _stopwords = (
             set(stopwords.words(language)).union(EXTRA_STOPWORDS.get(language, {})).union(set(extra_stopwords or []))
         )
+        STOPWORDS_CACHE[language] = _stopwords
 
     return STOPWORDS_CACHE.get(language, {})

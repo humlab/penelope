@@ -146,7 +146,7 @@ class TokenCountsGUI:
     @debug_view.capture(clear_output=CLEAR_OUTPUT)
     def display(self) -> "TokenCountsGUI":
         global debug_view
-        # FIXME: #68 TokenCountsGUI: Don't display if config not specified
+
         if self._corpus_configs.value is None:
             return self
 
