@@ -5,16 +5,15 @@ from typing import Callable, List
 import ipywidgets as widgets
 import pandas as pd
 from bokeh.io import output_notebook
+from loguru import logger
 from penelope import pipeline
 from penelope.corpus import DocumentIndex
 from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.notebook.utility import OutputsTabExt
-from penelope.pipeline import interfaces
-from penelope.utility import PoS_Tag_Scheme, getLogger, path_add_suffix, strip_path_and_extension
+from penelope.pipeline import interfaces, tasks
+from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
 
 from .plot import plot_by_bokeh as plot_dataframe
-
-logger = getLogger("penelope")
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']
 
@@ -206,6 +205,19 @@ def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex
     return data.reset_index()
 
 
+def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFrame:
+
+    task: tasks.CheckpointFeather = pipe.find(tasks.CheckpointFeather)
+
+    if task is not None:
+
+        document_index = tasks.CheckpointFeather.read_document_index(task.folder)
+
+        return document_index
+
+    return None
+
+
 @debug_view.capture(clear_output=CLEAR_OUTPUT)
 def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
@@ -219,16 +231,20 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     checkpoint_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
 
-    p: pipeline.CorpusPipeline = (
-        corpus_config.get_pipeline(
-            "tagged_frame_pipeline",
-            checkpoint_filename=checkpoint_filename,
-        )
-        .tqdm()
-        .exhaust()
+    p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
+        "tagged_frame_pipeline",
+        checkpoint_filename=checkpoint_filename,
     )
 
+    document_index: DocumentIndex = probe_checkpoint_document_index(p)
+
+    if document_index is not None:
+        return document_index
+
+    p.tqdm().exhaust()
+
     document_index: DocumentIndex = p.payload.document_index
+
     if 'n_raw_tokens' not in document_index.columns:
         raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")
 

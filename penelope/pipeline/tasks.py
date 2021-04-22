@@ -1,3 +1,4 @@
+import contextlib
 import glob
 import itertools
 import os
@@ -12,6 +13,7 @@ import pandas as pd
 from loguru import logger
 from penelope import co_occurrence, utility
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
+from penelope.corpus.document_index import DocumentIndex
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
     TextReader,
@@ -265,16 +267,30 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
 
     def enter(self):
         if self.force:
-            try:
+            with contextlib.suppress(Exception):
                 shutil.rmtree(self.folder, ignore_errors=True)
-            except:  # pylint: disable=bare-except
-                pass
 
     def process_stream(self) -> Iterable[DocumentPayload]:
 
         task_cls = ReadFeather if os.path.isdir(self.folder) else WriteFeather
         task: ITask = task_cls(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
         return task.outstream()
+
+    @staticmethod
+    def read_document_index(folder: str) -> DocumentIndex:
+        filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
+        if os.path.isfile(filename):
+            document_index: DocumentIndex = pd.read_feather(filename).set_index('document_name', drop=False)
+            if '' in document_index.columns:
+                document_index.drop(columns='', inplace=True)
+            return document_index
+        return None
+
+    @staticmethod
+    def write_document_index(folder: str, document_index: DocumentIndex):
+        filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
+        if document_index is not None:
+            document_index.reset_index().to_feather(filename, compression="lz4")
 
 
 @dataclass
@@ -293,20 +309,16 @@ class WriteFeather(ITask):
     def process_payload(self, payload: DocumentPayload) -> Iterable[DocumentPayload]:
         tagged_frame: TaggedFrame = payload.content
         filename = os.path.join(self.folder, replace_extension(payload.filename, ".feather"))
-        tagged_frame.to_feather(
-            filename,
-            compression="lz4",
-        )
+        tagged_frame.to_feather(filename, compression="lz4")
         return payload
 
     def exit(self):
-        if self.document_index is not None:
-            self.document_index.reset_index().to_feather(
-                os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME), compression="lz4"
-            )
 
-        if self.pipeline.payload.token2id is not None:
-            pass
+        CheckpointFeather.write_document_index(self.folder, self.document_index)
+
+        # if self.pipeline.payload.token2id is not None:
+        #     # FIXME: Store TOKEN2ID
+        #     pass
 
 
 @dataclass
@@ -334,10 +346,9 @@ class ReadFeather(DefaultResolveMixIn, ITask):
             )
 
     def enter(self):
-        if os.path.isfile(self.document_index_filename):
-            self.pipeline.payload.effective_document_index = pd.read_feather(self.document_index_filename).set_index(
-                'document_name', drop=False
-            )
+        document_index = CheckpointFeather.read_document_index(self.folder)
+        if document_index is not None:
+            self.pipeline.payload.effective_document_index = document_index
 
 
 @dataclass

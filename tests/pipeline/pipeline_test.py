@@ -10,6 +10,7 @@ from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
 from penelope.pipeline.config import create_pipeline_factory
+from penelope.pipeline.tasks import Checkpoint, Tqdm
 from penelope.utility import PropertyValueMaskingOpts
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER
@@ -161,8 +162,7 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     assert len(tagged_payload.content[tagged_payload.content.pos_ == 'NOUN']) == len(text_payload.content.split())
 
 
-def test_pipeline_takt_succeeds(config: CorpusConfig):
-
+def test_pipeline_take_succeeds(config: CorpusConfig):
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(lemmatize=True)
@@ -201,6 +201,12 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
     assert all([isinstance(payload.content, tuple) for payload in payloads])
     assert all([isinstance(payload.content[0], str) for payload in payloads])
     assert all([isinstance(payload.content[1], str) for payload in payloads])
+
+
+def test_pipeline_find_task(config: CorpusConfig):
+    p: CorpusPipeline = CorpusPipeline(config=config).checkpoint("dummy_name").tqdm()
+    assert type(p.find(Checkpoint)) == Checkpoint
+    assert type(p.find(Tqdm)) == Tqdm
 
 
 def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
