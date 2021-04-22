@@ -53,6 +53,7 @@ def wildcard_to_DTM_pipeline(
     except Exception as ex:
         raise ex
 
+
 def wildcard_to_co_occurrence_pipeline(
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
