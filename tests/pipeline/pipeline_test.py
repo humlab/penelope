@@ -205,8 +205,8 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
 
 def test_pipeline_find_task(config: CorpusConfig):
     p: CorpusPipeline = CorpusPipeline(config=config).checkpoint("dummy_name").tqdm()
-    assert type(p.find(Checkpoint)) == Checkpoint
-    assert type(p.find(Tqdm)) == Tqdm
+    assert isinstance(p.find(Checkpoint), Checkpoint)
+    assert isinstance(p.find(Tqdm), Tqdm)
 
 
 def test_pipeline_to_dtm_succeeds(config: CorpusConfig):

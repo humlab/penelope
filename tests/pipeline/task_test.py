@@ -1,10 +1,8 @@
 import os
-from io import StringIO
 from typing import Iterable
 from unittest.mock import MagicMock, Mock
 
 import pandas as pd
-from penelope.corpus import load_document_index
 from penelope.corpus.document_index import load_document_index_from_str
 from penelope.pipeline import checkpoint, sparv
 from penelope.pipeline.interfaces import ContentType, DocumentPayload

@@ -46,7 +46,7 @@ class CorpusPipelineBase(Generic[_T_self]):
 
     def find(self, task_cls: Type[ITask]) -> ITask:
         for task in self.tasks:
-            if type(task) is task_cls:
+            if isinstance(task, task_cls):
                 return task
         return None
 
