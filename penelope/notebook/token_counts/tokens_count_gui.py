@@ -238,12 +238,9 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     document_index: DocumentIndex = probe_checkpoint_document_index(p)
 
-    if document_index is not None:
-        return document_index
-
-    p.tqdm().exhaust()
-
-    document_index: DocumentIndex = p.payload.document_index
+    if document_index is None:
+        p.tqdm().exhaust()
+        document_index: DocumentIndex = p.payload.document_index
 
     if 'n_raw_tokens' not in document_index.columns:
         raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")

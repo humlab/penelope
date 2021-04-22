@@ -80,7 +80,10 @@ class CorpusPipelineBase(Generic[_T_self]):
 
     def exhaust(self, n_count=0) -> CorpusPipelineBase:
         """Exhaust the entire pipeline, disregarding items"""
-        collections.deque(self.resolve(), maxlen=n_count)
+        for i in enumerate(self.resolve()):
+            if n_count > 0 and i >= n_count:
+                break
+        # collections.deque(self.resolve(), maxlen=n_count)
         return self
 
     def add(self, task: Union[ITask, List[ITask]]) -> _T_self:
