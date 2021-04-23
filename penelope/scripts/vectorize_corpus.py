@@ -1,3 +1,4 @@
+from penelope.utility.pos_tags import pos_tags_to_str
 import sys
 from typing import Sequence
 
@@ -32,7 +33,7 @@ def split_filename(filename, sep='_'):
 @click.option(
     '-x',
     '--pos-excludes',
-    default='|MAD|MID|PAD|',
+    default=None,
     help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
     type=click.STRING,
 )
@@ -68,8 +69,7 @@ def main(
     phrase_file: str = None,
     pos_includes: str = None,
     pos_paddings: str = None,
-    # FIXME: pos_excludes PoS-exclude default cannot be PoS-schema dependent
-    pos_excludes: str = '|MAD|MID|PAD|',
+    pos_excludes: str = None,
     to_lowercase: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
@@ -87,6 +87,8 @@ def main(
 
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)
+        if pos_excludes is None:
+            pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
