@@ -1,7 +1,8 @@
 from dataclasses import asdict, dataclass
-from typing import Dict, List
+from typing import Any, Container, Dict, Iterable, List, Union
 
 import pandas as pd
+from more_itertools import collapse
 
 SUC_tags = {
     'AB': 'Adverb',
@@ -205,14 +206,35 @@ class PoS_Tag_Scheme:
         self.PD_PoS_groups: pd.DataFrame = df.groupby('tag_group_name')['tag'].agg(list)
         self.pos_to_id: dict = df['pos_id'].to_dict()
         self.id_to_pos: dict = {v: k for k, v in self.pos_to_id.items()}
+        self.groups: Dict[str, List[str]] = self.PD_PoS_groups.to_dict()
 
     @property
     def tags(self) -> List[str]:
+
         return list(self.PD_PoS_tags.index)
 
-    @property
-    def groups(self) -> Dict[str, List[str]]:
-        return self.PD_PoS_groups.to_dict()
+    def unwrap(self, x: Any) -> Any:
+        if isinstance(x, str):
+            if x in self.groups:
+                return self.groups[x]
+            if '|' in x:
+                return str_to_pos_tags(x)
+            return x
+        return list(x)
+
+    def exclude(self, excludes: Union[str, Container[str]] = None) -> List[str]:
+
+        _all_tags = list(self.PD_PoS_tags.index)
+
+        if excludes is None:
+            return _all_tags
+
+        if isinstance(excludes, str):
+            excludes = [excludes]
+
+        excludes = set(collapse(map(self.unwrap, excludes)))
+
+        return [x for x in _all_tags if not x in excludes]
 
     @property
     def Pronoun(self) -> List[str]:
@@ -285,3 +307,7 @@ def get_pos_schema(name: str) -> PoS_Tag_Scheme:
 
 def pos_tags_to_str(tags: List[str]) -> str:
     return f"|{'|'.join(tags)}|"
+
+
+def str_to_pos_tags(tags: str) -> List[str]:
+    return tags.strip('|').split('|')
