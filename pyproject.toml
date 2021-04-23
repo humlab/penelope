@@ -162,8 +162,8 @@ omit = [
     "tests/*",
     "interfaces.py",
     "interface.py",
-    "penelope/notebook/*",    # FIXME! temporary omission"
-    "*_gui.py"      # FIXME! temporary omission"
+    "penelope/notebook/*",
+    "*_gui.py" 
 ]
 
 [tool.coverage.report]

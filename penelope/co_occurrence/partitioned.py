@@ -39,7 +39,6 @@ def partitioned_corpus_co_occurrence(
     ignore_pad: str = None,
 ) -> ComputeResult:
 
-    # FIXME: #27 Adding document_index and token2id as parameters causes index updates not to be reflected
     if payload.token2id is None:
         # if not hasattr(stream, 'token2id'):
         raise CoOccurrenceError("expected `token2id` found None")
@@ -90,7 +89,6 @@ def partitioned_corpus_co_occurrence(
 
         co_occurrence[partition_column] = key
 
-        # FIXME! #26  n_raw_tokens  n_tokens in document_index ARE EMPRY
         total_results.append(co_occurrence)
 
     co_occurrences = pd.concat(total_results, ignore_index=True)
@@ -101,7 +99,6 @@ def partitioned_corpus_co_occurrence(
         DocumentIndexHelper(payload.document_index).group_by_column(column_name=partition_column, index_values=keys)
     ).document_index
 
-    # FIXME: #13 Count threshold value should specify min inclusion value
     co_occurrences = _filter_co_coccurrences_by_global_threshold(co_occurrences, global_threshold_count)
 
     return ComputeResult(co_occurrences=co_occurrences, document_index=index)

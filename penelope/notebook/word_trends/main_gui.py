@@ -56,7 +56,6 @@ def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.Corpus
     global LAST_ARGS, LAST_CORPUS_CONFIG
     LAST_ARGS = args
     LAST_CORPUS_CONFIG = corpus_config
-    # FIXME: #41 Compute uses corpus name from config instead of GUI opts
     corpus: dtm.VectorizedCorpus = workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
     return corpus
 

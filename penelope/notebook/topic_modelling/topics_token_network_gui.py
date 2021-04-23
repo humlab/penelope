@@ -263,7 +263,6 @@ def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
 @dataclass
 class ViewModel:
 
-    # FIXME: This must be bundled and stored in the InferredTopicsData data!!!
     filename_fields: FilenameFieldSpecs = None
 
     _topics_data: topic_modelling.InferredTopicsData = field(init=False, default=None)

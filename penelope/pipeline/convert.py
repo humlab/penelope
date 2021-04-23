@@ -57,7 +57,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     pad: str = "*"
     phrase_pad: str = "(*)"
 
-    # FIXME: #31 Verify that blank LEMMAS are replaced  by TOKEN
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
 
@@ -81,7 +80,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
 
     """ Phrase detection """
     if extract_opts.phrases is not None:
-        # FIXME #66 Lowercasing of extract tokens not consistent with phrase detection
         found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=extract_opts.to_lowercase)
         if found_phrases:
             doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
@@ -251,7 +249,6 @@ def parse_phrases(phrase_file: str, phrases: List[str]):
 #     token_ids: List[int] = doc.loc[mask].token_id.tolist()
 
 #     if phrases is not None:
-#         # FIXME:
 #         raise NotImplementedError()
 #         # phrased_tokens = multiple_replace(' '.join(tokens), phrases, ignore_case=ignore_case).split()
 

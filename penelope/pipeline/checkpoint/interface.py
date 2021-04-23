@@ -49,7 +49,6 @@ class CheckpointOpts:
         self.content_type_code = int(value)
 
     def as_type(self, value: ContentType) -> "CheckpointOpts":
-        # FIXME #45 Not all member properties are copied in type cast
         opts = copy.copy(self)
         opts.content_type_code = int(value)
         return opts

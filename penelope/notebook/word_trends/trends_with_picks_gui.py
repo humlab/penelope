@@ -349,7 +349,6 @@ class TrendsWithPickTokensGUI:
             tokens = self.token_selector[: self.page_size]
         return tokens
 
-    # FIXME: Make this a drop-in replacement for text entry i.e. no plotting of its own, just raise event with selected words
     @staticmethod
     def create(
         corpus: VectorizedCorpus,
@@ -370,7 +369,6 @@ class TrendsWithPickTokensGUI:
     @staticmethod
     def default_tokens_plotter(tokens: Sequence[str], corpus: VectorizedCorpus, n_columns: int, split: bool):
         indices: List[int] = [corpus.token2id[token] for token in tokens]
-        # FIXME: Switch to the one used in TrendsGUI???
         p = plotter.yearly_token_distribution_multiple_line_plot(
             corpus,
             indices,

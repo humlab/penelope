@@ -77,7 +77,6 @@ class StoreMixIn:
 
         return self
 
-    # FIXME: #15 Make arguments naming mandatory to avoid mixups
     @staticmethod
     def dump_exists(*, tag: str, folder: str) -> bool:
         """Checks if corpus with tag `tag` exists in folder `folder`

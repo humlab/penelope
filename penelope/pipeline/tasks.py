@@ -623,7 +623,6 @@ class TextToDTM(ITask):
         return self
 
     def process_stream(self) -> VectorizedCorpus:
-        # FIXME: #30 [Bug] Index not set since pipeline is not exhaused at this point:
         corpus = convert.to_vectorized_corpus(
             stream=self.instream,
             vectorize_opts=self.vectorize_opts,

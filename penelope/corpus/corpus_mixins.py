@@ -12,7 +12,6 @@ class PartitionMixIn:
 
         if isinstance(by, (list, tuple)):
             raise NotImplementedError("multi column partitions is currently not implemented")
-            # FIXME: #20 Investigate rule that concatenates concepts
             # by = '_'.join(by)
 
         groups = self.document_index.groupby(by=by)['document_name'].aggregate(list).to_dict()

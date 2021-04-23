@@ -256,7 +256,6 @@ class ITask(abc.ABC):
         for payload in self.instream:
             yield self.process(payload)
 
-    # FIXME #50 Make outstream non-overridable
     def outstream(self) -> Iterable[DocumentPayload]:
         """Returns stream of payloads. Non-overridable! """
 
@@ -294,7 +293,6 @@ class ITask(abc.ABC):
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
 
-# FIXME #46 Token2Id raises KeyError
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 

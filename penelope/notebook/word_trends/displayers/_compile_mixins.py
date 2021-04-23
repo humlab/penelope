@@ -28,7 +28,6 @@ class LinesDataMixin:
         # if hasattr(bag_term_matrix, 'todense'):
         #     bag_term_matrix = bag_term_matrix.todense()
 
-        # FIXME #107 Error when occurs when compiling multiline data
         smoothers: List[Callable] = kwargs.get('smoothers', []) or []
         xs_data = []
         ys_data = []
