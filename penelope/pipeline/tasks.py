@@ -220,7 +220,6 @@ class SaveTaggedCSV(Checkpoint):
 class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
-    # FIXME; Consolidate with Checkpoint
     filename: str = None
     checkpoint_opts: checkpoint.CheckpointOpts = None
     extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index should be created
@@ -589,7 +588,6 @@ class TokensTransform(ITask):
         self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        # FIXME Must update n_tokens
         return payload.update(self.out_content_type, self.transformer.transform(payload.content))
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":

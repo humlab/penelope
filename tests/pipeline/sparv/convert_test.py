@@ -21,7 +21,6 @@ def test_sparv_csv_serializer():
 
     assert tagged_frame is not None
     assert tagged_frame.token.tolist()[:5] == ['RIKSDAGENS', 'PROTOKOLL', '1950', 'ANDRA', 'KAMMAREN']
-    # FIXME: #32 Verify quality of Sparv4 CSV dehyphenation
     assert tagged_frame.token.tolist()[-5:] == ['bandelen', 'Öster-', 'sund', '—', 'Gällivare']
     assert tagged_frame.baseform.tolist()[:5] == ['riksdag', 'protokoll', '1950', 'andra', 'kammare']
     assert tagged_frame.baseform.tolist()[-5:] == ['bandel', 'Öster-', 'sund', '—', 'Gällivare']
@@ -61,7 +60,6 @@ def test_sparv_csv_serializer():
 
 #     assert tagged_frame is not None
 #     assert tagged_frame.token.tolist()[:5] == ['RIKSDAGENS', 'PROTOKOLL', '1950', 'ANDRA', 'KAMMAREN']
-#     # FIXME: #32 Verify quality of Sparv4 CSV dehyphenation
 #     assert tagged_frame.token.tolist()[-5:] == ['bandelen', 'Öster-', 'sund', '—', 'Gällivare']
 #     assert tagged_frame.baseform.tolist()[:5] == ['riksdag', 'protokoll', '1950', 'andra', 'kammare']
 #     assert tagged_frame.baseform.tolist()[-5:] == ['bandel', 'Öster-', 'sund', '—', 'Gällivare']

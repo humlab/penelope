@@ -28,7 +28,6 @@ class MmCorpusStatisticsService:
         """
         data = ((document_id, x[0], x[1]) for document_id, values in enumerate(self.corpus) for x in values)
         df: pd.DataFrame = pd.DataFrame(list(zip(*data)), columns=['document_id', 'token_id', 'count'])
-        # FIXME: Possible bug, right_index=True => right_on='document_id'
         df = df.merge(self.corpus.document_names, left_on='document_id', right_index=True)
 
         return df

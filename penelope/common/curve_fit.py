@@ -47,7 +47,6 @@ def square_root(x, a, b, c):
 
 
 def pchip_spline(xs, ys):
-    # FIXME: #21 PchipInterpolator ValueError: setting an array element with a sequence.
     if isinstance(ys, scipy.sparse.spmatrix):
         ys = ys.todense().A1
     spliner = scipy.interpolate.PchipInterpolator(xs, ys)

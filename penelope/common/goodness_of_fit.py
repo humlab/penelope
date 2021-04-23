@@ -98,7 +98,6 @@ def get_basic_statistics(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
             'min': [dtm[:, i].min() for i in range(0, dtm.shape[1])],
             'max': [dtm[:, i].max() for i in range(0, dtm.shape[1])],
             'mean': [dtm[:, i].mean() for i in range(0, dtm.shape[1])],
-            # FIXME: #22 Variance computation fails for sparse matrixs
             # 'var': [np.var(dtm[:, i]) for i in range(0, dtm.shape[1])],
         },
         index=range(0, dtm.shape[1]),

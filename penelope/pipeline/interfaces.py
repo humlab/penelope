@@ -101,8 +101,6 @@ class PipelinePayload:
     token2id: Mapping[str, int] = None
     effective_document_index: DocumentIndex = None
 
-    # FIXME: Move to document_index_proxy object?
-
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
 
     @property
