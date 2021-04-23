@@ -1,3 +1,4 @@
+from penelope.utility.pos_tags import pos_tags_to_str
 import sys
 from typing import List, Sequence
 
@@ -40,7 +41,7 @@ from penelope.utility import PropertyValueMaskingOpts
 @click.option(
     '-x',
     '--pos-excludes',
-    default='|MAD|MID|PAD|',
+    default=None,
     help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
     type=click.STRING,
 )
@@ -77,8 +78,7 @@ def main(
     create_subfolder: bool = True,
     pos_includes: str = None,
     pos_paddings: str = None,
-    # FIXME: #58 Make defaults imdependent of PoS schema (read from corpus_config)
-    pos_excludes: str = '|MAD|MID|PAD|',
+    pos_excludes: str = None,
     to_lowercase: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
@@ -132,7 +132,7 @@ def process_co_ocurrence(
     create_subfolder: bool = True,
     pos_includes: str = None,
     pos_paddings: str = None,
-    pos_excludes: str = '|MAD|MID|PAD|',
+    pos_excludes: str = None,
     to_lowercase: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
@@ -148,8 +148,9 @@ def process_co_ocurrence(
     try:
         output_folder, output_tag = filename_to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
-
         phrases = parse_phrases(phrase_file, phrase)
+        if pos_excludes is None:
+            pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
