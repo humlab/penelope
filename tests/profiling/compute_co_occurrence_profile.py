@@ -1,11 +1,12 @@
+from penelope import corpus as corpora
+from penelope import pipeline, utility, workflows
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
-from penelope import workflows, pipeline, utility, corpus as corpora
 
 RESOURCE_FOLDER = "./tests/test_data/"
 CONFIG_FILENAME = "riksdagens-protokoll.yml"
 DATA_FOLDER = "./tests/test_data"
-CONCEPT = {} # {'information'}
+CONCEPT = {}  # {'information'}
 
 SUC_SCHEMA: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.SUC
 POS_TARGETS: str = 'NN|PM'
@@ -14,7 +15,7 @@ POS_EXLUDES: str = 'MAD|MID|PAD'
 
 corpus_config = pipeline.CorpusConfig.find(CONFIG_FILENAME, RESOURCE_FOLDER).folders(DATA_FOLDER)
 corpus_filename = '/data/westac/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
-#corpus_filename = './tests/test_data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
+# corpus_filename = './tests/test_data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
 compute_opts = ComputeOpts(
     corpus_type=pipeline.CorpusType.SparvCSV,
     corpus_filename=corpus_filename,
@@ -80,4 +81,3 @@ bundle = workflows.co_occurrence.compute(
 )
 
 assert bundle is not None
-
