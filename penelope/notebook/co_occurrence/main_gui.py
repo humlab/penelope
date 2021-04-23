@@ -84,27 +84,10 @@ class MainGUI:
 
     def layout(self):
 
-        accordion = widgets.Accordion(
-            children=[
-                widgets.VBox(
-                    [
-                        self.gui_load.layout(),
-                    ],
-                    layout={'border': '1px solid black', 'padding': '16px', 'margin': '4px'},
-                ),
-                widgets.VBox(
-                    [
-                        self.gui_compute.layout(),
-                    ],
-                    layout={'border': '1px solid black', 'padding': '16px', 'margin': '4px'},
-                ),
-            ]
-        )
+        accordion = widgets.Accordion(children=[self.gui_load.layout(), self.gui_compute.layout()])
 
         accordion.set_title(0, "LOAD AN EXISTING CO-OCCURRENCE COMPUTATION")
         accordion.set_title(1, '...OR COMPUTE A NEW CO-OCCURRENCE')
-        # accordion.set_title(2, '...OR LOAD AND EXPLORE A CO-OCCURRENCE DTM')
-        # accordion.set_title(3, '...OR COMPUTE OR DOWNLOAD CO-OCCURRENCES AS EXCEL')
 
         return widgets.VBox([accordion, view])
 
