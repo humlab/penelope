@@ -83,7 +83,7 @@ class BaseGUI:
         value=True, description='To lower', icon='check', layout=button_layout
     )
     _remove_stopwords: widgets.ToggleButton = widgets.ToggleButton(
-        value=False, description='No stopwords', icon='check', layout=button_layout
+        value=False, description='No stopwords', icon='', layout=button_layout
     )
     _only_alphabetic: widgets.ToggleButton = widgets.ToggleButton(
         value=False, description='Only alphabetic', icon='', layout=button_layout
@@ -105,7 +105,7 @@ class BaseGUI:
     _use_pos_groupings: widgets.ToggleButton = widgets.ToggleButton(
         value=True, description='PoS groups', icon='', layout=button_layout
     )
-    # FIXME: #63 Append PoS togge button missing in GUI
+
     _append_pos_tag: widgets.ToggleButton = widgets.ToggleButton(
         value=False, description='Append PoS', icon='', layout=button_layout
     )
