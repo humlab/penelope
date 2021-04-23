@@ -291,6 +291,7 @@ class ITask(abc.ABC):
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
 
+
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 

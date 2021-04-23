@@ -1,4 +1,3 @@
-from penelope.utility.pos_tags import pos_tags_to_str
 import sys
 from typing import List, Sequence
 
@@ -11,6 +10,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, Vector
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.convert import parse_phrases
 from penelope.utility import PropertyValueMaskingOpts
+from penelope.utility.pos_tags import pos_tags_to_str
 
 # pylint: disable=too-many-arguments
 

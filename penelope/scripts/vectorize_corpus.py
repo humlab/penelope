@@ -1,16 +1,15 @@
-from penelope.utility.pos_tags import pos_tags_to_str
 import sys
 from typing import Sequence
 
 import click
 import penelope.notebook.interface as interface
 import penelope.workflows as workflows
+from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.convert import parse_phrases
-from penelope.utility import getLogger
+from penelope.utility import pos_tags_to_str
 
-logger = getLogger("penelope")
 # pylint: disable=too-many-arguments, unused-argument
 
 
