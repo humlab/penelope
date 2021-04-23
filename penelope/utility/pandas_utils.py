@@ -78,7 +78,6 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
             continue
 
         if attr_name not in doc.columns:
-            # FIXME: Warn if attribute not in colums!
             continue
 
         if isinstance(attr_value, tuple):
