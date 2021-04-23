@@ -38,7 +38,6 @@ def compute(
             checkpoint_filename=checkpoint_filename,
         )
 
-        # FIXME: #55 No passthrough of co-occurrence concept words
         args.extract_tagged_tokens_opts.passthrough_tokens = list(args.context_opts.concept)
 
         compute_result: co_occurrence.ComputeResult = (

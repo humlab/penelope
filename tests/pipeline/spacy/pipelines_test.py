@@ -43,7 +43,6 @@ def test_spaCy_co_occurrence_pipeline(config):
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes=pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun),
-        # FIXME: This test will fail:
         pos_paddings=pos_tags_to_str(pos_scheme.Conjunction),
     )
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(

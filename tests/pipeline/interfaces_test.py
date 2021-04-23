@@ -49,7 +49,6 @@ def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['a']
 
-    # FIXME: Consider equating np.nan withFalse, in such a case 'd' should be returned:
     new_doc = doc[PropertyValueMaskingOpts(is_stop=False).mask(doc)]
     assert len(new_doc) == 1
     assert new_doc['text'].to_list() == ['b']
