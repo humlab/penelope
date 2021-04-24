@@ -436,10 +436,14 @@ def update_document_index_properties(
         document_name (str): [description]
         property_bag (Mapping[str, int]): [description]
     """
-    property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
+    if 'document_name' in property_bag:
+        property_bag: dict = {k: v for k, v in property_bag.items() if k != 'document_name'}
+
     for key in [k for k in property_bag if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
-    document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
+
+    document_index.loc[document_name, property_bag.keys()] = property_bag.values()
+    # document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
 
 
 def overload_by_document_index_properties(
