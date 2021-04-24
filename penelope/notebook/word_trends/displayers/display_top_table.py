@@ -7,6 +7,7 @@ from penelope.notebook.ipyaggrid_utility import display_grid
 
 from ._displayer import ITrendDisplayer
 
+
 # FIXME #72 Word trends: No data in top tokens displayer
 @dataclass
 class TopTokensDisplayer(ITrendDisplayer):
