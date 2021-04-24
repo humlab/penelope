@@ -4,6 +4,7 @@ import penelope.notebook.utility as notebook_utility
 from gensim.utils import deprecated
 from penelope.utility import getLogger
 
+from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .gofs_gui import GoFsGUI
 from .trends_data import TrendsData
 from .trends_gui import TrendsGUI
@@ -23,7 +24,7 @@ class GofTrendsGUI:
     gofs_gui: GoFsGUI
 
     def setup(self) -> "GofTrendsGUI":
-        self.trends_gui = TrendsGUI().setup()
+        self.trends_gui = TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
         self.gofs_gui = GoFsGUI().setup()
         return self
 

@@ -10,6 +10,8 @@ from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
 
+from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
+
 view = widgets.Output(layout={'border': '2px solid green'})
 
 LAST_ARGS = None
@@ -35,7 +37,7 @@ def loaded_callback(
 
     gui = word_trends.GofTrendsGUI(
         gofs_gui=word_trends.GoFsGUI().setup(),
-        trends_gui=word_trends.TrendsGUI().setup(),
+        trends_gui=word_trends.TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
     )
 
     display(gui.layout())

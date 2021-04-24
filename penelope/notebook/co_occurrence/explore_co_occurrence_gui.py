@@ -25,8 +25,8 @@ class ExploreGUI:
     def setup(self) -> "ExploreGUI":
         # FIXME: #71 Co-occurrence: Options not shown in GUI-tab
         self.tab_main = notebook_utility.OutputsTabExt(["Data", "Trends", "Options", "GoF"], layout={'width': '98%'})
-        # TODO: Add table displaer of selected tokens
-        self.trends_gui = word_trends.TrendsGUI().setup()
+        # TODO: #74 Add table display of selected tokens
+        self.trends_gui = word_trends.TrendsGUI().setup(displayers=word_trends.DEFAULT_WORD_TREND_DISPLAYERS)
         self.gofs_gui = word_trends.GoFsGUI().setup() if self.gofs_enabled else None
 
         return self
