@@ -23,8 +23,9 @@ class ExploreGUI:
     global_tokens_count_threshold: int = 25
 
     def setup(self) -> "ExploreGUI":
-
+        # FIXME: #71 Co-occurrence: Options not shown in GUI-tab
         self.tab_main = notebook_utility.OutputsTabExt(["Data", "Trends", "Options", "GoF"], layout={'width': '98%'})
+        # TODO: Add table displaer of selected tokens
         self.trends_gui = word_trends.TrendsGUI().setup()
         self.gofs_gui = word_trends.GoFsGUI().setup() if self.gofs_enabled else None
 
