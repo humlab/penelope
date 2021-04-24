@@ -4,7 +4,7 @@ from typing import Sequence
 import ipywidgets as widgets
 from penelope.utility import get_logger
 
-from .displayers import WORD_TREND_DISPLAYERS, ITrendDisplayer
+from .displayers import DEFAULT_WORD_TREND_DISPLAYERS, ITrendDisplayer
 from .trends_data import TrendsData, TrendsOpts
 
 logger = get_logger()
@@ -109,7 +109,7 @@ class TrendsGUI:
 
     def setup(self, *, displayers: Sequence[ITrendDisplayer] = None) -> "TrendsGUI":
 
-        displayers = displayers or WORD_TREND_DISPLAYERS
+        displayers = displayers or DEFAULT_WORD_TREND_DISPLAYERS
 
         for i, cls in enumerate(displayers):
             displayer: ITrendDisplayer = cls()

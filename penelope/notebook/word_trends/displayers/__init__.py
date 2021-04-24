@@ -6,4 +6,4 @@ from .display_line import LineDisplayer
 from .display_table import TableDisplayer
 from .display_top_table import TopTokensDisplayer
 
-WORD_TREND_DISPLAYERS = [TableDisplayer, LineDisplayer, BarDisplayer, TopTokensDisplayer]
+DEFAULT_WORD_TREND_DISPLAYERS = [TableDisplayer, LineDisplayer, BarDisplayer, TopTokensDisplayer]

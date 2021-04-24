@@ -1,6 +1,6 @@
 # type: ignore
 from .displayers import (
-    WORD_TREND_DISPLAYERS,
+    DEFAULT_WORD_TREND_DISPLAYERS,
     BarDisplayer,
     CategoryDataMixin,
     ITrendDisplayer,
