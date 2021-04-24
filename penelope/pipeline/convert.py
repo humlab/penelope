@@ -100,12 +100,17 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         # TODO: #52 Make passthrough token case-insensative
         mask |= doc[target].isin(passthroughs)
 
-    token_pos_tuples = doc.loc[mask][[target, pos_column]].to_records(index=False)
+    # TODO: #73 PENELOPE: Improve overall system performance
+    # token_pos_tuples = doc.loc[mask][[target, pos_column]].to_records(index=False)
+    token_pos_tuples = doc.loc[mask][[target, pos_column]].itertuples(index=False, name=None)
 
     if len(pos_paddings) > 0:
-        token_pos_tuples = map(
-            lambda x: (pad, x[1]) if x[1] in pos_paddings and x[0] not in passthroughs else x, token_pos_tuples
-        )
+        # token_pos_tuples = map(
+        #     lambda x: (pad, x[1]) if x[1] in pos_paddings and x[0] not in passthroughs else x, token_pos_tuples
+        # )
+        token_pos_tuples = [
+            (pad, x[1]) if x[1] in pos_paddings and x[0] not in passthroughs else x for x in token_pos_tuples
+        ]
 
     if extract_opts.append_pos:
         tokens = [
