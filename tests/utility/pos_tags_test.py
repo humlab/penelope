@@ -15,14 +15,14 @@ def test_pos_tags():
     tags = suc_schema.exclude("Delimiter")
     assert set(tags).difference(all_tags - {'MID', 'MAD', 'PAD'}) == set()
 
-    tags = suc_schema.exclude({'MID', 'MAD', 'PAD'})
+    tags = suc_schema.exclude(['MID', 'MAD', 'PAD'])
     assert set(tags).difference(all_tags - {'MID', 'MAD', 'PAD'}) == set()
 
-    tags = suc_schema.exclude({'MID', 'MAD', 'PAD', "Delimiter"})
+    tags = suc_schema.exclude(['MID', 'MAD', 'PAD', "Delimiter"])
     assert set(tags).difference(all_tags - {'MID', 'MAD', 'PAD'}) == set()
 
-    tags = suc_schema.exclude({'NN', "Delimiter", {'VB'}})
+    tags = suc_schema.exclude(['NN', "Delimiter", ['VB']])
     assert set(tags).difference(all_tags - {'MID', 'MAD', 'PAD', 'NN', 'VB'}) == set()
 
-    tags = suc_schema.exclude({'NN|JJ', "Delimiter", {'VB'}})
+    tags = suc_schema.exclude(['NN|JJ', "Delimiter", ['VB']])
     assert set(tags).difference(all_tags - {'MID', 'MAD', 'PAD', 'NN', 'VB', 'JJ'}) == set()

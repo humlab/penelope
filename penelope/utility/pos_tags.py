@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import Any, Container, Dict, Iterable, List, Union
+from typing import Any, Container, Dict, List, Union
 
 import pandas as pd
 from more_itertools import collapse
@@ -234,7 +234,7 @@ class PoS_Tag_Scheme:
 
         excludes = set(collapse(map(self.unwrap, excludes)))
 
-        return [x for x in _all_tags if not x in excludes]
+        return [x for x in _all_tags if x not in excludes]
 
     @property
     def Pronoun(self) -> List[str]:
