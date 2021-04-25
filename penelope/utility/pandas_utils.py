@@ -147,3 +147,26 @@ class PropertyValueMaskingOpts:
             for attr_name, attr_value in self.data.items()
             if attr_name in doc.columns and attr_value is not None
         ]
+
+
+def try_split_column(
+    df: pd.DataFrame,
+    source_name: str,
+    sep: str,
+    target_names: List[str],
+    drop_source: bool = True,
+    probe_size: int = 10,
+) -> pd.DataFrame:
+
+    if df is None or len(df) == 0 or source_name not in df.columns:
+        return df
+
+    if probe_size > 0 and not df.head(probe_size)[source_name].str.match(rf".+{sep}\w+").all():
+        return df
+
+    df[target_names] = df[source_name].str.split(sep, n=1, expand=True)
+
+    if source_name not in target_names and drop_source:
+        df.drop(columns=source_name, inplace=True)
+
+    return df

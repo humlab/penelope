@@ -64,7 +64,7 @@ from .filename_utils import (
     ts_data_path,
 )
 from .mixins import PropsMixIn
-from .pandas_utils import PropertyValueMaskingOpts, create_mask, create_mask2, setup_pandas
+from .pandas_utils import PropertyValueMaskingOpts, create_mask, create_mask2, setup_pandas, try_split_column
 from .pos_tags import (
     Known_PoS_Tag_Schemes,
     PD_PoS_tag_groups,
