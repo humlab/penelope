@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.3.18"
+version = "0.3.19"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -85,6 +85,7 @@ pyinstrument = "==3.*,>=3.4.1"
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 co_occurrence = "penelope.scripts.co_occurrence:main"
+
 
 
 [tool.pytest.ini_options]
