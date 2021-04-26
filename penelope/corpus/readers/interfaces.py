@@ -27,7 +27,7 @@ class TextReaderOpts:
     quoting: Optional[int] = csv.QUOTE_NONE
 
     @property
-    def props(self):
+    def props(self) -> dict:
         return dict(
             filename_pattern=self.filename_pattern,
             filename_filter=self.filename_filter,
@@ -38,7 +38,7 @@ class TextReaderOpts:
             quoting=self.quoting,
         )
 
-    def copy(self, **kwargs):
+    def copy(self, **kwargs) -> TextReaderOpts:
         return TextReaderOpts(**{**self.props, **kwargs})
 
 
@@ -86,12 +86,16 @@ class ExtractTaggedTokensOpts:
     @property
     def props(self):
         return dict(
+            lemmatize=self.lemmatize,
+            target_override=self.target_override,
             pos_includes=self.pos_includes,
             pos_excludes=self.pos_excludes,
             pos_paddings=self.pos_paddings,
+            pos_replace_marker=self.pos_replace_marker,
             passthrough_tokens=(self.passthrough_tokens or []),
-            lemmatize=self.lemmatize,
             append_pos=self.append_pos,
+            phrases=self.phrases,
+            to_lowercase=self.to_lowercase,
         )
 
 

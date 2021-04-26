@@ -67,3 +67,22 @@ class ComputeOpts:
                 raise ValueError("only one partition key is allowed (for now)")
 
         return True
+
+    @property
+    def props(self) -> dict:
+        options = {
+            'corpus_type': int(self.corpus_type),
+            'input_filename': self.corpus_filename,
+            'output_folder': self.target_folder,
+            'output_tag': self.corpus_tag,
+            'tokens_transform_opts': self.tokens_transform_opts.props,
+            'reader_opts': self.text_reader_opts.props,
+            'extract_tokens_opts': self.extract_tagged_tokens_opts.props
+            if self.extract_tagged_tokens_opts is not None
+            else {},
+            'vectorize_opt': self.vectorize_opts.props,
+            'count_threshold': self.count_threshold,
+            'context_opts': self.context_opts,
+            'partition_keys': self.partition_keys,
+        }
+        return options
