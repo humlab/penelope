@@ -264,10 +264,15 @@ def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
             bundle.corpus_tag = strip_path_and_extension(output_filename)
         bundle.corpus_folder = os.path.split(output_filename)[0]
         bundle.corpus.dump(tag=bundle.corpus_tag, folder=bundle.corpus_folder)
+        bundle.corpus.dump_options(
+            tag=bundle.corpus_tag,
+            folder=bundle.corpus_folder,
+            options=bundle.compute_options,
+        )
         DocumentIndexHelper(bundle.document_index).store(
             os.path.join(bundle.corpus_folder, f"{bundle.corpus_tag}_document_index.csv")
         )
-
+    """Also save options with same name as co-occurrence file"""
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         json.dump(bundle.compute_options, json_file, indent=4)
 
