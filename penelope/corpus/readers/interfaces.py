@@ -92,9 +92,9 @@ class ExtractTaggedTokensOpts:
             pos_excludes=self.pos_excludes,
             pos_paddings=self.pos_paddings,
             pos_replace_marker=self.pos_replace_marker,
-            passthrough_tokens=(self.passthrough_tokens or []),
+            passthrough_tokens=list(self.passthrough_tokens or []),
             append_pos=self.append_pos,
-            phrases=self.phrases,
+            phrases=None if self.phrases is None else list(self.phrases),
             to_lowercase=self.to_lowercase,
         )
 
