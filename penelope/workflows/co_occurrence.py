@@ -12,6 +12,11 @@ logger = getLogger('penelope')
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
 
+class ZeroComputeError(ValueError):
+    def __init__(self):
+        super().__init__("Computation ended up in ZERO records. Check settings!")
+
+
 # pylint: disable=unused-argument
 def compute(
     args: interface.ComputeOpts,
@@ -54,7 +59,7 @@ def compute(
         ).value()
 
         if len(compute_result.co_occurrences) == 0:
-            raise ValueError("Computation ended up in ZERO records. Check settinsgs!")
+            raise ZeroComputeError()
 
         corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
             co_occurrences=compute_result.co_occurrences,

@@ -2,18 +2,19 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Union
 
 import ipywidgets as widgets
-import penelope.notebook.co_occurrence as co_occurrence_gui
 from IPython.core.display import display
 from penelope import co_occurrence, pipeline, workflows
-from penelope.notebook.interface import ComputeOpts
-from penelope.notebook.word_trends.trends_data import TrendsData
+
+from .. import co_occurrence as co_occurrence_gui
+from ..interface import ComputeOpts
+from ..utility import CLEAR_OUTPUT
+from ..word_trends.trends_data import TrendsData
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
 LAST_BUNDLE: co_occurrence.Bundle = None
 LAST_ARGS = None
 LAST_CONFIG = None
-CLEAR_OUTPUT = True
 
 
 def create(
@@ -34,16 +35,24 @@ def compute_co_occurrence_callback(
     args: ComputeOpts,
     checkpoint_file: Optional[str] = None,
 ) -> co_occurrence.Bundle:
-    global LAST_BUNDLE, LAST_ARGS, LAST_CONFIG
-    LAST_ARGS = args
-    LAST_CONFIG = corpus_config
-    bundle: co_occurrence.Bundle = workflows.co_occurrence.compute(
-        args=args,
-        corpus_config=corpus_config,
-        checkpoint_file=checkpoint_file,
-    )
-    LAST_BUNDLE = bundle
-    return bundle
+    try:
+        global LAST_BUNDLE, LAST_ARGS, LAST_CONFIG
+        LAST_ARGS = args
+        LAST_CONFIG = corpus_config
+
+        if args.dry_run:
+            print(args.command_line("co_occurrence"))
+            return None
+
+        bundle: co_occurrence.Bundle = workflows.co_occurrence.compute(
+            args=args,
+            corpus_config=corpus_config,
+            checkpoint_file=checkpoint_file,
+        )
+        LAST_BUNDLE = bundle
+        return bundle
+    except workflows.co_occurrence.ZeroComputeError:
+        return None
 
 
 @dataclass
@@ -95,6 +104,8 @@ class MainGUI:
     def display_explorer(self, bundle: co_occurrence.Bundle, *_, **__):
         global LAST_BUNDLE
         LAST_BUNDLE = bundle
+        if bundle is None:
+            return
         self.trends_data = co_occurrence.to_trends_data(bundle).update()
         self.gui_explore = (
             co_occurrence_gui.ExploreGUI(global_tokens_count_threshold=self.global_count_threshold)

@@ -5,12 +5,11 @@ from typing import Callable
 import penelope.co_occurrence as co_occurrence
 from ipywidgets import Button, HBox, Label, Layout, Output, VBox
 from loguru import logger
-from penelope.notebook.utility import FileChooserExt2
 from penelope.utility import default_data_folder
 
-# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
+from ..utility import CLEAR_OUTPUT, FileChooserExt2
 
-CLEAR_OUTPUT = True
+# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
 debug_view = Output(layout={"border": "1px solid black"})
 

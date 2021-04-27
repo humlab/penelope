@@ -9,35 +9,11 @@ import pandas as pd
 import yaml
 from IPython.display import Javascript
 from IPython.display import display as ipython_display
-from penelope.utility import getLogger
+from loguru import logger
 
-logger = getLogger()
 # pylint: disable=too-many-ancestors
 
-
-# def create_download_link(df: pd.DataFrame, title: str = "Download CSV", filename: str = "data.csv") -> HTML:
-#     """Creates a download link for a Pandas dataframe without saving data to disk
-
-#         Source: https://medium.com/ibm-data-science-experience/how-to-upload-download-files-to-from-notebook-in-my-local-machine-6a4e65a15767
-
-#     Parameters
-#     ----------
-#     df : pd.DataFrame
-#     title : str, optional
-#         Link title, by default "Download CSV"
-#     filename : str, optional
-#         [description], by default "data.csv"
-
-#     Returns
-#     -------
-#     HTML
-#     """
-#     csv = df.to_csv(index=False)
-#     b64 = base64.b64encode(csv.encode())
-#     payload = b64.decode()
-#     html = '<a download="{filename}" href="data:text/csv;base64,{payload}" target="_blank">{title}</a>'
-#     html = html.format(payload=payload, title=title, filename=filename)
-#     return HTML(html)
+CLEAR_OUTPUT = True
 
 
 def create_js_download(df: pd.DataFrame, **to_csv_opts) -> Javascript:
