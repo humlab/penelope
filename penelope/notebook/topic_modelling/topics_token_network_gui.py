@@ -9,9 +9,10 @@ import networkx as nx
 import pandas as pd
 from IPython.display import display
 from penelope import topic_modelling
-from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.plot import get_color_palette
 from penelope.utility.filename_fields import FilenameFieldSpecs
+
+from ..ipyaggrid_utility import display_grid
 
 view = widgets.Output()
 

@@ -9,7 +9,6 @@ import networkx as nx
 import pandas as pd
 import penelope.network.metrics as network_metrics
 import penelope.network.plot_utility as network_plot
-import penelope.notebook.widgets_utils as widget_utils
 from bokeh.models.sources import ColumnDataSource
 from IPython import display
 from penelope import topic_modelling, utility
@@ -17,6 +16,7 @@ from penelope.network import layout_source
 from penelope.network.networkx import utility as network_utility
 from penelope.topic_modelling.container import InferredTopicsData
 
+from .. import widgets_utils
 from .display_utility import display_document_topics_as_grid
 from .model_container import TopicModelContainer
 
@@ -68,7 +68,7 @@ def plot_document_topic_network(
 
     r_topics = p.circle(x="x", y="y", size=25, source=topic_source, color=color_specifier, alpha=1.00)
 
-    callback = widget_utils.glyph_hover_callback2(
+    callback = widgets_utils.glyph_hover_callback2(
         topic_source, "node_id", text_ids=titles.index, text=titles, element_id=text_id
     )
 
@@ -239,7 +239,7 @@ class GUI:
         self.period.min, self.period.max = inferred_topics.year_period
         self.period.value = (self.period.min, self.period.min + 5)
 
-        self.text = widget_utils.text_widget(f"ID_{self.plot_mode.name}")
+        self.text = widgets_utils.text_widget(f"ID_{self.plot_mode.name}")
         self.button.on_click(self.update_handler)
         # self.threshold.observe(self.update_handler, names='value')
         # self.period.observe(self.update_handler, names='value')

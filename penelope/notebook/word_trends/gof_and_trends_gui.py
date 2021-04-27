@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-import penelope.notebook.utility as notebook_utility
 from gensim.utils import deprecated
 from penelope.utility import getLogger
 
+from .. import utility as notebook_utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .gofs_gui import GoFsGUI
 from .trends_data import TrendsData

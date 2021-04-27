@@ -3,8 +3,8 @@ from typing import Any
 
 import IPython.display
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
-from penelope.notebook.ipyaggrid_utility import display_grid
 
+from ...ipyaggrid_utility import display_grid
 from ._displayer import ITrendDisplayer
 
 

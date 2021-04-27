@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 import penelope.common.goodness_of_fit as gof
-import penelope.notebook.utility as notebook_utility
-from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.utility import getLogger
 
+from .. import utility as notebook_utility
+from ..ipyaggrid_utility import display_grid
 from .trends_data import TrendsData
 
 logger = getLogger("penelope")

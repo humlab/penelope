@@ -32,6 +32,7 @@ class TrendsOpts:
         return False
 
 
+# FIXME Move class away from penelope.notebook (bad dependency)
 @dataclass
 class TrendsData:
 

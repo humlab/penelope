@@ -7,9 +7,9 @@ import pandas as pd
 import qgrid
 from bokeh.plotting import show
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.word_trends.trends_data import TrendsData
 
 from .displayers import deprecated_plot as plotter
+from .trends_data import TrendsData
 
 
 class TokensSelector(abc.ABC):

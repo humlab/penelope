@@ -6,9 +6,9 @@ from typing import Any, Callable, Dict, List
 
 import ipywidgets as widgets
 from penelope import pipeline, topic_modelling, utility
-from penelope.notebook.co_occurrence.main_gui import MainGUI
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 
+from ..co_occurrence.main_gui import MainGUI
 from . import display_topic_titles
 from .display_topic_titles import DisplayPandasGUI
 from .model_container import TopicModelContainer

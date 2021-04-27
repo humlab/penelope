@@ -2,9 +2,9 @@ from dataclasses import dataclass, field
 
 import IPython.display
 import pandas as pd
-from penelope.notebook.ipyaggrid_utility import display_grid
 from penelope.utility import try_split_column
 
+from ...ipyaggrid_utility import display_grid
 from ._compile_mixins import CategoryDataMixin
 from ._displayer import ITrendDisplayer
 

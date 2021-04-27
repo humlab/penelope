@@ -1,5 +1,6 @@
-import penelope.notebook.ipyaggrid_utility as ipyaggrid_utility
 from ipyaggrid import Grid
+
+from .. import ipyaggrid_utility
 
 
 def display_document_topics_as_grid(df):

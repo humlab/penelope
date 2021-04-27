@@ -8,11 +8,11 @@ from bokeh.io import output_notebook
 from loguru import logger
 from penelope import pipeline
 from penelope.corpus import DocumentIndex
-from penelope.notebook.ipyaggrid_utility import display_grid
-from penelope.notebook.utility import OutputsTabExt
 from penelope.pipeline import interfaces, tasks
 from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
 
+from ..ipyaggrid_utility import display_grid
+from ..utility import CLEAR_OUTPUT, OutputsTabExt
 from .plot import plot_by_bokeh as plot_dataframe
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']

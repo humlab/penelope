@@ -2,12 +2,12 @@ import types
 
 import ipywidgets as widgets
 import pandas as pd
-import penelope.notebook.widgets_utils as widgets_utils
 import penelope.plot as plot_utility
 import penelope.topic_modelling as topic_modelling
 import penelope.utility as utility
 from IPython.display import display
 
+from .. import widgets_utils
 from .model_container import TopicModelContainer
 
 pd.set_option("display.max_rows", None)

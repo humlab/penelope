@@ -4,13 +4,13 @@ from typing import Callable, List
 
 import IPython.display as display
 import pandas as pd
-import penelope.notebook.word_trends.trends_with_picks_gui as word_trend_plot_gui
 from ipywidgets import HTML, Button, Dropdown, FloatSlider, HBox, IntSlider, Layout, Output, VBox
 from markdown import markdown as md
 from penelope.common.cluster_analysis import CorpusClusters, compute_clusters
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 from penelope.utility import clamp, get_logger
 
+from ..word_trends import trends_with_picks_gui as word_trend_plot_gui
 from . import cluster_plot
 from .plot import ClustersCountPlot, ClustersMeanPlot
 
