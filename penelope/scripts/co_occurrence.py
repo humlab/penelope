@@ -45,6 +45,7 @@ from penelope.utility.pos_tags import pos_tags_to_str
     help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
     type=click.STRING,
 )
+@click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words')
 @click.option(
@@ -79,6 +80,7 @@ def main(
     pos_includes: str = None,
     pos_paddings: str = None,
     pos_excludes: str = None,
+    append_pos: bool = False,
     to_lowercase: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
@@ -105,6 +107,7 @@ def main(
         pos_includes=pos_includes,
         pos_paddings=pos_paddings,
         pos_excludes=pos_excludes,
+        append_pos=append_pos,
         to_lowercase=to_lowercase,
         lemmatize=lemmatize,
         remove_stopwords=remove_stopwords,
@@ -133,6 +136,7 @@ def process_co_ocurrence(
     pos_includes: str = None,
     pos_paddings: str = None,
     pos_excludes: str = None,
+    append_pos: bool = False,
     to_lowercase: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
@@ -179,6 +183,7 @@ def process_co_ocurrence(
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
                 phrases=phrases,
+                append_pos=append_pos,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
             count_threshold=count_threshold,
