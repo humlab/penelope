@@ -258,6 +258,18 @@ def dict_to_list_of_tuples(d: Mapping) -> List[Tuple[Any, Any]]:
     return [(k, v) for (k, v) in d.items()]
 
 
+def dotget(d: dict, path: str, default: Any = None) -> Any:
+
+    if path is None:
+        return None
+
+    for attr in path.split('.'):
+        d = d.get(attr)
+        if d is None:
+            break
+    return d or default
+
+
 def list_of_dicts_to_dict_of_lists(dl: List[Mapping[str, Any]]) -> Mapping[str, List[Any]]:
     dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists

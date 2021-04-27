@@ -91,6 +91,7 @@ from .utils import (
     dict_split,
     dict_subset,
     dict_to_list_of_tuples,
+    dotget,
     extend,
     extend_single,
     extract_counter_items_within_threshold,
