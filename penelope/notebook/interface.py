@@ -1,10 +1,11 @@
 import os
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Mapping
 
-from penelope.co_occurrence.interface import ContextOpts
+from loguru import logger
+from penelope.co_occurrence import ContextOpts, folder_and_tag_to_filename
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
-from penelope.corpus.dtm.vectorizer import VectorizeOpts
+from penelope.corpus.dtm import VectorizeOpts
 from penelope.pipeline import CorpusType
 from penelope.utility import PropertyValueMaskingOpts
 
@@ -34,6 +35,8 @@ class ComputeOpts:
 
     context_opts: ContextOpts = None
     partition_keys: List[str] = None
+
+    dry_run: bool = field(init=False, default=False)
 
     def is_satisfied(self):
 
@@ -82,7 +85,105 @@ class ComputeOpts:
             else {},
             'vectorize_opt': self.vectorize_opts.props,
             'count_threshold': self.count_threshold,
-            'context_opts': self.context_opts,
-            'partition_keys': self.partition_keys,
+            'context_opts': self.context_opts.props,
+            'partition_keys': None if self.partition_keys is None else list(self.partition_keys),
         }
         return options
+
+    def command_line_options(self) -> Mapping[str, str]:
+
+        options = {}
+
+        if self.context_opts:
+
+            options['--context-width'] = self.context_opts.context_width
+            if self.context_opts.ignore_concept:
+                options['--no-concept'] = True
+
+            if len(self.context_opts.concept or []) > 0:
+                options['--concept'] = self.context_opts.concept
+
+        options['--count-threshold'] = self.count_threshold
+
+        if len(self.extract_tagged_tokens_opts.phrases or []):
+            options['--phrase'] = self.extract_tagged_tokens_opts.phrases
+
+        if self.extract_tagged_tokens_opts.pos_includes:
+            options['--pos-includes'] = self.extract_tagged_tokens_opts.pos_includes
+
+        if self.extract_tagged_tokens_opts.pos_paddings:
+            options['--pos-paddings'] = self.extract_tagged_tokens_opts.pos_paddings
+
+        if self.extract_tagged_tokens_opts.pos_excludes:
+            options['--pos-excludes'] = self.extract_tagged_tokens_opts.pos_excludes
+
+        if len(self.partition_keys or []) > 0:
+            options['--partition-key'] = self.partition_keys
+
+        if self.extract_tagged_tokens_opts.lemmatize:
+            options['--lemmatize'] = True
+
+        if self.tokens_transform_opts.to_lower:
+            options['--to-lowercase'] = True
+
+        if self.extract_tagged_tokens_opts.append_pos:
+            options['--append-pos'] = True
+
+        options[f'--{"" if self.tokens_transform_opts.keep_symbols else "no" }-keep-symbols'] = True
+        options[f'--{"" if self.tokens_transform_opts.keep_numerals else "no" }-keep-numerals'] = True
+        options[f'--{"" if self.tokens_transform_opts.to_lower else "no" }-to-lowercase'] = True
+
+        if self.tokens_transform_opts.min_len > 1:
+            options['--min-word-length'] = self.tokens_transform_opts.min_len
+
+        if (self.tokens_transform_opts.max_len or 99) < 99:
+            options['--max-word-length'] = self.tokens_transform_opts.max_len
+
+        if self.tokens_transform_opts.remove_stopwords:
+            options['--remove_stopwords'] = self.tokens_transform_opts.language
+
+        if self.tokens_transform_opts.only_alphabetic:
+            options['--only-alphabetic'] = True
+
+        if self.tokens_transform_opts.only_any_alphanumeric:
+            options['--only-any-alphanumeric'] = True
+
+        if self.force:
+            options['--force'] = True
+
+        return options
+
+    def command_line(self, script: str) -> str:
+
+        options: List[str] = []
+
+        for key, value in self.command_line_options().items():
+            if isinstance(value, bool):
+                options.append(key)
+            elif isinstance(value, (str,)):
+                options.append(f"{key} \"{value}\"")
+            elif isinstance(
+                value,
+                (
+                    str,
+                    int,
+                ),
+            ):
+                options.append(f"{key} {value}")
+            elif isinstance(
+                value,
+                (
+                    list,
+                    tuple,
+                    set,
+                ),
+            ):
+                options.extend([f"{key} \"{v}\"" for v in value])
+            else:
+                logger.warning(f"skipped option {key} {value}")
+
+        config_filename: str = "doit.yml"
+        target_filename: str = folder_and_tag_to_filename(folder=self.target_folder, tag=self.corpus_tag)
+        command: str = f"{script} {' '.join(options)} {config_filename} {self.corpus_filename} {target_filename}"
+
+        return command

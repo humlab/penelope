@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List
 
 import ipywidgets as widgets
-import penelope.notebook.utility as notebook_utility
 import penelope.utility as utility
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
@@ -12,6 +11,7 @@ from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.utility import PropertyValueMaskingOpts, better_flatten, default_data_folder, get_logger
 
 from . import interface
+from . import utility as notebook_utility
 
 logger = get_logger('penelope')
 
@@ -117,11 +117,12 @@ class BaseGUI:
         layout=widgets.Layout(width='480px'),
     )
 
-    _vectorize_button: widgets.Button = widgets.Button(
+    _compute_button: widgets.Button = widgets.Button(
         description='Compute!',
         button_style='Success',
         layout=button_layout,
     )
+    _cli_button: widgets.Button = widgets.Button(description='CLI', button_style='Success', layout=button_layout)
     extra_placeholder: widgets.HBox = widgets.HBox()
     buttons_placeholder: widgets.VBox = widgets.VBox()
 
@@ -204,8 +205,8 @@ class BaseGUI:
                                             [
                                                 widgets.HTML("&nbsp;"),
                                                 widgets.HTML("&nbsp;"),
-                                                widgets.HTML("&nbsp;"),
-                                                self._vectorize_button,
+                                                self._cli_button,
+                                                self._compute_button,
                                             ]
                                         ),
                                     ]
@@ -219,17 +220,20 @@ class BaseGUI:
         )
 
     # @view.capture(clear_output=True)
-    def _compute_handler(self, *_):
+    def _compute_handler(self, sender: widgets.Button, *_):
 
         if self.compute_callback is None:
             raise ValueError("fatal: cannot compute (callback is not specified)")
 
-        self._vectorize_button.disabled = True
+        self._compute_button.disabled = True
+        self._cli_button.disabled = True
         try:
 
-            result: Any = self.compute_callback(self.compute_opts, self.corpus_config)
+            opts: interface.ComputeOpts = self.compute_opts
+            opts.dry_run = sender.description == "CLI"
+            result: Any = self.compute_callback(opts, self.corpus_config)
 
-            if self.done_callback is not None:
+            if result is not None and self.done_callback is not None:
                 self.done_callback(result, self.compute_opts)
 
         except (ValueError, FileNotFoundError) as ex:
@@ -238,7 +242,8 @@ class BaseGUI:
             logger.info(ex)
             raise
         finally:
-            self._vectorize_button.disabled = False
+            self._cli_button.disabled = False
+            self._compute_button.disabled = False
 
     def _corpus_type_changed(self, *_):
         self._pos_includes.disabled = self._corpus_type.value == 'text'
@@ -298,7 +303,8 @@ class BaseGUI:
         self._remove_stopwords.observe(self._remove_stopwords_state_changed, 'value')
         self._only_alphabetic.observe(self._toggle_state_changed, 'value')
         self._only_any_alphanumeric.observe(self._toggle_state_changed, 'value')
-        self._vectorize_button.on_click(self._compute_handler)
+        self._compute_button.on_click(self._compute_handler)
+        self._cli_button.on_click(self._compute_handler)
         self._use_pos_groupings.observe(self.update_pos_schema, 'value')
 
         self._pos_includes.observe(self.pos_select_update, 'value')

@@ -2,25 +2,27 @@ from typing import Union
 
 import ipywidgets as widgets
 import penelope.corpus.dtm as dtm
-import penelope.notebook.dtm as dtm_gui
-import penelope.notebook.word_trends as word_trends
 import penelope.pipeline as pipeline
 import penelope.workflows as workflows
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook import interface
 
+from .. import dtm as dtm_gui
+from .. import interface, utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
+from .gof_and_trends_gui import GofTrendsGUI
+from .gofs_gui import GoFsGUI
+from .trends_data import TrendsData
+from .trends_gui import TrendsGUI
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
 LAST_ARGS = None
 LAST_CORPUS_CONFIG = None
 LAST_CORPUS = None
-CLEAR_OUTPUT = True
 
 
-@view.capture(clear_output=CLEAR_OUTPUT)
+@view.capture(clear_output=utility.CLEAR_OUTPUT)
 def loaded_callback(
     corpus: VectorizedCorpus,
     corpus_folder: str,
@@ -28,36 +30,43 @@ def loaded_callback(
 ):
     global LAST_CORPUS
     LAST_CORPUS = corpus
-    trends_data: word_trends.TrendsData = word_trends.TrendsData(
+    trends_data: TrendsData = TrendsData(
         corpus=corpus,
         corpus_folder=corpus_folder,
         corpus_tag=corpus_tag,
         n_count=25000,
     ).update()
 
-    gui = word_trends.GofTrendsGUI(
-        gofs_gui=word_trends.GoFsGUI().setup(),
-        trends_gui=word_trends.TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
+    gui = GofTrendsGUI(
+        gofs_gui=GoFsGUI().setup(),
+        trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
     )
 
     display(gui.layout())
     gui.display(trends_data=trends_data)
 
 
-@view.capture(clear_output=CLEAR_OUTPUT)
+@view.capture(clear_output=utility.CLEAR_OUTPUT)
 def computed_callback(
     corpus: VectorizedCorpus,
     opts: interface.ComputeOpts,
 ) -> None:
 
+    if opts.dry_run:
+        return
+
     loaded_callback(corpus=corpus, corpus_folder=opts.target_folder, corpus_tag=opts.corpus_tag)
 
 
-@view.capture(clear_output=CLEAR_OUTPUT)
+@view.capture(clear_output=utility.CLEAR_OUTPUT)
 def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.CorpusConfig) -> dtm.VectorizedCorpus:
     global LAST_ARGS, LAST_CORPUS_CONFIG
     LAST_ARGS = args
     LAST_CORPUS_CONFIG = corpus_config
+    if args.dry_run:
+        print(args.command_line("vectorize_corpus"))
+        return None
+
     corpus: dtm.VectorizedCorpus = workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
     return corpus
 
