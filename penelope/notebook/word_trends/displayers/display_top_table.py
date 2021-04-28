@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import IPython.display
+
+# import perspective
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 from ...ipyaggrid_utility import display_grid
@@ -24,5 +26,7 @@ class TopTokensDisplayer(ITrendDisplayer):
     def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
 
         with self.output:
+
+            # g = perspective.PerspectiveWidget(plot_data)
             g = display_grid(plot_data)
             IPython.display.display(g)
