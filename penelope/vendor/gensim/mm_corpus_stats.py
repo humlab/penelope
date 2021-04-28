@@ -11,7 +11,7 @@ class MmCorpusStatisticsService:
     def __init__(self, corpus, dictionary, language):
         self.corpus = corpus
         self.dictionary = dictionary
-        self.stopwords = nltk_utility.stopwords.words(language[1])
+        self.stopwords = nltk_utility.get_stopwords(language[1])
         _ = dictionary[0]
 
     def get_total_token_frequencies(self):
