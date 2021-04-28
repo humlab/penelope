@@ -37,9 +37,14 @@ class LoadGUI:
     @debug_view.capture(clear_output=True)
     def _load_handler(self, _):
         try:
+
             if not self.corpus_filename or not os.path.isfile(self.corpus_filename):
                 self.warn("👎 Please select a valid corpus file 👎")
                 return
+
+            if self._load_button.disabled:
+                return
+
             self.warn('Please wait')
             self._load_button.description = "Loading..."
             self._load_button.disabled = True

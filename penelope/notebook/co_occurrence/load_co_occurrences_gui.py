@@ -35,6 +35,9 @@ class LoadGUI:
         if self.load_callback is None:
             return
 
+        if self._load_button.disabled:
+            return
+
         self._load_button.description = "Loading"
         self._load_button.disabled = True
         self._filename.disabled = True
