@@ -290,12 +290,14 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
         if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)
         else None
     )
+    corpus_options: dict = VectorizedCorpus.load_options(folder=corpus_folder, tag=corpus_tag)
+
     if corpus is None and compute_corpus:
         corpus = to_vectorized_corpus(
             co_occurrences=co_occurrences, document_index=document_index, value_column='value'
         )
 
-    options = load_options(co_occurrences_filename)
+    options = load_options(co_occurrences_filename) or corpus_options
 
     bundle = Bundle(
         co_occurrences_filename=co_occurrences_filename,
@@ -324,11 +326,11 @@ def to_trends_data(bundle: Bundle, n_count=25000):
 
 
 def load_options(co_occurrences_filename: str) -> dict:
-    """Loads options used when co-occurrence was computed"""
-
+    """Loads co-occurrence compute options"""
     options_filename = replace_extension(co_occurrences_filename, 'json')
     if os.path.isfile(options_filename):
-        return read_json(options_filename)
+        options = read_json(options_filename)
+        return options
     return {'not_found': options_filename}
 
 
