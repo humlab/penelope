@@ -17,7 +17,6 @@ from .plot import plot_by_bokeh as plot_dataframe
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']
 
-CLEAR_OUTPUT = True
 debug_view = widgets.Output()
 # pylint: disable=too-many-instance-attributes
 
