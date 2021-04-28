@@ -105,7 +105,7 @@ class ComputeOpts:
 
         options['--count-threshold'] = self.count_threshold
 
-        if len(self.extract_tagged_tokens_opts.phrases or []):
+        if self.extract_tagged_tokens_opts.phrases and len(self.extract_tagged_tokens_opts.phrases):
             options['--phrase'] = self.extract_tagged_tokens_opts.phrases
 
         if self.extract_tagged_tokens_opts.pos_includes:
