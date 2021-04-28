@@ -37,7 +37,7 @@ def get_logger(
     name: str = "penelope",
     *,
     to_file: Union[bool, str] = False,
-    level: int = logging.DEBUG,
+    level: int = logging.WARNING,
 ):  # pylint: disable=redefined-outer-name
     """
     Setup logging of messages to both file and console
