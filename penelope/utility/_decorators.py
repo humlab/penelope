@@ -1,6 +1,31 @@
 import functools
 import logging
 
+from loguru import logger
+
+
+def deprecated(obj):
+    if isinstance(obj, (type,)):
+        return _deprecated_class(cls=obj)
+    return _deprecated_function(f=obj)
+
+
+def _deprecated_function(f):
+    def _deprecated(*args, **kwargs):
+        logging.warning(f"Method '{f.__name__}' is deprecated and will be removed in future release")
+        return f(*args, **kwargs)
+
+    return _deprecated
+
+
+def _deprecated_class(cls):
+    class Deprecated(cls):
+        def __init__(self, *args, **kwargs):
+            logging.warning(f"Class '{cls.__name__}' is deprecated and will be removed in future release")
+            super().__init__(*args, **kwargs)
+
+    return Deprecated
+
 
 def try_catch(func, exceptions=None, suppress=False, nice=False):
     """
@@ -22,6 +47,7 @@ def try_catch(func, exceptions=None, suppress=False, nice=False):
     return wrapper
 
 
+@deprecated
 def suppress_error(func, exceptions=(Exception,), suppress=True, nice=True):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -51,24 +77,20 @@ class ExpectException:
         return False
 
 
-def deprecated(obj):
-    if isinstance(obj, (type,)):
-        return _deprecated_class(cls=obj)
-    return _deprecated_function(f=obj)
+def enter_exit_log(*, entry=True, exit=True, level="WARNING"):  # pylint: disable=redefined-builtin
+    def wrapper(func):
+        name = func.__name__
 
+        @functools.wraps(func)
+        def wrapped(*args, **kwargs):
+            logger_ = logger.opt(depth=1)
+            if entry:
+                logger_.log(level, "Entering '{}' (args={}, kwargs={})", name, args, kwargs)
+            result = func(*args, **kwargs)
+            if exit:
+                logger_.log(level, "Exiting '{}' (result={})", name, result)
+            return result
 
-def _deprecated_function(f):
-    def _deprecated(*args, **kwargs):
-        logging.warning(f"Method '{f.__name__}' is deprecated and will be removed in future release")
-        return f(*args, **kwargs)
+        return wrapped
 
-    return _deprecated
-
-
-def _deprecated_class(cls):
-    class Deprecated(cls):
-        def __init__(self, *args, **kwargs):
-            logging.warning(f"Class '{cls.__name__}' is deprecated and will be removed in future release")
-            super().__init__(*args, **kwargs)
-
-    return Deprecated
+    return wrapper
