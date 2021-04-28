@@ -252,10 +252,8 @@ class BaseGUI:
 
     # @view.capture(clear_output=True)
     def _toggle_state_changed(self, event):
-        try:
+        with contextlib.suppress(Exception):
             event['owner'].icon = 'check' if event['new'] else ''
-        except Exception as ex:
-            logger.exception(ex)
 
     def _remove_stopwords_state_changed(self, *_):
         self._extra_stopwords.disabled = not self._remove_stopwords.value
