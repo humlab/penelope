@@ -1,6 +1,6 @@
 # type: ignore
 # isort: skip_file
-# pylint: disable=wrong-import-position)
+# pylint: disable=wrong-import-position
 import logging
 
 logging.getLogger("matplotlib").setLevel(level=logging.ERROR)
