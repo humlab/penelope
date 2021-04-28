@@ -7,7 +7,8 @@ import ipyfilechooser
 import ipywidgets as widgets
 import pandas as pd
 import yaml
-from IPython.display import Javascript, display as ipython_display
+from IPython.display import Javascript
+from IPython.display import display as ipython_display
 from loguru import logger
 
 # pylint: disable=too-many-ancestors
