@@ -1,6 +1,6 @@
 from penelope.corpus import TokensTransformer, TokensTransformOpts
 from penelope.corpus.transforms import load_stopwords
-from penelope.vendor.nltk import STOPWORDS_CACHE, extended_stopwords
+from penelope.vendor.nltk import STOPWORDS_CACHE, extended_stopwords, get_stopwords
 
 
 def test_transform_smoke_test():
@@ -30,3 +30,9 @@ def test_remove_stopwords():
 
     assert len(xtra_stopwords) == len(stopwords)
     assert len(STOPWORDS_CACHE) > 0
+
+
+def test_get_stopwords():
+
+    words = get_stopwords("swedish")
+    assert len(words) > 0
