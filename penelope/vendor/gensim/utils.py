@@ -1,9 +1,7 @@
 import collections
-import logging
 
 import gensim
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 def build_vocab(corpus):
