@@ -90,9 +90,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         )
         # Add option for filtering out concept words
         # if len(dotget(self.compute_options, "context_opts.concept", [])) > 0:
-        self._show_concept = ToggleButton(
-            description='Show concept', value=False, icon='', layout=Layout(width='auto')
-        )
+        self._show_concept = ToggleButton(description='Show concept', value=False, icon='', layout=Layout(width='auto'))
         self._show_concept.observe(self.update_data, 'value')
         self._show_concept.observe(self.toggle_icon, 'value')
         self._message: HTML = HTML()
@@ -127,10 +125,10 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._record_count_limit.observe(self.update_data, 'value')
         self._token_filter.observe(self.update_data, 'value')
 
-    def alert(self,  message: str) -> None:
+    def alert(self, message: str) -> None:
         self._message.value = f"<span style='color: red; font-weight: bold;'>{message}</span>"
 
-    def info(self,  message: str) -> None:
+    def info(self, message: str) -> None:
         self._message.value = f"<span style='color: green; font-weight: bold;'>{message}</span>"
 
     def get_data(self):
