@@ -4,13 +4,11 @@ from typing import Any, Callable, List, Sequence
 
 import ipywidgets
 import pandas as pd
-import qgrid
 from bokeh.plotting import show
 from penelope.corpus import VectorizedCorpus
 
 from .displayers import deprecated_plot as plotter
 from .trends_data import TrendsData
-
 
 class TokensSelector(abc.ABC):
     def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
@@ -78,127 +76,6 @@ class TokensSelector(abc.ABC):
     @abc.abstractmethod
     def __getitem__(self, key) -> str:
         return None
-
-
-class QgridTokensSelector(TokensSelector):
-    def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
-
-        super().__init__(tokens, token_column, norms_columns)
-        self._widget: qgrid.QGridWidget = None
-
-    @property
-    def widget(self):
-        if self._widget is None:
-            self._widget = self._create_widget()
-        return self._widget
-
-    def on_selection_change_handler(self, handler):
-        self._on_selection_change_handler = handler
-
-    def _on_selection_changed(self, *_args):
-        if self._on_selection_change_handler is not None:
-            self._on_selection_change_handler(_args[0]['new'])
-
-    def _create_widget(self) -> qgrid.QGridWidget:
-
-        grid_options = {
-            # SlickGrid options
-            # https://github.com/6pac/SlickGrid/wiki/Grid-Options
-            'fullWidthRows': False,
-            'syncColumnCellResize': True,
-            'forceFitColumns': False,
-            'defaultColumnWidth': 150,
-            'rowHeight': 28,
-            'enableColumnReorder': False,
-            'enableTextSelectionOnCells': True,
-            # 'editable': True,
-            'autoEdit': False,
-            # 'explicitInitialization': True,
-            # Qgrid options
-            'maxVisibleRows': 20,
-            'minVisibleRows': 20,
-            'sortable': True,
-            'filterable': True,
-            'highlightSelectedCell': False,
-            'highlightSelectedRow': True,
-        }
-
-        # qgrid.enable(dataframe=True, series=True)
-
-        col_opts = {
-            # https://github.com/6pac/SlickGrid/wiki/Column-Options
-            'editable': False
-        }
-
-        column_definitions = {
-            # https://github.com/6pac/SlickGrid/wiki/Column-Options
-            self.token_column: {
-                'defaultSortAsc': True,
-                'maxWidth': 300,
-                'minWidth': 180,
-                'resizable': True,
-                'sortable': True,
-                # 'toolTip': "",
-                'width': 180,
-                # 'editable': True
-            },
-            'GoF': {
-                # 'defaultSortAsc': True,
-                'maxWidth': 80,
-                'minWidth': 20,
-                'resizable': True,
-                'sortable': True,
-                # 'toolTip': "",
-                'width': 70,
-                'editable': False,
-                # 'filterable': False,
-            },
-            '|GoF|': {
-                # 'defaultSortAsc': True,
-                'maxWidth': 80,
-                'minWidth': 20,
-                'resizable': True,
-                'sortable': True,
-                # 'toolTip': "",
-                'width': 70,
-                'editable': False,
-                # 'filterable': False,
-            },
-        }
-
-        q = qgrid.show_grid(
-            self.tokens,
-            precision=6,
-            grid_options=grid_options,
-            column_options=col_opts,
-            column_definitions=column_definitions,
-        )
-
-        q.layout = ipywidgets.Layout(width="250px")
-
-        q.on('selection_changed', self._on_selection_changed)
-
-        return q
-
-    def get_selected_tokens(self) -> List[str]:
-
-        return list(self._widget.get_selected_df().index)
-
-    def get_selected_indices(self) -> List[int]:
-
-        return self._widget.get_selected_rows()
-
-    def get_tokens_slice(self, start: int = 0, n_count: int = 0):
-        return list(self.tokens.iloc[start : start + n_count].index)
-
-    def set_selected_indices(self, indices: List[int]):
-        return self._widget.change_selection(self.tokens.iloc[indices].index)
-
-    def __len__(self):
-        return len(self.tokens)
-
-    def __getitem__(self, key):
-        return self.tokens.iloc[key].index
 
 
 class SelectMultipleTokensSelector(TokensSelector):

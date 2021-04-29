@@ -13,4 +13,4 @@ from .gof_and_trends_gui import GofTrendsGUI
 from .gofs_gui import GoFsGUI
 from .trends_data import TrendsData
 from .trends_gui import TrendsGUI
-from .trends_with_picks_gui import QgridTokensSelector, TokensSelector, TrendsWithPickTokensGUI
+from .trends_with_picks_gui import TokensSelector, TrendsWithPickTokensGUI
