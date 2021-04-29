@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Union
 
 import ipycytoscape
 import ipywidgets as widgets
@@ -9,11 +9,11 @@ from penelope.plot import get_color_palette
 
 from .display_table import UnnestedExplodeTableDisplayer
 
-view = widgets.Output()
+# pylint: disable=too-many-instance-attributes
 
 # TODO #80 Co-occurrence network
 DEFAULT_LAYOUT_ARGUMENTS = {
-    'cola': {'maxSimulationTime': 20000},
+    'cola': {'maxSimulationTime': 10000},
     'springy': {'stiffness': 400, 'repulsion': 400, 'damping': 0.5},
     'ngraph.forcelayout': {
         'springLength': 100,
@@ -59,28 +59,6 @@ DEFAULT_EDGE_STYLE = {
     'z-index': 0,
     'overlay-opacity': 0,
 }
-
-
-@dataclass
-class NetworkDisplayer(UnnestedExplodeTableDisplayer):
-    """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
-
-    name: str = field(default="Network")
-    gui: "GUI" = None
-
-    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
-
-        with self.output:
-            IPython_display(view)
-            co_occurrences: pd.DataFrame = self.create_data_frame(plot_data)
-            self.gui: GUI = (
-                GUI(co_occurrences=co_occurrences)
-                .setup(
-                    # custom_styles=custom_styles,
-                )
-                .display()
-            )
-            IPython_display(self.gui.layout())
 
 
 def css_styles(categories: List[int], custom_styles: dict) -> dict:
@@ -162,12 +140,40 @@ def create_network(co_occurrences: pd.DataFrame) -> ipycytoscape.CytoscapeWidget
     return w
 
 
-# pylint: disable=too-many-instance-attributes
 @dataclass
-class GUI:
+class NetworkDisplayer(UnnestedExplodeTableDisplayer):
+    """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
 
-    co_occurrences: pd.DataFrame = None
+    name: str = field(default="Network")
     network: ipycytoscape.CytoscapeWidget = None
+
+    def setup(self, *_, **__):
+        # self._custom_styles = custom_styles()
+        self._network_layout.observe(self._layout_handler, names='value')
+        self._animate.observe(self._toggle_state_changed, 'value')
+        self._relayout.on_click(self._relayout_handler)
+
+    def plot(self, plot_data: Union[pd.DataFrame, dict], **_):  # pylint: disable=unused-argument
+
+        network_data: pd.DataFrame = self.create_data_frame(plot_data)
+
+        if network_data is None:
+            self.alert("No data!")
+            return self
+
+        self.network = create_network(network_data)
+        self.set_layout()
+        self.network.set_style(css_styles(network_data.category.unique(), self.custom_styles))
+
+        with self.output:
+            IPython_display(self.layout())
+
+        with self._view:
+            IPython_display(self.network)
+
+        return self
+
+    _view: widgets.Output = widgets.Output()
 
     _node_spacing: widgets.IntSlider = widgets.IntSlider(
         description='', min=3, max=500, value=50, layout={'width': '200px'}
@@ -182,9 +188,6 @@ class GUI:
         options=['cola', 'klay', 'circle', 'concentric'],
         value='cola',
         layout={'width': '115px'},
-    )
-    _button = widgets.Button(
-        description="Display", button_style='Success', layout=widgets.Layout(width='115px', background_color='blue')
     )
     _relayout = widgets.Button(
         description="Continue", button_style='Info', layout=widgets.Layout(width='115px', background_color='blue')
@@ -215,9 +218,12 @@ class GUI:
             self.network.relayout()
 
     def set_layout(self):
+
         self.alert("Layout: " + self.network_layout)
+
         if not self.network:
             return
+
         self.network.set_layout(
             name=self.network_layout,
             animate=self.animate,
@@ -230,7 +236,6 @@ class GUI:
     def lock(self, value: bool = True) -> None:
         self._buzy = not value
 
-        self._button.disabled = value
         self._relayout.disabled = value
         self._curve_style.disabled = value
         self._network_layout.disabled = value
@@ -242,14 +247,6 @@ class GUI:
     def _toggle_state_changed(self, event):
         event['owner'].icon = 'check' if event['new'] else ''
 
-    def setup(self, custom_styles: dict = None) -> "GUI":
-        self._custom_styles = custom_styles
-        self._network_layout.observe(self._layout_handler, names='value')
-        self._animate.observe(self._toggle_state_changed, 'value')
-        self._relayout.on_click(self._relayout_handler)
-        self._button.on_click(self.display)
-        return self
-
     def layout(self):
         return widgets.VBox(
             [
@@ -259,39 +256,31 @@ class GUI:
                             [
                                 widgets.HTML("<b>Layout</b>"),
                                 self._network_layout,
-                                widgets.HTML("<b>Curve style</b>"),
-                                self._curve_style,
-                                self._animate,
                             ]
                         ),
                         widgets.VBox(
                             [
-                                self._label,
-                                widgets.HTML("&nbsp;"),
-                                widgets.HTML("&nbsp;"),
-                                self._relayout,
-                                self._button,
+                                widgets.HTML("<b>Curve style</b>"),
+                                self._curve_style,
                             ]
                         ),
-                        widgets.VBox([]),
+                        widgets.VBox(
+                            [
+                                self._animate,
+                                self._relayout,
+                            ]
+                        ),
+                        widgets.VBox(
+                            [
+                                widgets.HTML("&nbsp;"),
+                                self._label,
+                            ]
+                        ),
                     ]
                 ),
-                view,
+                self._view,
             ]
         )
-
-    @view.capture(clear_output=True)
-    def display(self, *_) -> "GUI":
-
-        if self.co_occurrences is None:
-            print("No data!")
-            return self
-
-        self.network = create_network(self.co_occurrences)
-        self.set_layout()
-        self.network.set_style(css_styles(self.co_occurrences.category.unique(), self.custom_styles))
-        IPython_display(self.network)
-        return self
 
     @property
     def network_layout(self) -> List[int]:
@@ -307,7 +296,7 @@ class GUI:
 
     @property
     def custom_styles(self):
-        style = self._custom_styles or {}
+        style = {}
         if style.get('edges', None) is None:
             style['edges'] = {}
         style['edges']['curve-style'] = self.curve_style
