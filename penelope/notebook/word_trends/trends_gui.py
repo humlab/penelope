@@ -9,7 +9,7 @@ from .trends_data import TrendsData, TrendsOpts
 
 logger = get_logger()
 
-BUTTON_LAYOUT = widgets.Layout(width='100px')
+BUTTON_LAYOUT = widgets.Layout(width='120px')
 OUTPUT_LAYOUT = widgets.Layout(width='600px')
 
 

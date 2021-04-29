@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import pandas as pd
+from penelope.notebook.word_trends.displayers.display_top_table import TopTokensDisplayer
 from penelope.utility import getLogger
 
 from .. import utility as notebook_utility
@@ -24,7 +25,9 @@ class ExploreGUI:
 
     def setup(self) -> "ExploreGUI":
         # FIXME: #71 Co-occurrence: Options not shown in GUI-tab
-        self.tab_main = notebook_utility.OutputsTabExt(["Data", "Trends", "Options", "GoF"], layout={'width': '98%'})
+        self.tab_main = notebook_utility.OutputsTabExt(
+            ["Data", "Trends", "Options", "GoF", "TopTokens"], layout={'width': '98%'}
+        )
         # TODO: #74 Add table display of selected tokens
         self.trends_gui = word_trends.TrendsGUI().setup(displayers=word_trends.DEFAULT_WORD_TREND_DISPLAYERS)
         self.gofs_gui = word_trends.GoFsGUI().setup() if self.gofs_enabled else None
@@ -57,6 +60,9 @@ class ExploreGUI:
             clear=True,
         )
         self.tab_main.display_as_yaml(2, trends_data.compute_options, clear=True, width='800px', height='600px')
+
+        top_displayer: TopTokensDisplayer = TopTokensDisplayer(corpus=trends_data.corpus).setup()
+        self.tab_main.display_content(4, top_displayer.layout(), clear=True)
 
         return self
 
