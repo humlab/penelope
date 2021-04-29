@@ -101,6 +101,7 @@ from .utils import (
     fn_name,
     get_func_args,
     get_logger,
+    get_smiley,
     getLogger,
     ifextend,
     inspect_default_opts,

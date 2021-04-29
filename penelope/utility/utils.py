@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import functools
 import glob
@@ -11,6 +12,7 @@ import time
 import uuid
 from importlib import import_module
 from numbers import Number
+from random import randrange
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
 
 import gensim.utils
@@ -550,3 +552,13 @@ def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) ->
     else:
         fx = lambda mo: replace_map[mo.string[mo.start() : mo.end()]]
     return regex.sub(fx, text)
+
+
+SMILEYS = "😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚☺🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫🥱😴😌😛"
+
+
+def get_smiley() -> str:
+    with contextlib.suppress(Exception):
+        x = randrange(0, len(SMILEYS), 1)
+        return SMILEYS[x]
+    return "😪"
