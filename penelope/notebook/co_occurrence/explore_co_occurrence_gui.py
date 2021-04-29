@@ -27,7 +27,6 @@ class ExploreGUI:
         self.tab_main = notebook_utility.OutputsTabExt(
             ["Data", "Trends", "Options", "GoF", "TopTokens"], layout={'width': '98%'}
         )
-        # TODO: #74 Add table display of selected tokens
         self.trends_gui = word_trends.TrendsGUI().setup(displayers=word_trends.DEFAULT_WORD_TREND_DISPLAYERS)
         self.gofs_gui = word_trends.GoFsGUI().setup() if self.gofs_enabled else None
 
