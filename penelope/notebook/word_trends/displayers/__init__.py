@@ -20,5 +20,5 @@ DEFAULT_WORD_TREND_DISPLAYERS = [
     UnnestedExplodeTableDisplayer,
     LineDisplayer,
     BarDisplayer,
-    NetworkDisplayer,
+    # NetworkDisplayer,
 ]
