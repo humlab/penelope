@@ -191,9 +191,9 @@ class PoSFilter:
 
         universal_tags = utility.PoS_TAGS_SCHEMES.Universal.tags
 
-        assert all([x in universal_tags for x in (self.include_pos or [])])
-        assert all([x in universal_tags for x in (self.exclude_pos or [])])
-        assert all([x in universal_tags for x in (self.replace_pos or [])])
+        assert all(x in universal_tags for x in (self.include_pos or []))
+        assert all(x in universal_tags for x in (self.exclude_pos or []))
+        assert all(x in universal_tags for x in (self.replace_pos or []))
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
         pipeline.to_terms_list_kwargs['include_pos'] = self.include_pos

@@ -38,7 +38,7 @@ class ZipSource(ISource):
 
     def __enter__(self):  # pylint: disable=unused-argument
         if self.zipfile is None:
-            self.zipfile = ZipFile(self.source_path, "r")
+            self.zipfile = ZipFile(self.source_path, "r")  # pylint: disable=consider-using-with
             self.enter_depth = 1
         else:
             self.enter_depth += 1

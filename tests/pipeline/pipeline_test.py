@@ -77,7 +77,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: CorpusCo
         'document_id',
         'document_name',
     ]
-    assert all([x.split(':')[0] in columns for x in config.text_reader_opts.filename_fields])
+    assert all(x.split(':')[0] in columns for x in config.text_reader_opts.filename_fields)
     assert pipeline.payload.document_lookup('RECOMMENDATION_0201_049455_2017.txt')['unesco_id'] == 49455
 
 
@@ -198,9 +198,9 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
     )
     assert len(payloads) == 5
 
-    assert all([isinstance(payload.content, tuple) for payload in payloads])
-    assert all([isinstance(payload.content[0], str) for payload in payloads])
-    assert all([isinstance(payload.content[1], str) for payload in payloads])
+    assert all(isinstance(payload.content, tuple) for payload in payloads)
+    assert all(isinstance(payload.content[0], str) for payload in payloads)
+    assert all(isinstance(payload.content[1], str) for payload in payloads)
 
 
 def test_pipeline_find_task(config: CorpusConfig):

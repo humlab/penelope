@@ -65,6 +65,6 @@ def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
     payloads = [p for p in p.resolve()]
 
     assert [x.document_name for x in payloads] == ['prot_197677__26', 'prot_197677__27', 'prot_197677__25']
-    assert all([x.content_type == pipeline.ContentType.TOKENS for x in payloads])
-    assert all([isinstance(x.content, list) for x in payloads])
+    assert all(x.content_type == pipeline.ContentType.TOKENS for x in payloads)
+    assert all(isinstance(x.content, list) for x in payloads)
     assert len(payloads) == 3

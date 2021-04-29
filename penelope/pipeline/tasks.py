@@ -505,7 +505,7 @@ class TapStream(CountTokensMixIn, ITask):
 
     def enter(self):
         logger.info(f"Tapping stream to {self.target}")
-        self.zink = zipfile.ZipFile(self.target, "w")
+        self.zink = zipfile.ZipFile(self.target, "w")  # pylint: disable=consider-using-with
 
     def exit(self):
         self.zink.close()

@@ -307,7 +307,7 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
 
     payloads = [x.content for x in pipeline.resolve()]
 
-    assert all([isinstance(x, Doc) for x in payloads])
+    assert all(isinstance(x, Doc) for x in payloads)
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
@@ -325,8 +325,8 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
 
     payloads = [x.content for x in pipeline.resolve()]
 
-    assert all([isinstance(x, pd.DataFrame) for x in payloads])
-    assert all([x.columns.tolist() == attributes for x in payloads])
+    assert all(isinstance(x, pd.DataFrame) for x in payloads)
+    assert all(x.columns.tolist() == attributes for x in payloads)
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nlp):

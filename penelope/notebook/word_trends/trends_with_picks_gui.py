@@ -10,6 +10,7 @@ from penelope.corpus import VectorizedCorpus
 from .displayers import deprecated_plot as plotter
 from .trends_data import TrendsData
 
+
 class TokensSelector(abc.ABC):
     def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
 

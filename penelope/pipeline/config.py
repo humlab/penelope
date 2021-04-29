@@ -146,7 +146,7 @@ class CorpusConfig:
                     return config
             except:  # pylint: disable=bare-except
                 pass
-        FileNotFoundError(filename)
+        raise FileNotFoundError(filename)
 
     def folders(self, path: str, method: str = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""

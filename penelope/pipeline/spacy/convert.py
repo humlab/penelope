@@ -36,7 +36,7 @@ def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: d
     keys = {k for k in keys if attribute_value_filters[k] is not None}
 
     if len(keys) > 0:
-        tokens = (t for t in tokens if all([getattr(t, attr) == attribute_value_filters[attr] for attr in keys]))
+        tokens = (t for t in tokens if all(getattr(t, attr) == attribute_value_filters[attr] for attr in keys))
 
     return tokens
 

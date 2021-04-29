@@ -36,10 +36,10 @@ def test_compile_multiline_data_with_no_smoothers():
 
     assert isinstance(multiline_data, dict)
     assert ["A", "B"] == multiline_data['label']
-    assert all([(x == y).all() for x, y in zip([[2013, 2014], [2013, 2014]], multiline_data['xs'])])
+    assert all((x == y).all() for x, y in zip([[2013, 2014], [2013, 2014]], multiline_data['xs']))
     assert len(multiline_data['color']) == 2
     assert len(multiline_data['ys']) == 2
-    assert all([np.allclose(x, y) for x, y in zip([[4.0, 6.0], [3.0, 7.0]], multiline_data['ys'])])
+    assert all(np.allclose(x, y) for x, y in zip([[4.0, 6.0], [3.0, 7.0]], multiline_data['ys']))
 
 
 def test_compile_multiline_data_with_smoothers():
