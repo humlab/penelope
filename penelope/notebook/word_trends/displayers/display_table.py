@@ -13,7 +13,7 @@ from ._displayer import ITrendDisplayer
 class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
     """Displays data as a pivot table with category as rows and tokens as columns"""
 
-    name: str = field(default="Table")
+    name: str = field(default="Pivot")
 
     def setup(self, *_, **__):
         return
@@ -35,7 +35,7 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
 class UnnestedTableDisplayer(TableDisplayer):
     """Unnests (unpivots) the pivot table so that tokens columns are turned rows with token category & token count columns"""
 
-    name: str = field(default="Data")
+    name: str = field(default="Table")
 
     def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
         df = super().create_data_frame(plot_data)
@@ -47,7 +47,7 @@ class UnnestedTableDisplayer(TableDisplayer):
 class UnnestedExplodeTableDisplayer(UnnestedTableDisplayer):
     """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
 
-    name: str = field(default="Data")
+    name: str = field(default="Tabular")
 
     def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
         df: pd.DataFrame = super().create_data_frame(plot_data)
