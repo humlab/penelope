@@ -1,8 +1,12 @@
+import io
+
+import ipycytoscape
 import numpy as np
+import pandas as pd
 import pytest
 from penelope.common.curve_fit import pchip_spline, rolling_average_smoother
 from penelope.notebook.word_trends import BarDisplayer, LineDisplayer, TableDisplayer
-from penelope.notebook.word_trends.displayers import CategoryDataMixin, LinesDataMixin, PenelopeBugCheck
+from penelope.notebook.word_trends.displayers import CategoryDataMixin, LinesDataMixin, PenelopeBugCheck, create_network
 from tests.utils import create_smaller_vectorized_corpus
 
 BIGGER_CORPUS_FILENAME = './tests/test_data/riksdagens-protokoll.1950-1959.ak.sparv4.csv.zip'
@@ -68,3 +72,23 @@ def test_compile_year_token_vector_data_when_corpus_is_not_grouped_by_year_fails
     indices = [0, 1, 2, 3]
     with pytest.raises(PenelopeBugCheck):
         _ = CategoryDataMixin().compile(corpus, indices)
+
+
+def test_():
+
+    data_str = """;category;token;count;w1;w2
+0;1920;riksdag/ledamot;18;riksdag;ledamot
+1;1930;riksdag/ledamot;22;riksdag;ledamot
+2;1940;riksdag/ledamot;29;riksdag;ledamot
+3;1950;riksdag/ledamot;29;riksdag;ledamot
+4;1960;riksdag/ledamot;30;riksdag;ledamot
+5;1970;riksdag/ledamot;22;riksdag;ledamot
+6;1980;riksdag/ledamot;582;riksdag;ledamot
+7;1990;riksdag/ledamot;640;riksdag;ledamot
+8;2000;riksdag/ledamot;710;riksdag;ledamot"""
+
+    df = pd.read_csv(io.StringIO(data_str), sep=';', index_col=0)
+
+    w: ipycytoscape.CytoscapeWidget = create_network(df)
+
+    assert w is not None
