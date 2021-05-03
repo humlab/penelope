@@ -104,10 +104,6 @@ class MainGUI:
         if bundle is None:
             return
         self.trends_data = co_occurrence.to_trends_data(bundle).update()
-        self.gui_explore = (
-            co_occurrence_gui.ExploreGUI()
-            .setup()
-            .display(trends_data=self.trends_data)
-        )
+        self.gui_explore = co_occurrence_gui.ExploreGUI().setup().display(trends_data=self.trends_data)
 
         display(self.gui_explore.layout())
