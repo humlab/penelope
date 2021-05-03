@@ -21,7 +21,6 @@ class ExploreGUI:
     trends_gui: word_trends.TrendsGUI = None
     gofs_gui: word_trends.GoFsGUI = None
     gofs_enabled: bool = False
-    global_tokens_count_threshold: int = 25
 
     def setup(self) -> "ExploreGUI":
         self.tab_main = notebook_utility.OutputsTabExt(
@@ -52,7 +51,6 @@ class ExploreGUI:
             0,
             CoOccurrenceTable(
                 data,
-                global_tokens_count_threshold=self.global_tokens_count_threshold,
                 compute_options=trends_data.compute_options,
             ),
             clear=True,

@@ -63,7 +63,6 @@ class MainGUI:
         corpus_folder: str,
         data_folder: str,
         resources_folder: str,
-        global_count_threshold: int = 25,
     ) -> widgets.VBox:
 
         self.trends_data: TrendsData = None
@@ -89,8 +88,6 @@ class MainGUI:
 
         self.gui_explore: co_occurrence_gui.ExploreGUI = None
 
-        self.global_count_threshold = global_count_threshold
-
     def layout(self):
 
         accordion = widgets.Accordion(children=[self.gui_load.layout(), self.gui_compute.layout()])
@@ -108,7 +105,7 @@ class MainGUI:
             return
         self.trends_data = co_occurrence.to_trends_data(bundle).update()
         self.gui_explore = (
-            co_occurrence_gui.ExploreGUI(global_tokens_count_threshold=self.global_count_threshold)
+            co_occurrence_gui.ExploreGUI()
             .setup()
             .display(trends_data=self.trends_data)
         )
