@@ -76,6 +76,17 @@ pylint:
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
+show-size:
+	@pip list --format freeze | \
+		awk -F = {'print $$1'} | \
+			xargs pip show | \
+				grep -E 'Location:|Name:' | \
+					cut -d ' ' -f 2 | \
+						paste -d ' ' - - | \
+							awk '{gsub("-","_",$$1); print $$2 "/" tolower($$1)}' | \
+								xargs du -sh 2> /dev/null | \
+									sort -h
+
 pylint_diff:
 	@time poetry run pylint -j 2 `git diff --name-only --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
 
