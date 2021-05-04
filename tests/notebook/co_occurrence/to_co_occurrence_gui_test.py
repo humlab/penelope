@@ -11,7 +11,7 @@ from penelope.utility import PropertyValueMaskingOpts
 
 
 def dummy_config():
-    return CorpusConfig.load(path='./tests/test_data/ssi_corpus_config.yml')
+    return CorpusConfig.load(path='./tests/test_data/SSI.yml')
 
 
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
