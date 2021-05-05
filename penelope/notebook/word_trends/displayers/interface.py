@@ -1,8 +1,7 @@
 import abc
-from dataclasses import dataclass
 from typing import Any, Sequence, TypeVar
 
-import ipywidgets
+from ipywidgets import Output
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.corpus.dtm import VectorizedCorpus
 
@@ -11,11 +10,10 @@ T = TypeVar('T', bound='ITrendDisplayer')
 DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
-@dataclass
 class ITrendDisplayer(abc.ABC):
-
-    output: ipywidgets.Output = None
-    name: str = "noname"
+    def __init__(self, name: str = "noname"):
+        self.output: Output = Output()
+        self.name: str = name
 
     @abc.abstractmethod
     def setup(self):

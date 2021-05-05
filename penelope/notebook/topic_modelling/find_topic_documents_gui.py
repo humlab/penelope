@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Any
 
 from IPython.display import display as ip_display
@@ -8,16 +7,14 @@ from ipywidgets.widgets.widget_box import HBox
 from .display_topic_titles import reduce_topic_tokens_overview
 
 
-@dataclass
 class GUI:
-
-    threshold_slider = FloatSlider(min=0.01, max=1.0, value=0.2)
-    top_token_slider = IntSlider(min=3, max=200, value=3, disabled=True)
-    find_text = Text(description="")
-    output = Output()
-    callback = lambda *_: ()
-
-    toplist_label: HTML = HTML("Tokens toplist threshold for token")
+    def __init__(self):
+        self.threshold_slider: FloatSlider = FloatSlider(min=0.01, max=1.0, value=0.2)
+        self.top_token_slider: IntSlider = IntSlider(min=3, max=200, value=3, disabled=True)
+        self.find_text: Text = Text(description="")
+        self.output: Output = Output()
+        self.callback = lambda *_: ()
+        self.toplist_label: HTML = HTML("Tokens toplist threshold for token")
 
     def layout(self):
         return VBox(

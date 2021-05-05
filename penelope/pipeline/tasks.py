@@ -258,7 +258,7 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     """Creates a feather checkpoint. """
 
     folder: str = None
-    force: bool = False
+    force: bool = field(default=False)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -640,7 +640,7 @@ class Vocabulary(ITask):
         Both = 3
 
     token2id: Token2Id = None
-    token_type: TokenType = TokenType.Both
+    token_type: TokenType = field(default=TokenType.Both)
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TAGGED_FRAME]

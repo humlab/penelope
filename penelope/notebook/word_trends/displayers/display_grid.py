@@ -1,17 +1,14 @@
-from dataclasses import dataclass, field
-
 import pandas as pd
 from ipyaggrid import Grid
 from IPython.display import display
 
 from ._compile_mixins import CategoryDataMixin
-from ._displayer import ITrendDisplayer
+from .interface import ITrendDisplayer
 
 
-@dataclass
 class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
-
-    name: str = field(default="Grid")
+    def __init__(self, name: str = "Grid"):
+        super().__init__(name=name)
 
     def setup(self):
         return

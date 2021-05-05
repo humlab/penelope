@@ -30,15 +30,15 @@ class CheckpointOpts:
     sep: str = '\t'
     quoting: int = csv.QUOTE_NONE
     custom_serializer_classname: str = None
-    deserialize_in_parallel: bool = False
-    deserialize_processes: int = 4
-    deserialize_chunksize: int = 4
+    deserialize_in_parallel: bool = field(default=False)
+    deserialize_processes: int = field(default=4)
+    deserialize_chunksize: int = field(default=4)
 
     text_column: str = field(default="text")
     lemma_column: str = field(default="lemma")
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
-    index_column: Union[int, None] = 0
+    index_column: Union[int, None] = field(default=0)
 
     @property
     def content_type(self) -> ContentType:

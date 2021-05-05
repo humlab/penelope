@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from gensim.utils import deprecated
 from penelope.utility import getLogger
 
@@ -16,12 +14,12 @@ logger = getLogger("penelope")
 
 
 @deprecated
-@dataclass
 class GofTrendsGUI:
     """GUI component for combined display of tokens distributions and goodness of fit to uniform distribution."""
 
-    trends_gui: TrendsGUI
-    gofs_gui: GoFsGUI
+    def __init__(self, trends_gui: TrendsGUI, gofs_gui: GoFsGUI):
+        self.trends_gui: TrendsGUI = trends_gui
+        self.gofs_gui: GoFsGUI = gofs_gui
 
     def setup(self) -> "GofTrendsGUI":
         self.trends_gui = TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)

@@ -12,7 +12,7 @@ OUTPUT_FOLDER = './tests/output'
 
 def fake_config() -> CorpusConfig:
 
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/ssi_corpus_config.yml')
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'

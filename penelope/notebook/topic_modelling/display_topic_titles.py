@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Callable
 
 import pandas as pd
@@ -11,48 +10,47 @@ from penelope.notebook.utility import create_js_download
 
 from .utility import reduce_topic_tokens_overview
 
+CSS_RULES = ".ag-cell { white-space: normal !important; } "
+DEFAULT_STYLE = dict(
+    export_csv=True,
+    export_excel=True,
+    export_mode="buttons",
+    index=True,
+    keep_multiindex=False,
+    menu={"buttons": [{"name": "Export Grid", "hide": True}]},
+    quick_filter=True,
+    show_toggle_delete=False,
+    show_toggle_edit=False,
+    theme="ag-theme-balham",
+)
+GRID_OPTIONS = dict(
+    columnDefs=[
+        {"headerName": "Topic", "field": "topic_id", "maxWidth": 80},
+        {"headerName": "Tokens", "field": "tokens"},
+    ],
+    enableSorting=True,
+    enableFilter=True,
+    enableColResize=True,
+    enableRangeSelection=False,
+    rowSelection='multiple',
+    defaultColDef={
+        "flex": 1,
+        "wrapText": True,
+        "autoHeight": True,
+        "sortable": True,
+        "resizable": True,
+        "editable": False,
+    },
+    onColumnResized="function onColumnResized(params) {params.api.resetRowHeights();params.api.setDomLayout('autoHeight');}",
+    onColumnVisible="function onColumnResized(params) {params.api.resetRowHeights();params.api.setDomLayout('autoHeight');}",
+)
 
-@dataclass
+
 class DisplayIPyWidgetsGUI:
-
-    css_rules = ".ag-cell { white-space: normal !important; } "
-    default_style = dict(
-        export_csv=True,
-        export_excel=True,
-        export_mode="buttons",
-        index=True,
-        keep_multiindex=False,
-        menu={"buttons": [{"name": "Export Grid", "hide": True}]},
-        quick_filter=True,
-        show_toggle_delete=False,
-        show_toggle_edit=False,
-        theme="ag-theme-balham",
-    )
-    grid_options = dict(
-        columnDefs=[
-            {"headerName": "Topic", "field": "topic_id", "maxWidth": 80},
-            {"headerName": "Tokens", "field": "tokens"},
-        ],
-        enableSorting=True,
-        enableFilter=True,
-        enableColResize=True,
-        enableRangeSelection=False,
-        rowSelection='multiple',
-        defaultColDef={
-            "flex": 1,
-            "wrapText": True,
-            "autoHeight": True,
-            "sortable": True,
-            "resizable": True,
-            "editable": False,
-        },
-        onColumnResized="function onColumnResized(params) {params.api.resetRowHeights();params.api.setDomLayout('autoHeight');}",
-        onColumnVisible="function onColumnResized(params) {params.api.resetRowHeights();params.api.setDomLayout('autoHeight');}",
-    )
-
-    count_slider = IntSlider(description="Tokens", min=25, max=200, value=50)
-    output = Output()  # layout=ipywidgets.Layout(height="1000px"))
-    data = None
+    def __init__(self):
+        self.count_slider: IntSlider = IntSlider(description="Tokens", min=25, max=200, value=50)
+        self.output = Output()
+        self.data = None
 
     def layout(self):
         return VBox([self.count_slider, self.output])
@@ -60,9 +58,9 @@ class DisplayIPyWidgetsGUI:
     def display_table(self, df):
         g = Grid(
             grid_data=df,
-            grid_options=self.grid_options,
-            **self.default_style,
-            css_rules=self.css_rules,
+            grid_options=GRID_OPTIONS,
+            **DEFAULT_STYLE,
+            css_rules=CSS_RULES,
         )
         IPython_display(g)
 
@@ -88,23 +86,22 @@ PANDAS_TABLE_STYLE = [
 ]
 
 
-@dataclass
 class DisplayPandasGUI:  # pylint: disable=too-many-instance-attributes
-
-    count_slider: IntSlider = IntSlider(
-        description="Tokens",
-        min=25,
-        max=200,
-        value=50,
-        continuous_update=False,
-    )
-    search_text: Text = Text(description="Find")
-    download_button: Button = Button(description="Download")
-    output: Output = Output()  # layout=ipywidgets.Layout(height="1000px"))
-    topics: pd.DataFrame = None
-    reduced_topics: pd.DataFrame = None
-    callback: Callable = lambda *_: ()
-    js_download: Javascript = None
+    def __init__(self):
+        self.count_slider: IntSlider = IntSlider(
+            description="Tokens",
+            min=25,
+            max=200,
+            value=50,
+            continuous_update=False,
+        )
+        self.search_text: Text = Text(description="Find")
+        self.download_button: Button = Button(description="Download")
+        self.output: Output = Output()
+        self.topics: pd.DataFrame = None
+        self.reduced_topics: pd.DataFrame = None
+        self.callback: Callable = lambda *_: ()
+        self.js_download: Javascript = None
 
     def layout(self):
         return VBox((HBox((self.count_slider, self.search_text, self.download_button)), self.output))

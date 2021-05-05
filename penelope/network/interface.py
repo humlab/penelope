@@ -1,7 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Tuple
 
 import networkx as nx
+
+
+def noop(**_):
+    return {}
 
 
 @dataclass
@@ -13,4 +17,4 @@ class LayoutAlgorithm:
 
     engine: Any = None
     layout_function: Any = nx.nx_pydot.pydot_layout
-    layout_args: Callable = lambda **_: {}
+    layout_args: Callable = field(default=noop)

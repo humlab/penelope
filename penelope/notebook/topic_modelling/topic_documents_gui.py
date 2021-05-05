@@ -1,5 +1,4 @@
 import warnings
-from dataclasses import dataclass
 from typing import Callable
 
 import pandas as pd
@@ -21,21 +20,25 @@ TEXT_ID = "id_345"
 BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
 
 
-@dataclass
 class GUI:
+    def __init__(self):
 
-    n_topics: int = 0
-    text_id: str = TEXT_ID
-    text: HTML = HTML(value=f"<span class='{TEXT_ID}'></span>")
-    topic_id: IntSlider = IntSlider(description='Topic ID', min=0, max=199, step=1, value=0, continuous_update=False)
-    n_top: IntSlider = IntSlider(description='', min=5, max=500, step=1, value=75)
-    threshold = FloatSlider(description='Threshold', min=0.0, max=1.0, step=0.01, value=0.20, continues_update=False)
-    output: Output = Output()
+        self.n_topics: int = 0
+        self.text_id: str = TEXT_ID
+        self.text: HTML = HTML(value=f"<span class='{TEXT_ID}'></span>")
+        self.topic_id: IntSlider = IntSlider(
+            description='Topic ID', min=0, max=199, step=1, value=0, continuous_update=False
+        )
+        self.n_top: IntSlider = IntSlider(description='', min=5, max=500, step=1, value=75)
+        self.threshold = FloatSlider(
+            description='Threshold', min=0.0, max=1.0, step=0.01, value=0.20, continues_update=False
+        )
+        self.output: Output = Output()
 
-    prev_topic_id: Button = Button(description="<<", layout=Layout(**BUTTON_STYLE))
-    next_topic_id: Button = Button(description=">>", layout=Layout(**BUTTON_STYLE))
+        self.prev_topic_id: Button = Button(description="<<", layout=Layout(**BUTTON_STYLE))
+        self.next_topic_id: Button = Button(description=">>", layout=Layout(**BUTTON_STYLE))
 
-    callback: Callable = lambda *_: ()
+        self.callback: Callable = lambda *_: ()
 
     def _callback(self, *_):
         self.callback(self)

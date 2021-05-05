@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import pandas as pd
 from penelope.notebook.word_trends.displayers.display_top_table import TopTokensDisplayer
 from penelope.utility import getLogger
@@ -11,16 +9,13 @@ from ..co_occurrence.display_data import CoOccurrenceTable
 logger = getLogger()
 
 
-@dataclass
 class ExploreGUI:
-
-    trends_data: word_trends.TrendsData = None
-
-    tab_main: notebook_utility.OutputsTabExt = None
-
-    trends_gui: word_trends.TrendsGUI = None
-    gofs_gui: word_trends.GoFsGUI = None
-    gofs_enabled: bool = False
+    def __init__(self):
+        self.trends_data: word_trends.TrendsData = None
+        self.tab_main: notebook_utility.OutputsTabExt = None
+        self.trends_gui: word_trends.TrendsGUI = None
+        self.gofs_gui: word_trends.GoFsGUI = None
+        self.gofs_enabled: bool = False
 
     def setup(self) -> "ExploreGUI":
         self.tab_main = notebook_utility.OutputsTabExt(

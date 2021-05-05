@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Any, Callable, Union
 
 from penelope.pipeline import CorpusConfig
@@ -10,7 +9,6 @@ from ..gui_base import BaseGUI
 logger = get_logger('penelope')
 
 
-@dataclass
 class ComputeGUI(BaseGUI):
     def layout(self, hide_input=False, hide_output=False):
         layout = super().layout(hide_input, hide_output)

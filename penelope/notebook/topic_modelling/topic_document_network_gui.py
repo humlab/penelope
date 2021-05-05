@@ -157,72 +157,49 @@ def compile_network_data(opts: "GUI.GUI_opts") -> pd.DataFrame:
     return df
 
 
-@dataclass
 class GUI:
-    @dataclass
-    class GUI_opts:
-        plot_mode: PlotMode
-        inferred_topics: InferredTopicsData
-        layout_algorithm: str
-        threshold: float
-        period: Tuple[int, int]
-        topic_ids: Sequence[int]
-        scale: float
-        output_format: str
+    def __init__(self, plot_mode: PlotMode, inferred_topics: InferredTopicsData = None):
 
-    @property
-    def opts(self) -> GUI_opts:
-        return GUI.GUI_opts(
-            plot_mode=self.plot_mode,
-            inferred_topics=self.inferred_topics,
-            layout_algorithm=self.layout_algorithm.value,
-            threshold=self.threshold.value,
-            period=self.period.value,
-            topic_ids=self.topic_ids.value,
-            scale=self.scale.value,
-            output_format=self.output_format.value,
+        self.plot_mode: PlotMode = plot_mode
+        self.inferred_topics: InferredTopicsData = inferred_topics
+
+        self.text: widgets.HTML = None
+        self.period = widgets.IntRangeSlider(
+            description="",
+            min=1900,
+            max=2030,
+            step=1,
+            value=(1900, 1900 + 5),
+            continues_update=False,
         )
-
-    plot_mode: PlotMode
-    inferred_topics: InferredTopicsData = None
-
-    text: widgets.HTML = None
-    period = widgets.IntRangeSlider(
-        description="",
-        min=1900,
-        max=2030,
-        step=1,
-        value=(1900, 1900 + 5),
-        continues_update=False,
-    )
-    scale = widgets.FloatSlider(
-        description="",
-        min=0.0,
-        max=1.0,
-        step=0.01,
-        value=0.1,
-        continues_update=False,
-    )
-    threshold = widgets.FloatSlider(
-        description="",
-        min=0.0,
-        max=1.0,
-        step=0.01,
-        value=0.10,
-        continues_update=False,
-    )
-    output_format = widgets.Dropdown(
-        description="",
-        options={"Network": "network", "Table": "table"},
-        value="network",
-        layout={'width': '200px'},
-    )
-    layout_algorithm = widgets.Dropdown(description="", options=[], value=None, layout={'width': '250px'})
-    topic_ids = widgets.SelectMultiple(description="", options=[], value=[], rows=8, layout={'width': '180px'})
-    button = widgets.Button(
-        description="Display", button_style='Success', layout=widgets.Layout(width='115px', background_color='blue')
-    )
-    output = widgets.Output()
+        self.scale = widgets.FloatSlider(
+            description="",
+            min=0.0,
+            max=1.0,
+            step=0.01,
+            value=0.1,
+            continues_update=False,
+        )
+        self.threshold = widgets.FloatSlider(
+            description="",
+            min=0.0,
+            max=1.0,
+            step=0.01,
+            value=0.10,
+            continues_update=False,
+        )
+        self.output_format = widgets.Dropdown(
+            description="",
+            options={"Network": "network", "Table": "table"},
+            value="network",
+            layout={'width': '200px'},
+        )
+        self.layout_algorithm = widgets.Dropdown(description="", options=[], value=None, layout={'width': '250px'})
+        self.topic_ids = widgets.SelectMultiple(description="", options=[], value=[], rows=8, layout={'width': '180px'})
+        self.button = widgets.Button(
+            description="Display", button_style='Success', layout=widgets.Layout(width='115px', background_color='blue')
+        )
+        self.output = widgets.Output()
 
     def setup(self, inferred_topics: InferredTopicsData, default_threshold: float = None) -> "GUI":
 
@@ -292,6 +269,30 @@ class GUI:
             ]
         )
         return _layout
+
+    @dataclass
+    class GUI_opts:
+        plot_mode: PlotMode
+        inferred_topics: InferredTopicsData
+        layout_algorithm: str
+        threshold: float
+        period: Tuple[int, int]
+        topic_ids: Sequence[int]
+        scale: float
+        output_format: str
+
+    @property
+    def opts(self) -> GUI_opts:
+        return GUI.GUI_opts(
+            plot_mode=self.plot_mode,
+            inferred_topics=self.inferred_topics,
+            layout_algorithm=self.layout_algorithm.value,
+            threshold=self.threshold.value,
+            period=self.period.value,
+            topic_ids=self.topic_ids.value,
+            scale=self.scale.value,
+            output_format=self.output_format.value,
+        )
 
 
 def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer):

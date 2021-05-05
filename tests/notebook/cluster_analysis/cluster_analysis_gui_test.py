@@ -51,7 +51,7 @@ def test_setup_gui():
     df_gof = gof.compute_goddness_of_fits_to_uniform(corpus=corpus)
 
     state = cluster_analysis_gui.GUI_State(corpus_clusters=None, corpus=corpus, df_gof=df_gof)
-    gui = cluster_analysis_gui.ClusterAnalysisGUI(state=state, display_trends=dummy_patch)
+    gui = cluster_analysis_gui.ClusterAnalysisGUI(state=state, display_callback=dummy_patch)
 
     # gui.plot_cluster = monkey_patch
     # gui.plot_clusters = monkey_patch

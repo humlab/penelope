@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from typing import Any
 
 import IPython.display
@@ -7,14 +6,13 @@ import IPython.display
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 from ...ipyaggrid_utility import display_grid
-from ._displayer import ITrendDisplayer
+from .interface import ITrendDisplayer
 
 
 # FIXME #72 Word trends: No data in top tokens displayer
-@dataclass
 class TopTokensDisplayer(ITrendDisplayer):
-
-    name: str = field(default="TopTokens")
+    def __init__(self, name: str = "TopTokens"):
+        super().__init__(name=name)
 
     def setup(self, *_, **__):
         return

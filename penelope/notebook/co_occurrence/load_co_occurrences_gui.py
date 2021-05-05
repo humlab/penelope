@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass, field
 from typing import Callable
 
 import penelope.co_occurrence as co_occurrence
@@ -14,20 +13,20 @@ from ..utility import CLEAR_OUTPUT, FileChooserExt2
 debug_view = Output(layout={"border": "1px solid black"})
 
 
-@dataclass
 class LoadGUI:
+    def __init__(self, default_path: str = None, default_filename: str = '', filename_pattern: str = None):
 
-    default_path: str = field(default=None)
-    default_filename: str = field(default='')
-    filename_pattern: str = None
+        self.default_path: str = default_path
+        self.default_filename: str = default_filename
+        self.filename_pattern: str = filename_pattern
 
-    _filename: FileChooserExt2 = None
-    _load_button: Button = Button(
-        description='Load', button_style='Success', layout=Layout(width='120px'), disabled=True
-    )
+        self._filename: FileChooserExt2 = None
+        self._load_button: Button = Button(
+            description='Load', button_style='Success', layout=Layout(width='120px'), disabled=True
+        )
 
-    load_callback: Callable[[str], None] = None
-    loaded_callback: Callable[[co_occurrence.Bundle], None] = None
+        self.load_callback: Callable[[str], None] = None
+        self.loaded_callback: Callable[[co_occurrence.Bundle], None] = None
 
     # @view.capture(clear_output=True)
     def _load_handler(self, *_):

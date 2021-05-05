@@ -1,19 +1,17 @@
-from dataclasses import dataclass, field
-
 import IPython.display
 import pandas as pd
 from penelope.utility import try_split_column
 
 from ...ipyaggrid_utility import display_grid
 from ._compile_mixins import CategoryDataMixin
-from ._displayer import ITrendDisplayer
+from .interface import ITrendDisplayer
 
 
-@dataclass
 class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
     """Displays data as a pivot table with category as rows and tokens as columns"""
 
-    name: str = field(default="Pivot")
+    def __init__(self, name: str = "Pivot"):
+        super().__init__(name=name)
 
     def setup(self, *_, **__):
         return
@@ -31,11 +29,11 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
             IPython.display.display(g)
 
 
-@dataclass
 class UnnestedTableDisplayer(TableDisplayer):
     """Unnests (unpivots) the pivot table so that tokens columns are turned rows with token category & token count columns"""
 
-    name: str = field(default="Table")
+    def __init__(self, name: str = "Table"):
+        super().__init__(name=name)
 
     def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
         df = super().create_data_frame(plot_data)
@@ -43,11 +41,11 @@ class UnnestedTableDisplayer(TableDisplayer):
         return df
 
 
-@dataclass
 class UnnestedExplodeTableDisplayer(UnnestedTableDisplayer):
     """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
 
-    name: str = field(default="Tabular")
+    def __init__(self, name: str = "Tabular"):
+        super().__init__(name=name)
 
     def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
         df: pd.DataFrame = super().create_data_frame(plot_data)
