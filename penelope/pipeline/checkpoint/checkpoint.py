@@ -44,11 +44,11 @@ def store_checkpoint(
             zf.writestr(payload.filename, data=data)
             yield payload
 
+
         if document_index is not None:
-            zf.writestr(
-                checkpoint_opts.document_index_name,
-                data=document_index.to_csv(sep=checkpoint_opts.document_index_sep, header=True),
-            )
+            document_index_name = checkpoint_opts.document_index_name or DOCUMENT_INDEX_FILENAME
+            document_index_sep = checkpoint_opts.document_index_sep or "\t"
+            zf.writestr(document_index_name, data=document_index.to_csv(sep=document_index_sep, header=True))
 
         if token2id is not None:
             zf.writestr(DICTIONARY_FILENAME, data=json.dumps(token2id.store))
