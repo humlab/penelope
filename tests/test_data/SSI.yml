@@ -9,7 +9,7 @@ checkpoint_opts:
     sep: "\t"
     quoting: 3
     document_index_name: null
-    document_index_sep: null
+    document_index_sep: "\t"
     text_column: text
     lemma_column: lemma_
     pos_column: pos_
@@ -45,7 +45,7 @@ text_reader_opts:
   - "year:_:3"
   - "city:\\w+\\_\\d+\\_\\d+\\_\\d+\\_(.*)\\.txt"
   filename_filter: null
-  filename_pattern: '*.txt'
+  filename_pattern: "*.txt"
   index_field: null
   sep: "\t"
   quoting: 3
