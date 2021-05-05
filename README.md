@@ -1,5 +1,10 @@
 # Humlab Penelope
-(p)NL(o)P
+
+NLP package used in the following research projects:
+
+    - Welfare State Analytics (westac.se)
+    - International Ideas at UNESCO: Digital Approaches to Global Conceptual History (inidun.github.io)
+
 ======
 
 [![current release version](https://img.shields.io/github/release/humlab/penelope.svg?style=flat-square)](https://github.com/humlab/penelope/releases)
@@ -12,8 +17,9 @@
 Installation
 ------------
 
-- Install pre-commit (recommend with pipx)
-- ``make init && make install``
+```
+pip install humlab-penelope
+```
 
 Dependencies
 
@@ -23,13 +29,9 @@ Development
 
 Testing
 
-`make pytest`
-
 Versioning
 
 References
-
-- `Humlab-pENELoPE`
 
 <!-- .. |Coverage-Status| image:: https://coveralls.io/repos/tqdm/tqdm/badge.svg?branch=master
    :target: https://coveralls.io/github/tqdm/tqdm
