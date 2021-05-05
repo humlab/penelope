@@ -23,8 +23,7 @@ def create_js_download(df: pd.DataFrame, filename='results.csv', **to_csv_opts) 
 
     csv_text = df.to_csv(**to_csv_opts).replace('\n', '\\n').replace('\r', '').replace("'", "\'")
 
-    js_download = (
-        """
+    js_download = """
         var csv = '%s';
         var filename = '%s';
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -42,8 +41,9 @@ def create_js_download(df: pd.DataFrame, filename='results.csv', **to_csv_opts) 
                 document.body.removeChild(link);
             }
         }
-    """
-        % (csv_text, filename)
+    """ % (
+        csv_text,
+        filename,
     )
 
     return Javascript(js_download)

@@ -44,7 +44,6 @@ def store_checkpoint(
             zf.writestr(payload.filename, data=data)
             yield payload
 
-
         if document_index is not None:
             document_index_name = checkpoint_opts.document_index_name or DOCUMENT_INDEX_FILENAME
             document_index_sep = checkpoint_opts.document_index_sep or "\t"

@@ -3,7 +3,7 @@ from typing import List
 
 import IPython.display as IPython_display
 import pandas as pd
-from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Text, ToggleButton, VBox, Output
+from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from pandas.api.types import is_numeric_dtype
 from penelope.co_occurrence.convert import store_co_occurrences
 from penelope.notebook.utility import create_js_download
