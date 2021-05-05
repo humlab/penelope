@@ -16,7 +16,7 @@ from loguru import logger
 CLEAR_OUTPUT = True
 
 
-def create_js_download(df: pd.DataFrame, **to_csv_opts) -> Javascript:
+def create_js_download(df: pd.DataFrame, filename='results.csv', **to_csv_opts) -> Javascript:
 
     if df is None or len(df) == 0:
         return None
@@ -26,7 +26,7 @@ def create_js_download(df: pd.DataFrame, **to_csv_opts) -> Javascript:
     js_download = (
         """
         var csv = '%s';
-        var filename = 'results.csv';
+        var filename = '%s';
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         if (navigator.msSaveBlob) { // IE 10+
             navigator.msSaveBlob(blob, filename);
@@ -43,7 +43,7 @@ def create_js_download(df: pd.DataFrame, **to_csv_opts) -> Javascript:
             }
         }
     """
-        % csv_text
+        % (csv_text, filename)
     )
 
     return Javascript(js_download)
