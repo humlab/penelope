@@ -1,10 +1,9 @@
 import abc
-from dataclasses import dataclass
 from typing import Any, Callable, List, Sequence
 
-import ipywidgets
 import pandas as pd
 from bokeh.plotting import show
+from ipywidgets import HTML, Button, HBox, IntSlider, Layout, Output, SelectMultiple, Text, ToggleButton, VBox
 from penelope.corpus import VectorizedCorpus
 
 from .displayers import deprecated_plot as plotter
@@ -81,8 +80,8 @@ class TokensSelector(abc.ABC):
 
 class SelectMultipleTokensSelector(TokensSelector):
     def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
-        self._text_widget: ipywidgets.Text = None
-        self._tokens_widget: ipywidgets.SelectMultiple = None
+        self._text_widget: Text = None
+        self._tokens_widget: SelectMultiple = None
         self._token_to_index = None
         super().__init__(tokens, token_column, norms_columns)
 
@@ -95,19 +94,19 @@ class SelectMultipleTokensSelector(TokensSelector):
     def _rehash_token_to_index(self):
         self._token_to_index = {w: i for i, w in enumerate(self.tokens.index.tolist())}
 
-    def _create_widget(self) -> ipywidgets.SelectMultiple:
+    def _create_widget(self) -> SelectMultiple:
 
         _tokens = list(self.tokens.index)
-        _layout = ipywidgets.Layout(width="200px")
-        self._tokens_widget = ipywidgets.SelectMultiple(options=_tokens, value=[], rows=30)
+        _layout = Layout(width="200px")
+        self._tokens_widget = SelectMultiple(options=_tokens, value=[], rows=30)
         self._tokens_widget.layout = _layout
         self._tokens_widget.observe(self._on_selection_changed, "value")
 
-        self._text_widget = ipywidgets.Text(description="")
+        self._text_widget = Text(description="")
         self._text_widget.layout = _layout
         self._text_widget.observe(self._on_filter_changed, "value")
 
-        _widget = ipywidgets.VBox([ipywidgets.HTML("<b>Filter</b>"), self._text_widget, self._tokens_widget])
+        _widget = VBox([HTML("<b>Filter</b>"), self._text_widget, self._tokens_widget])
 
         return _widget
 
@@ -143,33 +142,32 @@ class SelectMultipleTokensSelector(TokensSelector):
         return self._tokens_widget.options[key]
 
 
-@dataclass
 class TrendsWithPickTokensGUI:
+    def __init__(self, token_selector: TokensSelector, update_handler: Callable = None):
+        self.token_selector: TokensSelector = token_selector
+        self.update_handler: Callable = update_handler
 
-    token_selector: TokensSelector = None
-    update_handler: Callable = None
-
-    _page_size = ipywidgets.IntSlider(
-        description="Count",
-        min=0,
-        max=100,
-        step=1,
-        value=3,
-        continuous_update=False,
-        layout=ipywidgets.Layout(width="300px"),
-    )
-    _forward = ipywidgets.Button(
-        description=">>",
-        button_style="Success",
-        layout=ipywidgets.Layout(width="40px", color="green"),
-    )
-    _back = ipywidgets.Button(
-        description="<<",
-        button_style="Success",
-        layout=ipywidgets.Layout(width="40px", color="green"),
-    )
-    _split = ipywidgets.ToggleButton(description="Split", layout=ipywidgets.Layout(width="80px", color="green"))
-    _output = ipywidgets.Output(layout=ipywidgets.Layout(width="80%"))
+        self._page_size = IntSlider(
+            description="Count",
+            min=0,
+            max=100,
+            step=1,
+            value=3,
+            continuous_update=False,
+            layout=Layout(width="300px"),
+        )
+        self._forward = Button(
+            description=">>",
+            button_style="Success",
+            layout=Layout(width="40px", color="green"),
+        )
+        self._back = Button(
+            description="<<",
+            button_style="Success",
+            layout=Layout(width="40px", color="green"),
+        )
+        self._split = ToggleButton(description="Split", layout=Layout(width="80px", color="green"))
+        self._output = Output(layout=Layout(width="80%"))
 
     def setup(self):
 
@@ -202,10 +200,10 @@ class TrendsWithPickTokensGUI:
         self._update()
 
     def layout(self):
-        return ipywidgets.VBox(
+        return VBox(
             [
-                ipywidgets.HBox([self._back, self._forward, self._page_size, self._split]),
-                ipywidgets.HBox([self.token_selector.widget, self._output], layout=ipywidgets.Layout(width="98%")),
+                HBox([self._back, self._forward, self._page_size, self._split]),
+                HBox([self.token_selector.widget, self._output], layout=Layout(width="98%")),
             ]
         )
 

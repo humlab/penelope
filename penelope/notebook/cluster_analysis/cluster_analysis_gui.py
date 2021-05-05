@@ -42,47 +42,46 @@ class GUI_State:
         return tokens
 
 
-@dataclass
 class ClusterAnalysisGUI:
+    def __init__(self, state: GUI_State, display_callback: Callable):
 
-    state: GUI_State
-    display_trends: Callable
-
-    n_cluster_count: IntSlider = IntSlider(
-        description='#Cluster', min=1, max=200, step=1, value=20, bar_style='info', continuous_update=False
-    )
-    method_key: Dropdown = Dropdown(
-        description='Method', options=METHODS_LIST, value='k_means2', layout=Layout(width='200px')
-    )
-    metric: Dropdown = Dropdown(
-        description='Metric', options=METRICS_LIST, value='l2_norm', layout=Layout(width='200px')
-    )
-    n_metric_top: Dropdown = Dropdown(
-        description='Words', options=N_METRIC_TOP_WORDS, value=5000, layout=Layout(width='200px')
-    )
-    clusters_output_type: Dropdown = Dropdown(
-        description='Output', options=CLUSTERS_OUTPUT_TYPES, value='count', layout=Layout(width='200px')
-    )
-    compute = Button(description='Compute', button_style='Success', layout=Layout(width='100px'))
-    clusters_count_output: Output = Output()
-    clusters_mean_output: Output = Output()
-    cluster_output_type: Dropdown = Dropdown(
-        description='Output', options=CLUSTER_OUTPUT_TYPES, value='boxplot', layout=Layout(width='200px')
-    )
-    threshold: FloatSlider = FloatSlider(
-        description='Threshold', min=0.0, max=1.0, step=0.01, value=0.50, bar_style='info', continuous_update=False
-    )
-    cluster_index: Dropdown = Dropdown(
-        description='Cluster', value=None, options=[], bar_style='info', disabled=True, layout=Layout(width='200px')
-    )
-    back: Button = Button(
-        description="<<", button_style='Success', layout=Layout(width='40px', color='green'), disabled=True
-    )
-    forward: Button = Button(
-        description=">>", button_style='Success', layout=Layout(width='40px', color='green'), disabled=True
-    )
-    cluster_output: Output = Output()
-    cluster_words_output: Output = Output()
+        self.state = state
+        self.display_trends = display_callback
+        self.n_cluster_count: IntSlider = IntSlider(
+            description='#Cluster', min=1, max=200, step=1, value=20, bar_style='info', continuous_update=False
+        )
+        self.method_key: Dropdown = Dropdown(
+            description='Method', options=METHODS_LIST, value='k_means2', layout=Layout(width='200px')
+        )
+        self.metric: Dropdown = Dropdown(
+            description='Metric', options=METRICS_LIST, value='l2_norm', layout=Layout(width='200px')
+        )
+        self.n_metric_top: Dropdown = Dropdown(
+            description='Words', options=N_METRIC_TOP_WORDS, value=5000, layout=Layout(width='200px')
+        )
+        self.clusters_output_type: Dropdown = Dropdown(
+            description='Output', options=CLUSTERS_OUTPUT_TYPES, value='count', layout=Layout(width='200px')
+        )
+        self.compute = Button(description='Compute', button_style='Success', layout=Layout(width='100px'))
+        self.clusters_count_output: Output = Output()
+        self.clusters_mean_output: Output = Output()
+        self.cluster_output_type: Dropdown = Dropdown(
+            description='Output', options=CLUSTER_OUTPUT_TYPES, value='boxplot', layout=Layout(width='200px')
+        )
+        self.threshold: FloatSlider = FloatSlider(
+            description='Threshold', min=0.0, max=1.0, step=0.01, value=0.50, bar_style='info', continuous_update=False
+        )
+        self.cluster_index: Dropdown = Dropdown(
+            description='Cluster', value=None, options=[], bar_style='info', disabled=True, layout=Layout(width='200px')
+        )
+        self.back: Button = Button(
+            description="<<", button_style='Success', layout=Layout(width='40px', color='green'), disabled=True
+        )
+        self.forward: Button = Button(
+            description=">>", button_style='Success', layout=Layout(width='40px', color='green'), disabled=True
+        )
+        self.cluster_output: Output = Output()
+        self.cluster_words_output: Output = Output()
 
     def lock(self, value: bool):
         self.compute.disabled = value
@@ -327,7 +326,7 @@ def display_gui(corpus: VectorizedCorpus, df_gof: pd.DataFrame):
 
     DEBUG_CONTAINER['data'] = state
 
-    gui = ClusterAnalysisGUI(state=state, display_trends=display_trends).setup()
+    gui = ClusterAnalysisGUI(state=state, display_callback=display_trends).setup()
     layout = gui.layout()
     display.display(layout)
 

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Callable, Optional, Union
 
 import ipywidgets as widgets
@@ -55,7 +54,6 @@ def compute_co_occurrence_callback(
         return None
 
 
-@dataclass
 class MainGUI:
     def __init__(
         self,

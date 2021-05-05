@@ -1,7 +1,18 @@
-from dataclasses import dataclass, field
 from typing import Sequence
 
-import ipywidgets as widgets
+from ipywidgets import (
+    BoundedIntText,
+    Dropdown,
+    HBox,
+    Label,
+    Layout,
+    Output,
+    SelectMultiple,
+    Tab,
+    Textarea,
+    ToggleButton,
+    VBox,
+)
 from penelope.utility import get_logger
 
 from .displayers import ITrendDisplayer
@@ -9,55 +20,49 @@ from .trends_data import TrendsData, TrendsOpts
 
 logger = get_logger()
 
-BUTTON_LAYOUT = widgets.Layout(width='120px')
-OUTPUT_LAYOUT = widgets.Layout(width='600px')
+BUTTON_LAYOUT = Layout(width='120px')
+OUTPUT_LAYOUT = Layout(width='600px')
 
 
-@dataclass
 class TrendsGUI:
     """GUI component that displays word trends"""
 
-    trends_data: TrendsData = field(default=None, init=False)
+    def __init__(self):
+        self.trends_data: TrendsData = None
 
-    _tab: widgets.Tab = widgets.Tab(layout={'width': '98%'})
-    _picker: widgets.SelectMultiple = widgets.SelectMultiple(
-        description="", options=[], value=[], rows=30, layout={'width': '250px'}
-    )
-    _normalize: widgets.ToggleButton = widgets.ToggleButton(
-        description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
-    )
-    _tf_idf: widgets.ToggleButton = widgets.ToggleButton(
-        description="TF-IDF", icon='check', value=False, layout=BUTTON_LAYOUT
-    )
-    _smooth: widgets.ToggleButton = widgets.ToggleButton(
-        description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT
-    )
-    _group_by: widgets.Dropdown = widgets.Dropdown(
-        options=['year', 'lustrum', 'decade'],
-        value='year',
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='75px'),
-    )
-    _status: widgets.Label = widgets.Label(layout=widgets.Layout(width='50%', border="0px transparent white"))
-    _words: widgets.Textarea = widgets.Textarea(
-        description="",
-        rows=2,
-        value="",
-        placeholder='Enter words, wildcards and/or regexps such as "information", "info*", "*ment",  "|.*tion$|"',
-        layout=widgets.Layout(width='98%'),
-    )
-    _word_count: widgets.BoundedIntText = widgets.BoundedIntText(
-        value=500, min=3, max=50000, step=10, description='Max words:', disabled=False, layout={'width': '180px'}
-    )
-    _displayers: Sequence[ITrendDisplayer] = field(default_factory=list)
+        self._tab: Tab = Tab(layout={'width': '98%'})
+        self._picker: SelectMultiple = SelectMultiple(
+            description="", options=[], value=[], rows=30, layout={'width': '250px'}
+        )
+        self._normalize: ToggleButton = ToggleButton(
+            description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
+        )
+        self._tf_idf: ToggleButton = ToggleButton(description="TF-IDF", icon='check', value=False, layout=BUTTON_LAYOUT)
+        self._smooth: ToggleButton = ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
+        self._group_by: Dropdown = Dropdown(
+            options=['year', 'lustrum', 'decade'],
+            value='year',
+            description='',
+            disabled=False,
+            layout=Layout(width='75px'),
+        )
+        self._status: Label = Label(layout=Layout(width='50%', border="0px transparent white"))
+        self._words: Textarea = Textarea(
+            description="",
+            rows=2,
+            value="",
+            placeholder='Enter words, wildcards and/or regexps such as "information", "info*", "*ment",  "|.*tion$|"',
+            layout=Layout(width='98%'),
+        )
+        self._word_count: BoundedIntText = BoundedIntText(
+            value=500, min=3, max=50000, step=10, description='Max words:', disabled=False, layout={'width': '180px'}
+        )
+        self._displayers: Sequence[ITrendDisplayer] = []
 
-    # update_handler: Callable = field(default=None, init=False)
-
-    def layout(self) -> widgets.VBox:
-        return widgets.VBox(
+    def layout(self) -> VBox:
+        return VBox(
             [
-                widgets.HBox(
+                HBox(
                     [
                         self._tf_idf,
                         self._normalize,
@@ -68,7 +73,7 @@ class TrendsGUI:
                     ]
                 ),
                 self._words,
-                widgets.HBox([self._picker, self._tab], layout={'width': '98%'}),
+                HBox([self._picker, self._tab], layout={'width': '98%'}),
             ]
         )
 
@@ -112,7 +117,7 @@ class TrendsGUI:
         for i, cls in enumerate(displayers):
             displayer: ITrendDisplayer = cls()
             self._displayers.append(displayer)
-            displayer.output = widgets.Output()
+            displayer.output = Output()
             with displayer.output:
                 displayer.setup()
 

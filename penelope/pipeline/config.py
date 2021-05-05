@@ -5,7 +5,7 @@ import glob
 import json
 import os
 import pathlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import yaml
@@ -42,13 +42,13 @@ class CorpusConfig:
 
     corpus_name: str = None
     corpus_type: CorpusType = CorpusType.Undefined
-    corpus_pattern: str = "*.zip"
+    corpus_pattern: str = field(default="*.zip")
     checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = None
     pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
-    language: str = "english"
+    language: str = field(default="english")
 
     def get_pipeline(self, pipeline_key: str, *args, **kwargs) -> CorpusPipeline:
         """Returns a pipeline class by key from `pipelines` section"""

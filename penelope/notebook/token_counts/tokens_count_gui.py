@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 from typing import Callable, List
 
 import ipywidgets as widgets
@@ -21,42 +20,49 @@ debug_view = widgets.Output()
 # pylint: disable=too-many-instance-attributes
 
 
-@dataclass
 class TokenCountsGUI:
     """GUI component that displays word trends"""
 
-    compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame]
+    def __init__(
+        self,
+        compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame],
+        load_document_index_callback: Callable[[pipeline.CorpusConfig], DocumentIndex],
+        load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig],
+    ):
 
-    load_document_index_callback: Callable[[pipeline.CorpusConfig], DocumentIndex]
-    load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig]
+        self.compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame] = compute_callback
+        self.load_document_index_callback: Callable[
+            [pipeline.CorpusConfig], DocumentIndex
+        ] = load_document_index_callback
+        self.load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig] = load_corpus_config_callback
 
-    document_index: DocumentIndex = None
+        self.document_index: DocumentIndex = None
 
-    _corpus_configs: widgets.Dropdown = widgets.Dropdown(
-        description='', options=[], value=None, layout={'width': '200px'}
-    )
-    _normalize: widgets.ToggleButton = widgets.ToggleButton(
-        description="Normalize", icon='check', value=False, layout=widgets.Layout(width='140px')
-    )
-    _smooth: widgets.ToggleButton = widgets.ToggleButton(
-        description="Smooth", icon='check', value=False, layout=widgets.Layout(width='140px')
-    )
-    _grouping: widgets.Dropdown = widgets.Dropdown(
-        options=TOKEN_COUNT_GROUPINGS,
-        value='year',
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='90px'),
-    )
-    _status: widgets.Label = widgets.Label(layout=widgets.Layout(width='50%', border="0px transparent white"))
-    _categories: widgets.SelectMultiple = widgets.SelectMultiple(
-        options=[],
-        value=[],
-        rows=12,
-        layout=widgets.Layout(width='120px'),
-    )
+        self._corpus_configs: widgets.Dropdown = widgets.Dropdown(
+            description='', options=[], value=None, layout={'width': '200px'}
+        )
+        self._normalize: widgets.ToggleButton = widgets.ToggleButton(
+            description="Normalize", icon='check', value=False, layout=widgets.Layout(width='140px')
+        )
+        self._smooth: widgets.ToggleButton = widgets.ToggleButton(
+            description="Smooth", icon='check', value=False, layout=widgets.Layout(width='140px')
+        )
+        self._grouping: widgets.Dropdown = widgets.Dropdown(
+            options=TOKEN_COUNT_GROUPINGS,
+            value='year',
+            description='',
+            disabled=False,
+            layout=widgets.Layout(width='90px'),
+        )
+        self._status: widgets.Label = widgets.Label(layout=widgets.Layout(width='50%', border="0px transparent white"))
+        self._categories: widgets.SelectMultiple = widgets.SelectMultiple(
+            options=[],
+            value=[],
+            rows=12,
+            layout=widgets.Layout(width='120px'),
+        )
 
-    _tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
+        self._tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
 
     def layout(self) -> widgets.HBox:
         global debug_view

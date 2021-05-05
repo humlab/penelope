@@ -1,10 +1,9 @@
 import warnings
 from contextlib import suppress
-from dataclasses import dataclass
 from os.path import join as jj
 from typing import Any, Callable, Dict, List
 
-import ipywidgets as widgets
+from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
 from penelope import pipeline, topic_modelling, utility
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 
@@ -55,16 +54,12 @@ def load_model(
     display_topic_titles.display_gui(topics, DisplayPandasGUI)
 
 
-@dataclass
 class LoadGUI:
-
-    model_name = widgets.Dropdown(description="Model", options=[], layout=widgets.Layout(width="40%"))
-
-    load = widgets.Button(description="Load", button_style="Success", layout=widgets.Layout(width="80px"))
-
-    output = widgets.Output()
-
-    load_callback: Callable = None
+    def __init__(self):
+        self.model_name: Dropdown = Dropdown(description="Model", options=[], layout=Layout(width="40%"))
+        self.load: Button = Button(description="Load", button_style="Success", layout=Layout(width="80px"))
+        self.output: Output = Output()
+        self.load_callback: Callable = None
 
     def setup(self, model_names: List[str], load_callback: Callable = None) -> "LoadGUI":
         self.model_name.options = model_names
@@ -72,8 +67,8 @@ class LoadGUI:
         self.load.on_click(self._load_handler)
         return self
 
-    def layout(self) -> widgets.VBox:
-        _layout = widgets.VBox([widgets.HBox([self.model_name, self.load]), widgets.VBox([self.output])])
+    def layout(self) -> VBox:
+        _layout = VBox([HBox([self.model_name, self.load]), VBox([self.output])])
         return _layout
 
     def _load_handler(self, *_):

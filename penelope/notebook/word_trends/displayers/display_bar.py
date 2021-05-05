@@ -1,19 +1,17 @@
 import itertools
 import math
-from dataclasses import dataclass, field
 
 import bokeh
 
 from ._compile_mixins import CategoryDataMixin
-from ._displayer import ITrendDisplayer
+from .interface import ITrendDisplayer
 from .utils import get_year_category_ticks
 
 
-@dataclass
 class BarDisplayer(CategoryDataMixin, ITrendDisplayer):
-
-    year_tick: int = field(default=5)
-    name: str = field(default="Bar")
+    def __init__(self, name: str = "Bar"):
+        super().__init__(name=name)
+        self.year_tick: int = 5
 
     def setup(self):
         return

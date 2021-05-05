@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import penelope.common.goodness_of_fit as gof
 from penelope.utility import getLogger
 
@@ -10,12 +8,12 @@ from .trends_data import TrendsData
 logger = getLogger("penelope")
 
 
-@dataclass
 class GoFsGUI:
     """GUI component for displaying token distributions goodness of fit to uniform distribution."""
 
-    tab_gof: notebook_utility.OutputsTabExt = None
-    is_displayed: bool = False
+    def __init__(self, tab_gof: notebook_utility.OutputsTabExt = None):
+        self.tab_gof: notebook_utility.OutputsTabExt = tab_gof
+        self.is_displayed: bool = False
 
     def setup(self) -> "GoFsGUI":
         self.tab_gof: notebook_utility.OutputsTabExt = notebook_utility.OutputsTabExt(

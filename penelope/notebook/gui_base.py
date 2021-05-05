@@ -1,14 +1,27 @@
 import contextlib
 import os
-from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List
 
-import ipywidgets as widgets
 import penelope.utility as utility
+from ipywidgets import (
+    HTML,
+    Button,
+    Dropdown,
+    HBox,
+    IntSlider,
+    Layout,
+    SelectMultiple,
+    Text,
+    Textarea,
+    ToggleButton,
+    VBox,
+)
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import PropertyValueMaskingOpts, better_flatten, default_data_folder, get_logger
+from penelope.utility import PropertyValueMaskingOpts, better_flatten
+from penelope.utility import default_data_folder as home_data_folder
+from penelope.utility import get_logger
 
 from . import interface
 from . import utility as notebook_utility
@@ -17,174 +30,169 @@ logger = get_logger('penelope')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
-default_layout = widgets.Layout(width='200px')
-button_layout = widgets.Layout(width='140px')
+default_layout = Layout(width='200px')
+button_layout = Layout(width='140px')
 
-# view: widgets.Output = widgets.Output()
+# view:Output = Output()
 
 
-@dataclass
 class BaseGUI:
+    def __init__(
+        self, default_corpus_path: str = None, default_corpus_filename: str = '', default_data_folder: str = None
+    ):
+        self.default_corpus_path: str = default_corpus_path
+        self.default_corpus_filename: str = default_corpus_filename
+        self.default_data_folder: str = default_data_folder
 
-    default_corpus_path: str = None
-    default_corpus_filename: str = field(default='')
-    default_data_folder: str = None
+        self._config: CorpusConfig = None
 
-    _config: CorpusConfig = None
+        self._corpus_filename: notebook_utility.FileChooserExt2 = None
+        self._target_folder: notebook_utility.FileChooserExt2 = None
 
-    _corpus_filename: notebook_utility.FileChooserExt2 = None
-    _target_folder: notebook_utility.FileChooserExt2 = None
+        self._corpus_tag: Text = Text(
+            value='',
+            placeholder='Tag to prepend output files',
+            description='',
+            disabled=False,
+            layout=default_layout,
+        )
+        self._pos_includes: SelectMultiple = SelectMultiple(
+            options=[],
+            value=[],
+            rows=8,
+            description='',
+            disabled=False,
+            layout=Layout(width='160px'),
+        )
+        self._pos_paddings: SelectMultiple = SelectMultiple(
+            options=[],
+            value=[],
+            rows=8,
+            description='',
+            disabled=False,
+            layout=Layout(width='160px'),
+        )
+        self._pos_excludes: SelectMultiple = SelectMultiple(
+            options=[],
+            value=[],
+            rows=8,
+            description='',
+            disabled=False,
+            layout=Layout(width='160px'),
+        )
+        self._filename_fields: Text = Text(
+            value="",
+            placeholder='Fields to extract from filename (regex)',
+            description='',
+            disabled=True,
+            layout=default_layout,
+        )
+        self._create_subfolder: ToggleButton = ToggleButton(
+            value=True, description='Create folder', icon='check', layout=button_layout
+        )
+        self._lemmatize: ToggleButton = ToggleButton(
+            value=True, description='Lemmatize', icon='check', layout=button_layout
+        )
+        self._to_lowercase: ToggleButton = ToggleButton(
+            value=True, description='To lower', icon='check', layout=button_layout
+        )
+        self._remove_stopwords: ToggleButton = ToggleButton(
+            value=False, description='No stopwords', icon='', layout=button_layout
+        )
+        self._only_alphabetic: ToggleButton = ToggleButton(
+            value=False, description='Only alphabetic', icon='', layout=button_layout
+        )
+        self._only_any_alphanumeric: ToggleButton = ToggleButton(
+            value=False, description='Only alphanumeric', icon='', layout=button_layout
+        )
+        self._extra_stopwords: Textarea = Textarea(
+            value='örn',
+            placeholder='Enter extra stop words',
+            description='',
+            disabled=False,
+            rows=8,
+            layout=Layout(width='100px'),
+        )
+        self._count_threshold: IntSlider = IntSlider(
+            description='', min=1, max=1000, step=1, value=10, layout=default_layout
+        )
+        self._use_pos_groupings: ToggleButton = ToggleButton(
+            value=True, description='PoS groups', icon='', layout=button_layout
+        )
 
-    _corpus_tag: widgets.Text = widgets.Text(
-        value='',
-        placeholder='Tag to prepend output files',
-        description='',
-        disabled=False,
-        layout=default_layout,
-    )
-    _pos_includes: widgets.SelectMultiple = widgets.SelectMultiple(
-        options=[],
-        value=[],
-        rows=8,
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='160px'),
-    )
-    _pos_paddings: widgets.SelectMultiple = widgets.SelectMultiple(
-        options=[],
-        value=[],
-        rows=8,
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='160px'),
-    )
-    _pos_excludes: widgets.SelectMultiple = widgets.SelectMultiple(
-        options=[],
-        value=[],
-        rows=8,
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='160px'),
-    )
-    _filename_fields: widgets.Text = widgets.Text(
-        value="",
-        placeholder='Fields to extract from filename (regex)',
-        description='',
-        disabled=True,
-        layout=default_layout,
-    )
-    _create_subfolder: widgets.ToggleButton = widgets.ToggleButton(
-        value=True, description='Create folder', icon='check', layout=button_layout
-    )
-    _lemmatize: widgets.ToggleButton = widgets.ToggleButton(
-        value=True, description='Lemmatize', icon='check', layout=button_layout
-    )
-    _to_lowercase: widgets.ToggleButton = widgets.ToggleButton(
-        value=True, description='To lower', icon='check', layout=button_layout
-    )
-    _remove_stopwords: widgets.ToggleButton = widgets.ToggleButton(
-        value=False, description='No stopwords', icon='', layout=button_layout
-    )
-    _only_alphabetic: widgets.ToggleButton = widgets.ToggleButton(
-        value=False, description='Only alphabetic', icon='', layout=button_layout
-    )
-    _only_any_alphanumeric: widgets.ToggleButton = widgets.ToggleButton(
-        value=False, description='Only alphanumeric', icon='', layout=button_layout
-    )
-    _extra_stopwords: widgets.Textarea = widgets.Textarea(
-        value='örn',
-        placeholder='Enter extra stop words',
-        description='',
-        disabled=False,
-        rows=8,
-        layout=widgets.Layout(width='100px'),
-    )
-    _count_threshold: widgets.IntSlider = widgets.IntSlider(
-        description='', min=1, max=1000, step=1, value=10, layout=default_layout
-    )
-    _use_pos_groupings: widgets.ToggleButton = widgets.ToggleButton(
-        value=True, description='PoS groups', icon='', layout=button_layout
-    )
+        self._append_pos_tag: ToggleButton = ToggleButton(
+            value=False, description='Append PoS', icon='', layout=button_layout
+        )
+        self._phrases = Text(
+            value='',
+            placeholder='Enter phrases, use semicoloon (;) as phrase delimiter',
+            description='',
+            disabled=False,
+            layout=Layout(width='480px'),
+        )
 
-    _append_pos_tag: widgets.ToggleButton = widgets.ToggleButton(
-        value=False, description='Append PoS', icon='', layout=button_layout
-    )
-    _phrases = widgets.Text(
-        value='',
-        placeholder='Enter phrases, use semicoloon (;) as phrase delimiter',
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='480px'),
-    )
+        self._compute_button: Button = Button(
+            description='Compute!',
+            button_style='Success',
+            layout=button_layout,
+        )
+        self._cli_button: Button = Button(description='CLI', button_style='Success', layout=button_layout)
+        self.extra_placeholder: HBox = HBox()
+        self.buttons_placeholder: VBox = VBox()
 
-    _compute_button: widgets.Button = widgets.Button(
-        description='Compute!',
-        button_style='Success',
-        layout=button_layout,
-    )
-    _cli_button: widgets.Button = widgets.Button(description='CLI', button_style='Success', layout=button_layout)
-    extra_placeholder: widgets.HBox = widgets.HBox()
-    buttons_placeholder: widgets.VBox = widgets.VBox()
+        self._corpus_type: Dropdown = Dropdown(
+            description='',
+            options={
+                'Text': CorpusType.Text,
+                'Pipeline': CorpusType.Pipeline,
+                'Sparv4-CSV': CorpusType.SparvCSV,
+            },
+            value=CorpusType.Pipeline,
+            layout=default_layout,
+        )
 
-    _corpus_type: widgets.Dropdown = widgets.Dropdown(
-        description='',
-        options={
-            'Text': CorpusType.Text,
-            'Pipeline': CorpusType.Pipeline,
-            'Sparv4-CSV': CorpusType.SparvCSV,
-        },
-        value=CorpusType.Pipeline,
-        layout=default_layout,
-    )
+        self.compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any] = None
+        self.done_callback: Callable[[Any, interface.ComputeOpts], None] = None
 
-    compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any] = None
-    done_callback: Callable[[Any, interface.ComputeOpts], None] = None
+    def layout(self, hide_input=False, hide_output=False) -> VBox:
 
-    def layout(self, hide_input=False, hide_output=False) -> widgets.VBox:
-
-        return widgets.VBox(
+        return VBox(
             (
                 []
                 if hide_input
-                else [
-                    widgets.HBox(
-                        [widgets.VBox([widgets.HTML("<b>Corpus type</b>"), self._corpus_type]), self._corpus_filename]
-                    )
-                ]
+                else [HBox([VBox([HTML("<b>Corpus type</b>"), self._corpus_type]), self._corpus_filename])]
             )
             + (
                 []
                 if hide_output
                 else [
-                    widgets.HBox(
-                        [widgets.VBox([widgets.HTML("<b>Output tag</b>"), self._corpus_tag]), self._target_folder]
-                    ),
+                    HBox([VBox([HTML("<b>Output tag</b>"), self._corpus_tag]), self._target_folder]),
                 ]
             )
             + [
                 self.extra_placeholder,
-                widgets.HBox(
+                HBox(
                     [
-                        widgets.VBox([widgets.HTML("<b>Target PoS</b>"), self._pos_includes]),
-                        widgets.VBox([widgets.HTML("<b>Padding PoS</b>"), self._pos_paddings]),
-                        widgets.VBox([widgets.HTML("<b>Exclude PoS</b>"), self._pos_excludes]),
-                        widgets.VBox([widgets.HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
+                        VBox([HTML("<b>Target PoS</b>"), self._pos_includes]),
+                        VBox([HTML("<b>Padding PoS</b>"), self._pos_paddings]),
+                        VBox([HTML("<b>Exclude PoS</b>"), self._pos_excludes]),
+                        VBox([HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
                     ]
                 ),
-                widgets.HBox([widgets.VBox([widgets.HTML("<b>Phrases</b>"), self._phrases])]),
-                widgets.HBox(
+                HBox([VBox([HTML("<b>Phrases</b>"), self._phrases])]),
+                HBox(
                     [
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.VBox([widgets.HTML("<b>Filename fields</b>"), self._filename_fields]),
-                                widgets.VBox([widgets.HTML("<b>Frequency threshold</b>"), self._count_threshold]),
+                                VBox([HTML("<b>Filename fields</b>"), self._filename_fields]),
+                                VBox([HTML("<b>Frequency threshold</b>"), self._count_threshold]),
                             ]
                         ),
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HBox(
+                                HBox(
                                     [
-                                        widgets.VBox(
+                                        VBox(
                                             [
                                                 self._use_pos_groupings,
                                                 self._lemmatize,
@@ -193,7 +201,7 @@ class BaseGUI:
                                             ]
                                         ),
                                         self.buttons_placeholder,
-                                        widgets.VBox(
+                                        VBox(
                                             [
                                                 self._append_pos_tag,
                                                 self._only_alphabetic,
@@ -201,10 +209,10 @@ class BaseGUI:
                                                 self._create_subfolder,
                                             ]
                                         ),
-                                        widgets.VBox(
+                                        VBox(
                                             [
-                                                widgets.HTML("&nbsp;"),
-                                                widgets.HTML("&nbsp;"),
+                                                HTML("&nbsp;"),
+                                                HTML("&nbsp;"),
                                                 self._cli_button,
                                                 self._compute_button,
                                             ]
@@ -220,7 +228,7 @@ class BaseGUI:
         )
 
     # @view.capture(clear_output=True)
-    def _compute_handler(self, sender: widgets.Button, *_):
+    def _compute_handler(self, sender: Button, *_):
 
         if self.compute_callback is None:
             raise ValueError("fatal: cannot compute (callback is not specified)")
@@ -267,7 +275,7 @@ class BaseGUI:
     ) -> "BaseGUI":
 
         self._corpus_filename = notebook_utility.FileChooserExt2(
-            path=self.default_corpus_path or default_data_folder(),
+            path=self.default_corpus_path or home_data_folder(),
             filename=self.default_corpus_filename,
             filter_pattern=config.corpus_pattern,
             title='<b>Source corpus file</b>',
@@ -279,7 +287,7 @@ class BaseGUI:
         self._corpus_filename.refresh()
 
         self._target_folder = notebook_utility.FileChooserExt2(
-            path=self.default_data_folder or default_data_folder(),
+            path=self.default_data_folder or home_data_folder(),
             title='<b>Output folder</b>',
             show_hidden=False,
             select_default=True,

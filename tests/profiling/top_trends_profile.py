@@ -1,6 +1,5 @@
 import os
 
-from ipywidgets import Output
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.corpus.dtm import VectorizedCorpus
 from penelope.notebook.word_trends.displayers import TopTokensDisplayer
@@ -13,7 +12,7 @@ tag = os.path.split(folder)[1]
 corpus: VectorizedCorpus = VectorizedCorpus.load(folder=folder, tag=tag)
 
 top_tokens = corpus.get_top_n_words(n=100000)
-displayer: TopTokensDisplayer = TopTokensDisplayer(output=Output())
+displayer: TopTokensDisplayer = TopTokensDisplayer()
 displayer.setup()
 
 indices = [x[1] for x in top_tokens]

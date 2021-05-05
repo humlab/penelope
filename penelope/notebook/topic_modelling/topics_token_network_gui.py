@@ -1,6 +1,5 @@
 import glob
 import os
-from dataclasses import dataclass, field
 from typing import Any, Callable, List
 
 import ipycytoscape
@@ -261,13 +260,13 @@ def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
     return g
 
 
-@dataclass
 class ViewModel:
+    def __init__(self, filename_fields: FilenameFieldSpecs = None):
 
-    filename_fields: FilenameFieldSpecs = None
+        self.filename_fields: FilenameFieldSpecs = filename_fields
 
-    _topics_data: topic_modelling.InferredTopicsData = field(init=False, default=None)
-    _top_topic_tokens: pd.DataFrame = field(init=False, default=None)
+        self._topics_data: topic_modelling.InferredTopicsData = None
+        self._top_topic_tokens: pd.DataFrame = None
 
     @property
     def top_topic_tokens(self) -> pd.DataFrame:
@@ -345,72 +344,75 @@ def default_displayer(opts: "GUI") -> None:
 
 
 # pylint: disable=too-many-instance-attributes
-@dataclass
 class GUI:
+    def __init__(self, network: ipycytoscape.CytoscapeWidget = None, model: ViewModel = None):
 
-    network: ipycytoscape.CytoscapeWidget = None
-    model: ViewModel = None
+        self.network: ipycytoscape.CytoscapeWidget = network
+        self.model: ViewModel = model
 
-    _source_folder: widgets.Dropdown = widgets.Dropdown(layout={'width': '200px'})
-    _topic_ids: widgets.SelectMultiple = widgets.SelectMultiple(
-        description="", options=[], value=[], rows=9, layout={'width': '100px'}
-    )
-    _top_count: widgets.IntSlider = widgets.IntSlider(
-        description='', min=3, max=200, value=50, layout={'width': '200px'}
-    )
+        self._source_folder: widgets.Dropdown = widgets.Dropdown(layout={'width': '200px'})
+        self._topic_ids: widgets.SelectMultiple = widgets.SelectMultiple(
+            description="", options=[], value=[], rows=9, layout={'width': '100px'}
+        )
+        self._top_count: widgets.IntSlider = widgets.IntSlider(
+            description='', min=3, max=200, value=50, layout={'width': '200px'}
+        )
 
-    _node_spacing: widgets.IntSlider = widgets.IntSlider(
-        description='', min=3, max=500, value=50, layout={'width': '200px'}
-    )
-    _edge_length_val: widgets.IntSlider = widgets.IntSlider(
-        description='', min=3, max=500, value=50, layout={'width': '200px'}
-    )
-    _padding: widgets.IntSlider = widgets.IntSlider(description='', min=3, max=500, value=50, layout={'width': '200px'})
-    _label: widgets.HTML = widgets.HTML(value='&nbsp;', layout={'width': '200px'})
-    _output_format = widgets.Dropdown(
-        description='', options=['network', 'table', 'gephi'], value='network', layout={'width': '200px'}
-    )
-    _network_layout = widgets.Dropdown(
-        description='',
-        options=[
-            'cola',
-            'klay',
-            'circle',
-            'concentric',
-            # 'cise',
-            # 'springy',
-            # 'ngraph.forcelayout',
-            # 'cose-bilkent', 'cose', 'euler', 'fcose', 'spread', 'elk', 'stress', 'force', 'avsdf',
-        ],
-        value='cola',
-        layout={'width': '115px'},
-    )
-    _button = widgets.Button(
-        description="Display", button_style='Success', layout=widgets.Layout(width='115px', background_color='blue')
-    )
-    _relayout = widgets.Button(
-        description="Continue", button_style='Info', layout=widgets.Layout(width='115px', background_color='blue')
-    )
-    _animate: widgets.Checkbox = widgets.ToggleButton(
-        description="Animate",
-        icon='check',
-        value=True,
-        layout={'width': '115px'},
-    )
-    _curve_style = widgets.Dropdown(
-        description='',
-        options=[
-            ('Straight line', 'haystack'),
-            ('Curve, Bezier', 'bezier'),
-            ('Curve, Bezier*', 'unbundled-bezier'),
-        ],
-        value='haystack',
-        layout={'width': '115px'},
-    )
+        self._node_spacing: widgets.IntSlider = widgets.IntSlider(
+            description='', min=3, max=500, value=50, layout={'width': '200px'}
+        )
+        self._edge_length_val: widgets.IntSlider = widgets.IntSlider(
+            description='', min=3, max=500, value=50, layout={'width': '200px'}
+        )
+        self._padding: widgets.IntSlider = widgets.IntSlider(
+            description='', min=3, max=500, value=50, layout={'width': '200px'}
+        )
+        self._label: widgets.HTML = widgets.HTML(value='&nbsp;', layout={'width': '200px'})
+        self._output_format = widgets.Dropdown(
+            description='', options=['network', 'table', 'gephi'], value='network', layout={'width': '200px'}
+        )
+        self._network_layout = widgets.Dropdown(
+            description='',
+            options=[
+                'cola',
+                'klay',
+                'circle',
+                'concentric',
+                # 'cise',
+                # 'springy',
+                # 'ngraph.forcelayout',
+                # 'cose-bilkent', 'cose', 'euler', 'fcose', 'spread', 'elk', 'stress', 'force', 'avsdf',
+            ],
+            value='cola',
+            layout={'width': '115px'},
+        )
+        self._button = widgets.Button(
+            description="Display", button_style='Success', layout=widgets.Layout(width='115px', background_color='blue')
+        )
+        self._relayout = widgets.Button(
+            description="Continue", button_style='Info', layout=widgets.Layout(width='115px', background_color='blue')
+        )
+        self._animate: widgets.Checkbox = widgets.ToggleButton(
+            description="Animate",
+            icon='check',
+            value=True,
+            layout={'width': '115px'},
+        )
+        self._curve_style = widgets.Dropdown(
+            description='',
+            options=[
+                ('Straight line', 'haystack'),
+                ('Curve, Bezier', 'bezier'),
+                ('Curve, Bezier*', 'unbundled-bezier'),
+            ],
+            value='haystack',
+            layout={'width': '115px'},
+        )
 
-    loader: Callable[[str], topic_modelling.InferredTopicsData] = None
-    displayer: Callable[["GUI"], None] = None
-    _custom_styles: dict = None
+        self.loader: Callable[[str], topic_modelling.InferredTopicsData] = None
+        self.displayer: Callable[["GUI"], None] = None
+        self._custom_styles: dict = None
+        self._buzy: bool = False
 
     @view.capture(clear_output=False)
     def _displayer(self, *_):
@@ -419,8 +421,6 @@ class GUI:
         self.alert('<b>Computing</b>...')
         self.displayer(self)
         self.alert('')
-
-    _buzy: bool = field(init=False, default=False)
 
     @view.capture(clear_output=False)
     def _load_handler(self, *_):

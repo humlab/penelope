@@ -1,44 +1,35 @@
 import glob
 import os
-from dataclasses import dataclass
 from typing import Callable, List
 
-import ipywidgets
-import penelope.utility as utility
-
-logger = utility.getLogger('penelope')
+from ipywidgets import Button, Dropdown, HBox, IntSlider, Layout, Output, VBox
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
 
-view = ipywidgets.Output()
+view = Output()
+
+DISTANCE_METRIC_OPTIONS = [('linear', 0), ('inverse', 1), ('constant', 2)]
 
 
-@dataclass
 class ComputeGUI:
-
-    distance_metric_options = [('linear', 0), ('inverse', 1), ('constant', 2)]
-
-    filepath = ipywidgets.Dropdown(
-        description='Corpus', options=[], value=None, layout=ipywidgets.Layout(width='400px')
-    )
-    window_size = ipywidgets.IntSlider(
-        description='Window', min=2, max=40, value=5, layout=ipywidgets.Layout(width='250px')
-    )
-    method = ipywidgets.Dropdown(
-        description='Method', options=['HAL', 'Glove'], value='HAL', layout=ipywidgets.Layout(width='200px')
-    )
-    button = ipywidgets.Button(
-        description='Compute',
-        button_style='Success',
-        layout=ipywidgets.Layout(width='115px', background_color='blue'),
-    )
-
-    distance_metric = ipywidgets.Dropdown(
-        description='Dist.f.', options=distance_metric_options, value=2, layout=ipywidgets.Layout(width='200px')
-    )
-
-    compute_handler: Callable = None
+    def __init__(self):
+        self.filepath: Dropdown = Dropdown(description='Corpus', options=[], value=None, layout=Layout(width='400px'))
+        self.window_size: IntSlider = IntSlider(
+            description='Window', min=2, max=40, value=5, layout=Layout(width='250px')
+        )
+        self.method: Dropdown = Dropdown(
+            description='Method', options=['HAL', 'Glove'], value='HAL', layout=Layout(width='200px')
+        )
+        self.button: Button = Button(
+            description='Compute',
+            button_style='Success',
+            layout=Layout(width='115px', background_color='blue'),
+        )
+        self.distance_metric: Dropdown = Dropdown(
+            description='Dist.f.', options=DISTANCE_METRIC_OPTIONS, value=2, layout=Layout(width='200px')
+        )
+        self.compute_handler: Callable = None
 
     @view.capture(clear_output=True)
     def _compute_handler(self, _):
@@ -66,13 +57,13 @@ class ComputeGUI:
 
     def layout(self):
 
-        layout = ipywidgets.VBox(
+        layout = VBox(
             [
-                ipywidgets.HBox(
+                HBox(
                     [
-                        ipywidgets.VBox([self.filepath, self.method]),
-                        ipywidgets.VBox([self.window_size, self.distance_metric]),
-                        ipywidgets.VBox(
+                        VBox([self.filepath, self.method]),
+                        VBox([self.window_size, self.distance_metric]),
+                        VBox(
                             [
                                 # self.direction_sensitive,
                                 self.button

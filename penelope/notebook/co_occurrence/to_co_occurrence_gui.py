@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from typing import Callable, Set, Union
 
 import ipywidgets as widgets
@@ -19,39 +18,47 @@ tooltips = {
 view = widgets.Output(layout={"border": "1px solid black"})
 
 
-@dataclass
 class ComputeGUI(BaseGUI):
+    def __init__(
+        self,
+        default_corpus_path: str = None,
+        default_corpus_filename: str = '',
+        default_data_folder: str = None,
+        partition_key: str = "year",
+    ):
 
-    partition_key: str = field(default='year')
+        super().__init__(default_corpus_path, default_corpus_filename, default_data_folder)
 
-    _context_width = widgets.IntSlider(
-        description='',
-        min=1,
-        max=40,
-        step=1,
-        value=2,
-        layout=default_layout,
-        # tooltip=tooltips['_context_width'],
-    )
-    _concept = widgets.Text(
-        value='',
-        placeholder='Use comma (,) as word delimiter',
-        description='',
-        disabled=False,
-        layout=widgets.Layout(width='280px'),
-        # tooltip=tooltips['_concept'],
-    )
-    _ignore_concept = widgets.ToggleButton(
-        value=False,
-        description='No Concept',
-        icon='check',
-        layout=button_layout,
-        # tooltip=tooltips['_ignore_concept'],
-    )
+        self.partition_key: str = partition_key
+
+        self._context_width = widgets.IntSlider(
+            description='',
+            min=1,
+            max=40,
+            step=1,
+            value=2,
+            layout=default_layout,
+            # tooltip=tooltips['_context_width'],
+        )
+        self._concept = widgets.Text(
+            value='',
+            placeholder='Use comma (,) as word delimiter',
+            description='',
+            disabled=False,
+            layout=widgets.Layout(width='280px'),
+            # tooltip=tooltips['_concept'],
+        )
+        self._ignore_concept = widgets.ToggleButton(
+            value=False,
+            description='No Concept',
+            icon='check',
+            layout=button_layout,
+            # tooltip=tooltips['_ignore_concept'],
+        )
 
     def layout(self, hide_input=False, hide_output=False):
 
-        placeholder: widgets.VBox = super().extra_placeholder
+        placeholder: widgets.VBox = self.extra_placeholder
         extra_layout = widgets.HBox(
             [
                 widgets.VBox([widgets.HTML("<b>Context distance</b>"), self._context_width]),

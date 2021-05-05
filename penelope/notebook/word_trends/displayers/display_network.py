@@ -1,10 +1,9 @@
-from dataclasses import dataclass, field
 from typing import List, Union
 
 import ipycytoscape
-import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display as IPython_display
+from ipywidgets import HTML, Button, Checkbox, Dropdown, HBox, IntSlider, Layout, Output, ToggleButton, VBox
 from penelope.plot import get_color_palette
 
 from .display_table import UnnestedExplodeTableDisplayer
@@ -140,12 +139,50 @@ def create_network(co_occurrences: pd.DataFrame) -> ipycytoscape.CytoscapeWidget
     return w
 
 
-@dataclass
 class NetworkDisplayer(UnnestedExplodeTableDisplayer):
     """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
 
-    name: str = field(default="Network")
-    network: ipycytoscape.CytoscapeWidget = None
+    def __init__(self, name: str = "Network"):
+        super().__init__(name=name)
+        self.network: ipycytoscape.CytoscapeWidget = None
+
+        self._view: Output = Output()
+
+        self._node_spacing: IntSlider = IntSlider(description='', min=3, max=500, value=50, layout={'width': '200px'})
+        self._edge_length_val: IntSlider = IntSlider(
+            description='', min=3, max=500, value=50, layout={'width': '200px'}
+        )
+        self._padding: IntSlider = IntSlider(description='', min=3, max=500, value=50, layout={'width': '200px'})
+        self._label: HTML = HTML(value='&nbsp;', layout={'width': '200px'})
+        self._network_layout = Dropdown(
+            description='',
+            options=['cola', 'klay', 'circle', 'concentric'],
+            value='cola',
+            layout={'width': '115px'},
+        )
+        self._relayout = Button(
+            description="Continue", button_style='Info', layout=Layout(width='115px', background_color='blue')
+        )
+        self._animate: Checkbox = ToggleButton(
+            description="Animate",
+            icon='check',
+            value=True,
+            layout={'width': '115px'},
+        )
+        self._curve_style = Dropdown(
+            description='',
+            options=[
+                ('Straight line', 'haystack'),
+                ('Curve, Bezier', 'bezier'),
+                ('Curve, Bezier*', 'unbundled-bezier'),
+            ],
+            value='haystack',
+            layout={'width': '115px'},
+        )
+
+        self._custom_styles: dict = None
+
+        self._buzy: bool = False
 
     def setup(self, *_, **__):
         # self._custom_styles = custom_styles()
@@ -172,46 +209,6 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
             IPython_display(self.network)
 
         return self
-
-    _view: widgets.Output = widgets.Output()
-
-    _node_spacing: widgets.IntSlider = widgets.IntSlider(
-        description='', min=3, max=500, value=50, layout={'width': '200px'}
-    )
-    _edge_length_val: widgets.IntSlider = widgets.IntSlider(
-        description='', min=3, max=500, value=50, layout={'width': '200px'}
-    )
-    _padding: widgets.IntSlider = widgets.IntSlider(description='', min=3, max=500, value=50, layout={'width': '200px'})
-    _label: widgets.HTML = widgets.HTML(value='&nbsp;', layout={'width': '200px'})
-    _network_layout = widgets.Dropdown(
-        description='',
-        options=['cola', 'klay', 'circle', 'concentric'],
-        value='cola',
-        layout={'width': '115px'},
-    )
-    _relayout = widgets.Button(
-        description="Continue", button_style='Info', layout=widgets.Layout(width='115px', background_color='blue')
-    )
-    _animate: widgets.Checkbox = widgets.ToggleButton(
-        description="Animate",
-        icon='check',
-        value=True,
-        layout={'width': '115px'},
-    )
-    _curve_style = widgets.Dropdown(
-        description='',
-        options=[
-            ('Straight line', 'haystack'),
-            ('Curve, Bezier', 'bezier'),
-            ('Curve, Bezier*', 'unbundled-bezier'),
-        ],
-        value='haystack',
-        layout={'width': '115px'},
-    )
-
-    _custom_styles: dict = None
-
-    _buzy: bool = field(init=False, default=False)
 
     def _relayout_handler(self, *_):
         if self.network:
@@ -248,31 +245,31 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
         event['owner'].icon = 'check' if event['new'] else ''
 
     def layout(self):
-        return widgets.VBox(
+        return VBox(
             [
-                widgets.HBox(
+                HBox(
                     [
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HTML("<b>Layout</b>"),
+                                HTML("<b>Layout</b>"),
                                 self._network_layout,
                             ]
                         ),
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HTML("<b>Curve style</b>"),
+                                HTML("<b>Curve style</b>"),
                                 self._curve_style,
                             ]
                         ),
-                        widgets.VBox(
+                        VBox(
                             [
                                 self._animate,
                                 self._relayout,
                             ]
                         ),
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HTML("&nbsp;"),
+                                HTML("&nbsp;"),
                                 self._label,
                             ]
                         ),

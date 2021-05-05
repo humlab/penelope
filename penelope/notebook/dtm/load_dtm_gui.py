@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 from typing import Callable
 
 import ipyfilechooser
@@ -17,22 +16,27 @@ logger = getLogger('penelope')
 debug_view = Output(layout={'border': '1px solid black'})
 
 
-@dataclass
 class LoadGUI:
+    def __init__(
+        self,
+        default_corpus_folder: str,
+        filename_pattern: str,
+        load_callback: Callable[[str, str], VectorizedCorpus] = None,
+        done_callback: Callable[[VectorizedCorpus, str, str], None] = None,
+    ):
 
-    default_corpus_folder: str
-    filename_pattern: str
-    load_callback: Callable[[str, str], VectorizedCorpus]
-    done_callback: Callable[[VectorizedCorpus, str, str], None]
-
-    _corpus_filename: ipyfilechooser.FileChooser = None
-    _alert: HTML = HTML('.')
-    _load_button = Button(
-        description='Load',
-        button_style='Success',
-        layout=Layout(width='115px', background_color='blue'),
-        disabled=True,
-    )
+        self.default_corpus_folder = default_corpus_folder
+        self.filename_pattern = filename_pattern
+        self.load_callback: Callable[[str, str], VectorizedCorpus] = load_callback
+        self.done_callback: Callable[[VectorizedCorpus, str, str], None] = done_callback
+        self._corpus_filename: ipyfilechooser.FileChooser = None
+        self._alert: HTML = HTML('.')
+        self._load_button = Button(
+            description='Load',
+            button_style='Success',
+            layout=Layout(width='115px', background_color='blue'),
+            disabled=True,
+        )
 
     @debug_view.capture(clear_output=True)
     def _load_handler(self, _):

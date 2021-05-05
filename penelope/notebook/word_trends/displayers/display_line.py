@@ -1,5 +1,4 @@
 import math
-from dataclasses import dataclass, field
 from typing import Any, Sequence
 
 import bokeh
@@ -8,21 +7,20 @@ import bokeh.plotting
 import ipywidgets
 
 from ._compile_mixins import LinesDataMixin
-from ._displayer import ITrendDisplayer
+from .interface import ITrendDisplayer
 from .utils import get_year_category_ticks
 
 PLOT_WIDTH = 800
 PLOT_HEIGHT = 500
 
 
-@dataclass
 class LineDisplayer(LinesDataMixin, ITrendDisplayer):
-
-    name: str = field(default="Line")
-    figure: bokeh.plotting.Figure = None
-    handle: Any = None
-    data_source: bokeh.models.ColumnDataSource = None
-    year_tick: int = field(default=5)
+    def __init__(self, name: str = "Line"):
+        super().__init__(name=name)
+        self.figure: bokeh.plotting.Figure = None
+        self.handle: Any = None
+        self.data_source: bokeh.models.ColumnDataSource = None
+        self.year_tick: int = 5
 
     def setup(self):
 

@@ -49,7 +49,7 @@ class ContentType(IntEnum):
 @dataclass
 class DocumentPayload:
 
-    content_type: ContentType = ContentType.NONE
+    content_type: ContentType = field(default=ContentType.NONE)
     filename: str = None
     content: Any = None
     filename_values: Mapping[str, Any] = None

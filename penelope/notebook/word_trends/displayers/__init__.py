@@ -7,7 +7,7 @@ import logging
 logging.getLogger("matplotlib").setLevel(level=logging.ERROR)
 
 from ._compile_mixins import CategoryDataMixin, LinesDataMixin, PenelopeBugCheck  # noqa: E402
-from ._displayer import ITrendDisplayer  # noqa: E402
+from .interface import ITrendDisplayer  # noqa: E402
 from .display_bar import BarDisplayer  # noqa: E402
 from .display_line import LineDisplayer  # noqa: E402
 from .display_network import NetworkDisplayer, create_network  # noqa: E402

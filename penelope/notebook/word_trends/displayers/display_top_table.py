@@ -1,5 +1,4 @@
 import contextlib
-from dataclasses import dataclass, field
 
 import IPython.display
 import pandas as pd
@@ -8,40 +7,39 @@ from penelope.corpus.dtm import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from perspective import PerspectiveWidget
 
-from ._displayer import ITrendDisplayer
+from .interface import ITrendDisplayer
 
 
 # FIXME #72 Word trends: No data in top tokens displayer
-@dataclass
 class TopTokensDisplayer(ITrendDisplayer):
+    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
+        super().__init__(name=name)
+        self.corpus: VectorizedCorpus = corpus
 
-    name: str = field(default="TopTokens")
-    corpus: VectorizedCorpus = None
-
-    _download_output: Output = Output()
-    _top_count: Dropdown = Dropdown(
-        options=[10 ** i for i in range(0, 7)],
-        value=100,
-        placeholder='Record count limit',
-        layout=Layout(width='auto'),
-    )
-    _save = Button(description='Save data', layout=Layout(width='auto'))
-    _download = Button(description='Download data', layout=Layout(width='auto'))
-    _table: PerspectiveWidget = None
-    _kind: Dropdown = Dropdown(
-        options=['token', 'token/count', 'token+count'],
-        value='token+count',
-        description='',
-        disabled=False,
-        layout=Layout(width='100px'),
-    )
-    _category: Dropdown = Dropdown(
-        options=['year', 'lustrum', 'decade'],
-        value='decade',
-        description='',
-        disabled=False,
-        layout=Layout(width='100px'),
-    )
+        self._download_output: Output = Output()
+        self._top_count: Dropdown = Dropdown(
+            options=[10 ** i for i in range(0, 7)],
+            value=100,
+            placeholder='Record count limit',
+            layout=Layout(width='auto'),
+        )
+        self._save = Button(description='Save data', layout=Layout(width='auto'))
+        self._download = Button(description='Download data', layout=Layout(width='auto'))
+        self._table: PerspectiveWidget = None
+        self._kind: Dropdown = Dropdown(
+            options=['token', 'token/count', 'token+count'],
+            value='token+count',
+            description='',
+            disabled=False,
+            layout=Layout(width='100px'),
+        )
+        self._category: Dropdown = Dropdown(
+            options=['year', 'lustrum', 'decade'],
+            value='decade',
+            description='',
+            disabled=False,
+            layout=Layout(width='100px'),
+        )
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
         self._table = PerspectiveWidget(self.data)

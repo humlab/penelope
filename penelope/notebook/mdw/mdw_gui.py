@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import Callable
 
 import pandas as pd
@@ -13,43 +12,41 @@ logger = logging.getLogger(__name__)
 # pylint: disable=too-many-instance-attributes
 
 
-@dataclass
 class MDW_GUI:
+    def __init__(self):
+        self._top_n_terms: IntSlider = IntSlider(
+            description='#terms',
+            min=10,
+            max=1000,
+            value=100,
+            tooltip='The total number of most discriminating terms to return for each group',
+        )
+        self._max_n_terms: IntSlider = IntSlider(
+            description='#top',
+            min=1,
+            max=2000,
+            value=2000,
+            tooltip='Only consider terms whose document frequency is within the top # terms out of all terms',
+        )
+        self._period1: IntRangeSlider = IntRangeSlider(
+            description='Period',
+            min=1900,
+            max=2099,
+            value=(2001, 2002),
+            layout={'width': '250px'},
+        )
+        self._period2 = IntRangeSlider(
+            description='Period',
+            min=1900,
+            max=2099,
+            value=(2001, 2002),
+            layout={'width': '250px'},
+        )
 
-    _top_n_terms: IntSlider = IntSlider(
-        description='#terms',
-        min=10,
-        max=1000,
-        value=100,
-        tooltip='The total number of most discriminating terms to return for each group',
-    )
-    _max_n_terms: IntSlider = IntSlider(
-        description='#top',
-        min=1,
-        max=2000,
-        value=2000,
-        tooltip='Only consider terms whose document frequency is within the top # terms out of all terms',
-    )
-    _period1: IntRangeSlider = IntRangeSlider(
-        description='Period',
-        min=1900,
-        max=2099,
-        value=(2001, 2002),
-        layout={'width': '250px'},
-    )
-    _period2 = IntRangeSlider(
-        description='Period',
-        min=1900,
-        max=2099,
-        value=(2001, 2002),
-        layout={'width': '250px'},
-    )
-
-    _compute = Button(description='Compute', icon='', button_style='Success', layout={'width': '120px'})
-
-    compute_callback: Callable = None
-    done_callback: Callable = None
-    corpus: dtm.VectorizedCorpus = None
+        self._compute = Button(description='Compute', icon='', button_style='Success', layout={'width': '120px'})
+        self.compute_callback: Callable = None
+        self.done_callback: Callable = None
+        self.corpus: dtm.VectorizedCorpus = None
 
     def setup(self, corpus: dtm.VectorizedCorpus, compute_callback: Callable, done_callback: Callable) -> "MDW_GUI":
 

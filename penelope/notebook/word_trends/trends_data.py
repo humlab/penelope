@@ -45,10 +45,12 @@ class TrendsData:
     most_deviating_overview: pd.DataFrame = None
     most_deviating: pd.DataFrame = None
 
-    current_trends_opts: TrendsOpts = TrendsOpts(normalize=False, tf_idf=False, group_by='year')
+    current_trends_opts: TrendsOpts = field(
+        default_factory=lambda: TrendsOpts(normalize=False, tf_idf=False, group_by='year')
+    )
     transformed_corpus: VectorizedCorpus = None
 
-    n_count: int = 25000
+    n_count: int = field(default=25000)
 
     memory: dict = field(default_factory=dict)
 
