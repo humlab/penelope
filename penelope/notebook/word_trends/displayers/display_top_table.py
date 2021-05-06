@@ -16,7 +16,6 @@ class TopTokensDisplayer(ITrendDisplayer):
         super().__init__(name=name)
         self.corpus: VectorizedCorpus = corpus
 
-        self._download_output: Output = Output()
         self._top_count: Dropdown = Dropdown(
             options=[10 ** i for i in range(0, 7)],
             value=100,
@@ -25,6 +24,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         )
         self._save = Button(description='Save data', layout=Layout(width='auto'))
         self._download = Button(description='Download data', layout=Layout(width='auto'))
+        self._download_output: Output = Output()
         self._table: PerspectiveWidget = None
         self._kind: Dropdown = Dropdown(
             options=['token', 'token/count', 'token+count'],

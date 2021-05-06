@@ -3,7 +3,7 @@ from typing import List
 
 import IPython.display as IPython_display
 import pandas as pd
-from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Text, ToggleButton, VBox
+from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from pandas.api.types import is_numeric_dtype
 from penelope.co_occurrence.convert import store_co_occurrences
 from penelope.notebook.utility import create_js_download
@@ -73,7 +73,6 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         else:
             raise ValueError(f"Data must be dict or pandas.DataFrame not {type(co_occurrences)}")
 
-        # self._output: Output = Output(Layout=Layout(width='auto'))
         self._token_filter: Text = Text(
             value=default_token_filter, placeholder='token match', layout=Layout(width='auto')
         )
@@ -88,16 +87,13 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
             placeholder='Record count limit',
             layout=Layout(width='auto'),
         )
-        # Add option for filtering out concept words
-        # if len(dotget(self.compute_options, "context_opts.concept", [])) > 0:
         self._show_concept = ToggleButton(description='Show concept', value=False, icon='', layout=Layout(width='auto'))
         self._show_concept.observe(self.update_data, 'value')
         self._show_concept.observe(self.toggle_icon, 'value')
         self._message: HTML = HTML()
         self._save = Button(description='Save data', layout=Layout(width='auto'))
         self._download = Button(description='Download data', layout=Layout(width='auto'))
-
-        #        with contextlib.suppress(Exception):
+        self._download_output: Output = Output()
 
         self._table: PerspectiveWidget = PerspectiveWidget(
             self.get_data(),
@@ -113,6 +109,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
                 VBox([HTML("👀"), self._show_concept if self._show_concept is not None else HTML("")]),
                 VBox([self._save, self._download]),
                 VBox([HTML("😢"), self._message]),
+                self._download_output,
             ],
             layout=Layout(width='auto'),
         )
@@ -159,39 +156,16 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self.info(f"Data size: {len(data)}")
         self._table.load(data)
 
-    # def filter(self, _):
-    #     # BOOLEAN_FILTERS = ["&", "|", "==", "!=", "or", "and"]
-    #     # NUMBER_FILTERS = ["<", ">", "==", "<=", ">=", "!=", "is null", "is not null"]
-    #     # STRING_FILTERS = ["==", "contains", "!=", "in", "not in", "begins with", "ends with"]
-    #     # DATETIME_FILTERS = ["<", ">", "==", "<=", ">=", "!="]
-    #     self._button_bar.disabled = True
-    #     filters = []  # self._get_filters()
-    #     # with contextlib.suppress(Exception):
-    #     #     if self._table.filters != filters:
-    #     #         self._table.filters = filters
-    #     self.update_data({})
-    #     self._button_bar.disabled = False
-
-    # def _get_filters(self) -> List[List[str]]:
-
-    #     filters = []
-    #     for token in self._token_filter.value.strip().split():
-    #         token.startswith("~")
-    #         filters.append(["tokens", "contains", self._token_filter.value])
-
-    #     if self._global_threshold_filter.value > 1:
-    #         filters.append(["value", ">=", self._global_threshold_filter.value])
-
-    #     return filters
-
     def save(self, _b):
         store_co_occurrences(path_add_timestamp('co_occurrence_data.csv'), self.get_data())
 
     def download(self, *_):
         self._button_bar.disabled = True
-        # with self._output:
+
         with contextlib.suppress(Exception):
             js_download = create_js_download(self.get_data(), index=True)
             if js_download is not None:
-                IPython_display.display(js_download)
+                with self._download_output:
+                    IPython_display.display(js_download)
+
         self._button_bar.disabled = False
