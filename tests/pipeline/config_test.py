@@ -63,7 +63,7 @@ def test_yaml_dumps_and_loads_of_corpus_config_succeeds():
 
 def test_dump_and_load_of_corpus_config_succeeds():
 
-    dump_filename = './tests/output/corpus_config_test.yaml'
+    dump_filename = './tests/output/corpus_config_test.yml'
     TEST_CONFIG.dump(dump_filename)
     deserialized_config = CorpusConfig.load(dump_filename)
 
