@@ -148,3 +148,4 @@ htmlcov
 *.sav
 export
 checkpoints
+*.swp
