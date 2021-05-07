@@ -85,7 +85,7 @@ class ComputeOpts:
             else {},
             'vectorize_opt': self.vectorize_opts.props,
             'count_threshold': self.count_threshold,
-            'context_opts': self.context_opts.props,
+            'context_opts': {} if self.context_opts is None else self.context_opts.props,
             'partition_keys': None if self.partition_keys is None else list(self.partition_keys),
         }
         return options
