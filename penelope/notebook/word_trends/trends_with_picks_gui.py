@@ -7,7 +7,7 @@ from ipywidgets import HTML, Button, HBox, IntSlider, Layout, Output, SelectMult
 from penelope.corpus import VectorizedCorpus
 
 from .displayers import deprecated_plot as plotter
-from .trends_data import TrendsData
+from .interface import TrendsData
 
 
 class TokensSelector(abc.ABC):

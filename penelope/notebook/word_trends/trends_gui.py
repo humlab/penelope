@@ -16,7 +16,7 @@ from ipywidgets import (
 from penelope.utility import get_logger
 
 from .displayers import ITrendDisplayer
-from .trends_data import TrendsData, TrendsOpts
+from .interface import TrendsData, TrendsOpts
 
 logger = get_logger()
 

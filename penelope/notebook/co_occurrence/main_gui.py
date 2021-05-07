@@ -7,7 +7,7 @@ from penelope import co_occurrence, pipeline, workflows
 from .. import co_occurrence as co_occurrence_gui
 from ..interface import ComputeOpts
 from ..utility import CLEAR_OUTPUT
-from ..word_trends.trends_data import TrendsData
+from ..word_trends.interface import TrendsData
 
 view = widgets.Output(layout={'border': '2px solid green'})
 

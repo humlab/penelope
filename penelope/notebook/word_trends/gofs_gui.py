@@ -3,7 +3,7 @@ from penelope.utility import getLogger
 
 from .. import utility as notebook_utility
 from ..ipyaggrid_utility import display_grid
-from .trends_data import TrendsData
+from .interface import TrendsData
 
 logger = getLogger("penelope")
 

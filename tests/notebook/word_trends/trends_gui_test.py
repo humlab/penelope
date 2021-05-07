@@ -1,9 +1,7 @@
 from unittest.mock import Mock
 
 import ipywidgets
-from penelope.notebook.word_trends import TrendsGUI
-from penelope.notebook.word_trends.displayers import ITrendDisplayer
-from penelope.notebook.word_trends.trends_data import TrendsData
+from penelope.notebook.word_trends import ITrendDisplayer, TrendsData, TrendsGUI
 
 
 def test_TrendsGUI_setup():

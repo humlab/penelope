@@ -4,7 +4,7 @@ from penelope.utility import getLogger
 from .. import utility as notebook_utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .gofs_gui import GoFsGUI
-from .trends_data import TrendsData
+from .interface import TrendsData
 from .trends_gui import TrendsGUI
 
 logger = getLogger("penelope")
@@ -16,6 +16,8 @@ logger = getLogger("penelope")
 @deprecated
 class GofTrendsGUI:
     """GUI component for combined display of tokens distributions and goodness of fit to uniform distribution."""
+
+    # FIXME TopTokens and Options not displayed in word trends
 
     def __init__(self, trends_gui: TrendsGUI, gofs_gui: GoFsGUI):
         self.trends_gui: TrendsGUI = trends_gui
