@@ -2,6 +2,7 @@ from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
 import spacy
+from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 
@@ -108,7 +109,10 @@ def texts_to_tagged_frames(
         Seqence of documents represented as data frames
     """
 
-    nlp: Language = spacy.load(language, disable=_get_disables(attributes)) if isinstance(language, str) else language
+    """Add SPACY_DATA environment variable if defined"""
+    name: Union[str, Language] = prepend_spacy_path(language)
+
+    nlp: Language = spacy.load(name, disable=_get_disables(attributes)) if isinstance(language, str) else language
 
     for document in stream:
         yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)

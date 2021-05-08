@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock
 
 import pandas as pd
@@ -14,6 +15,7 @@ from penelope.corpus.readers import (
 )
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
 from penelope.utility import PropertyValueMaskingOpts
+from penelope.vendor.spacy import SPACY_DATA, prepend_path, prepend_spacy_path
 from spacy.language import Language
 from spacy.tokens import Doc
 
@@ -49,9 +51,14 @@ ATTRIBUTES = [
 ]
 
 
+def spacy_model_path(model_name: str) -> str:
+    path: str = os.path.join(os.environ.get("SPACY_PATH", ""), model_name)
+    return path
+
+
 @pytest.fixture(scope="module")
 def en_nlp() -> Language:
-    return spacy.load("en_core_web_sm")
+    return spacy.load(os.path.join(os.environ.get("SPACY_PATH", ""), "en_core_web_sm"))
 
 
 @pytest.fixture(scope="module")
@@ -151,9 +158,10 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
     ]
 
 
+@pytest.mark.skipif(SPACY_DATA == "", reason="SPACY_DATA not set")
 def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
 
-    nlp = spacy.load("en_core_web_sm")
+    nlp = spacy.load(prepend_spacy_path("en_core_web_sm"))
     attributes = ["i", "text", "lemma_", "pos_"]
 
     dfs = convert.texts_to_tagged_frames(
@@ -454,3 +462,24 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     corpus = pipeline.value()
 
     assert isinstance(corpus, VectorizedCorpus)
+
+
+@pytest.mark.skipif(SPACY_DATA == "", reason="SPACY_DATA not set")
+def test_spacy_data_location():
+
+    spacy_data: str = "/data/lib/spacy_data/2.3.1"
+
+    if not os.path.isdir(spacy_data):
+        return
+
+    nlp: Language = spacy.load(os.path.join(spacy_data, "en_core_web_sm"))
+    assert isinstance(nlp, Language)
+
+    nlp: Language = spacy.load(os.path.join(spacy_data, "en"))
+    assert isinstance(nlp, Language)
+
+    nlp: Language = spacy.load(prepend_path("en_core_web_sm", spacy_data))
+    assert isinstance(nlp, Language)
+
+    nlp: Language = spacy.load(prepend_path(nlp, ""))
+    assert isinstance(nlp, Language)

@@ -9,6 +9,7 @@ from penelope.pipeline.spacy.convert import (
     text_to_tagged_frame,
     texts_to_tagged_frames,
 )
+from penelope.vendor.spacy import prepend_spacy_path
 from spacy.tokens import Doc, Token
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
@@ -18,7 +19,7 @@ SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at m
 
 @pytest.fixture
 def nlp() -> Doc:
-    return spacy.load("en_core_web_sm")
+    return spacy.load(prepend_spacy_path("en_core_web_sm"))
 
 
 @pytest.fixture
