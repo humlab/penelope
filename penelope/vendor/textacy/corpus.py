@@ -1,6 +1,6 @@
 import os
 import types
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, Union
 
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
 import textacy
@@ -15,6 +15,7 @@ from penelope.utility import (
     path_add_suffix,
     timecall,
 )
+from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language as SpacyLanguage
 from spacy.tokens import Doc as SpacyDoc
 from textacy import Corpus as TextacyCorpus
@@ -75,7 +76,8 @@ def save_corpus(
 
 
 @timecall
-def load_corpus(filename: str, lang: str) -> textacy.Corpus:  # pylint: disable=unused-argument
+def load_corpus(filename: str, lang: Union[str, SpacyLanguage]) -> textacy.Corpus:
+    lang: Union[str, SpacyLanguage] = prepend_spacy_path(lang)
     corpus = textacy.Corpus.load(lang, filename)
     return corpus
 

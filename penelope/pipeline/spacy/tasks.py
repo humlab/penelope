@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 
 import spacy
+from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language
 
 from .. import interfaces
@@ -26,9 +27,8 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
 
     def setup(self):
         disables = DEFAULT_SPACY_DISABLES if self.disables is None else self.disables
-        nlp: Language = (
-            spacy.load(self.lang_or_nlp, disable=disables) if isinstance(self.lang_or_nlp, str) else self.lang_or_nlp
-        )
+        name: Union[str, Language] = prepend_spacy_path(self.lang_or_nlp)
+        nlp: Language = spacy.load(name, disable=disables) if isinstance(self.lang_or_nlp, str) else self.lang_or_nlp
         self.pipeline.put("spacy_nlp", nlp)
         self.pipeline.put("disables", self.disables)
         return self
