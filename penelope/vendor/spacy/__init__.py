@@ -4,7 +4,7 @@ from typing import Union
 
 from spacy.language import Language
 
-SPACY_DATA = os.environ.get("SPACY_PATH", "")
+SPACY_DATA = os.environ.get("SPACY_DATA", "")
 
 
 def prepend_path(model: Union[Language, str], path: str) -> Union[Language, str]:

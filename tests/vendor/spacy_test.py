@@ -52,13 +52,13 @@ ATTRIBUTES = [
 
 
 def spacy_model_path(model_name: str) -> str:
-    path: str = os.path.join(os.environ.get("SPACY_PATH", ""), model_name)
+    path: str = os.path.join(os.environ.get("SPACY_DATA", ""), model_name)
     return path
 
 
 @pytest.fixture(scope="module")
 def en_nlp() -> Language:
-    return spacy.load(os.path.join(os.environ.get("SPACY_PATH", ""), "en_core_web_sm"))
+    return spacy.load(os.path.join(os.environ.get("SPACY_DATA", ""), "en_core_web_sm"))
 
 
 @pytest.fixture(scope="module")
