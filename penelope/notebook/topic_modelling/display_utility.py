@@ -2,6 +2,8 @@ from ipyaggrid import Grid
 
 from .. import ipyaggrid_utility
 
+# FIXME #89 Replace ipyaggrid with `perspective` or `panel.Tabulator`
+
 
 def display_document_topics_as_grid(df):
 

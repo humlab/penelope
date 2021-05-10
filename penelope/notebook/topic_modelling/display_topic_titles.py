@@ -10,6 +10,7 @@ from penelope.notebook.utility import create_js_download
 
 from .utility import reduce_topic_tokens_overview
 
+# FIXME #89 Replace ipyaggrid with `perspective` or `panel.Tabulator`
 CSS_RULES = ".ag-cell { white-space: normal !important; } "
 DEFAULT_STYLE = dict(
     export_csv=True,

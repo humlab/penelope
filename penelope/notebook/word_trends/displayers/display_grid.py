@@ -1,11 +1,16 @@
 import pandas as pd
 from ipyaggrid import Grid
 from IPython.display import display
+from penelope.utility import deprecated
 
 from ._compile_mixins import CategoryDataMixin
 from .interface import ITrendDisplayer
 
+# FIXME #89 Replace ipyaggrid with `perspective` or `panel.Tabulator`
+# TODO This class is not used and can be removed
 
+
+@deprecated
 class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
     def __init__(self, name: str = "Grid"):
         super().__init__(name=name)

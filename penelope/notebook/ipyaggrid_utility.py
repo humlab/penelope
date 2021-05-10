@@ -4,6 +4,8 @@ import ipyaggrid
 import numpy as np
 import pandas as pd
 
+# FIXME #89 Replace ipyaggrid with `perspective` or `panel.Tabulator`
+
 DEFAULT_GRID_STYLE = dict(
     columns_fit="auto",
     export_csv=True,

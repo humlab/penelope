@@ -34,10 +34,11 @@ def loaded_callback(
         corpus=corpus,
         corpus_folder=corpus_folder,
         corpus_tag=corpus_tag,
+        # FIXME #88 Review use of hard-coded value `n_count`
         n_count=25000,
     ).update()
 
-    gui = GofTrendsGUI(
+    gui: GofTrendsGUI = GofTrendsGUI(
         gofs_gui=GoFsGUI().setup(),
         trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
     )
