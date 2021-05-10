@@ -6,6 +6,8 @@ from ...ipyaggrid_utility import display_grid
 from ._compile_mixins import CategoryDataMixin
 from .interface import ITrendDisplayer
 
+# from .utils import tabulator_widget
+
 
 class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
     """Displays data as a pivot table with category as rows and tokens as columns"""
@@ -26,6 +28,7 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
         with self.output:
             df = self.create_data_frame(plot_data)
             g = display_grid(df)
+            # g = tabulator_widget(df)
             IPython.display.display(g)
 
 

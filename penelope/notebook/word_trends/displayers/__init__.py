@@ -4,6 +4,9 @@
 
 import logging
 
+# import panel as pn
+# pn.extension()
+
 logging.getLogger("matplotlib").setLevel(level=logging.ERROR)
 
 from ._compile_mixins import CategoryDataMixin, LinesDataMixin, PenelopeBugCheck  # noqa: E402
