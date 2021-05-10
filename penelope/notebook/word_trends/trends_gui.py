@@ -27,7 +27,7 @@ OUTPUT_LAYOUT = Layout(width='600px')
 class TrendsGUI:
     """GUI component that displays word trends"""
 
-    def __init__(self):
+    def __init__(self, n_top_count: int = 5000):
         self.trends_data: TrendsData = None
 
         self._tab: Tab = Tab(layout={'width': '98%'})
@@ -55,7 +55,13 @@ class TrendsGUI:
             layout=Layout(width='98%'),
         )
         self._word_count: BoundedIntText = BoundedIntText(
-            value=500, min=3, max=50000, step=10, description='Max words:', disabled=False, layout={'width': '180px'}
+            value=n_top_count,
+            min=3,
+            max=100000,
+            step=10,
+            description='Max words:',
+            disabled=False,
+            layout={'width': '180px'},
         )
         self._displayers: Sequence[ITrendDisplayer] = []
 
@@ -107,10 +113,19 @@ class TrendsGUI:
 
     def _update_picker(self, *_):
 
-        words = self.trends_data.find_words(self.options)
+        _words = self.trends_data.find_words(self.options)
+        _values = [w for w in self._picker.value if w in _words]
 
-        self._picker.value = [w for w in self._picker.value if w in words]
-        self._picker.options = words
+        self._picker.value = []
+        self._picker.options = _words
+        self._picker.value = _values
+
+        if len(_words) == 0:
+            self.alert("😢 Found no matching words!")
+        else:
+            self.alert(
+                f"✔ Displaying {len(_words)} matching tokens. {'' if len(_words) < self.word_count else ' (result truncated)'}"
+            )
 
     def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "TrendsGUI":
 
