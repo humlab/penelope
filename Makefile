@@ -50,7 +50,6 @@ tools:
 	@pip install --upgrade pip --quiet
 	@pip install poetry --upgrade --quiet
 
-
 bump.patch: requirements.txt
 	@poetry run dephell project bump patch
 	@git add pyproject.toml requirements.txt
