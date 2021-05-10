@@ -77,7 +77,7 @@ def texts_to_tagged_frames(
     stream: Iterable[str],
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
-    language: Union[Language, str] = "en_core_web_sm",
+    language: Union[Language, str] = "en_core_web_md",
 ) -> Iterable[TaggedFrame]:
     """[summary]
 
@@ -96,7 +96,7 @@ def texts_to_tagged_frames(
 
 
     language : Union[Language, str], optional
-        spaCy.Language or a string that specifies the language, by default "en_core_web_sm"
+        spaCy.Language or a string that specifies the language, by default "en_core_web_md"
 
     Returns
     -------
