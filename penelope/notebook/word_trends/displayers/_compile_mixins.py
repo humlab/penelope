@@ -51,7 +51,7 @@ class LinesDataMixin:
 
 class CategoryDataMixin:
     def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Any:
-        """Extracts token's vectors for tokens ´indices` and returns a dict keyed by token"""
+        """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
 
         if 'category' not in corpus.document_index.columns:
             raise PenelopeBugCheck("Supplied corpus HAS NOT been prepeared with call to 'group_by_period'")
