@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import contextlib
 import json
 import os
+import pathlib
 from dataclasses import dataclass
-from typing import Mapping, Tuple, Union
+from typing import TYPE_CHECKING, Mapping, Tuple, Union
 
 import pandas as pd
 import scipy
@@ -22,6 +25,10 @@ from penelope.notebook.word_trends import TrendsData
 from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
 from .interface import ContextOpts, CoOccurrenceError
+
+if TYPE_CHECKING:
+    from penelope.pipeline import Token2Id
+
 
 CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
@@ -251,6 +258,8 @@ class Bundle:
 
     co_occurrences: pd.DataFrame = None
     document_index: DocumentIndex = None
+    token2id: Token2Id = None
+
     corpus: VectorizedCorpus = None
     compute_options: dict = None
 
@@ -269,6 +278,7 @@ def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
             folder=bundle.corpus_folder,
             options=bundle.compute_options,
         )
+        bundle.token2id.store(os.path.join(bundle.corpus_folder, "dictionary.zip"))
         DocumentIndexHelper(bundle.document_index).store(
             os.path.join(bundle.corpus_folder, f"{bundle.corpus_tag}_document_index.csv")
         )
@@ -292,6 +302,8 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
     )
     corpus_options: dict = VectorizedCorpus.load_options(folder=corpus_folder, tag=corpus_tag)
 
+    token2id: Token2Id = Token2Id.load(os.path.join(corpus_folder, "dictionary.zip"))
+
     if corpus is None and compute_corpus:
         corpus = to_vectorized_corpus(
             co_occurrences=co_occurrences, document_index=document_index, value_column='value'
@@ -305,6 +317,7 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
         corpus_tag=corpus_tag,
         co_occurrences=co_occurrences,
         document_index=document_index,
+        token2id=token2id,
         compute_options=options,
         corpus=corpus,
     )

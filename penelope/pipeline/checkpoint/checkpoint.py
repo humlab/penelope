@@ -50,7 +50,7 @@ def store_checkpoint(
             zf.writestr(document_index_name, data=document_index.to_csv(sep=document_index_sep, header=True))
 
         if token2id is not None:
-            zf.writestr(DICTIONARY_FILENAME, data=json.dumps(token2id.store))
+            zf.writestr(DICTIONARY_FILENAME, data=json.dumps(token2id.data))
 
 
 class CheckpointReader(zipfile.ZipFile):
