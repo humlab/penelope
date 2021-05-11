@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Union
 
+import pandas as pd
+
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
@@ -295,14 +297,17 @@ DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFr
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
-    def __init__(self, store: Optional[Union[dict, defaultdict]] = None):
+    def __init__(self, store: Optional[Union[dict, defaultdict]] = None, lowercase:bool = True):
         if isinstance(store, defaultdict):
             self.store = store
         elif isinstance(store, dict):
             self.store = defaultdict(int, self.store)
         else:
             self.store = store or defaultdict()
+
         self.store.default_factory = self.store.__len__
+        self.lowercase: bool = lowercase
+
 
     def __getitem__(self, key):
         return self.store[self._keytransform(key)]
@@ -323,6 +328,13 @@ class Token2Id(MutableMapping):
         return key
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
+
+        if self.lowercase:
+            if isinstance(tokens, pd.core.api.Series):
+                tokens = pd.core.api.Series.str.lower()
+            else:
+                tokens = (token.lower() for token in tokens)
+
         for token in tokens:
             _ = self.store[token]
         return self
