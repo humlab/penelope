@@ -78,7 +78,7 @@ def partitioned_corpus_co_occurrence(
         # keyed_document_index: DocumentIndex= payload.document_index[payload.document_index[partition_column] == key]
         # metadata.append(_group_metadata(keyed_document_index, i, partition_column, key))
 
-        co_occurrence = corpus_co_occurrence(
+        co_occurrence: pd.DataFrame = corpus_co_occurrence(
             key_stream,
             payload=payload,
             context_opts=context_opts,
@@ -91,7 +91,7 @@ def partitioned_corpus_co_occurrence(
 
         total_results.append(co_occurrence)
 
-    co_occurrences = pd.concat(total_results, ignore_index=True)
+    co_occurrences: pd.DataFrame = pd.concat(total_results, ignore_index=True)
 
     # metadata_document_index: DocumentIndex = DocumentIndexHelper.from_metadata(metadata).document_index
 
