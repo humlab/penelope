@@ -50,17 +50,17 @@ def test_spaCy_co_occurrence_pipeline(config):
     )
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(context_width=4)
     global_threshold_count: int = 1
-    partition_column: str = 'year'
+    partition_key: str = 'year'
 
     compute_result: ComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=config.pipeline_payload.source,
+        partition_key=partition_key,
         tokens_transform_opts=tokens_transform_opts,
+        context_opts=context_opts,
         extract_tagged_tokens_opts=extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=tagged_tokens_filter_opts,
-        context_opts=context_opts,
         global_threshold_count=global_threshold_count,
-        partition_column=partition_column,
         checkpoint_filename=checkpoint_filename,
     ).value()
 
@@ -89,12 +89,12 @@ def test_spaCy_co_occurrence_workflow(config):
     compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
+        partition_key=partition_key,
         tokens_transform_opts=args.tokens_transform_opts,
         extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
         context_opts=args.context_opts,
         global_threshold_count=args.count_threshold,
-        partition_column=partition_key,
         checkpoint_filename=checkpoint_filename,
     ).value()
 

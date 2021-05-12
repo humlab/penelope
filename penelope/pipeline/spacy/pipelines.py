@@ -82,12 +82,12 @@ def spaCy_DTM_pipeline(
 def spaCy_co_occurrence_pipeline(
     corpus_config: CorpusConfig,
     corpus_filename: str,
+    partition_key: str,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
-    partition_column: str = 'year',
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
@@ -101,7 +101,7 @@ def spaCy_co_occurrence_pipeline(
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,
             tagged_tokens_filter_opts=tagged_tokens_filter_opts,
             global_threshold_count=global_threshold_count,
-            partition_column=partition_column,
+            partition_column=partition_key,
         )
         return p
 
