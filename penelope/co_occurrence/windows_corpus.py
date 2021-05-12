@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import Counter, defaultdict
 from typing import Any, Dict, Iterator, List, Mapping, Tuple
 
 from penelope.corpus import ITokenizedCorpus, metadata_to_document_index
@@ -25,16 +25,20 @@ class WindowsCorpus(ITokenizedCorpus):
         self._document_index: DocumentIndex = None
         self._metadata = []
         self._vocabulary = vocabulary
+        self._token_windows_counter: Counter = Counter()
 
     def __iter__(self):
         return self
 
     def __next__(self) -> Tuple[str, List[str]]:
         try:
+            # FIXME #91, #92: Add counters!!!
             filename, _, tokens = next(self.windows)
             _stats = self.statistics[filename]
             _stats['n_windows'] = _stats['n_windows'] + 1
-            _stats['n_tokens'] = _stats['n_tokens'] + len(tokens)
+            _stats['n_tokens'] = _stats['n_tokens'] + len(tokens)  # Always equal n_windows * window_size!
+            for token in tokens:
+                self._token_windows_counter[token] += 1
             return (filename, tokens)
         except StopIteration:
             self._metadata = [{'filename': k, **v} for k, v in dict(self.statistics).items()]
@@ -60,3 +64,8 @@ class WindowsCorpus(ITokenizedCorpus):
     @property
     def vocabulary(self) -> List[str]:
         return self._vocabulary
+
+    @property
+    def token_window_counts(self) -> Counter:
+        """Returns a counter with token's windows count."""
+        return self._token_windows_counter
