@@ -112,7 +112,9 @@ def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
     logger.info(f"COLUMNS (after reset): {', '.join(co_occurrence.columns.tolist())}")
 
 
+# FIXME #95 to_vectorized_corpus: make all arguments mandatory
 def to_vectorized_corpus(
+    *,
     co_occurrences: pd.DataFrame,
     document_index: DocumentIndex,
     value_column: str = "value",
