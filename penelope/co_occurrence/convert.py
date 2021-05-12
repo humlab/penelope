@@ -235,6 +235,8 @@ def to_dataframe(
     if ignore_pad is not None:
         co_occurrences = co_occurrences[((co_occurrences.w1 != ignore_pad) & (co_occurrences.w2 != ignore_pad))]
 
+    # FIXME #104 Co-occurrences.to_dataframe: Keep w1_id och w2_id + Token2Id. Drop w1 & w2
+    # FIXME #105 Co-occurrences.to_dataframe: Drop value_n_d
     co_occurrences: CoOccurrenceDataFrame = co_occurrences[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
 
     if transform_opts is not None:
