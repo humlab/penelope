@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import contextlib
 import json
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Mapping, Tuple, Union
+from typing import Mapping, Tuple, Union
 
 import pandas as pd
 import scipy
@@ -14,6 +12,7 @@ from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
     ITokenizedCorpus,
+    Token2Id,
     TokenizedCorpus,
     TokensTransformer,
     TokensTransformOpts,
@@ -24,10 +23,6 @@ from penelope.notebook.word_trends import TrendsData
 from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
 from .interface import ContextOpts, CoOccurrenceError
-
-if TYPE_CHECKING:
-    from penelope.pipeline import Token2Id
-
 
 CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
@@ -270,8 +265,10 @@ def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
     store_co_occurrences(output_filename, bundle.co_occurrences)
 
     if bundle.corpus is not None:
+
         if bundle.corpus_tag is None:
             bundle.corpus_tag = strip_path_and_extension(output_filename)
+
         bundle.corpus_folder = os.path.split(output_filename)[0]
         bundle.corpus.dump(tag=bundle.corpus_tag, folder=bundle.corpus_folder)
         bundle.corpus.dump_options(
@@ -279,10 +276,14 @@ def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
             folder=bundle.corpus_folder,
             options=bundle.compute_options,
         )
-        bundle.token2id.store(os.path.join(bundle.corpus_folder, "dictionary.zip"))
+
+        if bundle.token2id is not None:
+            bundle.token2id.store(os.path.join(bundle.corpus_folder, "dictionary.zip"))
+
         DocumentIndexHelper(bundle.document_index).store(
             os.path.join(bundle.corpus_folder, f"{bundle.corpus_tag}_document_index.csv")
         )
+
     """Also save options with same name as co-occurrence file"""
     with open(replace_extension(output_filename, 'json'), 'w') as json_file:
         json.dump(bundle.compute_options, json_file, indent=4)
@@ -305,6 +306,12 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
     options = load_options(co_occurrences_filename) or corpus_options
 
     token2id: Token2Id = Token2Id.load(os.path.join(corpus_folder, "dictionary.zip"))
+
+    if token2id is None:
+        logger.info("no vocabulary in bundle (creating a new vocabularyfrom co-occurrences)")
+        token2id = Token2Id()
+        token2id.ingest(co_occurrences.w1)
+        token2id.ingest(co_occurrences.w2)
 
     if corpus is None and compute_corpus:
 
