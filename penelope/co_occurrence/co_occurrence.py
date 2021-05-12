@@ -116,6 +116,8 @@ def corpus_co_occurrence(
     if payload.token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
 
+    # FIXME: #91 Co-occurrence: Add counter for number of windows a word occurs in
+    # FIXME: #92 Co-occurrence: Add counter for number of windows a word-pair occurs in
     windowed_corpus = to_vectorized_windows_corpus(stream=stream, token2id=payload.token2id, context_opts=context_opts)
 
     co_occurrence_matrix = windowed_corpus.co_occurrence_matrix()
@@ -142,6 +144,8 @@ def to_vectorized_windows_corpus(
     windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad=pad)
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
     corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
-        windows_corpus, vocabulary=token2id, already_tokenized=True
+        windows_corpus,
+        vocabulary=token2id,
+        already_tokenized=True,
     )
     return corpus
