@@ -87,32 +87,6 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
     assert len(compute_result.co_occurrences) > 0
 
 
-@pytest.mark.skip("long running, used for bug fixes")
-def test_co_occurrence_of_windowed_corpus_returns_correct_result4():
-
-    concept = {'jag'}
-    n_context_width = 2
-    corpus = SparvTokenizedCsvCorpus(
-        './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
-        reader_opts=TextReaderOpts(
-            filename_fields="year:_:1",
-        ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
-    )
-    compute_result: ComputeResult = partitioned_corpus_co_occurrence(
-        stream=corpus,
-        payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
-        context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
-        transform_opts=None,
-        global_threshold_count=None,
-        partition_column='year',
-        ignore_pad=None,
-    )
-
-    assert compute_result is not None
-    assert len(compute_result.co_occurrences) > 0
-
-
 @pytest.mark.parametrize(
     'filename', ['partitioned_concept_co_occurrences_data.csv', 'partitioned_concept_co_occurrences_data.zip']
 )
