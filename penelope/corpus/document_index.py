@@ -138,7 +138,7 @@ class DocumentIndexHelper:
 
     def group_by_column(
         self,
-        column_name: str = 'year',
+        column_name: str,
         transformer: Union[Callable[[T], T], Dict[T, T], None] = None,
         index_values: Union[str, List[T]] = None,
     ) -> "DocumentIndexHelper":
