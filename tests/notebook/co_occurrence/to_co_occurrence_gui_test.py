@@ -28,6 +28,7 @@ def test_to_co_occurrence_create_gui():  # pylint: disable=unused-argument
         corpus_folder='./tests/test_data',
         data_folder='./tests/test_data',
         corpus_config=corpus_config,
+        default_partition_key='year',
         compute_callback=compute_callback,
         done_callback=done_callback,
     )
@@ -37,6 +38,9 @@ def test_to_co_occurrence_create_gui():  # pylint: disable=unused-argument
 
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
 def test_GUI_setup():  # pylint: disable=unused-argument
+
+    partition_key: str = 'year'
+
     def done_callback(*_, **__):
         pass
 
@@ -45,6 +49,7 @@ def test_GUI_setup():  # pylint: disable=unused-argument
 
     corpus_config = dummy_config()
     gui = to_co_occurrence_gui.ComputeGUI(
+        default_partition_key=partition_key,
         default_corpus_path='./tests/test_data',
         default_corpus_filename='',
         default_data_folder='./tests/output',

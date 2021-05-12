@@ -6,10 +6,10 @@ import csv
 from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Union
 
-from penelope.corpus import DocumentIndex
+from penelope.corpus import DocumentIndex, Token2Id
 from penelope.utility import create_instance
 
-from ..interfaces import ContentType, DocumentPayload, Token2Id
+from ..interfaces import ContentType, DocumentPayload
 from ..tagged_frame import TaggedFrame
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]

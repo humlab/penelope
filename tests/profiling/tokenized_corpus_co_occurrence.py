@@ -28,7 +28,7 @@ compute_result: ComputeResult = partitioned_corpus_co_occurrence(
     context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
     transform_opts=None,
     global_threshold_count=None,
-    partition_column='document_name',
+    partition_key='document_name',
     ignore_pad=None,
 )
 

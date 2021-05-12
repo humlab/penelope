@@ -28,14 +28,15 @@ class ComputeResult:
     document_index: DocumentIndex = None
 
 
+# FIXME: #94 Enable partition by alternative keys (apart from year)
 def partitioned_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
     payload: PipelinePayload,
     context_opts: ContextOpts,
     transform_opts: TokensTransformOpts,
+    partition_key: str,
     global_threshold_count: int,
-    partition_column: str = 'year',
     ignore_pad: str = None,
 ) -> ComputeResult:
 
@@ -49,12 +50,13 @@ def partitioned_corpus_co_occurrence(
         raise CoOccurrenceError("expected document index found None")
         # payload._document_index = stream.document_index
 
-    if partition_column not in payload.document_index.columns:
-        raise CoOccurrenceError(f"expected `{partition_column}` not found in document index")
+    if partition_key not in payload.document_index.columns:
+        raise CoOccurrenceError(f"expected `{partition_key}` not found in document index")
 
     if not isinstance(global_threshold_count, int) or global_threshold_count < 1:
         global_threshold_count = 1
 
+    # FIXME #101 performance: get_bucket_key resolves entire pipeline (inefficient)
     def get_bucket_key(item: Tuple[str, Iterable[str]]) -> int:
 
         if not isinstance(item, tuple):
@@ -64,7 +66,7 @@ def partitioned_corpus_co_occurrence(
             raise CoOccurrenceError(f"expected filename (str) ound {type(item[0])}")
 
         document_name = strip_path_and_extension(item[0])
-        return int(payload.document_index.loc[document_name][partition_column])
+        return payload.document_index.loc[document_name][partition_key]
 
     total_results = []
     key_streams = more_itertools.bucket(stream, key=get_bucket_key, validator=None)
@@ -78,7 +80,8 @@ def partitioned_corpus_co_occurrence(
         # keyed_document_index: DocumentIndex= payload.document_index[payload.document_index[partition_column] == key]
         # metadata.append(_group_metadata(keyed_document_index, i, partition_column, key))
 
-        co_occurrence = corpus_co_occurrence(
+        # FIXME #90 Co-occurrence: Enables document based co-occurrence computation
+        co_occurrence: pd.DataFrame = corpus_co_occurrence(
             key_stream,
             payload=payload,
             context_opts=context_opts,
@@ -87,40 +90,25 @@ def partitioned_corpus_co_occurrence(
             transform_opts=transform_opts,
         )
 
-        co_occurrence[partition_column] = key
+        co_occurrence[partition_key] = key
 
         total_results.append(co_occurrence)
 
-    co_occurrences = pd.concat(total_results, ignore_index=True)
+    co_occurrences: pd.DataFrame = pd.concat(total_results, ignore_index=True)
 
     # metadata_document_index: DocumentIndex = DocumentIndexHelper.from_metadata(metadata).document_index
 
-    index: DocumentIndex = (
-        DocumentIndexHelper(payload.document_index).group_by_column(column_name=partition_column, index_values=keys)
-    ).document_index
+    document_index: DocumentIndex = (
+        payload.document_index
+        if partition_key not in ('document_name', 'document_id')
+        else (
+            DocumentIndexHelper(payload.document_index).group_by_column(column_name=partition_key, index_values=keys)
+        ).document_index
+    )
 
     co_occurrences = _filter_co_coccurrences_by_global_threshold(co_occurrences, global_threshold_count)
 
-    return ComputeResult(co_occurrences=co_occurrences, document_index=index)
-
-
-# def _group_metadata(keyed_document_index: DocumentIndex, i: int, column_name: str, value: Union[int,str]) -> dict:
-#     return {
-#         **{
-#             'document_id': i,
-#             'filename': f'{column_name}_{value}.txt',
-#             'document_name': f'{column_name}_{value}',
-#             'category': value,
-#             'n_docs': len(keyed_document_index),
-#             'year': value if column_name == 'year' else keyed_document_index.year.min()
-#         },
-#         **{
-#             count_column: keyed_document_index[count_column].sum().astype(np.int64)
-#             for count_column in DOCUMENT_INDEX_COUNT_COLUMNS
-#             if count_column in keyed_document_index.columns
-#         },
-#     }
-
+    return ComputeResult(co_occurrences=co_occurrences, document_index=document_index)
 
 def _filter_co_coccurrences_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
     if len(co_occurrences) == 0:

@@ -101,7 +101,7 @@ def spaCy_co_occurrence_pipeline(
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,
             tagged_tokens_filter_opts=tagged_tokens_filter_opts,
             global_threshold_count=global_threshold_count,
-            partition_column=partition_key,
+            partition_key=partition_key,
         )
         return p
 

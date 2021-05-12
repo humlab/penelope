@@ -1,7 +1,7 @@
 import pathlib
 
 import pytest
-from penelope.pipeline import Token2Id
+from penelope.corpus import Token2Id
 
 
 def test_interfaces_token2id_get():

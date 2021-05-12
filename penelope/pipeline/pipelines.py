@@ -55,12 +55,13 @@ def wildcard_to_DTM_pipeline(
 
 
 def wildcard_to_co_occurrence_pipeline(
+    *,
+    partition_key: str,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
-    partition_column: str = 'year',
 ):
     try:
         pipeline: CorpusPipeline = (
@@ -84,7 +85,7 @@ def wildcard_to_co_occurrence_pipeline(
                 context_opts=context_opts,
                 transform_opts=tokens_transform_opts,
                 global_threshold_count=global_threshold_count,
-                partition_column=partition_column,
+                partition_key=partition_key,
             )
         )
 

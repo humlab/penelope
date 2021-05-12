@@ -51,7 +51,7 @@ def display_grid(
 ) -> ipyaggrid.Grid:
 
     if isinstance(data, dict):
-        df = pd.DataFrame(data=data)  # .set_index('year')
+        df = pd.DataFrame(data=data)
     elif isinstance(data, pd.DataFrame):
         df = data
     else:

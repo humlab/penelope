@@ -65,6 +65,8 @@ def test_co_occurrence_with_thresholdt_succeeds():
 @pytest.mark.parametrize("concept, threshold_count, context_width", [({}, 0, 2), ({'fråga'}, 0, 2), ({'fråga'}, 2, 2)])
 def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, context_width):
 
+    partition_key: str = 'year'
+
     corpus = SparvTokenizedCsvCorpus(
         './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
         reader_opts=TextReaderOpts(
@@ -79,7 +81,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=context_width),
         transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True),
         global_threshold_count=threshold_count,
-        partition_column='year',
+        partition_key=partition_key,
         ignore_pad=None,
     )
 
@@ -102,7 +104,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         transform_opts=None,
         global_threshold_count=1,
-        partition_column='year',
+        partition_key=partition_key,
         ignore_pad=None,
     )
 

@@ -12,8 +12,15 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 import pandas as pd
 from loguru import logger
 from penelope import co_occurrence, utility
-from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
-from penelope.corpus.document_index import DocumentIndex
+from penelope.corpus import (
+    DocumentIndex,
+    Token2Id,
+    TokensTransformer,
+    TokensTransformOpts,
+    VectorizedCorpus,
+    VectorizeOpts,
+    default_tokenizer,
+)
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
     TextReader,
@@ -27,7 +34,7 @@ from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
-from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError, Token2Id
+from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
 from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn
 
@@ -675,25 +682,29 @@ class Vocabulary(ITask):
         return self.pipeline.payload.memory_store.get(token_column)
 
 
+# FIXME #100 ToCoOccurrence: Make partition_key mandatory
 @dataclass
 class ToCoOccurrence(ITask):
     """Computes a windows co-occurrence data."""
+
+    context_opts: co_occurrence.ContextOpts = None
+    transform_opts: TokensTransformOpts = None
+    global_threshold_count: int = None
+    partition_key: str = None
+    ignore_pad: str = field(default='*')
 
     def __post_init__(self):
         self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
 
-    context_opts: co_occurrence.ContextOpts = None
-    transform_opts: TokensTransformOpts = None
-    global_threshold_count: int = None
-    partition_column: str = field(default='year')
-    ignore_pad: str = field(default='*')
+        if self.partition_key is None:
+            raise ValueError("ToCoOccurrence: partition_key cannot be None")
 
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("context_opts", self.context_opts)
         self.pipeline.put("global_threshold_count", self.global_threshold_count)
-        self.pipeline.put("partition_column", self.partition_column)
+        self.pipeline.put("partition_column", self.partition_key)
         return self
 
     def process_stream(self) -> VectorizedCorpus:
@@ -709,7 +720,7 @@ class ToCoOccurrence(ITask):
             context_opts=self.context_opts,
             transform_opts=self.transform_opts,
             global_threshold_count=self.global_threshold_count,
-            partition_column=self.partition_column,
+            partition_key=self.partition_key,
             ignore_pad=self.ignore_pad,
         )
         yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=compute_result)

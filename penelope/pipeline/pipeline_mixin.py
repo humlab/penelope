@@ -101,18 +101,19 @@ class PipelineShortcutMixIn:
 
     def to_co_occurrence(
         self: pipelines.CorpusPipeline,
+        *,
         context_opts: co_occurrence.ContextOpts = None,
         transform_opts: TokensTransformOpts = None,
-        partition_column: str = 'year',
         global_threshold_count: int = None,
+        partition_key: str,
     ) -> pipelines.CorpusPipeline:
         """ (filename, DOCUMENT_CONTENT_TUPLES => DATAFRAME) """
         return self.add(
             tasks.ToCoOccurrence(
                 context_opts=context_opts,
                 transform_opts=transform_opts,
-                partition_column=partition_column,
                 global_threshold_count=global_threshold_count,
+                partition_key=partition_key,
             )
         )
 

@@ -54,7 +54,7 @@ def compute(
                 tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
                 context_opts=args.context_opts,
                 global_threshold_count=args.count_threshold,
-                partition_column=args.partition_keys[0],
+                partition_key=args.partition_keys[0],
             )
         )
         compute_result: co_occurrence.ComputeResult = p.value()
