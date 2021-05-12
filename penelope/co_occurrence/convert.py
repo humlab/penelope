@@ -29,6 +29,7 @@ CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
 
 CoOccurrenceDataFrame = pd.DataFrame
 
+
 def filename_to_folder_and_tag(co_occurrences_filename: str) -> Tuple[str, str]:
     """Strips out corpus folder and tag from filename having CO_OCCURRENCE_FILENAME_POSTFIX ending"""
     corpus_folder, corpus_basename = os.path.split(co_occurrences_filename)
@@ -108,6 +109,11 @@ def store_feather(filename: str, co_occurrences: CoOccurrenceDataFrame) -> None:
     logger.info(f"COLUMNS (after reset): {', '.join(co_occurrences.columns.tolist())}")
 
 
+class PartitionKeyNotUniqueKey(ValueError):
+    ...
+
+
+# FIXME #108 Bug. Logical error in to_vectorized_corpus
 def to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
@@ -116,6 +122,10 @@ def to_vectorized_corpus(
     partition_key: Union[int, str],
 ) -> VectorizedCorpus:
     """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
+
+    if document_index[partition_key].unique().size != len(document_index):
+        raise PartitionKeyNotUniqueKey()
+
     # Create new tokens from the co-occurring pairs
     tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
 
@@ -166,7 +176,9 @@ def to_co_occurrence_matrix(
         corpus_or_reader = TokenizedCorpus(reader=corpus_or_reader)
 
     vocabulary = vocabulary or corpus_or_reader.token2id
-    dtm_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(corpus_or_reader, already_tokenized=True, vocabulary=vocabulary)
+    dtm_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
+        corpus_or_reader, already_tokenized=True, vocabulary=vocabulary
+    )
     term_term_matrix = dtm_corpus.co_occurrence_matrix()
     return term_term_matrix
 
@@ -223,7 +235,9 @@ def to_dataframe(
 
             if n_token_count in document_index.columns:
                 try:
-                    co_occurrences[target_field] = co_occurrences.value / float(sum(document_index[n_token_count].values))
+                    co_occurrences[target_field] = co_occurrences.value / float(
+                        sum(document_index[n_token_count].values)
+                    )
                 except ZeroDivisionError:
                     co_occurrences[target_field] = 0.0
             else:
