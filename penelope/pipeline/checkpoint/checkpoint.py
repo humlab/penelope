@@ -5,7 +5,7 @@ from io import StringIO
 from os.path import basename
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index, Token2Id
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index
 from penelope.utility import assert_that_path_exists, filenames_satisfied_by, getLogger, path_of, zip_utils
 
 from ..interfaces import DocumentPayload, PipelineError
