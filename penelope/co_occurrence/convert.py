@@ -113,7 +113,6 @@ class PartitionKeyNotUniqueKey(ValueError):
     ...
 
 
-# FIXME #108 Bug. Logical error in to_vectorized_corpus
 def to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
