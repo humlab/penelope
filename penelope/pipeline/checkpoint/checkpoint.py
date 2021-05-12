@@ -5,10 +5,10 @@ from io import StringIO
 from os.path import basename
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index, Token2Id
 from penelope.utility import assert_that_path_exists, filenames_satisfied_by, getLogger, path_of, zip_utils
 
-from ..interfaces import DocumentPayload, PipelineError, Token2Id
+from ..interfaces import DocumentPayload, PipelineError
 from .interface import (
     CHECKPOINT_OPTS_FILENAME,
     DICTIONARY_FILENAME,

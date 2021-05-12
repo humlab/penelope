@@ -45,3 +45,4 @@ from .transforms import (
     upper_transform,
 )
 from .utils import bow_to_text, generate_token2id
+from .token2id import Token2Id

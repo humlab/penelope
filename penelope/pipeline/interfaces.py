@@ -2,14 +2,10 @@ from __future__ import annotations
 
 import abc
 import os
-import pathlib
-from collections import defaultdict
-from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
 
-import pandas as pd
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
@@ -18,14 +14,7 @@ from penelope.corpus import (
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
-from penelope.utility import (
-    Known_PoS_Tag_Schemes,
-    PoS_Tag_Scheme,
-    pandas_to_csv_zip,
-    replace_path,
-    strip_path_and_extension,
-    strip_paths,
-)
+from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, replace_path, strip_path_and_extension
 
 from .tagged_frame import TaggedFrame
 
@@ -298,66 +287,3 @@ class ITask(abc.ABC):
 
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
-
-
-class Token2Id(MutableMapping):
-    """A token-to-id mapping (dictionary)"""
-
-    def __init__(self, data: Optional[Union[dict, defaultdict]] = None):
-        if isinstance(data, defaultdict):
-            self.data = data
-        elif isinstance(data, dict):
-            self.data = defaultdict(int, data)
-        else:
-            self.data = data or defaultdict()
-        self.data.default_factory = self.data.__len__
-
-    def __getitem__(self, key):
-        return self.data[self._keytransform(key)]
-
-    def __setitem__(self, key, value):
-        self.data[self._keytransform(key)] = value
-
-    def __delitem__(self, key):
-        del self.data[self._keytransform(key)]
-
-    def __iter__(self):
-        return iter(self.data)
-
-    def __len__(self):
-        return len(self.data)
-
-    def _keytransform(self, key):
-        return key
-
-    def ingest(self, tokens: Iterator[str]) -> "Token2Id":
-        for token in tokens:
-            _ = self.data[token]
-        return self
-
-    def close(self) -> "Token2Id":
-        self.data.default_factory = None
-
-    def open(self) -> "Token2Id":
-        self.data.default_factory = self.__len__
-        return self
-
-    def id2token(self) -> dict:
-        return {v: k for k, v in self.data.items()}
-
-    def to_dataframe(self) -> pd.DataFrame:
-        df: pd.DataFrame = pd.DataFrame({'token': self.data.keys(), 'token_id': self.data.values()}).set_index('token')
-        return df
-
-    def store(self, filename: str):
-        """Store dictionary as CSV"""
-        pandas_to_csv_zip(filename, dfs=(self.to_dataframe(), strip_paths(filename)), sep='\t', header=True)
-
-    @staticmethod
-    def load(filename: str) -> Token2Id:
-        """Store dictionary as CSV"""
-        if not pathlib.Path(filename).exists():
-            return None
-        df: pd.DataFrame = pd.read_csv(filename, sep='\t', index_col=0)
-        data: dict = df['token_id'].to_dict()
-        return Token2Id(data=data)
