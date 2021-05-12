@@ -4,8 +4,9 @@ from collections.abc import MutableMapping
 from typing import Iterator, Optional, Union
 
 import pandas as pd
-from penelope.utility import pandas_to_csv_zip, strip_paths
 from loguru import logger
+from penelope.utility import pandas_to_csv_zip, strip_paths
+
 
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
