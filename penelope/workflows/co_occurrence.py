@@ -45,7 +45,7 @@ def compute(
 
         args.extract_tagged_tokens_opts.passthrough_tokens = list(args.context_opts.concept)
 
-        compute_result: co_occurrence.ComputeResult = (
+        p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
             # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
             + pipeline.wildcard_to_co_occurrence_pipeline(
@@ -56,7 +56,8 @@ def compute(
                 global_threshold_count=args.count_threshold,
                 partition_column=args.partition_keys[0],
             )
-        ).value()
+        )
+        compute_result: co_occurrence.ComputeResult = p.value()
 
         if len(compute_result.co_occurrences) == 0:
             raise ZeroComputeError()
@@ -73,6 +74,7 @@ def compute(
             corpus_folder=args.target_folder,
             co_occurrences=compute_result.co_occurrences,
             document_index=compute_result.document_index,
+            token2id=p.payload.token2id,
             compute_options=co_occurrence.create_options_bundle(
                 reader_opts=corpus_config.text_reader_opts,
                 tokens_transform_opts=args.tokens_transform_opts,
