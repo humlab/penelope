@@ -1,4 +1,3 @@
-
 import os
 
 from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence

@@ -1,8 +1,9 @@
+from os.path import join as jj
+
 from penelope import corpus as corpora
 from penelope import pipeline, utility, workflows
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
-from os.path import join as jj
 
 DATA_FOLDER = "./tests/test_data"
 CONFIG_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.yml")
