@@ -112,13 +112,12 @@ def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
     logger.info(f"COLUMNS (after reset): {', '.join(co_occurrence.columns.tolist())}")
 
 
-# FIXME #95 to_vectorized_corpus: make all arguments mandatory
 def to_vectorized_corpus(
     *,
     co_occurrences: pd.DataFrame,
     document_index: DocumentIndex,
-    value_column: str = "value",
-    partition_column: Union[int, str] = "year",
+    value_key: str,
+    partition_key: Union[int, str],
 ) -> VectorizedCorpus:
     """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
     # Create new tokens from the co-occurring pairs
@@ -128,13 +127,13 @@ def to_vectorized_corpus(
     token2id = {w: i for i, w in enumerate(sorted([w for w in set(tokens)]))}
 
     # Create a `partition_column` to index mapping (i.e. `partition_column` to document_id)
-    partition2index = document_index.set_index(partition_column).document_id.to_dict()
+    partition2index = document_index.set_index(partition_key).document_id.to_dict()
 
     df_partition_weights = pd.DataFrame(
         data={
-            'partition_index': co_occurrences[partition_column].apply(lambda y: partition2index[y]),
+            'partition_index': co_occurrences[partition_key].apply(lambda y: partition2index[y]),
             'token_id': tokens.apply(lambda x: token2id[x]),
-            'weight': co_occurrences[value_column],
+            'weight': co_occurrences[value_key],
         }
     )
     # Make certain  matrix gets right shape (otherwise empty documents at the end reduces row count)
@@ -303,15 +302,22 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
         else None
     )
     corpus_options: dict = VectorizedCorpus.load_options(folder=corpus_folder, tag=corpus_tag)
+    options = load_options(co_occurrences_filename) or corpus_options
 
     token2id: Token2Id = Token2Id.load(os.path.join(corpus_folder, "dictionary.zip"))
 
     if corpus is None and compute_corpus:
-        corpus = to_vectorized_corpus(
-            co_occurrences=co_occurrences, document_index=document_index, value_column='value'
-        )
 
-    options = load_options(co_occurrences_filename) or corpus_options
+        if len(options.get('partition_keys', []) or []) == 0:
+            raise ValueError("load_bundle: cannot load, unknown partition key")
+
+        partition_key = options['partition_keys'][0]
+        corpus = to_vectorized_corpus(
+            co_occurrences=co_occurrences,
+            document_index=document_index,
+            value_key='value',
+            partition_key=partition_key,
+        )
 
     bundle = Bundle(
         co_occurrences_filename=co_occurrences_filename,
