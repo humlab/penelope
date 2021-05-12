@@ -210,26 +210,3 @@ def load_corpus(
         v_corpus = v_corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
 
     return v_corpus
-
-
-# def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=100000, keep_magnitude=True):
-
-#     year_cache_tag = "cached_year_{}_{}".format(tag, "km" if keep_magnitude else "")
-
-#     v_corpus = None
-
-#     if not StoreMixIn.dump_exists(tag=year_cache_tag, folder=folder):
-#         logger.info("Caching corpus grouped by year...")
-#         v_corpus = (
-#             StoreMixIn.load(tag=tag, folder=folder)
-#             .group_by_year()
-#             .normalize(axis=1, keep_magnitude=keep_magnitude)
-#             .dump(tag=year_cache_tag, folder=folder)
-#         )
-
-#     if v_corpus is None:
-#         v_corpus = (
-#             StoreMixIn.load(tag=year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
-#         )
-
-#     return v_corpus
