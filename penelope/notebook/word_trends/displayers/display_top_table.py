@@ -52,6 +52,7 @@ class TopTokensDisplayer(ITrendDisplayer):
     def compile(self, *, corpus: VectorizedCorpus, **__) -> pd.DataFrame:
         self.corpus = corpus
 
+        # FIXME: #102 TopTokensDisplayer - Always group data from now on?
         if self.category != 'year':
             corpus = corpus.group_by_period(period=self.category)
 
