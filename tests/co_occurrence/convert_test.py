@@ -65,14 +65,20 @@ def test_store_co_occurrences(filename):
 
 def test_to_vectorized_corpus():
 
-    value_column = 'value'
+    value_key = 'value'
+    partition_key = 'year'
     filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
 
     index_filename = './tests/test_data/VENUS/VENUS_document_index.csv'
 
     co_occurrences = co_occurrence.load_co_occurrences(filename)
     document_index = DocumentIndexHelper.load(index_filename).document_index
-    corpus = co_occurrence.to_vectorized_corpus(co_occurrences, document_index, value_column)
+    corpus = co_occurrence.to_vectorized_corpus(
+        co_occurrences=co_occurrences,
+        document_index=document_index,
+        value_key=value_key,
+        partition_key=partition_key,
+    )
 
     assert corpus.data.shape[0] == len(document_index)
     assert corpus.data.shape[1] == len(co_occurrences.apply(lambda x: f"{x['w1']}/{x['w2']}", axis=1).unique())

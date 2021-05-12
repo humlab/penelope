@@ -74,6 +74,7 @@ def test_spaCy_co_occurrence_pipeline(config):
 def test_spaCy_co_occurrence_workflow(config):
 
     partition_key: str = 'year'
+    value_key: str = 'value'
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,
@@ -104,7 +105,10 @@ def test_spaCy_co_occurrence_workflow(config):
     co_occurrence_filename = co_occurrence.folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
 
     corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
-        co_occurrences=compute_result.co_occurrences, document_index=compute_result.document_index, value_column='value'
+        co_occurrences=compute_result.co_occurrences,
+        document_index=compute_result.document_index,
+        value_key=value_key,
+        partition_key=partition_key,
     )
 
     bundle = co_occurrence.Bundle(

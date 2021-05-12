@@ -65,7 +65,8 @@ def compute(
         corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
             co_occurrences=compute_result.co_occurrences,
             document_index=compute_result.document_index,
-            value_column='value',
+            value_key='value',
+            partition_key=args.partition_keys[0],
         )
 
         bundle = co_occurrence.Bundle(

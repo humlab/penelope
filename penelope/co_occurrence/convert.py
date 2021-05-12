@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import json
 import os
-import pathlib
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Mapping, Tuple, Union
 
@@ -92,8 +91,6 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
     return df
 
 
-# 2021-04-20 09:24:49.546 | INFO     | penelope.co_occurrence.convert:store_feather:95 - COLUMNS: w1, w2, value, value_n_d, value_n_t, year
-# 2021-04-20 09:24:49.655 | INFO     | penelope.co_occurrence.convert:store_feather:98 - COLUMNS (after reset): index, w1, w2, value, value_n_d, value_n_t, year
 def load_feather(filename: str) -> pd.DataFrame:
     feather_filename: str = replace_extension(filename, ".feather")
     if os.path.isfile(feather_filename):
@@ -116,29 +113,33 @@ def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
 
 
 def to_vectorized_corpus(
-    co_occurrences: pd.DataFrame, document_index: DocumentIndex, value_column: str = "value"
+    *,
+    co_occurrences: pd.DataFrame,
+    document_index: DocumentIndex,
+    value_key: str,
+    partition_key: Union[int, str],
 ) -> VectorizedCorpus:
-    """Creates a DTM corpus from a co-occurrence result set that was partitioned by year."""
+    """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
     # Create new tokens from the co-occurring pairs
     tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
 
     # Create a vocabulary & token2id mapping
     token2id = {w: i for i, w in enumerate(sorted([w for w in set(tokens)]))}
 
-    # Create a year to index mapping (i.e. year to document_id)
-    year2index = document_index.set_index('year').document_id.to_dict()
+    # Create a `partition_column` to index mapping (i.e. `partition_column` to document_id)
+    partition2index = document_index.set_index(partition_key).document_id.to_dict()
 
-    df_yearly_weights = pd.DataFrame(
+    df_partition_weights = pd.DataFrame(
         data={
-            'year_index': co_occurrences.year.apply(lambda y: year2index[y]),
+            'partition_index': co_occurrences[partition_key].apply(lambda y: partition2index[y]),
             'token_id': tokens.apply(lambda x: token2id[x]),
-            'weight': co_occurrences[value_column],
+            'weight': co_occurrences[value_key],
         }
     )
     # Make certain  matrix gets right shape (otherwise empty documents at the end reduces row count)
-    shape = (len(year2index), len(token2id))
+    shape = (len(partition2index), len(token2id))
     coo_matrix = scipy.sparse.coo_matrix(
-        (df_yearly_weights.weight, (df_yearly_weights.year_index, df_yearly_weights.token_id)),
+        (df_partition_weights.weight, (df_partition_weights.partition_index, df_partition_weights.token_id)),
         shape=shape,
     )
 
@@ -301,15 +302,22 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
         else None
     )
     corpus_options: dict = VectorizedCorpus.load_options(folder=corpus_folder, tag=corpus_tag)
+    options = load_options(co_occurrences_filename) or corpus_options
 
     token2id: Token2Id = Token2Id.load(os.path.join(corpus_folder, "dictionary.zip"))
 
     if corpus is None and compute_corpus:
-        corpus = to_vectorized_corpus(
-            co_occurrences=co_occurrences, document_index=document_index, value_column='value'
-        )
 
-    options = load_options(co_occurrences_filename) or corpus_options
+        if len(options.get('partition_keys', []) or []) == 0:
+            raise ValueError("load_bundle: cannot load, unknown partition key")
+
+        partition_key = options['partition_keys'][0]
+        corpus = to_vectorized_corpus(
+            co_occurrences=co_occurrences,
+            document_index=document_index,
+            value_key='value',
+            partition_key=partition_key,
+        )
 
     bundle = Bundle(
         co_occurrences_filename=co_occurrences_filename,

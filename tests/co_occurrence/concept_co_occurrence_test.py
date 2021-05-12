@@ -92,6 +92,8 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
 )
 def test_store_when_co_occurrences_data_is_partitioned(filename):
 
+    partition_key: str = 'year'
+    value_key: str = 'value'
     expected_filename = jj(OUTPUT_FOLDER, filename)
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     compute_result: ComputeResult = partitioned_corpus_co_occurrence(
@@ -104,7 +106,12 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         ignore_pad=None,
     )
 
-    dtm_corpus = to_vectorized_corpus(compute_result.co_occurrences, compute_result.document_index)
+    dtm_corpus = to_vectorized_corpus(
+        co_occurrences=compute_result.co_occurrences,
+        document_index=compute_result.document_index,
+        value_key=value_key,
+        partition_key=partition_key,
+    )
 
     bundle: Bundle = Bundle(
         co_occurrences=compute_result.co_occurrences,
