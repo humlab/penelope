@@ -73,6 +73,8 @@ def partitioned_corpus_co_occurrence(
     keys = sorted(list(key_streams))
 
     # metadata: List[dict] = []
+    # FIXME #106 Skip buckets if document-wise compute (i.e. key == document_name)
+    # FIXME #107 Parallelize if document-wise compute (i.e. key == document_name)
     for _, key in tqdm(enumerate(keys), desc="Processing partitions", position=0, leave=True):
 
         key_stream: FilenameTokensTuples = key_streams[key]
@@ -80,7 +82,7 @@ def partitioned_corpus_co_occurrence(
         # keyed_document_index: DocumentIndex= payload.document_index[payload.document_index[partition_column] == key]
         # metadata.append(_group_metadata(keyed_document_index, i, partition_column, key))
 
-        # FIXME #90 Co-occurrence: Enables document based co-occurrence computation
+        # FIXME #90 Co-occurrence: Enable document based co-occurrence computation
         co_occurrence: pd.DataFrame = corpus_co_occurrence(
             key_stream,
             payload=payload,
@@ -100,7 +102,7 @@ def partitioned_corpus_co_occurrence(
 
     document_index: DocumentIndex = (
         payload.document_index
-        if partition_key not in ('document_name', 'document_id')
+        if partition_key in ('document_name', 'document_id')
         else (
             DocumentIndexHelper(payload.document_index).group_by_column(column_name=partition_key, index_values=keys)
         ).document_index
@@ -109,6 +111,7 @@ def partitioned_corpus_co_occurrence(
     co_occurrences = _filter_co_coccurrences_by_global_threshold(co_occurrences, global_threshold_count)
 
     return ComputeResult(co_occurrences=co_occurrences, document_index=document_index)
+
 
 def _filter_co_coccurrences_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
     if len(co_occurrences) == 0:
