@@ -27,6 +27,7 @@ from .interface import ContextOpts, CoOccurrenceError
 CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
 
+CoOccurrenceDataFrame = pd.DataFrame
 
 def filename_to_folder_and_tag(co_occurrences_filename: str) -> Tuple[str, str]:
     """Strips out corpus folder and tag from filename having CO_OCCURRENCE_FILENAME_POSTFIX ending"""
@@ -43,7 +44,7 @@ def folder_and_tag_to_filename(*, folder: str, tag: str) -> str:
     return os.path.join(folder, tag_to_filename(tag=tag))
 
 
-def store_co_occurrences(filename: str, df: pd.DataFrame):
+def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame):
     """Store co-occurrence result data to CSV-file"""
 
     if filename.endswith('zip'):
@@ -53,18 +54,18 @@ def store_co_occurrences(filename: str, df: pd.DataFrame):
         compression = 'infer'
 
     logger.info("storing CSV file")
-    df.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
+    co_occurrences.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
 
     # with contextlib.suppress(Exception):
     try:
         logger.info("storing FEATHER file")
-        df.reset_index(drop=True).to_feather(replace_extension(filename, ".feather"), compression="lz4")
+        co_occurrences.reset_index(drop=True).to_feather(replace_extension(filename, ".feather"), compression="lz4")
     except Exception as ex:
         logger.info("store as FEATHER file failed")
         logger.error(ex)
 
 
-def load_co_occurrences(filename: str) -> pd.DataFrame:
+def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
     """Load co-occurrences from CSV-file"""
 
     feather_filename: str = replace_extension(filename, ".feather")
@@ -77,39 +78,39 @@ def load_co_occurrences(filename: str) -> pd.DataFrame:
             df.drop(columns='index', inplace=True)
         return df
 
-    df: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
+    co_occurrences: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
 
     with contextlib.suppress(Exception):
         logger.info("caching to FEATHER file")
-        store_feather(feather_filename, df)
+        store_feather(feather_filename, co_occurrences)
 
-    return df
+    return co_occurrences
 
 
-def load_feather(filename: str) -> pd.DataFrame:
+def load_feather(filename: str) -> CoOccurrenceDataFrame:
     feather_filename: str = replace_extension(filename, ".feather")
     if os.path.isfile(feather_filename):
         logger.info("loading FEATHER file")
-        co_occurrence: pd.DataFrame = pd.read_feather(feather_filename)
-        logger.info(f"COLUMNS (after load): {', '.join(co_occurrence.columns.tolist())}")
-        return co_occurrence
+        co_occurrences: pd.DataFrame = pd.read_feather(feather_filename)
+        logger.info(f"COLUMNS (after load): {', '.join(co_occurrences.columns.tolist())}")
+        return co_occurrences
     logger.info("FEATHER load FAILED")
     return None
 
 
-def store_feather(filename: str, co_occurrence: pd.DataFrame) -> None:
+def store_feather(filename: str, co_occurrences: CoOccurrenceDataFrame) -> None:
     feather_filename: str = replace_extension(filename, ".feather")
     # with contextlib.suppress(Exception):
     #     logger.info("caching to FEATHER file")
-    logger.info(f"COLUMNS: {', '.join(co_occurrence.columns.tolist())}")
-    co_occurrence = co_occurrence.reset_index()
-    co_occurrence.to_feather(feather_filename, compression="lz4")
-    logger.info(f"COLUMNS (after reset): {', '.join(co_occurrence.columns.tolist())}")
+    logger.info(f"COLUMNS: {', '.join(co_occurrences.columns.tolist())}")
+    co_occurrences = co_occurrences.reset_index()
+    co_occurrences.to_feather(feather_filename, compression="lz4")
+    logger.info(f"COLUMNS (after reset): {', '.join(co_occurrences.columns.tolist())}")
 
 
 def to_vectorized_corpus(
     *,
-    co_occurrences: pd.DataFrame,
+    co_occurrences: CoOccurrenceDataFrame,
     document_index: DocumentIndex,
     value_key: str,
     partition_key: Union[int, str],
@@ -165,7 +166,7 @@ def to_co_occurrence_matrix(
         corpus_or_reader = TokenizedCorpus(reader=corpus_or_reader)
 
     vocabulary = vocabulary or corpus_or_reader.token2id
-    dtm_corpus = CorpusVectorizer().fit_transform(corpus_or_reader, already_tokenized=True, vocabulary=vocabulary)
+    dtm_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(corpus_or_reader, already_tokenized=True, vocabulary=vocabulary)
     term_term_matrix = dtm_corpus.co_occurrence_matrix()
     return term_term_matrix
 
@@ -177,14 +178,14 @@ def to_dataframe(
     threshold_count: int = 1,
     ignore_pad: str = None,
     transform_opts: TokensTransformOpts = None,
-) -> pd.DataFrame:
+) -> CoOccurrenceDataFrame:
     """Converts a TTM to a Pandas DataFrame
 
     Parameters
     ----------
     term_term_matrix : scipy.sparse.spmatrix
         [description]
-    id2token : Mapping[int,str]
+    id2token : Id2Token
         [description]
     document_index : DocumentIndex, optional
         [description], by default None
@@ -193,7 +194,7 @@ def to_dataframe(
 
     Returns
     -------
-    [type]
+    CoOccurrenceDataFrame:
         [description]
     """
 
@@ -203,7 +204,7 @@ def to_dataframe(
     if 'n_raw_tokens' not in document_index.columns:
         raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
-    coo_df = (
+    co_occurrences = (
         pd.DataFrame({'w1_id': term_term_matrix.row, 'w2_id': term_term_matrix.col, 'value': term_term_matrix.data})[
             ['w1_id', 'w2_id', 'value']
         ]
@@ -212,37 +213,37 @@ def to_dataframe(
     )
 
     if threshold_count > 0:
-        coo_df = coo_df[coo_df.value >= threshold_count]
+        co_occurrences = co_occurrences[co_occurrences.value >= threshold_count]
 
     if document_index is not None:
 
-        coo_df['value_n_d'] = coo_df.value / float(len(document_index))
+        co_occurrences['value_n_d'] = co_occurrences.value / float(len(document_index))
 
         for n_token_count, target_field in [('n_tokens', 'value_n_t'), ('n_raw_tokens', 'value_n_r_t')]:
 
             if n_token_count in document_index.columns:
                 try:
-                    coo_df[target_field] = coo_df.value / float(sum(document_index[n_token_count].values))
+                    co_occurrences[target_field] = co_occurrences.value / float(sum(document_index[n_token_count].values))
                 except ZeroDivisionError:
-                    coo_df[target_field] = 0.0
+                    co_occurrences[target_field] = 0.0
             else:
                 logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document catalogue")
 
-    coo_df['w1'] = coo_df.w1_id.apply(lambda x: id2token[x])
-    coo_df['w2'] = coo_df.w2_id.apply(lambda x: id2token[x])
+    co_occurrences['w1'] = co_occurrences.w1_id.apply(lambda x: id2token[x])
+    co_occurrences['w2'] = co_occurrences.w2_id.apply(lambda x: id2token[x])
 
     if ignore_pad is not None:
-        coo_df = coo_df[((coo_df.w1 != ignore_pad) & (coo_df.w2 != ignore_pad))]
+        co_occurrences = co_occurrences[((co_occurrences.w1 != ignore_pad) & (co_occurrences.w2 != ignore_pad))]
 
-    coo_df: pd.DataFrame = coo_df[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
+    co_occurrences: CoOccurrenceDataFrame = co_occurrences[['w1', 'w2', 'value', 'value_n_d', 'value_n_t']]
 
     if transform_opts is not None:
-        unique_tokens = set(coo_df.w1.unique().tolist()).union(coo_df.w2.unique().tolist())
+        unique_tokens = set(co_occurrences.w1.unique().tolist()).union(co_occurrences.w2.unique().tolist())
         transform: TokensTransformer = TokensTransformer(transform_opts)
         keep_tokens = set(transform.transform(unique_tokens))
-        coo_df = coo_df[(coo_df.w1.isin(keep_tokens)) & (coo_df.w2.isin(keep_tokens))]
+        co_occurrences = co_occurrences[(co_occurrences.w1.isin(keep_tokens)) & (co_occurrences.w2.isin(keep_tokens))]
 
-    return coo_df
+    return co_occurrences
 
 
 @dataclass
