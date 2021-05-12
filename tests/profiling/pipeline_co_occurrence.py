@@ -2,10 +2,13 @@ from penelope import corpus as corpora
 from penelope import pipeline, utility, workflows
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
+from os.path import join as jj
 
-RESOURCE_FOLDER = "./tests/test_data/"
-CONFIG_FILENAME = "riksdagens-protokoll.yml"
 DATA_FOLDER = "./tests/test_data"
+CONFIG_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.yml")
+OUTPUT_FOLDER = jj(DATA_FOLDER, '../output')
+CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.test.zip")
+
 CONCEPT = {}  # {'information'}
 
 SUC_SCHEMA: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.SUC
@@ -13,13 +16,12 @@ POS_TARGETS: str = 'NN|PM'
 POS_PADDINGS: str = 'AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|PC|PL|PN|PP|PS|RG|RO|SN|UO|VB'
 POS_EXLUDES: str = 'MAD|MID|PAD'
 
-corpus_config = pipeline.CorpusConfig.find(CONFIG_FILENAME, RESOURCE_FOLDER).folders(DATA_FOLDER)
-corpus_filename = '/data/westac/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
-# corpus_filename = './tests/test_data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
+corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
+
 compute_opts = ComputeOpts(
     corpus_type=pipeline.CorpusType.SparvCSV,
-    corpus_filename=corpus_filename,
-    target_folder='/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA',
+    corpus_filename=CORPUS_FILENAME,
+    target_folder=jj(OUTPUT_FOLDER, 'APA'),
     corpus_tag='APA',
     tokens_transform_opts=corpora.TokensTransformOpts(
         only_alphabetic=False,
@@ -77,7 +79,7 @@ corpus_config.pipeline_payload.files(
 bundle = workflows.co_occurrence.compute(
     args=compute_opts,
     corpus_config=corpus_config,
-    checkpoint_file='./tests/output/test.zip',
+    checkpoint_file=jj(OUTPUT_FOLDER, 'test.zip'),
 )
 
 assert bundle is not None
