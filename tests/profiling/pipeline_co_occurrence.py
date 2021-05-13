@@ -69,7 +69,7 @@ compute_opts = ComputeOpts(
     create_subfolder=True,
     persist=True,
     context_opts=ContextOpts(context_width=1, concept=CONCEPT, ignore_concept=False),
-    partition_keys=['year'],
+    partition_keys=['document_name'],
     force=False,
 )
 
