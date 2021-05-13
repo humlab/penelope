@@ -1,6 +1,11 @@
 # type: ignore
-from .co_occurrence import corpus_co_occurrence, corpus_to_windows, tokens_to_windows
-from .convert import (
+
+
+from . import partition_by_document, partition_by_key
+from .convert import to_co_occurrence_matrix, to_trends_data
+from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
+from .interface import ComputeResult, ContextOpts, CoOccurrenceError
+from .persistence import (
     CO_OCCURRENCE_FILENAME_PATTERN,
     CO_OCCURRENCE_FILENAME_POSTFIX,
     Bundle,
@@ -13,12 +18,6 @@ from .convert import (
     store_bundle,
     store_co_occurrences,
     tag_to_filename,
-    to_co_occurrence_matrix,
-    to_dataframe,
-    to_trends_data,
-    to_vectorized_corpus,
 )
-from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
-from .interface import ContextOpts, CoOccurrenceError
-from .partitioned import ComputeResult, partitioned_corpus_co_occurrence
 from .windows_corpus import WindowsCorpus, WindowsStream
+from .windows_utility import corpus_to_windows, tokens_to_windows

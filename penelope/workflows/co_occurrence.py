@@ -62,7 +62,7 @@ def compute(
         if len(compute_result.co_occurrences) == 0:
             raise ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrence.to_vectorized_corpus(
+        corpus: VectorizedCorpus = co_occurrence.partition_by_key.to_vectorized_corpus(
             co_occurrences=compute_result.co_occurrences,
             document_index=compute_result.document_index,
             value_key='value',

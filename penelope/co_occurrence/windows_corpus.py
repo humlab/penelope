@@ -8,8 +8,8 @@ WindowsStream = Iterator[Tuple[str, int, Iterator[str]]]
 
 
 class WindowsCorpus(ITokenizedCorpus):
-    """Aggregates statistics while iterating a stream of token windows.
-    Each window is a tuple (filename: str, id: int, tokens: Iterator[str])
+    """Aggregates statistics while iterating the document stream with sliding windows.
+    Each window is a triple (filename: str, id: int, tokens: Iterator[str])
     """
 
     def __init__(self, windows: WindowsStream, vocabulary: Mapping[str, int] = None):

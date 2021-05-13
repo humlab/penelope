@@ -1,13 +1,29 @@
 from dataclasses import dataclass, field
 from typing import Set
 
+import pandas as pd
+from penelope.corpus import DocumentIndex, Token2Id
 from penelope.utility import getLogger
+from prometheus_client import Counter
 
 logger = getLogger('penelope')
 
 
 class CoOccurrenceError(ValueError):
     ...
+
+
+class PartitionKeyNotUniqueKey(ValueError):
+    ...
+
+
+@dataclass
+class ComputeResult:
+
+    co_occurrences: pd.DataFrame = None
+    document_index: DocumentIndex = None
+    token2id: Token2Id = None
+    token_window_counts: Counter = None
 
 
 @dataclass

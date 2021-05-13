@@ -68,8 +68,8 @@ class HyperspaceAnalogueToLanguageVectorizer:
         assert self.token2id is not None, "Fit with no vocabulary!"
         assert self.corpus is not None, "Fit with no corpus!"
 
-        nw_xy: sp.lil_matrix = sp.csc_matrix((len(self.token2id), len(self.token2id)), dtype=np.int32)
-        nw_x: np.ndarray = np.zeros(len(self.token2id), dtype=np.int32)
+        nw_xy: sp.lil_matrix = sp.csc_matrix((len(self.token2id), len(self.token2id)), dtype=np.uint32)
+        nw_x: np.ndarray = np.zeros(len(self.token2id), dtype=np.uint32)
 
         for terms in corpus:
 
@@ -242,18 +242,18 @@ def test_burgess_litmus_test():
         'raced': {'.': 1, 'barn': 3, 'fell': 2, 'horse': 0, 'past': 5, 'raced': 0, 'the': 4},
         'the': {'.': 3, 'barn': 6, 'fell': 4, 'horse': 5, 'past': 3, 'raced': 4, 'the': 2},
     }
-    df_answer = pd.DataFrame(answer).astype(np.int32)[['the', 'horse', 'raced', 'past', 'barn', 'fell']].sort_index()
+    df_answer = pd.DataFrame(answer).astype(np.uint32)[['the', 'horse', 'raced', 'past', 'barn', 'fell']].sort_index()
     # display(df_answer)
     vectorizer = HyperspaceAnalogueToLanguageVectorizer()
     vectorizer.fit([terms], size=5, distance_metric=0)
-    df_imp = vectorizer.to_df().astype(np.int32)[['the', 'horse', 'raced', 'past', 'barn', 'fell']].sort_index()
+    df_imp = vectorizer.to_df().astype(np.uint32)[['the', 'horse', 'raced', 'past', 'barn', 'fell']].sort_index()
     assert df_imp.equals(df_answer), "Test failed"
     # df_imp == df_answer
 
     # Example in Chen, Lu:
     terms = 'The basic concept of the word association'.lower().split()
     vectorizer = HyperspaceAnalogueToLanguageVectorizer().fit([terms], size=5, distance_metric=0)
-    df_imp = vectorizer.to_df().astype(np.int32)[['the', 'basic', 'concept', 'of', 'word', 'association']].sort_index()
+    df_imp = vectorizer.to_df().astype(np.uint32)[['the', 'basic', 'concept', 'of', 'word', 'association']].sort_index()
     df_answer = pd.DataFrame(
         {
             'the': [2, 5, 4, 3, 6, 4],
@@ -264,7 +264,7 @@ def test_burgess_litmus_test():
             'association': [0, 0, 0, 0, 0, 0],
         },
         index=['the', 'basic', 'concept', 'of', 'word', 'association'],
-        dtype=np.int32,
+        dtype=np.uint32,
     ).sort_index()[['the', 'basic', 'concept', 'of', 'word', 'association']]
     assert df_imp.equals(df_answer), "Test failed"
     print('Test run OK')
