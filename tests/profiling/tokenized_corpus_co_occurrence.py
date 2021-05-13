@@ -1,9 +1,9 @@
 import os
 
-from penelope.co_occurrence import ContextOpts, partitioned_corpus_co_occurrence
-from penelope.co_occurrence.partitioned import ComputeResult
+from penelope.co_occurrence import ContextOpts
+from penelope.co_occurrence.interface import ComputeResult
+from penelope.co_occurrence.partition_by_document import partition_by_document_co_occurrence
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
-from penelope.pipeline.interfaces import PipelinePayload
 
 jj = os.path.join
 
@@ -22,13 +22,14 @@ corpus = SparvTokenizedCsvCorpus(
         lemmatize=True,
     ),
 )
-compute_result: ComputeResult = partitioned_corpus_co_occurrence(
+compute_result: ComputeResult = partition_by_document_co_occurrence(
     stream=corpus,
-    payload=PipelinePayload(effective_document_index=corpus.document_index, token2id=corpus.token2id),
+    document_index=corpus.document_index,
+    token2id=corpus.token2id,
     context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
-    transform_opts=None,
+    # transform_opts=None,
     global_threshold_count=None,
-    partition_key='document_name',
+    # partition_key='document_name',
     ignore_pad=None,
 )
 

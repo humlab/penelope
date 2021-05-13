@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from penelope.co_occurrence import to_dataframe
+from penelope.co_occurrence.partition_by_key import to_dataframe
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import PandasCorpusReader
 

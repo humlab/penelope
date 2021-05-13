@@ -1,9 +1,11 @@
 import json
 
 from penelope.co_occurrence import ContextOpts, WindowsCorpus, corpus_to_windows
+from penelope.corpus import CorpusVectorizer, SparvTokenizedCsvCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
-from penelope.corpus.sparv_corpus import SparvTokenizedCsvCorpus
+from tests.test_data.corpus_fixtures import SAMPLE_WINDOW_STREAM
 from tests.test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
+from tests.utils import generate_token2id
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
 
@@ -143,3 +145,17 @@ def test_windows_iterator():
     assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_windows']) == 2
     assert int(document_index[document_index.filename == 'tran_2019_03_test.txt']['n_windows']) == 8
     assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_tokens']) == 10
+
+
+def test_co_occurrence_given_windows_and_vocabulary_succeeds():
+
+    vocabulary = generate_token2id([x[2] for x in SAMPLE_WINDOW_STREAM])
+
+    windows_corpus = WindowsCorpus(SAMPLE_WINDOW_STREAM, vocabulary=vocabulary)
+
+    v_corpus = CorpusVectorizer().fit_transform(windows_corpus, already_tokenized=True, vocabulary=vocabulary)
+
+    coo_matrix = v_corpus.co_occurrence_matrix()
+
+    assert 10 == coo_matrix.todense()[vocabulary['b'], vocabulary['a']]
+    assert 1 == coo_matrix.todense()[vocabulary['d'], vocabulary['c']]
