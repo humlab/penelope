@@ -25,6 +25,7 @@ class TextReaderOpts:
     as_binary: Optional[bool] = False
     sep: Optional[str] = field(default='\t')
     quoting: Optional[int] = csv.QUOTE_NONE
+    n_processes: int = 1
 
     @property
     def props(self) -> dict:
@@ -36,6 +37,7 @@ class TextReaderOpts:
             as_binary=self.as_binary,
             sep=self.sep,
             quoting=self.quoting,
+            n_processes=self.n_processes,
         )
 
     def copy(self, **kwargs) -> TextReaderOpts:

@@ -1,12 +1,12 @@
 import os
-from penelope.corpus.utils import generate_token2id
 
-from penelope.co_occurrence import ContextOpts
+from loguru import logger
+from penelope.co_occurrence import ContextOpts, store_co_occurrences
 from penelope.co_occurrence.interface import ComputeResult
 from penelope.co_occurrence.partition_by_document import compute_corpus_co_occurrence
-from penelope.co_occurrence import store_co_occurrences
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, readers
-from loguru import logger
+from penelope.corpus.utils import generate_token2id
+
 jj = os.path.join
 
 

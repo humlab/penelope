@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+from typing import Any, AnyStr, Iterable, List, Mapping, Tuple
 
-from penelope.utility import create_iterator, extract_filenames_metadata, list_filenames
+from penelope.utility import extract_filenames_metadata, list_any_source, streamify_zip_source
 
 from ..document_index import DocumentIndex, metadata_to_document_index
 from .interfaces import ICorpusReader
@@ -22,21 +23,27 @@ class ZipTextIterator(ICorpusReader):
         reader_opts : TextReaderOpts
             [description]
         """
-        self.reader_opts = reader_opts
-        self.source_path = source_path
-        self._filenames = list_filenames(
+        self.reader_opts: TextReaderOpts = reader_opts
+        self.source_path: str = source_path
+        self._filenames: List[str] = list_any_source(
             source_path,
             filename_pattern=self.reader_opts.filename_pattern,
             filename_filter=self.reader_opts.filename_filter,
         )
-        self._metadata = None
-        self.iterator = None
+        self._metadata: List[Mapping[str, Any]] = None
+        self.iterator: Iterable[Tuple[str, AnyStr]] = None
 
-    def _create_metadata(self):
+    def _create_metadata(self) -> List[Mapping[str, Any]]:
         return extract_filenames_metadata(filenames=self.filenames, filename_fields=self.reader_opts.filename_fields)
 
-    def _create_iterator(self):
-        return create_iterator(self.source_path, filenames=self.filenames, as_binary=self.reader_opts.as_binary)
+    def _create_iterator(self) -> Iterable[Tuple[str, AnyStr]]:
+        return streamify_zip_source(
+            path=self.source_path,
+            filenames=self.filenames,
+            filename_pattern=self.reader_opts.filename_pattern,
+            as_binary=self.reader_opts.as_binary,
+            n_processes=self.reader_opts.n_processes,
+        )
 
     @property
     def filenames(self):

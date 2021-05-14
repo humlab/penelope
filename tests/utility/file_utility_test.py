@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest  # pylint: disable=unused-import
 from penelope.utility import (
-    create_read_iterator,
     extract_filename_metadata,
     filename_satisfied_by,
+    list_any_source,
     list_filenames,
-    namelist,
     pandas_read_csv_zip,
     pandas_to_csv_zip,
+    streamify_any_source,
     strip_path_and_add_counter,
     strip_path_and_extension,
     strip_paths,
@@ -107,24 +107,26 @@ def test_basename():
 
 
 def test_create_iterator():
-    stream = create_read_iterator(TEST_CORPUS_FILENAME, ['dikt_2019_01_test.txt'], filename_pattern='*.txt', as_binary=False)
+    stream = streamify_any_source(
+        TEST_CORPUS_FILENAME, ['dikt_2019_01_test.txt'], filename_pattern='*.txt', as_binary=False
+    )
     assert len([x for x in stream]) == 1
 
 
 def test_list_filenames_when_source_is_a_filename():
 
-    filenames = list_filenames(TEST_CORPUS_FILENAME, filename_pattern='*.txt', filename_filter=None)
+    filenames = list_any_source(TEST_CORPUS_FILENAME, filename_pattern='*.txt', filename_filter=None)
     assert len(filenames) == 5
 
-    filenames = list_filenames(TEST_CORPUS_FILENAME, filename_pattern='*.dat', filename_filter=None)
+    filenames = list_any_source(TEST_CORPUS_FILENAME, filename_pattern='*.dat', filename_filter=None)
     assert len(filenames) == 0
 
-    filenames = list_filenames(
+    filenames = list_any_source(
         TEST_CORPUS_FILENAME, filename_pattern='*.txt', filename_filter=['dikt_2019_01_test.txt']
     )
     assert len(filenames) == 1
 
-    filenames = list_filenames(
+    filenames = list_any_source(
         TEST_CORPUS_FILENAME, filename_pattern='*.txt', filename_filter=lambda x: x == 'dikt_2019_01_test.txt'
     )
     assert len(filenames) == 1
@@ -170,7 +172,7 @@ def test_pandas_to_csv_zip():
     pandas_to_csv_zip(filename, dfs=data, extension='csv', sep='\t')
 
     assert os.path.isfile(filename)
-    assert set(namelist(zip_or_filename=filename, pattern="*.csv")) == set({'df1.csv', 'df2.csv'})
+    assert set(list_filenames(zip_or_filename=filename, pattern="*.csv")) == set({'df1.csv', 'df2.csv'})
 
 
 def test_pandas_read_csv_zip():

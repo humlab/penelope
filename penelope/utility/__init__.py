@@ -11,21 +11,17 @@ from ._color_utility import (
 )
 from ._decorators import ExpectException, deprecated, enter_exit_log, suppress_error, try_catch
 from .file_utility import (
-    DataFrameFilenameTuple,
-    create_iterator,
     default_data_folder,
     excel_to_csv,
     find_folder,
     find_parent_folder,
     find_parent_folder_with_child,
-    list_filenames,
-    pandas_read_csv_zip,
-    pandas_to_csv_zip,
     pickle_compressed_to_file,
     pickle_to_file,
     read_excel,
     read_json,
     read_textfile,
+    read_textfile2,
     save_excel,
     symlink_files,
     unpickle_compressed_from_file,
@@ -63,8 +59,16 @@ from .filename_utils import (
     timestamp_filename,
     ts_data_path,
 )
-from .mixins import PropsMixIn
-from .pandas_utils import PropertyValueMaskingOpts, create_mask, create_mask2, setup_pandas, try_split_column
+from .pandas_utils import (
+    DataFrameFilenameTuple,
+    PropertyValueMaskingOpts,
+    create_mask,
+    create_mask2,
+    pandas_read_csv_zip,
+    pandas_to_csv_zip,
+    setup_pandas,
+    try_split_column,
+)
 from .pos_tags import (
     Known_PoS_Tag_Schemes,
     PD_PoS_tag_groups,
@@ -74,6 +78,7 @@ from .pos_tags import (
     get_pos_schema,
     pos_tags_to_str,
 )
+from .streamify_source import list_any_source, streamify_any_source, streamify_folder_source, streamify_zip_source
 from .utils import (
     LOG_FORMAT,
     DummyContext,
@@ -139,4 +144,10 @@ from .utils import (
     tuple_of_lists_to_list_of_tuples,
     uniquify,
 )
-from .zip_utils import compress, namelist, read, read_iterator, store
+from .zip_utils import compress, list_filenames, read_file_content, store
+
+
+class PropsMixIn:
+    @property
+    def props(self):
+        return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
