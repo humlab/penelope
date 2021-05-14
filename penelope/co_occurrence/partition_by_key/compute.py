@@ -14,7 +14,7 @@ from .convert import to_dataframe, to_vectorized_windows_corpus
 
 
 # FIXME: #94 Enable partition by alternative keys (apart from year)
-def compute_co_occurrence(
+def compute_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
     token2id: Token2Id,
@@ -66,7 +66,7 @@ def compute_co_occurrence(
         key_stream: FilenameTokensTuples = key_streams[key]
 
         # FIXME #90 Co-occurrence: Enable document based co-occurrence computation
-        co_occurrence: pd.DataFrame = compute_keyed_partition(
+        co_occurrence: pd.DataFrame = compute_co_occurrence(
             key_stream,
             token2id=token2id,
             document_index=document_index,
@@ -95,7 +95,7 @@ def compute_co_occurrence(
     return ComputeResult(co_occurrences=co_occurrences, document_index=co_document_index)
 
 
-def compute_keyed_partition(
+def compute_co_occurrence(
     stream: FilenameTokensTuples,
     *,
     token2id: Token2Id,

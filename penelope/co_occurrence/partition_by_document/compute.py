@@ -11,7 +11,7 @@ from ..windows_utility import tokens_to_windows
 from .vectorize import WindowsCoOccurrenceVectorizer
 
 
-def compute_co_occurrence(
+def compute_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
     token2id: Token2Id,  # API change!!!!
