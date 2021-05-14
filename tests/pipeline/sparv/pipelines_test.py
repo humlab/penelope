@@ -81,10 +81,3 @@ def test_to_numeric_tagged_frame_pipeline():
     assert document_tuples is not None
 
     raise NotImplementedError()
-
-    # token2id = generate_token2id()
-
-    # for _, document in document_tuples:
-    #     document = document_tuples[0][1]
-
-    # assert document is not None
