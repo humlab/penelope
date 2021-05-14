@@ -9,7 +9,7 @@ import penelope.vendor.textacy as textacy_utility
 import textacy
 from penelope.corpus import DocumentIndex
 from penelope.corpus.readers import TextReaderOpts, TextTransformer, ZipTextIterator
-from penelope.utility import create_read_iterator, path_add_suffix
+from penelope.utility import path_add_suffix, streamify_any_source
 from spacy.language import Language as SpacyLanguage
 from tqdm.auto import tqdm
 
@@ -85,7 +85,7 @@ class PreprocessTask(ITask):
         """Creates a preprocessed version of an archive"""
 
         transformer = TextTransformer().fix_hyphenation().fix_unicode().fix_whitespaces().fix_ftfy()
-        source = create_read_iterator(source_filename, filename_pattern=filename_pattern)
+        source = streamify_any_source(source_filename, filename_pattern=filename_pattern)
         if _tqdm is not None:
             source = _tqdm(source, desc='Preparing text corpus')
 

@@ -91,7 +91,7 @@ class CheckpointReader(zipfile.ZipFile):
         if self.document_index_name not in self.namelist():
             return None
 
-        data_str = zip_utils.read(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
+        data_str = zip_utils.read_file_content(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
         document_index = load_document_index(StringIO(data_str), sep=self.checkpoint_opts.document_index_sep)
         return document_index
 

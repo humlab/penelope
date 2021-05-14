@@ -4,7 +4,7 @@ from typing import Any, AnyStr, Callable, Iterable, List, Tuple
 import pandas as pd
 from gensim.corpora.textcorpus import TextCorpus
 from penelope.corpus import DocumentIndex
-from penelope.corpus.readers import streamify_text_source
+from penelope.utility import streamify_any_source
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +126,7 @@ class SimpleExtTextCorpus(ExtTextCorpus):
 
     def __init__(self, source: Any, lowercase: bool = False, filename_filter=None):
 
-        self.reader: Iterable[Tuple[str, AnyStr]] = streamify_text_source(source, filename_filter=filename_filter)
+        self.reader: Iterable[Tuple[str, AnyStr]] = streamify_any_source(source, filename_filter=filename_filter)
         self.filenames: List[str] = self.reader.filenames
         self.lowercase: bool = lowercase
 
