@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Iterable, List, Tuple
+from typing import Any, AnyStr, Callable, Iterable, List, Tuple
 
 import pandas as pd
 from gensim.corpora.textcorpus import TextCorpus
@@ -13,18 +13,18 @@ logger = logging.getLogger(__name__)
 class ExtTextCorpus(TextCorpus):
     def __init__(
         self,
-        stream: Iterable[Tuple[str, str]],
+        stream: Iterable[Tuple[str, AnyStr]],
         dictionary: dict = None,
         metadata=False,
         character_filters=None,
-        tokenizer: Callable = None,
+        tokenizer: Callable[[str], List[str]] = None,
         token_filters=None,
         bigram_transform=False,  # pylint: disable=unused-argument
     ):
-        self.stream = stream
-        self.filenames = None
-        self.document_index = None
-        self.length = None
+        self.stream: Iterable[Tuple[str, AnyStr]] = stream
+        self.filenames: List[str] = None
+        self.document_index: DocumentIndex = None
+        self.length: int = None
 
         # if 'filenames' in content_iterator.__dict__:
         #    self.filenames = content_iterator.filenames
@@ -124,11 +124,11 @@ class ExtTextCorpus(TextCorpus):
 class SimpleExtTextCorpus(ExtTextCorpus):
     """Reads content in stream and returns tokenized text. No other processing."""
 
-    def __init__(self, source, lowercase: bool = False, filename_filter=None):
+    def __init__(self, source: Any, lowercase: bool = False, filename_filter=None):
 
-        self.reader = streamify_text_source(source, filename_filter=filename_filter)
-        self.filenames = self.reader.filenames
-        self.lowercase = lowercase
+        self.reader: Iterable[Tuple[str, AnyStr]] = streamify_text_source(source, filename_filter=filename_filter)
+        self.filenames: List[str] = self.reader.filenames
+        self.lowercase: bool = lowercase
 
         super().__init__(self.reader)
 
