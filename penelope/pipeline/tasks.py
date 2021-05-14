@@ -714,7 +714,7 @@ class ToCoOccurrence(ITask):
         # else:
         #     instream = ((x.filename, x.content) for x in self.instream)
 
-        compute_result: co_occurrence.ComputeResult = co_occurrence.partition_by_key.compute_co_occurrence(
+        compute_result: co_occurrence.ComputeResult = co_occurrence.partition_by_key.compute_corpus_co_occurrence(
             stream=instream,
             token2id=self.pipeline.payload.token2id,
             document_index=self.pipeline.payload.document_index,
