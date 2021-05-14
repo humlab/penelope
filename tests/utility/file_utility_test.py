@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest  # pylint: disable=unused-import
 from penelope.utility import (
-    create_iterator,
+    create_read_iterator,
     extract_filename_metadata,
     filename_satisfied_by,
     list_filenames,
@@ -107,7 +107,7 @@ def test_basename():
 
 
 def test_create_iterator():
-    stream = create_iterator(TEST_CORPUS_FILENAME, ['dikt_2019_01_test.txt'], filename_pattern='*.txt', as_binary=False)
+    stream = create_read_iterator(TEST_CORPUS_FILENAME, ['dikt_2019_01_test.txt'], filename_pattern='*.txt', as_binary=False)
     assert len([x for x in stream]) == 1
 
 
