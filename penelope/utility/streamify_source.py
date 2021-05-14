@@ -65,7 +65,7 @@ def streamify_folder_source(
                 yield data
 
 
-def streamify_any_source(
+def streamify_any_source(  # pylint: disable=too-many-return-statements
     source: Union[AnyStr, zipfile.ZipFile, List, Any],
     filenames: List[str] = None,
     filename_pattern: str = '*.*',

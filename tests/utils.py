@@ -1,13 +1,17 @@
 import os
 import random
-from collections import defaultdict
-from typing import Callable, Iterable, List, Mapping, Tuple
+from typing import Callable, List, Tuple
 
 import numpy as np
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
-from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokenizedCorpus, metadata_to_document_index
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import (
+    ITokenizedCorpus,
+    TextTransformOpts,
+    TokenizedCorpus,
+    VectorizedCorpus,
+    metadata_to_document_index,
+)
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer, tng
 from penelope.utility import flatten
 from tests.test_data.tranströmer_corpus import TranströmerCorpus

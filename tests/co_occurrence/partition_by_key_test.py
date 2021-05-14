@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 from penelope.co_occurrence import ContextOpts
-from penelope.co_occurrence.partition_by_key import compute_keyed_partition
+from penelope.co_occurrence.partition_by_key import compute_co_occurrence
 from penelope.corpus import CorpusVectorizer
 from penelope.utility import dataframe_to_tuples
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
@@ -33,7 +33,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
 
-    coo_df = compute_keyed_partition(
+    coo_df = compute_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
@@ -51,7 +51,7 @@ def test_co_occurrence_with_no_concept_succeeds():
 
     expected_result = {('d', 'a', 1), ('b', 'a', 1)}
 
-    coo_df = compute_keyed_partition(
+    coo_df = compute_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
@@ -68,7 +68,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = {('g', 'a', 2)}
 
-    coo_df = compute_keyed_partition(
+    coo_df = compute_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,

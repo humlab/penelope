@@ -9,7 +9,7 @@ import pandas as pd
 import scipy
 from penelope import utility
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
-from penelope.utility import FilenameFieldSpecs, file_utility, filename_utils
+from penelope.utility import FilenameFieldSpecs, filename_utils
 from tqdm.auto import tqdm
 
 from .utility import compute_topic_proportions
@@ -190,7 +190,7 @@ class InferredTopicsData:
 
             for (df, name) in data:
                 archive_name = jj(target_folder, filename_utils.replace_extension(name, ".zip"))
-                file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
+                utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     @staticmethod
     def load(*, folder: str, filename_fields: FilenameFieldSpecs, pickled: bool = False):

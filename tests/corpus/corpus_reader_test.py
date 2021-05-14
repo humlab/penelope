@@ -7,10 +7,9 @@ import pandas as pd
 import penelope.corpus.readers.tng.reader as cr
 import penelope.corpus.readers.tng.sources as cs
 import penelope.corpus.readers.tng.transformer as tt
-import penelope.utility.zip_utils as zip_utils
 import pytest
 from penelope.corpus.readers.interfaces import TextReaderOpts
-from penelope.utility.filename_utils import strip_path_and_extension, strip_paths
+from penelope.utility import strip_path_and_extension, strip_paths, zip_utils, streamify_zip_source
 from tests.utils import OUTPUT_FOLDER, TEST_CORPUS_FILENAME
 
 EXPECTED_TEXT_FILES = [
@@ -152,11 +151,11 @@ def test_sources():
     source = cs.FolderSource(source_path=os.path.join(OUTPUT_FOLDER, strip_path_and_extension(TEST_CORPUS_FILENAME)))
     test_source(source)
 
-    items = list(zip_utils.streamify_zip_source(path=TEST_CORPUS_FILENAME))
+    items = list(streamify_zip_source(path=TEST_CORPUS_FILENAME))
     source = cs.InMemorySource(items=items)
     test_source(source)
 
-    items = list(zip_utils.streamify_zip_source(path=TEST_CORPUS_FILENAME, filename_pattern='*.*'))
+    items = list(streamify_zip_source(path=TEST_CORPUS_FILENAME, filename_pattern='*.*'))
     df = pd.DataFrame(data=items, columns=['filename', 'txt'])
     source = cs.PandasSource(data=df, text_column='txt', filename_column='filename')
     test_source(source)
