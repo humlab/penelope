@@ -1,44 +1,54 @@
+import os
 import pytest
-from penelope.utility import list_any_source, streamify_any_source
+import uuid
+from penelope.utility import list_any_source, streamify_any_source, unpack
 from tests.utils import TEST_CORPUS_FILENAME
+import shutil
 
 # pylint: disable=too-many-arguments
+EXPECTED_TEXT_FILES = [
+    'dikt_2019_01_test.txt',
+    'dikt_2019_02_test.txt',
+    'dikt_2019_03_test.txt',
+    'dikt_2020_01_test.txt',
+    'dikt_2020_02_test.txt',
+]
 
 
 def test_streamify_any_source_smoke_test():
-    expected_text_files = [
-        'dikt_2019_01_test.txt',
-        'dikt_2019_02_test.txt',
-        'dikt_2019_03_test.txt',
-        'dikt_2020_01_test.txt',
-        'dikt_2020_02_test.txt',
-    ]
     stream = streamify_any_source(TEST_CORPUS_FILENAME)
     filenames = [x[0] for x in stream]
-    assert filenames == ['README.md'] + expected_text_files
+    assert filenames == ['README.md'] + EXPECTED_TEXT_FILES
     stream = streamify_any_source(TEST_CORPUS_FILENAME, filename_pattern="*.md")
     filenames = [x[0] for x in stream]
     assert filenames == ['README.md']
 
     stream = streamify_any_source(TEST_CORPUS_FILENAME)
     filenames = [x[0] for x in stream]
-    assert filenames == ['README.md'] + expected_text_files
+    assert filenames == ['README.md'] + EXPECTED_TEXT_FILES
 
     stream = streamify_any_source(TEST_CORPUS_FILENAME, filename_filter=lambda x: x.endswith(".txt"))
     filenames = [x[0] for x in stream]
-    assert filenames == expected_text_files
+    assert filenames == EXPECTED_TEXT_FILES
 
-    stream = streamify_any_source(TEST_CORPUS_FILENAME, filename_filter=expected_text_files)
+    stream = streamify_any_source(TEST_CORPUS_FILENAME, filename_filter=EXPECTED_TEXT_FILES)
     filenames = [x[0] for x in stream]
-    assert filenames == expected_text_files
+    assert filenames == EXPECTED_TEXT_FILES
 
 
 def test_next_of_streamified_zipped_source_returns_document():
 
-    stream = streamify_any_source(TEST_CORPUS_FILENAME)
+    folder: str = os.path.join('./tests/output', str(uuid.uuid1()))
+    os.makedirs(folder)
 
-    assert stream is not None
-    assert next(stream) is not None
+    unpack(TEST_CORPUS_FILENAME, folder, create_sub_folder=False)
+
+    stream = streamify_any_source(folder)
+
+    filenames = [x[0] for x in stream]
+    assert filenames == ['README.md'] + EXPECTED_TEXT_FILES
+
+    shutil.rmtree(folder, ignore_errors=True)
 
 
 @pytest.mark.xfail
