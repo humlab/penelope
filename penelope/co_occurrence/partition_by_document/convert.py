@@ -31,9 +31,19 @@ def term_term_matrix_to_dataframe(
     return co_occurrences
 
 
-# def compute_value_n_t(co_occurrences: pd.DataFrame, document_index: DocumentIndex):
+# def compute_normalized_count(co_occurrences: pd.DataFrame, document_index: DocumentIndex) -> pd.Series:
+
 #     if document_index is None:
 #         return co_occurrences
+
+#     document_index = document_index.set_index('document_id', drop=False)
+
+#     # FIXME Add year and value_n_t/value_n_r_t to co
+#     co_occurrences['year'] = co_occurrences.merge()
+#     co_occurrences['value_n_t'] = co_occurrences['value'] / co_occurrences.groupby('year')['value'].transform('sum')
+
+#     co_occurrences.merge(document_index, )
+
 #     for n_token_count, target_field in [('n_tokens', 'value_n_t'), ('n_raw_tokens', 'value_n_r_t')]:
 #         if n_token_count in document_index.columns:
 #             try:
@@ -41,4 +51,15 @@ def term_term_matrix_to_dataframe(
 #             except ZeroDivisionError:
 #                 co_occurrences[target_field] = 0.0
 #         else:
-#             logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document catalogue")
+#             logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document index")
+
+
+def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
+    if len(co_occurrences) == 0:
+        return co_occurrences
+    if threshold is None or threshold <= 1:
+        return co_occurrences
+    filtered_co_occurrences = co_occurrences[
+        co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= threshold
+    ]
+    return filtered_co_occurrences
