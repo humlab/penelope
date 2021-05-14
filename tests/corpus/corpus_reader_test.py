@@ -152,11 +152,11 @@ def test_sources():
     source = cs.FolderSource(source_path=os.path.join(OUTPUT_FOLDER, strip_path_and_extension(TEST_CORPUS_FILENAME)))
     test_source(source)
 
-    items = list(zip_utils.read_iterator(path=TEST_CORPUS_FILENAME))
+    items = list(zip_utils.create_zip_read_iterator(path=TEST_CORPUS_FILENAME))
     source = cs.InMemorySource(items=items)
     test_source(source)
 
-    items = list(zip_utils.read_iterator(path=TEST_CORPUS_FILENAME, pattern='*.*'))
+    items = list(zip_utils.create_zip_read_iterator(path=TEST_CORPUS_FILENAME, filename_pattern='*.*'))
     df = pd.DataFrame(data=items, columns=['filename', 'txt'])
     source = cs.PandasSource(data=df, text_column='txt', filename_column='filename')
     test_source(source)
