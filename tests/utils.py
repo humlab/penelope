@@ -31,15 +31,6 @@ if __file__ in globals():
 # PMI
 
 
-def generate_token2id(terms: Iterable[str]) -> Mapping[str, int]:
-    token2id = defaultdict()
-    token2id.default_factory = token2id.__len__
-    for tokens in terms:
-        for token in tokens:
-            _ = token2id[token]
-    return dict(token2id)
-
-
 def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
 
     reader = tng.CorpusReader(
