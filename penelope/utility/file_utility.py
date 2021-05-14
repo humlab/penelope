@@ -135,4 +135,4 @@ def read_textfile(filename: str, as_binary: bool = False) -> str:
 def read_textfile2(filename: str, as_binary: bool = False) -> Tuple[str, AnyStr]:
     """Reads text in `filename` and return a tuple filename and text"""
     data = read_textfile(filename, as_binary=as_binary)
-    yield basename(filename), data
+    return basename(filename), data
