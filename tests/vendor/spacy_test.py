@@ -11,7 +11,6 @@ from penelope.corpus.readers import (
     TextReader,
     TextReaderOpts,
     TextTransformOpts,
-    streamify_text_source,
 )
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
 from penelope.utility import PropertyValueMaskingOpts
@@ -290,8 +289,7 @@ def dummy_source():
         ('tran_2020_01_test.txt', 'c c d a'),
         ('tran_2020_02_test.txt', 'a b b e'),
     ]
-    source = streamify_text_source(test_corpus)
-    return source
+    return test_corpus
 
 
 def test_spacy_pipeline_load_text_resolves():
