@@ -60,6 +60,7 @@ ipywidgets = "*"
 bokeh = "*"
 ipycytoscape = "*"
 perspective-python = "*"
+modin = {extras = ["dask"], version = "^0.9.1"}
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
