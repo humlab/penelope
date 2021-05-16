@@ -14,6 +14,7 @@ from penelope.corpus import (
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
+from penelope.corpus import Token2Id
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, replace_path, strip_path_and_extension
 
 from .tagged_frame import TaggedFrame
@@ -41,6 +42,8 @@ class ContentType(IntEnum):
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
     TAGGED_ID_FRAME = 16
+    DOC_TERM_MATRIX = 17
+    CO_OCCURRENCE_DATA_FRAME = 18
 
 
 @dataclass
@@ -95,7 +98,7 @@ class PipelinePayload:
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
-    token2id: Mapping[str, int] = None
+    token2id: Token2Id = None
     effective_document_index: DocumentIndex = None
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
