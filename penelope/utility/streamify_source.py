@@ -10,6 +10,14 @@ from .file_utility import read_textfile2
 from .filename_utils import filename_satisfied_by, replace_paths
 
 
+def _read_file_in_zip(args: Tuple) -> Tuple[str, AnyStr]:
+    return zip_utils.read_file_content2(zip_or_filename=args[0], filename=args[1], as_binary=args[2])
+
+
+def _read_file_in_folder(args: Tuple) -> Tuple[str, AnyStr]:
+    return read_textfile2(filename=args[0], as_binary=args[1])
+
+
 def streamify_zip_source(
     *,
     path: zipfile.ZipFile,
@@ -18,6 +26,7 @@ def streamify_zip_source(
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
+    n_chunksize: int = 5,
 ) -> Iterator[Tuple[str, AnyStr]]:
 
     filenames = filenames or zip_utils.list_filenames(
@@ -27,15 +36,18 @@ def streamify_zip_source(
     if n_processes == 1:
 
         with zipfile.ZipFile(path, 'r') as zf:
+
             for filename in filenames:
                 yield zip_utils.read_file_content2(zip_or_filename=zf, filename=filename, as_binary=as_binary)
 
     else:
 
-        with Pool(processes=n_processes) as executor:
-            args: str = [(path, filename, as_binary) for filename in filenames]
-            for filename, data in executor.imap(zip_utils.read_file_content2, args):
-                yield (filename, data)
+        args: str = [(path, filename, as_binary) for filename in filenames]
+
+        with Pool(processes=n_processes) as pool:
+            futures = pool.imap(_read_file_in_zip, args, chunksize=n_chunksize)
+            for data in futures:
+                yield data
 
 
 def streamify_folder_source(
@@ -45,6 +57,7 @@ def streamify_folder_source(
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
+    n_chunksize: int = 5,
 ) -> Iterable[Tuple[str, AnyStr]]:
 
     if filenames is None:
@@ -52,16 +65,16 @@ def streamify_folder_source(
 
     filenames: List[str] = replace_paths(path, filenames)
 
-    if n_processes <= 1:
+    if n_processes == 1:
 
         for filename in filenames:
-            yield read_textfile2(filename, as_binary=as_binary)
+            yield read_textfile2(filename, as_binary)
 
     else:
 
         with Pool(processes=n_processes) as executor:
             args = [(filename, as_binary) for filename in filenames]
-            for data in executor.imap(read_textfile2, args):
+            for data in executor.imap(_read_file_in_folder, args, chunksize=n_chunksize):
                 yield data
 
 
@@ -72,6 +85,7 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
+    n_chunksize: int = 5,
 ) -> Iterable[Tuple[str, AnyStr]]:
 
     filenames = filenames or list_any_source(source, filename_pattern=filename_pattern, filename_filter=filename_filter)
@@ -98,6 +112,7 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
             filename_filter=filename_filter,
             as_binary=as_binary,
             n_processes=n_processes,
+            n_chunksize=n_chunksize,
         )
 
     if isdir(source):
@@ -108,6 +123,7 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
             filename_filter=filename_filter,
             as_binary=as_binary,
             n_processes=n_processes,
+            n_chunksize=n_chunksize,
         )
 
     if isinstance(source, str):
