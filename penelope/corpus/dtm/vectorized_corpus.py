@@ -21,7 +21,7 @@ from .store import StoreMixIn
 
 logger = utility.getLogger("penelope")
 
-
+# FIXME #109 Refactor VectorizedCorpus to use Token2Id?
 class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, IVectorizedCorpus):
     def __init__(
         self,
