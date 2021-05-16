@@ -1,12 +1,13 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 import scipy
 from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
-from tqdm.auto import tqdm
 
-from ..interface import ComputeResult, ContextOpts, CoOccurrenceError
+from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from ..windows_utility import tokens_to_windows
 from .vectorize import WindowsCoOccurrenceVectorizer
 
@@ -14,14 +15,13 @@ from .vectorize import WindowsCoOccurrenceVectorizer
 def compute_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
-    token2id: Token2Id,  # API change!!!!
+    token2id: Token2Id,
     document_index: DocumentIndex,
     context_opts: ContextOpts,
     global_threshold_count: int,
+    ingest_tokens: bool = True,
     ignore_pad: bool = None,
-) -> ComputeResult:
-
-    pad: str = '*'
+) -> CoOccurrenceComputeResult:
 
     if token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
@@ -43,16 +43,19 @@ def compute_corpus_co_occurrence(
 
     total_results = []
 
-    vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(token2id.data)
+    vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(token2id)
 
-    for filename, tokens in tqdm(
-        stream, desc="Processing partitions", position=0, leave=True, total=len(document_index)
-    ):
+    for filename, tokens in stream:
 
-        windows = tokens_to_windows(tokens=tokens, context_opts=context_opts, padding=pad)
-        windows_ttm_matrix: VectorizedCorpus = vectorizer.fit_transform(windows)
+        if ingest_tokens:
+            token2id.ingest(tokens)
 
-        document_co_occurrences: pd.DataFrame = term_term_matrix_to_dataframe(windows_ttm_matrix, threshold_count=1)
+        document_co_occurrences: pd.DataFrame = compute_document_co_occurrence(
+            vectorizer=vectorizer,
+            tokens=tokens,
+            context_opts=context_opts,
+        )
+
         document_co_occurrences['document_id'] = document_index.loc[strip_extensions(filename)]['document_id']
 
         total_results.append(document_co_occurrences)
@@ -62,7 +65,7 @@ def compute_corpus_co_occurrence(
     ]
 
     if ignore_pad:
-        pad_id: int = token2id.id2token[pad]
+        pad_id: int = token2id.id2token[context_opts.pad]
         co_occurrences = co_occurrences[((co_occurrences.w1_id != pad_id) & (co_occurrences.w2_id != pad_id))]
 
     if len(co_occurrences) > 0 and global_threshold_count > 1:
@@ -73,12 +76,22 @@ def compute_corpus_co_occurrence(
     # FIXME: Don't add tokens - postpone to application layer
     # FIXME value_n_t moved out of co_occurrences computation to application layer
 
-    return ComputeResult(
+    return CoOccurrenceComputeResult(
         co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
         token_window_counts=vectorizer.token_windows_counts,
     )
+
+
+def compute_document_co_occurrence(
+    vectorizer: WindowsCoOccurrenceVectorizer, tokens: List[str], context_opts: ContextOpts
+) -> pd.DataFrame:
+
+    windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    windows_ttm_matrix: VectorizedCorpus = vectorizer.fit_transform(windows)
+    co_occurrences: pd.DataFrame = term_term_matrix_to_dataframe(windows_ttm_matrix, threshold_count=1)
+    return co_occurrences
 
 
 def term_term_matrix_to_dataframe(
@@ -94,11 +107,14 @@ def term_term_matrix_to_dataframe(
     Returns:
         pd.DataFrame: co-occurrence data frame
     """
-    # FIXME: Is np.uint16 sufficient? it ought to be!
+
     co_occurrences = (
         pd.DataFrame(
-            {'w1_id': term_term_matrix.row, 'w2_id': term_term_matrix.col, 'value': term_term_matrix.data},
-            dtype=[('w1_id', np.uint32), ('w2_id', np.uint32), ('value', np.uint16)],
+            {
+                'w1_id': pd.Series(term_term_matrix.row, dtype=np.uint32),
+                'w2_id': pd.Series(term_term_matrix.col, dtype=np.uint32),
+                'value': term_term_matrix.data,
+            },
         )
         .sort_values(['w1_id', 'w2_id'])
         .reset_index(drop=True)
