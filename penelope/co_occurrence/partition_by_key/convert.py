@@ -141,9 +141,8 @@ def to_vectorized_windows_corpus(
     stream: FilenameTokensTuples,
     token2id: Mapping[str, int],
     context_opts: ContextOpts,
-    pad: str = "*",
 ) -> VectorizedCorpus:
-    windows = corpus_to_windows(stream=stream, context_opts=context_opts, pad=pad)
+    windows = corpus_to_windows(stream=stream, context_opts=context_opts)
     windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
     corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
         windows_corpus,
