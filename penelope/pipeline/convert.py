@@ -220,48 +220,6 @@ def parse_phrases(phrase_file: str, phrases: List[str]):
         raise ValueError("failed to decode phrases. please review file and/or arguments") from ex
 
 
-# def tagged_idframe_to_tokens(  # pylint: disable=too-many-arguments
-#     doc: TaggedFrame,
-#     token2id: Token2Id,
-#     extract_opts: ExtractTaggedTokensOpts,
-#     filter_opts: PropertyValueMaskingOpts = None,
-#     phrases: List[List[int]] = None,
-#     ignore_case: bool = False,
-# ) -> Iterable[int]:
-#     """Extracts tokens from a tagged document represented as a Pandas data frame.
-
-#     Args:
-#         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-#         filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
-#         phrases (List[List[str]], optional): Phrases in tokens equence that should be merged into a single token. Defaults to None.
-#         ignore_case (bool, optional): Ignore case or not. Defaults to False.
-
-#     Returns:
-#         Iterable[str]: Sequence of extracted tokens
-#     """
-
-#     mask = np.repeat(True, len(doc.index))
-
-#     if filter_opts is not None:
-#         mask &= filter_opts.mask(doc)
-
-#     if len(extract_opts.get_pos_includes() or set()) > 0:
-#         mask &= doc.pos_id.isin(extract_opts.get_pos_includes())
-
-#     if len(extract_opts.get_pos_excludes() or set()) > 0:
-#         mask &= ~(doc.pos_id.isin(extract_opts.get_pos_excludes()))
-
-#     token_ids: List[int] = doc.loc[mask].token_id.tolist()
-
-#     if phrases is not None:
-#         raise NotImplementedError()
-#         # phrased_tokens = multiple_replace(' '.join(tokens), phrases, ignore_case=ignore_case).split()
-
-#         # return phrased_tokens
-
-#     return token_ids
-
-
 def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
     """Computes word counts (total and per part-of-speech) given tagged_frame"""
 
@@ -288,40 +246,3 @@ def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_
     token_counts = pos_statistics.to_dict()
     token_counts.update(n_raw_tokens=n_raw_tokens)
     return token_counts
-
-
-# def filter_tagged_frame(  # pylint: disable=too-many-arguments
-#     doc: TaggedFrame,
-#     extract_opts: ExtractTaggedTokensOpts,
-#     filter_opts: PropertyValueMaskingOpts = None,
-#     pos_column: str = 'pos_',
-# ) -> TaggedFrame:
-#     """Filteras a tagged document represented as a Pandas data frame.
-
-#     Args:
-#         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-#         filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
-#         pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
-
-#     Returns:
-#         TaggedFrame: Filtered TaggedFrame
-#     """
-#     if extract_opts.lemmatize is None and extract_opts.target_override is None:
-#         raise ValueError("a valid target not supplied (no lemmatize or target")
-
-#     mask = np.repeat(True, len(doc.index))
-
-#     if filter_opts is not None:
-#         mask &= filter_opts.mask(doc)
-
-#     if pos_column in doc.columns:
-
-#         if len(extract_opts.get_pos_includes() or set()) > 0:
-#             mask &= doc[pos_column].isin(extract_opts.get_pos_includes())
-
-#         if len(extract_opts.get_pos_excludes() or set()) > 0:
-#             mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
-
-#     doc = doc.loc[mask]
-
-#     return doc
