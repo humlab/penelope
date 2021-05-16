@@ -1,11 +1,12 @@
 import pathlib
+import zipfile
 from collections import defaultdict
 from collections.abc import MutableMapping
-from typing import Iterator, Optional, Union
+from typing import Iterator, List, Optional, Union
 
 import pandas as pd
 from loguru import logger
-from penelope.utility import pandas_to_csv_zip, strip_paths
+from penelope.utility import replace_extension, strip_paths
 
 
 class Token2Id(MutableMapping):
@@ -51,6 +52,9 @@ class Token2Id(MutableMapping):
             _ = self.data[token]
         return self
 
+    def is_open(self) -> bool:
+        return self.data.default_factory is not None
+
     def close(self) -> "Token2Id":
         self.data.default_factory = None
 
@@ -59,6 +63,7 @@ class Token2Id(MutableMapping):
         self._id2token = None
         return self
 
+    @property
     def id2token(self) -> dict:
         if self._id2token is None:
             self._id2token = {v: k for k, v in self.data.items()}
@@ -70,7 +75,10 @@ class Token2Id(MutableMapping):
 
     def store(self, filename: str):
         """Store dictionary as CSV"""
-        pandas_to_csv_zip(filename, dfs=(self.to_dataframe(), strip_paths(filename)), sep='\t', header=True)
+        # pandas_to_csv_zip(filename, dfs=(self.to_dataframe(), strip_paths(filename)), sep='\t', header=True)
+        with zipfile.ZipFile(filename, mode='w', compression=zipfile.ZIP_DEFLATED) as fp:
+            data_str = self.to_dataframe().to_csv(sep='\t', header=True)
+            fp.writestr(replace_extension(strip_paths(filename), ".csv"), data=data_str)
 
     @staticmethod
     def load(filename: str) -> "Token2Id":
@@ -78,6 +86,78 @@ class Token2Id(MutableMapping):
         if not pathlib.Path(filename).exists():
             logger.info("bundle has no vocabulary")
             return None
-        df: pd.DataFrame = pd.read_csv(filename, sep='\t', index_col=0)
+        df: pd.DataFrame = pd.read_csv(filename, sep='\t', index_col=0, na_filter=False)
         data: dict = df['token_id'].to_dict()
         return Token2Id(data=data)
+
+    def to_ids(self, tokens: List[str]) -> List[int]:
+        return [self.data[w] for w in tokens]
+
+    # def to_bow(self, documents: Iterator[Iterator[str]]):
+
+    #     was_closed = not self.is_open()
+
+    #     self.open()
+
+    #     token2id = self.data
+    #     counter = defaultdict(int)
+
+    #     for w in document:
+    #         counter[token2id[w]] += 1
+
+    #     if was_closed:
+    #         self.close()
+
+    #     # result = sorted(result.items())
+    #     return result
+
+    # def corpus2csc(corpus, num_terms=None, dtype=np.float64, num_docs=None, num_nnz=None, printprogress=0):
+    #     try:
+    #         # if the input corpus has the `num_nnz`, `num_docs` and `num_terms` attributes
+    #         # (as is the case with MmCorpus for example), we can use a more efficient code path
+    #         if num_terms is None:
+    #             num_terms = corpus.num_terms
+    #         if num_docs is None:
+    #             num_docs = corpus.num_docs
+    #         if num_nnz is None:
+    #             num_nnz = corpus.num_nnz
+    #     except AttributeError:
+    #         pass  # not a MmCorpus...
+    #     if printprogress:
+    #         logger.info("creating sparse matrix from corpus")
+    #     if num_terms is not None and num_docs is not None and num_nnz is not None:
+    #         # faster and much more memory-friendly version of creating the sparse csc
+    #         posnow, indptr = 0, [0]
+    #         indices = np.empty((num_nnz,), dtype=np.int32)  # HACK assume feature ids fit in 32bit integer
+    #         data = np.empty((num_nnz,), dtype=dtype)
+    #         for docno, doc in enumerate(corpus):
+    #             if printprogress and docno % printprogress == 0:
+    #                 logger.info("PROGRESS: at document #%i/%i", docno, num_docs)
+    #             posnext = posnow + len(doc)
+    #             # zip(*doc) transforms doc to (token_indices, token_counts]
+    #             indices[posnow: posnext], data[posnow: posnext] = zip(*doc) if doc else ([], [])
+    #             indptr.append(posnext)
+    #             posnow = posnext
+    #         assert posnow == num_nnz, "mismatch between supplied and computed number of non-zeros"
+    #         result = scipy.sparse.csc_matrix((data, indices, indptr), shape=(num_terms, num_docs), dtype=dtype)
+    #     else:
+    #         # slower version; determine the sparse matrix parameters during iteration
+    #         num_nnz, data, indices, indptr = 0, [], [], [0]
+    #         for docno, doc in enumerate(corpus):
+    #             if printprogress and docno % printprogress == 0:
+    #                 logger.info("PROGRESS: at document #%i", docno)
+
+    #             # zip(*doc) transforms doc to (token_indices, token_counts]
+    #             doc_indices, doc_data = zip(*doc) if doc else ([], [])
+    #             indices.extend(doc_indices)
+    #             data.extend(doc_data)
+    #             num_nnz += len(doc)
+    #             indptr.append(num_nnz)
+    #         if num_terms is None:
+    #             num_terms = max(indices) + 1 if indices else 0
+    #         num_docs = len(indptr) - 1
+    #         # now num_docs, num_terms and num_nnz contain the correct values
+    #         data = np.asarray(data, dtype=dtype)
+    #         indices = np.asarray(indices)
+    #         result = scipy.sparse.csc_matrix((data, indices, indptr), shape=(num_terms, num_docs), dtype=dtype)
+    #     return result
