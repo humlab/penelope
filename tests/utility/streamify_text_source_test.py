@@ -1,9 +1,10 @@
 import os
-import pytest
+import shutil
 import uuid
+
+import pytest
 from penelope.utility import list_any_source, streamify_any_source, unpack
 from tests.utils import TEST_CORPUS_FILENAME
-import shutil
 
 # pylint: disable=too-many-arguments
 EXPECTED_TEXT_FILES = [
