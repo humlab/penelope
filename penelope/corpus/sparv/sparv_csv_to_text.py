@@ -11,7 +11,7 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 
 # pylint: disable=too-many-instance-attributes
 
-# TODO: Consolidate with tagged_frame_to_tokens? Samek business logic.
+# TODO: Consolidate with tagged_frame_to_tokens? Same business logic.
 class SparvCsvToText:
     """Reads a Sparv CSV-file, applies filters and returns it as text"""
 
