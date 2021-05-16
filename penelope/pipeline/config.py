@@ -89,7 +89,7 @@ class CorpusConfig:
         return filenames
 
     @staticmethod
-    def load(path: str) -> "CorpusConfig":
+    def load(path: str, source: Optional[str] = None) -> "CorpusConfig":
         """Reads and deserializes a CorpusConfig from `path`"""
         with open(path, "r") as fp:
             if path.endswith('yaml') or path.endswith('yml'):
@@ -97,6 +97,8 @@ class CorpusConfig:
             else:
                 config_dict: dict = json.load(fp)
         deserialized_config = CorpusConfig.dict_to_corpus_config(config_dict)
+        if source is not None:
+            deserialized_config.pipeline_payload.source = source
         return deserialized_config
 
     @staticmethod
