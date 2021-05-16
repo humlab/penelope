@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from penelope.co_occurrence import Bundle, ComputeResult, ContextOpts, store_bundle
+from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult, store_bundle
 from penelope.co_occurrence.partition_by_document import compute_corpus_co_occurrence
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
@@ -21,7 +21,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
-    compute_result: ComputeResult = compute_corpus_co_occurrence(
+    compute_result: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
@@ -41,7 +41,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
 
     expected_filename = jj(OUTPUT_FOLDER, filename)
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    compute_result: ComputeResult = compute_corpus_co_occurrence(
+    compute_result: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
@@ -85,7 +85,7 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
         extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
-    compute_result: ComputeResult = compute_corpus_co_occurrence(
+    compute_result: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
@@ -104,7 +104,7 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
 def test_create_document_co_occurrences(filename):  # pylint: disable=unused-argument
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    compute_result: ComputeResult = compute_corpus_co_occurrence(
+    compute_result: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
@@ -156,7 +156,7 @@ def test_document_wise_co_occurrence():
             lemmatize=True,
         ),
     )
-    compute_result: ComputeResult = compute_corpus_co_occurrence(
+    compute_result: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,

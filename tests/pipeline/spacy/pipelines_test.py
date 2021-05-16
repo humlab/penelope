@@ -3,7 +3,7 @@ import os
 import penelope.co_occurrence as co_occurrence
 import penelope.workflows as workflows
 import pytest
-from penelope.co_occurrence.interface import ComputeResult
+from penelope.co_occurrence import CoOccurrenceComputeResult
 from penelope.corpus import TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline.config import CorpusConfig
@@ -52,7 +52,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     global_threshold_count: int = 1
     partition_key: str = 'year'
 
-    compute_result: ComputeResult = spaCy_co_occurrence_pipeline(
+    compute_result: CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=config.pipeline_payload.source,
         partition_key=partition_key,
@@ -86,7 +86,7 @@ def test_spaCy_co_occurrence_workflow(config):
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    compute_result: co_occurrence.ComputeResult = spaCy_co_occurrence_pipeline(
+    compute_result: co_occurrence.CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
         partition_key=partition_key,

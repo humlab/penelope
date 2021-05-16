@@ -57,7 +57,7 @@ def compute(
                 partition_key=args.partition_keys[0],
             )
         )
-        compute_result: co_occurrence.ComputeResult = p.value()
+        compute_result: co_occurrence.CoOccurrenceComputeResult = p.value()
 
         if len(compute_result.co_occurrences) == 0:
             raise ZeroComputeError()
