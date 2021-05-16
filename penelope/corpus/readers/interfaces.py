@@ -45,6 +45,11 @@ class TextReaderOpts:
     def copy(self, **kwargs) -> TextReaderOpts:
         return TextReaderOpts(**{**self.props, **kwargs})
 
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
 
 PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
 
