@@ -99,7 +99,7 @@ class PipelineShortcutMixIn:
         """ (filename, TEXT => DTM) """
         return self.add(tasks.TextToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
 
-    def to_co_occurrence(
+    def to_corpus_co_occurrence(
         self: pipelines.CorpusPipeline,
         *,
         context_opts: co_occurrence.ContextOpts = None,
@@ -109,7 +109,7 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         """ (filename, DOCUMENT_CONTENT_TUPLES => DATAFRAME) """
         return self.add(
-            tasks.ToCoOccurrence(
+            tasks.ToCorpusCoOccurrence(
                 context_opts=context_opts,
                 transform_opts=transform_opts,
                 global_threshold_count=global_threshold_count,

@@ -684,8 +684,8 @@ class Vocabulary(ITask):
 
 # FIXME #100 ToCoOccurrence: Make partition_key mandatory
 @dataclass
-class ToCoOccurrence(ITask):
-    """Computes a windows co-occurrence data."""
+class ToCorpusCoOccurrence(ITask):
+    """Computes a (corpus-level) windows co-occurrence data."""
 
     context_opts: co_occurrence.ContextOpts = None
     transform_opts: TokensTransformOpts = None

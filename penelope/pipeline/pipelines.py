@@ -81,7 +81,7 @@ def wildcard_to_co_occurrence_pipeline(
             .to_document_content_tuple()
             .tqdm()
             # .tap_stream("./tests/output/tapped_stream__prior_to_co_occurrence.zip",  "tap_4_prior_to_co_occurrence")
-            .to_co_occurrence(
+            .to_corpus_co_occurrence(
                 context_opts=context_opts,
                 transform_opts=tokens_transform_opts,
                 global_threshold_count=global_threshold_count,
