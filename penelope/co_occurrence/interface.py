@@ -20,7 +20,7 @@ class PartitionKeyNotUniqueKey(ValueError):
 
 
 @dataclass
-class ComputeResult:
+class CoOccurrenceComputeResult:
 
     co_occurrences: pd.DataFrame = None
     document_index: DocumentIndex = None
@@ -34,6 +34,7 @@ class ContextOpts:
     context_width: int = 2
     concept: Set[Token] = field(default_factory=set)
     ignore_concept: bool = False
+    pad: Token = field(default="*")
 
     @property
     def props(self):
@@ -41,4 +42,5 @@ class ContextOpts:
             context_width=self.context_width,
             concept=list(self.concept),
             ignore_concept=self.ignore_concept,
+            padding=self.pad,
         )

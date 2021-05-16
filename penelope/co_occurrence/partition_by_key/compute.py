@@ -7,7 +7,7 @@ from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_path_and_extension
 from tqdm.auto import tqdm
 
-from ..interface import ComputeResult, ContextOpts, CoOccurrenceError
+from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from .convert import to_dataframe, to_vectorized_windows_corpus
 
 # pylint: disable=ungrouped-imports
@@ -24,11 +24,16 @@ def compute_corpus_co_occurrence(
     partition_key: str,
     global_threshold_count: int,
     ignore_pad: str = None,
-) -> ComputeResult:
+) -> CoOccurrenceComputeResult:
 
     if token2id is None:
         # if not hasattr(stream, 'token2id'):
         raise CoOccurrenceError("expected `token2id` found None")
+        # payload.token2id = stream.token2id
+
+    if not isinstance(token2id, Token2Id):
+        # if not hasattr(stream, 'token2id'):
+        raise TypeError("`token2id` no instance of Token2Id")
         # payload.token2id = stream.token2id
 
     if document_index is None:
@@ -92,7 +97,7 @@ def compute_corpus_co_occurrence(
 
     co_occurrences = _filter_co_coccurrences_by_global_threshold(co_occurrences, global_threshold_count)
 
-    return ComputeResult(co_occurrences=co_occurrences, document_index=co_document_index)
+    return CoOccurrenceComputeResult(co_occurrences=co_occurrences, document_index=co_document_index)
 
 
 def compute_co_occurrence(
