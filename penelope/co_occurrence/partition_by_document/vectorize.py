@@ -14,8 +14,8 @@ class WindowsCoOccurrenceVectorizer:
     def __init__(self, vocabulary: Token2Id):
 
         self.token_windows_counts: Counter = Counter()
-        self.vectorizer = CountVectorizer(
-            tokenizer=lambda x: x, vocabulary=vocabulary, lowercase=False, dtype=np.uint16
+        self.vectorizer: CountVectorizer = CountVectorizer(
+            tokenizer=lambda x: x, vocabulary=vocabulary.data, lowercase=False, dtype=np.uint16
         )
 
     def fit_transform(self, windows: Iterator[Iterator[str]]) -> scipy.sparse.spmatrix:
