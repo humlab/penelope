@@ -43,6 +43,7 @@ class ZipTextIterator(ICorpusReader):
             filename_pattern=self.reader_opts.filename_pattern,
             as_binary=self.reader_opts.as_binary,
             n_processes=self.reader_opts.n_processes,
+            n_chunksize=self.reader_opts.n_chunksize,
         )
 
     @property

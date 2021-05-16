@@ -60,6 +60,7 @@ class TextReader(ICorpusReader):
             filename_filter=self.reader_opts.filename_filter,
             as_binary=self.reader_opts.as_binary,
             n_processes=self.reader_opts.n_processes,
+            n_chunksize=self.reader_opts.n_chunksize,
         )
 
     def _create_iterator(self) -> Iterable[Tuple[str, str]]:

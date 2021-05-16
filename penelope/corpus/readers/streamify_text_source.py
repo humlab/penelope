@@ -17,6 +17,7 @@ def streamify_text_source(
     filename_filter: Union[List[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
+    n_chunksize: int = 1,
 ) -> Iterable[Tuple[str, AnyStr]]:
     """Returns an (filename, text) iterator for `text_source`
 
@@ -43,6 +44,7 @@ def streamify_text_source(
                 filename_filter=filename_filter,
                 as_binary=as_binary,
                 n_processes=n_processes,
+                n_chunksize=n_chunksize,
             ),
         )
     return streamify_any_source(
@@ -51,4 +53,5 @@ def streamify_text_source(
         filename_filter=filename_filter,
         as_binary=as_binary,
         n_processes=n_processes,
+        n_chunksize=n_chunksize,
     )

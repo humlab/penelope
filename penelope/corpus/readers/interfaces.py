@@ -26,6 +26,7 @@ class TextReaderOpts:
     sep: Optional[str] = field(default='\t')
     quoting: Optional[int] = csv.QUOTE_NONE
     n_processes: int = 1
+    n_chunksize: int = 2
 
     @property
     def props(self) -> dict:
@@ -38,6 +39,7 @@ class TextReaderOpts:
             sep=self.sep,
             quoting=self.quoting,
             n_processes=self.n_processes,
+            n_chunksize=self.n_chunksize,
         )
 
     def copy(self, **kwargs) -> TextReaderOpts:
