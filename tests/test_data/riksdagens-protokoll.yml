@@ -14,7 +14,7 @@ checkpoint_opts:
     extra_columns: []
     custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
     deserialize_in_parallel: true
-    deserialize_processes: 6
+    deserialize_processes: 4
     deserialize_chunksize: 4
     index_column: null
 pipelines:
