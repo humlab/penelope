@@ -144,7 +144,7 @@ from .utils import (
     tuple_of_lists_to_list_of_tuples,
     uniquify,
 )
-from .zip_utils import compress, list_filenames, read_file_content, store
+from .zip_utils import compress, list_filenames, read_file_content, store, unpack  # , read_dataframe, read_json
 
 
 class PropsMixIn:
