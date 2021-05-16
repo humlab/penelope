@@ -4,10 +4,12 @@ from typing import Iterable, List
 
 from penelope.type_alias import FilenameTokensTuples
 
-from .interface import ContextOpts
+from .interface import ContextOpts, Token
 
 
-def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, padding: str = '*') -> Iterable[List[str]]:
+def tokens_to_windows(
+    *, tokens: Iterable[Token], context_opts: ContextOpts, padding: Token = None
+) -> Iterable[List[Token]]:
     """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens`
 
 
@@ -24,12 +26,12 @@ def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, paddi
 
     Parameters
     ----------
-    tokens : Iterable[str]
+    tokens : Iterable[Token]
         The sequence of tokens to be windowed
     context_opts: ContextOpts
         context_width : int
             The number of tokens to either side of the token in focus.
-        concept : Sequence[str]
+        concept : Sequence[Token]
             The token(s) in focus.
         ignore_concept: bool
             If to then filter ut the focus word.
@@ -65,7 +67,7 @@ def tokens_to_windows(*, tokens: Iterable[str], context_opts: ContextOpts, paddi
                 yield concept_window
 
 
-def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts, pad: str = "*") -> Iterable[List]:
+def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts, pad: Token) -> Iterable[List]:
 
     win_iter = (
         [filename, i, window]
