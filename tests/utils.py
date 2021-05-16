@@ -13,6 +13,7 @@ from penelope.corpus import (
     metadata_to_document_index,
 )
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer, tng
+from penelope.corpus.token2id import Token2Id
 from penelope.utility import flatten
 from tests.test_data.tranströmer_corpus import TranströmerCorpus
 
@@ -59,7 +60,7 @@ def random_corpus(
 class MockedProcessedCorpus(ITokenizedCorpus):
     def __init__(self, mock_data):
         self.data = [(f, self.generate_document(ws)) for f, ws in mock_data]
-        self.token2id = self.create_token2id()
+        self.token2id: Token2Id = self.create_token2id()
         self.n_tokens = {f: len(d) for f, d in mock_data}
         self.iterator = None
         self._metadata = [dict(filename=filename, year=filename.split('_')[1]) for filename, _ in self.data]
@@ -81,8 +82,8 @@ class MockedProcessedCorpus(ITokenizedCorpus):
     def document_index(self) -> pd.DataFrame:
         return self._documents
 
-    def create_token2id(self):
-        return {w: i for i, w in enumerate(sorted(list(set(flatten([x[1] for x in self.data])))))}
+    def create_token2id(self) -> Token2Id:
+        return Token2Id({w: i for i, w in enumerate(sorted(list(set(flatten([x[1] for x in self.data])))))})
 
     def __iter__(self):
         return self
