@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import pandas as pd
 from loguru import logger
-from penelope import co_occurrence, utility
+from penelope import utility
 from penelope.corpus import (
     DocumentIndex,
     Token2Id,
@@ -680,54 +680,6 @@ class Vocabulary(ITask):
 
     def get_name(self, token_column: str) -> str:
         return self.pipeline.payload.memory_store.get(token_column)
-
-
-# FIXME #100 ToCoOccurrence: Make partition_key mandatory
-@dataclass
-class ToCorpusCoOccurrence(ITask):
-    """Computes a (corpus-level) windows co-occurrence data."""
-
-    context_opts: co_occurrence.ContextOpts = None
-    transform_opts: TokensTransformOpts = None
-    global_threshold_count: int = None
-    partition_key: str = None
-    ignore_pad: str = field(default='*')
-
-    def __post_init__(self):
-        self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
-
-        if self.partition_key is None:
-            raise ValueError("ToCoOccurrence: partition_key cannot be None")
-
-    def setup(self) -> ITask:
-        super().setup()
-        self.pipeline.put("context_opts", self.context_opts)
-        self.pipeline.put("global_threshold_count", self.global_threshold_count)
-        self.pipeline.put("partition_column", self.partition_key)
-        return self
-
-    def process_stream(self) -> VectorizedCorpus:
-
-        # if self.pipeline.get_prior_content_type(self)  == ContentType.DOCUMENT_CONTENT_TUPLE:
-        instream = (x.content for x in self.instream)
-        # else:
-        #     instream = ((x.filename, x.content) for x in self.instream)
-
-        compute_result: co_occurrence.ComputeResult = co_occurrence.partition_by_key.compute_corpus_co_occurrence(
-            stream=instream,
-            token2id=self.pipeline.payload.token2id,
-            document_index=self.pipeline.payload.document_index,
-            context_opts=self.context_opts,
-            transform_opts=self.transform_opts,
-            global_threshold_count=self.global_threshold_count,
-            partition_key=self.partition_key,
-            ignore_pad=self.ignore_pad,
-        )
-        yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=compute_result)
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return None
 
 
 @dataclass
