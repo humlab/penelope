@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Set, Union
+from typing import List, Set, Union
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, Token2Id
@@ -35,6 +35,7 @@ class ContextOpts:
     concept: Set[Token] = field(default_factory=set)
     ignore_concept: bool = False
     pad: Token = field(default="*")
+    partition_keys: List[str] = field(default_factory=list)
 
     @property
     def props(self):
@@ -43,4 +44,5 @@ class ContextOpts:
             concept=list(self.concept),
             ignore_concept=self.ignore_concept,
             padding=self.pad,
+            partition_keys=self.partition_keys,
         )

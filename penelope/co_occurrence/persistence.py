@@ -181,7 +181,6 @@ def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "B
         # corpus = to_vectorized_corpus(
         #     co_occurrences=co_occurrences,
         #     document_index=document_index,
-        #     value_key='value',
         #     partition_key=partition_key,
         # )
 

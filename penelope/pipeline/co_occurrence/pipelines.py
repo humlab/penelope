@@ -42,14 +42,13 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
 @deprecated
 def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
     *,
-    partition_key: str,
     tokens_transform_opts: TokensTransformOpts = None,
     extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
 ):
-    """Computes co-occurrence partitioned on `partition_key`"""
+    """Computes generic partitioned co-occurrence"""
     try:
         pipeline: pipelines.CorpusPipeline = (
             pipelines.wildcard()
@@ -72,7 +71,6 @@ def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
                 context_opts=context_opts,
                 transform_opts=tokens_transform_opts,
                 global_threshold_count=global_threshold_count,
-                partition_key=partition_key,
             )
         )
 

@@ -64,7 +64,6 @@ def test_inidun_word_trends_bug():
         persist=True,
         force=False,
         context_opts=None,
-        partition_keys=None,
     )
 
     # workflows.document_term_matrix.compute(

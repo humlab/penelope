@@ -68,8 +68,12 @@ compute_opts = ComputeOpts(
     count_threshold=1,
     create_subfolder=True,
     persist=True,
-    context_opts=ContextOpts(context_width=1, concept=CONCEPT, ignore_concept=False),
-    partition_keys=['document_name'],
+    context_opts=ContextOpts(
+        context_width=1,
+        concept=CONCEPT,
+        ignore_concept=False,
+        partition_keys=['document_name'],
+    ),
     force=False,
 )
 

@@ -54,8 +54,6 @@ def compute(
                 tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
                 context_opts=args.context_opts,
                 global_threshold_count=args.count_threshold,
-                # FIXME: Not used:
-                partition_key=args.partition_keys[0],
             )
         )
         value: co_occurrence.CoOccurrenceComputeResult = p.value()
@@ -66,8 +64,6 @@ def compute(
         corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
             co_occurrences=value.co_occurrences,
             document_index=value.document_index,
-            # FIXME: Not used:
-            partition_key=args.partition_keys[0],
         )
 
         bundle = co_occurrence.Bundle(
@@ -84,7 +80,6 @@ def compute(
                 extract_tokens_opts=args.extract_tagged_tokens_opts,
                 input_filename=args.corpus_filename,
                 output_filename=target_filename,
-                partition_keys=args.partition_keys,
                 count_threshold=args.count_threshold,
             ),
         )

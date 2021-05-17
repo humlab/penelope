@@ -1,7 +1,7 @@
 # type: ignore
 
 
-from . import partition_by_document, partition_by_key
+from . import partition_by_document  # , partition_by_key
 from .convert import to_co_occurrence_matrix, to_trends_data
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
 from .interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError, Token

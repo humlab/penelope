@@ -22,7 +22,6 @@ class ComputeGUI(BaseGUI):
     def __init__(
         self,
         *,
-        default_partition_key: str,
         default_corpus_path: str = None,
         default_corpus_filename: str = '',
         default_data_folder: str = None,
@@ -30,12 +29,12 @@ class ComputeGUI(BaseGUI):
 
         super().__init__(default_corpus_path, default_corpus_filename, default_data_folder)
 
-        self._partition_key = widgets.Dropdown(
+        self._partition_key: widgets.Dropdown = widgets.Dropdown(
             description='',
-            options={'Year': 'year', 'Document': 'document_name'},
-            value=default_partition_key,
+            options={'Year': 'year', 'Document': 'document_id'},
+            value='document_id',
             layout=default_layout,
-            # tooltip=tooltips['_context_width'],
+            disabled=True,
         )
         self._context_width = widgets.IntSlider(
             description='',
@@ -85,11 +84,8 @@ class ComputeGUI(BaseGUI):
             concept=self.concept_tokens,
             context_width=self._context_width.value,
             ignore_concept=self._ignore_concept.value,
+            partition_keys = [self._partition_key.value]
         )
-
-    @property
-    def partition_key(self) -> str:
-        return self._partition_key.value
 
     @property
     def concept_tokens(self) -> Set[str]:
@@ -102,7 +98,6 @@ class ComputeGUI(BaseGUI):
     def compute_opts(self) -> interface.ComputeOpts:
         args: interface.ComputeOpts = super().compute_opts
         args.context_opts = self.context_opts
-        args.partition_keys = [self.partition_key]
         return args
 
 
@@ -110,7 +105,6 @@ def create_compute_gui(
     *,
     corpus_folder: str,
     data_folder: str,
-    default_partition_key: str = 'year',
     corpus_config: Union[str, CorpusConfig],
     compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Bundle] = None,
     done_callback: Callable[[Bundle, interface.ComputeOpts], None] = None,
@@ -118,7 +112,6 @@ def create_compute_gui(
     """Returns a GUI for turning a corpus pipeline to co-occurrence data"""
     corpus_config: CorpusConfig = CorpusConfig.find(corpus_config, corpus_folder).folders(corpus_folder)
     gui = ComputeGUI(
-        default_partition_key=default_partition_key,
         default_corpus_path=corpus_folder,
         default_corpus_filename=(corpus_config.pipeline_payload.source or ''),
         default_data_folder=data_folder,

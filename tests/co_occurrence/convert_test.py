@@ -65,7 +65,6 @@ def test_store_co_occurrences(filename):
 
 def test_to_vectorized_corpus():
 
-    partition_key = 'year'
     filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
 
     index_filename = './tests/test_data/VENUS/VENUS_document_index.csv'
@@ -75,7 +74,6 @@ def test_to_vectorized_corpus():
     corpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
-        partition_key=partition_key,
     )
 
     assert corpus.data.shape[0] == len(document_index)

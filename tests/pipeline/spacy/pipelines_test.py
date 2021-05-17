@@ -48,14 +48,12 @@ def test_spaCy_co_occurrence_pipeline(config):
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
         is_punct=False,
     )
-    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(context_width=4)
+    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(context_width=4, partition_keys=['document_id'])
     global_threshold_count: int = 1
-    partition_key: str = 'year'
 
-    compute_result: CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
+    value: CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=config.pipeline_payload.source,
-        partition_key=partition_key,
         tokens_transform_opts=tokens_transform_opts,
         context_opts=context_opts,
         extract_tagged_tokens_opts=extract_tagged_tokens_opts,
@@ -64,7 +62,7 @@ def test_spaCy_co_occurrence_pipeline(config):
         checkpoint_filename=checkpoint_filename,
     ).value()
 
-    compute_result.co_occurrences.to_csv(target_filename, sep='\t')
+    value.co_occurrences.to_csv(target_filename, sep='\t')
 
     assert os.path.isfile(target_filename)
 
@@ -73,22 +71,20 @@ def test_spaCy_co_occurrence_pipeline(config):
 
 def test_spaCy_co_occurrence_workflow(config):
 
-    partition_key: str = 'year'
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,
     )
     args.context_opts = co_occurrence.ContextOpts(
-        context_width=4, ignore_concept=True
+        context_width=4, ignore_concept=True, partition_keys=['document_id']
     )  # , concept={''}, ignore_concept=True)
 
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    compute_result: co_occurrence.CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
+    value: co_occurrence.CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
-        partition_key=partition_key,
         tokens_transform_opts=args.tokens_transform_opts,
         extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
         tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
@@ -97,24 +93,24 @@ def test_spaCy_co_occurrence_workflow(config):
         checkpoint_filename=checkpoint_filename,
     ).value()
 
-    assert compute_result.co_occurrences is not None
-    assert compute_result.document_index is not None
-    assert len(compute_result.co_occurrences) > 0
+    assert value.co_occurrences is not None
+    assert value.document_index is not None
+    assert len(value.co_occurrences) > 0
 
     co_occurrence_filename = co_occurrence.folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
 
     corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
-        co_occurrences=compute_result.co_occurrences,
-        document_index=compute_result.document_index,
-        partition_key=partition_key,
+        co_occurrences=value.co_occurrences,
+        document_index=value.document_index,
+        partition_key=args.context_opts.partition_keys[0],
     )
 
     bundle = co_occurrence.Bundle(
         corpus=corpus,
         corpus_tag=args.corpus_tag,
         corpus_folder=args.target_folder,
-        co_occurrences=compute_result.co_occurrences,
-        document_index=compute_result.document_index,
+        co_occurrences=value.co_occurrences,
+        document_index=value.document_index,
         compute_options=co_occurrence.create_options_bundle(
             reader_opts=config.text_reader_opts,
             tokens_transform_opts=args.tokens_transform_opts,
@@ -122,7 +118,6 @@ def test_spaCy_co_occurrence_workflow(config):
             extract_tokens_opts=args.extract_tagged_tokens_opts,
             input_filename=args.corpus_filename,
             output_filename=co_occurrence_filename,
-            partition_keys=[partition_key],
             count_threshold=args.count_threshold,
         ),
     )

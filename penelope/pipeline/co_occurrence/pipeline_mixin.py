@@ -23,7 +23,6 @@ class PipelineShortcutMixIn:
         context_opts: ContextOpts = None,
         transform_opts: TokensTransformOpts = None,
         global_threshold_count: int = None,
-        partition_key: str,
     ) -> pipelines.CorpusPipeline:
         """ (filename, DOCUMENT_CONTENT_TUPLES => DATAFRAME) """
         return self.add(
@@ -31,7 +30,6 @@ class PipelineShortcutMixIn:
                 context_opts=context_opts,
                 transform_opts=transform_opts,
                 global_threshold_count=global_threshold_count,
-                partition_key=partition_key,
             )
         )
 

@@ -51,7 +51,6 @@ def compute(
                 tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
                 context_opts=args.context_opts,
                 global_threshold_count=args.count_threshold,
-                partition_key=args.partition_keys[0],
             )
         )
 
@@ -80,7 +79,6 @@ def compute(
                 extract_tokens_opts=args.extract_tagged_tokens_opts,
                 input_filename=args.corpus_filename,
                 output_filename=target_filename,
-                partition_keys=args.partition_keys,
                 count_threshold=args.count_threshold,
             ),
         )

@@ -61,9 +61,9 @@ def FakeComputeOptsSpacyCSV(
             context_width=4,
             concept={},
             ignore_concept=False,
+            partition_keys=['document_id'],
         ),
         count_threshold=1,
-        partition_keys=['year'],
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
             lowercase=False,
@@ -118,9 +118,9 @@ def FakeComputeOptsSparvCSV(
         context_opts=ContextOpts(
             concept=('jag',),
             context_width=2,
+            partition_keys=['document_id'],
         ),
         count_threshold=1,
-        partition_keys=['year'],
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
         ),

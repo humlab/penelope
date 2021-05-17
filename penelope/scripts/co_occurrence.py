@@ -193,9 +193,9 @@ def process_co_ocurrence(
                 context_width=context_width,
                 concept=(concept or []),
                 ignore_concept=no_concept,
+                partition_keys=partition_key,
             ),
             tagged_tokens_filter_opts=PropertyValueMaskingOpts(),
-            partition_keys=partition_key,
             force=force,
         )
 

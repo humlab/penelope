@@ -61,7 +61,6 @@ class MainGUI:
         corpus_folder: str,
         data_folder: str,
         resources_folder: str,
-        default_partition_key='year',
     ) -> widgets.VBox:
 
         self.trends_data: TrendsData = None
@@ -75,7 +74,6 @@ class MainGUI:
             corpus_folder=corpus_folder,
             data_folder=data_folder,
             corpus_config=self.config,
-            default_partition_key=default_partition_key,
             compute_callback=compute_co_occurrence_callback,
             done_callback=self.display_explorer,
         )

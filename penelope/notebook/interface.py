@@ -34,7 +34,6 @@ class ComputeOpts:
 
     force: bool = field(init=True, default=False)
     context_opts: ContextOpts = None
-    partition_keys: List[str] = None
 
     dry_run: bool = field(init=False, default=False)
 
@@ -63,10 +62,10 @@ class ComputeOpts:
             if self.context_opts.context_width is None:
                 raise ValueError("please specify at width of context as max distance from concept")
 
-            if len(self.partition_keys or []) == 0:
+            if len(self.context_opts.partition_keys or []) == 0:
                 raise ValueError("please specify partition key")
 
-            if len(self.partition_keys) > 1:
+            if len(self.context_opts.partition_keys) > 1:
                 raise ValueError("only one partition key is allowed (for now)")
 
         return True
@@ -86,7 +85,6 @@ class ComputeOpts:
             'vectorize_opt': self.vectorize_opts.props,
             'count_threshold': self.count_threshold,
             'context_opts': {} if self.context_opts is None else self.context_opts.props,
-            'partition_keys': None if self.partition_keys is None else list(self.partition_keys),
         }
         return options
 
@@ -103,6 +101,9 @@ class ComputeOpts:
             if len(self.context_opts.concept or []) > 0:
                 options['--concept'] = self.context_opts.concept
 
+            if len(self.context_opts.partition_keys or []) > 0:
+                options['--partition-key'] = self.context_opts.partition_keys
+
         options['--count-threshold'] = self.count_threshold
 
         if self.extract_tagged_tokens_opts.phrases and len(self.extract_tagged_tokens_opts.phrases) > 0:
@@ -116,9 +117,6 @@ class ComputeOpts:
 
         if self.extract_tagged_tokens_opts.pos_excludes:
             options['--pos-excludes'] = self.extract_tagged_tokens_opts.pos_excludes
-
-        if len(self.partition_keys or []) > 0:
-            options['--partition-key'] = self.partition_keys
 
         if self.extract_tagged_tokens_opts.lemmatize:
             options['--lemmatize'] = True
