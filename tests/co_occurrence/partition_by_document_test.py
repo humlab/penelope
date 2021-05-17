@@ -2,7 +2,10 @@ import os
 
 import pytest
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult, store_bundle
-from penelope.co_occurrence.partition_by_document import compute_corpus_co_occurrence, co_occurrence_dataframe_to_vectorized_corpus
+from penelope.co_occurrence.partition_by_document import (
+    co_occurrence_dataframe_to_vectorized_corpus,
+    compute_corpus_co_occurrence,
+)
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 from tests.utils import OUTPUT_FOLDER, very_simple_corpus

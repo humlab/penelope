@@ -84,7 +84,7 @@ class ComputeGUI(BaseGUI):
             concept=self.concept_tokens,
             context_width=self._context_width.value,
             ignore_concept=self._ignore_concept.value,
-            partition_keys = [self._partition_key.value]
+            partition_keys=[self._partition_key.value],
         )
 
     @property
