@@ -23,7 +23,9 @@ def create(
 ) -> co_occurrence_gui.LoadGUI:
 
     gui: co_occurrence_gui.LoadGUI = co_occurrence_gui.LoadGUI(default_path=data_folder).setup(
-        filename_pattern=filename_pattern, load_callback=co_occurrence.load_bundle, loaded_callback=loaded_callback
+        filename_pattern=filename_pattern,
+        load_callback=co_occurrence.Bundle.load,
+        loaded_callback=loaded_callback,
     )
     return gui
 
@@ -80,7 +82,7 @@ class MainGUI:
 
         self.gui_load: co_occurrence_gui.LoadGUI = co_occurrence_gui.create_load_gui(
             data_folder=data_folder,
-            filename_pattern=co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
+            filename_pattern=co_occurrence.FILENAME_PATTERN,
             loaded_callback=self.display_explorer,
         )
 

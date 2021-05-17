@@ -8,13 +8,13 @@ from penelope.notebook.word_trends import TrendsData
 from .persistence import Bundle
 
 
-def to_trends_data(bundle: Bundle, n_count=25000):
+def to_trends_data(bundle: Bundle, n_count=25000) -> TrendsData:
 
     trends_data = TrendsData(
         compute_options=bundle.compute_options,
         corpus=bundle.corpus,
-        corpus_folder=bundle.corpus_folder,
-        corpus_tag=bundle.corpus_tag,
+        corpus_folder=bundle.folder,
+        corpus_tag=bundle.tag,
         n_count=n_count,
     ).remember(co_occurrences=bundle.co_occurrences, document_index=bundle.document_index)
 

@@ -2,9 +2,11 @@ import os
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
+import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import penelope.corpus.dtm as dtm
 import pytest
-from penelope.corpus import DocumentIndexHelper, TokensTransformOpts
+from penelope.corpus import DocumentIndexHelper, Token2Id, TokensTransformOpts
+from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDE_5DOCS
 from tests.utils import very_simple_corpus
 
@@ -13,22 +15,22 @@ jj = os.path.join
 
 def test_filename_to_folder_and_tag():
 
-    filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}'
-    folder, tag = co_occurrence.filename_to_folder_and_tag(filename)
+    filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
+    folder, tag = co_occurrence.to_folder_and_tag(filename)
     assert folder == './tests/test_data/VENUS'
     assert tag == 'VENUS'
 
 
 def test_folder_and_tag_to_filename():
-    expected_filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}'
+    expected_filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
     folder = './tests/test_data/VENUS'
     tag = 'VENUS'
-    filename = co_occurrence.folder_and_tag_to_filename(folder=folder, tag=tag)
+    filename = co_occurrence.to_filename(folder=folder, tag=tag)
     assert filename == expected_filename
 
 
 @pytest.mark.parametrize(
-    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}']
+    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.FILENAME_POSTFIX}']
 )
 def test_load_co_occurrences(filename):
 
@@ -44,7 +46,7 @@ def test_load_co_occurrences(filename):
 
 
 @pytest.mark.parametrize(
-    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.CO_OCCURRENCE_FILENAME_POSTFIX}']
+    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.FILENAME_POSTFIX}']
 )
 def test_store_co_occurrences(filename):
 
@@ -65,15 +67,17 @@ def test_store_co_occurrences(filename):
 
 def test_to_vectorized_corpus():
 
-    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
+    """Create an empty Bundle instance to get the filename right"""
+    bundle: co_occurrence.Bundle = co_occurrence.Bundle(folder='./tests/test_data/VENUS', tag="'VENUS")
 
-    index_filename = './tests/test_data/VENUS/VENUS_document_index.csv'
+    co_occurrences: CoOccurrenceDataFrame = co_occurrence.load_co_occurrences(bundle.co_occurrence_filename)
+    document_index: DocumentIndex = DocumentIndexHelper.load(bundle.document_index_filename).document_index
+    token2id: Token2Id = Token2Id.load(bundle.dictionary_filename)
 
-    co_occurrences = co_occurrence.load_co_occurrences(filename)
-    document_index = DocumentIndexHelper.load(index_filename).document_index
-    corpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
+    corpus = co_occurrence_module.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
+        token2id=token2id,
     )
 
     assert corpus.data.shape[0] == len(document_index)
@@ -106,12 +110,10 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
         .co_occurrence_matrix()
     )
 
-    co_occurrences = co_occurrence.partition_by_key.co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences = co_occurrence_module.co_occurrence_term_term_matrix_to_dataframe(
         term_term_matrix=term_term_matrix,
-        id2token=text_corpus.id2token,
-        document_index=text_corpus.document_index,
         threshold_count=1,
-        ignore_pad=None,
+        ignore_ids=None,
     )
 
     assert co_occurrences.value.sum() == term_term_matrix.sum()
@@ -130,6 +132,7 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
             ('tran_2020_02_test.txt', ['a', 'b', '*', '*']),
         ]
     )
+    id2token = {v: k for k, v in text_corpus.token2id.items()}
 
     term_term_matrix = (
         dtm.CorpusVectorizer()
@@ -137,25 +140,23 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
         .co_occurrence_matrix()
     )
 
-    co_occurrences = co_occurrence.partition_by_key.co_occurrence_term_term_matrix_to_dataframe(
+    ignore_id = id2token['*']
+
+    co_occurrences = co_occurrence_module.co_occurrence_term_term_matrix_to_dataframe(
         term_term_matrix=term_term_matrix,
-        id2token=text_corpus.id2token,
-        document_index=text_corpus.document_index,
         threshold_count=1,
-        ignore_pad='*',
-        transform_opts=None,
+        ignore_ids=set([ignore_id]),
     )
 
     assert not (co_occurrences.w1 == '*').any()
     assert not (co_occurrences.w2 == '*').any()
 
-    co_occurrences = co_occurrence.partition_by_key.co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences = co_occurrence_module.co_occurrence_term_term_matrix_to_dataframe(
         term_term_matrix=term_term_matrix,
-        id2token=text_corpus.id2token,
-        document_index=text_corpus.document_index,
         threshold_count=1,
-        ignore_pad='*',
-        transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"a"}),
+        ignore_ids=set([ignore_id]),
+        # FIXME: NOT IMPLEMENTED!!!
+        # transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"a"}),
     )
 
     # FIXME: Fails when running python in multiprocess mode
@@ -165,27 +166,30 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
 
 def test_load_and_store_bundle():
 
-    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
+    filename = co_occurrence.to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
 
-    bundle = co_occurrence.load_bundle(filename)
+    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
 
     assert bundle is not None
     assert isinstance(bundle.corpus, dtm.VectorizedCorpus)
     assert isinstance(bundle.co_occurrences, pd.DataFrame)
     assert isinstance(bundle.compute_options, dict)
-    assert bundle.corpus_folder == './tests/test_data/VENUS'
-    assert bundle.corpus_tag == 'VENUS'
+    assert bundle.folder == './tests/test_data/VENUS'
+    assert bundle.tag == 'VENUS'
 
     os.makedirs('./tests/output/MARS', exist_ok=True)
-    filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/output', tag='MARS')
-    co_occurrence.store_bundle(filename, bundle)
 
-    assert os.path.isfile(filename)
+    expected_filename = co_occurrence.to_filename(folder='./tests/output/MARS', tag='MARS')
+
+    bundle.store(folder='./tests/output/MARS', tag='MARS')
+
+    assert bundle.co_occurrence_filename == expected_filename
+    assert os.path.isfile(bundle.co_occurrence_filename)
 
 
 def test_to_trends_data():
     filename: str = './tests/test_data/VENUS/VENUS_co-occurrence.csv.zip'
-    bundle = co_occurrence.load_bundle(filename, compute_corpus=False)
+    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_corpus=False)
 
     trends_data = co_occurrence.to_trends_data(bundle).update()
 
@@ -193,7 +197,7 @@ def test_to_trends_data():
 
 
 def test_load_options():
-    filename: str = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
+    filename: str = co_occurrence.to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
     opts = co_occurrence.load_options(filename)
     assert opts is not None
 

@@ -14,7 +14,7 @@ def test_create_load_co_occurrences_gui():
     gui = co_occurrences_gui.create_load_gui(data_folder=DATA_FOLDER)
 
     gui = gui.setup(
-        filename_pattern=co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
+        filename_pattern=co_occurrence.FILENAME_PATTERN,
         load_callback=load_callback,
         loaded_callback=loaded_callback,
     )

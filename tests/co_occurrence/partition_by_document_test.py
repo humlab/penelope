@@ -1,11 +1,12 @@
 import os
 
 import pytest
-from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult, store_bundle
+from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult
 from penelope.co_occurrence.partition_by_document import (
     co_occurrence_dataframe_to_vectorized_corpus,
     compute_corpus_co_occurrence,
 )
+from penelope.co_occurrence.persistence import to_filename
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 from tests.utils import OUTPUT_FOLDER, very_simple_corpus
@@ -37,12 +38,14 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
     assert len(value.co_occurrences) > 0
 
 
-@pytest.mark.parametrize(
-    'filename', ['partitioned_concept_co_occurrences_data.csv', 'partitioned_concept_co_occurrences_data.zip']
-)
-def test_store_when_co_occurrences_data_is_partitioned(filename):
+def test_store_when_co_occurrences_data_is_partitioned():
 
-    expected_filename = jj(OUTPUT_FOLDER, filename)
+    tag: str = "JUPYTER"
+    folder: str = jj(OUTPUT_FOLDER, tag)
+    filename: str = to_filename(folder=folder, tag=tag)
+
+    os.makedirs(folder, exist_ok=True)
+
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
@@ -53,7 +56,7 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
         ignore_pad=None,
     )
 
-    dtm_corpus = co_occurrence_dataframe_to_vectorized_corpus(
+    corpus = co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         token2id=corpus.token2id,
@@ -62,16 +65,16 @@ def test_store_when_co_occurrences_data_is_partitioned(filename):
     bundle: Bundle = Bundle(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
-        co_occurrences_filename=expected_filename,
+        token2id=value.token2id,
         compute_options={},
-        corpus=dtm_corpus,
-        corpus_folder='./tests/output',
-        corpus_tag='partitioned_concept_co_occurrences_data',
+        corpus=corpus,
+        folder=folder,
+        tag=tag,
     )
 
-    store_bundle(expected_filename, bundle)
+    bundle.store()
 
-    assert os.path.isfile(expected_filename)
+    assert os.path.isfile(filename)
 
     # os.remove(expected_filename)
 
@@ -133,7 +136,7 @@ def test_create_document_co_occurrences(filename):  # pylint: disable=unused-arg
     #     corpus_tag='partitioned_concept_co_occurrences_data',
     # )
 
-    # store_bundle(expected_filename, bundle)
+    # bundle.store()
 
     # assert os.path.isfile(expected_filename)
 

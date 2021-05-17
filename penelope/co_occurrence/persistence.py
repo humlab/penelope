@@ -18,28 +18,143 @@ from penelope.corpus import (
 from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
-from .interface import ContextOpts
+from .interface import ContextOpts, CoOccurrenceError
 
-CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
-CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
+jj = os.path.join
 
-
-def filename_to_folder_and_tag(co_occurrences_filename: str) -> Tuple[str, str]:
-    """Strips out corpus folder and tag from filename having CO_OCCURRENCE_FILENAME_POSTFIX ending"""
-    corpus_folder, corpus_basename = os.path.split(co_occurrences_filename)
-    corpus_tag = right_chop(corpus_basename, CO_OCCURRENCE_FILENAME_POSTFIX)
-    return corpus_folder, corpus_tag
+FILENAME_POSTFIX = '_co-occurrence.csv.zip'
+FILENAME_PATTERN = f'*{FILENAME_POSTFIX}'
+DOCUMENT_INDEX_POSTFIX = '_co-occurrence.document_index.zip'
+DICTIONARY_POSTFIX = '_co-occurrence.dictionary.zip'
 
 
-def tag_to_filename(*, tag: str) -> str:
-    return f"{tag}{CO_OCCURRENCE_FILENAME_POSTFIX}"
+def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[str, str]:
+    """Strips out corpus folder and tag from filename having `postfix` ending"""
+    folder, corpus_basename = os.path.split(filename)
+    tag = right_chop(corpus_basename, postfix)
+    return folder, tag
 
 
-def folder_and_tag_to_filename(*, folder: str, tag: str) -> str:
-    return os.path.join(folder, tag_to_filename(tag=tag))
+def to_filename(*, folder: str, tag: str, postfix: str = FILENAME_POSTFIX) -> str:
+    return os.path.join(folder, f"{tag}{postfix}")
 
 
-def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame):
+@dataclass
+class Bundle:
+
+    folder: str = None
+    tag: str = None
+
+    co_occurrences: pd.DataFrame = None
+    document_index: DocumentIndex = None
+    token2id: Token2Id = None
+
+    corpus: VectorizedCorpus = None
+    compute_options: dict = None
+
+    def _get_filename(self, postfix: str) -> str:
+        return f"{self.tag}{postfix}"
+
+    def _get_path(self, postfix: str) -> str:
+        return to_filename(folder=self.folder, tag=self.tag, postfix=postfix)
+
+    @property
+    def co_occurrence_filename(self) -> str:
+        return self._get_path(FILENAME_POSTFIX)
+
+    @property
+    def document_index_filename(self) -> str:
+        return self._get_path(DOCUMENT_INDEX_POSTFIX)
+
+    @property
+    def dictionary_filename(self) -> str:
+        return self._get_path(DICTIONARY_POSTFIX)
+
+    @property
+    def options_filename(self) -> str:
+        return replace_extension(self.co_occurrence_filename, 'json')
+
+    def store(self, *, folder: str = None, tag: str = None) -> "Bundle":
+
+        if tag and folder:
+            self.tag, self.folder = tag, folder
+
+        if not (self.tag and self.folder):
+            raise CoOccurrenceError("store failed (folder and/or tag not specfied)")
+
+        store_co_occurrences(self.co_occurrence_filename, self.co_occurrences)
+        store_corpus(corpus=self.corpus, folder=self.folder, tag=self.tag, options=self.compute_options)
+
+        self.token2id.store(self.dictionary_filename)
+
+        DocumentIndexHelper(self.document_index).store(self.document_index_filename)
+
+        """Also save options with same name as co-occurrence file"""
+        with open(self.options_filename, 'w') as json_file:
+            json.dump(self.compute_options, json_file, indent=4)
+
+        return self
+
+    @staticmethod
+    def load(filename: str = None, folder: str = None, tag: str = None, compute_corpus: bool = True) -> "Bundle":
+        """Loads bundle identified by given filename i.e. `folder`/`tag`{FILENAME_POSTFIX}"""
+
+        if filename:
+            folder, tag = to_folder_and_tag(filename)
+        elif folder and tag:
+            filename = to_filename(folder=folder, tag=tag)
+        else:
+            raise CoOccurrenceError("load: filename and folder/tag cannot both be empty")
+
+        co_occurrences: CoOccurrenceDataFrame = load_co_occurrences(filename)
+        document_index: DocumentIndex = load_document_index(folder, tag)
+        corpus: VectorizedCorpus = load_corpus(folder, tag)
+        corpus_options: dict = VectorizedCorpus.load_options(folder=folder, tag=tag)
+        options: dict = load_options(filename) or corpus_options
+        token2id: Token2Id = load_dictionary(folder, tag)
+
+        if token2id is None:
+            raise CoOccurrenceError("Dictionary is missing - please reprocess setup!")
+
+        if corpus is None and compute_corpus:
+            raise ValueError("Compute of corpus during load is disabled")
+            # corpus = to_vectorized_corpus(
+            #     co_occurrences=co_occurrences,
+            #     document_index=document_index,
+            #     token2id=token2id,
+            # )
+
+        bundle = Bundle(
+            folder=folder,
+            tag=tag,
+            co_occurrences=co_occurrences,
+            document_index=document_index,
+            token2id=token2id,
+            compute_options=options,
+            corpus=corpus,
+        )
+
+        return bundle
+
+
+def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:
+
+    if corpus is None:
+        return None
+
+    corpus.dump(tag=tag, folder=folder)
+    corpus.dump_options(tag=tag, folder=folder, options=options)
+
+
+def load_corpus(corpus_folder: str, corpus_tag: str) -> VectorizedCorpus:
+    return (
+        VectorizedCorpus.load(folder=corpus_folder, tag=corpus_tag)
+        if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)
+        else None
+    )
+
+
+def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame) -> None:
     """Store co-occurrence result data to CSV-file"""
 
     if filename.endswith('zip'):
@@ -85,117 +200,31 @@ def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
 def load_feather(filename: str) -> CoOccurrenceDataFrame:
     feather_filename: str = replace_extension(filename, ".feather")
     if os.path.isfile(feather_filename):
-        logger.info("loading FEATHER file")
         co_occurrences: pd.DataFrame = pd.read_feather(feather_filename)
-        logger.info(f"COLUMNS (after load): {', '.join(co_occurrences.columns.tolist())}")
         return co_occurrences
-    logger.info("FEATHER load FAILED")
     return None
 
 
 def store_feather(filename: str, co_occurrences: CoOccurrenceDataFrame) -> None:
     feather_filename: str = replace_extension(filename, ".feather")
-    # with contextlib.suppress(Exception):
-    #     logger.info("caching to FEATHER file")
-    logger.info(f"COLUMNS: {', '.join(co_occurrences.columns.tolist())}")
     co_occurrences = co_occurrences.reset_index()
     co_occurrences.to_feather(feather_filename, compression="lz4")
-    logger.info(f"COLUMNS (after reset): {', '.join(co_occurrences.columns.tolist())}")
 
 
-@dataclass
-class Bundle:
-
-    co_occurrences_filename: str = None
-    corpus_folder: str = None
-    corpus_tag: str = None
-
-    co_occurrences: pd.DataFrame = None
-    document_index: DocumentIndex = None
-    token2id: Token2Id = None
-
-    corpus: VectorizedCorpus = None
-    compute_options: dict = None
+def load_document_index(folder: str, tag: str) -> DocumentIndex:
+    path: str = to_filename(folder=folder, tag=tag, postfix=DOCUMENT_INDEX_POSTFIX)
+    document_index = DocumentIndexHelper.load(path).document_index
+    return document_index
 
 
-def store_bundle(output_filename: str, bundle: Bundle) -> Bundle:
-
-    store_co_occurrences(output_filename, bundle.co_occurrences)
-
-    if bundle.corpus is not None:
-
-        if bundle.corpus_tag is None:
-            bundle.corpus_tag = strip_path_and_extension(output_filename)
-
-        bundle.corpus_folder = os.path.split(output_filename)[0]
-        bundle.corpus.dump(tag=bundle.corpus_tag, folder=bundle.corpus_folder)
-        bundle.corpus.dump_options(
-            tag=bundle.corpus_tag,
-            folder=bundle.corpus_folder,
-            options=bundle.compute_options,
-        )
-
-        if bundle.token2id is not None:
-            bundle.token2id.store(os.path.join(bundle.corpus_folder, "dictionary.zip"))
-
-        DocumentIndexHelper(bundle.document_index).store(
-            os.path.join(bundle.corpus_folder, f"{bundle.corpus_tag}_document_index.csv")
-        )
-
-    """Also save options with same name as co-occurrence file"""
-    with open(replace_extension(output_filename, 'json'), 'w') as json_file:
-        json.dump(bundle.compute_options, json_file, indent=4)
+def store_document_index(document_index: DocumentIndex, filename: str) -> None:
+    DocumentIndexHelper(document_index).store(filename)
 
 
-def load_bundle(co_occurrences_filename: str, compute_corpus: bool = True) -> "Bundle":
-    """Loads bundle identified by given filename i.e. `corpus_folder`/`corpus_tag`_co-occurrence.csv.zip"""
-
-    corpus_folder, corpus_tag = filename_to_folder_and_tag(co_occurrences_filename)
-    co_occurrences = load_co_occurrences(co_occurrences_filename)
-    document_index = DocumentIndexHelper.load(
-        os.path.join(corpus_folder, f"{corpus_tag}_document_index.csv")
-    ).document_index
-    corpus = (
-        VectorizedCorpus.load(folder=corpus_folder, tag=corpus_tag)
-        if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)
-        else None
-    )
-    corpus_options: dict = VectorizedCorpus.load_options(folder=corpus_folder, tag=corpus_tag)
-    options = load_options(co_occurrences_filename) or corpus_options
-
-    token2id: Token2Id = Token2Id.load(os.path.join(corpus_folder, "dictionary.zip"))
-
-    # FIXME: This patch should be deprecated (Token2Id must exists!)
-    if token2id is None and 'w1' in co_occurrences.columns:
-        logger.info("no vocabulary in bundle (creating a new vocabulary from co-occurrences)")
-        token2id = Token2Id()
-        token2id.ingest(co_occurrences.w1)
-        token2id.ingest(co_occurrences.w2)
-
-    if corpus is None and compute_corpus:
-        raise ValueError("Compute of corpus during load is disabled")
-        # if len(options.get('partition_keys', []) or []) == 0:
-        #     raise ValueError("load_bundle: cannot load, unknown partition key")
-
-        # partition_key = options['partition_keys'][0]
-        # corpus = to_vectorized_corpus(
-        #     co_occurrences=co_occurrences,
-        #     document_index=document_index,
-        #     partition_key=partition_key,
-        # )
-
-    bundle = Bundle(
-        co_occurrences_filename=co_occurrences_filename,
-        corpus_folder=corpus_folder,
-        corpus_tag=corpus_tag,
-        co_occurrences=co_occurrences,
-        document_index=document_index,
-        token2id=token2id,
-        compute_options=options,
-        corpus=corpus,
-    )
-
-    return bundle
+def load_dictionary(folder: str, tag: str) -> Token2Id:
+    path: str = to_filename(folder=folder, tag=tag, postfix=DICTIONARY_POSTFIX)
+    token2id: Token2Id = Token2Id.load(path)
+    return token2id
 
 
 def load_options(co_occurrences_filename: str) -> dict:
