@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable
 
-from penelope import co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
-from penelope.utility import PropertyValueMaskingOpts, deprecated
+from penelope.utility import PropertyValueMaskingOpts
 
 from . import tasks
-from .checkpoint import CheckpointOpts
-from .co_occurrence import tasks as coo_tasks
 
 if TYPE_CHECKING:
+    from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
+
     from . import pipelines
+    from .checkpoint import CheckpointOpts
 # pylint: disable=too-many-public-methods
 
 
@@ -99,55 +98,6 @@ class PipelineShortcutMixIn:
     def to_dtm(self: pipelines.CorpusPipeline, vectorize_opts: VectorizeOpts = None) -> pipelines.CorpusPipeline:
         """ (filename, TEXT => DTM) """
         return self.add(tasks.TextToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
-
-    @deprecated
-    def to_corpus_co_occurrence(
-        self: pipelines.CorpusPipeline,
-        *,
-        context_opts: co_occurrence.ContextOpts = None,
-        transform_opts: TokensTransformOpts = None,
-        global_threshold_count: int = None,
-        partition_key: str,
-    ) -> pipelines.CorpusPipeline:
-        """ (filename, DOCUMENT_CONTENT_TUPLES => DATAFRAME) """
-        return self.add(
-            coo_tasks.ToCorpusCoOccurrence(
-                context_opts=context_opts,
-                transform_opts=transform_opts,
-                global_threshold_count=global_threshold_count,
-                partition_key=partition_key,
-            )
-        )
-
-    def to_document_co_occurrence(
-        self: pipelines.CorpusPipeline,
-        *,
-        context_opts: co_occurrence.ContextOpts = None,
-        ingest_tokens: bool = True,
-    ) -> pipelines.CorpusPipeline:
-        """ TOKENS => CO_OCCURRENCE_DATAFRAME) """
-        return self.add(
-            coo_tasks.ToDocumentCoOccurrence(
-                context_opts=context_opts,
-                ingest_tokens=ingest_tokens,
-            )
-        )
-
-    def to_corpus_document_co_occurrence(
-        self: pipelines.CorpusPipeline,
-        *,
-        context_opts: co_occurrence.ContextOpts = None,
-        global_threshold_count: int = 1,
-        ignore_pad: bool = False,
-    ) -> pipelines.CorpusPipeline:
-        """ TOKENS => CO_OCCURRENCE_DATAFRAME) """
-        return self.add(
-            coo_tasks.ToCorpusDocumentCoOccurrence(
-                context_opts=context_opts,
-                global_threshold_count=global_threshold_count,
-                ignore_pad=ignore_pad,
-            )
-        )
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())
