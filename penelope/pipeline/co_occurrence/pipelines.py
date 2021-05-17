@@ -12,7 +12,6 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     tokens_transform_opts: TokensTransformOpts = None,  # pylint: disable=unused-argument
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
-    ignore_pad: bool = False,
     **kwargs,  # pylint: disable=unused-argument
 ):
     try:
@@ -29,7 +28,6 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
             .to_corpus_document_co_occurrence(
                 context_opts=context_opts,
                 global_threshold_count=global_threshold_count,
-                ignore_pad=ignore_pad,
             )
         )
 

@@ -50,7 +50,7 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
         # .tokens_transform(tokens_transform_opts=transform_opts)
         .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
         # .tqdm()
-        .to_corpus_document_co_occurrence(context_opts=context_opts, global_threshold_count=1, ignore_pad=False)
+        .to_corpus_document_co_occurrence(context_opts=context_opts, global_threshold_count=1)
     )
 
     value: CoOccurrenceComputeResult = pipeline.value()

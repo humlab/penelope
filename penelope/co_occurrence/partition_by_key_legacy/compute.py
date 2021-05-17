@@ -4,7 +4,7 @@ import more_itertools
 import pandas as pd
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, TokensTransformOpts
 from penelope.type_alias import FilenameTokensTuples
-from penelope.utility import strip_path_and_extension
+from penelope.utility import deprecated, strip_path_and_extension
 from tqdm.auto import tqdm
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
@@ -18,6 +18,7 @@ from .convert import (
 
 
 # FIXME: #94 Enable partition by alternative keys (apart from year)
+@deprecated
 def compute_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
@@ -27,7 +28,6 @@ def compute_corpus_co_occurrence(
     transform_opts: TokensTransformOpts,
     partition_key: str,
     global_threshold_count: int,
-    ignore_pad: str = None,
 ) -> CoOccurrenceComputeResult:
 
     if token2id is None:
@@ -81,7 +81,6 @@ def compute_corpus_co_occurrence(
             document_index=document_index,
             context_opts=context_opts,
             threshold_count=1,
-            ignore_pad=ignore_pad,
             transform_opts=transform_opts,
         )
 
@@ -104,6 +103,7 @@ def compute_corpus_co_occurrence(
     return CoOccurrenceComputeResult(co_occurrences=co_occurrences, document_index=co_document_index)
 
 
+@deprecated
 def compute_co_occurrence(
     stream: FilenameTokensTuples,
     *,
@@ -111,7 +111,6 @@ def compute_co_occurrence(
     document_index: DocumentIndex,
     context_opts: ContextOpts,
     threshold_count: int = 1,
-    ignore_pad: str = None,
     transform_opts: TokensTransformOpts = None,
 ) -> pd.DataFrame:
     """Computes a concept co-occurrence dataframe for given arguments
@@ -142,13 +141,13 @@ def compute_co_occurrence(
     windowed_corpus = to_vectorized_windows_corpus(stream=stream, token2id=token2id, context_opts=context_opts)
 
     co_occurrence_matrix = windowed_corpus.co_occurrence_matrix()
-
+    ignore_ids: set = {token2id[context_opts.pad]} if context_opts.ignore_padding else None
     co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(
         co_occurrence_matrix,
         id2token=windowed_corpus.id2token,
         document_index=document_index,
         threshold_count=threshold_count,
-        ignore_pad=ignore_pad,
+        ignore_ids=ignore_ids,
         transform_opts=transform_opts,
     )
 

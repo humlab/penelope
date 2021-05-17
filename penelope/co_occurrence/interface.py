@@ -41,6 +41,7 @@ class ContextOpts:
     ignore_concept: bool = False
     pad: Token = field(default="*")
     partition_keys: List[str] = field(default_factory=list)
+    ignore_padding: bool = False
 
     @property
     def props(self):
@@ -49,5 +50,6 @@ class ContextOpts:
             concept=list(self.concept),
             ignore_concept=self.ignore_concept,
             padding=self.pad,
+            ignore_padding=self.ignore_padding,
             partition_keys=self.partition_keys,
         )

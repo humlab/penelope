@@ -19,7 +19,6 @@ def compute_corpus_co_occurrence(
     context_opts: ContextOpts,
     global_threshold_count: int,
     ingest_tokens: bool = True,
-    ignore_pad: bool = None,
 ) -> CoOccurrenceComputeResult:
 
     if token2id is None:
@@ -44,7 +43,7 @@ def compute_corpus_co_occurrence(
 
     vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(token2id)
 
-    ignore_ids: Set[int] = None if not ignore_pad else {token2id.id2token[context_opts.pad]}
+    ignore_ids: Set[int] = None if not context_opts.ignore_padding else {token2id.id2token[context_opts.pad]}
 
     for filename, tokens in stream:
 

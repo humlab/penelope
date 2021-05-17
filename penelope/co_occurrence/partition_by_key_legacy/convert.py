@@ -6,12 +6,14 @@ import scipy
 from loguru import logger
 from penelope.corpus import CorpusVectorizer, TokensTransformer, TokensTransformOpts, VectorizedCorpus
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex, FilenameTokensTuples
+from penelope.utility import deprecated
 
 from ..interface import ContextOpts, CoOccurrenceError, PartitionKeyNotUniqueKey
 from ..windows_corpus import WindowsCorpus
 from ..windows_utility import corpus_to_windows
 
 
+@deprecated
 def to_vectorized_windows_corpus(
     *,
     stream: FilenameTokensTuples,
@@ -28,6 +30,7 @@ def to_vectorized_windows_corpus(
     return corpus
 
 
+@deprecated
 def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
     if len(co_occurrences) == 0:
         return co_occurrences
@@ -39,12 +42,13 @@ def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -
     return filtered_co_occurrences
 
 
+@deprecated
 def co_occurrence_term_term_matrix_to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
     document_index: DocumentIndex = None,
     threshold_count: int = 1,
-    ignore_pad: str = None,
+    ignore_ids: set = None,
     transform_opts: TokensTransformOpts = None,
 ) -> CoOccurrenceDataFrame:
     """Converts a TTM to a Pandas DataFrame
@@ -99,12 +103,14 @@ def co_occurrence_term_term_matrix_to_dataframe(
             else:
                 logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document catalogue")
 
+    if ignore_ids:
+        co_occurrences = co_occurrences[
+            (~co_occurrences.w1_id.isin(ignore_ids) & ~co_occurrences.w2_id.isin(ignore_ids))
+        ]
+
     # FIXME: If keep function then do not store w1/w2!!!!
     co_occurrences['w1'] = co_occurrences.w1_id.apply(lambda x: id2token[x])
     co_occurrences['w2'] = co_occurrences.w2_id.apply(lambda x: id2token[x])
-
-    if ignore_pad is not None:
-        co_occurrences = co_occurrences[((co_occurrences.w1 != ignore_pad) & (co_occurrences.w2 != ignore_pad))]
 
     # FIXME #104 Co-occurrences.to_dataframe: Keep w1_id och w2_id + Token2Id. Drop w1 & w2
     # FIXME #105 Co-occurrences.to_dataframe: Drop value_n_d
@@ -119,6 +125,7 @@ def co_occurrence_term_term_matrix_to_dataframe(
     return co_occurrences
 
 
+@deprecated
 def co_occurrence_dataframe_to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,

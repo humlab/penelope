@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from penelope.co_occurrence.partition_by_key import co_occurrence_term_term_matrix_to_dataframe
+from penelope.co_occurrence.partition_by_document import co_occurrence_term_term_matrix_to_dataframe
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import PandasCorpusReader
 
@@ -190,24 +190,13 @@ class Test_DataFrameVectorize(unittest.TestCase):
         term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
-        coo_df = co_occurrence_term_term_matrix_to_dataframe(
-            term_term_matrix, corpus.id2token, corpus.document_index, ignore_pad=None, transform_opts=None
-        )
+        coo_df = co_occurrence_term_term_matrix_to_dataframe(term_term_matrix, threshold_count=1, ignore_ids=set())
+        coo_df['w1'] = coo_df.w1_id.apply(corpus.token2id.get)
+        coo_df['w2'] = coo_df.w2_id.apply(corpus.token2id.get)
 
         # Assert
         assert 2 == int(coo_df[((coo_df.w1 == 'A') & (coo_df.w2 == 'B'))].value)
         assert 0 == len(coo_df[((coo_df.w1 == 'C') & (coo_df.w2 == 'F'))])
-
-        coo_df2 = co_occurrence_term_term_matrix_to_dataframe(
-            term_term_matrix,
-            corpus.id2token,
-            corpus.document_index,
-            ignore_pad=None,
-            # Post-compute transform options:
-            transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"A"}),
-        )
-
-        assert len(coo_df2) <= len(coo_df)
 
     def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted(self):
         corpus = self.create_simple_test_corpus(

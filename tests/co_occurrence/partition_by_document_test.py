@@ -31,7 +31,6 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         token2id=corpus.token2id,
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=context_width),
         global_threshold_count=threshold_count,
-        ignore_pad=None,
     )
 
     assert value is not None
@@ -53,7 +52,6 @@ def test_store_when_co_occurrences_data_is_partitioned():
         token2id=corpus.token2id,
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         global_threshold_count=1,
-        ignore_pad=None,
     )
 
     corpus = co_occurrence_dataframe_to_vectorized_corpus(
@@ -96,7 +94,6 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
         token2id=corpus.token2id,
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=context_width),
         global_threshold_count=threshold_count,
-        ignore_pad=None,
     )
 
     assert value is not None
@@ -115,7 +112,6 @@ def test_create_document_co_occurrences(filename):  # pylint: disable=unused-arg
         document_index=corpus.document_index,
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         global_threshold_count=1,
-        ignore_pad=None,
     )
 
     assert value is not None
@@ -166,7 +162,6 @@ def test_document_wise_co_occurrence():
         token2id=corpus.token2id,
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
         global_threshold_count=None,
-        ignore_pad=None,
     )
 
     assert value is not None

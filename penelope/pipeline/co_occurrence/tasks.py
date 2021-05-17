@@ -4,8 +4,7 @@ from typing import Any, Iterable, List, Optional
 
 import pandas as pd
 from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError, partition_by_document
-from penelope.corpus import Token2Id, TokensTransformOpts, VectorizedCorpus
-from penelope.utility import deprecated
+from penelope.corpus import Token2Id, VectorizedCorpus
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 
@@ -44,6 +43,8 @@ class ToDocumentCoOccurrence(ITask):
 
         tokens: Iterable[str] = payload.content
 
+        ignore_ids: set = {self.token2id[self.context_opts.pad]} if self.context_opts else None
+
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
 
@@ -56,6 +57,7 @@ class ToDocumentCoOccurrence(ITask):
             vectorizer=self.vectorizer,
             tokens=tokens,
             context_opts=self.context_opts,
+            ignore_ids=ignore_ids,
         )
 
         co_occurrences['document_id'] = self.get_document_id(payload)
@@ -76,7 +78,6 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
     context_opts: ContextOpts = None
     global_threshold_count: int = 1
-    ignore_pad: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
@@ -97,9 +98,10 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
         token2id: Token2Id = self.pipeline.payload.token2id
 
-        if self.ignore_pad:
-            pad_id: int = token2id[self.context_opts.pad]
-            co_occurrences = co_occurrences[((co_occurrences.w1_id != pad_id) & (co_occurrences.w2_id != pad_id))]
+        # FIXME This is already taken care of in ToDocumentCoOccurrence!
+        # if self.context_opts.ignore_padding:
+        #     pad_id: int = token2id[self.context_opts.pad]
+        #     co_occurrences = co_occurrences[((co_occurrences.w1_id != pad_id) & (co_occurrences.w2_id != pad_id))]
 
         if len(co_occurrences) > 0 and self.global_threshold_count > 1:
             co_occurrences = co_occurrences[
@@ -147,7 +149,6 @@ class ToCorpusDocumentCoOccurrence(ITask):
 #     context_opts: ContextOpts = None
 #     transform_opts: TokensTransformOpts = None
 #     global_threshold_count: int = None
-#     ignore_pad: str = field(default='*')
 
 #     def __post_init__(self):
 #         self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
@@ -173,7 +174,6 @@ class ToCorpusDocumentCoOccurrence(ITask):
 #             context_opts=self.context_opts,
 #             transform_opts=self.transform_opts,
 #             global_threshold_count=self.global_threshold_count,
-#             ignore_pad=self.ignore_pad,
 #         )
 #         yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=value)
 
