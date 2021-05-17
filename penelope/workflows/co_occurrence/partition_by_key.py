@@ -3,11 +3,10 @@ from typing import Optional
 
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
+from loguru import logger
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
-from penelope.utility import getLogger
-
-logger = getLogger('penelope')
+from penelope.utility import deprecated
 
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
@@ -18,6 +17,7 @@ class ZeroComputeError(ValueError):
 
 
 # pylint: disable=unused-argument
+@deprecated
 def compute(
     args: interface.ComputeOpts,
     corpus_config: pipeline.CorpusConfig,
@@ -77,7 +77,7 @@ def compute(
             corpus_folder=args.target_folder,
             co_occurrences=value.co_occurrences,
             document_index=value.document_index,
-            token2id=p.payload.token2id,
+            token2id=value.token2id,
             compute_options=co_occurrence.create_options_bundle(
                 reader_opts=corpus_config.text_reader_opts,
                 tokens_transform_opts=args.tokens_transform_opts,
