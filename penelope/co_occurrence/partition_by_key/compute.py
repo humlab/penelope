@@ -8,7 +8,7 @@ from penelope.utility import strip_path_and_extension
 from tqdm.auto import tqdm
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
-from .convert import co_occurrence_term_term_matrix_to_dataframe, to_vectorized_windows_corpus
+from .convert import truncate_by_global_threshold, co_occurrence_term_term_matrix_to_dataframe, to_vectorized_windows_corpus
 
 # pylint: disable=ungrouped-imports
 
@@ -95,7 +95,7 @@ def compute_corpus_co_occurrence(
         ).document_index
     )
 
-    co_occurrences = _filter_co_coccurrences_by_global_threshold(co_occurrences, global_threshold_count)
+    co_occurrences = truncate_by_global_threshold(co_occurrences, global_threshold_count)
 
     return CoOccurrenceComputeResult(co_occurrences=co_occurrences, document_index=co_document_index)
 
@@ -150,13 +150,3 @@ def compute_co_occurrence(
 
     return co_occurrences
 
-
-def _filter_co_coccurrences_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
-    if len(co_occurrences) == 0:
-        return co_occurrences
-    if threshold is None or threshold <= 1:
-        return co_occurrences
-    filtered_co_occurrences = co_occurrences[
-        co_occurrences.groupby(["w1", "w2"])['value'].transform('sum') >= threshold
-    ]
-    return filtered_co_occurrences

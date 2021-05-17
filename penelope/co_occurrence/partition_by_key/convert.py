@@ -30,7 +30,7 @@ def to_vectorized_windows_corpus(
     return corpus
 
 
-def to_vectorized_corpus(
+def co_occurrence_dataframe_to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
     document_index: DocumentIndex,
@@ -72,6 +72,16 @@ def to_vectorized_corpus(
 
     return v_corpus
 
+
+def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -> pd.DataFrame:
+    if len(co_occurrences) == 0:
+        return co_occurrences
+    if threshold is None or threshold <= 1:
+        return co_occurrences
+    filtered_co_occurrences = co_occurrences[
+        co_occurrences.groupby(["w1", "w2"])['value'].transform('sum') >= threshold
+    ]
+    return filtered_co_occurrences
 
 def co_occurrence_term_term_matrix_to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
