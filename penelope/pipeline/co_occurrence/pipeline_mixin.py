@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from penelope.co_occurrence import ContextOpts
     from penelope.corpus import TokensTransformOpts
 
-    from . import pipelines
+    from .. import pipelines
 
 
 class PipelineShortcutMixIn:

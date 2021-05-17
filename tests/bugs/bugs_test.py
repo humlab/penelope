@@ -3,7 +3,7 @@ import penelope.notebook.interface as interface
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
-from penelope.pipeline.pipelines import wildcard_to_DTM_pipeline
+from penelope.pipeline.dtm import wildcard_to_DTM_pipeline
 from penelope.utility import PropertyValueMaskingOpts
 
 

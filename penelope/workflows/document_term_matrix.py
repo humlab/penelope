@@ -3,7 +3,7 @@ import os
 import penelope.corpus.dtm as dtm
 from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusConfig
-from penelope.pipeline.pipelines import wildcard_to_DTM_pipeline
+from penelope.pipeline.dtm import wildcard_to_DTM_pipeline
 
 CheckpointPath = str
 
