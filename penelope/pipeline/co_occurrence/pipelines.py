@@ -13,7 +13,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     ignore_pad: bool = False,
-    **kwargs,
+    **kwargs,  # pylint: disable=unused-argument
 ):
     try:
         # FIXME: tokens_transform_opts ignored
