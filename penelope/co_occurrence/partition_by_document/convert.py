@@ -3,7 +3,6 @@ from typing import Set
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.co_occurrence import Token
 from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.type_alias import CoOccurrenceDataFrame
 

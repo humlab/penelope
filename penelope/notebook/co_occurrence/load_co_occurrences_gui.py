@@ -108,7 +108,7 @@ class LoadGUI:
 @debug_view.capture(clear_output=CLEAR_OUTPUT)
 def create_load_gui(
     data_folder: str,
-    filename_pattern: str = co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
+    filename_pattern: str = co_occurrence.FILENAME_PATTERN,
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> "LoadGUI":
 

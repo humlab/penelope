@@ -42,7 +42,6 @@ document_index = document_index.set_index('document_id', drop=False).rename_axis
 # %%
 len(document_index)
 # %%
-document_index.index.size
 # %%
 token_ids = co_occurrences.merge(
     token_pairs.set_index(['w1_id', 'w2_id']),

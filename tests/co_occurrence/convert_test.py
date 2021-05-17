@@ -5,7 +5,7 @@ import penelope.co_occurrence as co_occurrence
 import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import penelope.corpus.dtm as dtm
 import pytest
-from penelope.corpus import DocumentIndexHelper, Token2Id, TokensTransformOpts
+from penelope.corpus import DocumentIndexHelper, Token2Id
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDE_5DOCS
 from tests.utils import very_simple_corpus
@@ -158,6 +158,8 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
         # FIXME: NOT IMPLEMENTED!!!
         # transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"a"}),
     )
+    # co_occurrences['w1'] = co_occurrences.w1_id.apply(corpus.token2id.get)
+    # co_occurrences['w2'] = co_occurrences.w2_id.apply(corpus.token2id.get)
 
     # FIXME: Fails when running python in multiprocess mode
     # assert not (co_occurrences.w1 == 'a').any()

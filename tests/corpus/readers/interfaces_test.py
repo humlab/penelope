@@ -43,9 +43,9 @@ def test_interfaces_token2id_close():
 
 def test_interfaces_token2id_reverse():
 
-    token2id = Token2Id()
+    token2id: Token2Id = Token2Id()
 
-    id2token = token2id.ingest(['apa', 'banan', 'soffa']).id2token()
+    id2token = token2id.ingest(['apa', 'banan', 'soffa']).id2token
     assert id2token[0] == 'apa'
     assert id2token[1] == 'banan'
     assert id2token[2] == 'soffa'

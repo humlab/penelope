@@ -18,7 +18,7 @@ LAST_CONFIG = None
 
 def create(
     data_folder: str,
-    filename_pattern: str = co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
+    filename_pattern: str = co_occurrence.FILENAME_PATTERN,
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> co_occurrence_gui.LoadGUI:
 
@@ -52,7 +52,7 @@ def compute_co_occurrence_callback(
         )
         LAST_BUNDLE = bundle
         return bundle
-    except workflows.co_occurrence.ZeroComputeError:
+    except co_occurrence.ZeroComputeError:
         return None
 
 
