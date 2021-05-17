@@ -1,6 +1,7 @@
 import os
 
 import penelope.co_occurrence as co_occurrence
+import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import penelope.workflows as workflows
 import pytest
 from penelope.co_occurrence import CoOccurrenceComputeResult
@@ -48,7 +49,10 @@ def test_spaCy_co_occurrence_pipeline(config):
     tagged_tokens_filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
         is_punct=False,
     )
-    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(context_width=4, partition_keys=['document_id'])
+    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
+        context_width=4,
+        partition_keys=['document_id'],
+    )
     global_threshold_count: int = 1
 
     value: CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
@@ -97,18 +101,17 @@ def test_spaCy_co_occurrence_workflow(config):
     assert value.document_index is not None
     assert len(value.co_occurrences) > 0
 
-    co_occurrence_filename = co_occurrence.folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
-
-    corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
+    corpus: VectorizedCorpus = co_occurrence_module.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=value.co_occurrences,
+        token2id=value.token2id,
         document_index=value.document_index,
-        partition_key=args.context_opts.partition_keys[0],
+        # partition_key=args.context_opts.partition_keys[0],
     )
 
     bundle = co_occurrence.Bundle(
         corpus=corpus,
-        corpus_tag=args.corpus_tag,
-        corpus_folder=args.target_folder,
+        tag=args.corpus_tag,
+        folder=args.target_folder,
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         compute_options=co_occurrence.create_options_bundle(
@@ -117,12 +120,12 @@ def test_spaCy_co_occurrence_workflow(config):
             context_opts=args.context_opts,
             extract_tokens_opts=args.extract_tagged_tokens_opts,
             input_filename=args.corpus_filename,
-            output_filename=co_occurrence_filename,
+            output_filename=co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag),
             count_threshold=args.count_threshold,
         ),
     )
 
-    co_occurrence.store_bundle(co_occurrence_filename, bundle)
+    bundle.store()
 
 
 def test_spaCy_co_occurrence_pipeline3(config):

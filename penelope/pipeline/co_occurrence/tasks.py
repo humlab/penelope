@@ -3,13 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Optional
 
 import pandas as pd
-from penelope.co_occurrence import (
-    ContextOpts,
-    CoOccurrenceComputeResult,
-    CoOccurrenceError,
-    partition_by_document,
-    partition_by_key,
-)
+from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError, partition_by_document
 from penelope.corpus import Token2Id, TokensTransformOpts, VectorizedCorpus
 from penelope.utility import deprecated
 
@@ -141,47 +135,47 @@ class ToCorpusDocumentCoOccurrence(ITask):
         return None
 
 
-@deprecated
-@dataclass
-class ToCorpusCoOccurrence(ITask):
-    """Computes a (CORPUS-LEVEL) windows co-occurrence data.
+# @deprecated
+# @dataclass
+# class ToCorpusCoOccurrence(ITask):
+#     """Computes a (CORPUS-LEVEL) windows co-occurrence data.
 
-    Iterable[DocumentPayload] => ComputeResult
+#     Iterable[DocumentPayload] => ComputeResult
 
-    """
+#     """
 
-    context_opts: ContextOpts = None
-    transform_opts: TokensTransformOpts = None
-    global_threshold_count: int = None
-    ignore_pad: str = field(default='*')
+#     context_opts: ContextOpts = None
+#     transform_opts: TokensTransformOpts = None
+#     global_threshold_count: int = None
+#     ignore_pad: str = field(default='*')
 
-    def __post_init__(self):
-        self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
+#     def __post_init__(self):
+#         self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
+#         self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
 
-    def setup(self) -> ITask:
-        super().setup()
-        self.pipeline.put("context_opts", self.context_opts)
-        self.pipeline.put("global_threshold_count", self.global_threshold_count)
-        return self
+#     def setup(self) -> ITask:
+#         super().setup()
+#         self.pipeline.put("context_opts", self.context_opts)
+#         self.pipeline.put("global_threshold_count", self.global_threshold_count)
+#         return self
 
-    def process_stream(self) -> VectorizedCorpus:
+#     def process_stream(self) -> VectorizedCorpus:
 
-        # if self.pipeline.get_prior_content_type(self)  == ContentType.DOCUMENT_CONTENT_TUPLE:
-        instream = (x.content for x in self.instream)
-        # else:
-        #     instream = ((x.filename, x.content) for x in self.instream)
+#         # if self.pipeline.get_prior_content_type(self)  == ContentType.DOCUMENT_CONTENT_TUPLE:
+#         instream = (x.content for x in self.instream)
+#         # else:
+#         #     instream = ((x.filename, x.content) for x in self.instream)
 
-        value: CoOccurrenceComputeResult = partition_by_key.compute_corpus_co_occurrence(
-            stream=instream,
-            token2id=self.pipeline.payload.token2id,
-            document_index=self.pipeline.payload.document_index,
-            context_opts=self.context_opts,
-            transform_opts=self.transform_opts,
-            global_threshold_count=self.global_threshold_count,
-            ignore_pad=self.ignore_pad,
-        )
-        yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=value)
+#         value: CoOccurrenceComputeResult = partition_by_key.compute_corpus_co_occurrence(
+#             stream=instream,
+#             token2id=self.pipeline.payload.token2id,
+#             document_index=self.pipeline.payload.document_index,
+#             context_opts=self.context_opts,
+#             transform_opts=self.transform_opts,
+#             global_threshold_count=self.global_threshold_count,
+#             ignore_pad=self.ignore_pad,
+#         )
+#         yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=value)
 
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return None
+#     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+#         return None
