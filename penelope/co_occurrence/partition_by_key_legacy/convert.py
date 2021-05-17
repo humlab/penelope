@@ -4,14 +4,12 @@ import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
-from penelope.corpus import CorpusVectorizer, DocumentIndex, TokensTransformer, TokensTransformOpts, VectorizedCorpus
-from penelope.type_alias import FilenameTokensTuples
+from penelope.corpus import CorpusVectorizer, TokensTransformer, TokensTransformOpts, VectorizedCorpus
+from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex, FilenameTokensTuples
 
 from ..interface import ContextOpts, CoOccurrenceError, PartitionKeyNotUniqueKey
 from ..windows_corpus import WindowsCorpus
 from ..windows_utility import corpus_to_windows
-
-CoOccurrenceDataFrame = pd.DataFrame
 
 
 def to_vectorized_windows_corpus(
@@ -101,6 +99,7 @@ def co_occurrence_term_term_matrix_to_dataframe(
             else:
                 logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document catalogue")
 
+    # FIXME: If keep function then do not store w1/w2!!!!
     co_occurrences['w1'] = co_occurrences.w1_id.apply(lambda x: id2token[x])
     co_occurrences['w2'] = co_occurrences.w2_id.apply(lambda x: id2token[x])
 
