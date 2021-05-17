@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from penelope import co_occurrence
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
-from penelope.utility import PropertyValueMaskingOpts
+from penelope.utility import PropertyValueMaskingOpts, deprecated
 
 from . import tasks
 from .checkpoint import CheckpointOpts
@@ -100,6 +100,7 @@ class PipelineShortcutMixIn:
         """ (filename, TEXT => DTM) """
         return self.add(tasks.TextToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
 
+    @deprecated
     def to_corpus_co_occurrence(
         self: pipelines.CorpusPipeline,
         *,

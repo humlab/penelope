@@ -7,6 +7,8 @@ from penelope.corpus.readers.text_transformer import TextTransformOpts
 from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
 
 from .. import pipelines
+from ..co_occurrence.pipelines import wildcard_to_partitioned_by_key_co_occurrence_pipeline
+from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
@@ -66,7 +68,7 @@ def spaCy_DTM_pipeline(
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename
-        ) + pipelines.wildcard_to_DTM_pipeline(
+        ) + wildcard_to_DTM_pipeline(
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,
             tagged_tokens_filter_opts=tagged_tokens_filter_opts,
             tokens_transform_opts=tokens_transform_opts,
@@ -95,7 +97,7 @@ def spaCy_co_occurrence_pipeline(
             corpus_config=corpus_config,
             corpus_filename=corpus_filename,
             checkpoint_filename=checkpoint_filename,
-        ) + pipelines.wildcard_to_co_occurrence_pipeline(
+        ) + wildcard_to_partitioned_by_key_co_occurrence_pipeline(
             context_opts=context_opts,
             tokens_transform_opts=tokens_transform_opts,
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,

@@ -3,10 +3,15 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Optional
 
 import pandas as pd
-from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, partition_by_document, partition_by_key
-from penelope.co_occurrence.interface import CoOccurrenceError
-from penelope.corpus import Token2Id, VectorizedCorpus
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.co_occurrence import (
+    ContextOpts,
+    CoOccurrenceComputeResult,
+    CoOccurrenceError,
+    partition_by_document,
+    partition_by_key,
+)
+from penelope.corpus import Token2Id, TokensTransformOpts, VectorizedCorpus
+from penelope.utility import deprecated
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 
@@ -136,6 +141,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
         return None
 
 
+@deprecated
 @dataclass
 class ToCorpusCoOccurrence(ITask):
     """Computes a (CORPUS-LEVEL) windows co-occurrence data.

@@ -48,23 +48,23 @@ def compute(
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
             # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
-            + pipeline.wildcard_to_co_occurrence_pipeline(
+            + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
                 tokens_transform_opts=args.tokens_transform_opts,
                 extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
                 tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
                 context_opts=args.context_opts,
                 global_threshold_count=args.count_threshold,
-                partition_key=args.partition_keys[0],
             )
         )
-        compute_result: co_occurrence.CoOccurrenceComputeResult = p.value()
 
-        if len(compute_result.co_occurrences) == 0:
+        value: co_occurrence.CoOccurrenceComputeResult = p.value()
+
+        if len(value.co_occurrences) == 0:
             raise ZeroComputeError()
 
         corpus: VectorizedCorpus = co_occurrence.partition_by_key.to_vectorized_corpus(
-            co_occurrences=compute_result.co_occurrences,
-            document_index=compute_result.document_index,
+            co_occurrences=value.co_occurrences,
+            document_index=value.document_index,
             value_key='value',
             partition_key=args.partition_keys[0],
         )
@@ -73,9 +73,9 @@ def compute(
             corpus=corpus,
             corpus_tag=args.corpus_tag,
             corpus_folder=args.target_folder,
-            co_occurrences=compute_result.co_occurrences,
-            document_index=compute_result.document_index,
-            token2id=p.payload.token2id,
+            co_occurrences=value.co_occurrences,
+            document_index=value.document_index,
+            token2id=value.token2id,
             compute_options=co_occurrence.create_options_bundle(
                 reader_opts=corpus_config.text_reader_opts,
                 tokens_transform_opts=args.tokens_transform_opts,

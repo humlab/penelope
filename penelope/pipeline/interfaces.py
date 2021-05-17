@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, 
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
+    Token2Id,
     consolidate_document_index,
     load_document_index,
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
-from penelope.corpus import Token2Id
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, replace_path, strip_path_and_extension
 
 from .tagged_frame import TaggedFrame

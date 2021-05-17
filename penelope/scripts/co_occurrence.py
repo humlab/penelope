@@ -199,7 +199,7 @@ def process_co_ocurrence(
             force=force,
         )
 
-        workflows.co_occurrence.compute(
+        workflows.co_occurrence.compute_partitioned_by_key(
             args=args,
             corpus_config=corpus_config,
         )
