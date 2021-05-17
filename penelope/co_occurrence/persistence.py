@@ -140,7 +140,7 @@ class Bundle:
 def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:
 
     if corpus is None:
-        return None
+        return
 
     corpus.dump(tag=tag, folder=folder)
     corpus.dump_options(tag=tag, folder=folder, options=options)
