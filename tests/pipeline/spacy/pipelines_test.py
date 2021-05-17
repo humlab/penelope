@@ -104,7 +104,7 @@ def test_spaCy_co_occurrence_workflow(config):
 
     co_occurrence_filename = co_occurrence.folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
 
-    corpus: VectorizedCorpus = co_occurrence.partition_by_key.to_vectorized_corpus(
+    corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=compute_result.co_occurrences,
         document_index=compute_result.document_index,
         value_key=value_key,

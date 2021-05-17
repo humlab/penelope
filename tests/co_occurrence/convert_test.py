@@ -73,7 +73,7 @@ def test_to_vectorized_corpus():
 
     co_occurrences = co_occurrence.load_co_occurrences(filename)
     document_index = DocumentIndexHelper.load(index_filename).document_index
-    corpus = co_occurrence.partition_by_key.to_vectorized_corpus(
+    corpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
         value_key=value_key,
