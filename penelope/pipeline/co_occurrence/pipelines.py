@@ -2,7 +2,7 @@ from penelope.co_occurrence import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
 from penelope.utility import PropertyValueMaskingOpts, deprecated
 
-from ..pipelines import CorpusPipeline, wildcard
+from .. import pipelines
 
 
 def wildcard_to_partition_by_document_co_occurrence_pipeline(
@@ -16,8 +16,9 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
 ):
     try:
         # FIXME: tokens_transform_opts ignored
-        pipeline: CorpusPipeline = (
-            wildcard().tagged_frame_to_tokens(
+        pipeline: pipelines.CorpusPipeline = (
+            pipelines.wildcard()
+            .tagged_frame_to_tokens(
                 extract_opts=extract_tagged_tokens_opts,
                 filter_opts=tagged_tokens_filter_opts,
             )
@@ -36,6 +37,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     except Exception as ex:
         raise ex
 
+
 @deprecated
 def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
     *,
@@ -48,8 +50,8 @@ def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
 ):
     """Computes co-occurrence partitioned on `partition_key`"""
     try:
-        pipeline: CorpusPipeline = (
-            wildcard()
+        pipeline: pipelines.CorpusPipeline = (
+            pipelines.wildcard()
             .tagged_frame_to_tokens(
                 extract_opts=extract_tagged_tokens_opts,
                 filter_opts=tagged_tokens_filter_opts,

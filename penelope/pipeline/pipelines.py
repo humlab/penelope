@@ -1,12 +1,14 @@
+from .co_occurrence import pipeline_mixin as co_occurrence
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
-from .spacy.tasks_mixin import SpacyPipelineShortcutMixIn
+from .spacy import pipeline_mixin as spacy
 from .tasks import WildcardTask
 
 
 class CorpusPipeline(
     PipelineShortcutMixIn,
-    SpacyPipelineShortcutMixIn,
+    spacy.SpacyPipelineShortcutMixIn,
+    co_occurrence.PipelineShortcutMixIn,
     CorpusPipelineBase["CorpusPipeline"],
 ):
     def __add__(self, other: "CorpusPipeline") -> "CorpusPipeline":

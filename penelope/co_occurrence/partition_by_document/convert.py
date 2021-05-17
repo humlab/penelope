@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import scipy
 
-
 # def compute_normalized_count(co_occurrences: pd.DataFrame, document_index: DocumentIndex) -> pd.Series:
 
 #     if document_index is None:

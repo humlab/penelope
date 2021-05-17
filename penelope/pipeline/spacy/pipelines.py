@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from penelope.co_occurrence import ContextOpts
-from penelope.corpus.readers.text_transformer import TextTransformOpts
+from penelope.corpus.readers import TextTransformOpts
 from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
 
 from .. import pipelines

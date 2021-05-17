@@ -8,7 +8,11 @@ from penelope.utility import strip_path_and_extension
 from tqdm.auto import tqdm
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
-from .convert import truncate_by_global_threshold, co_occurrence_term_term_matrix_to_dataframe, to_vectorized_windows_corpus
+from .convert import (
+    co_occurrence_term_term_matrix_to_dataframe,
+    to_vectorized_windows_corpus,
+    truncate_by_global_threshold,
+)
 
 # pylint: disable=ungrouped-imports
 
@@ -149,4 +153,3 @@ def compute_co_occurrence(
     )
 
     return co_occurrences
-

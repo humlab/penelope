@@ -1,3 +1,2 @@
 # type: ignore
-from . import document_term_matrix
-from . import co_occurrence
+from . import co_occurrence, document_term_matrix
