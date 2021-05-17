@@ -3,41 +3,6 @@ import pandas as pd
 import scipy
 
 
-def co_occurrence_term_term_matrix_to_dataframe(
-    term_term_matrix: scipy.sparse.spmatrix,
-    threshold_count: int = 1,
-    dtype: np.dtype = np.uint32,
-) -> pd.DataFrame:
-    """Converts a TTM to a Pandas DataFrame
-
-    Args:
-        term_term_matrix (scipy.sparse.spmatrix): [description]
-        threshold_count (int, optional): min threshold for global token count. Defaults to 1.
-
-    Returns:
-        pd.DataFrame: co-occurrence data frame
-    """
-    co_occurrences = (
-        pd.DataFrame(
-            {
-                'w1_id': pd.Series(term_term_matrix.row, dtype=dtype),
-                'w2_id': pd.Series(term_term_matrix.col, dtype=dtype),
-                'value': term_term_matrix.data,
-            },
-            dtype=dtype
-        )
-        .sort_values(['w1_id', 'w2_id'])
-        .reset_index(drop=True)
-    )
-
-    if threshold_count > 1:
-        co_occurrences = co_occurrences[co_occurrences.value >= threshold_count]
-
-    return co_occurrences
-
-
-
-
 # def compute_normalized_count(co_occurrences: pd.DataFrame, document_index: DocumentIndex) -> pd.Series:
 
 #     if document_index is None:
@@ -70,3 +35,36 @@ def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -
         co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= threshold
     ]
     return filtered_co_occurrences
+
+
+def co_occurrence_term_term_matrix_to_dataframe(
+    term_term_matrix: scipy.sparse.spmatrix,
+    threshold_count: int = 1,
+    dtype: np.dtype = np.uint32,
+) -> pd.DataFrame:
+    """Converts a TTM to a Pandas DataFrame
+
+    Args:
+        term_term_matrix (scipy.sparse.spmatrix): [description]
+        threshold_count (int, optional): min threshold for global token count. Defaults to 1.
+
+    Returns:
+        pd.DataFrame: co-occurrence data frame
+    """
+    co_occurrences = (
+        pd.DataFrame(
+            {
+                'w1_id': pd.Series(term_term_matrix.row, dtype=dtype),
+                'w2_id': pd.Series(term_term_matrix.col, dtype=dtype),
+                'value': term_term_matrix.data,
+            },
+            dtype=dtype,
+        )
+        .sort_values(['w1_id', 'w2_id'])
+        .reset_index(drop=True)
+    )
+
+    if threshold_count > 1:
+        co_occurrences = co_occurrences[co_occurrences.value >= threshold_count]
+
+    return co_occurrences

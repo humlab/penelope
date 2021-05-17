@@ -14,6 +14,65 @@ from ..windows_utility import corpus_to_windows
 CoOccurrenceDataFrame = pd.DataFrame
 
 
+def to_vectorized_windows_corpus(
+    *,
+    stream: FilenameTokensTuples,
+    token2id: Mapping[str, int],
+    context_opts: ContextOpts,
+) -> VectorizedCorpus:
+    windows = corpus_to_windows(stream=stream, context_opts=context_opts)
+    windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
+        windows_corpus,
+        vocabulary=token2id,
+        already_tokenized=True,
+    )
+    return corpus
+
+
+def to_vectorized_corpus(
+    *,
+    co_occurrences: CoOccurrenceDataFrame,
+    document_index: DocumentIndex,
+    value_key: str,
+    partition_key: Union[int, str],
+) -> VectorizedCorpus:
+    """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
+
+    if len(document_index[partition_key].unique()) != len(document_index):
+        raise PartitionKeyNotUniqueKey()
+
+    # Create new tokens from the co-occurring pairs
+    tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
+
+    # Create a vocabulary & token2id mapping
+    token2id = {w: i for i, w in enumerate(sorted([w for w in set(tokens)]))}
+
+    # Create a `partition_column` to index mapping (i.e. `partition_column` to document_id)
+    partition2index = document_index.set_index(partition_key).document_id.to_dict()
+
+    df_partition_weights = pd.DataFrame(
+        data={
+            'partition_index': co_occurrences[partition_key].apply(lambda y: partition2index[y]),
+            'token_id': tokens.apply(lambda x: token2id[x]),
+            'weight': co_occurrences[value_key],
+        }
+    )
+    # Make certain  matrix gets right shape (otherwise empty documents at the end reduces row count)
+    shape = (len(partition2index), len(token2id))
+    coo_matrix = scipy.sparse.coo_matrix(
+        (df_partition_weights.weight, (df_partition_weights.partition_index, df_partition_weights.token_id)),
+        shape=shape,
+        dtype=np.uint32,
+    )
+
+    document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
+
+    v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, document_index=document_index)
+
+    return v_corpus
+
+
 def co_occurrence_term_term_matrix_to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
@@ -91,62 +150,3 @@ def co_occurrence_term_term_matrix_to_dataframe(
         co_occurrences = co_occurrences[(co_occurrences.w1.isin(keep_tokens)) & (co_occurrences.w2.isin(keep_tokens))]
 
     return co_occurrences
-
-
-def to_vectorized_windows_corpus(
-    *,
-    stream: FilenameTokensTuples,
-    token2id: Mapping[str, int],
-    context_opts: ContextOpts,
-) -> VectorizedCorpus:
-    windows = corpus_to_windows(stream=stream, context_opts=context_opts)
-    windows_corpus = WindowsCorpus(windows=windows, vocabulary=token2id)
-    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
-        windows_corpus,
-        vocabulary=token2id,
-        already_tokenized=True,
-    )
-    return corpus
-
-
-def to_vectorized_corpus(
-    *,
-    co_occurrences: CoOccurrenceDataFrame,
-    document_index: DocumentIndex,
-    value_key: str,
-    partition_key: Union[int, str],
-) -> VectorizedCorpus:
-    """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
-
-    if len(document_index[partition_key].unique()) != len(document_index):
-        raise PartitionKeyNotUniqueKey()
-
-    # Create new tokens from the co-occurring pairs
-    tokens = co_occurrences.apply(lambda x: f'{x["w1"]}/{x["w2"]}', axis=1)
-
-    # Create a vocabulary & token2id mapping
-    token2id = {w: i for i, w in enumerate(sorted([w for w in set(tokens)]))}
-
-    # Create a `partition_column` to index mapping (i.e. `partition_column` to document_id)
-    partition2index = document_index.set_index(partition_key).document_id.to_dict()
-
-    df_partition_weights = pd.DataFrame(
-        data={
-            'partition_index': co_occurrences[partition_key].apply(lambda y: partition2index[y]),
-            'token_id': tokens.apply(lambda x: token2id[x]),
-            'weight': co_occurrences[value_key],
-        }
-    )
-    # Make certain  matrix gets right shape (otherwise empty documents at the end reduces row count)
-    shape = (len(partition2index), len(token2id))
-    coo_matrix = scipy.sparse.coo_matrix(
-        (df_partition_weights.weight, (df_partition_weights.partition_index, df_partition_weights.token_id)),
-        shape=shape,
-        dtype=np.uint32,
-    )
-
-    document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
-
-    v_corpus = VectorizedCorpus(coo_matrix, token2id=token2id, document_index=document_index)
-
-    return v_corpus
