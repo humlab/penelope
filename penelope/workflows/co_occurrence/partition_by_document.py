@@ -3,11 +3,9 @@ from typing import Optional
 
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
+from loguru import logger
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
-from penelope.utility import getLogger
-
-logger = getLogger('penelope')
 
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
@@ -47,13 +45,13 @@ def compute(
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
-            # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
             + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
                 tokens_transform_opts=args.tokens_transform_opts,
                 extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
                 tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
                 context_opts=args.context_opts,
                 global_threshold_count=args.count_threshold,
+                partition_key=args.partition_keys[0],
             )
         )
 
@@ -62,11 +60,10 @@ def compute(
         if len(value.co_occurrences) == 0:
             raise ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
+        corpus: VectorizedCorpus = co_occurrence.partition_by_document.co_occurrence_dataframe_to_vectorized_corpus(
             co_occurrences=value.co_occurrences,
+            token2id=value.token2id,
             document_index=value.document_index,
-            value_key='value',
-            partition_key=args.partition_keys[0],
         )
 
         bundle = co_occurrence.Bundle(
