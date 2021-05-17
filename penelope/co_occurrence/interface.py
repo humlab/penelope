@@ -11,6 +11,11 @@ logger = getLogger('penelope')
 Token = Union[int, str]
 
 
+class ZeroComputeError(ValueError):
+    def __init__(self):
+        super().__init__("Computation ended up in ZERO records. Check settings!")
+
+
 class CoOccurrenceError(ValueError):
     ...
 
