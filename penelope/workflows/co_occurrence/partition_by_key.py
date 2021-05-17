@@ -11,11 +11,6 @@ from penelope.utility import deprecated
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
 
-class ZeroComputeError(ValueError):
-    def __init__(self):
-        super().__init__("Computation ended up in ZERO records. Check settings!")
-
-
 # pylint: disable=unused-argument
 @deprecated
 def compute(
@@ -29,7 +24,7 @@ def compute(
 
         assert args.is_satisfied()
 
-        target_filename = co_occurrence.folder_and_tag_to_filename(folder=args.target_folder, tag=args.corpus_tag)
+        target_filename = co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag)
 
         os.makedirs(args.target_folder, exist_ok=True)
 
@@ -59,7 +54,7 @@ def compute(
         value: co_occurrence.CoOccurrenceComputeResult = p.value()
 
         if len(value.co_occurrences) == 0:
-            raise ZeroComputeError()
+            raise co_occurrence.ZeroComputeError()
 
         corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
             co_occurrences=value.co_occurrences,
@@ -68,8 +63,8 @@ def compute(
 
         bundle = co_occurrence.Bundle(
             corpus=corpus,
-            corpus_tag=args.corpus_tag,
-            corpus_folder=args.target_folder,
+            tag=args.corpus_tag,
+            folder=args.target_folder,
             co_occurrences=value.co_occurrences,
             document_index=value.document_index,
             token2id=value.token2id,
@@ -84,7 +79,7 @@ def compute(
             ),
         )
 
-        co_occurrence.store_bundle(target_filename, bundle)
+        bundle.store()
 
         return bundle
 
