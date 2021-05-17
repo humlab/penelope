@@ -8,7 +8,7 @@ from penelope.utility import strip_path_and_extension
 from tqdm.auto import tqdm
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
-from .convert import to_dataframe, to_vectorized_windows_corpus
+from .convert import co_occurrence_term_term_matrix_to_dataframe, to_vectorized_windows_corpus
 
 # pylint: disable=ungrouped-imports
 
@@ -139,7 +139,7 @@ def compute_co_occurrence(
 
     co_occurrence_matrix = windowed_corpus.co_occurrence_matrix()
 
-    co_occurrences: pd.DataFrame = to_dataframe(
+    co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(
         co_occurrence_matrix,
         id2token=windowed_corpus.id2token,
         document_index=document_index,

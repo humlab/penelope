@@ -1,14 +1,13 @@
 from typing import List
 
-import numpy as np
 import pandas as pd
-import scipy
 from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from ..windows_utility import tokens_to_windows
+from .convert import co_occurrence_term_term_matrix_to_dataframe
 from .vectorize import WindowsCoOccurrenceVectorizer
 
 
@@ -90,39 +89,7 @@ def compute_document_co_occurrence(
 
     windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
     windows_ttm_matrix: VectorizedCorpus = vectorizer.fit_transform(windows)
-    co_occurrences: pd.DataFrame = term_term_matrix_to_dataframe(windows_ttm_matrix, threshold_count=1)
-    return co_occurrences
-
-
-def term_term_matrix_to_dataframe(
-    term_term_matrix: scipy.sparse.spmatrix,
-    threshold_count: int = 1,
-) -> pd.DataFrame:
-    """Converts a TTM to a Pandas DataFrame
-
-    Args:
-        term_term_matrix (scipy.sparse.spmatrix): [description]
-        threshold_count (int, optional): min threshold for global token count. Defaults to 1.
-
-    Returns:
-        pd.DataFrame: co-occurrence data frame
-    """
-
-    co_occurrences = (
-        pd.DataFrame(
-            {
-                'w1_id': pd.Series(term_term_matrix.row, dtype=np.uint32),
-                'w2_id': pd.Series(term_term_matrix.col, dtype=np.uint32),
-                'value': term_term_matrix.data,
-            },
-        )
-        .sort_values(['w1_id', 'w2_id'])
-        .reset_index(drop=True)
-    )
-
-    if threshold_count > 1:
-        co_occurrences = co_occurrences[co_occurrences.value >= threshold_count]
-
+    co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(windows_ttm_matrix, threshold_count=1)
     return co_occurrences
 
 

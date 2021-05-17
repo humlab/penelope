@@ -110,7 +110,7 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
         .co_occurrence_matrix()
     )
 
-    co_occurrences = co_occurrence.partition_by_key.to_dataframe(
+    co_occurrences = co_occurrence.partition_by_key.co_occurrence_term_term_matrix_to_dataframe(
         term_term_matrix=term_term_matrix,
         id2token=text_corpus.id2token,
         document_index=text_corpus.document_index,
@@ -141,7 +141,7 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
         .co_occurrence_matrix()
     )
 
-    co_occurrences = co_occurrence.partition_by_key.to_dataframe(
+    co_occurrences = co_occurrence.partition_by_key.co_occurrence_term_term_matrix_to_dataframe(
         term_term_matrix=term_term_matrix,
         id2token=text_corpus.id2token,
         document_index=text_corpus.document_index,
@@ -153,7 +153,7 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
     assert not (co_occurrences.w1 == '*').any()
     assert not (co_occurrences.w2 == '*').any()
 
-    co_occurrences = co_occurrence.partition_by_key.to_dataframe(
+    co_occurrences = co_occurrence.partition_by_key.co_occurrence_term_term_matrix_to_dataframe(
         term_term_matrix=term_term_matrix,
         id2token=text_corpus.id2token,
         document_index=text_corpus.document_index,
