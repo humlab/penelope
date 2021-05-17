@@ -15,14 +15,13 @@ from penelope.corpus import (
     TokensTransformOpts,
     VectorizedCorpus,
 )
+from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
 from .interface import ContextOpts
 
 CO_OCCURRENCE_FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 CO_OCCURRENCE_FILENAME_PATTERN = f'*{CO_OCCURRENCE_FILENAME_POSTFIX}'
-
-CoOccurrenceDataFrame = pd.DataFrame
 
 
 def filename_to_folder_and_tag(co_occurrences_filename: str) -> Tuple[str, str]:
