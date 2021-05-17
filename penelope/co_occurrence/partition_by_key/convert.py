@@ -124,7 +124,6 @@ def co_occurrence_dataframe_to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
     document_index: DocumentIndex,
-    value_key: str,
     partition_key: Union[int, str],
 ) -> VectorizedCorpus:
     """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""

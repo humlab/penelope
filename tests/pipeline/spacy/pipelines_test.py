@@ -74,7 +74,6 @@ def test_spaCy_co_occurrence_pipeline(config):
 def test_spaCy_co_occurrence_workflow(config):
 
     partition_key: str = 'year'
-    value_key: str = 'value'
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,
@@ -107,7 +106,6 @@ def test_spaCy_co_occurrence_workflow(config):
     corpus: VectorizedCorpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=compute_result.co_occurrences,
         document_index=compute_result.document_index,
-        value_key=value_key,
         partition_key=partition_key,
     )
 

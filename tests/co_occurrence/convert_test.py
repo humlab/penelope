@@ -65,7 +65,6 @@ def test_store_co_occurrences(filename):
 
 def test_to_vectorized_corpus():
 
-    value_key = 'value'
     partition_key = 'year'
     filename = co_occurrence.folder_and_tag_to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
 
@@ -76,7 +75,6 @@ def test_to_vectorized_corpus():
     corpus = co_occurrence.partition_by_key.co_occurrence_dataframe_to_vectorized_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
-        value_key=value_key,
         partition_key=partition_key,
     )
 
