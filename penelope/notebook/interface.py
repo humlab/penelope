@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Mapping
 
 from loguru import logger
-from penelope.co_occurrence import ContextOpts, folder_and_tag_to_filename
+from penelope.co_occurrence import ContextOpts, to_filename
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 from penelope.corpus.dtm import VectorizeOpts
 from penelope.pipeline import CorpusType
@@ -181,7 +181,7 @@ class ComputeOpts:
                 logger.warning(f"skipped option {key} {value}")
 
         config_filename: str = "doit.yml"
-        target_filename: str = folder_and_tag_to_filename(folder=self.target_folder, tag=self.corpus_tag)
+        target_filename: str = to_filename(folder=self.target_folder, tag=self.corpus_tag)
         command: str = f"{script} {' '.join(options)} {config_filename} {self.corpus_filename} {target_filename}"
 
         return command

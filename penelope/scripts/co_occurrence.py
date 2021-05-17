@@ -5,7 +5,7 @@ import click
 import penelope.notebook.interface as interface
 import penelope.workflows as workflows
 from loguru import logger
-from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
+from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.convert import parse_phrases
@@ -150,7 +150,7 @@ def process_co_ocurrence(
     force: bool = False,
 ):
     try:
-        output_folder, output_tag = filename_to_folder_and_tag(output_filename)
+        output_folder, output_tag = to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)
         if pos_excludes is None:
