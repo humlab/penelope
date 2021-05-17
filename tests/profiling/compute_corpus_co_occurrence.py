@@ -4,15 +4,15 @@ from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, store
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.pipeline.sparv.pipelines import to_tagged_frame_pipeline
+from penelope.utility.filename_utils import strip_path_and_extension
 
 jj = os.path.join
 
 
-def execute_co_occurrence():
+def execute_co_occurrence(corpus_filename: str, output_folder: str):
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    corpus_filename: str = '/data/westac/data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
     corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml', corpus_filename)
 
     context_opts: ContextOpts = ContextOpts(
@@ -54,23 +54,29 @@ def execute_co_occurrence():
     )
 
     compute_result: CoOccurrenceComputeResult = pipeline.value()
+    basename: str = strip_path_and_extension(corpus_filename)
+    store_co_occurrences(jj(output_folder, f"{basename}.co-occurrences.zip"), compute_result.co_occurrences)
 
-    store_co_occurrences(
-        "tests/output/riksdagens-protokoll.1920-2019.9files.co-occurrences.zip", compute_result.co_occurrences
+    compute_result.token2id.store(
+        jj(output_folder, f"{basename}.co-occurrences.dictionary.zip"),
     )
-    compute_result.token2id.store("tests/output/riksdagens-protokoll.1920-2019.dictionary.zip")
 
 
 if __name__ == "__main__":
-    execute_co_occurrence()
+    # CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
+    # CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
+    CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
+    OUTPUT_FOLDER: str = "tests/output"
+    execute_co_occurrence(CORPUS_FILENAME, OUTPUT_FOLDER)
 
-# # %%
-# import pandas as pd
-# from penelope.corpus import Token2Id
+# %%
+
 
 # filename = '/home/roger/source/penelope/tests/output/riksdagens-protokoll.1920-2019.9files.co-occurrences.feather'
-# co_occurrences = pd.read_feather(filename)
-# token2id: Token2Id = Token2Id.load('/home/roger/source/penelope/tests/output/riksdagens-protokoll.1920-2019.dictionary.zip')
+# co_occurrences = load_co_occurrences(filename)
+# token2id: Token2Id = Token2Id.load(
+#     '/home/roger/source/penelope/tests/output/riksdagens-protokoll.1920-2019.dictionary.zip'
+# )
 # id2token = token2id.id2token
 # token2id.close()
 # # # %%
@@ -78,12 +84,7 @@ if __name__ == "__main__":
 # co_occurrences['w1'] = co_occurrences.w1_id.apply(lambda x: id2token.get(x, "????"))
 # co_occurrences['w2'] = co_occurrences.w2_id.apply(lambda x: id2token.get(x, "????"))
 
-# # # %%
-
-# co_occurrences[co_occurrences.w2=='????']
-
 # # %%
 
-# token2id["nan"]
-
+# co_occurrences.head()
 # # %%
