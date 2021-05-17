@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
@@ -44,6 +44,8 @@ def compute_corpus_co_occurrence(
 
     vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(token2id)
 
+    ignore_ids: Set[int] = None if not ignore_pad else {token2id.id2token[context_opts.pad]}
+
     for filename, tokens in stream:
 
         if ingest_tokens:
@@ -53,6 +55,7 @@ def compute_corpus_co_occurrence(
             vectorizer=vectorizer,
             tokens=tokens,
             context_opts=context_opts,
+            ignore_ids=ignore_ids,
         )
 
         document_co_occurrences['document_id'] = document_index.loc[strip_extensions(filename)]['document_id']
@@ -62,10 +65,6 @@ def compute_corpus_co_occurrence(
     co_occurrences: pd.DataFrame = pd.concat(total_results, ignore_index=True)[
         ['document_id', 'w1_id', 'w2_id', 'value']
     ]
-
-    if ignore_pad:
-        pad_id: int = token2id.id2token[context_opts.pad]
-        co_occurrences = co_occurrences[((co_occurrences.w1_id != pad_id) & (co_occurrences.w2_id != pad_id))]
 
     if len(co_occurrences) > 0 and global_threshold_count > 1:
         co_occurrences = co_occurrences[
@@ -84,12 +83,20 @@ def compute_corpus_co_occurrence(
 
 
 def compute_document_co_occurrence(
-    vectorizer: WindowsCoOccurrenceVectorizer, tokens: List[str], context_opts: ContextOpts
+    vectorizer: WindowsCoOccurrenceVectorizer,
+    tokens: List[str],
+    context_opts: ContextOpts,
+    ignore_ids: set,
 ) -> pd.DataFrame:
 
     windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
     windows_ttm_matrix: VectorizedCorpus = vectorizer.fit_transform(windows)
-    co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(windows_ttm_matrix, threshold_count=1)
+    co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(
+        windows_ttm_matrix,
+        threshold_count=1,
+        ignore_ids=ignore_ids,
+    )
+
     return co_occurrences
 
 

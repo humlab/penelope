@@ -1,6 +1,9 @@
+from typing import Set
+
 import numpy as np
 import pandas as pd
 import scipy
+from penelope.co_occurrence import Token
 from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.type_alias import CoOccurrenceDataFrame
 
@@ -43,6 +46,7 @@ def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -
 def co_occurrence_term_term_matrix_to_dataframe(
     term_term_matrix: scipy.sparse.spmatrix,
     threshold_count: int = 1,
+    ignore_ids: Set[int] = None,
     dtype: np.dtype = np.uint32,
 ) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
@@ -67,6 +71,11 @@ def co_occurrence_term_term_matrix_to_dataframe(
         .reset_index(drop=True)
     )
 
+    if ignore_ids:
+        co_occurrences = co_occurrences[
+            (~co_occurrences.w1_id.isin(ignore_ids) & ~co_occurrences.w2_id.isin(ignore_ids))
+        ]
+
     if threshold_count > 1:
         co_occurrences = co_occurrences[co_occurrences.value >= threshold_count]
 
@@ -76,8 +85,8 @@ def co_occurrence_term_term_matrix_to_dataframe(
 def co_occurrence_dataframe_to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
-    token2id: Token2Id,
     document_index: DocumentIndex,
+    token2id: Token2Id,
 ) -> VectorizedCorpus:
     """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
 
