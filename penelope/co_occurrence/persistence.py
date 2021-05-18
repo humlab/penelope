@@ -1,8 +1,10 @@
 import contextlib
 import json
 import os
+import pickle
+from collections import Counter
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 import pandas as pd
 from loguru import logger
@@ -26,6 +28,7 @@ FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 FILENAME_PATTERN = f'*{FILENAME_POSTFIX}'
 DOCUMENT_INDEX_POSTFIX = '_co-occurrence.document_index.zip'
 DICTIONARY_POSTFIX = '_co-occurrence.dictionary.zip'
+TOKEN_WINDOW_COUNTS_POSTFIX = '_token_windows_counts.pickle'
 
 
 def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[str, str]:
@@ -51,6 +54,7 @@ class Bundle:
 
     corpus: VectorizedCorpus = None
     compute_options: dict = None
+    token_window_counts: Counter = None
 
     def _get_filename(self, postfix: str) -> str:
         return f"{self.tag}{postfix}"
@@ -74,6 +78,10 @@ class Bundle:
     def options_filename(self) -> str:
         return replace_extension(self.co_occurrence_filename, 'json')
 
+    @property
+    def token_window_counts_filename(self) -> str:
+        return self._get_path(postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
+
     def store(self, *, folder: str = None, tag: str = None) -> "Bundle":
 
         if tag and folder:
@@ -92,6 +100,8 @@ class Bundle:
         """Also save options with same name as co-occurrence file"""
         with open(self.options_filename, 'w') as json_file:
             json.dump(self.compute_options, json_file, indent=4)
+
+        store_token_window_counts(self.token_window_counts, self.token_window_counts_filename)
 
         return self
 
@@ -112,17 +122,16 @@ class Bundle:
         corpus_options: dict = VectorizedCorpus.load_options(folder=folder, tag=tag)
         options: dict = load_options(filename) or corpus_options
         token2id: Token2Id = load_dictionary(folder, tag)
+        token_window_counts: Counter = load_token_window_counts(
+            to_filename(folder=folder, tag=tag, postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
+        )
 
         if token2id is None:
             raise CoOccurrenceError("Dictionary is missing - please reprocess setup!")
 
         if corpus is None and compute_corpus:
             raise ValueError("Compute of corpus during load is disabled")
-            # corpus = to_vectorized_corpus(
-            #     co_occurrences=co_occurrences,
-            #     document_index=document_index,
-            #     token2id=token2id,
-            # )
+            # corpus = to_vectorized_corpus(co_occurrences=co_occurrences, document_index=document_index, token2id=token2id,)
 
         bundle = Bundle(
             folder=folder,
@@ -132,9 +141,30 @@ class Bundle:
             token2id=token2id,
             compute_options=options,
             corpus=corpus,
+            token_window_counts=token_window_counts,
         )
 
         return bundle
+
+
+def store_token_window_counts(counts: Counter, filename: str):
+
+    if not counts:
+        return
+
+    with open(filename, 'wb') as fp:
+        pickle.dump(counts, fp, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_token_window_counts(filename: str) -> Optional[Counter]:
+
+    if not os.path.isfile(filename):
+        return None
+
+    with open(filename, 'rb') as fp:
+        counts: Counter = pickle.load(fp)
+
+    return counts
 
 
 def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:

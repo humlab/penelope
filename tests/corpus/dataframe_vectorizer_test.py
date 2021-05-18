@@ -190,13 +190,16 @@ class Test_DataFrameVectorize(unittest.TestCase):
         term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
-        coo_df = co_occurrence_term_term_matrix_to_dataframe(term_term_matrix, threshold_count=1, ignore_ids=set())
-        coo_df['w1'] = coo_df.w1_id.apply(corpus.token2id.get)
-        coo_df['w2'] = coo_df.w2_id.apply(corpus.token2id.get)
+        id2w = corpus.id2token.get
+        co_occurrences = co_occurrence_term_term_matrix_to_dataframe(
+            term_term_matrix, threshold_count=1, ignore_ids=set()
+        )
+        co_occurrences['w1'] = co_occurrences.w1_id.apply(id2w)
+        co_occurrences['w2'] = co_occurrences.w2_id.apply(id2w)
 
         # Assert
-        assert 2 == int(coo_df[((coo_df.w1 == 'A') & (coo_df.w2 == 'B'))].value)
-        assert 0 == len(coo_df[((coo_df.w1 == 'C') & (coo_df.w2 == 'F'))])
+        assert 2 == int(co_occurrences[((co_occurrences.w1 == 'A') & (co_occurrences.w2 == 'B'))].value)
+        assert 0 == len(co_occurrences[((co_occurrences.w1 == 'C') & (co_occurrences.w2 == 'F'))])
 
     def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted(self):
         corpus = self.create_simple_test_corpus(
