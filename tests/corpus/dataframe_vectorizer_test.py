@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from penelope.co_occurrence.partition_by_document import co_occurrence_term_term_matrix_to_dataframe
+from penelope.co_occurrence.partition_by_document import term_term_matrix_to_co_occurrences
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import PandasCorpusReader
 
@@ -191,7 +191,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
         # Act
         id2w = corpus.id2token.get
-        co_occurrences = co_occurrence_term_term_matrix_to_dataframe(
+        co_occurrences = term_term_matrix_to_co_occurrences(
             term_term_matrix, threshold_count=1, ignore_ids=set()
         )
         co_occurrences['w1'] = co_occurrences.w1_id.apply(id2w)

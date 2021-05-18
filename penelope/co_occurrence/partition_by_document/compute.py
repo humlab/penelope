@@ -7,7 +7,7 @@ from penelope.utility import strip_extensions
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from ..windows_utility import tokens_to_windows
-from .convert import co_occurrence_term_term_matrix_to_dataframe
+from .convert import term_term_matrix_to_co_occurrences
 from .vectorize import WindowsCoOccurrenceVectorizer
 
 
@@ -89,7 +89,7 @@ def compute_document_co_occurrence(
 
     windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
     windows_ttm_matrix: VectorizedCorpus = vectorizer.fit_transform(windows)
-    co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences: pd.DataFrame = term_term_matrix_to_co_occurrences(
         windows_ttm_matrix,
         threshold_count=1,
         ignore_ids=ignore_ids,

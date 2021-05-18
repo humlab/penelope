@@ -110,7 +110,7 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
         .co_occurrence_matrix()
     )
 
-    co_occurrences = co_occurrence_module.co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
         threshold_count=1,
         ignore_ids=None,
@@ -142,7 +142,7 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
 
     ignore_id = id2token['*']
 
-    co_occurrences = co_occurrence_module.co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
         threshold_count=1,
         ignore_ids=set([ignore_id]),
@@ -151,7 +151,7 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
     assert not (co_occurrences.w1 == '*').any()
     assert not (co_occurrences.w2 == '*').any()
 
-    co_occurrences = co_occurrence_module.co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
         threshold_count=1,
         ignore_ids=set([ignore_id]),

@@ -42,7 +42,7 @@ def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -
     return filtered_co_occurrences
 
 
-def co_occurrence_term_term_matrix_to_dataframe(
+def term_term_matrix_to_co_occurrences(
     term_term_matrix: scipy.sparse.spmatrix,
     threshold_count: int = 1,
     ignore_ids: Set[int] = None,

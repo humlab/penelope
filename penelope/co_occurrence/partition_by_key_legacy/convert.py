@@ -43,7 +43,7 @@ def truncate_by_global_threshold(co_occurrences: pd.DataFrame, threshold: int) -
 
 
 @deprecated
-def co_occurrence_term_term_matrix_to_dataframe(
+def term_term_matrix_to_co_occurrences(
     term_term_matrix: scipy.sparse.spmatrix,
     id2token: Mapping[int, str],
     document_index: DocumentIndex = None,

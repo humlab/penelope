@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from .convert import (
-    co_occurrence_term_term_matrix_to_dataframe,
+    term_term_matrix_to_co_occurrences,
     to_vectorized_windows_corpus,
     truncate_by_global_threshold,
 )
@@ -142,7 +142,7 @@ def compute_co_occurrence(
 
     co_occurrence_matrix = windowed_corpus.co_occurrence_matrix()
     ignore_ids: set = {token2id[context_opts.pad]} if context_opts.ignore_padding else None
-    co_occurrences: pd.DataFrame = co_occurrence_term_term_matrix_to_dataframe(
+    co_occurrences: pd.DataFrame = term_term_matrix_to_co_occurrences(
         co_occurrence_matrix,
         id2token=windowed_corpus.id2token,
         document_index=document_index,
