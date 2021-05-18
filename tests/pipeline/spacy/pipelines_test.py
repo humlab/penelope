@@ -113,6 +113,7 @@ def test_spaCy_co_occurrence_workflow(config):
         document_index=value.document_index,
         token2id=value.token2id,
         corpus=corpus,
+        token_window_counts=value.token_window_counts,
         compute_options=co_occurrence.create_options_bundle(
             reader_opts=config.text_reader_opts,
             transform_opts=args.transform_opts,
