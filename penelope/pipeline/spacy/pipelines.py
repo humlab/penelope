@@ -7,7 +7,7 @@ from penelope.corpus.readers import TextTransformOpts
 from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
 
 from .. import pipelines
-from ..co_occurrence.pipelines import wildcard_to_partitioned_by_key_co_occurrence_pipeline
+from ..co_occurrence.pipelines import wildcard_to_partition_by_document_co_occurrence_pipeline
 from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
 if TYPE_CHECKING:
@@ -96,7 +96,7 @@ def spaCy_co_occurrence_pipeline(
             corpus_config=corpus_config,
             corpus_filename=corpus_filename,
             checkpoint_filename=checkpoint_filename,
-        ) + wildcard_to_partitioned_by_key_co_occurrence_pipeline(
+        ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
             context_opts=context_opts,
             tokens_transform_opts=tokens_transform_opts,
             extract_tagged_tokens_opts=extract_tagged_tokens_opts,

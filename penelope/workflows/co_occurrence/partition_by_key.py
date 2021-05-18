@@ -44,7 +44,7 @@ def compute(
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
             # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
-            + pipeline.wildcard_to_partitioned_by_key_co_occurrence_pipeline(
+            + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
                 tokens_transform_opts=args.tokens_transform_opts,
                 extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
                 tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,

@@ -14,12 +14,7 @@ from .checkpoint import (
     load_checkpoint,
     store_checkpoint,
 )
-
-# FIXME: deprecate wildcard_to_co_occurrence_pipeline
-from .co_occurrence import (
-    wildcard_to_partition_by_document_co_occurrence_pipeline,
-    wildcard_to_partitioned_by_key_co_occurrence_pipeline,
-)
+from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline
 from .config import CorpusConfig, CorpusType
 from .convert import tagged_frame_to_token_counts, tagged_frame_to_tokens, to_vectorized_corpus
 from .dtm import wildcard_to_DTM_pipeline
