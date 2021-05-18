@@ -333,8 +333,8 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nlp):
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
-    transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
+    text_transform_opts = TextTransformOpts()
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
     attributes = ['text', 'lemma_', 'pos_']
@@ -343,6 +343,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
         pos_includes='|VERB|NOUN|',
         pos_paddings='|ADJ|',
     )
+    transform_opts = None
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     pipeline = (
         CorpusPipeline(config=config)
@@ -391,8 +392,8 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(en_nlp):
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
-    transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
+    text_transform_opts = TextTransformOpts()
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
@@ -400,6 +401,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
         pos_includes='|VERB|NOUN|',
         pos_paddings=None,
     )
+    transform_opts = None
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
@@ -407,7 +409,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
 
     pipeline = (
         CorpusPipeline(config=config)
-        .load_text(reader_opts=reader_opts, transform_opts=transform_opts)
+        .load_text(reader_opts=reader_opts, transform_opts=text_transform_opts)
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
@@ -426,7 +428,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=transform_opts)
+    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     tagged_columns = {'text_column': 'text', 'lemma_column': 'lemma_', 'pos_column': 'pos_'}

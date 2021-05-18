@@ -68,7 +68,7 @@ def test_store_co_occurrences(filename):
 def test_to_vectorized_corpus():
 
     """Create an empty Bundle instance to get the filename right"""
-    bundle: co_occurrence.Bundle = co_occurrence.Bundle(folder='./tests/test_data/VENUS', tag="'VENUS")
+    bundle: co_occurrence.Bundle = co_occurrence.Bundle(folder='./tests/test_data/VENUS', tag="VENUS")
 
     co_occurrences: CoOccurrenceDataFrame = co_occurrence.load_co_occurrences(bundle.co_occurrence_filename)
     document_index: DocumentIndex = DocumentIndexHelper.load(bundle.document_index_filename).document_index
@@ -80,9 +80,9 @@ def test_to_vectorized_corpus():
         token2id=token2id,
     )
 
+    assert corpus.data.sum() == co_occurrences.value.sum()
     assert corpus.data.shape[0] == len(document_index)
-    assert corpus.data.shape[1] == len(co_occurrences.apply(lambda x: f"{x['w1']}/{x['w2']}", axis=1).unique())
-    assert corpus is not None
+    assert corpus.data.shape[1] == len(co_occurrences[["w1_id", "w2_id"]].drop_duplicates())
 
 
 def test_to_co_occurrence_matrix():
@@ -116,9 +116,10 @@ def test_to_dataframe_has_same_values_as_coocurrence_matrix():
         ignore_ids=None,
     )
 
+    fg = text_corpus.token2id.get
     assert co_occurrences.value.sum() == term_term_matrix.sum()
-    assert 4 == int(co_occurrences[((co_occurrences.w1 == 'a') & (co_occurrences.w2 == 'c'))].value)
-    assert 1 == int(co_occurrences[((co_occurrences.w1 == 'b') & (co_occurrences.w2 == 'd'))].value)
+    assert 4 == int(co_occurrences[((co_occurrences.w1_id == fg('a')) & (co_occurrences.w2_id == fg('c')))].value)
+    assert 1 == int(co_occurrences[((co_occurrences.w1_id == fg('b')) & (co_occurrences.w2_id == fg('d')))].value)
 
 
 def test_to_dataframe_coocurrence_matrix_with_paddings():
@@ -132,7 +133,7 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
             ('tran_2020_02_test.txt', ['a', 'b', '*', '*']),
         ]
     )
-    id2token = {v: k for k, v in text_corpus.token2id.items()}
+    token2id: Token2Id = Token2Id(text_corpus.token2id)
 
     term_term_matrix = (
         dtm.CorpusVectorizer()
@@ -140,30 +141,16 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
         .co_occurrence_matrix()
     )
 
-    ignore_id = id2token['*']
+    pad_id = token2id['*']
 
     co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
         threshold_count=1,
-        ignore_ids=set([ignore_id]),
+        ignore_ids=set([pad_id]),
     )
 
-    assert not (co_occurrences.w1 == '*').any()
-    assert not (co_occurrences.w2 == '*').any()
-
-    co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
-        term_term_matrix=term_term_matrix,
-        threshold_count=1,
-        ignore_ids=set([ignore_id]),
-        # FIXME: NOT IMPLEMENTED!!!
-        # transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"a"}),
-    )
-    # co_occurrences['w1'] = co_occurrences.w1_id.apply(corpus.token2id.get)
-    # co_occurrences['w2'] = co_occurrences.w2_id.apply(corpus.token2id.get)
-
-    # FIXME: Fails when running python in multiprocess mode
-    # assert not (co_occurrences.w1 == 'a').any()
-    # assert not (co_occurrences.w2 == 'a').any()
+    assert not (co_occurrences.w1_id == pad_id).any()
+    assert not (co_occurrences.w2_id == pad_id).any()
 
 
 def test_load_and_store_bundle():

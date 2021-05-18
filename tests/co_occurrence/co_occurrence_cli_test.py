@@ -7,7 +7,7 @@ def monkey_patch(*_, **__):
     pass
 
 
-@patch('penelope.co_occurrence.convert.store_co_occurrences', monkey_patch)
+@patch('penelope.co_occurrence.persistence.store_co_occurrences', monkey_patch)
 def test_process_co_ocurrence():
 
     args: dict = dict(
