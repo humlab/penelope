@@ -16,7 +16,6 @@ from penelope.corpus import (
     DocumentIndex,
     Token2Id,
     TokensTransformer,
-    TokensTransformOpts,
     VectorizedCorpus,
     VectorizeOpts,
     default_tokenizer,
@@ -30,7 +29,6 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
-from penelope.corpus.tokens_transformer import TokensTransformerMixin
 from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_paths
 from tqdm.auto import tqdm
 
