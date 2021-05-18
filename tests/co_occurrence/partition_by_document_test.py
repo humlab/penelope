@@ -61,13 +61,13 @@ def test_store_when_co_occurrences_data_is_partitioned():
     )
 
     bundle: Bundle = Bundle(
+        folder=folder,
+        tag=tag,
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         token2id=value.token2id,
         compute_options={},
         corpus=corpus,
-        folder=folder,
-        tag=tag,
     )
 
     bundle.store()

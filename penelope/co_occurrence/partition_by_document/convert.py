@@ -57,6 +57,7 @@ def co_occurrence_term_term_matrix_to_dataframe(
     Returns:
         pd.DataFrame: co-occurrence data frame
     """
+
     co_occurrences = (
         pd.DataFrame(
             {
@@ -69,6 +70,9 @@ def co_occurrence_term_term_matrix_to_dataframe(
         .sort_values(['w1_id', 'w2_id'])
         .reset_index(drop=True)
     )
+
+    if co_occurrences.value.max() < np.iinfo(np.uint16).max:
+        co_occurrences['value'] = co_occurrences.value.astype(np.uint16)
 
     if ignore_ids:
         co_occurrences = co_occurrences[
@@ -91,12 +95,12 @@ def co_occurrence_dataframe_to_vectorized_corpus(
 
     """Create distinct word-pair tokens and assign a token_id"""
     to_token = token2id.id2token.get
-    token_pairs = co_occurrences[["w1_id", "w2_id"]].unique()
-    token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
+    token_pairs: pd.DataFrame = co_occurrences[["w1_id", "w2_id"]].drop_duplicates().reset_index(drop=True)
     token_pairs["token_id"] = token_pairs.index
+    token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
 
     """Create a new vocabulary"""
-    vocabulary = token_pairs.set_index("token").to_dict()
+    vocabulary = token_pairs.set_index("token").token_id.to_dict()
 
     """Merge and assign token_id to co-occurring pairs"""
     token_ids: pd.Series = co_occurrences.merge(
@@ -109,13 +113,13 @@ def co_occurrence_dataframe_to_vectorized_corpus(
     """Set document_id as unique key for DTM document index """
     document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
 
-    """Make certain taht matrix gets right shape (to avoid offset errors)"""
-    shape = (len(document_index.index.size), len(vocabulary))
-    coo_matrix = scipy.sparse.coo_matrix(
+    """Make certain that the matrix gets right shape (to avoid offset errors)"""
+    shape = (len(document_index), len(vocabulary))
+    matrix = scipy.sparse.coo_matrix(
         (
-            co_occurrences.weight,
+            co_occurrences.value.astype(np.uint16),
             (
-                co_occurrences.document_id,
+                co_occurrences.document_id.astype(np.uint32),
                 token_ids.astype(np.uint32),
             ),
         ),
@@ -123,6 +127,6 @@ def co_occurrence_dataframe_to_vectorized_corpus(
     )
 
     """Create the final corpus"""
-    corpus = VectorizedCorpus(coo_matrix, token2id=vocabulary, document_index=document_index)
+    corpus = VectorizedCorpus(matrix, token2id=vocabulary, document_index=document_index)
 
     return corpus

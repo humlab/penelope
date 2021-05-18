@@ -15,7 +15,6 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     **kwargs,  # pylint: disable=unused-argument
 ):
     try:
-        # FIXME: transform_opts ignored
         pipeline: pipelines.CorpusPipeline = (
             pipelines.wildcard()
             .tagged_frame_to_tokens(

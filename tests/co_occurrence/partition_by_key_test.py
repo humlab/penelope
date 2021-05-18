@@ -39,7 +39,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         global_threshold_count=0,
     )
-    assert expected_result == dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']])
+    assert expected_result == set(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
 
 
 def test_co_occurrence_with_no_concept_succeeds():
@@ -55,7 +55,7 @@ def test_co_occurrence_with_no_concept_succeeds():
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         global_threshold_count=0,
     )
-    assert expected_result == dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']])
+    assert expected_result == set(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
 
 
 def test_co_occurrence_with_thresholdt_succeeds():
@@ -70,4 +70,4 @@ def test_co_occurrence_with_thresholdt_succeeds():
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         global_threshold_count=2,
     )
-    assert expected_result == dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']])
+    assert expected_result == set(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))

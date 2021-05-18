@@ -79,9 +79,7 @@ def test_spaCy_co_occurrence_workflow(config):
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,
     )
-    args.context_opts = co_occurrence.ContextOpts(
-        context_width=4, ignore_concept=True, partition_keys=['document_id']
-    )  # , concept={''}, ignore_concept=True)
+    args.context_opts = co_occurrence.ContextOpts(context_width=4, ignore_concept=True, partition_keys=['document_id'])
 
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
@@ -109,11 +107,12 @@ def test_spaCy_co_occurrence_workflow(config):
     )
 
     bundle = co_occurrence.Bundle(
-        corpus=corpus,
         tag=args.corpus_tag,
         folder=args.target_folder,
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
+        token2id=value.token2id,
+        corpus=corpus,
         compute_options=co_occurrence.create_options_bundle(
             reader_opts=config.text_reader_opts,
             transform_opts=args.transform_opts,
