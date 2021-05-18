@@ -22,7 +22,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
                 extract_opts=extract_tagged_tokens_opts,
                 filter_opts=tagged_tokens_filter_opts,
             )
-            # .tokens_transform(tokens_transform_opts=transform_opts)
+            .tokens_transform(tokens_transform_opts=tokens_transform_opts)
             .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
             .tqdm()
             .to_corpus_document_co_occurrence(
@@ -65,7 +65,7 @@ def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
             .to_document_content_tuple()
             .tqdm()
             # .tap_stream("./tests/output/tapped_stream__prior_to_co_occurrence.zip",  "tap_4_prior_to_co_occurrence")
-            .to_corpus_co_occurrence(
+            .to_corpus_document_co_occurrence(
                 context_opts=context_opts,
                 transform_opts=tokens_transform_opts,
                 global_threshold_count=global_threshold_count,
