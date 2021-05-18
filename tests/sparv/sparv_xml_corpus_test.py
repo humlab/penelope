@@ -30,8 +30,8 @@ def test_reader_store_result():
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
         target_filename,
         version=4,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
-        tokens_transform_opts=TokensTransformOpts(to_lower=True),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
+        transform_opts=TokensTransformOpts(to_lower=True),
     )
 
     for i in range(0, len(expected_names)):
@@ -56,8 +56,8 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
         SPARV3_ZIPPED_XML_EXPORT_FILENAME,
         target_filename,
         version=3,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=False),
-        tokens_transform_opts=TokensTransformOpts(to_lower=True, min_len=2, stopwords=['<text>']),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=False),
+        transform_opts=TokensTransformOpts(to_lower=True, min_len=2, stopwords=['<text>']),
     )
 
     expected_document_start = "utredningar justitiedepartementet förslag utlänningslag angående om- händertagande förläggning års gere ide to lm \rstatens utredningar förteckning betänkande förslag utlänningslag lag omhändertagande utlänning anstalt förläggning tryckort tryckorten bokstäverna fetstil begynnelse- bokstäverna departement"

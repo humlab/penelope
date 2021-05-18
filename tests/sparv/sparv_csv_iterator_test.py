@@ -23,7 +23,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False
         ),
     )
@@ -41,7 +41,7 @@ def test_reader_when_only_nn_returns_only_nn():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=False
         ),
     )
@@ -59,7 +59,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=True
         ),
     )
@@ -77,7 +77,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='NN|VB', pos_paddings=None, pos_excludes=None, lemmatize=True
         ),
     )
@@ -95,7 +95,7 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='NN|VB', pos_paddings=None, pos_excludes=None, lemmatize=True, append_pos=True
         ),
     )
@@ -118,7 +118,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     tokens_reader = readers.SparvCsvTokenizer(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='|NN|',
             pos_paddings=None,
             lemmatize=True,

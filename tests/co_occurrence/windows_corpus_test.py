@@ -70,7 +70,7 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
         reader_opts=TextReaderOpts(),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=True),
     )
     expected_windows = TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
@@ -89,7 +89,7 @@ def test_windowed_corpus_when_nn_vb_not_lemma_2_tokens():
 
     extract_tokens_opts = ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False)
     corpus = SparvTokenizedCsvCorpus(
-        SPARV_ZIPPED_CSV_EXPORT_FILENAME, reader_opts=TextReaderOpts(), extract_tokens_opts=extract_tokens_opts
+        SPARV_ZIPPED_CSV_EXPORT_FILENAME, reader_opts=TextReaderOpts(), extract_opts=extract_tokens_opts
     )
     expected_windows = [
         ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],

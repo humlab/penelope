@@ -17,7 +17,7 @@ pipeline_payload:
     pos_column: pos
   pos_schema_name: SUC
   source: sou_sparv3_3files_xml.zip
-tagged_tokens_filter_opts:
+filter_opts:
 text_reader_opts:
   as_binary: false
   filename_fields:

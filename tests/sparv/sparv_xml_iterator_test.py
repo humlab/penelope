@@ -35,7 +35,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
     reader = readers.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='', pos_paddings=None, lemmatize=False, pos_excludes=None
         ),
     )
@@ -69,7 +69,7 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
     reader = readers.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='', pos_paddings=None, lemmatize=True, pos_excludes=None
         ),
     )
@@ -102,7 +102,7 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
     reader = readers.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='', pos_paddings=None, lemmatize=True, pos_excludes="|MAD|MID|PAD|"
         ),
     )
@@ -121,7 +121,7 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
     reader = readers.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='|NN|',
             pos_paddings=None,
             lemmatize=True,
@@ -142,7 +142,7 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
     reader = readers.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=2,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
     for i, (filename, tokens) in enumerate(reader):
@@ -162,7 +162,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     reader = readers.SparvXmlReader(
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
         chunk_size=None,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
     )
 
     for i, (filename, tokens) in enumerate(reader):

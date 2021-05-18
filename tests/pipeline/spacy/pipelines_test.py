@@ -40,13 +40,13 @@ def test_spaCy_co_occurrence_pipeline(config):
 
     # .folder(folder='./tests/test_data')
     pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
-    tokens_transform_opts: TokensTransformOpts = TokensTransformOpts()
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
+    transform_opts: TokensTransformOpts = TokensTransformOpts()
+    extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes=pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun),
         pos_paddings=pos_tags_to_str(pos_scheme.Conjunction),
     )
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
         is_punct=False,
     )
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
@@ -58,10 +58,10 @@ def test_spaCy_co_occurrence_pipeline(config):
     value: CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=config.pipeline_payload.source,
-        tokens_transform_opts=tokens_transform_opts,
+        transform_opts=transform_opts,
         context_opts=context_opts,
-        extract_tagged_tokens_opts=extract_tagged_tokens_opts,
-        tagged_tokens_filter_opts=tagged_tokens_filter_opts,
+        extract_opts=extract_opts,
+        filter_opts=filter_opts,
         global_threshold_count=global_threshold_count,
         checkpoint_filename=checkpoint_filename,
     ).value()
@@ -89,9 +89,9 @@ def test_spaCy_co_occurrence_workflow(config):
     value: co_occurrence.CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
-        tokens_transform_opts=args.tokens_transform_opts,
-        extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
-        tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
+        transform_opts=args.transform_opts,
+        extract_opts=args.extract_opts,
+        filter_opts=args.filter_opts,
         context_opts=args.context_opts,
         global_threshold_count=args.count_threshold,
         checkpoint_filename=checkpoint_filename,
@@ -116,9 +116,9 @@ def test_spaCy_co_occurrence_workflow(config):
         document_index=value.document_index,
         compute_options=co_occurrence.create_options_bundle(
             reader_opts=config.text_reader_opts,
-            tokens_transform_opts=args.tokens_transform_opts,
+            transform_opts=args.transform_opts,
             context_opts=args.context_opts,
-            extract_tokens_opts=args.extract_tagged_tokens_opts,
+            extract_opts=args.extract_opts,
             input_filename=args.corpus_filename,
             output_filename=co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag),
             count_threshold=args.count_threshold,

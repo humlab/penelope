@@ -40,7 +40,7 @@ class TransformTokensMixIn:
         if self.transform_opts is None:
             return self
 
-        self.pipeline.put("tokens_transform_opts", self.transform_opts)
+        self.pipeline.put("transform_opts", self.transform_opts)
 
         if self.transformer is None:
             self.transformer = TokensTransformer(transform_opts=self.transform_opts)

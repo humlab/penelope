@@ -24,7 +24,7 @@ compute_opts = ComputeOpts(
     corpus_filename=CORPUS_FILENAME,
     target_folder=jj(OUTPUT_FOLDER, 'APA'),
     corpus_tag='APA',
-    tokens_transform_opts=corpora.TokensTransformOpts(
+    transform_opts=corpora.TokensTransformOpts(
         only_alphabetic=False,
         only_any_alphanumeric=False,
         to_lower=True,
@@ -52,7 +52,7 @@ compute_opts = ComputeOpts(
         sep='\t',
         quoting=3,
     ),
-    extract_tagged_tokens_opts=corpora.ExtractTaggedTokensOpts(
+    extract_opts=corpora.ExtractTaggedTokensOpts(
         lemmatize=True,
         target_override=None,
         pos_includes=POS_TARGETS,
@@ -61,7 +61,7 @@ compute_opts = ComputeOpts(
         passthrough_tokens=[],
         append_pos=False,
     ),
-    tagged_tokens_filter_opts=utility.PropertyValueMaskingOpts(),
+    filter_opts=utility.PropertyValueMaskingOpts(),
     vectorize_opts=corpora.VectorizeOpts(
         already_tokenized=True, lowercase=False, stop_words=None, max_df=1.0, min_df=1, verbose=False
     ),

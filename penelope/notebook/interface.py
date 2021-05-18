@@ -23,10 +23,10 @@ class ComputeOpts:
     corpus_filename: str
     target_folder: str
     corpus_tag: str
-    tokens_transform_opts: TokensTransformOpts
+    transform_opts: TokensTransformOpts
     text_reader_opts: TextReaderOpts
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts
+    extract_opts: ExtractTaggedTokensOpts
+    filter_opts: PropertyValueMaskingOpts
     vectorize_opts: VectorizeOpts
     count_threshold: int
     create_subfolder: bool
@@ -77,10 +77,10 @@ class ComputeOpts:
             'input_filename': self.corpus_filename,
             'output_folder': self.target_folder,
             'output_tag': self.corpus_tag,
-            'tokens_transform_opts': self.tokens_transform_opts.props,
+            'transform_opts': self.transform_opts.props,
             'reader_opts': self.text_reader_opts.props,
-            'extract_tokens_opts': self.extract_tagged_tokens_opts.props
-            if self.extract_tagged_tokens_opts is not None
+            'extract_opts': self.extract_opts.props
+            if self.extract_opts is not None
             else {},
             'vectorize_opt': self.vectorize_opts.props,
             'count_threshold': self.count_threshold,
@@ -106,44 +106,44 @@ class ComputeOpts:
 
         options['--count-threshold'] = self.count_threshold
 
-        if self.extract_tagged_tokens_opts.phrases and len(self.extract_tagged_tokens_opts.phrases) > 0:
-            options['--phrase'] = self.extract_tagged_tokens_opts.phrases
+        if self.extract_opts.phrases and len(self.extract_opts.phrases) > 0:
+            options['--phrase'] = self.extract_opts.phrases
 
-        if self.extract_tagged_tokens_opts.pos_includes:
-            options['--pos-includes'] = self.extract_tagged_tokens_opts.pos_includes
+        if self.extract_opts.pos_includes:
+            options['--pos-includes'] = self.extract_opts.pos_includes
 
-        if self.extract_tagged_tokens_opts.pos_paddings:
-            options['--pos-paddings'] = self.extract_tagged_tokens_opts.pos_paddings
+        if self.extract_opts.pos_paddings:
+            options['--pos-paddings'] = self.extract_opts.pos_paddings
 
-        if self.extract_tagged_tokens_opts.pos_excludes:
-            options['--pos-excludes'] = self.extract_tagged_tokens_opts.pos_excludes
+        if self.extract_opts.pos_excludes:
+            options['--pos-excludes'] = self.extract_opts.pos_excludes
 
-        if self.extract_tagged_tokens_opts.lemmatize:
+        if self.extract_opts.lemmatize:
             options['--lemmatize'] = True
 
-        if self.tokens_transform_opts.to_lower:
+        if self.transform_opts.to_lower:
             options['--to-lowercase'] = True
 
-        if self.extract_tagged_tokens_opts.append_pos:
+        if self.extract_opts.append_pos:
             options['--append-pos'] = True
 
-        options[f'--{"" if self.tokens_transform_opts.keep_symbols else "no" }-keep-symbols'] = True
-        options[f'--{"" if self.tokens_transform_opts.keep_numerals else "no" }-keep-numerals'] = True
-        options[f'--{"" if self.tokens_transform_opts.to_lower else "no" }-to-lowercase'] = True
+        options[f'--{"" if self.transform_opts.keep_symbols else "no" }-keep-symbols'] = True
+        options[f'--{"" if self.transform_opts.keep_numerals else "no" }-keep-numerals'] = True
+        options[f'--{"" if self.transform_opts.to_lower else "no" }-to-lowercase'] = True
 
-        if self.tokens_transform_opts.min_len > 1:
-            options['--min-word-length'] = self.tokens_transform_opts.min_len
+        if self.transform_opts.min_len > 1:
+            options['--min-word-length'] = self.transform_opts.min_len
 
-        if (self.tokens_transform_opts.max_len or 99) < 99:
-            options['--max-word-length'] = self.tokens_transform_opts.max_len
+        if (self.transform_opts.max_len or 99) < 99:
+            options['--max-word-length'] = self.transform_opts.max_len
 
-        if self.tokens_transform_opts.remove_stopwords:
-            options['--remove_stopwords'] = self.tokens_transform_opts.language
+        if self.transform_opts.remove_stopwords:
+            options['--remove_stopwords'] = self.transform_opts.language
 
-        if self.tokens_transform_opts.only_alphabetic:
+        if self.transform_opts.only_alphabetic:
             options['--only-alphabetic'] = True
 
-        if self.tokens_transform_opts.only_any_alphanumeric:
+        if self.transform_opts.only_any_alphanumeric:
             options['--only-any-alphanumeric'] = True
 
         if self.force:

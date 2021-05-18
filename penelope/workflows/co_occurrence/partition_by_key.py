@@ -39,15 +39,15 @@ def compute(
             checkpoint_filename=checkpoint_filename,
         )
 
-        args.extract_tagged_tokens_opts.passthrough_tokens = list(args.context_opts.concept)
+        args.extract_opts.passthrough_tokens = list(args.context_opts.concept)
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
             # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
             + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
-                tokens_transform_opts=args.tokens_transform_opts,
-                extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
-                tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
+                transform_opts=args.transform_opts,
+                extract_opts=args.extract_opts,
+                filter_opts=args.filter_opts,
                 context_opts=args.context_opts,
                 global_threshold_count=args.count_threshold,
             )
@@ -72,9 +72,9 @@ def compute(
             token2id=value.token2id,
             compute_options=co_occurrence.create_options_bundle(
                 reader_opts=corpus_config.text_reader_opts,
-                tokens_transform_opts=args.tokens_transform_opts,
+                transform_opts=args.transform_opts,
                 context_opts=args.context_opts,
-                extract_tokens_opts=args.extract_tagged_tokens_opts,
+                extract_opts=args.extract_opts,
                 input_filename=args.corpus_filename,
                 output_filename=target_filename,
                 count_threshold=args.count_threshold,

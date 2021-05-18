@@ -58,20 +58,20 @@ def to_tagged_frame_pipeline(
 
 def spaCy_DTM_pipeline(
     corpus_config: CorpusConfig,
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
+    transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     corpus_filename: str = None,
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
-            corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename
+            corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename,
         ) + wildcard_to_DTM_pipeline(
-            extract_tagged_tokens_opts=extract_tagged_tokens_opts,
-            tagged_tokens_filter_opts=tagged_tokens_filter_opts,
-            tokens_transform_opts=tokens_transform_opts,
+            extract_opts=extract_opts,
+            filter_opts=filter_opts,
+            transform_opts=transform_opts,
             vectorize_opts=vectorize_opts,
         )
         return p
@@ -84,9 +84,9 @@ def spaCy_DTM_pipeline(
 def spaCy_co_occurrence_pipeline(
     corpus_config: CorpusConfig,
     corpus_filename: str,
-    tokens_transform_opts: TokensTransformOpts = None,
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
+    transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     checkpoint_filename: str = None,
@@ -98,9 +98,9 @@ def spaCy_co_occurrence_pipeline(
             checkpoint_filename=checkpoint_filename,
         ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
             context_opts=context_opts,
-            tokens_transform_opts=tokens_transform_opts,
-            extract_tagged_tokens_opts=extract_tagged_tokens_opts,
-            tagged_tokens_filter_opts=tagged_tokens_filter_opts,
+            transform_opts=transform_opts,
+            extract_opts=extract_opts,
+            filter_opts=filter_opts,
             global_threshold_count=global_threshold_count,
         )
         return p

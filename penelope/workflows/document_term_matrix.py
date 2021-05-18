@@ -23,9 +23,9 @@ def compute(
                 corpus_filename=args.corpus_filename,
             )
             + wildcard_to_DTM_pipeline(
-                tokens_transform_opts=args.tokens_transform_opts,
-                extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
-                tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
+                transform_opts=args.transform_opts,
+                extract_opts=args.extract_opts,
+                filter_opts=args.filter_opts,
                 vectorize_opts=args.vectorize_opts,
             )
         ).value()

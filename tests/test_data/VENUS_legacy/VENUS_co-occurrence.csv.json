@@ -18,7 +18,7 @@
             "year"
         ]
     },
-    "tokens_transform_opts": {
+    "transform_opts": {
         "only_alphabetic": false,
         "only_any_alphanumeric": false,
         "to_lower": true,
@@ -33,7 +33,7 @@
         "keep_numerals": true,
         "keep_symbols": true
     },
-    "extract_tokens_opts": {
+    "extract_opts": {
         "pos_includes": "|NOUN|PROPN|VERB|",
         "pos_paddings": null,
         "pos_excludes": "|PUNCT|EOL|SPACE|",

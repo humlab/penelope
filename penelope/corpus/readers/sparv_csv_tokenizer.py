@@ -17,7 +17,7 @@ class SparvCsvTokenizer(TextTokenizer):
         source: TextSource,
         reader_opts: TextReaderOpts,
         *,
-        extract_tokens_opts: ExtractTaggedTokensOpts = None,
+        extract_opts: ExtractTaggedTokensOpts = None,
         chunk_size: int = None,
     ):
         """[summary]
@@ -39,7 +39,7 @@ class SparvCsvTokenizer(TextTokenizer):
             chunk_size=chunk_size,
         )
 
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True)
+        self.extract_tokens_opts = extract_opts or ExtractTaggedTokensOpts(lemmatize=True)
         self.parser = SparvCsvToText(delimiter=self.delimiter, extract_tokens_opts=self.extract_tokens_opts)
 
     def preprocess(self, content):

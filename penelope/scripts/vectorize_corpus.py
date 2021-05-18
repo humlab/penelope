@@ -94,7 +94,7 @@ def main(
             corpus_filename=input_filename,
             target_folder=output_folder,
             corpus_tag=output_tag,
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 to_lower=to_lowercase,
                 to_upper=False,
                 min_len=min_word_length,
@@ -110,7 +110,7 @@ def main(
                 only_any_alphanumeric=only_any_alphanumeric,
             ),
             text_reader_opts=corpus_config.text_reader_opts,
-            extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+            extract_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
                 pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,

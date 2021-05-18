@@ -15,8 +15,8 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         version,
         *,
         reader_opts: TextReaderOpts = None,
-        extract_tokens_opts: ExtractTaggedTokensOpts = None,
-        tokens_transform_opts: TokensTransformOpts = None,
+        extract_opts: ExtractTaggedTokensOpts = None,
+        transform_opts: TokensTransformOpts = None,
         chunk_size: int = None,
     ):
         reader_opts = reader_opts or TextReaderOpts()
@@ -26,14 +26,14 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         else:
             tokens_reader = readers.SparvXmlReader(
                 source,
-                extract_tokens_opts=extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True),
+                extract_opts=extract_opts or ExtractTaggedTokensOpts(lemmatize=True),
                 xslt_filename=None,
                 version=version,
                 reader_opts=reader_opts,
                 chunk_size=chunk_size,
             )
 
-        super().__init__(tokens_reader, tokens_transform_opts=tokens_transform_opts)
+        super().__init__(tokens_reader, transform_opts=transform_opts)
 
 
 class SparvTokenizedCsvCorpus(TokenizedCorpus):
@@ -50,8 +50,8 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         source,
         *,
         reader_opts: TextReaderOpts = None,
-        extract_tokens_opts: ExtractTaggedTokensOpts = None,
-        tokens_transform_opts: TokensTransformOpts = None,
+        extract_opts: ExtractTaggedTokensOpts = None,
+        transform_opts: TokensTransformOpts = None,
         chunk_size: int = None,
     ):
         reader_opts = reader_opts or TextReaderOpts()
@@ -60,11 +60,11 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         else:
             tokens_reader = readers.SparvCsvTokenizer(
                 source,
-                extract_tokens_opts=extract_tokens_opts,
+                extract_opts=extract_opts,
                 reader_opts=reader_opts,
                 chunk_size=chunk_size,
             )
-        super().__init__(tokens_reader, tokens_transform_opts=tokens_transform_opts)
+        super().__init__(tokens_reader, transform_opts=transform_opts)
 
 
 # FIXME: Implemented pos_paddings
@@ -72,9 +72,9 @@ def sparv_xml_extract_and_store(
     source: str,
     target: str,
     version: int,
-    extract_tokens_opts: ExtractTaggedTokensOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
     reader_opts: TextReaderOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
+    transform_opts: TokensTransformOpts = None,
     chunk_size: int = None,
 ):
     """[summary]
@@ -85,7 +85,7 @@ def sparv_xml_extract_and_store(
     target : str
     version : int
     extract_tokens_opts : ExtractTaggedTokensOpts, optional
-    tokens_transform_opts : TokensTransformOpts, optional
+    transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
             only_any_alphanumeric: bool = False,
@@ -107,9 +107,9 @@ def sparv_xml_extract_and_store(
     corpus = SparvTokenizedXmlCorpus(
         source,
         version,
-        extract_tokens_opts=extract_tokens_opts,
+        extract_opts=extract_opts,
         reader_opts=reader_opts,
-        tokens_transform_opts=tokens_transform_opts,
+        transform_opts=transform_opts,
         chunk_size=chunk_size,
     )
 
@@ -119,9 +119,9 @@ def sparv_xml_extract_and_store(
 def sparv_csv_extract_and_store(
     source: str,
     target: str,
-    extract_tokens_opts: ExtractTaggedTokensOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
     reader_opts: TextReaderOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
+    transform_opts: TokensTransformOpts = None,
     chunk_size: int = None,
 ):
     """Extracts and stores text documents from a Sparv corpus in CSV format
@@ -132,8 +132,8 @@ def sparv_csv_extract_and_store(
         [description]
     target : str
         [description]
-    extract_tokens_opts : ExtractTaggedTokensOpts, optional
-    tokens_transform_opts : TokensTransformOpts, optional
+    extract_opts : ExtractTaggedTokensOpts, optional
+    transform_opts : TokensTransformOpts, optional
         Passed to TokensTransformer:
             only_alphabetic: bool = False,
             only_any_alphanumeric: bool = False,
@@ -152,9 +152,9 @@ def sparv_csv_extract_and_store(
     """
     corpus = SparvTokenizedCsvCorpus(
         source,
-        extract_tokens_opts=extract_tokens_opts,
+        extract_opts=extract_opts,
         reader_opts=reader_opts,
-        tokens_transform_opts=tokens_transform_opts,
+        transform_opts=transform_opts,
         chunk_size=chunk_size,
     )
 

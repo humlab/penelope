@@ -9,13 +9,13 @@ from penelope.utility import replace_extension, suffix_filename, timestamp_filen
 
 # pylint: disable=too-many-arguments
 def store_options_to_json_file(
-    input_filename, output_filename, tokens_transform_opts: TokensTransformOpts, sparv_extract_opts
+    input_filename, output_filename, transform_opts: TokensTransformOpts, sparv_extract_opts
 ):
 
     store_options = {
         'input': input_filename,
         'output': output_filename,
-        'tokens_transform_opts': tokens_transform_opts.props,
+        'transform_opts': transform_opts.props,
         'sparv_extract_opts': sparv_extract_opts,
     }
 
@@ -55,7 +55,7 @@ def prepare_train_corpus(
     version,
 ):
     """Prepares the a training corpus from Sparv XML archive"""
-    tokens_transform_opts: TokensTransformOpts = TokensTransformOpts(
+    transform_opts: TokensTransformOpts = TokensTransformOpts(
         to_lower=lower,
         remove_stopwords=remove_stopwords is not None,
         language=remove_stopwords,
@@ -64,7 +64,7 @@ def prepare_train_corpus(
         keep_numerals=keep_numerals,
         keep_symbols=keep_symbols,
     )
-    extract_tokens_opts = ExtractTaggedTokensOpts(
+    extract_opts = ExtractTaggedTokensOpts(
         pos_includes=pos_includes,
         pos_excludes=pos_excludes,
         lemmatize=lemmatize,
@@ -79,16 +79,16 @@ def prepare_train_corpus(
         source=input_filename,
         target=output_filename,
         version=version,
-        extract_tokens_opts=extract_tokens_opts,
+        extract_opts=extract_opts,
         reader_opts=reader_opts,
-        tokens_transform_opts=tokens_transform_opts,
+        transform_opts=transform_opts,
     )
 
     store_options_to_json_file(
         input_filename,
         output_filename,
-        tokens_transform_opts,
-        dict(version=version, extract_tokens_opts=extract_tokens_opts, reader_opts=reader_opts),
+        transform_opts,
+        dict(version=version, extract_tokens_opts=extract_opts, reader_opts=reader_opts),
     )
 
 

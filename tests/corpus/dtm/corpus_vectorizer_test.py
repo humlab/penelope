@@ -25,7 +25,7 @@ def create_reader():
 
 def create_corpus():
     reader = create_reader()
-    tokens_transform_opts = TokensTransformOpts(
+    transform_opts = TokensTransformOpts(
         only_any_alphanumeric=True,
         to_lower=True,
         remove_accents=False,
@@ -33,7 +33,7 @@ def create_corpus():
         max_len=None,
         keep_numerals=False,
     )
-    corpus = TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
+    corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
 
 
@@ -160,7 +160,7 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 
     corpus = TokenizedCorpus(
         reader=create_reader(),
-        tokens_transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
+        transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
     )
 
     vocabulary = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).token2id

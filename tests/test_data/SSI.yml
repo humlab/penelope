@@ -32,7 +32,7 @@ pipeline_payload:
     tagger: spaCy
     text_column: text
   pos_schema_name: Universal
-tagged_tokens_filter_opts:
+filter_opts:
   data:
     is_alpha: null
     is_digit: null

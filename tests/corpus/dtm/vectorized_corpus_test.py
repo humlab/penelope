@@ -28,7 +28,7 @@ def create_reader() -> readers.TextTokenizer:
 
 def create_corpus() -> corpora.TokenizedCorpus:
     reader = create_reader()
-    tokens_transform_opts = corpora.TokensTransformOpts(
+    transform_opts = corpora.TokensTransformOpts(
         only_any_alphanumeric=True,
         to_lower=True,
         remove_accents=False,
@@ -36,7 +36,7 @@ def create_corpus() -> corpora.TokenizedCorpus:
         max_len=None,
         keep_numerals=False,
     )
-    corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
+    corpus = corpora.TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
 
 

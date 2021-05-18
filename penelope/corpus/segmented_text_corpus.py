@@ -64,7 +64,7 @@ class SegmentedTextCorpus(TokenizedCorpus):
         segment_strategy: str = 'sentence',
         segment_size: int = 0,
         *,
-        tokens_transform_opts: TokensTransformOpts = None,
+        transform_opts: TokensTransformOpts = None,
     ):
 
         if segment_strategy not in ['sentence', 'chunk', 'document']:
@@ -73,7 +73,7 @@ class SegmentedTextCorpus(TokenizedCorpus):
         if segment_strategy == 'chunk' and segment_size <= 0:
             raise AssertionError('Attribute segment_chunk must be positive if segement_strategy is chunk')
 
-        super().__init__(reader, tokens_transform_opts=tokens_transform_opts)
+        super().__init__(reader, transform_opts=transform_opts)
         self.segment_strategy = segment_strategy
         self.segment_size = segment_size
         self.strategies = {

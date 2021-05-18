@@ -27,7 +27,7 @@ pipeline_payload:
     pos_column: pos
     sparv_version: 4
   pos_schema_name: SUC
-tagged_tokens_filter_opts:
+filter_opts:
   data:
     is_alpha: null
     is_digit: null

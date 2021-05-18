@@ -239,17 +239,17 @@ def load_options(co_occurrences_filename: str) -> dict:
 def create_options_bundle(
     *,
     reader_opts: TextReaderOpts,
-    tokens_transform_opts: TokensTransformOpts,
+    transform_opts: TokensTransformOpts,
     context_opts: ContextOpts,
-    extract_tokens_opts: ExtractTaggedTokensOpts,
+    extract_opts: ExtractTaggedTokensOpts,
     **other_options,
 ):
     options = {
         **{
             'reader_opts': reader_opts.props,
             'context_opts': context_opts.props,
-            'tokens_transform_opts': tokens_transform_opts.props,
-            'extract_tokens_opts': extract_tokens_opts.props,
+            'transform_opts': transform_opts.props,
+            'extract_opts': extract_opts.props,
         },
         **other_options,
     }

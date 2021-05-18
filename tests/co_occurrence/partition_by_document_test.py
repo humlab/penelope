@@ -22,7 +22,7 @@ def test_partitioned_corpus_co_occurrence_succeeds(concept, threshold_count, con
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
@@ -85,7 +85,7 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
@@ -149,7 +149,7 @@ def test_document_wise_co_occurrence():
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes='NN|PM|VB',
             pos_excludes='MAD|MID|PAD',
             pos_paddings="AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|PC|PL|PN|PP|PS|RG|RO|SN|UO",
