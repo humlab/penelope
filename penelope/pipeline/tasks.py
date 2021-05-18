@@ -593,6 +593,7 @@ class TokensTransform(TransformTokensMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
+        self.setup_transform()
         return self
 
     def __post_init__(self):
@@ -601,7 +602,8 @@ class TokensTransform(TransformTokensMixIn, ITask):
         self.transformer = TokensTransformer(transform_opts=self.transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return payload.update(self.out_content_type, self.transformer.transform(payload.content))
+        tokens: List[str] = self.transform(payload.content)
+        return payload.update(self.out_content_type, tokens)
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":
         self.transformer.add(transform)
