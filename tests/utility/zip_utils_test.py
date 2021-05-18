@@ -8,7 +8,7 @@ def test_read_file_content():
     filename = "README.md"
     data = zip_utils.read_file_content(zip_or_filename=zip_filename, filename=filename)
     assert data == "apa"
-    with zipfile.ZipFile as zf:
+    with zipfile.ZipFile(zip_filename) as zf:
         data = zip_utils.read_file_content(zip_or_filename=zf, filename=filename)
     assert data == "apa"
 
@@ -31,7 +31,7 @@ def test_list_filenames():
 
     zip_filename = './tests/test_data/test_corpus.zip'
     filenames = zip_utils.list_filenames(zip_or_filename=zip_filename)
-    assert filenames == ['README.md'] + expected_text_files
+    assert filenames == expected_text_files
 
 
 def test_store():
