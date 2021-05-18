@@ -131,7 +131,7 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     tokens_payload = next(
         CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .resolve()
     )
 
@@ -153,7 +153,7 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     text_payload = next(
         CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .resolve()
     )
@@ -171,7 +171,7 @@ def test_pipeline_take_succeeds(config: CorpusConfig):
     take_payloads = (
         CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .take(2)
     )
@@ -191,7 +191,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
     payloads = (
         CorpusPipeline(config=config)
         .checkpoint(checkpoint_filename)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .to_document_content_tuple()
         .to_list()
@@ -222,7 +222,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
         (
             CorpusPipeline(config=config)
             .checkpoint(checkpoint_filename)
-            .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+            .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
             .tokens_transform(transform_opts=TokensTransformOpts())
             .tokens_to_text()
             .to_document_content_tuple()

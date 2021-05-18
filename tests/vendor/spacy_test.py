@@ -350,7 +350,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
     )
 
     payloads = [x.content for x in pipeline.resolve()]
@@ -411,7 +411,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
         .tokens_to_text()
         .to_document_content_tuple()
         .to_dtm(vectorize_opts)
@@ -446,7 +446,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
         .tokens_to_text()
         .to_document_content_tuple()
         .to_dtm(vectorize_opts)

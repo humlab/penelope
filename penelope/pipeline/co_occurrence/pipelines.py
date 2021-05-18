@@ -21,8 +21,9 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
             .tagged_frame_to_tokens(
                 extract_opts=extract_tagged_tokens_opts,
                 filter_opts=tagged_tokens_filter_opts,
+                tokens_transform_opts=tokens_transform_opts,
             )
-            .tokens_transform(transform_opts=tokens_transform_opts)
+            # .tokens_transform(transform_opts=tokens_transform_opts)
             .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
             .tqdm()
             .to_corpus_document_co_occurrence(
@@ -53,14 +54,13 @@ def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
             .tagged_frame_to_tokens(
                 extract_opts=extract_tagged_tokens_opts,
                 filter_opts=tagged_tokens_filter_opts,
+                tokens_transform_opts=tokens_transform_opts,
             )
-            # .tap_stream("./tests/output/tapped_stream__tagged_frame_to_tokens.zip",  "tap_2_tagged_frame_to_tokens")
-            .tokens_transform(
-                transform_opts=TokensTransformOpts(
-                    to_lower=tokens_transform_opts.to_lower,
-                ),
-            )
-            # .tap_stream("./tests/output/tapped_stream__tokens_transform.zip",  "tap_3_tokens_transform")
+            # .tokens_transform(
+            #     transform_opts=TokensTransformOpts(
+            #         to_lower=tokens_transform_opts.to_lower,
+            #     ),
+            # )
             .vocabulary()
             .to_document_content_tuple()
             .tqdm()
