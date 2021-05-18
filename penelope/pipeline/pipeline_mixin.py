@@ -126,7 +126,7 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline,
         *,
         extract_opts: ExtractTaggedTokensOpts,
-        transform_opts=TokensTransformOpts,
+        transform_opts: TokensTransformOpts,
         filter_opts: PropertyValueMaskingOpts,
     ) -> pipelines.CorpusPipeline:
         return self.add(
