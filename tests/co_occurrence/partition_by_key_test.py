@@ -30,8 +30,7 @@ def test_co_occurrence_matrix_of_corpus_returns_correct_result():
 def test_co_occurrence_without_no_concept_and_threshold_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
-
+    expected_result = sorted([('b', 'g', 1), ('b', 'f', 1), ('c', 'b', 2), ('g', 'f', 1)])
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
@@ -39,14 +38,14 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
         global_threshold_count=0,
     )
-    assert expected_result == set(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
+    assert expected_result == sorted(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
 
 
 def test_co_occurrence_with_no_concept_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
 
-    expected_result = {('d', 'a', 1), ('b', 'a', 1)}
+    expected_result = sorted([('d', 'a', 1), ('b', 'a', 1)])
 
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
@@ -55,13 +54,13 @@ def test_co_occurrence_with_no_concept_succeeds():
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
         global_threshold_count=0,
     )
-    assert expected_result == set(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
+    assert expected_result == sorted(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
 
 
 def test_co_occurrence_with_thresholdt_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    expected_result = {('g', 'a', 2)}
+    expected_result = sorted([('g', 'a', 1), ('g', 'a', 1)])
 
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
@@ -70,4 +69,4 @@ def test_co_occurrence_with_thresholdt_succeeds():
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
         global_threshold_count=2,
     )
-    assert expected_result == set(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
+    assert expected_result == sorted(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
