@@ -7,7 +7,7 @@ from penelope.co_occurrence.partition_by_document import (
     compute_corpus_co_occurrence,
 )
 from penelope.co_occurrence.persistence import to_filename
-from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
+from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts, Token2Id
 from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 from tests.utils import OUTPUT_FOLDER, very_simple_corpus
 
@@ -46,10 +46,12 @@ def test_store_when_co_occurrences_data_is_partitioned():
     os.makedirs(folder, exist_ok=True)
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
+    token2id: Token2Id = Token2Id(corpus.token2id)
+
     value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
-        token2id=corpus.token2id,
+        token2id=token2id,
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
         global_threshold_count=1,
     )
@@ -57,7 +59,7 @@ def test_store_when_co_occurrences_data_is_partitioned():
     corpus = co_occurrences_to_vectorized_corpus(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
-        token2id=corpus.token2id,
+        token2id=token2id,
     )
 
     bundle: Bundle = Bundle(
@@ -65,6 +67,7 @@ def test_store_when_co_occurrences_data_is_partitioned():
         tag=tag,
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
+        token_window_counts=value.token_window_counts,
         token2id=value.token2id,
         compute_options={},
         corpus=corpus,
