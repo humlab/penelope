@@ -223,7 +223,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
             CorpusPipeline(config=config)
             .checkpoint(checkpoint_filename)
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts)
-            .tokens_transform(tokens_transform_opts=TokensTransformOpts())
+            .tokens_transform(transform_opts=TokensTransformOpts())
             .tokens_to_text()
             .to_document_content_tuple()
             .tqdm()

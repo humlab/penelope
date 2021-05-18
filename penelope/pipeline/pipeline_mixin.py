@@ -77,24 +77,24 @@ class PipelineShortcutMixIn:
         self,
         *,
         text_transform_opts: TextTransformOpts,
-        tokens_transform_opts: TokensTransformOpts = None,
+        transform_opts: TokensTransformOpts = None,
         transformer: TokensTransformer = None,
     ) -> pipelines.CorpusPipeline:
         """ TOKEN => TOKENS """
         return self.add(
             tasks.TextToTokens(
                 text_transform_opts=text_transform_opts,
-                tokens_transform_opts=tokens_transform_opts,
+                tokens_transform_opts=transform_opts,
                 transformer=transformer,
             )
         )
 
     def tokens_transform(
-        self, *, tokens_transform_opts: TokensTransformOpts, transformer: TokensTransformer = None
+        self, *, transform_opts: TokensTransformOpts, transformer: TokensTransformer = None
     ) -> pipelines.CorpusPipeline:
         """ TOKEN => TOKENS """
-        if tokens_transform_opts or transformer:
-            return self.add(tasks.TokensTransform(tokens_transform_opts=tokens_transform_opts, transformer=transformer))
+        if transform_opts or transformer:
+            return self.add(tasks.TokensTransform(tokens_transform_opts=transform_opts, transformer=transformer))
         return self
 
     def to_dtm(self: pipelines.CorpusPipeline, vectorize_opts: VectorizeOpts = None) -> pipelines.CorpusPipeline:
