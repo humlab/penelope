@@ -191,9 +191,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
         # Act
         id2w = corpus.id2token.get
-        co_occurrences = term_term_matrix_to_co_occurrences(
-            term_term_matrix, threshold_count=1, ignore_ids=set()
-        )
+        co_occurrences = term_term_matrix_to_co_occurrences(term_term_matrix, threshold_count=1, ignore_ids=set())
         co_occurrences['w1'] = co_occurrences.w1_id.apply(id2w)
         co_occurrences['w2'] = co_occurrences.w2_id.apply(id2w)
 
