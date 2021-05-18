@@ -40,6 +40,7 @@ class CoOccurrenceComputeResult:
             w2=self.co_occurrences.w2_id.apply(fg),
         )
 
+
 @dataclass
 class ContextOpts:
 
