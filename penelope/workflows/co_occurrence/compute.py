@@ -4,6 +4,9 @@ from typing import Optional
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from loguru import logger
+
+# legacy: from penelope.co_occurrence.partition_by_key_legacy import co_occurrences_to_vectorized_corpus
+from penelope.co_occurrence.partition_by_document import co_occurrences_to_vectorized_corpus
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
 
@@ -54,10 +57,11 @@ def compute(
         if len(value.co_occurrences) == 0:
             raise co_occurrence.ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrence.partition_by_document.co_occurrences_to_vectorized_corpus(
+        corpus: VectorizedCorpus = co_occurrences_to_vectorized_corpus(
             co_occurrences=value.co_occurrences,
-            token2id=value.token2id,
             document_index=value.document_index,
+            # legacy: partition_key=args.context_opts.partition_keys[0],
+            token2id=value.token2id,
         )
 
         bundle = co_occurrence.Bundle(
@@ -67,6 +71,7 @@ def compute(
             co_occurrences=value.co_occurrences,
             document_index=value.document_index,
             token2id=value.token2id,
+            token_window_counts=value.token_window_counts,
             compute_options=co_occurrence.create_options_bundle(
                 reader_opts=corpus_config.text_reader_opts,
                 transform_opts=args.transform_opts,

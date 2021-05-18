@@ -8,11 +8,7 @@ from penelope.utility import deprecated, strip_path_and_extension
 from tqdm.auto import tqdm
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
-from .convert import (
-    term_term_matrix_to_co_occurrences,
-    to_vectorized_windows_corpus,
-    truncate_by_global_threshold,
-)
+from .convert import term_term_matrix_to_co_occurrences, to_vectorized_windows_corpus, truncate_by_global_threshold
 
 # pylint: disable=ungrouped-imports
 
