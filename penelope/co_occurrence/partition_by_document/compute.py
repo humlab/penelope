@@ -70,7 +70,6 @@ def compute_corpus_co_occurrence(
             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= global_threshold_count
         ]
 
-    # FIXME: Don't add tokens - postpone to application layer
     # FIXME value_n_t moved out of co_occurrences computation to application layer
 
     return CoOccurrenceComputeResult(
