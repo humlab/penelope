@@ -14,11 +14,7 @@ def wildcard_to_DTM_pipeline(
     try:
         p: CorpusPipeline = (
             wildcard()
-            .tagged_frame_to_tokens(
-                extract_opts=extract_opts,
-                filter_opts=filter_opts,
-                transform_opts=transform_opts
-            )
+            .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
             # .tokens_transform(transform_opts=transform_opts)
             .to_document_content_tuple()
             .tqdm()

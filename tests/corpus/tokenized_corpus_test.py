@@ -84,9 +84,7 @@ def test_next_document_when_max_len_is_six_returns_filter_out_longer_words():
 
 def test_n_tokens_when_exhausted_and_only_any_alphanumeric_min_len_two_returns_expected_count():
     reader = create_reader()
-    corpus = corpora.TokenizedCorpus(
-        reader, transform_opts=TokensTransformOpts(only_any_alphanumeric=True, min_len=2)
-    )
+    corpus = corpora.TokenizedCorpus(reader, transform_opts=TokensTransformOpts(only_any_alphanumeric=True, min_len=2))
     n_expected = [17, 13, 21, 42, 18]
     _ = [x for x in corpus]
     n_tokens = list(corpus.document_index.n_tokens)

@@ -23,9 +23,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
-            pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False
-        ),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False),
     )
 
     expected = "Rödräven är ett hunddjur som har en mycket vidsträckt utbredning över norra halvklotet .".split()
@@ -41,9 +39,7 @@ def test_reader_when_only_nn_returns_only_nn():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=False
-        ),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=False),
     )
 
     expected = "Rödräven hunddjur utbredning halvklotet".split()
@@ -59,9 +55,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=True
-        ),
+        extract_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=True),
     )
 
     expected = "rödräv hunddjur utbredning halvklot".split()

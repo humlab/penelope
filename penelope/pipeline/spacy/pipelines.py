@@ -67,7 +67,9 @@ def spaCy_DTM_pipeline(
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
-            corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename,
+            corpus_config=corpus_config,
+            checkpoint_filename=checkpoint_filename,
+            corpus_filename=corpus_filename,
         ) + wildcard_to_DTM_pipeline(
             extract_opts=extract_opts,
             filter_opts=filter_opts,

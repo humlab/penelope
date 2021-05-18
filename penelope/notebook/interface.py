@@ -79,9 +79,7 @@ class ComputeOpts:
             'output_tag': self.corpus_tag,
             'transform_opts': self.transform_opts.props,
             'reader_opts': self.text_reader_opts.props,
-            'extract_opts': self.extract_opts.props
-            if self.extract_opts is not None
-            else {},
+            'extract_opts': self.extract_opts.props if self.extract_opts is not None else {},
             'vectorize_opt': self.vectorize_opts.props,
             'count_threshold': self.count_threshold,
             'context_opts': {} if self.context_opts is None else self.context_opts.props,
