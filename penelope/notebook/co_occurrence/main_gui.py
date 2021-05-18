@@ -45,7 +45,7 @@ def compute_co_occurrence_callback(
             print(args.command_line("co_occurrence"))
             return None
 
-        bundle: co_occurrence.Bundle = workflows.co_occurrence.compute_partitioned_by_key(
+        bundle: co_occurrence.Bundle = workflows.co_occurrence.compute(
             args=args,
             corpus_config=corpus_config,
             checkpoint_file=checkpoint_file,

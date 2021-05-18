@@ -81,7 +81,7 @@ corpus_config.pipeline_payload.files(
     source=compute_opts.corpus_filename,
     document_index_source=None,
 )
-bundle = workflows.co_occurrence.compute_partitioned_by_key(
+bundle = workflows.co_occurrence.compute(
     args=compute_opts,
     corpus_config=corpus_config,
     checkpoint_file=jj(OUTPUT_FOLDER, 'test.zip'),

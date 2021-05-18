@@ -135,7 +135,7 @@ def test_spaCy_co_occurrence_pipeline3(config):
         corpus_tag="SATURNUS",
     )
 
-    workflows.co_occurrence.compute_partitioned_by_key(
+    workflows.co_occurrence.compute(
         args=args,
         corpus_config=config,
         checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',
