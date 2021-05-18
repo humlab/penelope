@@ -1,7 +1,11 @@
 import logging
+from dataclasses import dataclass, field
+from typing import List, Optional
+
+from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
 
 from . import convert
-from .interfaces import DocumentPayload
+from .interfaces import DocumentPayload, ITask
 
 
 class DefaultResolveMixIn:
@@ -23,3 +27,49 @@ class CountTokensMixIn:
         except Exception as ex:
             logging.exception(ex)
             raise
+
+
+@dataclass
+class TransformTokensMixIn:
+
+    transform_opts: Optional[TokensTransformOpts] = None
+    transformer: Optional[TokensTransformer] = field(init=False, default=None)
+
+    def setup_transform(self) -> ITask:
+
+        if self.transform_opts is None:
+            return self
+
+        self.pipeline.put("tokens_transform_opts", self.transform_opts)
+
+        if self.transformer is None:
+            self.transformer = TokensTransformer(transform_opts=self.transform_opts)
+
+        self.transformer.ingest(self.transform_opts)
+
+        return self
+
+    def transform(self, tokens: List[str]) -> List[str]:
+        if self.transformer:
+            return self.transformer.transform(tokens)
+        return tokens
+
+
+@dataclass
+class BuildToken2IdMixIn:
+
+    build_dictionary: bool = False
+    token2id: Token2Id = field(init=False, default=None)
+
+    def setup_token2id(self: ITask) -> ITask:
+
+        if self.build_dictionary:
+            self.token2id = Token2Id()
+            self.pipeline.payload.token2id = self.token2id
+
+        return self
+
+    def ingest_tokens(self, tokens: List[str]):
+
+        if self.build_dictionary:
+            self.token2id.ingest(tokens)

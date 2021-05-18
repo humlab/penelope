@@ -30,13 +30,14 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
+from penelope.corpus.tokens_transformer import TokensTransformerMixin
 from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_paths
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn
+from .tasks_mixin import BuildToken2IdMixIn, CountTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn
 
 
 @dataclass
@@ -394,21 +395,17 @@ class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class TextToTokens(ITask):
+class TextToTokens(TransformTokensMixIn, ITask):
     """Extracts tokens from payload.content, optinally transforming"""
 
     tokenize: Callable[[str], List[str]] = None
-    text_transform_opts: TokensTransformOpts = None
-
-    tokens_transform_opts: Optional[TokensTransformOpts] = None
-    transformer: Optional[TokensTransformer] = None
-
+    text_transform_opts: TextTransformOpts = None
     _text_transformer: TextTransformer = field(init=False)
 
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("text_transform_opts", self.text_transform_opts)
-        self.pipeline.put("tokens_transform_opts_text", self.tokens_transform_opts)
+        self.pipeline.put("tokens_transform_opts_text", self.transform_opts)
         return self
 
     def __post_init__(self):
@@ -420,10 +417,7 @@ class TextToTokens(ITask):
         if self.text_transform_opts is not None:
             self._text_transformer = TextTransformer(text_transform_opts=self.text_transform_opts)
 
-        if self.tokens_transform_opts is not None:
-            if self.transformer is None:
-                self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
-            self.transformer.ingest(self.tokens_transform_opts)
+        self.setup_transform()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         if self.in_content_type == ContentType.TOKENS:
@@ -432,8 +426,9 @@ class TextToTokens(ITask):
             if self._text_transformer is not None:
                 self.tokenize(self._text_transformer.transform(payload.content))
             tokens = self.tokenize(payload.content)
-        if self.transformer is not None:
-            tokens = self.transformer.transform(tokens)
+
+        tokens = self.transform(tokens)
+
         return payload.update(self.out_content_type, tokens)
 
 
@@ -468,7 +463,7 @@ class ToTaggedFrame(CountTokensMixIn, ITask):
 
 
 @dataclass
-class TaggedFrameToTokens(CountTokensMixIn, ITask):
+class TaggedFrameToTokens(CountTokensMixIn, BuildToken2IdMixIn, TransformTokensMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
@@ -477,6 +472,15 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TOKENS
+
+    def setup(self) -> ITask:
+
+        # FIXME: Figure out how to chain multiple inheritance function calls (with same name)
+        # super(self, TransformTokensMixIn).setup()
+        self.setup_token2id()
+        self.setup_transform()
+
+        return self
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
@@ -491,6 +495,12 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
         )
 
         tokens = list(tokens)
+
+        if self.transformer:
+            tokens = self.transform(tokens)
+
+        if self.token2id:
+            self.token2id.ingest(tokens)
 
         self.update_document_properties(payload, n_tokens=len(tokens))
 
@@ -578,21 +588,17 @@ def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
 
 @dataclass
-class TokensTransform(ITask):
+class TokensTransform(TransformTokensMixIn, ITask):
     """Transforms tokens payload.content"""
-
-    tokens_transform_opts: TokensTransformOpts = None
-    transformer: TokensTransformer = None
 
     def setup(self) -> ITask:
         super().setup()
-        self.pipeline.put("tokens_transform_opts", self.tokens_transform_opts)
         return self
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOKENS
-        self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
+        self.transformer = TokensTransformer(transform_opts=self.transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return payload.update(self.out_content_type, self.transformer.transform(payload.content))

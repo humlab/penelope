@@ -151,6 +151,6 @@ class TokensTransformerMixin:
 class TokensTransformer(TokensTransformerMixin, TokensTransformerBase):
     """Transforms applied on tokenized text"""
 
-    def __init__(self, tokens_transform_opts: TokensTransformOpts):
+    def __init__(self, transform_opts: TokensTransformOpts):
         TokensTransformerBase.__init__(self)
-        self.ingest(tokens_transform_opts)
+        self.ingest(transform_opts)

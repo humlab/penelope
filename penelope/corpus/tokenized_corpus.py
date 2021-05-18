@@ -50,7 +50,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
         self.reader: ICorpusReader = reader
         self._document_index: DocumentIndex = metadata_to_document_index(reader.metadata)
-        self.transformer = TokensTransformer(tokens_transform_opts=(tokens_transform_opts or TokensTransformOpts()))
+        self.transformer = TokensTransformer(transform_opts=(tokens_transform_opts or TokensTransformOpts()))
         self.iterator = None
         self._token2id = None
 

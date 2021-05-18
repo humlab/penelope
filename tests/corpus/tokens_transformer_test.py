@@ -4,7 +4,7 @@ from penelope.vendor.nltk import STOPWORDS_CACHE, extended_stopwords, get_stopwo
 
 
 def test_transform_smoke_test():
-    transformer = TokensTransformer(tokens_transform_opts=TokensTransformOpts())
+    transformer = TokensTransformer(transform_opts=TokensTransformOpts())
 
     assert transformer is not None
 
