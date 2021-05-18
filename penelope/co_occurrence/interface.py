@@ -32,6 +32,13 @@ class CoOccurrenceComputeResult:
     token2id: Token2Id = None
     token_window_counts: Counter = None
 
+    @property
+    def decoded_co_occurrences(self) -> pd.DataFrame:
+        fg = self.token2id.id2token.get
+        return self.co_occurrences.assign(
+            w1=self.co_occurrences.w1_id.apply(fg),
+            w2=self.co_occurrences.w2_id.apply(fg),
+        )
 
 @dataclass
 class ContextOpts:

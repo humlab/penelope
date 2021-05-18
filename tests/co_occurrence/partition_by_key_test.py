@@ -1,11 +1,10 @@
 import os
 
 import numpy as np
-from penelope.co_occurrence import ContextOpts
-from penelope.co_occurrence.partition_by_document import compute_co_occurrence
+from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult
+from penelope.co_occurrence.partition_by_document import compute_corpus_co_occurrence
 from penelope.corpus import CorpusVectorizer
 from penelope.utility import dataframe_to_tuples
-from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 from tests.utils import very_simple_corpus
 
 from ..test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, SIMPLE_CORPUS_ABCDEFG_3DOCS
@@ -33,15 +32,14 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = [('c', 'b', 2), ('b', 'g', 1), ('b', 'f', 1), ('g', 'f', 1)]
 
-    coo_df = compute_co_occurrence(
+    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
         context_opts=ContextOpts(concept={'b'}, ignore_concept=False, context_width=1),
-        threshold_count=0,
-        transform_opts=None,
+        global_threshold_count=0,
     )
-    assert expected_result == dataframe_to_tuples(coo_df, ['w1', 'w2', 'value'])
+    assert expected_result == dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']])
 
 
 def test_co_occurrence_with_no_concept_succeeds():
@@ -50,15 +48,14 @@ def test_co_occurrence_with_no_concept_succeeds():
 
     expected_result = {('d', 'a', 1), ('b', 'a', 1)}
 
-    coo_df = compute_co_occurrence(
+    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
         context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
-        threshold_count=1,
-        transform_opts=None,
+        global_threshold_count=0,
     )
-    assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
+    assert expected_result == dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']])
 
 
 def test_co_occurrence_with_thresholdt_succeeds():
@@ -66,12 +63,11 @@ def test_co_occurrence_with_thresholdt_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = {('g', 'a', 2)}
 
-    coo_df = compute_co_occurrence(
+    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
         context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=1),
-        threshold_count=2,
-        transform_opts=None,
+        global_threshold_count=2,
     )
-    assert expected_result == set(dataframe_to_tuples(coo_df, ['w1', 'w2', 'value']))
+    assert expected_result == dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']])
