@@ -92,6 +92,8 @@ def co_occurrences_to_vectorized_corpus(
     token2id: Token2Id,
 ) -> VectorizedCorpus:
     """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
+    if not isinstance(token2id, Token2Id):
+        token2id = Token2Id(data=token2id)
 
     """Create distinct word-pair tokens and assign a token_id"""
     to_token = token2id.id2token.get
