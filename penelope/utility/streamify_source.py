@@ -105,6 +105,7 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
         return ((f'document_{i+1}.txt', d) for i, d in enumerate(source))
 
     if zipfile.is_zipfile(source):
+
         return streamify_zip_source(
             path=source,
             filenames=filenames,
@@ -115,19 +116,23 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
             n_chunksize=n_chunksize,
         )
 
-    if isdir(source):
-        return streamify_folder_source(
-            path=source,
-            filenames=filenames,
-            filename_pattern=filename_pattern,
-            filename_filter=filename_filter,
-            as_binary=as_binary,
-            n_processes=n_processes,
-            n_chunksize=n_chunksize,
-        )
-
     if isinstance(source, str):
-        return (('document', x) for x in [source])
+
+        if isdir(source):
+            return streamify_folder_source(
+                path=source,
+                filenames=filenames,
+                filename_pattern=filename_pattern,
+                filename_filter=filename_filter,
+                as_binary=as_binary,
+                n_processes=n_processes,
+                n_chunksize=n_chunksize,
+            )
+
+        if isfile(source):
+            return iter([read_textfile2(source, as_binary=as_binary)])
+
+        return iter([('document', source)])
 
     raise FileNotFoundError(source)
 
