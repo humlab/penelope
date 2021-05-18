@@ -48,11 +48,6 @@ class ToDocumentCoOccurrence(ITask):
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
 
-        misses = [x for x in tokens if x not in self.token2id]
-        if len(misses) > 0:
-            print("MISSES!")
-            print(misses)
-
         co_occurrences: pd.DataFrame = partition_by_document.compute_document_co_occurrence(
             vectorizer=self.vectorizer,
             tokens=tokens,
