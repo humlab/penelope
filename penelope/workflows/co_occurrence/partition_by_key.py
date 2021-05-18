@@ -4,7 +4,7 @@ from typing import Optional
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from loguru import logger
-from penelope.co_occurrence.partition_by_key_legacy import co_occurrence_dataframe_to_vectorized_corpus
+from penelope.co_occurrence.partition_by_key_legacy import co_occurrences_to_vectorized_corpus
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
 from penelope.utility import deprecated
@@ -43,7 +43,6 @@ def compute(
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
-            # .tap_stream("./tests/output/tapped_stream__tagged_frame_pipeline.zip", "tap_1_tagged_frame_pipeline")
             + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
                 transform_opts=args.transform_opts,
                 extract_opts=args.extract_opts,
@@ -52,12 +51,13 @@ def compute(
                 global_threshold_count=args.count_threshold,
             )
         )
+
         value: co_occurrence.CoOccurrenceComputeResult = p.value()
 
         if len(value.co_occurrences) == 0:
             raise co_occurrence.ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrence_dataframe_to_vectorized_corpus(
+        corpus: VectorizedCorpus = co_occurrences_to_vectorized_corpus(
             co_occurrences=value.co_occurrences,
             document_index=value.document_index,
             partition_key=args.context_opts.partition_keys[0],

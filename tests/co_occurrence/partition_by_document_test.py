@@ -3,7 +3,7 @@ import os
 import pytest
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult
 from penelope.co_occurrence.partition_by_document import (
-    co_occurrence_dataframe_to_vectorized_corpus,
+    co_occurrences_to_vectorized_corpus,
     compute_corpus_co_occurrence,
 )
 from penelope.co_occurrence.persistence import to_filename
@@ -54,7 +54,7 @@ def test_store_when_co_occurrences_data_is_partitioned():
         global_threshold_count=1,
     )
 
-    corpus = co_occurrence_dataframe_to_vectorized_corpus(
+    corpus = co_occurrences_to_vectorized_corpus(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         token2id=corpus.token2id,
@@ -116,7 +116,7 @@ def test_create_document_co_occurrences(filename):  # pylint: disable=unused-arg
 
     assert value is not None
 
-    # dtm_corpus = co_occurrence_dataframe_to_vectorized_corpus(
+    # dtm_corpus = co_occurrences_to_vectorized_corpus(
     #     co_occurrences=value.co_occurrences,
     #     token2id=corpus.token2id,
     #     document_index=value.document_index,

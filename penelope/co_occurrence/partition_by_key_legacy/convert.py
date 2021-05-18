@@ -126,7 +126,7 @@ def co_occurrence_term_term_matrix_to_dataframe(
 
 
 @deprecated
-def co_occurrence_dataframe_to_vectorized_corpus(
+def co_occurrences_to_vectorized_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
     document_index: DocumentIndex,

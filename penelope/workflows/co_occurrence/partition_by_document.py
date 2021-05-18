@@ -54,7 +54,7 @@ def compute(
         if len(value.co_occurrences) == 0:
             raise co_occurrence.ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrence.partition_by_document.co_occurrence_dataframe_to_vectorized_corpus(
+        corpus: VectorizedCorpus = co_occurrence.partition_by_document.co_occurrences_to_vectorized_corpus(
             co_occurrences=value.co_occurrences,
             token2id=value.token2id,
             document_index=value.document_index,

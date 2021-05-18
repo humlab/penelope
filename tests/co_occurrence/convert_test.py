@@ -74,7 +74,7 @@ def test_to_vectorized_corpus():
     document_index: DocumentIndex = DocumentIndexHelper.load(bundle.document_index_filename).document_index
     token2id: Token2Id = Token2Id.load(bundle.dictionary_filename)
 
-    corpus = co_occurrence_module.co_occurrence_dataframe_to_vectorized_corpus(
+    corpus = co_occurrence_module.co_occurrences_to_vectorized_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
         token2id=token2id,
