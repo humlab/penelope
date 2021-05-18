@@ -90,7 +90,10 @@ class PipelineShortcutMixIn:
         )
 
     def tokens_transform(
-        self, *, transform_opts: TokensTransformOpts, transformer: TokensTransformer = None
+        self,
+        *,
+        transform_opts: TokensTransformOpts,
+        transformer: TokensTransformer = None,
     ) -> pipelines.CorpusPipeline:
         """ TOKEN => TOKENS """
         if transform_opts or transformer:
@@ -121,13 +124,16 @@ class PipelineShortcutMixIn:
 
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
+        *,
         extract_opts: ExtractTaggedTokensOpts,
+        transform_opts=TokensTransformOpts,
         filter_opts: PropertyValueMaskingOpts,
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.TaggedFrameToTokens(
                 extract_opts=extract_opts,
                 filter_opts=filter_opts,
+                transform_opts=transform_opts,
             )
         )
 

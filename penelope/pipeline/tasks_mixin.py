@@ -33,7 +33,7 @@ class CountTokensMixIn:
 class TransformTokensMixIn:
 
     transform_opts: Optional[TokensTransformOpts] = None
-    transformer: Optional[TokensTransformer] = field(init=False, default=None)
+    transformer: Optional[TokensTransformer] = None
 
     def setup_transform(self) -> ITask:
 
