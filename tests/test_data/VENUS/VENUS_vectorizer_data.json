@@ -1,0 +1,57 @@
+{
+    "reader_opts": {
+        "filename_pattern": "*.txt",
+        "filename_filter": null,
+        "filename_fields": [
+            "unesco_id:_:2",
+            "year:_:3",
+            "city:\\w+\\_\\d+\\_\\d+\\_\\d+\\_(.*)\\.txt"
+        ],
+        "index_field": null,
+        "as_binary": false,
+        "sep": "\t",
+        "quoting": 3,
+        "n_processes": 1,
+        "n_chunksize": 2
+    },
+    "context_opts": {
+        "context_width": 4,
+        "concept": [],
+        "ignore_concept": true,
+        "padding": "*",
+        "ignore_padding": false,
+        "partition_keys": [
+            "document_id"
+        ]
+    },
+    "transform_opts": {
+        "only_alphabetic": false,
+        "only_any_alphanumeric": false,
+        "to_lower": true,
+        "to_upper": false,
+        "min_len": 1,
+        "max_len": null,
+        "remove_accents": false,
+        "remove_stopwords": true,
+        "stopwords": null,
+        "extra_stopwords": [],
+        "language": "english",
+        "keep_numerals": true,
+        "keep_symbols": true
+    },
+    "extract_opts": {
+        "lemmatize": true,
+        "target_override": null,
+        "pos_includes": "|NOUN|PROPN|VERB|",
+        "pos_excludes": "|PUNCT|EOL|SPACE|",
+        "pos_paddings": null,
+        "pos_replace_marker": "*",
+        "passthrough_tokens": [],
+        "append_pos": false,
+        "phrases": null,
+        "to_lowercase": false
+    },
+    "input_filename": "./tests/test_data/legal_instrument_five_docs_test.zip",
+    "output_filename": "./tests/output/VENUS_co-occurrence.csv.zip",
+    "count_threshold": 1
+}
