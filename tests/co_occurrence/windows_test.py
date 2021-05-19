@@ -3,8 +3,7 @@ import json
 from penelope.co_occurrence import ContextOpts, WindowsCorpus, corpus_to_windows
 from penelope.corpus import CorpusVectorizer, SparvTokenizedCsvCorpus, generate_token2id
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
-from tests.test_data.corpus_fixtures import SAMPLE_WINDOW_STREAM
-from tests.test_data.windows_test_data import TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
+from tests.fixtures import SAMPLE_WINDOW_STREAM, TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
 

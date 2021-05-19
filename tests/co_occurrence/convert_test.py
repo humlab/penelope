@@ -1,68 +1,15 @@
 import os
 
-import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import penelope.corpus.dtm as dtm
 import pytest
 from penelope.corpus import DocumentIndexHelper, Token2Id
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
-from tests.test_data.corpus_fixtures import SIMPLE_CORPUS_ABCDE_5DOCS
-from tests.utils import very_simple_corpus
+from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus
 
 jj = os.path.join
 
-
-def test_filename_to_folder_and_tag():
-
-    filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
-    folder, tag = co_occurrence.to_folder_and_tag(filename)
-    assert folder == './tests/test_data/VENUS'
-    assert tag == 'VENUS'
-
-
-def test_folder_and_tag_to_filename():
-    expected_filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
-    folder = './tests/test_data/VENUS'
-    tag = 'VENUS'
-    filename = co_occurrence.to_filename(folder=folder, tag=tag)
-    assert filename == expected_filename
-
-
-@pytest.mark.parametrize(
-    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.FILENAME_POSTFIX}']
-)
-def test_load_co_occurrences(filename):
-
-    filename = jj('./tests/test_data', filename)
-
-    co_occurrences = co_occurrence.load_co_occurrences(filename)
-
-    assert co_occurrences is not None
-    assert 13 == len(co_occurrences)
-    assert 18 == co_occurrences.value.sum()
-    assert 3 == int(co_occurrences[(co_occurrences.w1 == 'g') & (co_occurrences.w2 == 'a')]['value'])
-    assert (['w1', 'w2', 'value', 'value_n_d', 'value_n_t'] == co_occurrences.columns).all()
-
-
-@pytest.mark.parametrize(
-    'filename', ['concept_data_co-occurrence.csv', f'concept_data{co_occurrence.FILENAME_POSTFIX}']
-)
-def test_store_co_occurrences(filename):
-
-    source_filename = jj('./tests/test_data', filename)
-    target_filename = jj('./tests/output', filename)
-
-    co_occurrences = co_occurrence.load_co_occurrences(source_filename)
-
-    co_occurrence.store_co_occurrences(target_filename, co_occurrences)
-
-    assert os.path.isfile(target_filename)
-
-    co_occurrences = co_occurrence.load_co_occurrences(target_filename)
-    assert co_occurrences is not None
-
-    os.remove(target_filename)
 
 
 def test_to_vectorized_corpus():
@@ -151,29 +98,6 @@ def test_to_dataframe_coocurrence_matrix_with_paddings():
 
     assert not (co_occurrences.w1_id == pad_id).any()
     assert not (co_occurrences.w2_id == pad_id).any()
-
-
-def test_load_and_store_bundle():
-
-    filename = co_occurrence.to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
-
-    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
-
-    assert bundle is not None
-    assert isinstance(bundle.corpus, dtm.VectorizedCorpus)
-    assert isinstance(bundle.co_occurrences, pd.DataFrame)
-    assert isinstance(bundle.compute_options, dict)
-    assert bundle.folder == './tests/test_data/VENUS'
-    assert bundle.tag == 'VENUS'
-
-    os.makedirs('./tests/output/MARS', exist_ok=True)
-
-    expected_filename = co_occurrence.to_filename(folder='./tests/output/MARS', tag='MARS')
-
-    bundle.store(folder='./tests/output/MARS', tag='MARS')
-
-    assert bundle.co_occurrence_filename == expected_filename
-    assert os.path.isfile(bundle.co_occurrence_filename)
 
 
 def test_to_trends_data():
