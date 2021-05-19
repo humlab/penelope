@@ -21,3 +21,4 @@ from .persistence import (
     to_folder_and_tag,
 )
 from .windows import WindowsCorpus, WindowsStream, corpus_to_windows, tokens_to_windows
+from .prepare import prepare_tabular_data
