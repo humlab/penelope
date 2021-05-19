@@ -11,7 +11,6 @@ from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus
 jj = os.path.join
 
 
-
 def test_to_vectorized_corpus():
 
     """Create an empty Bundle instance to get the filename right"""
