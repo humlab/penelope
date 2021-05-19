@@ -7,7 +7,7 @@ import pytest
 from penelope.common.curve_fit import pchip_spline, rolling_average_smoother
 from penelope.notebook.word_trends import BarDisplayer, LineDisplayer, TableDisplayer
 from penelope.notebook.word_trends.displayers import CategoryDataMixin, LinesDataMixin, PenelopeBugCheck, create_network
-from tests.utils import create_smaller_vectorized_corpus
+from tests.fixtures import create_smaller_vectorized_corpus
 
 BIGGER_CORPUS_FILENAME = './tests/test_data/riksdagens-protokoll.1950-1959.ak.sparv4.csv.zip'
 OUTPUT_FOLDER = './tests/output'

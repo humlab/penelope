@@ -1,6 +1,7 @@
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
-from tests import utils as test_utils
+from tests.fixtures import MockedProcessedCorpus
+from tests.utils import TEST_CORPUS_FILENAME, create_tokens_reader
 
 
 def mock_corpus():
@@ -11,15 +12,13 @@ def mock_corpus():
         ('document_2014_2.txt', "a a b b b b c d"),
         ('document_2014_3.txt', "a a c d"),
     ]
-    corpus = test_utils.MockedProcessedCorpus(mock_corpus_data)
+    corpus = MockedProcessedCorpus(mock_corpus_data)
     return corpus
 
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = test_utils.create_tokens_reader(
-        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
-    )
+    reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
     return reader
 
 
@@ -38,7 +37,7 @@ def create_corpus():
 
 
 def test_create_text_tokenizer_smoke_test():
-    reader = TextTokenizer(test_utils.TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
+    reader = TextTokenizer(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert reader is not None
     assert next(reader) is not None
 

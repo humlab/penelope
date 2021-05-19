@@ -1,21 +1,11 @@
 import os
-import random
-from typing import Callable, List, Tuple
+from typing import Callable
 
-import numpy as np
-import pandas as pd
 import penelope.topic_modelling as topic_modelling
-from penelope.corpus import (
-    ITokenizedCorpus,
-    TextTransformOpts,
-    TokenizedCorpus,
-    VectorizedCorpus,
-    metadata_to_document_index,
-)
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer, tng
-from penelope.corpus.token2id import Token2Id
-from penelope.utility import flatten
-from tests.test_data.tranströmer_corpus import TranströmerCorpus
+from penelope.corpus import TextTransformOpts
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
+
+from .fixtures import TranströmerCorpus
 
 OUTPUT_FOLDER = './tests/output'
 TEST_DATA_FOLDER = './tests/test_data'
@@ -24,8 +14,19 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 TEST_CORPUS_FILENAME = os.path.join(TEST_DATA_FOLDER, 'test_corpus.zip')
 TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = os.path.join(TEST_DATA_FOLDER, 'tranströmer_corpus_export.sparv4.csv.zip')
+PERSISTED_INFERRED_MODEL_SOURCE_FOLDER: str = './tests/test_data/tranströmer_inferred_model'
 
 # pylint: disable=too-many-arguments
+
+TOPIC_MODELING_OPTS = {
+    'n_topics': 4,
+    'passes': 1,
+    'random_seed': 42,
+    'alpha': 'auto',
+    'workers': 1,
+    'max_iter': 100,
+    'prefix': '',
+}
 
 if __file__ in globals():
     this_file = os.path.dirname(__file__)
@@ -34,75 +35,6 @@ if __file__ in globals():
 
 # http://www.nltk.org/howto/collocations.html
 # PMI
-
-
-def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
-
-    reader = tng.CorpusReader(
-        source=tng.InMemorySource(data),
-        reader_opts=TextReaderOpts(filename_fields="year:_:1"),
-        transformer=None,  # already tokenized
-    )
-    corpus = TokenizedCorpus(reader=reader)
-    return corpus
-
-
-def random_corpus(
-    n_docs: int = 5, vocabulary: str = 'abcdefg', min_length: int = 4, max_length: int = 10, years: List[int] = None
-) -> List[Tuple[str, List[str]]]:
-    def random_tokens():
-
-        return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
-
-    return [(f'rand_{random.choice(years or [0])}_{i}.txt', random_tokens()) for i in range(1, n_docs + 1)]
-
-
-class MockedProcessedCorpus(ITokenizedCorpus):
-    def __init__(self, mock_data):
-        self.data = [(f, self.generate_document(ws)) for f, ws in mock_data]
-        self.token2id: Token2Id = self.create_token2id()
-        self.n_tokens = {f: len(d) for f, d in mock_data}
-        self.iterator = None
-        self._metadata = [dict(filename=filename, year=filename.split('_')[1]) for filename, _ in self.data]
-        self._documents = metadata_to_document_index(self._metadata)
-
-    @property
-    def terms(self):
-        return [tokens for _, tokens in self.data]
-
-    @property
-    def filenames(self) -> List[str]:
-        return list(self.document_index.filename)
-
-    @property
-    def metadata(self):
-        return self._metadata
-
-    @property
-    def document_index(self) -> pd.DataFrame:
-        return self._documents
-
-    def create_token2id(self) -> Token2Id:
-        return Token2Id({w: i for i, w in enumerate(sorted(list(set(flatten([x[1] for x in self.data])))))})
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.iterator is None:
-            self.iterator = ((x, y) for x, y in self.data)
-        try:
-            return next(self.iterator)
-        except StopIteration:
-            self.iterator = None
-            raise
-
-    def generate_document(self, words):
-        if isinstance(words, str):
-            document = words.split()
-        else:
-            document = flatten([n * w for n, w in words])
-        return document
 
 
 def create_text_reader(
@@ -157,25 +89,6 @@ def create_tokens_reader(
     return reader
 
 
-def create_smaller_vectorized_corpus():
-    bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
-    token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-    document_index = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
-    v_corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
-    return v_corpus
-
-
-TOPIC_MODELING_OPTS = {
-    'n_topics': 4,
-    'passes': 1,
-    'random_seed': 42,
-    'alpha': 'auto',
-    'workers': 1,
-    'max_iter': 100,
-    'prefix': '',
-}
-
-
 def create_inferred_model(method="gensim_lda-multicore") -> topic_modelling.InferredModel:
 
     corpus: TranströmerCorpus = TranströmerCorpus()
@@ -190,6 +103,3 @@ def create_inferred_model(method="gensim_lda-multicore") -> topic_modelling.Infe
         engine_args=TOPIC_MODELING_OPTS,
     )
     return inferred_model
-
-
-PERSISTED_INFERRED_MODEL_SOURCE_FOLDER: str = './tests/test_data/tranströmer_inferred_model'

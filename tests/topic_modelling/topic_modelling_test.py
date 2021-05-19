@@ -8,7 +8,7 @@ import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.scripts.compute_topic_model import run_model
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
-from tests.test_data.tranströmer_corpus import TranströmerCorpus
+from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
 from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, TOPIC_MODELING_OPTS, create_inferred_model
