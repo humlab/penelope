@@ -257,9 +257,9 @@ def load_dictionary(folder: str, tag: str) -> Token2Id:
     return token2id
 
 
-def load_options(co_occurrences_filename: str) -> dict:
+def load_options(filename: str) -> dict:
     """Loads co-occurrence compute options"""
-    options_filename = replace_extension(co_occurrences_filename, 'json')
+    options_filename = replace_extension(filename, 'json')
     if os.path.isfile(options_filename):
         options = read_json(options_filename)
         return options

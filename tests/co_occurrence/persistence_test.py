@@ -3,6 +3,12 @@ import os
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.corpus.dtm as dtm
+import pytest
+from penelope.co_occurrence.persistence import Bundle
+from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
+from tests.utils import OUTPUT_FOLDER
+
+from .utils import create_co_occurrence_bundle
 
 jj = os.path.join
 
@@ -19,11 +25,11 @@ def test_filename_to_folder_and_tag():
 
 def test_folder_and_tag_to_filename():
 
-    expected_filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
+    expected_filename: str = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
 
     folder, tag = './tests/test_data/VENUS', 'VENUS'
 
-    filename = co_occurrence.to_filename(folder=folder, tag=tag)
+    filename: str = co_occurrence.to_filename(folder=folder, tag=tag)
 
     assert filename == expected_filename
 
@@ -34,11 +40,27 @@ def test_load_co_occurrences():
 
     filename = co_occurrence.to_filename(folder=folder, tag=tag)
 
-    co_occurrences = co_occurrence.load_co_occurrences(filename)
+    co_occurrences: pd.DataFrame = co_occurrence.load_co_occurrences(filename)
 
     assert co_occurrences is not None
     assert 16070 == len(co_occurrences)
     assert 123142 == co_occurrences.value.sum()
+
+
+def test_load_options():
+
+    folder, tag = './tests/test_data/VENUS', 'VENUS'
+
+    filename: str = co_occurrence.to_filename(folder=folder, tag=tag)
+
+    options = co_occurrence.load_options(filename)
+
+    assert options is not None
+
+
+@pytest.mark.skip(reason="not implemented")
+def test_create_options_bundle():
+    pass
 
 
 def test_store_co_occurrences():
@@ -81,3 +103,26 @@ def test_load_and_store_bundle():
 
     assert bundle.co_occurrence_filename == expected_filename
     assert os.path.isfile(bundle.co_occurrence_filename)
+
+
+def test_compute_and_store_bundle():
+
+    tag: str = "JUPYTER"
+    folder: str = jj(OUTPUT_FOLDER, tag)
+    filename: str = co_occurrence.to_filename(folder=folder, tag=tag)
+
+    os.makedirs(folder, exist_ok=True)
+
+    simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
+    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
+        concept={'g'}, ignore_concept=False, context_width=2
+    )
+    bundle: Bundle = create_co_occurrence_bundle(
+        corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
+    )
+
+    bundle.store()
+
+    assert os.path.isfile(filename)
+
+    os.remove(filename)
