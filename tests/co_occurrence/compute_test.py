@@ -1,6 +1,5 @@
 import os
 
-import numpy as np
 import pytest
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult
 from penelope.co_occurrence.partition_by_document import (
@@ -8,28 +7,12 @@ from penelope.co_occurrence.partition_by_document import (
     compute_corpus_co_occurrence,
 )
 from penelope.co_occurrence.persistence import to_filename
-from penelope.corpus import CorpusVectorizer, ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts, Token2Id
+from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts, Token2Id
 from penelope.utility import dataframe_to_tuples
-from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
+from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from tests.utils import OUTPUT_FOLDER
 
 jj = os.path.join
-
-
-def test_co_occurrence_matrix_of_corpus_returns_correct_result():
-
-    expected_token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}
-    expected_matrix = np.matrix([[0, 6, 4, 3, 3], [0, 0, 2, 1, 4], [0, 0, 0, 2, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]])
-
-    corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
-
-    v_corpus = CorpusVectorizer().fit_transform(corpus, already_tokenized=True, vocabulary=corpus.token2id)
-
-    term_term_matrix = v_corpus.co_occurrence_matrix()
-
-    assert (term_term_matrix.todense() == expected_matrix).all()
-    assert expected_token2id == v_corpus.token2id
-
 
 # FIXME Add document_id to results & asserts
 def test_co_occurrence_without_no_concept_and_threshold_succeeds():
@@ -75,6 +58,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
         global_threshold_count=2,
     )
     assert expected_result == sorted(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
+
 
 @pytest.mark.parametrize("concept, threshold_count, context_width", [({}, 0, 2), ({'fråga'}, 0, 2), ({'fråga'}, 2, 2)])
 def test_compute_corpus_co_occurrence_succeeds(concept, threshold_count, context_width):
