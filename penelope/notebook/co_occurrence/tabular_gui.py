@@ -1,77 +1,39 @@
 import contextlib
-from typing import List
+from typing import List, Set
 
 import IPython.display as IPython_display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
-from pandas.api.types import is_numeric_dtype
-from penelope.co_occurrence.persistence import store_co_occurrences
+from penelope.co_occurrence import store_co_occurrences, prepare_tabular_data, Bundle
+from penelope.corpus import Token2Id
 from penelope.notebook.utility import create_js_download
 from penelope.utility import dotget, path_add_timestamp
 from perspective import PerspectiveWidget
-
-
-def prepare_data_for_display(
-    co_occurrences: pd.DataFrame,
-    threshold: int = 25,
-    match_tokens: List[str] = None,
-    skip_tokens: List[str] = None,
-    n_head: int = 100000,
-) -> pd.DataFrame:
-
-    if len(co_occurrences) > n_head:
-        print(f"warning: only {n_head} records out of {len(co_occurrences)} records are displayed.")
-
-    for token in match_tokens or []:
-        co_occurrences = co_occurrences[
-            (co_occurrences.w1 == token)
-            | (co_occurrences.w2 == token)
-            | co_occurrences.w1.str.startswith(f"{token}@")
-            | co_occurrences.w2.str.startswith(f"{token}@")
-        ]
-
-    for token in skip_tokens or []:
-        co_occurrences = co_occurrences[
-            (co_occurrences.w1 != token)
-            & (co_occurrences.w2 != token)
-            & ~co_occurrences.w1.str.startswith(f"{token}@")
-            & ~co_occurrences.w2.str.startswith(f"{token}@")
-        ]
-
-    co_occurrences = co_occurrences.copy()
-
-    co_occurrences["tokens"] = co_occurrences.w1 + "/" + co_occurrences.w2
-
-    global_tokens_counts: pd.Series = co_occurrences.groupby(['tokens'])['value'].sum()
-    threshold_tokens: pd.Index = global_tokens_counts[global_tokens_counts >= threshold].index
-
-    co_occurrences = co_occurrences.set_index('tokens').loc[threshold_tokens]  # [['year', 'value', 'value_n_t']]
-
-    if is_numeric_dtype(co_occurrences['value_n_t'].dtype):
-        co_occurrences['value_n_t'] = co_occurrences.value_n_t.apply(lambda x: f'{x:.8f}')
-
-    return co_occurrences.head(n_head)
 
 
 class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
     def __init__(
         self,
         co_occurrences: pd.DataFrame,
+        token2id: Token2Id,
+        concepts: Set[str],
         *,
         default_token_filter: str = None,
-        hide_concept_default: bool = True,
-        compute_options: dict = None,
         **kwargs,
     ):
-        self.compute_options: dict = compute_options or {}
-        self.hide_concept_default: bool = hide_concept_default
 
-        if isinstance(co_occurrences, dict):
-            self.co_occurrences: pd.DataFrame = pd.DataFrame(co_occurrences)
-        elif isinstance(co_occurrences, pd.DataFrame):
-            self.co_occurrences: pd.DataFrame = co_occurrences
-        else:
-            raise ValueError(f"Data must be dict or pandas.DataFrame not {type(co_occurrences)}")
+        if not isinstance(co_occurrences, (dict, pd.DataFrame)):
+            raise ValueError(f"Expected dict or DataFrame, found {type(co_occurrences)}")
+
+        if not isinstance(token2id, Token2Id):
+            raise ValueError(f"Expected Token2Id, found {type(token2id)}")
+
+        self.co_occurrences: pd.DataFrame = (
+            pd.DataFrame(co_occurrences) if isinstance(co_occurrences, dict) else co_occurrences
+        )
+
+        self.token2id: pd.DataFrame = token2id
+        self.concepts: Set[str] = concepts
 
         self._token_filter: Text = Text(
             value=default_token_filter, placeholder='token match', layout=Layout(width='auto')
@@ -129,8 +91,9 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._message.value = f"<span style='color: green; font-weight: bold;'>{message}</span>"
 
     def get_data(self):
-        data = prepare_data_for_display(
+        data = prepare_tabular_data(
             self.co_occurrences,
+            self.token2id,
             threshold=self._global_threshold_filter.value,
             skip_tokens=self.skip_concept_tokens(),
             match_tokens=self._token_filter.value.strip().split(),
@@ -157,7 +120,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._table.load(data)
 
     def save(self, _b):
-        store_co_occurrences(path_add_timestamp('co_occurrence_data.csv'), self.get_data())
+        store_co_occurrences(path_add_timestamp('co_occurrence_data.csv'), self.get_data(), store_feather=False)
 
     def download(self, *_):
         self._button_bar.disabled = True
