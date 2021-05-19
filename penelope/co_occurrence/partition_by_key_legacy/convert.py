@@ -9,8 +9,7 @@ from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex, FilenameTo
 from penelope.utility import deprecated
 
 from ..interface import ContextOpts, CoOccurrenceError, PartitionKeyNotUniqueKey
-from ..windows_corpus import WindowsCorpus
-from ..windows_utility import corpus_to_windows
+from ..windows import WindowsCorpus, corpus_to_windows
 
 
 @deprecated

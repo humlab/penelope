@@ -20,5 +20,4 @@ from .persistence import (
     to_filename,
     to_folder_and_tag,
 )
-from .windows_corpus import WindowsCorpus, WindowsStream
-from .windows_utility import corpus_to_windows, tokens_to_windows
+from .windows import WindowsCorpus, WindowsStream, corpus_to_windows, tokens_to_windows

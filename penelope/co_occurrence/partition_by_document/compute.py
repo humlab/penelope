@@ -6,7 +6,7 @@ from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
-from ..windows_utility import tokens_to_windows
+from ..windows import tokens_to_windows
 from .convert import term_term_matrix_to_co_occurrences
 from .vectorize import WindowsCoOccurrenceVectorizer
 
