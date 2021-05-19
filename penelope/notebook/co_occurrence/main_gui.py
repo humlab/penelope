@@ -11,7 +11,6 @@ from ..word_trends.interface import TrendsData
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
-LAST_BUNDLE: co_occurrence.Bundle = None
 LAST_ARGS = None
 LAST_CONFIG = None
 
@@ -37,7 +36,7 @@ def compute_co_occurrence_callback(
     checkpoint_file: Optional[str] = None,
 ) -> co_occurrence.Bundle:
     try:
-        global LAST_BUNDLE, LAST_ARGS, LAST_CONFIG
+        global LAST_ARGS, LAST_CONFIG
         LAST_ARGS = args
         LAST_CONFIG = corpus_config
 
@@ -50,7 +49,6 @@ def compute_co_occurrence_callback(
             corpus_config=corpus_config,
             checkpoint_file=checkpoint_file,
         )
-        LAST_BUNDLE = bundle
         return bundle
     except co_occurrence.ZeroComputeError:
         return None
@@ -65,6 +63,7 @@ class MainGUI:
         resources_folder: str,
     ) -> widgets.VBox:
 
+        self.bundle: co_occurrence.Bundle = None
         self.trends_data: TrendsData = None
         self.config = (
             corpus_config
@@ -99,11 +98,12 @@ class MainGUI:
 
     @view.capture(clear_output=CLEAR_OUTPUT)
     def display_explorer(self, bundle: co_occurrence.Bundle, *_, **__):
-        global LAST_BUNDLE
-        LAST_BUNDLE = bundle
+
         if bundle is None:
             return
+
+        self.bundle = bundle
         self.trends_data = co_occurrence.to_trends_data(bundle).update()
-        self.gui_explore = co_occurrence_gui.ExploreGUI().setup().display(trends_data=self.trends_data)
+        self.gui_explore = co_occurrence_gui.ExploreGUI(bundle=bundle).setup().display(trends_data=self.trends_data)
 
         display(self.gui_explore.layout())

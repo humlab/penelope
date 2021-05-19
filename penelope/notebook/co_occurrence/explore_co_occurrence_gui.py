@@ -1,16 +1,17 @@
-import pandas as pd
+from penelope import co_occurrence
 from penelope.notebook.word_trends.displayers.display_top_table import TopTokensDisplayer
 from penelope.utility import getLogger
 
 from .. import utility as notebook_utility
 from .. import word_trends
-from ..co_occurrence.display_data import CoOccurrenceTable
+from ..co_occurrence.tabular_gui import CoOccurrenceTable
 
 logger = getLogger()
 
 
 class ExploreGUI:
-    def __init__(self):
+    def __init__(self, bundle: co_occurrence.Bundle):
+        self.bundle: co_occurrence.Bundle = bundle
         self.trends_data: word_trends.TrendsData = None
         self.tab_main: notebook_utility.OutputsTabExt = None
         self.trends_gui: word_trends.TrendsGUI = None
@@ -40,12 +41,11 @@ class ExploreGUI:
         #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
         # )
 
-        data: pd.DataFrame = trends_data.memory.get('co_occurrences')
-
         self.tab_main.display_content(
             0,
             CoOccurrenceTable(
-                data,
+                self.bundle.co_occurrences,
+                self.bundle.token2id,
                 compute_options=trends_data.compute_options,
             ),
             clear=True,
