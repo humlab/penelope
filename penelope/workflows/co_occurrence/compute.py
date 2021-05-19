@@ -5,8 +5,8 @@ import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from loguru import logger
 
-# legacy: from penelope.co_occurrence.partition_by_key_legacy import co_occurrences_to_vectorized_corpus
-from penelope.co_occurrence.partition_by_document import co_occurrences_to_vectorized_corpus
+# legacy: from penelope.co_occurrence.partition_by_key_legacy import co_occurrences_to_co_occurrence_corpus
+from penelope.co_occurrence.partition_by_document import co_occurrences_to_co_occurrence_corpus
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
 
@@ -57,7 +57,7 @@ def compute(
         if len(value.co_occurrences) == 0:
             raise co_occurrence.ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrences_to_vectorized_corpus(
+        corpus: VectorizedCorpus = co_occurrences_to_co_occurrence_corpus(
             co_occurrences=value.co_occurrences,
             document_index=value.document_index,
             # legacy: partition_key=args.context_opts.partition_keys[0],

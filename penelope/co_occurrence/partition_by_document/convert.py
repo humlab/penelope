@@ -85,7 +85,7 @@ def term_term_matrix_to_co_occurrences(
     return co_occurrences
 
 
-def co_occurrences_to_vectorized_corpus(
+def co_occurrences_to_co_occurrence_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
     document_index: DocumentIndex,
