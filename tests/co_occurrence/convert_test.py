@@ -143,7 +143,7 @@ def test_truncate_by_global_threshold():
         corpus, context_opts=context_opts
     ).co_occurrences
 
-    truncated_co_occurrences = truncate_by_global_threshold(co_occurrences=co_occurrences, 1)
+    truncated_co_occurrences = truncate_by_global_threshold(co_occurrences=co_occurrences, threshold=1)
 
     assert truncated_co_occurrences is not None
 
