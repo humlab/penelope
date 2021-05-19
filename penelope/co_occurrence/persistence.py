@@ -184,7 +184,7 @@ def load_corpus(corpus_folder: str, corpus_tag: str) -> VectorizedCorpus:
     )
 
 
-def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame) -> None:
+def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame, store_feather: bool = True) -> None:
     """Store co-occurrence result data to CSV-file"""
 
     if filename.endswith('zip'):
@@ -196,13 +196,10 @@ def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame) -
     logger.info("storing CSV file")
     co_occurrences.to_csv(filename, sep='\t', header=True, compression=compression, decimal=',')
 
-    # with contextlib.suppress(Exception):
-    try:
-        logger.info("storing FEATHER file")
-        co_occurrences.reset_index(drop=True).to_feather(replace_extension(filename, ".feather"), compression="lz4")
-    except Exception as ex:
-        logger.info("store as FEATHER file failed")
-        logger.error(ex)
+    if store_feather:
+        with contextlib.suppress(Exception):
+            logger.info("storing FEATHER file")
+            co_occurrences.reset_index(drop=True).to_feather(replace_extension(filename, ".feather"), compression="lz4")
 
 
 def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
