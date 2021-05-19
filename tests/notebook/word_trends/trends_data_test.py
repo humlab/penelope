@@ -204,12 +204,6 @@ def test_group_by_year():
     assert trends_data is not None
 
 
-def test_remember():
-    trends_data = TrendsData().update(corpus=simple_corpus(), corpus_folder='.', corpus_tag='dummy')
-    trends_data.remember(worth="yes")
-    assert trends_data.memory.get('worth') == "yes"
-
-
 def test_find_word_indices():
     trends_data = TrendsData().update(corpus=simple_corpus(), corpus_folder='.', corpus_tag='dummy')
     indices = trends_data.find_word_indices(

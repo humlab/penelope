@@ -52,8 +52,6 @@ class TrendsData:
 
     n_count: int = field(default=25000)
 
-    memory: dict = field(default_factory=dict)
-
     def update(
         self,
         *,
@@ -79,10 +77,6 @@ class TrendsData:
         self.most_deviating = gof.get_most_deviating_words(
             self.goodness_of_fit, 'l2_norm', n_count=self.n_count, ascending=False, abs_value=True
         )
-        return self
-
-    def remember(self, **kwargs) -> "TrendsData":
-        self.memory.update(**kwargs)
         return self
 
     def get_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
