@@ -99,7 +99,7 @@ def test_spaCy_co_occurrence_workflow(config):
     assert value.document_index is not None
     assert len(value.co_occurrences) > 0
 
-    corpus: VectorizedCorpus = co_occurrence_module.co_occurrences_to_vectorized_corpus(
+    corpus: VectorizedCorpus = co_occurrence_module.co_occurrences_to_co_occurrence_corpus(
         co_occurrences=value.co_occurrences,
         token2id=value.token2id,
         document_index=value.document_index,

@@ -3,12 +3,19 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+import scipy
+from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult
+from penelope.co_occurrence.partition_by_document import (
+    compute_corpus_co_occurrence,
+    term_term_matrix_to_co_occurrences,
+)
 from penelope.corpus import (
     ITokenizedCorpus,
     ReiterableTerms,
     Token2Id,
     TokenizedCorpus,
     VectorizedCorpus,
+    dtm,
     metadata_to_document_index,
 )
 from penelope.corpus.readers import TextReaderOpts, tng
@@ -122,6 +129,43 @@ def random_corpus(
         return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
 
     return [(f'rand_{random.choice(years or [0])}_{i}.txt', random_tokens()) for i in range(1, n_docs + 1)]
+
+
+def very_simple_term_term_matrix(corpus: ITokenizedCorpus) -> scipy.sparse.spmatrix:
+
+    term_term_matrix: scipy.sparse.spmatrix = (
+        dtm.CorpusVectorizer()
+        .fit_transform(corpus, already_tokenized=True, vocabulary=corpus.token2id)
+        .co_occurrence_matrix()
+    )
+    return term_term_matrix
+
+
+def very_simple_co_occurrences(corpus: ITokenizedCorpus) -> pd.DataFrame:
+
+    term_term_matrix: scipy.sparse.spmatrix = very_simple_term_term_matrix(corpus)
+
+    co_occurrences: pd.DataFrame = term_term_matrix_to_co_occurrences(
+        term_term_matrix=term_term_matrix,
+        threshold_count=1,
+        ignore_ids=None,
+    )
+
+    return co_occurrences
+
+
+def very_simple_corpus_co_occurrences(corpus: TokenizedCorpus, context_opts: ContextOpts) -> CoOccurrenceComputeResult:
+
+    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+        stream=corpus,
+        context_opts=context_opts,
+        token2id=corpus.token2id,
+        document_index=corpus.document_index,
+        global_threshold_count=None,
+        ingest_tokens=False,
+    )
+
+    return value
 
 
 class MockedProcessedCorpus(ITokenizedCorpus):

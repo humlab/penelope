@@ -2,11 +2,15 @@ import os
 
 import penelope.co_occurrence as co_occurrence
 import penelope.co_occurrence.partition_by_document as co_occurrence_module
-import penelope.corpus.dtm as dtm
-import pytest
-from penelope.corpus import DocumentIndexHelper, Token2Id
+import scipy
+from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
-from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus
+from tests.fixtures import (
+    SIMPLE_CORPUS_ABCDE_5DOCS,
+    very_simple_corpus,
+    very_simple_corpus_co_occurrences,
+    very_simple_term_term_matrix,
+)
 
 jj = os.path.join
 
@@ -27,11 +31,7 @@ def test_to_co_occurrence_matrix():
 
     text_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
-    term_term_matrix1 = (
-        dtm.CorpusVectorizer()
-        .fit_transform(text_corpus, already_tokenized=True, vocabulary=text_corpus.token2id)
-        .co_occurrence_matrix()
-    )
+    term_term_matrix1 = very_simple_term_term_matrix(text_corpus)
 
     term_term_matrix2 = co_occurrence.to_co_occurrence_matrix(text_corpus)
 
@@ -47,7 +47,7 @@ def test_to_vectorized_corpus():
     document_index: DocumentIndex = DocumentIndexHelper.load(bundle.document_index_filename).document_index
     token2id: Token2Id = Token2Id.load(bundle.dictionary_filename)
 
-    corpus = co_occurrence_module.co_occurrences_to_vectorized_corpus(
+    corpus = co_occurrence_module.co_occurrences_to_co_occurrence_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
         token2id=token2id,
@@ -92,15 +92,11 @@ def test_term_term_matrix_to_co_occurrences_with_ignore_ids():
     assert not (co_occurrences.w1_id == pad_id).any()
     assert not (co_occurrences.w2_id == pad_id).any()
 
+
 def test_term_term_matrix_to_co_occurrences_with_no_ignore_ids():
 
     text_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
-
-    term_term_matrix = (
-        dtm.CorpusVectorizer()
-        .fit_transform(text_corpus, already_tokenized=True, vocabulary=text_corpus.token2id)
-        .co_occurrence_matrix()
-    )
+    term_term_matrix: scipy.sparse.spmatrix = very_simple_term_term_matrix(text_corpus)
 
     co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
@@ -114,7 +110,22 @@ def test_term_term_matrix_to_co_occurrences_with_no_ignore_ids():
     assert 1 == int(co_occurrences[((co_occurrences.w1_id == fg('b')) & (co_occurrences.w2_id == fg('d')))].value)
 
 
-def test_co_occurrences_to_vectorized_corpus():
-    ...
+def test_co_occurrences_to_co_occurrence_corpus():
 
+    corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
+    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
+        concept={'g'}, ignore_concept=False, context_width=1
+    )
 
+    token2id: Token2Id = Token2Id(corpus.token2id)
+
+    value: co_occurrence.CoOccurrenceComputeResult = very_simple_corpus_co_occurrences(
+        corpus, context_opts=context_opts
+    )
+
+    corpus = co_occurrence_module.co_occurrences_to_co_occurrence_corpus(
+        co_occurrences=value.co_occurrences,
+        document_index=value.document_index,
+        token2id=token2id,
+    )
+    assert corpus is not None

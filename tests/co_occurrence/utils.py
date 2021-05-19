@@ -1,6 +1,6 @@
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult
 from penelope.co_occurrence.partition_by_document import (
-    co_occurrences_to_vectorized_corpus,
+    co_occurrences_to_co_occurrence_corpus,
     compute_corpus_co_occurrence,
 )
 from penelope.corpus import ITokenizedCorpus, Token2Id
@@ -20,7 +20,7 @@ def create_co_occurrence_bundle(
         global_threshold_count=1,
     )
 
-    corpus = co_occurrences_to_vectorized_corpus(
+    corpus = co_occurrences_to_co_occurrence_corpus(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         token2id=token2id,
