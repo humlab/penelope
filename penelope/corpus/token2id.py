@@ -2,6 +2,7 @@ import pathlib
 import zipfile
 from collections import defaultdict
 from collections.abc import MutableMapping
+from fnmatch import fnmatch
 from typing import Iterator, List, Optional, Union
 
 import pandas as pd
@@ -92,6 +93,27 @@ class Token2Id(MutableMapping):
 
     def to_ids(self, tokens: List[str]) -> List[int]:
         return [self.data[w] for w in tokens]
+
+    def find(self, what: Union[List[str], str]):
+
+        if not what:
+            return []
+
+        if isinstance(what, (int, str,)):
+            what = [what]
+
+        wildcards = [ w for w in what if '*' in w ]
+        tokens = [ w for w in what if w not in wildcards ]
+
+        matches = []
+
+        if tokens:
+            matches.extend([w for w in tokens if w in self.data])
+
+        if wildcards:
+            matches.extend([w for w in self.data.keys() if any(fnmatch(w, x) for x in wildcards)])
+
+        return [self[w] for w in set(matches)]
 
     # def to_bow(self, documents: Iterator[Iterator[str]]):
 
