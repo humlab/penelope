@@ -16,7 +16,7 @@ def to_trends_data(bundle: Bundle, n_count=25000) -> TrendsData:
         corpus_folder=bundle.folder,
         corpus_tag=bundle.tag,
         n_count=n_count,
-    ).remember(co_occurrences=bundle.co_occurrences, document_index=bundle.document_index)
+    )
 
     return trends_data
 
