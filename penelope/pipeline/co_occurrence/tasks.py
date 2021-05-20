@@ -3,27 +3,44 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Optional
 
 import pandas as pd
-from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError, partition_by_document
+from penelope.co_occurrence import (
+    ContextOpts,
+    CoOccurrenceComputeResult,
+    CoOccurrenceError,
+    WindowsCoOccurrenceVectorizer,
+    tokens_to_windows,
+)
 from penelope.corpus import Token2Id, VectorizedCorpus
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 
+CoOccurrenceMatrixBundle = collections.namedtuple(
+    'DocumentCoOccurrenceMatrixBundle', ['document_id', 'term_term_matrix', 'term_windows_count']
+)
+
 
 @dataclass
-class ToDocumentCoOccurrence(ITask):
+class ToCoOccurrenceMatrixBundle(ITask):
     """Computes a (DOCUMENT-LEVEL) windows co-occurrence data.
 
+    Bundle consists of the following document level information:
+
+        1) Co-occurrence matrix (TTM) with number of common windows in document
+        2) Mapping with number of windows each term occurs in
+
     Iterable[DocumentPayload] => Iterable[DocumentPayload]
+        DocumentPayload.content = Tuple[document_id, TTM, token_window_counts]
+
     """
 
     context_opts: ContextOpts = None
     ingest_tokens: bool = True
-    vectorizer: partition_by_document.WindowsCoOccurrenceVectorizer = field(init=False, default=None)
+    vectorizer: WindowsCoOccurrenceVectorizer = field(init=False, default=None)
     token2id: Token2Id = field(init=False, default=None)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATA_FRAME
+        self.out_content_type = ContentType.CO_OCCURRENCE_MATRIX_DOCUMENT_BUNDLE
 
     def setup(self) -> ITask:
         super().setup()
@@ -32,8 +49,8 @@ class ToDocumentCoOccurrence(ITask):
             self.pipeline.payload.token2id = Token2Id().open()
 
         self.token2id = self.pipeline.payload.token2id
-        self.vectorizer: partition_by_document.WindowsCoOccurrenceVectorizer = (
-            partition_by_document.WindowsCoOccurrenceVectorizer(self.token2id)
+        self.vectorizer: WindowsCoOccurrenceVectorizer = (
+            WindowsCoOccurrenceVectorizer(self.token2id)
         )
 
         self.pipeline.put("context_opts", self.context_opts)
@@ -43,29 +60,23 @@ class ToDocumentCoOccurrence(ITask):
 
         tokens: Iterable[str] = payload.content
 
-        ignore_ids: set = {self.token2id[self.context_opts.pad]} if self.context_opts else None
-
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
 
-        co_occurrences: pd.DataFrame = partition_by_document.compute_document_co_occurrence(
-            vectorizer=self.vectorizer,
-            tokens=tokens,
-            context_opts=self.context_opts,
-            ignore_ids=ignore_ids,
-        )
+        document_id = self.get_document_id(payload)
 
-        co_occurrences['document_id'] = self.get_document_id(payload)
+        windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
+        windows_ttm_matrix: VectorizedCorpus = self.vectorizer.fit_transform(windows)
+        token_window_counts: collections.Counter = self.vectorizer.token_window_counts
 
-        return payload.update(self.out_content_type, content=co_occurrences)
+        return payload.update(self.out_content_type, content=CoOccurrenceMatrixBundle(document_id, windows_ttm_matrix, token_window_counts))
 
     def get_document_id(self, payload: DocumentPayload) -> int:
         document_id = self.document_index.loc[payload.document_name]['document_id']
         return document_id
 
-
 @dataclass
-class ToCorpusDocumentCoOccurrence(ITask):
+class ToCorpusCoOccurrenceMatrixBundle(ITask):
     """Computes a COMPILED (DOCUMENT-LEVEL) windows co-occurrence data.
 
     Iterable[DocumentPayload] => ComputeResult
@@ -75,8 +86,8 @@ class ToCorpusDocumentCoOccurrence(ITask):
     global_threshold_count: int = 1
 
     def __post_init__(self):
-        self.in_content_type = ContentType.TOKENS
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATA_FRAME
+        self.in_content_type = ContentType.CO_OCCURRENCE_MATRIX_DOCUMENT_BUNDLE
+        self.out_content_type = ContentType.CO_OCCURRENCE_MATRIX_CORPUS_BUNDLE
 
     def setup(self) -> ITask:
         super().setup()
@@ -84,6 +95,15 @@ class ToCorpusDocumentCoOccurrence(ITask):
         return self
 
     def process_stream(self) -> VectorizedCorpus:
+
+        """Merge individual TTM to a single sparse matrix"""
+
+        """Create a sparse matrix [row=document_id, column=token_id, value=count] from document token counts"""
+
+        for payload in self.instream:
+            item: CoO
+            ttm = payload.content.
+
 
         total_results: List[pd.DataFrame] = [p.content for p in self.instream]
 
@@ -123,9 +143,9 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
     def get_token_windows_counts(self) -> Optional[collections.Counter]:
 
-        task: ToDocumentCoOccurrence = self.pipeline.find(ToDocumentCoOccurrence, self.__class__)
+        task: ToCoOccurrenceMatrixBundle = self.pipeline.find(ToCoOccurrenceMatrixBundle, self.__class__)
         if task is not None:
-            return task.vectorizer.token_windows_counts
+            return task.vectorizer.global_token_windows_counts
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
