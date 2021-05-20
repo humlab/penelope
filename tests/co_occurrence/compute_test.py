@@ -10,7 +10,6 @@ from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 jj = os.path.join
 
 
-# FIXME Add document_id to results & asserts
 def test_co_occurrence_without_no_concept_and_threshold_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
