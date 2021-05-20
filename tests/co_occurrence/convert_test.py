@@ -2,9 +2,12 @@ import os
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
-import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import scipy
-from penelope.co_occurrence.partition_by_document.convert import truncate_by_global_threshold
+from penelope.co_occurrence import (
+    co_occurrences_to_co_occurrence_corpus,
+    term_term_matrix_to_co_occurrences,
+    truncate_by_global_threshold,
+)
 from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import (
@@ -15,18 +18,6 @@ from tests.fixtures import (
 )
 
 jj = os.path.join
-
-
-def test_to_trends_data():
-
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
-    filename = co_occurrence.to_filename(folder=folder, tag=tag)
-
-    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_corpus=False)
-
-    trends_data = co_occurrence.to_trends_data(bundle).update()
-
-    assert trends_data is not None
 
 
 def test_to_co_occurrence_matrix():
@@ -49,7 +40,7 @@ def test_to_vectorized_corpus():
     document_index: DocumentIndex = DocumentIndexHelper.load(bundle.document_index_filename).document_index
     token2id: Token2Id = Token2Id.load(bundle.dictionary_filename)
 
-    corpus = co_occurrence_module.co_occurrences_to_co_occurrence_corpus(
+    corpus = co_occurrences_to_co_occurrence_corpus(
         co_occurrences=co_occurrences,
         document_index=document_index,
         token2id=token2id,
@@ -96,7 +87,7 @@ def test_term_term_matrix_to_co_occurrences_with_ignore_ids():
 
     pad_id = token2id['*']
 
-    co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
+    co_occurrences = term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
         threshold_count=1,
         ignore_ids=set([pad_id]),
@@ -111,7 +102,7 @@ def test_term_term_matrix_to_co_occurrences_with_no_ignore_ids():
     text_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     term_term_matrix: scipy.sparse.spmatrix = very_simple_term_term_matrix(text_corpus)
 
-    co_occurrences = co_occurrence_module.term_term_matrix_to_co_occurrences(
+    co_occurrences = term_term_matrix_to_co_occurrences(
         term_term_matrix=term_term_matrix,
         threshold_count=1,
         ignore_ids=None,
@@ -136,7 +127,7 @@ def test_co_occurrences_to_co_occurrence_corpus():
         corpus, context_opts=context_opts
     )
 
-    corpus = co_occurrence_module.co_occurrences_to_co_occurrence_corpus(
+    corpus = co_occurrences_to_co_occurrence_corpus(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         token2id=token2id,
