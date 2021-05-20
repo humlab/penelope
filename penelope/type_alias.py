@@ -7,3 +7,4 @@ FilenameTokensTuple = Tuple[str, Iterable[str]]
 FilenameTokensTuples = Iterable[FilenameTokensTuple]
 CoOccurrenceDataFrame = pd.DataFrame
 DocumentIndex = pd.DataFrame
+IntOrStr = Union[int, str]
