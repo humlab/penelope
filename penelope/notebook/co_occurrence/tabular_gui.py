@@ -11,7 +11,7 @@ from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
 from perspective import PerspectiveWidget
 
-
+# pylint: disable=too-many-instance-attributes
 class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
     def __init__(
         self,
