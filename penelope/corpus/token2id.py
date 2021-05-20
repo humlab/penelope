@@ -99,11 +99,11 @@ class Token2Id(MutableMapping):
         if not what:
             return []
 
-        if isinstance(what, (int, str,)):
+        if isinstance(what, (int, str)):
             what = [what]
 
-        wildcards = [ w for w in what if '*' in w ]
-        tokens = [ w for w in what if w not in wildcards ]
+        wildcards = [w for w in what if '*' in w]
+        tokens = [w for w in what if w not in wildcards]
 
         matches = []
 
