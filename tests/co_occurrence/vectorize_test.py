@@ -1,5 +1,6 @@
 import numpy as np
-from penelope.corpus.dtm import CorpusVectorizer
+import scipy
+from penelope.corpus import Token2Id, VectorizedCorpus, CorpusVectorizer
 from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus
 
 
@@ -16,3 +17,35 @@ def test_co_occurrence_matrix_of_corpus_returns_correct_result():
 
     assert (term_term_matrix.todense() == expected_matrix).all()
     assert expected_token2id == v_corpus.token2id
+
+
+
+def test_TTM_to_COODTM():
+
+    # document_id: int
+    # term_term_matrix: scipy.sparse.spmatrix
+    # token2id: Token2Id = Token2Id()
+
+    t_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
+    v_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(t_corpus, already_tokenized=True, vocabulary=corpus.token2id)
+    TTM: scipy.sparse.spmatrix = v_corpus.co_occurrence_matrix()
+
+    assert TTM is not None
+
+    # """Convert a sequence of TTM to a CC-Corpus"""
+    # token2id.ingest()
+    # w1_id = term_term_matrix.row
+    # w2_id = term_term_matrix.col
+    # values = term_term_matrix.data
+
+    # shape = (len(document_index), len(vocabulary))
+    # matrix = scipy.sparse.coo_matrix(
+    #     (
+    #         co_occurrences.value.astype(np.uint16),
+    #         (
+    #             co_occurrences.document_id.astype(np.uint32),
+    #             token_ids.astype(np.uint32),
+    #         ),
+    #     ),
+    #     shape=shape,
+    # )

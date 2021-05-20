@@ -38,7 +38,7 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         """ TOKENS => CO_OCCURRENCE_DATAFRAME) """
         return self.add(
-            tasks.ToDocumentCoOccurrence(
+            tasks.ToCoOccurrenceMatrixBundle(
                 context_opts=context_opts,
                 ingest_tokens=ingest_tokens,
             )
@@ -52,7 +52,7 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         """ TOKENS => CO_OCCURRENCE_DATAFRAME) """
         return self.add(
-            tasks.ToCorpusDocumentCoOccurrence(
+            tasks.ToCorpusCoOccurrenceMatrixBundle(
                 context_opts=context_opts,
                 global_threshold_count=global_threshold_count,
             )
