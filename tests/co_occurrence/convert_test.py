@@ -1,10 +1,10 @@
 import os
-from penelope.co_occurrence.partition_by_document.convert import truncate_by_global_threshold
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import scipy
+from penelope.co_occurrence.partition_by_document.convert import truncate_by_global_threshold
 from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import (
@@ -60,8 +60,19 @@ def test_to_vectorized_corpus():
     assert corpus.data.shape[1] == len(co_occurrences[["w1_id", "w2_id"]].drop_duplicates())
 
 
-def test_truncate_by_global_threshold():
-    ...
+def test_truncate_by_global_threshold2():
+
+    corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
+    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
+        concept={'g'}, ignore_concept=False, context_width=1
+    )
+    co_occurrences: pd.DataFrame = very_simple_corpus_co_occurrences(corpus, context_opts=context_opts).co_occurrences
+
+    truncated_co_occurrences = truncate_by_global_threshold(co_occurrences=co_occurrences, threshold=1)
+
+    assert truncated_co_occurrences is not None
+
+    # FIXME Add more tests/asserts
 
 
 def test_term_term_matrix_to_co_occurrences_with_ignore_ids():
@@ -131,20 +142,3 @@ def test_co_occurrences_to_co_occurrence_corpus():
         token2id=token2id,
     )
     assert corpus is not None
-
-
-def test_truncate_by_global_threshold():
-
-    corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
-    context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
-        concept={'g'}, ignore_concept=False, context_width=1
-    )
-    co_occurrences: pd.DataFrame = very_simple_corpus_co_occurrences(
-        corpus, context_opts=context_opts
-    ).co_occurrences
-
-    truncated_co_occurrences = truncate_by_global_threshold(co_occurrences=co_occurrences, threshold=1)
-
-    assert truncated_co_occurrences is not None
-
-    # FIXME Add more tests/asserts
