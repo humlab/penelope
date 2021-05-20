@@ -53,7 +53,7 @@ def compute_corpus_co_occurrence(
 
         windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
         windows_ttm_matrix: scipy.sparse.spmatrix = vectorizer.fit_transform(windows)
-        document_co_occurrences, _ = term_term_matrix_to_co_occurrences(
+        document_co_occurrences = term_term_matrix_to_co_occurrences(
             windows_ttm_matrix,
             threshold_count=1,
             ignore_ids=ignore_ids,

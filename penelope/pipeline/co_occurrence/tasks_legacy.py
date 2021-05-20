@@ -56,7 +56,7 @@ class ToDocumentCoOccurrence(ITask):
         # FIXME: If keep, then make use of window_counts!
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
         windows_ttm_matrix: scipy.sparse.spmatrix = self.vectorizer.fit_transform(windows)
-        co_occurrences, _ = term_term_matrix_to_co_occurrences(
+        co_occurrences = term_term_matrix_to_co_occurrences(
             windows_ttm_matrix,
             threshold_count=1,
             ignore_ids=ignore_ids,

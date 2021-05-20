@@ -1,6 +1,6 @@
 # type: ignore
 
-from .convert import term_term_matrix_to_co_occurrences, to_co_occurrence_matrix, co_occurrences_to_co_occurrence_corpus
+from .convert import term_term_matrix_to_co_occurrences, to_co_occurrence_matrix, co_occurrences_to_co_occurrence_corpus, truncate_by_global_threshold
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
 from .interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError, Token, ZeroComputeError
 from .persistence import (
