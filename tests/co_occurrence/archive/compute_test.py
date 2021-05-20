@@ -2,9 +2,10 @@ import os
 
 import pytest
 from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult
-from penelope.co_occurrence.partition_by_document import compute_corpus_co_occurrence
+from penelope.co_occurrence._stashed.compute import compute_corpus_co_occurrence
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from penelope.utility import dataframe_to_tuples
+
 from ...fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 
 jj = os.path.join

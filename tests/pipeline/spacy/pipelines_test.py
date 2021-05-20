@@ -1,7 +1,6 @@
 import os
 
 import penelope.co_occurrence as co_occurrence
-import penelope.co_occurrence.partition_by_document as co_occurrence_module
 import penelope.workflows as workflows
 import pytest
 from penelope.co_occurrence import CoOccurrenceComputeResult
@@ -99,7 +98,7 @@ def test_spaCy_co_occurrence_workflow(config):
     assert value.document_index is not None
     assert len(value.co_occurrences) > 0
 
-    corpus: VectorizedCorpus = co_occurrence_module.co_occurrences_to_co_occurrence_corpus(
+    corpus: VectorizedCorpus = co_occurrence.co_occurrences_to_co_occurrence_corpus(
         co_occurrences=value.co_occurrences,
         token2id=value.token2id,
         document_index=value.document_index,

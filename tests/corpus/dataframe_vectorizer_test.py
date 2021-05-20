@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from penelope.co_occurrence.partition_by_document import term_term_matrix_to_co_occurrences
+from penelope.co_occurrence import term_term_matrix_to_co_occurrences
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import PandasCorpusReader
 

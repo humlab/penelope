@@ -1,8 +1,10 @@
-from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceComputeResult
-from penelope.co_occurrence.partition_by_document import (
+from penelope.co_occurrence import (
+    Bundle,
+    ContextOpts,
+    CoOccurrenceComputeResult,
     co_occurrences_to_co_occurrence_corpus,
-    compute_corpus_co_occurrence,
 )
+from penelope.co_occurrence._stashed.compute import compute_corpus_co_occurrence
 from penelope.corpus import ITokenizedCorpus, Token2Id
 
 

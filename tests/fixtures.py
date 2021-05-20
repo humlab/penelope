@@ -4,8 +4,9 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult
-from penelope.co_occurrence.partition_by_document import (
+from penelope.co_occurrence import (
+    ContextOpts,
+    CoOccurrenceComputeResult,
     compute_corpus_co_occurrence,
     term_term_matrix_to_co_occurrences,
 )
