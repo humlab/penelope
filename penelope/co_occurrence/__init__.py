@@ -1,8 +1,6 @@
 # type: ignore
 
-
-from . import partition_by_document  # , partition_by_key
-from .convert import to_co_occurrence_matrix, to_trends_data
+from .convert import term_term_matrix_to_co_occurrences, to_co_occurrence_matrix, co_occurrences_to_co_occurrence_corpus
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
 from .interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError, Token, ZeroComputeError
 from .persistence import (
@@ -21,4 +19,5 @@ from .persistence import (
     to_folder_and_tag,
 )
 from .prepare import CoOccurrenceHelper
+from .vectorize import WindowsCoOccurrenceVectorizer
 from .windows import WindowsCorpus, WindowsStream, corpus_to_windows, tokens_to_windows
