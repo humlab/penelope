@@ -1,14 +1,15 @@
-from typing import List, Set
+from typing import Set
 
 import pandas as pd
-from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
+import scipy
+from penelope.corpus import DocumentIndex, Token2Id
 from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
 from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from ..windows import tokens_to_windows
-from .convert import term_term_matrix_to_co_occurrences
-from .vectorize import WindowsCoOccurrenceVectorizer
+from ..convert import term_term_matrix_to_co_occurrences
+from ..vectorize import WindowsCoOccurrenceVectorizer
 
 
 def compute_corpus_co_occurrence(
@@ -20,7 +21,7 @@ def compute_corpus_co_occurrence(
     global_threshold_count: int,
     ingest_tokens: bool = True,
 ) -> CoOccurrenceComputeResult:
-
+    """Note: This function is currently ONLY used in test cases!"""
     if token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
 
@@ -50,10 +51,11 @@ def compute_corpus_co_occurrence(
         if ingest_tokens:
             token2id.ingest(tokens)
 
-        document_co_occurrences: pd.DataFrame = compute_document_co_occurrence(
-            vectorizer=vectorizer,
-            tokens=tokens,
-            context_opts=context_opts,
+        windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+        windows_ttm_matrix: scipy.sparse.spmatrix = vectorizer.fit_transform(windows)
+        document_co_occurrences, _ = term_term_matrix_to_co_occurrences(
+            windows_ttm_matrix,
+            threshold_count=1,
             ignore_ids=ignore_ids,
         )
 
@@ -74,23 +76,6 @@ def compute_corpus_co_occurrence(
         co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
-        token_window_counts=vectorizer.token_windows_counts,
+        token_window_counts=vectorizer.global_token_windows_counts,
     )
 
-
-def compute_document_co_occurrence(
-    vectorizer: WindowsCoOccurrenceVectorizer,
-    tokens: List[str],
-    context_opts: ContextOpts,
-    ignore_ids: set,
-) -> pd.DataFrame:
-
-    windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
-    windows_ttm_matrix: VectorizedCorpus = vectorizer.fit_transform(windows)
-    co_occurrences: pd.DataFrame = term_term_matrix_to_co_occurrences(
-        windows_ttm_matrix,
-        threshold_count=1,
-        ignore_ids=ignore_ids,
-    )
-
-    return co_occurrences
