@@ -184,6 +184,7 @@ def load_corpus(corpus_folder: str, corpus_tag: str) -> VectorizedCorpus:
     )
 
 
+# pylint: disable=redefined-outer-name
 def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame, store_feather: bool = True) -> None:
     """Store co-occurrence result data to CSV-file"""
 
