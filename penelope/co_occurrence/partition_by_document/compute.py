@@ -70,8 +70,6 @@ def compute_corpus_co_occurrence(
             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= global_threshold_count
         ]
 
-    # FIXME value_n_t moved out of co_occurrences computation to application layer
-
     return CoOccurrenceComputeResult(
         co_occurrences=co_occurrences,
         token2id=token2id,
@@ -97,15 +95,3 @@ def compute_document_co_occurrence(
 
     return co_occurrences
 
-
-# def compute_value_n_t(co_occurrences: pd.DataFrame, document_index: DocumentIndex):
-#     if document_index is None:
-#         return co_occurrences
-#     for n_token_count, target_field in [('n_tokens', 'value_n_t'), ('n_raw_tokens', 'value_n_r_t')]:
-#         if n_token_count in document_index.columns:
-#             try:
-#                 co_occurrences[target_field] = co_occurrences.value / float(sum(document_index[n_token_count].values))
-#             except ZeroDivisionError:
-#                 co_occurrences[target_field] = 0.0
-#         else:
-#             logger.warning(f"{target_field}: cannot compute since {n_token_count} not in corpus document catalogue")
