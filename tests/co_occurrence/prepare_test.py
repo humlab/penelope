@@ -5,7 +5,7 @@ from penelope.co_occurrence import Bundle, CoOccurrenceHelper
 
 from ..fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from ..utils import OUTPUT_FOLDER
-from .utils import create_co_occurrence_bundle
+from ._utils import create_co_occurrence_bundle
 
 jj = os.path.join
 
