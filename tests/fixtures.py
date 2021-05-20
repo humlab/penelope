@@ -4,11 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.co_occurrence import (
-    ContextOpts,
-    CoOccurrenceComputeResult,
-    term_term_matrix_to_co_occurrences,
-)
+from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, term_term_matrix_to_co_occurrences
 from penelope.co_occurrence._stashed.compute import compute_corpus_co_occurrence
 from penelope.corpus import (
     ITokenizedCorpus,

@@ -6,10 +6,10 @@ from penelope.corpus import DocumentIndex, Token2Id
 from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
-from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
-from ..windows import tokens_to_windows
 from ..convert import term_term_matrix_to_co_occurrences
+from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
 from ..vectorize import WindowsCoOccurrenceVectorizer
+from ..windows import tokens_to_windows
 
 
 def compute_corpus_co_occurrence(

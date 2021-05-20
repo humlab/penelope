@@ -49,9 +49,7 @@ class ToCoOccurrenceMatrixBundle(ITask):
             self.pipeline.payload.token2id = Token2Id().open()
 
         self.token2id = self.pipeline.payload.token2id
-        self.vectorizer: WindowsCoOccurrenceVectorizer = (
-            WindowsCoOccurrenceVectorizer(self.token2id)
-        )
+        self.vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(self.token2id)
 
         self.pipeline.put("context_opts", self.context_opts)
         return self
@@ -69,11 +67,15 @@ class ToCoOccurrenceMatrixBundle(ITask):
         windows_ttm_matrix: VectorizedCorpus = self.vectorizer.fit_transform(windows)
         token_window_counts: collections.Counter = self.vectorizer.token_window_counts
 
-        return payload.update(self.out_content_type, content=CoOccurrenceMatrixBundle(document_id, windows_ttm_matrix, token_window_counts))
+        return payload.update(
+            self.out_content_type,
+            content=CoOccurrenceMatrixBundle(document_id, windows_ttm_matrix, token_window_counts),
+        )
 
     def get_document_id(self, payload: DocumentPayload) -> int:
         document_id = self.document_index.loc[payload.document_name]['document_id']
         return document_id
+
 
 @dataclass
 class ToCorpusCoOccurrenceMatrixBundle(ITask):
@@ -100,10 +102,9 @@ class ToCorpusCoOccurrenceMatrixBundle(ITask):
 
         """Create a sparse matrix [row=document_id, column=token_id, value=count] from document token counts"""
 
-        for payload in self.instream:
-            item: CoO
-            ttm = payload.content.
-
+        # for payload in self.instream:
+        #     item: CoO
+        #     ttm = payload.content.
 
         total_results: List[pd.DataFrame] = [p.content for p in self.instream]
 
