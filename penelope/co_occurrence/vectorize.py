@@ -42,6 +42,7 @@ class WindowsCoOccurrenceVectorizer:
         _token_windows_counts = {i: win_counts[i] for i in nz_indicies}
         return _token_windows_counts
 
+
 # def term_term_matrices_to_co_occurrences_corpus(
 #     document_id: int,
 #     term_term_matrix: scipy.sparse.spmatrix,
