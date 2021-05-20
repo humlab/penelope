@@ -332,6 +332,12 @@ def load_document_index(
     if filename_fields is not None:
         document_index = apply_filename_fields(document_index, filename_fields)
 
+    if 'year' in document_index:
+        document_index['year'] = document_index.year.astype(np.int16)
+
+    if document_index.document_id.max() < np.iinfo(np.uint16).max:
+        document_index['document_id'] = document_index.document_id.astype(np.uint16)
+
     return document_index
 
 
