@@ -67,9 +67,14 @@ class CoOccurrenceHelper:
         return self
 
     def trunk_by_global_count(self, threshold: int) -> "CoOccurrenceHelper":
+
+        if threshold < 2:
+            return self
+
         global_tokens_counts: pd.Series = self.co_occurrences.groupby(['tokens'])['value'].sum()
         threshold_tokens: pd.Index = global_tokens_counts[global_tokens_counts >= threshold].index
         self.data = self.data.set_index('tokens').loc[threshold_tokens]  # [['year', 'value', 'value_n_t']]
+
         return self
 
     def match(self, match_tokens: List[str]) -> "CoOccurrenceHelper":
@@ -128,6 +133,9 @@ class CoOccurrenceHelper:
         return data
 
     def head(self, n_head: int) -> "CoOccurrenceHelper":
+
+        if n_head <= 0:
+            return self.data
 
         if len(self.data) > n_head:
             print(f"warning: only {n_head} records out of {len(self.data)} records are displayed.")

@@ -1,23 +1,25 @@
 import contextlib
+from collections.abc import Iterable
 from typing import List, Set
 
 import IPython.display as IPython_display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
-from penelope.co_occurrence import store_co_occurrences, prepare_tabular_data, Bundle
-from penelope.corpus import Token2Id
+from penelope.co_occurrence import CoOccurrenceHelper, store_co_occurrences
+from penelope.corpus import DocumentIndex, Token2Id
 from penelope.notebook.utility import create_js_download
-from penelope.utility import dotget, path_add_timestamp
+from penelope.utility import path_add_timestamp
 from perspective import PerspectiveWidget
 
 
 class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
     def __init__(
         self,
+        *,
         co_occurrences: pd.DataFrame,
         token2id: Token2Id,
+        document_index: DocumentIndex,
         concepts: Set[str],
-        *,
         default_token_filter: str = None,
         **kwargs,
     ):
@@ -33,8 +35,14 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         )
 
         self.token2id: pd.DataFrame = token2id
+        self.document_index: pd.DataFrame = document_index
         self.concepts: Set[str] = concepts
 
+        self.helper: CoOccurrenceHelper = CoOccurrenceHelper(
+            self.co_occurrences,
+            self.token2id,
+            self.document_index,
+        )
         self._token_filter: Text = Text(
             value=default_token_filter, placeholder='token match', layout=Layout(width='auto')
         )
@@ -91,28 +99,44 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._message.value = f"<span style='color: green; font-weight: bold;'>{message}</span>"
 
     def get_data(self):
-        data = prepare_tabular_data(
-            self.co_occurrences,
-            self.token2id,
-            threshold=self._global_threshold_filter.value,
-            skip_tokens=self.skip_concept_tokens(),
-            match_tokens=self._token_filter.value.strip().split(),
-            n_head=self._record_count_limit.value,
+
+        data: pd.DataFrame = (
+            self.helper.reset()
+            .groupby('year')
+            .match(self.token_filter)
+            .trunk_by_global_count(self.global_threshold)
+            .exclude(self.ignores)
+            .head(self.count_limit)
         )
+
         return data
 
     def toggle_icon(self, event: dict) -> None:
         with contextlib.suppress(Exception):
             event['owner'].icon = 'check' if event['new'] else ''
 
-    def skip_concept_tokens(self) -> List[str]:
+    @property
+    def ignores(self) -> List[str]:
 
-        if self._show_concept.value:
-            return []
+        if self._show_concept.value or not self.concepts:
+            return set()
 
-        concept_tokens = dotget(self.compute_options, "context_opts.concept", []) or []
+        if isinstance(self.concepts, Iterable):
+            return set(self.concepts)
 
-        return concept_tokens
+        return {self.concepts}
+
+    @property
+    def global_threshold(self) -> int:
+        return self._global_threshold_filter.value
+
+    @property
+    def count_limit(self) -> int:
+        return self._record_count_limit.value
+
+    @property
+    def token_filter(self) -> List[str]:
+        return self._token_filter.value.strip().split()
 
     def update_data(self, *_):
         data = self.get_data()

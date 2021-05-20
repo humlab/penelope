@@ -2,7 +2,6 @@ import os
 
 from penelope import co_occurrence
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper
-from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 
 from ..fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from ..utils import OUTPUT_FOLDER
@@ -24,7 +23,7 @@ def create_simple_bundle() -> Bundle:
     return bundle
 
 
-def create_helper(bundle: Bundle) -> CoOccurrenceHelper:
+def create_bundle_helper(bundle: Bundle) -> CoOccurrenceHelper:
     helper: CoOccurrenceHelper = CoOccurrenceHelper(
         bundle.co_occurrences,
         bundle.token2id,
@@ -33,15 +32,15 @@ def create_helper(bundle: Bundle) -> CoOccurrenceHelper:
     return helper
 
 
+def create_simple_helper() -> CoOccurrenceHelper:
+    return create_bundle_helper(
+        create_bundle_helper(create_simple_bundle()),
+    )
+
+
 def test_co_occurrence_helper_reset():
 
-    bundle: Bundle = create_simple_bundle()
-
-    helper: CoOccurrenceHelper = CoOccurrenceHelper(
-        bundle.co_occurrences,
-        bundle.token2id,
-        bundle.document_index,
-    )
+    helper: CoOccurrenceHelper = create_simple_helper()
 
     helper.reset()
 
@@ -50,16 +49,10 @@ def test_co_occurrence_helper_reset():
 
 def test_co_occurrence_groupby():
 
-    bundle: Bundle = create_simple_bundle()
+    helper: CoOccurrenceHelper = create_simple_helper()
 
-    helper: CoOccurrenceHelper = CoOccurrenceHelper(
-        bundle.co_occurrences,
-        bundle.token2id,
-        bundle.document_index,
-    )
+    helper.reset()
 
     yearly_co_occurrences = helper.groupby('year').value
 
     assert yearly_co_occurrences is not None
-
-    assert bundle.co_occurrences.value.sum() == yearly_co_occurrences.value.sum()

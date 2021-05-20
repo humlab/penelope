@@ -44,8 +44,9 @@ class ExploreGUI:
         self.tab_main.display_content(
             0,
             CoOccurrenceTable(
-                self.bundle.co_occurrences,
-                self.bundle.token2id,
+                co_occurrences=self.bundle.co_occurrences,
+                token2id=self.bundle.token2id,
+                document_index=self.bundle.document_index,
                 compute_options=trends_data.compute_options,
             ),
             clear=True,
