@@ -1,24 +1,28 @@
-from penelope.type_alias import CoOccurrenceDataFrame
 from typing import List, Union
 
 import pandas as pd
 from penelope.corpus import DocumentIndex, Token2Id
+from penelope.type_alias import CoOccurrenceDataFrame
 
 IntOrStr = Union[int, str]
 
 
 class CoOccurrenceHelper:
-
-    def __init__(self, co_occurrences: CoOccurrenceDataFrame, token2id: Token2Id, document_index: DocumentIndex,):
+    def __init__(
+        self,
+        co_occurrences: CoOccurrenceDataFrame,
+        token2id: Token2Id,
+        document_index: DocumentIndex,
+    ):
 
         self.co_occurrences: CoOccurrenceDataFrame = co_occurrences
         self.token2id: Token2Id = token2id
         self.document_index: DocumentIndex = document_index
         self.groupings: List[str] = ['document_id']
-        self.data: pd.DataFrame = self.co_occurrences #.copy()
+        self.data: pd.DataFrame = self.co_occurrences  # .copy()
 
     def reset(self) -> "CoOccurrenceHelper":
-        self.data: pd.DataFrame = self.co_occurrences #.copy()
+        self.data: pd.DataFrame = self.co_occurrences  # .copy()
         return self
 
     def groupby(self, groupings: Union[str, List[str]]) -> "CoOccurrenceHelper":
@@ -42,7 +46,7 @@ class CoOccurrenceHelper:
         """Divide yearly window counts with yearly token counts"""
         data['value_n_t'] = data.value / pd.merge(
             data[grouping_columns],
-            document_index.groupby(grouping_columns)['n_raw_tokens'].sum(), # Yearly token counts
+            document_index.groupby(grouping_columns)['n_raw_tokens'].sum(),  # Yearly token counts
             left_on='year',
             right_index=True,
         )['n_raw_tokens']

@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .interface import IVectorizedCorpusProtocol
 from ..token2id import Token2Id
+from .interface import IVectorizedCorpusProtocol
 
 
 class CoOccurrenceMixIn:
-
     def to_co_occurrences(self: IVectorizedCorpusProtocol, source_token2id: Token2Id) -> pd.DataFrame:
         """Creates a co-occurrence data frame from a vectorized self (DTM)
 

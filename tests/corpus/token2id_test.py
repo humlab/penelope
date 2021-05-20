@@ -10,6 +10,7 @@ def test_token2id_find():
     assert set(token2id.find(what=['a*', 'f*'])) == set([0, 1, 3])
     assert set(token2id.find(what=['a*', 'beatrice'])) == set([0, 1, 2])
 
+
 def test_token2id_ingest():
 
     tokens = ['adam', 'anton', 'beatrice', 'felicia', 'niklas']

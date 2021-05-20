@@ -94,4 +94,3 @@ def compute_document_co_occurrence(
     )
 
     return co_occurrences
-
