@@ -119,7 +119,7 @@ class CoOccurrenceHelper:
         if column not in value_columns:
             raise ValueError(f"largets: expected any of {', '.join(value_columns)} but found {column}")
 
-        group_columns = [x for x in self.data.columns if x not in (value_columns + token_columns)]
+        group_columns = [x for x in self.data.columns if x not in value_columns + token_columns]
 
         # self.data['rank'] = self.data.groupby(group_columns)[column].rank(ascending=False) #, method='first')
         # return self.data[self.data['rank'] <= n_top] # .drop(columns='rank')
