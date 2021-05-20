@@ -78,4 +78,3 @@ def compute_corpus_co_occurrence(
         document_index=document_index,
         token_window_counts=vectorizer.global_token_windows_counts,
     )
-
