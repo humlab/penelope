@@ -13,7 +13,7 @@ class WindowsCoOccurrenceVectorizer:
     # FIXME Add WordWindowsCounter ()
     def __init__(self, vocabulary: Token2Id):
 
-        self.windows_counts_global: Counter = Counter()
+        self.window_counts_global: Counter = Counter()
         self.vectorizer: CountVectorizer = CountVectorizer(
             tokenizer=lambda x: x, vocabulary=vocabulary.data, lowercase=False, dtype=np.uint16
         )
@@ -30,7 +30,7 @@ class WindowsCoOccurrenceVectorizer:
 
         window_counts = self._get_window_counts(window_term_matrix)
 
-        self.windows_counts_global.update(window_counts)
+        self.window_counts_global.update(window_counts)
 
         return term_term_matrix, window_counts
 

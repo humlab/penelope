@@ -8,30 +8,14 @@ from penelope.corpus import DocumentIndex, Token2Id
 from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
-from ..convert import term_term_matrix_to_co_occurrences
-from ..interface import ContextOpts, CoOccurrenceError
-from ..vectorize import WindowsCoOccurrenceVectorizer
-from ..windows import tokens_to_windows
+from .convert import term_term_matrix_to_co_occurrences
+from .interface import ContextOpts, CoOccurrenceError
+from .vectorize import WindowsCoOccurrenceVectorizer
+from .windows import tokens_to_windows
+from .persistence import Bundle
 
 
-@dataclass
-class CoOccurrenceComputeResult:
-
-    co_occurrences: pd.DataFrame = None
-    document_index: DocumentIndex = None
-    token2id: Token2Id = None
-    token_window_counts: collections.Counter = None
-
-    @property
-    def decoded_co_occurrences(self) -> pd.DataFrame:
-        fg = self.token2id.id2token.get
-        return self.co_occurrences.assign(
-            w1=self.co_occurrences.w1_id.apply(fg),
-            w2=self.co_occurrences.w2_id.apply(fg),
-        )
-
-
-def compute_corpus_co_occurrence(
+def compute_non_partitioned_corpus_co_occurrence(
     stream: FilenameTokensTuples,
     *,
     token2id: Token2Id,
@@ -39,7 +23,7 @@ def compute_corpus_co_occurrence(
     context_opts: ContextOpts,
     global_threshold_count: int,
     ingest_tokens: bool = True,
-) -> CoOccurrenceComputeResult:
+) -> Bundle:
     """Note: This function is currently ONLY used in test cases!"""
     if token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
@@ -91,9 +75,9 @@ def compute_corpus_co_occurrence(
             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= global_threshold_count
         ]
 
-    return CoOccurrenceComputeResult(
+    return Bundle(
         co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
-        token_window_counts=vectorizer.windows_counts_global,
+        window_counts_global=vectorizer.window_counts_global,
     )

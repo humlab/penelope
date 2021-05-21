@@ -1,5 +1,5 @@
 from penelope.co_occurrence import Bundle, ContextOpts, co_occurrences_to_co_occurrence_corpus
-from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult, compute_corpus_co_occurrence
+from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
 from penelope.corpus import ITokenizedCorpus, Token2Id
 
 
@@ -9,7 +9,7 @@ def create_co_occurrence_bundle(
 
     token2id: Token2Id = Token2Id(corpus.token2id)
 
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=token2id,

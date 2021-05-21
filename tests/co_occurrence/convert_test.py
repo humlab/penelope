@@ -1,14 +1,16 @@
 import os
+from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import scipy
 from penelope.co_occurrence import (
+    Bundle,
     co_occurrences_to_co_occurrence_corpus,
     term_term_matrix_to_co_occurrences,
     truncate_by_global_threshold,
 )
-from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
+from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
 from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import (
@@ -124,9 +126,9 @@ def test_co_occurrences_to_co_occurrence_corpus():
 
     token2id: Token2Id = Token2Id(corpus.token2id)
 
-    value: CoOccurrenceComputeResult = very_simple_corpus_co_occurrences(corpus, context_opts=context_opts)
+    value: Bundle = very_simple_corpus_co_occurrences(corpus, context_opts=context_opts)
 
-    corpus = co_occurrences_to_co_occurrence_corpus(
+    corpus = VectorizedCorpus.from_co_occurrences(
         co_occurrences=value.co_occurrences,
         document_index=value.document_index,
         token2id=token2id,

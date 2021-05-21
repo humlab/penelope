@@ -186,6 +186,14 @@ class Bundle:
         return bundle
 
 
+    @property
+    def decoded_co_occurrences(self) -> pd.DataFrame:
+        fg = self.token2id.id2token.get
+        return self.co_occurrences.assign(
+            w1=self.co_occurrences.w1_id.apply(fg),
+            w2=self.co_occurrences.w2_id.apply(fg),
+        )
+
 def store_document_token_window_counts(matrix: scipy.sparse.spmatrix, filename: str, compressed: bool = True) -> None:
 
     if compressed:

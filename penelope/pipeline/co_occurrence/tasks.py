@@ -186,7 +186,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         task: ToCoOccurrenceDTM = self.pipeline.find(ToCoOccurrenceDTM, self.__class__)
         if task is not None:
-            return task.vectorizer.windows_counts_global
+            return task.vectorizer.window_counts_global
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

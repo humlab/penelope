@@ -3,7 +3,6 @@ import os
 import penelope.co_occurrence as co_occurrence
 import penelope.workflows as workflows
 import pytest
-from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline.config import CorpusConfig
@@ -55,7 +54,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     )
     global_threshold_count: int = 1
 
-    value: CoOccurrenceComputeResult = spaCy_co_occurrence_pipeline(
+    value: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=config.pipeline_payload.source,
         transform_opts=transform_opts,

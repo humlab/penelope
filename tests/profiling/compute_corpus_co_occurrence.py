@@ -1,7 +1,6 @@
 import os
 
-from penelope.co_occurrence import ContextOpts, store_co_occurrences
-from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
+from penelope.co_occurrence import ContextOpts, store_co_occurrences, Bundle
 from penelope.corpus import DocumentIndexHelper, ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.pipeline.sparv.pipelines import to_tagged_frame_pipeline
@@ -54,7 +53,7 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
         .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
     )
 
-    value: CoOccurrenceComputeResult = pipeline.value()
+    value: Bundle = pipeline.value()
     basename: str = strip_path_and_extension(corpus_filename)
     store_co_occurrences(jj(output_folder, f"{basename}.co-occurrences.zip"), value.co_occurrences)
 

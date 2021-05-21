@@ -5,13 +5,13 @@ from typing import Any, Iterable, List, Optional
 import pandas as pd
 import scipy
 from penelope.co_occurrence import (
+    Bundle,
     ContextOpts,
     CoOccurrenceError,
     WindowsCoOccurrenceVectorizer,
     term_term_matrix_to_co_occurrences,
     tokens_to_windows,
 )
-from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
 from penelope.corpus import Token2Id, VectorizedCorpus
 
 from ...interfaces import ContentType, DocumentPayload, ITask
@@ -120,20 +120,23 @@ class ToCorpusDocumentCoOccurrence(ITask):
         if 'n_raw_tokens' not in self.document_index.columns:
             raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
+        corpus = VectorizedCorpus.from_co_occurrences(co_occurrences=co_occurrences, token2id=token2id, document_index=self.document_index)
+
         yield DocumentPayload(
-            content=CoOccurrenceComputeResult(
+            content=Bundle(
+                corpus=corpus,
                 co_occurrences=co_occurrences,
                 token2id=token2id,
                 document_index=self.document_index,
-                token_window_counts=self.get_token_windows_counts(),
+                window_counts_global=self.get_window_counts_global(),
             )
         )
 
-    def get_token_windows_counts(self) -> Optional[collections.Counter]:
+    def get_window_counts_global(self) -> Optional[collections.Counter]:
 
         task: ToDocumentCoOccurrence = self.pipeline.find(ToDocumentCoOccurrence, self.__class__)
         if task is not None:
-            return task.vectorizer.windows_counts_global
+            return task.vectorizer.window_counts_global
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

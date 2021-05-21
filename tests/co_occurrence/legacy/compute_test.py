@@ -1,8 +1,8 @@
 import os
 
 import pytest
-from penelope.co_occurrence import ContextOpts
-from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult, compute_corpus_co_occurrence
+from penelope.co_occurrence import Bundle, ContextOpts
+from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from penelope.utility import dataframe_to_tuples
 
@@ -15,7 +15,7 @@ def test_co_occurrence_without_no_concept_and_threshold_succeeds():
 
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = sorted([('b', 'g', 1), ('b', 'f', 1), ('c', 'b', 2), ('g', 'f', 1)])
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
@@ -31,7 +31,7 @@ def test_co_occurrence_with_no_concept_succeeds():
 
     expected_result = sorted([('d', 'a', 1), ('b', 'a', 1)])
 
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
@@ -46,7 +46,7 @@ def test_co_occurrence_with_thresholdt_succeeds():
     corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     expected_result = sorted([('g', 'a', 1), ('g', 'a', 1)])
 
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
@@ -67,7 +67,7 @@ def test_compute_corpus_co_occurrence_succeeds(concept, threshold_count, context
         extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
@@ -90,7 +90,7 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
         extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|VB|', pos_paddings=None, lemmatize=False),
     )
 
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
@@ -119,7 +119,7 @@ def test_document_wise_co_occurrence():
             lemmatize=True,
         ),
     )
-    value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
+    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
