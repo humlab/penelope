@@ -6,15 +6,16 @@ import pandas as pd
 import scipy
 from penelope.co_occurrence import (
     ContextOpts,
-    CoOccurrenceComputeResult,
     CoOccurrenceError,
     WindowsCoOccurrenceVectorizer,
     term_term_matrix_to_co_occurrences,
     tokens_to_windows,
 )
+from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
+
 from penelope.corpus import Token2Id, VectorizedCorpus
 
-from ..interfaces import ContentType, DocumentPayload, ITask
+from ...interfaces import ContentType, DocumentPayload, ITask
 
 
 @dataclass

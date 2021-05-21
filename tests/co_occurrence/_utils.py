@@ -1,10 +1,9 @@
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
-    CoOccurrenceComputeResult,
     co_occurrences_to_co_occurrence_corpus,
 )
-from penelope.co_occurrence.archive.compute import compute_corpus_co_occurrence
+from penelope.co_occurrence.archive.compute import compute_corpus_co_occurrence, CoOccurrenceComputeResult
 from penelope.corpus import ITokenizedCorpus, Token2Id
 
 
