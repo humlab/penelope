@@ -8,3 +8,5 @@ FilenameTokensTuples = Iterable[FilenameTokensTuple]
 CoOccurrenceDataFrame = pd.DataFrame
 DocumentIndex = pd.DataFrame
 IntOrStr = Union[int, str]
+
+TaggedFrame = pd.core.api.DataFrame
