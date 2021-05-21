@@ -8,6 +8,8 @@ from penelope.notebook import interface
 
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
+jj = os.path.join
+dirname = os.path.dirname
 
 # pylint: disable=unused-argument
 def compute(
@@ -25,8 +27,8 @@ def compute(
 
         os.makedirs(args.target_folder, exist_ok=True)
 
-        checkpoint_filename: Optional[str] = (
-            checkpoint_file or f"{corpus_config.corpus_name}_{POS_CHECKPOINT_FILENAME_POSTFIX}"
+        checkpoint_filename: Optional[str] = checkpoint_file or jj(
+            dirname(args.corpus_filename), f"{args.corpus_tag}{POS_CHECKPOINT_FILENAME_POSTFIX}"
         )
 
         tagged_frame_pipeline: pipeline.CorpusPipeline = corpus_config.get_pipeline(
@@ -56,7 +58,7 @@ def compute(
         bundle.tag = args.tag
         bundle.folder = args.target_folder
         bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
-        bundle.compute_options = compile_compute_options(args, corpus_config, target_filename)
+        bundle.compute_options = compile_compute_options(args, target_filename)
 
         bundle.store()
 
