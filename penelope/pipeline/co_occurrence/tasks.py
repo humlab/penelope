@@ -4,7 +4,7 @@ from typing import Any, Iterable, Optional
 
 import numpy as np
 import scipy
-from penelope.co_occurrence import ContextOpts, WindowsCoOccurrenceVectorizer, tokens_to_windows
+from penelope.co_occurrence import ContextOpts, CoOccurrenceError, WindowsCoOccurrenceVectorizer, tokens_to_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.type_alias import DocumentIndex
 
@@ -85,7 +85,7 @@ class ToCoOccurrenceDTM(ITask):
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
-        self.out_content_type = ContentType.CO_OCCURRENCE_MATRIX_DOCUMENT_BUNDLE
+        self.out_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
 
     def setup(self) -> ITask:
         super().setup()
@@ -133,8 +133,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
     global_threshold_count: int = 1
 
     def __post_init__(self):
-        self.in_content_type = ContentType.CO_OCCURRENCE_MATRIX_DOCUMENT_BUNDLE
-        self.out_content_type = ContentType.CO_OCCURRENCE_MATRIX_CORPUS_BUNDLE
+        self.in_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
+        self.out_content_type = ContentType.CO_OCCURRENCE_DTM_CORPUS
 
     def setup(self) -> ITask:
         super().setup()
@@ -142,6 +142,15 @@ class ToCorpusCoOccurrenceDTM(ITask):
         return self
 
     def process_stream(self) -> VectorizedCorpus:
+
+        if self.document_index is None:
+            raise CoOccurrenceError("expected document index found None")
+
+        if 'n_tokens' not in self.document_index.columns:
+            raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
+
+        if 'n_raw_tokens' not in self.document_index.columns:
+            raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
         # FIXME: Do NOT expand stream to list
         stream: Iterable[CoOccurrenceMatrixBundle] = [payload.content for payload in self.instream]
@@ -158,12 +167,12 @@ class ToCorpusCoOccurrenceDTM(ITask):
         document_window_counts = create_document_token_window_counts_matrix(stream, corpus.data.shape)
 
         yield DocumentPayload(
-            content=tuple(
-                corpus,
-                token2id,
-                document_index,
-                global_window_counts,
-                document_window_counts,
+            content=CoOccurrenceComputeBundle(
+                corpus=corpus,
+                token2id=token2id,
+                document_index=document_index,
+                global_window_counts=global_window_counts,
+                document_window_counts=document_window_counts,
             )
         )
 
