@@ -1,3 +1,5 @@
+import collections
+from dataclasses import dataclass
 from typing import Set
 
 import pandas as pd
@@ -7,9 +9,26 @@ from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
 from ..convert import term_term_matrix_to_co_occurrences
-from ..interface import ContextOpts, CoOccurrenceComputeResult, CoOccurrenceError
+from ..interface import ContextOpts, CoOccurrenceError
 from ..vectorize import WindowsCoOccurrenceVectorizer
 from ..windows import tokens_to_windows
+
+
+@dataclass
+class CoOccurrenceComputeResult:
+
+    co_occurrences: pd.DataFrame = None
+    document_index: DocumentIndex = None
+    token2id: Token2Id = None
+    token_window_counts: collections.Counter = None
+
+    @property
+    def decoded_co_occurrences(self) -> pd.DataFrame:
+        fg = self.token2id.id2token.get
+        return self.co_occurrences.assign(
+            w1=self.co_occurrences.w1_id.apply(fg),
+            w2=self.co_occurrences.w2_id.apply(fg),
+        )
 
 
 def compute_corpus_co_occurrence(
