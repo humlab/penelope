@@ -1,16 +1,12 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, Optional
 
-import pandas as pd
-from penelope.co_occurrence import (
-    ContextOpts,
-    CoOccurrenceComputeResult,
-    CoOccurrenceError,
-    WindowsCoOccurrenceVectorizer,
-    tokens_to_windows,
-)
+import numpy as np
+import scipy
+from penelope.co_occurrence import ContextOpts, WindowsCoOccurrenceVectorizer, tokens_to_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
+from penelope.type_alias import DocumentIndex
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 
@@ -19,9 +15,58 @@ CoOccurrenceMatrixBundle = collections.namedtuple(
 )
 
 
+def TTM_to_coo_DTM(
+    stream: Iterable[CoOccurrenceMatrixBundle], token2id: Token2Id, document_index: DocumentIndex
+) -> VectorizedCorpus:
+
+    """Note: vocab size must be known..."""
+
+    """Compute vocab size: Number of elements in upper triangular TTM, diagonal excluded"""
+    N = len(token2id)  # size of TTM is N x N
+    vocab_size = int(N * (N - 1) / 2)
+
+    """Create COO-DTM matrix"""
+    shape = (len(document_index), vocab_size)
+    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=int)
+
+    """Ingest token-pairs into new vocabulary"""
+    fg = token2id.id2token.get
+    token2id: Token2Id = Token2Id()
+
+    for item in stream:
+
+        TTM: scipy.sparse.spmatrix = item.term_term_matrix
+
+        """Ingest token-pairs into the new COO-vocabulary"""
+        token2id.ingest(f"{fg(a)}/{fg(b)}" for (a, b) in zip(TTM.row, TTM.col))
+
+        """Translate token-pair ids into id in new COO-vocabulary"""
+        token_ids = [token2id[f"{fg(a)}/{fg(b)}"] for (a, b) in zip(TTM.row, TTM.col)]
+
+        matrix[item.document_id, [token_ids]] = TTM.data
+
+    document_index = document_index.set_index('document_id', drop=False)
+
+    corpus = VectorizedCorpus(bag_term_matrix=matrix.tocsr(), token2id=token2id.data, document_index=document_index)
+
+    return corpus
+
+
+def create_document_token_window_counts_matrix(stream: Iterable[CoOccurrenceMatrixBundle], shape: tuple):
+
+    counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
+
+    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=np.uint16)
+
+    for document_id, counts in counters.items():
+        matrix[document_id, list(counts.keys())] = list(counts.values())
+
+    return matrix.tocsr()
+
+
 @dataclass
-class ToCoOccurrenceMatrixBundle(ITask):
-    """Computes a (DOCUMENT-LEVEL) windows co-occurrence data.
+class ToCoOccurrenceDTM(ITask):
+    """Computes (DOCUMENT-LEVEL) windows co-occurrence.
 
     Bundle consists of the following document level information:
 
@@ -78,8 +123,8 @@ class ToCoOccurrenceMatrixBundle(ITask):
 
 
 @dataclass
-class ToCorpusCoOccurrenceMatrixBundle(ITask):
-    """Computes a COMPILED (DOCUMENT-LEVEL) windows co-occurrence data.
+class ToCorpusCoOccurrenceDTM(ITask):
+    """Computes COMPILED (DOCUMENT-LEVEL) windows co-occurrence data.
 
     Iterable[DocumentPayload] => ComputeResult
     """
@@ -98,53 +143,33 @@ class ToCorpusCoOccurrenceMatrixBundle(ITask):
 
     def process_stream(self) -> VectorizedCorpus:
 
-        """Merge individual TTM to a single sparse matrix"""
-
-        """Create a sparse matrix [row=document_id, column=token_id, value=count] from document token counts"""
-
-        # for payload in self.instream:
-        #     item: CoO
-        #     ttm = payload.content.
-
-        total_results: List[pd.DataFrame] = [p.content for p in self.instream]
-
-        co_occurrences: pd.DataFrame = pd.concat(total_results, ignore_index=True)[
-            ['document_id', 'w1_id', 'w2_id', 'value']
-        ]
-
+        # FIXME: Do NOT expand stream to list
+        stream: Iterable[CoOccurrenceMatrixBundle] = [payload.content for payload in self.instream]
         token2id: Token2Id = self.pipeline.payload.token2id
+        document_index: DocumentIndex = self.pipeline.payload.document_index
 
-        # FIXME This is already taken care of in ToDocumentCoOccurrence!
-        # if self.context_opts.ignore_padding:
-        #     pad_id: int = token2id[self.context_opts.pad]
-        #     co_occurrences = co_occurrences[((co_occurrences.w1_id != pad_id) & (co_occurrences.w2_id != pad_id))]
+        corpus: VectorizedCorpus = TTM_to_coo_DTM(
+            stream=stream,
+            token2id=token2id,
+            document_index=document_index,
+        )
 
-        if len(co_occurrences) > 0 and self.global_threshold_count > 1:
-            co_occurrences = co_occurrences[
-                co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= self.global_threshold_count
-            ]
-
-        if self.document_index is None:
-            raise CoOccurrenceError("expected document index found None")
-
-        if 'n_tokens' not in self.document_index.columns:
-            raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
-
-        if 'n_raw_tokens' not in self.document_index.columns:
-            raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
+        global_window_counts: collections.Counter = self.get_token_windows_counts()
+        document_window_counts = create_document_token_window_counts_matrix(stream, corpus.data.shape)
 
         yield DocumentPayload(
-            content=CoOccurrenceComputeResult(
-                co_occurrences=co_occurrences,
-                token2id=token2id,
-                document_index=self.document_index,
-                token_window_counts=self.get_token_windows_counts(),
+            content=tuple(
+                corpus,
+                token2id,
+                document_index,
+                global_window_counts,
+                document_window_counts,
             )
         )
 
     def get_token_windows_counts(self) -> Optional[collections.Counter]:
 
-        task: ToCoOccurrenceMatrixBundle = self.pipeline.find(ToCoOccurrenceMatrixBundle, self.__class__)
+        task: ToCoOccurrenceDTM = self.pipeline.find(ToCoOccurrenceDTM, self.__class__)
         if task is not None:
             return task.vectorizer.global_token_windows_counts
         return task
