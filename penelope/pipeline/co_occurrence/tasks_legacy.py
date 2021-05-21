@@ -31,7 +31,7 @@ class ToDocumentCoOccurrence(ITask):
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATA_FRAME
+        self.out_content_type = ContentType.CO_OCCURRENCE_DATA_FRAME_LEGACY
 
     def setup(self) -> ITask:
         super().setup()
@@ -84,7 +84,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATA_FRAME
+        self.out_content_type = ContentType.CO_OCCURRENCE_DATA_FRAME_LEGACY
 
     def setup(self) -> ITask:
         super().setup()
