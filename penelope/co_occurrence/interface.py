@@ -1,8 +1,10 @@
+import collections
 from dataclasses import dataclass, field
 from typing import List, Set, Union
 
 import pandas as pd
-from penelope.corpus import DocumentIndex, Token2Id
+import scipy
+from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.utility import getLogger
 from prometheus_client import Counter
 
@@ -22,6 +24,15 @@ class CoOccurrenceError(ValueError):
 
 class PartitionKeyNotUniqueKey(ValueError):
     ...
+
+
+@dataclass
+class CoOccurrenceComputeBundle:
+    corpus: VectorizedCorpus
+    token2id: Token2Id
+    document_index: DocumentIndex
+    global_window_counts: collections.Counter
+    document_window_counts: scipy.sparse.spmatrix
 
 
 @dataclass
