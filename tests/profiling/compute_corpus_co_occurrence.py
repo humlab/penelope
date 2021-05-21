@@ -1,6 +1,6 @@
 import os
 
-from penelope.co_occurrence import ContextOpts, store_co_occurrences, Bundle
+from penelope.co_occurrence import Bundle, ContextOpts, store_co_occurrences
 from penelope.corpus import DocumentIndexHelper, ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.pipeline.sparv.pipelines import to_tagged_frame_pipeline

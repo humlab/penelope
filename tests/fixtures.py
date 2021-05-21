@@ -4,7 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.co_occurrence import ContextOpts, term_term_matrix_to_co_occurrences, Bundle
+from penelope.co_occurrence import Bundle, ContextOpts, term_term_matrix_to_co_occurrences
 from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
 from penelope.corpus import (
     ITokenizedCorpus,

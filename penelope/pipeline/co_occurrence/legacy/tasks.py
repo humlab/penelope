@@ -120,7 +120,9 @@ class ToCorpusDocumentCoOccurrence(ITask):
         if 'n_raw_tokens' not in self.document_index.columns:
             raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
-        corpus = VectorizedCorpus.from_co_occurrences(co_occurrences=co_occurrences, token2id=token2id, document_index=self.document_index)
+        corpus = VectorizedCorpus.from_co_occurrences(
+            co_occurrences=co_occurrences, token2id=token2id, document_index=self.document_index
+        )
 
         yield DocumentPayload(
             content=Bundle(

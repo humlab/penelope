@@ -10,9 +10,9 @@ from penelope.utility import strip_extensions
 
 from .convert import term_term_matrix_to_co_occurrences
 from .interface import ContextOpts, CoOccurrenceError
+from .persistence import Bundle
 from .vectorize import WindowsCoOccurrenceVectorizer
 from .windows import tokens_to_windows
-from .persistence import Bundle
 
 
 def compute_non_partitioned_corpus_co_occurrence(

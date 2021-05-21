@@ -1,5 +1,4 @@
 import os
-from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
@@ -12,6 +11,7 @@ from penelope.co_occurrence import (
 )
 from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
 from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
+from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import (
     SIMPLE_CORPUS_ABCDE_5DOCS,
