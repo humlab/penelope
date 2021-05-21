@@ -74,7 +74,7 @@ def compute(
         raise
 
 
-def compile_compute_options(args: interface.ComputeOpts, target_filename: str="") -> dict:
+def compile_compute_options(args: interface.ComputeOpts, target_filename: str = "") -> dict:
     return co_occurrence.create_options_bundle(
         reader_opts=args.text_reader_opts,
         transform_opts=args.transform_opts,

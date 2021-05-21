@@ -4,12 +4,12 @@ import penelope.co_occurrence as co_occurrence
 import penelope.workflows as workflows
 import pytest
 from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
-from penelope.workflows.co_occurrence.compute import compile_compute_options
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import PoS_Tag_Scheme, PoS_Tag_Schemes, PropertyValueMaskingOpts, pos_tags_to_str
+from penelope.workflows.co_occurrence.compute import compile_compute_options
 
 from ..fixtures import FakeComputeOptsSpacyCSV
 
@@ -108,7 +108,7 @@ def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
         window_counts_document=value.window_counts_document,
         lazy_co_occurrences=value.corpus.to_co_occurrences(value.token2id),
         compute_options=compile_compute_options(
-            args, config.text_reader_opts, co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag)
+            args, co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag)
         ),
     )
 

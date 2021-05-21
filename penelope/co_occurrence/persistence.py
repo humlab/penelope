@@ -343,9 +343,7 @@ def create_options_bundle(
     return options
 
 
-def compile_compute_options(
-    args: Any, text_reader_opts: TextReaderOpts, target_filename: str
-) -> dict:
+def compile_compute_options(args: Any, text_reader_opts: TextReaderOpts, target_filename: str) -> dict:
     return create_options_bundle(
         reader_opts=text_reader_opts,
         transform_opts=args.transform_opts,
