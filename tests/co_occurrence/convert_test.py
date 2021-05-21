@@ -8,6 +8,7 @@ from penelope.co_occurrence import (
     term_term_matrix_to_co_occurrences,
     truncate_by_global_threshold,
 )
+from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
 from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import (
@@ -123,9 +124,7 @@ def test_co_occurrences_to_co_occurrence_corpus():
 
     token2id: Token2Id = Token2Id(corpus.token2id)
 
-    value: co_occurrence.CoOccurrenceComputeResult = very_simple_corpus_co_occurrences(
-        corpus, context_opts=context_opts
-    )
+    value: CoOccurrenceComputeResult = very_simple_corpus_co_occurrences(corpus, context_opts=context_opts)
 
     corpus = co_occurrences_to_co_occurrence_corpus(
         co_occurrences=value.co_occurrences,

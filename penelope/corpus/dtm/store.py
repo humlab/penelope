@@ -52,7 +52,7 @@ class StoreMixIn:
         folder : str, optional
             Target folder, by default './output'
         compressed : bool, optional
-            Specifies if matrix is store as .npz or .npy, by default .npz
+            Specifies if matrix is stored as .npz or .npy, by default .npz
 
         """
         tag = tag or time.strftime("%Y%m%d_%H%M%S")

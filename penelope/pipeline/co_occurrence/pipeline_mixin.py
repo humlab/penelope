@@ -44,7 +44,7 @@ class PipelineShortcutMixIn:
             )
         )
 
-    def to_corpus_document_co_occurrence(
+    def to_corpus_co_occurrence(
         self: pipelines.CorpusPipeline,
         *,
         context_opts: ContextOpts = None,

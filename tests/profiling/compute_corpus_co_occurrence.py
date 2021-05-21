@@ -1,6 +1,7 @@
 import os
 
-from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult, store_co_occurrences
+from penelope.co_occurrence import ContextOpts, store_co_occurrences
+from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
 from penelope.corpus import DocumentIndexHelper, ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.pipeline.sparv.pipelines import to_tagged_frame_pipeline
@@ -50,7 +51,7 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
         # .tokens_transform(transform_opts=transform_opts)
         .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
         # .tqdm()
-        .to_corpus_document_co_occurrence(context_opts=context_opts, global_threshold_count=1)
+        .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
     )
 
     value: CoOccurrenceComputeResult = pipeline.value()

@@ -4,10 +4,8 @@ from typing import Optional
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from loguru import logger
-
-from penelope.co_occurrence import co_occurrences_to_co_occurrence_corpus
-from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface
+from penelope.type_alias import CoOccurrenceDataFrame
 
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
@@ -51,26 +49,26 @@ def compute(
             )
         )
 
-        value: co_occurrence.CoOccurrenceComputeResult = p.value()
+        value: co_occurrence.CoOccurrenceComputeBundle = p.value()
 
         if len(value.co_occurrences) == 0:
             raise co_occurrence.ZeroComputeError()
 
-        corpus: VectorizedCorpus = co_occurrences_to_co_occurrence_corpus(
-            co_occurrences=value.co_occurrences,
+        co_occurrences: co_occurrence.CoOccurrenceDataFrame = co_occurrence.co_occurrence_corpus_to_co_occurrences(
+            term_term_matrix=corpus.data,
             document_index=value.document_index,
             # legacy: partition_key=args.context_opts.partition_keys[0],
             token2id=value.token2id,
         )
 
         bundle = co_occurrence.Bundle(
-            corpus=corpus,
             tag=args.corpus_tag,
             folder=args.target_folder,
-            co_occurrences=value.co_occurrences,
-            document_index=value.document_index,
+            corpus=value.corpus,
             token2id=value.token2id,
-            token_window_counts=value.token_window_counts,
+            document_index=value.document_index,
+            window_counts_global=value.token_window_counts,
+            co_occurrences=value.co_occurrences,
             compute_options=co_occurrence.create_options_bundle(
                 reader_opts=corpus_config.text_reader_opts,
                 transform_opts=args.transform_opts,

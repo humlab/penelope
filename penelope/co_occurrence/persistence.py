@@ -6,7 +6,9 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
+import numpy as np
 import pandas as pd
+import scipy
 from loguru import logger
 from penelope.corpus import (
     DocumentIndex,
@@ -29,6 +31,7 @@ FILENAME_PATTERN = f'*{FILENAME_POSTFIX}'
 DOCUMENT_INDEX_POSTFIX = '_co-occurrence.document_index.zip'
 DICTIONARY_POSTFIX = '_co-occurrence.dictionary.zip'
 TOKEN_WINDOW_COUNTS_POSTFIX = '_token_windows_counts.pickle'
+DOCUMENT_TOKEN_WINDOW_COUNTS_POSTFIX = '_document_token_windows_counts.npz'
 
 
 def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[str, str]:
@@ -48,13 +51,16 @@ class Bundle:
     folder: str = None
     tag: str = None
 
-    co_occurrences: pd.DataFrame = None
+    corpus: VectorizedCorpus = None
     document_index: DocumentIndex = None
     token2id: Token2Id = None
 
-    corpus: VectorizedCorpus = None
+    """Is this realy needed? Sum of matrix axis=0?"""
+    window_counts_global: scipy.sparse.spmatrix = None
+    window_counts_document: scipy.sparse.spmatrix = None
+
     compute_options: dict = None
-    token_window_counts: Counter = None
+    co_occurrences: pd.DataFrame = None
 
     def _get_filename(self, postfix: str) -> str:
         return f"{self.tag}{postfix}"
@@ -82,6 +88,10 @@ class Bundle:
     def token_window_counts_filename(self) -> str:
         return self._get_path(postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
 
+    @property
+    def document_token_window_counts_filename(self) -> str:
+        return self._get_path(postfix=DOCUMENT_TOKEN_WINDOW_COUNTS_POSTFIX)
+
     def store(self, *, folder: str = None, tag: str = None) -> "Bundle":
 
         if tag and folder:
@@ -90,7 +100,12 @@ class Bundle:
         if not (self.tag and self.folder):
             raise CoOccurrenceError("store failed (folder and/or tag not specfied)")
 
-        store_co_occurrences(self.co_occurrence_filename, self.co_occurrences)
+        if self.corpus is None:
+            raise CoOccurrenceError("store failed (corpus cannot be None)")
+
+        if self.token2id is None:
+            raise CoOccurrenceError("store failed (source token2id cannot be None)")
+
         store_corpus(corpus=self.corpus, folder=self.folder, tag=self.tag, options=self.compute_options)
 
         self.token2id.store(self.dictionary_filename)
@@ -101,7 +116,15 @@ class Bundle:
         with open(self.options_filename, 'w') as json_file:
             json.dump(self.compute_options, json_file, indent=4)
 
-        store_token_window_counts(self.token_window_counts, self.token_window_counts_filename)
+        store_token_window_counts(self.window_counts_global, self.token_window_counts_filename)
+
+        if self.co_occurrences is not None:
+            store_co_occurrences(self.co_occurrence_filename, self.co_occurrences)
+
+        if self.window_counts_document is not None:
+
+            if not scipy.sparse.issparse(self.window_counts_document):
+                raise CoOccurrenceError("store failed (corpus cannot be None)")
 
         return self
 
@@ -116,16 +139,18 @@ class Bundle:
         else:
             raise CoOccurrenceError("load: filename and folder/tag cannot both be empty")
 
-        co_occurrences: CoOccurrenceDataFrame = load_co_occurrences(filename)
-        document_index: DocumentIndex = load_document_index(folder, tag)
         corpus: VectorizedCorpus = load_corpus(folder, tag)
+        token2id: Token2Id = load_dictionary(folder, tag)
+        document_index: DocumentIndex = load_document_index(folder, tag)
         corpus_options: dict = VectorizedCorpus.load_options(folder=folder, tag=tag)
         options: dict = load_options(filename) or corpus_options
-        token2id: Token2Id = load_dictionary(folder, tag)
-        token_window_counts: Counter = load_token_window_counts(
+        window_counts_global: Counter = load_token_window_counts(
             to_filename(folder=folder, tag=tag, postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
         )
-
+        window_counts_document: scipy.sparse.spmatrix = load_document_token_window_counts(
+            to_filename(folder=folder, tag=tag, postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
+        )
+        co_occurrences: CoOccurrenceDataFrame = load_co_occurrences(filename)
         if token2id is None:
             raise CoOccurrenceError("Dictionary is missing - please reprocess setup!")
 
@@ -136,15 +161,36 @@ class Bundle:
         bundle = Bundle(
             folder=folder,
             tag=tag,
-            co_occurrences=co_occurrences,
+            corpus=corpus,
             document_index=document_index,
             token2id=token2id,
             compute_options=options,
-            corpus=corpus,
-            token_window_counts=token_window_counts,
+            co_occurrences=co_occurrences,
+            window_counts_global=window_counts_global,
+            window_counts_document=window_counts_document,
         )
 
         return bundle
+
+
+def store_document_token_window_counts(matrix: scipy.sparse.spmatrix, filename: str, compressed: bool = True) -> None:
+
+    if compressed:
+        assert scipy.sparse.issparse(matrix)
+        scipy.sparse.save_npz(replace_extension(filename, '.npz'), matrix, compressed=True)
+    else:
+        np.save(replace_extension(filename, '.npy'), matrix, allow_pickle=True)
+
+
+def load_document_token_window_counts(filename: str) -> scipy.sparse.spmatrix:
+
+    if os.path.isfile(replace_extension(filename, '.npz')):
+        return scipy.sparse.load_npz(replace_extension(filename, '.npz'))
+
+    if os.path.isfile(replace_extension(filename, '.npy')):
+        return np.load(replace_extension(filename, '.npy'), allow_pickle=True).item()
+
+    return None
 
 
 def store_token_window_counts(counts: Counter, filename: str):

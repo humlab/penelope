@@ -2,7 +2,7 @@ import os
 
 import pytest
 from penelope.co_occurrence import ContextOpts
-from penelope.co_occurrence.legacy.compute import compute_corpus_co_occurrence, CoOccurrenceComputeResult
+from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult, compute_corpus_co_occurrence
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from penelope.utility import dataframe_to_tuples
 

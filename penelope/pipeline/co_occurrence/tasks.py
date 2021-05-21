@@ -4,7 +4,13 @@ from typing import Any, Iterable, Optional
 
 import numpy as np
 import scipy
-from penelope.co_occurrence import ContextOpts, CoOccurrenceError, WindowsCoOccurrenceVectorizer, tokens_to_windows
+from penelope.co_occurrence import (
+    ContextOpts,
+    CoOccurrenceComputeBundle,
+    CoOccurrenceError,
+    WindowsCoOccurrenceVectorizer,
+    tokens_to_windows,
+)
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.type_alias import DocumentIndex
 
@@ -163,16 +169,16 @@ class ToCorpusCoOccurrenceDTM(ITask):
             document_index=document_index,
         )
 
-        global_window_counts: collections.Counter = self.get_token_windows_counts()
-        document_window_counts = create_document_token_window_counts_matrix(stream, corpus.data.shape)
+        window_counts_global: collections.Counter = self.get_token_windows_counts()
+        window_counts_document = create_document_token_window_counts_matrix(stream, corpus.data.shape)
 
         yield DocumentPayload(
             content=CoOccurrenceComputeBundle(
                 corpus=corpus,
                 token2id=token2id,
                 document_index=document_index,
-                global_window_counts=global_window_counts,
-                document_window_counts=document_window_counts,
+                window_counts_global=window_counts_global,
+                window_counts_document=window_counts_document,
             )
         )
 
@@ -180,7 +186,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         task: ToCoOccurrenceDTM = self.pipeline.find(ToCoOccurrenceDTM, self.__class__)
         if task is not None:
-            return task.vectorizer.global_token_windows_counts
+            return task.vectorizer.windows_counts_global
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

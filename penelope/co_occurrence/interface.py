@@ -2,11 +2,9 @@ import collections
 from dataclasses import dataclass, field
 from typing import List, Set, Union
 
-import pandas as pd
 import scipy
 from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.utility import getLogger
-from prometheus_client import Counter
 
 logger = getLogger('penelope')
 
@@ -31,8 +29,8 @@ class CoOccurrenceComputeBundle:
     corpus: VectorizedCorpus
     token2id: Token2Id
     document_index: DocumentIndex
-    global_window_counts: collections.Counter
-    document_window_counts: scipy.sparse.spmatrix
+    window_counts_global: collections.Counter
+    window_counts_document: scipy.sparse.spmatrix
 
 
 @dataclass

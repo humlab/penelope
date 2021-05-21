@@ -1,9 +1,5 @@
-from penelope.co_occurrence import (
-    Bundle,
-    ContextOpts,
-    co_occurrences_to_co_occurrence_corpus,
-)
-from penelope.co_occurrence.legacy.compute import compute_corpus_co_occurrence, CoOccurrenceComputeResult
+from penelope.co_occurrence import Bundle, ContextOpts, co_occurrences_to_co_occurrence_corpus
+from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult, compute_corpus_co_occurrence
 from penelope.corpus import ITokenizedCorpus, Token2Id
 
 
@@ -30,12 +26,13 @@ def create_co_occurrence_bundle(
     bundle: Bundle = Bundle(
         folder=folder,
         tag=tag,
-        co_occurrences=value.co_occurrences,
-        document_index=value.document_index,
-        token_window_counts=value.token_window_counts,
-        token2id=value.token2id,
-        compute_options={},
         corpus=corpus,
+        token2id=value.token2id,
+        document_index=value.document_index,
+        window_counts_global=value.token_window_counts,
+        window_counts_document=value,
+        compute_options={},
+        co_occurrences=value.co_occurrences,
     )
 
     return bundle

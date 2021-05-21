@@ -12,7 +12,6 @@ from penelope.co_occurrence import (
     tokens_to_windows,
 )
 from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
-
 from penelope.corpus import Token2Id, VectorizedCorpus
 
 from ...interfaces import ContentType, DocumentPayload, ITask
@@ -134,7 +133,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
         task: ToDocumentCoOccurrence = self.pipeline.find(ToDocumentCoOccurrence, self.__class__)
         if task is not None:
-            return task.vectorizer.global_token_windows_counts
+            return task.vectorizer.windows_counts_global
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

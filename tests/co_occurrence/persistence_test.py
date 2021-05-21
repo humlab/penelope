@@ -8,7 +8,7 @@ from penelope.co_occurrence.persistence import Bundle
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from tests.utils import OUTPUT_FOLDER
 
-from ._utils import create_co_occurrence_bundle
+from .utils import create_co_occurrence_bundle
 
 jj = os.path.join
 
