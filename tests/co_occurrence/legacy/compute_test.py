@@ -1,8 +1,8 @@
 import os
 
 import pytest
-from penelope.co_occurrence import ContextOpts, CoOccurrenceComputeResult
-from penelope.co_occurrence.archive.compute import compute_corpus_co_occurrence
+from penelope.co_occurrence import ContextOpts
+from penelope.co_occurrence.legacy.compute import compute_corpus_co_occurrence, CoOccurrenceComputeResult
 from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts
 from penelope.utility import dataframe_to_tuples
 

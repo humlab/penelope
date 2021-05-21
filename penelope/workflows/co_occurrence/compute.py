@@ -5,7 +5,6 @@ import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from loguru import logger
 
-# legacy: from penelope.co_occurrence.partition_by_key_legacy import co_occurrences_to_co_occurrence_corpus
 from penelope.co_occurrence import co_occurrences_to_co_occurrence_corpus
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import interface

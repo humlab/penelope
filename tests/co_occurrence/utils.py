@@ -3,7 +3,7 @@ from penelope.co_occurrence import (
     ContextOpts,
     co_occurrences_to_co_occurrence_corpus,
 )
-from penelope.co_occurrence.archive.compute import compute_corpus_co_occurrence, CoOccurrenceComputeResult
+from penelope.co_occurrence.legacy.compute import compute_corpus_co_occurrence, CoOccurrenceComputeResult
 from penelope.corpus import ITokenizedCorpus, Token2Id
 
 
