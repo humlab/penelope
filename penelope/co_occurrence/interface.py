@@ -1,9 +1,6 @@
-import collections
 from dataclasses import dataclass, field
 from typing import List, Set, Union
 
-import scipy
-from penelope.corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from penelope.utility import getLogger
 
 logger = getLogger('penelope')

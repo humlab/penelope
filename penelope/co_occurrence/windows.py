@@ -3,8 +3,7 @@ import itertools
 from collections import Counter, defaultdict
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Tuple
 
-from penelope.corpus import ITokenizedCorpus, metadata_to_document_index
-from penelope.corpus.document_index import DocumentIndex
+from penelope.corpus import DocumentIndex, ITokenizedCorpus, metadata_to_document_index
 from penelope.type_alias import FilenameTokensTuples
 
 from .interface import ContextOpts, Token

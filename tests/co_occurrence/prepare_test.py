@@ -2,14 +2,14 @@ import os
 
 from penelope.co_occurrence import CoOccurrenceHelper
 
-from .utils import create_simple_helper
+from . import utils as test_utils
 
 jj = os.path.join
 
 
 def test_co_occurrence_helper_reset():
 
-    helper: CoOccurrenceHelper = create_simple_helper()
+    helper: CoOccurrenceHelper = test_utils.create_simple_helper()
 
     helper.reset()
 
@@ -18,7 +18,7 @@ def test_co_occurrence_helper_reset():
 
 def test_co_occurrence_groupby():
 
-    helper: CoOccurrenceHelper = create_simple_helper()
+    helper: CoOccurrenceHelper = test_utils.create_simple_helper()
 
     helper.reset()
 

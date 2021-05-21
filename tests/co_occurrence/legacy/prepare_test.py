@@ -5,7 +5,7 @@ from penelope.co_occurrence import Bundle, CoOccurrenceHelper
 
 from ...fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from ...utils import OUTPUT_FOLDER
-from .utils import create_co_occurrence_bundle
+from . import utils as test_utils
 
 jj = os.path.join
 
@@ -17,7 +17,7 @@ def create_simple_bundle() -> Bundle:
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
         concept={}, ignore_concept=False, context_width=2
     )
-    bundle: Bundle = create_co_occurrence_bundle(
+    bundle: Bundle = test_utils.create_co_occurrence_bundle(
         corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
     )
     return bundle

@@ -8,7 +8,7 @@ from penelope.co_occurrence.persistence import Bundle
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from tests.utils import OUTPUT_FOLDER
 
-from .utils import create_co_occurrence_bundle
+from . import utils as test_utils
 
 jj = os.path.join
 
@@ -117,8 +117,11 @@ def test_compute_and_store_bundle():
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
         concept={'g'}, ignore_concept=False, context_width=2
     )
-    bundle: Bundle = create_co_occurrence_bundle(
-        corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
+    bundle: Bundle = test_utils.create_co_occurrence_bundle(
+        corpus=simple_corpus,
+        context_opts=context_opts,
+        folder=folder,
+        tag=tag,
     )
 
     bundle.store()
