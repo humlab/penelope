@@ -102,44 +102,58 @@ def co_occurrences_to_co_occurrence_corpus(
     document_index: DocumentIndex,
     token2id: Token2Id,
 ) -> VectorizedCorpus:
-    """Creates a DTM corpus from a co-occurrence result set that was partitioned by `partition_column`."""
-    if not isinstance(token2id, Token2Id):
-        token2id = Token2Id(data=token2id)
+    """Creates a co-occurrence DTM corpus from a co-occurrence data frame."""
+    # if not isinstance(token2id, Token2Id):
+    #     token2id = Token2Id(data=token2id)
 
-    """Create distinct word-pair tokens and assign a token_id"""
-    to_token = token2id.id2token.get
-    token_pairs: pd.DataFrame = co_occurrences[["w1_id", "w2_id"]].drop_duplicates().reset_index(drop=True)
-    token_pairs["token_id"] = token_pairs.index
-    token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
+    # """Create distinct word-pair tokens and assign a token_id"""
+    # to_token = token2id.id2token.get
+    # token_pairs: pd.DataFrame = co_occurrences[["w1_id", "w2_id"]].drop_duplicates().reset_index(drop=True)
+    # token_pairs["token_id"] = token_pairs.index
+    # token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
 
-    """Create a new vocabulary"""
-    vocabulary = token_pairs.set_index("token").token_id.to_dict()
+    # """Create a new vocabulary"""
+    # vocabulary = token_pairs.set_index("token").token_id.to_dict()
 
-    """Merge and assign token_id to co-occurring pairs"""
-    token_ids: pd.Series = co_occurrences.merge(
-        token_pairs.set_index(['w1_id', 'w2_id']),
-        how='left',
-        left_on=['w1_id', 'w2_id'],
-        right_index=True,
-    ).token_id
+    # """Merge and assign token_id to co-occurring pairs"""
+    # token_ids: pd.Series = co_occurrences.merge(
+    #     token_pairs.set_index(['w1_id', 'w2_id']),
+    #     how='left',
+    #     left_on=['w1_id', 'w2_id'],
+    #     right_index=True,
+    # ).token_id
 
-    """Set document_id as unique key for DTM document index """
-    document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
+    # """Set document_id as unique key for DTM document index """
+    # document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
 
-    """Make certain that the matrix gets right shape (to avoid offset errors)"""
-    shape = (len(document_index), len(vocabulary))
-    matrix = scipy.sparse.coo_matrix(
-        (
-            co_occurrences.value.astype(np.uint16),
-            (
-                co_occurrences.document_id.astype(np.uint32),
-                token_ids.astype(np.uint32),
-            ),
-        ),
-        shape=shape,
+    # """Make certain that the matrix gets right shape (to avoid offset errors)"""
+    # shape = (len(document_index), len(vocabulary))
+    # matrix = scipy.sparse.coo_matrix(
+    #     (
+    #         co_occurrences.value.astype(np.uint16),
+    #         (
+    #             co_occurrences.document_id.astype(np.uint32),
+    #             token_ids.astype(np.uint32),
+    #         ),
+    #     ),
+    #     shape=shape,
+    # )
+
+    # """Create the final corpus"""
+    # corpus = VectorizedCorpus(matrix, token2id=vocabulary, document_index=document_index)
+
+    corpus = VectorizedCorpus.from_co_occurrences(
+        co_occurrences=co_occurrences,
+        document_index=document_index,
+        token2id=token2id,
     )
-
-    """Create the final corpus"""
-    corpus = VectorizedCorpus(matrix, token2id=vocabulary, document_index=document_index)
-
     return corpus
+
+
+def co_occurrence_corpus_to_co_occurrence(
+    *,
+    coo_corpus: VectorizedCorpus,
+    token2id: Token2Id,
+) -> CoOccurrenceDataFrame:
+    """Creates a co-occurrence data frame from a co-occurrence DTM corpus."""
+    return coo_corpus.to_co_occurrences(token2id)
