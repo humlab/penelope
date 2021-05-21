@@ -8,7 +8,7 @@ def test_to_trends_data():
 
     filename = co_occurrence.to_filename(folder=folder, tag=tag)
 
-    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_corpus=False)
+    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_frame=False)
 
     trends_data = main_gui.to_trends_data(bundle).update()
 

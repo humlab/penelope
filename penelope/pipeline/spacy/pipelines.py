@@ -2,22 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from penelope.co_occurrence import ContextOpts
-from penelope.corpus.readers import TextTransformOpts
-from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
+from penelope.utility import PropertyValueMaskingOpts, path_add_suffix
 
 from .. import pipelines
 from ..co_occurrence.pipelines import wildcard_to_partition_by_document_co_occurrence_pipeline
 from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
 if TYPE_CHECKING:
+    from penelope.co_occurrence import ContextOpts
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
     from penelope.corpus.readers import ExtractTaggedTokensOpts
 
     from ..config import CorpusConfig
-
-
-logger = get_logger()
+    from ..pipelines import CorpusPipeline
 # pylint: disable=too-many-locals
 
 
@@ -29,7 +26,7 @@ def to_tagged_frame_pipeline(
     corpus_config: CorpusConfig,
     corpus_filename: str = None,
     checkpoint_filename: str = None,
-) -> pipelines.CorpusPipeline:
+) -> CorpusPipeline:
     try:
 
         _checkpoint_filename: str = checkpoint_filename or path_add_suffix(
@@ -41,7 +38,7 @@ def to_tagged_frame_pipeline(
             .set_spacy_model(corpus_config.pipeline_payload.memory_store['spacy_model'])
             .load_text(
                 reader_opts=corpus_config.text_reader_opts,
-                transform_opts=TextTransformOpts(),
+                transform_opts=None,
                 source=corpus_filename,
             )
             .text_to_spacy()

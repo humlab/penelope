@@ -1,8 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
 from penelope.utility import PropertyValueMaskingOpts
 
 from .. import pipelines
+
+if TYPE_CHECKING:
+    from ..pipelines import CorpusPipeline
 
 
 def wildcard_to_partition_by_document_co_occurrence_pipeline(
@@ -13,7 +20,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     **kwargs,  # pylint: disable=unused-argument
-) -> pipelines.CorpusPipeline:
+) -> CorpusPipeline:
     try:
         pipeline: pipelines.CorpusPipeline = (
             pipelines.wildcard()

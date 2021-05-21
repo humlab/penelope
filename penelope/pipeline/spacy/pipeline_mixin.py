@@ -5,13 +5,12 @@ from typing import TYPE_CHECKING, List, Union
 from . import tasks
 
 if TYPE_CHECKING:
-    # from ..pipeline import T_self
     from spacy.language import Language
 
     from ..pipelines import CorpusPipeline
 
 
-class SpacyPipelineShortcutMixIn:
+class PipelineShortcutMixIn:
     def text_to_spacy(self: CorpusPipeline) -> CorpusPipeline:
         return self.add(tasks.ToSpacyDoc())
 

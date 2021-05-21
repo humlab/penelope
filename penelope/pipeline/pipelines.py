@@ -1,14 +1,24 @@
-from .co_occurrence import pipeline_mixin as co_occurrence
+import glob
+import importlib
+from os.path import basename, dirname, join
+
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
-from .spacy import pipeline_mixin as spacy
 from .tasks import WildcardTask
 
 
+def register_pipeline_mixins():
+    module_names = glob.glob(join(dirname(__file__), "*/pipeline_mixin*.py"))
+    modules = [
+        importlib.import_module(f"penelope.pipeline.{basename(dirname(f))}.pipeline_mixin") for f in module_names
+    ]
+    classes = [getattr(module, "PipelineShortcutMixIn") for module in modules]
+    return classes
+
+
 class CorpusPipeline(
+    *register_pipeline_mixins(),
     PipelineShortcutMixIn,
-    spacy.SpacyPipelineShortcutMixIn,
-    co_occurrence.PipelineShortcutMixIn,
     CorpusPipelineBase["CorpusPipeline"],
 ):
     def __add__(self, other: "CorpusPipeline") -> "CorpusPipeline":

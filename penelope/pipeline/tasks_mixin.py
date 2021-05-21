@@ -4,17 +4,16 @@ from typing import List, Optional
 
 from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
 
-from . import convert
-from .interfaces import DocumentPayload, ITask
+from . import convert, interfaces
 
 
 class DefaultResolveMixIn:
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+    def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         return payload
 
 
 class CountTokensMixIn:
-    def register_token_counts(self, payload: DocumentPayload) -> DocumentPayload:
+    def register_token_counts(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         """Computes token counts from the tagged frame, and adds them to the document index"""
         try:
             token_counts = convert.tagged_frame_to_token_counts(
@@ -35,7 +34,7 @@ class TransformTokensMixIn:
     transform_opts: Optional[TokensTransformOpts] = None
     transformer: Optional[TokensTransformer] = None
 
-    def setup_transform(self) -> ITask:
+    def setup_transform(self) -> interfaces.ITask:
 
         if self.transform_opts is None:
             return self
@@ -61,7 +60,7 @@ class BuildToken2IdMixIn:
     build_dictionary: bool = False
     token2id: Token2Id = field(init=False, default=None)
 
-    def setup_token2id(self: ITask) -> ITask:
+    def setup_token2id(self: interfaces.ITask) -> interfaces.ITask:
 
         if self.build_dictionary:
             self.token2id = Token2Id()
