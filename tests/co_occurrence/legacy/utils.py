@@ -32,7 +32,7 @@ def create_co_occurrence_bundle(
         window_counts_global=value.token_window_counts,
         window_counts_document=value,
         compute_options={},
-        co_occurrences=value.co_occurrences,
+        lazy_co_occurrences=value.co_occurrences,
     )
 
     return bundle

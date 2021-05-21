@@ -25,15 +25,6 @@ class PartitionKeyNotUniqueKey(ValueError):
 
 
 @dataclass
-class CoOccurrenceComputeBundle:
-    corpus: VectorizedCorpus
-    token2id: Token2Id
-    document_index: DocumentIndex
-    window_counts_global: collections.Counter
-    window_counts_document: scipy.sparse.spmatrix
-
-
-@dataclass
 class ContextOpts:
 
     context_width: int = 2

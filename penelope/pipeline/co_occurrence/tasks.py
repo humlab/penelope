@@ -5,8 +5,8 @@ from typing import Any, Iterable, Optional
 import numpy as np
 import scipy
 from penelope.co_occurrence import (
+    Bundle,
     ContextOpts,
-    CoOccurrenceComputeBundle,
     CoOccurrenceError,
     WindowsCoOccurrenceVectorizer,
     tokens_to_windows,
@@ -173,7 +173,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         window_counts_document = create_document_token_window_counts_matrix(stream, corpus.data.shape)
 
         yield DocumentPayload(
-            content=CoOccurrenceComputeBundle(
+            content=Bundle(
                 corpus=corpus,
                 token2id=token2id,
                 document_index=document_index,

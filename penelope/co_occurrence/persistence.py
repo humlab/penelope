@@ -4,7 +4,7 @@ import os
 import pickle
 from collections import Counter
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -48,19 +48,28 @@ def to_filename(*, folder: str, tag: str, postfix: str = FILENAME_POSTFIX) -> st
 @dataclass
 class Bundle:
 
+    corpus: VectorizedCorpus = None
+    token2id: Token2Id = None
+    document_index: DocumentIndex = None
+    window_counts_global: scipy.sparse.spmatrix = None  # Is this realy needed? Sum of matrix axis=0?
+    window_counts_document: scipy.sparse.spmatrix = None
+
     folder: str = None
     tag: str = None
 
-    corpus: VectorizedCorpus = None
-    document_index: DocumentIndex = None
-    token2id: Token2Id = None
-
-    """Is this realy needed? Sum of matrix axis=0?"""
-    window_counts_global: scipy.sparse.spmatrix = None
-    window_counts_document: scipy.sparse.spmatrix = None
-
     compute_options: dict = None
-    co_occurrences: pd.DataFrame = None
+    lazy_co_occurrences: pd.DataFrame = None
+
+    @property
+    def co_occurrences(self) -> CoOccurrenceDataFrame:
+        if self.lazy_co_occurrences is None:
+            logger.info("Generating co-occurrences data frame....")
+            self.lazy_co_occurrences = self.corpus.to_co_occurrences()
+        return self.lazy_co_occurrences
+
+    @co_occurrences.setter
+    def co_occurrences(self, value: pd.DataFrame):
+        self.lazy_co_occurrences = value
 
     def _get_filename(self, postfix: str) -> str:
         return f"{self.tag}{postfix}"
@@ -118,8 +127,8 @@ class Bundle:
 
         store_token_window_counts(self.window_counts_global, self.token_window_counts_filename)
 
-        if self.co_occurrences is not None:
-            store_co_occurrences(self.co_occurrence_filename, self.co_occurrences)
+        if self.lazy_co_occurrences is not None:
+            store_co_occurrences(self.co_occurrence_filename, self.lazy_co_occurrences)
 
         if self.window_counts_document is not None:
 
@@ -129,7 +138,7 @@ class Bundle:
         return self
 
     @staticmethod
-    def load(filename: str = None, folder: str = None, tag: str = None, compute_corpus: bool = True) -> "Bundle":
+    def load(filename: str = None, folder: str = None, tag: str = None, compute_frame: bool = True) -> "Bundle":
         """Loads bundle identified by given filename i.e. `folder`/`tag`{FILENAME_POSTFIX}"""
 
         if filename:
@@ -150,13 +159,17 @@ class Bundle:
         window_counts_document: scipy.sparse.spmatrix = load_document_token_window_counts(
             to_filename(folder=folder, tag=tag, postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
         )
-        co_occurrences: CoOccurrenceDataFrame = load_co_occurrences(filename)
+
         if token2id is None:
             raise CoOccurrenceError("Dictionary is missing - please reprocess setup!")
 
-        if corpus is None and compute_corpus:
-            raise ValueError("Compute of corpus during load is disabled")
-            # corpus = to_vectorized_corpus(co_occurrences=co_occurrences, document_index=document_index, token2id=token2id,)
+        if corpus is None:
+            raise ValueError("Co-occurrence corpus is missing")
+
+        co_occurrences: CoOccurrenceDataFrame = load_co_occurrences(filename)
+
+        if co_occurrences is None and compute_frame:
+            co_occurrences = corpus.to_co_occurrences()
 
         bundle = Bundle(
             folder=folder,
@@ -165,9 +178,9 @@ class Bundle:
             document_index=document_index,
             token2id=token2id,
             compute_options=options,
-            co_occurrences=co_occurrences,
             window_counts_global=window_counts_global,
             window_counts_document=window_counts_document,
+            lazy_co_occurrences=co_occurrences,
         )
 
         return bundle
@@ -328,3 +341,17 @@ def create_options_bundle(
         **other_options,
     }
     return options
+
+
+def compile_compute_options(
+    args: Any, text_reader_opts: TextReaderOpts, target_filename: str
+) -> dict:
+    return create_options_bundle(
+        reader_opts=text_reader_opts,
+        transform_opts=args.transform_opts,
+        context_opts=args.context_opts,
+        extract_opts=args.extract_opts,
+        input_filename=args.corpus_filename,
+        output_filename=target_filename,
+        count_threshold=args.count_threshold,
+    )
