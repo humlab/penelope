@@ -4,7 +4,8 @@ import penelope.co_occurrence as co_occurrence
 import penelope.workflows as workflows
 import pytest
 from penelope.co_occurrence.legacy.compute import CoOccurrenceComputeResult
-from penelope.corpus import TokensTransformOpts, VectorizedCorpus
+from penelope.workflows.co_occurrence.compute import compile_compute_options
+from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
@@ -72,7 +73,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     os.remove(target_filename)
 
 
-def test_spaCy_co_occurrence_workflow(config):
+def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
 
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
@@ -83,7 +84,7 @@ def test_spaCy_co_occurrence_workflow(config):
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    value: co_occurrence.CoOccurrenceComputeBundle = spaCy_co_occurrence_pipeline(
+    value: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
         transform_opts=args.transform_opts,
@@ -96,32 +97,18 @@ def test_spaCy_co_occurrence_workflow(config):
 
     assert value.corpus is not None
     assert value.document_index is not None
-    assert len(value.co_occurrences) > 0
-
-    corpus: VectorizedCorpus = co_occurrence.co_occurrences_to_co_occurrence_corpus(
-        co_occurrences=value.co_occurrences,
-        token2id=value.token2id,
-        document_index=value.document_index,
-        # partition_key=args.context_opts.partition_keys[0],
-    )
 
     bundle = co_occurrence.Bundle(
         tag=args.corpus_tag,
         folder=args.target_folder,
-        corpus=corpus,
+        corpus=value.corpus,
         token2id=value.token2id,
         document_index=value.document_index,
         window_counts_global=value.token_window_counts,
         window_counts_document=value.window_counts_document,
-        co_occurrences=value.co_occurrences,
-        compute_options=co_occurrence.create_options_bundle(
-            reader_opts=config.text_reader_opts,
-            transform_opts=args.transform_opts,
-            context_opts=args.context_opts,
-            extract_opts=args.extract_opts,
-            input_filename=args.corpus_filename,
-            output_filename=co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag),
-            count_threshold=args.count_threshold,
+        lazy_co_occurrences=value.corpus.to_co_occurrences(value.token2id),
+        compute_options=compile_compute_options(
+            args, config.text_reader_opts, co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag)
         ),
     )
 

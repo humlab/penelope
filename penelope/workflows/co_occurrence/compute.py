@@ -5,7 +5,6 @@ import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
 from loguru import logger
 from penelope.notebook import interface
-from penelope.type_alias import CoOccurrenceDataFrame
 
 POS_CHECKPOINT_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 
@@ -49,36 +48,15 @@ def compute(
             )
         )
 
-        value: co_occurrence.CoOccurrenceComputeBundle = p.value()
+        bundle: co_occurrence.Bundle = p.value()
 
-        if len(value.co_occurrences) == 0:
+        if bundle.corpus is None:
             raise co_occurrence.ZeroComputeError()
 
-        co_occurrences: co_occurrence.CoOccurrenceDataFrame = co_occurrence.co_occurrence_corpus_to_co_occurrences(
-            term_term_matrix=corpus.data,
-            document_index=value.document_index,
-            # legacy: partition_key=args.context_opts.partition_keys[0],
-            token2id=value.token2id,
-        )
-
-        bundle = co_occurrence.Bundle(
-            tag=args.corpus_tag,
-            folder=args.target_folder,
-            corpus=value.corpus,
-            token2id=value.token2id,
-            document_index=value.document_index,
-            window_counts_global=value.token_window_counts,
-            co_occurrences=value.co_occurrences,
-            compute_options=co_occurrence.create_options_bundle(
-                reader_opts=corpus_config.text_reader_opts,
-                transform_opts=args.transform_opts,
-                context_opts=args.context_opts,
-                extract_opts=args.extract_opts,
-                input_filename=args.corpus_filename,
-                output_filename=target_filename,
-                count_threshold=args.count_threshold,
-            ),
-        )
+        bundle.tag = args.tag
+        bundle.folder = args.target_folder
+        bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
+        bundle.compute_options = compile_compute_options(args, corpus_config, target_filename)
 
         bundle.store()
 
@@ -94,3 +72,15 @@ def compute(
     except Exception as ex:
         logger.error(ex)
         raise
+
+
+def compile_compute_options(args: interface.ComputeOpts, target_filename: str="") -> dict:
+    return co_occurrence.create_options_bundle(
+        reader_opts=args.text_reader_opts,
+        transform_opts=args.transform_opts,
+        context_opts=args.context_opts,
+        extract_opts=args.extract_opts,
+        input_filename=args.corpus_filename,
+        output_filename=target_filename,
+        count_threshold=args.count_threshold,
+    )
