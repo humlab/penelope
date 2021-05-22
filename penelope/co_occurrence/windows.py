@@ -116,7 +116,7 @@ def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> 
 
     window = collections.deque((next(padded_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
 
-    if len(context_opts.concept) == 0:
+    if not context_opts.concept:
 
         for token in padded_tokens:
             window.append(token)
