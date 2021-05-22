@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable
 
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
+from penelope.corpus.interfaces import ITokenizedCorpus
 from penelope.utility import PropertyValueMaskingOpts
 
 from . import tasks
@@ -27,10 +28,13 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.LoadText(source=source, reader_opts=reader_opts, transform_opts=transform_opts))
 
-    def write_feather(self, folder: str):
+    def load_corpus(self, corpus: ITokenizedCorpus) -> pipelines.CorpusPipeline:
+        return self.add(tasks.LoadTokenizedCorpus(corpus=corpus))
+
+    def write_feather(self, folder: str) -> pipelines.CorpusPipeline:
         return self.add(tasks.WriteFeather(folder=folder))
 
-    def read_feather(self, folder: str):
+    def read_feather(self, folder: str) -> pipelines.CorpusPipeline:
         return self.add(tasks.ReadFeather(folder=folder))
 
     def save_tagged_frame(
