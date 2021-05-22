@@ -9,7 +9,6 @@ from penelope.co_occurrence import (
     term_term_matrix_to_co_occurrences,
     truncate_by_global_threshold,
 )
-from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
 from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
