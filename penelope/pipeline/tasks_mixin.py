@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+import pandas as pd
 from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
 
 from . import convert, interfaces
@@ -16,6 +17,10 @@ class CountTokensMixIn:
     def register_token_counts(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         """Computes token counts from the tagged frame, and adds them to the document index"""
         try:
+
+            if not isinstance(payload.content, pd.DataFrame):
+                raise ValueError("setup error: register_token_counts only applicable for tagged frames")
+
             token_counts = convert.tagged_frame_to_token_counts(
                 tagged_frame=payload.content,
                 pos_schema=self.pipeline.payload.pos_schema,
