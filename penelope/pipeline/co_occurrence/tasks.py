@@ -2,13 +2,13 @@ import collections
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
 
-import numpy as np
 import scipy
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
     WindowsCoOccurrenceVectorizer,
+    to_token_window_counts_matrix,
     tokens_to_windows,
 )
 from penelope.corpus import Token2Id, VectorizedCorpus
@@ -58,18 +58,6 @@ def TTM_to_coo_DTM(
     return corpus
 
 
-def create_document_token_window_counts_matrix(stream: Iterable[CoOccurrenceMatrixBundle], shape: tuple):
-
-    counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
-
-    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=np.uint16)
-
-    for document_id, counts in counters.items():
-        matrix[document_id, list(counts.keys())] = list(counts.values())
-
-    return matrix.tocsr()
-
-
 @dataclass
 class ToCoOccurrenceDTM(ITask):
     """Computes (DOCUMENT-LEVEL) windows co-occurrence.
@@ -115,12 +103,15 @@ class ToCoOccurrenceDTM(ITask):
         document_id = self.get_document_id(payload)
 
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
-        windows_ttm_matrix: VectorizedCorpus = self.vectorizer.fit_transform(windows)
-        token_window_counts: collections.Counter = self.vectorizer.token_window_counts
+        windows_ttm_matrix, window_counts = self.vectorizer.fit_transform(windows)
 
         return payload.update(
             self.out_content_type,
-            content=CoOccurrenceMatrixBundle(document_id, windows_ttm_matrix, token_window_counts),
+            content=CoOccurrenceMatrixBundle(
+                document_id,
+                windows_ttm_matrix,
+                window_counts,
+            ),
         )
 
     def get_document_id(self, payload: DocumentPayload) -> int:
@@ -150,16 +141,18 @@ class ToCorpusCoOccurrenceDTM(ITask):
     def process_stream(self) -> VectorizedCorpus:
 
         if self.document_index is None:
-            raise CoOccurrenceError("expected document index found None")
+            raise CoOccurrenceError("expected document index found no such thingNone")
 
+        # FIXME: Do NOT expand stream to list
+        stream: Iterable[CoOccurrenceMatrixBundle] = [payload.content for payload in self.instream]
+
+        # FIXME: These test only valid when at least one payload has been processed
         if 'n_tokens' not in self.document_index.columns:
             raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
 
         if 'n_raw_tokens' not in self.document_index.columns:
             raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
-        # FIXME: Do NOT expand stream to list
-        stream: Iterable[CoOccurrenceMatrixBundle] = [payload.content for payload in self.instream]
         token2id: Token2Id = self.pipeline.payload.token2id
         document_index: DocumentIndex = self.pipeline.payload.document_index
 
@@ -170,7 +163,10 @@ class ToCorpusCoOccurrenceDTM(ITask):
         )
 
         window_counts_global: collections.Counter = self.get_token_windows_counts()
-        window_counts_document = create_document_token_window_counts_matrix(stream, corpus.data.shape)
+
+        window_counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
+
+        window_counts_document = to_token_window_counts_matrix(window_counters, corpus.data.shape)
 
         yield DocumentPayload(
             content=Bundle(
