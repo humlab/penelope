@@ -4,7 +4,6 @@ import pandas as pd
 import penelope.co_occurrence as co_occurrence
 import penelope.corpus.dtm as dtm
 import pytest
-from penelope.co_occurrence.persistence import Bundle
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from tests.utils import OUTPUT_FOLDER
 
@@ -117,7 +116,7 @@ def test_compute_and_store_bundle():
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
         concept={'g'}, ignore_concept=False, context_width=2
     )
-    bundle: Bundle = test_utils.create_co_occurrence_bundle(
+    bundle: co_occurrence.Bundle = test_utils.create_co_occurrence_bundle(
         corpus=simple_corpus,
         context_opts=context_opts,
         folder=folder,
