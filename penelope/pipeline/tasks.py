@@ -771,7 +771,7 @@ class WildcardTask(ITask):
 
 
 @dataclass
-class LoadTokenizedCorpus(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     corpus: ITokenizedCorpus = None
@@ -794,5 +794,5 @@ class LoadTokenizedCorpus(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        self.register_token_counts(payload)
+        self.update_document_properties(payload, n_tokens=len(payload.content))
         return payload
