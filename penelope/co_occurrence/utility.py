@@ -1,14 +1,11 @@
-import collections
-from dataclasses import dataclass
-from typing import Set
+from typing import List, Mapping, Set
 
 import pandas as pd
-import scipy
 from penelope.corpus import DocumentIndex, Token2Id
 from penelope.type_alias import FilenameTokensTuples
 from penelope.utility import strip_extensions
 
-from .convert import term_term_matrix_to_co_occurrences
+from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 from .interface import ContextOpts, CoOccurrenceError
 from .persistence import Bundle
 from .vectorize import WindowsCoOccurrenceVectorizer
@@ -43,7 +40,8 @@ def compute_non_partitioned_corpus_co_occurrence(
     if not isinstance(token2id, Token2Id):
         token2id = Token2Id(data=token2id)
 
-    total_results = []
+    computed_data_frames: List[pd.DataFrame] = []
+    computed_window_counts: Mapping[int, Mapping[int, int]] = dict()
 
     vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(token2id)
 
@@ -55,18 +53,22 @@ def compute_non_partitioned_corpus_co_occurrence(
             token2id.ingest(tokens)
 
         windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
-        windows_ttm_matrix: scipy.sparse.spmatrix = vectorizer.fit_transform(windows)
+
+        ttm_matrix, window_counts = vectorizer.fit_transform(windows)
         document_co_occurrences = term_term_matrix_to_co_occurrences(
-            windows_ttm_matrix,
-            threshold_count=1,
-            ignore_ids=ignore_ids,
+            ttm_matrix, threshold_count=1, ignore_ids=ignore_ids
         )
 
-        document_co_occurrences['document_id'] = document_index.loc[strip_extensions(filename)]['document_id']
+        document_id = document_index.loc[strip_extensions(filename)]['document_id']
+        document_co_occurrences['document_id'] = document_id
 
-        total_results.append(document_co_occurrences)
+        computed_data_frames.append(document_co_occurrences)
+        computed_window_counts[document_id] = window_counts
 
-    co_occurrences: pd.DataFrame = pd.concat(total_results, ignore_index=True)[
+    shape = (len(computed_window_counts), len(token2id))
+    window_counts_matrix = to_token_window_counts_matrix(computed_window_counts, shape)
+
+    co_occurrences: pd.DataFrame = pd.concat(computed_data_frames, ignore_index=True)[
         ['document_id', 'w1_id', 'w2_id', 'value']
     ]
 
@@ -76,8 +78,9 @@ def compute_non_partitioned_corpus_co_occurrence(
         ]
 
     return Bundle(
-        co_occurrences=co_occurrences,
+        lazy_co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
         window_counts_global=vectorizer.window_counts_global,
+        window_counts_document=window_counts_matrix,
     )
