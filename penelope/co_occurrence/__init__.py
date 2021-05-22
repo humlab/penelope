@@ -4,6 +4,7 @@ from .convert import (
     co_occurrences_to_co_occurrence_corpus,
     term_term_matrix_to_co_occurrences,
     to_co_occurrence_matrix,
+    to_token_window_counts_matrix,
     truncate_by_global_threshold,
 )
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences

@@ -157,3 +157,23 @@ def co_occurrence_corpus_to_co_occurrence(
 ) -> CoOccurrenceDataFrame:
     """Creates a co-occurrence data frame from a co-occurrence DTM corpus."""
     return coo_corpus.to_co_occurrences(token2id)
+
+
+def to_token_window_counts_matrix(counters: Mapping[int, Mapping[int, int]], shape: tuple) -> scipy.sparse.spmatrix:
+    """Create a matrix with token's window count for each document (rows).
+       The shape of the returned sparse matrix is [number of document, vocabulary size]
+
+    Args:
+        counters (dict): Dict (key document id) of dict (key token id) of window counts
+        shape (tuple): Size of returned sparse matrix
+
+    Returns:
+        scipy.sparse.spmatrix: window counts matrix
+    """
+
+    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=np.uint16)
+
+    for document_id, counts in counters.items():
+        matrix[document_id, list(counts.keys())] = list(counts.values())
+
+    return matrix.tocsr()
