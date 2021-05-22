@@ -1,16 +1,12 @@
-import collections
 import os
+import pathlib
 import uuid
+from typing import List, Tuple
 
-from penelope import co_occurrence
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceHelper
-from penelope.corpus import ITokenizedCorpus, Token2Id, VectorizedCorpus
-from penelope.corpus.dtm.vectorizer import CorpusVectorizer
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
-from penelope.pipeline.co_occurrence.tasks import CoOccurrenceMatrixBundle, TTM_to_coo_DTM
-from penelope.pipeline.config import CorpusConfig
-from penelope.pipeline.pipelines import CorpusPipeline
-from penelope.utility.pandas_utils import PropertyValueMaskingOpts
+from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
+from penelope.corpus import ITokenizedCorpus, Token2Id, TokenizedCorpus, VectorizedCorpus
+from penelope.pipeline import CorpusConfig, CorpusPipeline, sparv
 
 from ..fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from ..utils import OUTPUT_FOLDER
@@ -18,104 +14,92 @@ from ..utils import OUTPUT_FOLDER
 jj = os.path.join
 
 
-# def create_simple_helper() -> CoOccurrenceHelper:
-#     return create_bundle_helper(
-#         create_bundle_helper(create_simple_bundle()),
-#     )
+def create_tranströmer_to_tagged_frame_pipeline() -> CorpusPipeline:
 
-# def create_simple_bundle() -> Bundle:
-#     tag: str = "TERRA"
-#     folder: str = jj(OUTPUT_FOLDER, tag)
-#     simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-#     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
-#         concept={}, ignore_concept=False, context_width=2
-#     )
-#     bundle: Bundle = create_co_occurrence_bundle(
-#         corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
-#     )
-#     return bundle
+    config_filename = './tests/test_data/tranströmer.yml'
+    source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
+    checkpoint_filename = f'./tests/output/{uuid.uuid1()}.checkpoint.zip'
 
+    corpus_config: CorpusConfig = CorpusConfig.load(config_filename)
 
-# def create_bundle_helper(bundle: Bundle) -> CoOccurrenceHelper:
-#     helper: CoOccurrenceHelper = CoOccurrenceHelper(
-#         bundle.co_occurrences,
-#         bundle.token2id,
-#         bundle.document_index,
-#     )
-#     return helper
+    corpus_config.pipeline_payload.source = source_filename
+    corpus_config.pipeline_payload.document_index_source = None
+
+    pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
+
+    p: CorpusPipeline = sparv.to_tagged_frame_pipeline(
+        corpus_config,
+        corpus_filename=source_filename,
+    )  # .checkpoint(checkpoint_filename)
+
+    return p
 
 
-def test_create_test_bundle(config: CorpusConfig):
+def create_very_simple_tokens_pipeline(data: List[Tuple[str, List[str]]]) -> CorpusPipeline:
+    corpus: TokenizedCorpus = very_simple_corpus(data)
+    p: CorpusPipeline = CorpusPipeline(config=None).load_corpus(corpus)
+    return p
 
-    checkpoint_filename: str = os.path.join(OUTPUT_FOLDER, f'{uuid.uuid1()}_checkpoint_pos_tagged_test.zip')
 
-    extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|NOUN|', pos_paddings=None
+def create_simple_bundle() -> Bundle:
+    tag: str = "TERRA"
+    folder: str = jj(OUTPUT_FOLDER, tag)
+    simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
+    context_opts: ContextOpts = ContextOpts(
+        concept={}, ignore_concept=False, context_width=2
     )
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
+    bundle: Bundle = create_co_occurrence_bundle(
+        corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
+    )
+    return bundle
 
-    corpus: VectorizedCorpus = (
-        (
-            CorpusPipeline(config=config)
-            .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
-            .to_dtm()
-        )
-        .single()
-        .content
+
+def create_bundle_helper(bundle: Bundle) -> CoOccurrenceHelper:
+    helper: CoOccurrenceHelper = CoOccurrenceHelper(
+        bundle.co_occurrences,
+        bundle.token2id,
+        bundle.document_index,
+    )
+    return helper
+
+
+def create_simple_helper() -> CoOccurrenceHelper:
+    return create_bundle_helper(
+        create_bundle_helper(create_simple_bundle()),
     )
 
-    corpus.dump(tag="kallekulakurtkurt", folder=OUTPUT_FOLDER)
-    assert isinstance(corpus, VectorizedCorpus)
-    assert corpus.data.shape[0] == 5
-    assert len(corpus.token2id) == corpus.data.shape[1]
 
-    os.remove(checkpoint_filename)
+def create_co_occurrence_bundle(
+    *, corpus: ITokenizedCorpus, context_opts: ContextOpts, folder: str, tag: str
+) -> Bundle:
+
+    token2id: Token2Id = Token2Id(corpus.token2id)
+
+    bundle: Bundle = compute_non_partitioned_corpus_co_occurrence(
+        stream=corpus,
+        document_index=corpus.document_index,
+        token2id=token2id,
+        context_opts=context_opts,
+        global_threshold_count=1,
+    )
+
+    corpus: VectorizedCorpus = VectorizedCorpus.from_co_occurrences(
+        co_occurrences=bundle.co_occurrences,
+        document_index=bundle.document_index,
+        token2id=token2id,
+    )
+
+    bundle.corpus = corpus
+    bundle.tag = tag
+    bundle.folder = folder
+
+    return bundle
 
 
-# def create_co_occurrence_bundle(
-#     *, t_corpus: ITokenizedCorpus, context_opts: ContextOpts, folder: str, tag: str
-# ) -> Bundle:
+def fake_config() -> CorpusConfig:
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
 
-#     stream: Iterable[CoOccurrenceMatrixBundle] = (
-#         CoOccurrenceMatrixBundle(
-#             document_id,
-#             CorpusVectorizer()
-#             .fit_transform([doc], already_tokenized=True, vocabulary=t_corpus.token2id)
-#             .co_occurrence_matrix(),
-#             collections.Counter(),
-#         )
-#         for document_id, doc in enumerate(t_corpus)
-#     )
+    corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
 
-#     corpus: VectorizedCorpus = TTM_to_coo_DTM(stream, t_token2id, t_document_index)
-
-#     assert corpus is not None
-
-#     token2id: Token2Id = Token2Id(corpus.token2id)
-
-#     # value: CoOccurrenceComputeResult = compute_corpus_co_occurrence(
-#     #     stream=corpus,
-#     #     document_index=corpus.document_index,
-#     #     token2id=token2id,
-#     #     context_opts=context_opts,
-#     #     global_threshold_count=1,
-#     # )
-
-#     # corpus = co_occurrences_to_co_occurrence_corpus(
-#     #     co_occurrences=value.co_occurrences,
-#     #     document_index=value.document_index,
-#     #     token2id=token2id,
-#     # )
-
-#     bundle: Bundle = Bundle(
-#         folder=folder,
-#         tag=tag,
-#         co_occurrences=value.co_occurrences,
-#         document_index=value.document_index,
-#         token_window_counts=value.token_window_counts,
-#         token2id=value.token2id,
-#         compute_options={},
-#         corpus=corpus,
-#     )
-
-#     return bundle
+    return corpus_config
