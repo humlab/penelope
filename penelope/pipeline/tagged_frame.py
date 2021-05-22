@@ -39,7 +39,7 @@ TaggedFrame = pd.core.api.DataFrame
 
 
 # @dataclass
-# class ToIdTaggedFrame(CountTokensMixIn, ITask):
+# class ToIdTaggedFrame(CountTaggedTokensMixIn, ITask):
 #     """Convert a string based tagged frame to id based tagged frame """
 #     attributes: List[str] = None
 #     attribute_value_filters: Dict[str, Any] = None

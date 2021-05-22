@@ -13,7 +13,7 @@ class DefaultResolveMixIn:
         return payload
 
 
-class CountTokensMixIn:
+class CountTaggedTokensMixIn:
     def register_token_counts(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         """Computes token counts from the tagged frame, and adds them to the document index"""
         try:

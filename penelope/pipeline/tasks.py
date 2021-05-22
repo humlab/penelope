@@ -14,6 +14,7 @@ from loguru import logger
 from penelope import utility
 from penelope.corpus import (
     DocumentIndex,
+    ITokenizedCorpus,
     Token2Id,
     TokensTransformer,
     VectorizedCorpus,
@@ -35,7 +36,7 @@ from tqdm.auto import tqdm
 from . import checkpoint, convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import BuildToken2IdMixIn, CountTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn
+from .tasks_mixin import BuildToken2IdMixIn, CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn
 
 
 @dataclass
@@ -223,7 +224,7 @@ class SaveTaggedCSV(Checkpoint):
 
 
 @dataclass
-class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
@@ -357,7 +358,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTaggedXML(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     filename: str = None
@@ -431,7 +432,7 @@ class TextToTokens(TransformTokensMixIn, ITask):
 
 
 @dataclass
-class ToTaggedFrame(CountTokensMixIn, ITask):
+class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 
     attributes: List[str] = None
     attribute_value_filters: Dict[str, Any] = None
@@ -461,7 +462,7 @@ class ToTaggedFrame(CountTokensMixIn, ITask):
 
 
 @dataclass
-class TaggedFrameToTokens(CountTokensMixIn, BuildToken2IdMixIn, TransformTokensMixIn, ITask):
+class TaggedFrameToTokens(CountTaggedTokensMixIn, BuildToken2IdMixIn, TransformTokensMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
@@ -506,7 +507,7 @@ class TaggedFrameToTokens(CountTokensMixIn, BuildToken2IdMixIn, TransformTokensM
 
 
 @dataclass
-class TapStream(CountTokensMixIn, ITask):
+class TapStream(CountTaggedTokensMixIn, ITask):
     """Taps content into zink. """
 
     target: str = None
@@ -556,7 +557,7 @@ def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
 
 # @dataclass
-# class FilterTaggedFrame(CountTokensMixIn, ITask):
+# class FilterTaggedFrame(CountTaggedTokensMixIn, ITask):
 #     """Filters tagged frame text from payload.content based on annotations etc. """
 
 #     extract_opts: ExtractTaggedTokensOpts = None
@@ -767,3 +768,31 @@ class WildcardTask(ITask):
 
 #     def process_stream(self) -> Iterable[DocumentPayload]:
 #         raise NotImplementedError()
+
+
+@dataclass
+class LoadTokenizedCorpus(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+
+    corpus: ITokenizedCorpus = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TOKENS
+
+    def setup(self) -> ITask:
+        super().setup()
+        self.pipeline.payload.set_reader_index(self.corpus.document_index)
+        self.instream = (
+            DocumentPayload(
+                content_type=self.out_content_type,
+                filename=filename,
+                content=content,
+                filename_values=None,
+            )
+            for filename, content in self.corpus
+        )
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        self.register_token_counts(payload)
+        return payload

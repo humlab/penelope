@@ -22,4 +22,4 @@ from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, Pipe
 from .pipeline_mixin import PipelineShortcutMixIn
 from .pipelines import CorpusPipeline, wildcard
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn
+from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn
