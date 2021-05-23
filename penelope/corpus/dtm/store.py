@@ -140,7 +140,7 @@ class StoreMixIn:
     @staticmethod
     def dump_options(*, tag: str, folder: str, options: Dict):
         json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
-        write_json(json_filename, options, default=lambda _:"<not serializable>")
+        write_json(json_filename, options, default=lambda _: "<not serializable>")
 
     @staticmethod
     def load_options(*, tag: str, folder: str) -> Dict:
