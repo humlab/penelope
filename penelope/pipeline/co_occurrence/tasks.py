@@ -166,19 +166,19 @@ class ToCorpusCoOccurrenceDTM(ITask):
             document_index=document_index,
         )
 
-        window_counts_global: collections.Counter = self.get_token_windows_counts()
+        corpus_token_window_counts: collections.Counter = self.get_token_windows_counts()
 
-        window_counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
+        document_token_window_counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
 
-        window_counts_document = to_token_window_counts_matrix(window_counters, corpus.data.shape)
+        document_token_window_count_matrix: scipy.sparse.spmatrix = to_token_window_counts_matrix(document_token_window_counters, corpus.data.shape)
 
         yield DocumentPayload(
             content=Bundle(
                 corpus=corpus,
                 token2id=token2id,
                 document_index=document_index,
-                window_counts_global=window_counts_global,
-                window_counts_document=window_counts_document,
+                corpus_token_window_counts=corpus_token_window_counts,
+                document_token_window_count_matrix=document_token_window_count_matrix,
             )
         )
 
@@ -186,7 +186,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         task: ToCoOccurrenceDTM = self.pipeline.find(ToCoOccurrenceDTM, self.__class__)
         if task is not None:
-            return task.vectorizer.window_counts_global
+            return task.vectorizer.corpus_token_window_counts
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

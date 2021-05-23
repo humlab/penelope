@@ -13,13 +13,13 @@ class WindowsCoOccurrenceVectorizer:
 
     def __init__(self, vocabulary: Token2Id, dtype: Any = np.uint32):
 
-        self.window_counts_global: Counter = Counter()
+        self.corpus_token_window_counts: Counter = Counter()
         self.vocabulary: Token2Id = vocabulary
         self.dtype = dtype
 
     def fit_transform(self, windows: Iterator[Iterator[str]]) -> Tuple[scipy.sparse.spmatrix, Mapping[int, int]]:
         """Fits windows generated from a __single__ document"""
-        
+
         # self.vocabulary.ingest(itertools.chain(*windows))
 
         vectorizer: CountVectorizer = CountVectorizer(
@@ -35,11 +35,11 @@ class WindowsCoOccurrenceVectorizer:
             1,
         )
 
-        window_counts_document: Mapping[int, int] = self._get_window_counts(window_term_matrix)
+        document_token_window_count_matrix: Mapping[int, int] = self._get_window_counts(window_term_matrix)
 
-        self.window_counts_global.update(window_counts_document)
+        self.corpus_token_window_counts.update(document_token_window_count_matrix)
 
-        return term_term_matrix, window_counts_document
+        return term_term_matrix, document_token_window_count_matrix
 
     def _get_window_counts(self, window_term_matrix: scipy.sparse.spmatrix) -> Mapping[int, int]:
         """Returns window counts for non-zero tokens in window_term_matrix"""

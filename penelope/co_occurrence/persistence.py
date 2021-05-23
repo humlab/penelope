@@ -56,10 +56,11 @@ class Bundle:
     document_index: DocumentIndex = None
 
     """Corpus-wide tokens' window counts"""
-    window_counts_global: scipy.sparse.spmatrix = None  # Is this realy needed? Sum of matrix axis=0?
+    # FIXME Is this realy needed? Sum of matrix axis=0?
+    corpus_token_window_counts: scipy.sparse.spmatrix = None
 
     """Document-wide tokens' window counts"""
-    window_counts_document: scipy.sparse.spmatrix = None
+    document_token_window_count_matrix: scipy.sparse.spmatrix = None
 
     folder: str = None
     tag: str = None
@@ -132,14 +133,14 @@ class Bundle:
         with open(self.options_filename, 'w') as json_file:
             json.dump(self.compute_options, json_file, indent=4)
 
-        store_token_window_counts(self.window_counts_global, self.token_window_counts_filename)
+        store_token_window_counts(self.corpus_token_window_counts, self.token_window_counts_filename)
 
         if self.lazy_co_occurrences is not None:
             store_co_occurrences(self.co_occurrence_filename, self.lazy_co_occurrences)
 
-        if self.window_counts_document is not None:
+        if self.document_token_window_count_matrix is not None:
 
-            if not scipy.sparse.issparse(self.window_counts_document):
+            if not scipy.sparse.issparse(self.document_token_window_count_matrix):
                 raise CoOccurrenceError("store failed (corpus cannot be None)")
 
         return self
@@ -160,10 +161,10 @@ class Bundle:
         document_index: DocumentIndex = load_document_index(folder, tag)
         corpus_options: dict = VectorizedCorpus.load_options(folder=folder, tag=tag)
         options: dict = load_options(filename) or corpus_options
-        window_counts_global: Counter = load_token_window_counts(
+        corpus_token_window_counts: Counter = load_token_window_counts(
             to_filename(folder=folder, tag=tag, postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
         )
-        window_counts_document: scipy.sparse.spmatrix = load_document_token_window_counts(
+        document_token_window_count_matrix: scipy.sparse.spmatrix = load_document_token_window_counts(
             to_filename(folder=folder, tag=tag, postfix=TOKEN_WINDOW_COUNTS_POSTFIX)
         )
 
@@ -185,8 +186,8 @@ class Bundle:
             document_index=document_index,
             token2id=token2id,
             compute_options=options,
-            window_counts_global=window_counts_global,
-            window_counts_document=window_counts_document,
+            corpus_token_window_counts=corpus_token_window_counts,
+            document_token_window_count_matrix=document_token_window_count_matrix,
             lazy_co_occurrences=co_occurrences,
         )
 

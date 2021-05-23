@@ -81,6 +81,6 @@ def compute_non_partitioned_corpus_co_occurrence(
         lazy_co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
-        window_counts_global=vectorizer.window_counts_global,
-        window_counts_document=window_counts_matrix,
+        corpus_token_window_counts=vectorizer.corpus_token_window_counts,
+        document_token_window_count_matrix=window_counts_matrix,
     )

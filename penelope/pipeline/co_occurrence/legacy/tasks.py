@@ -129,7 +129,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
                 co_occurrences=co_occurrences,
                 token2id=token2id,
                 document_index=self.document_index,
-                window_counts_global=self.get_window_counts_global(),
+                corpus_token_window_counts=self.get_window_counts_global(),
             )
         )
 
@@ -137,7 +137,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
         task: ToDocumentCoOccurrence = self.pipeline.find(ToDocumentCoOccurrence, self.__class__)
         if task is not None:
-            return task.vectorizer.window_counts_global
+            return task.vectorizer.corpus_token_window_counts
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
