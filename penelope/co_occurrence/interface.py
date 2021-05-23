@@ -35,7 +35,7 @@ class ContextOpts:
     def props(self):
         return dict(
             context_width=self.context_width,
-            concept=list(self.concept),
+            concept=list(self.concept or set()),
             ignore_concept=self.ignore_concept,
             padding=self.pad,
             ignore_padding=self.ignore_padding,

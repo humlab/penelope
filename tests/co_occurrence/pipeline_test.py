@@ -13,7 +13,7 @@ def test_pipeline_to_co_occurrence_succeeds():
 
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.tokenized_corpus()
-    context_opts: ContextOpts = ContextOpts(context_width=2, concept=None, ignore_concept=False, ignore_padding=False)
+    context_opts: ContextOpts = ContextOpts(context_width=2, concept={}, ignore_concept=False, ignore_padding=False)
     bundle: Bundle = (
         pipeline.CorpusPipeline(config=config)
         .load_corpus(tokenized_corpus)
