@@ -30,8 +30,8 @@ FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 FILENAME_PATTERN = f'*{FILENAME_POSTFIX}'
 DOCUMENT_INDEX_POSTFIX = '_co-occurrence.document_index.zip'
 DICTIONARY_POSTFIX = '_co-occurrence.dictionary.zip'
-CORPUS_COUNTS_POSTFIX = '_token_windows_counts.pickle'
-DOCUMENT_COUNTS_POSTFIX = '_document_token_windows_counts.npz'
+CORPUS_COUNTS_POSTFIX = '_corpus_windows_counts.pickle'
+DOCUMENT_COUNTS_POSTFIX = '_document_windows_counts.npz'
 
 
 def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[str, str]:
@@ -181,10 +181,10 @@ class Bundle:
         store_document_index(self.document_index, self.document_index_filename)
 
         self.token2id.store(self.dictionary_filename)
-        self.window_counts.store(self.folder, self.tag)
+        self.window_counts.store(folder=self.folder, tag=self.tag)
 
-        store_options(self.compute_options, self.options_filename)
-        store_co_occurrences(self.co_occurrence_filename, self.lazy_co_occurrences)
+        store_options(options=self.compute_options, filename=self.options_filename)
+        store_co_occurrences(filename=self.co_occurrence_filename, co_occurrences=self.lazy_co_occurrences)
 
         return self
 
@@ -256,7 +256,7 @@ def load_corpus(corpus_folder: str, corpus_tag: str) -> VectorizedCorpus:
 
 
 # pylint: disable=redefined-outer-name
-def store_co_occurrences(filename: str, co_occurrences: CoOccurrenceDataFrame, store_feather: bool = True) -> None:
+def store_co_occurrences(*, filename: str, co_occurrences: CoOccurrenceDataFrame, store_feather: bool = True) -> None:
     """Store co-occurrence result data to CSV-file (if loaded)"""
     if co_occurrences is None:
         return
@@ -345,10 +345,10 @@ def load_options(filename: str) -> dict:
     return {'not_found': options_filename}
 
 
-def store_options(options: dict, filename: str) -> None:
+def store_options(*, options: dict, filename: str) -> None:
     """Also save options with same name as co-occurrence file"""
     with open(filename, 'w') as fp:
-        json.dump(options, fp, indent=4)
+        json.dump(options, fp, indent=4, default=lambda _: '<not serializable>')
 
 
 def create_options_bundle(

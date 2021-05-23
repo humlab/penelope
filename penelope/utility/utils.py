@@ -4,6 +4,7 @@ import functools
 import glob
 import inspect
 import itertools
+import json
 import logging
 import os
 import platform
@@ -562,3 +563,7 @@ def get_smiley() -> str:
         x = randrange(0, len(SMILEYS), 1)
         return SMILEYS[x]
     return "😪"
+
+
+def dictify(o: Any) -> dict:
+    return json.loads(json.dumps(o, default=lambda _: "<not serializable"))

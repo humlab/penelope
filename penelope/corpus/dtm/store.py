@@ -7,12 +7,10 @@ from typing import Dict, Mapping, Optional
 
 import numpy as np
 import scipy
-from penelope.utility import getLogger, read_json, write_json
+from penelope.utility import dictify, read_json, write_json
 
 from ..document_index import DocumentIndex
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
-
-logger = getLogger("penelope")
 
 
 def create_corpus_instance(
@@ -142,7 +140,7 @@ class StoreMixIn:
     @staticmethod
     def dump_options(*, tag: str, folder: str, options: Dict):
         json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
-        write_json(json_filename, options)
+        write_json(json_filename, options, default=lambda _:"<not serializable>")
 
     @staticmethod
     def load_options(*, tag: str, folder: str) -> Dict:

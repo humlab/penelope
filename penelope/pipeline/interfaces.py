@@ -15,7 +15,7 @@ from penelope.corpus import (
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
-from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, replace_path, strip_path_and_extension
+from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
 
 from .tagged_frame import TaggedFrame
 
@@ -147,6 +147,12 @@ class PipelinePayload:
         for key, value in kwargs.items():
             self.memory_store[key] = value
         return self
+
+    def stored_opts(self, **extra_opts) -> dict:
+        opts: dict = {
+            k: v.props if hasattr(v, "props") else dictify(v) for k, v in self.memory_store.items() if v is not None
+        }
+        return {**self.props, **opts, **extra_opts}
 
     def set_reader_index(self, reader_index: DocumentIndex) -> "PipelinePayload":
         if self.document_index is None:

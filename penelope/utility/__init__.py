@@ -96,6 +96,7 @@ from .utils import (
     dict_split,
     dict_subset,
     dict_to_list_of_tuples,
+    dictify,
     dotget,
     extend,
     extend_single,

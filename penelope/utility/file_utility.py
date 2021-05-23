@@ -77,7 +77,7 @@ def read_json(path: str) -> Dict:
 
 def write_json(path: str, data: Dict, default=None):
     with open(path, 'w') as json_file:
-        json.dump(data, json_file, indent=4, default=default)
+        json.dump(data, json_file, indent=4, default=(lambda _: default) if default else None)
 
 
 def pickle_compressed_to_file(filename: str, thing: Any):

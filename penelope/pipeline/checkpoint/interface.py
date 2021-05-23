@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Union
 
 from penelope.corpus import DocumentIndex, Token2Id
-from penelope.utility import create_instance
+from penelope.utility import create_instance, dictify
 
 from ..interfaces import ContentType, DocumentPayload
 from ..tagged_frame import TaggedFrame
@@ -39,6 +39,10 @@ class CheckpointOpts:
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
     index_column: Union[int, None] = field(default=0)
+
+    @property
+    def props(self):
+        return dictify(self)
 
     @property
     def content_type(self) -> ContentType:
