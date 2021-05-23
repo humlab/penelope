@@ -70,6 +70,7 @@ class LoadText(DefaultResolveMixIn, ITask):
 
         self.pipeline.payload.set_reader_index(text_reader.document_index)
         self.pipeline.payload.metadata = text_reader.metadata
+
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
         self.pipeline.put("text_transform_opts", self.transform_opts.props)
 
@@ -157,6 +158,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         super().setup()
         self.pipeline.put("checkpoint_file", self.filename)
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
+        self.pipeline.put("checkpoint_opts", self.checkpoint_opts)
         return self
 
     def __post_init__(self):
@@ -245,8 +247,9 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
             reader_opts=self.extra_reader_opts,
         )
         self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
-        if self.extra_reader_opts:
-            self.pipeline.put("text_reader_opts", self.extra_reader_opts.props)
+
+        self.pipeline.put("reader_opts", self.extra_reader_opts.props)
+        self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
 
         self.instream = (payload for payload in self.checkpoint_data.payload_stream)
 
@@ -388,6 +391,8 @@ class LoadTaggedXML(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
             for document, content in self.corpus_reader
         )
 
+        self.pipeline.put("reader_opts", self.reader_opts.props)
+
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
         return payload
@@ -404,7 +409,6 @@ class TextToTokens(TransformTokensMixIn, ITask):
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("text_transform_opts", self.text_transform_opts)
-        self.pipeline.put("tokens_transform_opts_text", self.transform_opts)
         return self
 
     def __post_init__(self):
@@ -478,6 +482,9 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, BuildToken2IdMixIn, TransformT
         # super(self, TransformTokensMixIn).setup()
         self.setup_token2id()
         self.setup_transform()
+
+        self.pipeline.put("extract_opts", self.extract_opts)
+        self.pipeline.put("filter_opts", self.filter_opts)
 
         return self
 
