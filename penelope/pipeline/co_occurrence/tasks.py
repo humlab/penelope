@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Optional, Callable
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import scipy
 from penelope.co_occurrence import (
@@ -146,9 +146,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
             raise CoOccurrenceError("expected document index found no such thingNone")
 
         # FIXME: Do NOT expand stream to list
-        stream: Iterable[CoOccurrencePayload] = [
-            payload.content for payload in self.instream if not payload.is_empty
-        ]
+        stream: Iterable[CoOccurrencePayload] = [payload.content for payload in self.instream if not payload.is_empty]
 
         # FIXME: These test only valid when at least one payload has been processed
         if 'n_tokens' not in self.document_index.columns:
@@ -170,7 +168,10 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         document_token_window_counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
 
-        document_token_window_count_matrix: scipy.sparse.spmatrix = to_token_window_counts_matrix(document_token_window_counters, corpus.data.shape)
+        shape: Tuple[int, int] = (len(document_index), len(token2id))
+        document_token_window_count_matrix: scipy.sparse.spmatrix = to_token_window_counts_matrix(
+            document_token_window_counters, shape=shape
+        )
 
         yield DocumentPayload(
             content=Bundle(
