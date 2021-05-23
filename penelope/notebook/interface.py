@@ -62,11 +62,11 @@ class ComputeOpts:
             if self.context_opts.context_width is None:
                 raise ValueError("please specify at width of context as max distance from concept")
 
-            if len(self.context_opts.partition_keys or []) == 0:
-                raise ValueError("please specify partition key")
+            # if len(self.context_opts.partition_keys or []) == 0:
+            #     raise ValueError("please specify partition key")
 
-            if len(self.context_opts.partition_keys) > 1:
-                raise ValueError("only one partition key is allowed (for now)")
+            # if len(self.context_opts.partition_keys) > 1:
+            #     raise ValueError("only one partition key is allowed (for now)")
 
         return True
 
@@ -99,8 +99,8 @@ class ComputeOpts:
             if len(self.context_opts.concept or []) > 0:
                 options['--concept'] = self.context_opts.concept
 
-            if len(self.context_opts.partition_keys or []) > 0:
-                options['--partition-key'] = self.context_opts.partition_keys
+            # if len(self.context_opts.partition_keys or []) > 0:
+            #     options['--partition-key'] = self.context_opts.partition_keys
 
         options['--count-threshold'] = self.count_threshold
 
