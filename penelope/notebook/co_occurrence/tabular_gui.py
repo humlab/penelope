@@ -145,7 +145,9 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._table.load(data)
 
     def save(self, _b):
-        store_co_occurrences(path_add_timestamp('co_occurrence_data.csv'), self.get_data(), store_feather=False)
+        store_co_occurrences(
+            filename=path_add_timestamp('co_occurrence_data.csv'), co_occurrences=self.get_data(), store_feather=False
+        )
 
     def download(self, *_):
         self._button_bar.disabled = True
