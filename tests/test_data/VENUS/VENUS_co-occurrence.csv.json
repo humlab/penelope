@@ -1,5 +1,15 @@
 {
-    "reader_opts": {
+    "source": "./tests/test_data/legal_instrument_five_docs_test.zip",
+    "document_index_source": "./tests/test_data/legal_instrument_five_docs_test.csv",
+    "pos_schema_name": "Universal",
+    "lang": "en",
+    "lemma_column": "lemma_",
+    "pos_column": "pos_",
+    "spacy_model": "en_core_web_sm",
+    "tagger": "spaCy",
+    "text_column": "text",
+    "spacy_nlp": "<not serializable",
+    "text_reader_opts": {
         "filename_pattern": "*.txt",
         "filename_filter": null,
         "filename_fields": [
@@ -14,16 +24,22 @@
         "n_processes": 1,
         "n_chunksize": 2
     },
-    "context_opts": {
-        "context_width": 4,
-        "concept": [],
-        "ignore_concept": true,
-        "padding": "*",
-        "ignore_padding": false,
-        "partition_keys": [
-            "document_id"
-        ]
+    "text_transform_opts": {
+        "fix_whitespaces": true,
+        "fix_hyphenation": true,
+        "fix_ftfy_text": true,
+        "fix_accents": false,
+        "fix_unicode": false
     },
+    "tagged_attributes": [
+        "text",
+        "lemma_",
+        "pos_",
+        "is_punct",
+        "is_stop"
+    ],
+    "checkpoint_file": "./tests/output/co_occurrence_test_pos_csv.zip",
+    "checkpoint_opts": "<not serializable",
     "transform_opts": {
         "only_alphabetic": false,
         "only_any_alphanumeric": false,
@@ -51,7 +67,22 @@
         "phrases": null,
         "to_lowercase": false
     },
-    "input_filename": "./tests/test_data/legal_instrument_five_docs_test.zip",
-    "output_filename": "./tests/output/VENUS_co-occurrence.csv.zip",
-    "count_threshold": 1
+    "filter_opts": {
+        "is_alpha": false,
+        "is_punct": false,
+        "is_digit": null,
+        "is_stop": null,
+        "is_space": false
+    },
+    "context_opts": {
+        "context_width": 4,
+        "concept": [],
+        "ignore_concept": true,
+        "padding": "*",
+        "ignore_padding": false,
+        "partition_keys": [
+            "document_id"
+        ]
+    },
+    "global_threshold_count": 1
 }
