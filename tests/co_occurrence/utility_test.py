@@ -102,13 +102,14 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
     assert len(value.co_occurrences) > 0
 
 
+# @pytest.mark.skip(reason="long running")
 def test_document_wise_co_occurrence():
 
     concept = {}
     n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         # './tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip',
-        './tests/test_data/riksdagens-protokoll.1920-2019.test.zip',
+        './tests/test_data/riksdagens-protokoll.1920-2019.test.2files.zip',
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
@@ -119,13 +120,12 @@ def test_document_wise_co_occurrence():
             lemmatize=True,
         ),
     )
-    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
+    bundle: Bundle = compute_non_partitioned_corpus_co_occurrence(
         stream=corpus,
         document_index=corpus.document_index,
         token2id=corpus.token2id,
         context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=n_context_width),
         global_threshold_count=None,
     )
-
-    assert value is not None
-    assert len(value.co_occurrences) > 0
+    assert bundle is not None
+    assert len(bundle.co_occurrences) > 0
