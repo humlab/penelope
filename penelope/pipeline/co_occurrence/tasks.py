@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Callable
 
 import scipy
 from penelope.co_occurrence import (
@@ -16,44 +16,43 @@ from penelope.type_alias import DocumentIndex
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 
-CoOccurrenceMatrixBundle = collections.namedtuple(
+CoOccurrencePayload = collections.namedtuple(
     'DocumentCoOccurrenceMatrixBundle', ['document_id', 'term_term_matrix', 'term_windows_count']
 )
 
 
-def TTM_to_coo_DTM(
-    stream: Iterable[CoOccurrenceMatrixBundle], token2id: Token2Id, document_index: DocumentIndex
+def TTM_to_co_occurrence_DTM(
+    stream: Iterable[CoOccurrencePayload], token2id: Token2Id, document_index: DocumentIndex
 ) -> VectorizedCorpus:
+    """Tranforms a sequence of document-wise term-term matrices to a corpus-wide document-term matrix"""
 
-    """Note: vocab size must be known..."""
+    """NOTE: This implementation depends on stream being reiterable..."""
 
-    """Compute vocab size: Number of elements in upper triangular TTM, diagonal excluded"""
-    N = len(token2id)  # size of TTM is N x N
-    vocab_size = int(N * (N - 1) / 2)
-
-    """Create COO-DTM matrix"""
-    shape = (len(document_index), vocab_size)
-    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=int)
-
-    """Ingest token-pairs into new vocabulary"""
-    fg = token2id.id2token.get
-    token2id: Token2Id = Token2Id()
+    """Ingest token-pairs into new COO-vocabulary using existing token vocabulary"""
+    vocabulary: Token2Id = Token2Id()
+    fg: Callable[[int], str] = token2id.id2token.get
 
     for item in stream:
-
         TTM: scipy.sparse.spmatrix = item.term_term_matrix
 
-        """Ingest token-pairs into the new COO-vocabulary"""
-        token2id.ingest(f"{fg(a)}/{fg(b)}" for (a, b) in zip(TTM.row, TTM.col))
+        vocabulary.ingest(f"{fg(a)}/{fg(b)}" for (a, b) in zip(TTM.row, TTM.col))
+
+    vocabulary.close()
+
+    """Create sparse matrix where rows are documents, and columns are "token-pairs" tokens"""
+    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix((len(document_index), len(vocabulary)), dtype=int)
+
+    for item in stream:
+        TTM: scipy.sparse.spmatrix = item.term_term_matrix
 
         """Translate token-pair ids into id in new COO-vocabulary"""
-        token_ids = [token2id[f"{fg(a)}/{fg(b)}"] for (a, b) in zip(TTM.row, TTM.col)]
+        token_ids = [vocabulary[f"{fg(a)}/{fg(b)}"] for (a, b) in zip(TTM.row, TTM.col)]
 
         matrix[item.document_id, [token_ids]] = TTM.data
 
     document_index = document_index.set_index('document_id', drop=False)
 
-    corpus = VectorizedCorpus(bag_term_matrix=matrix.tocsr(), token2id=token2id.data, document_index=document_index)
+    corpus = VectorizedCorpus(bag_term_matrix=matrix.tocsr(), token2id=vocabulary.data, document_index=document_index)
 
     return corpus
 
@@ -95,19 +94,22 @@ class ToCoOccurrenceDTM(ITask):
 
     def process_payload(self, payload: DocumentPayload) -> Any:
 
+        document_id = self.get_document_id(payload)
+
         tokens: Iterable[str] = payload.content
+
+        if len(tokens) == 0:
+            return payload.empty(self.out_content_type)
 
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
-
-        document_id = self.get_document_id(payload)
 
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
         windows_ttm_matrix, window_counts = self.vectorizer.fit_transform(windows)
 
         return payload.update(
             self.out_content_type,
-            content=CoOccurrenceMatrixBundle(
+            content=CoOccurrencePayload(
                 document_id,
                 windows_ttm_matrix,
                 window_counts,
@@ -144,7 +146,9 @@ class ToCorpusCoOccurrenceDTM(ITask):
             raise CoOccurrenceError("expected document index found no such thingNone")
 
         # FIXME: Do NOT expand stream to list
-        stream: Iterable[CoOccurrenceMatrixBundle] = [payload.content for payload in self.instream]
+        stream: Iterable[CoOccurrencePayload] = [
+            payload.content for payload in self.instream if not payload.is_empty
+        ]
 
         # FIXME: These test only valid when at least one payload has been processed
         if 'n_tokens' not in self.document_index.columns:
@@ -156,7 +160,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         token2id: Token2Id = self.pipeline.payload.token2id
         document_index: DocumentIndex = self.pipeline.payload.document_index
 
-        corpus: VectorizedCorpus = TTM_to_coo_DTM(
+        corpus: VectorizedCorpus = TTM_to_co_occurrence_DTM(
             stream=stream,
             token2id=token2id,
             document_index=document_index,

@@ -1,5 +1,6 @@
 from collections import Counter
-from typing import Iterator, Mapping, Tuple
+import itertools
+from typing import Any, Iterator, Mapping, Tuple
 
 import numpy as np
 import scipy
@@ -10,22 +11,24 @@ from sklearn.feature_extraction.text import CountVectorizer
 class WindowsCoOccurrenceVectorizer:
     """Creates a term-term-matrix from a sequence of windows (tokens)"""
 
-    # FIXME Add WordWindowsCounter ()
-    def __init__(self, vocabulary: Token2Id):
+    def __init__(self, vocabulary: Token2Id, dtype: Any = np.uint32):
 
         self.window_counts_global: Counter = Counter()
-        # self.window_counts_document: Mapping[int, int] = None
-        self.vectorizer: CountVectorizer = CountVectorizer(
-            tokenizer=lambda x: x,
-            vocabulary=vocabulary.data,
-            lowercase=False,
-            dtype=np.uint16,
-        )
+        self.vocabulary: Token2Id = vocabulary
+        self.dtype = dtype
 
     def fit_transform(self, windows: Iterator[Iterator[str]]) -> Tuple[scipy.sparse.spmatrix, Mapping[int, int]]:
         """Fits windows generated from a __single__ document"""
+        
+        # self.vocabulary.ingest(itertools.chain(*windows))
 
-        window_term_matrix: scipy.sparse.spmatrix = self.vectorizer.fit_transform(windows)
+        vectorizer: CountVectorizer = CountVectorizer(
+            tokenizer=lambda x: x,
+            vocabulary=self.vocabulary.data,
+            lowercase=False,
+            dtype=self.dtype,
+        )
+        window_term_matrix: scipy.sparse.spmatrix = vectorizer.fit_transform(windows)
 
         term_term_matrix: scipy.sparse.spmatrix = scipy.sparse.triu(
             np.dot(window_term_matrix.T, window_term_matrix),

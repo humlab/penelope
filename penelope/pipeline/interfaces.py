@@ -67,16 +67,23 @@ class DocumentPayload:
         self.content = content
         return self
 
+    def empty(self, content_type: ContentType) -> "DocumentPayload":
+        return self.update(content_type, None)
+
+    @property
+    def is_empty(self) -> bool:
+        return self.content is None
+
     def update_properties(self, **properties) -> "DocumentPayload":
         """Save document properties to property bag"""
         self.property_bag.update(properties)
         return self
 
     @property
-    def document_name(self):
+    def document_name(self) -> str:
         return strip_path_and_extension(self.filename)
 
-    def as_str(self):
+    def as_str(self) -> str:
         if self.content_type == ContentType.TEXT:
             return self.content
         if self.content_type == ContentType.TOKENS:
