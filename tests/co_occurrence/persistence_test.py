@@ -71,7 +71,7 @@ def test_store_co_occurrences():
 
     co_occurrences = co_occurrence.load_co_occurrences(source_filename)
 
-    co_occurrence.store_co_occurrences(target_filename, co_occurrences)
+    co_occurrence.store_co_occurrences(filename=target_filename, co_occurrences=co_occurrences)
 
     assert os.path.isfile(target_filename)
 
