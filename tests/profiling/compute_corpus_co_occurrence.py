@@ -53,17 +53,11 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
         .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
     )
 
-    value: Bundle = pipeline.value()
+    bundle: Bundle = pipeline.value()
+
     basename: str = strip_path_and_extension(corpus_filename)
-    store_co_occurrences(jj(output_folder, f"{basename}.co-occurrences.zip"), value.co_occurrences)
 
-    value.token2id.store(
-        jj(output_folder, f"{basename}.co-occurrences.dictionary.zip"),
-    )
-
-    DocumentIndexHelper(value.document_index).store(
-        jj(output_folder, f"{basename}.co-occurrences.document_index.zip"),
-    )
+    bundle.store(folder=output_folder, tag=basename)
 
 
 if __name__ == "__main__":
