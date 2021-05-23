@@ -48,10 +48,17 @@ def to_filename(*, folder: str, tag: str, postfix: str = FILENAME_POSTFIX) -> st
 @dataclass
 class Bundle:
 
+    """Co-occurrence corpus where tokens are co-occurring word-pairs"""
     corpus: VectorizedCorpus = None
+
+    """Source corpus vocabulary"""
     token2id: Token2Id = None
     document_index: DocumentIndex = None
+
+    """Corpus-wide tokens' window counts"""
     window_counts_global: scipy.sparse.spmatrix = None  # Is this realy needed? Sum of matrix axis=0?
+
+    """Document-wide tokens' window counts"""
     window_counts_document: scipy.sparse.spmatrix = None
 
     folder: str = None
@@ -64,7 +71,7 @@ class Bundle:
     def co_occurrences(self) -> CoOccurrenceDataFrame:
         if self.lazy_co_occurrences is None:
             logger.info("Generating co-occurrences data frame....")
-            self.lazy_co_occurrences = self.corpus.to_co_occurrences()
+            self.lazy_co_occurrences = self.corpus.to_co_occurrences(self.token2id)
         return self.lazy_co_occurrences
 
     @co_occurrences.setter
@@ -169,7 +176,7 @@ class Bundle:
         co_occurrences: CoOccurrenceDataFrame = load_co_occurrences(filename)
 
         if co_occurrences is None and compute_frame:
-            co_occurrences = corpus.to_co_occurrences()
+            co_occurrences = corpus.to_co_occurrences(token2id)
 
         bundle = Bundle(
             folder=folder,

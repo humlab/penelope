@@ -55,7 +55,7 @@ def compute(
         if bundle.corpus is None:
             raise co_occurrence.ZeroComputeError()
 
-        bundle.tag = args.tag
+        bundle.tag = args.corpus_tag
         bundle.folder = args.target_folder
         bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
         bundle.compute_options = compile_compute_options(args, target_filename)

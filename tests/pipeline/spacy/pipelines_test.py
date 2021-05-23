@@ -103,7 +103,7 @@ def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
         corpus=value.corpus,
         token2id=value.token2id,
         document_index=value.document_index,
-        window_counts_global=value.token_window_counts,
+        window_counts_global=value.window_counts_global,
         window_counts_document=value.window_counts_document,
         lazy_co_occurrences=value.corpus.to_co_occurrences(value.token2id),
         compute_options=compile_compute_options(

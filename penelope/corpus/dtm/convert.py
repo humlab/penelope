@@ -98,6 +98,6 @@ class CoOccurrenceMixIn:
         )
 
         """Create the final corpus (dynamically to avoid cyclic dependency)"""
-        cls: type = create_instance("penelope.corpus.vectorized_corpus.VectorizedCorpus")
+        cls: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
         corpus = cls(matrix, token2id=vocabulary, document_index=document_index)
         return corpus
