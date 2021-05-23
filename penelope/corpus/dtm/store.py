@@ -7,7 +7,7 @@ from typing import Dict, Mapping, Optional
 
 import numpy as np
 import scipy
-from penelope.utility import dictify, read_json, write_json
+from penelope.utility import read_json, write_json
 
 from ..document_index import DocumentIndex
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
