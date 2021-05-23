@@ -1,7 +1,7 @@
 import os
 
 from penelope import pipeline
-from penelope.co_occurrence import ContextOpts, Bundle
+from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.corpus import TokenizedCorpus, VectorizedCorpus
 
 from ..fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus

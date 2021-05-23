@@ -1,5 +1,5 @@
-from collections import Counter
 import itertools
+from collections import Counter
 from typing import Any, Iterator, Mapping, Tuple
 
 import numpy as np
