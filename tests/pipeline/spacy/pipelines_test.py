@@ -8,7 +8,6 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import PoS_Tag_Scheme, PoS_Tag_Schemes, PropertyValueMaskingOpts, pos_tags_to_str
-from penelope.workflows.co_occurrence.compute import compile_compute_options
 
 from ..fixtures import FakeComputeOptsSpacyCSV
 
@@ -83,7 +82,7 @@ def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    value: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
+    bundle: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
         transform_opts=args.transform_opts,
@@ -94,22 +93,13 @@ def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
         checkpoint_filename=checkpoint_filename,
     ).value()
 
-    assert value.corpus is not None
-    assert value.document_index is not None
+    assert bundle.corpus is not None
+    assert bundle.token2id is not None
+    assert bundle.document_index is not None
 
-    bundle = co_occurrence.Bundle(
-        tag=args.corpus_tag,
-        folder=args.target_folder,
-        corpus=value.corpus,
-        token2id=value.token2id,
-        document_index=value.document_index,
-        corpus_token_window_counts=value.corpus_token_window_counts,
-        document_token_window_count_matrix=value.document_token_window_count_matrix,
-        lazy_co_occurrences=value.corpus.to_co_occurrences(value.token2id),
-        compute_options=compile_compute_options(
-            args, co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag)
-        ),
-    )
+    bundle.tag = args.corpus_tag
+    bundle.folder = args.target_folder
+    bundle.lazy_co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
 
     bundle.store()
 
