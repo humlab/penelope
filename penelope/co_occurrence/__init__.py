@@ -15,6 +15,7 @@ from .persistence import (
     FILENAME_PATTERN,
     FILENAME_POSTFIX,
     Bundle,
+    TokenWindowCountStatistics,
     create_options_bundle,
     load_co_occurrences,
     load_document_index,

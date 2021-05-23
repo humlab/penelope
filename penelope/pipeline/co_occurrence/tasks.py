@@ -7,6 +7,7 @@ from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
+    TokenWindowCountStatistics,
     WindowsCoOccurrenceVectorizer,
     to_token_window_counts_matrix,
     tokens_to_windows,
@@ -138,6 +139,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("context_opts", self.context_opts)
+        self.pipeline.put("global_threshold_count", self.global_threshold_count)
         return self
 
     def process_stream(self) -> VectorizedCorpus:
@@ -164,12 +166,12 @@ class ToCorpusCoOccurrenceDTM(ITask):
             document_index=document_index,
         )
 
-        corpus_token_window_counts: collections.Counter = self.get_token_windows_counts()
+        corpus_window_counts: collections.Counter = self.get_token_windows_counts()
 
         document_token_window_counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
 
         shape: Tuple[int, int] = (len(document_index), len(token2id))
-        document_token_window_count_matrix: scipy.sparse.spmatrix = to_token_window_counts_matrix(
+        document_window_counts: scipy.sparse.spmatrix = to_token_window_counts_matrix(
             document_token_window_counters, shape=shape
         )
 
@@ -178,8 +180,11 @@ class ToCorpusCoOccurrenceDTM(ITask):
                 corpus=corpus,
                 token2id=token2id,
                 document_index=document_index,
-                corpus_token_window_counts=corpus_token_window_counts,
-                document_token_window_count_matrix=document_token_window_count_matrix,
+                window_counts=TokenWindowCountStatistics(
+                    corpus_counts=corpus_window_counts,
+                    document_counts=document_window_counts,
+                ),
+                compute_options=self.pipeline.payload.stored_opts(),
             )
         )
 
@@ -187,7 +192,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         task: ToCoOccurrenceDTM = self.pipeline.find(ToCoOccurrenceDTM, self.__class__)
         if task is not None:
-            return task.vectorizer.corpus_token_window_counts
+            return task.vectorizer.corpus_window_counts
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

@@ -7,6 +7,7 @@ from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
+    TokenWindowCountStatistics,
     WindowsCoOccurrenceVectorizer,
     term_term_matrix_to_co_occurrences,
     tokens_to_windows,
@@ -129,7 +130,9 @@ class ToCorpusDocumentCoOccurrence(ITask):
                 co_occurrences=co_occurrences,
                 token2id=token2id,
                 document_index=self.document_index,
-                corpus_token_window_counts=self.get_window_counts_global(),
+                window_counts=TokenWindowCountStatistics(
+                    corpus_counts=self.get_window_counts_global(),
+                ),
             )
         )
 
@@ -137,7 +140,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
         task: ToDocumentCoOccurrence = self.pipeline.find(ToDocumentCoOccurrence, self.__class__)
         if task is not None:
-            return task.vectorizer.corpus_token_window_counts
+            return task.vectorizer.corpus_window_counts
         return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:

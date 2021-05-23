@@ -7,7 +7,7 @@ from penelope.utility import strip_extensions
 
 from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 from .interface import ContextOpts, CoOccurrenceError
-from .persistence import Bundle
+from .persistence import Bundle, TokenWindowCountStatistics
 from .vectorize import WindowsCoOccurrenceVectorizer
 from .windows import tokens_to_windows
 
@@ -81,6 +81,8 @@ def compute_non_partitioned_corpus_co_occurrence(
         lazy_co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
-        corpus_token_window_counts=vectorizer.corpus_token_window_counts,
-        document_token_window_count_matrix=window_counts_matrix,
+        window_counts=TokenWindowCountStatistics(
+            corpus_counts=vectorizer.corpus_window_counts,
+            document_counts=window_counts_matrix,
+        ),
     )
