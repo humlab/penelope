@@ -1,9 +1,6 @@
 from dataclasses import dataclass, field
+from penelope.utility.utils import create_dataclass_instance_from_kwargs
 from typing import List, Set, Union
-
-from penelope.utility import getLogger
-
-logger = getLogger('penelope')
 
 Token = Union[int, str]
 
@@ -37,7 +34,14 @@ class ContextOpts:
             context_width=self.context_width,
             concept=list(self.concept or set()),
             ignore_concept=self.ignore_concept,
-            padding=self.pad,
+            pad=self.pad,
             ignore_padding=self.ignore_padding,
             partition_keys=self.partition_keys,
         )
+
+    @classmethod
+    def from_kwargs(cls, **kwargs):
+
+        instance: ContextOpts = create_dataclass_instance_from_kwargs(cls, **kwargs)
+
+        return instance

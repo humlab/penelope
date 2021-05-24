@@ -78,7 +78,7 @@
         "context_width": 4,
         "concept": [],
         "ignore_concept": true,
-        "padding": "*",
+        "pad": "*",
         "ignore_padding": false,
         "partition_keys": [
             "document_id"

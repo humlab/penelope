@@ -4,7 +4,7 @@ import os
 import pickle
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional, Tuple
+from typing import Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -162,6 +162,14 @@ class Bundle:
     @property
     def options_filename(self) -> str:
         return replace_extension(self.co_occurrence_filename, 'json')
+
+    @property
+    def context_opts(self) -> Optional[ContextOpts]:
+        opts: dict = (self.compute_options or dict()).get("context_opts")
+        if opts is None:
+            return None
+        context_opts = ContextOpts.from_kwargs(**opts)
+        return context_opts
 
     def store(self, *, folder: str = None, tag: str = None) -> "Bundle":
 
@@ -369,15 +377,3 @@ def create_options_bundle(
         **other_options,
     }
     return options
-
-
-def compile_compute_options(args: Any, text_reader_opts: TextReaderOpts, target_filename: str) -> dict:
-    return create_options_bundle(
-        reader_opts=text_reader_opts,
-        transform_opts=args.transform_opts,
-        context_opts=args.context_opts,
-        extract_opts=args.extract_opts,
-        input_filename=args.corpus_filename,
-        output_filename=target_filename,
-        count_threshold=args.count_threshold,
-    )

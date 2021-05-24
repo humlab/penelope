@@ -89,6 +89,7 @@ from .utils import (
     clamp,
     clamp_values,
     complete_value_range,
+    create_dataclass_instance_from_kwargs,
     create_instance,
     dataframe_to_tuples,
     dict_of_key_values_inverted_to_dict_of_value_key,

@@ -11,6 +11,7 @@ import platform
 import re
 import time
 import uuid
+from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number
 from random import randrange
@@ -541,6 +542,26 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         return getattr(module, cls_or_function_name)
     except (ImportError, AttributeError, ValueError) as e:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
+
+
+O = TypeVar("O")
+
+
+def create_dataclass_instance_from_kwargs(cls: Type[O], **kwargs) -> O:
+    """Create an instance of `cls` assigning properties `kwargs`"""
+
+    if not is_dataclass(cls):
+        raise TypeError("can olnly create dataclass instances")
+
+    known_args = {k: v for k, v in kwargs.items() if k in cls.__annotations__}
+    unknown_args = {k: v for k, v in kwargs.items() if k not in cls.__annotations__}
+
+    instance: O = cls(**known_args)
+
+    for k, v in unknown_args.items():
+        setattr(instance, k, v)
+
+    return instance
 
 
 def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) -> str:
