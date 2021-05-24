@@ -1,12 +1,10 @@
+from typing import Set
 from penelope import co_occurrence
 from penelope.notebook.word_trends.displayers.display_top_table import TopTokensDisplayer
-from penelope.utility import getLogger
 
 from .. import utility as notebook_utility
 from .. import word_trends
 from ..co_occurrence.tabular_gui import CoOccurrenceTable
-
-logger = getLogger()
 
 
 class ExploreGUI:
@@ -40,7 +38,6 @@ class ExploreGUI:
         # self.tab_main.display_fx_result(
         #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
         # )
-
         self.tab_main.display_content(
             0,
             CoOccurrenceTable(
@@ -48,6 +45,7 @@ class ExploreGUI:
                 token2id=self.bundle.token2id,
                 document_index=self.bundle.document_index,
                 compute_options=trends_data.compute_options,
+                concepts=self.bundle.context_opts.concept if self.bundle.context_opts else set()
             ),
             clear=True,
         )
