@@ -10,3 +10,4 @@ DocumentIndex = pd.DataFrame
 IntOrStr = Union[int, str]
 
 TaggedFrame = pd.core.api.DataFrame
+Token = Union[int, str]
