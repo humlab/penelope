@@ -114,7 +114,7 @@ class TokenWindowCountStatistics:
 @dataclass
 class Bundle:
 
-    """Co-occurrence corpus where tokens are co-occurring word-pairs"""
+    """Co-occurrence corpus where the tokens are concatenated co-occurring word-pairs"""
 
     corpus: VectorizedCorpus = None
 

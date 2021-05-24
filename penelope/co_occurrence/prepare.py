@@ -71,9 +71,9 @@ class CoOccurrenceHelper:
         if threshold < 2:
             return self
 
-        global_tokens_counts: pd.Series = self.co_occurrences.groupby(['tokens'])['value'].sum()
+        global_tokens_counts: pd.Series = self.co_occurrences.groupby(['token'])['value'].sum()
         threshold_tokens: pd.Index = global_tokens_counts[global_tokens_counts >= threshold].index
-        self.data = self.data.set_index('tokens').loc[threshold_tokens]  # [['year', 'value', 'value_n_t']]
+        self.data = self.data.set_index('token').loc[threshold_tokens]  # [['year', 'value', 'value_n_t']]
 
         return self
 

@@ -68,7 +68,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         self._table: PerspectiveWidget = PerspectiveWidget(
             self.get_data(),
-            sort=[["tokens", "asc"]],
+            sort=[["token", "asc"]],
             aggregates={},
         )
 
