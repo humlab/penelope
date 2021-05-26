@@ -36,7 +36,6 @@ class WindowsCorpus(ITokenizedCorpus):
 
     def __next__(self) -> Tuple[str, List[str]]:
         try:
-            # FIXME #91, #92: Add counters!!!
             filename, _, tokens = next(self.windows)
             _stats = self.statistics[filename]
             _stats['n_windows'] = _stats['n_windows'] + 1
