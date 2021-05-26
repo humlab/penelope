@@ -141,16 +141,21 @@ class DocumentIndexHelper:
         column_name: str,
         transformer: Union[Callable[[T], T], Dict[T, T], None] = None,
         index_values: Union[str, List[T]] = None,
+        extra_grouping_columns: List[str] = None,
     ) -> "DocumentIndexHelper":
         """Returns a reduced document index grouped by specified column.
 
-        A new `category` column is added that by applying `transformer` to `column_name`.
         If `transformer` is None then `category` will be same as `column_name`.
-        All count columns as specified in COUNT_COLUMNS will be summed up.
+        Otherwise a new `category` column is added by applying `transformer` to `column_name`.
+
+        All columns found in COUNT_COLUMNS will be summed up.
+
         New `filename`, `document_name` and `document_id` columns are generated.
         Both `filename` and `document_name` will be set to str(`category`)
+
         If `index_values` is specified than the returned index will have _exactly_ those index
-        values, and can be used for instance if there are gaps n the index that needs to be filled.
+        values, and can be used for instance if there are gaps in the index that needs to be filled.
+
         For integer categories `index_values` can have the literal value `fill_gaps` in which case
         a strictly increasing index will be created without gaps.
 
@@ -166,7 +171,11 @@ class DocumentIndexHelper:
             [type]: [description]
         """
 
-        # Categrory column must exist (add before call if necessary)
+        if extra_grouping_columns:
+            # Additional grouping columns (e.g. document properties)
+            raise NotImplementedError("Use of extra_grouping_columns is NOT implemented")
+
+        # Category column must exist (add before call if necessary)
         if column_name not in self._document_index.columns:
             raise DocumentIndexError(f"fatal: document index has no {column_name} column")
 
@@ -194,7 +203,7 @@ class DocumentIndexHelper:
         # Add a new and possibly transformed `category`column, group by column and apply aggreates
         document_index: DocumentIndex = (
             self._document_index.assign(category=transform)
-            .groupby('category')
+            .groupby(['category'])
             .agg(count_aggregates)
             .rename(columns={column_name: 'n_docs'})
         )
@@ -204,10 +213,13 @@ class DocumentIndexHelper:
 
         # Set new index `index_values` as new index if specified, or else index
         if index_values is None:
+
             # Use existing index values (results from group by)
             index_values = document_index.index
+
         elif isinstance(index_values, str) and index_values == 'fill_gaps':
             # Create a strictly increasing index (fills gaps, index must be of integer type)
+
             if not np.issubdtype(document_index.dtype, np.integer):
                 raise DocumentIndexError(f"expected index of type int, found {type(document_index.dtype)}")
 
