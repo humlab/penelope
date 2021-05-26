@@ -19,7 +19,8 @@ def checkpoint_folder_name(corpus_filename: str) -> str:
 def to_tagged_frame_pipeline(
     corpus_config: config.CorpusConfig,
     corpus_filename: str = None,
-    force_checkpoint: str = None,
+    feather_checkpoint: bool = True,
+    force_checkpoint: bool = False,
     **_,
 ):
     """Loads a tagged data frame"""
@@ -41,6 +42,9 @@ def to_tagged_frame_pipeline(
     else:
         raise ValueError("fatal: corpus type is not (yet) supported")
 
-    p.add(task).checkpoint_feather(checkpoint_folder, force=force_checkpoint)
+    p.add(task)
+
+    if feather_checkpoint:
+        p = p.checkpoint_feather(checkpoint_folder, force=force_checkpoint)
 
     return p
