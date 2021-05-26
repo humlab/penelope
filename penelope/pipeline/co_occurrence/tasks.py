@@ -1,6 +1,7 @@
 import collections
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Optional, Tuple
+from loguru import logger
 
 import scipy
 from penelope.co_occurrence import (
@@ -152,9 +153,10 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         # FIXME: These test only valid when at least one payload has been processed
         if 'n_tokens' not in self.document_index.columns:
-            raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
+            raise CoOccurrenceError("expected `document_index.n_tokens`, but found no such column")
 
         if 'n_raw_tokens' not in self.document_index.columns:
+            # logger.warning("Value `n_raw_tokens` not in index, using `n_tokens` instead")
             raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
         token2id: Token2Id = self.pipeline.payload.token2id

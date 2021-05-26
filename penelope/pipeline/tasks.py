@@ -508,7 +508,7 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, BuildToken2IdMixIn, TransformT
         if self.token2id:
             self.token2id.ingest(tokens)
 
-        self.update_document_properties(payload, n_tokens=len(tokens))
+        self.update_document_properties(payload, n_tokens=len(tokens)) #, n_raw_tokens=len(payload.content))
 
         return payload.update(self.out_content_type, tokens)
 
@@ -609,6 +609,7 @@ class TokensTransform(TransformTokensMixIn, ITask):
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         tokens: List[str] = self.transform(payload.content)
+        # FIXME: call self.update_document_properties(payload, n_tokens=len(tokens))??
         return payload.update(self.out_content_type, tokens)
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":

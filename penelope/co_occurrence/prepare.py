@@ -13,45 +13,56 @@ class CoOccurrenceHelper:
         co_occurrences: CoOccurrenceDataFrame,
         token2id: Token2Id,
         document_index: DocumentIndex,
+        pivot_keys: List[str] = None
     ):
 
         self.co_occurrences: CoOccurrenceDataFrame = co_occurrences
         self.token2id: Token2Id = token2id
         self.document_index: DocumentIndex = document_index
-        self.groupings: List[str] = ['document_id']
         self.data: pd.DataFrame = self.co_occurrences  # .copy()
+        self.pivot_keys: List[str] = pivot_keys
 
     def reset(self) -> "CoOccurrenceHelper":
         self.data: pd.DataFrame = self.co_occurrences  # .copy()
+        self.pivot_keys = None
         return self
 
-    def groupby(self, groupings: Union[str, List[str]]) -> "CoOccurrenceHelper":
+    def groupby(self, keys: Union[str, List[str]]) -> "CoOccurrenceHelper":
+
+        if not keys:
+            raise ValueError("group keys is not specified")
 
         data: pd.DataFrame = self.data
 
-        if isinstance(groupings, str):
-            groupings = [groupings]
+        if isinstance(keys, str):
+            keys = [keys]
 
         document_index: DocumentIndex = self.document_index.set_index('document_id')
-        grouping_columns = [g for g in groupings if g in document_index.columns and g not in data.columns]
 
+        keys = [g for g in keys if g in document_index.columns and g not in data.columns]
+
+        if len(keys) == 0:
+            raise ValueError(f"group keys {' '.join(keys)} not found in document index")
         # counter_columns = [c for c in ['n_tokens', 'n_raw_tokens'] if c in document_index.columns]
 
         """Add grouping columns to data"""
-        data = data.merge(document_index[grouping_columns], left_on='document_id', right_index=True, how='inner')
+        data = data.merge(document_index[keys], left_on='document_id', right_index=True, how='inner')
 
         """Group and sum up data"""
-        data = data.groupby(grouping_columns + ['w1_id', 'w2_id'])['value'].sum().reset_index()
+        data = data.groupby(keys + ['w1_id', 'w2_id'])['value'].sum().reset_index()
 
         """Divide yearly window counts with yearly token counts"""
+        normalize_key = 'n_raw_tokens'
         data['value_n_t'] = data.value / pd.merge(
-            data[grouping_columns],
-            document_index.groupby(grouping_columns)['n_raw_tokens'].sum(),  # Yearly token counts
+            data[keys],
+            document_index.groupby(keys)[normalize_key].sum(),  # Yearly token counts
             left_on='year',
             right_index=True,
-        )['n_raw_tokens']
+        )[normalize_key]
 
         self.data = data
+        self.pivot_keys = keys
+
         return self
 
     def decode(self) -> "CoOccurrenceHelper":
@@ -111,7 +122,7 @@ class CoOccurrenceHelper:
 
     """ Unchained functions/properties follows """
 
-    def rank(self, n_top=10, column='value') -> pd.DataFrame:
+    def rank(self, n_top=10, column='value') -> "CoOccurrenceHelper":
 
         value_columns: List[str] = ['value', 'n_tokens', 'n_raw_tokens']
         token_columns: List[str] = ['w1', 'w2', 'token']
@@ -124,13 +135,18 @@ class CoOccurrenceHelper:
         # self.data['rank'] = self.data.groupby(group_columns)[column].rank(ascending=False) #, method='first')
         # return self.data[self.data['rank'] <= n_top] # .drop(columns='rank')
 
-        data = self.data[self.data.groupby(group_columns)[column].rank(ascending=False, method='first') <= n_top]
+        self.data = self.data[self.data.groupby(group_columns)[column].rank(ascending=False, method='first') <= n_top]
 
-        return data
+        return self
 
-    def largest(self, n_top=10, column='value') -> pd.DataFrame:
-        data = self.data.loc[self.data.groupby(self.groupings)[column].nlargest(n_top).reset_index().level_1]
-        return data
+    def largest(self, n_top=10, column='value') -> "CoOccurrenceHelper":
+
+        if self.pivot_keys is None:
+            return self.data.sort_values(by=column, ascending=True).head(n_top)
+
+        self.data = self.data.loc[self.data.groupby(self.pivot_keys)[column].nlargest(n_top).reset_index().level_1]
+
+        return self
 
     def head(self, n_head: int) -> "CoOccurrenceHelper":
 
@@ -140,9 +156,9 @@ class CoOccurrenceHelper:
         if len(self.data) > n_head:
             print(f"warning: only {n_head} records out of {len(self.data)} records are displayed.")
 
-        data = self.data.head(n_head)
+        self.data = self.data.head(n_head)
 
-        return data
+        return self
 
     @property
     def value(self) -> pd.DataFrame:
