@@ -26,3 +26,6 @@ def test_pos_tags():
 
     tags = suc_schema.exclude(['NN|JJ', "Delimiter", ['VB']])
     assert set(tags).difference(all_tags - {'MID', 'MAD', 'PAD', 'NN', 'VB', 'JJ'}) == set()
+
+    tags = suc_schema.all_types_except('NN|JJ')
+    assert set(tags) == (set(suc_schema.tags).difference(set(suc_schema.Delimiter))).difference(['NN', 'JJ'])
