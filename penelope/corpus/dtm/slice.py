@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from heapq import nlargest
+from typing import Sequence, Union
 
+import numpy as np
 import textacy
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
@@ -24,7 +26,7 @@ class SliceMixIn:
             Subset of self where words having a count less than 'n_count' are removed
         """
 
-        tokens = set(w for w, c in self.token_counter.items() if c >= n_count)
+        tokens = set(w for w, c in self.term_frequency_mapping.items() if c >= n_count)
 
         def _px(w):
             return w in tokens
@@ -44,7 +46,7 @@ class SliceMixIn:
         VectorizedCorpus
             Subset of self where words having a count less than 'n_count' are removed
         """
-        tokens = set(nlargest(n_top, self.token_counter, key=self.token_counter.get))
+        tokens = set(nlargest(n_top, self.term_frequency_mapping, key=self.term_frequency_mapping.get))
 
         def _px(w):
             return w in tokens
@@ -92,9 +94,9 @@ class SliceMixIn:
         sliced_bag_term_matrix, token2id = textacy.vsm.matrix_utils.filter_terms_by_df(
             self.bag_term_matrix, self.token2id, max_df=max_df, min_df=min_df, max_n_terms=max_n_terms
         )
-        token_counter = {w: c for w, c in self.token_counter.items() if w in token2id}
+        term_frequency_mapping = {w: c for w, c in self.term_frequency_mapping.items() if w in token2id}
 
-        v_corpus = self.create(sliced_bag_term_matrix, token2id, self.document_index, token_counter)
+        v_corpus = self.create(sliced_bag_term_matrix, token2id, self.document_index, term_frequency_mapping)
 
         return v_corpus
 
@@ -114,12 +116,26 @@ class SliceMixIn:
         """
         indices = [self.token2id[w] for w in self.token2id.keys() if px(w)]
 
+        v_corpus = self.slice_by_indicies(indices)
+
+        return v_corpus
+
+    # @autojit
+    def slice_by_indicies(self: IVectorizedCorpusProtocol, indices: Sequence[int]) -> IVectorizedCorpus:
+        """Create a subset corpus from given `indices`"""
+
         indices.sort()
 
         sliced_bag_term_matrix = self.bag_term_matrix[:, indices]
         token2id = {self.id2token[indices[i]]: i for i in range(0, len(indices))}
-        token_counter = {w: c for w, c in self.token_counter.items() if w in token2id}
+        term_frequency_mapping = {w: c for w, c in self.term_frequency_mapping.items() if w in token2id}
 
-        v_corpus = self.create(sliced_bag_term_matrix, token2id, self.document_index, token_counter)
+        v_corpus = self.create(sliced_bag_term_matrix, token2id, self.document_index, term_frequency_mapping)
 
         return v_corpus
+
+    def slice_by_term_frequency(self, threshold: Union[int, float]) -> IVectorizedCorpus:
+        """Returns subset of corpus where low frequenct words are fioltered out"""
+        indicies = np.argwhere(self.term_frequencies >= threshold).ravel()
+        corpus: IVectorizedCorpus = self.slice_by_indicies(indicies)
+        return corpus

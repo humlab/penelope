@@ -17,7 +17,7 @@ def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
     token2id: Dict[str, int],
     document_index: DocumentIndex,
-    token_counter: Dict[str, int] = None,
+    term_frequency_mapping: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
     module = importlib.import_module(name="penelope.corpus.dtm.vectorized_corpus")
@@ -26,7 +26,7 @@ def create_corpus_instance(
         bag_term_matrix=bag_term_matrix,
         token2id=token2id,
         document_index=document_index,
-        token_counter=token_counter,
+        term_frequency_mapping=term_frequency_mapping,
     )
 
 
@@ -39,7 +39,7 @@ class StoreMixIn:
 
         The two files are stored in files with names based on the specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `token_counter`
+            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `term_frequency_mapping`
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
 
@@ -57,7 +57,7 @@ class StoreMixIn:
 
         data = {
             'token2id': self.token2id,
-            'token_counter': self.token_counter,
+            'term_frequency_mapping': self.term_frequency_mapping,
             'document_index': self.document_index,
         }
         data_filename = StoreMixIn._data_filename(tag, folder)
@@ -103,7 +103,7 @@ class StoreMixIn:
 
         Two files are loaded based on specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `token_counter`
+            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `term_frequency_mapping`
             {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
 
 
@@ -124,8 +124,8 @@ class StoreMixIn:
             data = pickle.load(f)
 
         token2id: Mapping = data["token2id"]
-        document_index: DocumentIndex = data.get("document_index", data.get("document_index", None))
-        token_counter: dict = data.get("word_counts", data.get("token_counter", None))
+        document_index: DocumentIndex = data.get("document_index")
+        term_frequency_mapping: dict = data.get("term_frequency_mapping", data.get("token_counter", None))
         matrix_basename = StoreMixIn._matrix_filename(tag, folder)
 
         if os.path.isfile(matrix_basename + '.npz'):
@@ -134,7 +134,10 @@ class StoreMixIn:
             bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
 
         return create_corpus_instance(
-            bag_term_matrix, token2id=token2id, document_index=document_index, token_counter=token_counter
+            bag_term_matrix,
+            token2id=token2id,
+            document_index=document_index,
+            term_frequency_mapping=term_frequency_mapping,
         )
 
     @staticmethod

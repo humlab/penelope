@@ -38,12 +38,12 @@ class IVectorizedCorpus(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def token_counter(self) -> Dict[str, int]:
+    def term_frequency_mapping(self) -> Dict[str, int]:
         ...
 
     @property
     @abc.abstractproperty
-    def corpus_token_counts(self) -> np.ndarray:
+    def term_frequencies(self) -> np.ndarray:
         ...
 
     @property
@@ -214,7 +214,7 @@ class IVectorizedCorpus(abc.ABC):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        token_counter: Dict[str, int] = None,
+        term_frequency_mapping: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         ...
 
@@ -227,7 +227,7 @@ class IVectorizedCorpusProtocol(Protocol):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        token_counter: Dict[str, int] = None,
+        term_frequency_mapping: Dict[str, int] = None,
     ) -> IVectorizedCorpus:
         ...
 

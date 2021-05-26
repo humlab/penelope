@@ -102,8 +102,8 @@ def infrequent_words(
     if weighting == 'count' and threshold <= 1:
         return set([])
 
-    token_counter = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=as_strings)
-    words = {w for w in token_counter if token_counter[w] < threshold}
+    term_frequency_mapping = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=as_strings)
+    words = {w for w in term_frequency_mapping if term_frequency_mapping[w] < threshold}
 
     return words
 

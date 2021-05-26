@@ -148,7 +148,7 @@ def compute_goddness_of_fits_to_uniform(
     df_gof = pd.DataFrame(
         {
             'token': [corpus.id2token[i] for i in range(0, dtm.shape[1])],
-            'word_count': [corpus.token_counter[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
+            'word_count': [corpus.term_frequency_mapping[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
         }
     )
 

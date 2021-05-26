@@ -29,7 +29,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        token_counter: Dict[str, int] = None,
+        term_frequency_mapping: Dict[str, int] = None,
     ):
         """Class that encapsulates a bag-of-word matrix.
 
@@ -41,8 +41,8 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Token to token id translation i.e. translates token to column index
         document_index : DocumentIndex
             Corpus document metadata (bag-of-word row metadata)
-        token_counter : dict(str,int), optional
-            Total corpus word counts, by default None, computed if None
+        term_frequency_mapping : dict(str,int), optional
+            Supplied if source TF mapping is needed
         """
 
         # Ensure that we have a sparse matrix (CSR)
@@ -59,7 +59,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         self._id2token = None
 
         self._document_index = self._ingest_document_index(document_index=document_index)
-        self._token_counter = token_counter
+        self._term_frequency_mapping = term_frequency_mapping
 
     def _ingest_document_index(self, document_index: DocumentIndex):
         if not utility.is_strictly_increasing(document_index.index):
@@ -101,17 +101,24 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return self.bag_term_matrix.T
 
     @property
-    def token_counter(self) -> Dict[str, int]:
-        if self._token_counter is None:
-            self._token_counter = {self.id2token[i]: c for i, c in enumerate(self.corpus_token_counts)}
-        return self._token_counter
+    def term_frequency_mapping(self) -> Dict[str, int]:
+        if self._term_frequency_mapping is None:
+            self._term_frequency_mapping = {self.id2token[i]: c for i, c in enumerate(self.term_frequencies)}
+        return self._term_frequency_mapping
 
     @property
-    def corpus_token_counts(self) -> np.ndarray:
-        return self.bag_term_matrix.sum(axis=0).A1
+    def term_frequencies(self) -> np.ndarray:
+        """Global token frequencies (absolute term count)"""
+        return self.bag_term_matrix.sum(axis=0).A1.ravel()
+
+    @property
+    def TF(self) -> np.ndarray:
+        """Term frequencies (TF)"""
+        return self.term_frequencies
 
     @property
     def document_token_counts(self) -> np.ndarray:
+        """Number of tokens per document"""
         return self.bag_term_matrix.sum(axis=1).A1
 
     @property
@@ -209,7 +216,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             factor = self.bag_term_matrix[0, :].sum() / btm[0, :].sum()
             btm = btm * factor
 
-        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.token_counter)
+        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.term_frequency_mapping)
 
         return corpus
 
@@ -222,7 +229,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         token_counts = self.document_index.n_raw_tokens.values
         btm = utility.normalize_sparse_matrix_by_vector(self.bag_term_matrix, token_counts)
-        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.token_counter)
+        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.term_frequency_mapping)
 
         return corpus
 
@@ -288,7 +295,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         tfidf_bag_term_matrix = transformer.fit_transform(self.bag_term_matrix)
 
-        n_corpus = VectorizedCorpus(tfidf_bag_term_matrix, self.token2id, self.document_index, self.token_counter)
+        n_corpus = VectorizedCorpus(
+            tfidf_bag_term_matrix, self.token2id, self.document_index, self.term_frequency_mapping
+        )
 
         return n_corpus
 
@@ -353,13 +362,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        token_counter: Dict[str, int] = None,
+        term_frequency_mapping: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         return VectorizedCorpus(
             bag_term_matrix=bag_term_matrix,
             token2id=token2id,
             document_index=document_index,
-            token_counter=token_counter,
+            term_frequency_mapping=term_frequency_mapping,
         )
 
 

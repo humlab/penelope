@@ -29,10 +29,10 @@ def compute_non_partitioned_corpus_co_occurrence(
         raise CoOccurrenceError("expected document index found None")
 
     if 'n_tokens' not in document_index.columns:
-        raise CoOccurrenceError("expected `document_index.n_tokens`, but found no column")
+        raise CoOccurrenceError("expected `document_index.n_tokens`, but found no such column")
 
     if 'n_raw_tokens' not in document_index.columns:
-        raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
+        raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no such column")
 
     if not isinstance(global_threshold_count, int) or global_threshold_count < 1:
         global_threshold_count = 1

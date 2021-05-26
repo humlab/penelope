@@ -173,9 +173,9 @@ def merge_phrases(
     """Returns (same) document with found phrases merged into a single token.
     The first word in phrase is replaced by entire phrase, and consequtive words are replaced by `pad`.
     Note that the phrase will have the same PoS tag as the first word."""
-    for idx, token, n_tokens in phrase_positions:
+    for idx, token, n_count in phrase_positions:
         doc.loc[idx, target_column] = token
-        doc.loc[idx + 1 : idx + n_tokens - 1, target_column] = pad
+        doc.loc[idx + 1 : idx + n_count - 1, target_column] = pad
         # doc.loc[idx+1:len(phrase) + 1, pos_column] = 'MID'
     return doc
 
