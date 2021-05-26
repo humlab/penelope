@@ -157,4 +157,3 @@ class CoOccurrenceTable1(GridBox):  # pylint: disable=too-many-ancestors
                     IPython_display.display(js_download)
 
         self._button_bar.disabled = False
-

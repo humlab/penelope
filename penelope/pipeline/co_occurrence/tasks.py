@@ -1,9 +1,9 @@
 import collections
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Optional, Tuple
-from loguru import logger
 
 import scipy
+from loguru import logger
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,

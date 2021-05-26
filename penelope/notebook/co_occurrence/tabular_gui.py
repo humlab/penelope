@@ -12,7 +12,6 @@ from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
 from perspective import PerspectiveWidget
 
-
 # pylint: disable=too-many-instance-attributes
 
 
@@ -97,7 +96,9 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._download = Button(description='Download data', layout=Layout(width='auto'))
         self._download_output: Output = Output()
 
-        self._table: PerspectiveWidget = PerspectiveWidget(None)  # self.co_occurrences, sort=[["token", "asc"]], aggregates={}, )
+        self._table: PerspectiveWidget = PerspectiveWidget(
+            None
+        )  # self.co_occurrences, sort=[["token", "asc"]], aggregates={}, )
 
         self._button_bar = HBox(
             children=[
@@ -171,7 +172,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
     def _update_co_occurrences(self, *_) -> pd.DataFrame:
 
-        self.co_occurrences= self.to_co_occurrences()
+        self.co_occurrences = self.to_co_occurrences()
 
         self.info(f"Data size: {len(self.co_occurrences)}")
 
@@ -258,7 +259,6 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         self._button_bar.disabled = False
 
-
     def to_co_occurrences(self) -> pd.DataFrame:
 
         co_occurrences: pd.DataFrame = (
@@ -274,7 +274,6 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         ).value
 
         return co_occurrences
-
 
     def to_corpus(self) -> VectorizedCorpus:
 

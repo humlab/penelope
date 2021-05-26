@@ -161,7 +161,6 @@ def process_co_ocurrence(
             pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
             logger.info(f"PoS paddings expanded to: {pos_paddings}")
 
-
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
             corpus_filename=input_filename,

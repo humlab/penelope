@@ -1,10 +1,10 @@
 import pytest
-
+from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.co_occurrence import to_filename, Bundle
 from penelope.notebook.co_occurrence.tabular_gui import CoOccurrenceTable, get_prepared_corpus
 
 # pylint: disable=protected-access
+
 
 @pytest.fixture
 def bundle():
@@ -26,8 +26,8 @@ def test_get_prepared_corpus(bundle):
 
     assert corpus is not None
 
-def test_table_gui_create(bundle):
 
+def test_table_gui_create(bundle):
 
     gui: CoOccurrenceTable = CoOccurrenceTable(bundle=bundle)
 
@@ -37,6 +37,7 @@ def test_table_gui_create(bundle):
 
     gui.alert("🤢")
     gui.info("😊")
+
 
 @pytest.mark.parametrize("category", ["year", "lustrum", "decade"])
 def test_table_gui_to_corpus(bundle, category):
@@ -87,6 +88,7 @@ def test_table_gui_to_corpus(bundle, category):
 
     gui.save()
 
+
 @pytest.mark.parametrize("category", ["year", "lustrum", "decade"])
 def test_table_gui_to_co_occurrences(bundle, category):
 
@@ -106,4 +108,3 @@ def test_table_gui_to_co_occurrences(bundle, category):
     assert len(gui.co_occurrences) > 0
     assert all(gui.co_occurrences.token.str.startswith("educational"))
     assert all(gui.co_occurrences.w1 == "educational")
-

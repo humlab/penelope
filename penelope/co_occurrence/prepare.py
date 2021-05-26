@@ -13,7 +13,7 @@ class CoOccurrenceHelper:
         co_occurrences: CoOccurrenceDataFrame,
         token2id: Token2Id,
         document_index: DocumentIndex,
-        pivot_keys: List[str] = None
+        pivot_keys: List[str] = None,
     ):
 
         self.co_occurrences: CoOccurrenceDataFrame = co_occurrences
