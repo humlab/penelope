@@ -57,6 +57,7 @@ def create_bundle_helper(bundle: Bundle) -> CoOccurrenceHelper:
         bundle.co_occurrences,
         bundle.token2id,
         bundle.document_index,
+        pivot_keys=None,
     )
     return helper
 

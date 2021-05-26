@@ -57,7 +57,7 @@ def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
     expected_dtm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]]
     expected_word_counts = {'a': 10, 'b': 10, 'c': 11, 'd': 3}
     assert expected_vocab, v_corpus.token2id
-    assert expected_word_counts, v_corpus.token_counter
+    assert expected_word_counts, v_corpus.term_frequency_mapping
     assert (expected_dtm == v_corpus.bag_term_matrix.toarray()).all()
 
 
@@ -66,7 +66,7 @@ def test_word_counts_of_vectorized_corpus_are_absolute_word_of_entire_corpus():
     corpus = create_corpus()
     vectorizer = CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
-    results = v_corpus.token_counter
+    results = v_corpus.term_frequency_mapping
     expected = {
         'tre': 1,
         'svarta': 1,
