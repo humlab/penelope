@@ -37,19 +37,11 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
 
     corpus_config.text_reader_opts.update(n_processes=reader_opts.n_processes, n_chunksize=reader_opts.n_chunksize)
 
-    # stream = SparvCsvTokenizer(corpus_filename, extract_tokens_opts=extract_opts, reader_opts=reader_opts)
-    # document_index = stream.document_index
-    # token2id: Token2Id = Token2Id()
-    # for _, tokens in tqdm.tqdm(stream):
-    #     token2id.ingest(tokens)
-
     pipeline: CorpusPipeline = (
         to_tagged_frame_pipeline(corpus_config, corpus_filename).tagged_frame_to_tokens(
             extract_opts=extract_opts, filter_opts=None, transform_opts=None
         )
-        # .tokens_transform(transform_opts=transform_opts)
         .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
-        # .tqdm()
         .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
     )
 
