@@ -49,7 +49,7 @@ class CoOccurrenceMixIn:
         df['w1_id'] = df.w1.apply(sg)
         df['w2_id'] = df.w2.apply(sg)
 
-        df = df[['document_id', 'w1_id', 'w2_id', 'value', 'token', 'w1', 'w2']]
+        df = df[[category_column, 'w1_id', 'w2_id', 'value', 'token', 'w1', 'w2']]
 
         return df
 
