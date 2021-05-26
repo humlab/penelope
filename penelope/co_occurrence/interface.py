@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from penelope.utility.utils import create_dataclass_instance_from_kwargs
 from typing import List, Set, Union
+
+from penelope.utility.utils import create_dataclass_instance_from_kwargs
 
 Token = Union[int, str]
 
