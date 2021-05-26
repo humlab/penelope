@@ -390,6 +390,11 @@ class BaseGUI:
 
     @property
     def extract_opts(self) -> ExtractTaggedTokensOpts:
+
+        # if ["PASSTHROUGH"] in self._pos_paddings.value:
+        #    pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
+        #    logger.info(f"PoS paddings expanded to: {pos_paddings}")
+
         return ExtractTaggedTokensOpts(
             pos_includes=f"|{'|'.join(better_flatten(self._pos_includes.value))}|",
             pos_paddings=f"|{'|'.join(better_flatten(self._pos_paddings.value))}|",

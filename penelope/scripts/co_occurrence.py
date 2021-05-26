@@ -153,8 +153,14 @@ def process_co_ocurrence(
         output_folder, output_tag = to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)
+
         if pos_excludes is None:
             pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
+
+        if pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
+            pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
+            logger.info(f"PoS paddings expanded to: {pos_paddings}")
+
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
