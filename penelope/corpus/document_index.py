@@ -11,6 +11,7 @@ from penelope.utility import (
     FilenameFieldSpecs,
     PD_PoS_tag_groups,
     deprecated,
+    dict_of_key_values_inverted_to_dict_of_value_key,
     extract_filenames_metadata,
     is_strictly_increasing,
     list_of_dicts_to_dict_of_lists,
@@ -138,15 +139,16 @@ class DocumentIndexHelper:
 
     def group_by_column(
         self,
-        column_name: str,
+        pivot_column_name: str,
         transformer: Union[Callable[[T], T], Dict[T, T], None] = None,
         index_values: Union[str, List[T]] = None,
         extra_grouping_columns: List[str] = None,
+        target_column_name: str = 'category',
     ) -> "DocumentIndexHelper":
         """Returns a reduced document index grouped by specified column.
 
-        If `transformer` is None then `category` will be same as `column_name`.
-        Otherwise a new `category` column is added by applying `transformer` to `column_name`.
+        If `transformer` is None then grouping is done on `column_name`.
+        Otherwise a new `target_column_name` column is added by applying `transformer` to `pivot_column_name`.
 
         All columns found in COUNT_COLUMNS will be summed up.
 
@@ -160,9 +162,10 @@ class DocumentIndexHelper:
         a strictly increasing index will be created without gaps.
 
         Args:
-            column_name (str): The column to group by, must exist, must be of int or str type
+            pivot_column_name (str): The column to group by, must exist, must be of int or str type
             transformer (callable, dict, None): Transforms to apply to column before grouping
             index_values (pd.Series, List[T]): pandas index of returned document index
+            target_column_name (str): Name of resulting category column
 
         Raises:
             DocumentIndexError: [description]
@@ -176,36 +179,36 @@ class DocumentIndexHelper:
             raise NotImplementedError("Use of extra_grouping_columns is NOT implemented")
 
         # Category column must exist (add before call if necessary)
-        if column_name not in self._document_index.columns:
-            raise DocumentIndexError(f"fatal: document index has no {column_name} column")
+        if pivot_column_name not in self._document_index.columns:
+            raise DocumentIndexError(f"fatal: document index has no {pivot_column_name} column")
 
         # Create `agg` dict that sums up all count variables (and span of years per group)
         count_aggregates = {
-            column_name: 'size',
+            pivot_column_name: 'size',
             **{
                 count_column: 'sum'
                 for count_column in DOCUMENT_INDEX_COUNT_COLUMNS
                 if count_column in self._document_index.columns
             },
-            **({} if column_name == 'year' else {'year': ['min', 'max', 'size']}),
+            **({} if pivot_column_name == 'year' else {'year': ['min', 'max', 'size']}),
         }
 
         transform = lambda df: (
-            df[column_name]
+            df[pivot_column_name]
             if transformer is None
-            else df[column_name].apply(transformer)
+            else df[pivot_column_name].apply(transformer)
             if callable(transformer)
-            else df[column_name].apply(transformer.get)
+            else df[pivot_column_name].apply(transformer.get)
             if isinstance(transformer, dict)
             else None
         )
 
-        # Add a new and possibly transformed `category`column, group by column and apply aggreates
+        # Add a new and possibly transformed column, group by that column and apply aggreates
         document_index: DocumentIndex = (
-            self._document_index.assign(category=transform)
-            .groupby(['category'])
+            self._document_index.assign(**{target_column_name: transform})
+            .groupby([target_column_name])
             .agg(count_aggregates)
-            .rename(columns={column_name: 'n_docs'})
+            .rename(columns={pivot_column_name: 'n_docs'})
         )
 
         # Reset column index to a single level
@@ -229,11 +232,11 @@ class DocumentIndexHelper:
         document_index = pd.merge(
             pd.DataFrame(
                 {
-                    'category': index_values,
-                    'filename': [f"{column_name}_{value}.txt" for value in index_values],
-                    'document_name': [f"{column_name}_{value}" for value in index_values],
+                    target_column_name: index_values,
+                    'filename': [f"{pivot_column_name}_{value}.txt" for value in index_values],
+                    'document_name': [f"{pivot_column_name}_{value}" for value in index_values],
                 }
-            ).set_index('category'),
+            ).set_index(target_column_name),
             document_index,
             how='left',
             left_index=True,
@@ -241,10 +244,10 @@ class DocumentIndexHelper:
         )
 
         # Add `year` column if grouping column was 'year`, set to index or min year based on grouping column
-        document_index['year'] = document_index.index if column_name == 'year' else document_index.year_min
+        document_index['year'] = document_index.index if pivot_column_name == 'year' else document_index.year_min
 
         # Add `document_id`
-        document_index = document_index.reset_index()
+        document_index = document_index.reset_index(drop=document_index.index.name in document_index.columns)
         document_index['document_id'] = document_index.index
 
         # Set `document_name` as index of result data frame
@@ -252,7 +255,58 @@ class DocumentIndexHelper:
 
         return DocumentIndexHelper(document_index)
 
+    def group_by_time_period(
+        self,
+        *,
+        time_period_specifier: Union[str, dict, Callable[[Any], Any]],
+        source_column_name: str = 'year',
+        target_column_name: str = 'time_period',
+        index_values: Union[str, List[T]] = None,
+    ) -> Tuple[pd.DataFrame, dict]:
+        """Special case of of above, groups by 'year' based on `time_period_specifier`
+
+            time_period_specifier specifies transform of source_column_name to target_column_name prior to grouping:
+               - If Callable then it is applied on source_column_name
+               - If literal 'decade' or 'lustrum' then source column is assumed to be a year
+
+
+        Args:
+            time_period_specifier (Union[str, dict, Callable[[Any], Any]]): Group category specifier
+            target_column_name (str, optional): Category column name. Defaults to 'time_period'.
+
+        Returns:
+            Tuple[pd.DataFrame, dict]: grouped document index and group indicies
+        """
+
+        """Add new column `target_column_name`"""
+        self._document_index[target_column_name] = (
+            self._document_index[source_column_name]
+            if time_period_specifier == source_column_name
+            else self._document_index.year.apply(create_time_period_categorizer(time_period_specifier))
+        )
+
+        """Store indicies for documents in each group"""
+        category_indicies = self._document_index.groupby(target_column_name).apply(lambda x: x.index.tolist()).to_dict()
+
+        """Group by 'target_column_name' column"""
+        grouped_document_index = (
+            self.group_by_column(
+                pivot_column_name=target_column_name,
+                extra_grouping_columns=None,
+                target_column_name=target_column_name,
+                index_values=index_values,
+            )
+            .document_index.set_index('document_id', drop=False)
+            .sort_index(axis=0)
+        )
+
+        """Fix result names"""
+        grouped_document_index.columns = [name.replace('_sum', '') for name in grouped_document_index.columns]
+
+        return grouped_document_index, category_indicies
+
     def set_strictly_increasing_index(self) -> "DocumentIndexHelper":
+        """Sets a strictly increasing index"""
         self._document_index['document_id'] = get_strictly_increasing_document_id(
             self._document_index, document_id_field=None
         )
@@ -268,6 +322,33 @@ class DocumentIndexHelper:
             self._document_index = self._document_index.append(other_index, ignore_index=False)
             self._document_index['document_id'] = range(0, len(self._document_index))
         return self
+
+
+KNOWN_TIME_PERIODS: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
+
+TimePeriodSpecifier = Union[str, dict, Callable[[Any], Any]]
+
+
+def create_time_period_categorizer(time_period_specifier: TimePeriodSpecifier) -> Callable[[Any], Any]:
+    # FIXME: Move to pandas_utils or time_period_utils.py
+
+    if callable(time_period_specifier):
+        return time_period_specifier
+
+    if isinstance(time_period_specifier, str):
+
+        if time_period_specifier not in KNOWN_TIME_PERIODS:
+            raise ValueError(f"{time_period_specifier} is not a known period specifier")
+
+        categorizer = lambda y: y - int(y % KNOWN_TIME_PERIODS[time_period_specifier])
+
+    else:
+
+        year_group_mapping = dict_of_key_values_inverted_to_dict_of_value_key(time_period_specifier)
+
+        categorizer = lambda x: year_group_mapping.get(x, np.nan)
+
+    return categorizer
 
 
 def get_strictly_increasing_document_id(
