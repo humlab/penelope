@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Optional, Tuple
 
 import scipy
-from loguru import logger
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,

@@ -59,7 +59,7 @@ def create_slice_by_n_count_test_corpus() -> dtm.VectorizedCorpus:
 
 
 def create_bundle(tag: str = 'VENUS') -> Bundle:
-    folder, tag = f'./tests/test_data/{tag}', tag
+    folder = f'./tests/test_data/{tag}'
     filename = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
     return bundle

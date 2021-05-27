@@ -3,7 +3,7 @@ from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus.dtm import VectorizedCorpus
 from penelope.notebook.co_occurrence.tabular_gui import CoOccurrenceTable, get_prepared_corpus
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access, redefined-outer-name
 
 
 @pytest.fixture
