@@ -24,32 +24,36 @@ class CoOccurrenceMixIn:
             self.token2id [dict]:       Vocabulary of co-occuring token pairs
         """
 
+        time_period_column = 'time_period' if 'time_period' in self.document_index.columns else 'year'
+
         coo = self.data.tocoo(copy=False)
-
-        category_column = 'category' if 'category' in self.document_index.columns else 'document_id'
-
-        df = (
-            pd.DataFrame({category_column: coo.row, 'token_id': coo.col, 'value': coo.data})
-            # .sort_values(['document_id', 'token_id'])
-            # .reset_index(drop=True)
+        df = pd.DataFrame(
+            {
+                # 'document_id': coo.row,
+                'document_id': coo.row.astype(np.uint32),
+                'token_id': coo.col.astype(np.uint32),
+                'value': coo.data,
+            }
         )
 
-        """Decode w1/w2 token pairs using own token2id"""
+        """Add a time period column that can be used as a pivot column"""
+        df['time_period'] = self.document_index.loc[df.document_id][time_period_column].astype(np.uint16).values
+        # TODO Add year column as well??
+        
+        """Decode w1/w2 token pair"""
         fg = self.id2token.get
 
         df['token'] = df.token_id.apply(fg)
 
         ws = pd.DataFrame(df.token.str.split('/', 1).tolist(), columns=['w1', 'w2'], index=df.index)
-
         df = df.assign(w1=ws.w1, w2=ws.w2)
 
-        """Decode w1 and w2 tokens using supplied token2id"""
+        # """Decode w1 and w2 tokens using supplied token2id"""
         sg = source_token2id.get
+        df['w1_id'] = df.w1.apply(sg).astype(np.uint32)
+        df['w2_id'] = df.w2.apply(sg).astype(np.uint32)
 
-        df['w1_id'] = df.w1.apply(sg)
-        df['w2_id'] = df.w2.apply(sg)
-
-        df = df[[category_column, 'w1_id', 'w2_id', 'value', 'token', 'w1', 'w2']]
+        df = df.drop(columns=["token", "w1", "w2"]).reset_index()
 
         return df
 
