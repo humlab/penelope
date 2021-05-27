@@ -54,7 +54,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
         # FIXME: #102 TopTokensDisplayer - Always group data from now on?
         if self.category != 'year':
-            corpus = corpus.group_by_period(period=self.category)
+            corpus = corpus.group_by_time_period(time_period_specifier=self.category)
 
         top_terms: pd.DataFrame = corpus.get_top_terms(
             category_column='category', n_count=self.top_count, kind=self.kind
