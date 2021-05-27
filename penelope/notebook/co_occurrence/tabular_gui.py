@@ -17,13 +17,29 @@ from perspective import PerspectiveWidget
 
 def get_prepared_corpus(
     corpus: VectorizedCorpus,
-    period_specifier: str,
+    period_pivot: str,
     tf_idf: bool,
     token_filter: str,
     global_threshold: Union[int, float],
+    pivot_column_name: str,
 ) -> VectorizedCorpus:
+    """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold.
+    Returned corpus' document index has a new pivot column `target_column_name`
 
-    corpus = corpus.group_by_document_index(period_specifier=period_specifier)
+    Args:
+        corpus (VectorizedCorpus): input corpus
+        period_pivot (str): temporal pivot key
+        tf_idf (bool): apply TF-IDF flag
+        token_filter (str): match tokens
+        global_threshold (Union[int, float]): limit result by global term frequency
+        pivot_column_name (Union[int, float]): name of grouping column
+
+    Returns:
+        VectorizedCorpus: pivoted corpus.
+    """
+    corpus = corpus.group_by_time_period_optimized(
+        time_period_specifier=period_pivot, target_column_name=pivot_column_name
+    )
 
     if global_threshold > 1:
         corpus = corpus.slice_by_term_frequency(global_threshold)
@@ -49,6 +65,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         """Alternative implementation that uses VectorizedCorpus"""
         self.bundle = bundle
         self.co_occurrences: pd.DataFrame = None
+        self.pivot_column_name: str = 'time_period'
 
         if not isinstance(bundle.token2id, Token2Id):
             raise ValueError(f"Expected Token2Id, found {type(bundle.token2id)}")
@@ -261,14 +278,15 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
     def to_co_occurrences(self) -> pd.DataFrame:
 
+        if 'time_period' not in self.corpus.document_index.columns:
+            raise ValueError("to co-occurrence only allowed for grouped/categorized corpus")
+
         co_occurrences: pd.DataFrame = (
             CoOccurrenceHelper(
-                self.corpus.to_co_occurrences(self.bundle.token2id),
-                self.bundle.token2id,
-                self.bundle.document_index,
-                pivot_keys=self.pivot,
+                corpus=self.corpus,
+                source_token2id=self.bundle.token2id,
+                pivot_keys=self.pivot_column_name,
             )
-            .groupby(self.pivot)
             .exclude(self.ignores)
             .largest(self.largest)
         ).value
@@ -276,12 +294,13 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         return co_occurrences
 
     def to_corpus(self) -> VectorizedCorpus:
-
+        """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold."""
         corpus: VectorizedCorpus = get_prepared_corpus(
             corpus=self.bundle.corpus,
-            period_specifier=self.pivot,
+            period_pivot=self.pivot,
             tf_idf=self.tf_idf,
             token_filter=self.token_filter,
             global_threshold=self.global_threshold,
+            pivot_column_name=self.pivot_column_name,
         )
         return corpus

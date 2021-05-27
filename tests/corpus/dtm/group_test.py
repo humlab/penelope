@@ -2,56 +2,59 @@ import numpy as np
 import pandas as pd
 import penelope.corpus.dtm as dtm
 import pytest
-from penelope.co_occurrence import Bundle, to_filename
+from penelope.co_occurrence import Bundle
+from penelope.corpus import DocumentIndexHelper
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.corpus.dtm.group import categorize_document_index
 from penelope.utility import is_strictly_increasing
 from sklearn.feature_extraction.text import CountVectorizer
+
+from .utils import create_bundle, create_vectorized_corpus
 
 #  # pylint: disable=redefined-outer-name
 
 
+@pytest.fixture
+def vectorized_corpus() -> dtm.VectorizedCorpus:
+    return create_vectorized_corpus()
+
+
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
-
-    filename = to_filename(folder=folder, tag=tag)
-
-    bundle: Bundle = Bundle.load(filename, compute_frame=False)
-
-    return bundle
+    return create_bundle('VENUS')
 
 
 def test_categorize_document_index(bundle: Bundle):
-
     corpus: VectorizedCorpus = bundle.corpus
     document_index: pd.DataFrame = bundle.corpus.document_index
-
-    document_index, category_indicies = categorize_document_index(
-        corpus.document_index,
-        'year',
+    document_index, category_indicies = DocumentIndexHelper(document_index).group_by_time_period(
+        time_period_specifier='year',
     )
-
     assert category_indicies == corpus.document_index.groupby("year").apply(lambda x: x.index.tolist()).to_dict()
     assert document_index is not None
 
 
 def test_group_corpus_by_document_index(bundle: Bundle):
 
-    corpus: VectorizedCorpus = bundle.corpus.group_by_document_index(period_specifier='year', aggregate='sum')
+    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
+        time_period_specifier='year', aggregate='sum', target_column_name='category'
+    )
 
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
     assert len(corpus.document_index) == 5
     assert set(corpus.document_index.category.tolist()) == set([1945, 1958, 1978, 1997, 2017])
 
-    corpus: VectorizedCorpus = bundle.corpus.group_by_document_index(period_specifier='lustrum', aggregate='sum')
+    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
+        time_period_specifier='lustrum', aggregate='sum', target_column_name='category'
+    )
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
     assert len(corpus.document_index) == 5
     assert set(corpus.document_index.category.tolist()) == set([1945, 1955, 1975, 1995, 2015])
 
-    corpus: VectorizedCorpus = bundle.corpus.group_by_document_index(period_specifier='decade', aggregate='sum')
+    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
+        time_period_specifier='decade', aggregate='sum', target_column_name='category'
+    )
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
     assert len(corpus.document_index) == 5
@@ -71,19 +74,57 @@ def test_group_by_year_category_aggregates_DTM_to_PTM():
     document_index = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
     corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, document_index)
 
-    grouped_corpus = corpus.group_by_period(period='year')
+    grouped_corpus = corpus.group_by_time_period(time_period_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_period(period='lustrum')
+    grouped_corpus = corpus.group_by_time_period(time_period_specifier='lustrum')
     expected_ytm = [[2, 1, 4, 1], [4, 5, 5, 0], [4, 4, 2, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_period(period='decade')
+    grouped_corpus = corpus.group_by_time_period(time_period_specifier='decade')
     expected_ytm = [[2, 1, 4, 1], [8, 9, 7, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_period(period='year', fill_gaps=True)
+    grouped_corpus = corpus.group_by_time_period(time_period_specifier='year', fill_gaps=True)
+    expected_ytm = np.matrix(
+        [
+            [2, 1, 4, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [2, 2, 3, 0],
+            [2, 3, 2, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [4, 4, 2, 2],
+        ]
+    )
+    assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
+    assert len(grouped_corpus.document_index) == 9
+    assert is_strictly_increasing(grouped_corpus.document_index.index, sort_values=False)
+
+
+def test_group_by_time_period_aggregates_DTM_to_PTM():
+
+    bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
+    token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
+    document_index = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
+    corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, document_index)
+
+    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year')
+    expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
+    assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
+
+    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='lustrum')
+    expected_ytm = [[2, 1, 4, 1], [4, 5, 5, 0], [4, 4, 2, 2]]
+    assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
+
+    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='decade')
+    expected_ytm = [[2, 1, 4, 1], [8, 9, 7, 2]]
+    assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
+
+    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year', fill_gaps=True)
     expected_ytm = np.matrix(
         [
             [2, 1, 4, 1],
@@ -117,14 +158,14 @@ def test_group_by_year_mean_bag_term_matrix_to_year_term_matrix(vectorized_corpu
 
 def test_group_by_category_aggregates_bag_term_matrix_to_category_term_matrix(vectorized_corpus):
     """ A more generic version of group_by_year (not used for now) """
-    grouped_corpus: dtm.VectorizedCorpus = vectorized_corpus.group_by_category('year')
+    grouped_corpus: dtm.VectorizedCorpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year')
     expected_ytm = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
 
 def test_group_by_category_sums_bag_term_matrix_to_category_term_matrix(vectorized_corpus):
     """ A more generic version of group_by_year (not used for now) """
-    grouped_corpus = vectorized_corpus.group_by_category(column_name='year')
+    grouped_corpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year')
     expected_ytm = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
@@ -132,11 +173,11 @@ def test_group_by_category_sums_bag_term_matrix_to_category_term_matrix(vectoriz
 def test_group_by_category_means_bag_term_matrix_to_category_term_matrix(vectorized_corpus):
     """ A more generic version of group_by_year (not used for now) """
 
-    grouped_corpus = vectorized_corpus.group_by_category(column_name='year', aggregate='sum')
+    grouped_corpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year', aggregate='sum')
     expected_ytm = [np.array([4.0, 3.0, 7.0, 1.0]), np.array([6.0, 7.0, 4.0, 2.0])]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = vectorized_corpus.group_by_category(column_name='year', aggregate='mean')
+    grouped_corpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year', aggregate='mean')
     expected_ytm = np.array([np.array([4.0, 3.0, 7.0, 1.0]) / 2.0, np.array([6.0, 7.0, 4.0, 2.0]) / 3.0])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 

@@ -18,10 +18,11 @@ def test_get_prepared_corpus(bundle):
 
     corpus: VectorizedCorpus = get_prepared_corpus(
         corpus=bundle.corpus,
-        period_specifier="year",
+        period_pivot="year",
         tf_idf=False,
         token_filter="",
         global_threshold=1,
+        pivot_column_name='time_period',
     )
 
     assert corpus is not None
@@ -39,18 +40,18 @@ def test_table_gui_create(bundle):
     gui.info("😊")
 
 
-@pytest.mark.parametrize("category", ["year", "lustrum", "decade"])
-def test_table_gui_to_corpus(bundle, category):
+@pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
+def test_table_gui_to_corpus(bundle, time_period):
 
     gui: CoOccurrenceTable = CoOccurrenceTable(bundle=bundle)
 
     gui.stop_observe()
-    gui.pivot = category
+    gui.pivot = time_period
     gui.start_observe()
 
     corpus: VectorizedCorpus = gui.to_corpus()
 
-    assert "category" in corpus.document_index.columns
+    assert "time_period" in corpus.document_index.columns
 
     gui.stop_observe()
     gui.tf_idf = True
@@ -58,7 +59,7 @@ def test_table_gui_to_corpus(bundle, category):
 
     corpus: VectorizedCorpus = gui.to_corpus()
 
-    assert "category" in corpus.document_index.columns
+    assert "time_period" in corpus.document_index.columns
 
     gui.stop_observe()
     gui.token_filter = "apa"
@@ -89,13 +90,13 @@ def test_table_gui_to_corpus(bundle, category):
     gui.save()
 
 
-@pytest.mark.parametrize("category", ["year", "lustrum", "decade"])
-def test_table_gui_to_co_occurrences(bundle, category):
+@pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
+def test_table_gui_to_co_occurrences(bundle, time_period):
 
     gui: CoOccurrenceTable = CoOccurrenceTable(bundle=bundle)
 
     gui.stop_observe()
-    gui.pivot = category
+    gui.pivot = time_period
     gui.tf_idf = False
     gui.token_filter = "educational/*"
     gui.global_threshold = 50

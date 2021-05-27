@@ -5,6 +5,7 @@ import pandas as pd
 import penelope.corpus.dtm as dtm
 import penelope.corpus.readers as readers
 import penelope.corpus.tokenized_corpus as corpora
+from penelope.co_occurrence import Bundle, to_filename
 from tests.utils import OUTPUT_FOLDER, create_tokens_reader
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
@@ -55,3 +56,10 @@ def create_slice_by_n_count_test_corpus() -> dtm.VectorizedCorpus:
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     df = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
     return dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
+
+
+def create_bundle(tag: str = 'VENUS') -> Bundle:
+    folder, tag = f'./tests/test_data/{tag}', tag
+    filename = to_filename(folder=folder, tag=tag)
+    bundle: Bundle = Bundle.load(filename, compute_frame=False)
+    return bundle

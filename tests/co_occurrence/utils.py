@@ -54,9 +54,8 @@ def create_simple_bundle() -> Bundle:
 
 def create_bundle_helper(bundle: Bundle) -> CoOccurrenceHelper:
     helper: CoOccurrenceHelper = CoOccurrenceHelper(
-        bundle.co_occurrences,
-        bundle.token2id,
-        bundle.document_index,
+        corpus=bundle.corpus,
+        source_token2id=bundle.token2id,
         pivot_keys=None,
     )
     return helper

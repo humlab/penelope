@@ -30,7 +30,7 @@ def xtest_loaded_callback():
 
 
 def test_compile_multiline_data_with_no_smoothers():
-    corpus = create_smaller_vectorized_corpus().group_by_year()
+    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name="category")
     indices = [0, 1]
     multiline_data = LinesDataMixin().compile(corpus, indices, smoothers=None)
 
@@ -43,7 +43,7 @@ def test_compile_multiline_data_with_no_smoothers():
 
 
 def test_compile_multiline_data_with_smoothers():
-    corpus = create_smaller_vectorized_corpus().group_by_year()
+    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name="category")
     indices = [0, 1, 2, 3]
     smoothers = [pchip_spline, rolling_average_smoother('nearest', 3)]
     multiline_data = LinesDataMixin().compile(corpus, indices, smoothers=smoothers)
@@ -59,7 +59,7 @@ def test_compile_multiline_data_with_smoothers():
 
 
 def test_compile_year_token_vector_data_when_corpus_is_grouped_by_year_succeeds():
-    corpus = create_smaller_vectorized_corpus().group_by_year()
+    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name="category")
     indices = [0, 1, 2, 3]
     data = CategoryDataMixin().compile(corpus, indices)
     assert isinstance(data, dict)

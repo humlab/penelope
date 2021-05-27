@@ -172,7 +172,7 @@ def test_group_by_category():
     index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX), sep=';')
     result: pd.DataFrame = (
         DocumentIndexHelper(index)
-        .group_by_column(column_name='year', transformer=None, index_values=None)
+        .group_by_column(pivot_column_name='year', transformer=None, index_values=None)
         .document_index
     )
 

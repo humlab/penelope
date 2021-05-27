@@ -52,6 +52,8 @@ class TrendsData:
 
     n_count: int = field(default=25000)
 
+    category_column_name: str = field(default="category")
+
     def update(
         self,
         *,
@@ -91,7 +93,10 @@ class TrendsData:
             if opts.tf_idf:
                 transformed_corpus = transformed_corpus.tf_idf()
 
-            transformed_corpus = transformed_corpus.group_by_period(period=opts.group_by)
+            transformed_corpus = transformed_corpus.group_by_time_period(
+                time_period_specifier=opts.group_by,
+                target_column_name=self.category_column_name,
+            )
 
             if opts.normalize:
                 transformed_corpus = transformed_corpus.normalize_by_raw_counts()
@@ -114,5 +119,7 @@ class TrendsData:
         return words
 
     def get_top_terms(self, n_count: int = 100, kind='token+count') -> pd.DataFrame:
-        top_terms = self.transformed_corpus.get_top_terms(category_column='category', n_count=n_count, kind=kind)
+        top_terms = self.transformed_corpus.get_top_terms(
+            category_column=self.category_column_name, n_count=n_count, kind=kind
+        )
         return top_terms

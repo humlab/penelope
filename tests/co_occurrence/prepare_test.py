@@ -1,5 +1,7 @@
 import os
+from typing import Set
 
+import pandas as pd
 import pytest
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, to_filename
 
@@ -22,9 +24,8 @@ def bundle() -> Bundle:
 @pytest.fixture(scope="module")
 def helper(bundle: Bundle) -> CoOccurrenceHelper:
     helper: CoOccurrenceHelper = CoOccurrenceHelper(
-        co_occurrences=bundle.co_occurrences,
-        token2id=bundle.token2id,
-        document_index=bundle.document_index,
+        corpus=bundle.corpus,
+        source_token2id=bundle.token2id,
         pivot_keys=None,
     )
     return helper
@@ -83,7 +84,7 @@ def test_co_occurrence_helper_match(helper: CoOccurrenceHelper):
     assert all(helper.value.token.str.contains("nations"))
 
     helper.reset().groupby('year').match("nat*").decode()
-    assert all(helper.value.token.str.contains("nations"))
+    assert all(helper.value.token.str.contains("nat"))
 
 
 def test_co_occurrence_helper_exclude(helper: CoOccurrenceHelper):
@@ -97,8 +98,13 @@ def test_co_occurrence_helper_rank(helper: CoOccurrenceHelper):
 
 
 def test_co_occurrence_helper_largest(helper: CoOccurrenceHelper):
-    largest = helper.reset().groupby('year').decode().largest(10).value.token.tolist()
-    assert largest[:3] == ['general/conference', 'general/shall', 'executive/board']
+
+    expected: Set[str] = set(
+        helper.data[helper.data.year == 1997].sort_values('value', ascending=False).head(3)['token'].tolist()
+    )
+    data: pd.DataFrame = helper.reset().groupby('year').decode().largest(3).value
+    largest = set(data[data.year == 1997].token.tolist())
+    assert largest == expected
 
 
 def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
