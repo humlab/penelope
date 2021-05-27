@@ -89,12 +89,6 @@ vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
 compute_topic_model = "penelope.scripts.compute_topic_model:main"
 co_occurrence = "penelope.scripts.co_occurrence:main"
 
-
-
-
-
-
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
@@ -107,7 +101,11 @@ log_cli = "False"
 testpaths = [
     "tests",
 ]
-# norecursedirs = ['penelope', 'dist', 'docs', 'htmlcov', 'tmp', 'coverage', '.git', 'data', 'output', 'deprecated', '__pycache__', 'tmp', 'test-data']
+norecursedirs = [
+    "test_data",
+    "output",
+    "__pycache__",
+]
 python_files = "*_test.py"
 python_functions = "test_*"
 filterwarnings = [
