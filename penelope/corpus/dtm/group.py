@@ -1,33 +1,40 @@
 from __future__ import annotations
 
-from typing import List, Optional, Sequence, Tuple, TypeVar, Union
+from typing import List, Mapping, Sequence, TypeVar, Union
 
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.utility import dict_of_key_values_inverted_to_dict_of_value_key
+from penelope.type_alias import DocumentIndex
 
-from ..document_index import DocumentIndexHelper
+from ..document_index import (
+    KNOWN_TIME_PERIODS,
+    DocumentIndexHelper,
+    TimePeriodSpecifier,
+    create_time_period_categorizer,
+)
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol, VectorizedCorpusError
 
 T = TypeVar("T", int, str)
 
 
 class GroupByMixIn:
-    def group_by_category(
+    def group_by_pivot_column(
         self: IVectorizedCorpusProtocol,
-        column_name: str,
+        pivot_column_name: str,
         *,
         aggregate: str = 'sum',
         fill_gaps: bool = False,
         fill_steps: int = 1,
+        target_column_name: str = 'category',
     ) -> IVectorizedCorpus:
-        """Groups document index by category column,
+        """Groups corpus byand document index by an existing pivot column,
 
         Args:
-            category_column (str): The column to group by, must exist, must be of int or str type
+            column_name (str): The column to group by, MUST EXIST, must be of int or str type
             transformer (callable, dict, None): Transforms to apply to column before grouping
             index_values (pd.Series, List[T]): pandas index of returned document index
+            target_column_name (str): name of (possibly transformed) pivot column
 
         Returns
         -------
@@ -36,28 +43,34 @@ class GroupByMixIn:
             INDEX of length K with category values as DOCUMENT_NAME, where i:th value is category of i:th row in returned matrix
         """
 
-        if column_name not in self.document_index.columns:
-            raise VectorizedCorpusError(f"expected column {column_name} in index, but found no such thing")
+        if pivot_column_name not in self.document_index.columns:
+            raise VectorizedCorpusError(f"expected column {pivot_column_name} in index, but found no such thing")
 
-        category_series: pd.Series = self.document_index[column_name]
+        category_series: pd.Series = self.document_index[pivot_column_name]
 
-        categories: Sequence[T] = _get_unique_category_values(
-            category_series, fill_gaps=fill_gaps, fill_steps=fill_steps
-        )
+        categories: Sequence[T] = create_category_series(category_series, fill_gaps=fill_gaps, fill_steps=fill_steps)
 
-        bag_term_matrix = _group_bag_term_matrix_by_category(
+        bag_term_matrix = group_DTM_by_category_series(
             bag_term_matrix=self.bag_term_matrix,
-            category_series=self.document_index[column_name],
+            category_series=self.document_index[pivot_column_name],
             categories=categories,
             aggregate=aggregate,
         )
 
         document_index: DocumentIndexHelper = (
             DocumentIndexHelper(self.document_index)
-            .group_by_column(column_name=column_name, index_values=categories)
+            .group_by_column(
+                pivot_column_name=pivot_column_name,
+                index_values=categories,
+                target_column_name=target_column_name,
+            )
             .set_strictly_increasing_index()
             .document_index
         )
+
+        if pivot_column_name == 'year':
+            """Don't loose year if we group by year and rename target"""
+            document_index['year'] = document_index[target_column_name]
 
         corpus: IVectorizedCorpus = self.create(
             bag_term_matrix,
@@ -68,92 +81,101 @@ class GroupByMixIn:
 
         return corpus
 
-    def group_by_year(self: IVectorizedCorpusProtocol, aggregate='sum', fill_gaps=True) -> IVectorizedCorpus:
-        """Returns a new corpus where documents have been grouped and summed up by year."""
-        return self.group_by_category('year', aggregate=aggregate, fill_gaps=fill_gaps, fill_steps=1)
+    def group_by_year(
+        self: IVectorizedCorpusProtocol,
+        aggregate='sum',
+        fill_gaps=True,
+        target_column_name: str = 'category',
+    ) -> IVectorizedCorpus:
+        """ShortCut: Groups by existing year column"""
+        corpus: IVectorizedCorpus = self.group_by_pivot_column(
+            pivot_column_name='year',
+            aggregate=aggregate,
+            fill_gaps=fill_gaps,
+            fill_steps=1,
+            target_column_name=target_column_name,
+        )
+        return corpus
 
-    def group_by_period(
+    def group_by_time_period(
         self: IVectorizedCorpusProtocol,
         *,
-        period: Union[str, dict],
+        time_period_specifier: TimePeriodSpecifier,
         aggregate: str = 'sum',
         fill_gaps: bool = False,
+        target_column_name: str = 'time_period',
     ) -> IVectorizedCorpus:
-        """[summary] Returns a new corpus where documents have been grouped and summed up by [period] + group_columns.
-
-        Adds a new column named 'lustrum', 'decade' or 'periods' (if dict)
+        """Groups corpus and index by new column create accordning to `time_period_specifier`.
 
         Args:
             self (IVectorizedCorpusProtocol): Vectorized corpus
-            period (Union[str, dict]): Periods to group by ("year", "lustrum", "decade" or user defined via dict)
+            time_period_specifier (TimePeriodSpecifier): Specifies construction of pivot_column (categorizer)
             aggregate (str, optional): Aggregate function. Defaults to 'sum'.
             fill_gaps (bool, optional): Defaults to False.
-
-        Raises:
-            VectorizedCorpusError: [description]
 
         Returns:
             IVectorizedCorpus: [description]
         """
-        known_periods: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
 
-        if isinstance(period, str):
+        if time_period_specifier == 'year':
+            return self.group_by_year(
+                aggregate=aggregate,
+                fill_gaps=fill_gaps,
+            )
 
-            if period not in known_periods:
-                raise VectorizedCorpusError("unknown category specifier {category_specifier} ")
+        self.document_index[target_column_name] = self.document_index.year.apply(
+            create_time_period_categorizer(time_period_specifier)
+        )
 
-            if period == 'year':
-                return self.group_by_category('year', aggregate=aggregate, fill_gaps=fill_gaps, fill_steps=1)
-
-            categorizer = lambda x: x - int(x % known_periods[period])
-
-        else:
-            year_group_mapping = dict_of_key_values_inverted_to_dict_of_value_key(period)
-            categorizer = lambda x: year_group_mapping.get(x, np.nan)
-            period = 'period'
-
-        self.document_index[period] = self.document_index.year.apply(categorizer)
-
-        corpus = self.group_by_category(
-            period,
+        corpus = self.group_by_pivot_column(
+            pivot_column_name=target_column_name,
+            aggregate=aggregate,
             fill_gaps=fill_gaps,
-            fill_steps=known_periods.get(period, 1),
+            fill_steps=KNOWN_TIME_PERIODS.get(time_period_specifier, 1),
+            target_column_name=target_column_name,
         )
 
         return corpus
 
-    def group_by_document_index(
+    def group_by_time_period_optimized(
         self: IVectorizedCorpusProtocol,
-        period_specifier: Union[str, dict],
+        time_period_specifier: Union[str, dict],
         aggregate: str = 'sum',
-        extra_grouping_columns: Optional[Union[str, List[str]]] = None,
+        fill_gaps: bool = False,
+        target_column_name: str = 'time_period',
     ) -> IVectorizedCorpus:
+        """Groups corpus by specified time_period_specifier.
+        Uses scipy sparse lil format during construction.
+        Args:
+            time_period_specifier (Union[str, dict]): [description]
+            aggregate (str, optional): [description]. Defaults to 'sum'.
 
-        DTM: scipy.sparse.spmatrix = self.bag_term_matrix
+        Returns:
+            IVectorizedCorpus: grouped corpus
+        """
 
-        document_index, group_indicies = categorize_document_index(
-            self.document_index,
-            period_specifier,
-            extra_grouping_columns,
+        if time_period_specifier == 'year':
+            return self.group_by_year(
+                aggregate=aggregate,
+                fill_gaps=fill_gaps,
+                target_column_name=target_column_name,
+            )
+
+        if fill_gaps:
+            raise NotImplementedError("group_by_time_period_optimized: fill gaps when specifier not year")
+
+        document_index, category_indicies = DocumentIndexHelper(self.document_index).group_by_time_period(
+            time_period_specifier=time_period_specifier,
+            target_column_name=target_column_name,
         )
 
-        assert aggregate in {'sum', 'mean'}
-
-        shape = (len(document_index), DTM.shape[1])
-        dtype = np.uint32 if np.issubdtype(DTM.dtype, np.integer) and aggregate == 'sum' else np.float64
-
-        matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=dtype)
-
-        for document_id, category in document_index.category.to_dict().items():
-
-            indices = group_indicies.get(category, [])
-
-            if len(indices) == 0:
-                continue
-
-            matrix[document_id, :] = (
-                DTM[indices, :].mean(axis=0) if aggregate == 'mean' else DTM[indices, :].sum(axis=0)
-            )
+        matrix: scipy.sparse.spmatrix = group_DTM_by_category_indicies_mapping(
+            bag_term_matrix=self.bag_term_matrix,
+            category_indicies=category_indicies,
+            aggregate=aggregate,
+            document_index=document_index,
+            pivot_column_name=target_column_name,
+        )
 
         grouped_corpus: IVectorizedCorpus = self.create(
             matrix.tocsr(),
@@ -164,57 +186,37 @@ class GroupByMixIn:
         return grouped_corpus
 
 
-def categorize_document_index(
-    document_index: pd.DataFrame,
-    period_specifier: Union[str, dict],
-    extra_grouping_columns: Optional[Union[str, List[str]]] = None,
-) -> Tuple[pd.DataFrame, dict]:
+def group_DTM_by_category_indicies_mapping(
+    *,
+    bag_term_matrix: scipy.sparse.spmatrix,
+    category_indicies: Mapping[int, List[int]],
+    aggregate: str,
+    document_index: DocumentIndex,
+    pivot_column_name: str,
+):
+    shape = (len(document_index), bag_term_matrix.shape[1])
+    dtype = np.uint32 if np.issubdtype(bag_term_matrix.dtype, np.integer) and aggregate == 'sum' else np.float64
+    matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=dtype)
 
-    if extra_grouping_columns:
-        raise NotImplementedError("extra_grouping_columns not implemented")
+    for document_id, category_value in document_index[pivot_column_name].to_dict().items():
+        indices = category_indicies.get(category_value, [])
+        if len(indices) == 0:
+            continue
+        matrix[document_id, :] = (
+            bag_term_matrix[indices, :].mean(axis=0) if aggregate == 'mean' else bag_term_matrix[indices, :].sum(axis=0)
+        )
 
-    known_periods: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
-
-    if isinstance(period_specifier, str):
-
-        if period_specifier not in known_periods:
-            raise ValueError(f"{period_specifier} is not a known period specifier")
-
-        if period_specifier != 'year':
-            categorizer = lambda y: y - int(y % known_periods[period_specifier])
-
-    else:
-        year_group_mapping = dict_of_key_values_inverted_to_dict_of_value_key(period_specifier)
-        categorizer = lambda x: year_group_mapping.get(x, np.nan)
-
-    document_index['category'] = (
-        document_index.year if period_specifier == 'year' else document_index.year.apply(categorizer)
-    )
-
-    # if isinstance(extra_grouping_columns, str):
-    #     extra_grouping_columns = [extra_grouping_columns]
-
-    group_indicies = document_index.groupby('category').apply(lambda x: x.index.tolist()).to_dict()
-
-    grouped_document_index = (
-        DocumentIndexHelper(document_index)
-        .group_by_column('category', extra_grouping_columns=None)  # extra_grouping_columns
-        .document_index.set_index('document_id', drop=False)
-        .sort_index(axis=0)
-    )
-    grouped_document_index.columns = [name.replace('_sum', '') for name in grouped_document_index.columns]
-
-    return grouped_document_index, group_indicies
+    return matrix
 
 
-def _get_unique_category_values(category_series: pd.Series, fill_gaps: bool = True, fill_steps: int = 1):
-    """Returns dorted distinct category values, optionally with gaps filled"""
+def create_category_series(category_series: pd.Series, fill_gaps: bool = True, fill_steps: int = 1):
+    """Returns sorted distinct category values, optionally with gaps filled"""
     if fill_gaps:
         return list(range(category_series.min(), category_series.max() + 1, fill_steps))
     return list(sorted(category_series.unique().tolist()))
 
 
-def _group_bag_term_matrix_by_category(
+def group_DTM_by_category_series(
     bag_term_matrix: scipy.sparse.csr_matrix,
     *,
     category_series: pd.Series,
@@ -236,14 +238,14 @@ def _group_bag_term_matrix_by_category(
 
     shape = (len(categories), bag_term_matrix.shape[1])
     dtype = np.int64 if np.issubdtype(bag_term_matrix.dtype, np.integer) and aggregate == 'sum' else np.float64
-    grouped_bag_term_matrix = np.zeros(shape=shape, dtype=dtype)
+    matrix = np.zeros(shape=shape, dtype=dtype)
     for i, value in enumerate(categories):
         indices = category_series[category_series == value].index.tolist()
         if len(indices) == 0:
             continue
         if aggregate == 'mean':
-            grouped_bag_term_matrix[i, :] = bag_term_matrix[indices, :].mean(axis=0)
+            matrix[i, :] = bag_term_matrix[indices, :].mean(axis=0)
         else:
-            grouped_bag_term_matrix[i, :] = bag_term_matrix[indices, :].sum(axis=0)
+            matrix[i, :] = bag_term_matrix[indices, :].sum(axis=0)
 
-    return grouped_bag_term_matrix
+    return matrix
