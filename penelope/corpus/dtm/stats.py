@@ -52,7 +52,7 @@ class StatsMixIn:
         """
         categories = sorted(self.document_index[category_column].unique().tolist())
         indicies_groups = {
-            category: self.document_index[(self.document_index.category == category)].index for category in categories
+            category: self.document_index[(self.document_index[category_column] == category)].index for category in categories
         }
         data = {
             str(category): self.get_top_n_words(n=n_count, indices=indicies_groups[category])
