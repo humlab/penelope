@@ -4,6 +4,8 @@ from penelope.notebook import utility as notebook_utility
 from penelope.notebook.co_occurrence import ExploreGUI, main_gui
 from penelope.notebook.word_trends import TrendsData
 
+# pylint: disable=redefined-outer-name
+
 
 @pytest.fixture(scope="module")
 def bundle() -> co_occurrence.Bundle:

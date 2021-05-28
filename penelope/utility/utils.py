@@ -544,10 +544,10 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
-O = TypeVar("O")
+M = TypeVar("M")
 
 
-def create_dataclass_instance_from_kwargs(cls: Type[O], **kwargs) -> O:
+def create_dataclass_instance_from_kwargs(cls: Type[M], **kwargs) -> M:
     """Create an instance of `cls` assigning properties `kwargs`"""
 
     if not is_dataclass(cls):
@@ -556,7 +556,7 @@ def create_dataclass_instance_from_kwargs(cls: Type[O], **kwargs) -> O:
     known_args = {k: v for k, v in kwargs.items() if k in cls.__annotations__}
     unknown_args = {k: v for k, v in kwargs.items() if k not in cls.__annotations__}
 
-    instance: O = cls(**known_args)
+    instance: M = cls(**known_args)
 
     for k, v in unknown_args.items():
         setattr(instance, k, v)

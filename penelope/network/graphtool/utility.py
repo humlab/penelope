@@ -1,6 +1,7 @@
+# pylint: disable=import-error,unused-import
 try:
-    import graph_tool.all as gt  # type: ignore # pylint: disable=import-error
-    import graph_tool.draw as gt_draw  # type: ignore # pylint: disable=import-error, unused-argument
+    import graph_tool.all as gt  # type: ignore
+    import graph_tool.draw as gt_draw  # type: ignore
 except ImportError:
     gt_draw = None
     gt = None
