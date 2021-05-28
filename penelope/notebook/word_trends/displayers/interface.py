@@ -20,7 +20,7 @@ class ITrendDisplayer(abc.ABC):
         return
 
     @abc.abstractmethod
-    def compile(self, *, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Any:
+    def compile(self, *, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str, **_) -> Any:
         return None
 
     @abc.abstractmethod
@@ -37,5 +37,10 @@ class ITrendDisplayer(abc.ABC):
 
         self.clear()
         with self.output:
-            plot_data = self.compile(corpus=corpus, indices=indices, smoothers=DEFAULT_SMOOTHERS if smooth else [])
+            plot_data = self.compile(
+                corpus=corpus,
+                indices=indices,
+                category_name=category_name,
+                smoothers=DEFAULT_SMOOTHERS if smooth else [],
+            )
             self.plot(plot_data=plot_data, category_name=category_name)

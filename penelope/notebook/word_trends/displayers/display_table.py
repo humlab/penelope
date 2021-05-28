@@ -23,7 +23,7 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
         df = df[[category_name] + [x for x in df.columns if x != category_name]]
         return df
 
-    def plot(self, *, plot_data: dict, category_name: str, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):
 
         with self.output:
             df = self.create_data_frame(plot_data, category_name)

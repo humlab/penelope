@@ -28,6 +28,8 @@ from tests.fixtures import create_smaller_vectorized_corpus
 BIGGER_CORPUS_FILENAME = './tests/test_data/riksdagens-protokoll.1950-1959.ak.sparv4.csv.zip'
 OUTPUT_FOLDER = './tests/output'
 
+# pylint: disable=redefined-outer-name
+
 
 def test_BarDisplayer_create():
     assert BarDisplayer() is not None

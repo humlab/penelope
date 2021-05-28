@@ -190,9 +190,9 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
         self._animate.observe(self._toggle_state_changed, 'value')
         self._relayout.on_click(self._relayout_handler)
 
-    def plot(self, plot_data: Union[pd.DataFrame, dict], category_name: str, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: Union[pd.DataFrame, dict], category_name: str, **_):
 
-        network_data: pd.DataFrame = self.create_data_frame(plot_data)
+        network_data: pd.DataFrame = self.create_data_frame(plot_data, category_name)
 
         if network_data is None:
             self.alert("No data!")

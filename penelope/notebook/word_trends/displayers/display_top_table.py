@@ -1,9 +1,10 @@
 import contextlib
+from typing import Any
 
 import IPython.display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, VBox
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from perspective import PerspectiveWidget
 
@@ -50,9 +51,8 @@ class TopTokensDisplayer(ITrendDisplayer):
         self._kind.observe(self.update, 'value')
         return self
 
-    def compile(self, *, corpus: VectorizedCorpus, **__) -> pd.DataFrame:
+    def compile(self, corpus: VectorizedCorpus, **_) -> Any:  # pylint: disable=arguments-differ
         self.corpus = corpus
-
         # FIXME: #102 TopTokensDisplayer - Always group data from now on?
         if self.time_period != 'year':
             corpus = corpus.group_by_time_period(
@@ -64,9 +64,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         )
         return top_terms
 
-    def plot(
-        self, *, plot_data: dict, category_name: str, **_
-    ) -> "TopTokensDisplayer":  # pylint: disable=unused-argument
+    def plot(self, **_) -> "TopTokensDisplayer":  # pylint: disable=arguments-differ
 
         self.update()
         return self

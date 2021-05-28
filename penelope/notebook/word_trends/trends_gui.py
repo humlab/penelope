@@ -87,11 +87,11 @@ class TrendsGUI:
 
         try:
             if self.trends_data is None:
-                self.alert("Please load a corpus (no trends data) !")
+                self.alert("😮 Please load a corpus (no trends data) !")
                 return
 
             if self.trends_data is None or self.trends_data.corpus is None:
-                self.alert("Please load a corpus (no corpus in trends data) !")
+                self.alert("😥 Please load a corpus (no corpus in trends data) !")
                 return
 
             corpus = self.trends_data.get_corpus(self.options)
@@ -100,6 +100,7 @@ class TrendsGUI:
                 corpus=corpus,
                 indices=corpus.token_indices(self._picker.value),
                 smooth=self.smooth,
+                category_name=self.trends_data.category_column,
             )
 
             self.alert("✔")

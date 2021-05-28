@@ -16,7 +16,7 @@ class BarDisplayer(CategoryDataMixin, ITrendDisplayer):
     def setup(self):
         return
 
-    def plot(self, *, plot_data: dict, category_name: str, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):
 
         tokens = [w for w in plot_data.keys() if w not in (category_name, 'year')]
 

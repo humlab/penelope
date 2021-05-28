@@ -4,8 +4,10 @@ from typing import Any, Callable, List, Sequence
 import bokeh
 import scipy
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.utility import take
+
+# pylint: disable=unused-argument
 
 
 class PenelopeBugCheck(Exception):
@@ -16,12 +18,10 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
 class LinesDataMixin:
-    def compile(
-        self, corpus: VectorizedCorpus, indices: List[int], category_column_name: str = 'category', **kwargs
-    ) -> Any:
+    def compile(self, corpus: VectorizedCorpus, indices: List[int], category_name: str = 'category', **kwargs) -> Any:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
 
-        categories = corpus.document_index[category_column_name]
+        categories = corpus.document_index[category_name]
         bag_term_matrix = corpus.bag_term_matrix
 
         if not isinstance(bag_term_matrix, scipy.sparse.spmatrix):
@@ -52,17 +52,15 @@ class LinesDataMixin:
 
 
 class CategoryDataMixin:
-    def compile(
-        self, corpus: VectorizedCorpus, indices: Sequence[int], category_column_name: str = 'category', **_
-    ) -> Any:
+    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str = 'category', **_) -> Any:
         """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
 
-        if category_column_name not in corpus.document_index.columns:
+        if category_name not in corpus.document_index.columns:
             raise PenelopeBugCheck(
                 f"Category column{CategoryDataMixin} not found in document index (has data not been grouped?)"
             )
 
-        categories = corpus.document_index[category_column_name]
+        categories = corpus.document_index[category_name]
 
         if len(categories) != corpus.data.shape[0]:
             raise PenelopeBugCheck(
@@ -74,6 +72,13 @@ class CategoryDataMixin:
 
         data = {corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).A.ravel() for token_id in indices}
 
-        data[category_column_name] = categories
+        data[category_name] = categories
 
         return data
+
+
+class TopTokens2MixIn:
+    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str = 'category', **_) -> Any:
+        """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
+        top_terms = corpus.get_top_terms(category_column=category_name, n_count=10000, kind='token+count')
+        return top_terms

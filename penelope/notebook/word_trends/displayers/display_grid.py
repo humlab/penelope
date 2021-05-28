@@ -36,7 +36,7 @@ class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
         ]
         return column_defs
 
-    def plot(self, *, plot_data: dict, category_name: str, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):
 
         df = pd.DataFrame(data=plot_data).set_index(category_name)
 
