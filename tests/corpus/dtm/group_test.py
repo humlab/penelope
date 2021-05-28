@@ -34,9 +34,9 @@ def test_categorize_document_index(bundle: Bundle):
 
 
 def test_group_corpus_by_document_index(bundle: Bundle):
-
+    category_column: str = 'category'
     corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier='year', aggregate='sum', target_column_name='category'
+        time_period_specifier='year', aggregate='sum', target_column_name=category_column
     )
 
     assert corpus is not None
@@ -45,7 +45,7 @@ def test_group_corpus_by_document_index(bundle: Bundle):
     assert set(corpus.document_index.category.tolist()) == set([1945, 1958, 1978, 1997, 2017])
 
     corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier='lustrum', aggregate='sum', target_column_name='category'
+        time_period_specifier='lustrum', aggregate='sum', target_column_name=category_column
     )
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
@@ -53,7 +53,7 @@ def test_group_corpus_by_document_index(bundle: Bundle):
     assert set(corpus.document_index.category.tolist()) == set([1945, 1955, 1975, 1995, 2015])
 
     corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier='decade', aggregate='sum', target_column_name='category'
+        time_period_specifier='decade', aggregate='sum', target_column_name=category_column
     )
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
