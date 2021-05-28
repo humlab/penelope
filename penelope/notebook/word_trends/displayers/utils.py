@@ -27,6 +27,8 @@ def tabulator_widget(df: pd.DataFrame) -> pn.widgets.Tabulator:
 
     formatters = {
         'category': NumberFormatter(format='0'),
+        'time_period': NumberFormatter(format='0'),
+        'year': NumberFormatter(format='0'),
         'index': StringFormatter(),
     }
 
