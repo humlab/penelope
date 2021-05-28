@@ -126,6 +126,7 @@ def test_bar_displayer_compile_and_display(displayer_cls, bundle: co_occurrence.
 
     assert plot_data is not None
 
+
 def test_network():
 
     data_str = """;year;token;count;w1;w2

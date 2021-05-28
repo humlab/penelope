@@ -53,7 +53,6 @@ class TrendsData:
 
     n_count: int = field(default=25000)
 
-
     def update(
         self,
         *,

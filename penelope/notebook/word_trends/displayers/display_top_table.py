@@ -55,14 +55,18 @@ class TopTokensDisplayer(ITrendDisplayer):
 
         # FIXME: #102 TopTokensDisplayer - Always group data from now on?
         if self.time_period != 'year':
-            corpus = corpus.group_by_time_period(time_period_specifier=self.time_period, target_column_name=self.category_name)
+            corpus = corpus.group_by_time_period(
+                time_period_specifier=self.time_period, target_column_name=self.category_name
+            )
 
         top_terms: pd.DataFrame = corpus.get_top_terms(
             category_column=self.category_name, n_count=self.top_count, kind=self.kind
         )
         return top_terms
 
-    def plot(self, *, plot_data: dict, category_name: str, **_) -> "TopTokensDisplayer":  # pylint: disable=unused-argument
+    def plot(
+        self, *, plot_data: dict, category_name: str, **_
+    ) -> "TopTokensDisplayer":  # pylint: disable=unused-argument
 
         self.update()
         return self

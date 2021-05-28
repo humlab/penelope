@@ -16,7 +16,9 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
 class LinesDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: List[int], category_column_name: str='category', **kwargs) -> Any:
+    def compile(
+        self, corpus: VectorizedCorpus, indices: List[int], category_column_name: str = 'category', **kwargs
+    ) -> Any:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
 
         categories = corpus.document_index[category_column_name]
@@ -50,11 +52,15 @@ class LinesDataMixin:
 
 
 class CategoryDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_column_name: str='category', **_) -> Any:
+    def compile(
+        self, corpus: VectorizedCorpus, indices: Sequence[int], category_column_name: str = 'category', **_
+    ) -> Any:
         """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
 
         if category_column_name not in corpus.document_index.columns:
-            raise PenelopeBugCheck(f"Category column{CategoryDataMixin} not found in document index (has data not been grouped?)")
+            raise PenelopeBugCheck(
+                f"Category column{CategoryDataMixin} not found in document index (has data not been grouped?)"
+            )
 
         categories = corpus.document_index[category_column_name]
 
