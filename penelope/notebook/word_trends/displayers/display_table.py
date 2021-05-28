@@ -18,15 +18,15 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
     def setup(self, *_, **__):
         return
 
-    def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
+    def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
         df = pd.DataFrame(data=plot_data)
-        df = df[['category'] + [x for x in df.columns if x != 'category']]
+        df = df[[category_name] + [x for x in df.columns if x != category_name]]
         return df
 
-    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):  # pylint: disable=unused-argument
 
         with self.output:
-            df = self.create_data_frame(plot_data)
+            df = self.create_data_frame(plot_data, category_name)
             g = display_grid(df)
             # g = tabulator_widget(df)
             IPython.display.display(g)
@@ -38,9 +38,9 @@ class UnnestedTableDisplayer(TableDisplayer):
     def __init__(self, name: str = "Table"):
         super().__init__(name=name)
 
-    def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
-        df = super().create_data_frame(plot_data)
-        df = df.melt(id_vars=["category"], var_name="token", value_name="count")
+    def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
+        df = super().create_data_frame(plot_data, category_name)
+        df = df.melt(id_vars=[category_name], var_name="token", value_name="count")
         return df
 
 
@@ -50,8 +50,8 @@ class UnnestedExplodeTableDisplayer(UnnestedTableDisplayer):
     def __init__(self, name: str = "Tabular"):
         super().__init__(name=name)
 
-    def create_data_frame(self, plot_data: dict) -> pd.DataFrame:
-        df: pd.DataFrame = super().create_data_frame(plot_data)
+    def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
+        df: pd.DataFrame = super().create_data_frame(plot_data, category_name)
 
         df = try_split_column(df, "token", "/", ["w1", "w2"], drop_source=False)
 

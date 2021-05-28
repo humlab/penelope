@@ -90,10 +90,10 @@ def css_styles(categories: List[int], custom_styles: dict) -> dict:
     return styles
 
 
-def create_network(co_occurrences: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
+def create_network(co_occurrences: pd.DataFrame, category_column_name: str) -> ipycytoscape.CytoscapeWidget:
 
     unique_tokens = co_occurrences['token'].unique().tolist()
-    unique_categories = co_occurrences['category'].unique().tolist()
+    unique_categories = co_occurrences[category_column_name].unique().tolist()
 
     token_nodes = [
         ipycytoscape.Node(
@@ -120,14 +120,14 @@ def create_network(co_occurrences: pd.DataFrame) -> ipycytoscape.CytoscapeWidget
     edges = [
         ipycytoscape.Edge(
             data={
-                "id": f"{edge['category']}_{edge['token']}",
-                "source": str(edge['category']),
+                "id": f"{edge[category_column_name]}_{edge['token']}",
+                "source": str(edge[category_column_name]),
                 "target": edge['token'],
                 "weight": 10.0 * edge['count'],
-                "category_id": str(edge['category']),
+                "category_id": str(edge[category_column_name]),
             }
         )
-        for edge in co_occurrences[['category', 'token', 'count']].to_dict('records')
+        for edge in co_occurrences[[category_column_name, 'token', 'count']].to_dict('records')
     ]
     w = ipycytoscape.CytoscapeWidget(
         layout={'height': '800px'},
@@ -190,7 +190,7 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
         self._animate.observe(self._toggle_state_changed, 'value')
         self._relayout.on_click(self._relayout_handler)
 
-    def plot(self, plot_data: Union[pd.DataFrame, dict], **_):  # pylint: disable=unused-argument
+    def plot(self, plot_data: Union[pd.DataFrame, dict], category_name: str, **_):  # pylint: disable=unused-argument
 
         network_data: pd.DataFrame = self.create_data_frame(plot_data)
 
@@ -198,9 +198,9 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
             self.alert("No data!")
             return self
 
-        self.network = create_network(network_data)
+        self.network = create_network(network_data, category_name)
         self.set_layout()
-        self.network.set_style(css_styles(network_data.category.unique(), self.custom_styles))
+        self.network.set_style(css_styles(network_data[category_name].unique(), self.custom_styles))
 
         with self.output:
             IPython_display(self.layout())

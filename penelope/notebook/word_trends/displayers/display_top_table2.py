@@ -18,10 +18,10 @@ class TopTokensDisplayer(ITrendDisplayer):
         return
 
     def compile(self, *, corpus: VectorizedCorpus, **__) -> Any:
-        top_terms = corpus.get_top_terms(category_column='category', n_count=10000, kind='token+count')
+        top_terms = corpus.get_top_terms(category_column=self.category_column_name, n_count=10000, kind='token+count')
         return top_terms
 
-    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):  # pylint: disable=unused-argument
 
         with self.output:
 

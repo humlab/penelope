@@ -33,19 +33,20 @@ class TopTokensDisplayer(ITrendDisplayer):
             disabled=False,
             layout=Layout(width='100px'),
         )
-        self._category: Dropdown = Dropdown(
+        self._time_period: Dropdown = Dropdown(
             options=['year', 'lustrum', 'decade'],
             value='decade',
             description='',
             disabled=False,
             layout=Layout(width='100px'),
         )
+        self.category_name = "time_period"
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
         self._table = PerspectiveWidget(self.data)
         self._download.on_click(self.download)
         self._top_count.observe(self.update, 'value')
-        self._category.observe(self.update, 'value')
+        self._time_period.observe(self.update, 'value')
         self._kind.observe(self.update, 'value')
         return self
 
@@ -53,15 +54,15 @@ class TopTokensDisplayer(ITrendDisplayer):
         self.corpus = corpus
 
         # FIXME: #102 TopTokensDisplayer - Always group data from now on?
-        if self.category != 'year':
-            corpus = corpus.group_by_time_period(time_period_specifier=self.category)
+        if self.time_period != 'year':
+            corpus = corpus.group_by_time_period(time_period_specifier=self.time_period, target_column_name=self.category_name)
 
         top_terms: pd.DataFrame = corpus.get_top_terms(
-            category_column='category', n_count=self.top_count, kind=self.kind
+            category_column=self.category_name, n_count=self.top_count, kind=self.kind
         )
         return top_terms
 
-    def plot(self, plot_data: dict, **_) -> "TopTokensDisplayer":  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_) -> "TopTokensDisplayer":  # pylint: disable=unused-argument
 
         self.update()
         return self
@@ -82,7 +83,7 @@ class TopTokensDisplayer(ITrendDisplayer):
                 HBox(
                     [
                         VBox([HTML("<b>Top count</b>"), self._top_count]),
-                        VBox([HTML("<b>Grouping</b>"), self._category]),
+                        VBox([HTML("<b>Grouping</b>"), self._time_period]),
                         VBox([HTML("<b>Kind</b>"), self._kind]),
                         VBox(
                             [
@@ -108,8 +109,8 @@ class TopTokensDisplayer(ITrendDisplayer):
         return self._top_count.value
 
     @property
-    def category(self) -> str:
-        return self._category.value
+    def time_period(self) -> str:
+        return self._time_period.value
 
     @property
     def kind(self) -> str:
