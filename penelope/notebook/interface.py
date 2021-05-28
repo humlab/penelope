@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from loguru import logger
 from penelope.co_occurrence import ContextOpts, to_filename
@@ -20,20 +20,20 @@ class WorkflowException(Exception):
 class ComputeOpts:
 
     corpus_type: CorpusType
-    corpus_filename: str
-    target_folder: str
-    corpus_tag: str
+    corpus_filename: Optional[str]
+    target_folder: Optional[str]
+    corpus_tag: Optional[str]
     transform_opts: TokensTransformOpts
     text_reader_opts: TextReaderOpts
     extract_opts: ExtractTaggedTokensOpts
-    filter_opts: PropertyValueMaskingOpts
+    filter_opts: Optional[PropertyValueMaskingOpts]
     vectorize_opts: VectorizeOpts
-    count_threshold: int
+    count_threshold: Optional[int]
     create_subfolder: bool
     persist: bool
 
     force: bool = field(init=True, default=False)
-    context_opts: ContextOpts = None
+    context_opts: Optional[ContextOpts] = None
 
     dry_run: bool = field(init=False, default=False)
 

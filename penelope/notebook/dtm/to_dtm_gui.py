@@ -1,5 +1,6 @@
 from typing import Any, Callable, Union
 
+from penelope.corpus import VectorizedCorpus
 from penelope.pipeline import CorpusConfig
 from penelope.utility import get_logger
 
@@ -26,7 +27,7 @@ def create_compute_gui(
     corpus_folder: str,
     data_folder: str,
     corpus_config: Union[str, CorpusConfig],
-    compute_callback: Callable[[ComputeGUI, CorpusConfig], None],
+    compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], VectorizedCorpus],
     done_callback: Callable[[Any, interface.ComputeOpts], None],
 ) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""

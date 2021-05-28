@@ -1,10 +1,8 @@
-# type: ignore
-
 import abc
 import copy
 import csv
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Union
+from typing import Any, Iterable, List, Optional, Union
 
 from penelope.corpus import DocumentIndex, Token2Id
 from penelope.utility import create_instance, dictify
@@ -29,7 +27,7 @@ class CheckpointOpts:
 
     sep: str = '\t'
     quoting: int = csv.QUOTE_NONE
-    custom_serializer_classname: str = None
+    custom_serializer_classname: Optional[str] = None
     deserialize_in_parallel: bool = field(default=False)
     deserialize_processes: int = field(default=4)
     deserialize_chunksize: int = field(default=4)

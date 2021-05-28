@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import textacy.preprocessing.remove as textacy_remove
 
@@ -19,12 +19,12 @@ class TokensTransformOpts:
     to_lower: bool = False
     to_upper: bool = False
     min_len: int = 1
-    max_len: int = None
+    max_len: Optional[int] = None
     remove_accents: bool = False
     remove_stopwords: bool = False
-    stopwords: Iterable[str] = None
-    extra_stopwords: List[str] = None
-    language: str = "swedish"
+    stopwords: Optional[Iterable[str]] = None
+    extra_stopwords: Optional[List[str]] = None
+    language: Optional[str] = "swedish"
     keep_numerals: bool = True
     keep_symbols: bool = True
 

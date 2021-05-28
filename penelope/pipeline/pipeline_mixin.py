@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.interfaces import ITokenizedCorpus
@@ -129,9 +129,9 @@ class PipelineShortcutMixIn:
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
         *,
-        extract_opts: ExtractTaggedTokensOpts,
-        transform_opts: TokensTransformOpts,
-        filter_opts: PropertyValueMaskingOpts,
+        extract_opts: Optional[ExtractTaggedTokensOpts],
+        transform_opts: Optional[TokensTransformOpts],
+        filter_opts: Optional[PropertyValueMaskingOpts],
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.TaggedFrameToTokens(

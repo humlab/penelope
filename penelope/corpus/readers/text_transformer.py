@@ -37,7 +37,7 @@ class TextTransformOpts:
     def empty():
         return TextTransformOpts().clear()
 
-    extra_transforms:  Optional[List[Callable[[str], str]]] = field(default_factory=list)
+    extra_transforms: Optional[List[Callable[[str], str]]] = field(default_factory=list)
 
     @property
     def props(self):

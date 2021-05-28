@@ -59,7 +59,7 @@ class ExtractTaggedTokensOpts:
 
     lemmatize: bool
 
-    target_override: str = None
+    target_override: Optional[str] = None
 
     """ These PoS define the tokens of interest """
     pos_includes: str = ''
@@ -68,13 +68,13 @@ class ExtractTaggedTokensOpts:
     pos_excludes: str = ''
 
     """ The PoS define tokens that are replaced with a dummy marker `*` """
-    pos_paddings: str = None
+    pos_paddings: Optional[str] = None
     pos_replace_marker: str = '*'
 
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
 
-    phrases: PhraseSubstitutions = None
+    phrases: Optional[PhraseSubstitutions] = None
 
     to_lowercase: bool = False
 
