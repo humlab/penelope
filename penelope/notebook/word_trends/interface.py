@@ -49,10 +49,10 @@ class TrendsData:
         default_factory=lambda: TrendsOpts(normalize=False, tf_idf=False, group_by='year')
     )
     transformed_corpus: VectorizedCorpus = None
+    category_column: str = field(init=False, default="time_period")
 
     n_count: int = field(default=25000)
 
-    category_column_name: str = field(default="category")
 
     def update(
         self,
@@ -67,7 +67,7 @@ class TrendsData:
             raise ValueError("TrendsData: Corpus is NOT LOADED!")
 
         self.n_count = n_count or self.n_count
-        self.corpus = (corpus or self.corpus).group_by_year()
+        self.corpus = (corpus or self.corpus).group_by_year(target_column_name=self.category_column)
         self.corpus_folder = corpus_folder or self.corpus_folder
         self.corpus_tag = corpus_tag or self.corpus_tag
 
@@ -95,7 +95,7 @@ class TrendsData:
 
             transformed_corpus = transformed_corpus.group_by_time_period(
                 time_period_specifier=opts.group_by,
-                target_column_name=self.category_column_name,
+                target_column_name=self.category_column,
             )
 
             if opts.normalize:
@@ -120,6 +120,6 @@ class TrendsData:
 
     def get_top_terms(self, n_count: int = 100, kind='token+count') -> pd.DataFrame:
         top_terms = self.transformed_corpus.get_top_terms(
-            category_column=self.category_column_name, n_count=n_count, kind=kind
+            category_column=self.category_column, n_count=n_count, kind=kind
         )
         return top_terms
