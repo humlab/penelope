@@ -16,10 +16,10 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
 class LinesDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: List[int], **kwargs) -> Any:
+    def compile(self, corpus: VectorizedCorpus, indices: List[int], category_column_name: str='category', **kwargs) -> Any:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
 
-        categories = corpus.document_index.category
+        categories = corpus.document_index[category_column_name]
         bag_term_matrix = corpus.bag_term_matrix
 
         if not isinstance(bag_term_matrix, scipy.sparse.spmatrix):
@@ -50,23 +50,24 @@ class LinesDataMixin:
 
 
 class CategoryDataMixin:
-    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], **_) -> Any:
+    def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_column_name: str='category', **_) -> Any:
         """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
 
-        if 'category' not in corpus.document_index.columns:
-            raise PenelopeBugCheck("Supplied corpus HAS NOT been prepeared with call to 'group_by_period'")
+        if category_column_name not in corpus.document_index.columns:
+            raise PenelopeBugCheck(f"Category column{CategoryDataMixin} not found in document index (has data not been grouped?)")
 
-        categories = corpus.document_index.category
+        categories = corpus.document_index[category_column_name]
 
         if len(categories) != corpus.data.shape[0]:
             raise PenelopeBugCheck(
-                f"DTM shape {corpus.data.shape} is not compatible with categories {corpus.categories}"
+                f"DTM shape {corpus.data.shape} is not compatible with categories {corpus.data.shape}"
             )
 
         if not isinstance(corpus.bag_term_matrix, scipy.sparse.spmatrix):
             raise PenelopeBugCheck(f"Expected sparse matrix, found {type(corpus.data)}")
 
         data = {corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).A.ravel() for token_id in indices}
-        data['category'] = categories
+
+        data[category_column_name] = categories
 
         return data
