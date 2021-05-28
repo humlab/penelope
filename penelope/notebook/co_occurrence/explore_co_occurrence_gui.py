@@ -1,5 +1,6 @@
 from penelope import co_occurrence
 from penelope.notebook.word_trends.displayers.display_top_table import TopTokensDisplayer
+from loguru import logger
 
 from .. import utility as notebook_utility
 from .. import word_trends
@@ -26,22 +27,28 @@ class ExploreGUI:
 
     def display(self, trends_data: word_trends.TrendsData) -> "ExploreGUI":
 
-        self.trends_data = trends_data
+        try:
+            self.trends_data = trends_data
 
-        self.trends_gui.display(trends_data=trends_data)
+            self.trends_gui.display(trends_data=trends_data)
 
-        if self.gofs_gui:
-            self.gofs_gui.display(trends_data=trends_data)
+            if self.gofs_gui:
+                self.gofs_gui.display(trends_data=trends_data)
 
-        # self.tab_main.display_fx_result(0, display_grid, trends_data.memory.get('co_occurrences'), clear=True)
-        # self.tab_main.display_fx_result(
-        #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
-        # )
-        self.tab_main.display_content(0, CoOccurrenceTable(bundle=self.bundle), clear=True)
-        self.tab_main.display_as_yaml(2, trends_data.compute_options, clear=True, width='800px', height='600px')
+            # self.tab_main.display_fx_result(0, display_grid, trends_data.memory.get('co_occurrences'), clear=True)
+            # self.tab_main.display_fx_result(
+            #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
+            # )
+            self.tab_main.display_content(0, CoOccurrenceTable(bundle=self.bundle), clear=True)
+            self.tab_main.display_as_yaml(2, trends_data.compute_options, clear=True, width='800px', height='600px')
 
-        top_displayer: TopTokensDisplayer = TopTokensDisplayer(corpus=trends_data.corpus).setup()
-        self.tab_main.display_content(4, top_displayer.layout(), clear=True)
+            top_displayer: TopTokensDisplayer = TopTokensDisplayer(corpus=trends_data.corpus).setup()
+            self.tab_main.display_content(4, top_displayer.layout(), clear=True)
+        except KeyError as ex:
+            logger.error(
+                f"KeyError: {str(ex)}, columns in data: {' '.join(trends_data.transformed_corpus.document_index.columns)}"
+            )
+            raise
 
         return self
 
