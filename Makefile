@@ -169,6 +169,10 @@ gh-exists: ; @which gh > /dev/null
 profile-co_occurrence:
 	@poetry run python -m pyinstrument -o ./profiling_pipeline_co_occurrence.log ./tests/profiling/pipeline_co_occurrence.py
 
+.PHONY: stubs
+stubs:
+	@stubgen penelope/corpus/dtm/vectorized_corpus.py --output ./typings
+
 .PHONY: help check init version
 .PHONY: lint flake8 pylint pylint_by_file yapf black isort tidy pylint_diff_only
 .PHONY: test retest test-coverage pytest
