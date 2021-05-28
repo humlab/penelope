@@ -13,29 +13,31 @@ from penelope.utility import replace_extension, strip_paths
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
-    def __init__(self, data: Optional[Union[dict, defaultdict]] = None):
+    def __init__(self, data: Optional[Union[dict, defaultdict]] = None, lowercase: bool = False):
         if isinstance(data, defaultdict):
             self.data = data
         elif isinstance(data, dict):
             self.data = defaultdict(int, data)
         else:
             self.data = data or defaultdict()
+        self.lowercase: bool = lowercase
         self.data.default_factory = self.data.__len__
         self._id2token: dict = None
 
     def __getitem__(self, key):
-        # return self.data[self._keytransform(key)]
         return self.data[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value):
         if self._id2token:
             self._id2token = None
-        # self.data[self._keytransform(key)] = value
+        if self.lowercase:
+            key = key.lower()
         self.data[key] = value
 
     def __delitem__(self, key):
+        if self.lowercase:
+            key = key.lower()
         del self.data[key]
-        # del self.data[self._keytransform(key)]
 
     def __iter__(self):
         return iter(self.data)
@@ -43,14 +45,14 @@ class Token2Id(MutableMapping):
     def __len__(self):
         return len(self.data)
 
-    # FIXME Reason for this functioN? Remove if not used.
-    # def _keytransform(self, key: str) -> str:
-    #     return key
-
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
         self._id2token = None
-        for token in tokens:
-            _ = self.data[token]
+        if self.lowercase:
+            for token in tokens:
+                _ = self.data[token.lower()]
+        else:
+            for token in tokens:
+                _ = self.data[token]
         return self
 
     def is_open(self) -> bool:
@@ -66,7 +68,8 @@ class Token2Id(MutableMapping):
 
     @property
     def id2token(self) -> dict:
-        if self._id2token is None:
+        # FIXME: Always create new reversed mapping if vocabulay is open
+        if self._id2token is None or len(self) != len(self._id2token):  # or self.is_open():
             self._id2token = {v: k for k, v in self.data.items()}
         return self._id2token
 
