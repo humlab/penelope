@@ -1,15 +1,12 @@
 import numpy as np
 import pandas as pd
-import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
+from loguru import logger
 
 try:
-    import glove  # pylint: disable=import-error
+    import glove  # type: ignore # pylint: disable=import-error
 except ModuleNotFoundError:
     glove = None
-
-
-logger = utility.getLogger('corpus_text_analysis')
 
 
 # See http://www.foldl.me/2014/glove-python/
