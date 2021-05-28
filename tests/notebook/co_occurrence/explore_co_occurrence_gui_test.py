@@ -1,30 +1,35 @@
-from unittest.mock import MagicMock, Mock
-
-import pandas as pd
-from penelope.corpus import VectorizedCorpus
+import pytest
+from penelope import co_occurrence
+from penelope.notebook import utility as notebook_utility
+from penelope.notebook.co_occurrence import ExploreGUI, main_gui
 from penelope.notebook.word_trends import TrendsData
 
 
-def trends_data_mock() -> TrendsData:
-    return Mock(
-        spec=TrendsData,
-        **{
-            'corpus': MagicMock(spec=VectorizedCorpus),
-            'goodness_of_fit': MagicMock(spec=pd.DataFrame),
-            'most_deviating_overview': MagicMock(spec=pd.DataFrame),
-            'most_deviating': MagicMock(spec=pd.DataFrame),
-        },
-    )
+@pytest.fixture(scope="module")
+def bundle() -> co_occurrence.Bundle:
+    folder, tag = './tests/test_data/VENUS', 'VENUS'
+    filename = co_occurrence.to_filename(folder=folder, tag=tag)
+    bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_frame=False)
+    return bundle
 
 
-# @patch('penelope.notebook.utility.OutputsTabExt')
-# @patch('penelope.notebook.co_occurrence.explore_co_occurrence_gui.ipywidgets', Mock())
-# def test_ExploreCoOccurrencesGUI_create_and_layout(tab):
+@pytest.fixture(scope="module")
+def trends_data(bundle) -> TrendsData:
+    trends_data: TrendsData = main_gui.to_trends_data(bundle).update()
+    return trends_data
 
-#     trends_data: TrendsData = trends_data_mock()
 
-#     gui: ExploreGUI = ExploreGUI(trends_data=trends_data)
+def test_ExploreCoOccurrencesGUI_create_and_layout(bundle: co_occurrence.Bundle):
 
-#     layout = gui.layout()
+    gui: ExploreGUI = ExploreGUI(bundle=bundle).setup()
 
-#     # assert layout is not None
+    _: notebook_utility.OutputsTabExt = gui.layout()
+
+
+def test_ExploreCoOccurrencesGUI_display(bundle: co_occurrence.Bundle, trends_data: TrendsData):
+
+    gui: ExploreGUI = ExploreGUI(bundle=bundle).setup()
+
+    _: notebook_utility.OutputsTabExt = gui.layout()
+
+    gui.display(trends_data)
