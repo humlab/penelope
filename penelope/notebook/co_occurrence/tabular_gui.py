@@ -247,8 +247,8 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         return self._token_filter.value.strip().split()
 
     @token_filter.setter
-    def token_filter(self, value: str):
-        self._token_filter.value = value
+    def token_filter(self, value: List[str]):
+        self._token_filter.value = ' '.join(value) if isinstance(value, list) else value
 
     @property
     def pivot(self) -> str:

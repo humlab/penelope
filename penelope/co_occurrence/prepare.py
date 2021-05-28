@@ -54,7 +54,7 @@ class CoOccurrenceHelper:
             raise ValueError("No keys to group by!")
 
         """Add grouping columns to data"""
-        data = data.merge(self.corpus.document_index[pivot_keys], left_on='document_id', right_index=True, how='inner')
+        data: pd.DataFrame = data.merge(self.corpus.document_index[pivot_keys], left_on='document_id', right_index=True, how='inner')
 
         """Group and sum up data"""
         data = data.groupby(pivot_keys + ID_COLUMNS)['value'].sum().reset_index()

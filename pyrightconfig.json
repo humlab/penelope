@@ -1,0 +1,21 @@
+{
+    "include": [
+        "penelope",
+        "tests"
+    ],
+    "exclude": [
+        "**/deprecated",
+        "**/.ipynb_checkpoints",
+        "**/node_modules",
+        "**/__pycache__",
+        "**/.pytest_cache",
+        "**/__init__.py",
+        "**/__paths__.py",
+        "data",
+        "test_data"
+    ],
+    "typeCheckingMode": "basic",
+    "reportGeneralTypeIssues": false,
+    "reportMissingTypeStubs": true,
+
+}
