@@ -25,7 +25,7 @@ import scipy
 T = TypeVar('T')
 K = TypeVar('K')
 V = TypeVar('V')
-
+U = TypeVar('U')
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
 
@@ -544,10 +544,8 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
-M = TypeVar("M")
 
-
-def create_dataclass_instance_from_kwargs(cls: Type[M], **kwargs) -> M:
+def create_dataclass_instance_from_kwargs(cls: Type[U], **kwargs) -> U:
     """Create an instance of `cls` assigning properties `kwargs`"""
 
     if not is_dataclass(cls):
@@ -556,7 +554,7 @@ def create_dataclass_instance_from_kwargs(cls: Type[M], **kwargs) -> M:
     known_args = {k: v for k, v in kwargs.items() if k in cls.__annotations__}
     unknown_args = {k: v for k, v in kwargs.items() if k not in cls.__annotations__}
 
-    instance: M = cls(**known_args)
+    instance: U = cls(**known_args)
 
     for k, v in unknown_args.items():
         setattr(instance, k, v)
