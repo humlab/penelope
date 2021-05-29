@@ -10,7 +10,8 @@ from penelope.corpus import Token2Id
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
-from perspective import PerspectiveWidget
+from perspective import PerspectiveError, PerspectiveWidget
+from traitlets import TraitError
 
 # pylint: disable=too-many-instance-attributes
 
@@ -113,9 +114,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._download = Button(description='Download data', layout=Layout(width='auto'))
         self._download_output: Output = Output()
 
-        self._table: PerspectiveWidget = PerspectiveWidget(
-            None
-        )  # self.co_occurrences, sort=[["token", "asc"]], aggregates={}, )
+        self._table: PerspectiveWidget = PerspectiveWidget(self.co_occurrences, sort=[["token", "asc"]], aggregates={}, )
 
         self._button_bar = HBox(
             children=[
@@ -193,7 +192,11 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         self.info(f"Data size: {len(self.co_occurrences)}")
 
-        self._table.load(self.co_occurrences)
+        with contextlib.suppress(PerspectiveError, TraitError):
+
+            columns = ['time_period', 'w1', 'w2', 'token', 'value']
+
+            self._table.load(self.co_occurrences[columns])
 
     def _update_toggle_icon(self, event: dict) -> None:
         with contextlib.suppress(Exception):
@@ -278,8 +281,8 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
     def to_co_occurrences(self) -> pd.DataFrame:
 
-        if 'time_period' not in self.corpus.document_index.columns:
-            raise ValueError("to co-occurrence only allowed for grouped/categorized corpus")
+        if self.pivot_column_name not in self.corpus.document_index.columns:
+            raise ValueError(f"expected '{self.pivot_column_name}' but not found in {', '.join(self.corpus.document_index.columns)}")
 
         co_occurrences: pd.DataFrame = (
             CoOccurrenceHelper(
@@ -304,3 +307,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
             pivot_column_name=self.pivot_column_name,
         )
         return corpus
+
+    def setup(self) -> "CoOccurrenceTable":
+        self._update_corpus()
+        return self
