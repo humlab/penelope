@@ -7,11 +7,9 @@ from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import take
 
+from .utils import PenelopeBugCheck, column_exists_guard
+
 # pylint: disable=unused-argument
-
-
-class PenelopeBugCheck(Exception):
-    pass
 
 
 DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
@@ -20,6 +18,8 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 class LinesDataMixin:
     def compile(self, corpus: VectorizedCorpus, indices: List[int], category_name: str = 'category', **kwargs) -> Any:
         """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
+
+        column_exists_guard(corpus.document_index, category_name)
 
         categories = corpus.document_index[category_name]
         bag_term_matrix = corpus.bag_term_matrix
@@ -55,10 +55,7 @@ class CategoryDataMixin:
     def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str = 'category', **_) -> Any:
         """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
 
-        if category_name not in corpus.document_index.columns:
-            raise PenelopeBugCheck(
-                f"Category column{CategoryDataMixin} not found in document index (has data not been grouped?)"
-            )
+        column_exists_guard(corpus.document_index, category_name)
 
         categories = corpus.document_index[category_name]
 
@@ -80,5 +77,6 @@ class CategoryDataMixin:
 class TopTokens2MixIn:
     def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str = 'category', **_) -> Any:
         """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
+        column_exists_guard(corpus.document_index, category_name)
         top_terms = corpus.get_top_terms(category_column=category_name, n_count=10000, kind='token+count')
         return top_terms
