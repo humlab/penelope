@@ -53,7 +53,7 @@ class TokenWindowCountStatistics:
     # FIXME Is this realy needed? Sum of matrix axis=0?
     corpus_counts: Mapping[int, int] = None
 
-    """Document-wide tokens' window counts"""
+    """Document-level token window counts"""
     document_counts: scipy.sparse.spmatrix = None
 
     @staticmethod
