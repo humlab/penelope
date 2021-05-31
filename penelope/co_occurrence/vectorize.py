@@ -1,5 +1,6 @@
 from collections import Counter
-from typing import Any, Iterator, Mapping, Tuple
+from dataclasses import dataclass
+from typing import Any, Iterator, Mapping, Tuple, List
 
 import numpy as np
 import scipy
@@ -7,16 +8,23 @@ from penelope.corpus import Token2Id
 from sklearn.feature_extraction.text import CountVectorizer
 
 
+@dataclass
+class WindowsCoOccurrenceOutput:
+
+    term_term_matrix: scipy.sparse.spmatrix
+    term_window_counter: Mapping[int, int]
+
+
 class WindowsCoOccurrenceVectorizer:
     """Creates a term-term-matrix from a sequence of windows (tokens)"""
 
-    def __init__(self, vocabulary: Token2Id, dtype: Any = np.uint32):
+    def __init__(self, vocabulary: Token2Id, dtype: Any = np.int32):
 
         self.corpus_window_counts: Counter = Counter()
         self.vocabulary: Token2Id = vocabulary
         self.dtype = dtype
 
-    def fit_transform(self, windows: Iterator[Iterator[str]]) -> Tuple[scipy.sparse.spmatrix, Mapping[int, int]]:
+    def fit_transform(self, windows: Iterator[Iterator[str]]) -> WindowsCoOccurrenceOutput:
         """Fits windows generated from a __single__ document"""
 
         # self.vocabulary.ingest(itertools.chain(*windows))
@@ -34,15 +42,16 @@ class WindowsCoOccurrenceVectorizer:
             1,
         )
 
-        document_window_counts: Mapping[int, int] = self._get_window_counts(window_term_matrix)
+        term_window_counts: Mapping[int, int] = self.to_term_window_counter(window_term_matrix)
 
-        self.corpus_window_counts.update(document_window_counts)
+        self.corpus_window_counts.update(term_window_counts)
 
-        return term_term_matrix, document_window_counts
+        return WindowsCoOccurrenceOutput(term_term_matrix, term_window_counts)
 
-    def _get_window_counts(self, window_term_matrix: scipy.sparse.spmatrix) -> Mapping[int, int]:
-        """Returns window counts for non-zero tokens in window_term_matrix"""
-        win_counts = (window_term_matrix != 0).sum(axis=0).A1
-        nz_indicies = win_counts.nonzero()[0]
-        _token_windows_counts = {i: win_counts[i] for i in nz_indicies}
-        return _token_windows_counts
+    def to_term_window_counter(self, window_term_matrix: scipy.sparse.spmatrix) -> Mapping[int, int]:
+        """Returns tuples (token_id, window count) for non-zero tokens in window_term_matrix"""
+
+        window_counts: np.ndarray = (window_term_matrix != 0).sum(axis=0).A1
+
+        window_counter: Mapping[int, int] = {i: window_counts[i] for i in window_counts.nonzero()[0]}
+        return window_counter
