@@ -415,7 +415,9 @@ def load_document_index(
     if 'filename' not in document_index.columns:
         raise DocumentIndexError("expected mandatory column `filename` in document index, found no such thing")
 
-    document_index['document_id'] = get_strictly_increasing_document_id(document_index, document_id_field).astype(np.int32)
+    document_index['document_id'] = get_strictly_increasing_document_id(document_index, document_id_field).astype(
+        np.int32
+    )
 
     if 'document_name' not in document_index.columns or (document_index.document_name == document_index.filename).all():
         document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)

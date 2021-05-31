@@ -1,13 +1,12 @@
-
-
-from penelope.corpus.token2id import Token2Id
-import pytest
-import scipy
-from penelope.co_occurrence.persistence import Bundle, to_filename
 import numpy as np
 import pandas as pd
+import pytest
+import scipy
 from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
+from penelope.co_occurrence.persistence import Bundle, to_filename
 from penelope.corpus import VectorizedCorpus
+from penelope.corpus.token2id import Token2Id
+
 
 def test_burgess_litmus_test():
     terms = 'The Horse Raced Past The Barn Fell .'.lower().split()
@@ -47,8 +46,6 @@ def test_burgess_litmus_test():
     print('Test run OK')
 
 
-
-
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
     folder, tag = './tests/test_data/VENUS', 'VENUS'
@@ -67,8 +64,8 @@ def compute_hal_score(corpus: VectorizedCorpus, bundle: Bundle) -> VectorizedCor
 
     """
 
-
     return corpus
+
 
 def test_compute_hal_score(bundle: Bundle):
 
@@ -91,4 +88,3 @@ def test_compute_hal_score(bundle: Bundle):
 
     assert nw_xy is not None
     assert nw_x is not None
-

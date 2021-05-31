@@ -544,7 +544,6 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
-
 def create_dataclass_instance_from_kwargs(cls: Type[U], **kwargs) -> U:
     """Create an instance of `cls` assigning properties `kwargs`"""
 

@@ -1,10 +1,10 @@
 import json
 from typing import Iterable, List
-from penelope.type_alias import Token
 
-from penelope.co_occurrence import ContextOpts, WindowsCorpus, tokens_to_windows, corpus_to_windows
+from penelope.co_occurrence import ContextOpts, WindowsCorpus, corpus_to_windows, tokens_to_windows
 from penelope.corpus import CorpusVectorizer, SparvTokenizedCsvCorpus, generate_token2id
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from penelope.type_alias import Token
 from tests.fixtures import SAMPLE_WINDOW_STREAM, TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
@@ -102,6 +102,7 @@ def test_tokens_to_windows():
         ['a', 'e'],
     ]
     assert list(windows) == expected_windows
+
 
 def test_windowed_when_nn_vb_lemma_2_tokens():
 

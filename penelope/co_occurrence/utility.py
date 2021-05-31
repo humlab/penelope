@@ -5,7 +5,7 @@ import pandas as pd
 import scipy
 from penelope.corpus import DocumentIndex, Token2Id
 from penelope.type_alias import FilenameTokensTuples
-from penelope.utility import strip_extensions, deprecated
+from penelope.utility import deprecated, strip_extensions
 from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -50,7 +50,7 @@ def compute_non_partitioned_corpus_co_occurrence(
     vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(token2id)
 
     # Rule change: token_to_windows removes padding tokens
-    ignore_ids: Set[int] = None # if not context_opts.ignore_padding else {token2id.id2token[context_opts.pad]}
+    ignore_ids: Set[int] = None  # if not context_opts.ignore_padding else {token2id.id2token[context_opts.pad]}
 
     for filename, tokens in stream:
 
@@ -93,7 +93,6 @@ def compute_non_partitioned_corpus_co_occurrence(
     )
 
 
-
 @deprecated
 def co_occurrence_matrix(token_ids: Iterator[int], V: int, K: int = 2) -> scipy.sparse.spmatrix:
     """Computes a sparse co-occurrence matrix given a corpus
@@ -130,10 +129,12 @@ def co_occurrence_matrix(token_ids: Iterator[int], V: int, K: int = 2) -> scipy.
     print(f" {C.nnz} nonzero elements")
     return C
 
+
 # https://gist.github.com/zyocum/2ba0457246a4d0075149aa7d607432c1
 # https://www.kaggle.com/ambarish/recommendation-system-donors-choose
 # https://github.com/roothd17/Donor-Choose-ML
 # https://github.com/harrismohammed?tab=repositories
+
 
 @deprecated
 class CoOccurrenceCountVectorizer(CountVectorizer):

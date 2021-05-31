@@ -22,6 +22,7 @@ class KeynessMetric(IntEnum):
     TF_IDF = 1
     HAL_score = 2
 
+
 def compute_hal_score(corpus: VectorizedCorpus, bundle: Bundle) -> VectorizedCorpus:
     """Compute yearly HAL-score for each co-occurrence pair (w1, w2)
 
@@ -29,8 +30,8 @@ def compute_hal_score(corpus: VectorizedCorpus, bundle: Bundle) -> VectorizedCor
 
     """
 
-
     return corpus
+
 
 def get_prepared_corpus(
     bundle: Bundle,
@@ -72,7 +73,6 @@ def get_prepared_corpus(
 
     if global_threshold > 1:
         corpus = corpus.slice_by_term_frequency(global_threshold)
-
 
     if keyness == KeynessMetric.TF:
         pass

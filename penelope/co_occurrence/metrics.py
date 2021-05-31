@@ -1,8 +1,8 @@
-
 import numpy as np
 import scipy
 import scipy.sparse as sp
 from loguru import logger
+
 
 def PPMI(TTM: scipy.sparse.csc_matrix) -> scipy.sparse.csc_matrix:
     """Tranform a term-term count matrix to PPMI.
@@ -69,13 +69,13 @@ def to_PPMI3(TTM):
 
     row_matrix = np.ones((n_rows, n_cols), dtype=np.float64)
     for i in range(n_rows):
-        row_matrix[i,:] = 0 if row_totals[0,i] == 0 else row_matrix[i,:] * (1.0 / row_totals[0,i])
+        row_matrix[i, :] = 0 if row_totals[0, i] == 0 else row_matrix[i, :] * (1.0 / row_totals[0, i])
 
     column_matrix = np.ones((n_rows, n_cols), dtype=np.float)
     for j in range(n_cols):
-        column_matrix[:,j] = 0 if col_totals[0,j] == 0 else (1.0 / col_totals[0,j])
+        column_matrix[:, j] = 0 if col_totals[0, j] == 0 else (1.0 / col_totals[0, j])
 
     P = N * TTM.toarray() * row_matrix * column_matrix
 
-    P = np.fmax(np.zeros((n_rows,n_cols), dtype=np.float64), np.log(P))
+    P = np.fmax(np.zeros((n_rows, n_cols), dtype=np.float64), np.log(P))
     return sp.csr_matrix(P)

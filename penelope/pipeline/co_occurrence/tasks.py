@@ -1,9 +1,9 @@
 import collections
-from dataclasses import dataclass, field
 import itertools
-from typing import Any, Callable, Iterable, Optional, Tuple, Mapping
-import numpy as np
+from dataclasses import dataclass, field
+from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
 
+import numpy as np
 import scipy
 import scipy.sparse as sp
 from penelope.co_occurrence import (
@@ -11,8 +11,8 @@ from penelope.co_occurrence import (
     ContextOpts,
     CoOccurrenceError,
     TokenWindowCountStatistics,
-    WindowsCoOccurrenceVectorizer,
     WindowsCoOccurrenceOutput,
+    WindowsCoOccurrenceVectorizer,
     tokens_to_windows,
 )
 from penelope.corpus import Token2Id, VectorizedCorpus
@@ -203,7 +203,9 @@ class ToCorpusCoOccurrenceDTM(ITask):
             return task.vectorizer.corpus_window_counts
         return task
 
-    def document_window_counts_matrix(self, counters: Iterable[Tuple[int, Mapping[int, int]]], shape: tuple) -> sp.spmatrix:
+    def document_window_counts_matrix(
+        self, counters: Iterable[Tuple[int, Mapping[int, int]]], shape: tuple
+    ) -> sp.spmatrix:
         """Create a matrix with token's window count for each document (rows).
         The shape of the returned sparse matrix is [number of document, vocabulary size]
 

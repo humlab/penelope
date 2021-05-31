@@ -1,6 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Iterator, Mapping, Tuple, List
+from typing import Any, Iterator, List, Mapping, Tuple
 
 import numpy as np
 import scipy
