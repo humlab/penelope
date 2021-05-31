@@ -1,5 +1,6 @@
 import contextlib
 from collections.abc import Iterable
+from enum import IntEnum
 from typing import List, Set, Union
 
 import IPython.display as IPython_display
@@ -16,10 +17,26 @@ from traitlets import TraitError
 # pylint: disable=too-many-instance-attributes
 
 
+class KeynessMetric(IntEnum):
+    TF = 0
+    TF_IDF = 1
+    HAL_score = 2
+
+def compute_hal_score(corpus: VectorizedCorpus, bundle: Bundle) -> VectorizedCorpus:
+    """Compute yearly HAL-score for each co-occurrence pair (w1, w2)
+
+    HAL-score = (CW(w1)
+
+    """
+
+
+    return corpus
+
 def get_prepared_corpus(
+    bundle: Bundle,
     corpus: VectorizedCorpus,
     period_pivot: str,
-    tf_idf: bool,
+    keyness: KeynessMetric,
     token_filter: str,
     global_threshold: Union[int, float],
     pivot_column_name: str,
@@ -30,7 +47,7 @@ def get_prepared_corpus(
     Args:
         corpus (VectorizedCorpus): input corpus
         period_pivot (str): temporal pivot key
-        tf_idf (bool): apply TF-IDF flag
+        keyness (bool): keyness metric to compute
         token_filter (str): match tokens
         global_threshold (Union[int, float]): limit result by global term frequency
         pivot_column_name (Union[int, float]): name of grouping column
@@ -38,6 +55,17 @@ def get_prepared_corpus(
     Returns:
         VectorizedCorpus: pivoted corpus.
     """
+
+    """Note! Keyness metrics must be computed on the original corpus!!!"""
+    if keyness == KeynessMetric.TF_IDF:
+        corpus = corpus.tf_idf()
+    elif keyness == KeynessMetric.HAL_score:
+        # FIXME; compute HAL score
+        # corpus = corpus.hal()
+        corpus = compute_hal_score(corpus, bundle)
+    else:
+        ...
+
     corpus = corpus.group_by_time_period_optimized(
         time_period_specifier=period_pivot, target_column_name=pivot_column_name
     )
@@ -45,8 +73,9 @@ def get_prepared_corpus(
     if global_threshold > 1:
         corpus = corpus.slice_by_term_frequency(global_threshold)
 
-    if tf_idf:
-        corpus = corpus.tf_idf()
+
+    if keyness == KeynessMetric.TF:
+        pass
 
     if token_filter:
         indices = corpus.find_matching_words_indices(token_filter, n_max_count=None)
@@ -85,7 +114,12 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
             layout=Layout(width='auto'),
         )
 
-        self._tf_idf = ToggleButton(description='TF_IDF', value=False, icon='', layout=Layout(width='auto'))
+        """Properties that changes current corpus"""
+        self._keyness: Dropdown = Dropdown(
+            options={"TF": KeynessMetric.TF, "TF-IDF": KeynessMetric.TF_IDF, "HAL score": KeynessMetric.HAL_score},
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
 
         """Properties that don't change current corpus"""
         # self._rank: Dropdown = Dropdown(
@@ -110,23 +144,28 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._show_concept = ToggleButton(description='Show concept', value=False, icon='', layout=Layout(width='auto'))
         self._message: HTML = HTML()
         self._save = Button(description='Save data', layout=Layout(width='auto'))
-        self._display = Button(description='Update', layout=Layout(width='auto'))
+        # self._display = Button(description='Update', layout=Layout(width='auto'))
         self._download = Button(description='Download data', layout=Layout(width='auto'))
         self._download_output: Output = Output()
 
-        self._table: PerspectiveWidget = PerspectiveWidget(self.co_occurrences, sort=[["token", "asc"]], aggregates={}, )
+        self._table: PerspectiveWidget = PerspectiveWidget(
+            self.co_occurrences,
+            sort=[["token", "asc"]],
+            aggregates={},
+        )
 
         self._button_bar = HBox(
             children=[
                 VBox([HTML("<b>Token match</b>"), self._token_filter]),
-                VBox([self._tf_idf, self._show_concept if self._show_concept is not None else HTML("")]),
+                VBox([HTML("<b>Keyness metric/b>"), self._keyness]),
+                VBox([self._show_concept if self._show_concept is not None else HTML("")]),
                 VBox([HTML("<b>Group by</b>"), self._pivot]),
                 VBox([HTML("<b>Global threshold</b>"), self._global_threshold_filter]),
                 VBox([HTML("<b>Group limit</b>"), self._largest]),
                 # VBox([HTML("<b>Group ranks</b>"), self._rank]),
                 # VBox([HTML("<b>Result limit</b>"), self._head]),
                 VBox([self._save, self._download]),
-                VBox([self._display]),
+                # VBox([self._display]),
                 VBox([HTML("😢"), self._message]),
                 self._download_output,
             ],
@@ -135,17 +174,30 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         super().__init__(children=[self._button_bar, self._table], layout=Layout(width='auto'), **kwargs)
 
         self._save.on_click(self.save)
-        self._display.on_click(self.save)
+        # self._display.on_click(self.save)
         self._download.on_click(self.download)
 
         self.start_observe()
+
+    def set_buzy(self, is_buzy: bool = True, message: str = None):
+
+        if message:
+            self.alert(message)
+
+        self._keyness.disabled = is_buzy
+        self._show_concept.disabled = is_buzy
+        self._pivot.disabled = is_buzy
+        self._global_threshold_filter.disabled = is_buzy
+        self._token_filter.disabled = is_buzy
+        self._save.disabled = is_buzy
+        self._download.disabled = is_buzy
+        self._largest.disabled = is_buzy
 
     def start_observe(self):
 
         self.stop_observe()
 
-        self._tf_idf.observe(self._update_corpus, 'value')
-        self._tf_idf.observe(self._update_toggle_icon, 'value')
+        self._keyness.observe(self._update_corpus, 'value')
 
         self._show_concept.observe(self._update_co_occurrences, 'value')
         self._show_concept.observe(self._update_toggle_icon, 'value')
@@ -155,6 +207,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._global_threshold_filter.observe(self._update_co_occurrences, 'value')
         # self._head.observe(self._update_co_occurrences, 'value')
         self._token_filter.observe(self._update_co_occurrences, 'value')
+        self._largest.observe(self._update_co_occurrences, 'value')
 
         return self
 
@@ -162,8 +215,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         with contextlib.suppress(Exception):
 
-            self._tf_idf.unobserve(self._update_corpus, 'value')
-            self._tf_idf.unobserve(self._update_toggle_icon, 'value')
+            self._keyness.unobserve(self._update_corpus, 'value')
 
             self._show_concept.unobserve(self._update_co_occurrences, 'value')
             self._show_concept.unobserve(self._update_toggle_icon, 'value')
@@ -173,6 +225,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
             self._global_threshold_filter.unobserve(self._update_co_occurrences, 'value')
             # self._head.unobserve(self._update_co_occurrences, 'value')
             self._token_filter.unobserve(self._update_co_occurrences, 'value')
+            self._largest.unobserve(self._update_co_occurrences, 'value')
 
     def alert(self, message: str) -> None:
         self._message.value = f"<span style='color: red; font-weight: bold;'>{message}</span>"
@@ -190,13 +243,17 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         self.co_occurrences = self.to_co_occurrences()
 
-        self.info(f"Data size: {len(self.co_occurrences)}")
-
         with contextlib.suppress(PerspectiveError, TraitError):
 
             columns = ['time_period', 'w1', 'w2', 'token', 'value']
 
+            self.set_buzy(True, "⌛ loading table...")
+
             self._table.load(self.co_occurrences[columns])
+
+            self.set_buzy(False)
+
+        self.info(f"Data size: {len(self.co_occurrences)}")
 
     def _update_toggle_icon(self, event: dict) -> None:
         with contextlib.suppress(Exception):
@@ -222,12 +279,12 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
         self._show_concept.value = value
 
     @property
-    def tf_idf(self) -> bool:
-        return self._tf_idf.value
+    def keyness(self) -> KeynessMetric:
+        return self._keyness.value
 
-    @tf_idf.setter
-    def tf_idf(self, value: bool):
-        self._tf_idf.value = value
+    @keyness.setter
+    def keyness(self, value: KeynessMetric):
+        self._keyness.value = value
 
     @property
     def global_threshold(self) -> int:
@@ -281,8 +338,12 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
     def to_co_occurrences(self) -> pd.DataFrame:
 
+        self.set_buzy(True, "⌛ preparing co-occurrences...")
+
         if self.pivot_column_name not in self.corpus.document_index.columns:
-            raise ValueError(f"expected '{self.pivot_column_name}' but not found in {', '.join(self.corpus.document_index.columns)}")
+            raise ValueError(
+                f"expected '{self.pivot_column_name}' but not found in {', '.join(self.corpus.document_index.columns)}"
+            )
 
         co_occurrences: pd.DataFrame = (
             CoOccurrenceHelper(
@@ -294,18 +355,26 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
             .largest(self.largest)
         ).value
 
+        self.set_buzy(False)
+
         return co_occurrences
 
     def to_corpus(self) -> VectorizedCorpus:
         """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold."""
+        self.set_buzy(True, "⌛ updating corpus...")
+
         corpus: VectorizedCorpus = get_prepared_corpus(
+            self.bundle,
             corpus=self.bundle.corpus,
             period_pivot=self.pivot,
-            tf_idf=self.tf_idf,
+            keyness=self.keyness,
             token_filter=self.token_filter,
             global_threshold=self.global_threshold,
             pivot_column_name=self.pivot_column_name,
         )
+
+        self.set_buzy(False)
+
         return corpus
 
     def setup(self) -> "CoOccurrenceTable":
