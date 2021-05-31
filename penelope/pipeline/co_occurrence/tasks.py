@@ -1,15 +1,18 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Optional, Tuple
+import itertools
+from typing import Any, Callable, Iterable, Optional, Tuple, Mapping
+import numpy as np
 
 import scipy
+import scipy.sparse as sp
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
     TokenWindowCountStatistics,
     WindowsCoOccurrenceVectorizer,
-    to_token_window_counts_matrix,
+    WindowsCoOccurrenceOutput,
     tokens_to_windows,
 )
 from penelope.corpus import Token2Id, VectorizedCorpus
@@ -17,9 +20,12 @@ from penelope.type_alias import DocumentIndex
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 
-CoOccurrencePayload = collections.namedtuple(
-    'DocumentCoOccurrenceMatrixBundle', ['document_id', 'term_term_matrix', 'term_windows_count']
-)
+
+@dataclass
+class CoOccurrencePayload:
+    document_id: int
+    term_term_matrix: scipy.sparse.spmatrix
+    term_window_counter: Mapping[int, int]
 
 
 def TTM_to_co_occurrence_DTM(
@@ -106,14 +112,15 @@ class ToCoOccurrenceDTM(ITask):
             self.token2id.ingest(tokens)
 
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
-        windows_ttm_matrix, window_counts = self.vectorizer.fit_transform(windows)
+
+        result: WindowsCoOccurrenceOutput = self.vectorizer.fit_transform(windows)
 
         return payload.update(
             self.out_content_type,
             content=CoOccurrencePayload(
                 document_id,
-                windows_ttm_matrix,
-                window_counts,
+                result.term_term_matrix,
+                result.term_window_counter,
             ),
         )
 
@@ -167,13 +174,13 @@ class ToCorpusCoOccurrenceDTM(ITask):
             document_index=document_index,
         )
 
-        corpus_window_counts: collections.Counter = self.get_token_windows_counts()
-
-        document_token_window_counters: dict = {d.document_id: dict(d.term_windows_count) for d in stream}
-
-        shape: Tuple[int, int] = (len(document_index), len(token2id))
-        document_window_counts: scipy.sparse.spmatrix = to_token_window_counts_matrix(
-            document_token_window_counters, shape=shape
+        window_counters = itertools.chain((d.document_id, d.term_window_counter) for d in stream)
+        window_counts = TokenWindowCountStatistics(
+            corpus_counts=self.global_windows_counts(),
+            document_counts=self.document_window_counts_matrix(
+                window_counters,
+                shape=(len(document_index), len(token2id)),
+            ),
         )
 
         yield DocumentPayload(
@@ -181,20 +188,36 @@ class ToCorpusCoOccurrenceDTM(ITask):
                 corpus=corpus,
                 token2id=token2id,
                 document_index=document_index,
-                window_counts=TokenWindowCountStatistics(
-                    corpus_counts=corpus_window_counts,
-                    document_counts=document_window_counts,
-                ),
+                window_counts=window_counts,
                 compute_options=self.pipeline.payload.stored_opts(),
             )
         )
 
-    def get_token_windows_counts(self) -> Optional[collections.Counter]:
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        return None
+
+    def global_windows_counts(self) -> Optional[collections.Counter]:
 
         task: ToCoOccurrenceDTM = self.pipeline.find(ToCoOccurrenceDTM, self.__class__)
         if task is not None:
             return task.vectorizer.corpus_window_counts
         return task
 
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return None
+    def document_window_counts_matrix(self, counters: Iterable[Tuple[int, Mapping[int, int]]], shape: tuple) -> sp.spmatrix:
+        """Create a matrix with token's window count for each document (rows).
+        The shape of the returned sparse matrix is [number of document, vocabulary size]
+
+        Args:
+            counters (dict): Dict (key document id) of dict (key token id) of window counts
+            shape (tuple): Size of returned sparse matrix
+
+        Returns:
+            sp.spmatrix: window counts matrix
+        """
+
+        matrix: sp.lil_matrix = sp.lil_matrix(shape, dtype=np.int32)
+
+        for document_id, counts in counters:
+            matrix[document_id, list(counts.keys())] = list(counts.values())
+
+        return matrix.tocsr()
