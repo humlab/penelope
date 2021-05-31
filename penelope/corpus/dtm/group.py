@@ -121,6 +121,7 @@ class GroupByMixIn:
             return self.group_by_year(
                 aggregate=aggregate,
                 fill_gaps=fill_gaps,
+                target_column_name=target_column_name,
             )
 
         self.document_index[target_column_name] = self.document_index.year.apply(
@@ -195,7 +196,7 @@ def group_DTM_by_category_indicies_mapping(
     pivot_column_name: str,
 ):
     shape = (len(document_index), bag_term_matrix.shape[1])
-    dtype = np.uint32 if np.issubdtype(bag_term_matrix.dtype, np.integer) and aggregate == 'sum' else np.float64
+    dtype = np.int32 if np.issubdtype(bag_term_matrix.dtype, np.integer) and aggregate == 'sum' else np.float64
     matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=dtype)
 
     for document_id, category_value in document_index[pivot_column_name].to_dict().items():

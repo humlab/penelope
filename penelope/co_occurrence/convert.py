@@ -57,7 +57,7 @@ def term_term_matrix_to_co_occurrences(
     term_term_matrix: scipy.sparse.spmatrix,
     threshold_count: int = 1,
     ignore_ids: Set[int] = None,
-    dtype: np.dtype = np.uint32,
+    dtype: np.dtype = np.int32,
 ) -> pd.DataFrame:
     """Converts a TTM to a Pandas DataFrame
 
@@ -82,8 +82,8 @@ def term_term_matrix_to_co_occurrences(
         .reset_index(drop=True)
     )
 
-    if co_occurrences.value.max() < np.iinfo(np.uint16).max:
-        co_occurrences['value'] = co_occurrences.value.astype(np.uint16)
+    if co_occurrences.value.max() < np.iinfo(np.int32).max:
+        co_occurrences['value'] = co_occurrences.value.astype(np.int32)
 
     if ignore_ids:
         co_occurrences = co_occurrences[
@@ -103,7 +103,7 @@ def co_occurrences_to_co_occurrence_corpus(
     token2id: Token2Id,
 ) -> VectorizedCorpus:
     """Creates a co-occurrence DTM corpus from a co-occurrence data frame."""
-   
+
     corpus = VectorizedCorpus.from_co_occurrences(
         co_occurrences=co_occurrences,
         document_index=document_index,

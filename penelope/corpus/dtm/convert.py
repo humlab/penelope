@@ -30,14 +30,14 @@ class CoOccurrenceMixIn:
         df = pd.DataFrame(
             {
                 # 'document_id': coo.row,
-                'document_id': coo.row.astype(np.uint32),
-                'token_id': coo.col.astype(np.uint32),
+                'document_id': coo.row.astype(np.int32),
+                'token_id': coo.col.astype(np.int32),
                 'value': coo.data,
             }
         )
 
         """Add a time period column that can be used as a pivot column"""
-        df['time_period'] = self.document_index.loc[df.document_id][time_period_column].astype(np.uint16).values
+        df['time_period'] = self.document_index.loc[df.document_id][time_period_column].astype(np.int16).values
         # TODO Add year column as well??
 
         """Decode w1/w2 token pair"""
@@ -50,8 +50,8 @@ class CoOccurrenceMixIn:
 
         # """Decode w1 and w2 tokens using supplied token2id"""
         sg = source_token2id.get
-        df['w1_id'] = df.w1.apply(sg).astype(np.uint32)
-        df['w2_id'] = df.w2.apply(sg).astype(np.uint32)
+        df['w1_id'] = df.w1.apply(sg).astype(np.int32)
+        df['w2_id'] = df.w2.apply(sg).astype(np.int32)
 
         df = df.drop(columns=["token", "w1", "w2"]).reset_index()
 
@@ -92,10 +92,10 @@ class CoOccurrenceMixIn:
         shape = (len(document_index), len(vocabulary))
         matrix = scipy.sparse.coo_matrix(
             (
-                co_occurrences.value.astype(np.uint16),
+                co_occurrences.value.astype(np.int32),
                 (
-                    co_occurrences.document_id.astype(np.uint32),
-                    token_ids.astype(np.uint32),
+                    co_occurrences.document_id.astype(np.int32),
+                    token_ids.astype(np.int32),
                 ),
             ),
             shape=shape,

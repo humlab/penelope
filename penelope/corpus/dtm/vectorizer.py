@@ -125,7 +125,7 @@ class CorpusVectorizer:
                 seen_document_names.append(name)
                 yield terms
 
-        self.vectorizer = CountVectorizer(**vectorizer_opts, dtype=np.uint16)
+        self.vectorizer = CountVectorizer(**vectorizer_opts, dtype=np.int32)
         self.vectorizer_opts = vectorizer_opts
 
         bag_term_matrix = self.vectorizer.fit_transform(terms_stream())
