@@ -52,6 +52,21 @@ def create_simple_bundle() -> Bundle:
     return bundle
 
 
+def create_simple_bundle_by_pipeline(data: List[Tuple[str, List[str]]], context_opts: ContextOpts):
+    tokenized_corpus: TokenizedCorpus = very_simple_corpus(data)
+    config: CorpusConfig = CorpusConfig.tokenized_corpus()
+    bundle: Bundle = (
+        CorpusPipeline(config=config)
+        .load_corpus(tokenized_corpus)
+        .vocabulary()
+        .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
+        .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
+        .single()
+        .content
+    )
+    return bundle
+
+
 def create_bundle_helper(bundle: Bundle) -> CoOccurrenceHelper:
     helper: CoOccurrenceHelper = CoOccurrenceHelper(
         corpus=bundle.corpus,
