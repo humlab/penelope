@@ -84,6 +84,8 @@ def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> 
     `context_opts.context_width` is the the number of tokens to either side of the focus word, i.e.
     the total size of the window is (n_window + 1 + n_window).
 
+    If `context_opts.ignore_padding` is true, then the padding token is removed from returned windows.
+    The returned has varying sizes in such a case.
 
     Uses the "deck" `collection.deque` with a fixed length (appends exceeding `maxlen` deletes oldest entry)
     The yelded windows are all equal-sized with the focus `*`-padded at the beginning and end
@@ -117,19 +119,37 @@ def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> 
 
     if not context_opts.concept:
 
+        """ Co-occurrence without concept words """
+
         for token in padded_tokens:
+
             window.append(token)
-            yield list(window)
+
+            next_window = [w for w in window if w != pad] if context_opts.ignore_padding else list(window)
+
+            if len(next_window) >= context_opts.min_window_size:
+                yield next_window
 
     else:
 
+        """ Co-occurrence with concept words """
+
         for token in padded_tokens:
+
             window.append(token)
+
             if window[context_opts.context_width] in context_opts.concept:
+
                 concept_window = list(window)
+
                 if context_opts.ignore_concept:
                     _ = concept_window.pop(context_opts.context_width)
-                yield concept_window
+
+                if context_opts.ignore_padding:
+                    concept_window = [w for w in concept_window if w != pad]
+
+                if len(concept_window) >= context_opts.min_window_size:
+                    yield concept_window
 
 
 def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts) -> Iterable[List]:
