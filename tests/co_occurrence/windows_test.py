@@ -1,6 +1,8 @@
 import json
+from typing import Iterable, List
+from penelope.type_alias import Token
 
-from penelope.co_occurrence import ContextOpts, WindowsCorpus, corpus_to_windows
+from penelope.co_occurrence import ContextOpts, WindowsCorpus, tokens_to_windows, corpus_to_windows
 from penelope.corpus import CorpusVectorizer, SparvTokenizedCsvCorpus, generate_token2id
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from tests.fixtures import SAMPLE_WINDOW_STREAM, TRANSTRÖMMER_CORPUS_NNVB_LEMMA, TRANSTRÖMMER_NNVB_LEMMA_WINDOWS
@@ -21,6 +23,85 @@ def load_corpus_windows_fixture(filename: str):
     with open(filename, "r", encoding="utf8") as f:
         return json.load(f)
 
+
+def test_tokens_to_windows():
+    ...
+
+    tokens: Iterable[Token] = ["a", "*", "c", "a", "e", "*", "*", "h"]
+
+    context_opts: ContextOpts = ContextOpts(
+        concept=set(), context_width=1, ignore_padding=False, pad="*", min_window_size=0
+    )
+    windows: Iterable[List[Token]] = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    expected_windows = [
+        ['*', 'a', '*'],
+        ['a', '*', 'c'],
+        ['*', 'c', 'a'],
+        ['c', 'a', 'e'],
+        ['a', 'e', '*'],
+        ['e', '*', '*'],
+        ['*', '*', 'h'],
+        ['*', 'h', '*'],
+    ]
+    assert list(windows) == expected_windows
+
+    context_opts: ContextOpts = ContextOpts(
+        concept=set(), context_width=1, ignore_padding=True, pad="*", min_window_size=0
+    )
+    windows: Iterable[List[Token]] = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    expected_windows = [
+        ['a'],
+        ['a', 'c'],
+        ['c', 'a'],
+        ['c', 'a', 'e'],
+        ['a', 'e'],
+        ['e'],
+        ['h'],
+        ['h'],
+    ]
+    assert list(windows) == expected_windows
+
+    context_opts: ContextOpts = ContextOpts(
+        concept=set(['a']), context_width=1, ignore_padding=False, pad="*", min_window_size=0
+    )
+    windows: Iterable[List[Token]] = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    expected_windows = [
+        ['*', 'a', '*'],
+        ['c', 'a', 'e'],
+    ]
+    assert list(windows) == expected_windows
+
+    context_opts: ContextOpts = ContextOpts(
+        concept=set(['a']), context_width=1, ignore_padding=True, pad="*", min_window_size=0
+    )
+    windows: Iterable[List[Token]] = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    expected_windows = [
+        ['a'],
+        ['c', 'a', 'e'],
+    ]
+    assert list(windows) == expected_windows
+
+    context_opts: ContextOpts = ContextOpts(
+        concept=set(['a']), ignore_concept=True, context_width=1, ignore_padding=True, pad="*", min_window_size=0
+    )
+    windows: Iterable[List[Token]] = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    expected_windows = [
+        [],
+        ['c', 'e'],
+    ]
+    assert list(windows) == expected_windows
+
+    context_opts: ContextOpts = ContextOpts(
+        concept=set(), context_width=1, ignore_padding=True, pad="*", min_window_size=2
+    )
+    windows: Iterable[List[Token]] = tokens_to_windows(tokens=tokens, context_opts=context_opts)
+    expected_windows = [
+        ['a', 'c'],
+        ['c', 'a'],
+        ['c', 'a', 'e'],
+        ['a', 'e'],
+    ]
+    assert list(windows) == expected_windows
 
 def test_windowed_when_nn_vb_lemma_2_tokens():
 
