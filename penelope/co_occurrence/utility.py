@@ -59,16 +59,16 @@ def compute_non_partitioned_corpus_co_occurrence(
 
         windows = tokens_to_windows(tokens=tokens, context_opts=context_opts)
 
-        ttm_matrix, window_counts = vectorizer.fit_transform(windows)
+        result = vectorizer.fit_transform(windows)
         document_co_occurrences = term_term_matrix_to_co_occurrences(
-            ttm_matrix, threshold_count=1, ignore_ids=ignore_ids
+            result.term_term_matrix, threshold_count=1, ignore_ids=ignore_ids
         )
 
         document_id = document_index.loc[strip_extensions(filename)]['document_id']
         document_co_occurrences['document_id'] = document_id
 
         computed_data_frames.append(document_co_occurrences)
-        computed_window_counts[document_id] = window_counts
+        computed_window_counts[document_id] = result.term_window_counter
 
     shape = (len(computed_window_counts), len(token2id))
     window_counts_matrix = to_token_window_counts_matrix(computed_window_counts, shape)
