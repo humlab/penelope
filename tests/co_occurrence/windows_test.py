@@ -123,7 +123,7 @@ def test_windowed_when_nn_vb_lemma_2_tokens():
     windows = [
         w
         for w in corpus_to_windows(
-            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=2)
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=2, ignore_padding=False)
         )
     ]
 
@@ -139,7 +139,7 @@ def test_windowed_when_nn_vb_lemma_5_tokens():
     windows = [
         w
         for w in corpus_to_windows(
-            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=5)
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=5, ignore_padding=False)
         )
     ]
 
@@ -159,7 +159,7 @@ def test_windowed_corpus_when_nn_vb_lemma_x_tokens():
     windows = [
         w
         for w in corpus_to_windows(
-            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=5)
+            stream=corpus, context_opts=ContextOpts(concept=concept, ignore_concept=False, context_width=5, ignore_padding=False)
         )
     ]
 
