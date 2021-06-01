@@ -2,8 +2,7 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from penelope.corpus import Token2Id
-from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
+from penelope.corpus import Token2Id, VectorizedCorpus
 
 IntOrStr = Union[int, str]
 
