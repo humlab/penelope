@@ -1,36 +1,18 @@
 import contextlib
 from collections.abc import Iterable
-from enum import IntEnum
 from typing import List, Set, Union
 
 import IPython.display as IPython_display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
-from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
-from penelope.corpus import Token2Id
-from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
+from penelope.co_occurrence import Bundle, CoOccurrenceHelper, KeynessMetric, store_co_occurrences
+from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
 from perspective import PerspectiveError, PerspectiveWidget
 from traitlets import TraitError
 
 # pylint: disable=too-many-instance-attributes
-
-
-class KeynessMetric(IntEnum):
-    TF = 0
-    TF_IDF = 1
-    HAL_score = 2
-
-
-def compute_hal_score(corpus: VectorizedCorpus, bundle: Bundle) -> VectorizedCorpus:
-    """Compute yearly HAL-score for each co-occurrence pair (w1, w2)
-
-    HAL-score = (CW(w1)
-
-    """
-
-    return corpus
 
 
 def get_prepared_corpus(
@@ -60,12 +42,10 @@ def get_prepared_corpus(
     """Note! Keyness metrics must be computed on the original corpus!!!"""
     if keyness == KeynessMetric.TF_IDF:
         corpus = corpus.tf_idf()
-    elif keyness == KeynessMetric.HAL_score:
-        # FIXME; compute HAL score
-        # corpus = corpus.hal()
-        corpus = compute_hal_score(corpus, bundle)
-    else:
-        ...
+    elif keyness == KeynessMetric.HAL_cwr:
+        corpus = bundle.HAL_cwr_corpus()
+    elif keyness == KeynessMetric.TF:
+        pass
 
     corpus = corpus.group_by_time_period_optimized(
         time_period_specifier=period_pivot, target_column_name=pivot_column_name
@@ -73,9 +53,6 @@ def get_prepared_corpus(
 
     if global_threshold > 1:
         corpus = corpus.slice_by_term_frequency(global_threshold)
-
-    if keyness == KeynessMetric.TF:
-        pass
 
     if token_filter:
         indices = corpus.find_matching_words_indices(token_filter, n_max_count=None)
@@ -116,7 +93,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         """Properties that changes current corpus"""
         self._keyness: Dropdown = Dropdown(
-            options={"TF": KeynessMetric.TF, "TF-IDF": KeynessMetric.TF_IDF, "HAL score": KeynessMetric.HAL_score},
+            options={"TF": KeynessMetric.TF, "TF-IDF": KeynessMetric.TF_IDF, "HAL score": KeynessMetric.HAL_cwr},
             value=KeynessMetric.TF,
             layout=Layout(width='auto'),
         )
@@ -352,6 +329,7 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
                 pivot_keys=self.pivot_column_name,
             )
             .exclude(self.ignores)
+            .keyness(self.keyness)
             .largest(self.largest)
         ).value
 
