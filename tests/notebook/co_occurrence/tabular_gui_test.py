@@ -1,7 +1,7 @@
 import pytest
 from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.notebook.co_occurrence.tabular_gui import CoOccurrenceTable, get_prepared_corpus
+from penelope.notebook.co_occurrence.tabular_gui import CoOccurrenceTable, KeynessMetric, get_prepared_corpus
 
 # pylint: disable=protected-access, redefined-outer-name
 
@@ -17,9 +17,10 @@ def bundle():
 def test_get_prepared_corpus(bundle):
 
     corpus: VectorizedCorpus = get_prepared_corpus(
+        bundle=bundle,
         corpus=bundle.corpus,
         period_pivot="year",
-        tf_idf=False,
+        keyness=KeynessMetric.TF,
         token_filter="",
         global_threshold=1,
         pivot_column_name='time_period',

@@ -2,10 +2,19 @@ import numpy as np
 import pandas as pd
 import pytest
 import scipy
+from penelope.co_occurrence import (
+    Bundle,
+    ContextOpts,
+    compute_hal_cwr_score,
+    compute_hal_score_by_co_occurrence_matrix,
+    to_filename,
+)
 from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
-from penelope.co_occurrence.persistence import Bundle, to_filename
 from penelope.corpus import VectorizedCorpus
-from penelope.corpus.token2id import Token2Id
+from penelope.utility import deprecated
+from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
+
+# pylint: disable=redefined-outer-name
 
 
 def test_burgess_litmus_test():
@@ -24,8 +33,9 @@ def test_burgess_litmus_test():
     vectorizer.fit([terms], size=5, distance_metric=0)
     df_imp = vectorizer.to_df().astype(np.uint32)[['the', 'horse', 'raced', 'past', 'barn', 'fell']].sort_index()
     assert df_imp.equals(df_answer), "Test failed"
-    # df_imp == df_answer
 
+
+def test_chen_lu_test():
     # Example in Chen, Lu:
     terms = 'The basic concept of the word association'.lower().split()
     vectorizer = HyperspaceAnalogueToLanguageVectorizer().fit([terms], size=5, distance_metric=0)
@@ -42,8 +52,31 @@ def test_burgess_litmus_test():
         index=['the', 'basic', 'concept', 'of', 'word', 'association'],
         dtype=np.uint32,
     ).sort_index()[['the', 'basic', 'concept', 'of', 'word', 'association']]
+
     assert df_imp.equals(df_answer), "Test failed"
-    print('Test run OK')
+
+
+@deprecated
+def test_compute_hal_score_by_co_occurrence_matrix(bundle: Bundle):
+    co_occurrences = bundle.co_occurrences
+    co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
+        bundle.co_occurrences, bundle.window_counts.document_counts
+    )
+    assert 'cwr' in co_occurrences.columns
+
+
+def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
+    data = [('document_01.txt', 'The Horse Raced Past The Barn Fell .'.lower().split())]
+    context_opts: ContextOpts = ContextOpts(
+        context_width=2,
+        concept=set(),
+    )
+    bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
+    co_occurrences = bundle.co_occurrences
+    co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
+        bundle.co_occurrences, bundle.window_counts.document_counts
+    )
+    assert 'cwr' in co_occurrences.columns
 
 
 @pytest.fixture(scope="module")
@@ -57,34 +90,48 @@ def bundle() -> Bundle:
     return bundle
 
 
-def compute_hal_score(corpus: VectorizedCorpus, bundle: Bundle) -> VectorizedCorpus:
-    """Compute yearly HAL-score for each co-occurrence pair (w1, w2)
+# import timeit
 
-    HAL-score = (CW(w1)
+# def test_token_window_counts_corpus_timeit(bundle: Bundle):
+#     co_occurrence_corpus: VectorizedCorpus = bundle.corpus
+#     token_count_corpus: VectorizedCorpus = bundle.document_token_window_counts_corpus()
+#     vocab_mapping = bundle.vocabulay_id_mapping()
+#     nw_x = token_count_corpus.data.todense().astype(np.float)
+#     nw_xy = co_occurrence_corpus.data.copy().todense().astype(np.float)
+#     fx = lambda: compute_hal_score_cellwise(nw_xy, nw_x, vocab_mapping)
+#     duration1 = timeit.timeit(fx, number=5)
+#     fx = lambda: compute_hal_score_colwise(nw_xy, nw_x, vocab_mapping)
+#     duration2 = timeit.timeit(fx, number=5)
+#     nw_xy = co_occurrence_corpus.data.astype(np.float) #.copy().todense().astype(np.float)
+#     fx = lambda: compute_hal_cwr_score(nw_xy, nw_x, vocab_mapping)
+#     duration3 = timeit.timeit(fx, number=5)
+#     with pytest.raises(ValueError):
+#         raise ValueError(f"{duration1}/{duration2}/{duration3}")
 
-    """
 
-    return corpus
+def test_HAL_cwr_corpus(bundle: Bundle):
+    vocab_mapping = bundle.vocabulay_id_mapping()
+    nw_x = bundle.window_counts.document_counts.todense().astype(np.float)
+    nw_xy = bundle.corpus.data  # .copy().astype(np.float)
+    nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocab_mapping)
+
+    assert nw_cwr is not None
+    assert nw_cwr.sum() > 0
+
+    hal_cwr_corpus: VectorizedCorpus = bundle.HAL_cwr_corpus()
+
+    assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
 
 
-def test_compute_hal_score(bundle: Bundle):
+def test_HAL_cwr_corpus_burgess_litmus():
+    data = [('document_01.txt', 'The Horse Raced Past The Barn Fell .'.lower().split())]
+    context_opts: ContextOpts = ContextOpts(
+        context_width=2,
+        concept=set(),
+        ignore_padding=False,
+    )
+    bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
 
-    ...
+    hal_cwr_corpus: VectorizedCorpus = bundle.HAL_cwr_corpus()
 
-    # nw_xy is co_occurrence_matrx
-
-    # Must calculate nw_xy nw_x and nw_y for each year
-
-    # nw_xy is given by co_occurrence matrix/corpus
-    # nw_x is given by co_occurrence token windows count matrix
-
-    token2id: Token2Id = bundle.token2id
-    document_index: pd.DataFrame = bundle.document_index
-
-    nw_xy: scipy.sparse.spmatrix = bundle.corpus.data
-    nw_x: scipy.sparse.spmatrix = bundle.window_counts.document_counts
-
-    assert nw_xy.shape == (len(document_index), len(bundle.corpus.token2id))
-
-    assert nw_xy is not None
-    assert nw_x is not None
+    assert hal_cwr_corpus is not None
