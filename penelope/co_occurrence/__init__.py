@@ -4,11 +4,11 @@ from .convert import (
     co_occurrences_to_co_occurrence_corpus,
     term_term_matrix_to_co_occurrences,
     to_co_occurrence_matrix,
-    to_token_window_counts_matrix,
     truncate_by_global_threshold,
 )
 from .hal_or_glove import GloveVectorizer, HyperspaceAnalogueToLanguageVectorizer, compute_hal_or_glove_co_occurrences
 from .interface import ContextOpts, CoOccurrenceError, Token, ZeroComputeError
+from .metrics import KeynessMetric, compute_hal_cwr_score, compute_hal_score_by_co_occurrence_matrix
 from .persistence import (
     DICTIONARY_POSTFIX,
     DOCUMENT_INDEX_POSTFIX,
