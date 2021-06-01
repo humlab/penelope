@@ -12,7 +12,7 @@ jj = os.path.join
 def test_pipeline_to_co_occurrence_succeeds():
 
     context_opts: ContextOpts = ContextOpts(context_width=2, concept={}, ignore_concept=False, ignore_padding=False)
-    bundle: create_simple_bundle_by_pipeline(SIMPLE_CORPUS_ABCDE_5DOCS, context_opts)
+    bundle: Bundle = create_simple_bundle_by_pipeline(SIMPLE_CORPUS_ABCDE_5DOCS, context_opts)
 
     assert isinstance(bundle, Bundle)
 
