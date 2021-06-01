@@ -249,8 +249,11 @@ def test_load_inferred_topics_data(method):
 
     # Assert
     assert inferred_topics_data is not None
+
     assert inferred_topics_data.dictionary.equals(test_inferred_topics_data.dictionary)
-    assert inferred_topics_data.document_index.equals(test_inferred_topics_data.document_index)
+
+    pd.testing.assert_frame_equal(inferred_topics_data.document_index, test_inferred_topics_data.document_index,check_dtype=False)
+
     assert inferred_topics_data.topic_token_overview.round(5).equals(
         test_inferred_topics_data.topic_token_overview.round(5)
     )
@@ -269,7 +272,7 @@ def test_load_inferred_topics_data(method):
         .all()
     )
 
-    shutil.rmtree(target_folder)
+    shutil.rmtree(target_folder, ignore_errors=True)
 
 
 def test_run_cli():
