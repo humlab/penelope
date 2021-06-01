@@ -10,7 +10,10 @@ import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
-from penelope.corpus import (
+from penelope.type_alias import CoOccurrenceDataFrame
+from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
+
+from ..corpus import (
     DocumentIndex,
     DocumentIndexHelper,
     ExtractTaggedTokensOpts,
@@ -19,10 +22,8 @@ from penelope.corpus import (
     TokensTransformOpts,
     VectorizedCorpus,
 )
-from penelope.type_alias import CoOccurrenceDataFrame
-from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
-
 from .interface import ContextOpts, CoOccurrenceError
+from .metrics import compute_hal_cwr_score
 
 jj = os.path.join
 
@@ -244,6 +245,36 @@ class Bundle:
             w1=self.co_occurrences.w1_id.apply(fg),
             w2=self.co_occurrences.w2_id.apply(fg),
         )
+
+    def HAL_cwr_corpus(self) -> VectorizedCorpus:
+        """Returns a BoW co-occurrence corpus where the values are computed HAL CWR score."""
+
+        vocab_mapping = self.vocabulay_id_mapping()
+
+        nw_x = self.window_counts.document_counts.todense().astype(np.float)
+        nw_xy = self.corpus.data  # .copy().astype(np.float)
+
+        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocab_mapping)
+
+        cwr_corpus: VectorizedCorpus = VectorizedCorpus(
+            bag_term_matrix=nw_cwr,
+            token2id=self.corpus.token2id,
+            document_index=self.corpus.document_index,
+        )
+        return cwr_corpus
+
+    def vocabulay_token_mapping(self) -> Mapping[str, Tuple[int]]:
+        """Creates a map from co-occurrence corpus (word-pairs) to source corpus vocabulay (single words)"""
+        mapping = {token: tuple(map(self.token2id.get, token.split("/"))) for token, _ in self.corpus.token2id.items()}
+        return mapping
+
+    def vocabulay_id_mapping(self) -> Mapping[int, Tuple[int]]:
+        """Creates a map from co-occurrence corpus (word-pairs) to source corpus vocabulay (single words)"""
+        mapping = {
+            token_id: tuple(map(self.token2id.get, token.split("/")))
+            for token, token_id in self.corpus.token2id.items()
+        }
+        return mapping
 
 
 def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:
