@@ -15,8 +15,8 @@
         "test_data",
         "typings"
     ],
-    "typeCheckingMode": "basic",
-    "reportGeneralTypeIssues": false,
-    "reportMissingTypeStubs": false,
+    // "typeCheckingMode": "basic",
+    // "reportGeneralTypeIssues": false,
+    // "reportMissingTypeStubs": false,
 
 }
