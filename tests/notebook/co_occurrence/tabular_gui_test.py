@@ -1,7 +1,7 @@
 import pytest
 from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus.dtm import VectorizedCorpus
-from penelope.notebook.co_occurrence.tabular_gui import CoOccurrenceTable, KeynessMetric, get_prepared_corpus
+from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI, KeynessMetric, get_prepared_corpus
 
 # pylint: disable=protected-access, redefined-outer-name
 
@@ -31,7 +31,7 @@ def test_get_prepared_corpus(bundle):
 
 def test_table_gui_create(bundle):
 
-    gui: CoOccurrenceTable = CoOccurrenceTable(bundle=bundle)
+    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     assert gui is not None
     assert gui.bundle is bundle
@@ -44,7 +44,7 @@ def test_table_gui_create(bundle):
 @pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
 def test_table_gui_to_corpus(bundle, time_period):
 
-    gui: CoOccurrenceTable = CoOccurrenceTable(bundle=bundle)
+    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     gui.stop_observe()
     gui.pivot = time_period
@@ -94,7 +94,7 @@ def test_table_gui_to_corpus(bundle, time_period):
 @pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
 def test_table_gui_to_co_occurrences(bundle, time_period):
 
-    gui: CoOccurrenceTable = CoOccurrenceTable(bundle=bundle)
+    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     gui.stop_observe()
     gui.pivot = time_period

@@ -4,7 +4,7 @@ from penelope.notebook.word_trends.displayers.display_top_table import TopTokens
 
 from .. import utility as notebook_utility
 from .. import word_trends
-from ..co_occurrence.tabular_gui import CoOccurrenceTable
+from ..co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 
 
 class ExploreGUI:
@@ -39,7 +39,7 @@ class ExploreGUI:
             # self.tab_main.display_fx_result(
             #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
             # )
-            self.tab_main.display_content(0, CoOccurrenceTable(bundle=self.bundle).setup(), clear=True)
+            self.tab_main.display_content(0, TabularCoOccurrenceGUI(bundle=self.bundle).setup(), clear=True)
             self.tab_main.display_as_yaml(2, trends_data.compute_options, clear=True, width='800px', height='600px')
 
             top_displayer: TopTokensDisplayer = TopTokensDisplayer(corpus=trends_data.corpus).setup()

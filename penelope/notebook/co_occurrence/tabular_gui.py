@@ -61,7 +61,7 @@ def get_prepared_corpus(
     return corpus
 
 
-class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
+class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
     def __init__(
         self,
         *,
@@ -329,7 +329,6 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
                 pivot_keys=self.pivot_column_name,
             )
             .exclude(self.ignores)
-            .keyness(self.keyness)
             .largest(self.largest)
         ).value
 
@@ -355,6 +354,6 @@ class CoOccurrenceTable(GridBox):  # pylint: disable=too-many-ancestors
 
         return corpus
 
-    def setup(self) -> "CoOccurrenceTable":
+    def setup(self) -> "TabularCoOccurrenceGUI":
         self._update_corpus()
         return self
