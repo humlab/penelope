@@ -11,10 +11,17 @@ from penelope.co_occurrence import (
 )
 from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
 from penelope.corpus import VectorizedCorpus
-from penelope.utility import deprecated
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 
 # pylint: disable=redefined-outer-name
+
+
+@pytest.fixture(scope="module")
+def bundle() -> Bundle:
+    folder, tag = './tests/test_data/VENUS', 'VENUS'
+    filename = to_filename(folder=folder, tag=tag)
+    bundle: Bundle = Bundle.load(filename, compute_frame=False)
+    return bundle
 
 
 def test_burgess_litmus_test():
@@ -56,7 +63,6 @@ def test_chen_lu_test():
     assert df_imp.equals(df_answer), "Test failed"
 
 
-@deprecated
 def test_compute_hal_score_by_co_occurrence_matrix(bundle: Bundle):
     co_occurrences = bundle.co_occurrences
     co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
@@ -77,17 +83,6 @@ def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
         bundle.co_occurrences, bundle.window_counts.document_counts
     )
     assert 'cwr' in co_occurrences.columns
-
-
-@pytest.fixture(scope="module")
-def bundle() -> Bundle:
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
-
-    filename = to_filename(folder=folder, tag=tag)
-
-    bundle: Bundle = Bundle.load(filename, compute_frame=False)
-
-    return bundle
 
 
 # import timeit
