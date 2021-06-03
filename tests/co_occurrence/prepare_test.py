@@ -10,15 +10,16 @@ jj = os.path.join
 # pylint: disable=redefined-outer-name
 
 
+def create_bundle() -> Bundle:
+    folder, tag = './tests/test_data/VENUS', 'VENUS'
+    filename = to_filename(folder=folder, tag=tag)
+    bundle: Bundle = Bundle.load(filename, compute_frame=False)
+    return bundle
+
+
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
-
-    filename = to_filename(folder=folder, tag=tag)
-
-    bundle: Bundle = Bundle.load(filename, compute_frame=False)
-
-    return bundle
+    return create_bundle()
 
 
 @pytest.fixture(scope="module")
@@ -44,20 +45,21 @@ def test_co_occurrence_helper_decode(helper: CoOccurrenceHelper):
 
     helper.decode()
 
-    assert all(x in helper.co_occurrences.columns for x in ["w1", "w2", "token"])
+    assert all(x in helper.data.columns for x in ["w1", "w2", "token"])
 
 
-def test_co_occurrence_helper_groupby(helper: CoOccurrenceHelper):
+@pytest.mark.parametrize('pivot_key', ['year'])
+def test_co_occurrence_helper_groupby(pivot_key: str, helper: CoOccurrenceHelper):
 
     helper.reset()
 
     assert 'document_id' in helper.value.columns
-    assert 'year' not in helper.value.columns
+    assert pivot_key not in helper.value.columns
 
-    helper.groupby('year')
+    helper.groupby(pivot_key)
 
     assert 'document_id' not in helper.value.columns
-    assert 'year' in helper.value.columns
+    assert pivot_key in helper.value.columns
 
 
 def test_co_occurrence_helper_trunk_by_global_count(helper: CoOccurrenceHelper):
@@ -97,14 +99,14 @@ def test_co_occurrence_helper_rank(helper: CoOccurrenceHelper):
     assert 'constitution/united' in top_pairs
 
 
-def test_co_occurrence_helper_largest(helper: CoOccurrenceHelper):
+def test_co_occurrence_helper_largest():
 
-    expected: Set[str] = set(
-        helper.data[helper.data.year == 1997].sort_values('value', ascending=False).head(3)['token'].tolist()
-    )
-    data: pd.DataFrame = helper.reset().groupby('year').decode().largest(3).value
-    largest = set(data[data.year == 1997].token.tolist())
-    assert largest == expected
+    bundle: Bundle = create_bundle()
+    helper: CoOccurrenceHelper = CoOccurrenceHelper(corpus=bundle.corpus, source_token2id=bundle.token2id)
+
+    data: pd.DataFrame = helper.reset().groupby('year').largest(3).decode().value
+    largest = set(data[data.time_period == 1997].token.tolist())
+    assert largest == {'article/generation', 'ensure/generation', 'responsibility/generation'}
 
 
 def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
