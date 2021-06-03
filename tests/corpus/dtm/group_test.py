@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
-import penelope.corpus.dtm as dtm
 import pytest
 from penelope.co_occurrence import Bundle
-from penelope.corpus import DocumentIndexHelper
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -14,7 +12,7 @@ from .utils import create_bundle, create_vectorized_corpus
 
 
 @pytest.fixture
-def vectorized_corpus() -> dtm.VectorizedCorpus:
+def corpus() -> VectorizedCorpus:
     return create_vectorized_corpus()
 
 
@@ -61,8 +59,8 @@ def test_group_corpus_by_document_index(bundle: Bundle):
     assert set(corpus.document_index.category.tolist()) == set([1940, 1950, 1970, 1990, 2010])
 
 
-def test_group_by_year_aggregates_bag_term_matrix_to_year_term_matrix(vectorized_corpus):
-    c_data = vectorized_corpus.group_by_year()
+def test_group_by_year_aggregates_bag_term_matrix_to_year_term_matrix(corpus):
+    c_data = corpus.group_by_year()
     expected_ytm = [[4, 3, 7, 1], [6, 7, 4, 2]]
     assert np.allclose(expected_ytm, c_data.bag_term_matrix.todense())
 
@@ -72,7 +70,7 @@ def test_group_by_year_category_aggregates_DTM_to_PTM():
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     document_index = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
-    corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
 
     grouped_corpus = corpus.group_by_time_period(time_period_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
@@ -110,7 +108,7 @@ def test_group_by_time_period_aggregates_DTM_to_PTM():
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     document_index = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
-    corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
 
     grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
@@ -143,41 +141,41 @@ def test_group_by_time_period_aggregates_DTM_to_PTM():
     assert is_strictly_increasing(grouped_corpus.document_index.index, sort_values=False)
 
 
-def test_group_by_year_sum_bag_term_matrix_to_year_term_matrix(vectorized_corpus):
-    c_data = vectorized_corpus.group_by_year(aggregate='sum', fill_gaps=True)
+def test_group_by_year_sum_bag_term_matrix_to_year_term_matrix(corpus):
+    c_data = corpus.group_by_year(aggregate='sum', fill_gaps=True)
     expected_ytm = [[4, 3, 7, 1], [6, 7, 4, 2]]
     assert np.allclose(expected_ytm, c_data.bag_term_matrix.todense())
-    assert vectorized_corpus.data.dtype == c_data.data.dtype
+    assert corpus.data.dtype == c_data.data.dtype
 
 
-def test_group_by_year_mean_bag_term_matrix_to_year_term_matrix(vectorized_corpus):
-    c_data = vectorized_corpus.group_by_year(aggregate='mean', fill_gaps=True)
+def test_group_by_year_mean_bag_term_matrix_to_year_term_matrix(corpus):
+    c_data = corpus.group_by_year(aggregate='mean', fill_gaps=True)
     expected_ytm = np.array([np.array([4.0, 3.0, 7.0, 1.0]) / 2.0, np.array([6.0, 7.0, 4.0, 2.0]) / 3.0])
     assert np.allclose(expected_ytm, c_data.bag_term_matrix.todense())
 
 
-def test_group_by_category_aggregates_bag_term_matrix_to_category_term_matrix(vectorized_corpus):
+def test_group_by_category_aggregates_bag_term_matrix_to_category_term_matrix(corpus):
     """ A more generic version of group_by_year (not used for now) """
-    grouped_corpus: dtm.VectorizedCorpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year')
+    grouped_corpus: VectorizedCorpus = corpus.group_by_pivot_column(pivot_column_name='year')
     expected_ytm = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
 
-def test_group_by_category_sums_bag_term_matrix_to_category_term_matrix(vectorized_corpus):
+def test_group_by_category_sums_bag_term_matrix_to_category_term_matrix(corpus):
     """ A more generic version of group_by_year (not used for now) """
-    grouped_corpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year')
+    grouped_corpus = corpus.group_by_pivot_column(pivot_column_name='year')
     expected_ytm = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
 
-def test_group_by_category_means_bag_term_matrix_to_category_term_matrix(vectorized_corpus):
+def test_group_by_category_means_bag_term_matrix_to_category_term_matrix(corpus):
     """ A more generic version of group_by_year (not used for now) """
 
-    grouped_corpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year', aggregate='sum')
+    grouped_corpus = corpus.group_by_pivot_column(pivot_column_name='year', aggregate='sum')
     expected_ytm = [np.array([4.0, 3.0, 7.0, 1.0]), np.array([6.0, 7.0, 4.0, 2.0])]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = vectorized_corpus.group_by_pivot_column(pivot_column_name='year', aggregate='mean')
+    grouped_corpus = corpus.group_by_pivot_column(pivot_column_name='year', aggregate='mean')
     expected_ytm = np.array([np.array([4.0, 3.0, 7.0, 1.0]) / 2.0, np.array([6.0, 7.0, 4.0, 2.0]) / 3.0])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
@@ -217,7 +215,7 @@ def test_group_by_year_with_average():
     vec = CountVectorizer()
     bag_term_matrix = vec.fit_transform(corpus)
 
-    v_corpus: dtm.VectorizedCorpus = dtm.VectorizedCorpus(
+    v_corpus: VectorizedCorpus = VectorizedCorpus(
         bag_term_matrix, token2id=vec.vocabulary_, document_index=document_index
     )
 

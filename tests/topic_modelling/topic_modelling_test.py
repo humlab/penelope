@@ -252,7 +252,9 @@ def test_load_inferred_topics_data(method):
 
     assert inferred_topics_data.dictionary.equals(test_inferred_topics_data.dictionary)
 
-    pd.testing.assert_frame_equal(inferred_topics_data.document_index, test_inferred_topics_data.document_index,check_dtype=False)
+    pd.testing.assert_frame_equal(
+        inferred_topics_data.document_index, test_inferred_topics_data.document_index, check_dtype=False
+    )
 
     assert inferred_topics_data.topic_token_overview.round(5).equals(
         test_inferred_topics_data.topic_token_overview.round(5)

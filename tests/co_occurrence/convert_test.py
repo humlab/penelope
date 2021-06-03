@@ -9,8 +9,7 @@ from penelope.co_occurrence import (
     term_term_matrix_to_co_occurrences,
     truncate_by_global_threshold,
 )
-from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, dtm
-from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
+from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, VectorizedCorpus, dtm
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import (
     SIMPLE_CORPUS_ABCDE_5DOCS,

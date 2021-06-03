@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-import penelope.corpus.dtm as dtm
 import pytest
 import scipy
+from penelope.corpus import VectorizedCorpus
 
 from .utils import create_vectorized_corpus
 
@@ -10,7 +10,7 @@ from .utils import create_vectorized_corpus
 
 
 @pytest.fixture
-def slice_corpus() -> dtm.VectorizedCorpus:
+def slice_corpus() -> VectorizedCorpus:
     return create_vectorized_corpus()
 
 
@@ -18,7 +18,7 @@ def test_normalize_with_default_arguments_returns_matrix_normalized_by_l1_norm_f
     bag_term_matrix = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     df = pd.DataFrame({'year': [2013, 2014]})
-    v_corpus: dtm.VectorizedCorpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
+    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, df)
     n_corpus = v_corpus.normalize()
     E = np.array([[4, 3, 7, 1], [6, 7, 4, 2]]) / (np.array([[15, 19]]).T)
     assert (E == n_corpus.bag_term_matrix).all()
@@ -31,7 +31,7 @@ def test_normalize_with_keep_magnitude():
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     df = pd.DataFrame({'year': [2013, 2014]})
 
-    v_corpus: dtm.VectorizedCorpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, df)
+    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, df)
     n_corpus = v_corpus.normalize(keep_magnitude=True)
 
     factor = 15.0 / 19.0
@@ -42,7 +42,7 @@ def test_normalize_with_keep_magnitude():
 def test_slice_by_n_count_when_exists_tokens_below_count_returns_filtered_corpus(slice_corpus):
 
     # Act
-    t_corpus: dtm.VectorizedCorpus = slice_corpus.slice_by_n_count(6)
+    t_corpus: VectorizedCorpus = slice_corpus.slice_by_n_count(6)
 
     # Assert
     expected_bag_term_matrix = np.array([[2, 1, 4], [2, 2, 3], [2, 3, 2], [2, 4, 1], [2, 0, 1]])
@@ -54,7 +54,7 @@ def test_slice_by_n_count_when_exists_tokens_below_count_returns_filtered_corpus
 
 def test_slice_by_n_count_when_all_below_below_n_count_returns_empty_corpus(slice_corpus):
 
-    t_corpus: dtm.VectorizedCorpus = slice_corpus.slice_by_n_count(20)
+    t_corpus: VectorizedCorpus = slice_corpus.slice_by_n_count(20)
 
     assert {} == t_corpus.token2id
     assert {} == t_corpus.term_frequency_mapping

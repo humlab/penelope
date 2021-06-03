@@ -3,7 +3,7 @@ from typing import Any, Sequence, TypeVar
 
 from ipywidgets import Output
 from penelope.common.curve_fit import pchip_spline
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 
 T = TypeVar('T', bound='ITrendDisplayer')
 

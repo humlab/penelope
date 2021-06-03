@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from pandas.core.frame import DataFrame
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.utility import chunks
 from tqdm.auto import tqdm
 

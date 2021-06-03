@@ -20,7 +20,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 from memoization import cached
-from penelope.corpus.dtm import IVectorizedCorpus
+from penelope.corpus import IVectorizedCorpus
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
 from textacy import vsm
 

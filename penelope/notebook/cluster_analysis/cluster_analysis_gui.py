@@ -7,7 +7,7 @@ import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, FloatSlider, HBox, IntSlider, Layout, Output, VBox
 from markdown import markdown as md
 from penelope.common.cluster_analysis import CorpusClusters, compute_clusters
-from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.utility import clamp, get_logger
 
 from ..word_trends import trends_with_picks_gui as word_trend_plot_gui

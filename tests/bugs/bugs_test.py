@@ -1,9 +1,13 @@
-import penelope.corpus.dtm as dtm
 import penelope.notebook.interface as interface
 import pytest
-from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
-from penelope.pipeline import CorpusConfig
-from penelope.pipeline.dtm import wildcard_to_DTM_pipeline
+from penelope.corpus import (
+    ExtractTaggedTokensOpts,
+    TextReaderOpts,
+    TokensTransformOpts,
+    VectorizedCorpus,
+    VectorizeOpts,
+)
+from penelope.pipeline import CorpusConfig, wildcard_to_DTM_pipeline
 from penelope.utility import PropertyValueMaskingOpts
 
 
@@ -71,7 +75,7 @@ def test_inidun_word_trends_bug():
     #     corpus_config=corpus_config,
     # )
 
-    corpus: dtm.VectorizedCorpus = (
+    corpus: VectorizedCorpus = (
         corpus_config.get_pipeline(
             "tagged_frame_pipeline",
             corpus_filename=args.corpus_filename,

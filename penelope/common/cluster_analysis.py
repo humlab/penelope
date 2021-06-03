@@ -6,10 +6,10 @@ from typing import Dict, Iterable, List, Set, Tuple
 import numpy as np
 import pandas as pd
 import penelope.common.goodness_of_fit as gof
-import penelope.corpus.dtm as dtm
 import scipy
 import sklearn
 import sklearn.cluster
+from penelope.corpus import VectorizedCorpus
 from scipy.cluster.hierarchy import linkage
 
 
@@ -22,7 +22,7 @@ class KMeansResult:
 class CorpusClusters(abc.ABC):
     def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str]):
         self._token_clusters: pd.DataFrame = None
-        self.corpus: dtm.VectorizedCorpus = corpus
+        self.corpus: VectorizedCorpus = corpus
         self.tokens: List[str] = tokens
         self.cluster_labels = []
 
@@ -80,7 +80,7 @@ class CorpusClusters(abc.ABC):
 
 
 class HCACorpusClusters(CorpusClusters):
-    def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str], linkage_matrix, threshold: float = 0.5):
+    def __init__(self, corpus: VectorizedCorpus, tokens: List[str], linkage_matrix, threshold: float = 0.5):
 
         super().__init__(corpus, tokens)
 
@@ -141,7 +141,7 @@ class HCACorpusClusters(CorpusClusters):
 
 
 class KMeansCorpusClusters(CorpusClusters):
-    def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str], kmean_result: KMeansResult):
+    def __init__(self, corpus: VectorizedCorpus, tokens: List[str], kmean_result: KMeansResult):
 
         super().__init__(corpus, tokens)
 
@@ -173,7 +173,7 @@ class KMeansCorpusClusters(CorpusClusters):
         raise ValueError("kmeans: threshold not supported")
 
 
-def compute_kmeans(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
+def compute_kmeans(corpus: VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
     """Computes KMeans clusters using `sklearn.cluster.KMeans`(https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)"""
     data: scipy.sparse.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
 
@@ -182,7 +182,7 @@ def compute_kmeans(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clu
     return KMeansCorpusClusters(corpus, tokens, KMeansResult(centroids=km.cluster_centers_, labels=km.labels_))
 
 
-def compute_kmeans2(corpus: dtm.VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
+def compute_kmeans2(corpus: VectorizedCorpus, tokens: List[str] = None, n_clusters: int = 8, **kwargs):
     """Computes KMeans clusters using `scipy.cluster.vq.kmeans2` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.vq.kmeans2.html"""
     data: scipy.sparse.spmatrix = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
     data = data.T.todense()
@@ -212,7 +212,7 @@ LINKAGE_METRICS = {
 
 
 def compute_hca(
-    corpus: dtm.VectorizedCorpus, tokens: List[str], linkage_method: str = 'ward', linkage_metric: str = 'euclidean'
+    corpus: VectorizedCorpus, tokens: List[str], linkage_method: str = 'ward', linkage_metric: str = 'euclidean'
 ) -> HCACorpusClusters:
     """Computes HCA clusters using `scipy.cluster.hierarchy.linkage` (https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html"""
     data = corpus.data if tokens is None else corpus.data[:, corpus.token_indices(tokens)]
@@ -244,7 +244,7 @@ def smooth_matrix(xs, ys_m, smoothers):
 
 
 def get_top_tokens_by_metric(
-    *, metric: str, n_metric_top: int, corpus: dtm.VectorizedCorpus, df_gof: pd.DataFrame
+    *, metric: str, n_metric_top: int, corpus: VectorizedCorpus, df_gof: pd.DataFrame
 ) -> Tuple[List[int], List[str]]:
     """Computes most deviating tokens by metric"""
     df_top = gof.get_most_deviating_words(df_gof, metric, n_count=n_metric_top, ascending=False, abs_value=False)
@@ -259,7 +259,7 @@ def compute_clusters(
     n_clusters: int,
     metric: str,
     n_metric_top: int,
-    corpus: dtm.VectorizedCorpus,
+    corpus: VectorizedCorpus,
     df_gof: pd.DataFrame,
 ) -> CorpusClusters:
     """Computes cluster analysis data from specified parameters on `corpus` using distance metrics in df_god"""

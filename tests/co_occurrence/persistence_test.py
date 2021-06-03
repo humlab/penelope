@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
-import penelope.corpus.dtm as dtm
 import pytest
+from penelope.corpus import VectorizedCorpus
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from tests.utils import OUTPUT_FOLDER
 
@@ -88,7 +88,7 @@ def test_load_and_store_bundle():
     bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
 
     assert bundle is not None
-    assert isinstance(bundle.corpus, dtm.VectorizedCorpus)
+    assert isinstance(bundle.corpus, VectorizedCorpus)
     assert isinstance(bundle.co_occurrences, pd.DataFrame)
     assert isinstance(bundle.compute_options, dict)
     assert bundle.folder == './tests/test_data/VENUS'
