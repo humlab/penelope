@@ -1,6 +1,5 @@
 import pytest
 from penelope import co_occurrence
-from penelope.corpus import VectorizedCorpus
 from penelope.notebook import utility as notebook_utility
 from penelope.notebook.co_occurrence import ExploreGUI, main_gui
 from penelope.notebook.word_trends import TrendsData
