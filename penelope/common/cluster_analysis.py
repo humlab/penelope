@@ -20,7 +20,7 @@ class KMeansResult:
 
 
 class CorpusClusters(abc.ABC):
-    def __init__(self, corpus: dtm.VectorizedCorpus, tokens: List[str]):
+    def __init__(self, corpus: VectorizedCorpus, tokens: List[str]):
         self._token_clusters: pd.DataFrame = None
         self.corpus: VectorizedCorpus = corpus
         self.tokens: List[str] = tokens
