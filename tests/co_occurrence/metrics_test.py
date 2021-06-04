@@ -5,14 +5,13 @@ import scipy
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
+    CoOccurrenceHelper,
     compute_hal_cwr_score,
     compute_hal_score_by_co_occurrence_matrix,
     to_filename,
 )
 from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
-from penelope.co_occurrence.interface import KeynessMetric
-from penelope.co_occurrence.prepare import CoOccurrenceHelper
-from penelope.co_occurrence.significance import partitioned_significances
+from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus import VectorizedCorpus
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 

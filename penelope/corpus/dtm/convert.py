@@ -5,11 +5,10 @@ from typing import TYPE_CHECKING, Mapping, Tuple
 import numpy as np
 import pandas as pd
 import scipy
+from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from penelope.utility.utils import create_instance
 
-from ...co_occurrence.interface import KeynessMetric
-from ...co_occurrence.significance import partitioned_significances
 from ..token2id import Token2Id
 from .interface import IVectorizedCorpusProtocol
 

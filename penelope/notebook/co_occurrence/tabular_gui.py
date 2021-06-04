@@ -10,7 +10,8 @@ import panel as pn
 from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
-from penelope.co_occurrence import Bundle, CoOccurrenceHelper, KeynessMetric, store_co_occurrences
+from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
+from penelope.common.keyness import KeynessMetric
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp

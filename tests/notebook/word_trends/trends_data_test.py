@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
-from penelope.co_occurrence import KeynessMetric
+from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import TrendsData, TrendsOpts
 from tests.utils import OUTPUT_FOLDER

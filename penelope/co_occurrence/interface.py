@@ -1,20 +1,10 @@
 from dataclasses import dataclass, field
-from enum import IntEnum
 from typing import List, Set, Union
 
 from penelope.utility.utils import create_dataclass_instance_from_kwargs
 
 Token = Union[int, str]
 
-
-class KeynessMetric(IntEnum):
-    TF = 0
-    TF_normalized = 1
-    TF_IDF = 2
-    HAL_cwr = 3
-    PPMI = 4
-    DICE = 5
-    LLR = 6
 
 
 class ZeroComputeError(ValueError):

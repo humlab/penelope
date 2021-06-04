@@ -1,10 +1,19 @@
+from enum import IntEnum
 from typing import Callable, Union
 
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
-from .interface import KeynessMetric
+
+class KeynessMetric(IntEnum):
+    TF = 0
+    TF_normalized = 1
+    TF_IDF = 2
+    HAL_cwr = 3
+    PPMI = 4
+    DICE = 5
+    LLR = 6
 
 """Computes statistical significances of co-occurrences
 

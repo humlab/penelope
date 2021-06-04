@@ -13,7 +13,7 @@ from ipywidgets import (
     ToggleButton,
     VBox,
 )
-from penelope.co_occurrence import KeynessMetric
+from penelope.common.keyness import KeynessMetric
 from penelope.utility import get_logger
 
 from .displayers import ITrendDisplayer

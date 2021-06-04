@@ -1,5 +1,6 @@
 import pytest
-from penelope.co_occurrence import Bundle, KeynessMetric, to_filename
+from penelope.co_occurrence import Bundle, to_filename
+from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI, get_prepared_corpus
 

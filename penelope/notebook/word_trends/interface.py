@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import pandas as pd
 import penelope.common.goodness_of_fit as gof
-from penelope.co_occurrence import KeynessMetric
+from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 
 

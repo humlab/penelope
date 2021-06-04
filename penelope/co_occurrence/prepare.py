@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 from penelope.corpus import Token2Id, VectorizedCorpus
 
-from .interface import KeynessMetric
-from .significance import partitioned_significances
+from penelope.common.keyness import KeynessMetric, partitioned_significances
 
 IntOrStr = Union[int, str]
 
