@@ -243,3 +243,7 @@ class IVectorizedCorpusProtocol(Protocol):
     @property
     def id2token(self) -> Mapping[int, str]:
         ...
+
+    @property
+    def token2id(self) -> Mapping[str, int]:
+        ...
