@@ -1,18 +1,31 @@
 import contextlib
+import fnmatch
 from collections.abc import Iterable
 from typing import List, Set, Union
 
 import IPython.display as IPython_display
+import numpy as np
 import pandas as pd
+import panel as pn
+from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
+from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, KeynessMetric, store_co_occurrences
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
-from perspective import PerspectiveError, PerspectiveWidget
-from traitlets import TraitError
+from perspective import PerspectiveWidget
 
 # pylint: disable=too-many-instance-attributes
+USE_PERSPECTIVE = True
+DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
+
+PANEL_FORMATTERS = {
+    'category': NumberFormatter(format='0'),
+    'time_period': NumberFormatter(format='0'),
+    'year': NumberFormatter(format='0'),
+    'index': StringFormatter(),
+}
 
 
 def get_prepared_corpus(
@@ -20,7 +33,7 @@ def get_prepared_corpus(
     corpus: VectorizedCorpus,
     period_pivot: str,
     keyness: KeynessMetric,
-    token_filter: str,
+    # token_filter: str,
     global_threshold: Union[int, float],
     pivot_column_name: str,
 ) -> VectorizedCorpus:
@@ -30,7 +43,7 @@ def get_prepared_corpus(
     Args:
         corpus (VectorizedCorpus): input corpus
         period_pivot (str): temporal pivot key
-        keyness (bool): keyness metric to compute
+        keyness (KeynessMetric): keyness metric to apply on corpus
         token_filter (str): match tokens
         global_threshold (Union[int, float]): limit result by global term frequency
         pivot_column_name (Union[int, float]): name of grouping column
@@ -38,27 +51,86 @@ def get_prepared_corpus(
     Returns:
         VectorizedCorpus: pivoted corpus.
     """
-
-    """Note! Keyness metrics must be computed on the original corpus!!!"""
-    if keyness == KeynessMetric.TF_IDF:
-        corpus = corpus.tf_idf()
-    elif keyness == KeynessMetric.HAL_cwr:
-        corpus = bundle.HAL_cwr_corpus()
-    elif keyness == KeynessMetric.TF:
-        pass
-
-    corpus = corpus.group_by_time_period_optimized(
-        time_period_specifier=period_pivot, target_column_name=pivot_column_name
-    )
+    if period_pivot not in ["year", "lustrum", "decade"]:
+        raise ValueError(f"illegal time period {period_pivot}")
 
     if global_threshold > 1:
         corpus = corpus.slice_by_term_frequency(global_threshold)
 
-    if token_filter:
-        indices = corpus.find_matching_words_indices(token_filter, n_max_count=None)
-        corpus = corpus.slice_by_indicies(indices)
+    """Metrics computed on a document level"""
+    if keyness == KeynessMetric.TF_IDF:
+        corpus = corpus.tf_idf()
+    elif keyness == KeynessMetric.TF_normalized:
+        corpus = corpus.normalize_by_raw_counts()
+    elif keyness == KeynessMetric.TF:
+        pass
+
+    corpus = corpus.group_by_time_period_optimized(
+        time_period_specifier=period_pivot,
+        target_column_name=pivot_column_name,
+    )
+
+    """Metrics computed on partitioned corpus"""
+    if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE):
+        corpus = corpus.to_keyness_co_occurrence_corpus(
+            keyness=keyness, token2id=bundle.token2id, pivot_key=pivot_column_name
+        )
+    elif keyness == KeynessMetric.HAL_cwr:
+        corpus = bundle.HAL_cwr_corpus()
+
+    # if token_filter:
+    #     indices = corpus.find_matching_words_indices(token_filter, n_max_count=None)
+    #     corpus = corpus.slice_by_indicies(indices)
 
     return corpus
+
+
+class TabulatorTableView:
+    def __init__(self, data=None):  # pylint: disable=unused-argument
+        self.container = Output()
+        self.table: pn.widgets.Tabulator = None
+
+    def update(self, data):
+        if self.table is None:
+            self.table: pn.widgets.Tabulator = pn.widgets.Tabulator(
+                value=data,
+                formatters=PANEL_FORMATTERS,
+                layout='fit_data_table',
+                # pagination='remote',
+                # hidden_columns=['index'],
+                row_height=24,
+                show_index=False,
+            )
+            self.table.auto_edit = False
+            self.container.clear_output()
+            with self.container:
+                display(self.table)
+        else:
+            self.table.value = data
+
+
+class PerspectiveTableView:
+    def __init__(self, data=None):
+        self.table: PerspectiveWidget = PerspectiveWidget(
+            data,
+            sort=[["token", "asc"]],
+            aggregates={},
+        )
+        self.container = self.table
+
+    def update(self, data):
+        self.table.load(self.format_columns(data))
+
+    def format_columns(self, data: pd.DataFrame, precision: int = 6):
+
+        for column in data.columns:
+            if np.issubdtype(data[column].dtype, np.integer):
+                data[column] = data[column].apply(str)
+
+            if np.issubdtype(data[column].dtype, np.inexact):
+                data[column] = data[column].apply(f"{{:10.{precision}f}}".format)
+
+        return data
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
@@ -93,7 +165,15 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         """Properties that changes current corpus"""
         self._keyness: Dropdown = Dropdown(
-            options={"TF": KeynessMetric.TF, "TF-IDF": KeynessMetric.TF_IDF, "HAL score": KeynessMetric.HAL_cwr},
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
+                "HAL CWR": KeynessMetric.HAL_cwr,
+                "PPMI": KeynessMetric.PPMI,
+                "LLR": KeynessMetric.LLR,
+                "DICE": KeynessMetric.DICE,
+            },
             value=KeynessMetric.TF,
             layout=Layout(width='auto'),
         )
@@ -124,31 +204,30 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # self._display = Button(description='Update', layout=Layout(width='auto'))
         self._download = Button(description='Download data', layout=Layout(width='auto'))
         self._download_output: Output = Output()
+        self._table_view = TabulatorTableView()
 
-        self._table: PerspectiveWidget = PerspectiveWidget(
-            self.co_occurrences,
-            sort=[["token", "asc"]],
-            aggregates={},
-        )
+        self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
+        self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))
 
         self._button_bar = HBox(
             children=[
                 VBox([HTML("<b>Token match</b>"), self._token_filter]),
-                VBox([HTML("<b>Keyness metric/b>"), self._keyness]),
-                VBox([self._show_concept if self._show_concept is not None else HTML("")]),
+                VBox([HTML("<b>Keyness metric</b>"), self._keyness]),
+                VBox([HTML("🙂"), self._show_concept if self._show_concept is not None else HTML("")]),
                 VBox([HTML("<b>Group by</b>"), self._pivot]),
                 VBox([HTML("<b>Global threshold</b>"), self._global_threshold_filter]),
                 VBox([HTML("<b>Group limit</b>"), self._largest]),
                 # VBox([HTML("<b>Group ranks</b>"), self._rank]),
                 # VBox([HTML("<b>Result limit</b>"), self._head]),
                 VBox([self._save, self._download]),
+                VBox([self._toggle2, self._toggle2]),
                 # VBox([self._display]),
                 VBox([HTML("😢"), self._message]),
                 self._download_output,
             ],
             layout=Layout(width='auto'),
         )
-        super().__init__(children=[self._button_bar, self._table], layout=Layout(width='auto'), **kwargs)
+        super().__init__(children=[self._button_bar, self._table_view.container], layout=Layout(width='auto'), **kwargs)
 
         self._save.on_click(self.save)
         # self._display.on_click(self.save)
@@ -180,10 +259,10 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self._show_concept.observe(self._update_toggle_icon, 'value')
 
         self._pivot.observe(self._update_corpus, 'value')
+        self._global_threshold_filter.observe(self._update_corpus, 'value')
 
-        self._global_threshold_filter.observe(self._update_co_occurrences, 'value')
         # self._head.observe(self._update_co_occurrences, 'value')
-        self._token_filter.observe(self._update_co_occurrences, 'value')
+        self._token_filter.observe(self._filter_co_occurrences, 'value')
         self._largest.observe(self._update_co_occurrences, 'value')
 
         return self
@@ -198,10 +277,10 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             self._show_concept.unobserve(self._update_toggle_icon, 'value')
 
             self._pivot.unobserve(self._update_corpus, 'value')
+            self._global_threshold_filter.unobserve(self._update_corpus, 'value')
 
-            self._global_threshold_filter.unobserve(self._update_co_occurrences, 'value')
             # self._head.unobserve(self._update_co_occurrences, 'value')
-            self._token_filter.unobserve(self._update_co_occurrences, 'value')
+            self._token_filter.unobserve(self._filter_co_occurrences, 'value')
             self._largest.unobserve(self._update_co_occurrences, 'value')
 
     def alert(self, message: str) -> None:
@@ -220,17 +299,24 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         self.co_occurrences = self.to_co_occurrences()
 
-        with contextlib.suppress(PerspectiveError, TraitError):
+        # with contextlib.suppress(PerspectiveError, TraitError):
 
-            columns = ['time_period', 'w1', 'w2', 'token', 'value']
+        self.set_buzy(True, "⌛ loading table...")
 
-            self.set_buzy(True, "⌛ loading table...")
+        self._table_view.update(self.co_occurrences[DISPLAY_COLUMNS])
 
-            self._table.load(self.co_occurrences[columns])
-
-            self.set_buzy(False)
+        self.set_buzy(False)
 
         self.info(f"Data size: {len(self.co_occurrences)}")
+
+    def _filter_co_occurrences(self, *_) -> pd.DataFrame:
+
+        # with contextlib.suppress(PerspectiveError, TraitError):
+        co_occurrences: pd.DataFrame = self.to_filtered_co_occurrences()
+
+        self._table_view.update(co_occurrences[DISPLAY_COLUMNS])
+
+        self.info(f"Data size: {len(co_occurrences)}")
 
     def _update_toggle_icon(self, event: dict) -> None:
         with contextlib.suppress(Exception):
@@ -336,19 +422,42 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         return co_occurrences
 
+    def to_filtered_co_occurrences(self) -> pd.DataFrame:
+
+        if not self.token_filter:
+            return self.co_occurrences
+
+        co_occurrences: pd.DataFrame = self.co_occurrences
+
+        re_filters: List[str] = [fnmatch.translate(s) for s in self.token_filter]
+
+        for re_filter in re_filters:
+            co_occurrences = co_occurrences[
+                co_occurrences.token.astype(str).str.contains(pat=re_filter, case=False, na="")
+            ]
+
+        return co_occurrences
+
     def to_corpus(self) -> VectorizedCorpus:
         """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold."""
         self.set_buzy(True, "⌛ updating corpus...")
+
+        # print(f"to_corpus: keyness={self.keyness}")
+        # print(f"to_corpus: global_threshold={self.global_threshold}")
+        # print(f"to_corpus: pivot={self.pivot}")
+        # print(f"to_corpus: pivot_column_name={self.pivot_column_name}")
+        # print(f"to_corpus: corpus.shape (pre)={self.bundle.corpus.data.shape}")
 
         corpus: VectorizedCorpus = get_prepared_corpus(
             self.bundle,
             corpus=self.bundle.corpus,
             period_pivot=self.pivot,
             keyness=self.keyness,
-            token_filter=self.token_filter,
+            # token_filter=self.token_filter,
             global_threshold=self.global_threshold,
             pivot_column_name=self.pivot_column_name,
         )
+        # print(f"to_corpus: corpus.shape (post)={corpus.data.shape}")
 
         self.set_buzy(False)
 

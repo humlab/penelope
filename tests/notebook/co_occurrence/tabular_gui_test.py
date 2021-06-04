@@ -1,7 +1,7 @@
 import pytest
-from penelope.co_occurrence import Bundle, to_filename
-from penelope.corpus.dtm import VectorizedCorpus
-from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI, KeynessMetric, get_prepared_corpus
+from penelope.co_occurrence import Bundle, KeynessMetric, to_filename
+from penelope.corpus import VectorizedCorpus
+from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI, get_prepared_corpus
 
 # pylint: disable=protected-access, redefined-outer-name
 
@@ -21,7 +21,6 @@ def test_get_prepared_corpus(bundle):
         corpus=bundle.corpus,
         period_pivot="year",
         keyness=KeynessMetric.TF,
-        token_filter="",
         global_threshold=1,
         pivot_column_name='time_period',
     )
@@ -55,7 +54,7 @@ def test_table_gui_to_corpus(bundle, time_period):
     assert "time_period" in corpus.document_index.columns
 
     gui.stop_observe()
-    gui.tf_idf = True
+    gui.keyness = KeynessMetric.TF
     gui.start_observe()
 
     corpus: VectorizedCorpus = gui.to_corpus()
@@ -63,24 +62,7 @@ def test_table_gui_to_corpus(bundle, time_period):
     assert "time_period" in corpus.document_index.columns
 
     gui.stop_observe()
-    gui.token_filter = "apa"
-    gui.start_observe()
-
-    corpus: VectorizedCorpus = gui.to_corpus()
-
-    assert corpus.data.shape == (5, 0)
-
-    gui.stop_observe()
-    gui.token_filter = "educational/*"
-    gui.start_observe()
-
-    corpus: VectorizedCorpus = gui.to_corpus()
-
-    assert all(x.startswith("educational") for x in corpus.token2id)
-
-    gui.stop_observe()
-    gui.tf_idf = False
-    gui.token_filter = ""
+    gui.keyness = KeynessMetric.TF
     gui.global_threshold = 100
     gui.start_observe()
 
@@ -92,13 +74,13 @@ def test_table_gui_to_corpus(bundle, time_period):
 
 
 @pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
-def test_table_gui_to_co_occurrences(bundle, time_period):
+def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
 
     gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     gui.stop_observe()
     gui.pivot = time_period
-    gui.tf_idf = False
+    gui.keyness = KeynessMetric.TF
     gui.token_filter = "educational/*"
     gui.global_threshold = 50
     gui.concepts = set(["general"])
@@ -107,6 +89,28 @@ def test_table_gui_to_co_occurrences(bundle, time_period):
 
     gui._update_corpus()
 
-    assert len(gui.co_occurrences) > 0
-    assert all(gui.co_occurrences.token.str.startswith("educational"))
-    assert all(gui.co_occurrences.w1 == "educational")
+    co_occurrences = gui.to_filtered_co_occurrences()
+
+    assert len(co_occurrences) > 0
+    assert all(co_occurrences.token.str.startswith("educational"))
+    assert all(co_occurrences.w1 == "educational")
+
+
+def test_table_gui_debug_setup():
+
+    bundle: Bundle = Bundle.load(folder="/data/westac/data/APA", tag="APA", compute_frame=False)
+
+    assert bundle is not None
+
+    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
+
+    gui.stop_observe()
+    gui.pivot = "year"
+    gui.keyness = KeynessMetric.TF
+    gui.token_filter = ""
+    gui.global_threshold = 1
+    gui.concepts = set()
+    gui.largest = 1
+    gui.start_observe()
+
+    gui._update_corpus()

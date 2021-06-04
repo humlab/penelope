@@ -10,6 +10,9 @@ from penelope.co_occurrence import (
     to_filename,
 )
 from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
+from penelope.co_occurrence.interface import KeynessMetric
+from penelope.co_occurrence.prepare import CoOccurrenceHelper
+from penelope.co_occurrence.significance import partitioned_significances
 from penelope.corpus import VectorizedCorpus
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 
@@ -18,6 +21,10 @@ from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
+    return create_bundle()
+
+
+def create_bundle() -> Bundle:
     folder, tag = './tests/test_data/VENUS', 'VENUS'
     filename = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
@@ -130,3 +137,27 @@ def test_HAL_cwr_corpus_burgess_litmus():
     hal_cwr_corpus: VectorizedCorpus = bundle.HAL_cwr_corpus()
 
     assert hal_cwr_corpus is not None
+
+
+@pytest.mark.parametrize('keyness', [KeynessMetric.PPMI, KeynessMetric.DICE, KeynessMetric.LLR])
+def test_compute_PPMI(keyness: KeynessMetric):  # pylint: disable=unused-argument
+
+    bundle: Bundle = create_bundle()
+    document_pivot_key = 'year'
+    pivot_key = 'time_period'
+
+    helper: CoOccurrenceHelper = CoOccurrenceHelper(corpus=bundle.corpus, source_token2id=bundle.token2id)
+
+    co_occurrences = helper.groupby(document_pivot_key, target_pivot_key=pivot_key).value
+
+    vocabulary_size = max(bundle.token2id.values()) + 1
+
+    weighed_co_occurrences = partitioned_significances(
+        co_occurrences,
+        pivot_key=pivot_key,
+        keyness_metric=keyness,
+        vocabulary_size=vocabulary_size,
+        normalize=False,
+    )
+
+    assert weighed_co_occurrences is not None

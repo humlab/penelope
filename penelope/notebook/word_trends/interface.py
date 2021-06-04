@@ -3,6 +3,7 @@ from typing import Dict, List
 
 import pandas as pd
 import penelope.common.goodness_of_fit as gof
+from penelope.co_occurrence import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 
 
@@ -10,7 +11,7 @@ from penelope.corpus import VectorizedCorpus
 class TrendsOpts:
 
     normalize: bool
-    tf_idf: bool
+    keyness: KeynessMetric
     group_by: str
 
     smooth: bool = None
@@ -25,7 +26,7 @@ class TrendsOpts:
     def invalidates_corpus(self, other: "TrendsOpts") -> bool:
         if self.normalize != other.normalize:
             return True
-        if self.tf_idf != other.tf_idf:
+        if self.keyness != other.keyness:
             return True
         if self.group_by != other.group_by:
             return True
@@ -46,7 +47,7 @@ class TrendsData:
     most_deviating: pd.DataFrame = None
 
     current_trends_opts: TrendsOpts = field(
-        default_factory=lambda: TrendsOpts(normalize=False, tf_idf=False, group_by='year')
+        default_factory=lambda: TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
     )
     transformed_corpus: VectorizedCorpus = None
     category_column: str = field(init=False, default="time_period")
@@ -89,7 +90,7 @@ class TrendsData:
 
             transformed_corpus: VectorizedCorpus = self.corpus
 
-            if opts.tf_idf:
+            if opts.keyness == KeynessMetric.TF_IDF:
                 transformed_corpus = transformed_corpus.tf_idf()
 
             transformed_corpus = transformed_corpus.group_by_time_period(

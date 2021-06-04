@@ -119,7 +119,7 @@ def test_co_occurrences_to_co_occurrence_corpus():
 
     corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
-        concept={'g'}, ignore_concept=False, context_width=1
+        concept={}, ignore_concept=False, context_width=1
     )
 
     token2id: Token2Id = Token2Id(corpus.token2id)

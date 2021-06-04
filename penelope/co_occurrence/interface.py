@@ -13,6 +13,8 @@ class KeynessMetric(IntEnum):
     TF_IDF = 2
     HAL_cwr = 3
     PPMI = 4
+    DICE = 5
+    LLR = 6
 
 
 class ZeroComputeError(ValueError):

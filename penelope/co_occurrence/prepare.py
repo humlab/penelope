@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 from penelope.corpus import Token2Id, VectorizedCorpus
 
+from .interface import KeynessMetric
+from .significance import partitioned_significances
+
 IntOrStr = Union[int, str]
 
 
@@ -20,56 +23,104 @@ class CoOccurrenceHelper:
         source_token2id: Token2Id,
         pivot_keys: Union[str, List[str]] = None,
     ):
+
         self.corpus: VectorizedCorpus = corpus
         self.source_token2id: Token2Id = source_token2id
         self.corpus_pivot_keys: List[str] = [pivot_keys] if isinstance(pivot_keys, str) else pivot_keys
 
         self.co_occurrences: pd.DataFrame = self.corpus.to_co_occurrences(source_token2id)  # .copy()
-        self.data: pd.DataFrame = self.co_occurrences
-        self.data_pivot_keys: List[str] = self.corpus_pivot_keys
+        self.data: pd.DataFrame = None
+        self.data_pivot_keys: List[str] = None
+
+        self.reset()
 
     def reset(self) -> "CoOccurrenceHelper":
+
         self.data: pd.DataFrame = self.co_occurrences  # .copy()
         self.data_pivot_keys = self.corpus_pivot_keys
+
+        if 'time_period' not in self.data.columns:
+            if 'year' in self.data.columns:
+                self.data['time_period'] = self.data.year
+
         return self
 
-    def groupby(self, pivot_keys: Union[str, List[str]], normalize_key: str = 'n_raw_tokens') -> "CoOccurrenceHelper":
-        """Groups co-occurrences data frame by given keys"""
+    def normalize(
+        self, pivot_keys: Union[str, List[str]], taget_name='value_n_t', normalize_key: str = 'n_raw_tokens'
+    ) -> "CoOccurrenceHelper":
+
+        self.data[taget_name] = self._normalize(self.data, pivot_keys=pivot_keys, normalize_key=normalize_key)
+
+        return self
+
+    def _normalize(
+        self, data: pd.DataFrame, pivot_keys: Union[str, List[str]], normalize_key: str = 'n_raw_tokens'
+    ) -> "CoOccurrenceHelper":
+        """Normalizes groups defined by `pivot_keys` by raw token counts (given by document index)"""
+
+        missing_columns: List[str] = [
+            x for x in (pivot_keys + [normalize_key]) if x not in self.corpus.document_index.columns
+        ]
+        if len(missing_columns) > 0:
+            raise f"BugCheck: expected {','.join(missing_columns)} to be corpus' document index."
+
+        series: pd.Series = data.value / pd.merge(
+            data[pivot_keys],
+            self.corpus.document_index.groupby(pivot_keys)[normalize_key].sum(),
+            left_on=pivot_keys,
+            right_index=True,
+        )[normalize_key]
+
+        return series
+
+    def groupby(
+        self,
+        document_pivot_keys: Union[str, List[str]],
+        normalize: bool = False,
+        normalize_key: str = 'n_raw_tokens',
+        target_pivot_key='time_period',
+    ) -> "CoOccurrenceHelper":
+        """Groups co-occurrences data frame by given document index properties (i.e. year)
+        Extends/overloads the co-occurrence data frame with specified keys
+        Adds a `target_pivot_key` column as an alias from added column"""
 
         if self.data_pivot_keys:
             raise ValueError("Already grouped, please reset before calling again")
 
-        if not pivot_keys:
+        if not document_pivot_keys:
             raise ValueError("pivot keys is not specified")
 
         data: pd.DataFrame = self.data
 
-        if isinstance(pivot_keys, str):
-            pivot_keys = [pivot_keys]
+        if isinstance(document_pivot_keys, str):
+            document_pivot_keys = [document_pivot_keys]
 
-        pivot_keys = [g for g in pivot_keys if g in self.corpus.document_index.columns and g not in data.columns]
+        document_pivot_keys = [
+            g for g in document_pivot_keys if g in self.corpus.document_index.columns and g not in data.columns
+        ]
 
-        if len(pivot_keys) == 0:
+        if len(document_pivot_keys) == 0:
             raise ValueError("No keys to group by!")
 
         """Add grouping columns to data"""
         data: pd.DataFrame = data.merge(
-            self.corpus.document_index[pivot_keys], left_on='document_id', right_index=True, how='inner'
+            self.corpus.document_index[document_pivot_keys], left_on='document_id', right_index=True, how='inner'
         )
 
         """Group and sum up data"""
-        data = data.groupby(pivot_keys + ID_COLUMNS)['value'].sum().reset_index()
+        data = data.groupby(document_pivot_keys + ID_COLUMNS)['value'].sum().reset_index()
 
         """Divide window counts with time-periods token counts"""
-        data['value_n_t'] = data.value / pd.merge(
-            data[pivot_keys],
-            self.corpus.document_index.groupby(pivot_keys)[normalize_key].sum(),  # Yearly token counts
-            left_on='year',
-            right_index=True,
-        )[normalize_key]
+        if normalize:
+            data['value_n_t'] = self._normalize(data, pivot_keys=document_pivot_keys, normalize_key=normalize_key)
+
+        if target_pivot_key not in data.columns:
+            # FIXME: only handles single key:
+            assert document_pivot_keys[0] in data.columns
+            data[target_pivot_key] = data[document_pivot_keys[0]]
 
         self.data = data
-        self.data_pivot_keys = pivot_keys
+        self.data_pivot_keys = document_pivot_keys
 
         return self
 
@@ -78,18 +129,21 @@ class CoOccurrenceHelper:
         if 'w1' in self.data.columns:
             return self
 
+        self.data = self.data.copy()
+
         fg = self.source_token2id.id2token.get
         self.data["w1"] = self.data.w1_id.apply(fg)
         self.data["w2"] = self.data.w2_id.apply(fg)
 
         fg = self.corpus.id2token.get
         self.data["token"] = self.data.token_id.apply(fg)
-        # faster:
-        # self.data["token"] = self.data.w1 + '/' + self.data.w2
 
         return self
 
     def trunk_by_global_count(self, threshold: int) -> "CoOccurrenceHelper":
+
+        if len(self.data) == 0:
+            return self
 
         if threshold < 2:
             return self
@@ -102,6 +156,9 @@ class CoOccurrenceHelper:
 
     def match(self, match_tokens: List[str]) -> "CoOccurrenceHelper":
 
+        if len(self.data) == 0:
+            return self
+
         data: pd.DataFrame = self.data
 
         if match_tokens:
@@ -113,6 +170,9 @@ class CoOccurrenceHelper:
         return self
 
     def exclude(self, excludes: Union[IntOrStr, List[IntOrStr]]) -> "CoOccurrenceHelper":
+
+        if len(self.data) == 0:
+            return self
 
         if not excludes:
             return self
@@ -134,12 +194,15 @@ class CoOccurrenceHelper:
 
     """ Unchained functions/properties follows """
 
-    def rank(self, n_top=10, column='value') -> "CoOccurrenceHelper":
+    def rank(self, n_top: int = 10, column: str = 'value') -> "CoOccurrenceHelper":
+
+        if len(self.data) == 0:
+            return self
 
         if column not in VALUE_COLUMNS:
             raise ValueError(f"largets: expected any of {', '.join(VALUE_COLUMNS)} but found {column}")
 
-        group_columns = [x for x in self.data.columns if x not in VALUE_COLUMNS + TOKEN_COLUMNS]
+        group_columns: List[str] = [x for x in self.data.columns if x not in VALUE_COLUMNS + TOKEN_COLUMNS]
 
         # self.data['rank'] = self.data.groupby(group_columns)[column].rank(ascending=False) #, method='first')
         # return self.data[self.data['rank'] <= n_top] # .drop(columns='rank')
@@ -148,13 +211,18 @@ class CoOccurrenceHelper:
 
         return self
 
-    def largest(self, n_top=10, column='value') -> "CoOccurrenceHelper":
+    def largest(self, n_top: int = 10, column: str = 'value') -> "CoOccurrenceHelper":
+
         group_columns = list(set(self.data_pivot_keys or []).union(set(self.corpus_pivot_keys or [])))
-        largest_group = self.data.groupby(group_columns)[column].nlargest(n_top)
-        self.data = self.data.loc[largest_group.index.levels[1]]
+        largest_indices = self.data.groupby(group_columns)[column].nlargest(n_top).reset_index().level_1
+        self.data = self.data.loc[largest_indices]
+
         return self
 
     def head(self, n_head: int) -> "CoOccurrenceHelper":
+
+        if len(self.data) == 0:
+            return self
 
         if n_head <= 0:
             return self.data
@@ -164,6 +232,27 @@ class CoOccurrenceHelper:
 
         self.data = self.data.head(n_head)
 
+        return self
+
+    def weigh_by_significance(
+        self,
+        co_occurrences: pd.DataFrame,
+        keyness: KeynessMetric,
+        pivot_key: str,
+        vocabulary_size: int,
+        normalize: bool = False,
+    ) -> pd.DataFrame:
+        """Computes PPMI for co-occurrence (TTM) matrix
+        Note: Compute on non-filtered co-occurrences data!
+        """
+        ppmi_co_occurrences = partitioned_significances(
+            co_occurrences=co_occurrences,
+            pivot_key=pivot_key,
+            keyness_metric=keyness,
+            vocabulary_size=vocabulary_size,
+            normalize=normalize,
+        )
+        self.data = ppmi_co_occurrences
         return self
 
     @property

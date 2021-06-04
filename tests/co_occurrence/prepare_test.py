@@ -1,5 +1,4 @@
 import os
-from typing import Set
 
 import pandas as pd
 import pytest
@@ -112,3 +111,25 @@ def test_co_occurrence_helper_largest():
 def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
     heads = helper.reset().groupby('year').decode().head(10).value.token.tolist()
     assert len(heads) == 10
+
+
+def test_create_co_occurrence_vocabulary():
+
+    bundle: Bundle = create_bundle()
+    co_occurrences: pd.DataFrame = bundle.co_occurrences
+
+    vocab, vocab_mapping = bundle.corpus.create_co_occurrence_vocabulary(co_occurrences, bundle.token2id)
+
+    id2token = {v: k for k, v in vocab.items()}
+
+    fg = bundle.token2id.id2token
+    assert all(f"{fg[k[0]]}/{fg[k[1]]}" == id2token[v] for k, v in vocab_mapping.items())
+
+    tokens: pd.Series = (
+        co_occurrences[['w1_id', 'w2_id']].apply(lambda x: vocab_mapping.get((x[0], x[1])), axis=1).apply(id2token.get)
+    )
+
+    assert vocab is not None
+    assert len(vocab) == len(vocab_mapping)
+
+    assert all(tokens == co_occurrences.token)
