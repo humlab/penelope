@@ -199,12 +199,12 @@ def partitioned_significances(
     co_occurrence_partitions = []
     for period in co_occurrences[pivot_key].unique():
         co_partition = co_occurrences[co_occurrences[pivot_key] == period]
-        ttm = sp.csc_matrix(
+        term_term_matrix = sp.csc_matrix(
             (co_partition.value, (co_partition.w1_id, co_partition.w2_id)),
             shape=(vocabulary_size, vocabulary_size),
             dtype=np.float64,
         )
-        weights, (w1_ids, w2_ids) = significance(TTM=ttm, metric=keyness_metric, normalize=normalize)
+        weights, (w1_ids, w2_ids) = significance(TTM=term_term_matrix, metric=keyness_metric, normalize=normalize)
         co_occurrence_partitions.append(
             pd.DataFrame(data={pivot_key: period, 'w1_id': w1_ids, 'w2_id': w2_ids, 'value': weights})
         )
