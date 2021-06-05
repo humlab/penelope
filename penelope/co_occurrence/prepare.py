@@ -2,9 +2,8 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from penelope.corpus import Token2Id, VectorizedCorpus
-
 from penelope.common.keyness import KeynessMetric, partitioned_significances
+from penelope.corpus import Token2Id, VectorizedCorpus
 
 IntOrStr = Union[int, str]
 
@@ -212,12 +211,15 @@ class CoOccurrenceHelper:
 
     def largest(self, n_top: int = 10, column: str = 'value') -> "CoOccurrenceHelper":
 
+        if len(self.data) == 0:
+            return self
+
         group_columns = list(set(self.data_pivot_keys or []).union(set(self.corpus_pivot_keys or [])))
 
         if not group_columns:
             raise ValueError("fatal: group  columns cannot be empty")
 
-        largest_indices = self.data.groupby(group_columns)[column].nlargest(n_top).index.get_level_values(-1)
+        largest_indices = self.data.groupby(group_columns)[column].nlargest(n_top).index.get_level_values(-1).tolist()
 
         self.data = self.data.loc[largest_indices]
 
@@ -262,5 +264,5 @@ class CoOccurrenceHelper:
     @property
     def value(self) -> pd.DataFrame:
         if self.data.index.name in self.data.columns:
-            self.data.rename_axis('')
+            self.data.rename_axis('', inplace=True)
         return self.decode().data

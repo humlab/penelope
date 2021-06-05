@@ -6,7 +6,6 @@ from penelope.utility.utils import create_dataclass_instance_from_kwargs
 Token = Union[int, str]
 
 
-
 class ZeroComputeError(ValueError):
     def __init__(self):
         super().__init__("Computation ended up in ZERO records. Check settings!")
