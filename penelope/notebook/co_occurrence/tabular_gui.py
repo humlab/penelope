@@ -6,9 +6,9 @@ from typing import List, Set, Union
 import IPython.display as IPython_display
 import numpy as np
 import pandas as pd
-import panel as pn
+# import panel as pn
 from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
-from IPython.display import display
+# from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.common.keyness import KeynessMetric
@@ -86,28 +86,28 @@ def get_prepared_corpus(
     return corpus
 
 
-class TabulatorTableView:
-    def __init__(self, data=None):  # pylint: disable=unused-argument
-        self.container = Output()
-        self.table: pn.widgets.Tabulator = None
+# class TabulatorTableView:
+#     def __init__(self, data=None):  # pylint: disable=unused-argument
+#         self.container = Output()
+#         self.table: pn.widgets.Tabulator = None
 
-    def update(self, data):
-        if self.table is None:
-            self.table: pn.widgets.Tabulator = pn.widgets.Tabulator(
-                value=data,
-                formatters=PANEL_FORMATTERS,
-                layout='fit_data_table',
-                # pagination='remote',
-                # hidden_columns=['index'],
-                row_height=24,
-                show_index=False,
-            )
-            self.table.auto_edit = False
-            self.container.clear_output()
-            with self.container:
-                display(self.table)
-        else:
-            self.table.value = data
+#     def update(self, data):
+#         if self.table is None:
+#             self.table: pn.widgets.Tabulator = pn.widgets.Tabulator(
+#                 value=data,
+#                 formatters=PANEL_FORMATTERS,
+#                 layout='fit_data_table',
+#                 # pagination='remote',
+#                 # hidden_columns=['index'],
+#                 row_height=24,
+#                 show_index=False,
+#             )
+#             self.table.auto_edit = False
+#             self.container.clear_output()
+#             with self.container:
+#                 display(self.table)
+#         else:
+#             self.table.value = data
 
 
 class PerspectiveTableView:
@@ -205,7 +205,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # self._display = Button(description='Update', layout=Layout(width='auto'))
         self._download = Button(description='Download data', layout=Layout(width='auto'))
         self._download_output: Output = Output()
-        self._table_view = TabulatorTableView()
+        self._table_view = PerspectiveTableView()
 
         self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
         self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))
