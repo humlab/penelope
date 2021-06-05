@@ -103,7 +103,7 @@ def test_table_gui_debug_setup():
 
     assert bundle is not None
 
-    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
+    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle).setup()
 
     gui.stop_observe()
     gui.pivot = "year"

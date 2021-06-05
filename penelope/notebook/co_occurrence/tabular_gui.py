@@ -6,8 +6,10 @@ from typing import List, Set, Union
 import IPython.display as IPython_display
 import numpy as np
 import pandas as pd
+
 # import panel as pn
 from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
+
 # from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
@@ -27,6 +29,8 @@ PANEL_FORMATTERS = {
     'year': NumberFormatter(format='0'),
     'index': StringFormatter(),
 }
+
+CURRENT_BUNDLE = None
 
 
 def get_prepared_corpus(
@@ -142,6 +146,9 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         default_token_filter: str = None,
         **kwargs,
     ):
+        global CURRENT_BUNDLE
+        CURRENT_BUNDLE = bundle
+
         """Alternative implementation that uses VectorizedCorpus"""
         self.bundle = bundle
         self.co_occurrences: pd.DataFrame = None
