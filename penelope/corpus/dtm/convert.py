@@ -75,7 +75,7 @@ class CoOccurrenceMixIn:
 
         """Add a time period column that can be used as a pivot column"""
         df['time_period'] = self.document_index.loc[df.document_id][partition_key].astype(np.int16).values
-    
+
         """Decode w1/w2 token pair"""
         fg = self.id2token.get
 
@@ -89,7 +89,8 @@ class CoOccurrenceMixIn:
         df['w1_id'] = df.w1.apply(sg).astype(np.int32)
         df['w2_id'] = df.w2.apply(sg).astype(np.int32)
 
-        df = df.drop(columns=["token", "w1", "w2"]).reset_index()
+        df.drop(columns=["token", "w1", "w2"], inplace=True)
+        # df = df.reset_index()
 
         return df
 
