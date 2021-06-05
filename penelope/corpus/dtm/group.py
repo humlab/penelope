@@ -28,7 +28,7 @@ class GroupByMixIn:
         fill_steps: int = 1,
         target_column_name: str = 'category',
     ) -> IVectorizedCorpus:
-        """Groups corpus byand document index by an existing pivot column,
+        """Groups corpus and document index by an existing pivot column,
 
         Args:
             column_name (str): The column to group by, MUST EXIST, must be of int or str type
