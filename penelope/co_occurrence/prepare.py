@@ -213,7 +213,12 @@ class CoOccurrenceHelper:
     def largest(self, n_top: int = 10, column: str = 'value') -> "CoOccurrenceHelper":
 
         group_columns = list(set(self.data_pivot_keys or []).union(set(self.corpus_pivot_keys or [])))
-        largest_indices = self.data.groupby(group_columns)[column].nlargest(n_top).reset_index().level_1
+
+        if not group_columns:
+            raise ValueError("fatal: group  columns cannot be empty")
+
+        largest_indices = self.data.groupby(group_columns)[column].nlargest(n_top).index.get_level_values(-1)
+
         self.data = self.data.loc[largest_indices]
 
         return self
@@ -256,4 +261,6 @@ class CoOccurrenceHelper:
 
     @property
     def value(self) -> pd.DataFrame:
+        if self.data.index.name in self.data.columns:
+            self.data.rename_axis('')
         return self.decode().data
