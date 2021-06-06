@@ -76,7 +76,7 @@ def get_prepared_corpus(
     )
 
     """Metrics computed on partitioned corpus"""
-    if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE):
+    if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
         corpus = corpus.to_keyness_co_occurrence_corpus(
             keyness=keyness, token2id=bundle.token2id, pivot_key=pivot_column_name
         )
@@ -180,6 +180,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
                 "HAL CWR": KeynessMetric.HAL_cwr,
                 "PPMI": KeynessMetric.PPMI,
                 "LLR": KeynessMetric.LLR,
+                "LLR(D)": KeynessMetric.LLR_Dunning,
                 "DICE": KeynessMetric.DICE,
             },
             value=KeynessMetric.TF,
@@ -411,22 +412,29 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         self.set_buzy(True, "⌛ preparing co-occurrences...")
 
-        if self.pivot_column_name not in self.corpus.document_index.columns:
-            raise ValueError(
-                f"expected '{self.pivot_column_name}' but not found in {', '.join(self.corpus.document_index.columns)}"
-            )
+        try:
 
-        co_occurrences: pd.DataFrame = (
-            CoOccurrenceHelper(
-                corpus=self.corpus,
-                source_token2id=self.bundle.token2id,
-                pivot_keys=self.pivot_column_name,
-            )
-            .exclude(self.ignores)
-            .largest(self.largest)
-        ).value
+            if self.pivot_column_name not in self.corpus.document_index.columns:
+                raise ValueError(
+                    f"expected '{self.pivot_column_name}' but not found in {', '.join(self.corpus.document_index.columns)}"
+                )
 
-        self.set_buzy(False)
+            co_occurrences: pd.DataFrame = (
+                CoOccurrenceHelper(
+                    corpus=self.corpus,
+                    source_token2id=self.bundle.token2id,
+                    pivot_keys=self.pivot_column_name,
+                )
+                .exclude(self.ignores)
+                .largest(self.largest)
+            ).value
+
+            self.set_buzy(False, None)
+            self.alert("✔")
+        except Exception as ex:
+            self.set_buzy(False)
+            self.alert(f"😢 {str(ex)}")
+            raise
 
         return co_occurrences
 
@@ -456,18 +464,23 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # print(f"to_corpus: pivot_column_name={self.pivot_column_name}")
         # print(f"to_corpus: corpus.shape (pre)={self.bundle.corpus.data.shape}")
 
-        corpus: VectorizedCorpus = get_prepared_corpus(
-            self.bundle,
-            corpus=self.bundle.corpus,
-            period_pivot=self.pivot,
-            keyness=self.keyness,
-            # token_filter=self.token_filter,
-            global_threshold=self.global_threshold,
-            pivot_column_name=self.pivot_column_name,
-        )
-        # print(f"to_corpus: corpus.shape (post)={corpus.data.shape}")
-
-        self.set_buzy(False)
+        try:
+            corpus: VectorizedCorpus = get_prepared_corpus(
+                self.bundle,
+                corpus=self.bundle.corpus,
+                period_pivot=self.pivot,
+                keyness=self.keyness,
+                # token_filter=self.token_filter,
+                global_threshold=self.global_threshold,
+                pivot_column_name=self.pivot_column_name,
+            )
+            # print(f"to_corpus: corpus.shape (post)={corpus.data.shape}")
+            self.set_buzy(False, None)
+            self.alert("✔")
+        except Exception as ex:
+            self.set_buzy(False)
+            self.alert(f"😢 {str(ex)}")
+            raise
 
         return corpus
 
