@@ -14,6 +14,7 @@ class KeynessMetric(IntEnum):
     PPMI = 4
     DICE = 5
     LLR = 6
+    LLR_Dunning = 7
 
 
 """Computes statistical significances of co-occurrences
@@ -93,7 +94,8 @@ def _llr_dunning(Cij, Z, Zr, ii, jj, *_):
     def l(k, n, x):  # noqa: E741, E743
         # dunning's likelihood ratio with notation from
         # http://nlp.stanford.edu/fsnlp/promo/colloc.pdf p162
-        return np.log(max(x, 1e-10)) * k + np.log(max(1 - x, 1e-10)) * (n - k)
+        # np.log(max(x, 1e-10)) * k + np.log(max(1 - x, 1e-10)) * (n - k)
+        return np.log(np.clip(x, a_min=1e-10, a_max=None)) * k + np.log(np.clip(1 - x, a_min=1e-10, a_max=None)) * (n - k)
 
     p = Zr[jj] / Z
     Pi = Cij / Zr[ii]
@@ -127,10 +129,11 @@ METRIC_FUNCTION = {
     KeynessMetric.PPMI: _ppmi,
     KeynessMetric.DICE: _dice,
     KeynessMetric.LLR: _llr,
+    KeynessMetric.LLR_Dunning: _llr_dunning,
 }
 
 
-def significance(TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False) -> sp.csc_matrix:
+def significance(TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False, n_contexts=None) -> sp.csc_matrix:
     """Computes statistical significance if co-occurrences using `metric`.
 
     Args:
@@ -143,7 +146,7 @@ def significance(TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], nor
     metric = metric if callable(metric) else METRIC_FUNCTION.get(metric, _undefined)
 
     # Number of contexts (documents)
-    k = TTM.shape[0]  # FIXME: This is wrong since TTM is a term-term matrix!!!
+    k = n_contexts
 
     # Total number of observations (counts)
     Z: float = float(TTM.sum())  # Total number of observations (counts)
@@ -204,7 +207,7 @@ def partitioned_significances(
             shape=(vocabulary_size, vocabulary_size),
             dtype=np.float64,
         )
-        weights, (w1_ids, w2_ids) = significance(TTM=term_term_matrix, metric=keyness_metric, normalize=normalize)
+        weights, (w1_ids, w2_ids) = significance(TTM=term_term_matrix, metric=keyness_metric, normalize=normalize, n_contexts=1)
         co_occurrence_partitions.append(
             pd.DataFrame(data={pivot_key: period, 'w1_id': w1_ids, 'w2_id': w2_ids, 'value': weights})
         )
