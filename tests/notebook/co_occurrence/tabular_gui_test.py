@@ -107,7 +107,7 @@ def test_table_gui_debug_setup():
 
     gui.stop_observe()
     gui.pivot = "year"
-    gui.keyness = KeynessMetric.TF
+    gui.keyness = KeynessMetric.PPMI
     gui.token_filter = ""
     gui.global_threshold = 1
     gui.concepts = set()

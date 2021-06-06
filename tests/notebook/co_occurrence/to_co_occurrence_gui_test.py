@@ -64,7 +64,7 @@ def test_generate_cli_opts():
     compute_opts = interface.ComputeOpts(
         corpus_type=interface.CorpusType.SparvCSV,
         corpus_filename="apa.txt",
-        target_folder='/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA',
+        target_folder='./tests/output',
         corpus_tag='APA',
         transform_opts=TokensTransformOpts(
             only_alphabetic=False,

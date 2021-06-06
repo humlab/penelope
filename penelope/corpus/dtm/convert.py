@@ -230,7 +230,7 @@ class CoOccurrenceMixIn:
 
         mg = self.to_co_occurrence_vocab_mapping().get
 
-        co_occurrences['token_id'] = (co_occurrences[['w1_id', 'w2_id']].apply(lambda x: mg((x[0], x[1])), axis=1),)
+        co_occurrences['token_id'] = co_occurrences[['w1_id', 'w2_id']].apply(lambda x: mg((x[0], x[1])), axis=1)
 
         return co_occurrences
 
@@ -256,11 +256,14 @@ class CoOccurrenceMixIn:
             pivot_key=pivot_key,
         )
 
+        """Map that translate pivot_key to document_id"""
+        pg = { v: k for k,v in self.document_index[pivot_key].to_dict().items()}.get
+
         matrix = scipy.sparse.coo_matrix(
             (
                 co_occurrences.value,
                 (
-                    co_occurrences[pivot_key].astype(np.int32),
+                    co_occurrences[pivot_key].apply(pg).astype(np.int32),
                     co_occurrences.token_id.astype(np.int32),
                 ),
             ),
