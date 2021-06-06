@@ -76,16 +76,19 @@ def _dice(Cij, Z, Zr, ii, jj, *_, normalize=False):
 
 def _llr(Cij, Z, Zr, ii, jj, k, *_, normalize=False):
     """Computes log-likelihood ratio"""
+    def ln(a: np.ndarray) -> np.ndarray:
+        return np.log(np.clip(a, a_min=1e-10, a_max=None))
+
     values = 2.0 * (
-        (k * np.log(k))
-        - (Zr[ii] * np.log(Zr[ii]))
-        - (Zr[jj] * np.log(Zr[jj]))
-        + (Cij * np.log(Cij))
-        + (k - Zr[ii] - Zr[jj] + Cij) * np.log(k - Zr[ii] - Zr[jj] + Cij)
-        + (Zr[ii] - Cij) * np.log(Zr[ii] - Cij)
-        + (Zr[jj] - Cij) * np.log(Zr[jj] - Cij)
-        - (k - Zr[ii]) * np.log(k - Zr[ii])
-        - (k - Zr[jj]) * np.log(k - Zr[jj])
+        (k * ln(k))
+        - (Zr[ii] * ln(Zr[ii]))
+        - (Zr[jj] * ln(Zr[jj]))
+        + (Cij * ln(Cij))
+        + (k - Zr[ii] - Zr[jj] + Cij) * ln(k - Zr[ii] - Zr[jj] + Cij)
+        + (Zr[ii] - Cij) * ln(Zr[ii] - Cij)
+        + (Zr[jj] - Cij) * ln(Zr[jj] - Cij)
+        - (k - Zr[ii]) * ln(k - Zr[ii])
+        - (k - Zr[jj]) * ln(k - Zr[jj])
     )
     return values
 
@@ -112,13 +115,13 @@ def _llr_not_used(k, K, n, N):
     """
     Compute the Log Likelihood Ratio.
     """
-    val = k * np.log(float(k * N) / float(n * K))
+    val = k * np.log((k * N) / (n * K))
     if n > k:
-        val += (n - k) * np.log(float((n - k) * N) / float(n * (N - K)))
+        val += (n - k) * np.log(((n - k) * N) / (n * (N - K)))
     if K > k:
-        val += (K - k) * np.log(float(N * (K - k)) / float(K * (N - n)))
+        val += (K - k) * np.log((N * (K - k)) / (K * (N - n)))
     if (N - K - n + k) > 0:
-        val += (N - K - n + k) * np.log(float(N * (N - K - n + k)) / float((N - K) * (N - n)))
+        val += (N - K - n + k) * np.log((N * (N - K - n + k)) / ((N - K) * (N - n)))
     return val
 
 
@@ -211,8 +214,9 @@ def partitioned_significances(
             shape=(vocabulary_size, vocabulary_size),
             dtype=np.float64,
         )
+        n_contexts = co_partition.document_id.unique().size
         weights, (w1_ids, w2_ids) = significance(
-            TTM=term_term_matrix, metric=keyness_metric, normalize=normalize, n_contexts=1
+            TTM=term_term_matrix, metric=keyness_metric, normalize=normalize, n_contexts=n_contexts,
         )
         co_occurrence_partitions.append(
             pd.DataFrame(data={pivot_key: period, 'w1_id': w1_ids, 'w2_id': w2_ids, 'value': weights})
