@@ -137,7 +137,9 @@ def test_HAL_cwr_corpus_burgess_litmus():
     assert hal_cwr_corpus is not None
 
 
-@pytest.mark.parametrize('keyness', [KeynessMetric.PPMI, KeynessMetric.DICE, KeynessMetric.LLR, KeynessMetric.LLR_Dunning])
+@pytest.mark.parametrize(
+    'keyness', [KeynessMetric.PPMI, KeynessMetric.DICE, KeynessMetric.LLR, KeynessMetric.LLR_Dunning]
+)
 def test_compute_PPMI(keyness: KeynessMetric):  # pylint: disable=unused-argument
 
     bundle: Bundle = create_bundle()

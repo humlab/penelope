@@ -95,7 +95,9 @@ def _llr_dunning(Cij, Z, Zr, ii, jj, *_):
         # dunning's likelihood ratio with notation from
         # http://nlp.stanford.edu/fsnlp/promo/colloc.pdf p162
         # np.log(max(x, 1e-10)) * k + np.log(max(1 - x, 1e-10)) * (n - k)
-        return np.log(np.clip(x, a_min=1e-10, a_max=None)) * k + np.log(np.clip(1 - x, a_min=1e-10, a_max=None)) * (n - k)
+        return np.log(np.clip(x, a_min=1e-10, a_max=None)) * k + np.log(np.clip(1 - x, a_min=1e-10, a_max=None)) * (
+            n - k
+        )
 
     p = Zr[jj] / Z
     Pi = Cij / Zr[ii]
@@ -133,7 +135,9 @@ METRIC_FUNCTION = {
 }
 
 
-def significance(TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False, n_contexts=None) -> sp.csc_matrix:
+def significance(
+    TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False, n_contexts=None
+) -> sp.csc_matrix:
     """Computes statistical significance if co-occurrences using `metric`.
 
     Args:
@@ -207,7 +211,9 @@ def partitioned_significances(
             shape=(vocabulary_size, vocabulary_size),
             dtype=np.float64,
         )
-        weights, (w1_ids, w2_ids) = significance(TTM=term_term_matrix, metric=keyness_metric, normalize=normalize, n_contexts=1)
+        weights, (w1_ids, w2_ids) = significance(
+            TTM=term_term_matrix, metric=keyness_metric, normalize=normalize, n_contexts=1
+        )
         co_occurrence_partitions.append(
             pd.DataFrame(data={pivot_key: period, 'w1_id': w1_ids, 'w2_id': w2_ids, 'value': weights})
         )

@@ -257,7 +257,7 @@ class CoOccurrenceMixIn:
         )
 
         """Map that translate pivot_key to document_id"""
-        pg = { v: k for k,v in self.document_index[pivot_key].to_dict().items()}.get
+        pg = {v: k for k, v in self.document_index[pivot_key].to_dict().items()}.get
 
         matrix = scipy.sparse.coo_matrix(
             (
