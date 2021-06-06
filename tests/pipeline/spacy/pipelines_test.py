@@ -72,7 +72,7 @@ def test_spaCy_co_occurrence_pipeline(config):
 
 
 def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
-
+    """Note: Output of this test case should be used when updating tests/test_data/VENUS test data"""
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,

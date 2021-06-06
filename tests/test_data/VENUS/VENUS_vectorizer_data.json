@@ -79,10 +79,11 @@
         "concept": [],
         "ignore_concept": true,
         "pad": "*",
-        "ignore_padding": false,
+        "ignore_padding": true,
         "partition_keys": [
             "document_id"
-        ]
+        ],
+        "min_window_size": 1
     },
     "global_threshold_count": 1
 }
