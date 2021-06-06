@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
+from penelope.corpus.dtm.convert import CoOccurrenceVocabularyHelper
 from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
@@ -33,6 +34,7 @@ DOCUMENT_INDEX_POSTFIX = '_co-occurrence.document_index.zip'
 DICTIONARY_POSTFIX = '_co-occurrence.dictionary.zip'
 CORPUS_COUNTS_POSTFIX = '_corpus_windows_counts.pickle'
 DOCUMENT_COUNTS_POSTFIX = '_document_windows_counts.npz'
+VOCABULARY_MAPPING_POSTFIX = '_vocabs_mapping.pickle'
 
 
 def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[str, str]:
@@ -112,35 +114,53 @@ class TokenWindowCountStatistics:
         return to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
 
 
-@dataclass
 class Bundle:
+    def __init__( # pylint: disable=too-many-arguments
+        self,
+        corpus: VectorizedCorpus = None,
+        token2id: Token2Id = None,
+        document_index: DocumentIndex = None,
+        window_counts: TokenWindowCountStatistics = None,
+        folder: str = None,
+        tag: str = None,
+        compute_options: dict = None,
+        co_occurrences: pd.DataFrame = None,
+        vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = None,
+    ):
+        self.corpus: VectorizedCorpus = corpus
+        self.token2id: Token2Id = token2id
+        self.document_index: DocumentIndex = document_index
+        self.window_counts: TokenWindowCountStatistics = window_counts
+        self.folder: str = folder
+        self.tag: str = tag
+        self.compute_options: dict = compute_options
 
-    """Co-occurrence corpus where the tokens are concatenated co-occurring word-pairs"""
+        self._co_occurrences: pd.DataFrame = co_occurrences
+        self._vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = vocabs_mapping
 
-    corpus: VectorizedCorpus = None
-
-    """Source corpus vocabulary (i.e. not token-pairs)"""
-    token2id: Token2Id = None
-
-    document_index: DocumentIndex = None
-    window_counts: TokenWindowCountStatistics = None
-
-    folder: str = None
-    tag: str = None
-
-    compute_options: dict = None
-    lazy_co_occurrences: pd.DataFrame = None
+        """Co-occurrence corpus where the tokens are concatenated co-occurring word-pairs"""
+        """Source corpus vocabulary (i.e. not token-pairs)"""
 
     @property
     def co_occurrences(self) -> CoOccurrenceDataFrame:
-        if self.lazy_co_occurrences is None:
+        if self._co_occurrences is None:
             logger.info("Generating co-occurrences data frame....")
-            self.lazy_co_occurrences = self.corpus.to_co_occurrences(self.token2id)
-        return self.lazy_co_occurrences
+            self._co_occurrences = self.corpus.to_co_occurrences(self.token2id)
+        return self._co_occurrences
 
     @co_occurrences.setter
     def co_occurrences(self, value: pd.DataFrame):
-        self.lazy_co_occurrences = value
+        self._co_occurrences = value
+
+    @property
+    def vocabs_mapping(self) -> Mapping[Tuple[int, int], int]:
+        if self._vocabs_mapping is None:
+            self._vocabs_mapping = self.corpus.to_co_occurrence_vocab_mapping(self.token2id)
+        return self._vocabs_mapping
+
+    @vocabs_mapping.setter
+    def vocabs_mapping(self, value: Mapping[Tuple[int, int], int]):
+        self._vocabs_mapping = value
 
     def _get_filename(self, postfix: str) -> str:
         return f"{self.tag}{postfix}"
@@ -193,7 +213,9 @@ class Bundle:
         self.window_counts.store(folder=self.folder, tag=self.tag)
 
         store_options(options=self.compute_options, filename=self.options_filename)
-        store_co_occurrences(filename=self.co_occurrence_filename, co_occurrences=self.lazy_co_occurrences)
+        store_co_occurrences(filename=self.co_occurrence_filename, co_occurrences=self.co_occurrences)
+
+        store_vocabs_mapping(self.vocabs_mapping, self.folder, self.tag)
 
         return self
 
@@ -213,6 +235,12 @@ class Bundle:
         document_index: DocumentIndex = load_document_index(folder, tag)
         options: dict = load_options(filename) or VectorizedCorpus.load_options(folder=folder, tag=tag)
         window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics.load(folder, tag)
+        vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = load_vocabs_mapping(folder=folder, tag=tag)
+
+        if vocabs_mapping is None:
+            vocabs_mapping = CoOccurrenceVocabularyHelper.extract_vocabs_mapping_from_vocabs(corpus, token2id)
+
+        corpus.remember_vocabs_mapping(vocabs_mapping)
 
         if token2id is None:
             raise CoOccurrenceError("Vocabulary is missing (corrupt data)!")
@@ -229,11 +257,12 @@ class Bundle:
             folder=folder,
             tag=tag,
             corpus=corpus,
+            vocabs_mapping=vocabs_mapping,
             document_index=document_index,
             token2id=token2id,
             compute_options=options,
             window_counts=window_counts,
-            lazy_co_occurrences=co_occurrences,
+            co_occurrences=co_occurrences,
         )
 
         return bundle
@@ -246,15 +275,14 @@ class Bundle:
             w2=self.co_occurrences.w2_id.apply(fg),
         )
 
+    # FIXME: Move out of class (possible to dtm.convert.CoOccurrenceMixIn)
     def HAL_cwr_corpus(self) -> VectorizedCorpus:
         """Returns a BoW co-occurrence corpus where the values are computed HAL CWR score."""
-
-        vocab_mapping = self.vocabulay_id_mapping()
 
         nw_x = self.window_counts.document_counts.todense().astype(np.float)
         nw_xy = self.corpus.data  # .copy().astype(np.float)
 
-        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocab_mapping)
+        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, self.vocabs_mapping)
 
         cwr_corpus: VectorizedCorpus = VectorizedCorpus(
             bag_term_matrix=nw_cwr,
@@ -262,19 +290,6 @@ class Bundle:
             document_index=self.corpus.document_index,
         )
         return cwr_corpus
-
-    def vocabulay_token_mapping(self) -> Mapping[str, Tuple[int]]:
-        """Creates a map from co-occurrence corpus (word-pairs) to source corpus vocabulay (single words)"""
-        mapping = {token: tuple(map(self.token2id.get, token.split("/"))) for token, _ in self.corpus.token2id.items()}
-        return mapping
-
-    def vocabulay_id_mapping(self) -> Mapping[int, Tuple[int]]:
-        """Creates a map from co-occurrence corpus (word-pairs) to source corpus vocabulay (single words)"""
-        mapping = {
-            token_id: tuple(map(self.token2id.get, token.split("/")))
-            for token, token_id in self.corpus.token2id.items()
-        }
-        return mapping
 
 
 def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:
@@ -382,6 +397,22 @@ def load_options(filename: str) -> dict:
         options = read_json(options_filename)
         return options
     return {'not_found': options_filename}
+
+
+def store_vocabs_mapping(vocabs_mapping: Optional[Mapping[Tuple[int, int], int]], folder: str, tag: str):
+    if vocabs_mapping:
+        filename = to_filename(folder=folder, tag=tag, postfix=VOCABULARY_MAPPING_POSTFIX)
+        with open(filename, 'wb') as fp:
+            pickle.dump(vocabs_mapping, fp, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_vocabs_mapping(folder: str, tag: str) -> Optional[Mapping[Tuple[int, int], int]]:
+    filename = to_filename(folder=folder, tag=tag, postfix=VOCABULARY_MAPPING_POSTFIX)
+    if os.path.isfile(filename):
+        with open(filename, 'rb') as fp:
+            vocabs_mapping: Mapping[Tuple[int, int], int] = pickle.load(fp)
+            return vocabs_mapping
+    return None
 
 
 def store_options(*, options: dict, filename: str) -> None:

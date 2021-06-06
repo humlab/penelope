@@ -2,7 +2,7 @@
 
 import abc
 from numbers import Number
-from typing import Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -75,6 +75,11 @@ class IVectorizedCorpus(abc.ABC):
     @property
     @abc.abstractproperty
     def document_index(self) -> DocumentIndex:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def payload(self) -> Mapping[str, Any]:
         ...
 
     @abc.abstractmethod
@@ -246,4 +251,8 @@ class IVectorizedCorpusProtocol(Protocol):
 
     @property
     def token2id(self) -> Mapping[str, int]:
+        ...
+
+    @property
+    def payload(self) -> Mapping[str, Any]:
         ...

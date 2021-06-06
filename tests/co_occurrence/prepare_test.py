@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import pytest
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, to_filename
+from penelope.corpus.dtm.convert import CoOccurrenceVocabularyHelper
 
 jj = os.path.join
 
@@ -118,7 +119,7 @@ def test_create_co_occurrence_vocabulary():
     bundle: Bundle = create_bundle()
     co_occurrences: pd.DataFrame = bundle.co_occurrences
 
-    vocab, vocab_mapping = bundle.corpus.create_co_occurrence_vocabulary(co_occurrences, bundle.token2id)
+    vocab, vocab_mapping = CoOccurrenceVocabularyHelper.create_co_occurrence_vocabulary(co_occurrences, bundle.token2id)
 
     id2token = {v: k for k, v in vocab.items()}
 

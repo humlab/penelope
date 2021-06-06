@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import fnmatch
 import re
-from typing import Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
 import scipy
@@ -60,6 +60,10 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         self._document_index = self._ingest_document_index(document_index=document_index)
         self._term_frequency_mapping = term_frequency_mapping
+
+        self._payload = dict()
+
+        CoOccurrenceMixIn.__init__(self)
 
     def _ingest_document_index(self, document_index: DocumentIndex):
         if not utility.is_strictly_increasing(document_index.index):
@@ -140,6 +144,10 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     def document_index(self) -> DocumentIndex:
         """Returns number document index (part of interface) """
         return self._document_index
+
+    @property
+    def payload(self) -> Mapping[int, Any]:
+        return self._payload
 
     def todense(self) -> VectorizedCorpus:
         """Returns dense BoW matrix"""

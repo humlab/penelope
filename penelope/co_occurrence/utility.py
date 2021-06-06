@@ -83,7 +83,7 @@ def compute_non_partitioned_corpus_co_occurrence(
         ]
 
     return Bundle(
-        lazy_co_occurrences=co_occurrences,
+        co_occurrences=co_occurrences,
         token2id=token2id,
         document_index=document_index,
         window_counts=TokenWindowCountStatistics(

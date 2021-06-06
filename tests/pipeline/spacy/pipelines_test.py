@@ -99,7 +99,7 @@ def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
 
     bundle.tag = args.corpus_tag
     bundle.folder = args.target_folder
-    bundle.lazy_co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
+    bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
 
     bundle.store()
 

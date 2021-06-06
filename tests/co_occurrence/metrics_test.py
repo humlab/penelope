@@ -111,10 +111,9 @@ def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
 
 
 def test_HAL_cwr_corpus(bundle: Bundle):
-    vocab_mapping = bundle.vocabulay_id_mapping()
     nw_x = bundle.window_counts.document_counts.todense().astype(np.float)
     nw_xy = bundle.corpus.data  # .copy().astype(np.float)
-    nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocab_mapping)
+    nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, bundle.vocabs_mapping)
 
     assert nw_cwr is not None
     assert nw_cwr.sum() > 0
