@@ -115,7 +115,7 @@ class TokenWindowCountStatistics:
 
 
 class Bundle:
-    def __init__( # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         corpus: VectorizedCorpus = None,
         token2id: Token2Id = None,
