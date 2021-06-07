@@ -57,11 +57,6 @@ def test_load_options():
     assert options is not None
 
 
-@pytest.mark.skip(reason="not implemented")
-def test_create_options_bundle():
-    pass
-
-
 def test_store_co_occurrences():
 
     filename = f'VENUS{co_occurrence.FILENAME_POSTFIX}'

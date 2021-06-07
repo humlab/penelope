@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Mapping, Union
 
 import numpy as np
 import pandas as pd
@@ -20,13 +20,16 @@ class CoOccurrenceHelper:
         corpus: VectorizedCorpus,
         source_token2id: Token2Id,
         pivot_keys: Union[str, List[str]] = None,
+        co_occurrences: pd.DataFrame = None,
     ):
 
         self.corpus: VectorizedCorpus = corpus
         self.source_token2id: Token2Id = source_token2id
         self.corpus_pivot_keys: List[str] = [pivot_keys] if isinstance(pivot_keys, str) else pivot_keys
 
-        self.co_occurrences: pd.DataFrame = self.corpus.to_co_occurrences(source_token2id)  # .copy()
+        self.co_occurrences: pd.DataFrame = (
+            co_occurrences if co_occurrences is not None else self.corpus.to_co_occurrences(source_token2id)
+        )
         self.data: pd.DataFrame = None
         self.data_pivot_keys: List[str] = None
 
@@ -124,18 +127,12 @@ class CoOccurrenceHelper:
 
     def decode(self) -> "CoOccurrenceHelper":
 
-        if 'w1' in self.data.columns:
-            return self
-
-        self.data = self.data.copy()
-
-        fg = self.source_token2id.id2token.get
-        self.data["w1"] = self.data.w1_id.apply(fg)
-        self.data["w2"] = self.data.w2_id.apply(fg)
-
-        fg = self.corpus.id2token.get
-        self.data["token"] = self.data.token_id.apply(fg)
-
+        self.data = decode_tokens(
+            self.data,
+            self.source_token2id.id2token,
+            self.corpus.id2token,
+            copy=True,
+        )
         return self
 
     def trunk_by_global_count(self, threshold: int) -> "CoOccurrenceHelper":
@@ -266,3 +263,26 @@ class CoOccurrenceHelper:
         if self.data.index.name in self.data.columns:
             self.data.rename_axis('', inplace=True)
         return self.decode().data
+
+
+def decode_tokens(
+    co_occurrences: pd.DataFrame,
+    id2token: Mapping[int, str],
+    coo_id2token: Mapping[int, str],
+    copy: bool = True,
+) -> pd.DataFrame:
+
+    if 'w1' in co_occurrences.columns and 'token' in co_occurrences.columns:
+        return co_occurrences
+
+    if copy:
+        co_occurrences = co_occurrences.copy()
+
+    fg = id2token.get
+    co_occurrences["w1"] = co_occurrences.w1_id.apply(fg)
+    co_occurrences["w2"] = co_occurrences.w2_id.apply(fg)
+
+    fg = coo_id2token.get
+    co_occurrences["token"] = co_occurrences.token_id.apply(fg)
+
+    return co_occurrences
