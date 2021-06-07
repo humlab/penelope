@@ -216,7 +216,13 @@ class MockedProcessedCorpus(ITokenizedCorpus):
 def create_smaller_vectorized_corpus():
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-    document_index = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
+    document_index = pd.DataFrame(
+        {
+            'year': [2013, 2013, 2014, 2014, 2014],
+            'filename': ['2013.txt', '2013.txt', '2014.txt', '2014.txt', '2014.txt'],
+            'document_id': [0, 1, 2, 3, 4],
+        }
+    )
     v_corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
     return v_corpus
 

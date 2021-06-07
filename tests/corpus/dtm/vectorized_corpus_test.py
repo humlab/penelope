@@ -149,12 +149,6 @@ def test_find_matching_words_in_vocabulary():
     assert find_matching_words_in_vocabulary(token2id, ["*"]) == {"bengt", "bertil", "eva", "julia"}
 
 
-def test_document_index(corpus):
-    assert corpus.document_index is not None
-    assert corpus.document_index.columns.tolist() == ['year', 'n_raw_tokens']
-    assert len(corpus.document_index) == 5
-
-
 def test_to_dense(corpus):
     assert corpus.todense() is not None
 

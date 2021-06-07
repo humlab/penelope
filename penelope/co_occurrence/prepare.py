@@ -247,17 +247,18 @@ class CoOccurrenceHelper:
         vocabulary_size: int,
         normalize: bool = False,
     ) -> pd.DataFrame:
-        """Computes PPMI for co-occurrence (TTM) matrix
+        """Computes statistical signficance of for co-occurrences
         Note: Compute on non-filtered co-occurrences data!
         """
-        ppmi_co_occurrences = partitioned_significances(
+        weighed_co_occurrences = partitioned_significances(
             co_occurrences=co_occurrences,
             pivot_key=pivot_key,
             keyness_metric=keyness,
+            document_index=self.corpus.document_index,
             vocabulary_size=vocabulary_size,
             normalize=normalize,
         )
-        self.data = ppmi_co_occurrences
+        self.data = weighed_co_occurrences
         return self
 
     @property

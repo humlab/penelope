@@ -100,10 +100,7 @@ def test_co_occurrence_helper_rank(helper: CoOccurrenceHelper):
     assert 'constitution/united' in top_pairs
 
 
-def test_co_occurrence_helper_largest():
-
-    bundle: Bundle = create_bundle()
-    helper: CoOccurrenceHelper = CoOccurrenceHelper(corpus=bundle.corpus, source_token2id=bundle.token2id)
+def test_co_occurrence_helper_largest(helper: CoOccurrenceHelper):
 
     data: pd.DataFrame = helper.reset().largest(3).decode().value
     largest = set(data[data.time_period == 1997].token.tolist())

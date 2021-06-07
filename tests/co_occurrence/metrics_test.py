@@ -169,6 +169,7 @@ def test_compute_significance(bundle: Bundle, keyness: KeynessMetric):  # pylint
         co_occurrences,
         pivot_key=pivot_key,
         keyness_metric=keyness,
+        document_index=helper.corpus.document_index,
         vocabulary_size=vocabulary_size,
         normalize=False,
     )

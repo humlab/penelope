@@ -69,7 +69,13 @@ def test_group_by_year_category_aggregates_DTM_to_PTM():
 
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-    document_index = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
+    document_index = pd.DataFrame(
+        {
+            'year': [2009, 2013, 2014, 2017, 2017],
+            'filename': ['2009.txt', '2013.txt', '2014.txt', '2017.txt', '2017.txt'],
+            'document_id': [0, 1, 2, 3, 4],
+        }
+    )
     corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
 
     grouped_corpus = corpus.group_by_time_period(time_period_specifier='year')
@@ -107,7 +113,13 @@ def test_group_by_time_period_aggregates_DTM_to_PTM():
 
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-    document_index = pd.DataFrame({'year': [2009, 2013, 2014, 2017, 2017]})
+    document_index = pd.DataFrame(
+        {
+            'year': [2009, 2013, 2014, 2017, 2017],
+            'filename': ['2009.txt', '2013.txt', '2014.txt', '2017.txt', '2017.txt'],
+            'document_id': [0, 1, 2, 3, 4],
+        }
+    )
     corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
 
     grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year')
@@ -210,7 +222,7 @@ def test_group_by_year_with_average():
         ]
     )
 
-    document_index = pd.DataFrame({'year': [1, 1, 1, 2, 2]})
+    document_index = pd.DataFrame({'year': [1, 1, 1, 2, 2], 'document_id': range(0, 5)})
 
     vec = CountVectorizer()
     bag_term_matrix = vec.fit_transform(corpus)

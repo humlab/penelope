@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
-import pytest
 from penelope.corpus import VectorizedCorpus
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from tests.utils import OUTPUT_FOLDER

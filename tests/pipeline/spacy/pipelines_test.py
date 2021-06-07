@@ -28,6 +28,7 @@ def config():
     return fake_config()
 
 
+@pytest.mark.skip(reason="Long running")
 def test_spaCy_co_occurrence_pipeline(config):
 
     os.makedirs('./tests/output', exist_ok=True)
@@ -71,6 +72,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     os.remove(target_filename)
 
 
+@pytest.mark.skip(reason="Long running")
 def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
     """Note: Output of this test case should be used when updating tests/test_data/VENUS test data"""
     args = FakeComputeOptsSpacyCSV(

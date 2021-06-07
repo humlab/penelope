@@ -80,17 +80,16 @@ def test_TrendsData_get_corpus():
     assert expected_category_column in corpus.document_index.columns
 
     expected_columns = [
-        expected_category_column,
+        'time_period',
         'filename',
         'document_name',
-        'n_docs_size',
-        'n_raw_tokens_sum',
+        'n_raw_tokens',
         'year_min',
         'year_max',
-        'year_size',
+        'n_years',
+        'n_documents',
         'year',
         'document_id',
-        'n_raw_tokens',
     ]
 
     corpus: VectorizedCorpus = trends_data.get_corpus(
@@ -194,7 +193,7 @@ def test_trends_data_top_terms():
     assert df is not None
     assert df.columns.tolist() == ['2000', '2000/Count', '2010', '2010/Count']
     assert np.allclose(
-        df['2010/Count'].tolist(), [0.3427448893375985, 0.29717678877203213, 0.2852926960827151, 0.07478562580765426]
+        df['2010/Count'].tolist(), [0.0701636628489649, 0.060835369578336705, 0.058402564601052934, 0.01530944325751465]
     )
 
 

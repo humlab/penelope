@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import pytest
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 
@@ -7,6 +8,7 @@ def monkey_patch(*_, **__):
     pass
 
 
+@pytest.mark.skip(reason="Long running")
 @patch('penelope.co_occurrence.persistence.store_co_occurrences', monkey_patch)
 def test_process_co_ocurrence():
 

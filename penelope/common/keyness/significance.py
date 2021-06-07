@@ -193,6 +193,7 @@ def partitioned_significances(
     co_occurrences: pd.DataFrame,
     pivot_key: str,
     keyness_metric: KeynessMetric,
+    document_index: pd.DataFrame = None,
     vocabulary_size: int = None,
     normalize: bool = False,
 ) -> pd.DataFrame:
@@ -215,7 +216,7 @@ def partitioned_significances(
             shape=(vocabulary_size, vocabulary_size),
             dtype=np.float64,
         )
-        n_contexts = co_partition.document_id.unique().size
+        n_contexts = document_index.loc[co_partition.document_id.unique().size].n_documents.sum()
         weights, (w1_ids, w2_ids) = significance(
             TTM=term_term_matrix,
             metric=keyness_metric,

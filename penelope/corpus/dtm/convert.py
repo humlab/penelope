@@ -225,6 +225,7 @@ class CoOccurrenceMixIn:
             self.to_co_occurrences(token2id),
             keyness_metric=keyness,
             pivot_key=pivot_key,
+            document_index=self.document_index,
             vocabulary_size=len(token2id),
         )
 

@@ -46,7 +46,13 @@ def create_vectorized_corpus() -> VectorizedCorpus:
         ]
     )
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-    document_index = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
+    document_index = pd.DataFrame(
+        {
+            'year': [2013, 2013, 2014, 2014, 2014],
+            'filename': ['2013.txt', '2013.txt', '2014.txt', '2014.txt', '2014.txt'],
+            'document_id': [0, 1, 2, 3, 4],
+        }
+    )
     v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
     return v_corpus
 
@@ -54,7 +60,13 @@ def create_vectorized_corpus() -> VectorizedCorpus:
 def create_slice_by_n_count_test_corpus() -> VectorizedCorpus:
     bag_term_matrix = np.array([[1, 1, 4, 1], [0, 2, 3, 0], [0, 3, 2, 0], [0, 4, 1, 3], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
-    df = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
+    df = pd.DataFrame(
+        {
+            'year': [2013, 2013, 2014, 2014, 2014],
+            'filename': ['2013.txt', '2013.txt', '2014.txt', '2014.txt', '2014.txt'],
+            'document_id': [0, 1, 2, 3, 4],
+        }
+    )
     return VectorizedCorpus(bag_term_matrix, token2id, df)
 
 
