@@ -209,14 +209,14 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         )
         self._show_concept = ToggleButton(description='Show concept', value=False, icon='', layout=Layout(width='auto'))
         self._message: HTML = HTML()
-        self._save = Button(description='Save data', layout=Layout(width='auto'))
+        self._save = Button(description='Save', layout=Layout(width='auto'))
         # self._display = Button(description='Update', layout=Layout(width='auto'))
-        self._download = Button(description='Download data', layout=Layout(width='auto'))
+        self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
         self._table_view = PerspectiveTableView()
 
-        self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
-        self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))
+        # self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
+        # self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))
 
         self._button_bar = HBox(
             children=[
@@ -229,9 +229,9 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
                 # VBox([HTML("<b>Group ranks</b>"), self._rank]),
                 # VBox([HTML("<b>Result limit</b>"), self._head]),
                 VBox([self._save, self._download]),
-                VBox([self._toggle2, self._toggle2]),
+                # VBox([self._toggle2, self._toggle2]),
                 # VBox([self._display]),
-                VBox([HTML("😢"), self._message]),
+                VBox([HTML("📌"), self._message]),
                 self._download_output,
             ],
             layout=Layout(width='auto'),
