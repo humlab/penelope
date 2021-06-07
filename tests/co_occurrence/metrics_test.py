@@ -137,19 +137,32 @@ def test_HAL_cwr_corpus_burgess_litmus():
     assert hal_cwr_corpus is not None
 
 
+def create_helper(bundle: Bundle, period_specifier: str, pivot_key: str):
+    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
+        time_period_specifier=period_specifier,
+        target_column_name=pivot_key,
+    )
+
+    co_occurrences = corpus.to_co_occurrences(source_token2id=bundle.token2id, partition_key=pivot_key)
+
+    helper: CoOccurrenceHelper = CoOccurrenceHelper(
+        corpus=bundle.corpus,
+        source_token2id=bundle.token2id,
+        pivot_keys=[pivot_key],
+        co_occurrences=co_occurrences,
+    )
+    return helper
+
+
 @pytest.mark.parametrize(
     'keyness', [KeynessMetric.PPMI, KeynessMetric.DICE, KeynessMetric.LLR, KeynessMetric.LLR_Dunning]
 )
-def test_compute_PPMI(keyness: KeynessMetric):  # pylint: disable=unused-argument
-
-    bundle: Bundle = create_bundle()
+def test_compute_significance(bundle: Bundle, keyness: KeynessMetric):  # pylint: disable=unused-argument
     document_pivot_key = 'year'
     pivot_key = 'time_period'
 
-    helper: CoOccurrenceHelper = CoOccurrenceHelper(corpus=bundle.corpus, source_token2id=bundle.token2id)
-
-    co_occurrences = helper.groupby(document_pivot_key, target_pivot_key=pivot_key).value
-
+    helper: CoOccurrenceHelper = create_helper(bundle, document_pivot_key, pivot_key)
+    co_occurrences = helper.value
     vocabulary_size = max(bundle.token2id.values()) + 1
 
     weighed_co_occurrences = partitioned_significances(
