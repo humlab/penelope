@@ -175,22 +175,27 @@ class DocumentIndexHelper:
         """
 
         if extra_grouping_columns:
-            # Additional grouping columns (e.g. document properties)
             raise NotImplementedError("Use of extra_grouping_columns is NOT implemented")
 
-        # Category column must exist (add before call if necessary)
         if pivot_column_name not in self._document_index.columns:
             raise DocumentIndexError(f"fatal: document index has no {pivot_column_name} column")
 
-        # Create `agg` dict that sums up all count variables (and span of years per group)
+        """
+        Create `agg` dict that sums up all count variables (and span of years per group)
+        Adds or updates n_documents column. Sums up `n_documents` if it exists, other counts distinct `document_id`
+        """
         count_aggregates = {
-            pivot_column_name: 'size',
             **{
                 count_column: 'sum'
                 for count_column in DOCUMENT_INDEX_COUNT_COLUMNS
                 if count_column in self._document_index.columns
             },
             **({} if pivot_column_name == 'year' else {'year': ['min', 'max', 'size']}),
+            **(
+                {'document_id': 'nunique'}
+                if "n_documents" not in self._document_index.columns
+                else {'n_documents': 'sum'}
+            ),
         }
 
         transform = lambda df: (
@@ -203,16 +208,23 @@ class DocumentIndexHelper:
             else None
         )
 
-        # Add a new and possibly transformed column, group by that column and apply aggreates
         document_index: DocumentIndex = (
             self._document_index.assign(**{target_column_name: transform})
             .groupby([target_column_name])
             .agg(count_aggregates)
-            .rename(columns={pivot_column_name: 'n_docs'})
         )
 
         # Reset column index to a single level
         document_index.columns = [col if isinstance(col, str) else '_'.join(col) for col in document_index.columns]
+
+        document_index = document_index.rename(
+            columns={
+                'document_id_nunique': 'n_documents',
+                'n_documents_sum': 'n_documents',
+                'n_raw_tokens_sum': 'n_raw_tokens',
+                'year_size': 'n_years',
+            }
+        )
 
         # Set new index `index_values` as new index if specified, or else index
         if index_values is None:
