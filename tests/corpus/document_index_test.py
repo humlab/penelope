@@ -180,6 +180,40 @@ def test_group_by_category():
     assert result.year.tolist() == [2019, 2020]
 
 
+TEST_DOCUMENT_INDEX3 = """
+filename;year;year_id;document_name;document_id;title;n_raw_tokens
+tran_2009_01_test.txt;2009;1;tran_2009_01_test;0;Summer;44
+tran_2009_02_test.txt;2009;2;tran_2009_02_test;1;Winter;59
+tran_2019_01_test.txt;2019;1;tran_2019_01_test;2;Even break;68
+tran_2019_02_test.txt;2019;2;tran_2019_02_test;3;Night;59
+tran_2019_03_test.txt;2019;3;tran_2019_03_test;4;Shining;173
+tran_2024_01_test.txt;2024;1;tran_2024_01_test;5;Ostinato;33
+tran_2024_02_test.txt;2024;2;tran_2024_02_test;6;Epilogue;44
+tran_2029_01_test.txt;2029;1;tran_2029_01_test;7;Agrippa;24
+tran_2029_02_test.txt;2029;2;tran_2029_02_test;8;Nemolus;12
+"""
+
+
+def test_group_by_time_period_aggregates_n_documents():
+
+    index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX3), sep=';')
+    yearly_document_index, _ = DocumentIndexHelper(index).group_by_time_period(
+        time_period_specifier='year', source_column_name='year'
+    )
+
+    assert yearly_document_index.time_period.tolist() == [2009, 2019, 2024, 2029]
+    assert yearly_document_index.time_period.tolist() == [2009, 2019, 2024, 2029]
+    assert yearly_document_index.n_documents.tolist() == [2, 3, 2, 2]
+
+    decade_document_index, _ = DocumentIndexHelper(yearly_document_index).group_by_time_period(
+        time_period_specifier='decade', source_column_name='time_period'
+    )
+
+    assert decade_document_index.time_period.tolist() == [2000, 2010, 2020]
+    assert decade_document_index.time_period.tolist() == [2000, 2010, 2020]
+    assert decade_document_index.n_documents.tolist() == [2, 3, 4]
+
+
 def test_assert_is_strictly_increasing():
     assert_is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int))
     with pytest.raises(ValueError):
