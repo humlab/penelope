@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus import Token2Id, VectorizedCorpus
+from penelope.utility import do_not_use
 
 IntOrStr = Union[int, str]
 
@@ -74,6 +75,7 @@ class CoOccurrenceHelper:
 
         return series
 
+    @do_not_use
     def groupby(
         self,
         document_pivot_keys: Union[str, List[str]],

@@ -1,10 +1,11 @@
 import os
-from penelope.co_occurrence.prepare import decode_tokens
 
 import pandas as pd
 import pytest
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, to_filename
+from penelope.co_occurrence.prepare import decode_tokens
 from penelope.corpus.dtm.convert import CoOccurrenceVocabularyHelper
+from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 jj = os.path.join
 
@@ -18,6 +19,23 @@ def create_bundle() -> Bundle:
     return bundle
 
 
+def create_helper(bundle: Bundle, period_specifier: str, pivot_key: str):
+    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
+        time_period_specifier=period_specifier,
+        target_column_name=pivot_key,
+    )
+
+    co_occurrences = corpus.to_co_occurrences(source_token2id=bundle.token2id, partition_key=pivot_key)
+
+    helper: CoOccurrenceHelper = CoOccurrenceHelper(
+        corpus=bundle.corpus,
+        source_token2id=bundle.token2id,
+        pivot_keys=[pivot_key],
+        co_occurrences=co_occurrences,
+    )
+    return helper
+
+
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
     return create_bundle()
@@ -25,11 +43,7 @@ def bundle() -> Bundle:
 
 @pytest.fixture(scope="module")
 def helper(bundle: Bundle) -> CoOccurrenceHelper:
-    helper: CoOccurrenceHelper = CoOccurrenceHelper(
-        corpus=bundle.corpus,
-        source_token2id=bundle.token2id,
-        pivot_keys=None,
-    )
+    helper: CoOccurrenceHelper = create_helper(bundle, "year", "time_period")
     return helper
 
 
@@ -47,20 +61,6 @@ def test_co_occurrence_helper_decode(helper: CoOccurrenceHelper):
     helper.decode()
 
     assert all(x in helper.data.columns for x in ["w1", "w2", "token"])
-
-
-@pytest.mark.parametrize('pivot_key', ['year'])
-def test_co_occurrence_helper_groupby(pivot_key: str, helper: CoOccurrenceHelper):
-
-    helper.reset()
-
-    assert 'document_id' in helper.value.columns
-    assert pivot_key not in helper.value.columns
-
-    helper.groupby(pivot_key)
-
-    assert 'document_id' not in helper.value.columns
-    assert pivot_key in helper.value.columns
 
 
 def test_co_occurrence_helper_trunk_by_global_count(helper: CoOccurrenceHelper):
@@ -83,20 +83,20 @@ def test_co_occurrence_helper_trunk_by_global_count(helper: CoOccurrenceHelper):
 
 def test_co_occurrence_helper_match(helper: CoOccurrenceHelper):
 
-    helper.reset().groupby('year').match("nations").decode()
+    helper.reset().match("nations").decode()
     assert all(helper.value.token.str.contains("nations"))
 
-    helper.reset().groupby('year').match("nat*").decode()
+    helper.reset().match("nat*").decode()
     assert all(helper.value.token.str.contains("nat"))
 
 
 def test_co_occurrence_helper_exclude(helper: CoOccurrenceHelper):
-    helper.reset().groupby('year').exclude("united").decode()
+    helper.reset().exclude("united").decode()
     assert all(~helper.value.token.str.contains("united"))
 
 
 def test_co_occurrence_helper_rank(helper: CoOccurrenceHelper):
-    top_pairs = helper.reset().groupby('year').decode().rank(10).value.token.tolist()
+    top_pairs = helper.reset().decode().rank(10).value.token.tolist()
     assert 'constitution/united' in top_pairs
 
 
@@ -105,13 +105,13 @@ def test_co_occurrence_helper_largest():
     bundle: Bundle = create_bundle()
     helper: CoOccurrenceHelper = CoOccurrenceHelper(corpus=bundle.corpus, source_token2id=bundle.token2id)
 
-    data: pd.DataFrame = helper.reset().groupby('year').largest(3).decode().value
+    data: pd.DataFrame = helper.reset().largest(3).decode().value
     largest = set(data[data.time_period == 1997].token.tolist())
     assert largest == {'article/generation', 'ensure/generation', 'responsibility/generation'}
 
 
 def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
-    heads = helper.reset().groupby('year').decode().head(10).value.token.tolist()
+    heads = helper.reset().decode().head(10).value.token.tolist()
     assert len(heads) == 10
 
 
