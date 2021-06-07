@@ -97,16 +97,18 @@ def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
     assert all(co_occurrences.w1 == "educational")
 
 
-
-@pytest.mark.parametrize("folder,tag,keyness", [
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.PPMI),
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.HAL_cwr),
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR),
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR_Dunning),
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.DICE),
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_IDF),
-    ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_normalized),
-])
+@pytest.mark.parametrize(
+    "folder,tag,keyness",
+    [
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.PPMI),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.HAL_cwr),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR_Dunning),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.DICE),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_IDF),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_normalized),
+    ],
+)
 def test_table_gui_debug_setup(folder: str, tag: str, keyness: KeynessMetric):
 
     bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
