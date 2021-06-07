@@ -42,8 +42,8 @@ def test_load_co_occurrences():
     co_occurrences: pd.DataFrame = co_occurrence.load_co_occurrences(filename)
 
     assert co_occurrences is not None
-    assert 16070 == len(co_occurrences)
-    assert 123142 == co_occurrences.value.sum()
+    assert 16005 == len(co_occurrences)
+    assert 122849 == co_occurrences.value.sum()
 
 
 def test_load_options():
