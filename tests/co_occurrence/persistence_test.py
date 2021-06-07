@@ -100,8 +100,7 @@ def test_load_and_store_bundle():
 
     bundle.store(folder='./tests/output/MARS', tag='MARS')
 
-    assert bundle.co_occurrence_filename == expected_filename
-    assert os.path.isfile(bundle.co_occurrence_filename)
+    assert os.path.isfile(expected_filename)
 
 
 def test_compute_and_store_bundle():

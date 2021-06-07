@@ -6,7 +6,6 @@ import scipy
 from loguru import logger
 from penelope.corpus.dtm.convert import CoOccurrenceVocabularyHelper
 from penelope.type_alias import CoOccurrenceDataFrame
-from penelope.utility import replace_extension
 
 from ..corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from . import persistence
@@ -61,28 +60,6 @@ class Bundle:
     @vocabs_mapping.setter
     def vocabs_mapping(self, value: Mapping[Tuple[int, int], int]):
         self._vocabs_mapping = value
-
-    def _get_filename(self, postfix: str) -> str:
-        return f"{self.tag}{postfix}"
-
-    def _get_path(self, postfix: str) -> str:
-        return persistence.to_filename(folder=self.folder, tag=self.tag, postfix=postfix)
-
-    @property
-    def co_occurrence_filename(self) -> str:
-        return self._get_path(persistence.FILENAME_POSTFIX)
-
-    @property
-    def document_index_filename(self) -> str:
-        return self._get_path(persistence.DOCUMENT_INDEX_POSTFIX)
-
-    @property
-    def dictionary_filename(self) -> str:
-        return self._get_path(persistence.DICTIONARY_POSTFIX)
-
-    @property
-    def options_filename(self) -> str:
-        return replace_extension(self.co_occurrence_filename, 'json')
 
     @property
     def context_opts(self) -> Optional[ContextOpts]:
@@ -144,3 +121,19 @@ class Bundle:
             document_index=self.corpus.document_index,
         )
         return cwr_corpus
+
+    # @property
+    # def co_occurrence_filename(self) -> str:
+    #     return persistence.co_occurrence_filename(self.folder, self.tag)
+
+    # @property
+    # def document_index_filename(self) -> str:
+    #     return persistence.document_index_filename(self.folder, self.tag)
+
+    # @property
+    # def vocabulary_filename(self) -> str:
+    #     return persistence.vocabulary_filename(self.folder, self.tag)
+
+    # @property
+    # def options_filename(self) -> str:
+    #     return replace_extension(self.co_occurrence_filename, 'json')

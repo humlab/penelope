@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
-from penelope.co_occurrence import ContextOpts
 from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
 
@@ -25,7 +24,7 @@ from ..corpus import (
     TokensTransformOpts,
     VectorizedCorpus,
 )
-from .interface import CoOccurrenceError
+from .interface import ContextOpts, CoOccurrenceError
 
 if TYPE_CHECKING:
     from .bundle import Bundle
@@ -50,6 +49,30 @@ def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[s
 
 def to_filename(*, folder: str, tag: str, postfix: str = FILENAME_POSTFIX) -> str:
     return os.path.join(folder, f"{tag}{postfix}")
+
+
+def _get_filename(tag: str, postfix: str) -> str:
+    return f"{tag}{postfix}"
+
+
+def _get_path(folder: str, tag: str, postfix: str) -> str:
+    return to_filename(folder=folder, tag=tag, postfix=postfix)
+
+
+def co_occurrence_filename(folder: str, tag: str) -> str:
+    return _get_path(folder, tag, FILENAME_POSTFIX)
+
+
+def document_index_filename(folder: str, tag: str) -> str:
+    return _get_path(folder, tag, DOCUMENT_INDEX_POSTFIX)
+
+
+def vocabulary_filename(folder: str, tag: str) -> str:
+    return _get_path(folder, tag, DICTIONARY_POSTFIX)
+
+
+def options_filename(folder: str, tag: str) -> str:
+    return replace_extension(co_occurrence_filename(folder, tag), 'json')
 
 
 def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:
@@ -278,16 +301,18 @@ def store(bundle: "Bundle"):
     if bundle.token2id is None:
         raise CoOccurrenceError("store failed (source token2id cannot be None)")
 
-    store_corpus(corpus=bundle.corpus, folder=bundle.folder, tag=bundle.tag, options=bundle.compute_options)
-    store_document_index(bundle.document_index, bundle.document_index_filename)
+    folder, tag = bundle.folder, bundle.tag
 
-    bundle.token2id.store(bundle.dictionary_filename)
-    bundle.window_counts.store(folder=bundle.folder, tag=bundle.tag)
+    store_corpus(corpus=bundle.corpus, folder=folder, tag=tag, options=bundle.compute_options)
+    store_document_index(bundle.document_index, document_index_filename(folder, tag))
 
-    store_options(options=bundle.compute_options, filename=bundle.options_filename)
-    store_co_occurrences(filename=bundle.co_occurrence_filename, co_occurrences=bundle.co_occurrences)
+    bundle.token2id.store(vocabulary_filename(folder, tag))
+    bundle.window_counts.store(folder, tag)
 
-    store_vocabs_mapping(bundle.vocabs_mapping, bundle.folder, bundle.tag)
+    store_options(options=bundle.compute_options, filename=options_filename(folder, tag))
+    store_co_occurrences(filename=co_occurrence_filename(folder, tag), co_occurrences=bundle.co_occurrences)
+
+    store_vocabs_mapping(bundle.vocabs_mapping, folder, tag)
 
 
 def load(filename: str = None, folder: str = None, tag: str = None, compute_frame: bool = True) -> dict:

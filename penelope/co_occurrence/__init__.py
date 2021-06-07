@@ -1,5 +1,5 @@
 # type: ignore
-
+from .bundle import Bundle
 from .convert import (
     co_occurrences_to_co_occurrence_corpus,
     term_term_matrix_to_co_occurrences,
@@ -14,7 +14,6 @@ from .persistence import (
     DOCUMENT_INDEX_POSTFIX,
     FILENAME_PATTERN,
     FILENAME_POSTFIX,
-    Bundle,
     TokenWindowCountStatistics,
     create_options_bundle,
     load_co_occurrences,

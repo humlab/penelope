@@ -9,9 +9,10 @@ from penelope.utility import deprecated, strip_extensions
 from scipy.sparse.csr import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 
+from .bundle import Bundle
 from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 from .interface import ContextOpts, CoOccurrenceError
-from .persistence import Bundle, TokenWindowCountStatistics
+from .persistence import TokenWindowCountStatistics
 from .vectorize import WindowsCoOccurrenceVectorizer
 from .windows import tokens_to_windows
 
