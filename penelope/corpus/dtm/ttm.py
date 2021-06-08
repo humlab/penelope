@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.common.keyness import KeynessMetric, partitioned_significances
+from penelope.common.keyness import KeynessMetric, compute_hal_cwr_score, partitioned_significances
 from penelope.utility.utils import create_instance
 
 from ..token2id import Token2Id
@@ -205,7 +205,7 @@ class CoOccurrenceMixIn:
     def to_keyness_co_occurrences(
         self: IVectorizedCorpusProtocol, keyness: KeynessMetric, token2id: Token2Id, pivot_key: str
     ) -> pd.DataFrame:
-        """Returns co-occurrence data frame with weighed values by significance metric.
+        """Returns co-occurrence data frame with weighed values by significance metrics.
 
         Keyness values are computed for each partition as specified by pivot_key.
 
@@ -271,8 +271,40 @@ class CoOccurrenceMixIn:
             shape=self.data.shape,
         )
 
-        cls: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
-        corpus = cls(matrix, token2id=self.token2id, document_index=self.document_index)
-        corpus.remember_vocabs_mapping(self.to_co_occurrence_vocab_mapping(token2id))
+        corpus = self.create_instance(matrix, token2id=token2id)
+
+        return corpus
+
+    def HAL_cwr_corpus(
+        self: IVectorizedCorpusProtocol,
+        *,
+        document_window_counts: scipy.sparse.spmatrix,
+        vocabs_mapping: Mapping[Tuple[int, int], int],
+    ) -> VectorizedCorpus:
+        """Returns a BoW co-occurrence corpus where the values are computed HAL CWR score."""
+
+        nw_x = document_window_counts.todense().astype(np.float)
+        nw_xy = self.data  # .copy().astype(np.float)
+
+        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocabs_mapping)
+
+        cwr_corpus: "VectorizedCorpus" = self.create_instance(bag_term_matrix=nw_cwr)
+        return cwr_corpus
+
+    def create_instance(self, bag_term_matrix: scipy.sparse.spmatrix, token2id: Token2Id = None) -> "VectorizedCorpus":
+        corpus_class: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
+        corpus: "VectorizedCorpus" = corpus_class(
+            bag_term_matrix=bag_term_matrix,
+            token2id=self.token2id,
+            document_index=self.document_index,
+        )
+
+        vocabs_mapping: Any = self.payload.get("vocabs_mapping")
+
+        if vocabs_mapping is None and token2id is not None:
+            vocabs_mapping = self.to_co_occurrence_vocab_mapping(token2id)
+
+        if vocabs_mapping is not None:
+            corpus.remember_vocabs_mapping(vocabs_mapping)
 
         return corpus
