@@ -103,20 +103,7 @@ class MainGUI:
             return
 
         self.bundle = bundle
-        self.trends_data = to_trends_data(bundle).update()
+        self.trends_data = TrendsData(bundle=bundle)
         self.gui_explore = co_occurrence_gui.ExploreGUI(bundle=bundle).setup().display(trends_data=self.trends_data)
 
         display(self.gui_explore.layout())
-
-
-def to_trends_data(bundle: co_occurrence.Bundle, n_count=25000) -> TrendsData:
-
-    trends_data = TrendsData(
-        compute_options=bundle.compute_options,
-        corpus=bundle.corpus,
-        corpus_folder=bundle.folder,
-        corpus_tag=bundle.tag,
-        n_count=n_count,
-    )
-
-    return trends_data

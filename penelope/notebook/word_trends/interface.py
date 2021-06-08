@@ -1,8 +1,9 @@
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Dict, List
 
 import pandas as pd
 import penelope.common.goodness_of_fit as gof
+from penelope.co_occurrence import Bundle
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 
@@ -33,73 +34,106 @@ class TrendsOpts:
         return False
 
 
-# FIXME Move class away from penelope.notebook (bad dependency)
 @dataclass
-class TrendsData:
-
-    corpus: VectorizedCorpus = None
-    corpus_folder: str = None
-    corpus_tag: str = None
-    compute_options: Dict = None
+class GoodnessOfFitData:
 
     goodness_of_fit: pd.DataFrame = None
     most_deviating_overview: pd.DataFrame = None
     most_deviating: pd.DataFrame = None
 
-    current_trends_opts: TrendsOpts = field(
-        default_factory=lambda: TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
-    )
-    transformed_corpus: VectorizedCorpus = None
-    category_column: str = field(init=False, default="time_period")
+    @staticmethod
+    def compute(corpus: VectorizedCorpus, n_count: int) -> "GoodnessOfFitData":
 
-    n_count: int = field(default=25000)
+        goodness_of_fit = gof.compute_goddness_of_fits_to_uniform(
+            corpus, None, verbose=True, metrics=['l2_norm', 'slope']
+        )
+        most_deviating_overview = gof.compile_most_deviating_words(goodness_of_fit, n_count=n_count)
+        most_deviating = gof.get_most_deviating_words(
+            goodness_of_fit, 'l2_norm', n_count=n_count, ascending=False, abs_value=True
+        )
 
-    def update(
+        gof_data: GoodnessOfFitData = GoodnessOfFitData(
+            goodness_of_fit=goodness_of_fit,
+            most_deviating=most_deviating,
+            most_deviating_overview=most_deviating_overview,
+        )
+
+        return gof_data
+
+
+class TrendsData:
+    """Container class for displayed token trend
+
+    Note: If `Bundle` is set (not None) then the trends data is co-occurrence data
+
+    """
+
+    def __init__(
         self,
-        *,
+        bundle: Bundle = None,
         corpus: VectorizedCorpus = None,
         corpus_folder: str = None,
         corpus_tag: str = None,
-        n_count: int = None,
-    ) -> "TrendsData":
+        n_count: int = 100000,
+    ):
+        if (corpus is None) == (bundle is None):
+            raise ValueError("Bundle and Corpus are mutuala exclusive arguments!")
 
-        if (corpus or self.corpus) is None:
-            raise ValueError("TrendsData: Corpus is NOT LOADED!")
+        self.bundle: Bundle = bundle
 
-        self.n_count = n_count or self.n_count
-        self.corpus = (corpus or self.corpus).group_by_year(target_column_name=self.category_column)
-        self.corpus_folder = corpus_folder or self.corpus_folder
-        self.corpus_tag = corpus_tag or self.corpus_tag
+        self.corpus: VectorizedCorpus = corpus or bundle.corpus
+        self.corpus_folder: str = corpus_folder or bundle.folder
+        self.corpus_tag: str = corpus_tag or bundle.tag
 
-        self.compute_options = VectorizedCorpus.load_options(tag=self.corpus_tag, folder=self.corpus_folder)
-        self.goodness_of_fit = gof.compute_goddness_of_fits_to_uniform(
-            self.corpus, None, verbose=True, metrics=['l2_norm', 'slope']
-        )
-        self.most_deviating_overview = gof.compile_most_deviating_words(self.goodness_of_fit, n_count=self.n_count)
-        self.most_deviating = gof.get_most_deviating_words(
-            self.goodness_of_fit, 'l2_norm', n_count=self.n_count, ascending=False, abs_value=True
-        )
-        return self
+        self.n_count: int = n_count
+
+        self._compute_options: Dict = None
+        self._gof_data: GoodnessOfFitData = None
+
+        self.transformed_corpus: VectorizedCorpus = self.corpus
+        self.current_trends_opts: TrendsOpts = TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
+        self.category_column: str = "time_period"
+
+        # FIXME:
+        # self.corpus = self.corpus.group_by_year(target_column_name=self.category_column)
+
+    @property
+    def gof_data(self) -> GoodnessOfFitData:
+        if self._gof_data is None:
+            self._gof_data = GoodnessOfFitData.compute(self.corpus, n_count=self.n_count)
+        return self._gof_data
 
     def get_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
 
-        if self.transformed_corpus is None:
-            self.transformed_corpus = self.corpus
-
         if self.current_trends_opts.invalidates_corpus(opts):
+
+            self._gof_data = None
 
             transformed_corpus: VectorizedCorpus = self.corpus
 
-            if opts.keyness == KeynessMetric.TF_IDF:
-                transformed_corpus = transformed_corpus.tf_idf()
+            if self.bundle is not None:
+                """ Co-occurrence trends word trends """
+                transformed_corpus = self.bundle.to_keyness_corpus(
+                    period_pivot=opts.group_by,
+                    global_threshold=1,
+                    keyness=opts.keyness,
+                    pivot_column_name=self.category_column,
+                    normalize=opts.normalize,
+                )
+            else:
+                """ Normal word trends """
+                if opts.keyness == KeynessMetric.TF_IDF:
+                    transformed_corpus = transformed_corpus.tf_idf()
+                elif opts.keyness == KeynessMetric.TF_normalized:
+                    transformed_corpus = transformed_corpus.normalize_by_raw_counts()
 
-            transformed_corpus = transformed_corpus.group_by_time_period(
-                time_period_specifier=opts.group_by,
-                target_column_name=self.category_column,
-            )
+                transformed_corpus = transformed_corpus.group_by_time_period(
+                    time_period_specifier=opts.group_by,
+                    target_column_name=self.category_column,
+                )
 
-            if opts.normalize:
-                transformed_corpus = transformed_corpus.normalize_by_raw_counts()
+                if opts.normalize:
+                    transformed_corpus = transformed_corpus.normalize_by_raw_counts()
 
             self.transformed_corpus = transformed_corpus
             self.current_trends_opts = opts.clone
