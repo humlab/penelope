@@ -38,17 +38,16 @@ def test_TrendsData_create():
 
 def test_TrendsData_update():
 
-    data = TrendsData().update(
+    data = TrendsData(
         corpus=simple_corpus(),
         corpus_folder=OUTPUT_FOLDER,
         corpus_tag="dummy",
         n_count=10,
     )
 
-    assert isinstance(data.goodness_of_fit, pd.DataFrame)
-    assert isinstance(data.most_deviating_overview, pd.DataFrame)
-    assert isinstance(data.goodness_of_fit, pd.DataFrame)
-    assert isinstance(data.most_deviating, pd.DataFrame)
+    assert isinstance(data.gof_data.goodness_of_fit, pd.DataFrame)
+    assert isinstance(data.gof_data.most_deviating_overview, pd.DataFrame)
+    assert isinstance(data.gof_data.most_deviating, pd.DataFrame)
 
 
 def test_TrendsData_remember():
@@ -57,7 +56,7 @@ def test_TrendsData_remember():
 
 def test_TrendsData_get_corpus():
     expected_category_column: str = 'time_period'
-    trends_data: TrendsData = TrendsData().update(
+    trends_data: TrendsData = TrendsData(
         corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_count=100
     )
 
@@ -132,7 +131,7 @@ def test_TrendsData_get_corpus():
 
 def test_trends_data_top_terms():
     expected_category_column: str = 'time_period'
-    trends_data: TrendsData = TrendsData().update(
+    trends_data: TrendsData = TrendsData(
         corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_count=100
     )
     corpus = trends_data.get_corpus(TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year'))
@@ -212,13 +211,13 @@ def test_group_by_year():
         corpus_folder=corpus_folder,
         corpus_tag=corpus_tag,
         n_count=100,
-    ).update()
+    )
 
     assert trends_data is not None
 
 
 def test_find_word_indices():
-    trends_data = TrendsData().update(corpus=simple_corpus(), corpus_folder='.', corpus_tag='dummy')
+    trends_data = TrendsData(corpus=simple_corpus(), bundle=None, corpus_folder='.', corpus_tag='dummy')
     indices = trends_data.find_word_indices(
         TrendsOpts(group_by='year', normalize=False, smooth=False, keyness=KeynessMetric.TF, words=["c"], word_count=2)
     )

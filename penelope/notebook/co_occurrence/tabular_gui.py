@@ -1,7 +1,7 @@
 import contextlib
 import fnmatch
 from collections.abc import Iterable
-from typing import List, Set, Union
+from typing import List, Set
 
 import IPython.display as IPython_display
 import numpy as np
@@ -31,63 +31,6 @@ PANEL_FORMATTERS = {
 }
 
 CURRENT_BUNDLE = None
-
-
-def get_prepared_corpus(
-    bundle: Bundle,
-    corpus: VectorizedCorpus,
-    period_pivot: str,
-    keyness: KeynessMetric,
-    # token_filter: str,
-    global_threshold: Union[int, float],
-    pivot_column_name: str,
-) -> VectorizedCorpus:
-    """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold.
-    Returned corpus' document index has a new pivot column `target_column_name`
-
-    Args:
-        corpus (VectorizedCorpus): input corpus
-        period_pivot (str): temporal pivot key
-        keyness (KeynessMetric): keyness metric to apply on corpus
-        token_filter (str): match tokens
-        global_threshold (Union[int, float]): limit result by global term frequency
-        pivot_column_name (Union[int, float]): name of grouping column
-
-    Returns:
-        VectorizedCorpus: pivoted corpus.
-    """
-    if period_pivot not in ["year", "lustrum", "decade"]:
-        raise ValueError(f"illegal time period {period_pivot}")
-
-    if global_threshold > 1:
-        corpus = corpus.slice_by_term_frequency(global_threshold)
-
-    """Metrics computed on a document level"""
-    if keyness == KeynessMetric.TF_IDF:
-        corpus = corpus.tf_idf()
-    elif keyness == KeynessMetric.TF_normalized:
-        corpus = corpus.normalize_by_raw_counts()
-    elif keyness == KeynessMetric.TF:
-        pass
-
-    corpus = corpus.group_by_time_period_optimized(
-        time_period_specifier=period_pivot,
-        target_column_name=pivot_column_name,
-    )
-
-    """Metrics computed on partitioned corpus"""
-    if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
-        corpus = corpus.to_keyness_co_occurrence_corpus(
-            keyness=keyness, token2id=bundle.token2id, pivot_key=pivot_column_name
-        )
-    elif keyness == KeynessMetric.HAL_cwr:
-        corpus = bundle.HAL_cwr_corpus()
-
-    # if token_filter:
-    #     indices = corpus.find_matching_words_indices(token_filter, n_max_count=None)
-    #     corpus = corpus.slice_by_indicies(indices)
-
-    return corpus
 
 
 # class TabulatorTableView:
@@ -465,12 +408,9 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # print(f"to_corpus: corpus.shape (pre)={self.bundle.corpus.data.shape}")
 
         try:
-            corpus: VectorizedCorpus = get_prepared_corpus(
-                self.bundle,
-                corpus=self.bundle.corpus,
+            corpus: VectorizedCorpus = self.bundle.to_keyness_corpus(
                 period_pivot=self.pivot,
                 keyness=self.keyness,
-                # token_filter=self.token_filter,
                 global_threshold=self.global_threshold,
                 pivot_column_name=self.pivot_column_name,
             )

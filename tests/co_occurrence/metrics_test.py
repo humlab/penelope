@@ -2,16 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 import scipy
-from penelope.co_occurrence import (
-    Bundle,
-    ContextOpts,
-    CoOccurrenceHelper,
+from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceHelper, to_filename
+from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
+from penelope.common.keyness import (
+    KeynessMetric,
     compute_hal_cwr_score,
     compute_hal_score_by_co_occurrence_matrix,
-    to_filename,
+    partitioned_significances,
 )
-from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
-from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus import VectorizedCorpus
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 
@@ -118,8 +116,9 @@ def test_HAL_cwr_corpus(bundle: Bundle):
     assert nw_cwr is not None
     assert nw_cwr.sum() > 0
 
-    hal_cwr_corpus: VectorizedCorpus = bundle.HAL_cwr_corpus()
-
+    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus(
+        document_window_counts=bundle.window_counts.document_counts, vocabs_mapping=bundle.vocabs_mapping
+    )
     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
 
 
@@ -132,7 +131,9 @@ def test_HAL_cwr_corpus_burgess_litmus():
     )
     bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
 
-    hal_cwr_corpus: VectorizedCorpus = bundle.HAL_cwr_corpus()
+    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus(
+        document_window_counts=bundle.window_counts.document_counts, vocabs_mapping=bundle.vocabs_mapping
+    )
 
     assert hal_cwr_corpus is not None
 

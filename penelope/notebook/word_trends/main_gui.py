@@ -35,7 +35,7 @@ def loaded_callback(
         corpus_tag=corpus_tag,
         # FIXME #88 Review use of hard-coded value `n_count`
         n_count=25000,
-    ).update()
+    )
 
     gui: GofTrendsGUI = GofTrendsGUI(
         gofs_gui=GoFsGUI().setup(),

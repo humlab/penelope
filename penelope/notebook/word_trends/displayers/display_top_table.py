@@ -4,6 +4,7 @@ from typing import Any
 import IPython.display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, VBox
+from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from perspective import PerspectiveWidget
@@ -13,10 +14,32 @@ from .interface import ITrendDisplayer
 
 # FIXME #72 Word trends: No data in top tokens displayer
 class TopTokensDisplayer(ITrendDisplayer):
-    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
+    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens", is_coo: bool = True):
         super().__init__(name=name)
         self.corpus: VectorizedCorpus = corpus
 
+        keyness_options = {
+            "TF": KeynessMetric.TF,
+            "TF (norm)": KeynessMetric.TF_normalized,
+            "TF-IDF": KeynessMetric.TF_IDF,
+        }
+
+        if is_coo:
+            keyness_options.update(
+                {
+                    "HAL CWR": KeynessMetric.HAL_cwr,
+                    "PPMI": KeynessMetric.PPMI,
+                    "LLR": KeynessMetric.LLR,
+                    "LLR(D)": KeynessMetric.LLR_Dunning,
+                    "DICE": KeynessMetric.DICE,
+                }
+            )
+
+        self._keyness: Dropdown = Dropdown(
+            options=keyness_options,
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
         self._top_count: Dropdown = Dropdown(
             options=[10 ** i for i in range(0, 7)],
             value=100,
@@ -84,6 +107,7 @@ class TopTokensDisplayer(ITrendDisplayer):
             [
                 HBox(
                     [
+                        VBox([HTML("<b>Keyness</b>"), self._keyness]),
                         VBox([HTML("<b>Top count</b>"), self._top_count]),
                         VBox([HTML("<b>Grouping</b>"), self._time_period]),
                         VBox([HTML("<b>Kind</b>"), self._kind]),

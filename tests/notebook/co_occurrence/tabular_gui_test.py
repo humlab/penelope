@@ -2,7 +2,7 @@ import pytest
 from penelope.co_occurrence import Bundle, to_filename
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI, get_prepared_corpus
+from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 
 # pylint: disable=protected-access, redefined-outer-name
 
@@ -13,20 +13,6 @@ def bundle():
     filename = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
     return bundle
-
-
-def test_get_prepared_corpus(bundle):
-
-    corpus: VectorizedCorpus = get_prepared_corpus(
-        bundle=bundle,
-        corpus=bundle.corpus,
-        period_pivot="year",
-        keyness=KeynessMetric.TF,
-        global_threshold=1,
-        pivot_column_name='time_period',
-    )
-
-    assert corpus is not None
 
 
 def test_table_gui_create(bundle):
@@ -127,3 +113,28 @@ def test_table_gui_debug_setup(folder: str, tag: str, keyness: KeynessMetric):
     gui.start_observe()
 
     gui._update_corpus()
+
+
+@pytest.mark.parametrize(
+    "folder,tag,keyness",
+    [
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.PPMI),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.HAL_cwr),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR_Dunning),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.DICE),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_IDF),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_normalized),
+    ],
+)
+def test_get_prepared_corpus(folder: str, tag: str, keyness: KeynessMetric):
+    bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
+
+    corpus: VectorizedCorpus = bundle.to_keyness_corpus(
+        period_pivot="year",
+        keyness=keyness,
+        global_threshold=1,
+        pivot_column_name='time_period',
+    )
+
+    assert corpus is not None

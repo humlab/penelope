@@ -17,7 +17,7 @@ def bundle() -> co_occurrence.Bundle:
 
 @pytest.fixture(scope="module")
 def trends_data(bundle) -> TrendsData:
-    trends_data: TrendsData = main_gui.to_trends_data(bundle).update()
+    trends_data: TrendsData = TrendsData(bundle=bundle)
     return trends_data
 
 

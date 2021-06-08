@@ -3,7 +3,7 @@ from penelope.utility import getLogger
 
 from .. import utility as notebook_utility
 from ..ipyaggrid_utility import display_grid
-from .interface import TrendsData
+from .interface import GoodnessOfFitData, TrendsData
 
 logger = getLogger("penelope")
 
@@ -27,17 +27,18 @@ class GoFsGUI:
     def display(self, trends_data: TrendsData) -> "GoFsGUI":
         if self.is_displayed:
             return self
+        gof_data: GoodnessOfFitData = trends_data.gof_data
         self.tab_gof = (
-            self.tab_gof.display_fx_result(0, display_grid, trends_data.goodness_of_fit)
+            self.tab_gof.display_fx_result(0, display_grid, gof_data.goodness_of_fit)
             .display_fx_result(
-                1, display_grid, trends_data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
+                1, display_grid, gof_data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
             )
-            .display_fx_result(2, gof.plot_metrics, trends_data.goodness_of_fit, plot=False, lazy=True)
+            .display_fx_result(2, gof.plot_metrics, gof_data.goodness_of_fit, plot=False, lazy=True)
             .display_fx_result(
                 3,
                 gof.plot_slopes,
                 trends_data.corpus,
-                trends_data.most_deviating,
+                gof_data.most_deviating,
                 "l2_norm",
                 600,
                 600,
