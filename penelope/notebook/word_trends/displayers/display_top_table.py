@@ -1,4 +1,5 @@
 import contextlib
+from penelope.co_occurrence.bundle import Bundle
 from typing import Any
 
 import IPython.display
@@ -14,32 +15,19 @@ from .interface import ITrendDisplayer
 
 # FIXME #72 Word trends: No data in top tokens displayer
 class TopTokensDisplayer(ITrendDisplayer):
-    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens", is_coo: bool = True):
+
+    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
         super().__init__(name=name)
+
         self.corpus: VectorizedCorpus = corpus
 
-        keyness_options = {
+        self.keyness_options = {
             "TF": KeynessMetric.TF,
             "TF (norm)": KeynessMetric.TF_normalized,
             "TF-IDF": KeynessMetric.TF_IDF,
         }
 
-        if is_coo:
-            keyness_options.update(
-                {
-                    "HAL CWR": KeynessMetric.HAL_cwr,
-                    "PPMI": KeynessMetric.PPMI,
-                    "LLR": KeynessMetric.LLR,
-                    "LLR(D)": KeynessMetric.LLR_Dunning,
-                    "DICE": KeynessMetric.DICE,
-                }
-            )
-
-        self._keyness: Dropdown = Dropdown(
-            options=keyness_options,
-            value=KeynessMetric.TF,
-            layout=Layout(width='auto'),
-        )
+        self._keyness: Dropdown = None
         self._top_count: Dropdown = Dropdown(
             options=[10 ** i for i in range(0, 7)],
             value=100,
@@ -67,32 +55,39 @@ class TopTokensDisplayer(ITrendDisplayer):
         self.category_name = "time_period"
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
+        self._keyness: Dropdown = Dropdown(
+            options=self.keyness_options,
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
+
         self._table = PerspectiveWidget(self.data)
         self._download.on_click(self.download)
-        self._top_count.observe(self.update, 'value')
-        self._time_period.observe(self.update, 'value')
-        self._kind.observe(self.update, 'value')
+        self._top_count.observe(self.load, 'value')
+        self._time_period.observe(self.load, 'value')
+        self._keyness.observe(self.load, 'value')
+        self._kind.observe(self.load, 'value')
         return self
 
-    def compile(self, corpus: VectorizedCorpus, **_) -> Any:  # pylint: disable=arguments-differ
-        self.corpus = corpus
-        # FIXME: #102 TopTokensDisplayer - Always group data from now on?
-        if self.time_period != 'year':
-            corpus = corpus.group_by_time_period(
-                time_period_specifier=self.time_period, target_column_name=self.category_name
-            )
+    def transform(self) -> VectorizedCorpus:
+        corpus = self.corpus.group_by_time_period(
+            time_period_specifier=self.time_period, target_column_name=self.category_name
+        )
+        return corpus
 
-        top_terms: pd.DataFrame = corpus.get_top_terms(
+
+    def compile(self, **_) -> Any:  # pylint: disable=arguments-differ
+        top_terms: pd.DataFrame = self.transform().get_top_terms(
             category_column=self.category_name, n_count=self.top_count, kind=self.kind
         )
         return top_terms
 
     def plot(self, **_) -> "TopTokensDisplayer":  # pylint: disable=arguments-differ
 
-        self.update()
+        self.load()
         return self
 
-    def update(self, *_):
+    def load(self, *_):
         self._table.load(self.data)
 
     def download(self, *_):
@@ -127,6 +122,10 @@ class TopTokensDisplayer(ITrendDisplayer):
         return layout
 
     @property
+    def keyness(self) -> KeynessMetric:
+        return self._keyness.value
+
+    @property
     def data(self) -> pd.DataFrame:
         return self.compile(corpus=self.corpus)
 
@@ -141,3 +140,35 @@ class TopTokensDisplayer(ITrendDisplayer):
     @property
     def kind(self) -> str:
         return self._kind.value
+
+
+class CoOccurrenceTokensDisplayer(TopTokensDisplayer):
+
+    def __init__(self, bundle: Bundle, name: str="TopTokens"):
+        super().__init__(corpus=bundle.corpus, name=name)
+
+        self.bundle = bundle
+        self.keyness_options.update(
+            {
+                "HAL CWR": KeynessMetric.HAL_cwr,
+                "PPMI": KeynessMetric.PPMI,
+                "LLR": KeynessMetric.LLR,
+                "LLR(D)": KeynessMetric.LLR_Dunning,
+                "DICE": KeynessMetric.DICE,
+            }
+        )
+
+    def transform(self) -> VectorizedCorpus:
+        corpus: VectorizedCorpus = self.bundle.to_keyness_corpus(
+            period_pivot=self.time_period,
+            keyness=self.keyness,
+            fill_gaps=False,
+            normalize=False,
+            global_threshold=1, # FIXME Add
+            pivot_column_name=self.category_name,
+        )
+        return corpus
+
+    def plot(self, **_):
+        self.data = self.compile()
+        self.load()
