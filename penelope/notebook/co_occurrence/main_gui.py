@@ -7,7 +7,7 @@ from penelope import co_occurrence, pipeline, workflows
 from .. import co_occurrence as co_occurrence_gui
 from ..interface import ComputeOpts
 from ..utility import CLEAR_OUTPUT
-from ..word_trends.interface import TrendsData
+from ..word_trends.interface import BundleTrendsData
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
@@ -64,7 +64,7 @@ class MainGUI:
     ) -> widgets.VBox:
 
         self.bundle: co_occurrence.Bundle = None
-        self.trends_data: TrendsData = None
+        self.trends_data: BundleTrendsData = None
         self.config = (
             corpus_config
             if isinstance(corpus_config, pipeline.CorpusConfig)
@@ -103,7 +103,7 @@ class MainGUI:
             return
 
         self.bundle = bundle
-        self.trends_data = TrendsData(bundle=bundle)
+        self.trends_data = BundleTrendsData(bundle=bundle)
         self.gui_explore = co_occurrence_gui.ExploreGUI(bundle=bundle).setup().display(trends_data=self.trends_data)
 
         display(self.gui_explore.layout())

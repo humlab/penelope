@@ -413,6 +413,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
                 keyness=self.keyness,
                 global_threshold=self.global_threshold,
                 pivot_column_name=self.pivot_column_name,
+                normalize=False,
             )
             # print(f"to_corpus: corpus.shape (post)={corpus.data.shape}")
             self.set_buzy(False, None)

@@ -44,6 +44,8 @@ class Bundle:
         keyness: KeynessMetric,
         global_threshold: Union[int, float],
         pivot_column_name: str,
+        normalize: bool = False,
+        fill_gaps: bool = False,
     ) -> VectorizedCorpus:
         """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold.
         Returned corpus' document index has a new pivot column `target_column_name`
@@ -78,12 +80,16 @@ class Bundle:
         corpus = corpus.group_by_time_period_optimized(
             time_period_specifier=period_pivot,
             target_column_name=pivot_column_name,
+            fill_gaps=fill_gaps,
         )
 
         """Metrics computed on partitioned corpus"""
         if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
             corpus = corpus.to_keyness_co_occurrence_corpus(
-                keyness=keyness, token2id=self.token2id, pivot_key=pivot_column_name
+                keyness=keyness,
+                token2id=self.token2id,
+                pivot_key=pivot_column_name,
+                normalize=normalize,
             )
         elif keyness == KeynessMetric.HAL_cwr:
             corpus = corpus.HAL_cwr_corpus(

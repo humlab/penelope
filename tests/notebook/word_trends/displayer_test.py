@@ -7,8 +7,7 @@ import pytest
 from penelope import co_occurrence
 from penelope.common.curve_fit import pchip_spline, rolling_average_smoother
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.co_occurrence import main_gui
-from penelope.notebook.word_trends import TrendsData
+from penelope.notebook.word_trends import BundleTrendsData
 from penelope.notebook.word_trends.displayers import (
     BarDisplayer,
     CategoryDataMixin,
@@ -101,8 +100,8 @@ def bundle() -> co_occurrence.Bundle:
 
 
 @pytest.fixture(scope="module")
-def trends_data(bundle) -> TrendsData:
-    trends_data: TrendsData = TrendsData(bundle=bundle)
+def trends_data(bundle) -> BundleTrendsData:
+    trends_data: BundleTrendsData = BundleTrendsData(bundle=bundle)
     return trends_data
 
 

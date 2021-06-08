@@ -203,7 +203,11 @@ class CoOccurrenceMixIn:
         return corpus
 
     def to_keyness_co_occurrences(
-        self: IVectorizedCorpusProtocol, keyness: KeynessMetric, token2id: Token2Id, pivot_key: str
+        self: IVectorizedCorpusProtocol,
+        keyness: KeynessMetric,
+        token2id: Token2Id,
+        pivot_key: str,
+        normalize: bool = False,
     ) -> pd.DataFrame:
         """Returns co-occurrence data frame with weighed values by significance metrics.
 
@@ -227,6 +231,7 @@ class CoOccurrenceMixIn:
             pivot_key=pivot_key,
             document_index=self.document_index,
             vocabulary_size=len(token2id),
+            normalize=normalize,
         )
 
         mg = self.to_co_occurrence_vocab_mapping().get
@@ -236,7 +241,11 @@ class CoOccurrenceMixIn:
         return co_occurrences
 
     def to_keyness_co_occurrence_corpus(
-        self: IVectorizedCorpusProtocol, keyness: KeynessMetric, token2id: Token2Id, pivot_key: str
+        self: IVectorizedCorpusProtocol,
+        keyness: KeynessMetric,
+        token2id: Token2Id,
+        pivot_key: str,
+        normalize: bool = False,
     ) -> VectorizedCorpus:
         """Returns a copy of the corpus where the values have been weighed by keyness metric.
 
@@ -255,6 +264,7 @@ class CoOccurrenceMixIn:
             keyness=keyness,
             token2id=token2id,
             pivot_key=pivot_key,
+            normalize=normalize,
         )
 
         """Map that translate pivot_key to document_id"""

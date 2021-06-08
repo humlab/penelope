@@ -1,6 +1,7 @@
 import collections
-from typing import Dict, List
 from dataclasses import dataclass
+from typing import Dict, List
+
 import bokeh
 import numpy as np
 import pandas as pd
@@ -35,9 +36,7 @@ class GofData:
     @staticmethod
     def compute(corpus: VectorizedCorpus, n_count: int) -> "GofData":
 
-        goodness_of_fit = compute_goddness_of_fits_to_uniform(
-            corpus, None, verbose=True, metrics=['l2_norm', 'slope']
-        )
+        goodness_of_fit = compute_goddness_of_fits_to_uniform(corpus, None, verbose=True, metrics=['l2_norm', 'slope'])
         most_deviating_overview = compile_most_deviating_words(goodness_of_fit, n_count=n_count)
         most_deviating = get_most_deviating_words(
             goodness_of_fit, 'l2_norm', n_count=n_count, ascending=False, abs_value=True
@@ -50,6 +49,7 @@ class GofData:
         )
 
         return gof_data
+
 
 def get_gof_by_l2_norms(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     df_gof = pd.DataFrame(
