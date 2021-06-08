@@ -11,12 +11,12 @@ from penelope import utility
 from sklearn.feature_extraction.text import TfidfTransformer
 
 from ..document_index import DocumentIndex
-from .convert import CoOccurrenceMixIn
 from .group import GroupByMixIn
 from .interface import IVectorizedCorpus, VectorizedCorpusError
 from .slice import SliceMixIn
 from .stats import StatsMixIn
 from .store import StoreMixIn
+from .ttm import CoOccurrenceMixIn
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
 
