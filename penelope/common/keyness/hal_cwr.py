@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import scipy
+import scipy.sparse as sp
 
 # @deprecated
 # def compute_hal_score_cellwise(nw_xy: scipy.sparse.spmatrix, nw_x: scipy.sparse.spmatrix, vocab_mapping: dict) -> scipy.sparse.spmatrix:
@@ -20,17 +20,17 @@ import scipy
 #         nw_xy[:, t] = nw_xy[:, t]  / (nw_x[:,vocab_mapping[t][0]] + nw_x[:,vocab_mapping[t][1]] - nw_xy[:, t])
 #     return nw_xy
 
+SparseMatrix = sp.spmatrix
 
-def compute_hal_score_by_co_occurrence_matrix(
-    co_occurrences: pd.DataFrame, nw_x_matrix: scipy.sparse.spmatrix
-) -> pd.Series:
+
+def compute_hal_score_by_co_occurrence_matrix(co_occurrences: pd.DataFrame, nw_x_matrix: SparseMatrix) -> pd.Series:
     """Compute yearly HAL-score for each co-occurrence pair (w1, w2)"""
 
     # nw_xy is given by co_occurrences data frame
     co_occurrences = co_occurrences[['document_id', 'w1_id', 'w2_id', 'value']]
     co_occurrences['nw_xy'] = co_occurrences.value
 
-    nw_x_matrix: scipy.sparse.spmatrix = nw_x_matrix.tocoo()
+    nw_x_matrix: SparseMatrix = nw_x_matrix.tocoo()
     nw_x_frame: pd.DataFrame = pd.DataFrame(
         data={
             'document_id': nw_x_matrix.row,
@@ -55,11 +55,11 @@ def compute_hal_score_by_co_occurrence_matrix(
 
 
 def compute_hal_cwr_score(
-    nw_xy: scipy.sparse.spmatrix,
-    nw_x: scipy.sparse.spmatrix,
+    nw_xy: SparseMatrix,
+    nw_x: SparseMatrix,
     vocab_mapping: dict,
     inplace: bool = False,
-) -> scipy.sparse.spmatrix:
+) -> SparseMatrix:
     """Computes HAL common windows ratio (CWR) score for co-occurrings terms.
 
     Note: The `nw_xy` is a *document-term matrix* (DTM) gives the common window count CW for terms x and y
@@ -78,12 +78,12 @@ def compute_hal_cwr_score(
 
 
     Args:
-        nw_xy (scipy.sparse.spmatrix): co-occurrence matrix in the form of a vectorized corpus
-        nw_x (scipy.sparse.spmatrix): [description]
+        nw_xy (SparseMatrix): co-occurrence matrix in the form of a vectorized corpus
+        nw_x (SparseMatrix): [description]
         vocab_mapping (dict): [description]
 
     Returns:
-        scipy.sparse.spmatrix: [description]
+        SparseMatrix: [description]
     """
 
     nw_xy = (nw_xy if inplace else nw_xy.copy()).astype(np.float)
