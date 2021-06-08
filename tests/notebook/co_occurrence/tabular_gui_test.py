@@ -136,7 +136,7 @@ def test_get_prepared_corpus(folder: str, tag: str, keyness: KeynessMetric):
         global_threshold=1,
         pivot_column_name='time_period',
         normalize=False,
-        fill_gaps=True,
+        fill_gaps=False,
     )
 
     assert corpus is not None

@@ -61,18 +61,18 @@ def test_TrendsData_get_corpus():
     )
 
     corpus: VectorizedCorpus = trends_data.transform(
-        TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
+        TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year', fill_gaps=True)
     ).transformed_corpus
 
     assert corpus.data.shape == (9, 4)  # Shape of 'year' should include years without documents (gaps are filled)
-    assert corpus.data.shape == trends_data.corpus.data.shape
+    assert corpus.data.shape == trends_data.transformed_corpus.data.shape
     assert corpus.data.sum() == trends_data.corpus.data.sum()
     assert np.allclose(corpus.data.sum(axis=1).A1, np.array([8.0, 0.0, 0.0, 0.0, 7.0, 7.0, 0.0, 0.0, 12.0]))
     assert 'year' in corpus.document_index.columns
     assert expected_category_column in corpus.document_index.columns
 
     corpus: VectorizedCorpus = trends_data.transform(
-        TrendsOpts(normalize=True, keyness=KeynessMetric.TF, group_by='year')
+        TrendsOpts(normalize=True, keyness=KeynessMetric.TF, group_by='year', fill_gaps=True)
     ).transformed_corpus
     assert corpus.data.shape == (9, 4)
     assert np.allclose(corpus.data.sum(axis=1).A1, np.array([1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0]))
@@ -203,7 +203,7 @@ def test_trends_data_top_terms():
     assert df is not None
     assert df.columns.tolist() == ['2000', '2000/Count', '2010', '2010/Count']
     assert np.allclose(
-        df['2010/Count'].tolist(), [0.0701636628489649, 0.060835369578336705, 0.058402564601052934, 0.01530944325751465]
+        df['2010/Count'].tolist(), [0.08474405764438495, 0.07812263452765607, 0.06537949635506012, 0.030446904614286802]
     )
 
 
