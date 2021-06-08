@@ -1,16 +1,14 @@
-from typing import Mapping, Optional, Tuple
+from typing import Mapping, Optional, Tuple, Union
 
-import numpy as np
 import pandas as pd
-import scipy
 from loguru import logger
-from penelope.corpus.dtm.convert import CoOccurrenceVocabularyHelper
+from penelope.common.keyness import KeynessMetric
+from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper
 from penelope.type_alias import CoOccurrenceDataFrame
 
 from ..corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from . import persistence
 from .interface import ContextOpts
-from .metrics import compute_hal_cwr_score
 
 
 class Bundle:
@@ -39,6 +37,61 @@ class Bundle:
 
         """Co-occurrence corpus where the tokens are concatenated co-occurring word-pairs"""
         """Source corpus vocabulary (i.e. not token-pairs)"""
+
+    def to_keyness_corpus(
+        self,
+        period_pivot: str,
+        keyness: KeynessMetric,
+        global_threshold: Union[int, float],
+        pivot_column_name: str,
+    ) -> VectorizedCorpus:
+        """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold.
+        Returned corpus' document index has a new pivot column `target_column_name`
+
+        Args:
+            corpus (VectorizedCorpus): input corpus
+            period_pivot (str): temporal pivot key
+            keyness (KeynessMetric): keyness metric to apply on corpus
+            token_filter (str): match tokens
+            global_threshold (Union[int, float]): limit result by global term frequency
+            pivot_column_name (Union[int, float]): name of grouping column
+
+        Returns:
+            VectorizedCorpus: pivoted corpus.
+        """
+        if period_pivot not in ["year", "lustrum", "decade"]:
+            raise ValueError(f"illegal time period {period_pivot}")
+
+        corpus: VectorizedCorpus = self.corpus
+
+        if global_threshold > 1:
+            corpus = corpus.slice_by_term_frequency(global_threshold)
+
+        """Metrics computed on a document level"""
+        if keyness == KeynessMetric.TF_IDF:
+            corpus = corpus.tf_idf()
+        elif keyness == KeynessMetric.TF_normalized:
+            corpus = corpus.normalize_by_raw_counts()
+        elif keyness == KeynessMetric.TF:
+            pass
+
+        corpus = corpus.group_by_time_period_optimized(
+            time_period_specifier=period_pivot,
+            target_column_name=pivot_column_name,
+        )
+
+        """Metrics computed on partitioned corpus"""
+        if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
+            corpus = corpus.to_keyness_co_occurrence_corpus(
+                keyness=keyness, token2id=self.token2id, pivot_key=pivot_column_name
+            )
+        elif keyness == KeynessMetric.HAL_cwr:
+            corpus = corpus.HAL_cwr_corpus(
+                document_window_counts=self.window_counts.document_counts,
+                vocabs_mapping=self.vocabs_mapping,
+            )
+
+        return corpus
 
     @property
     def co_occurrences(self) -> CoOccurrenceDataFrame:
@@ -105,35 +158,3 @@ class Bundle:
             w1=self.co_occurrences.w1_id.apply(fg),
             w2=self.co_occurrences.w2_id.apply(fg),
         )
-
-    # FIXME: Move out of class (possible to dtm.convert.CoOccurrenceMixIn)
-    def HAL_cwr_corpus(self) -> VectorizedCorpus:
-        """Returns a BoW co-occurrence corpus where the values are computed HAL CWR score."""
-
-        nw_x = self.window_counts.document_counts.todense().astype(np.float)
-        nw_xy = self.corpus.data  # .copy().astype(np.float)
-
-        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, self.vocabs_mapping)
-
-        cwr_corpus: VectorizedCorpus = VectorizedCorpus(
-            bag_term_matrix=nw_cwr,
-            token2id=self.corpus.token2id,
-            document_index=self.corpus.document_index,
-        )
-        return cwr_corpus
-
-    # @property
-    # def co_occurrence_filename(self) -> str:
-    #     return persistence.co_occurrence_filename(self.folder, self.tag)
-
-    # @property
-    # def document_index_filename(self) -> str:
-    #     return persistence.document_index_filename(self.folder, self.tag)
-
-    # @property
-    # def vocabulary_filename(self) -> str:
-    #     return persistence.vocabulary_filename(self.folder, self.tag)
-
-    # @property
-    # def options_filename(self) -> str:
-    #     return replace_extension(self.co_occurrence_filename, 'json')
