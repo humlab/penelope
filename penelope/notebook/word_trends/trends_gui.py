@@ -100,7 +100,7 @@ class TrendsGUI:
                 self.alert("😥 Please load a corpus (no corpus in trends data) !")
                 return
 
-            corpus = self.trends_data.get_corpus(self.options)
+            corpus = self.trends_data.to_transformed_corpus(self.options)
 
             self.current_displayer.display(
                 corpus=corpus,

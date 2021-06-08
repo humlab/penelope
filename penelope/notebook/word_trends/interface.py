@@ -103,7 +103,7 @@ class TrendsData:
             self._gof_data = GoodnessOfFitData.compute(self.corpus, n_count=self.n_count)
         return self._gof_data
 
-    def get_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+    def to_transformed_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
 
         if self.current_trends_opts.invalidates_corpus(opts):
 
@@ -141,13 +141,13 @@ class TrendsData:
         return self.transformed_corpus
 
     def find_word_indices(self, opts: TrendsOpts) -> List[int]:
-        indices: List[int] = self.get_corpus(opts).find_matching_words_indices(
+        indices: List[int] = self.to_transformed_corpus(opts).find_matching_words_indices(
             opts.words, opts.word_count, descending=opts.descending
         )
         return indices
 
     def find_words(self, opts: TrendsOpts) -> List[str]:
-        words: List[int] = self.get_corpus(opts).find_matching_words(
+        words: List[int] = self.to_transformed_corpus(opts).find_matching_words(
             opts.words, opts.word_count, descending=opts.descending
         )
         return words
