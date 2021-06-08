@@ -124,9 +124,9 @@ class ComputeOpts:
         if self.extract_opts.append_pos:
             options['--append-pos'] = True
 
-        options[f'--{"" if self.transform_opts.keep_symbols else "no" }-keep-symbols'] = True
-        options[f'--{"" if self.transform_opts.keep_numerals else "no" }-keep-numerals'] = True
-        options[f'--{"" if self.transform_opts.to_lower else "no" }-to-lowercase'] = True
+        options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
+        options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
+        options[f'--{"" if self.transform_opts.to_lower else "no" }to-lowercase'] = True
 
         if self.transform_opts.min_len > 1:
             options['--min-word-length'] = self.transform_opts.min_len
