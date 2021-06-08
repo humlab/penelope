@@ -1,6 +1,6 @@
 from loguru import logger
 from penelope import co_occurrence
-from penelope.notebook.word_trends.displayers.display_top_table import TopTokensDisplayer
+from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTokensDisplayer
 
 from .. import utility as notebook_utility
 from .. import word_trends
@@ -42,7 +42,7 @@ class ExploreGUI:
             self.tab_main.display_content(0, TabularCoOccurrenceGUI(bundle=self.bundle).setup(), clear=True)
             self.tab_main.display_as_yaml(2, self.bundle.compute_options, clear=True, width='800px', height='600px')
 
-            top_displayer: TopTokensDisplayer = TopTokensDisplayer(corpus=trends_data.corpus).setup()
+            top_displayer: CoOccurrenceTokensDisplayer = CoOccurrenceTokensDisplayer(bundle=self.bundle).setup()
             self.tab_main.display_content(4, top_displayer.layout(), clear=True)
         except KeyError as ex:
             logger.error(
