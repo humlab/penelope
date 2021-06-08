@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Callable, Union
+from typing import Callable, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -210,13 +210,13 @@ def partitioned_significances(
     vocabulary_size: int = vocabulary_size or max(co_occurrences.w1_id, co_occurrences.w2_id)
     co_occurrence_partitions = []
     for period in co_occurrences[pivot_key].unique():
-        co_partition = co_occurrences[co_occurrences[pivot_key] == period]
+        pivot_co_occurrences = co_occurrences[co_occurrences[pivot_key] == period]
         term_term_matrix = sp.csc_matrix(
-            (co_partition.value, (co_partition.w1_id, co_partition.w2_id)),
+            (pivot_co_occurrences.value, (pivot_co_occurrences.w1_id, pivot_co_occurrences.w2_id)),
             shape=(vocabulary_size, vocabulary_size),
             dtype=np.float64,
         )
-        n_contexts = document_index.loc[co_partition.document_id.unique().size].n_documents.sum()
+        n_contexts = _get_documents_count(document_index, pivot_co_occurrences)
         weights, (w1_ids, w2_ids) = significance(
             TTM=term_term_matrix,
             metric=keyness_metric,
@@ -228,3 +228,17 @@ def partitioned_significances(
         )
     weighed_co_occurrences = pd.concat(co_occurrence_partitions, ignore_index=True)
     return weighed_co_occurrences
+
+
+def _get_documents_count(document_index: pd.DataFrame, co_occurrences: pd.DataFrame) -> int:
+    """Returns number of documents that has contributed to data in `co_occurrences`"""
+    if 'document_id' not in co_occurrences.columns:
+        raise ValueError("fatal: document index has no ID column")
+    documents_ids: Sequence[int] = co_occurrences.document_id.unique()
+    if len(documents_ids) == 0:
+        return 0
+    if 'n_documents' in document_index.columns:
+        n_contexts = document_index.loc[documents_ids].n_documents.sum()
+    else:
+        n_contexts = len(document_index.loc[documents_ids])
+    return n_contexts
