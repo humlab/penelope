@@ -2,7 +2,6 @@ import os
 import shutil
 import uuid
 
-import pytest
 from penelope.utility import list_any_source, streamify_any_source, unpack
 from tests.utils import TEST_CORPUS_FILENAME
 
@@ -50,29 +49,6 @@ def test_next_of_streamified_zipped_source_returns_document():
     assert filenames == ['README.md'] + EXPECTED_TEXT_FILES
 
     shutil.rmtree(folder, ignore_errors=True)
-
-
-@pytest.mark.xfail
-def test_next_of_streamified_folder_source_returns_document_stream():
-    assert False
-
-
-@pytest.mark.xfail
-def test_next_of_streamified_already_stream_source_returns_document_stream():
-    assert False
-
-
-@pytest.mark.xfail
-def test_next_of_streamified_of_text_chunk_returns_single_document():
-    assert False
-
-
-@pytest.mark.xfail
-def test_next_of_streamified_when_not_str_nor_stream_should_fail():
-    assert False
-
-
-# NOTE: Test pattern, txt/xml, filename_filter (list/function), as_binary
 
 
 def test_create_iterator():
