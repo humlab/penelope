@@ -4,7 +4,7 @@ import pandas as pd
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import OutputsTabExt
 from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsData, TrendsGUI
-from penelope.notebook.word_trends.interface import GoodnessOfFitData
+from penelope.notebook.word_trends.interface import GofData
 
 
 def trends_data_mock():
@@ -13,7 +13,7 @@ def trends_data_mock():
         **{
             'corpus': MagicMock(spec=VectorizedCorpus),
             'gof_data': MagicMock(
-                spec=GoodnessOfFitData,
+                spec=GofData,
                 **{
                     'goodness_of_fit': MagicMock(spec=pd.DataFrame),
                     'most_deviating_overview': MagicMock(spec=pd.DataFrame),
@@ -47,7 +47,7 @@ def test_GoFsGUI_layout(_):
 def test_GoFsGUI_display(tab):
     tab = Mock(OutputsTabExt)
     gui = GoFsGUI(tab_gof=tab)
-    gof_data = MagicMock(spec=GoodnessOfFitData, most_deviating_overview=MagicMock(spec=pd.DataFrame))
+    gof_data = MagicMock(spec=GofData, most_deviating_overview=MagicMock(spec=pd.DataFrame))
     corpus = Mock(spec=VectorizedCorpus)
     trends_data = MagicMock(spec=TrendsData, corpus=corpus, gof_data=gof_data, category_column="apa")
     gui.display(trends_data=trends_data)

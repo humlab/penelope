@@ -3,7 +3,7 @@ from penelope.utility import getLogger
 
 from .. import utility as notebook_utility
 from ..ipyaggrid_utility import display_grid
-from .interface import GoodnessOfFitData, TrendsData
+from .interface import GofData, TrendsData
 
 logger = getLogger("penelope")
 
@@ -27,7 +27,7 @@ class GoFsGUI:
     def display(self, trends_data: TrendsData) -> "GoFsGUI":
         if self.is_displayed:
             return self
-        gof_data: GoodnessOfFitData = trends_data.gof_data
+        gof_data: GofData = trends_data.gof_data
         self.tab_gof = (
             self.tab_gof.display_fx_result(0, display_grid, gof_data.goodness_of_fit)
             .display_fx_result(

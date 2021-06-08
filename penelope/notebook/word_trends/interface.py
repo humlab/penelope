@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 from typing import Dict, List
 
 import pandas as pd
-import penelope.common.goodness_of_fit as gof
+from penelope.common.goodness_of_fit import GofData
 from penelope.co_occurrence import Bundle
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
@@ -33,34 +33,6 @@ class TrendsOpts:
             return True
         return False
 
-
-@dataclass
-class GoodnessOfFitData:
-
-    goodness_of_fit: pd.DataFrame = None
-    most_deviating_overview: pd.DataFrame = None
-    most_deviating: pd.DataFrame = None
-
-    @staticmethod
-    def compute(corpus: VectorizedCorpus, n_count: int) -> "GoodnessOfFitData":
-
-        goodness_of_fit = gof.compute_goddness_of_fits_to_uniform(
-            corpus, None, verbose=True, metrics=['l2_norm', 'slope']
-        )
-        most_deviating_overview = gof.compile_most_deviating_words(goodness_of_fit, n_count=n_count)
-        most_deviating = gof.get_most_deviating_words(
-            goodness_of_fit, 'l2_norm', n_count=n_count, ascending=False, abs_value=True
-        )
-
-        gof_data: GoodnessOfFitData = GoodnessOfFitData(
-            goodness_of_fit=goodness_of_fit,
-            most_deviating=most_deviating,
-            most_deviating_overview=most_deviating_overview,
-        )
-
-        return gof_data
-
-
 class TrendsData:
     """Container class for displayed token trend
 
@@ -88,7 +60,7 @@ class TrendsData:
         self.n_count: int = n_count
 
         self._compute_options: Dict = None
-        self._gof_data: GoodnessOfFitData = None
+        self._gof_data: GofData = None
 
         self.transformed_corpus: VectorizedCorpus = self.corpus
         self.current_trends_opts: TrendsOpts = TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
@@ -98,9 +70,9 @@ class TrendsData:
         # self.corpus = self.corpus.group_by_year(target_column_name=self.category_column)
 
     @property
-    def gof_data(self) -> GoodnessOfFitData:
+    def gof_data(self) -> GofData:
         if self._gof_data is None:
-            self._gof_data = GoodnessOfFitData.compute(self.corpus, n_count=self.n_count)
+            self._gof_data = GofData.compute(self.corpus, n_count=self.n_count)
         return self._gof_data
 
     def to_transformed_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
