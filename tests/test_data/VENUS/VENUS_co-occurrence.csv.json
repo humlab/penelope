@@ -40,21 +40,6 @@
     ],
     "checkpoint_file": "./tests/output/co_occurrence_test_pos_csv.zip",
     "checkpoint_opts": "<not serializable",
-    "transform_opts": {
-        "only_alphabetic": false,
-        "only_any_alphanumeric": false,
-        "to_lower": true,
-        "to_upper": false,
-        "min_len": 1,
-        "max_len": null,
-        "remove_accents": false,
-        "remove_stopwords": true,
-        "stopwords": null,
-        "extra_stopwords": [],
-        "language": "english",
-        "keep_numerals": true,
-        "keep_symbols": true
-    },
     "extract_opts": {
         "lemmatize": true,
         "target_override": null,
@@ -63,6 +48,7 @@
         "pos_paddings": null,
         "pos_replace_marker": "*",
         "passthrough_tokens": [],
+        "block_tokens": [],
         "append_pos": false,
         "phrases": null,
         "to_lowercase": false
@@ -73,6 +59,21 @@
         "is_digit": null,
         "is_stop": null,
         "is_space": false
+    },
+    "transform_opts": {
+        "to_lower": true,
+        "to_upper": false,
+        "only_alphabetic": false,
+        "only_any_alphanumeric": false,
+        "min_len": 1,
+        "max_len": null,
+        "remove_accents": false,
+        "remove_stopwords": true,
+        "stopwords": null,
+        "extra_stopwords": [],
+        "language": "english",
+        "keep_numerals": true,
+        "keep_symbols": true
     },
     "context_opts": {
         "context_width": 4,
