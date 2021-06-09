@@ -1,5 +1,4 @@
 import io
-from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
 
 import ipycytoscape
 import numpy as np
@@ -23,6 +22,7 @@ from penelope.notebook.word_trends.displayers import (
     UnnestedTableDisplayer,
     create_network,
 )
+from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
 from tests.fixtures import create_smaller_vectorized_corpus
 
 BIGGER_CORPUS_FILENAME = './tests/test_data/riksdagens-protokoll.1950-1959.ak.sparv4.csv.zip'
@@ -128,6 +128,7 @@ def test_displayer_compile_and_display(displayer_cls, bundle: co_occurrence.Bund
 
     assert plot_data is not None
 
+
 def test_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
 
     displayer: ITrendDisplayer = TopTokensDisplayer(corpus=bundle.corpus)
@@ -136,6 +137,7 @@ def test_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
     plot_data: dict = displayer.compile()
 
     assert plot_data is not None
+
 
 def test_co_occurrence_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
 
