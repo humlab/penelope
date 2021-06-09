@@ -6,8 +6,6 @@ from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
 
-import pandas as pd
-
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
