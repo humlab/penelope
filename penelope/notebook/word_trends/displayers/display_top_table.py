@@ -140,7 +140,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         return self._kind.value
 
 
-class CoOccurrenceTokensDisplayer(TopTokensDisplayer):
+class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
     def __init__(self, bundle: Bundle, name: str = "TopTokens"):
         super().__init__(corpus=bundle.corpus, name=name)
 
