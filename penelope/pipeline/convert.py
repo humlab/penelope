@@ -4,7 +4,14 @@ from typing import Callable, Iterable, List, Set, Tuple, Union
 import numpy as np
 import pandas as pd
 from loguru import logger
-from penelope.corpus import CorpusVectorizer, DocumentIndex, VectorizedCorpus, VectorizeOpts, default_tokenizer
+from penelope.corpus import (
+    CorpusVectorizer,
+    DocumentIndex,
+    TokensTransformOpts,
+    VectorizedCorpus,
+    VectorizeOpts,
+    default_tokenizer,
+)
 from penelope.corpus.readers import ExtractTaggedTokensOpts, PhraseSubstitutions
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
 
@@ -41,6 +48,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
     pos_column: str = 'pos_',
+    transform_opts: TokensTransformOpts = None,
 ) -> Iterable[str]:
     """Extracts tokens from a tagged document represented as a Pandas data frame.
 
@@ -72,9 +80,11 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         raise ValueError(f"{target} is not valid target for given document (missing column)")
 
     passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
+    blocks: Set[str] = extract_opts.get_block_tokens()
     pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
-    if extract_opts.to_lowercase:
+    # FIXME: Make filter non-destructive (don't change dataframe)
+    if extract_opts.to_lowercase or (transform_opts and transform_opts.to_lower):
         doc[target] = doc[target].str.lower()
         passthroughs = {x.lower() for x in passthroughs}
 
@@ -96,12 +106,18 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if len(extract_opts.get_pos_excludes()) > 0:
         mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
+    # TODO: Merge extract_opts och transform_opts
+    if transform_opts:
+        mask &= transform_opts.mask(doc[target])
+
     if len(passthroughs) > 0:
         # TODO: #52 Make passthrough token case-insensative
         mask |= doc[target].isin(passthroughs)
 
+    if len(blocks) > 0:
+        mask &= ~doc[target].isin(blocks)
+
     # TODO: #73 PENELOPE: Improve overall system performance
-    # token_pos_tuples = doc.loc[mask][[target, pos_column]].to_records(index=False)
     token_pos_tuples = doc.loc[mask][[target, pos_column]].itertuples(index=False, name=None)
 
     if len(pos_paddings) > 0:

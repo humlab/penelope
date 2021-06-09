@@ -466,7 +466,12 @@ class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 
 
 @dataclass
-class TaggedFrameToTokens(CountTaggedTokensMixIn, BuildToken2IdMixIn, TransformTokensMixIn, ITask):
+class TaggedFrameToTokens(
+    CountTaggedTokensMixIn,
+    BuildToken2IdMixIn,
+    TransformTokensMixIn,
+    ITask,
+):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
@@ -478,13 +483,13 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, BuildToken2IdMixIn, TransformT
 
     def setup(self) -> ITask:
 
-        # FIXME: Figure out how to chain multiple inheritance function calls (with same name)
-        # super(self, TransformTokensMixIn).setup()
         self.setup_token2id()
-        self.setup_transform()
+        # Let convert.tagged_frame_to_tokens do transform instead
+        # self.setup_transform()
 
         self.pipeline.put("extract_opts", self.extract_opts)
         self.pipeline.put("filter_opts", self.filter_opts)
+        self.pipeline.put("transform_opts", self.transform_opts)
 
         return self
 
@@ -498,12 +503,13 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, BuildToken2IdMixIn, TransformT
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
             **(self.pipeline.payload.tagged_columns_names or {}),
+            transform_opts=self.transform_opts,
         )
 
         tokens = list(tokens)
 
-        if self.transformer:
-            tokens = self.transform(tokens)
+        # if self.transformer:
+        #     tokens = self.transform(tokens)
 
         if self.token2id:
             self.token2id.ingest(tokens)
