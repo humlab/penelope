@@ -1,4 +1,5 @@
 import io
+from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
 
 import ipycytoscape
 import numpy as np
@@ -117,13 +118,22 @@ def trends_data(bundle) -> BundleTrendsData:
         NetworkDisplayer,
     ],
 )
-def test_bar_displayer_compile_and_display(displayer_cls, bundle: co_occurrence.Bundle):
+def test_displayer_compile_and_display(displayer_cls, bundle: co_occurrence.Bundle):
 
     corpus: VectorizedCorpus = bundle.corpus.group_by_year(target_column_name='category')
 
     displayer: ITrendDisplayer = displayer_cls()
 
     plot_data: dict = displayer.compile(corpus=corpus, indices=[0, 1, 2])
+
+    assert plot_data is not None
+
+
+def test_co_occurrence_displayer_compile_and_display(bundle: co_occurrence.Bundle):
+
+    displayer: ITrendDisplayer = CoOccurrenceTopTokensDisplayer(bundle=bundle)
+
+    plot_data: dict = displayer.compile()
 
     assert plot_data is not None
 
