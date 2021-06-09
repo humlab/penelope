@@ -55,7 +55,7 @@ tools:
 	@pip install poetry --upgrade --quiet
 
 bump.patch: requirements.txt
-	@poetry run dephell project bump patch
+	@poetry version patch
 	@git add pyproject.toml requirements.txt
 	@git commit -m "Bump version patch"
 	@git push
@@ -161,7 +161,7 @@ install_graphtool:
 	@sudo apt update && apt install python3-graph-tool
 
 requirements.txt: poetry.lock
-	@poetry export -f requirements.txt --output requirements.txt
+	@poetry export --without-hashes -f requirements.txt --output requirements.txt
 
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
