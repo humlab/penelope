@@ -1,10 +1,10 @@
 import contextlib
-from penelope.co_occurrence.bundle import Bundle
 from typing import Any
 
 import IPython.display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, VBox
+from penelope.co_occurrence.bundle import Bundle
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
@@ -15,7 +15,6 @@ from .interface import ITrendDisplayer
 
 # FIXME #72 Word trends: No data in top tokens displayer
 class TopTokensDisplayer(ITrendDisplayer):
-
     def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
         super().__init__(name=name)
 
@@ -74,7 +73,6 @@ class TopTokensDisplayer(ITrendDisplayer):
             time_period_specifier=self.time_period, target_column_name=self.category_name
         )
         return corpus
-
 
     def compile(self, **_) -> Any:  # pylint: disable=arguments-differ
         top_terms: pd.DataFrame = self.transform().get_top_terms(
@@ -143,8 +141,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
 
 class CoOccurrenceTokensDisplayer(TopTokensDisplayer):
-
-    def __init__(self, bundle: Bundle, name: str="TopTokens"):
+    def __init__(self, bundle: Bundle, name: str = "TopTokens"):
         super().__init__(corpus=bundle.corpus, name=name)
 
         self.bundle = bundle
@@ -164,7 +161,7 @@ class CoOccurrenceTokensDisplayer(TopTokensDisplayer):
             keyness=self.keyness,
             fill_gaps=False,
             normalize=False,
-            global_threshold=1, # FIXME Add
+            global_threshold=1,  # FIXME Add
             pivot_column_name=self.category_name,
         )
         return corpus
