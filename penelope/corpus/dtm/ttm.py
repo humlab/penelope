@@ -62,7 +62,7 @@ class CoOccurrenceVocabularyHelper:
         to_token = token2id.id2token.get
         token_pairs: pd.DataFrame = co_occurrences[["w1_id", "w2_id"]].drop_duplicates().reset_index(drop=True)
         token_pairs["token_id"] = token_pairs.index
-        token_pairs["token"] = f"{token_pairs.w1_id.apply(to_token)}/{token_pairs.w2_id.apply(to_token)}"
+        token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
 
         """Create a new vocabulary"""
         vocabulary = token_pairs.set_index("token").token_id.to_dict()
