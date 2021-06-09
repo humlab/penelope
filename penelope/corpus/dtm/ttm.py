@@ -126,23 +126,6 @@ class CoOccurrenceMixIn:
         """Add a time period column that can be used as a pivot column"""
         df['time_period'] = self.document_index.loc[df.document_id][partition_key].astype(np.int16).values
 
-        # """Decode w1/w2 token pair"""
-        # if self.vocabs_mapping is None:
-        #     fg = self.id2token.get
-
-        #     df['token'] = df.token_id.apply(fg)
-
-        #     ws = pd.DataFrame(df.token.str.split('/', 1).tolist(), columns=['w1', 'w2'], index=df.index)
-        #     df = df.assign(w1=ws.w1, w2=ws.w2)
-
-        #     # """Decode w1 and w2 tokens using supplied token2id"""
-        #     sg = source_token2id.get
-        #     df['w1_id'] = df.w1.apply(sg).astype(np.int32)
-        #     df['w2_id'] = df.w2.apply(sg).astype(np.int32)
-
-        #     df.drop(columns=["token", "w1", "w2"], inplace=True)
-
-        # else:
         pg = self.to_source_vocab_mapping(source_token2id).get
 
         df[['w1_id', 'w2_id']] = pd.DataFrame(df.token_id.apply(pg).tolist())
