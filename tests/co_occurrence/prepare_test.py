@@ -104,7 +104,7 @@ def test_co_occurrence_helper_largest(helper: CoOccurrenceHelper):
 
     data: pd.DataFrame = helper.reset().largest(3).decode().value
     largest = set(data[data.time_period == 1997].token.tolist())
-    assert largest == {'article/generation', 'ensure/generation', 'responsibility/generation'}
+    assert largest == {'article/generation', 'ensure/generation', 'should/generation'}
 
 
 def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
