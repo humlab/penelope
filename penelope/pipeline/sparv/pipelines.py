@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
 
 from penelope.utility import strip_extensions
 
-from .. import config, interfaces, pipelines, tasks
+from .. import config, pipelines, tasks
+
+if TYPE_CHECKING:
+    from ..interfaces import ITask
 
 
 def checkpoint_folder_name(corpus_filename: str) -> str:
@@ -13,7 +19,8 @@ def checkpoint_folder_name(corpus_filename: str) -> str:
 def to_tagged_frame_pipeline(
     corpus_config: config.CorpusConfig,
     corpus_filename: str = None,
-    force_checkpoint: str = None,
+    feather_checkpoint: bool = True,
+    force_checkpoint: bool = False,
     **_,
 ):
     """Loads a tagged data frame"""
@@ -24,17 +31,20 @@ def to_tagged_frame_pipeline(
 
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
 
-        task: interfaces.ITask = tasks.LoadTaggedCSV(
+        task: ITask = tasks.LoadTaggedCSV(
             filename=corpus_filename,
             checkpoint_opts=corpus_config.checkpoint_opts,
             extra_reader_opts=corpus_config.text_reader_opts,
         )
 
     elif corpus_config.corpus_type == config.CorpusType.SparvXML:
-        task: interfaces.ITask = tasks.LoadTaggedXML()
+        task: ITask = tasks.LoadTaggedXML()
     else:
         raise ValueError("fatal: corpus type is not (yet) supported")
 
-    p.add(task).checkpoint_feather(checkpoint_folder, force=force_checkpoint)
+    p.add(task)
+
+    if feather_checkpoint:
+        p = p.checkpoint_feather(checkpoint_folder, force=force_checkpoint)
 
     return p

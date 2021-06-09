@@ -1,6 +1,10 @@
+# pylint: disable=import-error,unused-import
 try:
-    import graph_tool.all as gt
+    import graph_tool.all as gt  # type: ignore
+    import graph_tool.draw as gt_draw  # type: ignore
 except ImportError:
+    gt_draw = None
+    gt = None
     print('warning: graph_tool not installed!')
 
 

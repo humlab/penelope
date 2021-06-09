@@ -43,10 +43,14 @@ class CorpusPipelineBase(Generic[_T_self]):
     def tasks(self) -> List[ITask]:
         return self._tasks
 
-    def find(self, task_cls: Type[ITask]) -> ITask:
+    def find(self, task_cls: Type[ITask], stop_cls: Type[ITask] = None) -> ITask:
+        """Find first task of class `task_cls`. Don't look beyond `stop_cls` if given."""
         for task in self.tasks:
             if isinstance(task, task_cls):
                 return task
+            if stop_cls is not None:
+                if isinstance(task, stop_cls):
+                    break
         return None
 
     def get_prior_to(self, task: ITask) -> ITask:

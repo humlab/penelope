@@ -19,7 +19,7 @@ class SparvXmlReader(TextTokenizer):
         reader_opts: TextReaderOpts = None,
         version: int = 4,
         xslt_filename: str = None,
-        extract_tokens_opts: ExtractTaggedTokensOpts = None,
+        extract_opts: ExtractTaggedTokensOpts = None,
         chunk_size: int = None,
     ):
         """Sparv XML file reader
@@ -46,7 +46,7 @@ class SparvXmlReader(TextTokenizer):
             chunk_size=chunk_size,
         )
 
-        self.extract_tokens_opts = extract_tokens_opts or ExtractTaggedTokensOpts(lemmatize=True)
+        self.extract_tokens_opts = extract_opts or ExtractTaggedTokensOpts(lemmatize=True)
         self.xslt_filename = XSLT_FILENAME_V3 if version == 3 else xslt_filename
         self.parser = SparvXml2Text(
             xslt_filename=self.xslt_filename,
@@ -79,7 +79,7 @@ class Sparv3XmlReader(SparvXmlReader):
         reader_opts = reader_opts or TextReaderOpts()
         super().__init__(
             source,
-            extract_tokens_opts=extract_tokens_opts,
+            extract_opts=extract_tokens_opts,
             xslt_filename=XSLT_FILENAME_V3,
             reader_opts=reader_opts,
             chunk_size=chunk_size,

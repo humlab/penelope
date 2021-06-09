@@ -1,15 +1,13 @@
-# type: ignore
-
 import abc
 import copy
 import csv
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Union
+from typing import Any, Iterable, List, Optional, Union
 
-from penelope.corpus import DocumentIndex
-from penelope.utility import create_instance
+from penelope.corpus import DocumentIndex, Token2Id
+from penelope.utility import create_instance, dictify
 
-from ..interfaces import ContentType, DocumentPayload, Token2Id
+from ..interfaces import ContentType, DocumentPayload
 from ..tagged_frame import TaggedFrame
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
@@ -29,7 +27,7 @@ class CheckpointOpts:
 
     sep: str = '\t'
     quoting: int = csv.QUOTE_NONE
-    custom_serializer_classname: str = None
+    custom_serializer_classname: Optional[str] = None
     deserialize_in_parallel: bool = field(default=False)
     deserialize_processes: int = field(default=4)
     deserialize_chunksize: int = field(default=4)
@@ -39,6 +37,10 @@ class CheckpointOpts:
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
     index_column: Union[int, None] = field(default=0)
+
+    @property
+    def props(self):
+        return dictify(self)
 
     @property
     def content_type(self) -> ContentType:

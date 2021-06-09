@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import ftfy
 import textacy.preprocessing as preprocessing
@@ -37,7 +37,7 @@ class TextTransformOpts:
     def empty():
         return TextTransformOpts().clear()
 
-    extra_transforms: List[Callable] = field(default_factory=list)
+    extra_transforms: Optional[List[Callable[[str], str]]] = field(default_factory=list)
 
     @property
     def props(self):

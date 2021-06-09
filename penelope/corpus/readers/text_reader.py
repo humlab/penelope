@@ -1,15 +1,17 @@
-import logging
 import os
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, AnyStr, Dict, Iterable, List, Sequence, Tuple
 
-from penelope.utility import extract_filenames_metadata, filename_satisfied_by, list_filenames, strip_paths
+from penelope.utility import (
+    extract_filenames_metadata,
+    filename_satisfied_by,
+    list_any_source,
+    streamify_any_source,
+    strip_paths,
+)
 
 from ..document_index import DocumentIndex, metadata_to_document_index
 from .interfaces import FilenameOrCallableOrSequenceFilter, ICorpusReader, TextReaderOpts, TextSource
-from .streamify_text_source import streamify_text_source
 from .text_transformer import TextTransformer, TextTransformOpts
-
-logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 
@@ -35,7 +37,7 @@ class TextReader(ICorpusReader):
         reader_opts: TextReaderOpts = None,
         transform_opts: TextTransformOpts = None,
     ):
-        reader_opts = reader_opts or TextReaderOpts()
+        reader_opts: TextReaderOpts = reader_opts or TextReaderOpts()
 
         self._source: TextSource = source
         self.reader_opts: TextReaderOpts = reader_opts.copy()
@@ -44,19 +46,21 @@ class TextReader(ICorpusReader):
         )
 
         self._iterator = None
-        self._all_filenames: List[str] = list_filenames(
+        self._all_filenames: List[str] = list_any_source(
             source,
             filename_pattern=self.reader_opts.filename_pattern,
             filename_filter=None,
         )
         self._all_metadata: Sequence[Dict[str, Any]] = self._create_all_metadata()
 
-    def _get_texts(self) -> Iterable[Tuple[str, str]]:
-        return streamify_text_source(
+    def _get_texts(self) -> Iterable[Tuple[str, AnyStr]]:
+        return streamify_any_source(
             self._source,
             filename_pattern=self.reader_opts.filename_pattern,
             filename_filter=self.reader_opts.filename_filter,
             as_binary=self.reader_opts.as_binary,
+            n_processes=self.reader_opts.n_processes,
+            n_chunksize=self.reader_opts.n_chunksize,
         )
 
     def _create_iterator(self) -> Iterable[Tuple[str, str]]:

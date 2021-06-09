@@ -1,8 +1,11 @@
-from dataclasses import asdict, dataclass, field
+import abc
+from dataclasses import asdict, dataclass
 from typing import Dict, List
 
 import pandas as pd
-import penelope.common.goodness_of_fit as gof
+from penelope.co_occurrence import Bundle
+from penelope.common.goodness_of_fit import GofData
+from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 
 
@@ -10,9 +13,10 @@ from penelope.corpus import VectorizedCorpus
 class TrendsOpts:
 
     normalize: bool
-    tf_idf: bool
+    keyness: KeynessMetric
     group_by: str
 
+    fill_gaps: bool = False
     smooth: bool = None
     word_count: int = None
     words: List[str] = None
@@ -25,100 +29,120 @@ class TrendsOpts:
     def invalidates_corpus(self, other: "TrendsOpts") -> bool:
         if self.normalize != other.normalize:
             return True
-        if self.tf_idf != other.tf_idf:
+        if self.keyness != other.keyness:
             return True
         if self.group_by != other.group_by:
+            return True
+        if self.fill_gaps != other.fill_gaps:
             return True
         return False
 
 
-# FIXME Move class away from penelope.notebook (bad dependency)
-@dataclass
-class TrendsData:
+class ITrendsData(abc.ABC):
+    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_count: int = 100000):
+        self.corpus: VectorizedCorpus = corpus
+        self.corpus_folder: str = corpus_folder
+        self.corpus_tag: str = corpus_tag
+        self.n_count: int = n_count
 
-    corpus: VectorizedCorpus = None
-    corpus_folder: str = None
-    corpus_tag: str = None
-    compute_options: Dict = None
+        self._compute_options: Dict = None
+        self._gof_data: GofData = None
 
-    goodness_of_fit: pd.DataFrame = None
-    most_deviating_overview: pd.DataFrame = None
-    most_deviating: pd.DataFrame = None
+        self._transformed_corpus: VectorizedCorpus = None
+        self._trends_opts: TrendsOpts = TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
+        self.category_column: str = "time_period"
 
-    current_trends_opts: TrendsOpts = field(
-        default_factory=lambda: TrendsOpts(normalize=False, tf_idf=False, group_by='year')
-    )
-    transformed_corpus: VectorizedCorpus = None
+    @abc.abstractmethod
+    def _transform_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+        ...
 
-    n_count: int = field(default=25000)
+    @property
+    def transformed_corpus(self) -> VectorizedCorpus:
+        return self._transformed_corpus
 
-    memory: dict = field(default_factory=dict)
-
-    def update(
-        self,
-        *,
-        corpus: VectorizedCorpus = None,
-        corpus_folder: str = None,
-        corpus_tag: str = None,
-        n_count: int = None,
-    ) -> "TrendsData":
-
-        if (corpus or self.corpus) is None:
-            raise ValueError("TrendsData: Corpus is NOT LOADED!")
-
-        self.n_count = n_count or self.n_count
-        self.corpus = (corpus or self.corpus).group_by_year()
-        self.corpus_folder = corpus_folder or self.corpus_folder
-        self.corpus_tag = corpus_tag or self.corpus_tag
-
-        self.compute_options = VectorizedCorpus.load_options(tag=self.corpus_tag, folder=self.corpus_folder)
-        self.goodness_of_fit = gof.compute_goddness_of_fits_to_uniform(
-            self.corpus, None, verbose=True, metrics=['l2_norm', 'slope']
-        )
-        self.most_deviating_overview = gof.compile_most_deviating_words(self.goodness_of_fit, n_count=self.n_count)
-        self.most_deviating = gof.get_most_deviating_words(
-            self.goodness_of_fit, 'l2_norm', n_count=self.n_count, ascending=False, abs_value=True
-        )
-        return self
-
-    def remember(self, **kwargs) -> "TrendsData":
-        self.memory.update(**kwargs)
-        return self
-
-    def get_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
-
-        if self.transformed_corpus is None:
-            self.transformed_corpus = self.corpus
-
-        if self.current_trends_opts.invalidates_corpus(opts):
-
-            transformed_corpus: VectorizedCorpus = self.corpus
-
-            if opts.tf_idf:
-                transformed_corpus = transformed_corpus.tf_idf()
-
-            transformed_corpus = transformed_corpus.group_by_period(period=opts.group_by)
-
-            if opts.normalize:
-                transformed_corpus = transformed_corpus.normalize_by_raw_counts()
-
-            self.transformed_corpus = transformed_corpus
-            self.current_trends_opts = opts.clone
-
-        return self.transformed_corpus
+    @property
+    def gof_data(self) -> GofData:
+        if self._gof_data is None:
+            self._gof_data = GofData.compute(self.corpus, n_count=self.n_count)
+        return self._gof_data
 
     def find_word_indices(self, opts: TrendsOpts) -> List[int]:
-        indices: List[int] = self.get_corpus(opts).find_matching_words_indices(
+        indices: List[int] = self._transform_corpus(opts).find_matching_words_indices(
             opts.words, opts.word_count, descending=opts.descending
         )
         return indices
 
     def find_words(self, opts: TrendsOpts) -> List[str]:
-        words: List[int] = self.get_corpus(opts).find_matching_words(
+        words: List[int] = self._transform_corpus(opts).find_matching_words(
             opts.words, opts.word_count, descending=opts.descending
         )
         return words
 
     def get_top_terms(self, n_count: int = 100, kind='token+count') -> pd.DataFrame:
-        top_terms = self.transformed_corpus.get_top_terms(category_column='category', n_count=n_count, kind=kind)
+        top_terms = self._transformed_corpus.get_top_terms(
+            category_column=self.category_column, n_count=n_count, kind=kind
+        )
         return top_terms
+
+    def transform(self, opts: TrendsOpts) -> "ITrendsData":
+
+        if self._transformed_corpus is not None:
+            if not self._trends_opts.invalidates_corpus(opts):
+                return self
+
+        self._transformed_corpus = self._transform_corpus(opts)
+        self._trends_opts = opts.clone
+        self._gof_data = None
+
+        return self
+
+    def reset(self) -> "ITrendsData":
+        self._transformed_corpus = None
+        self._trends_opts = TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
+        self._gof_data = None
+        return self
+
+
+class TrendsData(ITrendsData):
+    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_count: int = 100000):
+        super().__init__(corpus=corpus, corpus_folder=corpus_folder, corpus_tag=corpus_tag, n_count=n_count)
+
+    def _transform_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+
+        transformed_corpus: VectorizedCorpus = self.corpus
+
+        """ Normal word trends """
+        if opts.keyness == KeynessMetric.TF_IDF:
+            transformed_corpus = transformed_corpus.tf_idf()
+        elif opts.keyness == KeynessMetric.TF_normalized:
+            transformed_corpus = transformed_corpus.normalize_by_raw_counts()
+
+        transformed_corpus = transformed_corpus.group_by_time_period(
+            time_period_specifier=opts.group_by,
+            target_column_name=self.category_column,
+            fill_gaps=opts.fill_gaps,
+        )
+
+        if opts.normalize:
+            transformed_corpus = transformed_corpus.normalize_by_raw_counts()
+
+        return transformed_corpus
+
+
+class BundleTrendsData(ITrendsData):
+    def __init__(self, bundle: Bundle = None, n_count: int = 100000):
+        super().__init__(corpus=bundle.corpus, corpus_folder=bundle.folder, corpus_tag=bundle.tag, n_count=n_count)
+        self.bundle = bundle
+
+    def _transform_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+
+        transformed_corpus: VectorizedCorpus = self.bundle.to_keyness_corpus(
+            period_pivot=opts.group_by,
+            global_threshold=1,
+            keyness=opts.keyness,
+            pivot_column_name=self.category_column,
+            normalize=opts.normalize,
+            fill_gaps=opts.fill_gaps,
+        )
+
+        return transformed_corpus

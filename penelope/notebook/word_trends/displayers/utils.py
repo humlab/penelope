@@ -5,6 +5,15 @@ import panel as pn
 from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
 
 
+class PenelopeBugCheck(Exception):
+    pass
+
+
+def column_exists_guard(document_index: pd.DataFrame, column_name: str) -> None:
+    if column_name not in document_index.columns:
+        raise PenelopeBugCheck(f"expected '{column_name}' to be in {', '.join(document_index.columns)}")
+
+
 def get_year_category_ticks(categories: List[int], n_tick: int = 5) -> List[int]:
     """Gets ticks every n_tick years if category is year
     Returns all cateories if all values are either, lustrum and decade"""
@@ -27,6 +36,8 @@ def tabulator_widget(df: pd.DataFrame) -> pn.widgets.Tabulator:
 
     formatters = {
         'category': NumberFormatter(format='0'),
+        'time_period': NumberFormatter(format='0'),
+        'year': NumberFormatter(format='0'),
         'index': StringFormatter(),
     }
 

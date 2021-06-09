@@ -1,9 +1,9 @@
 import unittest
 
 import pandas as pd
-import penelope.corpus.dtm as dtm
 import penelope.corpus.tokenized_corpus as corpora
 import scipy
+from penelope.corpus import CorpusVectorizer
 from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 from tests.utils import create_tokens_reader
 
@@ -21,7 +21,7 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_corpus(self):
         reader = self.create_reader()
-        tokens_transform_opts = corpora.TokensTransformOpts(
+        transform_opts = corpora.TokensTransformOpts(
             only_any_alphanumeric=True,
             to_lower=True,
             remove_accents=False,
@@ -29,12 +29,12 @@ class Test_ChiSquare(unittest.TestCase):
             max_len=None,
             keep_numerals=False,
         )
-        corpus = corpora.TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
+        corpus = corpora.TokenizedCorpus(reader, transform_opts=transform_opts)
         return corpus
 
     def skip_test_chisquare(self):
         corpus = self.create_corpus()
-        v = dtm.CorpusVectorizer()
+        v = CorpusVectorizer()
         v_corpus = v.fit_transform(corpus, already_tokenized=True).group_by_year().slice_by_n_count(0)
         _ = scipy.stats.chisquare(
             v_corpus.bag_term_matrix.T.todense(), f_exp=None, ddof=0, axis=0

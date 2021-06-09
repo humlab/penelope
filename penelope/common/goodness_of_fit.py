@@ -1,4 +1,5 @@
 import collections
+from dataclasses import dataclass
 from typing import Dict, List
 
 import bokeh
@@ -6,7 +7,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from pandas.core.frame import DataFrame
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.utility import chunks
 from tqdm.auto import tqdm
 
@@ -23,6 +24,31 @@ from .distance_metrics import (
 
 class GoodnessOfFitComputeError(ValueError):
     ...
+
+
+@dataclass
+class GofData:
+
+    goodness_of_fit: pd.DataFrame = None
+    most_deviating_overview: pd.DataFrame = None
+    most_deviating: pd.DataFrame = None
+
+    @staticmethod
+    def compute(corpus: VectorizedCorpus, n_count: int) -> "GofData":
+
+        goodness_of_fit = compute_goddness_of_fits_to_uniform(corpus, None, verbose=True, metrics=['l2_norm', 'slope'])
+        most_deviating_overview = compile_most_deviating_words(goodness_of_fit, n_count=n_count)
+        most_deviating = get_most_deviating_words(
+            goodness_of_fit, 'l2_norm', n_count=n_count, ascending=False, abs_value=True
+        )
+
+        gof_data: GofData = GofData(
+            goodness_of_fit=goodness_of_fit,
+            most_deviating=most_deviating,
+            most_deviating_overview=most_deviating_overview,
+        )
+
+        return gof_data
 
 
 def get_gof_by_l2_norms(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
@@ -148,7 +174,7 @@ def compute_goddness_of_fits_to_uniform(
     df_gof = pd.DataFrame(
         {
             'token': [corpus.id2token[i] for i in range(0, dtm.shape[1])],
-            'word_count': [corpus.token_counter[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
+            'word_count': [corpus.term_frequency_mapping[corpus.id2token[i]] for i in range(0, dtm.shape[1])],
         }
     )
 

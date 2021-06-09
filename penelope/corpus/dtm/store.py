@@ -7,19 +7,17 @@ from typing import Dict, Mapping, Optional
 
 import numpy as np
 import scipy
-from penelope.utility import getLogger, read_json, write_json
+from penelope.utility import read_json, write_json
 
 from ..document_index import DocumentIndex
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
-
-logger = getLogger("penelope")
 
 
 def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
     token2id: Dict[str, int],
     document_index: DocumentIndex,
-    token_counter: Dict[str, int] = None,
+    term_frequency_mapping: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
     module = importlib.import_module(name="penelope.corpus.dtm.vectorized_corpus")
@@ -28,7 +26,7 @@ def create_corpus_instance(
         bag_term_matrix=bag_term_matrix,
         token2id=token2id,
         document_index=document_index,
-        token_counter=token_counter,
+        term_frequency_mapping=term_frequency_mapping,
     )
 
 
@@ -41,7 +39,7 @@ class StoreMixIn:
 
         The two files are stored in files with names based on the specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `token_counter`
+            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `term_frequency_mapping`
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
 
@@ -52,14 +50,14 @@ class StoreMixIn:
         folder : str, optional
             Target folder, by default './output'
         compressed : bool, optional
-            Specifies if matrix is store as .npz or .npy, by default .npz
+            Specifies if matrix is stored as .npz or .npy, by default .npz
 
         """
         tag = tag or time.strftime("%Y%m%d_%H%M%S")
 
         data = {
             'token2id': self.token2id,
-            'token_counter': self.token_counter,
+            'term_frequency_mapping': self.term_frequency_mapping,
             'document_index': self.document_index,
         }
         data_filename = StoreMixIn._data_filename(tag, folder)
@@ -105,7 +103,7 @@ class StoreMixIn:
 
         Two files are loaded based on specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `token_counter`
+            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `term_frequency_mapping`
             {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
 
 
@@ -126,8 +124,8 @@ class StoreMixIn:
             data = pickle.load(f)
 
         token2id: Mapping = data["token2id"]
-        document_index: DocumentIndex = data.get("document_index", data.get("document_index", None))
-        token_counter: dict = data.get("word_counts", data.get("token_counter", None))
+        document_index: DocumentIndex = data.get("document_index")
+        term_frequency_mapping: dict = data.get("term_frequency_mapping", data.get("token_counter", None))
         matrix_basename = StoreMixIn._matrix_filename(tag, folder)
 
         if os.path.isfile(matrix_basename + '.npz'):
@@ -136,13 +134,16 @@ class StoreMixIn:
             bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
 
         return create_corpus_instance(
-            bag_term_matrix, token2id=token2id, document_index=document_index, token_counter=token_counter
+            bag_term_matrix,
+            token2id=token2id,
+            document_index=document_index,
+            term_frequency_mapping=term_frequency_mapping,
         )
 
     @staticmethod
     def dump_options(*, tag: str, folder: str, options: Dict):
         json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
-        write_json(json_filename, options)
+        write_json(json_filename, options, default=lambda _: "<not serializable>")
 
     @staticmethod
     def load_options(*, tag: str, folder: str) -> Dict:
@@ -210,26 +211,3 @@ def load_corpus(
         v_corpus = v_corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
 
     return v_corpus
-
-
-# def load_cached_normalized_vectorized_corpus(tag, folder, n_count=10000, n_top=100000, keep_magnitude=True):
-
-#     year_cache_tag = "cached_year_{}_{}".format(tag, "km" if keep_magnitude else "")
-
-#     v_corpus = None
-
-#     if not StoreMixIn.dump_exists(tag=year_cache_tag, folder=folder):
-#         logger.info("Caching corpus grouped by year...")
-#         v_corpus = (
-#             StoreMixIn.load(tag=tag, folder=folder)
-#             .group_by_year()
-#             .normalize(axis=1, keep_magnitude=keep_magnitude)
-#             .dump(tag=year_cache_tag, folder=folder)
-#         )
-
-#     if v_corpus is None:
-#         v_corpus = (
-#             StoreMixIn.load(tag=year_cache_tag, folder=folder).slice_by_n_count(n_count).slice_by_n_top(n_top)
-#         )
-
-#     return v_corpus

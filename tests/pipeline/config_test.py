@@ -25,7 +25,7 @@ pipeline_payload:
     text_column: text
   pos_schema_name: Universal
   source: legal_instrument_corpus.zip
-tagged_tokens_filter_opts:
+filter_opts:
   data:
     is_alpha: null
     is_digit: null

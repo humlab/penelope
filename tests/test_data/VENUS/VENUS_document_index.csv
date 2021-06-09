@@ -1,6 +1,0 @@
-	category	filename	document_name	n_docs	n_raw_tokens	n_tokens	Pronoun	Noun	Verb	Adverb	Numeral	Adjective	Preposition	Conjunction	Delimiter	Other	year	document_id
-year_1945	1945	year_1945.txt	year_1945	1	4263.0	1886.0	752.0	1423.0	464.0	109.0	87.0	314.0	725.0	245.0	601.0	144.0	1945	0
-year_1958	1958	year_1958.txt	year_1958	1	1647.0	766.0	239.0	619.0	152.0	50.0	58.0	124.0	256.0	109.0	262.0	40.0	1958	1
-year_1978	1978	year_1978.txt	year_1978	1	729.0	336.0	90.0	242.0	95.0	25.0	9.0	82.0	103.0	70.0	133.0	13.0	1978	2
-year_1997	1997	year_1997.txt	year_1997	1	1269.0	532.0	157.0	398.0	135.0	54.0	34.0	172.0	183.0	104.0	179.0	32.0	1997	3
-year_2017	2017	year_2017.txt	year_2017	1	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2017	4

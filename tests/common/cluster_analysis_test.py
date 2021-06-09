@@ -1,16 +1,16 @@
 import numpy as np
 import pandas as pd
 import penelope.common.goodness_of_fit as gof
-import penelope.corpus.dtm as dtm
 import pytest
 from penelope.common.cluster_analysis import CorpusClusters, compute_clusters
+from penelope.corpus import VectorizedCorpus
 
 
 def create_vectorized_corpus():
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     document_index = pd.DataFrame({'year': [2013, 2013, 2014, 2014, 2014]})
-    corpus = dtm.VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
     return corpus
 
 

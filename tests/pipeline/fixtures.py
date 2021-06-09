@@ -18,7 +18,7 @@ def FakeComputeOptsSpacyCSV(
         target_folder="./tests/output",
         corpus_type=CorpusType.SpacyCSV,
         # pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
-        tokens_transform_opts=TokensTransformOpts(
+        transform_opts=TokensTransformOpts(
             extra_stopwords=[],
             keep_numerals=True,
             keep_symbols=True,
@@ -39,16 +39,17 @@ def FakeComputeOptsSpacyCSV(
             index_field=None,  # use filename
             as_binary=False,
         ),
-        extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             lemmatize=True,
             target_override=None,
             pos_includes='|NOUN|PROPN|VERB|',
             pos_paddings=None,
             pos_excludes='|PUNCT|EOL|SPACE|',
             passthrough_tokens=[],
+            block_tokens=[],
             append_pos=False,
         ),
-        tagged_tokens_filter_opts=PropertyValueMaskingOpts(
+        filter_opts=PropertyValueMaskingOpts(
             is_alpha=False,
             is_punct=False,
             is_digit=None,
@@ -61,9 +62,9 @@ def FakeComputeOptsSpacyCSV(
             context_width=4,
             concept={},
             ignore_concept=False,
+            partition_keys=['document_id'],
         ),
         count_threshold=1,
-        partition_keys=['year'],
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
             lowercase=False,
@@ -85,7 +86,7 @@ def FakeComputeOptsSparvCSV(
         corpus_filename=corpus_filename,
         target_folder="./tests/output",
         corpus_type=CorpusType.SparvCSV,
-        tokens_transform_opts=TokensTransformOpts(
+        transform_opts=TokensTransformOpts(
             to_lower=True,
             min_len=1,
             remove_stopwords=None,
@@ -100,13 +101,13 @@ def FakeComputeOptsSparvCSV(
             index_field=None,  # use filename
             as_binary=False,
         ),
-        extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             pos_includes=None,
             pos_excludes='|MAD|MID|PAD|',
             pos_paddings=None,
             lemmatize=False,
         ),
-        tagged_tokens_filter_opts=PropertyValueMaskingOpts(
+        filter_opts=PropertyValueMaskingOpts(
             is_alpha=False,
             is_punct=False,
             is_digit=None,
@@ -118,9 +119,9 @@ def FakeComputeOptsSparvCSV(
         context_opts=ContextOpts(
             concept=('jag',),
             context_width=2,
+            partition_keys=['document_id'],
         ),
         count_threshold=1,
-        partition_keys=['year'],
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
         ),

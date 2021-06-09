@@ -4,12 +4,14 @@ import functools
 import glob
 import inspect
 import itertools
+import json
 import logging
 import os
 import platform
 import re
 import time
 import uuid
+from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number
 from random import randrange
@@ -23,7 +25,7 @@ import scipy
 T = TypeVar('T')
 K = TypeVar('K')
 V = TypeVar('V')
-
+U = TypeVar('U')
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
 
@@ -542,6 +544,23 @@ def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
+def create_dataclass_instance_from_kwargs(cls: Type[U], **kwargs) -> U:
+    """Create an instance of `cls` assigning properties `kwargs`"""
+
+    if not is_dataclass(cls):
+        raise TypeError("can olnly create dataclass instances")
+
+    known_args = {k: v for k, v in kwargs.items() if k in cls.__annotations__}
+    unknown_args = {k: v for k, v in kwargs.items() if k not in cls.__annotations__}
+
+    instance: U = cls(**known_args)
+
+    for k, v in unknown_args.items():
+        setattr(instance, k, v)
+
+    return instance
+
+
 def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) -> str:
     # Create a regular expression  from the dictionary keys
     opts = dict(flags=re.IGNORECASE) if ignore_case else {}
@@ -562,3 +581,7 @@ def get_smiley() -> str:
         x = randrange(0, len(SMILEYS), 1)
         return SMILEYS[x]
     return "😪"
+
+
+def dictify(o: Any) -> dict:
+    return json.loads(json.dumps(o, default=lambda _: "<not serializable"))

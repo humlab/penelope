@@ -2,24 +2,22 @@ from __future__ import annotations
 
 import abc
 import os
-from collections import defaultdict
-from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
 
 import pandas as pd
 
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
+    Token2Id,
     consolidate_document_index,
     load_document_index,
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
-from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, strip_path_and_extension
-from penelope.utility.filename_utils import replace_path
+from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
 
 from .tagged_frame import TaggedFrame
 
@@ -46,6 +44,12 @@ class ContentType(IntEnum):
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
     TAGGED_ID_FRAME = 16
+    DOC_TERM_MATRIX = 17
+
+    CO_OCCURRENCE_DATA_FRAME_LEGACY = 18
+
+    CO_OCCURRENCE_DTM_DOCUMENT = 19
+    CO_OCCURRENCE_DTM_CORPUS = 20
 
 
 @dataclass
@@ -65,16 +69,23 @@ class DocumentPayload:
         self.content = content
         return self
 
+    def empty(self, content_type: ContentType) -> "DocumentPayload":
+        return self.update(content_type, None)
+
+    @property
+    def is_empty(self) -> bool:
+        return self.content is None
+
     def update_properties(self, **properties) -> "DocumentPayload":
         """Save document properties to property bag"""
         self.property_bag.update(properties)
         return self
 
     @property
-    def document_name(self):
+    def document_name(self) -> str:
         return strip_path_and_extension(self.filename)
 
-    def as_str(self):
+    def as_str(self) -> str:
         if self.content_type == ContentType.TEXT:
             return self.content
         if self.content_type == ContentType.TOKENS:
@@ -100,7 +111,7 @@ class PipelinePayload:
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
-    token2id: Mapping[str, int] = None
+    token2id: Token2Id = None
     effective_document_index: DocumentIndex = None
 
     _document_index_lookup: Mapping[str, Dict[str, Any]] = None
@@ -138,6 +149,12 @@ class PipelinePayload:
         for key, value in kwargs.items():
             self.memory_store[key] = value
         return self
+
+    def stored_opts(self, **extra_opts) -> dict:
+        opts: dict = {
+            k: v.props if hasattr(v, "props") else dictify(v) for k, v in self.memory_store.items() if v is not None
+        }
+        return {**self.props, **opts, **extra_opts}
 
     def set_reader_index(self, reader_index: DocumentIndex) -> "PipelinePayload":
         if self.document_index is None:
@@ -292,59 +309,3 @@ class ITask(abc.ABC):
 
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
-
-
-class Token2Id(MutableMapping):
-    """A token-to-id mapping (dictionary)"""
-
-    def __init__(self, store: Optional[Union[dict, defaultdict]] = None, lowercase:bool = True):
-        if isinstance(store, defaultdict):
-            self.store = store
-        elif isinstance(store, dict):
-            self.store = defaultdict(int, self.store)
-        else:
-            self.store = store or defaultdict()
-
-        self.store.default_factory = self.store.__len__
-        self.lowercase: bool = lowercase
-
-
-    def __getitem__(self, key):
-        return self.store[self._keytransform(key)]
-
-    def __setitem__(self, key, value):
-        self.store[self._keytransform(key)] = value
-
-    def __delitem__(self, key):
-        del self.store[self._keytransform(key)]
-
-    def __iter__(self):
-        return iter(self.store)
-
-    def __len__(self):
-        return len(self.store)
-
-    def _keytransform(self, key):
-        return key
-
-    def ingest(self, tokens: Iterator[str]) -> "Token2Id":
-
-        if self.lowercase:
-            if isinstance(tokens, pd.core.api.Series):
-                tokens = pd.core.api.Series.str.lower()
-            else:
-                tokens = (token.lower() for token in tokens)
-
-        for token in tokens:
-            _ = self.store[token]
-        return self
-
-    def close(self) -> "Token2Id":
-        self.store.default_factory = None
-
-    def open(self) -> "Token2Id":
-        self.store.default_factory = self.__len__
-        return self
-
-    def id2token(self) -> dict:
-        return {v: k for k, v in self.store.items()}

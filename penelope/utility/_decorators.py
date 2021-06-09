@@ -27,6 +27,27 @@ def _deprecated_class(cls):
     return Deprecated
 
 
+def do_not_use(obj):
+    if isinstance(obj, (type,)):
+        return _raise_deprecated_class(cls=obj)
+    return _raise_deprecated_function(f=obj)
+
+
+def _raise_deprecated_function(f):
+    def _deprecated(*args, **kwargs):
+        raise DeprecationWarning(f"Method '{f.__name__}' is no longer valid")
+
+    return _deprecated
+
+
+def _raise_deprecated_class(cls):
+    class Deprecated(cls):
+        def __init__(self, *args, **kwargs):
+            raise DeprecationWarning(f"Class '{cls.__name__}' is deprecated")
+
+    return Deprecated
+
+
 def try_catch(func, exceptions=None, suppress=False, nice=False):
     """
     Surrounds the function with a try-except block

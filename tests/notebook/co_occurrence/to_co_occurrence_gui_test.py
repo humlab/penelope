@@ -64,9 +64,9 @@ def test_generate_cli_opts():
     compute_opts = interface.ComputeOpts(
         corpus_type=interface.CorpusType.SparvCSV,
         corpus_filename="apa.txt",
-        target_folder='/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA',
+        target_folder='./tests/output',
         corpus_tag='APA',
-        tokens_transform_opts=TokensTransformOpts(
+        transform_opts=TokensTransformOpts(
             only_alphabetic=False,
             only_any_alphanumeric=False,
             to_lower=True,
@@ -94,16 +94,17 @@ def test_generate_cli_opts():
             sep='\t',
             quoting=3,
         ),
-        extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+        extract_opts=ExtractTaggedTokensOpts(
             lemmatize=True,
             target_override=None,
             pos_includes="NN",
             pos_excludes=None,
             pos_paddings="MID|MAD|PAD",
             passthrough_tokens=[],
+            block_tokens=['/'],
             append_pos=False,
         ),
-        tagged_tokens_filter_opts=PropertyValueMaskingOpts(),
+        filter_opts=PropertyValueMaskingOpts(),
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
             lowercase=False,
@@ -119,8 +120,8 @@ def test_generate_cli_opts():
             context_width=1,
             concept=["apa"],
             ignore_concept=False,
+            partition_keys=['document_id'],
         ),
-        partition_keys=['year'],
         force=False,
     )
 

@@ -6,7 +6,7 @@ checkpoint_opts:
     content_type_code: 1
     sep: "\t"
     quoting: 3
-    document_index_name: "document_index.csv"
+    document_index_name: "tranströmer.csv"
     document_index_sep: "\t"
     text_column: token
     lemma_column: baseform
@@ -27,7 +27,7 @@ pipeline_payload:
     pos_column: pos
     sparv_version: 4
   pos_schema_name: SUC
-tagged_tokens_filter_opts:
+filter_opts:
   data:
     is_alpha: null
     is_digit: null

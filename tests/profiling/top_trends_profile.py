@@ -1,7 +1,7 @@
 import os
 
 from penelope.common.curve_fit import pchip_spline  # , rolling_average_smoother
-from penelope.corpus.dtm import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends.displayers import TopTokensDisplayer
 
 DEFAULT_SMOOTHERS = [pchip_spline]

@@ -90,7 +90,7 @@ def _process_document_file(args: List[Tuple]) -> DocumentPayload:
     )
 
 
-def _process_document_with_read(args: List[Tuple]) -> DocumentPayload:
+def _process_document_with_read(args: Tuple) -> DocumentPayload:
 
     filename, source, serializer, checkpoint_opts = args
 

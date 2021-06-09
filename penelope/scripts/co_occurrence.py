@@ -5,7 +5,7 @@ import click
 import penelope.notebook.interface as interface
 import penelope.workflows as workflows
 from loguru import logger
-from penelope.co_occurrence import ContextOpts, filename_to_folder_and_tag
+from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.convert import parse_phrases
@@ -150,18 +150,23 @@ def process_co_ocurrence(
     force: bool = False,
 ):
     try:
-        output_folder, output_tag = filename_to_folder_and_tag(output_filename)
+        output_folder, output_tag = to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)
+
         if pos_excludes is None:
             pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
+
+        if pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
+            pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
+            logger.info(f"PoS paddings expanded to: {pos_paddings}")
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
             corpus_filename=input_filename,
             target_folder=output_folder,
             corpus_tag=output_tag,
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 to_lower=to_lowercase,
                 to_upper=False,
                 min_len=min_word_length,
@@ -177,7 +182,7 @@ def process_co_ocurrence(
                 only_any_alphanumeric=only_any_alphanumeric,
             ),
             text_reader_opts=corpus_config.text_reader_opts,
-            extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+            extract_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
                 pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,
@@ -193,9 +198,9 @@ def process_co_ocurrence(
                 context_width=context_width,
                 concept=(concept or []),
                 ignore_concept=no_concept,
+                partition_keys=partition_key,
             ),
-            tagged_tokens_filter_opts=PropertyValueMaskingOpts(),
-            partition_keys=partition_key,
+            filter_opts=PropertyValueMaskingOpts(),
             force=force,
         )
 

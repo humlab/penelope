@@ -1,8 +1,16 @@
+import fnmatch
+import zipfile
+from io import StringIO
 from numbers import Number
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from loguru import logger
+
+from .filename_utils import replace_extension
+
+DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
 
 
 def setup_pandas():
@@ -170,3 +178,36 @@ def try_split_column(
         df.drop(columns=source_name, inplace=True)
 
     return df
+
+
+def pandas_to_csv_zip(
+    zip_filename: str, dfs: Union[DataFrameFilenameTuple, List[DataFrameFilenameTuple]], extension='csv', **to_csv_opts
+):
+    if not isinstance(dfs, (list, tuple)):
+        raise ValueError("expected tuple or list of tuples")
+
+    if isinstance(dfs, (tuple,)):
+        dfs = [dfs]
+
+    with zipfile.ZipFile(zip_filename, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for (df, filename) in dfs:
+            if not isinstance(df, pd.core.frame.DataFrame) or not isinstance(filename, str):
+                raise ValueError(
+                    f"Expected Tuple[pd.DateFrame, filename: str], found Tuple[{type(df)}, {type(filename)}]"
+                )
+            filename = replace_extension(filename=filename, extension=extension)
+            data_str = df.to_csv(**to_csv_opts)
+            zf.writestr(filename, data=data_str)
+
+
+def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> Dict:
+
+    data = dict()
+    with zipfile.ZipFile(zip_filename, mode='r') as zf:
+        for filename in zf.namelist():
+            if not fnmatch.fnmatch(filename, pattern):
+                logger.info(f"skipping {filename} down't match {pattern} ")
+                continue
+            df = pd.read_csv(StringIO(zf.read(filename).decode(encoding='utf-8')), **read_csv_opts)
+            data[filename] = df
+    return data

@@ -13,7 +13,14 @@ from .document_index import (
     update_document_index_properties,
     update_document_index_token_counts,
 )
-from .dtm import CorpusVectorizer, VectorizedCorpus, VectorizeOpts, load_corpus
+from .dtm import (
+    CorpusVectorizer,
+    IVectorizedCorpus,
+    VectorizedCorpus,
+    VectorizeOpts,
+    find_matching_words_in_vocabulary,
+    load_corpus,
+)
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers.interfaces import ExtractTaggedTokensOpts, PhraseSubstitutions, TextReaderOpts
 from .readers.text_transformer import TextTransformOpts
@@ -26,6 +33,7 @@ from .sparv_corpus import (
 )
 from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
+from .token2id import Token2Id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
 from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer, TokensTransformOpts
 from .transforms import (

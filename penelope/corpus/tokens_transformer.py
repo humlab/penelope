@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
+import numpy as np
+import pandas as pd
 import textacy.preprocessing.remove as textacy_remove
 
 from . import transforms
@@ -14,17 +16,18 @@ from . import transforms
 @dataclass
 class TokensTransformOpts:
 
-    only_alphabetic: bool = False
-    only_any_alphanumeric: bool = False
     to_lower: bool = False
     to_upper: bool = False
+
+    only_alphabetic: bool = False
+    only_any_alphanumeric: bool = False
     min_len: int = 1
-    max_len: int = None
+    max_len: Optional[int] = None
     remove_accents: bool = False
     remove_stopwords: bool = False
-    stopwords: Iterable[str] = None
-    extra_stopwords: List[str] = None
-    language: str = "swedish"
+    stopwords: Optional[Iterable[str]] = None
+    extra_stopwords: Optional[List[str]] = None
+    language: Optional[str] = "swedish"
     keep_numerals: bool = True
     keep_symbols: bool = True
 
@@ -34,6 +37,28 @@ class TokensTransformOpts:
     @property
     def props(self):
         return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
+
+    def mask(self, tokens: pd.Series) -> np.ndarray:
+        mask = np.repeat(True, len(tokens))
+        if self.min_len > 1:
+            mask &= tokens.str.len() >= self.min_len
+        if self.max_len:
+            mask &= tokens.str.len() <= self.max_len
+        if self.only_alphabetic:
+            mask &= tokens.apply(lambda t: all(c in transforms.ALPHABETIC_CHARS for c in t))
+        if self.only_any_alphanumeric:
+            mask &= tokens.apply(lambda t: any(c.isalnum() for c in t))
+        if self.remove_accents:
+            # FIXME Not implemented
+            pass
+        if self.remove_stopwords:
+            mask &= ~tokens.isin(transforms.load_stopwords(self.stopwords, self.extra_stopwords))
+        if not self.keep_numerals:
+            mask &= ~tokens.str.isnumeric()
+        if not self.keep_symbols:
+            mask &= ~tokens.apply(lambda t: all(c in transforms.SYMBOLS_CHARS for c in t))
+        mask &= tokens != ''
+        return mask
 
 
 DEFAULT_TOKENS_TRANSFORM_OPTIONS = TokensTransformOpts().props
@@ -151,6 +176,6 @@ class TokensTransformerMixin:
 class TokensTransformer(TokensTransformerMixin, TokensTransformerBase):
     """Transforms applied on tokenized text"""
 
-    def __init__(self, tokens_transform_opts: TokensTransformOpts):
+    def __init__(self, transform_opts: TokensTransformOpts):
         TokensTransformerBase.__init__(self)
-        self.ingest(tokens_transform_opts)
+        self.ingest(transform_opts)

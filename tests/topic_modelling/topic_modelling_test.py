@@ -8,7 +8,7 @@ import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.scripts.compute_topic_model import run_model
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
-from tests.test_data.tranströmer_corpus import TranströmerCorpus
+from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
 from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, TOPIC_MODELING_OPTS, create_inferred_model
@@ -249,8 +249,13 @@ def test_load_inferred_topics_data(method):
 
     # Assert
     assert inferred_topics_data is not None
+
     assert inferred_topics_data.dictionary.equals(test_inferred_topics_data.dictionary)
-    assert inferred_topics_data.document_index.equals(test_inferred_topics_data.document_index)
+
+    pd.testing.assert_frame_equal(
+        inferred_topics_data.document_index, test_inferred_topics_data.document_index, check_dtype=False
+    )
+
     assert inferred_topics_data.topic_token_overview.round(5).equals(
         test_inferred_topics_data.topic_token_overview.round(5)
     )
@@ -269,7 +274,7 @@ def test_load_inferred_topics_data(method):
         .all()
     )
 
-    shutil.rmtree(target_folder)
+    shutil.rmtree(target_folder, ignore_errors=True)
 
 
 def test_run_cli():

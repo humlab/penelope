@@ -1,5 +1,7 @@
+import pathlib
+
 import pytest
-from penelope.pipeline.interfaces import Token2Id
+from penelope.corpus import Token2Id
 
 
 def test_interfaces_token2id_get():
@@ -41,9 +43,24 @@ def test_interfaces_token2id_close():
 
 def test_interfaces_token2id_reverse():
 
-    token2id = Token2Id()
+    token2id: Token2Id = Token2Id()
 
-    id2token = token2id.ingest(['apa', 'banan', 'soffa']).id2token()
+    id2token = token2id.ingest(['apa', 'banan', 'soffa']).id2token
     assert id2token[0] == 'apa'
     assert id2token[1] == 'banan'
     assert id2token[2] == 'soffa'
+
+
+def test_interfaces_token2id_store():
+
+    filename: str = './tests/output/test_interfaces_token2id_store.zip'
+    token2id = Token2Id()
+
+    token2id.ingest(['apa', 'banan', 'soffa'])
+    token2id.store(filename)
+
+    assert pathlib.Path(filename).exists()
+
+    token2id_loaded: Token2Id = Token2Id.load(filename)
+
+    assert token2id.data == token2id_loaded.data

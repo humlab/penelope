@@ -52,7 +52,8 @@ class StatsMixIn:
         """
         categories = sorted(self.document_index[category_column].unique().tolist())
         indicies_groups = {
-            category: self.document_index[(self.document_index.category == category)].index for category in categories
+            category: self.document_index[(self.document_index[category_column] == category)].index
+            for category in categories
         }
         data = {
             str(category): self.get_top_n_words(n=n_count, indices=indicies_groups[category])
@@ -128,10 +129,13 @@ class StatsMixIn:
         Returns
         -------
         Dict[str, int]
-            Most frequent words and their counts, subset of dict `token_counter`
+            Most frequent words and their counts, subset of dict `term_frequency_mapping`
 
         """
-        tokens = {w: self.token_counter[w] for w in nlargest(n_top, self.token_counter, key=self.token_counter.get)}
+        tokens = {
+            w: self.term_frequency_mapping[w]
+            for w in nlargest(n_top, self.term_frequency_mapping, key=self.term_frequency_mapping.get)
+        }
         return tokens
 
     def stats(self: IVectorizedCorpusProtocol):
@@ -196,9 +200,10 @@ class StatsMixIn:
     ) -> List[str]:
         """Returns the `n_top` globally most frequent word in `tokens`"""
         words = list(words)
+        n_top = n_top or len(words)
         if len(words) < n_top:
             return words
-        token_counts = [self.token_counter.get(w, 0) for w in words]
+        token_counts = [self.term_frequency_mapping.get(w, 0) for w in words]
         most_frequent_words = [words[x] for x in np.argsort(token_counts)[-n_top:]]
         if descending:
             most_frequent_words = list(sorted(most_frequent_words, reverse=descending))

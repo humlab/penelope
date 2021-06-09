@@ -5,10 +5,10 @@ from io import StringIO
 from os.path import basename
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, load_document_index
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index
 from penelope.utility import assert_that_path_exists, filenames_satisfied_by, getLogger, path_of, zip_utils
 
-from ..interfaces import DocumentPayload, PipelineError, Token2Id
+from ..interfaces import DocumentPayload, PipelineError
 from .interface import (
     CHECKPOINT_OPTS_FILENAME,
     DICTIONARY_FILENAME,
@@ -50,7 +50,7 @@ def store_checkpoint(
             zf.writestr(document_index_name, data=document_index.to_csv(sep=document_index_sep, header=True))
 
         if token2id is not None:
-            zf.writestr(DICTIONARY_FILENAME, data=json.dumps(token2id.store))
+            zf.writestr(DICTIONARY_FILENAME, data=json.dumps(token2id.data))
 
 
 class CheckpointReader(zipfile.ZipFile):
@@ -91,7 +91,7 @@ class CheckpointReader(zipfile.ZipFile):
         if self.document_index_name not in self.namelist():
             return None
 
-        data_str = zip_utils.read(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
+        data_str = zip_utils.read_file_content(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
         document_index = load_document_index(StringIO(data_str), sep=self.checkpoint_opts.document_index_sep)
         return document_index
 

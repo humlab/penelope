@@ -126,24 +126,24 @@ class ExtractPipeline:
     ) -> ExtractPipeline:
         return self.add(PoSFilter(include_pos=include_pos, replace_pos=replace_pos, exclude_pos=exclude_pos))
 
-    def ingest_transform_opts(self, tokens_transform_opts: TokensTransformOpts) -> ExtractPipeline:
+    def ingest_transform_opts(self, transform_opts: TokensTransformOpts) -> ExtractPipeline:
 
-        if not tokens_transform_opts.keep_numerals:
+        if not transform_opts.keep_numerals:
             self.ingest(filter_nums=True)
 
-        if tokens_transform_opts.remove_stopwords:
-            self.remove_stopwords(tokens_transform_opts.extra_stopwords)
+        if transform_opts.remove_stopwords:
+            self.remove_stopwords(transform_opts.extra_stopwords)
 
-        if tokens_transform_opts.min_len and tokens_transform_opts.min_len > 1:
-            self.add(MinCharactersFilter(min_length=tokens_transform_opts.min_len))
+        if transform_opts.min_len and transform_opts.min_len > 1:
+            self.add(MinCharactersFilter(min_length=transform_opts.min_len))
 
-        if tokens_transform_opts.max_len:
-            self.add(MaxCharactersFilter(max_length=tokens_transform_opts.max_len))
+        if transform_opts.max_len:
+            self.add(MaxCharactersFilter(max_length=transform_opts.max_len))
 
-        if tokens_transform_opts.to_lower:
+        if transform_opts.to_lower:
             self.add(TransformTask(transformer=str.lower))
 
-        if tokens_transform_opts.to_upper:
+        if transform_opts.to_upper:
             self.add(TransformTask(transformer=str.upper))
 
         # only_alphabetic: bool = False
@@ -344,7 +344,7 @@ def extract_document_tokens(
     spacy_docs: Iterable[Doc],
     document_index: DocumentIndex,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
+    transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
 ) -> Iterable[Tuple[str, Iterable[str]]]:
 
@@ -356,7 +356,7 @@ def extract_document_tokens(
             replace_pos=extract_tokens_opts.replace_pos,
             exclude_pos=extract_tokens_opts.pos_excludes,
         )
-        .ingest_transform_opts(tokens_transform_opts)
+        .ingest_transform_opts(transform_opts)
         .ingest(**extract_args)
         .process()
     )
@@ -370,7 +370,7 @@ def vectorize_textacy_corpus(
     spacy_docs: Iterable[Doc],
     document_index: DocumentIndex,
     extract_tokens_opts: ExtractTaggedTokensOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
+    transform_opts: TokensTransformOpts = None,
     extract_args: Dict[str, Any] = None,
     vectorizer_args=None,
 ):
@@ -378,7 +378,7 @@ def vectorize_textacy_corpus(
         spacy_docs=spacy_docs,
         document_index=document_index,
         extract_tokens_opts=extract_tokens_opts,
-        tokens_transform_opts=tokens_transform_opts,
+        transform_opts=transform_opts,
         extract_args=extract_args,
     )
 

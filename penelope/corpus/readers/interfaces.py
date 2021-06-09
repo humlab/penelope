@@ -25,6 +25,8 @@ class TextReaderOpts:
     as_binary: Optional[bool] = False
     sep: Optional[str] = field(default='\t')
     quoting: Optional[int] = csv.QUOTE_NONE
+    n_processes: int = 1
+    n_chunksize: int = 2
 
     @property
     def props(self) -> dict:
@@ -36,10 +38,17 @@ class TextReaderOpts:
             as_binary=self.as_binary,
             sep=self.sep,
             quoting=self.quoting,
+            n_processes=self.n_processes,
+            n_chunksize=self.n_chunksize,
         )
 
     def copy(self, **kwargs) -> TextReaderOpts:
         return TextReaderOpts(**{**self.props, **kwargs})
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
 
 PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
@@ -50,7 +59,7 @@ class ExtractTaggedTokensOpts:
 
     lemmatize: bool
 
-    target_override: str = None
+    target_override: Optional[str] = None
 
     """ These PoS define the tokens of interest """
     pos_includes: str = ''
@@ -59,15 +68,17 @@ class ExtractTaggedTokensOpts:
     pos_excludes: str = ''
 
     """ The PoS define tokens that are replaced with a dummy marker `*` """
-    pos_paddings: str = None
+    pos_paddings: Optional[str] = None
     pos_replace_marker: str = '*'
 
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
 
-    phrases: PhraseSubstitutions = None
+    phrases: Optional[PhraseSubstitutions] = None
 
     to_lowercase: bool = False
+
+    block_tokens: List[str] = field(default_factory=list)
 
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
@@ -83,6 +94,11 @@ class ExtractTaggedTokensOpts:
             return set()
         return set(self.passthrough_tokens)
 
+    def get_block_tokens(self) -> Set[str]:
+        if self.block_tokens is None:
+            return set()
+        return set(self.block_tokens)
+
     @property
     def props(self):
         return dict(
@@ -93,6 +109,7 @@ class ExtractTaggedTokensOpts:
             pos_paddings=self.pos_paddings,
             pos_replace_marker=self.pos_replace_marker,
             passthrough_tokens=list(self.passthrough_tokens or []),
+            block_tokens=list(self.block_tokens or []),
             append_pos=self.append_pos,
             phrases=None if self.phrases is None else list(self.phrases),
             to_lowercase=self.to_lowercase,

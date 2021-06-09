@@ -14,7 +14,7 @@ checkpoint_opts:
     extra_columns: []
     custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
     deserialize_in_parallel: true
-    deserialize_processes: 6
+    deserialize_processes: 4
     deserialize_chunksize: 4
     index_column: null
 pipelines:
@@ -32,7 +32,7 @@ pipeline_payload:
     lemma_column: baseform
     pos_column: pos
   pos_schema_name: SUC
-tagged_tokens_filter_opts:
+filter_opts:
 text_reader_opts:
   as_binary: false
   filename_fields:

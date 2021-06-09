@@ -5,6 +5,7 @@ import glob
 import json
 import os
 import pathlib
+import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
@@ -45,7 +46,7 @@ class CorpusConfig:
     corpus_pattern: str = field(default="*.zip")
     checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None
+    filter_opts: PropertyValueMaskingOpts = None
     pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = field(default="english")
@@ -89,7 +90,7 @@ class CorpusConfig:
         return filenames
 
     @staticmethod
-    def load(path: str) -> "CorpusConfig":
+    def load(path: str, source: Optional[str] = None) -> "CorpusConfig":
         """Reads and deserializes a CorpusConfig from `path`"""
         with open(path, "r") as fp:
             if path.endswith('yaml') or path.endswith('yml'):
@@ -97,6 +98,8 @@ class CorpusConfig:
             else:
                 config_dict: dict = json.load(fp)
         deserialized_config = CorpusConfig.dict_to_corpus_config(config_dict)
+        if source is not None:
+            deserialized_config.pipeline_payload.source = source
         return deserialized_config
 
     @staticmethod
@@ -112,10 +115,10 @@ class CorpusConfig:
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
 
-        if config_dict.get('tagged_tokens_filter_opts', None) is not None:
-            opts = config_dict['tagged_tokens_filter_opts']
+        if config_dict.get('filter_opts', None) is not None:
+            opts = config_dict['filter_opts']
             if opts.get('data', None) is not None:
-                config_dict['tagged_tokens_filter_opts'] = PropertyValueMaskingOpts(**opts['data'])
+                config_dict['filter_opts'] = PropertyValueMaskingOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
@@ -152,3 +155,18 @@ class CorpusConfig:
         """Replaces (any) existing source path specification for corpus/index to `path`"""
         self.pipeline_payload.folders(path, method=method)
         return self
+
+    @staticmethod
+    def tokenized_corpus(language: str = "swedish") -> CorpusConfig:
+        config: CorpusConfig = CorpusConfig(
+            corpus_name=uuid.uuid1(),
+            corpus_type=CorpusType.Tokenized,
+            corpus_pattern=None,
+            checkpoint_opts=None,
+            text_reader_opts=None,
+            filter_opts=None,
+            pipelines=None,
+            pipeline_payload=interfaces.PipelinePayload(),
+            language=language,
+        )
+        return config

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, List, Mapping, Tuple, Union
 
 import more_itertools
+import numpy as np
 import pandas as pd
 from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 from sklearn.feature_extraction.text import CountVectorizer
@@ -124,7 +125,7 @@ class CorpusVectorizer:
                 seen_document_names.append(name)
                 yield terms
 
-        self.vectorizer = CountVectorizer(**vectorizer_opts)
+        self.vectorizer = CountVectorizer(**vectorizer_opts, dtype=np.int32)
         self.vectorizer_opts = vectorizer_opts
 
         bag_term_matrix = self.vectorizer.fit_transform(terms_stream())

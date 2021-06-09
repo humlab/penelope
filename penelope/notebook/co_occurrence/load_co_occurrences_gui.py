@@ -108,7 +108,7 @@ class LoadGUI:
 @debug_view.capture(clear_output=CLEAR_OUTPUT)
 def create_load_gui(
     data_folder: str,
-    filename_pattern: str = co_occurrence.CO_OCCURRENCE_FILENAME_PATTERN,
+    filename_pattern: str = co_occurrence.FILENAME_PATTERN,
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> "LoadGUI":
 
@@ -127,7 +127,7 @@ def load_co_occurrence_bundle(filename: str) -> co_occurrence.Bundle:
         if not filename or not os.path.isfile(filename):
             raise ValueError("Please select co-occurrence file")
 
-        bundle = co_occurrence.load_bundle(filename)
+        bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
         logger.info("co-occurrence loaded")
         return bundle
     except (ValueError, FileNotFoundError, PermissionError) as ex:

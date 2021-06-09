@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from penelope.co_occurrence import to_dataframe
+from penelope.co_occurrence import term_term_matrix_to_co_occurrences
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import PandasCorpusReader
 
@@ -18,7 +18,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     def create_corpus(self):
         df = self.create_test_dataframe()
         reader = PandasCorpusReader(df)
-        corpus = TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts())
+        corpus = TokenizedCorpus(reader, transform_opts=TokensTransformOpts())
         return corpus
 
     def test_corpus_token_stream(self):
@@ -39,7 +39,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     def test_processed_corpus_token_stream(self):
         df = self.create_test_dataframe()
         reader = PandasCorpusReader(df)
-        corpus = TokenizedCorpus(reader, tokens_transform_opts=TokensTransformOpts())
+        corpus = TokenizedCorpus(reader, transform_opts=TokensTransformOpts())
         result = [x for x in corpus]
         expected = [
             ('document_0.txt', ['A', 'B', 'C']),
@@ -51,19 +51,19 @@ class Test_DataFrameVectorize(unittest.TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def create_simple_test_corpus(self, tokens_transform_opts: TokensTransformOpts):
+    def create_simple_test_corpus(self, transform_opts: TokensTransformOpts):
         data = [
             (2000, 'Detta är en mening med 14 token, 3 siffror och 2 symboler.'),
             (2000, 'Är det i denna mening en mening?'),
         ]
         df = pd.DataFrame(data, columns=['year', 'txt'])
         reader = PandasCorpusReader(df)
-        corpus = TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
+        corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
         return corpus
 
     def test_tokenized_document_where_symbols_are_filtered_out(self):
         corpus = self.create_simple_test_corpus(
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 keep_symbols=False,
                 only_any_alphanumeric=True,
                 to_lower=False,
@@ -87,7 +87,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_tokenized_document_where_symbols_and_numerals_are_filtered_out(self):
         corpus = self.create_simple_test_corpus(
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 keep_symbols=False,
                 only_any_alphanumeric=True,
                 to_lower=False,
@@ -107,7 +107,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
 
     def test_tokenized_document_in_lowercase_where_symbols_and_numerals_and_one_letter_words_are_filtered_out(self):
         corpus = self.create_simple_test_corpus(
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 keep_symbols=False,
                 only_any_alphanumeric=True,
                 to_lower=True,
@@ -130,7 +130,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     ):
         stopwords = {'är', 'en', 'med', 'och', 'det', 'detta', 'denna'}
         corpus = self.create_simple_test_corpus(
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 keep_symbols=False,
                 only_any_alphanumeric=True,
                 to_lower=True,
@@ -153,7 +153,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         reader = PandasCorpusReader(self.create_test_dataframe())
         corpus = TokenizedCorpus(
             reader,
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 only_any_alphanumeric=False,
                 to_lower=False,
                 remove_accents=False,
@@ -177,7 +177,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
         corpus = TokenizedCorpus(
             reader,
             # Pre-compute transform options:
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 only_any_alphanumeric=False,
                 to_lower=False,
                 remove_accents=False,
@@ -190,28 +190,18 @@ class Test_DataFrameVectorize(unittest.TestCase):
         term_term_matrix = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).co_occurrence_matrix()
 
         # Act
-        coo_df = to_dataframe(
-            term_term_matrix, corpus.id2token, corpus.document_index, ignore_pad=None, transform_opts=None
-        )
+        id2w = corpus.id2token.get
+        co_occurrences = term_term_matrix_to_co_occurrences(term_term_matrix, threshold_count=1, ignore_ids=set())
+        co_occurrences['w1'] = co_occurrences.w1_id.apply(id2w)
+        co_occurrences['w2'] = co_occurrences.w2_id.apply(id2w)
 
         # Assert
-        assert 2 == int(coo_df[((coo_df.w1 == 'A') & (coo_df.w2 == 'B'))].value)
-        assert 0 == len(coo_df[((coo_df.w1 == 'C') & (coo_df.w2 == 'F'))])
-
-        coo_df2 = to_dataframe(
-            term_term_matrix,
-            corpus.id2token,
-            corpus.document_index,
-            ignore_pad=None,
-            # Post-compute transform options:
-            transform_opts=TokensTransformOpts(language="swedish", remove_stopwords=True, extra_stopwords={"A"}),
-        )
-
-        assert len(coo_df2) <= len(coo_df)
+        assert 2 == int(co_occurrences[((co_occurrences.w1 == 'A') & (co_occurrences.w2 == 'B'))].value)
+        assert 0 == len(co_occurrences[((co_occurrences.w1 == 'C') & (co_occurrences.w2 == 'F'))])
 
     def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted(self):
         corpus = self.create_simple_test_corpus(
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 keep_symbols=False,
                 only_any_alphanumeric=True,
                 to_lower=True,
@@ -228,7 +218,7 @@ class Test_DataFrameVectorize(unittest.TestCase):
     def test_tokenized_document_token_counts_is_not_empty_if_enumerable_is_exhausted(self):
         # Note: Symbols are always removed by reader - hence "keep_symbols" filter has no effect
         corpus = self.create_simple_test_corpus(
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 keep_symbols=False,
                 only_any_alphanumeric=True,
                 to_lower=True,

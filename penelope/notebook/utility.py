@@ -13,7 +13,7 @@ from loguru import logger
 
 # pylint: disable=too-many-ancestors
 
-CLEAR_OUTPUT = True
+CLEAR_OUTPUT = False
 
 
 def create_js_download(df: pd.DataFrame, filename='results.csv', **to_csv_opts) -> Javascript:

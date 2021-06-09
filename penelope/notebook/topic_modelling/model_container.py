@@ -1,3 +1,5 @@
+from typing import Optional
+
 import penelope.topic_modelling as topic_modelling
 
 
@@ -15,8 +17,8 @@ class TopicModelContainer:
         _inferred_data: topic_modelling.InferredModel = None,
         _inferred_topics: topic_modelling.InferredTopicsData = None,
     ):
-        self._inferred_data: topic_modelling.InferredModel = None
-        self._inferred_topics: topic_modelling.InferredTopicsData = None
+        self._inferred_data: topic_modelling.InferredModel = _inferred_data
+        self._inferred_topics: topic_modelling.InferredTopicsData = _inferred_topics
 
     @staticmethod
     def singleton():
@@ -24,7 +26,9 @@ class TopicModelContainer:
         return TopicModelContainer._singleton
 
     def set_data(
-        self, _inferred_data: topic_modelling.InferredModel, _inferred_topics: topic_modelling.InferredTopicsData
+        self,
+        _inferred_data: Optional[topic_modelling.InferredModel],
+        _inferred_topics: Optional[topic_modelling.InferredTopicsData],
     ):
         """ Fix missing document attribute n_terms """
         if 'n_terms' not in _inferred_topics.document_index.columns:

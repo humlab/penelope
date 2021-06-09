@@ -364,7 +364,7 @@ class BaseGUI:
                 _pos_widget.observe(self.pos_select_update, 'value')
 
     @property
-    def tokens_transform_opts(self) -> TokensTransformOpts:
+    def transform_opts(self) -> TokensTransformOpts:
 
         opts = TokensTransformOpts(
             keep_numerals=True,
@@ -389,20 +389,26 @@ class BaseGUI:
         return opts
 
     @property
-    def extract_tagged_tokens_opts(self) -> ExtractTaggedTokensOpts:
+    def extract_opts(self) -> ExtractTaggedTokensOpts:
+
+        # if ["PASSTHROUGH"] in self._pos_paddings.value:
+        #    pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
+        #    logger.info(f"PoS paddings expanded to: {pos_paddings}")
+
         return ExtractTaggedTokensOpts(
             pos_includes=f"|{'|'.join(better_flatten(self._pos_includes.value))}|",
             pos_paddings=f"|{'|'.join(better_flatten(self._pos_paddings.value))}|",
             pos_excludes=f"|{'|'.join(better_flatten(self._pos_excludes.value))}|",
             lemmatize=self._lemmatize.value,
-            passthrough_tokens=list(),
+            passthrough_tokens=[],
+            block_tokens=['/'],
             phrases=self.phrases,
             to_lowercase=self._to_lowercase.value,
             append_pos=self._append_pos_tag.value,
         )
 
     @property
-    def tagged_tokens_filter_opts(self) -> PropertyValueMaskingOpts:
+    def filter_opts(self) -> PropertyValueMaskingOpts:
         # FIXME #48 Check if _only_alphabetic is valid for Stanza & Sparv (or ignored)
         return PropertyValueMaskingOpts(
             is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None
@@ -464,10 +470,10 @@ class BaseGUI:
             corpus_filename=self.corpus_filename,
             target_folder=self.target_folder,
             corpus_tag=self.corpus_tag,
-            tokens_transform_opts=self.tokens_transform_opts,
+            transform_opts=self.transform_opts,
             text_reader_opts=self.corpus_config.text_reader_opts,
-            extract_tagged_tokens_opts=self.extract_tagged_tokens_opts,
-            tagged_tokens_filter_opts=self.tagged_tokens_filter_opts,
+            extract_opts=self.extract_opts,
+            filter_opts=self.filter_opts,
             count_threshold=self.count_threshold,
             create_subfolder=self.create_subfolder,
             vectorize_opts=self.vectorize_opts,
