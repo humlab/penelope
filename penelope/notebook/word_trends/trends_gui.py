@@ -13,6 +13,7 @@ from ipywidgets import (
     ToggleButton,
     VBox,
 )
+from penelope.common.keyness import KeynessMetric
 from penelope.utility import get_logger
 
 from .displayers import ITrendDisplayer
@@ -37,7 +38,12 @@ class TrendsGUI:
         self._normalize: ToggleButton = ToggleButton(
             description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
         )
-        self._tf_idf: ToggleButton = ToggleButton(description="TF-IDF", icon='check', value=False, layout=BUTTON_LAYOUT)
+        self._keyness: ToggleButton = Dropdown(
+            description="",
+            value=KeynessMetric.TF,
+            options={"TF": KeynessMetric.TF, "TF-IDF": KeynessMetric.TF_IDF},
+            layout=BUTTON_LAYOUT,
+        )
         self._smooth: ToggleButton = ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
         self._group_by: Dropdown = Dropdown(
             options=['year', 'lustrum', 'decade'],
@@ -70,7 +76,7 @@ class TrendsGUI:
             [
                 HBox(
                     [
-                        self._tf_idf,
+                        self._keyness,
                         self._normalize,
                         self._smooth,
                         self._group_by,
@@ -87,19 +93,20 @@ class TrendsGUI:
 
         try:
             if self.trends_data is None:
-                self.alert("Please load a corpus (no trends data) !")
+                self.alert("😮 Please load a corpus (no trends data) !")
                 return
 
             if self.trends_data is None or self.trends_data.corpus is None:
-                self.alert("Please load a corpus (no corpus in trends data) !")
+                self.alert("😥 Please load a corpus (no corpus in trends data) !")
                 return
 
-            corpus = self.trends_data.get_corpus(self.options)
+            corpus = self.trends_data.transform(self.options).transformed_corpus
 
             self.current_displayer.display(
                 corpus=corpus,
                 indices=corpus.token_indices(self._picker.value),
                 smooth=self.smooth,
+                category_name=self.trends_data.category_column,
             )
 
             self.alert("✔")
@@ -143,7 +150,7 @@ class TrendsGUI:
         self._words.observe(self._update_picker, names='value')
         self._tab.observe(self._plot_trends, 'selected_index')
         self._normalize.observe(self._plot_trends, names='value')
-        self._tf_idf.observe(self._plot_trends, names='value')
+        self._keyness.observe(self._plot_trends, names='value')
         self._smooth.observe(self._plot_trends, names='value')
         self._group_by.observe(self._plot_trends, names='value')
         self._picker.observe(self._plot_trends, names='value')
@@ -188,8 +195,8 @@ class TrendsGUI:
         return self._smooth.value
 
     @property
-    def tf_idf(self) -> bool:
-        return self._tf_idf.value
+    def keyness(self) -> KeynessMetric:
+        return self._keyness.value
 
     @property
     def normalize(self) -> bool:
@@ -208,7 +215,7 @@ class TrendsGUI:
         return TrendsOpts(
             normalize=self.normalize,
             smooth=self.smooth,
-            tf_idf=self.tf_idf,
+            keyness=self.keyness,
             group_by=self.group_by,
             word_count=self.word_count,
             words=self.words_or_regexp,

@@ -1,0 +1,46 @@
+from unittest.mock import patch
+
+import pytest
+from penelope.scripts.co_occurrence import process_co_ocurrence
+
+
+def monkey_patch(*_, **__):
+    pass
+
+
+@pytest.mark.skip(reason="Long running")
+@patch('penelope.co_occurrence.persistence.store_co_occurrences', monkey_patch)
+def test_process_co_ocurrence():
+
+    args: dict = dict(
+        corpus_config="./tests/test_data/riksdagens-protokoll.yml",
+        input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip",
+        output_filename="./tests/output/test_process_co_ocurrence",
+        concept=None,
+        no_concept=False,
+        context_width=6,
+        partition_key=["year"],
+        phrase=None,
+        phrase_file=None,
+        create_subfolder=True,
+        pos_includes="|NN|PM|VB|JJ|",
+        pos_paddings="|UO|",
+        pos_excludes="|MAD|MID|PAD|",
+        to_lowercase=True,
+        lemmatize=True,
+        remove_stopwords='swedish',
+        min_word_length=1,
+        max_word_length=None,
+        keep_symbols=True,
+        keep_numerals=True,
+        only_any_alphanumeric=False,
+        only_alphabetic=False,
+        count_threshold=10,
+        force=False,
+    )
+
+    process_co_ocurrence(**args)
+
+
+if __name__ == "__main__":
+    test_process_co_ocurrence()

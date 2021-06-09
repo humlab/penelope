@@ -86,15 +86,20 @@ def main(
 
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)
+
         if pos_excludes is None:
             pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
+
+        if pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
+            pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
+            logger.info(f"PoS paddings expanded to: {pos_paddings}")
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
             corpus_filename=input_filename,
             target_folder=output_folder,
             corpus_tag=output_tag,
-            tokens_transform_opts=TokensTransformOpts(
+            transform_opts=TokensTransformOpts(
                 to_lower=to_lowercase,
                 to_upper=False,
                 min_len=min_word_length,
@@ -110,7 +115,7 @@ def main(
                 only_any_alphanumeric=only_any_alphanumeric,
             ),
             text_reader_opts=corpus_config.text_reader_opts,
-            extract_tagged_tokens_opts=ExtractTaggedTokensOpts(
+            extract_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
                 pos_paddings=pos_paddings,
                 pos_excludes=pos_excludes,

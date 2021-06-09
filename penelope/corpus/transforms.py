@@ -11,6 +11,7 @@ logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=lo
 ALPHABETIC_LOWER_CHARS = string.ascii_lowercase + "åäöéàáâãäåæèéêëîïñôöùûÿ"
 ALPHABETIC_CHARS = set(ALPHABETIC_LOWER_CHARS + ALPHABETIC_LOWER_CHARS.upper())
 SYMBOLS_CHARS = set("'\\¢£¥§©®°±øæç•›€™").union(set('!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'))
+ACCENT_CHARS = set('\'`')
 SYMBOLS_TRANSLATION = dict.fromkeys(map(ord, SYMBOLS_CHARS), None)
 default_tokenizer = nltk.word_tokenize
 
@@ -84,4 +85,5 @@ def remove_symbols() -> TokensTransformerFunction:
 
 
 def remove_accents() -> TokensTransformerFunction:
+    # FIXME: Wrongly implemented
     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)

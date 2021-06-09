@@ -18,7 +18,7 @@ class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
     def setup(self):
         return
 
-    def default_column_defs(self, df: pd.DataFrame):
+    def default_column_defs(self, df: pd.DataFrame, category_name: str):
         column_defs = [
             {
                 'headerName': column.title(),
@@ -27,7 +27,7 @@ class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
                 # 'hide':False,
                 'cellRenderer': (
                     "function(params) { return params.value.toFixed(6); }"
-                    if column not in ('year', 'category')
+                    if column not in ('year', category_name)
                     else None
                 ),
                 # 'type': 'numericColumn'
@@ -36,11 +36,11 @@ class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
         ]
         return column_defs
 
-    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):
 
-        df = pd.DataFrame(data=plot_data).set_index('category')
+        df = pd.DataFrame(data=plot_data).set_index(category_name)
 
-        column_defs = self.default_column_defs(df)
+        column_defs = self.default_column_defs(df, category_name)
         grid_options = {
             'columnDefs': column_defs,
             'enableSorting': True,

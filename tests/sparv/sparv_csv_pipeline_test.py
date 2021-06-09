@@ -1,6 +1,6 @@
-import penelope.corpus.readers.tng as tng
-import penelope.pipeline as pipeline
 import pytest
+from penelope import pipeline
+from penelope.corpus.readers import tng
 from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 from penelope.pipeline import tasks
 from penelope.utility import PropertyValueMaskingOpts

@@ -1,5 +1,10 @@
-import graph_tool.all as gt  # pylint: disable=import-error
-import graph_tool.draw as gt_draw  # pylint: disable=import-error
+try:
+    import graph_tool.all as gt  # type: ignore # pylint: disable=import-error
+    import graph_tool.draw as gt_draw  # type: ignore # pylint: disable=import-error, unused-argument
+except ImportError:
+    gt_draw = None
+    gt = None
+    print('warning: graph_tool not installed!')
 
 
 def plot(G_gt, layout_gt, n_range, palette, **kwargs):  # pylint: disable=unused-argument

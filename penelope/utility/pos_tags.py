@@ -236,6 +236,10 @@ class PoS_Tag_Scheme:
 
         return [x for x in _all_tags if x not in excludes]
 
+    def all_types_except(self, tags: Union[str, Container[str]] = None) -> List[str]:
+
+        return self.exclude([tags, self.Delimiter])
+
     @property
     def Pronoun(self) -> List[str]:
         return self.groups.get('Pronoun', [])

@@ -1,17 +1,28 @@
-import penelope.corpus.dtm as dtm
-from penelope.co_occurrence.interface import ContextOpts
-from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
-from penelope.utility import PropertyValueMaskingOpts
+import glob
+import importlib
+from os.path import basename, dirname, join
 
+from .co_occurrence import pipeline_mixin as coo_mixin
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
-from .spacy.tasks_mixin import SpacyPipelineShortcutMixIn
+from .spacy import pipeline_mixin as spacy_mixin
 from .tasks import WildcardTask
 
 
+def register_pipeline_mixins():
+    module_names = glob.glob(join(dirname(__file__), "*/pipeline_mixin*.py"))
+    modules = [
+        importlib.import_module(f"penelope.pipeline.{basename(dirname(f))}.pipeline_mixin") for f in module_names
+    ]
+    classes = [getattr(module, "PipelineShortcutMixIn") for module in modules]
+    return classes
+
+
 class CorpusPipeline(
+    # *register_pipeline_mixins(),
     PipelineShortcutMixIn,
-    SpacyPipelineShortcutMixIn,
+    spacy_mixin.PipelineShortcutMixIn,
+    coo_mixin.PipelineShortcutMixIn,
     CorpusPipelineBase["CorpusPipeline"],
 ):
     def __add__(self, other: "CorpusPipeline") -> "CorpusPipeline":
@@ -29,66 +40,3 @@ AnyPipeline = CorpusPipeline
 def wildcard() -> CorpusPipeline:
     p: CorpusPipeline = CorpusPipeline(config=None)
     return p
-
-
-def wildcard_to_DTM_pipeline(
-    tokens_transform_opts: TokensTransformOpts = None,
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
-    vectorize_opts: dtm.VectorizeOpts = None,
-):
-    try:
-        p: CorpusPipeline = (
-            wildcard()
-            .tagged_frame_to_tokens(
-                extract_opts=extract_tagged_tokens_opts,
-                filter_opts=tagged_tokens_filter_opts,
-            )
-            .tokens_transform(tokens_transform_opts=tokens_transform_opts)
-            .to_document_content_tuple()
-            .tqdm()
-            .to_dtm(vectorize_opts=vectorize_opts)
-        )
-        return p
-    except Exception as ex:
-        raise ex
-
-
-def wildcard_to_co_occurrence_pipeline(
-    tokens_transform_opts: TokensTransformOpts = None,
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
-    context_opts: ContextOpts = None,
-    global_threshold_count: int = None,
-    partition_column: str = 'year',
-):
-    try:
-        pipeline: CorpusPipeline = (
-            wildcard()
-            .tagged_frame_to_tokens(
-                extract_opts=extract_tagged_tokens_opts,
-                filter_opts=tagged_tokens_filter_opts,
-            )
-            # .tap_stream("./tests/output/tapped_stream__tagged_frame_to_tokens.zip",  "tap_2_tagged_frame_to_tokens")
-            .tokens_transform(
-                tokens_transform_opts=TokensTransformOpts(
-                    to_lower=tokens_transform_opts.to_lower,
-                ),
-            )
-            # .tap_stream("./tests/output/tapped_stream__tokens_transform.zip",  "tap_3_tokens_transform")
-            .vocabulary()
-            .to_document_content_tuple()
-            .tqdm()
-            # .tap_stream("./tests/output/tapped_stream__prior_to_co_occurrence.zip",  "tap_4_prior_to_co_occurrence")
-            .to_co_occurrence(
-                context_opts=context_opts,
-                transform_opts=tokens_transform_opts,
-                global_threshold_count=global_threshold_count,
-                partition_column=partition_column,
-            )
-        )
-
-        return pipeline
-
-    except Exception as ex:
-        raise ex

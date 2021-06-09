@@ -4,8 +4,8 @@ from typing import List
 
 import pandas as pd
 import pytest
-from penelope.corpus import ExtractTaggedTokensOpts
-from penelope.pipeline.checkpoint import CheckpointOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.pipeline import CheckpointOpts
 from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
 
@@ -130,6 +130,21 @@ def test_tagged_frame_to_tokens_with_passthrough(tagged_frame: pd.DataFrame):
     )
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == ['kyrkan', 'trängdes', 'gapade', 'ljuslågor', 'fladdrade']
+
+
+def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.DataFrame):
+
+    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False,
+        pos_includes='VB',
+        pos_excludes=None,
+        passthrough_tokens=['kyrkan', 'ljuslågor'],
+        block_tokens=['fladdrade'],
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    assert tokens == ['kyrkan', 'trängdes', 'gapade', 'ljuslågor']
 
 
 def test_tagged_frame_to_tokens_replace_pos(tagged_frame: pd.DataFrame):
@@ -284,3 +299,86 @@ utskotten	NN	|utskott|
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases, to_lowercase=True),
     )
     assert phrased_tokens[:9] == ['herr_talman', '!', 'jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
+
+
+def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> List[str]:
+
+    tokens = tagged_frame_to_tokens(
+        tagged_frame,
+        filter_opts=None,
+        text_column='token',
+        lemma_column='pos',
+        pos_column='baseform',
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, to_lowercase=False),
+        transform_opts=transform_opts,
+    )
+    return tokens
+
+
+def test_to_tagged_frame_to_tokens_with_transform_opts():
+
+    os.makedirs('./tests/output', exist_ok=True)
+    data_str: str = """token	pos	baseform
+Herr	NN	|herr|
+talman	NN	|talman|
+!	MAD	|
+Kammaren	NN	|kammare|
+måste	VB	|må|
+besluta	VB	|besluta|
+att	IE	|att|
+välja	VB	|välja|
+10	RO	|10|
+suppleanter	NN	|suppleant|
+i	PL	|
+utskotten	NN	|utskott|
+.	MAD	|
+"""
+    tagged_frame: pd.DataFrame = pd.read_csv(StringIO(data_str), sep='\t', index_col=None)
+
+    transform_opts: TokensTransformOpts() = None
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == tagged_frame.token.tolist()
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True)
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == [x.lower() for x in tagged_frame.token.tolist()]
+
+    # transform_opts: TokensTransformOpts = TokensTransformOpts(to_upper=True)
+    # tokens = transform_frame(tagged_frame, transform_opts)
+    # assert tokens == [ x.upper() for x in tagged_frame.token.tolist()]
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, only_alphabetic=True)
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == ['herr', 'talman', 'kammaren', 'måste', 'besluta', 'att', 'välja', 'suppleanter', 'i', 'utskotten']
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, only_any_alphanumeric=True)
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == [
+        'herr',
+        'talman',
+        'kammaren',
+        'måste',
+        'besluta',
+        'att',
+        'välja',
+        '10',
+        'suppleanter',
+        'i',
+        'utskotten',
+    ]
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, remove_stopwords=True, stopwords='swedish')
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == ['herr', 'talman', '!', 'kammaren', 'besluta', 'välja', '10', 'suppleanter', 'utskotten', '.']
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, min_len=5)
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == [x.lower() for x in tagged_frame.token.tolist() if len(x) >= 5]
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, max_len=5)
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == [x.lower() for x in tagged_frame.token.tolist() if len(x) <= 5]
+
+    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, keep_numerals=False, keep_symbols=False)
+    tokens = transform_frame(tagged_frame, transform_opts)
+    assert tokens == ['herr', 'talman', 'kammaren', 'måste', 'besluta', 'att', 'välja', 'suppleanter', 'i', 'utskotten']

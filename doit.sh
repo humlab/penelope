@@ -1,49 +1,42 @@
 #!/bin/bash
 
-# Beställningen kommer här:
+set -e
 
-# Vi är intresserade av två concept: information respektive propaganda – lemmatiserade. I båda fallen vill ha concept kvar. vi vill kolla på:
+CORPUS_FOLDER=/data/westac/data
+TARGET_FOLDER=/data/westac/shared
 
-# SUC tags:
-#     'Pronoun': ['DT', 'HD', 'HP', 'HS', 'PS', 'PN'],
-#     'Noun': ['NN', 'PM', 'UO'],
-#     'Verb': ['PC', 'VB'],
-#     'Adverb': ['AB', 'HA', 'IE', 'IN', 'PL'],
-#     'Numeral': ['RG', 'RO'],
-#     'Adjective': ['JJ'],
-#     'Preposition': ['PP'],
-#     'Conjunction': ['KN', 'SN'],
-#     'Delimiter': ['MAD', 'MID', 'PAD'],
+CORPUS_FILENAME=riksdagens-protokoll.1920-2019.sparv4.csv.zip
+#CORPUS_FILENAME=riksdagens-protokoll.1920-2019.test.sparv4.csv.zip
+CONFIG_FILENAME='./tests/test_data/riksdagens-protokoll.yml'
 
 run()
 {
     concept_word=$1
-    pos_classes=$2
-    context_width=$3
+    pos_includes=$2
+    pos_paddings=$3
+    context_width=$4
 
-    basename="${concept_word}_w${context_width}_${pos_classes//|}_lemma_no_stops"
-    mkdir -p /data/westac/shared/$basename
+    basename="NEW_${concept_word}_w${context_width}_${pos_includes//|}_${pos_paddings//|}_LEMMA_KEEPSTOPS"
+    mkdir -p  ${TARGET_FOLDER}/$basename
 
-    echo "co_occurrence --pos-includes $pos_classes --context-width $context_width --lemmatize --to-lowercase --partition-key year \
-        --remove-stopwords swedish --concept $concept_word \
-        resources/riksdagens-protokoll.yml  \
-        /data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip \
-        /data/westac/shared/${basename}/${basename}"
+    command="poetry run co_occurrence --pos-includes "$pos_includes" --pos-paddings "$pos_paddings" --context-width $context_width \
+        --lemmatize --to-lowercase --partition-key year --concept $concept_word \
+         ${CONFIG_FILENAME} \
+         ${CORPUS_FOLDER}/${CORPUS_FILENAME} \
+         ${TARGET_FOLDER}/${basename}/${basename}"
+
+    echo $command > ${TARGET_FOLDER}/${basename}/run_command.sh
+
+    $command
 }
 
-CONCEPTS="information propaganda"
+CONCEPTS="$*"
 
 for concept in $CONCEPTS ; do
 
-    # samförekommande substantiv i dels ett 11-ordsfönster, dels ett 7-ordsfönster.
-    run $concept "|NN|PM|UO|" 11
-    run $concept "|NN|PM|UO|" 7
-
-    # samförekommande adjektiv i ett 3-ordsfönster
-    run $concept "|JJ|" 3
-
-    # samförekommande verb i ett 3-ordsfönster
-    run $concept "|PC|VB|" 3
+    run $concept "VB" "PASSTHROUGH" 1
+    #run $concept "JJ" "PASSTHROUGH" 1
+    #run $concept "NN|PM" "PASSTHROUGH" 5
+    #run $concept "NN|PM" "PASSTHROUGH" 10
 
 done
-

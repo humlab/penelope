@@ -70,7 +70,7 @@ class LineDisplayer(LinesDataMixin, ITrendDisplayer):
 
         return p
 
-    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, **_):
 
         if self.handle is None:
             self.handle = bokeh.plotting.show(self.figure, notebook_handle=True)

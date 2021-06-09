@@ -16,9 +16,9 @@ class BarDisplayer(CategoryDataMixin, ITrendDisplayer):
     def setup(self):
         return
 
-    def plot(self, plot_data: dict, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, category_name: str, **_):
 
-        tokens = [w for w in plot_data.keys() if w not in ('category', 'year')]
+        tokens = [w for w in plot_data.keys() if w not in (category_name, 'year')]
 
         source = bokeh.models.ColumnDataSource(data=plot_data)
 
@@ -29,13 +29,13 @@ class BarDisplayer(CategoryDataMixin, ITrendDisplayer):
         offset = -0.25
         v = []
         for token in tokens:
-            w = p.vbar(x='category', top=token, width=0.2, source=source, color=next(colors))
+            w = p.vbar(x=category_name, top=token, width=0.2, source=source, color=next(colors))
             offset += 0.25
             v.append(w)
 
         p.x_range.range_padding = 0.04
         p.xaxis.major_label_orientation = math.pi / 4
-        p.xaxis.ticker = get_year_category_ticks(plot_data['category'])
+        p.xaxis.ticker = get_year_category_ticks(plot_data[category_name])
 
         p.xgrid.grid_line_color = None
         p.ygrid.grid_line_color = None

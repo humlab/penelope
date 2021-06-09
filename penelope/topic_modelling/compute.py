@@ -1,4 +1,5 @@
 import os
+from typing import Any, Mapping, Optional
 
 import penelope.utility as utility
 
@@ -25,7 +26,7 @@ def _find_engine(method: str):
 def infer_model(
     train_corpus: TrainingCorpus,
     method: str = 'sklearn_lda',
-    engine_args: dict = None,
+    engine_args: Optional[Mapping[str, Any]] = None,
     **kwargs,
 ) -> InferredModel:
 

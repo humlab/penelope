@@ -1,7 +1,7 @@
 import warnings
 from contextlib import suppress
 from os.path import join as jj
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
 from penelope import pipeline, topic_modelling, utility
@@ -87,7 +87,7 @@ class LoadGUI:
 
 
 def create_load_topic_model_gui(
-    corpus_config: pipeline.CorpusConfig, corpus_folder: str, state: TopicModelContainer
+    corpus_config: Optional[pipeline.CorpusConfig], corpus_folder: str, state: TopicModelContainer
 ) -> MainGUI:
 
     model_infos: List[dict] = topic_modelling.find_models(corpus_folder)

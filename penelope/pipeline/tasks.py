@@ -11,9 +11,16 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import pandas as pd
 from loguru import logger
-from penelope import co_occurrence, utility
-from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizedCorpus, VectorizeOpts, default_tokenizer
-from penelope.corpus.document_index import DocumentIndex
+from penelope import utility
+from penelope.corpus import (
+    DocumentIndex,
+    ITokenizedCorpus,
+    Token2Id,
+    TokensTransformer,
+    VectorizedCorpus,
+    VectorizeOpts,
+    default_tokenizer,
+)
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
     TextReader,
@@ -27,9 +34,9 @@ from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_
 from tqdm.auto import tqdm
 
 from . import checkpoint, convert
-from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError, Token2Id
+from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import CountTokensMixIn, DefaultResolveMixIn
+from .tasks_mixin import BuildToken2IdMixIn, CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn
 
 
 @dataclass
@@ -63,6 +70,7 @@ class LoadText(DefaultResolveMixIn, ITask):
 
         self.pipeline.payload.set_reader_index(text_reader.document_index)
         self.pipeline.payload.metadata = text_reader.metadata
+
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
         self.pipeline.put("text_transform_opts", self.transform_opts.props)
 
@@ -150,6 +158,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         super().setup()
         self.pipeline.put("checkpoint_file", self.filename)
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
+        self.pipeline.put("checkpoint_opts", self.checkpoint_opts)
         return self
 
     def __post_init__(self):
@@ -217,7 +226,7 @@ class SaveTaggedCSV(Checkpoint):
 
 
 @dataclass
-class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
@@ -238,8 +247,9 @@ class LoadTaggedCSV(CountTokensMixIn, DefaultResolveMixIn, ITask):
             reader_opts=self.extra_reader_opts,
         )
         self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
-        if self.extra_reader_opts:
-            self.pipeline.put("text_reader_opts", self.extra_reader_opts.props)
+
+        self.pipeline.put("reader_opts", self.extra_reader_opts.props)
+        self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
 
         self.instream = (payload for payload in self.checkpoint_data.payload_stream)
 
@@ -351,7 +361,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTaggedXML(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     filename: str = None
@@ -381,27 +391,24 @@ class LoadTaggedXML(CountTokensMixIn, DefaultResolveMixIn, ITask):
             for document, content in self.corpus_reader
         )
 
+        self.pipeline.put("reader_opts", self.reader_opts.props)
+
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
         return payload
 
 
 @dataclass
-class TextToTokens(ITask):
+class TextToTokens(TransformTokensMixIn, ITask):
     """Extracts tokens from payload.content, optinally transforming"""
 
     tokenize: Callable[[str], List[str]] = None
-    text_transform_opts: TokensTransformOpts = None
-
-    tokens_transform_opts: Optional[TokensTransformOpts] = None
-    transformer: Optional[TokensTransformer] = None
-
+    text_transform_opts: TextTransformOpts = None
     _text_transformer: TextTransformer = field(init=False)
 
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("text_transform_opts", self.text_transform_opts)
-        self.pipeline.put("tokens_transform_opts_text", self.tokens_transform_opts)
         return self
 
     def __post_init__(self):
@@ -413,10 +420,7 @@ class TextToTokens(ITask):
         if self.text_transform_opts is not None:
             self._text_transformer = TextTransformer(text_transform_opts=self.text_transform_opts)
 
-        if self.tokens_transform_opts is not None:
-            if self.transformer is None:
-                self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
-            self.transformer.ingest(self.tokens_transform_opts)
+        self.setup_transform()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         if self.in_content_type == ContentType.TOKENS:
@@ -425,13 +429,14 @@ class TextToTokens(ITask):
             if self._text_transformer is not None:
                 self.tokenize(self._text_transformer.transform(payload.content))
             tokens = self.tokenize(payload.content)
-        if self.transformer is not None:
-            tokens = self.transformer.transform(tokens)
+
+        tokens = self.transform(tokens)
+
         return payload.update(self.out_content_type, tokens)
 
 
 @dataclass
-class ToTaggedFrame(CountTokensMixIn, ITask):
+class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 
     attributes: List[str] = None
     attribute_value_filters: Dict[str, Any] = None
@@ -461,7 +466,12 @@ class ToTaggedFrame(CountTokensMixIn, ITask):
 
 
 @dataclass
-class TaggedFrameToTokens(CountTokensMixIn, ITask):
+class TaggedFrameToTokens(
+    CountTaggedTokensMixIn,
+    BuildToken2IdMixIn,
+    TransformTokensMixIn,
+    ITask,
+):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts = None
@@ -470,6 +480,18 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TOKENS
+
+    def setup(self) -> ITask:
+
+        self.setup_token2id()
+        # Let convert.tagged_frame_to_tokens do transform instead
+        # self.setup_transform()
+
+        self.pipeline.put("extract_opts", self.extract_opts)
+        self.pipeline.put("filter_opts", self.filter_opts)
+        self.pipeline.put("transform_opts", self.transform_opts)
+
+        return self
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
@@ -481,17 +503,24 @@ class TaggedFrameToTokens(CountTokensMixIn, ITask):
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
             **(self.pipeline.payload.tagged_columns_names or {}),
+            transform_opts=self.transform_opts,
         )
 
         tokens = list(tokens)
 
-        self.update_document_properties(payload, n_tokens=len(tokens))
+        # if self.transformer:
+        #     tokens = self.transform(tokens)
+
+        if self.token2id:
+            self.token2id.ingest(tokens)
+
+        self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
 
         return payload.update(self.out_content_type, tokens)
 
 
 @dataclass
-class TapStream(CountTokensMixIn, ITask):
+class TapStream(CountTaggedTokensMixIn, ITask):
     """Taps content into zink. """
 
     target: str = None
@@ -541,7 +570,7 @@ def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
 
 # @dataclass
-# class FilterTaggedFrame(CountTokensMixIn, ITask):
+# class FilterTaggedFrame(CountTaggedTokensMixIn, ITask):
 #     """Filters tagged frame text from payload.content based on annotations etc. """
 
 #     extract_opts: ExtractTaggedTokensOpts = None
@@ -571,24 +600,23 @@ def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
 
 @dataclass
-class TokensTransform(ITask):
+class TokensTransform(TransformTokensMixIn, ITask):
     """Transforms tokens payload.content"""
-
-    tokens_transform_opts: TokensTransformOpts = None
-    transformer: TokensTransformer = None
 
     def setup(self) -> ITask:
         super().setup()
-        self.pipeline.put("tokens_transform_opts", self.tokens_transform_opts)
+        self.setup_transform()
         return self
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOKENS
-        self.transformer = TokensTransformer(tokens_transform_opts=self.tokens_transform_opts)
+        self.transformer = TokensTransformer(transform_opts=self.transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return payload.update(self.out_content_type, self.transformer.transform(payload.content))
+        tokens: List[str] = self.transform(payload.content)
+        # FIXME: call self.update_document_properties(payload, n_tokens=len(tokens))??
+        return payload.update(self.out_content_type, tokens)
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":
         self.transformer.add(transform)
@@ -676,49 +704,6 @@ class Vocabulary(ITask):
 
 
 @dataclass
-class ToCoOccurrence(ITask):
-    """Computes a windows co-occurrence data."""
-
-    def __post_init__(self):
-        self.in_content_type = [ContentType.DOCUMENT_CONTENT_TUPLE, ContentType.TOKENS]
-        self.out_content_type = ContentType.CO_OCCURRENCE_DATAFRAME
-
-    context_opts: co_occurrence.ContextOpts = None
-    transform_opts: TokensTransformOpts = None
-    global_threshold_count: int = None
-    partition_column: str = field(default='year')
-    ignore_pad: str = field(default='*')
-
-    def setup(self) -> ITask:
-        super().setup()
-        self.pipeline.put("context_opts", self.context_opts)
-        self.pipeline.put("global_threshold_count", self.global_threshold_count)
-        self.pipeline.put("partition_column", self.partition_column)
-        return self
-
-    def process_stream(self) -> VectorizedCorpus:
-
-        # if self.pipeline.get_prior_content_type(self)  == ContentType.DOCUMENT_CONTENT_TUPLE:
-        instream = (x.content for x in self.instream)
-        # else:
-        #     instream = ((x.filename, x.content) for x in self.instream)
-
-        compute_result: co_occurrence.ComputeResult = co_occurrence.partitioned_corpus_co_occurrence(
-            stream=instream,
-            payload=self.pipeline.payload,
-            context_opts=self.context_opts,
-            transform_opts=self.transform_opts,
-            global_threshold_count=self.global_threshold_count,
-            partition_column=self.partition_column,
-            ignore_pad=self.ignore_pad,
-        )
-        yield DocumentPayload(content_type=ContentType.CO_OCCURRENCE_DATAFRAME, content=compute_result)
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return None
-
-
-@dataclass
 class ChunkTokens(ITask):
     chunk_size: int = None
 
@@ -797,3 +782,31 @@ class WildcardTask(ITask):
 
 #     def process_stream(self) -> Iterable[DocumentPayload]:
 #         raise NotImplementedError()
+
+
+@dataclass
+class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+
+    corpus: ITokenizedCorpus = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TOKENS
+
+    def setup(self) -> ITask:
+        super().setup()
+        self.pipeline.payload.set_reader_index(self.corpus.document_index)
+        self.instream = (
+            DocumentPayload(
+                content_type=self.out_content_type,
+                filename=filename,
+                content=content,
+                filename_values=None,
+            )
+            for filename, content in self.corpus
+        )
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        self.update_document_properties(payload, n_tokens=len(payload.content))
+        return payload

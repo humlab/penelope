@@ -1,9 +1,9 @@
 import os
 
-import penelope.corpus.dtm as dtm
+from penelope.corpus import VectorizedCorpus
 from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusConfig
-from penelope.pipeline.pipelines import wildcard_to_DTM_pipeline
+from penelope.pipeline.dtm import wildcard_to_DTM_pipeline
 
 CheckpointPath = str
 
@@ -11,21 +11,21 @@ CheckpointPath = str
 def compute(
     args: ComputeOpts,
     corpus_config: CorpusConfig,
-) -> dtm.VectorizedCorpus:
+) -> VectorizedCorpus:
 
     try:
 
         assert args.is_satisfied()
 
-        corpus: dtm.VectorizedCorpus = (
+        corpus: VectorizedCorpus = (
             corpus_config.get_pipeline(
                 "tagged_frame_pipeline",
                 corpus_filename=args.corpus_filename,
             )
             + wildcard_to_DTM_pipeline(
-                tokens_transform_opts=args.tokens_transform_opts,
-                extract_tagged_tokens_opts=args.extract_tagged_tokens_opts,
-                tagged_tokens_filter_opts=args.tagged_tokens_filter_opts,
+                transform_opts=args.transform_opts,
+                extract_opts=args.extract_opts,
+                filter_opts=args.filter_opts,
                 vectorize_opts=args.vectorize_opts,
             )
         ).value()
@@ -42,10 +42,10 @@ def compute(
         raise ex
 
 
-def store_corpus_bundle(corpus: dtm.VectorizedCorpus, args: ComputeOpts):
+def store_corpus_bundle(corpus: VectorizedCorpus, args: ComputeOpts):
 
-    if dtm.VectorizedCorpus.dump_exists(tag=args.corpus_tag, folder=args.target_folder):
-        dtm.VectorizedCorpus.remove(tag=args.corpus_tag, folder=args.target_folder)
+    if VectorizedCorpus.dump_exists(tag=args.corpus_tag, folder=args.target_folder):
+        VectorizedCorpus.remove(tag=args.corpus_tag, folder=args.target_folder)
 
     target_folder = args.target_folder
 
@@ -57,7 +57,7 @@ def store_corpus_bundle(corpus: dtm.VectorizedCorpus, args: ComputeOpts):
     corpus.dump(tag=args.corpus_tag, folder=target_folder)
 
     # FIXME #79 Co-occurrence context options not stored in JSON
-    dtm.VectorizedCorpus.dump_options(
+    VectorizedCorpus.dump_options(
         tag=args.corpus_tag,
         folder=target_folder,
         options=args.props,

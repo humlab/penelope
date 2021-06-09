@@ -11,7 +11,7 @@ import scipy
 
 logger = utility.getLogger('corpus_text_analysis')
 
-
+# FIXME: #99 Add type hints
 def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_series: np.ndarray):
     """Computes topic proportations as LDAvis. Fast version
     Parameters
@@ -53,6 +53,7 @@ def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_s
 #     return topic_proportion
 
 
+# FIXME #98 gensim 4.0: wrappers.ldamallet.LdaMallet is deeprecated/removed in Gensim 4.0
 def malletmodel2ldamodel(
     mallet_model: gensim.models.wrappers.ldamallet.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50
 ):

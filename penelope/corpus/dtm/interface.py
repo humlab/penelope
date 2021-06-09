@@ -1,7 +1,8 @@
 # type: ignore
+
 import abc
 from numbers import Number
-from typing import Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -38,12 +39,12 @@ class IVectorizedCorpus(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def token_counter(self) -> Dict[str, int]:
+    def term_frequency_mapping(self) -> Dict[str, int]:
         ...
 
     @property
     @abc.abstractproperty
-    def corpus_token_counts(self) -> np.ndarray:
+    def term_frequencies(self) -> np.ndarray:
         ...
 
     @property
@@ -74,6 +75,11 @@ class IVectorizedCorpus(abc.ABC):
     @property
     @abc.abstractproperty
     def document_index(self) -> DocumentIndex:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def payload(self) -> Mapping[str, Any]:
         ...
 
     @abc.abstractmethod
@@ -214,7 +220,7 @@ class IVectorizedCorpus(abc.ABC):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        token_counter: Dict[str, int] = None,
+        term_frequency_mapping: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         ...
 
@@ -227,7 +233,7 @@ class IVectorizedCorpusProtocol(Protocol):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        token_counter: Dict[str, int] = None,
+        term_frequency_mapping: Dict[str, int] = None,
     ) -> IVectorizedCorpus:
         ...
 
@@ -241,4 +247,12 @@ class IVectorizedCorpusProtocol(Protocol):
 
     @property
     def id2token(self) -> Mapping[int, str]:
+        ...
+
+    @property
+    def token2id(self) -> Mapping[str, int]:
+        ...
+
+    @property
+    def payload(self) -> Mapping[str, Any]:
         ...

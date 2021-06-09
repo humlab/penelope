@@ -11,7 +11,7 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 
 # pylint: disable=too-many-instance-attributes
 
-# TODO: Consolidate with tagged_frame_to_tokens? Samek business logic.
+# TODO: Consolidate with tagged_frame_to_tokens? Same business logic.
 class SparvCsvToText:
     """Reads a Sparv CSV-file, applies filters and returns it as text"""
 
@@ -40,6 +40,7 @@ class SparvCsvToText:
         _pos_paddings: Set[str] = _opts.get_pos_paddings()
         _pos_excludes: Set[str] = _opts.get_pos_excludes()
         _passthrough_tokens: Set[str] = _opts.get_passthrough_tokens()
+        _block_tokens: Set[str] = _opts.get_block_tokens()
         _append_pos: bool = _opts.append_pos
         _pad: str = "*"
 
@@ -58,6 +59,9 @@ class SparvCsvToText:
             if len(_passthrough_tokens) == 0:
                 data = (x for x in data if x[_pos] in _pos_all_includes)
             data = (x for x in data if x[_lem] in _passthrough_tokens or x[_pos] in _pos_all_includes)
+
+        if _block_tokens:
+            data = (x for x in data if x[_lem] not in _block_tokens)
 
         if _pos_excludes is not None:
             data = (x for x in data if (x[_pos] not in _pos_excludes or x[_lem] in _passthrough_tokens))

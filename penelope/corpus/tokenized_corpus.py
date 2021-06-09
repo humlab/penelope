@@ -15,14 +15,14 @@ logger = utility.getLogger("__penelope__")
 
 
 class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
-    def __init__(self, reader: ICorpusReader, *, tokens_transform_opts: TokensTransformOpts = None):
+    def __init__(self, reader: ICorpusReader, *, transform_opts: TokensTransformOpts = None):
         """[summary]
 
         Parameters
         ----------
         reader : ICorpusReader
             Corpus reader
-        tokens_transform_opts : TokensTransformOpts
+        transform_opts : TokensTransformOpts
             Passed to TokensTransformer and can be:
                 only_alphabetic: bool = False,
                 only_any_alphanumeric: bool = False,
@@ -50,7 +50,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
         self.reader: ICorpusReader = reader
         self._document_index: DocumentIndex = metadata_to_document_index(reader.metadata)
-        self.transformer = TokensTransformer(tokens_transform_opts=(tokens_transform_opts or TokensTransformOpts()))
+        self.transformer = TokensTransformer(transform_opts=(transform_opts or TokensTransformOpts()))
         self.iterator = None
         self._token2id = None
 

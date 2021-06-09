@@ -17,20 +17,25 @@ tooltips = {
 }
 view = widgets.Output(layout={"border": "1px solid black"})
 
-
+# FIXME #103 ComputeGUI: Add explicit partition key selector
 class ComputeGUI(BaseGUI):
     def __init__(
         self,
+        *,
         default_corpus_path: str = None,
         default_corpus_filename: str = '',
         default_data_folder: str = None,
-        partition_key: str = "year",
     ):
 
         super().__init__(default_corpus_path, default_corpus_filename, default_data_folder)
 
-        self.partition_key: str = partition_key
-
+        self._partition_key: widgets.Dropdown = widgets.Dropdown(
+            description='',
+            options={'Year': 'year', 'Document': 'document_id'},
+            value='document_id',
+            layout=default_layout,
+            disabled=True,
+        )
         self._context_width = widgets.IntSlider(
             description='',
             min=1,
@@ -61,7 +66,7 @@ class ComputeGUI(BaseGUI):
         placeholder: widgets.VBox = self.extra_placeholder
         extra_layout = widgets.HBox(
             [
-                widgets.VBox([widgets.HTML("<b>Context distance</b>"), self._context_width]),
+                widgets.VBox([widgets.HTML("<b>Context distance</b>"), self._context_width, self._partition_key]),
                 widgets.VBox([widgets.HTML("<b>Concept</b>"), self._concept, self._ignore_concept]),
             ]
         )
@@ -79,6 +84,7 @@ class ComputeGUI(BaseGUI):
             concept=self.concept_tokens,
             context_width=self._context_width.value,
             ignore_concept=self._ignore_concept.value,
+            partition_keys=[self._partition_key.value],
         )
 
     @property
@@ -92,7 +98,6 @@ class ComputeGUI(BaseGUI):
     def compute_opts(self) -> interface.ComputeOpts:
         args: interface.ComputeOpts = super().compute_opts
         args.context_opts = self.context_opts
-        args.partition_keys = [self.partition_key]
         return args
 
 

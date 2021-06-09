@@ -1,6 +1,7 @@
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
-from tests import utils as test_utils
+from tests.fixtures import MockedProcessedCorpus
+from tests.utils import TEST_CORPUS_FILENAME, create_tokens_reader
 
 
 def mock_corpus():
@@ -11,21 +12,19 @@ def mock_corpus():
         ('document_2014_2.txt', "a a b b b b c d"),
         ('document_2014_3.txt', "a a c d"),
     ]
-    corpus = test_utils.MockedProcessedCorpus(mock_corpus_data)
+    corpus = MockedProcessedCorpus(mock_corpus_data)
     return corpus
 
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = test_utils.create_tokens_reader(
-        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
-    )
+    reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
     return reader
 
 
 def create_corpus():
     reader = create_reader()
-    tokens_transform_opts = TokensTransformOpts(
+    transform_opts = TokensTransformOpts(
         only_any_alphanumeric=True,
         to_lower=True,
         remove_accents=False,
@@ -33,12 +32,12 @@ def create_corpus():
         max_len=None,
         keep_numerals=False,
     )
-    corpus = TokenizedCorpus(reader, tokens_transform_opts=tokens_transform_opts)
+    corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
 
 
 def test_create_text_tokenizer_smoke_test():
-    reader = TextTokenizer(test_utils.TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
+    reader = TextTokenizer(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert reader is not None
     assert next(reader) is not None
 
@@ -58,7 +57,7 @@ def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
     expected_dtm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]]
     expected_word_counts = {'a': 10, 'b': 10, 'c': 11, 'd': 3}
     assert expected_vocab, v_corpus.token2id
-    assert expected_word_counts, v_corpus.token_counter
+    assert expected_word_counts, v_corpus.term_frequency_mapping
     assert (expected_dtm == v_corpus.bag_term_matrix.toarray()).all()
 
 
@@ -67,7 +66,7 @@ def test_word_counts_of_vectorized_corpus_are_absolute_word_of_entire_corpus():
     corpus = create_corpus()
     vectorizer = CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
-    results = v_corpus.token_counter
+    results = v_corpus.term_frequency_mapping
     expected = {
         'tre': 1,
         'svarta': 1,
@@ -160,7 +159,7 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 
     corpus = TokenizedCorpus(
         reader=create_reader(),
-        tokens_transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
+        transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
     )
 
     vocabulary = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).token2id

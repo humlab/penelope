@@ -327,26 +327,3 @@ def yearly_token_distribution_multiple_line_plot(
         p = bokeh.layouts.gridplot([plots[u : u + n_columns] for u in range(0, len(indices), n_columns)])
 
     return p
-
-
-# def plot_distribution2(ys: Union[str, Sequence[float]], window_size, mode='nearest'):
-
-#     xs = np.arange(0, len(ys), 1)
-#     yw = scipy.ndimage.filters.uniform_filter1d(ys, size=window_size, mode=mode)
-#     xw = np.arange(0, len(yw), 1)
-
-#     # xp, yp = cf.fit_curve(cf.fit_polynomial3, xs, ys, step=0.1)
-#     xp, yp = cf.fit_polynomial4(xs, ys)
-#     p = bokeh.plotting.figure(
-#         plot_width=800,
-#         plot_height=600,
-#     )
-#     p.scatter(xs, ys, size=6, color='red', alpha=0.6, legend_label='actual')
-#     p.line(x=xs, y=ys, line_width=1, color='red', alpha=0.6, legend_label='actual')
-#     p.line(x=xp, y=yp, line_width=1, color='green', alpha=0.6, legend_label='poly')
-#     p.xgrid.grid_line_color = None
-#     p.ygrid.grid_line_color = None
-
-#     p.line(x=xw, y=yw, line_width=1, color='green', alpha=1, legend_label='rolling')
-
-#     return p

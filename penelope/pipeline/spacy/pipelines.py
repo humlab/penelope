@@ -2,20 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from penelope.co_occurrence.co_occurrence import ContextOpts
-from penelope.corpus.readers.text_transformer import TextTransformOpts
-from penelope.utility import PropertyValueMaskingOpts, get_logger, path_add_suffix
+from penelope.utility import PropertyValueMaskingOpts, path_add_suffix
 
 from .. import pipelines
+from ..co_occurrence.pipelines import wildcard_to_partition_by_document_co_occurrence_pipeline
+from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
 if TYPE_CHECKING:
+    from penelope.co_occurrence import ContextOpts
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
     from penelope.corpus.readers import ExtractTaggedTokensOpts
 
     from ..config import CorpusConfig
-
-
-logger = get_logger()
+    from ..pipelines import CorpusPipeline
 # pylint: disable=too-many-locals
 
 
@@ -27,7 +26,7 @@ def to_tagged_frame_pipeline(
     corpus_config: CorpusConfig,
     corpus_filename: str = None,
     checkpoint_filename: str = None,
-) -> pipelines.CorpusPipeline:
+) -> CorpusPipeline:
     try:
 
         _checkpoint_filename: str = checkpoint_filename or path_add_suffix(
@@ -39,7 +38,7 @@ def to_tagged_frame_pipeline(
             .set_spacy_model(corpus_config.pipeline_payload.memory_store['spacy_model'])
             .load_text(
                 reader_opts=corpus_config.text_reader_opts,
-                transform_opts=TextTransformOpts(),
+                transform_opts=None,
                 source=corpus_filename,
             )
             .text_to_spacy()
@@ -56,20 +55,22 @@ def to_tagged_frame_pipeline(
 
 def spaCy_DTM_pipeline(
     corpus_config: CorpusConfig,
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
-    tokens_transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
+    transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     corpus_filename: str = None,
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
-            corpus_config=corpus_config, checkpoint_filename=checkpoint_filename, corpus_filename=corpus_filename
-        ) + pipelines.wildcard_to_DTM_pipeline(
-            extract_tagged_tokens_opts=extract_tagged_tokens_opts,
-            tagged_tokens_filter_opts=tagged_tokens_filter_opts,
-            tokens_transform_opts=tokens_transform_opts,
+            corpus_config=corpus_config,
+            checkpoint_filename=checkpoint_filename,
+            corpus_filename=corpus_filename,
+        ) + wildcard_to_DTM_pipeline(
+            extract_opts=extract_opts,
+            filter_opts=filter_opts,
+            transform_opts=transform_opts,
             vectorize_opts=vectorize_opts,
         )
         return p
@@ -82,12 +83,11 @@ def spaCy_DTM_pipeline(
 def spaCy_co_occurrence_pipeline(
     corpus_config: CorpusConfig,
     corpus_filename: str,
-    tokens_transform_opts: TokensTransformOpts = None,
-    extract_tagged_tokens_opts: ExtractTaggedTokensOpts = None,
-    tagged_tokens_filter_opts: PropertyValueMaskingOpts = None,
+    transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
-    partition_column: str = 'year',
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
     try:
@@ -95,13 +95,12 @@ def spaCy_co_occurrence_pipeline(
             corpus_config=corpus_config,
             corpus_filename=corpus_filename,
             checkpoint_filename=checkpoint_filename,
-        ) + pipelines.wildcard_to_co_occurrence_pipeline(
+        ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
             context_opts=context_opts,
-            tokens_transform_opts=tokens_transform_opts,
-            extract_tagged_tokens_opts=extract_tagged_tokens_opts,
-            tagged_tokens_filter_opts=tagged_tokens_filter_opts,
+            transform_opts=transform_opts,
+            extract_opts=extract_opts,
+            filter_opts=filter_opts,
             global_threshold_count=global_threshold_count,
-            partition_column=partition_column,
         )
         return p
 

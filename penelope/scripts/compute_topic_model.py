@@ -130,7 +130,7 @@ def run_model(
         chunk_size=None,
     )
 
-    corpus = tokenized_corpus.TokenizedCorpus(reader=tokens_reader, tokens_transform_opts=transformer_opts)
+    corpus = tokenized_corpus.TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)
 
     train_corpus = topic_modelling.TrainingCorpus(
         terms=corpus.terms,
@@ -139,7 +139,7 @@ def run_model(
         document_index=corpus.document_index,
         corpus_options=dict(
             reader_opts=reader_opts.props,
-            tokens_transform_opts=transformer_opts.props,
+            transform_opts=transformer_opts.props,
         ),
     )
 

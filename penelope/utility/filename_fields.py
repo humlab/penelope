@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 from .filename_utils import strip_paths
 
 FilenameFieldSpec = Union[List[str], Dict[str, Union[Callable, str]]]
-FilenameFieldSpecs = Sequence[FilenameFieldSpec]
+FilenameFieldSpecs = Optional[Sequence[FilenameFieldSpec]]
 NameFieldSpecs = Optional[FilenameFieldSpecs]
 
 

@@ -2,19 +2,17 @@ import os
 import pickle
 import sys
 import types
-from typing import Any, Dict, Iterable, List, Mapping, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 import gensim
 import pandas as pd
 import scipy
 from penelope import utility
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, load_document_index
-from penelope.utility import FilenameFieldSpecs, file_utility, filename_utils
+from penelope.utility import FilenameFieldSpecs, filename_utils
 from tqdm.auto import tqdm
 
 from .utility import compute_topic_proportions
-
-logger = utility.getLogger('corpus_text_analysis')
 
 DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 jj = os.path.join
@@ -28,7 +26,7 @@ class TrainingCorpus:
         terms: Iterable[Iterable[str]] = None,
         document_index: DocumentIndex = None,
         doc_term_matrix: scipy.sparse.csr_matrix = None,
-        id2word: Mapping[int, str] = None,
+        id2word: Optional[Mapping[int, str]] = None,
         vectorizer_args: Mapping[str, Any] = None,
         corpus: gensim.matutils.Sparse2Corpus = None,
         corpus_options: dict = None,
@@ -190,7 +188,7 @@ class InferredTopicsData:
 
             for (df, name) in data:
                 archive_name = jj(target_folder, filename_utils.replace_extension(name, ".zip"))
-                file_utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
+                utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     @staticmethod
     def load(*, folder: str, filename_fields: FilenameFieldSpecs, pickled: bool = False):

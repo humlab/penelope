@@ -11,6 +11,10 @@ release: ready guard_clean_working_repository bump.patch tag
 
 #gh release create v0.2.35 --title "INIDUN release" --notes "Update that facilitates INIDUN release"
 
+.PHONY: watch
+watch:
+	@fswatch -1 -r --latency 1 ./tests/notebook/co_occurrence | xargs -0 -n1 -I{} pytest ./tests/notebook/co_occurrence
+
 ready: tools clean tidy test lint build
 
 build: requirements.txt
@@ -49,7 +53,6 @@ version:
 tools:
 	@pip install --upgrade pip --quiet
 	@pip install poetry --upgrade --quiet
-
 
 bump.patch: requirements.txt
 	@poetry run dephell project bump patch
@@ -163,6 +166,13 @@ requirements.txt: poetry.lock
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
+profile-co_occurrence:
+	@poetry run python -m pyinstrument -o ./profiling_pipeline_co_occurrence.log ./tests/profiling/pipeline_co_occurrence.py
+
+.PHONY: stubs
+stubs:
+	@stubgen penelope/corpus/dtm/vectorized_corpus.py --output ./typings
+
 .PHONY: help check init version
 .PHONY: lint flake8 pylint pylint_by_file yapf black isort tidy pylint_diff_only
 .PHONY: test retest test-coverage pytest
@@ -170,6 +180,7 @@ gh-exists: ; @which gh > /dev/null
 .PHONY: clean clean_cache update
 .PHONY: install_graphtool gh check-gh gh-exists tools
 .PHONY: data spacy_data nltk_data
+.PHONY: profile-co_occurrence
 
 help:
 	@echo "Higher level recepies: "
