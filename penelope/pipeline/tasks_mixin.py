@@ -48,8 +48,8 @@ class TransformTokensMixIn:
 
         if self.transformer is None:
             self.transformer = TokensTransformer(transform_opts=self.transform_opts)
-
-        self.transformer.ingest(self.transform_opts)
+        else:
+            self.transformer.ingest(self.transform_opts)
 
         return self
 
