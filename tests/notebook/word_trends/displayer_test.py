@@ -112,7 +112,6 @@ def trends_data(bundle) -> BundleTrendsData:
         BarDisplayer,
         LineDisplayer,
         TableDisplayer,
-        TopTokensDisplayer,
         UnnestedExplodeTableDisplayer,
         UnnestedTableDisplayer,
         NetworkDisplayer,
@@ -123,15 +122,25 @@ def test_displayer_compile_and_display(displayer_cls, bundle: co_occurrence.Bund
     corpus: VectorizedCorpus = bundle.corpus.group_by_year(target_column_name='category')
 
     displayer: ITrendDisplayer = displayer_cls()
+    displayer.setup()
 
     plot_data: dict = displayer.compile(corpus=corpus, indices=[0, 1, 2])
 
     assert plot_data is not None
 
+def test_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
 
-def test_co_occurrence_displayer_compile_and_display(bundle: co_occurrence.Bundle):
+    displayer: ITrendDisplayer = TopTokensDisplayer(corpus=bundle.corpus)
+    displayer.setup()
+
+    plot_data: dict = displayer.compile()
+
+    assert plot_data is not None
+
+def test_co_occurrence_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
 
     displayer: ITrendDisplayer = CoOccurrenceTopTokensDisplayer(bundle=bundle)
+    displayer.setup()
 
     plot_data: dict = displayer.compile()
 
