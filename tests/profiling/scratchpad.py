@@ -32,7 +32,7 @@ co_occurrences.head()
 
 to_token = token2id.id2token.get
 token_pairs = co_occurrences[["w1_id", "w2_id"]].drop_duplicates()
-token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
+token_pairs["token"] = f"{token_pairs.w1_id.apply(to_token)}/{token_pairs.w2_id.apply(to_token)}"
 token_pairs["token_id"] = token_pairs.index
 
 vocabulary = token_pairs.set_index("token").to_dict()

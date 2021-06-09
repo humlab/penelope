@@ -62,7 +62,7 @@ class CoOccurrenceVocabularyHelper:
         to_token = token2id.id2token.get
         token_pairs: pd.DataFrame = co_occurrences[["w1_id", "w2_id"]].drop_duplicates().reset_index(drop=True)
         token_pairs["token_id"] = token_pairs.index
-        token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
+        token_pairs["token"] = f"{token_pairs.w1_id.apply(to_token)}/{token_pairs.w2_id.apply(to_token)}"
 
         """Create a new vocabulary"""
         vocabulary = token_pairs.set_index("token").token_id.to_dict()
@@ -144,7 +144,19 @@ class CoOccurrenceMixIn:
 
         # else:
         pg = self.to_source_vocab_mapping(source_token2id).get
+
         df[['w1_id', 'w2_id']] = pd.DataFrame(df.token_id.apply(pg).tolist())
+
+        # items = df.token_id.apply(pg).tolist()
+        # if len(items) != len(df):
+        #     logger.warning("len(items) != len(df)")
+        # try:
+        #     df[['w1_id', 'w2_id']] = pd.DataFrame(items)
+        # except Exception as ex:
+        #     logger.exception(ex)
+        #     logger.info("trying to recover...")
+        #     df['w1_id'] = [x[0] if len(x) == 2 else np.NaN for x in items]
+        #     df['w2_id'] = [x[1] if len(x) == 2 else np.NaN for x in items]
 
         return df
 

@@ -121,3 +121,20 @@ def test_compute_and_store_bundle():
     assert os.path.isfile(filename)
 
     os.remove(filename)
+
+
+# def test_load_sommar_bundle():
+
+#     filename = co_occurrence.to_filename(folder='/data/westac/data/SOMMAR', tag='SOMMAR')
+
+#     bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
+
+#     assert bundle is not None
+
+#     pg = bundle.corpus.to_source_vocab_mapping(bundle.token2id).get
+
+#     df = bundle.co_occurrences
+
+#     items = df.token_id.apply(pg).tolist()
+
+#     df[['w1_id', 'w2_id']] = pd.DataFrame(items)

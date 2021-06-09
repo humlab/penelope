@@ -78,6 +78,8 @@ class ExtractTaggedTokensOpts:
 
     to_lowercase: bool = False
 
+    block_tokens: List[str] = field(default_factory=list)
+
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
 
@@ -92,6 +94,11 @@ class ExtractTaggedTokensOpts:
             return set()
         return set(self.passthrough_tokens)
 
+    def get_block_tokens(self) -> Set[str]:
+        if self.block_tokens is None:
+            return set()
+        return set(self.block_tokens)
+
     @property
     def props(self):
         return dict(
@@ -102,6 +109,7 @@ class ExtractTaggedTokensOpts:
             pos_paddings=self.pos_paddings,
             pos_replace_marker=self.pos_replace_marker,
             passthrough_tokens=list(self.passthrough_tokens or []),
+            block_tokens=list(self.block_tokens or []),
             append_pos=self.append_pos,
             phrases=None if self.phrases is None else list(self.phrases),
             to_lowercase=self.to_lowercase,

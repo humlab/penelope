@@ -37,7 +37,8 @@ def compute(
             checkpoint_filename=checkpoint_filename,
         )
 
-        args.extract_opts.passthrough_tokens = list(args.context_opts.concept)
+        args.extract_opts.passthrough_tokens = args.context_opts.concept
+        args.extract_opts.block_tokens = ['/']
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
@@ -57,7 +58,13 @@ def compute(
 
         bundle.tag = args.corpus_tag
         bundle.folder = args.target_folder
-        bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
+
+        try:
+            bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
+        except ValueError as ex:
+            logger.error("fatal: to_co_occurrences failed (skipping)")
+            logger.exception(ex)
+
         bundle.compute_options = compile_compute_options(args, target_filename)
 
         bundle.store()

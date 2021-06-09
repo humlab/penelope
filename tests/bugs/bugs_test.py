@@ -55,6 +55,7 @@ def test_inidun_word_trends_bug():
             pos_paddings='|ADJ|ADV|INTJ|PART|CONJ|CCONJ|SCONJ|NUM|AUX|SYM|X|ADP|',
             pos_replace_marker='*',
             passthrough_tokens=[],
+            block_tokens=[],
             append_pos=False,
             phrases=None,
             to_lowercase=True,

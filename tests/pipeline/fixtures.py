@@ -46,6 +46,7 @@ def FakeComputeOptsSpacyCSV(
             pos_paddings=None,
             pos_excludes='|PUNCT|EOL|SPACE|',
             passthrough_tokens=[],
+            block_tokens=[],
             append_pos=False,
         ),
         filter_opts=PropertyValueMaskingOpts(
