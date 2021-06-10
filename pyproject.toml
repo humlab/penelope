@@ -116,10 +116,6 @@ filterwarnings = [
   "ignore::UserWarning"
 ]
 
-[tool.dephell.main]
-from = {format = "poetry", path = "pyproject.toml"}
-to = {format = "poetry", path = "pyproject.toml"}
-
 [tool.black]
 line-length = 120
 target-version = ["py38"]
