@@ -149,3 +149,4 @@ htmlcov
 export
 checkpoints
 *.swp
+profile-reports

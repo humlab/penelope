@@ -169,7 +169,8 @@ check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
 profile-co_occurrence:
-	@poetry run python -m pyinstrument -r html -o ./$(RUN_TIMESTAMP)_co_occurrence_profile.html ./tests/profiling/pipeline_co_occurrence.py
+	@mkdir -p ./profile-reports
+	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_co_occurrence_profile.html ./tests/profiling/pipeline_co_occurrence.py
 
 .PHONY: stubs
 stubs:
