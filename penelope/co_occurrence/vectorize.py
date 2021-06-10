@@ -78,9 +78,6 @@ class WindowsCoOccurrenceVectorizer:
         indptr = np.asarray(indptr, dtype=np.int32)
         values = np.frombuffer(values, dtype=np.intc)
 
-        X = scipy.sparse.csr_matrix((values, jj, indptr),
-                          shape=(len(indptr) - 1, len(vocabulary)),
-                          dtype=self.dtype)
+        X = scipy.sparse.csr_matrix((values, jj, indptr), shape=(len(indptr) - 1, len(vocabulary)), dtype=self.dtype)
         X.sort_indices()
         return X
-
