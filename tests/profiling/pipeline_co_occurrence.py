@@ -3,7 +3,7 @@ from os.path import join as jj
 from penelope import corpus as corpora
 from penelope import pipeline, utility, workflows
 from penelope.co_occurrence import ContextOpts
-from penelope.corpus.dtm import WORD_PAIR_SEPERATOR
+from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.notebook.interface import ComputeOpts
 
 DATA_FOLDER = "./tests/test_data"
@@ -60,7 +60,7 @@ compute_opts = ComputeOpts(
         pos_excludes=POS_EXLUDES,
         pos_paddings=POS_PADDINGS,
         passthrough_tokens=[],
-        block_tokens=[WORD_PAIR_SEPERATOR],
+        block_tokens=[WORD_PAIR_DELIMITER],
         append_pos=False,
     ),
     filter_opts=utility.PropertyValueMaskingOpts(),

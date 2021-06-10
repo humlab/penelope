@@ -1,6 +1,6 @@
 import IPython.display
 import pandas as pd
-from penelope.corpus.dtm import WORD_PAIR_SEPERATOR
+from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.utility import try_split_column
 
 from ...ipyaggrid_utility import display_grid
@@ -54,7 +54,7 @@ class UnnestedExplodeTableDisplayer(UnnestedTableDisplayer):
     def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
         df: pd.DataFrame = super().create_data_frame(plot_data, category_name)
 
-        df = try_split_column(df, "token", WORD_PAIR_SEPERATOR, ["w1", "w2"], drop_source=False)
+        df = try_split_column(df, "token", WORD_PAIR_DELIMITER, ["w1", "w2"], drop_source=False)
 
         if 'w1' not in df.columns:
             df = try_split_column(df, "token", "@", ["token", "pos"], drop_source=False)

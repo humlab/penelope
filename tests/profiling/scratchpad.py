@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from penelope.co_occurrence import load_co_occurrences
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id
-from penelope.corpus.dtm import WORD_PAIR_SEPERATOR
+from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 
 jj = os.path.join
 
@@ -31,9 +31,9 @@ co_occurrences.head()
 
 # %%
 
-to_token = lambda x: token2id.id2token.get(x, '').replace(WORD_PAIR_SEPERATOR, '')
+to_token = lambda x: token2id.id2token.get(x, '').replace(WORD_PAIR_DELIMITER, '')
 token_pairs = co_occurrences[["w1_id", "w2_id"]].drop_duplicates()
-token_pairs["token"] = token_pairs.w1_id.apply(to_token) + WORD_PAIR_SEPERATOR + token_pairs.w2_id.apply(to_token)
+token_pairs["token"] = token_pairs.w1_id.apply(to_token) + WORD_PAIR_DELIMITER + token_pairs.w2_id.apply(to_token)
 token_pairs["token_id"] = token_pairs.index
 
 vocabulary = token_pairs.set_index("token").to_dict()

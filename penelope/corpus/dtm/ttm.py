@@ -163,10 +163,10 @@ class CoOccurrenceMixIn:
     ) -> Tuple[VectorizedCorpus, Mapping[Tuple[int, int], int]]:
         """Creates a co-occurrence DTM corpus from a co-occurrences data frame.
 
-           A "word-pair token" in the corpus' vocabulary has the form "w1 WORD_PAIR_SEP w2".
+           A "word-pair token" in the corpus' vocabulary has the form "w1 WORD_PAIR_DELIMITER w2".
 
            The mapping between the two vocabulary is stored in self.payload['vocabs_mapping]
-           The mapping translates identities for (w1,w2) to identity for "w1 WORD_PAIR_SEP w2".
+           The mapping translates identities for (w1,w2) to identity for "w1 WORD_PAIR_DELIMITER w2".
 
 
         Args:
@@ -223,7 +223,7 @@ class CoOccurrenceMixIn:
         Keyness values are computed for each partition as specified by pivot_key.
 
         Note: Corpus must be a co-occurrences corpus!
-              Tokens must be of the form "w1 WORD_PAIR_SEP w2".
+              Tokens must be of the form "w1 WORD_PAIR_DELIMITER w2".
               Supplied token2id must be vocabulary for single words "w1", "w2", ...
 
         Args:
