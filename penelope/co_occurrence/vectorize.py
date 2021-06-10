@@ -1,3 +1,4 @@
+import array
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Iterator, Mapping
@@ -29,13 +30,15 @@ class WindowsCoOccurrenceVectorizer:
 
         # self.vocabulary.ingest(itertools.chain(*windows))
 
-        vectorizer: CountVectorizer = CountVectorizer(
-            tokenizer=lambda x: x,
-            vocabulary=self.vocabulary.data,
-            lowercase=False,
-            dtype=self.dtype,
-        )
-        window_term_matrix: scipy.sparse.spmatrix = vectorizer.fit_transform(windows)
+        # vectorizer: CountVectorizer = CountVectorizer(
+        #     tokenizer=lambda x: x,
+        #     vocabulary=self.vocabulary.data,
+        #     lowercase=False,
+        #     dtype=self.dtype,
+        # )
+        # window_term_matrix: scipy.sparse.spmatrix = vectorizer.fit_transform(windows)
+
+        window_term_matrix: scipy.sparse.spmatrix = self.vectorize(windows)
 
         term_term_matrix: scipy.sparse.spmatrix = scipy.sparse.triu(
             np.dot(window_term_matrix.T, window_term_matrix),
@@ -55,3 +58,29 @@ class WindowsCoOccurrenceVectorizer:
 
         window_counter: Mapping[int, int] = {i: window_counts[i] for i in window_counts.nonzero()[0]}
         return window_counter
+
+    def vectorize(self, windows: Iterator[Iterator[str]]) -> scipy.sparse.spmatrix:
+        """Optimized/simplified version of sklearn.feature_extraction.text._count_vocab"""
+        vocabulary = self.vocabulary
+        fg = vocabulary.data.get
+        indptr, jj = [], []
+
+        values = array.array(str("i"))
+        indptr.append(0)
+
+        for window in windows:
+            token_counter: Counter = Counter(fg(t) for t in window)
+            jj.extend(token_counter.keys())
+            values.extend(token_counter.values())
+            indptr.append(len(jj))
+
+        jj = np.asarray(jj, dtype=np.int64)
+        indptr = np.asarray(indptr, dtype=np.int32)
+        values = np.frombuffer(values, dtype=np.intc)
+
+        X = scipy.sparse.csr_matrix((values, jj, indptr),
+                          shape=(len(indptr) - 1, len(vocabulary)),
+                          dtype=self.dtype)
+        X.sort_indices()
+        return X
+

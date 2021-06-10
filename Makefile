@@ -5,6 +5,8 @@ PACKAGE_FOLDER=penelope
 SPACY_MODEL=en_core_web_sm
 PYTEST_ARGS=--durations=0 --cov=$(PACKAGE_FOLDER) --cov-report=xml --cov-report=html tests
 
+RUN_TIMESTAMP := $(shell /bin/date "+%Y-%m-%d-%H%M%S")
+
 fast-release: clean tidy build guard_clean_working_repository bump.patch tag publish
 
 release: ready guard_clean_working_repository bump.patch tag
@@ -167,7 +169,7 @@ check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
 profile-co_occurrence:
-	@poetry run python -m pyinstrument -o ./profiling_pipeline_co_occurrence.log ./tests/profiling/pipeline_co_occurrence.py
+	@poetry run python -m pyinstrument -r html -o ./$(RUN_TIMESTAMP)_co_occurrence_profile.html ./tests/profiling/pipeline_co_occurrence.py
 
 .PHONY: stubs
 stubs:
