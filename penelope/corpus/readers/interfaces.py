@@ -79,6 +79,7 @@ class ExtractTaggedTokensOpts:
     to_lowercase: bool = False
 
     block_tokens: List[str] = field(default_factory=list)
+    block_chars: str = ""
 
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()

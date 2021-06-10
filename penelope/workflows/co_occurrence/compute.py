@@ -38,7 +38,8 @@ def compute(
         )
 
         args.extract_opts.passthrough_tokens = args.context_opts.concept
-        args.extract_opts.block_tokens = ['/']
+        args.extract_opts.block_tokens = []
+        args.extract_opts.block_chars = ''
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline

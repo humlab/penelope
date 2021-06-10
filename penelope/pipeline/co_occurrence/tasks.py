@@ -16,6 +16,7 @@ from penelope.co_occurrence import (
     tokens_to_windows,
 )
 from penelope.corpus import Token2Id, VectorizedCorpus
+from penelope.corpus.dtm import to_word_pair_token
 from penelope.type_alias import DocumentIndex
 
 from ..interfaces import ContentType, DocumentPayload, ITask
@@ -37,12 +38,12 @@ def TTM_to_co_occurrence_DTM(
 
     """Ingest token-pairs into new COO-vocabulary using existing token vocabulary"""
     vocabulary: Token2Id = Token2Id()
+
     fg: Callable[[int], str] = token2id.id2token.get
 
     for item in stream:
         TTM: scipy.sparse.spmatrix = item.term_term_matrix
-
-        vocabulary.ingest(f"{fg(a)}/{fg(b)}" for (a, b) in zip(TTM.row, TTM.col))
+        vocabulary.ingest(to_word_pair_token(a, b, fg) for (a, b) in zip(TTM.row, TTM.col))
 
     vocabulary.close()
 
@@ -53,7 +54,7 @@ def TTM_to_co_occurrence_DTM(
         TTM: scipy.sparse.spmatrix = item.term_term_matrix
 
         """Translate token-pair ids into id in new COO-vocabulary"""
-        token_ids = [vocabulary[f"{fg(a)}/{fg(b)}"] for (a, b) in zip(TTM.row, TTM.col)]
+        token_ids = [vocabulary[to_word_pair_token(a, b, fg)] for (a, b) in zip(TTM.row, TTM.col)]
 
         matrix[item.document_id, [token_ids]] = TTM.data
 

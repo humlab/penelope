@@ -88,6 +88,10 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         doc[target] = doc[target].str.lower()
         passthroughs = {x.lower() for x in passthroughs}
 
+    if extract_opts.block_chars:
+        for char in extract_opts.block_chars:
+            doc[target] = doc[target].str.replace(char, '', regex=False)
+
     """ Phrase detection """
     if extract_opts.phrases is not None:
         found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=extract_opts.to_lowercase)

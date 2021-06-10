@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, to_filename
 from penelope.co_occurrence.prepare import decode_tokens
-from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper
+from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper, to_word_pair_token
 from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 jj = os.path.join
@@ -121,8 +121,8 @@ def test_create_co_occurrence_vocabulary():
 
     id2token = {v: k for k, v in vocab.items()}
 
-    fg = bundle.token2id.id2token
-    assert all(f"{fg[k[0]]}/{fg[k[1]]}" == id2token[v] for k, v in vocab_mapping.items())
+    fg = bundle.token2id.id2token.get
+    assert all(to_word_pair_token(k[0], k[1], fg) == id2token[v] for k, v in vocab_mapping.items())
 
     tokens: pd.Series = (
         co_occurrences[['w1_id', 'w2_id']].apply(lambda x: vocab_mapping.get((x[0], x[1])), axis=1).apply(id2token.get)

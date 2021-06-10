@@ -401,7 +401,7 @@ class BaseGUI:
             pos_excludes=f"|{'|'.join(better_flatten(self._pos_excludes.value))}|",
             lemmatize=self._lemmatize.value,
             passthrough_tokens=[],
-            block_tokens=['/'],
+            block_tokens=[],
             phrases=self.phrases,
             to_lowercase=self._to_lowercase.value,
             append_pos=self._append_pos_tag.value,

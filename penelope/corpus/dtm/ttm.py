@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
@@ -30,13 +30,22 @@ def empty_data() -> pd.DataFrame:
     return frame
 
 
+WORD_PAIR_DELIMITER = "/"
+
+
+def to_word_pair_token(w1_id: int, w2_id: int, fg: Callable[[int], str]) -> str:
+    w1 = fg(w1_id, '').replace(WORD_PAIR_DELIMITER, '')
+    w2 = fg(w2_id, '').replace(WORD_PAIR_DELIMITER, '')
+    return f"{w1}{WORD_PAIR_DELIMITER}{w2}"
+
+
 class CoOccurrenceVocabularyHelper:
     @staticmethod
     def extract_vocabs_mapping_from_co_occurrences(co_occurrences: pd.DataFrame) -> Mapping[Tuple[int, int], int]:
-        """Returns a mapping between source/co-occurrence vocabularies"""
+        """Returns a mapping between source vocabulary and co-occurrence vocabulary"""
 
         if 'w1_id' not in co_occurrences.columns or 'token_id' not in co_occurrences.columns:
-            raise ValueError("fata: cannot create mapping when word ids are missing")
+            raise ValueError("fatal: cannot create mapping when word ids are missing")
 
         vocabs_mapping: Mapping[Tuple[int, int], int] = (
             co_occurrences[["w1_id", "w2_id", "token_id"]]
@@ -52,17 +61,22 @@ class CoOccurrenceVocabularyHelper:
         corpus: VectorizedCorpus, token2id: Token2Id
     ) -> Mapping[Tuple[int, int], int]:
         """Creates a map from co-occurrence corpus (word-pairs) to source corpus vocabulay (single words)"""
-        mapping = {tuple(map(token2id.get, token.split("/"))): token_id for token, token_id in corpus.token2id.items()}
+        mapping = {
+            tuple(map(token2id.get, token.split(WORD_PAIR_DELIMITER))): token_id
+            for token, token_id in corpus.token2id.items()
+        }
         return mapping
 
     @staticmethod
     def create_co_occurrence_vocabulary(co_occurrences: pd.DataFrame, token2id: Token2Id) -> Tuple[dict, pd.Series]:
         """Returns a new vocabulary for word-pairs in `co_occurrences`"""
 
-        to_token = token2id.id2token.get
+        to_token = lambda x: token2id.id2token.get(x, '').replace(WORD_PAIR_DELIMITER, '')
         token_pairs: pd.DataFrame = co_occurrences[["w1_id", "w2_id"]].drop_duplicates().reset_index(drop=True)
         token_pairs["token_id"] = token_pairs.index
-        token_pairs["token"] = token_pairs.w1_id.apply(to_token) + "/" + token_pairs.w2_id.apply(to_token)
+        token_pairs["token"] = (
+            token_pairs.w1_id.apply(to_token) + WORD_PAIR_DELIMITER + token_pairs.w2_id.apply(to_token)
+        )
 
         """Create a new vocabulary"""
         vocabulary = token_pairs.set_index("token").token_id.to_dict()
@@ -149,10 +163,10 @@ class CoOccurrenceMixIn:
     ) -> Tuple[VectorizedCorpus, Mapping[Tuple[int, int], int]]:
         """Creates a co-occurrence DTM corpus from a co-occurrences data frame.
 
-           A "word-pair token" in the corpus' vocabulary has the form "w1/w2".
+           A "word-pair token" in the corpus' vocabulary has the form "w1 WORD_PAIR_SEP w2".
 
            The mapping between the two vocabulary is stored in self.payload['vocabs_mapping]
-           The mapping translates identities for (w1,w2) to identity for "w1/w2".
+           The mapping translates identities for (w1,w2) to identity for "w1 WORD_PAIR_SEP w2".
 
 
         Args:
@@ -209,7 +223,7 @@ class CoOccurrenceMixIn:
         Keyness values are computed for each partition as specified by pivot_key.
 
         Note: Corpus must be a co-occurrences corpus!
-              Tokens must be of the form "w1/w2".
+              Tokens must be of the form "w1 WORD_PAIR_SEP w2".
               Supplied token2id must be vocabulary for single words "w1", "w2", ...
 
         Args:

@@ -101,7 +101,7 @@ def test_generate_cli_opts():
             pos_excludes=None,
             pos_paddings="MID|MAD|PAD",
             passthrough_tokens=[],
-            block_tokens=['/'],
+            block_tokens=[],
             append_pos=False,
         ),
         filter_opts=PropertyValueMaskingOpts(),
