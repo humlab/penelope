@@ -112,6 +112,8 @@ class ToCoOccurrenceDTM(ITask):
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
 
+        _ = self.token2id[self.context_opts.pad]
+
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
 
         result: WindowsCoOccurrenceOutput = self.vectorizer.fit_transform(windows)

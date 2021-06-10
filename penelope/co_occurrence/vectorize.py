@@ -6,7 +6,6 @@ from typing import Any, Iterator, Mapping
 import numpy as np
 import scipy
 from penelope.corpus import Token2Id
-from sklearn.feature_extraction.text import CountVectorizer
 
 
 @dataclass
