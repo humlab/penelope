@@ -60,7 +60,7 @@ compute_opts = ComputeOpts(
         pos_excludes=POS_EXLUDES,
         pos_paddings=POS_PADDINGS,
         passthrough_tokens=[],
-        block_tokens=[WORD_PAIR_DELIMITER],
+        block_tokens=[],
         append_pos=False,
     ),
     filter_opts=utility.PropertyValueMaskingOpts(),

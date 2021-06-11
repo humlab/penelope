@@ -80,7 +80,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         raise ValueError(f"{target} is not valid target for given document (missing column)")
 
     passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
-    blocks: Set[str] = extract_opts.get_block_tokens()
+    blocks: Set[str] = extract_opts.get_block_tokens().union('')
     pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
     # FIXME: Make filter non-destructive (don't change dataframe)
@@ -88,9 +88,9 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
         doc[target] = doc[target].str.lower()
         passthroughs = {x.lower() for x in passthroughs}
 
-    if extract_opts.block_chars:
-        for char in extract_opts.block_chars:
-            doc[target] = doc[target].str.replace(char, '', regex=False)
+    # if extract_opts.block_chars:
+    #     for char in extract_opts.block_chars:
+    #         doc[target] = doc[target].str.replace(char, '', regex=False)
 
     """ Phrase detection """
     if extract_opts.phrases is not None:
