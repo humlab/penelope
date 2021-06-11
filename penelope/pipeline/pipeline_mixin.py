@@ -111,8 +111,8 @@ class PipelineShortcutMixIn:
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())
 
-    def tqdm(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
-        return self.add(tasks.Tqdm())
+    def tqdm(self: pipelines.CorpusPipeline, desc: str=None) -> pipelines.CorpusPipeline:
+        return self.add(tasks.Tqdm(desc=desc))
 
     def passthrough(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.Passthrough())
@@ -123,8 +123,11 @@ class PipelineShortcutMixIn:
     def project(self: pipelines.CorpusPipeline, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
         return self.add(tasks.Project(project=project))
 
-    def vocabulary(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
-        return self.add(tasks.Vocabulary())
+    def vocabulary(self: pipelines.CorpusPipeline, lemmatize: bool) -> pipelines.CorpusPipeline:
+        token_type: tasks.Vocabulary.TokenType = (
+            tasks.Vocabulary.TokenType.Lemma if lemmatize else tasks.Vocabulary.TokenType.Text
+        )
+        return self.add(tasks.Vocabulary(token_type=token_type))
 
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
