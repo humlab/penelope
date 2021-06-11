@@ -54,7 +54,6 @@ class ToDocumentCoOccurrence(ITask):
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
 
-        # FIXME: If keep, then make use of window_counts!
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
         windows_ttm_matrix, _ = self.vectorizer.fit_transform(windows)
         co_occurrences = term_term_matrix_to_co_occurrences(
