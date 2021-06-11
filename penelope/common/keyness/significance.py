@@ -56,7 +56,8 @@ LLR_significance = 2 * ((k * log(k)) - (ki * log(ki)) - (kj * log(kj)) + (kij * 
 
 def _pmi(Cij, Z, Zr, ii, jj, *_, normalize=False):
     """Computes PMI (pointwise mutual information)"""
-    values = np.log(Cij * Z / (Zr[ii] * Zr[jj]))
+    with np.errstate(divide='ignore'):
+        values = np.log(Cij * Z / (Zr[ii] * Zr[jj]))
     return values
 
 
@@ -70,7 +71,8 @@ def _ppmi(Cij, Z, Zr, ii, jj, *_, normalize=False):
 
 def _dice(Cij, Z, Zr, ii, jj, *_, normalize=False):
     """Computes DICE coefficient ratio"""
-    values = 2.0 * Cij / (Zr[ii] + Zr[jj])
+    with np.errstate(divide='ignore'):
+        values = 2.0 * Cij / (Zr[ii] + Zr[jj])
     return values
 
 
