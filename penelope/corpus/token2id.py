@@ -1,26 +1,28 @@
 import pathlib
 import zipfile
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import MutableMapping
+from copyreg import pickle
 from fnmatch import fnmatch
 from typing import Iterator, List, Optional, Union
 
 import pandas as pd
 from loguru import logger
-from penelope.utility import replace_extension, strip_paths
+from penelope.utility import path_add_suffix, replace_extension, strip_paths
+from penelope.utility.file_utility import pickle_to_file, unpickle_from_file
 
 
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
-    def __init__(self, data: Optional[Union[dict, defaultdict]] = None, lowercase: bool = False):
+    def __init__(self, data: Optional[Union[dict, defaultdict]] = None, tf: Counter = None):
         if isinstance(data, defaultdict):
             self.data = data
         elif isinstance(data, dict):
             self.data = defaultdict(int, data)
         else:
             self.data = data or defaultdict()
-        self.lowercase: bool = lowercase
+        self.tf: Counter = tf
         self.data.default_factory = self.data.__len__
         self._id2token: dict = None
 
@@ -30,8 +32,6 @@ class Token2Id(MutableMapping):
     def __setitem__(self, key: str, value):
         if self._id2token:
             self._id2token = None
-        if self.lowercase:
-            key = key.lower()
         self.data[key] = value
 
     def __delitem__(self, key):
@@ -46,13 +46,11 @@ class Token2Id(MutableMapping):
         return len(self.data)
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
+        if self.tf is None:
+            self.tf = Counter()
         self._id2token = None
-        if self.lowercase:
-            for token in tokens:
-                _ = self.data[token.lower()]
-        else:
-            for token in tokens:
-                _ = self.data[token]
+        token_ids = [self.data[t] for t in tokens]
+        self.tf.update(token_ids)
         return self
 
     def is_open(self) -> bool:
@@ -79,20 +77,37 @@ class Token2Id(MutableMapping):
 
     def store(self, filename: str):
         """Store dictionary as CSV"""
+
         # pandas_to_csv_zip(filename, dfs=(self.to_dataframe(), strip_paths(filename)), sep='\t', header=True)
         with zipfile.ZipFile(filename, mode='w', compression=zipfile.ZIP_DEFLATED) as fp:
             data_str = self.to_dataframe().to_csv(sep='\t', header=True)
             fp.writestr(replace_extension(strip_paths(filename), ".csv"), data=data_str)
 
+        self.store_tf(filename)
+
     @staticmethod
     def load(filename: str) -> "Token2Id":
         """Store dictionary as CSV"""
         if not pathlib.Path(filename).exists():
-            logger.info("bundle has no vocabulary")
+            logger.info(f"Token2Id.load: filename {filename} not found")
             return None
         df: pd.DataFrame = pd.read_csv(filename, sep='\t', index_col=0, na_filter=False)
         data: dict = df['token_id'].to_dict()
-        return Token2Id(data=data)
+        tf: Counter = Token2Id.load_tf(filename)
+        token2id: Token2Id = Token2Id(data=data, tf=tf)
+        return token2id
+
+    @staticmethod
+    def load_tf(filename: str) -> Optional[Counter]:
+        tf_filename: str = path_add_suffix(filename, "_tf", new_extension=".pbz2")
+        tf: Counter = unpickle_from_file(tf_filename) if pathlib.Path(tf_filename).exists() else None
+        return tf
+
+    def store_tf(self, filename: str) -> None:
+        if not self.tf:
+            return
+        tf_filename: str = path_add_suffix(filename, "_tf", new_extension=".pbz2")
+        pickle_to_file(tf_filename, self.tf)
 
     def to_ids(self, tokens: List[str]) -> List[int]:
         return [self.data[w] for w in tokens]
