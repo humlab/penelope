@@ -40,6 +40,7 @@ def compute(
         args.extract_opts.passthrough_tokens = args.context_opts.concept
         args.extract_opts.block_tokens = []
         # args.extract_opts.block_chars = ''
+        args.extract_opts.global_count_threshold = args.count_threshold
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
