@@ -663,8 +663,8 @@ class TextToDTM(ITask):
 @dataclass
 class Vocabulary(ITask):
     class TokenType(IntEnum):
-        Text = (1,)
-        Lemma = (2,)
+        Text = 1
+        Lemma = 2
         Both = 3
 
     token2id: Token2Id = None
