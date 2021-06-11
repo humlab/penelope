@@ -2,7 +2,6 @@ import pathlib
 import zipfile
 from collections import Counter, defaultdict
 from collections.abc import MutableMapping
-from copyreg import pickle
 from fnmatch import fnmatch
 from typing import Iterator, List, Optional, Union
 
@@ -35,8 +34,6 @@ class Token2Id(MutableMapping):
         self.data[key] = value
 
     def __delitem__(self, key):
-        if self.lowercase:
-            key = key.lower()
         del self.data[key]
 
     def __iter__(self):
