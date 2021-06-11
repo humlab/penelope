@@ -155,10 +155,13 @@ class ToCorpusCoOccurrenceDTM(ITask):
     def process_stream(self) -> VectorizedCorpus:
 
         if self.document_index is None:
-            raise CoOccurrenceError("expected document index found no such thingNone")
+            raise CoOccurrenceError("expected document index found no such thing")
 
         # FIXME: Do NOT expand stream to list
         stream: Iterable[CoOccurrencePayload] = [payload.content for payload in self.instream if not payload.is_empty]
+
+        # Prevent new tokens from being added
+        self.pipeline.payload.token2id.close()
 
         # FIXME: These test only valid when at least one payload has been processed
         if 'n_tokens' not in self.document_index.columns:
