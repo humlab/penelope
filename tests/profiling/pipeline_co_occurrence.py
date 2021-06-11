@@ -3,7 +3,6 @@ from os.path import join as jj
 from penelope import corpus as corpora
 from penelope import pipeline, utility, workflows
 from penelope.co_occurrence import ContextOpts
-from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.notebook.interface import ComputeOpts
 
 DATA_FOLDER = "./tests/test_data"
