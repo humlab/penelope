@@ -2,6 +2,7 @@ import contextlib
 import glob
 import itertools
 import os
+from penelope.pipeline.checkpoint.interface import CheckpointData
 import shutil
 import zipfile
 from contextlib import suppress
@@ -85,6 +86,7 @@ class LoadText(DefaultResolveMixIn, ITask):
 class Tqdm(ITask):
 
     tbar = None
+    desc: str = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
@@ -93,6 +95,7 @@ class Tqdm(ITask):
     def setup(self) -> ITask:
         super().setup()
         self.tbar = tqdm(
+            desc=self.desc,
             position=0,
             leave=True,
             total=len(self.document_index) if self.document_index is not None else None,
@@ -230,8 +233,8 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
-    checkpoint_opts: checkpoint.CheckpointOpts = None
-    extra_reader_opts: TextReaderOpts = None  # Use if e.g. document index should be created
+    checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
+    extra_reader_opts: Optional[TextReaderOpts] = None  # Use if e.g. document index should be created
     checkpoint_data: checkpoint.CheckpointData = field(default=None, init=None, repr=None)
 
     def __post_init__(self):
@@ -240,20 +243,25 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
-        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
-        self.checkpoint_data = checkpoint.load_checkpoint(
-            self.filename,
-            checkpoint_opts=self.checkpoint_opts,
-            reader_opts=self.extra_reader_opts,
-        )
-        self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
 
         self.pipeline.put("reader_opts", self.extra_reader_opts.props)
         self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
 
+        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
+        self.checkpoint_data: checkpoint.CheckpointData = self.create_checkpoint_data()
+        self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
+
         self.instream = (payload for payload in self.checkpoint_data.payload_stream)
 
         return self
+
+    def create_checkpoint_data(self) -> CheckpointData:
+        checkpoint_data: CheckpointData = checkpoint.load_checkpoint(
+            self.filename,
+            checkpoint_opts=self.checkpoint_opts,
+            reader_opts=self.extra_reader_opts,
+        )
+        return checkpoint_data
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
