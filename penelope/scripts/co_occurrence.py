@@ -6,7 +6,7 @@ import penelope.notebook.interface as interface
 import penelope.workflows as workflows
 from loguru import logger
 from penelope.co_occurrence import ContextOpts, to_folder_and_tag
-from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.convert import parse_phrases
 from penelope.utility import PropertyValueMaskingOpts
@@ -19,6 +19,7 @@ from penelope.utility.pos_tags import pos_tags_to_str
 @click.argument('corpus_config', type=click.STRING)  # , help='Model name.')
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
+@click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
 @click.option('--no-concept', default=False, is_flag=True, help='Filter out concept word')
 @click.option('--count-threshold', default=None, help='Filter out co_occurrences below threshold', type=click.INT)
@@ -70,6 +71,7 @@ def main(
     corpus_config: str = None,
     input_filename: str = None,
     output_filename: str = None,
+    filename_pattern: str = None,
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
@@ -97,6 +99,7 @@ def main(
         corpus_config=corpus_config,
         input_filename=input_filename,
         output_filename=output_filename,
+        filename_pattern=filename_pattern,
         concept=concept,
         no_concept=no_concept,
         context_width=context_width,
@@ -126,6 +129,7 @@ def process_co_ocurrence(
     corpus_config: str = None,
     input_filename: str = None,
     output_filename: str = None,
+    filename_pattern: str = None,
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
@@ -161,6 +165,11 @@ def process_co_ocurrence(
             pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
             logger.info(f"PoS paddings expanded to: {pos_paddings}")
 
+        text_reader_opts: TextReaderOpts = corpus_config.text_reader_opts.copy()
+
+        if filename_pattern is not None:
+            text_reader_opts.filename_pattern = filename_pattern
+
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
             corpus_filename=input_filename,
@@ -181,7 +190,7 @@ def process_co_ocurrence(
                 only_alphabetic=only_alphabetic,
                 only_any_alphanumeric=only_any_alphanumeric,
             ),
-            text_reader_opts=corpus_config.text_reader_opts,
+            text_reader_opts=text_reader_opts,
             extract_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
                 pos_paddings=pos_paddings,
