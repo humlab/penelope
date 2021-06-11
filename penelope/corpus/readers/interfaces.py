@@ -81,6 +81,11 @@ class ExtractTaggedTokensOpts:
     block_tokens: List[str] = field(default_factory=list)
     # block_chars: str = ""
 
+    """Global term frequency threshold"""
+    global_count_threshold: int = 1
+    """Global term frequency threshold"""
+    global_count_threshold_mask: str = "--MASKED--"
+
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
 

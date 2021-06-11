@@ -170,11 +170,11 @@ def load_checkpoint(
         parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
     )
 
-    payload_stream = deserialized_stream(source_name, checkpoint_opts, filenames)
+    create_stream = lambda: deserialized_stream(source_name, checkpoint_opts, filenames)
 
     data: CheckpointData = CheckpointData(
         content_type=checkpoint_opts.content_type,
-        payload_stream=payload_stream,
+        create_stream=create_stream,
         document_index=document_index,
         token2id=token2id,
         checkpoint_opts=checkpoint_opts,

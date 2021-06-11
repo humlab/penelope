@@ -228,6 +228,10 @@ class PipelinePayload:
         return self
 
 
+class ResetNotApplicableError(Exception):
+    ...
+
+
 @dataclass
 class ITask(abc.ABC):
 
@@ -304,6 +308,10 @@ class ITask(abc.ABC):
         """Stores document properties to document index"""
         payload.update_properties(**properties)
         self.pipeline.payload.update_document_properties(payload.document_name, **properties)
+
+    # FIXME: #114 Enable reset of payload stream (when applicable)
+    def reset(self) -> None:
+        raise ResetNotApplicableError()
 
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]

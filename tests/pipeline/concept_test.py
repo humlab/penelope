@@ -16,7 +16,7 @@ def test_phrased_tagged_frame():
     data = checkpoint.load_checkpoint(
         source_name=checkpoint_filename, checkpoint_opts=checkpoint_opts, reader_opts=None
     )
-    payload = next(data.payload_stream)
+    payload = next(data.create_stream())
 
     tokens = tagged_frame_to_tokens(
         payload.content,

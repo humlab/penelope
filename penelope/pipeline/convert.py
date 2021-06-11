@@ -7,6 +7,7 @@ from loguru import logger
 from penelope.corpus import (
     CorpusVectorizer,
     DocumentIndex,
+    Token2Id,
     TokensTransformOpts,
     VectorizedCorpus,
     VectorizeOpts,
@@ -41,9 +42,10 @@ def to_vectorized_corpus(
     return corpus
 
 
-def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
+def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-statements
     doc: TaggedFrame,
     extract_opts: ExtractTaggedTokensOpts,
+    token2id: Token2Id = None,
     filter_opts: PropertyValueMaskingOpts = None,
     text_column: str = 'text',
     lemma_column: str = 'lemma_',
@@ -83,8 +85,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     blocks: Set[str] = extract_opts.get_block_tokens().union('')
     pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
-    # FIXME: Make filter non-destructive (don't change dataframe)
-    if extract_opts.to_lowercase or (transform_opts and transform_opts.to_lower):
+    if extract_opts.to_lowercase or extract_opts.lemmatize or (transform_opts and transform_opts.to_lower):
         doc[target] = doc[target].str.lower()
         passthroughs = {x.lower() for x in passthroughs}
 
@@ -121,8 +122,30 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments
     if len(blocks) > 0:
         mask &= ~doc[target].isin(blocks)
 
-    # TODO: #73 PENELOPE: Improve overall system performance
-    token_pos_tuples = doc.loc[mask][[target, pos_column]].itertuples(index=False, name=None)
+    masked_data = doc.loc[mask][[target, pos_column]].copy()
+
+    if extract_opts.global_count_threshold > 1:
+        """
+        If global_count_threshold_mask is None, then filter out tokens below threshold
+        Otherwise replace token with `global_count_threshold_mask`
+        """
+        if token2id is None or token2id.tf is None:
+            raise ValueError("Token2Id.TF not avaliable when mask_threshold_count was requested")
+
+        tg = token2id.data.get
+        cg = token2id.tf.get
+
+        masked_data['token_id'] = masked_data['target'].apply(tg)
+        masked_data['count'] = masked_data.token_id.apply(cg)
+
+        if extract_opts.global_count_threshold_mask:
+            masked_data[
+                masked_data.count >= extract_opts.global_count_threshold, target
+            ] = extract_opts.global_count_threshold_mask
+        else:
+            masked_data = masked_data[masked_data.count >= extract_opts.global_count_threshold]
+
+    token_pos_tuples = masked_data.itertuples(index=False, name=None)
 
     if len(pos_paddings) > 0:
         # token_pos_tuples = map(

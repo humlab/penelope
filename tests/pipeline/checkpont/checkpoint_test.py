@@ -21,7 +21,7 @@ def test_load_tagged_frame_checkpoint():
     assert data.source_name == "legal_instrument_five_docs_test_pos_csv.zip"
     assert len(data.document_index) == 5
 
-    payloads = [x for x in data.payload_stream]
+    payloads = [x for x in data.create_stream()]
     assert len(payloads) == 5
     assert all(x.filename in data.document_index.filename.to_list() for x in payloads)
 
@@ -32,7 +32,7 @@ def test_load_tagged_frame_checkpoint():
         checkpoint_opts=checkpoint_opts,
         reader_opts=TextReaderOpts(filename_filter=whitelist),
     )
-    assert {x.filename for x in data.payload_stream} == whitelist
+    assert {x.filename for x in data.create_stream()} == whitelist
     assert {x for x in data.document_index.filename.to_list()} == whitelist
 
     """Test reader_opts filter by a predicate"""
@@ -44,7 +44,7 @@ def test_load_tagged_frame_checkpoint():
         checkpoint_opts=checkpoint_opts,
         reader_opts=TextReaderOpts(filename_filter=whitelister),
     )
-    assert {x.filename for x in data.payload_stream} == expected_documents
+    assert {x.filename for x in data.create_stream()} == expected_documents
     assert {x for x in data.document_index.filename.to_list()} == expected_documents
 
 

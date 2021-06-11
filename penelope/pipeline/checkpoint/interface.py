@@ -2,7 +2,7 @@ import abc
 import copy
 import csv
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Callable, Iterable, List, Optional, Union
 
 from penelope.corpus import DocumentIndex, Token2Id
 from penelope.utility import create_instance, dictify
@@ -83,7 +83,7 @@ class CheckpointData:
     content_type: ContentType = ContentType.NONE
     document_index: DocumentIndex = None
     token2id: Token2Id = None
-    payload_stream: Iterable[DocumentPayload] = None
+    create_stream: Callable[[], Iterable[DocumentPayload]] = None
     checkpoint_opts: CheckpointOpts = None
 
 
