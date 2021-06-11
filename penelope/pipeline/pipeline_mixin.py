@@ -132,7 +132,6 @@ class PipelineShortcutMixIn:
         extract_opts: Optional[ExtractTaggedTokensOpts],
         transform_opts: Optional[TokensTransformOpts],
         filter_opts: Optional[PropertyValueMaskingOpts],
-        
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.TaggedFrameToTokens(
