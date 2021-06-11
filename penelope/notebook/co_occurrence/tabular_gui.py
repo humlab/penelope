@@ -6,11 +6,6 @@ from typing import List, Set
 import IPython.display as IPython_display
 import numpy as np
 import pandas as pd
-
-# import panel as pn
-from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
-
-# from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.common.keyness import KeynessMetric
@@ -20,18 +15,31 @@ from penelope.utility import path_add_timestamp
 from perspective import PerspectiveWidget
 
 # pylint: disable=too-many-instance-attributes
-USE_PERSPECTIVE = True
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
 
-PANEL_FORMATTERS = {
-    'category': NumberFormatter(format='0'),
-    'time_period': NumberFormatter(format='0'),
-    'year': NumberFormatter(format='0'),
-    'index': StringFormatter(),
-}
+
+def empty_data():
+    return pd.DataFrame(
+        data={
+            'time_period': pd.Series(data=[], dtype=np.int),
+            'w1': pd.Series(data=[], dtype=str),
+            'w2': pd.Series(data=[], dtype=str),
+            'value': pd.Series(data=[], dtype=str),
+        }
+    )
+
 
 CURRENT_BUNDLE = None
 
+# from IPython.display import display
+# import panel as pn
+# from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
+# PANEL_FORMATTERS = {
+#     'category': NumberFormatter(format='0'),
+#     'time_period': NumberFormatter(format='0'),
+#     'year': NumberFormatter(format='0'),
+#     'index': StringFormatter(),
+# }
 
 # class TabulatorTableView:
 #     def __init__(self, data=None):  # pylint: disable=unused-argument
@@ -58,27 +66,38 @@ CURRENT_BUNDLE = None
 
 
 class PerspectiveTableView:
-    def __init__(self, data=None):
+    def __init__(self, data: pd.DataFrame = None):
+        data = data if data is not None else empty_data()
         self.table: PerspectiveWidget = PerspectiveWidget(
             data,
             sort=[["token", "asc"]],
             aggregates={},
         )
         self.container = self.table
+        self.precision: int = 6
 
-    def update(self, data):
-        self.table.load(self.format_columns(data))
+    def update(self, data: pd.DataFrame) -> None:
+        self.table.replace(
+            data={
+                'time_period': data.time_period.apply(str),
+                'w1': data.w1,
+                'w2': data.w2,
+                'value': (
+                    data.value.apply(str)
+                    if np.issubdtype(data.value.dtype, np.integer)
+                    else data.value.apply(f"{{:10.{self.precision}f}}".format)
+                ),
+            }
+        )
 
-    def format_columns(self, data: pd.DataFrame, precision: int = 6):
-
-        for column in data.columns:
-            if np.issubdtype(data[column].dtype, np.integer):
-                data[column] = data[column].apply(str)
-
-            if np.issubdtype(data[column].dtype, np.inexact):
-                data[column] = data[column].apply(f"{{:10.{precision}f}}".format)
-
-        return data
+    # def format_columns(self, data: pd.DataFrame, precision: int = 6):
+    #     data = pd.DataFrame(data=data)
+    #     for column in data.columns:
+    #         if np.issubdtype(data[column].dtype, np.integer):
+    #             data[column] = data[column].apply(str)
+    #         if np.issubdtype(data[column].dtype, np.inexact):
+    #             data[column] = data[column].apply(f"{{:10.{precision}f}}".format)
+    #     return data
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
@@ -156,7 +175,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # self._display = Button(description='Update', layout=Layout(width='auto'))
         self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
-        self._table_view = PerspectiveTableView()
+        self._table_view = PerspectiveTableView(data=empty_data())
 
         # self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
         # self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))
