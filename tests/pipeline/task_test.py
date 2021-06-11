@@ -25,7 +25,7 @@ def test_task_vocabulary_token2id():
     )
 
     instream = MagicMock(spec=Iterable[DocumentPayload])
-    task: Vocabulary = Vocabulary(pipeline=pipeline, instream=instream).setup()
+    task: Vocabulary = Vocabulary(pipeline=pipeline, instream=instream, token_type=Vocabulary.TokenType.Lemma).setup()
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content,
@@ -34,16 +34,8 @@ def test_task_vocabulary_token2id():
 
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)
 
-    expected_tokens = tagged_frame.token.tolist() + tagged_frame.baseform.tolist()
-    assert expected_tokens == [x for x in task.tokens_iter(payload)]
-
-    payload_next = task.process_payload(payload=payload)
-
-    assert payload_next is not None
-    assert payload_next.content_type == ContentType.TAGGED_FRAME
-    assert payload_next.content is tagged_frame
-    assert len(set(expected_tokens)) == len(task.token2id)
-    assert task.token2id is pipeline.payload.token2id
+    expected_tokens = tagged_frame.baseform.tolist()
+    assert expected_tokens == [x for x in task.tokens_stream(payload)]
 
 
 def test_CheckpointFeather_write_document_index():
