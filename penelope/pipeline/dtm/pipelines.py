@@ -13,6 +13,13 @@ def wildcard_to_DTM_pipeline(
     try:
         p: CorpusPipeline = (
             wildcard()
+            .vocabulary(
+                lemmatize=extract_opts,
+                progress=True,
+                tf_threshold=extract_opts.global_tf_threshold,
+                tf_keeps=None,
+                close=True,
+            )
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
             # .tokens_transform(transform_opts=transform_opts)
             .to_document_content_tuple()
