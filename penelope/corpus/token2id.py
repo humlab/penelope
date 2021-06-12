@@ -3,12 +3,12 @@ import zipfile
 from collections import Counter, defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from typing import Iterator, List, Optional, Union
+from typing import Container, Iterator, List, Mapping, Optional, Union
 
 import pandas as pd
 from loguru import logger
-from penelope.utility import path_add_suffix, replace_extension, strip_paths
-from penelope.utility.file_utility import pickle_to_file, unpickle_from_file
+from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
+from penelope.utility import path_add_suffix, pickle_to_file, replace_extension, strip_paths, unpickle_from_file
 
 
 class Token2Id(MutableMapping):
@@ -24,6 +24,9 @@ class Token2Id(MutableMapping):
         self.tf: Counter = tf
         self.data.default_factory = self.data.__len__
         self._id2token: dict = None
+
+    def __contains__(self, key):
+        return key in self.data
 
     def __getitem__(self, key):
         return self.data[key]
@@ -50,11 +53,13 @@ class Token2Id(MutableMapping):
         self.tf.update(token_ids)
         return self
 
+    @property
     def is_open(self) -> bool:
         return self.data.default_factory is not None
 
     def close(self) -> "Token2Id":
         self.data.default_factory = None
+        return self
 
     def open(self) -> "Token2Id":
         self.data.default_factory = self.__len__
@@ -72,7 +77,7 @@ class Token2Id(MutableMapping):
         df: pd.DataFrame = pd.DataFrame({'token': self.data.keys(), 'token_id': self.data.values()}).set_index('token')
         return df
 
-    def store(self, filename: str):
+    def store(self, filename: str) -> "Token2Id":
         """Store dictionary as CSV"""
 
         # pandas_to_csv_zip(filename, dfs=(self.to_dataframe(), strip_paths(filename)), sep='\t', header=True)
@@ -81,6 +86,8 @@ class Token2Id(MutableMapping):
             fp.writestr(replace_extension(strip_paths(filename), ".csv"), data=data_str)
 
         self.store_tf(filename)
+
+        return self
 
     @staticmethod
     def load(filename: str) -> "Token2Id":
@@ -130,71 +137,45 @@ class Token2Id(MutableMapping):
 
         return [self[w] for w in set(matches)]
 
-    # def to_bow(self, documents: Iterator[Iterator[str]]):
+    def compress(self, tf_threshold: int = 1, inplace=False, keep_ids: Container[int] = None) -> "Token2Id":
+        """Returns a compressed version of corpus where tokens below threshold are removed"""
 
-    #     was_closed = not self.is_open()
+        if tf_threshold <= 1:
+            return self
 
-    #     self.open()
+        keep_ids: Container[int] = set(keep_ids) if keep_ids else set()
 
-    #     token2id = self.data
-    #     counter = defaultdict(int)
+        if self.tf is None:
+            raise ValueError("Token2Id.compress: cannot compress when TF counts is none!")
 
-    #     for w in document:
-    #         counter[token2id[w]] += 1
+        tf: Counter = self.tf
 
-    #     if was_closed:
-    #         self.close()
+        translation: Mapping[int, int] = {
+            token_id: (i, v)
+            for i, (token_id, v) in enumerate((k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keep_ids))
+        }
 
-    #     # result = sorted(result.items())
-    #     return result
+        new_tf: Counter = Counter({k: v for (k, v) in translation.values()})
+        new_data = {w: translation[i][0] for (w, i) in self.data.items() if i in translation}
 
-    # def corpus2csc(corpus, num_terms=None, dtype=np.float64, num_docs=None, num_nnz=None, printprogress=0):
-    #     try:
-    #         # if the input corpus has the `num_nnz`, `num_docs` and `num_terms` attributes
-    #         # (as is the case with MmCorpus for example), we can use a more efficient code path
-    #         if num_terms is None:
-    #             num_terms = corpus.num_terms
-    #         if num_docs is None:
-    #             num_docs = corpus.num_docs
-    #         if num_nnz is None:
-    #             num_nnz = corpus.num_nnz
-    #     except AttributeError:
-    #         pass  # not a MmCorpus...
-    #     if printprogress:
-    #         logger.info("creating sparse matrix from corpus")
-    #     if num_terms is not None and num_docs is not None and num_nnz is not None:
-    #         # faster and much more memory-friendly version of creating the sparse csc
-    #         posnow, indptr = 0, [0]
-    #         indices = np.empty((num_nnz,), dtype=np.int32)  # HACK assume feature ids fit in 32bit integer
-    #         data = np.empty((num_nnz,), dtype=dtype)
-    #         for docno, doc in enumerate(corpus):
-    #             if printprogress and docno % printprogress == 0:
-    #                 logger.info("PROGRESS: at document #%i/%i", docno, num_docs)
-    #             posnext = posnow + len(doc)
-    #             # zip(*doc) transforms doc to (token_indices, token_counts]
-    #             indices[posnow: posnext], data[posnow: posnext] = zip(*doc) if doc else ([], [])
-    #             indptr.append(posnext)
-    #             posnow = posnext
-    #         assert posnow == num_nnz, "mismatch between supplied and computed number of non-zeros"
-    #         result = scipy.sparse.csc_matrix((data, indices, indptr), shape=(num_terms, num_docs), dtype=dtype)
-    #     else:
-    #         # slower version; determine the sparse matrix parameters during iteration
-    #         num_nnz, data, indices, indptr = 0, [], [], [0]
-    #         for docno, doc in enumerate(corpus):
-    #             if printprogress and docno % printprogress == 0:
-    #                 logger.info("PROGRESS: at document #%i", docno)
+        if GLOBAL_TF_THRESHOLD_MASK_TOKEN not in new_data:
+            new_data[GLOBAL_TF_THRESHOLD_MASK_TOKEN] = len(new_data)
 
-    #             # zip(*doc) transforms doc to (token_indices, token_counts]
-    #             doc_indices, doc_data = zip(*doc) if doc else ([], [])
-    #             indices.extend(doc_indices)
-    #             data.extend(doc_data)
-    #             num_nnz += len(doc)
-    #             indptr.append(num_nnz)
-    #         if num_terms is None:
-    #             num_terms = max(indices) + 1 if indices else 0
-    #         num_docs = len(indptr) - 1
-    #         # now num_docs, num_terms and num_nnz contain the correct values
-    #         data = np.asarray(data, dtype=dtype)
-    #         indices = np.asarray(indices)
-    #         result = scipy.sparse.csc_matrix((data, indices, indptr), shape=(num_terms, num_docs), dtype=dtype)
-    #     return result
+        mask_id = new_data[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
+
+        if mask_id not in new_tf:
+            new_tf[mask_id] = 0
+
+        new_tf[mask_id] += sum(tf[i] for i in self.data.values() if i not in translation)
+
+        if inplace:
+
+            self.data = defaultdict(None, new_data)
+            self.tf = new_tf
+            self.open()
+
+            return self
+
+        token2id: Token2Id = Token2Id(data=new_data, tf=new_tf)
+
+        return token2id
