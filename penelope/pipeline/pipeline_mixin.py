@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.interfaces import ITokenizedCorpus
@@ -121,12 +121,27 @@ class PipelineShortcutMixIn:
         return self.add(tasks.Project(project=project))
 
     def vocabulary(
-        self: pipelines.CorpusPipeline, lemmatize: bool, progress: bool = False, close: bool = True
+        self: pipelines.CorpusPipeline,
+        *,
+        lemmatize: bool,
+        progress: bool = False,
+        tf_threshold: int = 1,
+        tf_keeps: Container[Union[int, str]] = None,
+        close: bool = True,
     ) -> pipelines.CorpusPipeline:
+
         token_type: tasks.Vocabulary.TokenType = (
             tasks.Vocabulary.TokenType.Lemma if lemmatize else tasks.Vocabulary.TokenType.Text
         )
-        return self.add(tasks.Vocabulary(token_type=token_type, progress=progress, close=close))
+        return self.add(
+            tasks.Vocabulary(
+                token_type=token_type,
+                progress=progress,
+                tf_threshold=tf_threshold,
+                tf_keeps=tf_keeps,
+                close=close,
+            )
+        )
 
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,

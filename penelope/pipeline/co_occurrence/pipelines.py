@@ -24,9 +24,15 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     try:
         pipeline: pipelines.CorpusPipeline = (
             pipelines.wildcard()
-            .vocabulary(lemmatize=extract_opts, progress=True, close=True)
+            .vocabulary(
+                lemmatize=extract_opts,
+                progress=True,
+                tf_threshold=extract_opts.global_tf_threshold,
+                tf_keeps=context_opts.concept,
+                close=True
+            )
             .tagged_frame_to_tokens(
-                extract_opts=extract_opts,
+                extract_opts={**extract_opts, **{'global_tf_threshold': 1}},
                 filter_opts=filter_opts,
                 transform_opts=transform_opts,
             )
