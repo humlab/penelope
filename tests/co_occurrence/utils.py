@@ -58,7 +58,7 @@ def create_simple_bundle_by_pipeline(data: List[Tuple[str, List[str]]], context_
     bundle: Bundle = (
         CorpusPipeline(config=config)
         .load_corpus(tokenized_corpus)
-        .vocabulary()
+        .vocabulary(lemmatize=True)
         .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
         .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
         .single()
