@@ -143,7 +143,7 @@ class Token2Id(MutableMapping):
         if tf_threshold <= 1:
             return self
 
-        keeps: Container[int] = set([self[x] if isinstance(x, str) else x for x in keeps]) if keeps else set()
+        keeps: Container[int] = {self[x] if isinstance(x, str) else x for x in keeps} if keeps else set()
 
         logger.info(f"compressing vocab. TF threshold: {tf_threshold} keeping: {' '.join([self[x] for x in keeps])}")
 
