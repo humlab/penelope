@@ -15,6 +15,8 @@ TextSource = Union[str, zipfile.ZipFile, List, Any]
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
+GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "(x)"
+
 
 @dataclass
 class TextReaderOpts:
@@ -73,18 +75,17 @@ class ExtractTaggedTokensOpts:
 
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
+    to_lowercase: bool = False
 
     phrases: Optional[PhraseSubstitutions] = None
 
-    to_lowercase: bool = False
-
+    """Tokens that will be filtered out"""
     block_tokens: List[str] = field(default_factory=list)
     # block_chars: str = ""
-
     """Global term frequency threshold"""
-    global_count_threshold: int = 1
+    global_tf_threshold: int = 1
     """Global term frequency threshold"""
-    global_count_threshold_mask: str = "--MASKED--"
+    global_tf_threshold_mask: bool = False
 
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
