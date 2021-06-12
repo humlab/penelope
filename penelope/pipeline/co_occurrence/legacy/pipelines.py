@@ -23,7 +23,7 @@ def wildcard_to_partitioned_by_key_co_occurrence_pipeline(
                 filter_opts=filter_opts,
                 transform_opts=transform_opts,
             )
-            .vocabulary()
+            .vocabulary(lemmatize=extract_opts.lemmatize, progress=True)
             .to_document_content_tuple()
             .tqdm()
             .to_corpus_co_occurrence(

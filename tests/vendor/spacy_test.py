@@ -223,7 +223,7 @@ def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
     filter_opts = PropertyValueMaskingOpts(is_punct=None)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
     assert tokens == [
-        'Mars',
+        'mars',
         'be',
         'once',
         'home',
@@ -259,14 +259,14 @@ def test_extract_tokens_lemma_no_stops_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True)
     filter_opts = PropertyValueMaskingOpts(is_stop=False, is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
-    assert tokens == ['Mars', 'home', 'sea', 'ocean', 'life']
+    assert tokens == ['mars', 'home', 'sea', 'ocean', 'life']
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc):
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|PROPN|', pos_paddings=None)
     filter_opts = PropertyValueMaskingOpts(is_punct=False)
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
-    assert tokens == ['Mars']
+    assert tokens == ['mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc):

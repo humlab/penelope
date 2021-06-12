@@ -139,6 +139,40 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     assert len(tagged_payload.content[tagged_payload.content.pos_ == 'NOUN']) == len(tokens_payload.content)
 
 
+def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
+
+    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+
+    pipeline: CorpusPipeline = (
+        CorpusPipeline(config=config)
+        .checkpoint(checkpoint_filename)
+        .vocabulary(lemmatize=True, progress=False)
+        .exhaust()
+    )
+
+    assert pipeline.payload.token2id is not None
+    assert pipeline.payload.token2id.tf is not None
+    assert len(pipeline.payload.token2id) == 1145
+    assert len(pipeline.payload.token2id) == len(pipeline.payload.token2id.tf) is not None
+    assert set(pipeline.payload.token2id.data.keys()) == {x.lower() for x in pipeline.payload.token2id.keys()}
+    assert 'Cultural' not in pipeline.payload.token2id
+    assert 'wars' not in pipeline.payload.token2id
+    assert 'war' in pipeline.payload.token2id
+
+    pipeline: CorpusPipeline = (
+        CorpusPipeline(config=config)
+        .checkpoint(checkpoint_filename)
+        .vocabulary(lemmatize=False, progress=False)
+        .exhaust()
+    )
+
+    assert len(pipeline.payload.token2id) == 1476
+    assert 'Cultural' in pipeline.payload.token2id
+    assert 'wars' in pipeline.payload.token2id
+
+    assert pipeline.payload.token2id.tf[pipeline.payload.token2id['the']] == 704
+
+
 def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')

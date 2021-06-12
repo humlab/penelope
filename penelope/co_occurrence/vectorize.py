@@ -31,7 +31,7 @@ class WindowsCoOccurrenceVectorizer:
 
         # vectorizer: CountVectorizer = CountVectorizer(
         #     tokenizer=lambda x: x,
-        #     vocabulary=self.vocabulary.data,
+        #     vocabulary=dict(self.vocabulary.data),
         #     lowercase=False,
         #     dtype=self.dtype,
         # )
@@ -61,14 +61,13 @@ class WindowsCoOccurrenceVectorizer:
     def vectorize(self, windows: Iterator[Iterator[str]]) -> scipy.sparse.spmatrix:
         """Optimized/simplified version of sklearn.feature_extraction.text._count_vocab"""
         vocabulary = self.vocabulary
-        fg = vocabulary.data.get
         indptr, jj = [], []
 
         values = array.array(str("i"))
         indptr.append(0)
 
         for window in windows:
-            token_counter: Counter = Counter(fg(t) for t in window)
+            token_counter: Counter = Counter(vocabulary[t] for t in window)
             jj.extend(token_counter.keys())
             values.extend(token_counter.values())
             indptr.append(len(jj))

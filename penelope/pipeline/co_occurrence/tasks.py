@@ -60,7 +60,9 @@ def TTM_to_co_occurrence_DTM(
 
     document_index = document_index.set_index('document_id', drop=False)
 
-    corpus = VectorizedCorpus(bag_term_matrix=matrix.tocsr(), token2id=vocabulary.data, document_index=document_index)
+    corpus = VectorizedCorpus(
+        bag_term_matrix=matrix.tocsr(), token2id=dict(vocabulary.data), document_index=document_index
+    )
 
     return corpus
 
@@ -95,6 +97,10 @@ class ToCoOccurrenceDTM(ITask):
             self.pipeline.payload.token2id = Token2Id().open()
 
         self.token2id = self.pipeline.payload.token2id
+
+        if self.context_opts.pad not in self.token2id:
+            _ = self.token2id[self.context_opts.pad]
+
         self.vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(self.token2id)
 
         self.pipeline.put("context_opts", self.context_opts)
@@ -111,8 +117,6 @@ class ToCoOccurrenceDTM(ITask):
 
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
-
-        _ = self.token2id[self.context_opts.pad]
 
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
 

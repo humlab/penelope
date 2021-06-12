@@ -24,13 +24,14 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     try:
         pipeline: pipelines.CorpusPipeline = (
             pipelines.wildcard()
+            .vocabulary(lemmatize=extract_opts, progress=True, close=True)
             .tagged_frame_to_tokens(
                 extract_opts=extract_opts,
                 filter_opts=filter_opts,
                 transform_opts=transform_opts,
             )
             # .tokens_transform(transform_opts=transform_opts)
-            .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
+            .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=False)
             .tqdm(desc="Processing documents")
             .to_corpus_co_occurrence(
                 context_opts=context_opts,

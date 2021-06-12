@@ -13,7 +13,7 @@ from penelope.corpus import (
     VectorizeOpts,
     default_tokenizer,
 )
-from penelope.corpus.readers import ExtractTaggedTokensOpts, PhraseSubstitutions
+from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts, PhraseSubstitutions
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
 
 from .interfaces import ContentType, DocumentPayload, PipelineError
@@ -124,26 +124,36 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
 
     masked_data = doc.loc[mask][[target, pos_column]].copy()
 
-    if extract_opts.global_count_threshold > 1:
+    if extract_opts.global_tf_threshold > 1:
         """
-        If global_count_threshold_mask is None, then filter out tokens below threshold
-        Otherwise replace token with `global_count_threshold_mask`
+        If global_count_threshold_mask then filter out tokens below threshold
+        Otherwise replace token with `GLOBAL_TF_THRESHOLD_MASK_TOKEN`
+
+        Alternativ implementation:
+            1. Compress Token2Id (removed low frequency words)
+            2. Remove or mask tokens not in compressed token2id
         """
         if token2id is None or token2id.tf is None:
             raise ValueError("Token2Id.TF not avaliable when mask_threshold_count was requested")
 
-        tg = token2id.data.get
+        tg = token2id.get
         cg = token2id.tf.get
 
-        masked_data['token_id'] = masked_data['target'].apply(tg)
-        masked_data['count'] = masked_data.token_id.apply(cg)
+        masked_data['token_id'] = masked_data[target].apply(tg)
+        masked_data['token_count'] = masked_data.token_id.apply(cg)
 
-        if extract_opts.global_count_threshold_mask:
-            masked_data[
-                masked_data.count >= extract_opts.global_count_threshold, target
-            ] = extract_opts.global_count_threshold_mask
+        low_frequency_mask = masked_data.token_count < extract_opts.global_tf_threshold
+
+        passthrough_ids: Set[int] = set() if not passthroughs else {tg(w) for w in passthroughs}
+        if passthrough_ids:
+            low_frequency_mask &= ~masked_data.token_id.isin(passthrough_ids)
+
+        if extract_opts.global_tf_threshold_mask:
+            """Mask low frequency terms"""
+            masked_data.update(masked_data[low_frequency_mask].assign(**{target: GLOBAL_TF_THRESHOLD_MASK_TOKEN}))
         else:
-            masked_data = masked_data[masked_data.count >= extract_opts.global_count_threshold]
+            """Filter out low frequency terms"""
+            masked_data = masked_data[~low_frequency_mask]
 
     token_pos_tuples = masked_data.itertuples(index=False, name=None)
 
