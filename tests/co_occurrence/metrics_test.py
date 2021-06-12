@@ -176,3 +176,25 @@ def test_compute_significance(bundle: Bundle, keyness: KeynessMetric):  # pylint
     )
 
     assert weighed_co_occurrences is not None
+
+
+# def test_HAL_cwr_corpus_bug(bundle: Bundle):
+
+#     folder, tag = (
+#         '/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/NEW_V2_information_w5_NNPM_PASSTHROUGH_LEMMA_KEEPSTOPS',
+#         'NEW_V2_information_w5_NNPM_PASSTHROUGH_LEMMA_KEEPSTOPS',
+#     )
+#     filename = to_filename(folder=folder, tag=tag)
+#     bundle: Bundle = Bundle.load(filename, compute_frame=False)
+
+#     nw_x = bundle.window_counts.document_counts  # .todense().astype(np.float)
+#     nw_xy = bundle.corpus.data  # .copy().astype(np.float)
+#     nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, bundle.vocabs_mapping)
+
+#     assert nw_cwr is not None
+#     assert nw_cwr.sum() > 0
+
+#     hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus(
+#         document_window_counts=bundle.window_counts.document_counts, vocabs_mapping=bundle.vocabs_mapping
+#     )
+#     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
