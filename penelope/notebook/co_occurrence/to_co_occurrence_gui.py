@@ -17,7 +17,7 @@ tooltips = {
 }
 view = widgets.Output(layout={"border": "1px solid black"})
 
-# FIXME #103 ComputeGUI: Add explicit partition key selector
+
 class ComputeGUI(BaseGUI):
     def __init__(
         self,
