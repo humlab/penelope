@@ -16,23 +16,24 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     *,
     extract_opts: ExtractTaggedTokensOpts = None,
     filter_opts: PropertyValueMaskingOpts = None,
-    transform_opts: TokensTransformOpts = None,  # pylint: disable=unused-argument
+    transform_opts: TokensTransformOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     **kwargs,  # pylint: disable=unused-argument
 ) -> CorpusPipeline:
     try:
+        passthroughs: set = context_opts.concept.union(extract_opts.get_passthrough_tokens())
         pipeline: pipelines.CorpusPipeline = (
             pipelines.wildcard()
             .vocabulary(
                 lemmatize=extract_opts,
                 progress=True,
                 tf_threshold=extract_opts.global_tf_threshold,
-                tf_keeps=context_opts.concept,
-                close=True
+                tf_keeps=passthroughs,
+                close=True,
             )
             .tagged_frame_to_tokens(
-                extract_opts={**extract_opts, **{'global_tf_threshold': 1}},
+                extract_opts=extract_opts.clear_tf_threshold(),
                 filter_opts=filter_opts,
                 transform_opts=transform_opts,
             )
