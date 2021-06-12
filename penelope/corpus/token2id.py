@@ -137,13 +137,13 @@ class Token2Id(MutableMapping):
 
         return [self[w] for w in set(matches)]
 
-    def compress(self, tf_threshold: int = 1, inplace=False, keep_ids: Container[int] = None) -> "Token2Id":
+    def compress(self, tf_threshold: int = 1, inplace=False, keeps: Container[Union[int, str]] = None) -> "Token2Id":
         """Returns a compressed version of corpus where tokens below threshold are removed"""
 
         if tf_threshold <= 1:
             return self
 
-        keep_ids: Container[int] = set(keep_ids) if keep_ids else set()
+        keeps: Container[int] = set([self[x] if isinstance(x, str) else x for x in keeps]) if keeps else set()
 
         if self.tf is None:
             raise ValueError("Token2Id.compress: cannot compress when TF counts is none!")
@@ -152,7 +152,7 @@ class Token2Id(MutableMapping):
 
         translation: Mapping[int, int] = {
             token_id: (i, v)
-            for i, (token_id, v) in enumerate((k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keep_ids))
+            for i, (token_id, v) in enumerate((k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keeps))
         }
 
         new_tf: Counter = Counter({k: v for (k, v) in translation.values()})

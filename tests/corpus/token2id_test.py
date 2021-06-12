@@ -85,7 +85,7 @@ def test_token2id_compress():
     assert dict(id2token_compress.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
     assert dict(id2token_compress.tf) == {0: 3, 1: 2, 2: 2, 3: 3}
 
-    id2token_compress = token2id.compress(2, keep_ids={4}, inplace=False)
+    id2token_compress = token2id.compress(2, keeps={4}, inplace=False)
     assert dict(id2token_compress.data) == {
         'adam': 0,
         'anton': 1,
