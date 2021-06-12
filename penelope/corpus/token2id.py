@@ -24,6 +24,7 @@ class Token2Id(MutableMapping):
         self.tf: Counter = tf
         self.data.default_factory = self.data.__len__
         self._id2token: dict = None
+        self.fallback_token = None
 
     def __contains__(self, key):
         return key in self.data
@@ -55,21 +56,35 @@ class Token2Id(MutableMapping):
 
     @property
     def is_open(self) -> bool:
-        return self.data.default_factory is not None
+        return self.data.default_factory is self.__len__
 
-    def close(self) -> "Token2Id":
-        self.data.default_factory = None
+    def close(self, fallback: int = None) -> "Token2Id":
+        if fallback is not None:
+            self.data.default_factory = lambda: fallback
+        else:
+            self.data.default_factory = None
         return self
 
     def open(self) -> "Token2Id":
+
+        if self.data.default_factory is self.__len__:
+            return self
+
+        if not self.data.default_factory is None:
+            raise ValueError("Token2Id cannot be opened with current state")
+
         self.data.default_factory = self.__len__
         self._id2token = None
+        return self
+
+    def default(self, value: int) -> "Token2Id":
+        self.data.default_factory = lambda: value
         return self
 
     @property
     def id2token(self) -> dict:
         # FIXME: Always create new reversed mapping if vocabulay is open
-        if self._id2token is None or len(self) != len(self._id2token):  # or self.is_open():
+        if self._id2token is None or len(self) != len(self._id2token):  # or self.is_open:
             self._id2token = {v: k for k, v in self.data.items()}
         return self._id2token
 
@@ -174,10 +189,9 @@ class Token2Id(MutableMapping):
 
             self.data = defaultdict(None, new_data)
             self.tf = new_tf
-            self.open()
 
-            return self
+            return self.close(fallback=mask_id)
 
-        token2id: Token2Id = Token2Id(data=new_data, tf=new_tf)
+        token2id: Token2Id = Token2Id(data=new_data, tf=new_tf).close(fallback=mask_id)
 
         return token2id
