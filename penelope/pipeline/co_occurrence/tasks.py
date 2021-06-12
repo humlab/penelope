@@ -94,7 +94,7 @@ class ToCoOccurrenceDTM(ITask):
         super().setup()
 
         if self.pipeline.payload.token2id is None:
-            self.pipeline.payload.token2id = Token2Id().open()
+            self.pipeline.payload.token2id = Token2Id()
 
         self.token2id = self.pipeline.payload.token2id
 
