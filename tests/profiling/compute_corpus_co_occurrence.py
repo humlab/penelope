@@ -16,7 +16,7 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
     corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml', corpus_filename)
 
     context_opts: ContextOpts = ContextOpts(
-        concept={},
+        concept=set(),
         ignore_concept=False,
         context_width=2,
         pad="*",

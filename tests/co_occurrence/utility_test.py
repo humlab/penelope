@@ -105,7 +105,7 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
 # @pytest.mark.skip(reason="long running")
 def test_document_wise_co_occurrence():
 
-    concept = {}
+    concept = set()
     n_context_width = 2
     corpus = SparvTokenizedCsvCorpus(
         # './tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip',

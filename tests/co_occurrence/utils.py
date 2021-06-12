@@ -45,7 +45,7 @@ def create_simple_bundle() -> Bundle:
     tag: str = "TERRA"
     folder: str = jj(OUTPUT_FOLDER, tag)
     simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
-    context_opts: ContextOpts = ContextOpts(concept={}, ignore_concept=False, context_width=2)
+    context_opts: ContextOpts = ContextOpts(concept=set(), ignore_concept=False, context_width=2)
     bundle: Bundle = create_co_occurrence_bundle(
         corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
     )

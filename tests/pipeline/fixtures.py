@@ -60,7 +60,7 @@ def FakeComputeOptsSpacyCSV(
         persist=True,
         context_opts=ContextOpts(
             context_width=4,
-            concept={},
+            concept=set(),
             ignore_concept=False,
             partition_keys=['document_id'],
         ),

@@ -10,7 +10,7 @@ CONFIG_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.yml")
 OUTPUT_FOLDER = jj(DATA_FOLDER, '../output')
 CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.test.zip")
 
-CONCEPT = {}  # {'information'}
+CONCEPT = set()  # {'information'}
 
 SUC_SCHEMA: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.SUC
 POS_TARGETS: str = 'NN|PM'
