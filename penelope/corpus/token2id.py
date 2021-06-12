@@ -145,6 +145,8 @@ class Token2Id(MutableMapping):
 
         keeps: Container[int] = set([self[x] if isinstance(x, str) else x for x in keeps]) if keeps else set()
 
+        logger.info(f"compressing vocab. TF threshold: {tf_threshold} keeping: {' '.join([self[x] for x in keeps])}")
+
         if self.tf is None:
             raise ValueError("Token2Id.compress: cannot compress when TF counts is none!")
 
