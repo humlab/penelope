@@ -125,7 +125,7 @@ class PipelineShortcutMixIn:
         *,
         lemmatize: bool,
         progress: bool = False,
-        tf_threshold: int = 1,
+        tf_threshold: int = None,
         tf_keeps: Container[Union[int, str]] = None,
         close: bool = True,
     ) -> pipelines.CorpusPipeline:
