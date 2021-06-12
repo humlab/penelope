@@ -31,11 +31,16 @@ class Token2Id(MutableMapping):
         return key in self.data
 
     def __getitem__(self, key):
+        if not self._is_open:
+            if self.fallback_token:
+                return self.data.get(key, self.fallback_token)
         return self.data[key]
 
     def __setitem__(self, key: str, value):
         if self._id2token:
             self._id2token = None
+        if not self.is_open:
+            raise ValueError(f"cannot add item to a closed vocabulary: '{value}'")
         self.data[key] = value
 
     def __delitem__(self, key):
@@ -48,8 +53,12 @@ class Token2Id(MutableMapping):
         return len(self.data)
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
+        if not self._is_open:
+            raise ValueError("cannot ingest into a closed vocabulary")
+
         if self.tf is None:
             self.tf = Counter()
+
         self._id2token = None
         token_ids = [self.data[t] for t in tokens]
         self.tf.update(token_ids)
@@ -60,10 +69,8 @@ class Token2Id(MutableMapping):
         return self._is_open
 
     def close(self, fallback: int = None) -> "Token2Id":
-        if fallback is not None:
-            self.data.default_factory = lambda: fallback
-        else:
-            self.data.default_factory = None
+        self.data.default_factory = None
+        self.fallback_token = fallback
         self._is_open = False
         return self
 
@@ -164,7 +171,9 @@ class Token2Id(MutableMapping):
 
         keeps: Container[int] = {self[x] if isinstance(x, str) else x for x in keeps} if keeps else set()
 
-        logger.info(f"compressing vocab. TF threshold: {tf_threshold} keeping: {' '.join([self[x] for x in keeps])}")
+        logger.info(
+            f"compressing vocab. TF threshold: {tf_threshold} keeping: {' '.join([self.id2token[x] for x in keeps])}"
+        )
 
         if self.tf is None:
             raise ValueError("Token2Id.compress: cannot compress when TF counts is none!")
