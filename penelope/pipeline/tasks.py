@@ -1,4 +1,5 @@
 import contextlib
+from errno import EKEYEXPIRED
 import glob
 import os
 import shutil
@@ -6,7 +7,7 @@ import zipfile
 from contextlib import suppress
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Union
 
 import pandas as pd
 from loguru import logger
@@ -494,6 +495,7 @@ class TaggedFrameToTokens(
 
     extract_opts: ExtractTaggedTokensOpts = None
     filter_opts: PropertyValueMaskingOpts = None
+    ingest_tokens: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -524,8 +526,9 @@ class TaggedFrameToTokens(
 
         tokens = list(tokens)
 
-        if self.token2id:
-            self.token2id.ingest(tokens)
+        if self.ingest_tokens:
+            if self.token2id:
+                self.token2id.ingest(tokens)
 
         self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
 
@@ -654,6 +657,9 @@ class Vocabulary(DefaultResolveMixIn, ITask):
     token_type: Optional[TokenType] = None
     progress: bool = False
     close: bool = True
+    tf_threshold: int = 1
+    tf_keeps: Container[Union[int,str]] = 1
+
     target: str = field(init=False, default="")
 
     def __post_init__(self):
@@ -670,11 +676,17 @@ class Vocabulary(DefaultResolveMixIn, ITask):
     def enter(self):
         token2id: Token2Id = Token2Id()
         instream = tqdm(self.instream, desc="Vocab:") if self.progress else self.instream
+
         token2id.ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN])
+
         for payload in instream:
             token2id.ingest(self.tokens_stream(payload))
-        if self.close:
+
+        if self.tf_threshold > 1:
+            token2id.compress(self.tf_threshold, inplace=True, keeps=self.tf_keeps)
+        elif self.close:
             token2id.close()
+
         self.token2id = token2id
         self.pipeline.payload.token2id = self.token2id
         self.reset()
