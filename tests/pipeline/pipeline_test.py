@@ -152,7 +152,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
 
     assert pipeline.payload.token2id is not None
     assert pipeline.payload.token2id.tf is not None
-    assert len(pipeline.payload.token2id) == 1145
+    assert len(pipeline.payload.token2id) == 1147
     assert len(pipeline.payload.token2id) == len(pipeline.payload.token2id.tf) is not None
     assert set(pipeline.payload.token2id.data.keys()) == {x.lower() for x in pipeline.payload.token2id.keys()}
     assert 'Cultural' not in pipeline.payload.token2id
@@ -166,7 +166,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
         .exhaust()
     )
 
-    assert len(pipeline.payload.token2id) == 1476
+    assert len(pipeline.payload.token2id) == 1478
     assert 'Cultural' in pipeline.payload.token2id
     assert 'wars' in pipeline.payload.token2id
 
