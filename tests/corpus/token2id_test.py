@@ -1,5 +1,6 @@
 import os
 
+import pytest
 from penelope.corpus import Token2Id
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.utility import path_add_suffix
@@ -77,33 +78,44 @@ def test_token2id_compress():
     assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4, 'beata': 5}
     assert dict(token2id.tf) == {0: 3, 1: 2, 2: 1, 3: 1, 4: 1, 5: 2}
 
-    id2token_compress = token2id.compress(tf_threshold=1, inplace=False)
-    assert dict(id2token_compress.data) == dict(token2id.data)
-    assert dict(id2token_compress.tf) == dict(token2id.tf)
+    token2id_compressed = token2id.compress(tf_threshold=1, inplace=False)
+    assert token2id_compressed is token2id
+    assert token2id_compressed.fallback_token is None
+    with pytest.raises(KeyError):
+        _ = token2id_compressed["roger"]
 
-    id2token_compress = token2id.compress(tf_threshold=2, inplace=False)
-    assert dict(id2token_compress.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
-    assert dict(id2token_compress.tf) == {0: 3, 1: 2, 2: 2, 3: 3}
+    token2id_compressed = token2id.compress(tf_threshold=2, inplace=False)
+    assert dict(token2id_compressed.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
+    assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 2, 3: 3}
+    assert token2id.fallback_token is None
+    assert token2id_compressed.fallback_token is not None
+    assert token2id_compressed["roger"] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
+    assert "roger" not in token2id_compressed
 
-    id2token_compress = token2id.compress(tf_threshold=2, keeps={4}, inplace=False)
-    assert dict(id2token_compress.data) == {
+    with pytest.raises(ValueError):
+        token2id_compressed["roger"] = 99
+
+    assert token2id_compressed['word_that_dont_exists'] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
+
+    token2id_compressed = token2id.compress(tf_threshold=2, keeps={4}, inplace=False)
+    assert dict(token2id_compressed.data) == {
         'adam': 0,
         'anton': 1,
         'niklas': 2,
         'beata': 3,
         GLOBAL_TF_THRESHOLD_MASK_TOKEN: 4,
     }
-    assert dict(id2token_compress.tf) == {0: 3, 1: 2, 2: 1, 3: 2, 4: 2}
+    assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 1, 3: 2, 4: 2}
 
     token2id: Token2Id = Token2Id().ingest(tokens).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
-    id2token_compress = token2id.compress(tf_threshold=2, inplace=False)
-    assert dict(id2token_compress.data) == {
+    token2id_compressed = token2id.compress(tf_threshold=2, inplace=False)
+    assert dict(token2id_compressed.data) == {
         'adam': 0,
         'anton': 1,
         'beata': 2,
         GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3,
     }
-    assert dict(id2token_compress.tf) == {0: 3, 1: 2, 2: 2, 3: 4}
+    assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 2, 3: 4}
 
     token2id: Token2Id = Token2Id().ingest(tokens).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
     token2id.compress(tf_threshold=2, inplace=True)
