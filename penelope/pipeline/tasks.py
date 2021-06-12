@@ -1,5 +1,4 @@
 import contextlib
-from errno import EKEYEXPIRED
 import glob
 import os
 import shutil
@@ -657,8 +656,8 @@ class Vocabulary(DefaultResolveMixIn, ITask):
     token_type: Optional[TokenType] = None
     progress: bool = False
     close: bool = True
-    tf_threshold: int = 1
-    tf_keeps: Container[Union[int,str]] = 1
+    tf_threshold: int = None
+    tf_keeps: Container[Union[int, str]] = 1
 
     target: str = field(init=False, default="")
 
@@ -682,7 +681,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         for payload in instream:
             token2id.ingest(self.tokens_stream(payload))
 
-        if self.tf_threshold > 1:
+        if self.tf_threshold and self.tf_threshold > 1:
             token2id.compress(self.tf_threshold, inplace=True, keeps=self.tf_keeps)
         elif self.close:
             token2id.close()
