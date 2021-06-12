@@ -22,9 +22,10 @@ class Token2Id(MutableMapping):
         else:
             self.data = data or defaultdict()
         self.tf: Counter = tf
-        self.data.default_factory = self.data.__len__
         self._id2token: dict = None
         self.fallback_token = None
+        self.data.default_factory = self.data.__len__
+        self._is_open = True
 
     def __contains__(self, key):
         return key in self.data
@@ -56,29 +57,32 @@ class Token2Id(MutableMapping):
 
     @property
     def is_open(self) -> bool:
-        return self.data.default_factory is self.__len__
+        return self._is_open
 
     def close(self, fallback: int = None) -> "Token2Id":
         if fallback is not None:
             self.data.default_factory = lambda: fallback
         else:
             self.data.default_factory = None
+        self._is_open = False
         return self
 
     def open(self) -> "Token2Id":
 
-        if self.data.default_factory is self.__len__:
+        if self.is_open:
             return self
 
-        if not self.data.default_factory is None:
+        if self.data.default_factory is not None:
             raise ValueError("Token2Id cannot be opened with current state")
 
-        self.data.default_factory = self.__len__
+        self.data.default_factory = self.data.__len__
         self._id2token = None
+        self._is_open = True
         return self
 
     def default(self, value: int) -> "Token2Id":
         self.data.default_factory = lambda: value
+        self._is_open = False
         return self
 
     @property
@@ -152,7 +156,7 @@ class Token2Id(MutableMapping):
 
         return [self[w] for w in set(matches)]
 
-    def compress(self, tf_threshold: int = 1, inplace=False, keeps: Container[Union[int, str]] = None) -> "Token2Id":
+    def compress(self, *, tf_threshold: int = 1, inplace=False, keeps: Container[Union[int, str]] = None) -> "Token2Id":
         """Returns a compressed version of corpus where tokens below threshold are removed"""
 
         if tf_threshold <= 1:
