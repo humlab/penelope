@@ -1,8 +1,6 @@
 import contextlib
 import glob
-import itertools
 import os
-from penelope.pipeline.checkpoint.interface import CheckpointData
 import shutil
 import zipfile
 from contextlib import suppress
@@ -23,6 +21,7 @@ from penelope.corpus import (
     default_tokenizer,
 )
 from penelope.corpus.readers import (
+    GLOBAL_TF_THRESHOLD_MASK_TOKEN,
     ExtractTaggedTokensOpts,
     TextReader,
     TextReaderOpts,
@@ -34,7 +33,8 @@ from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_re
 from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_paths
 from tqdm.auto import tqdm
 
-from . import checkpoint, convert
+from . import checkpoint as cp
+from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
 from .tasks_mixin import BuildToken2IdMixIn, CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn
@@ -50,6 +50,7 @@ class LoadText(DefaultResolveMixIn, ITask):
     source: TextSource = None
     reader_opts: TextReaderOpts = None
     transform_opts: TextTransformOpts = None
+    text_reader: TextReader = field(init=False, default=None)
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -63,23 +64,29 @@ class LoadText(DefaultResolveMixIn, ITask):
         if self.source is not None:
             self.pipeline.payload.source = self.source
 
-        text_reader: TextReader = TextReader.create(
+        self.text_reader: TextReader = TextReader.create(
             source=self.pipeline.payload.source,
             reader_opts=self.reader_opts,
             transform_opts=self.transform_opts,
         )
 
-        self.pipeline.payload.set_reader_index(text_reader.document_index)
-        self.pipeline.payload.metadata = text_reader.metadata
+        self.pipeline.payload.set_reader_index(self.text_reader.document_index)
+        self.pipeline.payload.metadata = self.text_reader.metadata
 
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
         self.pipeline.put("text_transform_opts", self.transform_opts.props)
 
-        self.instream = (
-            DocumentPayload(filename=filename, content_type=ContentType.TEXT, content=text)
-            for filename, text in text_reader
-        )
         return self
+
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        return (
+            DocumentPayload(filename=filename, content_type=ContentType.TEXT, content=text)
+            for filename, text in self.text_reader
+        )
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        self.instream = self.create_instream()
+        return super().process_stream()
 
 
 @dataclass
@@ -155,7 +162,7 @@ class ToDocumentContentTuple(ITask):
 class Checkpoint(DefaultResolveMixIn, ITask):
 
     filename: str = None
-    checkpoint_opts: checkpoint.CheckpointOpts = None
+    checkpoint_opts: cp.CheckpointOpts = None
 
     def setup(self) -> ITask:
         super().setup()
@@ -168,31 +175,28 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        return self._load_payload_stream() if os.path.isfile(self.filename) else self._store_payload_stream()
+
     def process_stream(self) -> Iterable[DocumentPayload]:
-
-        if os.path.isfile(self.filename):
-            payload_stream = self._load_payload_stream()
-        else:
-            payload_stream = self._store_payload_stream()
-
-        for payload in payload_stream:
-            yield payload
+        self.instream = self.create_instream()
+        return super().process_stream()
 
     def _load_payload_stream(self):
-        checkpoint_data: checkpoint.CheckpointData = checkpoint.load_checkpoint(
+        checkpoint_data: cp.CheckpointData = cp.load_checkpoint(
             self.filename,
             checkpoint_opts=self.checkpoint_opts,
         )
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
         self.out_content_type = checkpoint_data.content_type
 
-        payload_stream = checkpoint_data.payload_stream
+        payload_stream = checkpoint_data.create_stream()
         return payload_stream
 
     def _store_payload_stream(self):
         self.out_content_type = self.get_out_content_type()
         checkpoint_opts = self.checkpoint_opts.as_type(self.out_content_type)
-        payload_stream = checkpoint.store_checkpoint(
+        payload_stream = cp.store_checkpoint(
             checkpoint_opts=checkpoint_opts,
             target_filename=self.filename,
             document_index=self.document_index,
@@ -214,7 +218,7 @@ class SaveTaggedCSV(Checkpoint):
     """Stores sequence of tagged data frame documents to archive. """
 
     filename: str = None
-    checkpoint_opts: checkpoint.CheckpointOpts = None
+    checkpoint_opts: cp.CheckpointOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -233,9 +237,9 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
-    checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
+    checkpoint_opts: Optional[cp.CheckpointOpts] = None
     extra_reader_opts: Optional[TextReaderOpts] = None  # Use if e.g. document index should be created
-    checkpoint_data: checkpoint.CheckpointData = field(default=None, init=None, repr=None)
+    checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -244,19 +248,24 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     def setup(self) -> ITask:
         super().setup()
 
+        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
+        self.checkpoint_data: cp.CheckpointData = self.load_checkpoint()
+        self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
+
         self.pipeline.put("reader_opts", self.extra_reader_opts.props)
         self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
 
-        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
-        self.checkpoint_data: checkpoint.CheckpointData = self.create_checkpoint_data()
-        self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
-
-        self.instream = (payload for payload in self.checkpoint_data.payload_stream)
-
         return self
 
-    def create_checkpoint_data(self) -> CheckpointData:
-        checkpoint_data: CheckpointData = checkpoint.load_checkpoint(
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        return self.checkpoint_data.create_stream()
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        self.instream = self.create_instream()
+        return super().process_stream()
+
+    def load_checkpoint(self) -> cp.CheckpointData:
+        checkpoint_data: cp.CheckpointData = cp.load_checkpoint(
             self.filename,
             checkpoint_opts=self.checkpoint_opts,
             reader_opts=self.extra_reader_opts,
@@ -288,7 +297,6 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
                 shutil.rmtree(self.folder, ignore_errors=True)
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-
         task_cls = ReadFeather if os.path.isdir(self.folder) else WriteFeather
         task: ITask = task_cls(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
         return task.outstream()
@@ -330,12 +338,7 @@ class WriteFeather(ITask):
         return payload
 
     def exit(self):
-
         CheckpointFeather.write_document_index(self.folder, self.document_index)
-
-        # if self.pipeline.payload.token2id is not None:
-        #     # FIXME: Store TOKEN2ID
-        #     pass
 
 
 @dataclass
@@ -351,7 +354,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
         self.out_content_type = ContentType.TAGGED_FRAME
         self.document_index_filename = os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME)
 
-    def process_stream(self) -> Iterable[DocumentPayload]:
+    def create_instream(self) -> Iterable[DocumentPayload]:
         pattern: str = os.path.join(self.folder, "*.feather")
         for path in sorted(glob.glob(pattern)):
             tagged_frame = pd.read_feather(path)
@@ -362,6 +365,10 @@ class ReadFeather(DefaultResolveMixIn, ITask):
                 filename=replace_extension(filename, ".csv"),
             )
 
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        self.instream = self.create_instream()
+        return super().process_stream()
+
     def enter(self):
         document_index = CheckpointFeather.read_document_index(self.folder)
         if document_index is not None:
@@ -369,7 +376,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedXML(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     filename: str = None
@@ -382,6 +389,7 @@ class LoadTaggedXML(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
+        self.pipeline.put("reader_opts", self.reader_opts.props)
         self.corpus_reader = create_sparv_xml_corpus_reader(
             source_path=self.filename or self.pipeline.payload.source,
             reader_opts=self.reader_opts or self.pipeline.config.text_reader_opts,
@@ -389,17 +397,19 @@ class LoadTaggedXML(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
             content_type="pandas",
         )
         self.pipeline.payload.set_reader_index(self.corpus_reader.document_index)
-        self.instream = (
-            DocumentPayload(
+
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        for document, content in self.corpus_reader:
+            yield DocumentPayload(
                 content_type=ContentType.TAGGED_FRAME,
                 filename=document,
                 content=content,
                 filename_values=None,
             )
-            for document, content in self.corpus_reader
-        )
 
-        self.pipeline.put("reader_opts", self.reader_opts.props)
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        self.instream = self.create_instream()
+        return super().process_stream()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
@@ -492,8 +502,6 @@ class TaggedFrameToTokens(
     def setup(self) -> ITask:
 
         self.setup_token2id()
-        # Let convert.tagged_frame_to_tokens do transform instead
-        # self.setup_transform()
 
         self.pipeline.put("extract_opts", self.extract_opts)
         self.pipeline.put("filter_opts", self.filter_opts)
@@ -515,9 +523,6 @@ class TaggedFrameToTokens(
         )
 
         tokens = list(tokens)
-
-        # if self.transformer:
-        #     tokens = self.transform(tokens)
 
         if self.token2id:
             self.token2id.ingest(tokens)
@@ -575,36 +580,6 @@ def somewhat_generic_serializer(content: Any) -> Optional[str]:
         return somewhat_generic_serializer(content[1])
 
     return None
-
-
-# @dataclass
-# class FilterTaggedFrame(CountTaggedTokensMixIn, ITask):
-#     """Filters tagged frame text from payload.content based on annotations etc. """
-
-#     extract_opts: ExtractTaggedTokensOpts = None
-#     filter_opts: PropertyValueMaskingOpts = None
-
-#     def __post_init__(self):
-#         self.in_content_type = ContentType.TAGGED_FRAME
-#         self.out_content_type = ContentType.TOKENS
-
-#     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
-#         if self.pipeline.get('pos_column', None) is None:
-#             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
-
-#         tokens: Iterable[str] = convert.tagged_frame_to_tokens(
-#             doc=payload.content,
-#             extract_opts=self.extract_opts,
-#             filter_opts=self.filter_opts,
-#             **(self.pipeline.payload.tagged_columns_names or {}),
-#         )
-
-#         tokens = list(tokens)
-
-#         self.update_document_properties(payload, n_tokens=len(tokens))
-
-#         return payload.update(self.out_content_type, tokens)
 
 
 @dataclass
@@ -668,47 +643,59 @@ class TextToDTM(ITask):
         return None
 
 
+# FIXME #115 Enable optional one-pass creation of vocabulary and TF frequencies
 @dataclass
-class Vocabulary(ITask):
+class Vocabulary(DefaultResolveMixIn, ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
-        Both = 3
 
     token2id: Token2Id = None
-    token_type: TokenType = field(default=TokenType.Both)
+    token_type: Optional[TokenType] = None
+    progress: bool = False
+    close: bool = True
+    target: str = field(init=False, default="")
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
 
     def setup(self) -> ITask:
-        self.token2id = Token2Id()
-        self.pipeline.payload.token2id = self.token2id
+        self.target = self.get_column_name(self.token_type)
+        if self.in_content_type == ContentType.TAGGED_FRAME:
+            if self.token_type is None:
+                raise ValueError("token_type text or lemma not specfied")
         return self
 
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        self.token2id.ingest(self.tokens_iter(payload))
-        return payload
+    def enter(self):
+        token2id: Token2Id = Token2Id()
+        instream = tqdm(self.instream, desc="Vocab:") if self.progress else self.instream
+        token2id.ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN])
+        for payload in instream:
+            token2id.ingest(self.tokens_stream(payload))
+        if self.close:
+            token2id.close()
+        self.token2id = token2id
+        self.pipeline.payload.token2id = self.token2id
+        self.reset()
+        return self
 
-    def tokens_iter(self, payload: DocumentPayload) -> Iterable[str]:
-
+    def tokens_stream(self, payload: DocumentPayload) -> Iterable[str]:
         if payload.content_type == ContentType.TOKENS:
             return payload.content
-
-        text_tokens = payload.content[self.get_name('text_column')]
-        lemma_tokens = payload.content[self.get_name('lemma_column')]
-
-        if self.token_type == Vocabulary.TokenType.Text:
-            return text_tokens
-
         if self.token_type == Vocabulary.TokenType.Lemma:
-            return lemma_tokens
+            tokens = payload.content[self.target].str.lower()
+        else:
+            tokens = payload.content[self.target]
+        return tokens
 
-        return itertools.chain(text_tokens, lemma_tokens)
+    def get_column_name(self, token_type: TokenType) -> str:
+        if token_type == Vocabulary.TokenType.Lemma:
+            return self.pipeline.payload.memory_store.get("lemma_column")
+        return self.pipeline.payload.memory_store.get("text_column")
 
-    def get_name(self, token_column: str) -> str:
-        return self.pipeline.payload.memory_store.get(token_column)
+    def reset(self) -> None:
+        self.chain()
 
 
 @dataclass
@@ -756,6 +743,70 @@ class WildcardTask(ITask):
         self.abort()
 
 
+@dataclass
+class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+
+    corpus: ITokenizedCorpus = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.NONE
+        self.out_content_type = ContentType.TOKENS
+
+    def setup(self) -> ITask:
+        super().setup()
+        self.pipeline.payload.set_reader_index(self.corpus.document_index)
+
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        return (
+            DocumentPayload(
+                content_type=self.out_content_type,
+                filename=filename,
+                content=content,
+                filename_values=None,
+            )
+            for filename, content in self.corpus
+        )
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        self.instream = self.create_instream()
+        return super().process_stream()
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        self.update_document_properties(payload, n_tokens=len(payload.content))
+        return payload
+
+
+# @dataclass
+# class FilterTaggedFrame(CountTaggedTokensMixIn, ITask):
+#     """Filters tagged frame text from payload.content based on annotations etc. """
+
+#     extract_opts: ExtractTaggedTokensOpts = None
+#     filter_opts: PropertyValueMaskingOpts = None
+
+#     def __post_init__(self):
+#         self.in_content_type = ContentType.TAGGED_FRAME
+#         self.out_content_type = ContentType.TOKENS
+
+#     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+#         if self.pipeline.get('pos_column', None) is None:
+#             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
+
+#         tokens: Iterable[str] = convert.tagged_frame_to_tokens(
+#             doc=payload.content,
+#             extract_opts=self.extract_opts,
+#             filter_opts=self.filter_opts,
+#             **(self.pipeline.payload.tagged_columns_names or {}),
+#         )
+
+#         tokens = list(tokens)
+
+#         self.update_document_properties(payload, n_tokens=len(tokens))
+
+#         return payload.update(self.out_content_type, tokens)
+
+
 # class Split(ITask):
 
 #     partioner: Callable = None
@@ -790,31 +841,3 @@ class WildcardTask(ITask):
 
 #     def process_stream(self) -> Iterable[DocumentPayload]:
 #         raise NotImplementedError()
-
-
-@dataclass
-class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
-    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
-
-    corpus: ITokenizedCorpus = None
-
-    def __post_init__(self):
-        self.in_content_type = ContentType.NONE
-        self.out_content_type = ContentType.TOKENS
-
-    def setup(self) -> ITask:
-        super().setup()
-        self.pipeline.payload.set_reader_index(self.corpus.document_index)
-        self.instream = (
-            DocumentPayload(
-                content_type=self.out_content_type,
-                filename=filename,
-                content=content,
-                filename_values=None,
-            )
-            for filename, content in self.corpus
-        )
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        self.update_document_properties(payload, n_tokens=len(payload.content))
-        return payload

@@ -4,7 +4,8 @@ from typing import List
 
 import pandas as pd
 import pytest
-from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
+from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.pipeline import CheckpointOpts
 from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
@@ -147,6 +148,62 @@ def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.Dat
     assert tokens == ['kyrkan', 'trängdes', 'gapade', 'ljuslågor']
 
 
+def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFrame):
+
+    expected_counts: dict = {
+        '.': 3,
+        'bakom': 1,
+        'den': 1,
+        'fladdra': 1,
+        'gapa': 1,
+        'halvmörker': 1,
+        'i': 2,
+        'ingen': 1,
+        'inne': 1,
+        'kyrka': 1,
+        'ljuslåga': 1,
+        'någon': 1,
+        'och': 1,
+        'romansk': 1,
+        'tränga': 1,
+        'turist': 1,
+        'valv': 2,
+        'väldig': 1,
+        'överblick': 1,
+    }
+
+    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
+
+    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    assert set(expected_counts.keys()) == set(tokens)
+
+    extract_opts.global_tf_threshold = 2
+    extract_opts.global_tf_threshold_mask = False
+
+    with pytest.raises(ValueError):
+        """Raises error since token2id not supplied (i.e. token2id.TF is needed)"""
+        tokens = tagged_frame_to_tokens(tagged_frame, token2id=None, **opts, extract_opts=extract_opts)
+
+    token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(tagged_frame.baseform)
+
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert tokens == ['i', 'i', '.', 'valv', 'valv', '.', '.']
+
+    extract_opts.global_tf_threshold = 2
+    extract_opts.global_tf_threshold_mask = True
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert len(tokens) == len(tagged_frame)
+    assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.'])
+
+    extract_opts.global_tf_threshold = 2
+    extract_opts.global_tf_threshold_mask = True
+    extract_opts.passthrough_tokens = {'överblick'}
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert len(tokens) == len(tagged_frame)
+    assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.', 'överblick'])
+
+
 def test_tagged_frame_to_tokens_replace_pos(tagged_frame: pd.DataFrame):
 
     opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
@@ -205,12 +262,6 @@ def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame)
     )
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == ['väldig@JJ', 'romansk@JJ', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
-
-
-@pytest.mark.skip(reason="Not implemented")
-def test_tagged_frame_to_token_counts():
-    pass
-    # def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
 
 
 def test_detect_phrases(tagged_frame: pd.DataFrame):
