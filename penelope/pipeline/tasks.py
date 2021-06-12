@@ -682,7 +682,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
             token2id.ingest(self.tokens_stream(payload))
 
         if self.tf_threshold and self.tf_threshold > 1:
-            token2id.compress(self.tf_threshold, inplace=True, keeps=self.tf_keeps)
+            token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
         elif self.close:
             token2id.close()
 
