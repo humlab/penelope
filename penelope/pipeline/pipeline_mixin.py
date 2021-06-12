@@ -120,11 +120,13 @@ class PipelineShortcutMixIn:
     def project(self: pipelines.CorpusPipeline, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
         return self.add(tasks.Project(project=project))
 
-    def vocabulary(self: pipelines.CorpusPipeline, lemmatize: bool, progress: bool = False) -> pipelines.CorpusPipeline:
+    def vocabulary(
+        self: pipelines.CorpusPipeline, lemmatize: bool, progress: bool = False, close: bool = True
+    ) -> pipelines.CorpusPipeline:
         token_type: tasks.Vocabulary.TokenType = (
             tasks.Vocabulary.TokenType.Lemma if lemmatize else tasks.Vocabulary.TokenType.Text
         )
-        return self.add(tasks.Vocabulary(token_type=token_type, progress=progress))
+        return self.add(tasks.Vocabulary(token_type=token_type, progress=progress, close=close))
 
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
