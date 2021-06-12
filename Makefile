@@ -185,6 +185,10 @@ stubs:
 .PHONY: data spacy_data nltk_data
 .PHONY: profile-co_occurrence
 
+venus:
+	@rm -rf ./tests/test_data/VENUS/*
+	@poetry run python -c 'from tests.pipeline.fixtures import create_venus_bundle; create_venus_bundle()'
+
 help:
 	@echo "Higher level recepies: "
 	@echo " make ready            Makes ready for release (tools tidy test flake8 pylint)"

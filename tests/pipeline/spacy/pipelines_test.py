@@ -72,9 +72,15 @@ def test_spaCy_co_occurrence_pipeline(config):
     os.remove(target_filename)
 
 
-@pytest.mark.skip(reason="Long running")
-def test_spaCy_co_occurrence_workflow(config: CorpusConfig):
-    """Note: Output of this test case should be used when updating tests/test_data/VENUS test data"""
+# @pytest.mark.skip(reason="Long running")
+def test_spaCy_co_occurrence_workflow():
+    """Note: Use the output from this test case to update the tests/test_data/VENUS test data"""
+
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+
+    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+
     args = FakeComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,

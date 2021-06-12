@@ -1,8 +1,11 @@
-from penelope.co_occurrence import ContextOpts
+import os
+
+from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.notebook.interface import ComputeOpts
-from penelope.pipeline.config import CorpusType
+from penelope.pipeline import CorpusConfig, CorpusType
+from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import PropertyValueMaskingOpts
 
 
@@ -126,3 +129,45 @@ def FakeComputeOptsSparvCSV(
             already_tokenized=True,
         ),
     )
+
+
+def create_venus_bundle():
+    """Note: Use the output from this test case to update the tests/test_data/VENUS test data"""
+
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+
+    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+
+    args = FakeComputeOptsSpacyCSV(
+        corpus_tag="VENUS",
+        corpus_filename=config.pipeline_payload.source,
+    )
+    args.target_folder = './tests/test_data/VENUS'
+    args.context_opts = ContextOpts(context_width=4, ignore_concept=True, partition_keys=['document_id'])
+
+    os.makedirs('./tests/test_data/VENUS', exist_ok=True)
+    os.makedirs('./tests/output', exist_ok=True)
+
+    checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
+
+    bundle: Bundle = spaCy_co_occurrence_pipeline(
+        corpus_config=config,
+        corpus_filename=None,
+        transform_opts=args.transform_opts,
+        extract_opts=args.extract_opts,
+        filter_opts=args.filter_opts,
+        context_opts=args.context_opts,
+        global_threshold_count=args.count_threshold,
+        checkpoint_filename=checkpoint_filename,
+    ).value()
+
+    assert bundle.corpus is not None
+    assert bundle.token2id is not None
+    assert bundle.document_index is not None
+
+    bundle.tag = args.corpus_tag
+    bundle.folder = args.target_folder
+    bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
+
+    bundle.store()
