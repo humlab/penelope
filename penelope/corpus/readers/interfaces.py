@@ -106,6 +106,10 @@ class ExtractTaggedTokensOpts:
             return set()
         return set(self.block_tokens)
 
+    def clear_tf_threshold(self) -> ExtractTaggedTokensOpts:
+        self.global_tf_threshold = 1
+        return self
+
     @property
     def props(self):
         return dict(
