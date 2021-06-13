@@ -11,6 +11,10 @@ from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.utility import path_add_suffix, pickle_to_file, replace_extension, strip_paths, unpickle_from_file
 
 
+class ClosedVocabularyError(Exception):
+    ...
+
+
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
@@ -40,7 +44,7 @@ class Token2Id(MutableMapping):
         if self._id2token:
             self._id2token = None
         if not self.is_open:
-            raise ValueError(f"cannot add item to a closed vocabulary: '{value}'")
+            raise ClosedVocabularyError(f"cannot add item to a closed vocabulary: '{value}'")
         self.data[key] = value
 
     def __delitem__(self, key):
@@ -54,7 +58,7 @@ class Token2Id(MutableMapping):
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
         if not self._is_open:
-            raise ValueError("cannot ingest into a closed vocabulary")
+            raise ClosedVocabularyError("cannot ingest into a closed vocabulary")
 
         if self.tf is None:
             self.tf = Counter()
