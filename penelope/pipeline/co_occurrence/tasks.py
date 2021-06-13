@@ -17,9 +17,10 @@ from penelope.co_occurrence import (
 )
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import to_word_pair_token
+from penelope.pipeline.tasks_mixin import VocabularyIngestMixIn
 from penelope.type_alias import DocumentIndex
 
-from ..interfaces import ContentType, DocumentPayload, ITask
+from ..interfaces import ContentType, DocumentPayload, ITask, PipelineError
 
 
 @dataclass
@@ -68,7 +69,7 @@ def TTM_to_co_occurrence_DTM(
 
 
 @dataclass
-class ToCoOccurrenceDTM(ITask):
+class ToCoOccurrenceDTM(VocabularyIngestMixIn, ITask):
     """Computes (DOCUMENT-LEVEL) windows co-occurrence.
 
     Bundle consists of the following document level information:
@@ -82,9 +83,7 @@ class ToCoOccurrenceDTM(ITask):
     """
 
     context_opts: ContextOpts = None
-    ingest_tokens: bool = True
     vectorizer: WindowsCoOccurrenceVectorizer = field(init=False, default=None)
-    token2id: Token2Id = field(init=False, default=None)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
@@ -92,21 +91,23 @@ class ToCoOccurrenceDTM(ITask):
 
     def setup(self) -> ITask:
         super().setup()
+        self.pipeline.put("context_opts", self.context_opts)
+        return self
+
+    def enter(self):
+        super().enter()
 
         if self.pipeline.payload.token2id is None:
-            self.pipeline.payload.token2id = Token2Id()
-
-        self.token2id = self.pipeline.payload.token2id
+            raise PipelineError(f"{type(self).__name__} requires a vocabulary!")
 
         if self.context_opts.pad not in self.token2id:
             _ = self.token2id[self.context_opts.pad]
 
         self.vectorizer: WindowsCoOccurrenceVectorizer = WindowsCoOccurrenceVectorizer(self.token2id)
 
-        self.pipeline.put("context_opts", self.context_opts)
-        return self
-
     def process_payload(self, payload: DocumentPayload) -> Any:
+
+        self.token2id = self.pipeline.payload.token2id
 
         document_id = self.get_document_id(payload)
 
@@ -115,8 +116,7 @@ class ToCoOccurrenceDTM(ITask):
         if len(tokens) == 0:
             return payload.empty(self.out_content_type)
 
-        if self.ingest_tokens:
-            self.token2id.ingest(tokens)
+        self.ingest(tokens)
 
         windows = tokens_to_windows(tokens=tokens, context_opts=self.context_opts)
 
