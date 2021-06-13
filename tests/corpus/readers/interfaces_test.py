@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 import pytest
@@ -52,6 +53,7 @@ def test_interfaces_token2id_reverse():
 
 
 def test_interfaces_token2id_store():
+    os.makedirs('./tests/output', exist_ok=True)
 
     filename: str = './tests/output/test_interfaces_token2id_store.zip'
     token2id = Token2Id()

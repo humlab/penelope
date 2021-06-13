@@ -1,4 +1,5 @@
 from io import StringIO
+import os
 
 import numpy as np
 import pandas as pd
@@ -54,6 +55,7 @@ def load_test_index(data_str: str) -> DocumentIndexHelper:
 
 
 def test_store():
+    os.makedirs('./tests/output', exist_ok=True)
     index = load_test_index(TEST_DOCUMENT_INDEX)
     index.store('./tests/output/test_store_index.csv')
     with open('./tests/output/test_store_index.csv', 'r') as fp:

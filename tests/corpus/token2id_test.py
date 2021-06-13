@@ -18,6 +18,7 @@ def test_token2id_find():
 
 
 def test_token2id_ingest():
+    os.makedirs('./tests/output', exist_ok=True)
 
     tokens = ['adam', 'anton', 'anton', 'beatrice', 'felicia', 'niklas', 'adam', 'adam']
     token2id: Token2Id = Token2Id().ingest(tokens)

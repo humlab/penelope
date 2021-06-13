@@ -74,6 +74,7 @@ def test_bag_term_matrix_to_bag_term_docs(corpus):
 
 
 def test_load_of_uncompressed_corpus(text_corpus):
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     # Arrange
     dumped_v_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
@@ -90,6 +91,7 @@ def test_load_of_uncompressed_corpus(text_corpus):
 
 
 def test_load_of_compressed_corpus(text_corpus):
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     # Arrange
     dumped_v_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
@@ -124,6 +126,7 @@ def test_normalize_by_raw_counts():
 
 
 def test_dump_and_store_of_corpus_with_empty_trailing_row() -> VectorizedCorpus:
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [0, 0, 0, 0]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}

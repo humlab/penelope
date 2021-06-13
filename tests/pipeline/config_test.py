@@ -1,4 +1,5 @@
 import json
+import os
 
 import yaml
 from penelope.pipeline import CorpusConfig
@@ -63,6 +64,7 @@ def test_yaml_dumps_and_loads_of_corpus_config_succeeds():
 
 def test_dump_and_load_of_corpus_config_succeeds():
 
+    os.makedirs('./tests/output', exist_ok=True)
     dump_filename = './tests/output/corpus_config_test.yml'
     TEST_CONFIG.dump(dump_filename)
     deserialized_config = CorpusConfig.load(dump_filename)

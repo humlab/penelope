@@ -132,6 +132,8 @@ def test_source_get_info():
 
 
 def test_sources():
+    os.makedirs('./tests/output', exist_ok=True)
+
     def test_source(source):
 
         assert set(source.namelist()) == set(EXPECTED_TEXT_FILES + ['README.md'])

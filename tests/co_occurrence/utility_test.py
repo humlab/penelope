@@ -35,7 +35,7 @@ def test_co_occurrence_with_no_concept_succeeds():
         stream=corpus,
         token2id=corpus.token2id,
         document_index=corpus.document_index,
-        context_opts=ContextOpts(concept={'g'}, ignore_concept=True, context_width=1),
+        context_opts=ContextOpts(concept={'g'}, ignore_concept=True, ignore_padding=True, context_width=1),
         global_threshold_count=0,
     )
     assert expected_result == sorted(dataframe_to_tuples(value.decoded_co_occurrences[['w1', 'w2', 'value']]))
