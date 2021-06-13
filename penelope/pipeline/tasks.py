@@ -507,7 +507,7 @@ class TaggedFrameToTokens(
 
         return self
 
-    def enter(self) -> ITask:
+    def enter(self) -> ITask:  # pylint: disable=useless-super-delegation
         super().enter()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
