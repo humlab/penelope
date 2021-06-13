@@ -15,7 +15,7 @@ TextSource = Union[str, zipfile.ZipFile, List, Any]
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
 
-GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "(x)"
+GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "__low-tf__"
 
 
 @dataclass
