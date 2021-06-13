@@ -37,7 +37,7 @@ from . import checkpoint as cp
 from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import BuildToken2IdMixIn, CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn
+from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn, VocabularyIngestMixIn
 
 
 @dataclass
@@ -486,7 +486,7 @@ class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 @dataclass
 class TaggedFrameToTokens(
     CountTaggedTokensMixIn,
-    BuildToken2IdMixIn,
+    VocabularyIngestMixIn,
     TransformTokensMixIn,
     ITask,
 ):
@@ -494,21 +494,21 @@ class TaggedFrameToTokens(
 
     extract_opts: ExtractTaggedTokensOpts = None
     filter_opts: PropertyValueMaskingOpts = None
-    ingest_tokens: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TOKENS
 
     def setup(self) -> ITask:
-
-        self.setup_token2id()
-
+        super().setup()
         self.pipeline.put("extract_opts", self.extract_opts)
         self.pipeline.put("filter_opts", self.filter_opts)
         self.pipeline.put("transform_opts", self.transform_opts)
 
         return self
+
+    def enter(self) -> ITask:
+        super().enter()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
@@ -525,9 +525,7 @@ class TaggedFrameToTokens(
 
         tokens = list(tokens)
 
-        if self.ingest_tokens:
-            if self.token2id:
-                self.token2id.ingest(tokens)
+        self.ingest(tokens)
 
         self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
 
@@ -670,24 +668,27 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         if self.in_content_type == ContentType.TAGGED_FRAME:
             if self.token_type is None:
                 raise ValueError("token_type text or lemma not specfied")
+
+        self.token2id: Token2Id = Token2Id()
+        self.pipeline.payload.token2id = self.token2id
         return self
 
     def enter(self):
-        token2id: Token2Id = Token2Id()
+
         instream = tqdm(self.instream, desc="Vocab:") if self.progress else self.instream
 
-        token2id.ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN])
+        ingest = self.token2id.ingest
+
+        ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN])
 
         for payload in instream:
-            token2id.ingest(self.tokens_stream(payload))
+            ingest(self.tokens_stream(payload))
 
         if self.tf_threshold and self.tf_threshold > 1:
-            token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
+            self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
         elif self.close:
-            token2id.close()
+            self.token2id.close()
 
-        self.token2id = token2id
-        self.pipeline.payload.token2id = self.token2id
         self.reset()
         return self
 
