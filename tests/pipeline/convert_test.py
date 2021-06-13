@@ -40,11 +40,6 @@ fladdrade	VB	|fladdra|
 """
 
 
-@pytest.mark.skip(reason="Not implemented")
-def test_to_vectorized_corpus():
-    pass
-
-
 def create_checkpoint_opts() -> CheckpointOpts:
     options: CheckpointOpts = CheckpointOpts(
         content_type_code=1,

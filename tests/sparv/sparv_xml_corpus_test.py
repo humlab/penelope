@@ -45,7 +45,7 @@ def test_reader_store_result():
     os.remove(target_filename)
 
 
-@pytest.mark.skip('Long running')
+@pytest.mark.long_running
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)

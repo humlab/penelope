@@ -50,6 +50,7 @@ def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: te
     assert ["Mary", "lamb", "fleece", "snow"] == terms[0]
 
 
+@pytest.mark.long_running
 def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: textacy.Corpus):
 
     terms = (

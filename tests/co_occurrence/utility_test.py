@@ -102,7 +102,7 @@ def test_partitioned_corpus_co_occurrence_succeeds2(concept, threshold_count, co
     assert len(value.co_occurrences) > 0
 
 
-# @pytest.mark.skip(reason="long running")
+@pytest.mark.long_running
 def test_document_wise_co_occurrence():
 
     concept = set()

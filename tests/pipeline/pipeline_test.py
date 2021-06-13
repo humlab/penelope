@@ -118,6 +118,7 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: CorpusConfig):
     assert isinstance(pipeline.payload.document_index, pd.DataFrame)
 
 
+@pytest.mark.long_running
 def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')

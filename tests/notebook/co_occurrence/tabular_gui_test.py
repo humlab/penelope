@@ -141,25 +141,3 @@ def test_get_prepared_corpus(folder: str, tag: str, keyness: KeynessMetric):
     )
 
     assert corpus is not None
-
-# 2.87s call     tests/topic_modelling/topic_modelling_test.py::test_load_inferred_topics_data[gensim_lda-multicore]
-# 2.76s call     tests/topic_modelling/topic_modelling_test.py::test_infer_topics_data[gensim_lda-multicore]
-# 2.58s call     tests/topic_modelling/topic_modelling_test.py::test_load_inferred_model_when_lazy_does_not_load_model_or_corpus[gensim_lda-multicore]
-# 2.28s call     tests/sparv/sparv_csv_pipeline_test.py::test_sparv_tagged_frame_to_tokens
-# 2.24s call     tests/topic_modelling/topic_modelling_test.py::test_infer_model[gensim_lda-multicore]
-# 2.19s call     tests/topic_modelling/topic_modelling_test.py::test_run_model_by_cli_stores_a_model_that_can_be_loaded
-# 2.17s call     tests/topic_modelling/topic_modelling_test.py::test_run_cli
-# 2.13s call     tests/pipeline/pipeline_test.py::test_pipeline_tagged_frame_to_tokens_succeeds
-# 1.86s call     tests/notebook/co_occurrence/tabular_gui_test.py::test_get_prepared_corpus[./tests/test_data/VENUS-VENUS-KeynessMetric.DICE]
-# 1.72s setup    tests/vendor/spacy_test.py::test_annotate_document_with_lemma_and_pos_strings_succeeds
-# 1.66s call     tests/notebook/co_occurrence/tabular_gui_test.py::test_get_prepared_corpus[./tests/test_data/VENUS-VENUS-KeynessMetric.LLR_Dunning]
-# 1.54s call     tests/notebook/co_occurrence/tabular_gui_test.py::test_table_gui_to_corpus[decade]
-# 1.50s call     tests/pipeline/pipeline_test.py::test_pipeline_tagged_frame_to_tuple_succeeds
-# 1.50s call     tests/pipeline/pipeline_test.py::test_pipeline_to_dtm_succeeds
-# 1.37s call     tests/pipeline/pipeline_test.py::test_pipeline_take_succeeds
-# 1.27s call     tests/pipeline/feather_test.py::test_pipeline_can_can_be_saved_in_feather
-# 1.20s call     tests/pipeline/corpus_pipeline_test.py::test_spacy_pipeline
-# 1.15s call     tests/notebook/co_occurrence/tabular_gui_test.py::test_table_gui_to_corpus[year]
-# 1.11s call     tests/notebook/co_occurrence/tabular_gui_test.py::test_table_gui_to_co_occurrences_filters_out_tokens[decade]
-# 1.09s call     tests/notebook/co_occurrence/tabular_gui_test.py::test_table_gui_to_corpus[lustrum]
-# 1.08s call     tests/pipeline/pipeline_test.py::test_pipeline_can_load_pos_tagged_checkpoint

@@ -39,7 +39,7 @@ def test_extract_to_tsv():
     assert result == '\r'.join(expected) + '\r'
 
 
-@pytest.mark.skip('Long running')
+@pytest.mark.long_running
 def test_xml_to_csv_corpus_reader():
 
     source_path = './tests/test_data/sou_test_sparv3_xml.zip'
