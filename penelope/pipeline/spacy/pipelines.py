@@ -90,19 +90,15 @@ def spaCy_co_occurrence_pipeline(
     global_threshold_count: int = None,
     checkpoint_filename: str = None,
 ) -> pipelines.CorpusPipeline:
-    try:
-        p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
-            corpus_config=corpus_config,
-            corpus_filename=corpus_filename,
-            checkpoint_filename=checkpoint_filename,
-        ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
-            context_opts=context_opts,
-            transform_opts=transform_opts,
-            extract_opts=extract_opts,
-            filter_opts=filter_opts,
-            global_threshold_count=global_threshold_count,
-        )
-        return p
-
-    except Exception as ex:
-        raise ex
+    p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
+        corpus_config=corpus_config,
+        corpus_filename=corpus_filename,
+        checkpoint_filename=checkpoint_filename,
+    ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
+        context_opts=context_opts,
+        transform_opts=transform_opts,
+        extract_opts=extract_opts,
+        filter_opts=filter_opts,
+        global_threshold_count=global_threshold_count,
+    )
+    return p

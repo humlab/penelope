@@ -21,32 +21,28 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     global_threshold_count: int = None,
     **kwargs,  # pylint: disable=unused-argument
 ) -> CorpusPipeline:
-    try:
-        passthroughs: set = context_opts.concept.union(extract_opts.get_passthrough_tokens())
-        pipeline: pipelines.CorpusPipeline = (
-            pipelines.wildcard()
-            .vocabulary(
-                lemmatize=extract_opts,
-                progress=True,
-                tf_threshold=extract_opts.global_tf_threshold,
-                tf_keeps=passthroughs,
-                close=True,
-            )
-            .tagged_frame_to_tokens(
-                extract_opts=extract_opts.clear_tf_threshold(),
-                filter_opts=filter_opts,
-                transform_opts=transform_opts,
-            )
-            # .tokens_transform(transform_opts=transform_opts)
-            .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=False)
-            .tqdm(desc="Processing documents")
-            .to_corpus_co_occurrence(
-                context_opts=context_opts,
-                global_threshold_count=global_threshold_count,
-            )
+    passthroughs: set = context_opts.concept.union(extract_opts.get_passthrough_tokens())
+    pipeline: pipelines.CorpusPipeline = (
+        pipelines.wildcard()
+        .vocabulary(
+            lemmatize=extract_opts,
+            progress=True,
+            tf_threshold=extract_opts.global_tf_threshold,
+            tf_keeps=passthroughs,
+            close=True,
         )
+        .tagged_frame_to_tokens(
+            extract_opts=extract_opts.clear_tf_threshold(),
+            filter_opts=filter_opts,
+            transform_opts=transform_opts,
+        )
+        # .tokens_transform(transform_opts=transform_opts)
+        .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=False)
+        .tqdm(desc="Processing documents")
+        .to_corpus_co_occurrence(
+            context_opts=context_opts,
+            global_threshold_count=global_threshold_count,
+        )
+    )
 
-        return pipeline
-
-    except Exception as ex:
-        raise ex
+    return pipeline
