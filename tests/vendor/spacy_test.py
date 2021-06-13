@@ -217,7 +217,8 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
     ]
 
 
-def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc):
+def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc: pd.DataFrame):
+    df_doc = df_doc.copy()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True)
     filter_opts = PropertyValueMaskingOpts(is_punct=None)
