@@ -60,20 +60,21 @@ class TransformTokensMixIn:
 
 
 @dataclass
-class BuildToken2IdMixIn:
+class VocabularyIngestMixIn:
 
-    build_dictionary: bool = False
-    token2id: Token2Id = field(init=False, default=None)
+    token2id: Token2Id = None
+    ingest_tokens: bool = False
 
-    def setup_token2id(self: interfaces.ITask) -> interfaces.ITask:
+    def enter(self):
+        super().enter()
 
-        if self.build_dictionary:
-            self.token2id = Token2Id()
-            self.pipeline.payload.token2id = self.token2id
+        if self.ingest_tokens:
+            if self.pipeline.payload.token2id is None:
+                self.pipeline.payload.token2id = self.token2id or Token2Id()
 
-        return self
+        self.token2id = self.pipeline.payload.token2id
 
-    def ingest_tokens(self, tokens: List[str]):
+    def ingest(self, tokens: List[str]):
 
-        if self.build_dictionary:
+        if self.ingest_tokens:
             self.token2id.ingest(tokens)
