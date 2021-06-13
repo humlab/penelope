@@ -74,7 +74,7 @@ def test_spaCy_co_occurrence_pipeline(config):
 
 # @pytest.mark.skip(reason="Long running")
 def test_spaCy_co_occurrence_workflow():
-    """Note: Use the output from this test case to update the tests/test_data/VENUS test data"""
+    """Note: Use the output from this test case to update the tests/test_data/VENUS test data VENUS-TESTDATA"""
 
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
 
