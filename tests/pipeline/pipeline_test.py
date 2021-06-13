@@ -81,6 +81,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: CorpusCo
     assert pipeline.payload.document_lookup('RECOMMENDATION_0201_049455_2017.txt')['unesco_id'] == 49455
 
 
+@pytest.mark.long_running
 def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
@@ -139,6 +140,7 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     assert len(tagged_payload.content[tagged_payload.content.pos_ == 'NOUN']) == len(tokens_payload.content)
 
 
+@pytest.mark.long_running
 def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
@@ -173,6 +175,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
     assert pipeline.payload.token2id.tf[pipeline.payload.token2id['the']] == 704
 
 
+@pytest.mark.long_running
 def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
@@ -274,6 +277,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
 
 
 # pylint: disable=too-many-locals
+@pytest.mark.long_running
 def test_compute_dtm_when_persist_is_false(config: CorpusConfig):
 
     args = FakeComputeOptsSpacyCSV(corpus_tag='compute_dtm_when_persist_is_false')

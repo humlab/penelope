@@ -28,7 +28,7 @@ def config():
     return fake_config()
 
 
-@pytest.mark.skip(reason="Long running")
+@pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline(config):
 
     os.makedirs('./tests/output', exist_ok=True)
@@ -72,7 +72,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     os.remove(target_filename)
 
 
-# @pytest.mark.skip(reason="Long running")
+@pytest.mark.long_running
 def test_spaCy_co_occurrence_workflow():
     """Note: Use the output from this test case to update the tests/test_data/VENUS test data VENUS-TESTDATA"""
 
@@ -112,6 +112,7 @@ def test_spaCy_co_occurrence_workflow():
     bundle.store()
 
 
+@pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline3(config):
     corpus_filename = './tests/test_data/legal_instrument_five_docs_test.zip'
     args = FakeComputeOptsSpacyCSV(

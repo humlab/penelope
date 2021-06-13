@@ -31,6 +31,7 @@ def mary_had_a_little_lamb_tokens():
     return tokenized_docs
 
 
+@pytest.mark.long_running
 def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: textacy.Corpus):
 
     terms = (

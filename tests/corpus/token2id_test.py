@@ -1,9 +1,9 @@
 import os
-from penelope.corpus.token2id import ClosedVocabularyError
 
 import pytest
 from penelope.corpus import Token2Id
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
+from penelope.corpus.token2id import ClosedVocabularyError
 from penelope.utility import path_add_suffix
 
 

@@ -53,6 +53,7 @@ def test_load_inferred_model_fixture():
     assert inferred_model is not None
 
 
+@pytest.mark.long_running
 def test_store_compressed_inferred_model(inferred_model: InferredModel):
 
     # Arrange
@@ -70,6 +71,7 @@ def test_store_compressed_inferred_model(inferred_model: InferredModel):
     shutil.rmtree(target_folder)
 
 
+@pytest.mark.long_running
 def test_store_uncompressed_inferred_model(inferred_model):
 
     # Arrange
@@ -87,6 +89,7 @@ def test_store_uncompressed_inferred_model(inferred_model):
     shutil.rmtree(target_folder)
 
 
+@pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
 
@@ -115,6 +118,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     shutil.rmtree(target_folder)
 
 
+@pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(method):
 
@@ -138,6 +142,7 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
     shutil.rmtree(target_folder)
 
 
+@pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 
@@ -167,6 +172,7 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     shutil.rmtree(target_folder)
 
 
+@pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_infer_topics_data(method):
 
@@ -198,6 +204,7 @@ def test_infer_topics_data(method):
     assert list(inferred_topics_data.document_topic_weights.topic_id.unique()) == [0, 1, 2, 3]
 
 
+@pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_store_inferred_topics_data(method):
 
@@ -226,6 +233,7 @@ def test_store_inferred_topics_data(method):
     shutil.rmtree(target_folder)
 
 
+@pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore"])
 def test_load_inferred_topics_data(method):
 

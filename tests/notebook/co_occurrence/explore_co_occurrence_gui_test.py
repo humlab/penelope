@@ -28,6 +28,7 @@ def test_ExploreCoOccurrencesGUI_create_and_layout(bundle: co_occurrence.Bundle)
     _: notebook_utility.OutputsTabExt = gui.layout()
 
 
+@pytest.mark.long_running
 def test_ExploreCoOccurrencesGUI_display(bundle: co_occurrence.Bundle, trends_data: BundleTrendsData):
 
     gui: ExploreGUI = ExploreGUI(bundle=bundle).setup()

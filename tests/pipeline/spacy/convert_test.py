@@ -64,6 +64,7 @@ def test_spacy_doc_to_tagged_frame(looking_back: Doc):
     assert_test_xyz_to_tagged_frame(tagged_frame)
 
 
+@pytest.mark.long_running
 def test_text_to_tagged_frames(nlp):
     tagged_frame = text_to_tagged_frame(
         document=SAMPLE_TEXT,
@@ -74,6 +75,7 @@ def test_text_to_tagged_frames(nlp):
     assert_test_xyz_to_tagged_frame(tagged_frame)
 
 
+@pytest.mark.long_running
 def test_texts_to_tagged_frames(nlp):
     stream = [SAMPLE_TEXT, SAMPLE_TEXT]
     tagged_frames = texts_to_tagged_frames(

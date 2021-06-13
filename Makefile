@@ -31,6 +31,12 @@ tidy: black isort
 
 test:
 	@mkdir -p ./tests/output
+	@echo SKIPPING LONG RUNNING TESTS!
+	@poetry run pytest -m "not long_running" $(PYTEST_ARGS) tests
+	@rm -rf ./tests/output/*
+
+full-test:
+	@mkdir -p ./tests/output
 	@poetry run pytest $(PYTEST_ARGS) tests
 	@rm -rf ./tests/output/*
 

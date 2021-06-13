@@ -13,6 +13,7 @@ def corpus_config():
 
     config = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
 
+    # FIXME: Reduce test data size
     config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
     config.pipeline_payload.document_index_source = None
 
@@ -45,6 +46,7 @@ def test_read_sparv_csv_zip_using_tng_reader_and_zip_source(corpus_config: pipel
     assert names == ['prot_197677__25.csv', 'prot_197677__26.csv', 'prot_197677__27.csv']
 
 
+@pytest.mark.long_running
 def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
 
     p = pipeline.CorpusPipeline(config=corpus_config)
