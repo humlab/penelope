@@ -80,7 +80,7 @@
         "concept": [],
         "ignore_concept": true,
         "pad": "*",
-        "ignore_padding": true,
+        "ignore_padding": false,
         "partition_keys": [
             "document_id"
         ],
