@@ -33,7 +33,7 @@ from .sparv_corpus import (
 )
 from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
-from .token2id import Token2Id, ClosedVocabularyError
+from .token2id import ClosedVocabularyError, Token2Id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
 from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer, TokensTransformOpts
 from .transforms import (
