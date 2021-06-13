@@ -27,7 +27,7 @@ class ContextOpts:
     ignore_concept: bool = False
     pad: Token = field(default="*")
     partition_keys: List[str] = field(default_factory=list)
-    ignore_padding: bool = True
+    ignore_padding: bool = False
     min_window_size: int = 1
 
     @property
