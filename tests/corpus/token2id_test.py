@@ -1,4 +1,5 @@
 import os
+from penelope.corpus.token2id import ClosedVocabularyError
 
 import pytest
 from penelope.corpus import Token2Id
@@ -93,7 +94,7 @@ def test_token2id_compress():
     assert token2id_compressed["roger"] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
     assert "roger" not in token2id_compressed
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ClosedVocabularyError):
         token2id_compressed["roger"] = 99
 
     assert token2id_compressed['word_that_dont_exists'] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
