@@ -27,7 +27,8 @@ class ComputeOpts:
     extract_opts: ExtractTaggedTokensOpts
     filter_opts: Optional[PropertyValueMaskingOpts]
     vectorize_opts: VectorizeOpts
-    count_threshold: Optional[int]
+    tf_threshold: Optional[int]
+    tf_threshold_mask: Optional[bool]
     create_subfolder: bool
     persist: bool
 
@@ -80,7 +81,8 @@ class ComputeOpts:
             'reader_opts': self.text_reader_opts.props,
             'extract_opts': self.extract_opts.props if self.extract_opts is not None else {},
             'vectorize_opt': self.vectorize_opts.props,
-            'count_threshold': self.count_threshold,
+            'tf_threshold': self.tf_threshold,
+            'tf_threshold_mask': self.tf_threshold_mask,
             'context_opts': {} if self.context_opts is None else self.context_opts.props,
         }
         return options
@@ -101,7 +103,7 @@ class ComputeOpts:
             # if len(self.context_opts.partition_keys or []) > 0:
             #     options['--partition-key'] = self.context_opts.partition_keys
 
-        options['--count-threshold'] = self.count_threshold
+        options['--count-threshold'] = self.tf_threshold
 
         if self.extract_opts.phrases and len(self.extract_opts.phrases) > 0:
             options['--phrase'] = self.extract_opts.phrases

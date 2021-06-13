@@ -40,7 +40,7 @@ def compute(
         args.extract_opts.passthrough_tokens = args.context_opts.concept
         args.extract_opts.block_tokens = []
         # args.extract_opts.block_chars = ''
-        args.extract_opts.global_tf_threshold = args.count_threshold
+        args.extract_opts.global_tf_threshold = args.tf_threshold
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
@@ -49,7 +49,7 @@ def compute(
                 extract_opts=args.extract_opts,
                 filter_opts=args.filter_opts,
                 context_opts=args.context_opts,
-                global_threshold_count=args.count_threshold,
+                global_threshold_count=args.tf_threshold,
             )
         )
 
@@ -93,5 +93,6 @@ def compile_compute_options(args: interface.ComputeOpts, target_filename: str = 
         extract_opts=args.extract_opts,
         input_filename=args.corpus_filename,
         output_filename=target_filename,
-        count_threshold=args.count_threshold,
+        tf_threshold=10,
+        tf_threshold_mask=False,
     )

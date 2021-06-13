@@ -103,6 +103,8 @@ def test_generate_cli_opts():
             passthrough_tokens=[],
             block_tokens=[],
             append_pos=False,
+            global_tf_threshold=1,
+            global_tf_threshold_mask=False,
         ),
         filter_opts=PropertyValueMaskingOpts(),
         vectorize_opts=VectorizeOpts(
@@ -113,7 +115,8 @@ def test_generate_cli_opts():
             min_df=1,
             verbose=False,
         ),
-        count_threshold=1,
+        tf_threshold=1,
+        tf_threshold_mask=False,
         create_subfolder=True,
         persist=True,
         context_opts=ContextOpts(

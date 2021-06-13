@@ -66,7 +66,7 @@ compute_opts = ComputeOpts(
     vectorize_opts=corpora.VectorizeOpts(
         already_tokenized=True, lowercase=False, stop_words=None, max_df=1.0, min_df=1, verbose=False
     ),
-    count_threshold=1,
+    tf_threshold=1,
     create_subfolder=True,
     persist=True,
     context_opts=ContextOpts(

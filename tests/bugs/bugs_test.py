@@ -59,12 +59,15 @@ def test_inidun_word_trends_bug():
             append_pos=False,
             phrases=None,
             to_lowercase=True,
+            global_tf_threshold=10,
+            global_tf_threshold_mask=False,
         ),
         filter_opts=PropertyValueMaskingOpts(),
         vectorize_opts=VectorizeOpts(
             already_tokenized=True, lowercase=False, stop_words=None, max_df=1.0, min_df=1, verbose=False
         ),
-        count_threshold=10,
+        tf_threshold=10,
+        tf_threshold_mask=False,
         create_subfolder=True,
         persist=True,
         force=False,
@@ -91,8 +94,8 @@ def test_inidun_word_trends_bug():
 
     assert corpus is not None
 
-    # if (args.count_threshold or 1) > 1:
-    #     corpus = corpus.slice_by_n_count(args.count_threshold)
+    # if (args.tf_threshold or 1) > 1:
+    #     corpus = corpus.slice_by_n_count(args.tf_threshold)
 
     # if args.persist:
     #     store_corpus_bundle(corpus, args)

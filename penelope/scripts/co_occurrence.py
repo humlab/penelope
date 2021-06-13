@@ -9,20 +9,18 @@ from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.convert import parse_phrases
-from penelope.utility import PropertyValueMaskingOpts
-from penelope.utility.pos_tags import pos_tags_to_str
+from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, unused-argument
 
 
 @click.command()
-@click.argument('corpus_config', type=click.STRING)  # , help='Model name.')
+@click.argument('corpus_config', type=click.STRING)
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
 @click.option('--no-concept', default=False, is_flag=True, help='Filter out concept word')
-@click.option('--count-threshold', default=None, help='Filter out co_occurrences below threshold', type=click.INT)
 @click.option(
     '-w',
     '--context-width',
@@ -30,8 +28,6 @@ from penelope.utility.pos_tags import pos_tags_to_str
     help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
     type=click.INT,
 )
-@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
-@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
 @click.option(
     '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
@@ -47,6 +43,8 @@ from penelope.utility.pos_tags import pos_tags_to_str
     type=click.STRING,
 )
 @click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
+@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
+@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words')
 @click.option(
@@ -56,8 +54,21 @@ from penelope.utility.pos_tags import pos_tags_to_str
     type=click.Choice(['swedish', 'english']),
     help='Remove stopwords using given language',
 )
+@click.option(
+    '--tf-threshold',
+    default=1,
+    type=click.IntRange(1, 99),
+    help='Globoal TF threshold filter (words below filtered out)',
+)
+@click.option(
+    '--tf-threshold-mask',
+    default=False,
+    is_flag=True,
+    help='If true, then low TF words are kept, but masked as "__low_tf__"',
+)
 @click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
 @click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
+@click.option('--doc-chunk-size', default=None, help='Split document in chunks of chunk-size words.', type=click.INT)
 @click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
 @click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
 @click.option(
@@ -75,9 +86,9 @@ def main(
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
+    partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,
-    partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
     pos_paddings: str = None,
@@ -88,13 +99,16 @@ def main(
     remove_stopwords: str = None,
     min_word_length: int = 2,
     max_word_length: int = None,
+    doc_chunk_size: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
-    count_threshold: int = None,
+    tf_threshold: int = 1,
+    tf_threshold_mask: bool = False,
     force: bool = False,
 ):
+
     process_co_ocurrence(
         corpus_config=corpus_config,
         input_filename=input_filename,
@@ -120,7 +134,8 @@ def main(
         keep_numerals=keep_numerals,
         only_any_alphanumeric=only_any_alphanumeric,
         only_alphabetic=only_alphabetic,
-        count_threshold=count_threshold,
+        tf_threshold=tf_threshold,
+        tf_threshold_mask=tf_threshold_mask,
         force=force,
     )
 
@@ -133,9 +148,9 @@ def process_co_ocurrence(
     concept: List[str] = None,
     no_concept: bool = None,
     context_width: int = None,
+    partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,
-    partition_key: Sequence[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = None,
     pos_paddings: str = None,
@@ -146,13 +161,16 @@ def process_co_ocurrence(
     remove_stopwords: str = None,
     min_word_length: int = 2,
     max_word_length: int = None,
+    doc_chunk_size: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
-    count_threshold: int = None,
+    tf_threshold: int = 1,
+    tf_threshold_mask: bool = False,
     force: bool = False,
 ):
+
     try:
         output_folder, output_tag = to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
@@ -197,10 +215,14 @@ def process_co_ocurrence(
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
                 phrases=phrases,
+                to_lowercase=to_lowercase,
                 append_pos=append_pos,
+                global_tf_threshold=tf_threshold,
+                global_tf_threshold_mask=tf_threshold_mask,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
-            count_threshold=count_threshold,
+            tf_threshold=tf_threshold,
+            tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,
             persist=True,
             context_opts=ContextOpts(

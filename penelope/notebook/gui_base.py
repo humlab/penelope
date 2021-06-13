@@ -28,7 +28,7 @@ from . import utility as notebook_utility
 
 logger = get_logger('penelope')
 
-# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
+# pylint: disable=attribute-defined-outside-init, too-many-instance-attributes, too-many-public-methods
 
 default_layout = Layout(width='200px')
 button_layout = Layout(width='140px')
@@ -113,8 +113,11 @@ class BaseGUI:
             rows=8,
             layout=Layout(width='100px'),
         )
-        self._count_threshold: IntSlider = IntSlider(
+        self._tf_threshold: IntSlider = IntSlider(
             description='', min=1, max=1000, step=1, value=10, layout=default_layout
+        )
+        self._tf_threshold_mask: ToggleButton = ToggleButton(
+            value=False, description='Mask low-TF', icon='', layout=button_layout
         )
         self._use_pos_groupings: ToggleButton = ToggleButton(
             value=True, description='PoS groups', icon='', layout=button_layout
@@ -185,7 +188,8 @@ class BaseGUI:
                         VBox(
                             [
                                 VBox([HTML("<b>Filename fields</b>"), self._filename_fields]),
-                                VBox([HTML("<b>Frequency threshold</b>"), self._count_threshold]),
+                                VBox([HTML("<b>Frequency threshold</b>"), self._tf_threshold]),
+                                VBox([self._tf_threshold_mask]),
                             ]
                         ),
                         VBox(
@@ -441,8 +445,12 @@ class BaseGUI:
         return self._corpus_filename.selected
 
     @property
-    def count_threshold(self) -> int:
-        return self._count_threshold.value
+    def tf_threshold(self) -> int:
+        return self._tf_threshold.value
+
+    @property
+    def tf_threshold_mask(self) -> bool:
+        return self._tf_threshold_mask.value
 
     @property
     def create_subfolder(self) -> bool:
@@ -474,7 +482,7 @@ class BaseGUI:
             text_reader_opts=self.corpus_config.text_reader_opts,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
-            count_threshold=self.count_threshold,
+            tf_threshold=self.tf_threshold,
             create_subfolder=self.create_subfolder,
             vectorize_opts=self.vectorize_opts,
             persist=True,

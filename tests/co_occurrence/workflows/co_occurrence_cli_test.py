@@ -35,7 +35,8 @@ def test_process_co_ocurrence():
         keep_numerals=True,
         only_any_alphanumeric=False,
         only_alphabetic=False,
-        count_threshold=10,
+        tf_threshold=10,
+        tf_threshold_mask=False,
         force=False,
     )
 

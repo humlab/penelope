@@ -126,7 +126,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
 
     if extract_opts.global_tf_threshold > 1:
         """
-        If global_count_threshold_mask then filter out tokens below threshold
+        If global_tf_threshold_mask then filter out tokens below threshold
         Otherwise replace token with `GLOBAL_TF_THRESHOLD_MASK_TOKEN`
 
         Alternativ implementation:

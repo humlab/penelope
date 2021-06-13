@@ -67,7 +67,7 @@ def FakeComputeOptsSpacyCSV(
             ignore_concept=False,
             partition_keys=['document_id'],
         ),
-        count_threshold=1,
+        tf_threshold=1,
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
             lowercase=False,
@@ -124,7 +124,7 @@ def FakeComputeOptsSparvCSV(
             context_width=2,
             partition_keys=['document_id'],
         ),
-        count_threshold=1,
+        tf_threshold=1,
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
         ),
@@ -158,7 +158,7 @@ def create_venus_bundle():
         extract_opts=args.extract_opts,
         filter_opts=args.filter_opts,
         context_opts=args.context_opts,
-        global_threshold_count=args.count_threshold,
+        global_threshold_count=args.tf_threshold,
         checkpoint_filename=checkpoint_filename,
     ).value()
 

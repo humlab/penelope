@@ -97,7 +97,7 @@ def test_spaCy_co_occurrence_workflow():
         extract_opts=args.extract_opts,
         filter_opts=args.filter_opts,
         context_opts=args.context_opts,
-        global_threshold_count=args.count_threshold,
+        global_threshold_count=args.tf_threshold,
         checkpoint_filename=checkpoint_filename,
     ).value()
 
