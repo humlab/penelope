@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import itertools
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Sequence, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterator, List, Optional, Sequence, Type, TypeVar, Union
 
 from .interfaces import ContentType, DocumentPayload, ITask, PipelinePayload
 
@@ -43,14 +43,25 @@ class CorpusPipelineBase(Generic[_T_self]):
     def tasks(self) -> List[ITask]:
         return self._tasks
 
-    def find(self, task_cls: Type[ITask], stop_cls: Type[ITask] = None) -> ITask:
+    def find(self, task_cls: Union[str, Type[ITask]], stop_cls: Union[ITask, Type[ITask]] = None) -> Optional[ITask]:
         """Find first task of class `task_cls`. Don't look beyond `stop_cls` if given."""
+
         for task in self.tasks:
-            if isinstance(task, task_cls):
+
+            if isinstance(task_cls, str):
+
+                if type(task).__name__ == task_cls:
+                    return task
+
+            elif isinstance(task, task_cls):
                 return task
+
             if stop_cls is not None:
+                if task is stop_cls:
+                    break
                 if isinstance(task, stop_cls):
                     break
+
         return None
 
     def get_prior_to(self, task: ITask) -> ITask:
