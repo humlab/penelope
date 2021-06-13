@@ -5,18 +5,46 @@ import os
 # %%
 import numpy as np
 import pandas as pd
-from penelope.co_occurrence import load_co_occurrences
+from penelope.co_occurrence import Bundle, load_co_occurrences
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 
 jj = os.path.join
 
 
+filename1 = '/home/roger/source/penelope/tests/test_data/VENUS/VENUS_co-occurrence.csv.zip'
+b1: Bundle = Bundle.load(filename1)
+
+
+filename2 = '/home/roger/source/penelope/tmp/VENUS/VENUS_co-occurrence.csv.zip'
+b2: Bundle = Bundle.load(filename2)
+
+
+# %%
+# helper: CoOccurrenceHelper = CoOccurrenceHelper()
+
+cc1 = (
+    b1.decoded_co_occurrences.assign(token=b1.decoded_co_occurrences.w1 + "/" + b1.decoded_co_occurrences.w2)
+    .groupby('token')['value']
+    .sum()
+    .sort_values(ascending=False)
+)
+
+cc2 = (
+    b2.decoded_co_occurrences.assign(token=b2.decoded_co_occurrences.w1 + "/" + b2.decoded_co_occurrences.w2)
+    .groupby('token')['value']
+    .sum()
+    .sort_values(ascending=False)
+)
+
+
+# %%
+
 # %%
 
 DATA_FOLDER = '/home/roger/source/penelope/tests/output/'
-
 CO_OCCURRENCE_FILENAME = 'riksdagens-protokoll.1920-2019.test.sparv4.csv.co-occurrences.feather'
+
 DICTIONARY_FILENAME = 'riksdagens-protokoll.1920-2019.test.sparv4.csv.co-occurrences.dictionary.zip'
 DOCUMENT_INDEX_FILENAME = 'riksdagens-protokoll.1920-2019.test.sparv4.csv.co-occurrences.document_index.zip'
 
