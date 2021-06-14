@@ -83,6 +83,7 @@ Sphinx = "==3.*,>=3.5.1"
 recommonmark = "==0.*,>=0.7.1"
 pyinstrument = "==3.*,>=3.4.1"
 tomlkit = "^0.7.2"
+pytest-timeout = "^1.4.2"
 
 [tool.poetry.scripts]
 vectorize_corpus = "penelope.scripts.vectorize_corpus:main"
@@ -115,6 +116,7 @@ filterwarnings = [
   "ignore::RuntimeWarning",
   "ignore::UserWarning"
 ]
+timeout = 300
 
 [tool.black]
 line-length = 120
