@@ -48,3 +48,5 @@ class ContextOpts:
         instance: ContextOpts = create_dataclass_instance_from_kwargs(cls, **kwargs)
 
         return instance
+
+    
