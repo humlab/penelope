@@ -33,7 +33,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
             close=True,
         )
         .tagged_frame_to_tokens(
-            extract_opts=extract_opts, #.clear_tf_threshold(),
+            extract_opts=extract_opts,  # .clear_tf_threshold(),
             filter_opts=filter_opts,
             transform_opts=transform_opts,
         )
