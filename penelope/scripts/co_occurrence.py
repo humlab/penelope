@@ -227,7 +227,7 @@ def process_co_ocurrence(
             persist=True,
             context_opts=ContextOpts(
                 context_width=context_width,
-                concept=(concept or []),
+                concept=set(concept or []),
                 ignore_concept=no_concept,
                 partition_keys=partition_key,
             ),
