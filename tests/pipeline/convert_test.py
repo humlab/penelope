@@ -145,6 +145,8 @@ def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.Dat
 
 def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFrame):
 
+    tagged_frame: pd.DataFrame = tagged_frame.copy()
+
     expected_counts: dict = {
         '.': 3,
         'bakom': 1,
@@ -197,6 +199,62 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
     tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
     assert len(tokens) == len(tagged_frame)
     assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.', 'överblick'])
+
+
+def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_frame: pd.DataFrame):
+
+    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
+
+    """ Alternative #1: tagged_frame_to_tokens does the filtering """
+
+    df: pd.DataFrame = tagged_frame.copy()
+    extract_opts.global_tf_threshold = 2
+    extract_opts.global_tf_threshold_mask = True
+    token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(df.baseform)
+
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert len(tokens) == len(df)
+    assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.'])
+
+    """ Alternative #2: Use token2id to mask low TF tokens"""
+    df: pd.DataFrame = tagged_frame.copy()
+    token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(df.baseform)
+    token2id.compress(tf_threshold=2, inplace=True)
+    token2id.close()
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert len(tokens) == len(df)
+    assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.'])
+
+
+def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagged_frame: pd.DataFrame):
+
+    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes=None, pos_excludes=None, global_tf_threshold=2, global_tf_threshold_mask=False
+    )
+    """ Alternative #1: tagged_frame_to_tokens does the filtering """
+
+    token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(tagged_frame.baseform)
+    expected_count = len(
+        tagged_frame[
+            tagged_frame.baseform.apply(lambda x: token2id.tf[token2id[x]] >= extract_opts.global_tf_threshold)
+        ]
+    )
+
+    df: pd.DataFrame = tagged_frame.copy()
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert len(tokens) == expected_count
+    assert set(tokens) == set(['i', 'i', '.', 'valv', 'valv', '.', '.'])
+
+    """ Alternative #2: Use token2id to mask low TF tokens"""
+    df: pd.DataFrame = tagged_frame.copy()
+    token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(df.baseform)
+    token2id.compress(tf_threshold=2, inplace=True)
+    token2id.close()
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    assert len(tokens) == expected_count
+    assert set(tokens) == set(['i', 'i', '.', 'valv', 'valv', '.', '.'])
 
 
 def test_tagged_frame_to_tokens_replace_pos(tagged_frame: pd.DataFrame):
