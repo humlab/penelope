@@ -483,6 +483,7 @@ class BaseGUI:
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
             tf_threshold=self.tf_threshold,
+            tf_threshold_mask=self.tf_threshold_mask,
             create_subfolder=self.create_subfolder,
             vectorize_opts=self.vectorize_opts,
             persist=True,
