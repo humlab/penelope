@@ -122,7 +122,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     if len(blocks) > 0:
         mask &= ~doc[target].isin(blocks)
 
-    masked_data = doc.loc[mask][[target, pos_column]].copy()
+    filtered_data = doc.loc[mask][[target, pos_column]].copy()
 
     if extract_opts.global_tf_threshold > 1:
         """
@@ -139,23 +139,24 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         tg = token2id.get
         cg = token2id.tf.get
 
-        masked_data['token_id'] = masked_data[target].apply(tg)
-        masked_data['token_count'] = masked_data.token_id.apply(cg)
+        filtered_data['token_id'] = filtered_data[target].apply(tg)
+        filtered_data['token_count'] = filtered_data.token_id.apply(cg)
 
-        low_frequency_mask = masked_data.token_count < extract_opts.global_tf_threshold
+        low_frequency_mask = filtered_data.token_count.fillna(0) < extract_opts.global_tf_threshold
 
         passthrough_ids: Set[int] = set() if not passthroughs else {tg(w) for w in passthroughs}
         if passthrough_ids:
-            low_frequency_mask &= ~masked_data.token_id.isin(passthrough_ids)
+            low_frequency_mask &= ~filtered_data.token_id.isin(passthrough_ids)
 
         if extract_opts.global_tf_threshold_mask:
             """Mask low frequency terms"""
-            masked_data.update(masked_data[low_frequency_mask].assign(**{target: GLOBAL_TF_THRESHOLD_MASK_TOKEN}))
+            # filtered_data.update(filtered_data[low_frequency_mask].assign(**{target: GLOBAL_TF_THRESHOLD_MASK_TOKEN}))
+            filtered_data[target] = filtered_data[target].where(~low_frequency_mask, GLOBAL_TF_THRESHOLD_MASK_TOKEN)
         else:
             """Filter out low frequency terms"""
-            masked_data = masked_data[~low_frequency_mask]
+            filtered_data = filtered_data[~low_frequency_mask]
 
-    token_pos_tuples = masked_data.itertuples(index=False, name=None)
+    token_pos_tuples = filtered_data[[target, pos_column]].itertuples(index=False, name=None)
 
     if len(pos_paddings) > 0:
         # token_pos_tuples = map(
