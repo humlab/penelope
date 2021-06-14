@@ -203,7 +203,7 @@ class Token2Id(MutableMapping):
         new_tf[mask_id] += sum(tf[i] for i in self.data.values() if i not in translation)
 
         if inplace:
-
+            self._id2token = None
             self.data = defaultdict(None, new_data)
             self.tf = new_tf
 
