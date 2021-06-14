@@ -41,6 +41,7 @@ def compute(
         args.extract_opts.block_tokens = []
         # args.extract_opts.block_chars = ''
         args.extract_opts.global_tf_threshold = args.tf_threshold
+        args.extract_opts.global_tf_threshold_mask = args.tf_threshold_mask
 
         p: pipeline.CorpusPipeline = (
             tagged_frame_pipeline
