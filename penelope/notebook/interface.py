@@ -126,6 +126,12 @@ class ComputeOpts:
         if self.extract_opts.append_pos:
             options['--append-pos'] = True
 
+        if self.extract_opts.global_tf_threshold > 1:
+            options['--tf-threshold'] = self.extract_opts.global_tf_threshold
+
+        if self.extract_opts.global_tf_threshold_mask:
+            options['--tf-threshold-mask'] = True
+
         options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
         options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
         options[f'--{"" if self.transform_opts.to_lower else "no" }to-lowercase'] = True
