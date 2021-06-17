@@ -1,3 +1,4 @@
+import contextlib
 from typing import Callable, Set, Union
 
 import ipywidgets as widgets
@@ -41,7 +42,7 @@ class ComputeGUI(BaseGUI):
             min=1,
             max=40,
             step=1,
-            value=2,
+            value=1,
             layout=default_layout,
             # tooltip=tooltips['_context_width'],
         )
@@ -55,19 +56,33 @@ class ComputeGUI(BaseGUI):
         )
         self._ignore_concept = widgets.ToggleButton(
             value=False,
-            description='No Concept',
+            description='Ignore concept',
+            icon='',
+            layout=button_layout,
+            tooltips="Remove word-pairs that include concept tokens from end result",
+        )
+        self._ignore_padding = widgets.ToggleButton(
+            value=True,
+            description='Ignore padding',
             icon='check',
             layout=button_layout,
-            # tooltip=tooltips['_ignore_concept'],
+            tooltips="Remove word-pairs that include padding tokens from end result",
         )
+        self._context_width_title = widgets.HTML("<b>Context distance</b>")
 
     def layout(self, hide_input=False, hide_output=False):
 
         placeholder: widgets.VBox = self.extra_placeholder
         extra_layout = widgets.HBox(
             [
-                widgets.VBox([widgets.HTML("<b>Context distance</b>"), self._context_width, self._partition_key]),
-                widgets.VBox([widgets.HTML("<b>Concept</b>"), self._concept, self._ignore_concept]),
+                widgets.VBox([self._context_width_title, self._context_width, self._partition_key]),
+                widgets.VBox(
+                    [
+                        widgets.HTML("<b>Concept</b>"),
+                        self._concept,
+                        widgets.HBox([self._ignore_concept, self._ignore_padding]),
+                    ]
+                ),
             ]
         )
         placeholder.children = [extra_layout]
@@ -76,7 +91,16 @@ class ComputeGUI(BaseGUI):
 
     def setup(self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable):
         super().setup(config=config, compute_callback=compute_callback, done_callback=done_callback)
+        self._ignore_concept.observe(self._toggle_state_changed, 'value')
+        self._ignore_padding.observe(self._toggle_state_changed, 'value')
+        self._context_width.observe(self._context_width_changed, 'value')
+        self._context_width.value = 2
         return self
+
+    def _context_width_changed(self, _):
+        with contextlib.suppress(Exception):
+            w: int = 2 * self._context_width.value + 1
+            self._context_width_title.value = f"<b>Context distance (w = {w})</b>"
 
     @property
     def context_opts(self) -> ContextOpts:
@@ -84,6 +108,7 @@ class ComputeGUI(BaseGUI):
             concept=self.concept_tokens,
             context_width=self._context_width.value,
             ignore_concept=self._ignore_concept.value,
+            ignore_padding=self._ignore_padding.value,
             partition_keys=[self._partition_key.value],
         )
 
@@ -91,7 +116,7 @@ class ComputeGUI(BaseGUI):
     def concept_tokens(self) -> Set[str]:
         _concepts_str = [x.strip() for x in self._concept.value.strip().split(',') if len(x.strip()) > 1]
         if len(_concepts_str) == 0:
-            return {}
+            return set()
         return set(_concepts_str)
 
     @property
