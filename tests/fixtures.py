@@ -4,8 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.co_occurrence import Bundle, ContextOpts, term_term_matrix_to_co_occurrences
-from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
+from penelope.co_occurrence import term_term_matrix_to_co_occurrences
 from penelope.corpus import (
     ITokenizedCorpus,
     ReiterableTerms,
@@ -149,20 +148,6 @@ def very_simple_co_occurrences(corpus: ITokenizedCorpus) -> pd.DataFrame:
     )
 
     return co_occurrences
-
-
-def very_simple_corpus_co_occurrences(corpus: TokenizedCorpus, context_opts: ContextOpts) -> Bundle:
-
-    value: Bundle = compute_non_partitioned_corpus_co_occurrence(
-        stream=corpus,
-        context_opts=context_opts,
-        token2id=corpus.token2id,
-        document_index=corpus.document_index,
-        global_threshold_count=None,
-        ingest_tokens=False,
-    )
-
-    return value
 
 
 class MockedProcessedCorpus(ITokenizedCorpus):
