@@ -3,7 +3,6 @@ SHELL := /bin/bash
 SOURCE_FOLDERS=penelope tests
 PACKAGE_FOLDER=penelope
 SPACY_MODEL=en_core_web_sm
-PYTEST_ARGS=--durations=0 --cov=$(PACKAGE_FOLDER) --cov-report=xml --cov-report=html tests
 
 RUN_TIMESTAMP := $(shell /bin/date "+%Y-%m-%d-%H%M%S")
 
@@ -32,16 +31,22 @@ tidy: black isort
 test:
 	@mkdir -p ./tests/output
 	@echo SKIPPING LONG RUNNING TESTS!
-	@poetry run pytest -m "not long_running" $(PYTEST_ARGS) tests
+	@poetry run pytest -m "not long_running" --durations=0 tests
+	@rm -rf ./tests/output/*
+
+test-coverage:
+	@mkdir -p ./tests/output
+	@echo SKIPPING LONG RUNNING TESTS!
+	@poetry run pytest -m "not long_running" --cov=$(PACKAGE_FOLDER) --cov-report=html tests
 	@rm -rf ./tests/output/*
 
 full-test:
 	@mkdir -p ./tests/output
-	@poetry run pytest $(PYTEST_ARGS) tests
+	@poetry run pytest --cov=$(PACKAGE_FOLDER) --cov-report=html tests
 	@rm -rf ./tests/output/*
 
 retest:
-	@poetry run pytest $(PYTEST_ARGS) --last-failed tests
+	@poetry run pytest --durations=0 --last-failed tests
 
 init: tools
 	@poetry install
@@ -74,9 +79,9 @@ tag:
 	@git tag $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g") -a
 	@git push origin --tags
 
-test-coverage:
-	-poetry run coverage --rcfile=.coveragerc run -m pytest
-	-poetry run coveralls
+# test-coverage:
+# 	-poetry run coverage --rcfile=.coveragerc run -m pytest
+# 	-poetry run coveralls
 
 pytest:
 	@mkdir -p ./tests/output
