@@ -60,18 +60,23 @@ class PipelineShortcutMixIn:
         return self.add(tasks.LoadTaggedXML(filename=filename, options=options))
 
     def checkpoint(
-        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts = None
+        self: pipelines.CorpusPipeline,
+        filename: str,
+        checkpoint_opts: CheckpointOpts = None,
+        force_checkpoint: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
-        return self.add(tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts))
+        return self.add(
+            tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts, force_checkpoint=force_checkpoint)
+        )
 
     def checkpoint_feather(
         self: pipelines.CorpusPipeline,
         folder: str,
-        force: bool = False,
+        force_checkpoint: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ [DATAFRAME] => [CHECKPOINT] => PASSTHROUGH """
-        return self.add(tasks.CheckpointFeather(folder=folder, force=force))
+        return self.add(tasks.CheckpointFeather(folder=folder, force_checkpoint=force_checkpoint))
 
     def tokens_to_text(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         """ [TOKEN] => TEXT """

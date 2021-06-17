@@ -38,7 +38,12 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
     corpus_config.text_reader_opts.update(n_processes=reader_opts.n_processes, n_chunksize=reader_opts.n_chunksize)
 
     pipeline: CorpusPipeline = (
-        to_tagged_frame_pipeline(corpus_config, corpus_filename)
+        to_tagged_frame_pipeline(
+            corpus_config=corpus_config,
+            corpus_filename=corpus_filename,
+            enable_checkpoint=True,
+            force_checkpoint=False,
+        )
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=None, transform_opts=None)
         .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=True)
         .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)

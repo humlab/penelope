@@ -350,7 +350,7 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
         .text_to_spacy()
         .passthrough()
         .spacy_to_pos_tagged_frame()
-        .checkpoint(checkpoint_filename, checkpoint_opts=checkpoint_opts)
+        .checkpoint(checkpoint_filename, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
         .to_content()
     )
 
@@ -377,6 +377,7 @@ def test_spacy_pipeline_load_checkpoint(checkpoint_opts: CheckpointOpts):
         .checkpoint(
             checkpoint_filename,
             checkpoint_opts=checkpoint_opts,
+            force_checkpoint=False,
         )
         .to_content()
     )

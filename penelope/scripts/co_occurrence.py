@@ -1,4 +1,3 @@
-import sys
 from typing import List, Sequence
 
 import click
@@ -20,7 +19,12 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
-@click.option('--no-concept', default=False, is_flag=True, help='Filter out concept word')
+@click.option(
+    '--ignore-padding', default=False, is_flag=True, help='Filter out word pairs that include a padding token'
+)
+@click.option(
+    '--ignore-concept', default=False, is_flag=True, help='Filter out word pairs that include a concept token'
+)
 @click.option(
     '-w',
     '--context-width',
@@ -30,15 +34,15 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 )
 @click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
 @click.option(
-    '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
+    '-i', '--pos-includes', default='', help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
 )
 @click.option(
-    '-m', '--pos-paddings', default=None, help='List of POS tags to replace with a padding marker.', type=click.STRING
+    '-m', '--pos-paddings', default='', help='List of POS tags to replace with a padding marker.', type=click.STRING
 )
 @click.option(
     '-x',
     '--pos-excludes',
-    default=None,
+    default='',
     help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
     type=click.STRING,
 )
@@ -77,22 +81,30 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
-@click.option('-f', '--force/--no-force', default=False, is_flag=True, help='Ignore checkpoints')
+@click.option('-e', '--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='Enable checkpoints')
+@click.option(
+    '-f',
+    '--force-checkpoint/--no-force-checkpoint',
+    default=False,
+    is_flag=True,
+    help='Force new checkpoints (if enabled)',
+)
 def main(
     corpus_config: str = None,
     input_filename: str = None,
     output_filename: str = None,
     filename_pattern: str = None,
     concept: List[str] = None,
-    no_concept: bool = None,
+    ignore_concept: bool = False,
+    ignore_padding: bool = False,
     context_width: int = None,
     partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,
     create_subfolder: bool = True,
-    pos_includes: str = None,
-    pos_paddings: str = None,
-    pos_excludes: str = None,
+    pos_includes: str = '',
+    pos_paddings: str = '',
+    pos_excludes: str = '',
     append_pos: bool = False,
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -106,7 +118,8 @@ def main(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    force: bool = False,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ):
 
     process_co_ocurrence(
@@ -115,7 +128,8 @@ def main(
         output_filename=output_filename,
         filename_pattern=filename_pattern,
         concept=concept,
-        no_concept=no_concept,
+        ignore_concept=ignore_concept,
+        ignore_padding=ignore_padding,
         context_width=context_width,
         phrase=phrase,
         phrase_file=phrase_file,
@@ -136,7 +150,8 @@ def main(
         only_alphabetic=only_alphabetic,
         tf_threshold=tf_threshold,
         tf_threshold_mask=tf_threshold_mask,
-        force=force,
+        enable_checkpoint=enable_checkpoint,
+        force_checkpoint=force_checkpoint,
     )
 
 
@@ -146,7 +161,8 @@ def process_co_ocurrence(
     output_filename: str = None,
     filename_pattern: str = None,
     concept: List[str] = None,
-    no_concept: bool = None,
+    ignore_concept: bool = False,
+    ignore_padding: bool = False,
     context_width: int = None,
     partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
@@ -168,7 +184,8 @@ def process_co_ocurrence(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    force: bool = False,
+    enable_checkpoint: bool=True,
+    force_checkpoint: bool=False,
 ):
 
     try:
@@ -228,24 +245,24 @@ def process_co_ocurrence(
             context_opts=ContextOpts(
                 context_width=context_width,
                 concept=set(concept or []),
-                ignore_concept=no_concept,
+                ignore_concept=ignore_concept,
+                ignore_padding=ignore_padding,
                 partition_keys=partition_key,
             ),
             filter_opts=PropertyValueMaskingOpts(),
-            force=force,
+            enable_checkpoint=enable_checkpoint,
+            force_checkpoint=force_checkpoint,
         )
 
-        workflows.co_occurrence.compute(
-            args=args,
-            corpus_config=corpus_config,
-        )
+        workflows.co_occurrence.compute(args=args, corpus_config=corpus_config)
 
         logger.info('Done!')
 
-    except Exception as ex:  # pylint: disable=try-except-raise
-        logger.exception(ex)
-        click.echo(ex)
-        sys.exit(1)
+    except Exception as ex:  # pylint: disable=try-except-raise, unused-variable
+        # logger.exception(ex)
+        # click.echo(ex)
+        # sys.exit(1)
+        raise
 
 
 if __name__ == '__main__':

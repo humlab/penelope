@@ -90,6 +90,9 @@ class BaseGUI:
         self._create_subfolder: ToggleButton = ToggleButton(
             value=True, description='Create folder', icon='check', layout=button_layout
         )
+        self._ignore_checkpoints: ToggleButton = ToggleButton(
+            value=False, description='Force', icon='', layout=button_layout
+        )
         self._lemmatize: ToggleButton = ToggleButton(
             value=True, description='Lemmatize', icon='check', layout=button_layout
         )
@@ -100,18 +103,18 @@ class BaseGUI:
             value=False, description='No stopwords', icon='', layout=button_layout
         )
         self._only_alphabetic: ToggleButton = ToggleButton(
-            value=False, description='Only alphabetic', icon='', layout=button_layout
+            value=False, description='Only alpha', icon='', layout=button_layout
         )
         self._only_any_alphanumeric: ToggleButton = ToggleButton(
-            value=False, description='Only alphanumeric', icon='', layout=button_layout
+            value=False, description='Only alphanum', icon='', layout=button_layout
         )
         self._extra_stopwords: Textarea = Textarea(
-            value='örn',
+            value='',
             placeholder='Enter extra stop words',
             description='',
             disabled=False,
             rows=8,
-            layout=Layout(width='100px'),
+            layout=Layout(width='140px'),
         )
         self._tf_threshold: IntSlider = IntSlider(
             description='', min=1, max=1000, step=1, value=10, layout=default_layout
@@ -120,7 +123,7 @@ class BaseGUI:
             value=False, description='Mask low-TF', icon='', layout=button_layout
         )
         self._use_pos_groupings: ToggleButton = ToggleButton(
-            value=True, description='PoS groups', icon='', layout=button_layout
+            value=True, description='PoS groups', icon='check', layout=button_layout
         )
 
         self._append_pos_tag: ToggleButton = ToggleButton(
@@ -189,7 +192,6 @@ class BaseGUI:
                             [
                                 VBox([HTML("<b>Filename fields</b>"), self._filename_fields]),
                                 VBox([HTML("<b>Frequency threshold</b>"), self._tf_threshold]),
-                                VBox([self._tf_threshold_mask]),
                             ]
                         ),
                         VBox(
@@ -201,7 +203,7 @@ class BaseGUI:
                                                 self._use_pos_groupings,
                                                 self._lemmatize,
                                                 self._to_lowercase,
-                                                self._remove_stopwords,
+                                                self._tf_threshold_mask,
                                             ]
                                         ),
                                         self.buttons_placeholder,
@@ -210,13 +212,13 @@ class BaseGUI:
                                                 self._append_pos_tag,
                                                 self._only_alphabetic,
                                                 self._only_any_alphanumeric,
-                                                self._create_subfolder,
+                                                self._remove_stopwords,
                                             ]
                                         ),
                                         VBox(
                                             [
-                                                HTML("&nbsp;"),
-                                                HTML("&nbsp;"),
+                                                self._ignore_checkpoints,
+                                                self._create_subfolder,
                                                 self._cli_button,
                                                 self._compute_button,
                                             ]
@@ -313,6 +315,10 @@ class BaseGUI:
         self._remove_stopwords.observe(self._remove_stopwords_state_changed, 'value')
         self._only_alphabetic.observe(self._toggle_state_changed, 'value')
         self._only_any_alphanumeric.observe(self._toggle_state_changed, 'value')
+        self._use_pos_groupings.observe(self._toggle_state_changed, 'value')
+        self._tf_threshold_mask.observe(self._toggle_state_changed, 'value')
+        self._create_subfolder.observe(self._toggle_state_changed, 'value')
+        self._ignore_checkpoints.observe(self._toggle_state_changed, 'value')
         self._compute_button.on_click(self._compute_handler)
         self._cli_button.on_click(self._compute_handler)
         self._use_pos_groupings.observe(self.update_pos_schema, 'value')
@@ -409,6 +415,8 @@ class BaseGUI:
             phrases=self.phrases,
             to_lowercase=self._to_lowercase.value,
             append_pos=self._append_pos_tag.value,
+            global_tf_threshold=self.tf_threshold,
+            global_tf_threshold_mask=self.tf_threshold_mask,
         )
 
     @property
@@ -457,6 +465,10 @@ class BaseGUI:
         return self._create_subfolder.value
 
     @property
+    def ignore_checkpoints(self) -> bool:
+        return self._ignore_checkpoints.value
+
+    @property
     def filename_fields(self) -> str:
         return self._filename_fields.value
 
@@ -482,11 +494,14 @@ class BaseGUI:
             text_reader_opts=self.corpus_config.text_reader_opts,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
+            # FIXME Replace these with ExtractOpts.global_tf_threshold* (or vice versa)
             tf_threshold=self.tf_threshold,
             tf_threshold_mask=self.tf_threshold_mask,
             create_subfolder=self.create_subfolder,
             vectorize_opts=self.vectorize_opts,
             persist=True,
             context_opts=None,
+            enable_checkpoint=True,
+            force_checkpoint=self.ignore_checkpoints,
         )
         return args

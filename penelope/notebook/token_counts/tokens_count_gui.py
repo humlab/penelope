@@ -242,6 +242,7 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
     p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
         "tagged_frame_pipeline",
         checkpoint_filename=checkpoint_filename,
+        enable_checkpoint=True,
     )
 
     document_index: DocumentIndex = probe_checkpoint_document_index(p)

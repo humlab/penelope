@@ -29,7 +29,7 @@ def test_pipeline_can_can_be_saved_in_feather(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
-    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename)
+    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename, force_checkpoint=False)
 
     for payload in pipeline.resolve():
 

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts, VectorizeOpts
     from penelope.corpus.readers import ExtractTaggedTokensOpts
 
+    # from ..checkpoint.interface import CheckpointOpts
     from ..config import CorpusConfig
     from ..pipelines import CorpusPipeline
 # pylint: disable=too-many-locals
@@ -23,9 +24,13 @@ def default_done_callback(*_: Any, **__: Any) -> None:
 
 
 def to_tagged_frame_pipeline(
+    *,
     corpus_config: CorpusConfig,
     corpus_filename: str = None,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
     checkpoint_filename: str = None,
+    **_,
 ) -> CorpusPipeline:
     try:
 
@@ -45,8 +50,11 @@ def to_tagged_frame_pipeline(
             .tqdm()
             .passthrough()
             .spacy_to_pos_tagged_frame()
-            .checkpoint(_checkpoint_filename)
         )
+
+        if enable_checkpoint:
+            pipeline = pipeline.checkpoint(filename=_checkpoint_filename, force_checkpoint=force_checkpoint)
+
         return pipeline
 
     except Exception as ex:
@@ -61,12 +69,16 @@ def spaCy_DTM_pipeline(
     vectorize_opts: VectorizeOpts = None,
     corpus_filename: str = None,
     checkpoint_filename: str = None,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
             checkpoint_filename=checkpoint_filename,
             corpus_filename=corpus_filename,
+            enable_checkpoint=enable_checkpoint,
+            force_checkpoint=force_checkpoint,
         ) + wildcard_to_DTM_pipeline(
             extract_opts=extract_opts,
             filter_opts=filter_opts,
@@ -89,16 +101,20 @@ def spaCy_co_occurrence_pipeline(
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     checkpoint_filename: str = None,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
     p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
         corpus_config=corpus_config,
         corpus_filename=corpus_filename,
         checkpoint_filename=checkpoint_filename,
+        enable_checkpoint=enable_checkpoint,
+        force_checkpoint=force_checkpoint,
     ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
         context_opts=context_opts,
         transform_opts=transform_opts,
         extract_opts=extract_opts,
         filter_opts=filter_opts,
-        global_threshold_count=global_threshold_count,
+        global_tf_threshold=global_threshold_count,
     )
     return p

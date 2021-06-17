@@ -17,7 +17,8 @@ def test_process_co_ocurrence():
         input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip",
         output_filename="./tests/output/test_process_co_ocurrence",
         concept=None,
-        no_concept=False,
+        ignore_concept=False,
+        ignore_padding=False,
         context_width=6,
         partition_key=["year"],
         phrase=None,
@@ -37,7 +38,8 @@ def test_process_co_ocurrence():
         only_alphabetic=False,
         tf_threshold=10,
         tf_threshold_mask=False,
-        force=False,
+        enable_checkpoint=True,
+        force_checkpoint=False,
     )
 
     process_co_ocurrence(**args)

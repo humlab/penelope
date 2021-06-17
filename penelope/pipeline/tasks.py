@@ -160,9 +160,11 @@ class ToDocumentContentTuple(ITask):
 
 @dataclass
 class Checkpoint(DefaultResolveMixIn, ITask):
+    """Checkpoints stream to a single files archive"""
 
     filename: str = None
     checkpoint_opts: cp.CheckpointOpts = None
+    force_checkpoint: bool = False
 
     def setup(self) -> ITask:
         super().setup()
@@ -174,6 +176,14 @@ class Checkpoint(DefaultResolveMixIn, ITask):
     def __post_init__(self):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
+
+    def enter(self):
+        if self.force_checkpoint:
+            if os.path.isfile(self.filename):
+                os.remove(self.filename)
+            self.force_checkpoint = False
+
+        return super().enter()
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         return self._load_payload_stream() if os.path.isfile(self.filename) else self._store_payload_stream()
@@ -233,7 +243,7 @@ class SaveTaggedCSV(Checkpoint):
 
 
 @dataclass
-class LoadTaggedCSV(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 
     filename: str = None
@@ -285,14 +295,14 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     """Creates a feather checkpoint. """
 
     folder: str = None
-    force: bool = field(default=False)
+    force_checkpoint: bool = field(default=False)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def enter(self):
-        if self.force:
+        if self.force_checkpoint:
             with contextlib.suppress(Exception):
                 shutil.rmtree(self.folder, ignore_errors=True)
 
@@ -315,6 +325,8 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     def write_document_index(folder: str, document_index: DocumentIndex):
         filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
         if document_index is not None:
+            if document_index.index.name in document_index.columns:
+                document_index.rename_axis('', inplace=True)
             document_index.reset_index().to_feather(filename, compression="lz4")
 
 
@@ -521,6 +533,7 @@ class TaggedFrameToTokens(
             filter_opts=self.filter_opts,
             **(self.pipeline.payload.tagged_columns_names or {}),
             transform_opts=self.transform_opts,
+            token2id=self.pipeline.payload.token2id,
         )
 
         tokens = list(tokens)
@@ -675,7 +688,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
     def enter(self):
 
-        instream = tqdm(self.instream, desc="Vocab:") if self.progress else self.instream
+        instream = tqdm(self.instream, total=len(self.document_index), desc="Vocab:") if self.progress else self.instream
 
         ingest = self.token2id.ingest
 

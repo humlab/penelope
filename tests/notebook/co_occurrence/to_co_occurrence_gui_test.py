@@ -125,7 +125,8 @@ def test_generate_cli_opts():
             ignore_concept=False,
             partition_keys=['document_id'],
         ),
-        force=False,
+        enable_checkpoint=True,
+        force_checkpoint=False,
     )
 
     cli_command: str = compute_opts.command_line("apa")

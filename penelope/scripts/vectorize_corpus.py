@@ -72,6 +72,14 @@ def split_filename(filename, sep='_'):
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
+@click.option('-e', '--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='Enable checkpoints')
+@click.option(
+    '-f',
+    '--force-checkpoint/--no-force-checkpoint',
+    default=False,
+    is_flag=True,
+    help='Force new checkpoints (if enabled)',
+)
 def main(
     corpus_config: str = None,
     input_filename: str = None,
@@ -97,7 +105,8 @@ def main(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    force: bool = False,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ):
 
     process(
@@ -124,7 +133,8 @@ def main(
         only_alphabetic=only_alphabetic,
         tf_threshold=tf_threshold,
         tf_threshold_mask=tf_threshold_mask,
-        force=force,
+        enable_checkpoint=enable_checkpoint,
+        force_checkpoint=force_checkpoint,
     )
 
 
@@ -153,7 +163,8 @@ def process(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    force: bool = False,
+    enable_checkpoint: bool=True,
+    force_checkpoint: bool=False,
 ):
 
     try:
@@ -209,7 +220,8 @@ def process(
             tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,
             persist=True,
-            force=force,
+            enable_checkpoint=enable_checkpoint,
+            force_checkpoint=force_checkpoint,
         )
 
         workflows.document_term_matrix.compute(
