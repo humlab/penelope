@@ -93,13 +93,6 @@ def compute_hal_cwr_score(
     w1_indicies = [reverse_mapping[i][0] for i in range(0, nw_xy.shape[1])]
     w2_indicies = [reverse_mapping[i][1] for i in range(0, nw_xy.shape[1])]
 
-    # temp fix:
-    # TODO: Varför finns token ID's för orginalkorpus som är större än nw_xy.shape[1]?
-    # Är det "pad" characters som lagts till i efterhand?
-    # Följande fix funkar  inte eftersom inte samma antal poster tas bort
-    # w1_indicies = [x for x in w1_indicies if x < nw_xy.shape[1]]
-    # w2_indicies = [x for x in w2_indicies if x < nw_xy.shape[1]]
-
     for d in range(0, nw_xy.shape[0]):
         nw_xy[d, :] = nw_xy[d, :] / (nw_x[d, w1_indicies] + nw_x[d, w2_indicies] - nw_xy[d, :])
 
