@@ -51,12 +51,12 @@ class CorpusConfig:
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = field(default="english")
 
-    def get_pipeline(self, pipeline_key: str, *args, **kwargs) -> CorpusPipeline:
+    def get_pipeline(self, pipeline_key: str, **kwargs) -> CorpusPipeline:
         """Returns a pipeline class by key from `pipelines` section"""
         if pipeline_key not in self.pipelines:
             raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
         factory: Type[CorpusPipeline] = create_pipeline_factory(self.pipelines[pipeline_key])
-        return factory(self, *args, **kwargs)
+        return factory(corpus_config=self, **kwargs)
 
     @property
     def pos_schema(self) -> PoS_Tag_Scheme:
