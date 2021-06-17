@@ -4,11 +4,10 @@ from collections import Counter, defaultdict
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Tuple
 
 from penelope.corpus import DocumentIndex, ITokenizedCorpus, metadata_to_document_index
-from penelope.type_alias import FilenameTokensTuples
+from penelope.type_alias import Token, WindowsStream
+from penelope.utility import deprecated
 
 from .interface import ContextOpts, Token
-
-WindowsStream = Iterator[Tuple[str, int, Iterator[str]]]
 
 
 class WindowsCorpus(ITokenizedCorpus):
@@ -74,7 +73,8 @@ class WindowsCorpus(ITokenizedCorpus):
         return self._token_windows_counter
 
 
-def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> Iterable[List[Token]]:
+@deprecated
+def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) -> Iterable[Iterable[Token]]:
     """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens`
 
 
@@ -95,18 +95,12 @@ def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> 
     ----------
     tokens : Iterable[Token]
         The sequence of tokens to be windowed
-    context_opts: ContextOpts
-        context_width : int
-            The number of tokens to either side of the token in focus.
-        concept : Sequence[Token]
-            The token(s) in focus.
-        ignore_concept: bool
-            If to then filter ut the focus word.
+    context_opts: ContextOpts (width, concept, etc)
 
     Yields
     -------
-    Iterable[List[str]]
-        The sequence of windows
+    Iterable[Tuple[List[str], bool]]
+        The sequence of windows and flag that is true if window is a concept context
     """
 
     pad: Token = context_opts.pad
@@ -140,6 +134,7 @@ def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> 
 
             if window[context_opts.context_width] in context_opts.concept:
 
+                """ Context window """
                 concept_window = list(window)
 
                 if context_opts.ignore_concept:
@@ -152,11 +147,35 @@ def tokens_to_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> 
                     yield concept_window
 
 
-def corpus_to_windows(*, stream: FilenameTokensTuples, context_opts: ContextOpts) -> Iterable[List]:
+def generate_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> Iterable[Iterable[str]]:
+    """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens`
 
-    win_iter = (
-        [filename, i, window]
-        for filename, tokens in stream
-        for i, window in enumerate(tokens_to_windows(tokens=tokens, context_opts=context_opts))
-    )
-    return win_iter
+    Uses the "deck" `collection.deque` with a fixed length (appends exceeding `maxlen` deletes oldest entry)
+    The yelded windows are all equal-sized with the focus `*`-padded at the beginning and end
+    of the token sequence.
+
+    Parameters
+    ----------
+    tokens : Iterable[Token]
+        The sequence of tokens to be windowed
+    context_opts: ContextOpts (width, concept, etc)
+
+    Yields
+    -------
+    Iterable[Tuple[List[str]]]
+        The sequence of windows
+    """
+
+    pad: Token = context_opts.pad
+
+    n_window = 2 * context_opts.context_width + 1
+
+    padded_tokens = itertools.chain([pad] * context_opts.context_width, tokens, [pad] * context_opts.context_width)
+
+    window = collections.deque((next(padded_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
+
+    for token in padded_tokens:
+
+        window.append(token)
+
+        yield list(window)
