@@ -54,11 +54,11 @@ def test_pipeline_to_co_occurrence_can_ingest_new_vocabulary():
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     config: CorpusConfig = CorpusConfig.tokenized_corpus()
 
-    ingest_tokens = True
     bundle: Bundle = (
         CorpusPipeline(config=config)
         .load_corpus(tokenized_corpus)
-        .to_document_co_occurrence(context_opts=CONTEXT_OPTS, ingest_tokens=ingest_tokens)
+        .vocabulary(lemmatize=True)
+        .to_document_co_occurrence(context_opts=CONTEXT_OPTS, ingest_tokens=False)
         .to_corpus_co_occurrence(context_opts=CONTEXT_OPTS, global_threshold_count=1)
         .single()
         .content

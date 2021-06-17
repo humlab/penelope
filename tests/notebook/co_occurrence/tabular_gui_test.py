@@ -93,6 +93,7 @@ def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
         ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR_Dunning),
         ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.DICE),
         ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_IDF),
+        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF),
         ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_normalized),
     ],
 )
@@ -102,7 +103,7 @@ def test_table_gui_debug_setup(folder: str, tag: str, keyness: KeynessMetric):
 
     assert bundle is not None
 
-    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle).setup()
+    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     gui.stop_observe()
     gui.pivot = "year"
