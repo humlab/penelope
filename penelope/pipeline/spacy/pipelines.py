@@ -61,7 +61,7 @@ def to_tagged_frame_pipeline(
         raise ex
 
 
-def spaCy_DTM_pipeline(
+def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
     corpus_config: CorpusConfig,
     extract_opts: ExtractTaggedTokensOpts = None,
     filter_opts: PropertyValueMaskingOpts = None,
