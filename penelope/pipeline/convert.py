@@ -298,5 +298,5 @@ def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_
     )
     n_raw_tokens = pos_statistics[~(pos_statistics.index == 'Delimiter')].sum()
     token_counts = pos_statistics.to_dict()
-    token_counts.update(n_raw_tokens=n_raw_tokens)
+    token_counts.update(n_raw_tokens=n_raw_tokens, n_tokens=n_raw_tokens)
     return token_counts
