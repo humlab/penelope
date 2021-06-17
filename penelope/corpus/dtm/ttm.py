@@ -137,6 +137,9 @@ class CoOccurrenceMixIn:
             }
         )
 
+        if len(df) == 0:
+            return empty_data()
+
         """Add a time period column that can be used as a pivot column"""
         df['time_period'] = self.document_index.loc[df.document_id][partition_key].astype(np.int16).values
 
@@ -189,19 +192,23 @@ class CoOccurrenceMixIn:
         document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
 
         """Make certain that the matrix gets right shape (to avoid offset errors)"""
+
         shape = (len(document_index), len(vocabulary))
 
-        fg = vocabs_mapping.get
-        matrix = scipy.sparse.coo_matrix(
-            (
-                co_occurrences.value.astype(np.int32),
+        if len(vocabulary) == 0:
+            matrix = scipy.sparse.coo_matrix(([], (co_occurrences.document_id, [])), shape=shape)
+        else:
+            fg = vocabs_mapping.get
+            matrix = scipy.sparse.coo_matrix(
                 (
-                    co_occurrences.document_id.astype(np.int32),
-                    co_occurrences[['w1_id', 'w2_id']].apply(lambda x: fg((x[0], x[1])), axis=1),
+                    co_occurrences.value.astype(np.int32),
+                    (
+                        co_occurrences.document_id.astype(np.int32),
+                        co_occurrences[['w1_id', 'w2_id']].apply(lambda x: fg((x[0], x[1])), axis=1),
+                    ),
                 ),
-            ),
-            shape=shape,
-        )
+                shape=shape,
+            )
 
         """Create the final corpus (dynamically to avoid cyclic dependency)"""
         cls: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
@@ -302,6 +309,7 @@ class CoOccurrenceMixIn:
     ) -> VectorizedCorpus:
         """Returns a BoW co-occurrence corpus where the values are computed HAL CWR score."""
 
+        #  FIXME: cannot do todense if large corpus:
         nw_x = document_window_counts.todense().astype(np.float)
         nw_xy = self.data  # .copy().astype(np.float)
 
