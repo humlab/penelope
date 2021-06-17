@@ -70,7 +70,7 @@ class ExtractTaggedTokensOpts:
     pos_excludes: str = ''
 
     """ The PoS define tokens that are replaced with a dummy marker `*` """
-    pos_paddings: Optional[str] = None
+    pos_paddings: Optional[str] = ''
     pos_replace_marker: str = '*'
 
     passthrough_tokens: List[str] = field(default_factory=list)
