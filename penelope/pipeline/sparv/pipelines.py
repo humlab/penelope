@@ -17,9 +17,10 @@ def checkpoint_folder_name(corpus_filename: str) -> str:
 
 
 def to_tagged_frame_pipeline(
+    *,
     corpus_config: config.CorpusConfig,
     corpus_filename: str = None,
-    feather_checkpoint: bool = True,
+    enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
     **_,
 ):
@@ -44,7 +45,7 @@ def to_tagged_frame_pipeline(
 
     p.add(task)
 
-    if feather_checkpoint:
-        p = p.checkpoint_feather(checkpoint_folder, force=force_checkpoint)
+    if enable_checkpoint:
+        p = p.checkpoint_feather(checkpoint_folder, force_checkpoint=force_checkpoint)
 
     return p
