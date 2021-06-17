@@ -163,8 +163,8 @@ def process(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    enable_checkpoint: bool=True,
-    force_checkpoint: bool=False,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ):
 
     try:

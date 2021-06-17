@@ -688,7 +688,9 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
     def enter(self):
 
-        instream = tqdm(self.instream, total=len(self.document_index), desc="Vocab:") if self.progress else self.instream
+        instream = (
+            tqdm(self.instream, total=len(self.document_index), desc="Vocab:") if self.progress else self.instream
+        )
 
         ingest = self.token2id.ingest
 

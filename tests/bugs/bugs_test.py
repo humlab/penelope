@@ -1,5 +1,6 @@
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
+
 def test_inidun_word_trends_bug():
 
     process_co_ocurrence(

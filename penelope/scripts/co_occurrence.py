@@ -33,9 +33,7 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
     type=click.INT,
 )
 @click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
-@click.option(
-    '-i', '--pos-includes', default='', help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
-)
+@click.option('-i', '--pos-includes', default='', help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
 @click.option(
     '-m', '--pos-paddings', default='', help='List of POS tags to replace with a padding marker.', type=click.STRING
 )
@@ -184,8 +182,8 @@ def process_co_ocurrence(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    enable_checkpoint: bool=True,
-    force_checkpoint: bool=False,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ):
 
     try:
