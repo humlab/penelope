@@ -304,12 +304,22 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     def enter(self):
         if self.force_checkpoint:
             with contextlib.suppress(Exception):
-                shutil.rmtree(self.folder, ignore_errors=True)
+                if os.path.isdir(self.folder):
+                    shutil.rmtree(self.folder, ignore_errors=True)
+
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        if os.path.isdir(self.folder):
+            task: ITask = ReadFeather(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
+            if not task.is_empty:
+                return task.outstream()
+            logger.info("Checkpoint is empty or corrupt. Recreating checkpoint...")
+
+        task: ITask = WriteFeather(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
+        return task.outstream()
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-        task_cls = ReadFeather if os.path.isdir(self.folder) else WriteFeather
-        task: ITask = task_cls(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
-        return task.outstream()
+        self.instream = self.create_instream()
+        return super().process_stream()
 
     @staticmethod
     def read_document_index(folder: str) -> DocumentIndex:
@@ -353,6 +363,10 @@ class WriteFeather(ITask):
         CheckpointFeather.write_document_index(self.folder, self.document_index)
 
 
+class EmptyCheckPointError(PipelineError):
+    ...
+
+
 @dataclass
 class ReadFeather(DefaultResolveMixIn, ITask):
     """Stores sequence of tagged data frame documents to archive. """
@@ -367,8 +381,14 @@ class ReadFeather(DefaultResolveMixIn, ITask):
         self.document_index_filename = os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME)
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-        pattern: str = os.path.join(self.folder, "*.feather")
-        for path in sorted(glob.glob(pattern)):
+
+        # FIXME Shouldn't we read files in document index order??
+
+        paths: List[str] = self.get_matching_paths()
+        if len(paths) == 0:
+            raise EmptyCheckPointError(f"No feather files in folder {self.folder} (corrupt checkpoint?")
+
+        for path in paths:
             tagged_frame = pd.read_feather(path)
             filename = strip_paths(path)
             yield DocumentPayload(
@@ -385,6 +405,15 @@ class ReadFeather(DefaultResolveMixIn, ITask):
         document_index = CheckpointFeather.read_document_index(self.folder)
         if document_index is not None:
             self.pipeline.payload.effective_document_index = document_index
+
+    def get_matching_paths(self) -> List[str]:
+        pattern: str = os.path.join(self.folder, "*.feather")
+        paths: List[str] = sorted(glob.glob(pattern))
+        return paths
+
+    @property
+    def is_empty(self):
+        return len(self.get_matching_paths()) == 0
 
 
 @dataclass
