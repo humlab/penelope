@@ -246,7 +246,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
 
 
 def test_pipeline_find_task(config: CorpusConfig):
-    p: CorpusPipeline = CorpusPipeline(config=config, force_checkpoint=False).checkpoint("dummy_name").tqdm()
+    p: CorpusPipeline = CorpusPipeline(config=config).checkpoint("dummy_name", force_checkpoint=False).tqdm()
     assert isinstance(p.find(Checkpoint), Checkpoint)
     assert isinstance(p.find(Tqdm), Tqdm)
 
