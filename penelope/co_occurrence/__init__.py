@@ -24,5 +24,5 @@ from .persistence import (
     to_folder_and_tag,
 )
 from .prepare import CoOccurrenceHelper
-from .vectorize import WindowsCoOccurrenceOutput, WindowsCoOccurrenceVectorizer
-from .windows import WindowsCorpus, WindowsStream, corpus_to_windows, tokens_to_windows
+from .vectorize import DocumentWindowsVectorizer, VectorizedTTM, VectorizeType
+from .windows import WindowsCorpus, generate_windows
