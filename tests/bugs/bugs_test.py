@@ -1,12 +1,14 @@
+import pytest
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 
-def test_inidun_word_trends_bug():
+@pytest.mark.long_running
+def test_CLI_process_co_ocurrence():
 
     process_co_ocurrence(
         corpus_config="./doit.yml",
         input_filename='./tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip',
-        output_filename='./tests/output//APA/APA_co-occurrence.csv.zip',
+        output_filename='./tests/output/APA/APA_co-occurrence.csv.zip',
         filename_pattern=None,
         concept=None,
         ignore_concept=False,
@@ -32,7 +34,7 @@ def test_inidun_word_trends_bug():
         tf_threshold=10,
         tf_threshold_mask=False,
         enable_checkpoint=True,
-        force_checkpoint=True,
+        force_checkpoint=False,
     )
 
     assert True
