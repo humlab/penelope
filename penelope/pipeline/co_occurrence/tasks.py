@@ -1,9 +1,6 @@
-
-from collections import Counter
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
+from typing import Any, Callable, Iterable, Mapping, Optional
 
-import numpy as np
 import scipy
 import scipy.sparse as sp
 from penelope.co_occurrence import (
@@ -12,9 +9,9 @@ from penelope.co_occurrence import (
     CoOccurrenceError,
     DocumentWindowsVectorizer,
     TokenWindowCountStatistics,
+    VectorizedTTM,
     VectorizeType,
 )
-from penelope.co_occurrence import VectorizedTTM
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import to_word_pair_token
@@ -30,28 +27,52 @@ class CoOccurrencePayload:
     vectorized_data: Mapping[VectorizeType, VectorizedTTM]
 
 
+def to_token_pairs(term_term_matrix: sp.spmatrix, single_vocabulary: Token2Id) -> Iterable[str]:
+    fg = single_vocabulary.id2token.get
+    return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
+
+
 class CoOccurrenceCorpusBuilder:
     """Creates icrementally a DTM co-occurrence corpus from a stream of document TTM matrices"""
 
     def __init__(
         self,
+        vectorize_type: VectorizeType,
         document_index: DocumentIndex,
         pair_vocabulary: Token2Id,
         single_vocabulary: Token2Id,
+        vectorizer: DocumentWindowsVectorizer,
     ):
+        self.vectorize_type: VectorizeType = vectorize_type
         self.document_index: DocumentIndex = document_index
         self.pair_vocabulary: Token2Id = pair_vocabulary
         self.single_vocabulary: Token2Id = single_vocabulary
-        self.matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(
-            (len(document_index), len(pair_vocabulary)), dtype=int
-        )
+        self.vectorizer: DocumentWindowsVectorizer = vectorizer
 
-    def ingest(self, items: Iterable[VectorizedTTM]) -> "CoOccurrenceCorpusBuilder":
-        for item in items:
-            self.add(item)
+        """ Co-occurrence DTM matrix """
+        self.matrix: sp.spmatrix = None
+        # scipy.sparse.lil_matrix(
+        #     (len(document_index), len(pair_vocabulary)), dtype=int
+        # )
+        self.row = []
+        self.col = []
+        self.data = []
+
+        """ Token window counts per document """
+        # shape: Tuple[int, int] = (len(self.document_index), len(single_vocabulary))
+        # self.window_count_matrix: sp.lil_matrix = sp.lil_matrix(shape, dtype=np.int32)
+        self.counts_row = []
+        self.counts_col = []
+        self.counts_data = []
+
+    def ingest(self, payloads: Iterable[CoOccurrencePayload]) -> "CoOccurrenceCorpusBuilder":
+        for payload in payloads:
+            self.add(payload)
         return self
 
-    def add(self, item: VectorizedTTM) -> None:
+    def add(self, payload: CoOccurrencePayload) -> None:
+
+        item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
 
         fg: Callable[[int], str] = self.single_vocabulary.id2token.get
 
@@ -60,10 +81,21 @@ class CoOccurrenceCorpusBuilder:
         """Translate token-pair ids into id in new COO-vocabulary"""
         token_ids = [self.pair_vocabulary[to_word_pair_token(a, b, fg)] for (a, b) in zip(TTM.row, TTM.col)]
 
-        self.matrix[item.document_id, [token_ids]] = TTM.data
+        # self.matrix[item.document_id, [token_ids]] = TTM.data
+        self.row.extend([item.document_id] * len(token_ids))
+        self.col.extend(token_ids)
+        self.data.extend(TTM.data)
 
-    def to_corpus(self) -> VectorizedCorpus:
+        """ Add term windows counts """
+        counts: Mapping[int, int] = item.term_window_counts
+        # self.window_count_matrix[item.document_id, list(counts.keys())] = list(counts.values())
+        self.counts_row.extend([item.document_id] * len(counts))
+        self.counts_col.extend(counts.keys())
+        self.counts_data.extend(counts.values())
 
+    @property
+    def corpus(self) -> VectorizedCorpus:
+        self.matrix = sp.coo_matrix((self.data, (self.row, self.col)))
         corpus: VectorizedCorpus = VectorizedCorpus(
             bag_term_matrix=self.matrix.tocsr(),
             token2id=dict(self.pair_vocabulary.data),
@@ -72,50 +104,22 @@ class CoOccurrenceCorpusBuilder:
 
         return corpus
 
-
-class DocumentTokenWindowCountsMatrixBuilder:
-    """Create a matrix with token's window count for each document (rows).
-    The shape of the returned sparse matrix is [number of document, vocabulary size]
-
-    Args:
-        counters (dict): Dict (key document id) of dict (key token id) of window counts
-        shape (tuple): Size of returned sparse matrix
-
-    Returns:
-        sp.spmatrix: window counts matrix
-    """
-
-    def __init__(self, shape=Tuple[int, int]):
-
-        self.shape = shape
-        self.matrix: sp.lil_matrix = sp.lil_matrix(shape, dtype=np.int32)
-
-    def ingest(self, items: Iterable[VectorizedTTM]) -> "DocumentTokenWindowCountsMatrixBuilder":
-        for item in items:
-            self.add(item)
-        return self
-
-    def add(self, item: VectorizedTTM):  # counts: Mapping[int, int]):
-        counts: Mapping[int, int] = item.term_window_counts
-        self.matrix[item.document_id, list(counts.keys())] = list(counts.values())
-
     @property
-    def value(self) -> sp.spmatrix:
-        return self.matrix.tocsr()
+    def window_count_statistics(self) -> TokenWindowCountStatistics:
+        total_term_window_counts = (
+            self.vectorizer.total_term_window_counts.get(self.vectorize_type) if self.vectorizer else None
+        )
+        window_count_matrix: sp.spmatrix = sp.coo_matrix((self.counts_data, (self.counts_row, self.counts_col))).tocsr()
+        window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics(
+            corpus_counts=total_term_window_counts,
+            document_counts=window_count_matrix,
+        )
+        return window_counts
 
-
-def create_pair_vocabulary(
-    stream: Iterable[CoOccurrencePayload],
-    single_vocabulary: Token2Id,
-) -> Token2Id:
-    """Create a new vocabulary for token-pairs in co-occurrence stream"""
-    fg: Callable[[int], str] = single_vocabulary.id2token.get
-    vocabulary: Token2Id = Token2Id()
-    for item in stream:
-        TTM: scipy.sparse.spmatrix = item.term_term_matrix
-        vocabulary.ingest(to_word_pair_token(a, b, fg) for (a, b) in zip(TTM.row, TTM.col))
-    vocabulary.close()
-    return vocabulary
+    def ingest_tokens(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":
+        item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
+        self.pair_vocabulary.ingest(to_token_pairs(item.term_term_matrix, self.single_vocabulary))
+        return self
 
 
 @dataclass
@@ -205,90 +209,52 @@ class ToCorpusCoOccurrenceDTM(ITask):
         self.pipeline.put("global_threshold_count", self.global_threshold_count)
         return self
 
-    def process_stream(self) -> VectorizedCorpus:
+    def process_stream(self) -> Iterable[DocumentPayload]:
 
         if self.document_index is None:
             raise CoOccurrenceError("expected document index found no such thing")
-
-        self.pipeline.payload.token2id.close()
-
-        if 'n_tokens' not in self.document_index.columns:
-            raise CoOccurrenceError("expected `document_index.n_tokens`, but found no such column")
-
-        if 'n_raw_tokens' not in self.document_index.columns:
-            raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no column")
 
         """Ingest token-pairs into new COO-vocabulary using existing token vocabulary"""
 
         vectorizer: DocumentWindowsVectorizer = self.vectorizer()
         single_vocabulary: Token2Id = self.pipeline.payload.token2id
-        shape: Tuple[int, int] = (len(self.document_index), len(single_vocabulary))
-
-        payloads: Iterable[CoOccurrencePayload] = [payload.content for payload in self.instream if not payload.is_empty]
 
         pair_vocabulary: Token2Id = Token2Id()
 
-        normal_builder = CoOccurrenceCorpusBuilder(self.document_index, pair_vocabulary, single_vocabulary)
+        normal_builder = CoOccurrenceCorpusBuilder(
+            VectorizeType.Normal, self.document_index, pair_vocabulary, single_vocabulary, vectorizer
+        )
         concept_builder = (
-            CoOccurrenceCorpusBuilder(self.document_index, pair_vocabulary, single_vocabulary)
+            CoOccurrenceCorpusBuilder(
+                VectorizeType.Concept, self.document_index, pair_vocabulary, single_vocabulary, vectorizer
+            )
             if self.context_opts.concept
             else None
         )
 
-        normal_counts_builder = DocumentTokenWindowCountsMatrixBuilder(shape=shape)
-        concept_counts_builder = (
-            DocumentTokenWindowCountsMatrixBuilder(shape=shape) if self.context_opts.concept else None
+        coo_payloads: Iterable[CoOccurrencePayload] = (
+            payload.content for payload in self.instream if not payload.is_empty
         )
-
-        for payload in payloads:
-
-            item = payload.vectorized_data.get(VectorizeType.Normal)
-
-            pair_vocabulary.ingest(self.to_token_pairs(item.term_term_matrix, single_vocabulary.id2token.get))
-
-            normal_builder.add(item)
-            normal_counts_builder.add(item)
-
+        for coo_payload in coo_payloads:
+            normal_builder.ingest_tokens(coo_payload).add(payload=coo_payload)
             if concept_builder:
-                concept_item = payload.vectorized_data.get(VectorizeType.Concept)
-                # pair_vocabulary.ingest(self.to_token_pairs(concept_item.term_term_matrix, single_vocabulary.id2token.get))
-                concept_builder.add(concept_item)
-                concept_counts_builder.add(item)
+                concept_builder.add(payload=coo_payload)
 
         pair_vocabulary.close()
 
-        corpus: VectorizedCorpus = normal_builder.to_corpus()
-        concept_corpus: VectorizedCorpus = concept_builder.to_corpus() if concept_builder else None
-
-        normal_window_counts = TokenWindowCountStatistics(
-            corpus_counts=vectorizer.total_term_window_counts.get(VectorizeType.Normal),
-            document_counts=normal_counts_builder.value,
-        )
-
-        concept_window_counts = (
-            TokenWindowCountStatistics(
-                corpus_counts=vectorizer.total_term_window_counts.get(VectorizeType.Concept),
-                document_counts=concept_counts_builder.value,
-            )
-            if concept_counts_builder
-            else None
-        )
-
-        yield DocumentPayload(
+        payload: DocumentPayload = DocumentPayload(
             content=Bundle(
-                corpus=corpus,
-                window_counts=normal_window_counts,
+                corpus=normal_builder.corpus,
+                window_counts=normal_builder.window_count_statistics,
                 token2id=self.pipeline.payload.token2id,
                 document_index=self.pipeline.payload.document_index,
-                concept_corpus=concept_corpus,
-                concept_window_counts=concept_window_counts,
+                concept_corpus=concept_builder.corpus if concept_builder else None,
+                concept_window_counts=concept_builder.window_count_statistics if concept_builder else None,
                 compute_options=self.pipeline.payload.stored_opts(),
             )
         )
 
-    def to_token_pairs(self, term_term_matrix: sp.spmatrix, single_vocabulary: Token2Id) -> Iterable[str]:
-        fg = single_vocabulary.id2token.get
-        return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
+        yield payload
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
