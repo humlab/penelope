@@ -152,7 +152,7 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
         '.': 3,
         'bakom': 1,
         'den': 1,
-        'fladdra': 1,
+        'fladdra_omkring': 1,
         'gapa': 1,
         'halvmörker': 1,
         'i': 2,

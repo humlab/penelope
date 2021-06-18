@@ -3,7 +3,7 @@ from typing import Iterable
 import numpy as np
 from penelope.co_occurrence.vectorize import VectorizedTTM, VectorizeType
 from penelope.corpus import CorpusVectorizer, Token2Id, VectorizedCorpus
-from penelope.pipeline.co_occurrence.tasks import CoOccurrencePayload, TTM_to_co_occurrence_DTM, create_pair_vocabulary
+from penelope.pipeline.co_occurrence.tasks import CoOccurrenceCorpusBuilder, CoOccurrencePayload
 from penelope.type_alias import DocumentIndex
 from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus
 
@@ -39,22 +39,26 @@ def test_TTM_to_co_occurrence_DTM_using_LIL_matrix():
                     .fit_transform([doc], already_tokenized=True, vocabulary=single_vocabulary.data)
                     .co_occurrence_matrix(),
                     term_window_counts={},
-                    document_id=0,
+                    document_id=document_id,
                 )
             },
         )
         for document_id, doc in enumerate(source_corpus)
     )
 
-    pair_vocabulary: Token2Id = create_pair_vocabulary(
-        stream=(x.vectorized_data.get(VectorizeType.Normal) for x in stream),
-        single_vocabulary=single_vocabulary,
-    )
-    corpus: VectorizedCorpus = TTM_to_co_occurrence_DTM(
-        stream=(x for x in stream),
+    pair_vocabulary: Token2Id = Token2Id()
+
+    builder: CoOccurrenceCorpusBuilder = CoOccurrenceCorpusBuilder(
+        vectorize_type=VectorizeType.Normal,
         document_index=document_index,
-        single_vocabulary=single_vocabulary,
         pair_vocabulary=pair_vocabulary,
+        single_vocabulary=single_vocabulary,
+        vectorizer=None,
     )
+
+    for payload in stream:
+        builder.ingest_tokens(payload).add(payload)
+
+    corpus: VectorizedCorpus = builder.corpus
 
     assert corpus is not None
