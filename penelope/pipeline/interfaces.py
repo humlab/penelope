@@ -329,9 +329,10 @@ class ITask(abc.ABC):
         payload.update_properties(**properties)
         self.pipeline.payload.update_document_properties(payload.document_name, **properties)
 
-    # FIXME: #114 Enable reset of payload stream (when applicable)
-    def reset(self) -> None:
-        raise ResetNotApplicableError()
-
+    def get_filenames(self) -> List[str]:
+        """Override this function if task can return expected filenames in stream"""
+        if self.prior:
+            return self.prior.get_filenames()
+        return []
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
