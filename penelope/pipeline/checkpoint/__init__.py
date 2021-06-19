@@ -1,5 +1,6 @@
 # type: ignore
 
+from . import feather
 from .checkpoint import load_archive, store_archive
 from .interface import CheckpointData, CheckpointOpts, IContentSerializer
 from .serialize import (
