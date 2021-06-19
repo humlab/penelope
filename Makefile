@@ -28,22 +28,27 @@ lint: tidy pylint flake8
 
 tidy: black isort
 
-test:
-	@mkdir -p ./tests/output
+test: output-dir
 	@echo SKIPPING LONG RUNNING TESTS!
 	@poetry run pytest -m "not long_running" --durations=0 tests
 	@rm -rf ./tests/output/*
 
-test-coverage:
-	@mkdir -p ./tests/output
+test-coverage: output-dir
 	@echo SKIPPING LONG RUNNING TESTS!
 	@poetry run pytest -m "not long_running" --cov=$(PACKAGE_FOLDER) --cov-report=html tests
 	@rm -rf ./tests/output/*
 
-full-test:
+full-test: output-dir
+	@poetry run pytest tests
+	@rm -rf ./tests/output/*
+
+full-test-coverage: output-dir
 	@mkdir -p ./tests/output
 	@poetry run pytest --cov=$(PACKAGE_FOLDER) --cov-report=html tests
 	@rm -rf ./tests/output/*
+
+output-dir:
+	@mkdir -p ./tests/output
 
 retest:
 	@poetry run pytest --durations=0 --last-failed tests
@@ -197,7 +202,8 @@ stubs:
 .PHONY: profile-co_occurrence
 
 venus:
-	@rm -rf ./tests/test_data/VENUS/*
+	@tar czvf ./tmp/VENUS.$(RUN_TIMESTAMP).tar.gz ./tests/test_data/VENUS
+	@rm -rf  ./tests/test_data/VENUS/*
 	@poetry run python -c 'from tests.pipeline.fixtures import create_venus_bundle; create_venus_bundle()'
 
 help:
