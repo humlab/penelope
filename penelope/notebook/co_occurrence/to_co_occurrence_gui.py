@@ -75,11 +75,13 @@ class ComputeGUI(BaseGUI):
         placeholder: widgets.VBox = self.extra_placeholder
         extra_layout = widgets.HBox(
             [
-                widgets.VBox([
-                    self._context_width_title,
-                    self._context_width,
-                    self._ignore_padding,
-                ]),
+                widgets.VBox(
+                    [
+                        self._context_width_title,
+                        self._context_width,
+                        self._ignore_padding,
+                    ]
+                ),
                 widgets.VBox(
                     [
                         widgets.HTML("<b>Concept</b>"),
