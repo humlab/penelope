@@ -319,10 +319,11 @@ class BaseGUI:
         self._tf_threshold_mask.observe(self._toggle_state_changed, 'value')
         self._create_subfolder.observe(self._toggle_state_changed, 'value')
         self._ignore_checkpoints.observe(self._toggle_state_changed, 'value')
+        self._append_pos_tag.observe(self._toggle_state_changed, 'value')
+
         self._compute_button.on_click(self._compute_handler)
         self._cli_button.on_click(self._compute_handler)
         self._use_pos_groupings.observe(self.update_pos_schema, 'value')
-
         self._pos_includes.observe(self.pos_select_update, 'value')
         self._pos_paddings.observe(self.pos_select_update, 'value')
         self._pos_excludes.observe(self.pos_select_update, 'value')
