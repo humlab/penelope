@@ -64,7 +64,7 @@ def create_simple_bundle_by_pipeline(
 ):
     if not isinstance(data, TokenizedCorpus):
         data: TokenizedCorpus = very_simple_corpus(data)
-    config: CorpusConfig = CorpusConfig.tokenized_corpus()
+    config: CorpusConfig = CorpusConfig.tokenized_corpus_config()
     bundle: Bundle = (
         CorpusPipeline(config=config)
         .load_corpus(data)
