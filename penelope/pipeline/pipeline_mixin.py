@@ -167,6 +167,30 @@ class PipelineShortcutMixIn:
         """Taps the stream into a debug zink."""
         return self.add(tasks.TapStream(target=target, tag=tag, enabled=True))
 
+    # def assert_payload_content(
+    #     self: pipelines.CorpusPipeline,
+    #     expected_values: Iterable[Any],
+    #     comparer=Callable[[Any, Any], bool],
+    #     accept_fewer_expected_values: bool = False,
+    # ) -> pipelines.CorpusPipeline:
+    #     return self.add(
+    #         tasks.AssertPayloadContent(
+    #             expected_values=expected_values,
+    #             comparer=comparer,
+    #             accept_fewer_expected_values=accept_fewer_expected_values,
+    #         )
+    #     )
+
+    def assert_on_payload(
+        self: pipelines.CorpusPipeline, payload_test: Callable[[Any], bool], *payload_test_args: Any
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.AssertOnPayload(payload_test=payload_test, *payload_test_args))
+
+    def assert_on_exit(
+        self: pipelines.CorpusPipeline, exit_test: Callable[[Any], bool], *exit_test_args: Any
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.AssertOnExit(exit_test=exit_test, *exit_test_args))
+
     # def filter_tagged_frame(
     #     self: pipelines.CorpusPipeline,
     #     extract_opts: ExtractTaggedTokensOpts,
