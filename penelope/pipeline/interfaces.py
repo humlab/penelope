@@ -71,10 +71,6 @@ class DocumentPayload:
     def empty(self, content_type: ContentType) -> "DocumentPayload":
         return self.update(content_type, None)
 
-    @property
-    def is_empty(self) -> bool:
-        return self.content is None
-
     def update_properties(self, **properties) -> "DocumentPayload":
         """Save document properties to property bag"""
         self.property_bag.update(properties)
