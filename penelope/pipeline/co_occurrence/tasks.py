@@ -221,10 +221,10 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         pair_vocabulary: Token2Id = Token2Id()
 
-        normal_builder = CoOccurrenceCorpusBuilder(
+        normal_builder: CoOccurrenceCorpusBuilder = CoOccurrenceCorpusBuilder(
             VectorizeType.Normal, self.document_index, pair_vocabulary, single_vocabulary, vectorizer
         )
-        concept_builder = (
+        concept_builder: CoOccurrenceCorpusBuilder = (
             CoOccurrenceCorpusBuilder(
                 VectorizeType.Concept, self.document_index, pair_vocabulary, single_vocabulary, vectorizer
             )
