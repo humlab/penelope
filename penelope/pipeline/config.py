@@ -157,7 +157,7 @@ class CorpusConfig:
         return self
 
     @staticmethod
-    def tokenized_corpus(language: str = "swedish") -> CorpusConfig:
+    def tokenized_corpus_config(language: str = "swedish") -> CorpusConfig:
         config: CorpusConfig = CorpusConfig(
             corpus_name=uuid.uuid1(),
             corpus_type=CorpusType.Tokenized,
