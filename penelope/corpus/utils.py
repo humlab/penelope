@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Dict, Iterator, List, Tuple
 
 from penelope.utility import flatten
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 def generate_token2id(terms: Iterator[Iterator[str]], n_docs: int = None) -> dict:

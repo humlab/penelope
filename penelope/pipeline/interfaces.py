@@ -16,7 +16,7 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import TextSource
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from .tagged_frame import TaggedFrame
 
