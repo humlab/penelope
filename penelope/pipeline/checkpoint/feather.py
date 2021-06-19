@@ -19,6 +19,11 @@ def write_payload(folder: str, payload: DocumentPayload) -> Iterable[DocumentPay
     return payload
 
 
+def payload_exists(folder: str, payload: DocumentPayload) -> DocumentPayload:
+    filename = os.path.join(folder, replace_extension(payload.filename, ".feather"))
+    return os.path.isfile(filename)
+
+
 def read_payload(filename: str) -> DocumentPayload:
     filename = replace_extension(filename, ".feather")
     tagged_frame: pd.DataFrame = pd.read_feather(filename)
@@ -35,8 +40,8 @@ def get_matching_paths(*, folder: str) -> List[str]:
     return paths
 
 
-def folder_is_empty(folder: str) -> bool:
-    return len(get_matching_paths(folder=folder)) == 0
+def document_index_exists(folder: str) -> bool:
+    return os.path.isfile(os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME))
 
 
 def read_document_index(folder: str) -> DocumentIndex:
