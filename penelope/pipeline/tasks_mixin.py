@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 import pandas as pd
 from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
@@ -78,3 +78,21 @@ class VocabularyIngestMixIn:
 
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
+
+
+class RewindMixIn:
+    """Used for non-processing/passthrough task (i.e. Assert*, Tap*) that might be rewinded"""
+
+    rewinded: bool = False
+
+    def rewind(self) -> None:
+        """Rewind prior chain and then resetinstream to prior outstream"""
+        self.rewinded = True
+        self.instream = self.rewind_stream()
+
+    def rewind_stream(self) -> Iterable[interfaces.DocumentPayload]:
+        """Returns prior tasks rewinded stream"""
+        prior_task: interfaces.ITask = self.pipeline.get_prior_to(self)
+        if not prior_task:
+            return self.instream
+        return prior_task.rewind_stream() if hasattr(prior_task, 'rewind_stream') else prior_task.outstream()

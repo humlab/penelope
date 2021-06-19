@@ -6,7 +6,7 @@ import zipfile
 from contextlib import suppress
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Container, Dict, Iterable, Iterator, List, Optional, Sequence, Union
 
 import pandas as pd
 from loguru import logger
@@ -37,7 +37,7 @@ from . import checkpoint as cp
 from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn, VocabularyIngestMixIn
+from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, RewindMixIn, TransformTokensMixIn, VocabularyIngestMixIn
 
 
 @dataclass
@@ -306,6 +306,7 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
             with contextlib.suppress(Exception):
                 if os.path.isdir(self.folder):
                     shutil.rmtree(self.folder, ignore_errors=True)
+        self.force_checkpoint = False
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         if os.path.isdir(self.folder):
@@ -575,7 +576,7 @@ class TaggedFrameToTokens(
 
 
 @dataclass
-class TapStream(CountTaggedTokensMixIn, ITask):
+class TapStream(RewindMixIn, ITask):
     """Taps content into zink. """
 
     target: str = None
@@ -606,6 +607,81 @@ class TapStream(CountTaggedTokensMixIn, ITask):
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return self.store(payload)
 
+class AssertPayloadError(PipelineError):
+    ...
+
+# @dataclass
+# class AssertPayloadContent(ITask):
+#     """Test utility task: asserts payload content equals expected values """
+
+#     expected_values: Iterable[Any] = None
+#     comparer: Callable[[Any, Any], bool] = None
+#     accept_fewer_expected_values: Callable[[Any, Any], bool] = False
+
+#     _expected_values_iter: Iterator[Any] = field(init=False, default=None)
+
+#     def __post_init__(self):
+#         self.in_content_type = ContentType.ANY
+#         self.out_content_type = ContentType.PASSTHROUGH
+
+#     def enter(self):
+#         self._expected_values_iter: Iterator[Any] = iter(self.expected_values)
+
+    # def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+    #     if not self.rewinded:
+    #         try:
+
+    #             expected_value: Any = next(self._expected_values_iter)
+
+    #             if self.comparer and expected_value:
+    #                 if not self.comparer(payload.content, expected_value):
+    #                     logger.error(f"AssertPayloadContent: failed for document {payload.filename}:")
+    #                     logger.error(f"   content:\n{payload.content}")
+    #                     logger.error(f"  expected:\n{expected_value}")
+    #                     raise AssertPayloadError()
+
+    #         except StopIteration as x:
+    #             if not self.accept_fewer_expected_values:
+    #                 raise AssertPayloadError("AssertPayloadContent: to few expected values") from x
+
+    #     return payload
+
+class AssertOnExitError(PipelineError):
+    ...
+
+@dataclass
+class AssertOnExit(DefaultResolveMixIn, RewindMixIn, ITask):
+    """Test utility task: asserts payload content equals expected values """
+
+    exit_test: Callable[[Any, Any], bool] = None
+    exit_test_args: Sequence[Any] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def exit(self):
+        if not self.rewinded:
+            if not self.exit_test(self.pipeline, *self.exit_test_args):
+                raise AssertOnExitError()
+
+@dataclass
+class AssertOnPayload(RewindMixIn, ITask):
+    """Test utility task: asserts payload content equals expected values """
+
+    payload_test: Callable[[Any, DocumentPayload, Any], bool] = None
+    payload_test_args: Sequence[Any] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        if not self.rewinded:
+            if not self.payload_test(self.pipeline, payload, *self.payload_test_args):
+                raise AssertPayloadError()
+        return payload
 
 def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
@@ -687,7 +763,7 @@ class TextToDTM(ITask):
 
 # FIXME #115 Enable optional one-pass creation of vocabulary and TF frequencies
 @dataclass
-class Vocabulary(DefaultResolveMixIn, ITask):
+class Vocabulary(DefaultResolveMixIn, RewindMixIn, ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
@@ -733,7 +809,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         elif self.close:
             self.token2id.close()
 
-        self.reset()
+        self.rewind()
         return self
 
     def tokens_stream(self, payload: DocumentPayload) -> Iterable[str]:
@@ -749,9 +825,6 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         if token_type == Vocabulary.TokenType.Lemma:
             return self.pipeline.payload.memory_store.get("lemma_column")
         return self.pipeline.payload.memory_store.get("text_column")
-
-    def reset(self) -> None:
-        self.chain()
 
 
 @dataclass

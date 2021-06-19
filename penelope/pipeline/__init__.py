@@ -23,4 +23,4 @@ from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
 from .pipelines import CorpusPipeline, wildcard
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn
+from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, RewindMixIn
