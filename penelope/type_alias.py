@@ -13,3 +13,4 @@ TaggedFrame = pd.core.api.DataFrame
 Token = Union[int, str]
 
 WindowsStream = Iterator[Tuple[str, int, Iterable[Token]]]
+DocumentIndex = pd.DataFrame
