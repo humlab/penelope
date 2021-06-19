@@ -291,6 +291,14 @@ class ITask(abc.ABC):
     def document_index(self) -> DocumentIndex:
         return self.pipeline.payload.document_index
 
+    @property
+    def prior(self) -> ITask:
+        return self.pipeline.get_prior_to(self)
+
+    @property
+    def next(self) -> ITask:
+        return self.pipeline.get_next_to(self)
+
     def input_type_guard(self, content_type) -> None:
         if self.in_content_type is None or self.in_content_type == ContentType.NONE:
             return
