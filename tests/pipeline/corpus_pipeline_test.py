@@ -257,24 +257,25 @@ def test_tagged_frame_to_tokens_succeeds():
     assert next_payload.content_type == ContentType.TOKENS
 
 
-def patch_store_checkpoint(
+def patch_store_archive(
     *, checkpoint_opts, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
 ):
     for p in payload_stream:
         yield p
 
 
-def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
+def patch_load_archive(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
     return CheckpointData(
         content_type=ContentType.TAGGED_FRAME,
         document_index=None,
         create_stream=lambda: fake_data_frame_stream(1),
         checkpoint_opts=CheckpointOpts().as_type(ContentType.TAGGED_FRAME),
         source_name="source-name",
+        filenames=['dummy_1.csv'],
     )
 
 
-@patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
+@patch('penelope.pipeline.checkpoint.store_archive', patch_store_archive)
 def test_save_data_frame_succeeds():
     pipeline = Mock(spec=CorpusPipeline, **{'payload.set_reader_index': monkey_patch})
     opts = Mock(spec=CheckpointOpts)
@@ -284,7 +285,7 @@ def test_save_data_frame_succeeds():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
 
-@patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
+@patch('penelope.pipeline.checkpoint.load_archive', patch_load_archive)
 def test_load_data_frame_succeeds():
     pipeline = Mock(
         spec=CorpusPipeline,
@@ -301,8 +302,8 @@ def test_load_data_frame_succeeds():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
 
-@patch('penelope.pipeline.checkpoint.store_checkpoint', patch_store_checkpoint)
-@patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
+@patch('penelope.pipeline.checkpoint.store_archive', patch_store_archive)
+@patch('penelope.pipeline.checkpoint.load_archive', patch_load_archive)
 def test_checkpoint_data_frame_succeeds():
     attrs = {'get_prior_content_type.return_value': ContentType.TAGGED_FRAME}
     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
@@ -365,7 +366,7 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
     # pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
 
-def test_spacy_pipeline_load_checkpoint(checkpoint_opts: CheckpointOpts):
+def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts):
 
     checkpoint_filename = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 

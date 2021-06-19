@@ -22,7 +22,7 @@ from .serialize import create_serializer, deserialized_payload_stream, parallel_
 logger = getLogger("penelope")
 
 
-def store_checkpoint(
+def store_archive(
     *,
     checkpoint_opts: CheckpointOpts,
     target_filename: str,
@@ -53,7 +53,78 @@ def store_checkpoint(
             zf.writestr(DICTIONARY_FILENAME, data=json.dumps(token2id.data))
 
 
-class CheckpointReader(zipfile.ZipFile):
+def load_archive(
+    source_name: str,
+    checkpoint_opts: CheckpointOpts = None,
+    reader_opts: TextReaderOpts = None,
+    deserialize_stream: Callable[[str, CheckpointOpts, List[str]], Iterable[DocumentPayload]] = None,
+) -> CheckpointData:
+    """Load a TAGGED FRAME checkpoint stored in a ZIP FILE with CSV-filed and optionally a document index
+
+    Args:
+        source_name (str): [description]
+        options (CheckpointOpts, optional): deserialize opts. Defaults to None.
+        reader_opts (TextReaderOpts, optional): Settings for creatin a document index or filtering files. Defaults to None.
+
+    Raises:
+        PipelineError: Something is wrong
+
+    Returns:
+        CheckpointData: Checkpoint data contianer
+    """
+
+    with _CheckpointZipFile(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
+
+        filenames: List[str] = zf.document_filenames
+        document_index: DocumentIndex = zf.document_index
+        checkpoint_opts: CheckpointOpts = zf.checkpoint_opts
+        token2id: Token2Id = zf.token2id
+
+        if document_index is None:
+            document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
+
+    if document_index is None:
+
+        logger.warning(f"Checkpoint {source_name} has no document index (I hope you have one separately")
+
+    elif filenames != document_index.filename.to_list():
+
+        """ Check that filenames and document index are in sync """
+        if set(filenames) != set(document_index.filename.to_list()):
+            raise Exception(f"{source_name} archive filenames and document index filenames differs")
+
+        logger.warning(f"{source_name} filename sort order mismatch (using document index sort order)")
+
+        filenames = document_index.filename.to_list()
+
+    if reader_opts:
+
+        filenames = filenames_satisfied_by(
+            filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern
+        )
+
+        if document_index is not None:
+            document_index = document_index[document_index.filename.isin(filenames)]
+
+    deserialized_stream = deserialize_stream or (
+        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
+    )
+
+    create_stream = lambda: deserialized_stream(source_name, checkpoint_opts, filenames)
+
+    data: CheckpointData = CheckpointData(
+        content_type=checkpoint_opts.content_type,
+        create_stream=create_stream,
+        document_index=document_index,
+        token2id=token2id,
+        checkpoint_opts=checkpoint_opts,
+        source_name=basename(source_name),
+        filenames=filenames,
+    )
+
+    return data
+
+class _CheckpointZipFile(zipfile.ZipFile):
     def __init__(
         self,
         file: Any,
@@ -110,75 +181,3 @@ class CheckpointReader(zipfile.ZipFile):
         filenames = [f for f in self.namelist() if f not in [self.document_index_name, CHECKPOINT_OPTS_FILENAME]]
         return filenames
 
-
-def load_checkpoint(
-    source_name: str,
-    checkpoint_opts: CheckpointOpts = None,
-    reader_opts: TextReaderOpts = None,
-    deserialize_stream: Callable[[str, CheckpointOpts, List[str]], Iterable[DocumentPayload]] = None,
-) -> CheckpointData:
-    """Load a tagged frame checkpoint stored in a zipped file with CSV-filed and optionally a document index
-
-    Currently reader_opts is only used when pandas doc index should be created (might also be used to filter files).
-
-    Args:
-        source_name (str): [description]
-        options (CheckpointOpts, optional): deserialize opts. Defaults to None.
-        reader_opts (TextReaderOpts, optional): Settings for creatin a document index or filtering files. Defaults to None.
-
-    Raises:
-        PipelineError: [description]
-
-    Returns:
-        CheckpointData: [description]
-    """
-
-    with CheckpointReader(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
-
-        filenames: List[str] = zf.document_filenames
-        document_index: DocumentIndex = zf.document_index
-        checkpoint_opts: CheckpointOpts = zf.checkpoint_opts
-        token2id: Token2Id = zf.token2id
-
-        if document_index is None:
-            document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
-
-    if document_index is None:
-
-        logger.warning(f"Checkpoint {source_name} has no document index (I hope you have one separately")
-
-    elif filenames != document_index.filename.to_list():
-
-        """ Check that filenames and document index are in sync """
-        if set(filenames) != set(document_index.filename.to_list()):
-            raise Exception(f"{source_name} archive filenames and document index filenames differs")
-
-        logger.warning(f"{source_name} filename sort order mismatch (using document index sort order)")
-
-        filenames = document_index.filename.to_list()
-
-    if reader_opts:
-
-        filenames = filenames_satisfied_by(
-            filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern
-        )
-
-        if document_index is not None:
-            document_index = document_index[document_index.filename.isin(filenames)]
-
-    deserialized_stream = deserialize_stream or (
-        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
-    )
-
-    create_stream = lambda: deserialized_stream(source_name, checkpoint_opts, filenames)
-
-    data: CheckpointData = CheckpointData(
-        content_type=checkpoint_opts.content_type,
-        create_stream=create_stream,
-        document_index=document_index,
-        token2id=token2id,
-        checkpoint_opts=checkpoint_opts,
-        source_name=basename(source_name),
-    )
-
-    return data
