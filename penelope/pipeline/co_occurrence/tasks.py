@@ -232,7 +232,9 @@ class ToCorpusCoOccurrenceDTM(ITask):
         )
 
         coo_payloads: Iterable[CoOccurrencePayload] = (
-            payload.content for payload in self.prior.outstream(desc="Ingest", total=len(self.document_index)) if not payload.is_empty
+            payload.content
+            for payload in self.prior.outstream(desc="Ingest", total=len(self.document_index))
+            if not payload.is_empty
         )
         for coo_payload in coo_payloads:
             normal_builder.ingest_tokens(coo_payload).add(payload=coo_payload)

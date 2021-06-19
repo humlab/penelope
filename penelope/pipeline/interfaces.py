@@ -335,4 +335,5 @@ class ITask(abc.ABC):
             return self.prior.get_filenames()
         return []
 
+
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
