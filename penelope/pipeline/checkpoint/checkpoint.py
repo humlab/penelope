@@ -1,4 +1,5 @@
 import json
+import os
 import zipfile
 from dataclasses import asdict
 from io import StringIO
@@ -6,9 +7,10 @@ from os.path import basename
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index
-from penelope.utility import assert_that_path_exists, filenames_satisfied_by, getLogger, path_of, zip_utils
+from penelope.utility import filenames_satisfied_by, getLogger, zip_utils
 
 from ..interfaces import DocumentPayload, PipelineError
+from . import feather
 from .interface import (
     CHECKPOINT_OPTS_FILENAME,
     DICTIONARY_FILENAME,
@@ -31,9 +33,10 @@ def store_archive(
     token2id: Token2Id = None,
 ) -> Iterable[DocumentPayload]:
 
+    target_folder: bool = basename(target_filename)
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
 
-    assert_that_path_exists(path_of(target_filename))
+    os.makedirs(target_folder, exist_ok=True)
 
     with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
 
@@ -42,6 +45,7 @@ def store_archive(
         for payload in payload_stream:
             data = serializer.serialize(payload.content, checkpoint_opts)
             zf.writestr(payload.filename, data=data)
+
             yield payload
 
         if document_index is not None:
@@ -124,6 +128,7 @@ def load_archive(
 
     return data
 
+
 class _CheckpointZipFile(zipfile.ZipFile):
     def __init__(
         self,
@@ -180,4 +185,3 @@ class _CheckpointZipFile(zipfile.ZipFile):
     def document_filenames(self) -> List[str]:
         filenames = [f for f in self.namelist() if f not in [self.document_index_name, CHECKPOINT_OPTS_FILENAME]]
         return filenames
-
