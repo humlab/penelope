@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.interfaces import ITokenizedCorpus
-from penelope.utility import PropertyValueMaskingOpts
+from penelope.utility import PropertyValueMaskingOpts, deprecated
 
 from . import tasks
 
@@ -31,9 +31,11 @@ class PipelineShortcutMixIn:
     def load_corpus(self, corpus: ITokenizedCorpus) -> pipelines.CorpusPipeline:
         return self.add(tasks.LoadTokenizedCorpus(corpus=corpus))
 
+    @deprecated
     def write_feather(self, folder: str) -> pipelines.CorpusPipeline:
         return self.add(tasks.WriteFeather(folder=folder))
 
+    @deprecated
     def read_feather(self, folder: str) -> pipelines.CorpusPipeline:
         return self.add(tasks.ReadFeather(folder=folder))
 
