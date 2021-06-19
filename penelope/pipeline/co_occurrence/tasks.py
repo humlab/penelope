@@ -174,7 +174,6 @@ class ToCoOccurrenceDTM(VocabularyIngestMixIn, ITask):
 
         windows: Iterable[Iterable[Token]] = generate_windows(tokens=tokens, context_opts=self.context_opts)
 
-        # FIXME CO-OCCURRENCE VectorizeType
         data: Mapping[VectorizeType, VectorizedTTM] = self.vectorizer.fit_transform(
             document_id=document_id, windows=windows, context_opts=self.context_opts
         )
@@ -233,7 +232,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         )
 
         coo_payloads: Iterable[CoOccurrencePayload] = (
-            payload.content for payload in self.instream if not payload.is_empty
+            payload.content for payload in self.prior.outstream(desc="Ingest", total=len(self.document_index)) if not payload.is_empty
         )
         for coo_payload in coo_payloads:
             normal_builder.ingest_tokens(coo_payload).add(payload=coo_payload)

@@ -6,7 +6,7 @@ import zipfile
 from contextlib import suppress
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Callable, Container, Dict, Iterable, Iterator, List, Optional, Sequence, Union
+from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Sequence, Union
 
 import pandas as pd
 from loguru import logger
@@ -37,7 +37,7 @@ from . import checkpoint as cp
 from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
-from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, RewindMixIn, TransformTokensMixIn, VocabularyIngestMixIn
+from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn, VocabularyIngestMixIn
 
 
 @dataclass
@@ -83,10 +83,6 @@ class LoadText(DefaultResolveMixIn, ITask):
             DocumentPayload(filename=filename, content_type=ContentType.TEXT, content=text)
             for filename, text in self.text_reader
         )
-
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
 
 
 @dataclass
@@ -188,10 +184,6 @@ class Checkpoint(DefaultResolveMixIn, ITask):
     def create_instream(self) -> Iterable[DocumentPayload]:
         return self._load_payload_stream() if os.path.isfile(self.filename) else self._store_payload_stream()
 
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
-
     def _load_payload_stream(self):
         checkpoint_data: cp.CheckpointData = cp.load_checkpoint(
             self.filename,
@@ -210,7 +202,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
             checkpoint_opts=checkpoint_opts,
             target_filename=self.filename,
             document_index=self.document_index,
-            payload_stream=self.instream,
+            payload_stream=self.prior.outstream(),
         )
         return payload_stream
 
@@ -234,9 +226,8 @@ class SaveTaggedCSV(Checkpoint):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        for payload in self._store_payload_stream():
-            yield payload
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        return self._store_payload_stream()
 
     def get_out_content_type(self):
         return self.out_content_type
@@ -269,10 +260,6 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         return self.checkpoint_data.create_stream()
-
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
 
     def load_checkpoint(self) -> cp.CheckpointData:
         checkpoint_data: cp.CheckpointData = cp.load_checkpoint(
@@ -309,18 +296,11 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
         self.force_checkpoint = False
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-        if os.path.isdir(self.folder):
-            task: ITask = ReadFeather(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
-            if not task.is_empty:
-                return task.outstream()
-            logger.info("Checkpoint is empty or corrupt. Recreating checkpoint...")
-
-        task: ITask = WriteFeather(folder=self.folder, pipeline=self.pipeline, instream=self.instream)
-        return task.outstream()
-
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
+        return (
+            ReadFeather(folder=self.folder, pipeline=self.pipeline)
+            if self.checkpoint_exists()
+            else WriteFeather(folder=self.folder, prior=self.prior, pipeline=self.pipeline)
+        ).outstream()
 
     @staticmethod
     def read_document_index(folder: str) -> DocumentIndex:
@@ -339,6 +319,9 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
             if document_index.index.name in document_index.columns:
                 document_index.rename_axis('', inplace=True)
             document_index.reset_index().to_feather(filename, compression="lz4")
+
+    def checkpoint_exists(self) -> bool:
+        return os.path.isdir(self.folder) and not ReadFeather.folder_is_empty(folder=self.folder)
 
 
 @dataclass
@@ -381,11 +364,10 @@ class ReadFeather(DefaultResolveMixIn, ITask):
         self.out_content_type = ContentType.TAGGED_FRAME
         self.document_index_filename = os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME)
 
-    def create_instream(self) -> Iterable[DocumentPayload]:
+    def process_stream(self) -> Iterable[DocumentPayload]:
 
         # FIXME Shouldn't we read files in document index order??
-
-        paths: List[str] = self.get_matching_paths()
+        paths: List[str] = self.get_matching_paths(folder=self.folder)
         if len(paths) == 0:
             raise EmptyCheckPointError(f"No feather files in folder {self.folder} (corrupt checkpoint?")
 
@@ -398,23 +380,24 @@ class ReadFeather(DefaultResolveMixIn, ITask):
                 filename=replace_extension(filename, ".csv"),
             )
 
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
-
     def enter(self):
         document_index = CheckpointFeather.read_document_index(self.folder)
         if document_index is not None:
             self.pipeline.payload.effective_document_index = document_index
 
-    def get_matching_paths(self) -> List[str]:
-        pattern: str = os.path.join(self.folder, "*.feather")
+    @property
+    def is_empty(self):
+        return len(ReadFeather.get_matching_paths(folder=self.folder)) == 0
+
+    @staticmethod
+    def get_matching_paths(*, folder: str) -> List[str]:
+        pattern: str = os.path.join(folder, "*.feather")
         paths: List[str] = sorted(glob.glob(pattern))
         return paths
 
-    @property
-    def is_empty(self):
-        return len(self.get_matching_paths()) == 0
+    @staticmethod
+    def folder_is_empty(folder: str) -> bool:
+        return len(ReadFeather.get_matching_paths(folder=folder)) == 0
 
 
 @dataclass
@@ -448,10 +431,6 @@ class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
                 content=content,
                 filename_values=None,
             )
-
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
@@ -576,7 +555,7 @@ class TaggedFrameToTokens(
 
 
 @dataclass
-class TapStream(RewindMixIn, ITask):
+class TapStream(ITask):
     """Taps content into zink. """
 
     target: str = None
@@ -607,8 +586,10 @@ class TapStream(RewindMixIn, ITask):
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return self.store(payload)
 
+
 class AssertPayloadError(PipelineError):
     ...
+
 
 # @dataclass
 # class AssertPayloadContent(ITask):
@@ -627,31 +608,32 @@ class AssertPayloadError(PipelineError):
 #     def enter(self):
 #         self._expected_values_iter: Iterator[Any] = iter(self.expected_values)
 
-    # def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+# def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
-    #     if not self.rewinded:
-    #         try:
+#         try:
 
-    #             expected_value: Any = next(self._expected_values_iter)
+#             expected_value: Any = next(self._expected_values_iter)
 
-    #             if self.comparer and expected_value:
-    #                 if not self.comparer(payload.content, expected_value):
-    #                     logger.error(f"AssertPayloadContent: failed for document {payload.filename}:")
-    #                     logger.error(f"   content:\n{payload.content}")
-    #                     logger.error(f"  expected:\n{expected_value}")
-    #                     raise AssertPayloadError()
+#             if self.comparer and expected_value:
+#                 if not self.comparer(payload.content, expected_value):
+#                     logger.error(f"AssertPayloadContent: failed for document {payload.filename}:")
+#                     logger.error(f"   content:\n{payload.content}")
+#                     logger.error(f"  expected:\n{expected_value}")
+#                     raise AssertPayloadError()
 
-    #         except StopIteration as x:
-    #             if not self.accept_fewer_expected_values:
-    #                 raise AssertPayloadError("AssertPayloadContent: to few expected values") from x
+#         except StopIteration as x:
+#             if not self.accept_fewer_expected_values:
+#                 raise AssertPayloadError("AssertPayloadContent: to few expected values") from x
 
-    #     return payload
+#     return payload
+
 
 class AssertOnExitError(PipelineError):
     ...
 
+
 @dataclass
-class AssertOnExit(DefaultResolveMixIn, RewindMixIn, ITask):
+class AssertOnExit(DefaultResolveMixIn, ITask):
     """Test utility task: asserts payload content equals expected values """
 
     exit_test: Callable[[Any, Any], bool] = None
@@ -661,13 +643,12 @@ class AssertOnExit(DefaultResolveMixIn, RewindMixIn, ITask):
         self.in_content_type = ContentType.ANY
         self.out_content_type = ContentType.PASSTHROUGH
 
-    def exit(self):
-        if not self.rewinded:
-            if not self.exit_test(self.pipeline, *self.exit_test_args):
-                raise AssertOnExitError()
+    # def create_instream(self) -> Iterable[DocumentPayload]:
+    #     return self.prior.create_instream()
+
 
 @dataclass
-class AssertOnPayload(RewindMixIn, ITask):
+class AssertOnPayload(ITask):
     """Test utility task: asserts payload content equals expected values """
 
     payload_test: Callable[[Any, DocumentPayload, Any], bool] = None
@@ -678,10 +659,13 @@ class AssertOnPayload(RewindMixIn, ITask):
         self.out_content_type = ContentType.PASSTHROUGH
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        if not self.rewinded:
-            if not self.payload_test(self.pipeline, payload, *self.payload_test_args):
-                raise AssertPayloadError()
+        if not self.payload_test(self.pipeline, payload, *self.payload_test_args):
+            raise AssertPayloadError()
         return payload
+
+    # def create_instream(self) -> Iterable[DocumentPayload]:
+    #     return self.prior.create_instream()
+
 
 def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
@@ -751,7 +735,7 @@ class TextToDTM(ITask):
 
     def process_stream(self) -> VectorizedCorpus:
         corpus = convert.to_vectorized_corpus(
-            stream=self.instream,
+            stream=self.create_instream(),
             vectorize_opts=self.vectorize_opts,
             document_index=lambda: self.pipeline.payload.document_index,
         )
@@ -763,7 +747,7 @@ class TextToDTM(ITask):
 
 # FIXME #115 Enable optional one-pass creation of vocabulary and TF frequencies
 @dataclass
-class Vocabulary(DefaultResolveMixIn, RewindMixIn, ITask):
+class Vocabulary(DefaultResolveMixIn, ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
@@ -793,15 +777,11 @@ class Vocabulary(DefaultResolveMixIn, RewindMixIn, ITask):
 
     def enter(self):
 
-        instream = (
-            tqdm(self.instream, total=len(self.document_index), desc="Vocab:") if self.progress else self.instream
-        )
-
         ingest = self.token2id.ingest
 
         ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN])
 
-        for payload in instream:
+        for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab:"):
             ingest(self.tokens_stream(payload))
 
         if self.tf_threshold and self.tf_threshold > 1:
@@ -809,7 +789,6 @@ class Vocabulary(DefaultResolveMixIn, RewindMixIn, ITask):
         elif self.close:
             self.token2id.close()
 
-        self.rewind()
         return self
 
     def tokens_stream(self, payload: DocumentPayload) -> Iterable[str]:
@@ -842,7 +821,7 @@ class ChunkTokens(ITask):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
 
-        for payload in self.instream:
+        for payload in self.create_instream():
             tokens = payload.content
             if len(payload.content) < self.chunk_size:
                 yield payload
@@ -897,10 +876,6 @@ class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
             for filename, content in self.corpus
         )
 
-    def process_stream(self) -> Iterable[DocumentPayload]:
-        self.instream = self.create_instream()
-        return super().process_stream()
-
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.update_document_properties(payload, n_tokens=len(payload.content))
         return payload
@@ -936,37 +911,9 @@ class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
 #         return payload.update(self.out_content_type, tokens)
 
 
-# class Split(ITask):
+class Split(ITask):
+    ...
 
-#     partioner: Callable = None
 
-#     def __post_init__(self):
-#         self.in_content_type = ContentType.ANY
-#         self.out_content_type = ContentType.STREAM
-
-#     def setup(self) -> ITask:
-#         super().setup()
-
-#     def process_payload(self, payload: DocumentPayload) -> Any:
-#         raise NotImplementedError()
-
-#     def process_stream(self) -> Iterable[DocumentPayload]:
-#         raise NotImplementedError()
-
-# class Reduce(ITask):
-
-#     reducer: Callable = None
-#     reducer: Callable = None
-
-#     def __post_init__(self):
-#         self.in_content_type = ContentType.ANY
-#         self.out_content_type = ContentType.STREAM
-
-#     def setup(self) -> ITask:
-#         super().setup()
-
-#     def process_payload(self, payload: DocumentPayload) -> Any:
-#         raise NotImplementedError()
-
-#     def process_stream(self) -> Iterable[DocumentPayload]:
-#         raise NotImplementedError()
+class Reduce(ITask):
+    ...

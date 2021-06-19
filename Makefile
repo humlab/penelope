@@ -42,6 +42,10 @@ full-test: output-dir
 	@poetry run pytest tests
 	@rm -rf ./tests/output/*
 
+long-test: output-dir
+	@poetry run pytest -m "long_running" --durations=0 tests
+	@rm -rf ./tests/output/*
+
 full-test-coverage: output-dir
 	@mkdir -p ./tests/output
 	@poetry run pytest --cov=$(PACKAGE_FOLDER) --cov-report=html tests

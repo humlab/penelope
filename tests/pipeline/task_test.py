@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock
 import pandas as pd
 from penelope.corpus.document_index import load_document_index_from_str
 from penelope.pipeline import checkpoint, sparv
-from penelope.pipeline.interfaces import ContentType, DocumentPayload
+from penelope.pipeline.interfaces import ContentType, DocumentPayload, ITask
 from penelope.pipeline.pipelines import CorpusPipeline
 from penelope.pipeline.tasks import FEATHER_DOCUMENT_INDEX_NAME, CheckpointFeather, Vocabulary
 
@@ -24,8 +24,9 @@ def test_task_vocabulary_token2id():
         },
     )
 
-    instream = MagicMock(spec=Iterable[DocumentPayload])
-    task: Vocabulary = Vocabulary(pipeline=pipeline, instream=instream, token_type=Vocabulary.TokenType.Lemma).setup()
+    prior = MagicMock(spec=ITask, outstream=lambda: MagicMock(spec=Iterable[DocumentPayload]))
+
+    task: Vocabulary = Vocabulary(pipeline=pipeline, prior=prior, token_type=Vocabulary.TokenType.Lemma).setup()
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content,

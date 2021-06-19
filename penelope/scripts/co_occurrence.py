@@ -33,10 +33,8 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
     type=click.INT,
 )
 @click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
-@click.option('-i', '--pos-includes', default='', help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
-@click.option(
-    '-m', '--pos-paddings', default='', help='List of POS tags to replace with a padding marker.', type=click.STRING
-)
+@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
+@click.option('-m', '--pos-paddings', default='', help='POS tags to replace with a padding marker.', type=click.STRING)
 @click.option(
     '-x',
     '--pos-excludes',
@@ -46,7 +44,7 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 )
 @click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
 @click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
-@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
+@click.option('-z', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words')
 @click.option(
@@ -87,6 +85,13 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
     is_flag=True,
     help='Force new checkpoints (if enabled)',
 )
+@click.option(
+    '-n',
+    '--deserialize-processes',
+    default=4,
+    type=click.IntRange(1, 99),
+    help='Number of processes during deserialization',
+)
 def main(
     corpus_config: str = None,
     input_filename: str = None,
@@ -118,6 +123,7 @@ def main(
     tf_threshold_mask: bool = False,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
+    deserialize_processes: int = 4,
 ):
 
     process_co_ocurrence(
@@ -150,6 +156,7 @@ def main(
         tf_threshold_mask=tf_threshold_mask,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,
+        deserialize_processes=deserialize_processes,
     )
 
 
@@ -184,6 +191,7 @@ def process_co_ocurrence(
     tf_threshold_mask: bool = False,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
+    deserialize_processes: int = 4,
 ):
 
     try:
@@ -202,6 +210,8 @@ def process_co_ocurrence(
 
         if filename_pattern is not None:
             text_reader_opts.filename_pattern = filename_pattern
+
+        corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,

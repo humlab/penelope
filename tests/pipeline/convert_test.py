@@ -185,6 +185,8 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
 
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(tagged_frame.baseform)
 
+    extract_opts.global_tf_threshold = 2
+    extract_opts.global_tf_threshold_mask = False
     tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
     assert tokens == ['i', 'i', '.', 'valv', 'valv', '.', '.']
 

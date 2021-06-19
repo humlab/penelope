@@ -2,12 +2,9 @@ import pytest
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 '''
-co_occurrence --context-width 2 --ignore-padding --tf-threshold 3 --tf-threshold-mask --pos-includes "|NN|PM|PC|VB|" --pos-paddings
-"|JJ|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|" --pos-excludes "|MAD|MID|PAD|" --lemmatize --to-lowercase --keep-symbols
---keep-numerals --enable-checkpoint --force-checkpoint doit.yml
-/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip
-/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA/APA_co-occurrence.csv.zip
+co_occurrence --context-width 2 --ignore-padding --tf-threshold 3 --tf-threshold-mask --pos-includes "|NN|PM|PC|VB|" --pos-paddings "|JJ|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|" --pos-excludes "|MAD|MID|PAD|" --lemmatize --to-lowercase --keep-symbols --keep-numerals --enable-checkpoint --force-checkpoint doit.yml /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA/APA_co-occurrence.csv.zip
 '''
+
 
 @pytest.mark.long_running
 def test_CLI_process_co_ocurrence():

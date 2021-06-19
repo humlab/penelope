@@ -19,7 +19,7 @@ class CoOccurrenceError(ValueError):
 
 
 def compute_hal_or_glove_co_occurrences(
-    instream: Iterable[Tuple[str, Iterable[str]]],
+    stream: Iterable[Tuple[str, Iterable[str]]],
     *,
     document_index: DocumentIndex,
     token2id: Mapping[str, int],
@@ -87,7 +87,7 @@ def compute_hal_or_glove_co_occurrences(
         return int(document_index.loc[filename][partition_column])
 
     total_results = []
-    key_streams = more_itertools.bucket(instream, key=get_bucket_key, validator=None)
+    key_streams = more_itertools.bucket(stream, key=get_bucket_key, validator=None)
     keys = sorted(list(key_streams))
 
     metadata = []

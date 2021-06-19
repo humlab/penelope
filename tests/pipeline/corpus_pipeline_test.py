@@ -21,6 +21,7 @@ from penelope.pipeline import (
     DocumentPayload,
     PipelinePayload,
 )
+from penelope.pipeline.interfaces import ITask
 from penelope.utility import PropertyValueMaskingOpts
 from tests.utils import TEST_DATA_FOLDER
 
@@ -277,8 +278,8 @@ def patch_load_checkpoint(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional
 def test_save_data_frame_succeeds():
     pipeline = Mock(spec=CorpusPipeline, **{'payload.set_reader_index': monkey_patch})
     opts = Mock(spec=CheckpointOpts)
-    task = tasks.SaveTaggedCSV(pipeline=pipeline, filename="dummy.zip", checkpoint_opts=opts)
-    task.instream = fake_data_frame_stream(1)
+    prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
+    task = tasks.SaveTaggedCSV(pipeline=pipeline, prior=prior, filename="dummy.zip", checkpoint_opts=opts)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
@@ -291,9 +292,11 @@ def test_load_data_frame_succeeds():
             'payload.set_reader_index': monkey_patch,
         },
     )
-    task = tasks.LoadTaggedCSV(pipeline=pipeline, filename="dummy.zip", extra_reader_opts=TextReaderOpts()).setup()
+    prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
+    task = tasks.LoadTaggedCSV(
+        pipeline=pipeline, filename="dummy.zip", prior=prior, extra_reader_opts=TextReaderOpts()
+    ).setup()
     task.register_token_counts = lambda _: task
-    task.instream = fake_data_frame_stream(1)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
@@ -302,8 +305,8 @@ def test_load_data_frame_succeeds():
 @patch('penelope.pipeline.checkpoint.load_checkpoint', patch_load_checkpoint)
 def test_checkpoint_data_frame_succeeds():
     attrs = {'get_prior_content_type.return_value': ContentType.TAGGED_FRAME}
-    task = tasks.Checkpoint(pipeline=Mock(spec=CorpusPipeline, **attrs), filename="dummy.zip").setup()
-    task.instream = fake_data_frame_stream(1)
+    prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
+    task = tasks.Checkpoint(pipeline=Mock(spec=CorpusPipeline, **attrs), prior=prior, filename="dummy.zip").setup()
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
@@ -322,6 +325,7 @@ def test_tokens_to_text_when_text_instream_succeeds():
     assert next_payload.content_type == ContentType.TEXT
 
 
+@pytest.mark.long_running
 def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 
     checkpoint_filename = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")

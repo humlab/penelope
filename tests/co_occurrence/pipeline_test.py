@@ -1,6 +1,6 @@
 import os
-from typing import Iterable
 import uuid
+from typing import Iterable
 
 import pytest
 import scipy.sparse as sp
@@ -122,8 +122,8 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
     expected_TTMs = {filename: simple_co_occurrence(document_windows[filename]) for filename in document_windows}
 
     def verify_tokens_payload(
-        p: CorpusPipeline, payload: DocumentPayload, *_
-    ) -> bool:  # pylint: disable=unused-argument
+        p: CorpusPipeline, payload: DocumentPayload, *_  # pylint: disable=unused-argument
+    ) -> bool:
         # expected_tokens: dict = { k: v for k, v in SIMPLE_CORPUS_ABCDE_5DOCS}
 
         expected_tokens: dict = {
@@ -155,7 +155,6 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
 
         return True
 
-
     bundle: Bundle = (
         CorpusPipeline(config=config)
         .load_corpus(tokenized_corpus)
@@ -170,11 +169,10 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
     )
 
     for filename in expected_TTMs:
-        document_id = int(bundle.document_index[bundle.document_index.filename==filename].document_id)
+        document_id = int(bundle.document_index[bundle.document_index.filename == filename].document_id)
         for (i, j), ij in bundle.vocabs_mapping.items():
             pair = (bundle.token2id.id2token[i], bundle.token2id.id2token[j])
             if pair in expected_TTMs[filename]:
                 assert bundle.corpus.data[document_id, ij] == expected_TTMs[filename][pair]
             else:
                 assert bundle.corpus.data[document_id, ij] == 0
-

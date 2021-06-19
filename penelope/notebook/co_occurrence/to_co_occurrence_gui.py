@@ -34,7 +34,7 @@ class ComputeGUI(BaseGUI):
             description='',
             options={'Year': 'year', 'Document': 'document_id'},
             value='document_id',
-            layout=default_layout,
+            layout=widgets.Layout(width='140px'),
             disabled=True,
         )
         self._context_width = widgets.IntSlider(
@@ -75,12 +75,22 @@ class ComputeGUI(BaseGUI):
         placeholder: widgets.VBox = self.extra_placeholder
         extra_layout = widgets.HBox(
             [
-                widgets.VBox([self._context_width_title, self._context_width, self._partition_key]),
+                widgets.VBox([
+                    self._context_width_title,
+                    self._context_width,
+                    self._ignore_padding,
+                ]),
                 widgets.VBox(
                     [
                         widgets.HTML("<b>Concept</b>"),
                         self._concept,
-                        widgets.HBox([self._ignore_concept, self._ignore_padding]),
+                        widgets.HBox([self._ignore_concept]),
+                    ]
+                ),
+                widgets.VBox(
+                    [
+                        widgets.HTML("<b>Pivot</b>"),
+                        self._partition_key,
                     ]
                 ),
             ]

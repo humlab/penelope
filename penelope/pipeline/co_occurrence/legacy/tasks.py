@@ -102,7 +102,7 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
     def process_stream(self) -> VectorizedCorpus:
 
-        total_results: List[pd.DataFrame] = [p.content for p in self.instream]
+        total_results: List[pd.DataFrame] = [p.content for p in self.create_instream()]
 
         co_occurrences: pd.DataFrame = pd.concat(total_results, ignore_index=True)[
             ['document_id', 'w1_id', 'w2_id', 'value']

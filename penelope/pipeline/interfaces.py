@@ -16,6 +16,7 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import TextSource
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
+from tqdm import tqdm
 
 from .tagged_frame import TaggedFrame
 
@@ -236,15 +237,24 @@ class ResetNotApplicableError(Exception):
 class ITask(abc.ABC):
 
     pipeline: pipelines.CorpusPipeline = None
-    instream: Iterable[DocumentPayload] = None
 
     in_content_type: Union[ContentType, Sequence[ContentType]] = field(init=False, default=None)
     out_content_type: ContentType = field(init=False, default=None)
 
+    prior: ITask = None
+    next: ITask = None
+
+    # @property
+    # def prior(self) -> ITask:
+    #     return self.pipeline.get_prior_to(self)
+
+    # @property
+    # def next(self) -> ITask:
+    #     return self.pipeline.get_next_to(self)
+
     def chain(self) -> ITask:
-        prior_task: ITask = self.pipeline.get_prior_to(self)
-        if prior_task is not None:
-            self.instream = prior_task.outstream()
+        self.prior = self.pipeline.get_prior_to(self)
+        self.next = self.pipeline.get_next_to(self)
         return self
 
     def setup(self) -> ITask:
@@ -266,21 +276,31 @@ class ITask(abc.ABC):
         """Called after stream has been generated."""
         return
 
+    def create_instream(self) -> Iterable[DocumentPayload]:
+        """Creates stream of payloads. Overridable. """
+
+        if self.prior is None:
+            raise PipelineError("No prior task found. Have you loaded a corpus source?")
+
+        return self.prior.outstream()
+
     def process_stream(self) -> Iterable[DocumentPayload]:
-        """Generates stream of payloads. Overridable. """
-
-        if self.instream is None:
-            raise PipelineError("No instream specified. Have you loaded a corpus source?")
-
-        for payload in self.instream:
+        """Processes stream of payloads. Overridable. """
+        for payload in self.create_instream():
             yield self.process(payload)
 
-    def outstream(self) -> Iterable[DocumentPayload]:
+    def outstream(self, **kwargs) -> Iterable[DocumentPayload]:
         """Returns stream of payloads. Non-overridable! """
 
         self.enter()
-        for payload in self.process_stream():
-            yield payload
+
+        if kwargs:
+            for payload in tqdm(self.process_stream(), **kwargs):
+                yield payload
+        else:
+            for payload in self.process_stream():
+                yield payload
+
         self.exit()
 
     def hookup(self, pipeline: pipelines.AnyPipeline) -> ITask:
@@ -290,14 +310,6 @@ class ITask(abc.ABC):
     @property
     def document_index(self) -> DocumentIndex:
         return self.pipeline.payload.document_index
-
-    @property
-    def prior(self) -> ITask:
-        return self.pipeline.get_prior_to(self)
-
-    @property
-    def next(self) -> ITask:
-        return self.pipeline.get_next_to(self)
 
     def input_type_guard(self, content_type) -> None:
         if self.in_content_type is None or self.in_content_type == ContentType.NONE:

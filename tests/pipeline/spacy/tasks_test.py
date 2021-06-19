@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import spacy
-from penelope.pipeline import ContentType, CorpusPipeline, DocumentPayload, PipelinePayload
+from penelope.pipeline import ContentType, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.tasks import SetSpacyModel, SpacyDocToTaggedFrame, ToSpacyDoc, ToSpacyDocToTaggedFrame
 from penelope.vendor.spacy import prepend_spacy_path
@@ -71,7 +71,8 @@ def test_to_spacy_doc(test_payload):
 @patch('penelope.pipeline.convert.tagged_frame_to_token_counts', return_value={})
 def test_spacy_doc_to_tagged_frame(looking_back, test_payload):
     payload = DocumentPayload(content_type=ContentType.SPACYDOC, filename='hello.txt', content=looking_back)
-    task = SpacyDocToTaggedFrame(instream=[payload], attributes=POS_ATTRIBUTES)
+    prior = Mock(spec=ITask, outstream=lambda: [payload])
+    task = SpacyDocToTaggedFrame(prior=prior, attributes=POS_ATTRIBUTES)
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME
@@ -81,17 +82,8 @@ def test_spacy_doc_to_tagged_frame(looking_back, test_payload):
 @patch('penelope.pipeline.convert.tagged_frame_to_token_counts', return_value={})
 def test_to_spacy_doc_to_tagged_frame(test_payload):
     payload = DocumentPayload(content_type=ContentType.TEXT, filename='hello.txt', content=SAMPLE_TEXT)
-    task = ToSpacyDocToTaggedFrame(instream=[payload], attributes=POS_ATTRIBUTES)
+    prior = Mock(spec=ITask, outstream=lambda: [payload])
+    task = ToSpacyDocToTaggedFrame(prior=prior, attributes=POS_ATTRIBUTES)
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME
-
-
-# @patch('spacy.load', patch_spacy_load)
-# @patch('penelope.pipeline.convert.tagged_frame_to_token_counts', return_value={})
-# def test_shortcuts(nlp, test_payload):
-#     payload = DocumentPayload(content_type=ContentType.TEXT, filename='hello.txt', content=SAMPLE_TEXT)
-#     pipeline = patch_spacy_pipeline(test_payload).set_spacy_model(language=nlp).text_to_spacy_to_tagged_frame().setup()
-#     pipeline.tasks[1].instream = [payload]
-#     payload_next = pipeline.tasks[-1].process_payload(payload)
-#     assert payload_next.content_type == ContentType.TAGGED_FRAME
