@@ -4,7 +4,6 @@ from heapq import nlargest
 from typing import Sequence, Union
 
 import numpy as np
-import textacy
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
@@ -91,6 +90,8 @@ class SliceMixIn:
         max_n_terms : in optional
             [description], by default None
         """
+        import textacy
+
         sliced_bag_term_matrix, token2id = textacy.vsm.matrix_utils.filter_terms_by_df(
             self.bag_term_matrix, self.token2id, max_df=max_df, min_df=min_df, max_n_terms=max_n_terms
         )
