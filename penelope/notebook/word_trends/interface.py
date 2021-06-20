@@ -5,7 +5,7 @@ from typing import Dict, List
 import pandas as pd
 from penelope.co_occurrence import Bundle
 from penelope.common.goodness_of_fit import GofData
-from penelope.common.keyness import KeynessMetric
+from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
 
 
@@ -139,6 +139,7 @@ class BundleTrendsData(ITrendsData):
         transformed_corpus: VectorizedCorpus = self.bundle.to_keyness_corpus(
             period_pivot=opts.group_by,
             global_threshold=1,
+            keyness_source=KeynessMetricSource.Full,
             keyness=opts.keyness,
             pivot_column_name=self.category_column,
             normalize=opts.normalize,
