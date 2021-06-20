@@ -1,101 +1,66 @@
-import penelope.notebook.interface as interface
 import pytest
-from penelope.corpus import (
-    ExtractTaggedTokensOpts,
-    TextReaderOpts,
-    TokensTransformOpts,
-    VectorizedCorpus,
-    VectorizeOpts,
-)
-from penelope.pipeline import CorpusConfig, wildcard_to_DTM_pipeline
-from penelope.utility import PropertyValueMaskingOpts
+from penelope.scripts.co_occurrence import process_co_ocurrence
+
+'''
+co_occurrence --context-width 2 --ignore-padding --tf-threshold 3 --tf-threshold-mask --pos-includes "|NN|PM|PC|VB|" --pos-paddings "|JJ|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|" --pos-excludes "|MAD|MID|PAD|" --lemmatize --to-lowercase --keep-symbols --keep-numerals --enable-checkpoint --force-checkpoint doit.yml /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA/APA_co-occurrence.csv.zip
+'''
+
+'''
+co_occurrence
+    --context-width 2
+    --concept "information"
+    --ignore-padding
+    --tf-threshold 10
+    --tf-threshold-mask
+    --pos-includes "|JJ|NN|PM|PC|VB|"
+    --pos-paddings "|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|"
+    --pos-excludes "|MAD|MID|PAD|"
+    --lemmatize
+    --to-lowercase
+    --keep-symbols
+    --keep-numerals
+    --enable-checkpoint
+    --force-checkpoint
+    doit.yml
+    /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip
+    /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/information/information_co-occurrence.csv.zip
+'''
 
 
-@pytest.mark.skip(reason="Debug test")
-def test_inidun_word_trends_bug():
+@pytest.mark.long_running
+def test_CLI_process_co_ocurrence():
 
-    # phrases = parse_phrases(phrase_file, phrase)
-    corpus_config: CorpusConfig = CorpusConfig.load("/data/inidun/SSI.yml")
-    corpus_config.pipeline_payload.folders('/data/inidun')
-
-    args: interface.ComputeOpts = interface.ComputeOpts(
-        corpus_type=1,
-        corpus_filename='/data/inidun/legal_instrument_corpus.zip',
-        target_folder='./tests/output/MARS',
-        corpus_tag='MARS',
-        transform_opts=TokensTransformOpts(
-            only_alphabetic=False,
-            only_any_alphanumeric=False,
-            to_lower=True,
-            to_upper=False,
-            min_len=1,
-            max_len=None,
-            remove_accents=False,
-            remove_stopwords=False,
-            stopwords=None,
-            extra_stopwords=['örn'],
-            language='english',
-            keep_numerals=True,
-            keep_symbols=True,
-        ),
-        text_reader_opts=TextReaderOpts(
-            filename_pattern='*.txt',
-            filename_filter=None,
-            filename_fields=['unesco_id:_:2', 'year:_:3', 'city:\\w+\\_\\d+\\_\\d+\\_\\d+\\_(.*)\\.txt'],
-            index_field=None,
-            as_binary=False,
-            sep='\t',
-            quoting=3,
-        ),
-        extract_opts=ExtractTaggedTokensOpts(
-            lemmatize=True,
-            target_override=None,
-            pos_includes='|NOUN|PROPN|DET|PRON|VERB|',
-            pos_excludes='|PUNCT|EOL|SPACE|',
-            pos_paddings='|ADJ|ADV|INTJ|PART|CONJ|CCONJ|SCONJ|NUM|AUX|SYM|X|ADP|',
-            pos_replace_marker='*',
-            passthrough_tokens=[],
-            block_tokens=[],
-            append_pos=False,
-            phrases=None,
-            to_lowercase=True,
-            global_tf_threshold=10,
-            global_tf_threshold_mask=False,
-        ),
-        filter_opts=PropertyValueMaskingOpts(),
-        vectorize_opts=VectorizeOpts(
-            already_tokenized=True, lowercase=False, stop_words=None, max_df=1.0, min_df=1, verbose=False
-        ),
-        tf_threshold=10,
-        tf_threshold_mask=False,
+    process_co_ocurrence(
+        corpus_config="./doit.yml",
+        # input_filename='./tests/test_data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip',
+        input_filename='/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip',
+        output_filename='./tests/output/information/information_co-occurrence.csv.zip',
+        filename_pattern=None,
+        concept=['information'],
+        ignore_concept=False,
+        ignore_padding=True,
+        context_width=2,
+        phrase=None,
+        phrase_file=None,
+        partition_key=None,
         create_subfolder=True,
-        persist=True,
-        force=False,
-        context_opts=None,
+        pos_includes="|JJ|NN|PM|PC|VB|",
+        pos_paddings="|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|",
+        pos_excludes="|MAD|MID|PAD|",
+        append_pos=False,
+        to_lowercase=True,
+        lemmatize=True,
+        remove_stopwords=False,
+        min_word_length=1,
+        max_word_length=None,
+        keep_symbols=True,
+        keep_numerals=True,
+        only_any_alphanumeric=False,
+        only_alphabetic=False,
+        tf_threshold=10,
+        tf_threshold_mask=True,
+        enable_checkpoint=True,
+        force_checkpoint=True,
     )
 
-    # workflows.document_term_matrix.compute(
-    #     args=args,
-    #     corpus_config=corpus_config,
-    # )
-
-    corpus: VectorizedCorpus = (
-        corpus_config.get_pipeline(
-            "tagged_frame_pipeline",
-            corpus_filename=args.corpus_filename,
-        )
-        + wildcard_to_DTM_pipeline(
-            transform_opts=args.transform_opts,
-            extract_opts=args.extract_opts,
-            filter_opts=args.filter_opts,
-            vectorize_opts=args.vectorize_opts,
-        )
-    ).value()
-
-    assert corpus is not None
-
-    # if (args.tf_threshold or 1) > 1:
-    #     corpus = corpus.slice_by_n_count(args.tf_threshold)
-
-    # if args.persist:
-    #     store_corpus_bundle(corpus, args)
+    assert True

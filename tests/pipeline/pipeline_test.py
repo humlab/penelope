@@ -98,7 +98,7 @@ def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: CorpusConfi
         .text_to_spacy()
         .tqdm()
         .spacy_to_pos_tagged_frame()
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
     ).exhaust()
 
     assert os.path.isfile(checkpoint_filename)
@@ -109,7 +109,7 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: CorpusConfig):
 
     checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
-    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename)
+    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename, force_checkpoint=False)
 
     payloads: List[DocumentPayload] = pipeline.to_list()
 
@@ -128,11 +128,13 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: CorpusConfig):
     )
     filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
-    tagged_payload = next(CorpusPipeline(config=config).checkpoint(checkpoint_filename).resolve())
+    tagged_payload = next(
+        CorpusPipeline(config=config).checkpoint(checkpoint_filename, force_checkpoint=False).resolve()
+    )
 
     tokens_payload = next(
         CorpusPipeline(config=config)
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .resolve()
     )
@@ -148,7 +150,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
 
     pipeline: CorpusPipeline = (
         CorpusPipeline(config=config)
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
         .vocabulary(lemmatize=True, progress=False)
         .exhaust()
     )
@@ -164,7 +166,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: CorpusConfig):
 
     pipeline: CorpusPipeline = (
         CorpusPipeline(config=config)
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
         .vocabulary(lemmatize=False, progress=False)
         .exhaust()
     )
@@ -186,11 +188,13 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: CorpusConfig):
     )
     filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(is_punct=False)
 
-    tagged_payload = next(CorpusPipeline(config=config).checkpoint(checkpoint_filename).resolve())
+    tagged_payload = next(
+        CorpusPipeline(config=config).checkpoint(checkpoint_filename, force_checkpoint=False).resolve()
+    )
 
     text_payload = next(
         CorpusPipeline(config=config)
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .resolve()
@@ -208,7 +212,7 @@ def test_pipeline_take_succeeds(config: CorpusConfig):
 
     take_payloads = (
         CorpusPipeline(config=config)
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .take(2)
@@ -228,7 +232,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
 
     payloads = (
         CorpusPipeline(config=config)
-        .checkpoint(checkpoint_filename)
+        .checkpoint(checkpoint_filename, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .to_document_content_tuple()
@@ -242,7 +246,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: CorpusConfig):
 
 
 def test_pipeline_find_task(config: CorpusConfig):
-    p: CorpusPipeline = CorpusPipeline(config=config).checkpoint("dummy_name").tqdm()
+    p: CorpusPipeline = CorpusPipeline(config=config).checkpoint("dummy_name", force_checkpoint=False).tqdm()
     assert isinstance(p.find(Checkpoint), Checkpoint)
     assert isinstance(p.find(Tqdm), Tqdm)
 
@@ -259,7 +263,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
     corpus: VectorizedCorpus = (
         (
             CorpusPipeline(config=config)
-            .checkpoint(checkpoint_filename)
+            .checkpoint(checkpoint_filename, force_checkpoint=False)
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
             .tokens_transform(transform_opts=TokensTransformOpts())
             .tokens_to_text()
@@ -348,5 +352,5 @@ def test_create_pipeline_by_string(config: CorpusConfig):
     cls_str = 'penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline'
     factory = create_pipeline_factory(cls_str)
     assert factory is not None
-    p: CorpusPipeline = factory(config)
+    p: CorpusPipeline = factory(corpus_config=config)
     assert p is not None

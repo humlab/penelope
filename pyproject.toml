@@ -116,7 +116,7 @@ filterwarnings = [
   "ignore::RuntimeWarning",
   "ignore::UserWarning"
 ]
-timeout = 300
+# timeout = 300
 
 [tool.black]
 line-length = 120

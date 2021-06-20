@@ -78,6 +78,13 @@ class CorpusPipelineBase(Generic[_T_self]):
             return ContentType.NONE
         return prior_task.out_content_type
 
+    def get_next_to(self, task: ITask) -> ITask:
+        """Returns task succeeding `task`"""
+        index: int = self.tasks.index(task)
+        if index + 1 < len(self.tasks):
+            return self.tasks[index + 1]
+        return None
+
     def setup(self) -> CorpusPipelineBase:
         """Chains task input/output and setups each task"""
         for task in self.tasks:

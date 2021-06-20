@@ -1,44 +1,43 @@
-from unittest.mock import Mock
-
-import pytest
-from penelope.notebook.dtm import ComputeGUI, create_compute_gui
-from penelope.pipeline.config import CorpusConfig
+from penelope.notebook import dtm
+from penelope.pipeline import CorpusConfig
 
 
 def dummy_callback(*_, **__):
     pass
 
 
-@pytest.mark.skip('')
-def test_gui_create():
-
-    gui = ComputeGUI()
-
-    assert gui.layout() is not None
+def dummy_config():
+    return CorpusConfig.load(path='./tests/test_data/SSI.yml')
 
 
-@pytest.mark.skip('')
-def test_gui_setup():
+def test_GUI_setup_and_layout():  # pylint: disable=unused-argument
+    def done_callback(*_, **__):
+        pass
 
-    gui = ComputeGUI()
-    config = Mock(spec=CorpusConfig)
-    gui.setup(
-        config=config,
-        compute_callback=None,
-        done_callback=dummy_callback,
+    def compute_callback(args, corpus_config):  # pylint: disable=unused-argument
+        pass
+
+    corpus_config = dummy_config()
+    gui = dtm.ComputeGUI(
+        default_corpus_path='./tests/test_data',
+        default_corpus_filename='',
+        default_data_folder='./tests/output',
+    ).setup(
+        config=corpus_config,
+        compute_callback=compute_callback,
+        done_callback=done_callback,
     )
 
+    assert gui is not None
     assert gui.layout() is not None
 
 
-@pytest.mark.skip('')
 def test_create_gui():
 
-    config = Mock(spec=CorpusConfig)
-    gui: ComputeGUI = create_compute_gui(
+    gui: dtm.ComputeGUI = dtm.create_compute_gui(
         corpus_folder='./tests/test_data',
         data_folder='./tests/test_data',
-        corpus_config=config,
+        corpus_config=dummy_config(),
         compute_callback=dummy_callback,
         done_callback=dummy_callback,
     )

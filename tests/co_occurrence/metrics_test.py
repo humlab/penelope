@@ -108,8 +108,9 @@ def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
 #         raise ValueError(f"{duration1}/{duration2}/{duration3}")
 
 
+# @pytest.mark.xfail()
 def test_HAL_cwr_corpus(bundle: Bundle):
-    nw_x = bundle.window_counts.document_counts.todense().astype(np.float)
+    nw_x = bundle.window_counts.document_counts  # .todense().astype(np.float)
     nw_xy = bundle.corpus.data  # .copy().astype(np.float)
     nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, bundle.vocabs_mapping)
 

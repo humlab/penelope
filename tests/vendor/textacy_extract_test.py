@@ -63,6 +63,7 @@ def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: text
     assert ["little", "white"] == terms[0]
 
 
+@pytest.mark.long_running
 def test_pos_extract_when_a_more_complexed_filter(mary_had_a_little_lamb_corpus: textacy.Corpus):
 
     terms = (

@@ -32,7 +32,8 @@ class ComputeOpts:
     create_subfolder: bool
     persist: bool
 
-    force: bool = field(init=True, default=False)
+    enable_checkpoint: bool = field(init=True, default=True)
+    force_checkpoint: bool = field(init=True, default=False)
     context_opts: Optional[ContextOpts] = None
 
     dry_run: bool = field(init=False, default=False)
@@ -103,7 +104,17 @@ class ComputeOpts:
             # if len(self.context_opts.partition_keys or []) > 0:
             #     options['--partition-key'] = self.context_opts.partition_keys
 
-        options['--count-threshold'] = self.tf_threshold
+            if self.context_opts.ignore_concept:
+                options['--ignore-concept'] = self.context_opts.ignore_concept
+
+            if self.context_opts.ignore_padding:
+                options['--ignore-padding'] = self.context_opts.ignore_padding
+
+        if self.tf_threshold > 1:
+            options['--tf-threshold'] = self.tf_threshold
+
+        if self.tf_threshold_mask:
+            options['--tf-threshold-mask'] = self.tf_threshold_mask
 
         if self.extract_opts.phrases and len(self.extract_opts.phrases) > 0:
             options['--phrase'] = self.extract_opts.phrases
@@ -111,7 +122,7 @@ class ComputeOpts:
         if self.extract_opts.pos_includes:
             options['--pos-includes'] = self.extract_opts.pos_includes
 
-        if self.extract_opts.pos_paddings:
+        if self.extract_opts.pos_paddings and self.extract_opts.pos_paddings.strip('|'):
             options['--pos-paddings'] = self.extract_opts.pos_paddings
 
         if self.extract_opts.pos_excludes:
@@ -125,12 +136,6 @@ class ComputeOpts:
 
         if self.extract_opts.append_pos:
             options['--append-pos'] = True
-
-        if self.extract_opts.global_tf_threshold > 1:
-            options['--tf-threshold'] = self.extract_opts.global_tf_threshold
-
-        if self.extract_opts.global_tf_threshold_mask:
-            options['--tf-threshold-mask'] = True
 
         options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
         options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
@@ -151,8 +156,11 @@ class ComputeOpts:
         if self.transform_opts.only_any_alphanumeric:
             options['--only-any-alphanumeric'] = True
 
-        if self.force:
-            options['--force'] = True
+        if self.enable_checkpoint:
+            options['--enable-checkpoint'] = True
+
+        if self.force_checkpoint:
+            options['--force-checkpoint'] = True
 
         return options
 

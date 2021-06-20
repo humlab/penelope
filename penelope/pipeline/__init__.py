@@ -4,15 +4,14 @@ from . import spacy, sparv
 from .checkpoint import (
     CheckpointData,
     CheckpointOpts,
-    CheckpointReader,
     CsvContentSerializer,
     IContentSerializer,
     TextContentSerializer,
     TokensContentSerializer,
     create_serializer,
     deserialized_payload_stream,
-    load_checkpoint,
-    store_checkpoint,
+    load_archive,
+    store_archive,
 )
 from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline
 from .config import CorpusConfig, CorpusType

@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, List, Tuple, Union
+from typing import Callable, Iterable, Iterator, List, Tuple, Union
 
 import pandas as pd
 
@@ -11,3 +11,6 @@ IntOrStr = Union[int, str]
 
 TaggedFrame = pd.core.api.DataFrame
 Token = Union[int, str]
+
+WindowsStream = Iterator[Tuple[str, int, Iterable[Token]]]
+DocumentIndex = pd.DataFrame

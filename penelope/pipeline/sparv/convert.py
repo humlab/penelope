@@ -1,3 +1,4 @@
+import re
 from io import StringIO
 
 import pandas as pd
@@ -5,9 +6,13 @@ import pandas as pd
 from ..checkpoint import CheckpointOpts, CsvContentSerializer
 from ..tagged_frame import TaggedFrame
 
+COLON_NUMBER_PATTERN = re.compile(r'\:\d+$')
 
-def extract_lemma(token: str, baseform: str) -> str:
+
+def to_lemma_form(token: str, baseform: str) -> str:
     lemma = token if baseform.strip('|') == '' else baseform.strip('|').split('|')[0]
+    lemma = lemma.replace(' ', '_')
+    lemma = COLON_NUMBER_PATTERN.sub('', lemma)
     return lemma
 
 
@@ -21,5 +26,7 @@ class SparvCsvSerializer(CsvContentSerializer):
             index_col=False,
             skiprows=[1],  # XML <text> tag
         ).fillna('')
-        df['baseform'] = df.apply(lambda x: extract_lemma(x['token'], x['baseform']), axis=1)
+
+        df['baseform'] = df.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1)
+
         return df

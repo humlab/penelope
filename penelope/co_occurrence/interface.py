@@ -48,3 +48,8 @@ class ContextOpts:
         instance: ContextOpts = create_dataclass_instance_from_kwargs(cls, **kwargs)
 
         return instance
+
+    def get_concepts(self) -> Set[str]:
+        if not self.concept:
+            return set()
+        return set(self.concept)

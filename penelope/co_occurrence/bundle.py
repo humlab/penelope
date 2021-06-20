@@ -15,9 +15,11 @@ class Bundle:
     def __init__(  # pylint: disable=too-many-arguments
         self,
         corpus: VectorizedCorpus = None,
+        window_counts: persistence.TokenWindowCountStatistics = None,
         token2id: Token2Id = None,
         document_index: DocumentIndex = None,
-        window_counts: persistence.TokenWindowCountStatistics = None,
+        concept_corpus: VectorizedCorpus = None,
+        concept_window_counts: persistence.TokenWindowCountStatistics = None,
         folder: str = None,
         tag: str = None,
         compute_options: dict = None,
@@ -25,12 +27,15 @@ class Bundle:
         vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = None,
     ):
         self.corpus: VectorizedCorpus = corpus
+        self.window_counts: persistence.TokenWindowCountStatistics = window_counts
         self.token2id: Token2Id = token2id
         self.document_index: DocumentIndex = document_index
-        self.window_counts: persistence.TokenWindowCountStatistics = window_counts
         self.folder: str = folder
         self.tag: str = tag
         self.compute_options: dict = compute_options
+
+        self.concept_corpus: VectorizedCorpus = concept_corpus
+        self.concept_window_counts: persistence.TokenWindowCountStatistics = concept_window_counts
 
         self._co_occurrences: pd.DataFrame = co_occurrences
         self._vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = vocabs_mapping
@@ -64,7 +69,7 @@ class Bundle:
         if period_pivot not in ["year", "lustrum", "decade"]:
             raise ValueError(f"illegal time period {period_pivot}")
 
-        corpus: VectorizedCorpus = self.corpus
+        corpus: VectorizedCorpus = self.concept_corpus if self.concept_corpus else self.corpus
 
         if global_threshold > 1:
             corpus = corpus.slice_by_term_frequency(global_threshold)

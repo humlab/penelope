@@ -35,6 +35,8 @@ def compute(
             "tagged_frame_pipeline",
             corpus_filename=args.corpus_filename,
             checkpoint_filename=checkpoint_filename,
+            enable_checkpoint=args.enable_checkpoint,
+            force_checkpoint=args.force_checkpoint,
         )
 
         args.extract_opts.passthrough_tokens = args.context_opts.concept
@@ -50,7 +52,7 @@ def compute(
                 extract_opts=args.extract_opts,
                 filter_opts=args.filter_opts,
                 context_opts=args.context_opts,
-                global_threshold_count=args.tf_threshold,
+                global_tf_threshold=args.tf_threshold,
             )
         )
 

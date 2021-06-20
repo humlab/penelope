@@ -41,13 +41,16 @@ class TrendsGUI:
         self._keyness: ToggleButton = Dropdown(
             description="",
             value=KeynessMetric.TF,
-            options={"TF": KeynessMetric.TF, "TF-IDF": KeynessMetric.TF_IDF},
+            options={
+                "TF": KeynessMetric.TF,
+                "TF-IDF": KeynessMetric.TF_IDF,
+            },
             layout=BUTTON_LAYOUT,
         )
         self._smooth: ToggleButton = ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
         self._group_by: Dropdown = Dropdown(
             options=['year', 'lustrum', 'decade'],
-            value='year',
+            value='decade',
             description='',
             disabled=False,
             layout=Layout(width='75px'),

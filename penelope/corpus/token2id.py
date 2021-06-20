@@ -176,7 +176,7 @@ class Token2Id(MutableMapping):
         keeps: Container[int] = {self[x] if isinstance(x, str) else x for x in keeps} if keeps else set()
 
         logger.info(
-            f"compressing vocab. TF threshold: {tf_threshold} keeping: {' '.join([self.id2token[x] for x in keeps])}"
+            f"Compressing vocab: TF-threshold={tf_threshold} Keeping: {' '.join([self.id2token[x] for x in keeps])}"
         )
 
         if self.tf is None:

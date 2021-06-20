@@ -24,22 +24,18 @@ def split_filename(filename, sep='_'):
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_tag')
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
-@click.option(
-    '-i', '--pos-includes', default=None, help='List of POS tags to include e.g. "|NN|JJ|".', type=click.STRING
-)
-@click.option(
-    '-m', '--pos-paddings', default=None, help='List of POS tags to replace with a padding marker.', type=click.STRING
-)
+@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
+@click.option('-m', '--pos-paddings', default='', help='POS tags to replace with a padding marker.', type=click.STRING)
 @click.option(
     '-x',
     '--pos-excludes',
-    default=None,
+    default='',
     help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
     type=click.STRING,
 )
 @click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
 @click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
-@click.option('-n', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
+@click.option('-z', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words')
 @click.option(
@@ -72,6 +68,21 @@ def split_filename(filename, sep='_'):
 @click.option(
     '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
 )
+@click.option('-e', '--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='Enable checkpoints')
+@click.option(
+    '-f',
+    '--force-checkpoint/--no-force-checkpoint',
+    default=False,
+    is_flag=True,
+    help='Force new checkpoints (if enabled)',
+)
+@click.option(
+    '-n',
+    '--deserialize-processes',
+    default=4,
+    type=click.IntRange(1, 99),
+    help='Number of processes during deserialization',
+)
 def main(
     corpus_config: str = None,
     input_filename: str = None,
@@ -81,9 +92,9 @@ def main(
     phrase: Sequence[str] = None,
     phrase_file: str = None,
     create_subfolder: bool = True,
-    pos_includes: str = None,
-    pos_paddings: str = None,
-    pos_excludes: str = None,
+    pos_includes: str = '',
+    pos_paddings: str = '',
+    pos_excludes: str = '',
     append_pos: bool = False,
     to_lowercase: bool = True,
     lemmatize: bool = True,
@@ -97,7 +108,9 @@ def main(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    force: bool = False,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
+    deserialize_processes: int = 4,
 ):
 
     process(
@@ -124,7 +137,9 @@ def main(
         only_alphabetic=only_alphabetic,
         tf_threshold=tf_threshold,
         tf_threshold_mask=tf_threshold_mask,
-        force=force,
+        enable_checkpoint=enable_checkpoint,
+        force_checkpoint=force_checkpoint,
+        deserialize_processes=deserialize_processes,
     )
 
 
@@ -153,7 +168,9 @@ def process(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    force: bool = False,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
+    deserialize_processes: int = 4,
 ):
 
     try:
@@ -171,6 +188,8 @@ def process(
 
         if filename_pattern is not None:
             text_reader_opts.filename_pattern = filename_pattern
+
+        corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
 
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
@@ -209,13 +228,11 @@ def process(
             tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,
             persist=True,
-            force=force,
+            enable_checkpoint=enable_checkpoint,
+            force_checkpoint=force_checkpoint,
         )
 
-        workflows.document_term_matrix.compute(
-            args=args,
-            corpus_config=corpus_config,
-        )
+        workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
 
         logger.info('Done!')
 

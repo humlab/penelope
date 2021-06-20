@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Callable, Sequence, Union
 
 import numpy as np
@@ -6,6 +6,7 @@ import pandas as pd
 import scipy.sparse as sp
 
 
+@unique
 class KeynessMetric(IntEnum):
     TF = 0
     TF_normalized = 1

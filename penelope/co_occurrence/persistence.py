@@ -35,9 +35,11 @@ FILENAME_POSTFIX = '_co-occurrence.csv.zip'
 FILENAME_PATTERN = f'*{FILENAME_POSTFIX}'
 DOCUMENT_INDEX_POSTFIX = '_co-occurrence.document_index.zip'
 DICTIONARY_POSTFIX = '_co-occurrence.dictionary.zip'
-CORPUS_COUNTS_POSTFIX = '_corpus_windows_counts.pickle'
 DOCUMENT_COUNTS_POSTFIX = '_document_windows_counts.npz'
 VOCABULARY_MAPPING_POSTFIX = '_vocabs_mapping.pickle'
+
+CORPUS_COUNTS_POSTFIX = '_corpus_windows_counts.pickle'
+CONCEPT_CORPUS_COUNTS_POSTFIX = '_concept_corpus_windows_counts.pickle'
 
 
 def to_folder_and_tag(filename: str, postfix: str = FILENAME_POSTFIX) -> Tuple[str, str]:
@@ -81,14 +83,15 @@ def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: di
         return
 
     corpus.dump(tag=tag, folder=folder)
-    corpus.dump_options(tag=tag, folder=folder, options=options)
+
+    if options:
+        corpus.dump_options(tag=tag, folder=folder, options=options)
 
 
-def load_corpus(corpus_folder: str, corpus_tag: str) -> VectorizedCorpus:
+def load_corpus(*, folder: str, tag: str) -> VectorizedCorpus:
+
     return (
-        VectorizedCorpus.load(folder=corpus_folder, tag=corpus_tag)
-        if VectorizedCorpus.dump_exists(folder=corpus_folder, tag=corpus_tag)
-        else None
+        VectorizedCorpus.load(folder=folder, tag=tag) if VectorizedCorpus.dump_exists(folder=folder, tag=tag) else None
     )
 
 
@@ -304,10 +307,15 @@ def store(bundle: "Bundle"):
     folder, tag = bundle.folder, bundle.tag
 
     store_corpus(corpus=bundle.corpus, folder=folder, tag=tag, options=bundle.compute_options)
+    bundle.window_counts.store(folder, tag)
+
+    if bundle.concept_corpus:
+        store_corpus(corpus=bundle.concept_corpus, folder=folder, tag=tag + "_concept", options=bundle.compute_options)
+        bundle.concept_window_counts.store(folder, tag + "_concept")
+
     store_document_index(bundle.document_index, document_index_filename(folder, tag))
 
     bundle.token2id.store(vocabulary_filename(folder, tag))
-    bundle.window_counts.store(folder, tag)
 
     store_options(options=bundle.compute_options, filename=options_filename(folder, tag))
     store_co_occurrences(filename=co_occurrence_filename(folder, tag), co_occurrences=bundle.co_occurrences)
@@ -326,14 +334,25 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     else:
         folder, tag = to_folder_and_tag(filename)
 
-    corpus: VectorizedCorpus = load_corpus(folder, tag)
+    corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag)
+    window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics.load(folder, tag)
+
+    concept_corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag + "_concept")
+
+    concept_window_counts: TokenWindowCountStatistics = (
+        TokenWindowCountStatistics.load(folder, tag + "_concept") if concept_corpus else None
+    )
+
     token2id: Token2Id = load_vocabulary(folder, tag)
     document_index: DocumentIndex = load_document_index(folder, tag)
+
     options: dict = load_options(filename) or VectorizedCorpus.load_options(folder=folder, tag=tag)
-    window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics.load(folder, tag)
     vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = load_vocabs_mapping(folder=folder, tag=tag)
 
     corpus.remember_vocabs_mapping(vocabs_mapping)
+
+    if concept_corpus:
+        corpus.remember_vocabs_mapping(vocabs_mapping)
 
     if token2id is None:
         raise CoOccurrenceError("Vocabulary is missing (corrupt data)!")
@@ -350,11 +369,13 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
         folder=folder,
         tag=tag,
         corpus=corpus,
+        window_counts=window_counts,
+        concept_corpus=concept_corpus,
+        concept_window_counts=concept_window_counts,
         vocabs_mapping=vocabs_mapping,
         document_index=document_index,
         token2id=token2id,
         compute_options=options,
-        window_counts=window_counts,
         co_occurrences=co_occurrences,
     )
 

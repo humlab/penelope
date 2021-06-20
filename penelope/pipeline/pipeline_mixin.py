@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
 from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.corpus.interfaces import ITokenizedCorpus
-from penelope.utility import PropertyValueMaskingOpts
+from penelope.utility import PropertyValueMaskingOpts, deprecated
 
 from . import tasks
 
@@ -31,9 +31,11 @@ class PipelineShortcutMixIn:
     def load_corpus(self, corpus: ITokenizedCorpus) -> pipelines.CorpusPipeline:
         return self.add(tasks.LoadTokenizedCorpus(corpus=corpus))
 
+    @deprecated
     def write_feather(self, folder: str) -> pipelines.CorpusPipeline:
         return self.add(tasks.WriteFeather(folder=folder))
 
+    @deprecated
     def read_feather(self, folder: str) -> pipelines.CorpusPipeline:
         return self.add(tasks.ReadFeather(folder=folder))
 
@@ -60,10 +62,15 @@ class PipelineShortcutMixIn:
         return self.add(tasks.LoadTaggedXML(filename=filename, options=options))
 
     def checkpoint(
-        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts = None
+        self: pipelines.CorpusPipeline,
+        filename: str,
+        checkpoint_opts: CheckpointOpts = None,
+        force_checkpoint: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
-        return self.add(tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts))
+        return self.add(
+            tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts, force_checkpoint=force_checkpoint)
+        )
 
     def checkpoint_feather(
         self: pipelines.CorpusPipeline,
@@ -161,6 +168,30 @@ class PipelineShortcutMixIn:
     def tap_stream(self: pipelines.CorpusPipeline, target: str, tag: str) -> pipelines.CorpusPipeline:
         """Taps the stream into a debug zink."""
         return self.add(tasks.TapStream(target=target, tag=tag, enabled=True))
+
+    # def assert_payload_content(
+    #     self: pipelines.CorpusPipeline,
+    #     expected_values: Iterable[Any],
+    #     comparer=Callable[[Any, Any], bool],
+    #     accept_fewer_expected_values: bool = False,
+    # ) -> pipelines.CorpusPipeline:
+    #     return self.add(
+    #         tasks.AssertPayloadContent(
+    #             expected_values=expected_values,
+    #             comparer=comparer,
+    #             accept_fewer_expected_values=accept_fewer_expected_values,
+    #         )
+    #     )
+
+    def assert_on_payload(
+        self: pipelines.CorpusPipeline, payload_test: Callable[[Any], bool], *payload_test_args: Any
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.AssertOnPayload(payload_test=payload_test, *payload_test_args))
+
+    def assert_on_exit(
+        self: pipelines.CorpusPipeline, exit_test: Callable[[Any], bool], *exit_test_args: Any
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.AssertOnExit(exit_test=exit_test, *exit_test_args))
 
     # def filter_tagged_frame(
     #     self: pipelines.CorpusPipeline,

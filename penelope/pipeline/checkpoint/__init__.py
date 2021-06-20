@@ -1,6 +1,7 @@
 # type: ignore
 
-from .checkpoint import CheckpointReader, load_checkpoint, store_checkpoint
+from . import feather
+from .checkpoint import load_archive, store_archive
 from .interface import CheckpointData, CheckpointOpts, IContentSerializer
 from .serialize import (
     CsvContentSerializer,

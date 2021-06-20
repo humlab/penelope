@@ -78,16 +78,18 @@ class PerspectiveTableView:
 
     def update(self, data: pd.DataFrame) -> None:
         self.table.replace(
-            data={
-                'time_period': data.time_period.apply(str),
-                'w1': data.w1,
-                'w2': data.w2,
-                'value': (
-                    data.value.apply(str)
-                    if np.issubdtype(data.value.dtype, np.integer)
-                    else data.value.apply(f"{{:10.{self.precision}f}}".format)
-                ),
-            }
+            data=pd.DataFrame(
+                {
+                    'time_period': data.time_period.apply(str),
+                    'w1': data.w1,
+                    'w2': data.w2,
+                    'value': (
+                        data.value.apply(str)
+                        if np.issubdtype(data.value.dtype, np.integer)
+                        else data.value.apply(f"{{:10.{self.precision}f}}".format)
+                    ),
+                }
+            )
         )
 
     # def format_columns(self, data: pd.DataFrame, precision: int = 6):
@@ -98,6 +100,61 @@ class PerspectiveTableView:
     #         if np.issubdtype(data[column].dtype, np.inexact):
     #             data[column] = data[column].apply(f"{{:10.{precision}f}}".format)
     #     return data
+
+
+class PandasTableView:
+    def __init__(self, data=None):  # pylint: disable=unused-argument
+        self.container = Output(layout=Layout(width='600px', height='600px', overflow_y='auto'))
+        self.data = data
+        self.style_dict = [
+            dict(
+                selector="thead th",
+                props=[
+                    # ('background-color', 'slategray'),
+                    # ('color', 'white'),
+                    ('font-size', '12px'),
+                    ('font-weight', 'bold'),
+                    ('padding', '5px 5px'),
+                    # ('position', 'sticky'),
+                    # ('text-align', 'center'),
+                    # ('top', '0'),
+                ],
+            ),
+            dict(
+                selector="td",
+                props=[
+                    # ('background-color', 'silver'),
+                    # ('color', 'darkblue'),
+                    ('font-size', '10px'),
+                    ('padding', '5px 5px'),
+                    # ('position', 'sticky'),
+                    ('text-align', 'left'),
+                    # ('top', '0'),
+                ],
+            ),
+        ]
+
+    def update(self, data: pd.DataFrame):
+        self.container.clear_output()
+        self.data = data.set_index('time_period') if data is not None else empty_data()
+        # self.data.style.clear()
+        with self.container:
+            with pd.option_context(
+                'display.precision',
+                6,
+                'display.max_rows',
+                None,
+                'display.max_columns',
+                None,
+                'display.width',
+                500,
+                'display.multi_sparse',
+                True,
+            ):
+                IPython_display.display(self.data)  # (HTML(self.data.style.render()))
+
+
+TableViewerClass = PandasTableView
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
@@ -175,7 +232,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # self._display = Button(description='Update', layout=Layout(width='auto'))
         self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
-        self._table_view = PerspectiveTableView(data=empty_data())
+        self._table_view = TableViewerClass(data=empty_data())
 
         # self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
         # self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))

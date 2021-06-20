@@ -1,11 +1,10 @@
 import os
 import pathlib
 import uuid
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceHelper
-from penelope.co_occurrence.utility import compute_non_partitioned_corpus_co_occurrence
-from penelope.corpus import ITokenizedCorpus, Token2Id, TokenizedCorpus, VectorizedCorpus
+from penelope.corpus import TokenizedCorpus
 from penelope.pipeline import CorpusConfig, CorpusPipeline, sparv
 
 from ..fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
@@ -28,8 +27,10 @@ def create_tranströmer_to_tagged_frame_pipeline() -> CorpusPipeline:
     pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
 
     p: CorpusPipeline = sparv.to_tagged_frame_pipeline(
-        corpus_config,
+        corpus_config=corpus_config,
         corpus_filename=source_filename,
+        enable_checkpoint=True,
+        force_checkpoint=False,
     )  # .checkpoint(checkpoint_filename)
 
     return p
@@ -46,24 +47,35 @@ def create_simple_bundle() -> Bundle:
     folder: str = jj(OUTPUT_FOLDER, tag)
     simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     context_opts: ContextOpts = ContextOpts(concept=set(), ignore_concept=False, context_width=2)
-    bundle: Bundle = create_co_occurrence_bundle(
-        corpus=simple_corpus, context_opts=context_opts, folder=folder, tag=tag
+    bundle: Bundle = create_simple_bundle_by_pipeline(
+        data=simple_corpus,
+        context_opts=context_opts,
+        folder=folder,
+        tag=tag,
     )
     return bundle
 
 
-def create_simple_bundle_by_pipeline(data: List[Tuple[str, List[str]]], context_opts: ContextOpts):
-    tokenized_corpus: TokenizedCorpus = very_simple_corpus(data)
-    config: CorpusConfig = CorpusConfig.tokenized_corpus()
+def create_simple_bundle_by_pipeline(
+    data: Union[TokenizedCorpus, List[Tuple[str, List[str]]]],
+    context_opts: ContextOpts,
+    folder: str = OUTPUT_FOLDER,
+    tag: str = "TERRA",
+):
+    if not isinstance(data, TokenizedCorpus):
+        data: TokenizedCorpus = very_simple_corpus(data)
+    config: CorpusConfig = CorpusConfig.tokenized_corpus_config()
     bundle: Bundle = (
         CorpusPipeline(config=config)
-        .load_corpus(tokenized_corpus)
+        .load_corpus(data)
         .vocabulary(lemmatize=False)
         .to_document_co_occurrence(context_opts=context_opts, ingest_tokens=False)
         .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1)
         .single()
         .content
     )
+    bundle.folder = folder
+    bundle.tag = tag
     return bundle
 
 
@@ -80,33 +92,6 @@ def create_simple_helper() -> CoOccurrenceHelper:
     return create_bundle_helper(
         create_bundle_helper(create_simple_bundle()),
     )
-
-
-def create_co_occurrence_bundle(
-    *, corpus: ITokenizedCorpus, context_opts: ContextOpts, folder: str, tag: str
-) -> Bundle:
-
-    token2id: Token2Id = Token2Id(corpus.token2id)
-
-    bundle: Bundle = compute_non_partitioned_corpus_co_occurrence(
-        stream=corpus,
-        document_index=corpus.document_index,
-        token2id=token2id,
-        context_opts=context_opts,
-        global_threshold_count=1,
-    )
-
-    corpus: VectorizedCorpus = VectorizedCorpus.from_co_occurrences(
-        co_occurrences=bundle.co_occurrences,
-        document_index=bundle.document_index,
-        token2id=token2id,
-    )
-
-    bundle.corpus = corpus
-    bundle.tag = tag
-    bundle.folder = folder
-
-    return bundle
 
 
 def fake_config() -> CorpusConfig:

@@ -9,6 +9,7 @@ from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.pipeline import CheckpointOpts
 from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
+from penelope.pipeline.sparv.convert import to_lemma_form
 
 # pylint: disable=redefined-outer-name
 
@@ -35,7 +36,7 @@ ingen	PN	|ingen|
 .	MAD	|
 Några	DT	|någon|
 ljuslågor	NN	|ljuslåga|
-fladdrade	VB	|fladdra|
+fladdrade	VB	|fladdra omkring:10|
 .	MAD	|
 """
 
@@ -90,7 +91,7 @@ def test_tagged_frame_to_tokens_pos_and_lemma(tagged_frame: pd.DataFrame):
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
-    assert tokens == tagged_frame.baseform.tolist()
+    assert tokens == tagged_frame.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1).tolist()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='VB', pos_excludes=None)
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
@@ -98,7 +99,7 @@ def test_tagged_frame_to_tokens_pos_and_lemma(tagged_frame: pd.DataFrame):
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='VB', pos_excludes=None)
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
-    assert tokens == ['tränga', 'gapa', 'fladdra']
+    assert tokens == ['tränga', 'gapa', 'fladdra_omkring']
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
@@ -151,7 +152,7 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
         '.': 3,
         'bakom': 1,
         'den': 1,
-        'fladdra': 1,
+        'fladdra_omkring': 1,
         'gapa': 1,
         'halvmörker': 1,
         'i': 2,
@@ -184,6 +185,8 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
 
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(tagged_frame.baseform)
 
+    extract_opts.global_tf_threshold = 2
+    extract_opts.global_tf_threshold_mask = False
     tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
     assert tokens == ['i', 'i', '.', 'valv', 'valv', '.', '.']
 

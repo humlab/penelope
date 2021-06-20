@@ -75,7 +75,7 @@ compute_opts = ComputeOpts(
         ignore_concept=False,
         partition_keys=['document_name'],
     ),
-    force=False,
+    force_checkpoint=False,
 )
 
 corpus_config.pipeline_payload.files(
