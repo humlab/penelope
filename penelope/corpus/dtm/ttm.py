@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ from .interface import IVectorizedCorpusProtocol
 
 if TYPE_CHECKING:
     from .vectorized_corpus import VectorizedCorpus
-
+    from penelope.co_occurrence import TokenWindowCountStatistics
 
 def empty_data() -> pd.DataFrame:
 
@@ -87,6 +87,16 @@ class CoOccurrenceVocabularyHelper:
 
 
 class CoOccurrenceMixIn:
+
+    @property
+    def token_window_counts(self) -> Optional[TokenWindowCountStatistics]:
+        """ Token window count statistics collected during co-occurrence computation"""
+        return self._payload.get("token_window_counts", None)
+
+    @token_window_counts.setter
+    def token_window_counts(self, value: TokenWindowCountStatistics) -> Optional[TokenWindowCountStatistics]:
+        self._payload["token_window_counts"] = value
+
     def to_co_occurrence_vocab_mapping(
         self: IVectorizedCorpusProtocol, source_token2id: Token2Id = None
     ) -> Mapping[Tuple[int, int], int]:
