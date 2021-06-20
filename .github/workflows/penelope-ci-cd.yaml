@@ -45,7 +45,7 @@ jobs:
       - run: poetry debug
       - run: poetry run flake8 ./penelope
       - run: make nltk_data spacy_data
-      - run: make pytest
+      - run: make test
 
       # - run: safety check --bare --file ./requirements.txt
       # - run: poetry run mypy
