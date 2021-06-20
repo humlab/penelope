@@ -27,6 +27,7 @@ co_occurrence
 '''
 
 
+@pytest.mark.skip("debug test")
 @pytest.mark.long_running
 def test_CLI_process_co_ocurrence():
 
