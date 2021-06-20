@@ -17,6 +17,12 @@ class KeynessMetric(IntEnum):
     LLR = 6
     LLR_Dunning = 7
 
+@unique
+class KeynessMetricSource(IntEnum):
+    Full = 0
+    Concept = 1
+    Weighed = 2
+
 
 """Computes statistical significances of co-occurrences
 
