@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
 
 import scipy
 import scipy.sparse as sp
@@ -14,7 +14,7 @@ from penelope.co_occurrence import (
 )
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
-from penelope.corpus.dtm import to_word_pair_token
+from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.pipeline.tasks_mixin import VocabularyIngestMixIn
 from penelope.type_alias import DocumentIndex, Token
 
@@ -29,7 +29,12 @@ class CoOccurrencePayload:
 
 def to_token_pairs(term_term_matrix: sp.spmatrix, single_vocabulary: Token2Id) -> Iterable[str]:
     fg = single_vocabulary.id2token.get
-    return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
+    sep: str = WORD_PAIR_DELIMITER
+    return (
+        f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
+        for (a, b) in zip(term_term_matrix.row, term_term_matrix.col)
+    )
+    # return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
 
 
 class CoOccurrenceCorpusBuilder:
@@ -72,6 +77,8 @@ class CoOccurrenceCorpusBuilder:
 
     def add(self, payload: CoOccurrencePayload) -> None:
 
+        sep: str = WORD_PAIR_DELIMITER
+
         item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
 
         fg: Callable[[int], str] = self.single_vocabulary.id2token.get
@@ -79,7 +86,13 @@ class CoOccurrenceCorpusBuilder:
         TTM: scipy.sparse.spmatrix = item.term_term_matrix
 
         """Translate token-pair ids into id in new COO-vocabulary"""
-        token_ids = [self.pair_vocabulary[to_word_pair_token(a, b, fg)] for (a, b) in zip(TTM.row, TTM.col)]
+        token_ids = [
+            self.pair_vocabulary[
+                f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
+                # to_word_pair_token(a, b, fg)
+            ]
+            for (a, b) in zip(TTM.row, TTM.col)
+        ]
 
         # self.matrix[item.document_id, [token_ids]] = TTM.data
         self.row.extend([item.document_id] * len(token_ids))
@@ -95,7 +108,8 @@ class CoOccurrenceCorpusBuilder:
 
     @property
     def corpus(self) -> VectorizedCorpus:
-        self.matrix = sp.coo_matrix((self.data, (self.row, self.col)))
+        shape: Tuple[int, int] = (len(self.document_index), len(self.pair_vocabulary))
+        self.matrix = sp.coo_matrix((self.data, (self.row, self.col)), shape=shape)
         corpus: VectorizedCorpus = VectorizedCorpus(
             bag_term_matrix=self.matrix.tocsr(),
             token2id=dict(self.pair_vocabulary.data),
@@ -234,7 +248,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         coo_payloads: Iterable[CoOccurrencePayload] = (
             payload.content
             for payload in self.prior.outstream(desc="Ingest", total=len(self.document_index))
-            if not payload.is_empty
+            if not payload.content is None
         )
         for coo_payload in coo_payloads:
             normal_builder.ingest_tokens(coo_payload).add(payload=coo_payload)
