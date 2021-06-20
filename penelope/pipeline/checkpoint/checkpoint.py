@@ -10,7 +10,6 @@ from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, 
 from penelope.utility import filenames_satisfied_by, getLogger, zip_utils
 
 from ..interfaces import DocumentPayload, PipelineError
-from . import feather
 from .interface import (
     CHECKPOINT_OPTS_FILENAME,
     DICTIONARY_FILENAME,
