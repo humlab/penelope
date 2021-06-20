@@ -695,6 +695,8 @@ class TextToDTM(ITask):
         return None
 
 
+MAGIC_TOKENS = {"*", GLOBAL_TF_THRESHOLD_MASK_TOKEN}
+
 # FIXME #115 Enable optional one-pass creation of vocabulary and TF frequencies
 @dataclass
 class Vocabulary(DefaultResolveMixIn, ITask):
@@ -707,13 +709,14 @@ class Vocabulary(DefaultResolveMixIn, ITask):
     progress: bool = False
     close: bool = True
     tf_threshold: int = None
-    tf_keeps: Container[Union[int, str]] = 1
+    tf_keeps: Container[Union[int, str]] = field(default_factory=set)
 
     target: str = field(init=False, default="")
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TAGGED_FRAME]
         self.out_content_type = ContentType.PASSTHROUGH
+        self.tf_keeps = set(self.tf_keeps or [])
 
     def setup(self) -> ITask:
         self.target = self.get_column_name(self.token_type)
@@ -729,13 +732,15 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         ingest = self.token2id.ingest
 
-        ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN])
+        ingest(MAGIC_TOKENS)
+        self.tf_keeps |= MAGIC_TOKENS
 
         for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab:"):
             ingest(self.tokens_stream(payload))
 
         if self.tf_threshold and self.tf_threshold > 1:
             self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
+
         if self.close:
             self.token2id.close()
 
