@@ -33,6 +33,9 @@ test: output-dir
 	@poetry run pytest -m "not long_running" --durations=0 tests
 	@rm -rf ./tests/output/*
 
+pytest: output-dir
+	@poetry run pytest -m "not long_running" --durations=0 tests
+
 test-coverage: output-dir
 	@echo SKIPPING LONG RUNNING TESTS!
 	@poetry run pytest -m "not long_running" --cov=$(PACKAGE_FOLDER) --cov-report=html tests
@@ -91,10 +94,6 @@ tag:
 # test-coverage:
 # 	-poetry run coverage --rcfile=.coveragerc run -m pytest
 # 	-poetry run coveralls
-
-pytest:
-	@mkdir -p ./tests/output
-	@poetry run pytest --quiet tests
 
 pylint:
 	@time poetry run pylint $(SOURCE_FOLDERS)
