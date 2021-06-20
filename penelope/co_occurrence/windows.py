@@ -7,7 +7,7 @@ from penelope.corpus import DocumentIndex, ITokenizedCorpus, metadata_to_documen
 from penelope.type_alias import Token, WindowsStream
 from penelope.utility import deprecated
 
-from .interface import ContextOpts, Token
+from .interface import ContextOpts
 
 
 class WindowsCorpus(ITokenizedCorpus):

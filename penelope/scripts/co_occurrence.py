@@ -267,8 +267,8 @@ def process_co_ocurrence(
         logger.info('Done!')
 
     except Exception as ex:  # pylint: disable=try-except-raise, unused-variable
-        # logger.exception(ex)
-        # click.echo(ex)
+        logger.exception(ex)
+        click.echo(ex)
         # sys.exit(1)
         raise
 
