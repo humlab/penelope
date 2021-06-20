@@ -85,6 +85,7 @@ class CheckpointData:
     token2id: Token2Id = None
     create_stream: Callable[[], Iterable[DocumentPayload]] = None
     checkpoint_opts: CheckpointOpts = None
+    filenames: List[str] = None
 
 
 class IContentSerializer(abc.ABC):
