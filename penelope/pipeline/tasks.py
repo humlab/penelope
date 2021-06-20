@@ -241,7 +241,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
 
     filename: str = None
     checkpoint_opts: Optional[cp.CheckpointOpts] = None
-    extra_reader_opts: Optional[TextReaderOpts] = None  # Use if e.g. document index should be created
+    extra_reader_opts: Optional[TextReaderOpts] = None
     checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
 
     def __post_init__(self):
