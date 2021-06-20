@@ -1,7 +1,6 @@
 from unittest.mock import Mock, patch
 
 import penelope.notebook.utility as notebook_utility
-import pytest
 from penelope.notebook import dtm
 from penelope.pipeline import CorpusConfig
 
@@ -14,7 +13,6 @@ def dummy_config():
     return CorpusConfig.load(path='./tests/test_data/SSI.yml')
 
 
-@patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))
 def test_GUI_setup_and_layout():  # pylint: disable=unused-argument
     def done_callback(*_, **__):
         pass
