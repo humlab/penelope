@@ -3,7 +3,7 @@ import zipfile
 from collections import Counter, defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from typing import Container, Iterator, List, Mapping, Optional, Union
+from typing import Callable, Container, Iterator, List, Mapping, Optional, Union
 
 import pandas as pd
 from loguru import logger
@@ -27,7 +27,7 @@ class Token2Id(MutableMapping):
             self.data = data or defaultdict()
         self.tf: Counter = tf
         self._id2token: dict = None
-        self.fallback_token = None
+        self._fallback_token = None
         self.data.default_factory = self.data.__len__
         self._is_open = True
 
@@ -36,9 +36,19 @@ class Token2Id(MutableMapping):
 
     def __getitem__(self, key):
         if not self._is_open:
-            if self.fallback_token:
-                return self.data.get(key, self.fallback_token)
+            if self._fallback_token:
+                return self.data.get(key, self._fallback_token)
         return self.data[key]
+
+    def __optimized__getitem__(self) -> Callable[[str], int]:
+        """Optimises __getitem__ by wireing up a replacement closure without conditional constructs"""
+        data = self.data
+        if self._is_open:
+            return lambda w: data[w]
+        fallback_token = self._fallback_token
+        if fallback_token is None:
+            return lambda w: data[w]
+        return lambda key: data.get(key, fallback_token)
 
     def __setitem__(self, key: str, value):
         if self._id2token:
@@ -64,18 +74,28 @@ class Token2Id(MutableMapping):
             self.tf = Counter()
 
         self._id2token = None
-        token_ids = [self.data[t] for t in tokens]
-        self.tf.update(token_ids)
+        data = self.data
+        self.tf.update(data[t] for t in tokens)
         return self
 
     @property
     def is_open(self) -> bool:
         return self._is_open
 
+    @property
+    def fallback_token(self) -> str:
+        return self._fallback_token
+
+    @fallback_token.setter
+    def fallback_token(self, value: str) -> None:
+        self._fallback_token = value
+        self.__getitem__ = self.__optimized__getitem__()
+
     def close(self, fallback: int = None) -> "Token2Id":
         self.data.default_factory = None
-        self.fallback_token = fallback
+        self._fallback_token = fallback
         self._is_open = False
+        self.__getitem__ = self.__optimized__getitem__()
         return self
 
     def open(self) -> "Token2Id":
@@ -89,11 +109,15 @@ class Token2Id(MutableMapping):
         self.data.default_factory = self.data.__len__
         self._id2token = None
         self._is_open = True
+
+        self.__getitem__ = self.__optimized__getitem__()
+
         return self
 
     def default(self, value: int) -> "Token2Id":
         self.data.default_factory = lambda: value
         self._is_open = False
+        self.__getitem__ = self.__optimized__getitem__()
         return self
 
     @property
