@@ -5,16 +5,38 @@ from penelope.scripts.co_occurrence import process_co_ocurrence
 co_occurrence --context-width 2 --ignore-padding --tf-threshold 3 --tf-threshold-mask --pos-includes "|NN|PM|PC|VB|" --pos-paddings "|JJ|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|" --pos-excludes "|MAD|MID|PAD|" --lemmatize --to-lowercase --keep-symbols --keep-numerals --enable-checkpoint --force-checkpoint doit.yml /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/APA/APA_co-occurrence.csv.zip
 '''
 
+'''
+co_occurrence
+    --context-width 2
+    --concept "information"
+    --ignore-padding
+    --tf-threshold 10
+    --tf-threshold-mask
+    --pos-includes "|JJ|NN|PM|PC|VB|"
+    --pos-paddings "|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|"
+    --pos-excludes "|MAD|MID|PAD|"
+    --lemmatize
+    --to-lowercase
+    --keep-symbols
+    --keep-numerals
+    --enable-checkpoint
+    --force-checkpoint
+    doit.yml
+    /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip
+    /home/roger/source/welfare-state-analytics/welfare_state_analytics/data/information/information_co-occurrence.csv.zip
+'''
+
 
 @pytest.mark.long_running
 def test_CLI_process_co_ocurrence():
 
     process_co_ocurrence(
         corpus_config="./doit.yml",
-        input_filename='./tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip',
-        output_filename='./tests/output/APA/APA_co-occurrence.csv.zip',
+        # input_filename='./tests/test_data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip',
+        input_filename='/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip',
+        output_filename='./tests/output/information/information_co-occurrence.csv.zip',
         filename_pattern=None,
-        concept=None,
+        concept=['information'],
         ignore_concept=False,
         ignore_padding=True,
         context_width=2,
@@ -22,8 +44,8 @@ def test_CLI_process_co_ocurrence():
         phrase_file=None,
         partition_key=None,
         create_subfolder=True,
-        pos_includes="|NN|PM|PC|VB|",
-        pos_paddings="PASSTHROUGH",
+        pos_includes="|JJ|NN|PM|PC|VB|",
+        pos_paddings="|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|",
         pos_excludes="|MAD|MID|PAD|",
         append_pos=False,
         to_lowercase=True,
@@ -36,7 +58,7 @@ def test_CLI_process_co_ocurrence():
         only_any_alphanumeric=False,
         only_alphabetic=False,
         tf_threshold=10,
-        tf_threshold_mask=False,
+        tf_threshold_mask=True,
         enable_checkpoint=True,
         force_checkpoint=True,
     )
