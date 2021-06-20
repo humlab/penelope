@@ -1,6 +1,3 @@
-from unittest.mock import Mock, patch
-
-import penelope.notebook.utility as notebook_utility
 from penelope.notebook import dtm
 from penelope.pipeline import CorpusConfig
 
