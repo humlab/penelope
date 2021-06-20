@@ -99,13 +99,13 @@ class DocumentWindowsVectorizer:
         if concept_word:
             cwu = counters[VectorizeType.Concept].update
             for window in windows:
-                token_counts: dict = count_tokens((fg(t) for t in window))
+                token_counts: dict = count_tokens(fg(t) for t in window)
                 if concept_word in window:  # any(x in window for x in concept):
                     cwu(token_counts)
                 ewu(token_counts)
         else:
             for window in windows:
-                ewu(count_tokens((fg(t) for t in window)))
+                ewu(count_tokens(fg(t) for t in window))
 
         data: Mapping[VectorizeType, VectorizedTTM] = {
             key: counter.compile(vectorize_type=key, document_id=document_id, vocab_size=len(self.vocabulary))
