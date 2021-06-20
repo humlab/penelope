@@ -7,6 +7,7 @@ from bokeh.io import output_notebook
 from loguru import logger
 from penelope import pipeline
 from penelope.corpus import DocumentIndex
+from penelope.pipeline import checkpoint as cp
 from penelope.pipeline import interfaces, tasks
 from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
 
@@ -217,11 +218,11 @@ def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFra
 
     task: tasks.CheckpointFeather = pipe.find(tasks.CheckpointFeather)
 
-    if task is not None:
-
-        document_index = tasks.CheckpointFeather.read_document_index(task.folder)
-
-        return document_index
+    if task:
+        try:
+            return cp.feather.read_document_index(task.folder)
+        except interfaces.PipelineError:
+            ...
 
     return None
 
