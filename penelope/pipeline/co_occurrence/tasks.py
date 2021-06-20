@@ -27,14 +27,14 @@ class CoOccurrencePayload:
     vectorized_data: Mapping[VectorizeType, VectorizedTTM]
 
 
-def to_token_pairs(term_term_matrix: sp.spmatrix, single_vocabulary: Token2Id) -> Iterable[str]:
-    fg = single_vocabulary.id2token.get
-    sep: str = WORD_PAIR_DELIMITER
-    return (
-        f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
-        for (a, b) in zip(term_term_matrix.row, term_term_matrix.col)
-    )
-    # return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
+# def to_token_pairs(term_term_matrix: sp.spmatrix, single_vocabulary: Token2Id) -> Iterable[str]:
+#     fg = single_vocabulary.id2token.get
+#     sep: str = WORD_PAIR_DELIMITER
+#     return (
+#         f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
+#         for (a, b) in zip(term_term_matrix.row, term_term_matrix.col)
+#     )
+#     # return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
 
 
 class CoOccurrenceCorpusBuilder:
@@ -56,19 +56,24 @@ class CoOccurrenceCorpusBuilder:
 
         """ Co-occurrence DTM matrix """
         self.matrix: sp.spmatrix = None
-        # scipy.sparse.lil_matrix(
-        #     (len(document_index), len(pair_vocabulary)), dtype=int
-        # )
         self.row = []
         self.col = []
         self.data = []
 
         """ Token window counts per document """
-        # shape: Tuple[int, int] = (len(self.document_index), len(single_vocabulary))
-        # self.window_count_matrix: sp.lil_matrix = sp.lil_matrix(shape, dtype=np.int32)
         self.counts_row = []
         self.counts_col = []
         self.counts_data = []
+
+        self._single_id2token_without_sep: dict = None
+
+    @property
+    def single_id2token_without_sep(self) -> dict:
+        if self._single_id2token_without_sep is None:
+            self._single_id2token_without_sep = {
+                w_id: w.replace(WORD_PAIR_DELIMITER, '') for w_id, w in self.single_vocabulary.id2token.items()
+            }
+        return self._single_id2token_without_sep
 
     def ingest(self, payloads: Iterable[CoOccurrencePayload]) -> "CoOccurrenceCorpusBuilder":
         for payload in payloads:
@@ -77,24 +82,30 @@ class CoOccurrenceCorpusBuilder:
 
     def add(self, payload: CoOccurrencePayload) -> None:
 
-        sep: str = WORD_PAIR_DELIMITER
-
         item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
-
-        fg: Callable[[int], str] = self.single_vocabulary.id2token.get
 
         TTM: scipy.sparse.spmatrix = item.term_term_matrix
 
         """Translate token-pair ids into id in new COO-vocabulary"""
-        token_ids = [
-            self.pair_vocabulary[
-                f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
-                # to_word_pair_token(a, b, fg)
-            ]
-            for (a, b) in zip(TTM.row, TTM.col)
-        ]
 
-        # self.matrix[item.document_id, [token_ids]] = TTM.data
+        # START: OPTIMIZED PERFORMENCE SECTION
+        # token_ids = [
+        #     self.pair_vocabulary[
+        #         sep.join([fg(a, '').replace(sep, ''), fg(b, '').replace(sep, '')])
+        #         # f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
+        #         # to_word_pair_token(a, b, fg)
+        #     ]
+        #     for (a, b) in zip(TTM.row, TTM.col)
+        # ]
+
+        fg: Callable[[int], str] = self.single_id2token_without_sep.get
+        r = TTM.row
+        c = TTM.col
+        pv = self.pair_vocabulary
+        sj = WORD_PAIR_DELIMITER.join
+        token_ids = [pv[sj([fg(r[i], ''), fg(c[i], '')])] for i in range(0, len(r))]
+        # END: OPTIMIZED PERFORMENCE SECTION
+
         self.row.extend([item.document_id] * len(token_ids))
         self.col.extend(token_ids)
         self.data.extend(TTM.data)
@@ -132,7 +143,16 @@ class CoOccurrenceCorpusBuilder:
 
     def ingest_tokens(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":
         item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
-        self.pair_vocabulary.ingest(to_token_pairs(item.term_term_matrix, self.single_vocabulary))
+        # START: OPTIMIZED PERFORMENCE SECTION
+        # self.pair_vocabulary.ingest(to_token_pairs(item.term_term_matrix, self.single_vocabulary))
+
+        r = item.term_term_matrix.row
+        c = item.term_term_matrix.col
+        sj = WORD_PAIR_DELIMITER.join
+        fg: Callable[[int], str] = self.single_id2token_without_sep.get
+        self.pair_vocabulary.ingest(sj([fg(r[i], ''), fg(c[i], '')]) for i in range(0, len(r)))
+
+        # END: OPTIMIZED PERFORMENCE SECTION
         return self
 
 
