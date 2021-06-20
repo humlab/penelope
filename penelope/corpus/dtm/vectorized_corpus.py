@@ -29,20 +29,16 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        term_frequency_mapping: Dict[str, int] = None,
+        term_frequency_mapping: Optional[Dict[str, int]] = None,
+        **kwargs,
     ):
-        """Class that encapsulates a bag-of-word matrix.
+        """Class that encapsulates a bag-of-word matrix
 
-        Parameters
-        ----------
-        bag_term_matrix : scipy.sparse.csr_matrix
-            The bag-of-word matrix
-        token2id : dict(str, int)
-            Token to token id translation i.e. translates token to column index
-        document_index : DocumentIndex
-            Corpus document metadata (bag-of-word row metadata)
-        term_frequency_mapping : dict(str,int), optional
-            Supplied if source TF mapping is needed
+        Args:
+            bag_term_matrix (scipy.sparse.csr_matrix): Bag-of-word matrix
+            token2id (Dict[str, int]): Token to token/column index translation
+            document_index (DocumentIndex): Corpus document/row metadata
+            term_frequency_mapping (Dict[str, int], optional): Supplied if source TF mapping is needed.
         """
 
         # Ensure that we have a sparse matrix (CSR)
@@ -55,13 +51,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         assert scipy.sparse.issparse(self.bag_term_matrix), "only sparse data allowed"
 
-        self._token2id = token2id
-        self._id2token = None
+        self._token2id: Mapping[str, int] = token2id
+        self._id2token: Optional[Mapping[int, str]] = None
 
-        self._document_index = self._ingest_document_index(document_index=document_index)
-        self._term_frequency_mapping = term_frequency_mapping
+        self._document_index: DocumentIndex = self._ingest_document_index(document_index=document_index)
+        self._term_frequency_mapping: Optional[Dict[str, int]] = term_frequency_mapping
 
-        self._payload = dict()
+        self._payload: dict = dict(**kwargs)
 
         CoOccurrenceMixIn.__init__(self)
 
@@ -146,7 +142,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return self._document_index
 
     @property
-    def payload(self) -> Mapping[int, Any]:
+    def payload(self) -> Mapping[Any, Any]:
         return self._payload
 
     def todense(self) -> VectorizedCorpus:
