@@ -1,5 +1,4 @@
 import contextlib
-import glob
 import os
 import shutil
 import zipfile
@@ -12,7 +11,6 @@ import pandas as pd
 from loguru import logger
 from penelope import utility
 from penelope.corpus import (
-    DocumentIndex,
     ITokenizedCorpus,
     Token2Id,
     TokensTransformer,
@@ -30,7 +28,7 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
-from penelope.utility import PropertyValueMaskingOpts, replace_extension, strip_paths
+from penelope.utility import PropertyValueMaskingOpts
 from tqdm.auto import tqdm
 
 from . import checkpoint as cp
@@ -38,6 +36,10 @@ from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
 from .tagged_frame import TaggedFrame
 from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn, VocabularyIngestMixIn
+
+
+class EmptyCheckPointError(PipelineError):
+    ...
 
 
 @dataclass
@@ -83,6 +85,9 @@ class LoadText(DefaultResolveMixIn, ITask):
             DocumentPayload(filename=filename, content_type=ContentType.TEXT, content=text)
             for filename, text in self.text_reader
         )
+
+    def get_filenames(self) -> List[str]:
+        return self.document_index['filename'].tolist()
 
 
 @dataclass
@@ -185,10 +190,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         return self._load_payload_stream() if os.path.isfile(self.filename) else self._store_payload_stream()
 
     def _load_payload_stream(self):
-        checkpoint_data: cp.CheckpointData = cp.load_checkpoint(
-            self.filename,
-            checkpoint_opts=self.checkpoint_opts,
-        )
+        checkpoint_data: cp.CheckpointData = cp.load_archive(self.filename, checkpoint_opts=self.checkpoint_opts)
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
         self.out_content_type = checkpoint_data.content_type
 
@@ -198,7 +200,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
     def _store_payload_stream(self):
         self.out_content_type = self.get_out_content_type()
         checkpoint_opts = self.checkpoint_opts.as_type(self.out_content_type)
-        payload_stream = cp.store_checkpoint(
+        payload_stream = cp.store_archive(
             checkpoint_opts=checkpoint_opts,
             target_filename=self.filename,
             document_index=self.document_index,
@@ -217,7 +219,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
 @dataclass
 class SaveTaggedCSV(Checkpoint):
-    """Stores sequence of tagged data frame documents to archive. """
+    """Stores sequence of tagged data frame to archive and optionally to FEATHER files. """
 
     filename: str = None
     checkpoint_opts: cp.CheckpointOpts = None
@@ -250,7 +252,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         super().setup()
 
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
-        self.checkpoint_data: cp.CheckpointData = self.load_checkpoint()
+        self.checkpoint_data: cp.CheckpointData = self.load_archive()
         self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
 
         self.pipeline.put("reader_opts", self.extra_reader_opts.props)
@@ -261,8 +263,8 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     def create_instream(self) -> Iterable[DocumentPayload]:
         return self.checkpoint_data.create_stream()
 
-    def load_checkpoint(self) -> cp.CheckpointData:
-        checkpoint_data: cp.CheckpointData = cp.load_checkpoint(
+    def load_archive(self) -> cp.CheckpointData:
+        checkpoint_data: cp.CheckpointData = cp.load_archive(
             self.filename,
             checkpoint_opts=self.checkpoint_opts,
             reader_opts=self.extra_reader_opts,
@@ -273,8 +275,8 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         self.register_token_counts(payload)
         return payload
 
-
-FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
+    def get_filenames(self) -> List[str]:
+        return self.checkpoint_data.filenames if bool(self.checkpoint_data) else []
 
 
 @dataclass
@@ -282,46 +284,25 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     """Creates a feather checkpoint. """
 
     folder: str = None
-    force_checkpoint: bool = field(default=False)
+    force: bool = field(default=False)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def enter(self):
-        if self.force_checkpoint:
+        if self.force:
             with contextlib.suppress(Exception):
                 if os.path.isdir(self.folder):
                     shutil.rmtree(self.folder, ignore_errors=True)
-        self.force_checkpoint = False
+        self.force = False
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         return (
             ReadFeather(folder=self.folder, pipeline=self.pipeline)
-            if self.checkpoint_exists()
-            else WriteFeather(folder=self.folder, prior=self.prior, pipeline=self.pipeline)
+            if cp.feather.document_index_exists(folder=self.folder)
+            else WriteFeather(folder=self.folder, prior=self.prior, pipeline=self.pipeline, force=self.force)
         ).outstream()
-
-    @staticmethod
-    def read_document_index(folder: str) -> DocumentIndex:
-        filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
-        if os.path.isfile(filename):
-            document_index: DocumentIndex = pd.read_feather(filename).set_index('document_name', drop=False)
-            if '' in document_index.columns:
-                document_index.drop(columns='', inplace=True)
-            return document_index
-        return None
-
-    @staticmethod
-    def write_document_index(folder: str, document_index: DocumentIndex):
-        filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
-        if document_index is not None:
-            if document_index.index.name in document_index.columns:
-                document_index.rename_axis('', inplace=True)
-            document_index.reset_index().to_feather(filename, compression="lz4")
-
-    def checkpoint_exists(self) -> bool:
-        return os.path.isdir(self.folder) and not ReadFeather.folder_is_empty(folder=self.folder)
 
 
 @dataclass
@@ -329,6 +310,7 @@ class WriteFeather(ITask):
     """Stores sequence of tagged data frame documents to archive. """
 
     folder: str = None
+    force: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -338,17 +320,12 @@ class WriteFeather(ITask):
         os.makedirs(self.folder, exist_ok=True)
 
     def process_payload(self, payload: DocumentPayload) -> Iterable[DocumentPayload]:
-        tagged_frame: TaggedFrame = payload.content
-        filename = os.path.join(self.folder, replace_extension(payload.filename, ".feather"))
-        tagged_frame.to_feather(filename, compression="lz4")
+        if self.force or not cp.feather.payload_exists(folder=self.folder, payload=payload):
+            cp.feather.write_payload(folder=self.folder, payload=payload)
         return payload
 
     def exit(self):
-        CheckpointFeather.write_document_index(self.folder, self.document_index)
-
-
-class EmptyCheckPointError(PipelineError):
-    ...
+        cp.feather.write_document_index(self.folder, self.document_index)
 
 
 @dataclass
@@ -357,47 +334,17 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
     folder: str = None
 
-    document_index_filename: str = field(init=False, default=None)
-
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TAGGED_FRAME
-        self.document_index_filename = os.path.join(self.folder, FEATHER_DOCUMENT_INDEX_NAME)
-
-    def process_stream(self) -> Iterable[DocumentPayload]:
-
-        # FIXME Shouldn't we read files in document index order??
-        paths: List[str] = self.get_matching_paths(folder=self.folder)
-        if len(paths) == 0:
-            raise EmptyCheckPointError(f"No feather files in folder {self.folder} (corrupt checkpoint?")
-
-        for path in paths:
-            tagged_frame = pd.read_feather(path)
-            filename = strip_paths(path)
-            yield DocumentPayload(
-                content_type=ContentType.TAGGED_FRAME,
-                content=tagged_frame,
-                filename=replace_extension(filename, ".csv"),
-            )
 
     def enter(self):
-        document_index = CheckpointFeather.read_document_index(self.folder)
-        if document_index is not None:
-            self.pipeline.payload.effective_document_index = document_index
+        self.pipeline.payload.effective_document_index = cp.feather.read_document_index(self.folder)
 
-    @property
-    def is_empty(self):
-        return len(ReadFeather.get_matching_paths(folder=self.folder)) == 0
-
-    @staticmethod
-    def get_matching_paths(*, folder: str) -> List[str]:
-        pattern: str = os.path.join(folder, "*.feather")
-        paths: List[str] = sorted(glob.glob(pattern))
-        return paths
-
-    @staticmethod
-    def folder_is_empty(folder: str) -> bool:
-        return len(ReadFeather.get_matching_paths(folder=folder)) == 0
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        for filename in self.document_index.filename.tolist():
+            payload: DocumentPayload = cp.feather.read_payload(os.path.join(self.folder, filename))
+            yield payload
 
 
 @dataclass
@@ -435,6 +382,9 @@ class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
         return payload
+
+    def get_filenames(self) -> List[str]:
+        return self.document_index['filename'].tolist()
 
 
 @dataclass
@@ -786,7 +736,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         if self.tf_threshold and self.tf_threshold > 1:
             self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
-        elif self.close:
+        if self.close:
             self.token2id.close()
 
         return self
