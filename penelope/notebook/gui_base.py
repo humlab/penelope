@@ -351,12 +351,12 @@ class BaseGUI:
             _pos_widget.options = pos_schema.groups if self._use_pos_groupings.value else tags
 
         if self._use_pos_groupings.value:
+            self._pos_paddings.value = [v for _, v in self._pos_paddings.options.items()]
             self._pos_includes.value = [pos_schema.groups['Noun'], pos_schema.groups['Verb']]
-            self._pos_paddings.value = []
             self._pos_excludes.value = [pos_schema.groups['Delimiter']]
         else:
+            self._pos_paddings.value = [v for _, v in self._pos_paddings.options.items()]
             self._pos_includes.value = pos_schema.groups['Noun'] + pos_schema.groups['Verb']
-            self._pos_paddings.value = []
             self._pos_excludes.value = pos_schema.groups['Delimiter']
 
         return self
