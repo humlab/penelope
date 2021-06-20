@@ -16,7 +16,7 @@ release: ready guard_clean_working_repository bump.patch tag
 watch:
 	@fswatch -1 -r --latency 1 ./tests/notebook/co_occurrence | xargs -0 -n1 -I{} pytest ./tests/notebook/co_occurrence
 
-ready: tools clean tidy test lint build
+ready: tools clean tidy full-test lint build
 
 build: requirements.txt
 	@poetry build
