@@ -46,6 +46,6 @@ def to_tagged_frame_pipeline(
     p.add(task)
 
     if enable_checkpoint:
-        p = p.checkpoint_feather(checkpoint_folder, force_checkpoint=force_checkpoint)
+        p = p.checkpoint_feather(checkpoint_folder, force=force_checkpoint)
 
     return p
