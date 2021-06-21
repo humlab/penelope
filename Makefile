@@ -205,9 +205,8 @@ stubs:
 .PHONY: profile-co_occurrence
 
 venus:
-	@tar czvf ./tmp/VENUS.$(RUN_TIMESTAMP).tar.gz ./tests/test_data/VENUS
-	@rm -rf  ./tests/test_data/VENUS/*
-	@poetry run python -c 'from tests.pipeline.fixtures import create_venus_bundle; create_venus_bundle()'
+	# @tar czvf ./tmp/VENUS.$(RUN_TIMESTAMP).tar.gz ./tests/test_data/VENUS
+	@poetry run python -c 'from tests.pipeline.fixtures import create_test_data_bundles; create_test_data_bundles()'
 
 help:
 	@echo "Higher level recepies: "
