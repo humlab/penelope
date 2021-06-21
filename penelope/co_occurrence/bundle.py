@@ -101,7 +101,7 @@ class Bundle:
 
         bundle: Bundle = persistence.load(
             filename=filename, folder=folder, tag=tag, compute_frame=compute_frame
-        ).remember_vocab_mapping(compute_frame)
+        ).remember_vocab_mapping()
 
         if bundle.co_occurrences is None and compute_frame:
             raise NotImplementedError("THIS IS PROBABLY A BUG")
