@@ -53,7 +53,6 @@ def test_TTM_to_co_occurrence_DTM_using_LIL_matrix():
         document_index=document_index,
         pair_vocabulary=pair_vocabulary,
         single_vocabulary=single_vocabulary,
-        vectorizer=None,
     )
 
     for payload in stream:
