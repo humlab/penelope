@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Union
+
 import numpy as np
 import scipy
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, significance_ratio

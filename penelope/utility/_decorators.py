@@ -47,8 +47,10 @@ def _raise_deprecated_class(cls):
 
     return Deprecated
 
+
 class UseOfClassOrMethodIsDisabled(Exception):
     ...
+
 
 def mark_as_disabled(obj):
     if isinstance(obj, (type,)):
@@ -67,6 +69,7 @@ def _raise_invalidated_class(cls):
 def _raise_invalidated_function(f):
     def _invalid(*args, **kwargs):
         raise UseOfClassOrMethodIsDisabled(f"Method '{f.__name__}' is no longer valid")
+
     return _invalid
 
 

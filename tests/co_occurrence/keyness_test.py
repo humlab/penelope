@@ -105,11 +105,10 @@ def test_zero_out_by_tf_threshold():
     assert (corpus.term_frequencies == expected_sums).all()
 
     tf_threshold: int = 10
-    indicies = [i for i, v in enumerate(expected_sums) if v < tf_threshold ]
+    indicies = [i for i, v in enumerate(expected_sums) if v < tf_threshold]
     for i in indicies:
         expected_sums[i] = 0
 
     corpus.zero_out_by_tf_threshold(tf_threshold)
 
     assert (corpus.term_frequencies == expected_sums).all()
-
