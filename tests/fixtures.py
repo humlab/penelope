@@ -525,3 +525,14 @@ TRANSTRÖMMER_NNVB_LEMMA_WINDOWS = [
     ["tran_2019_01_test.txt", 6, ["Mr", "Mrs", "herr", "signora", "öppna", "valv", "valv", "*", "*", "*", "*"]],
     ["tran_2019_01_test.txt", 7, ["Mrs", "herr", "signora", "öppna", "valv", "valv", "*", "*", "*", "*", "*"]],
 ]
+
+MARY_TEST_CORPUS = [
+    ('mars_1999_01.txt', 'Mars was once home to seas and oceans, and perhaps even life.'),
+    ('mars_1999_02.txt', 'But its atmosphere has now been blown away.'),
+    ('mars_1999_03.txt', 'Most activity beneath its surface has long ceased.'),
+    ('mars_1999_04.txt', 'It’s a dead planet.'),
+    ('mars_1999_05.txt', 'A volcano erupted on Mars 2.5 million years ago.'),
+    ('mars_1999_06.txt', 'An eruption occurred as recently as 53,000 years ago in a region called Cerberus Fossae.'),
+    ('mars_1999_07.txt', 'It is the youngest known volcanic eruption on Mars.'),
+    ('mars_1999_08.txt', 'Some volcanos still erupts to the surface at rare intervals.'),
+]

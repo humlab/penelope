@@ -9,22 +9,13 @@ from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
 from penelope.utility import PropertyValueMaskingOpts
-from penelope.vendor.spacy import SPACY_DATA, prepend_path, prepend_spacy_path
+from penelope.vendor.spacy import SPACY_DATA, prepend_path
 from spacy.language import Language
 from spacy.tokens import Doc
+from ..fixtures import MARY_TEST_CORPUS
 
 # pylint: disable=redefined-outer-name
 
-TEST_CORPUS = [
-    ('mars_1999_01.txt', 'Mars was once home to seas and oceans, and perhaps even life.'),
-    ('mars_1999_02.txt', 'But its atmosphere has now been blown away.'),
-    ('mars_1999_03.txt', 'Most activity beneath its surface has long ceased.'),
-    ('mars_1999_04.txt', 'It’s a dead planet.'),
-    ('mars_1999_05.txt', 'A volcano erupted on Mars 2.5 million years ago.'),
-    ('mars_1999_06.txt', 'An eruption occurred as recently as 53,000 years ago in a region called Cerberus Fossae.'),
-    ('mars_1999_07.txt', 'It is the youngest known volcanic eruption on Mars.'),
-    ('mars_1999_08.txt', 'Some volcanos still erupts to the surface at rare intervals.'),
-]
 ATTRIBUTES = [
     "i",
     "text",
@@ -50,26 +41,12 @@ def spacy_model_path(model_name: str) -> str:
     return path
 
 
-@pytest.fixture(scope="module")
-def en_nlp() -> Language:
-    return spacy.load(os.path.join(os.environ.get("SPACY_DATA", ""), "en_core_web_sm"))
-
-
-@pytest.fixture(scope="module")
-def df_doc(en_nlp) -> Language:
-    attributes = ["text", "lemma_", "pos_", "is_space", "is_punct", "is_digit", "is_alpha", "is_stop"]
-    doc = convert.text_to_tagged_frame(
-        TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp
-    )
-    return doc
-
-
 def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
 
     attributes = ["lemma_", "pos_"]
 
     df = convert.text_to_tagged_frame(
-        TEST_CORPUS[0][1],
+        MARY_TEST_CORPUS[0][1],
         attributes=attributes,
         attribute_value_filters=None,
         nlp=en_nlp,
@@ -115,7 +92,7 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
     attributes = ["lemma_", "pos_"]
 
     df = convert.text_to_tagged_frame(
-        TEST_CORPUS[0][1],
+        MARY_TEST_CORPUS[0][1],
         attributes=attributes,
         attribute_value_filters={'is_punct': False},
         nlp=en_nlp,
@@ -152,17 +129,16 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
     ]
 
 
-@pytest.mark.skipif(SPACY_DATA == "", reason="SPACY_DATA not set")
-def test_annotate_documents_with_lemma_and_pos_strings_succeeds():
+@pytest.mark.long_runnung
+def test_annotate_documents_with_lemma_and_pos_strings_succeeds(en_nlp):
 
-    nlp = spacy.load(prepend_spacy_path("en_core_web_sm"))
     attributes = ["i", "text", "lemma_", "pos_"]
 
     dfs = convert.texts_to_tagged_frames(
-        [text for _, text in TEST_CORPUS],
+        [text for _, text in MARY_TEST_CORPUS],
         attributes=attributes,
         attribute_value_filters=None,
-        language=nlp,
+        language=en_nlp,
     )
     df = next(dfs)
 
@@ -318,7 +294,7 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts)
+    reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts)
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
     attributes = ['text', 'lemma_', 'pos_']
     pipeline = (
@@ -339,7 +315,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
+    reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
     attributes = ['text', 'lemma_', 'pos_']
@@ -398,7 +374,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
+    reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
@@ -433,7 +409,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
-    reader = TextReader.create(TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
+    reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     tagged_columns = {'text_column': 'text', 'lemma_column': 'lemma_', 'pos_column': 'pos_'}
@@ -466,6 +442,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
 
 
 @pytest.mark.skipif(SPACY_DATA == "", reason="SPACY_DATA not set")
+@pytest.mark.long_running
 def test_spacy_data_location():
 
     spacy_data: str = "/data/lib/spacy_data/2.3.1"

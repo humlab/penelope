@@ -2,25 +2,17 @@ from typing import List
 
 import pandas as pd
 import pytest
-import spacy
 from penelope.pipeline.spacy.convert import (
     filter_tokens_by_attribute_values,
     spacy_doc_to_tagged_frame,
     text_to_tagged_frame,
     texts_to_tagged_frames,
 )
-from penelope.vendor.spacy import prepend_spacy_path
 from spacy.tokens import Doc, Token
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
 
 # pylint: disable=redefined-outer-name
-
-
-@pytest.fixture
-def nlp() -> Doc:
-    return spacy.load(prepend_spacy_path("en_core_web_sm"))
-
 
 @pytest.fixture
 def looking_back(nlp) -> Doc:
@@ -64,25 +56,23 @@ def test_spacy_doc_to_tagged_frame(looking_back: Doc):
     assert_test_xyz_to_tagged_frame(tagged_frame)
 
 
-@pytest.mark.long_running
-def test_text_to_tagged_frames(nlp):
+def test_text_to_tagged_frames(en_nlp):
     tagged_frame = text_to_tagged_frame(
         document=SAMPLE_TEXT,
         attributes=['text', 'pos_', 'lemma_'],
         attribute_value_filters={'is_stop': None, 'is_punct': False},
-        nlp=nlp,
+        nlp=en_nlp,
     )
     assert_test_xyz_to_tagged_frame(tagged_frame)
 
 
-@pytest.mark.long_running
-def test_texts_to_tagged_frames(nlp):
+def test_texts_to_tagged_frames(en_nlp):
     stream = [SAMPLE_TEXT, SAMPLE_TEXT]
     tagged_frames = texts_to_tagged_frames(
         stream=stream,
         attributes=['text', 'pos_', 'lemma_'],
         attribute_value_filters={'is_stop': None, 'is_punct': False},
-        language=nlp,
+        language=en_nlp,
     )
     for tagged_frame in tagged_frames:
         assert_test_xyz_to_tagged_frame(tagged_frame)
