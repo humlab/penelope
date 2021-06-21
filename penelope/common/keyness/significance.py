@@ -17,6 +17,7 @@ class KeynessMetric(IntEnum):
     LLR = 6
     LLR_Dunning = 7
 
+
 @unique
 class KeynessMetricSource(IntEnum):
     Full = 0
@@ -251,3 +252,10 @@ def _get_documents_count(document_index: pd.DataFrame, co_occurrences: pd.DataFr
     else:
         n_contexts = len(document_index.loc[documents_ids])
     return n_contexts
+
+
+def significance_ratio(A: sp.spmatrix, B: sp.spmatrix) -> sp.spmatrix:
+    """https://stackoverflow.com/posts/58446948"""
+    inv_B: sp.spmatrix = B.copy()
+    inv_B.data = 1 / inv_B.data
+    return A.multiply(inv_B)
