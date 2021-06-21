@@ -17,18 +17,8 @@ from .interface import ITrendDisplayer
 TABLE = None
 DATA = None
 # pylint: disable=too-many-instance-attributes
-# FIXME #72 Word trends: No data in top tokens displayer
+
 class TopTokensDisplayer(ITrendDisplayer):
-    def keyness_dropdown(self) -> Dropdown:
-        return Dropdown(
-            options={
-                "TF": KeynessMetric.TF,
-                "TF (norm)": KeynessMetric.TF_normalized,
-                "TF-IDF": KeynessMetric.TF_IDF,
-            },
-            value=KeynessMetric.TF,
-            layout=Layout(width='auto'),
-        )
 
     def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
         super().__init__(name=name)
@@ -36,7 +26,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         self.simple_display: bool = False
 
         self.corpus: VectorizedCorpus = corpus
-        self._keyness: Dropdown = self.keyness_dropdown()
+        self._keyness: Dropdown = self.keyness_widget()
         self._placeholder: VBox = VBox()
         self._top_count: Dropdown = Dropdown(
             options=[10 ** i for i in range(0, 7)],
@@ -66,9 +56,20 @@ class TopTokensDisplayer(ITrendDisplayer):
         self._table: PerspectiveWidget = None
         self._output: Output = None
 
+    def keyness_widget(self) -> Dropdown:
+        return Dropdown(
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
+            },
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
+
     def setup(self, *_, **__) -> "TopTokensDisplayer":
 
-        self._table = PerspectiveWidget(self.data) if not self.simple_display else None
+        self._table = PerspectiveWidget(self.data, client=True) if not self.simple_display else None
         self._output = Output() if self.simple_display else None
         self._download.on_click(self.download)
         self._top_count.observe(self.load, 'value')
