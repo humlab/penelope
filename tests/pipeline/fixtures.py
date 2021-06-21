@@ -1,4 +1,6 @@
 import os
+import shutil
+import uuid
 
 from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
@@ -7,9 +9,13 @@ from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import PropertyValueMaskingOpts
+from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
+from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_7DOCS
+from tests.notebook.co_occurrence.load_co_occurrences_gui_test import DATA_FOLDER
+from tests.utils import OUTPUT_FOLDER
 
 
-def FakeComputeOptsSpacyCSV(
+def ComputeOptsSpacyCSV(
     *,
     corpus_tag: str = 'MARS',
     corpus_filename: str = './tests/test_data/legal_instrument_five_docs_test.zip',
@@ -81,7 +87,7 @@ def FakeComputeOptsSpacyCSV(
     )
 
 
-def FakeComputeOptsSparvCSV(
+def ComputeOptsSparvCSV(
     *,
     corpus_tag: str = 'TELLUS',
     corpus_filename: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
@@ -134,25 +140,22 @@ def FakeComputeOptsSparvCSV(
     )
 
 
-def create_venus_bundle():
-    """Note: Use the output from this test case to update the tests/test_data/VENUS test data"""
+def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextOpts, tag: str):
+    """Note: Use the output from this test case to update the tests/test_data/{tag} test data"""
+    target_folder: str = f'./tests/test_data/{tag}'
+    os.makedirs(target_folder, exist_ok=True)
 
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
-
-    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
-
-    args = FakeComputeOptsSpacyCSV(
-        corpus_tag="VENUS",
+    args = ComputeOptsSpacyCSV(
+        corpus_tag=tag,
         corpus_filename=config.pipeline_payload.source,
     )
-    args.target_folder = './tests/test_data/VENUS'
-    args.context_opts = ContextOpts(context_width=4, ignore_concept=True, partition_keys=['document_id'])
+    args.target_folder = target_folder
+    args.context_opts = context_opts
 
-    os.makedirs('./tests/test_data/VENUS', exist_ok=True)
-    os.makedirs('./tests/output', exist_ok=True)
+    os.makedirs(target_folder, exist_ok=True)
+    shutil.rmtree(target_folder, ignore_errors=True)
 
-    checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
+    checkpoint_filename: str = f"./tests/output/{str(uuid.uuid1())}_test_pos_csv.zip"
 
     bundle: Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
@@ -173,4 +176,52 @@ def create_venus_bundle():
     bundle.folder = args.target_folder
     bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
 
-    bundle.store()
+    return bundle
+
+
+def create_test_data_bundles():
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+
+    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+
+    tag: str = 'VENUS-CONCEPT'
+    create_bundle_by_spaCy_pipeline(
+        config=config,
+        context_opts=ContextOpts(
+            context_width=4, concept={"cultural"}, ignore_concept=True, partition_keys=['document_id']
+        ),
+        tag=tag,
+    ).store()
+
+    tag: str = 'VENUS'
+    create_bundle_by_spaCy_pipeline(
+        config=config,
+        context_opts=ContextOpts(context_width=4, concept={}, ignore_concept=True, partition_keys=['document_id']),
+        tag=tag,
+    ).store()
+
+    tag: str = 'ABCDEFG_7DOCS'
+    create_bundle_by_spaCy_pipeline(
+        config=config,
+        context_opts=ContextOpts(context_width=4, concept={}, ignore_concept=True, partition_keys=['document_id']),
+        tag=tag,
+    ).store()
+
+    tag: str = 'ABCDEFG_7DOCS'
+    create_simple_bundle_by_pipeline(
+        data=SIMPLE_CORPUS_ABCDEFG_7DOCS,
+        context_opts=ContextOpts(concept={}, ignore_concept=False, context_width=2),
+        tag=tag,
+        folder=DATA_FOLDER,
+    ).store()
+
+    tag: str = 'ABCDEFG_7DOCS_CONCEPT'
+    create_simple_bundle_by_pipeline(
+        data=SIMPLE_CORPUS_ABCDEFG_7DOCS,
+        context_opts=ContextOpts(concept={'g'}, ignore_concept=False, context_width=2),
+        tag=tag,
+        folder=DATA_FOLDER,
+    ).store()
