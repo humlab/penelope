@@ -130,13 +130,14 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
         yield DocumentPayload(
             content=Bundle(
-                corpus=corpus,
+                corpus=corpus.remember(
+                    window_counts=TokenWindowCountStatistics(
+                        corpus_counts=self.get_window_counts_global(),
+                    )
+                ),
                 co_occurrences=co_occurrences,
                 token2id=token2id,
                 document_index=self.document_index,
-                window_counts=TokenWindowCountStatistics(
-                    corpus_counts=self.get_window_counts_global(),
-                ),
             )
         )
 

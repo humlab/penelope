@@ -1,3 +1,4 @@
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
 
@@ -269,12 +270,12 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         payload: DocumentPayload = DocumentPayload(
             content=Bundle(
-                corpus=normal_builder.corpus,
-                window_counts=self.get_window_counts(normal_builder),
+                corpus=normal_builder.corpus.remember(window_counts=self.get_window_counts(normal_builder)),
                 token2id=self.pipeline.payload.token2id,
                 document_index=self.pipeline.payload.document_index,
-                concept_corpus=concept_builder.corpus if concept_builder else None,
-                concept_window_counts=self.get_window_counts(concept_builder) if concept_builder else None,
+                concept_corpus=concept_builder.corpus.remember(window_counts=self.get_window_counts(concept_builder))
+                if concept_builder
+                else None,
                 compute_options=self.pipeline.payload.stored_opts(),
             )
         )
