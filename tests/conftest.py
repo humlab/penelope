@@ -7,6 +7,8 @@ from spacy.language import Language
 
 from .fixtures import MARY_TEST_CORPUS
 
+# pylint: disable=redefined-outer-name
+
 
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
