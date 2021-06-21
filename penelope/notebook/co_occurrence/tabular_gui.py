@@ -14,7 +14,7 @@ from penelope.common.keyness.significance import KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
-from perspective import PerspectiveWidget
+from perspective import Table, PerspectiveWidget
 
 # pylint: disable=too-many-instance-attributes
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
@@ -70,29 +70,27 @@ CURRENT_BUNDLE = None
 class PerspectiveTableView:
     def __init__(self, data: pd.DataFrame = None):
         data = data if data is not None else empty_data()
-        self.table: PerspectiveWidget = PerspectiveWidget(
-            data,
-            sort=[["token", "asc"]],
-            aggregates={},
-        )
-        self.container = self.table
+        #self.table: Table = Table(data, index=['time_period', 'w1', 'w2'])
+        self.widget: PerspectiveWidget = PerspectiveWidget(data, client=True)
+        self.container = self.widget
         self.precision: int = 6
 
     def update(self, data: pd.DataFrame) -> None:
-        self.table.replace(
-            data=pd.DataFrame(
-                {
-                    'time_period': data.time_period.apply(str),
-                    'w1': data.w1,
-                    'w2': data.w2,
-                    'value': (
-                        data.value.apply(str)
-                        if np.issubdtype(data.value.dtype, np.integer)
-                        else data.value.apply(f"{{:10.{self.precision}f}}".format)
-                    ),
-                }
-            )
-        )
+        self.widget.replace(data=data)
+        # self.table.replace(
+        #     data=pd.DataFrame(
+        #         {
+        #             'time_period': data.time_period.apply(str),
+        #             'w1': data.w1,
+        #             'w2': data.w2,
+        #             'value': (
+        #                 data.value.apply(str)
+        #                 if np.issubdtype(data.value.dtype, np.integer)
+        #                 else data.value.apply(f"{{:10.{self.precision}f}}".format)
+        #             ),
+        #         }
+        #     )
+        # )
 
     # def format_columns(self, data: pd.DataFrame, precision: int = 6):
     #     data = pd.DataFrame(data=data)
@@ -156,7 +154,7 @@ class PandasTableView:
                 IPython_display.display(self.data)  # (HTML(self.data.style.render()))
 
 
-TableViewerClass = PandasTableView
+TableViewerClass = PerspectiveTableView
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
