@@ -7,7 +7,7 @@ import pandas as pd
 import scipy
 from penelope.common.keyness import KeynessMetric, compute_hal_cwr_score, partitioned_significances
 from penelope.type_alias import VocabularyMapping
-from penelope.utility.utils import create_instance
+from penelope.utility import create_instance, mark_as_disabled
 
 from ..token2id import Token2Id
 from .interface import IVectorizedCorpusProtocol
@@ -91,26 +91,88 @@ class CoOccurrenceVocabularyHelper:
         return vocabulary, vocabs_mapping
 
 
+class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
+    ...
+
+    @property
+    def window_counts(self) -> Optional[TokenWindowCountStatistics]:
+        ...
+
+    @window_counts.setter
+    def window_counts(self, value: TokenWindowCountStatistics) -> None:
+        ...
+
+    @property
+    def vocabs_mapping(self) -> Optional[VocabularyMapping]:
+        ...
+
+    @vocabs_mapping.setter
+    def vocabs_mapping(self, value: TokenWindowCountStatistics) -> None:
+        ...
+
+    def get_pair_vocabulary_mapping(self, single_vocabulary: Token2Id) -> VocabularyMapping:
+        ...
+
+    def get_single_vocabulary_mapping(self, single_vocabulary: Token2Id = None) -> Mapping[int, Tuple[int, int]]:
+        ...
+
+    def to_co_occurrences(self, source_token2id: Token2Id, partition_key: str = None) -> pd.DataFrame:
+        ...
+
+    def to_keyness_co_occurrences(
+        self,
+        keyness: KeynessMetric,
+        single_vocabulary: Token2Id,
+        pivot_key: str,
+        normalize: bool = False,
+    ) -> pd.DataFrame:
+        ...
+
+    def to_keyness_co_occurrence_corpus(
+        self,
+        keyness: KeynessMetric,
+        token2id: Token2Id,
+        pivot_key: str,
+        normalize: bool = False,
+    ) -> VectorizedCorpus:
+        ...
+
+    def HAL_cwr_corpus(
+        self,
+        *,
+        document_window_counts: scipy.sparse.spmatrix,
+        vocabs_mapping: Mapping[Tuple[int, int], int],
+    ) -> VectorizedCorpus:
+        ...
+
+    def create_co_occurrence_corpus(
+        self, bag_term_matrix: scipy.sparse.spmatrix, single_vocabulary: Token2Id = None
+    ) -> "VectorizedCorpus":
+        ...
+
+
 class CoOccurrenceMixIn:
     @property
-    def window_counts(self: IVectorizedCorpusProtocol) -> Optional[TokenWindowCountStatistics]:
+    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[TokenWindowCountStatistics]:
         """ Token window count statistics collected during co-occurrence computation"""
         return self.payload.get("window_counts")
 
     @window_counts.setter
-    def window_counts(self: IVectorizedCorpusProtocol, value: TokenWindowCountStatistics) -> None:
+    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol, value: TokenWindowCountStatistics) -> None:
         self.remember(window_counts=value)
 
     @property
-    def vocabs_mapping(self: IVectorizedCorpusProtocol) -> Optional[VocabularyMapping]:
+    def vocabs_mapping(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[VocabularyMapping]:
         """ Translation between single word and word pair vocabularies"""
         return self.payload.get("vocabs_mapping")
 
     @vocabs_mapping.setter
-    def vocabs_mapping(self: IVectorizedCorpusProtocol, value: TokenWindowCountStatistics) -> None:
+    def vocabs_mapping(self: ICoOccurrenceVectorizedCorpusProtocol, value: TokenWindowCountStatistics) -> None:
         self.remember(vocabs_mapping=value)
 
-    def get_pair_vocabulary_mapping(self: IVectorizedCorpusProtocol, single_vocabulary: Token2Id) -> VocabularyMapping:
+    def get_pair_vocabulary_mapping(
+        self: ICoOccurrenceVectorizedCorpusProtocol, single_vocabulary: Token2Id
+    ) -> VocabularyMapping:
         """Returns cached vocabulary mapping"""
         if "vocabs_mapping" not in self.payload:
             if single_vocabulary is None:
@@ -123,7 +185,7 @@ class CoOccurrenceMixIn:
         return self.payload.get("vocabs_mapping")
 
     def get_single_vocabulary_mapping(
-        self: IVectorizedCorpusProtocol, single_vocabulary: Token2Id = None
+        self: ICoOccurrenceVectorizedCorpusProtocol, single_vocabulary: Token2Id = None
     ) -> Mapping[int, Tuple[int, int]]:
         if "reversed_vocabs_mapping" not in self.payload:
             self.remember(
@@ -132,7 +194,7 @@ class CoOccurrenceMixIn:
         return self.payload.get("reversed_vocabs_mapping")
 
     def to_co_occurrences(
-        self: IVectorizedCorpusProtocol, source_token2id: Token2Id, partition_key: str = None
+        self: ICoOccurrenceVectorizedCorpusProtocol, source_token2id: Token2Id, partition_key: str = None
     ) -> pd.DataFrame:
         """Creates a co-occurrence data frame from a vectorized self (DTM)
 
@@ -179,6 +241,7 @@ class CoOccurrenceMixIn:
 
         return df
 
+    @mark_as_disabled
     @staticmethod
     def from_co_occurrences(
         *, co_occurrences: pd.DataFrame, document_index: pd.DataFrame, token2id: Token2Id
@@ -240,7 +303,7 @@ class CoOccurrenceMixIn:
         return corpus
 
     def to_keyness_co_occurrences(
-        self: IVectorizedCorpusProtocol,
+        self: ICoOccurrenceVectorizedCorpusProtocol,
         keyness: KeynessMetric,
         single_vocabulary: Token2Id,
         pivot_key: str,
@@ -278,7 +341,7 @@ class CoOccurrenceMixIn:
         return co_occurrences
 
     def to_keyness_co_occurrence_corpus(
-        self: IVectorizedCorpusProtocol,
+        self: ICoOccurrenceVectorizedCorpusProtocol,
         keyness: KeynessMetric,
         token2id: Token2Id,
         pivot_key: str,
@@ -318,12 +381,12 @@ class CoOccurrenceMixIn:
             shape=self.data.shape,
         )
 
-        corpus = self.create_instance(matrix, single_vocabulary=token2id)
+        corpus = self.create_co_occurrence_corpus(matrix, single_vocabulary=token2id)
 
         return corpus
 
     def HAL_cwr_corpus(
-        self: IVectorizedCorpusProtocol,
+        self: ICoOccurrenceVectorizedCorpusProtocol,
         *,
         document_window_counts: scipy.sparse.spmatrix,
         vocabs_mapping: Mapping[Tuple[int, int], int],
@@ -336,10 +399,10 @@ class CoOccurrenceMixIn:
 
         nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocabs_mapping)
 
-        cwr_corpus: "VectorizedCorpus" = self.create_instance(bag_term_matrix=nw_cwr)
+        cwr_corpus: "VectorizedCorpus" = self.create_co_occurrence_corpus(bag_term_matrix=nw_cwr)
         return cwr_corpus
 
-    def create_instance(
+    def create_co_occurrence_corpus(
         self, bag_term_matrix: scipy.sparse.spmatrix, single_vocabulary: Token2Id = None
     ) -> "VectorizedCorpus":
         corpus_class: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
@@ -355,6 +418,6 @@ class CoOccurrenceMixIn:
             vocabs_mapping = self.get_pair_vocabulary_mapping(single_vocabulary)
 
         if vocabs_mapping is not None:
-            corpus.remember_vocabs_mapping(vocabs_mapping)
+            corpus.remember(vocabs_mapping=vocabs_mapping)
 
         return corpus
