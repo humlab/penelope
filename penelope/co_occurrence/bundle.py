@@ -1,106 +1,59 @@
-from typing import Mapping, Optional, Tuple, Union
+from typing import Mapping, Optional, Tuple
 
 import pandas as pd
 from loguru import logger
-from penelope.common.keyness import KeynessMetric
 from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper
 from penelope.type_alias import CoOccurrenceDataFrame
 
 from ..corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from . import persistence
 from .interface import ContextOpts
+from .keyness import ComputeKeynessOpts, compute_weighed_corpus_keyness
 
 
 class Bundle:
     def __init__(  # pylint: disable=too-many-arguments
         self,
         corpus: VectorizedCorpus = None,
-        window_counts: persistence.TokenWindowCountStatistics = None,
         token2id: Token2Id = None,
         document_index: DocumentIndex = None,
         concept_corpus: VectorizedCorpus = None,
-        concept_window_counts: persistence.TokenWindowCountStatistics = None,
         folder: str = None,
         tag: str = None,
         compute_options: dict = None,
         co_occurrences: pd.DataFrame = None,
         vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = None,
     ):
+        """Full co-occurrence corpus where the tokens are concatenated co-occurring word-pairs"""
         self.corpus: VectorizedCorpus = corpus
-        self.window_counts: persistence.TokenWindowCountStatistics = window_counts
+
+        """Source corpus vocabulary (i.e. not token-pairs)"""
         self.token2id: Token2Id = token2id
         self.document_index: DocumentIndex = document_index
+
         self.folder: str = folder
         self.tag: str = tag
+
         self.compute_options: dict = compute_options
 
+        """Concept context co-occurrence corpus"""
         self.concept_corpus: VectorizedCorpus = concept_corpus
-        self.concept_window_counts: persistence.TokenWindowCountStatistics = concept_window_counts
 
         self._co_occurrences: pd.DataFrame = co_occurrences
         self._vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = vocabs_mapping
 
-        """Co-occurrence corpus where the tokens are concatenated co-occurring word-pairs"""
-        """Source corpus vocabulary (i.e. not token-pairs)"""
+        self.remember_vocab_mapping()
 
-    def to_keyness_corpus(
-        self,
-        period_pivot: str,
-        keyness: KeynessMetric,
-        global_threshold: Union[int, float],
-        pivot_column_name: str,
-        normalize: bool = False,
-        fill_gaps: bool = False,
-    ) -> VectorizedCorpus:
-        """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold.
-        Returned corpus' document index has a new pivot column `target_column_name`
+    def keyness_transform(self, *, opts: ComputeKeynessOpts) -> VectorizedCorpus:
+        """Returns a grouped, keyness adjusted corpus filtered by  threshold."""
 
-        Args:
-            corpus (VectorizedCorpus): input corpus
-            period_pivot (str): temporal pivot key
-            keyness (KeynessMetric): keyness metric to apply on corpus
-            token_filter (str): match tokens
-            global_threshold (Union[int, float]): limit result by global term frequency
-            pivot_column_name (Union[int, float]): name of grouping column
-
-        Returns:
-            VectorizedCorpus: pivoted corpus.
-        """
-        if period_pivot not in ["year", "lustrum", "decade"]:
-            raise ValueError(f"illegal time period {period_pivot}")
-
-        corpus: VectorizedCorpus = self.concept_corpus if self.concept_corpus else self.corpus
-
-        if global_threshold > 1:
-            corpus = corpus.slice_by_term_frequency(global_threshold)
-
-        """Metrics computed on a document level"""
-        if keyness == KeynessMetric.TF_IDF:
-            corpus = corpus.tf_idf()
-        elif keyness == KeynessMetric.TF_normalized:
-            corpus = corpus.normalize_by_raw_counts()
-        elif keyness == KeynessMetric.TF:
-            pass
-
-        corpus = corpus.group_by_time_period_optimized(
-            time_period_specifier=period_pivot,
-            target_column_name=pivot_column_name,
-            fill_gaps=fill_gaps,
+        corpus: VectorizedCorpus = compute_weighed_corpus_keyness(
+            self.corpus,
+            self.concept_corpus,
+            single_vocabulary=self.token2id,
+            vocabs_mapping=self.vocabs_mapping,
+            opts=opts,
         )
-
-        """Metrics computed on partitioned corpus"""
-        if keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
-            corpus = corpus.to_keyness_co_occurrence_corpus(
-                keyness=keyness,
-                token2id=self.token2id,
-                pivot_key=pivot_column_name,
-                normalize=normalize,
-            )
-        elif keyness == KeynessMetric.HAL_cwr:
-            corpus = corpus.HAL_cwr_corpus(
-                document_window_counts=self.window_counts.document_counts,
-                vocabs_mapping=self.vocabs_mapping,
-            )
 
         return corpus
 
@@ -118,7 +71,7 @@ class Bundle:
     @property
     def vocabs_mapping(self) -> Mapping[Tuple[int, int], int]:
         if self._vocabs_mapping is None:
-            self._vocabs_mapping = self.corpus.to_co_occurrence_vocab_mapping(self.token2id)
+            self._vocabs_mapping = self.corpus.get_pair_vocabulary_mapping(self.token2id)
         return self._vocabs_mapping
 
     @vocabs_mapping.setter
@@ -146,21 +99,29 @@ class Bundle:
     def load(filename: str = None, folder: str = None, tag: str = None, compute_frame: bool = True) -> "Bundle":
         """Loads bundle identified by given filename i.e. `folder`/`tag`{FILENAME_POSTFIX}"""
 
-        data = persistence.load(filename=filename, folder=folder, tag=tag, compute_frame=compute_frame)
-
-        bundle = Bundle(**data)
-
-        if bundle.vocabs_mapping is None:
-            bundle.vocabs_mapping = CoOccurrenceVocabularyHelper.extract_vocabs_mapping_from_vocabs(
-                bundle.corpus, bundle.token2id
-            )
-
-        bundle.corpus.remember_vocabs_mapping(bundle.vocabs_mapping)
+        bundle: Bundle = persistence.load(
+            filename=filename, folder=folder, tag=tag, compute_frame=compute_frame
+        ).remember_vocab_mapping(compute_frame)
 
         if bundle.co_occurrences is None and compute_frame:
-            bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
+            raise NotImplementedError("THIS IS PROBABLY A BUG")
+            # bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
 
         return bundle
+
+    def remember_vocab_mapping(self) -> "Bundle":
+        if self.vocabs_mapping is None:
+            self.vocabs_mapping = CoOccurrenceVocabularyHelper.extract_pair_to_single_vocabulary_mapping(
+                self.corpus, self.token2id
+            )
+
+        if self.corpus.vocabs_mapping is None:
+            self.corpus.remember(vocabs_mapping=self.vocabs_mapping)
+
+        if self.concept_corpus and self.concept_corpus.vocabs_mapping is None:
+            self.concept_corpus.remember(vocabs_mapping=self.vocabs_mapping)
+
+        return self
 
     @property
     def decoded_co_occurrences(self) -> pd.DataFrame:
