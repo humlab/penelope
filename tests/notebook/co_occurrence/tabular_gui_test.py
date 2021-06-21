@@ -1,6 +1,6 @@
 import pytest
 from penelope.co_occurrence import Bundle, to_filename
-from penelope.common.keyness import KeynessMetric
+from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 
@@ -9,7 +9,7 @@ from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 
 @pytest.fixture
 def bundle():
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
+    folder, tag = './tests/test_data/VENUS-CONCEPT', 'VENUS-CONCEPT'
     filename = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
     return bundle
@@ -67,6 +67,7 @@ def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
 
     gui.stop_observe()
     gui.pivot = time_period
+    gui.keyness_source = KeynessMetricSource.Full
     gui.keyness = KeynessMetric.TF
     gui.token_filter = "educational/*"
     gui.global_threshold = 50
@@ -85,19 +86,21 @@ def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
 
 @pytest.mark.long_running
 @pytest.mark.parametrize(
-    "folder,tag,keyness",
+    "tag,keyness",
     [
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.PPMI),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.HAL_cwr),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR_Dunning),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.DICE),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_IDF),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_normalized),
+        ('SSI', KeynessMetric.PPMI),
+        ('SSI', KeynessMetric.HAL_cwr),
+        ('SSI', KeynessMetric.LLR),
+        ('SSI', KeynessMetric.LLR_Dunning),
+        ('SSI', KeynessMetric.DICE),
+        ('SSI', KeynessMetric.TF_IDF),
+        ('SSI', KeynessMetric.TF),
+        ('SSI', KeynessMetric.TF_normalized),
     ],
 )
-def test_table_gui_debug_setup(folder: str, tag: str, keyness: KeynessMetric):
+def test_table_gui_debug_setup(tag: str, keyness: KeynessMetric):
+
+    folder: str = f'./tests/test_data/{tag}'
 
     bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
 
@@ -107,6 +110,7 @@ def test_table_gui_debug_setup(folder: str, tag: str, keyness: KeynessMetric):
 
     gui.stop_observe()
     gui.pivot = "year"
+    gui.keyness_source = KeynessMetricSource.Full
     gui.keyness = keyness
     gui.token_filter = ""
     gui.global_threshold = 1
@@ -115,30 +119,3 @@ def test_table_gui_debug_setup(folder: str, tag: str, keyness: KeynessMetric):
     gui.start_observe()
 
     gui._update_corpus()
-
-
-@pytest.mark.parametrize(
-    "folder,tag,keyness",
-    [
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.PPMI),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.HAL_cwr),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.LLR_Dunning),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.DICE),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_IDF),
-        ('./tests/test_data/VENUS', 'VENUS', KeynessMetric.TF_normalized),
-    ],
-)
-def test_get_prepared_corpus(folder: str, tag: str, keyness: KeynessMetric):
-    bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
-
-    corpus: VectorizedCorpus = bundle.to_keyness_corpus(
-        period_pivot="year",
-        keyness=keyness,
-        global_threshold=1,
-        pivot_column_name='time_period',
-        normalize=False,
-        fill_gaps=False,
-    )
-
-    assert corpus is not None
