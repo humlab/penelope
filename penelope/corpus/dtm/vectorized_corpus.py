@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import fnmatch
 import re
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 import numpy as np
 import scipy
@@ -196,13 +196,18 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Filtered corpus.
         """
 
-        meta_documents = self.document_index[self.document_index.apply(px, axis=1)]
+        document_index = self.document_index[self.document_index.apply(px, axis=1)]
 
-        indices = list(meta_documents.index)
+        indices = list(document_index.index)
 
-        v_corpus = VectorizedCorpus(self.bag_term_matrix[indices, :], self.token2id, meta_documents, None)
+        corpus = VectorizedCorpus(
+            bag_term_matrix=self.bag_term_matrix[indices, :],
+            token2id=self.token2id,
+            document_index=document_index,
+            **self.payload,
+        )
 
-        return v_corpus
+        return corpus
 
     def normalize(self, axis: int = 1, norm: str = 'l1', keep_magnitude: bool = False) -> IVectorizedCorpus:
         """Scale BoW matrix's rows or columns individually to unit norm:
@@ -229,7 +234,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             factor = self.bag_term_matrix[0, :].sum() / btm[0, :].sum()
             btm = btm * factor
 
-        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.term_frequency_mapping)
+        corpus = VectorizedCorpus(
+            bag_term_matrix=btm,
+            token2id=self.token2id,
+            document_index=self.document_index,
+            term_frequency_mapping=self.term_frequency_mapping,
+            **self.payload,
+        )
 
         return corpus
 
@@ -242,7 +253,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         token_counts = self.document_index.n_raw_tokens.values
         btm = utility.normalize_sparse_matrix_by_vector(self.bag_term_matrix, token_counts)
-        corpus = VectorizedCorpus(btm, self.token2id, self.document_index, self.term_frequency_mapping)
+        corpus = VectorizedCorpus(
+            bag_term_matrix=btm,
+            token2id=self.token2id,
+            document_index=self.document_index,
+            term_frequency_mapping=self.term_frequency_mapping,
+            **self.payload,
+        )
 
         return corpus
 
@@ -309,7 +326,11 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         tfidf_bag_term_matrix = transformer.fit_transform(self.bag_term_matrix)
 
         n_corpus = VectorizedCorpus(
-            tfidf_bag_term_matrix, self.token2id, self.document_index, self.term_frequency_mapping
+            bag_term_matrix=tfidf_bag_term_matrix,
+            token2id=self.token2id,
+            document_index=self.document_index,
+            term_frequency_mapping=self.term_frequency_mapping,
+            **self.payload,
         )
 
         return n_corpus
@@ -370,18 +391,27 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         ]
         return indices
 
+    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> IVectorizedCorpus:
+        indicies = np.argwhere(self.term_frequencies < tf_threshold).ravel()
+        if len(indicies) > 0:
+            self.data[:, indicies] = 0
+            self.data.eliminate_zeros()
+        return self
+
     @staticmethod
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
         term_frequency_mapping: Dict[str, int] = None,
+        **kwargs,
     ) -> "IVectorizedCorpus":
         return VectorizedCorpus(
             bag_term_matrix=bag_term_matrix,
             token2id=token2id,
             document_index=document_index,
             term_frequency_mapping=term_frequency_mapping,
+            **kwargs,
         )
 
 
