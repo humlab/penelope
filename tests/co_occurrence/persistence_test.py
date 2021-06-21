@@ -13,19 +13,19 @@ jj = os.path.join
 
 def test_filename_to_folder_and_tag():
 
-    filename = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
+    filename = f'./tests/test_data/dummy/dummy{co_occurrence.FILENAME_POSTFIX}'
 
     folder, tag = co_occurrence.to_folder_and_tag(filename)
 
-    assert folder == './tests/test_data/VENUS'
-    assert tag == 'VENUS'
+    assert folder == './tests/test_data/dummy'
+    assert tag == 'dummy'
 
 
 def test_folder_and_tag_to_filename():
 
-    expected_filename: str = f'./tests/test_data/VENUS/VENUS{co_occurrence.FILENAME_POSTFIX}'
+    expected_filename: str = f'./tests/test_data/dummy/dummy{co_occurrence.FILENAME_POSTFIX}'
 
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
+    folder, tag = './tests/test_data/dummy', 'dummy'
 
     filename: str = co_occurrence.to_filename(folder=folder, tag=tag)
 

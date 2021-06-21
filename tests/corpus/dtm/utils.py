@@ -70,7 +70,7 @@ def create_slice_by_n_count_test_corpus() -> VectorizedCorpus:
     return VectorizedCorpus(bag_term_matrix, token2id, df)
 
 
-def create_bundle(tag: str = 'VENUS') -> Bundle:
+def create_bundle(tag: str = 'DUMMY') -> Bundle:
     folder = f'./tests/test_data/{tag}'
     filename = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
