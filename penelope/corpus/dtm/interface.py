@@ -2,7 +2,7 @@
 
 import abc
 from numbers import Number
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -214,6 +214,10 @@ class IVectorizedCorpus(abc.ABC):
     def pick_n_top_words(self, words: List[str], n_top: int, descending: bool) -> List[str]:
         ...
 
+    @abc.abstractmethod
+    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> "IVectorizedCorpus":
+        ...
+
     @staticmethod
     @abc.abstractmethod
     def create(
@@ -234,6 +238,7 @@ class IVectorizedCorpusProtocol(Protocol):
         token2id: Dict[str, int],
         document_index: DocumentIndex,
         term_frequency_mapping: Dict[str, int] = None,
+        **kwargs,
     ) -> IVectorizedCorpus:
         ...
 
