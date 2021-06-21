@@ -22,6 +22,7 @@ def mary_had_a_little_lamb_corpus() -> textacy.Corpus:
     return corpus
 
 
+@pytest.mark.long_running
 def test_vectorizer(mary_had_a_little_lamb_corpus: textacy.Corpus):  # pylint: disable=redefined-outer-name
 
     expected_dtm = np.matrix(

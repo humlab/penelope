@@ -4,10 +4,8 @@ from typing import Optional, Union
 import numpy as np
 import scipy
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, significance_ratio
-from penelope.type_alias import VocabularyMapping
 
 from ..corpus import Token2Id, VectorizedCorpus
-from . import persistence
 
 
 @dataclass
