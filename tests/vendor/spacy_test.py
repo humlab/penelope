@@ -12,6 +12,7 @@ from penelope.utility import PropertyValueMaskingOpts
 from penelope.vendor.spacy import SPACY_DATA, prepend_path
 from spacy.language import Language
 from spacy.tokens import Doc
+
 from ..fixtures import MARY_TEST_CORPUS
 
 # pylint: disable=redefined-outer-name

@@ -4,6 +4,7 @@ import penelope.pipeline.spacy.convert as convert
 import pytest
 import spacy
 from spacy.language import Language
+
 from .fixtures import MARY_TEST_CORPUS
 
 

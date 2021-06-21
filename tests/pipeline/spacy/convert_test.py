@@ -14,9 +14,10 @@ SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at m
 
 # pylint: disable=redefined-outer-name
 
+
 @pytest.fixture
-def looking_back(nlp) -> Doc:
-    return nlp(SAMPLE_TEXT)
+def looking_back(en_nlp) -> Doc:
+    return en_nlp(SAMPLE_TEXT)
 
 
 def test_filter_tokens_by_attribute_values(looking_back: Doc):  # pylint: disable=unused-argument
