@@ -77,6 +77,7 @@ class GroupByMixIn:
             token2id=self.token2id,
             document_index=document_index,
             term_frequency_mapping=self.term_frequency_mapping,
+            **self.payload,
         )
 
         return corpus
@@ -183,6 +184,7 @@ class GroupByMixIn:
             token2id=self.token2id,
             document_index=document_index,
             term_frequency_mapping=self.term_frequency_mapping,
+            **self.payload,
         )
         return grouped_corpus
 
