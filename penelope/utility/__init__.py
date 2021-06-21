@@ -16,7 +16,7 @@ from ._decorators import (
     enter_exit_log,
     suppress_error,
     try_catch,
-    use_is_disabled,
+    mark_as_disabled,
 )
 from .file_utility import (
     default_data_folder,
