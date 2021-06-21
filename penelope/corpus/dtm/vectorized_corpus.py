@@ -145,6 +145,15 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     def payload(self) -> Mapping[Any, Any]:
         return self._payload
 
+    def remember(self, **kwargs) -> VectorizedCorpus:
+        """Stores items in payload"""
+        self.payload.update(kwargs)
+        return self
+
+    def recall(self, key: str) -> Optional[Any]:
+        """Retrieves item from payload"""
+        return self.payload.get(key)
+
     def todense(self) -> VectorizedCorpus:
         """Returns dense BoW matrix"""
         dtm = self.data

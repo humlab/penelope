@@ -256,3 +256,9 @@ class IVectorizedCorpusProtocol(Protocol):
     @property
     def payload(self) -> Mapping[str, Any]:
         ...
+
+    def remember(self, **kwargs) -> None:
+        ...
+
+    def recall(self, key: str) -> Optional[Any]:
+        ...
