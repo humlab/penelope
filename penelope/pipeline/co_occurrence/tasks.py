@@ -46,13 +46,11 @@ class CoOccurrenceCorpusBuilder:
         document_index: DocumentIndex,
         pair_vocabulary: Token2Id,
         single_vocabulary: Token2Id,
-        vectorizer: DocumentWindowsVectorizer,
     ):
         self.vectorize_type: VectorizeType = vectorize_type
         self.document_index: DocumentIndex = document_index
         self.pair_vocabulary: Token2Id = pair_vocabulary
         self.single_vocabulary: Token2Id = single_vocabulary
-        self.vectorizer: DocumentWindowsVectorizer = vectorizer
 
         """ Co-occurrence DTM matrix """
         self.matrix: sp.spmatrix = None
@@ -129,11 +127,7 @@ class CoOccurrenceCorpusBuilder:
 
         return corpus
 
-    @property
-    def window_count_statistics(self) -> TokenWindowCountStatistics:
-        total_term_window_counts = (
-            self.vectorizer.total_term_window_counts.get(self.vectorize_type) if self.vectorizer else None
-        )
+    def compile_window_count_statistics(self, total_term_window_counts: Counter) -> TokenWindowCountStatistics:
         window_count_matrix: sp.spmatrix = sp.coo_matrix((self.counts_data, (self.counts_row, self.counts_col))).tocsr()
         window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics(
             corpus_counts=total_term_window_counts,
@@ -249,18 +243,14 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         """Ingest token-pairs into new COO-vocabulary using existing token vocabulary"""
 
-        vectorizer: DocumentWindowsVectorizer = self.vectorizer()
         single_vocabulary: Token2Id = self.pipeline.payload.token2id
-
         pair_vocabulary: Token2Id = Token2Id()
 
         normal_builder: CoOccurrenceCorpusBuilder = CoOccurrenceCorpusBuilder(
-            VectorizeType.Normal, self.document_index, pair_vocabulary, single_vocabulary, vectorizer
+            VectorizeType.Normal, self.document_index, pair_vocabulary, single_vocabulary
         )
         concept_builder: CoOccurrenceCorpusBuilder = (
-            CoOccurrenceCorpusBuilder(
-                VectorizeType.Concept, self.document_index, pair_vocabulary, single_vocabulary, vectorizer
-            )
+            CoOccurrenceCorpusBuilder(VectorizeType.Concept, self.document_index, pair_vocabulary, single_vocabulary)
             if self.context_opts.concept
             else None
         )
@@ -280,16 +270,25 @@ class ToCorpusCoOccurrenceDTM(ITask):
         payload: DocumentPayload = DocumentPayload(
             content=Bundle(
                 corpus=normal_builder.corpus,
-                window_counts=normal_builder.window_count_statistics,
+                window_counts=self.get_window_counts(normal_builder),
                 token2id=self.pipeline.payload.token2id,
                 document_index=self.pipeline.payload.document_index,
                 concept_corpus=concept_builder.corpus if concept_builder else None,
-                concept_window_counts=concept_builder.window_count_statistics if concept_builder else None,
+                concept_window_counts=self.get_window_counts(concept_builder) if concept_builder else None,
                 compute_options=self.pipeline.payload.stored_opts(),
             )
         )
 
         yield payload
+
+    def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountStatistics:
+        return (
+            builder.compile_window_count_statistics(
+                self.vectorizer().total_term_window_counts.get(builder.vectorize_type)
+            )
+            if builder is not None
+            else None
+        )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
