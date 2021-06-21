@@ -51,7 +51,6 @@ class Bundle:
             self.corpus,
             self.concept_corpus,
             single_vocabulary=self.token2id,
-            vocabs_mapping=self.vocabs_mapping,
             opts=opts,
         )
 

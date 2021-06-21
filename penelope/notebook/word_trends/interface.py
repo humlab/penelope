@@ -140,7 +140,7 @@ class BundleTrendsData(ITrendsData):
         transformed_corpus: VectorizedCorpus = self.bundle.keyness_transform(
             opts=ComputeKeynessOpts(
                 period_pivot=opts.group_by,
-                global_threshold=1,
+                tf_threshold=1,
                 keyness_source=KeynessMetricSource.Full,
                 keyness=opts.keyness,
                 pivot_column_name=self.category_column,

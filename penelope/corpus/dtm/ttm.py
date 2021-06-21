@@ -137,12 +137,7 @@ class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
     ) -> VectorizedCorpus:
         ...
 
-    def HAL_cwr_corpus(
-        self,
-        *,
-        document_window_counts: scipy.sparse.spmatrix,
-        vocabs_mapping: Mapping[Tuple[int, int], int],
-    ) -> VectorizedCorpus:
+    def HAL_cwr_corpus(self) -> VectorizedCorpus:
         ...
 
     def create_co_occurrence_corpus(
@@ -385,19 +380,22 @@ class CoOccurrenceMixIn:
 
         return corpus
 
-    def HAL_cwr_corpus(
-        self: ICoOccurrenceVectorizedCorpusProtocol,
-        *,
-        document_window_counts: scipy.sparse.spmatrix,
-        vocabs_mapping: Mapping[Tuple[int, int], int],
-    ) -> VectorizedCorpus:
+    def HAL_cwr_corpus(self: ICoOccurrenceVectorizedCorpusProtocol) -> VectorizedCorpus:
         """Returns a BoW co-occurrence corpus where the values are computed HAL CWR score."""
 
+        if self.window_counts is None:
+            raise ValueError("HAL_cwr_corpus: payload `window_counts` cannot be empty!")
+
+        if self.vocabs_mapping is None:
+            raise ValueError("HAL_cwr_corpus: payload `vocabs_mapping` cannot be empty!")
+
+        document_window_counts: scipy.sparse.spmatrix = self.window_counts.document_counts
+
         #  FIXME: cannot do todense if large corpus:
-        nw_x = document_window_counts.todense().astype(np.float)
+        nw_x = document_window_counts  # .todense().astype(np.float)
         nw_xy = self.data  # .copy().astype(np.float)
 
-        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, vocabs_mapping)
+        nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, self.vocabs_mapping)
 
         cwr_corpus: "VectorizedCorpus" = self.create_co_occurrence_corpus(bag_term_matrix=nw_cwr)
         return cwr_corpus

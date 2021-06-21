@@ -1,6 +1,7 @@
 import os
 
 import penelope.co_occurrence as co_occurrence
+import pytest
 import scipy
 from penelope.co_occurrence import (
     co_occurrences_to_co_occurrence_corpus,
@@ -26,9 +27,10 @@ def test_to_co_occurrence_matrix():
     assert (term_term_matrix1 != term_term_matrix2).nnz == 0
 
 
-def test_to_vectorized_corpus():
+@pytest.mark.skip(reason="Deprecated co_occurrences_to_co_occurrence_corpus (or not tested)")
+def test_co_occurrences_to_co_occurrence_corpus():
 
-    folder, tag = './tests/test_data/VENUS', "VENUS"
+    folder, tag = './tests/test_data/ABCDEFG_7DOCS_CONCEPT', "ABCDEFG_7DOCS_CONCEPT"
 
     co_occurrences: CoOccurrenceDataFrame = co_occurrence.load_co_occurrences(co_occurrence_filename(folder, tag))
     document_index: DocumentIndex = DocumentIndexHelper.load(document_index_filename(folder, tag)).document_index

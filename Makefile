@@ -100,6 +100,10 @@ pylint:
 	# @poetry run mypy --version
 	# @poetry run mypy .
 
+pylint-source:
+	@time poetry run pylint penelope
+
+
 show-size:
 	@pip list --format freeze | \
 		awk -F = {'print $$1'} | \

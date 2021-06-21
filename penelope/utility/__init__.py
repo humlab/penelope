@@ -14,9 +14,9 @@ from ._decorators import (
     deprecated,
     do_not_use,
     enter_exit_log,
+    mark_as_disabled,
     suppress_error,
     try_catch,
-    mark_as_disabled,
 )
 from .file_utility import (
     default_data_folder,

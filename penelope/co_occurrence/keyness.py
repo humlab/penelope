@@ -22,9 +22,7 @@ class ComputeKeynessOpts:
     tf_threshold: Union[int, float] = 1
 
 
-def compute_corpus_keyness(
-    corpus: VectorizedCorpus, opts: ComputeKeynessOpts, token2id: Token2Id, vocabs_mapping: VocabularyMapping
-) -> VectorizedCorpus:
+def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, token2id: Token2Id) -> VectorizedCorpus:
 
     """Metrics computed on a document level"""
     if opts.keyness == KeynessMetric.TF_IDF:
@@ -49,11 +47,7 @@ def compute_corpus_keyness(
             normalize=opts.normalize,
         )
     elif opts.keyness == KeynessMetric.HAL_cwr:
-        window_counts: persistence.TokenWindowCountStatistics = corpus.window_counts
-        corpus = corpus.HAL_cwr_corpus(
-            document_window_counts=window_counts.document_counts,
-            vocabs_mapping=vocabs_mapping,
-        )
+        corpus = corpus.HAL_cwr_corpus()
 
     return corpus
 
@@ -62,7 +56,6 @@ def compute_weighed_corpus_keyness(
     corpus: VectorizedCorpus,
     concept_corpus: Optional[VectorizedCorpus],
     single_vocabulary: Token2Id,
-    vocabs_mapping: VocabularyMapping,
     opts: ComputeKeynessOpts,
 ) -> VectorizedCorpus:
     """Computes a keyness corpus for `corpus` and optionally `concept_corpus`.
@@ -99,15 +92,13 @@ def compute_weighed_corpus_keyness(
                 concept_corpus.data.eliminate_zeros()
 
     corpus: VectorizedCorpus = (
-        compute_corpus_keyness(corpus=corpus, opts=opts, token2id=single_vocabulary, vocabs_mapping=vocabs_mapping)
+        compute_corpus_keyness(corpus=corpus, opts=opts, token2id=single_vocabulary)
         if opts.keyness_source in (KeynessMetricSource.Full, KeynessMetricSource.Weighed)
         else None
     )
 
     concept_corpus: VectorizedCorpus = (
-        compute_corpus_keyness(
-            corpus=concept_corpus, opts=opts, token2id=single_vocabulary, vocabs_mapping=vocabs_mapping
-        )
+        compute_corpus_keyness(corpus=concept_corpus, opts=opts, token2id=single_vocabulary)
         if opts.keyness_source in (KeynessMetricSource.Concept, KeynessMetricSource.Weighed)
         else None
     )

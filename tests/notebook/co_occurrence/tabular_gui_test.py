@@ -9,7 +9,7 @@ from penelope.notebook.co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 
 @pytest.fixture
 def bundle():
-    folder, tag = './tests/test_data/VENUS-CONCEPT', 'VENUS-CONCEPT'
+    folder, tag = './tests/test_data/SSI', 'SSI'
     filename = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
     return bundle
@@ -55,7 +55,7 @@ def test_table_gui_to_corpus(bundle, time_period):
 
     corpus: VectorizedCorpus = gui.to_corpus()
 
-    assert all(corpus.term_frequencies >= 100)
+    assert ((corpus.term_frequencies >= 100) | (corpus.term_frequencies == 0)).all()
 
     gui.save()
 

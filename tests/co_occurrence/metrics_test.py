@@ -70,7 +70,7 @@ def test_chen_lu_test():
 def test_compute_hal_score_by_co_occurrence_matrix(bundle: Bundle):
     co_occurrences = bundle.co_occurrences
     co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
-        bundle.co_occurrences, bundle.window_counts.document_counts
+        bundle.co_occurrences, bundle.corpus.window_counts.document_counts
     )
     assert 'cwr' in co_occurrences.columns
 
@@ -84,42 +84,21 @@ def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
     bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
     co_occurrences = bundle.co_occurrences
     co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
-        bundle.co_occurrences, bundle.window_counts.document_counts
+        bundle.co_occurrences, bundle.corpus.window_counts.document_counts
     )
     assert 'cwr' in co_occurrences.columns
 
 
-# import timeit
-
-# def test_token_window_counts_corpus_timeit(bundle: Bundle):
-#     co_occurrence_corpus: VectorizedCorpus = bundle.corpus
-#     token_count_corpus: VectorizedCorpus = bundle.document_token_window_counts_corpus()
-#     vocab_mapping = bundle.vocabulay_id_mapping()
-#     nw_x = token_count_corpus.data.todense().astype(np.float)
-#     nw_xy = co_occurrence_corpus.data.copy().todense().astype(np.float)
-#     fx = lambda: compute_hal_score_cellwise(nw_xy, nw_x, vocab_mapping)
-#     duration1 = timeit.timeit(fx, number=5)
-#     fx = lambda: compute_hal_score_colwise(nw_xy, nw_x, vocab_mapping)
-#     duration2 = timeit.timeit(fx, number=5)
-#     nw_xy = co_occurrence_corpus.data.astype(np.float) #.copy().todense().astype(np.float)
-#     fx = lambda: compute_hal_cwr_score(nw_xy, nw_x, vocab_mapping)
-#     duration3 = timeit.timeit(fx, number=5)
-#     with pytest.raises(ValueError):
-#         raise ValueError(f"{duration1}/{duration2}/{duration3}")
-
-
-# @pytest.mark.xfail()
 def test_HAL_cwr_corpus(bundle: Bundle):
-    nw_x = bundle.window_counts.document_counts  # .todense().astype(np.float)
-    nw_xy = bundle.corpus.data  # .copy().astype(np.float)
-    nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, bundle.vocabs_mapping)
+    corpus: VectorizedCorpus = bundle.corpus
+    nw_x = corpus.window_counts.document_counts  # .todense().astype(np.float)
+    nw_xy = corpus.data  # .copy().astype(np.float)
+    nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, corpus.vocabs_mapping)
 
     assert nw_cwr is not None
     assert nw_cwr.sum() > 0
 
-    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus(
-        document_window_counts=bundle.window_counts.document_counts, vocabs_mapping=bundle.vocabs_mapping
-    )
+    hal_cwr_corpus: VectorizedCorpus = corpus.HAL_cwr_corpus()
     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
 
 
@@ -132,9 +111,7 @@ def test_HAL_cwr_corpus_burgess_litmus():
     )
     bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
 
-    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus(
-        document_window_counts=bundle.window_counts.document_counts, vocabs_mapping=bundle.vocabs_mapping
-    )
+    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus()
 
     assert hal_cwr_corpus is not None
 
@@ -177,25 +154,3 @@ def test_compute_significance(bundle: Bundle, keyness: KeynessMetric):  # pylint
     )
 
     assert weighed_co_occurrences is not None
-
-
-# def test_HAL_cwr_corpus_bug(bundle: Bundle):
-
-#     folder, tag = (
-#         '/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/NEW_V2_information_w5_NNPM_PASSTHROUGH_LEMMA_KEEPSTOPS',
-#         'NEW_V2_information_w5_NNPM_PASSTHROUGH_LEMMA_KEEPSTOPS',
-#     )
-#     filename = to_filename(folder=folder, tag=tag)
-#     bundle: Bundle = Bundle.load(filename, compute_frame=False)
-
-#     nw_x = bundle.window_counts.document_counts  # .todense().astype(np.float)
-#     nw_xy = bundle.corpus.data  # .copy().astype(np.float)
-#     nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, bundle.vocabs_mapping)
-
-#     assert nw_cwr is not None
-#     assert nw_cwr.sum() > 0
-
-#     hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus(
-#         document_window_counts=bundle.window_counts.document_counts, vocabs_mapping=bundle.vocabs_mapping
-#     )
-#     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()

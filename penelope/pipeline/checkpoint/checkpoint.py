@@ -3,7 +3,7 @@ import os
 import zipfile
 from dataclasses import asdict
 from io import StringIO
-from os.path import basename
+from os.path import basename, dirname
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index
@@ -32,7 +32,7 @@ def store_archive(
     token2id: Token2Id = None,
 ) -> Iterable[DocumentPayload]:
 
-    target_folder: bool = basename(target_filename)
+    target_folder: bool = dirname(target_filename)
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
 
     os.makedirs(target_folder, exist_ok=True)
