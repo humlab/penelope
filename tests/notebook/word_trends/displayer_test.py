@@ -94,7 +94,7 @@ def test_compile_year_token_vector_data_when_corpus_is_not_grouped_by_year_fails
 
 @pytest.fixture(scope="module")
 def bundle() -> co_occurrence.Bundle:
-    folder, tag = './tests/test_data/VENUS', 'VENUS'
+    folder, tag = './tests/test_data/SSI', 'SSI'
     filename = co_occurrence.to_filename(folder=folder, tag=tag)
     bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_frame=False)
     return bundle
