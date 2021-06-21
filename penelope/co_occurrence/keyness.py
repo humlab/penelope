@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Union
-
+import numpy as np
+import scipy
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, significance_ratio
 from penelope.type_alias import VocabularyMapping
 
@@ -78,12 +79,23 @@ def compute_weighed_corpus_keyness(
     Returns:
         VectorizedCorpus: [description]
     """
+
     if opts.period_pivot not in ["year", "lustrum", "decade"]:
         raise ValueError(f"illegal time period {opts.period_pivot}")
 
     if opts.keyness_source in (KeynessMetricSource.Concept, KeynessMetricSource.Weighed):
         if concept_corpus is None:
             raise ValueError(f"Keyness {opts.keyness_source.name} requested when concept corpus is None!")
+
+    if opts.tf_threshold > 1:
+        # corpus = corpus.slice_by_term_frequency(opts.tf_threshold)
+        indicies = np.argwhere(corpus.term_frequencies < opts.tf_threshold).ravel()
+        if len(indicies) > 0:
+            corpus.data[:, indicies] = 0
+            corpus.data.eliminate_zeros()
+            if concept_corpus is not None:
+                concept_corpus.data[:, indicies] = 0
+                concept_corpus.data.eliminate_zeros()
 
     corpus: VectorizedCorpus = (
         compute_corpus_keyness(corpus=corpus, opts=opts, token2id=single_vocabulary, vocabs_mapping=vocabs_mapping)
@@ -99,13 +111,11 @@ def compute_weighed_corpus_keyness(
         else None
     )
 
-    if corpus and concept_corpus:
-        corpus = weigh_corpora(corpus, concept_corpus)
+    weighed_corpus: VectorizedCorpus = (
+        weigh_corpora(corpus, concept_corpus) if corpus and concept_corpus else corpus or concept_corpus
+    )
 
-    if opts.tf_threshold > 1:
-        corpus = corpus.slice_by_term_frequency(opts.tf_threshold)
-
-    return corpus
+    return weighed_corpus
 
 
 def weigh_corpora(corpus: VectorizedCorpus, concept_corpus: VectorizedCorpus) -> VectorizedCorpus:
@@ -113,6 +123,13 @@ def weigh_corpora(corpus: VectorizedCorpus, concept_corpus: VectorizedCorpus) ->
     if corpus.data.shape != concept_corpus.data.shape:
         raise ValueError("Corpus shapes doesn't match")
 
-    R = significance_ratio(concept_corpus.data, corpus.data)
+    M: scipy.sparse.spmatrix = significance_ratio(concept_corpus.data, corpus.data)
 
-    return R
+    weighed_corpus: VectorizedCorpus = VectorizedCorpus(
+        bag_term_matrix=M,
+        token2id=concept_corpus.token2id,
+        document_index=concept_corpus.document_index,
+        term_frequency_mapping=concept_corpus.term_frequency_mapping,
+        **concept_corpus.payload,
+    )
+    return weighed_corpus
