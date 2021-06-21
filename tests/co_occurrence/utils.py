@@ -1,5 +1,6 @@
 import os
 import pathlib
+import shutil
 import uuid
 from typing import List, Tuple, Union
 
@@ -44,13 +45,11 @@ def create_very_simple_tokens_pipeline(data: List[Tuple[str, List[str]]]) -> Cor
 
 def create_simple_bundle() -> Bundle:
     tag: str = "TERRA"
-    folder: str = jj(OUTPUT_FOLDER, tag)
     simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     context_opts: ContextOpts = ContextOpts(concept=set(), ignore_concept=False, context_width=2)
     bundle: Bundle = create_simple_bundle_by_pipeline(
         data=simple_corpus,
         context_opts=context_opts,
-        folder=folder,
         tag=tag,
     )
     return bundle
@@ -59,9 +58,11 @@ def create_simple_bundle() -> Bundle:
 def create_simple_bundle_by_pipeline(
     data: Union[TokenizedCorpus, List[Tuple[str, List[str]]]],
     context_opts: ContextOpts,
-    folder: str = OUTPUT_FOLDER,
     tag: str = "TERRA",
+    folder: str = None,
 ):
+    folder = os.path.join(folder or OUTPUT_FOLDER, tag)
+    shutil.rmtree(folder, ignore_errors=True)
     if not isinstance(data, TokenizedCorpus):
         data: TokenizedCorpus = very_simple_corpus(data)
     config: CorpusConfig = CorpusConfig.tokenized_corpus_config()
