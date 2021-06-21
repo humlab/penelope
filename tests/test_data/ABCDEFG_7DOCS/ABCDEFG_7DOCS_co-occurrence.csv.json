@@ -1,0 +1,15 @@
+{
+    "source": "object",
+    "document_index_source": "object",
+    "pos_schema_name": "Universal",
+    "context_opts": {
+        "context_width": 2,
+        "concept": [],
+        "ignore_concept": false,
+        "pad": "*",
+        "ignore_padding": false,
+        "partition_keys": [],
+        "min_window_size": 1
+    },
+    "global_threshold_count": 1
+}
