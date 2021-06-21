@@ -50,7 +50,7 @@ def _raise_deprecated_class(cls):
 class UseOfClassOrMethodIsDisabled(Exception):
     ...
 
-def use_is_disabled(obj):
+def mark_as_disabled(obj):
     if isinstance(obj, (type,)):
         return _raise_invalidated_class(cls=obj)
     return _raise_invalidated_function(f=obj)

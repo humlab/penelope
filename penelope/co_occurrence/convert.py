@@ -13,7 +13,7 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import ICorpusReader
 from penelope.type_alias import CoOccurrenceDataFrame
-from penelope.utility import use_is_disabled
+from penelope.utility import mark_as_disabled
 
 def to_co_occurrence_matrix(
     corpus_or_reader: Union[ICorpusReader, TokenizedCorpus], vocabulary: Mapping[str, int] = None
@@ -96,7 +96,7 @@ def term_term_matrix_to_co_occurrences(
     return co_occurrences
 
 
-@use_is_disabled
+@mark_as_disabled
 def co_occurrences_to_co_occurrence_corpus(
     *,
     co_occurrences: CoOccurrenceDataFrame,
