@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.5.9"
+version = "0.5.10"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
