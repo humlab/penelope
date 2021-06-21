@@ -47,6 +47,28 @@ def _raise_deprecated_class(cls):
 
     return Deprecated
 
+class UseOfClassOrMethodIsDisabled(Exception):
+    ...
+
+def use_is_disabled(obj):
+    if isinstance(obj, (type,)):
+        return _raise_invalidated_class(cls=obj)
+    return _raise_invalidated_function(f=obj)
+
+
+def _raise_invalidated_class(cls):
+    class Invalid(cls):
+        def __init__(self, *args, **kwargs):
+            raise UseOfClassOrMethodIsDisabled(f"Class '{cls.__name__}' is deprecated")
+
+    return Invalid
+
+
+def _raise_invalidated_function(f):
+    def _invalid(*args, **kwargs):
+        raise UseOfClassOrMethodIsDisabled(f"Method '{f.__name__}' is no longer valid")
+    return _invalid
+
 
 def try_catch(func, exceptions=None, suppress=False, nice=False):
     """
