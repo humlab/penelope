@@ -137,11 +137,11 @@ class SliceMixIn:
 
     def slice_by_term_frequency(self, threshold: Union[int, float]) -> IVectorizedCorpus:
         """Returns subset of corpus where low frequenct words are fioltered out"""
-        indicies = self.term_frequencies_below_threshold(threshold)
+        indicies = self.term_frequencies_greater_than_or_equal_to_threshold(threshold)
         corpus: IVectorizedCorpus = self.slice_by_indicies(indicies)
         return corpus
 
-    def term_frequencies_below_threshold(self, threshold: Union[int, float]) -> np.ndarray:
+    def term_frequencies_greater_than_or_equal_to_threshold(self, threshold: Union[int, float]) -> np.ndarray:
         """Returns indicies of words having a frequency below a given threshold"""
         indicies = np.argwhere(self.term_frequencies >= threshold).ravel()
         return indicies

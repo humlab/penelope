@@ -145,7 +145,7 @@ class CoOccurrenceHelper:
         if threshold < 2:
             return self
 
-        low_frequency_ids: np.ndarray = self.corpus.term_frequencies_below_threshold(threshold)
+        low_frequency_ids: np.ndarray = self.corpus.term_frequencies_greater_than_or_equal_to_threshold(threshold)
 
         self.data = self.data[~self.data.token_id.isin(low_frequency_ids)]
 
