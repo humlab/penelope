@@ -15,7 +15,7 @@ from penelope.utility import PropertyValueMaskingOpts
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER
 
-from .fixtures import FakeComputeOptsSpacyCSV
+from .fixtures import ComputeOptsSpacyCSV
 
 CORPUS_FOLDER = './tests/test_data'
 
@@ -285,7 +285,7 @@ def test_pipeline_to_dtm_succeeds(config: CorpusConfig):
 @pytest.mark.long_running
 def test_compute_dtm_when_persist_is_false(config: CorpusConfig):
 
-    args = FakeComputeOptsSpacyCSV(corpus_tag='compute_dtm_when_persist_is_false')
+    args = ComputeOptsSpacyCSV(corpus_tag='compute_dtm_when_persist_is_false')
 
     corpus = workflows.document_term_matrix.compute(args=args, corpus_config=config)
 

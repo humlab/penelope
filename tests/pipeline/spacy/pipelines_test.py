@@ -9,7 +9,7 @@ from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
 from penelope.utility import PoS_Tag_Scheme, PoS_Tag_Schemes, PropertyValueMaskingOpts, pos_tags_to_str
 
-from ..fixtures import FakeComputeOptsSpacyCSV
+from ..fixtures import ComputeOptsSpacyCSV
 
 # pylint: disable=redefined-outer-name
 
@@ -81,7 +81,7 @@ def test_spaCy_co_occurrence_workflow():
     config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
 
-    args = FakeComputeOptsSpacyCSV(
+    args = ComputeOptsSpacyCSV(
         corpus_tag="VENUS",
         corpus_filename=config.pipeline_payload.source,
     )
@@ -115,7 +115,7 @@ def test_spaCy_co_occurrence_workflow():
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline3(config):
     corpus_filename = './tests/test_data/legal_instrument_five_docs_test.zip'
-    args = FakeComputeOptsSpacyCSV(
+    args = ComputeOptsSpacyCSV(
         corpus_filename=corpus_filename,
         corpus_tag="SATURNUS",
     )
