@@ -6,14 +6,14 @@ import os
 import pickle
 from collections import Counter
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Mapping, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
 from penelope.type_alias import CoOccurrenceDataFrame
-from penelope.utility import read_json, replace_extension, right_chop, strip_path_and_extension
+from penelope.utility import create_instance, read_json, replace_extension, right_chop, strip_path_and_extension
 
 from ..corpus import (
     DocumentIndex,
@@ -306,12 +306,14 @@ def store(bundle: "Bundle"):
 
     folder, tag = bundle.folder, bundle.tag
 
+    os.makedirs(folder, exist_ok=True)
+
     store_corpus(corpus=bundle.corpus, folder=folder, tag=tag, options=bundle.compute_options)
-    bundle.window_counts.store(folder, tag)
+    bundle.corpus.window_counts.store(folder, tag)
 
     if bundle.concept_corpus:
         store_corpus(corpus=bundle.concept_corpus, folder=folder, tag=tag + "_concept", options=bundle.compute_options)
-        bundle.concept_window_counts.store(folder, tag + "_concept")
+        bundle.concept_corpus.window_counts.store(folder, tag + "_concept")
 
     store_document_index(bundle.document_index, document_index_filename(folder, tag))
 
@@ -323,7 +325,7 @@ def store(bundle: "Bundle"):
     store_vocabs_mapping(bundle.vocabs_mapping, folder, tag)
 
 
-def load(filename: str = None, folder: str = None, tag: str = None, compute_frame: bool = True) -> dict:
+def load(filename: str = None, folder: str = None, tag: str = None, compute_frame: bool = True) -> Bundle:
     """Loads bundle identified by given filename i.e. `folder`/`tag`{FILENAME_POSTFIX}"""
 
     if not filename:
@@ -334,25 +336,23 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     else:
         folder, tag = to_folder_and_tag(filename)
 
-    corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag)
-    window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics.load(folder, tag)
-
-    concept_corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag + "_concept")
-
-    concept_window_counts: TokenWindowCountStatistics = (
-        TokenWindowCountStatistics.load(folder, tag + "_concept") if concept_corpus else None
-    )
-
-    token2id: Token2Id = load_vocabulary(folder, tag)
-    document_index: DocumentIndex = load_document_index(folder, tag)
-
     options: dict = load_options(filename) or VectorizedCorpus.load_options(folder=folder, tag=tag)
     vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = load_vocabs_mapping(folder=folder, tag=tag)
 
-    corpus.remember_vocabs_mapping(vocabs_mapping)
+    corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag).remember(
+        window_counts=TokenWindowCountStatistics.load(folder, tag),
+        vocabs_mapping=vocabs_mapping,
+    )
 
+    concept_corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag + "_concept")
     if concept_corpus:
-        corpus.remember_vocabs_mapping(vocabs_mapping)
+        concept_corpus.remember(
+            window_counts=TokenWindowCountStatistics.load(folder=folder, tag=tag + "_concept"),
+            vocabs_mapping=vocabs_mapping,
+        )
+
+    token2id: Token2Id = load_vocabulary(folder, tag)
+    document_index: DocumentIndex = load_document_index(folder, tag)
 
     if token2id is None:
         raise CoOccurrenceError("Vocabulary is missing (corrupt data)!")
@@ -365,18 +365,16 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     if co_occurrences is None and compute_frame:
         co_occurrences = corpus.to_co_occurrences(token2id)
 
-    bundle = dict(
+    bundle_cls: Type["Bundle"] = create_instance('penelope.co_occurrence.bundle.Bundle')
+    bundle: "Bundle" = bundle_cls(
         folder=folder,
         tag=tag,
         corpus=corpus,
-        window_counts=window_counts,
         concept_corpus=concept_corpus,
-        concept_window_counts=concept_window_counts,
         vocabs_mapping=vocabs_mapping,
         document_index=document_index,
         token2id=token2id,
         compute_options=options,
         co_occurrences=co_occurrences,
     )
-
     return bundle

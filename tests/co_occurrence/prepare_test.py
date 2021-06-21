@@ -117,7 +117,7 @@ def test_create_co_occurrence_vocabulary():
     bundle: Bundle = create_bundle()
     co_occurrences: pd.DataFrame = bundle.co_occurrences
     co_occurrences = decode_tokens(co_occurrences, bundle.token2id.id2token, bundle.corpus.id2token)
-    vocab, vocab_mapping = CoOccurrenceVocabularyHelper.create_co_occurrence_vocabulary(co_occurrences, bundle.token2id)
+    vocab, vocab_mapping = CoOccurrenceVocabularyHelper.create_pair_vocabulary(co_occurrences, bundle.token2id)
 
     id2token = {v: k for k, v in vocab.items()}
 

@@ -8,7 +8,9 @@ import numpy as np
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
+from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric
+from penelope.common.keyness.significance import KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
@@ -169,7 +171,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         CURRENT_BUNDLE = bundle
 
         """Alternative implementation that uses VectorizedCorpus"""
-        self.bundle = bundle
+        self.bundle: Bundle = bundle
         self.co_occurrences: pd.DataFrame = None
         self.pivot_column_name: str = 'time_period'
 
@@ -180,13 +182,28 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             raise ValueError("Expected Compute Options in bundle but found no such thing.")
 
         """Current processed corpus"""
-        self.corpus = bundle.corpus
+        self.corpus: VectorizedCorpus = bundle.corpus
 
         """Properties that changes current corpus"""
         self._pivot: Dropdown = Dropdown(
             options=["year", "lustrum", "decade"],
             value="decade",
             placeholder='Group by',
+            layout=Layout(width='auto'),
+        )
+
+        """"Keyness source"""
+        self._keyness_source: Dropdown = Dropdown(
+            options={
+                "Full corpus": KeynessMetricSource.Full,
+                "Concept corpus": KeynessMetricSource.Concept,
+                "Weighed corpus": KeynessMetricSource.Weighed,
+            }
+            if bundle.concept_corpus is not None
+            else {
+                "Full corpus": KeynessMetricSource.Full,
+            },
+            value=KeynessMetricSource.Weighed if bundle.concept_corpus is not None else KeynessMetricSource.Full,
             layout=Layout(width='auto'),
         )
 
@@ -226,7 +243,12 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             value=10000,
             layout=Layout(width='auto'),
         )
-        self._show_concept = ToggleButton(description='Show concept', value=False, icon='', layout=Layout(width='auto'))
+        self._show_concept = ToggleButton(
+            description='Show concept',
+            value=False,
+            icon='',
+            layout=Layout(width='auto'),
+        )
         self._message: HTML = HTML()
         self._save = Button(description='Save', layout=Layout(width='auto'))
         # self._display = Button(description='Update', layout=Layout(width='auto'))
@@ -240,8 +262,9 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self._button_bar = HBox(
             children=[
                 VBox([HTML("<b>Token match</b>"), self._token_filter]),
+                VBox([HTML("<b>Keyness source</b>"), self._keyness_source]),
                 VBox([HTML("<b>Keyness metric</b>"), self._keyness]),
-                VBox([HTML("🙂"), self._show_concept if self._show_concept is not None else HTML("")]),
+                VBox([HTML("🙂"), self._show_concept]),
                 VBox([HTML("<b>Group by</b>"), self._pivot]),
                 VBox([HTML("<b>Global threshold</b>"), self._global_threshold_filter]),
                 VBox([HTML("<b>Group limit</b>"), self._largest]),
@@ -269,7 +292,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             self.alert(message)
 
         self._keyness.disabled = is_buzy
-        self._show_concept.disabled = is_buzy
+        self._show_concept.disabled = is_buzy or self.bundle.concept_corpus is None
         self._pivot.disabled = is_buzy
         self._global_threshold_filter.disabled = is_buzy
         self._token_filter.disabled = is_buzy
@@ -281,6 +304,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         self.stop_observe()
 
+        self._keyness_source.observe(self._update_corpus, 'value')
         self._keyness.observe(self._update_corpus, 'value')
 
         self._show_concept.observe(self._update_co_occurrences, 'value')
@@ -299,6 +323,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         with contextlib.suppress(Exception):
 
+            self._keyness_source.unobserve(self._update_corpus, 'value')
             self._keyness.unobserve(self._update_corpus, 'value')
 
             self._show_concept.unobserve(self._update_co_occurrences, 'value')
@@ -376,6 +401,14 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
     @keyness.setter
     def keyness(self, value: KeynessMetric):
         self._keyness.value = value
+
+    @property
+    def keyness_source(self) -> KeynessMetricSource:
+        return self._keyness_source.value
+
+    @keyness_source.setter
+    def keyness_source(self, value: KeynessMetricSource):
+        self._keyness_source.value = value
 
     @property
     def global_threshold(self) -> int:
@@ -484,13 +517,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         # print(f"to_corpus: corpus.shape (pre)={self.bundle.corpus.data.shape}")
 
         try:
-            corpus: VectorizedCorpus = self.bundle.to_keyness_corpus(
-                period_pivot=self.pivot,
-                keyness=self.keyness,
-                global_threshold=self.global_threshold,
-                pivot_column_name=self.pivot_column_name,
-                normalize=False,
-            )
+            corpus: VectorizedCorpus = self.bundle.keyness_transform(opts=self.compute_opts())
             # print(f"to_corpus: corpus.shape (post)={corpus.data.shape}")
             self.set_buzy(False, None)
             self.alert("✔")
@@ -504,3 +531,13 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
     def setup(self) -> "TabularCoOccurrenceGUI":
         self._update_corpus()
         return self
+
+    def compute_opts(self) -> ComputeKeynessOpts:
+        return ComputeKeynessOpts(
+            period_pivot=self.pivot,
+            keyness_source=self.keyness_source,
+            keyness=self.keyness,
+            tf_threshold=self.global_threshold,
+            pivot_column_name=self.pivot_column_name,
+            normalize=False,
+        )

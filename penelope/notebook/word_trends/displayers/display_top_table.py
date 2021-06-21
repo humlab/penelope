@@ -6,7 +6,8 @@ import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, VBox
 from penelope.co_occurrence.bundle import Bundle
-from penelope.common.keyness import KeynessMetric
+from penelope.co_occurrence.keyness import ComputeKeynessOpts
+from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from perspective import PerspectiveWidget
@@ -18,20 +19,25 @@ DATA = None
 # pylint: disable=too-many-instance-attributes
 # FIXME #72 Word trends: No data in top tokens displayer
 class TopTokensDisplayer(ITrendDisplayer):
+    def keyness_dropdown(self) -> Dropdown:
+        return Dropdown(
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
+            },
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
+
     def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
         super().__init__(name=name)
 
         self.simple_display: bool = False
 
         self.corpus: VectorizedCorpus = corpus
-
-        self.keyness_options = {
-            "TF": KeynessMetric.TF,
-            "TF (norm)": KeynessMetric.TF_normalized,
-            "TF-IDF": KeynessMetric.TF_IDF,
-        }
-
-        self._keyness: Dropdown = None
+        self._keyness: Dropdown = self.keyness_dropdown()
+        self._placeholder: VBox = VBox()
         self._top_count: Dropdown = Dropdown(
             options=[10 ** i for i in range(0, 7)],
             value=100,
@@ -61,11 +67,6 @@ class TopTokensDisplayer(ITrendDisplayer):
         self._output: Output = None
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
-        self._keyness: Dropdown = Dropdown(
-            options=self.keyness_options,
-            value=KeynessMetric.TF,
-            layout=Layout(width='auto'),
-        )
 
         self._table = PerspectiveWidget(self.data) if not self.simple_display else None
         self._output = Output() if self.simple_display else None
@@ -176,6 +177,7 @@ class TopTokensDisplayer(ITrendDisplayer):
                 HBox(
                     [
                         VBox([HTML("<b>Keyness</b>"), self._keyness]),
+                        self._placeholder,
                         VBox([HTML("<b>Top count</b>"), self._top_count]),
                         VBox([HTML("<b>Grouping</b>"), self._time_period]),
                         VBox([HTML("<b>Kind</b>"), self._kind]),
@@ -224,29 +226,57 @@ class TopTokensDisplayer(ITrendDisplayer):
 
 
 class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
-    def __init__(self, bundle: Bundle, name: str = "TopTokens"):
-        super().__init__(corpus=bundle.corpus, name=name)
-
-        self.bundle = bundle
-        self.keyness_options.update(
-            {
+    def keyness_dropdown(self) -> Dropdown:
+        return Dropdown(
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
                 "HAL CWR": KeynessMetric.HAL_cwr,
                 "PPMI": KeynessMetric.PPMI,
                 "LLR": KeynessMetric.LLR,
                 "LLR(D)": KeynessMetric.LLR_Dunning,
                 "DICE": KeynessMetric.DICE,
-            }
+            },
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
         )
+
+    def __init__(self, bundle: Bundle, name: str = "TopTokens"):
+        super().__init__(corpus=bundle.corpus, name=name)
+        self.bundle = bundle
+        self._keyness_source: Dropdown = Dropdown(
+            options={
+                "Full corpus": KeynessMetricSource.Full,
+                "Concept corpus": KeynessMetricSource.Concept,
+                "Weighed corpus": KeynessMetricSource.Weighed,
+            }
+            if bundle.concept_corpus is not None
+            else {
+                "Full corpus": KeynessMetricSource.Full,
+            },
+            value=KeynessMetricSource.Weighed if bundle.concept_corpus is not None else KeynessMetricSource.Full,
+            layout=Layout(width='auto'),
+        )
+
+        self._placeholder.children = [HTML("<b>Keyness source</b>"), self._keyness_source]
+
+    @property
+    def keyness_source(self) -> KeynessMetricSource:
+        return self._keyness_source.value
 
     def transform(self) -> VectorizedCorpus:
         self.alert(f"⌛ Computing {self.keyness.name}...")
-        corpus: VectorizedCorpus = self.bundle.to_keyness_corpus(
-            period_pivot=self.time_period,
-            keyness=self.keyness,
-            fill_gaps=False,
-            normalize=False,
-            global_threshold=1,  # FIXME Add
-            pivot_column_name=self.category_name,
+        corpus: VectorizedCorpus = self.bundle.keyness_transform(
+            opts=ComputeKeynessOpts(
+                period_pivot=self.time_period,
+                keyness=self.keyness,
+                keyness_source=self.keyness_source,
+                fill_gaps=False,
+                normalize=False,
+                tf_threshold=1,
+                pivot_column_name=self.category_name,
+            )
         )
         self.alert("")
         return corpus
