@@ -1,9 +1,11 @@
 import abc
+import contextlib
 from typing import Sequence
 
 from ipywidgets import (
     HTML,
     BoundedIntText,
+    Button,
     Dropdown,
     GridBox,
     HBox,
@@ -36,7 +38,7 @@ class TrendsBaseGUI(abc.ABC):
     def keyness_widget(self) -> Dropdown:
         ...
 
-    def __init__(self, n_top_count: int = 5000):
+    def __init__(self, n_top_count: int = 1000):
         self.trends_data: TrendsData = None
 
         self._tab: Tab = Tab(layout={'width': '98%'})
@@ -56,7 +58,7 @@ class TrendsBaseGUI(abc.ABC):
             disabled=False,
             layout=Layout(width='75px'),
         )
-        self._alert: Label = Label(layout=Layout(width='50%', border="0px transparent white"))
+        self._alert: Label = Label(layout=Layout(width='auto', border="0px transparent white"))
         self._words: Textarea = Textarea(
             description="",
             rows=2,
@@ -69,10 +71,11 @@ class TrendsBaseGUI(abc.ABC):
             min=3,
             max=100000,
             step=10,
-            description='Max words:',
+            description='',
             disabled=False,
             layout={'width': '180px'},
         )
+        self._compute: Button = Button(description="Compute", button_style='success', layout=BUTTON_LAYOUT)
         self._displayers: Sequence[ITrendDisplayer] = []
 
     def layout(self) -> GridBox:
@@ -85,8 +88,10 @@ class TrendsBaseGUI(abc.ABC):
                         VBox([HTML("<b>Top count</b>"), self._top_count]),
                         VBox([HTML("<b>Grouping</b>"), self._time_period]),
                         VBox([self._normalize, self._smooth]),
+                        VBox([HTML("⚽"), self._compute]),
                         VBox([HTML("📌"), self._alert]),
-                    ]
+                    ],
+                    layout={'width': '98%'},
                 ),
                 self._words,
                 HBox([self._picker, self._tab], layout={'width': '98%'}),
@@ -96,9 +101,10 @@ class TrendsBaseGUI(abc.ABC):
 
         return layout
 
-    def _plot_trends(self, *_):
-
+    def _compute_keyness(self, *_):
         try:
+            self.buzy(True)
+
             if self.trends_data is None:
                 self.alert("😮 Please load a corpus (no trends data) !")
                 return
@@ -107,11 +113,34 @@ class TrendsBaseGUI(abc.ABC):
                 self.alert("😥 Please load a corpus (no corpus in trends data) !")
                 return
 
-            corpus = self.trends_data.transform(self.options).transformed_corpus
+            self.alert("⌛ Computing...")
 
+            self.trends_data.transform(self.options)
+
+            self.alert("✔")
+
+            self._plot_trends()
+        except ValueError as ex:
+            self.alert(str(ex))
+        except Exception as ex:
+            logger.exception(ex)
+            self.warn(str(ex))
+            raise
+        self.buzy(False)
+
+    def _plot_trends(self, *_):
+
+        try:
+            self.buzy(True)
+
+            if self.trends_data is None or self.trends_data.transformed_corpus is None:
+                self.alert("🥱 (not computed)")
+                return
+
+            self.alert("⌛ Preparing display...")
             self.current_displayer.display(
-                corpus=corpus,
-                indices=corpus.token_indices(self._picker.value),
+                corpus=self.trends_data.transformed_corpus,
+                indices=self.trends_data.transformed_corpus.token_indices(self._picker.value),
                 smooth=self.smooth,
                 category_name=self.trends_data.category_column,
             )
@@ -156,13 +185,40 @@ class TrendsBaseGUI(abc.ABC):
 
         self._words.observe(self._update_picker, names='value')
         self._tab.observe(self._plot_trends, 'selected_index')
-        self._normalize.observe(self._plot_trends, names='value')
-        self._keyness.observe(self._plot_trends, names='value')
-        self._smooth.observe(self._plot_trends, names='value')
-        self._time_period.observe(self._plot_trends, names='value')
         self._picker.observe(self._plot_trends, names='value')
 
+        self._compute.on_click(self._compute_keyness)
+
+        # self._smooth.observe(self._plot_trends, names='value')
+        # self._normalize.observe(self._plot_trends, names='value')
+
+        # self._keyness.observe(self._plot_trends, names='value')
+        # self._keyness_source.observe(self._plot_trends, names='value')
+        # self._top_count.observe(self._plot_trends, names='value')
+        # self._time_period.observe(self._plot_trends, names='value')
+
         return self
+
+    def buzy(self, value: bool) -> None:
+
+        self._compute.disable = value
+        self._smooth.disable = value
+        self._normalize.disable = value
+        self._words.disable = value
+        self._keyness.disable = value
+        self._keyness_source.disable = value
+        self._top_count.disable = value
+        self._time_period.disable = value
+
+        # if value:
+        #     with contextlib.suppress(Exception):
+        #         self._words.unobserve(self._update_picker, names='value')
+        #         self._tab.unobserve(self._plot_trends, 'selected_index')
+        #         self._picker.unobserve(self._plot_trends, names='value')
+        # else:
+        #     self._words.observe(self._update_picker, names='value')
+        #     self._tab.observe(self._plot_trends, 'selected_index')
+        #     self._picker.observe(self._plot_trends, names='value')
 
     def display(self, *, trends_data: TrendsData):
         if trends_data is None:
@@ -243,8 +299,8 @@ class TrendsGUI(TrendsBaseGUI):
         )
 
 
-class CoOccurrenceTrendsGUI(TrendsGUI):
-    def __init__(self, bundle: Bundle, n_top_count: int = 5000):
+class CoOccurrenceTrendsGUI(TrendsBaseGUI):
+    def __init__(self, bundle: Bundle, n_top_count: int = 1000):
         super().__init__(n_top_count=n_top_count)
         self.bundle = bundle
         self._keyness_source: Dropdown = Dropdown(
@@ -260,6 +316,7 @@ class CoOccurrenceTrendsGUI(TrendsGUI):
             value=KeynessMetricSource.Weighed if bundle.concept_corpus is not None else KeynessMetricSource.Full,
             layout=Layout(width='auto'),
         )
+        self._placeholder.children = [HTML("<b>Keyness source</b>"), self._keyness_source]
 
     def keyness_widget(self) -> Dropdown:
         return Dropdown(
@@ -277,10 +334,10 @@ class CoOccurrenceTrendsGUI(TrendsGUI):
             layout=Layout(width='auto'),
         )
 
-    def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "CoOccurrenceTrendsGUI":
-        super().setup(displayers=displayers)
-        self._keyness_source.observe(self._plot_trends, names='value')
-        return self
+    # def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "CoOccurrenceTrendsGUI":
+    #     super().setup(displayers=displayers)
+    #     self._keyness_source.observe(self._plot_trends, names='value')
+    #     return self
 
     @property
     def keyness_source(self) -> KeynessMetricSource:

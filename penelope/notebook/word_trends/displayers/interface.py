@@ -33,7 +33,7 @@ class ITrendDisplayer(abc.ABC):
     def display(self, *, corpus: VectorizedCorpus, indices: Sequence[int], smooth: bool, category_name: str):
 
         if len(indices) == 0:
-            raise ValueError("Nothing to plot!")
+            raise ValueError("Please specify tokens to plot")
 
         self.clear()
         with self.output:

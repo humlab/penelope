@@ -12,7 +12,7 @@ class ExploreGUI:
         self.bundle: co_occurrence.Bundle = bundle
         self.trends_data: word_trends.BundleTrendsData = None
         self.tab_main: notebook_utility.OutputsTabExt = None
-        self.trends_gui: word_trends.TrendsGUI = None
+        self.trends_gui: word_trends.TrendsBaseGUI = None
         self.gofs_gui: word_trends.GoFsGUI = None
         self.gofs_enabled: bool = False
         self.n_top_count: int = 5000
