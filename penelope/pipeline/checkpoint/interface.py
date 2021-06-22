@@ -18,6 +18,7 @@ DICTIONARY_FILENAME = "dictionary.csv"
 
 # pylint: disable=too-many-instance-attributes
 
+
 @dataclass
 class CheckpointOpts:
 
