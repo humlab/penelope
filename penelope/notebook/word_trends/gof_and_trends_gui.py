@@ -9,15 +9,10 @@ from .trends_gui import TrendsGUI
 
 logger = getLogger("penelope")
 
-# debug_view = ipywidgets.Output(layout={'border': '1px solid black'})
-# display(debug_view)
-
 
 @deprecated
 class GofTrendsGUI:
     """GUI component for combined display of tokens distributions and goodness of fit to uniform distribution."""
-
-    # FIXME TopTokens and Options not displayed in word trends
 
     def __init__(self, trends_gui: TrendsGUI, gofs_gui: GoFsGUI):
         self.trends_gui: TrendsGUI = trends_gui
