@@ -86,14 +86,14 @@ class DocumentWindowsVectorizer:
             return token_counter
 
         def _count_tokens_with_ignores(windows: Iterable[str]) -> dict:
-            # token_counter: dict = {}
-            # tg = token_counter.get
-            # for t in windows:
-            #     if t in ignore_ids:
-            #         continue
-            #     token_counter[t] = tg(t, 0) + 1
-            # return token_counter
-            return Counter(t for t in windows if t not in ignore_ids)
+            token_counter: dict = {}
+            tg = token_counter.get
+            for t in windows:
+                if t in ignore_ids:
+                    continue
+                token_counter[t] = tg(t, 0) + 1
+            return token_counter
+            # return Counter(t for t in windows if t not in ignore_ids)
 
         count_tokens = _count_tokens_with_ignores if ignore_ids else _count_tokens_without_ignores
 
