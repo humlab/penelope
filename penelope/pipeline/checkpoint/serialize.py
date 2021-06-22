@@ -171,3 +171,28 @@ def parallel_deserialized_payload_stream(
 
         for payload in payloads_futures:
             yield payload
+
+# def parallel_deserialized_payload_stream(
+#     source_name: str,
+#     checkpoint_opts: CheckpointOpts,
+#     filenames: List[str],
+# ) -> Iterable[DocumentPayload]:
+
+#     logger.info(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
+#     serializer: IContentSerializer = create_serializer(checkpoint_opts)
+
+#     N: int = checkpoint_opts.abort_at_index
+
+#     with Pool(processes=checkpoint_opts.deserialize_processes) as executor:
+#         args: str = [(filename, source_name, serializer, checkpoint_opts) for filename in filenames]
+#         payloads_futures: Iterable[DocumentPayload] = executor.imap(
+#             _process_document_with_read, args, chunksize=checkpoint_opts.deserialize_chunksize
+#         )
+
+#         q, i = 1 if N > 0 else 0, 0
+#         for payload in payloads_futures:
+#             yield payload
+#             if (i := i + q) == N:
+#                 logger.info("abort_at_index: stopping processing since count limit is exceeded")
+#                 break
+

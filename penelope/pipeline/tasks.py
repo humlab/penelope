@@ -346,6 +346,15 @@ class ReadFeather(DefaultResolveMixIn, ITask):
             payload: DocumentPayload = cp.feather.read_payload(os.path.join(self.folder, filename))
             yield payload
 
+    # def process_stream(self) -> Iterable[DocumentPayload]:
+    #     N: int = self.pipeline.config.checkpoint_opts.abort_at_index
+    #     q, i = 1 if N > 0 else 0, 0
+    #     for filename in self.document_index.filename.tolist():
+    #         payload: DocumentPayload = cp.feather.read_payload(os.path.join(self.folder, filename))
+    #         yield payload
+    #         if (i := i + q) == N:
+    #             logger.info("abort_at_index: stopping processing since count limit is exceeded")
+    #             break
 
 @dataclass
 class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
