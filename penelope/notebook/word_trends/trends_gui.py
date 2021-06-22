@@ -277,10 +277,10 @@ class CoOccurrenceTrendsGUI(TrendsGUI):
             layout=Layout(width='auto'),
         )
 
-    def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "TrendsGUI":
+    def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "CoOccurrenceTrendsGUI":
         super().setup(displayers=displayers)
-
         self._keyness_source.observe(self._plot_trends, names='value')
+        return self
 
     @property
     def keyness_source(self) -> KeynessMetricSource:
