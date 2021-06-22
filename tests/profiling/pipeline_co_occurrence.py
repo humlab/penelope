@@ -10,7 +10,7 @@ CONFIG_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.yml")
 OUTPUT_FOLDER = jj(DATA_FOLDER, '../output')
 CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.test.zip")
 
-CONCEPT = set()  # {'information'}
+CONCEPT = set(['information'])  # {'information'}
 
 SUC_SCHEMA: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.SUC
 POS_TARGETS: str = 'NN|PM'
@@ -84,6 +84,10 @@ corpus_config.pipeline_payload.files(
     source=compute_opts.corpus_filename,
     document_index_source=None,
 )
+
+# corpus_config.checkpoint_opts.abort_at_index = 50
+# compute_opts.corpus_filename = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
+
 bundle = workflows.co_occurrence.compute(
     args=compute_opts,
     corpus_config=corpus_config,

@@ -37,6 +37,8 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
 
     corpus_config.text_reader_opts.update(n_processes=reader_opts.n_processes, n_chunksize=reader_opts.n_chunksize)
 
+    corpus_config.checkpoint_opts.abort_at_index = 1500
+
     pipeline: CorpusPipeline = (
         to_tagged_frame_pipeline(
             corpus_config=corpus_config,
@@ -58,7 +60,7 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
 
 if __name__ == "__main__":
     # CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
-    CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.test.sparv4.csv.zip'
+    CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
     # CORPUS_FILENAME: str = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
     OUTPUT_FOLDER: str = "tests/output"
     execute_co_occurrence(CORPUS_FILENAME, OUTPUT_FOLDER)
