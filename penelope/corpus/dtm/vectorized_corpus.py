@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import fnmatch
 import re
+import warnings
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 import numpy as np
 import scipy
 import sklearn.preprocessing
 from penelope import utility
+
+# pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
+from scipy.sparse import SparseEfficiencyWarning
 from sklearn.feature_extraction.text import TfidfTransformer
 
 from ..document_index import DocumentIndex
@@ -18,7 +22,7 @@ from .stats import StatsMixIn
 from .store import StoreMixIn
 from .ttm import CoOccurrenceMixIn
 
-# pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
+warnings.simplefilter('ignore', SparseEfficiencyWarning)
 
 logger = utility.getLogger("penelope")
 
@@ -392,6 +396,8 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return indices
 
     def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> IVectorizedCorpus:
+        """Clears (inplace) tokens (columns) having a TF-value (xolumn sum) less than threshold"""
+        # FIXME Column zero-out gives SparseEfficiencyWarning
         indicies = np.argwhere(self.term_frequencies < tf_threshold).ravel()
         if len(indicies) > 0:
             self.data[:, indicies] = 0
