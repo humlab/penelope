@@ -124,10 +124,10 @@ def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
     """ Read FEATHER if exists """
     if os.path.isfile(feather_filename):
 
-        logger.info("loading FEATHER file")
         df: pd.DataFrame = pd.read_feather(feather_filename)
         if 'index' in df.columns:
             df.drop(columns='index', inplace=True)
+
         return df
 
     """ Read CSV if exists """
