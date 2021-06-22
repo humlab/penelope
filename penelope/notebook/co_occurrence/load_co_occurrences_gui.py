@@ -2,7 +2,7 @@ import os
 from typing import Callable
 
 import penelope.co_occurrence as co_occurrence
-from ipywidgets import Button, HBox, Label, Layout, Output, VBox
+from ipywidgets import HTML, Button, HBox, Layout, Output, VBox
 from loguru import logger
 from penelope.utility import default_data_folder
 
@@ -41,12 +41,18 @@ class LoadGUI:
         self._load_button.disabled = True
         self._filename.disabled = True
         try:
+            self.info("⌛ Loading bundle...")
             bundle = self.load_callback(self.filename)
+            self.info("✔ Bundle loaded!")
             if self.loaded_callback is not None:
+                self.info("⌛ Preparing display...")
                 self.loaded_callback(bundle)
+                self.info("✔")
         except (ValueError, FileNotFoundError) as ex:
+            self.alert("😮 Load failed!")
             print(ex)
         except Exception as ex:
+            self.alert("😮 Load failed!")
             logger.info(ex)
             raise
         finally:
@@ -79,6 +85,7 @@ class LoadGUI:
 
         self._filename.register_callback(self.file_selected)
         self._load_button.on_click(self._load_handler)
+        self._alert: HTML = HTML("📌")
         self.load_callback = load_callback
         self.loaded_callback = loaded_callback
 
@@ -91,7 +98,7 @@ class LoadGUI:
                     [
                         VBox([self._filename]),
                         VBox(
-                            [Label("λ"), self._load_button],
+                            [self._alert, self._load_button],
                             layout=Layout(display='flex', align_items='flex-end', justify_content='space-between'),
                         ),
                     ]
@@ -99,6 +106,12 @@ class LoadGUI:
                 debug_view,
             ]
         )
+
+    def alert(self, message: str) -> None:
+        self._alert.value = f"<span style='color: red; font-weight: bold;'>{message or '🙁'}</span>"
+
+    def info(self, message: str) -> None:
+        self._alert.value = f"<span style='color: green; font-weight: bold;'>{message or '😃'}</span>"
 
     @property
     def filename(self):
@@ -128,7 +141,7 @@ def load_co_occurrence_bundle(filename: str) -> co_occurrence.Bundle:
             raise ValueError("Please select co-occurrence file")
 
         bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
-        logger.info("co-occurrence loaded")
+
         return bundle
     except (ValueError, FileNotFoundError, PermissionError) as ex:
         logger.error(ex)
