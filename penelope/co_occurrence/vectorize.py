@@ -8,7 +8,6 @@ import numpy as np
 import scipy
 from penelope.co_occurrence.interface import ContextOpts
 from penelope.corpus import Token2Id
-from penelope.type_alias import Token
 
 
 class VectorizeType(IntEnum):
@@ -38,19 +37,21 @@ class DocumentWindowsVectorizer:
     ) -> Mapping[VectorizeType, VectorizedTTM]:
         """Fits windows generated from a __single__ document"""
 
+        fg = self.vocabulary.get
         ignore_ids: Set[int] = set()
+        concept_ids: Set[int] = {fg(t) for t in context_opts.get_concepts()}
 
         if context_opts.ignore_padding:
-            ignore_ids.add(self.vocabulary[context_opts.pad])
+            ignore_ids.add(fg(context_opts.pad))
 
-        if context_opts.concept:
+        if concept_ids:
             if context_opts.ignore_concept:
-                ignore_ids.update(context_opts.get_concepts())
+                ignore_ids.update(concept_ids)
 
         data: Mapping[VectorizeType, VectorizedTTM] = self._vectorize(
             document_id=document_id,
             windows=windows,
-            concept=context_opts.concept,
+            concept=concept_ids,
             ignore_ids=ignore_ids,
         )
 
@@ -63,8 +64,8 @@ class DocumentWindowsVectorizer:
         self,
         *,
         document_id: int,
-        windows: Iterator[Iterable[Token]],
-        concept: Set[str],
+        windows: Iterator[Iterable[int]],
+        concept: Set[int],
         ignore_ids: Set[int],
     ) -> Mapping[VectorizeType, VectorizedTTM]:
 
@@ -75,10 +76,9 @@ class DocumentWindowsVectorizer:
 
         counters: Mapping[VectorizeType, WindowsTermsCounter] = defaultdict(WindowsTermsCounter)
 
-        fg = self.vocabulary.get
         ewu = counters[VectorizeType.Normal].update
 
-        def _count_tokens_without_ignores(windows: Iterable[str]) -> dict:
+        def _count_tokens_without_ignores(windows: Iterable[int]) -> dict:
             token_counter: dict = {}
             tg = token_counter.get
             for t in windows:
@@ -86,26 +86,27 @@ class DocumentWindowsVectorizer:
             return token_counter
 
         def _count_tokens_with_ignores(windows: Iterable[str]) -> dict:
-            token_counter: dict = {}
-            tg = token_counter.get
-            for t in windows:
-                if t in ignore_ids:
-                    continue
-                token_counter[t] = tg(t, 0) + 1
-            return token_counter
+            # token_counter: dict = {}
+            # tg = token_counter.get
+            # for t in windows:
+            #     if t in ignore_ids:
+            #         continue
+            #     token_counter[t] = tg(t, 0) + 1
+            # return token_counter
+            return Counter(t for t in windows if t not in ignore_ids)
 
         count_tokens = _count_tokens_with_ignores if ignore_ids else _count_tokens_without_ignores
 
         if concept_word:
             cwu = counters[VectorizeType.Concept].update
             for window in windows:
-                token_counts: dict = count_tokens(fg(t) for t in window)
+                token_counts: dict = count_tokens(window)
                 if concept_word in window:  # any(x in window for x in concept):
                     cwu(token_counts)
                 ewu(token_counts)
         else:
             for window in windows:
-                ewu(count_tokens(fg(t) for t in window))
+                ewu(count_tokens(window))
 
         data: Mapping[VectorizeType, VectorizedTTM] = {
             key: counter.compile(vectorize_type=key, document_id=document_id, vocab_size=len(self.vocabulary))

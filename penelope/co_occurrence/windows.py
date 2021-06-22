@@ -147,8 +147,13 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
                     yield concept_window
 
 
-def generate_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> Iterable[Iterable[str]]:
-    """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens`
+def generate_windows(
+    *,
+    token_ids: Iterable[int],
+    context_width: int,
+    pad_id: int,
+) -> Iterable[Iterable[int]]:
+    """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens_ids`
 
     Uses the "deck" `collection.deque` with a fixed length (appends exceeding `maxlen` deletes oldest entry)
     The yelded windows are all equal-sized with the focus `*`-padded at the beginning and end
@@ -156,8 +161,8 @@ def generate_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> I
 
     Parameters
     ----------
-    tokens : Iterable[Token]
-        The sequence of tokens to be windowed
+    tokens_ids : Iterable[int]
+        The sequence of tokens_ids to be windowed
     context_opts: ContextOpts (width, concept, etc)
 
     Yields
@@ -166,16 +171,9 @@ def generate_windows(*, tokens: Iterable[Token], context_opts: ContextOpts) -> I
         The sequence of windows
     """
 
-    pad: Token = context_opts.pad
-
-    n_window = 2 * context_opts.context_width + 1
-
-    padded_tokens = itertools.chain([pad] * context_opts.context_width, tokens, [pad] * context_opts.context_width)
-
+    n_window = 2 * context_width + 1
+    padded_tokens = itertools.chain([pad_id] * context_width, token_ids, [pad_id] * context_width)
     window = collections.deque((next(padded_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
-
     for token in padded_tokens:
-
         window.append(token)
-
         yield list(window)

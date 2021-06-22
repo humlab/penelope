@@ -37,7 +37,7 @@ def execute_co_occurrence(corpus_filename: str, output_folder: str):
 
     corpus_config.text_reader_opts.update(n_processes=reader_opts.n_processes, n_chunksize=reader_opts.n_chunksize)
 
-    corpus_config.checkpoint_opts.abort_at_index = 1500
+    # corpus_config.checkpoint_opts.abort_at_index = 1500
 
     pipeline: CorpusPipeline = (
         to_tagged_frame_pipeline(

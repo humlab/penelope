@@ -356,6 +356,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
     #             logger.info("abort_at_index: stopping processing since count limit is exceeded")
     #             break
 
+
 @dataclass
 class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """

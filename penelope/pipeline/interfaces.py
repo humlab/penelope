@@ -50,6 +50,8 @@ class ContentType(IntEnum):
     CO_OCCURRENCE_DTM_DOCUMENT = 19
     CO_OCCURRENCE_DTM_CORPUS = 20
 
+    TOKEN_IDS = 21
+
 
 @dataclass
 class DocumentPayload:

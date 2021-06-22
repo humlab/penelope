@@ -17,7 +17,7 @@ from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.pipeline.tasks_mixin import VocabularyIngestMixIn
-from penelope.type_alias import DocumentIndex, Token
+from penelope.type_alias import DocumentIndex
 
 from ..interfaces import ContentType, DocumentPayload, ITask, PipelineError
 
@@ -169,7 +169,7 @@ class ToCoOccurrenceDTM(VocabularyIngestMixIn, ITask):
     vectorizer: DocumentWindowsVectorizer = field(init=False, default=None)
 
     def __post_init__(self):
-        self.in_content_type = ContentType.TOKENS
+        self.in_content_type = [ContentType.TOKENS, ContentType.TOKEN_IDS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
 
     def setup(self) -> ITask:
@@ -191,17 +191,26 @@ class ToCoOccurrenceDTM(VocabularyIngestMixIn, ITask):
     def process_payload(self, payload: DocumentPayload) -> Any:
 
         self.token2id = self.pipeline.payload.token2id
+        fg = self.token2id.data.get
 
         document_id = self.get_document_id(payload)
 
-        tokens: Iterable[str] = payload.content
-
-        if len(tokens) == 0:
+        if len(payload.content) == 0:
             return payload.empty(self.out_content_type)
 
-        self.ingest(tokens)
+        if self.in_content_type == ContentType.TOKEN_IDS:
+            token_ids: Iterable[int] = payload.content
+        else:
+            if self.ingest_tokens and self.token2id.is_open:
+                # FIXME: Make a version of ingest that returns ids
+                self.token2id.ingest(payload.content)
+            token_ids: Iterable[int] = [fg(t) for t in payload.content]
 
-        windows: Iterable[Iterable[Token]] = generate_windows(tokens=tokens, context_opts=self.context_opts)
+        windows: Iterable[Iterable[int]] = generate_windows(
+            token_ids=token_ids,
+            context_width=self.context_opts.context_width,
+            pad_id=fg(self.context_opts.pad),
+        )
 
         data: Mapping[VectorizeType, VectorizedTTM] = self.vectorizer.fit_transform(
             document_id=document_id, windows=windows, context_opts=self.context_opts

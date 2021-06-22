@@ -16,6 +16,7 @@ CHECKPOINT_OPTS_FILENAME = "options.json"
 DOCUMENT_INDEX_FILENAME = "document_index.csv"
 DICTIONARY_FILENAME = "dictionary.csv"
 
+# pylint: disable=too-many-instance-attributes
 
 @dataclass
 class CheckpointOpts:
@@ -37,6 +38,8 @@ class CheckpointOpts:
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
     index_column: Union[int, None] = field(default=0)
+
+    # abort_at_index: int = field(default=None)
 
     @property
     def props(self):

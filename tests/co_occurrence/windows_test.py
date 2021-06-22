@@ -1,9 +1,10 @@
 import json
 from typing import Iterable
 
-from penelope.co_occurrence import ContextOpts, WindowsCorpus  # , corpus_to_concept_windows, tokens_to_concept_windows
+from penelope.co_occurrence import ContextOpts, WindowsCorpus
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import CorpusVectorizer, generate_token2id
+from penelope.corpus.token2id import Token2Id
 from penelope.type_alias import Token
 from tests.fixtures import SAMPLE_WINDOW_STREAM
 
@@ -26,12 +27,13 @@ def load_corpus_windows_fixture(filename: str):
 
 def test_tokens_to_windows():
 
-    tokens: Iterable[Token] = ["a", "*", "c", "a", "e", "*", "*", "h"]
-
     context_opts: ContextOpts = ContextOpts(
         concept=set(), context_width=1, ignore_padding=False, pad="*", min_window_size=0
     )
-    windows: Iterable[Iterable[str]] = generate_windows(tokens=tokens, context_opts=context_opts)
+
+    tokens: Iterable[Token] = ["a", "*", "c", "a", "e", "*", "*", "h"]
+    token2id: Token2Id = Token2Id().ingest([context_opts.pad] + tokens)
+
     expected_windows = [
         ['*', 'a', '*'],
         ['a', '*', 'c'],
@@ -42,7 +44,14 @@ def test_tokens_to_windows():
         ['*', '*', 'h'],
         ['*', 'h', '*'],
     ]
-    assert list(windows) == expected_windows
+
+    windows: Iterable[Iterable[str]] = generate_windows(
+        token_ids=[token2id[t] for t in tokens],
+        context_width=context_opts.context_width,
+        pad_id=token2id[context_opts.pad],
+    )
+
+    assert list(windows) == [[token2id[t] for t in w] for w in expected_windows]
 
 
 def test_windows_iterator():

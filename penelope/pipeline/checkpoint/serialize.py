@@ -172,6 +172,7 @@ def parallel_deserialized_payload_stream(
         for payload in payloads_futures:
             yield payload
 
+
 # def parallel_deserialized_payload_stream(
 #     source_name: str,
 #     checkpoint_opts: CheckpointOpts,
@@ -195,4 +196,3 @@ def parallel_deserialized_payload_stream(
 #             if (i := i + q) == N:
 #                 logger.info("abort_at_index: stopping processing since count limit is exceeded")
 #                 break
-

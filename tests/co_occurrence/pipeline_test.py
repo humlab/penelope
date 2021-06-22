@@ -17,6 +17,7 @@ jj = os.path.join
 CONTEXT_OPTS: ContextOpts = ContextOpts(context_width=2, concept={}, ignore_concept=False, ignore_padding=False)
 
 
+@pytest.mark.skip(reason="ingest is now prohibited if vocabulary is closed")
 def test_pipeline_to_co_occurrence_ingest_prohobited_if_vocabulary_exists():
 
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
