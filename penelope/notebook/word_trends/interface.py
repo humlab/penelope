@@ -11,30 +11,33 @@ from penelope.corpus import VectorizedCorpus
 
 
 @dataclass
-class TrendsOpts:
+class TrendsComputeOpts:
 
     normalize: bool
     keyness: KeynessMetric
-    group_by: str
+    time_period: str
 
     fill_gaps: bool = False
     smooth: bool = None
-    word_count: int = None
+    top_count: int = None
     words: List[str] = None
     descending: bool = False
+    keyness_source: KeynessMetricSource = KeynessMetricSource.Full
 
     @property
-    def clone(self) -> "TrendsOpts":
-        return TrendsOpts(**asdict(self))
+    def clone(self) -> "TrendsComputeOpts":
+        return TrendsComputeOpts(**asdict(self))
 
-    def invalidates_corpus(self, other: "TrendsOpts") -> bool:
+    def invalidates_corpus(self, other: "TrendsComputeOpts") -> bool:
         if self.normalize != other.normalize:
             return True
         if self.keyness != other.keyness:
             return True
-        if self.group_by != other.group_by:
+        if self.time_period != other.time_period:
             return True
         if self.fill_gaps != other.fill_gaps:
+            return True
+        if self.keyness_source != other.keyness_source:
             return True
         return False
 
@@ -50,11 +53,13 @@ class ITrendsData(abc.ABC):
         self._gof_data: GofData = None
 
         self._transformed_corpus: VectorizedCorpus = None
-        self._trends_opts: TrendsOpts = TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
+        self._trends_opts: TrendsComputeOpts = TrendsComputeOpts(
+            normalize=False, keyness=KeynessMetric.TF, time_period='year'
+        )
         self.category_column: str = "time_period"
 
     @abc.abstractmethod
-    def _transform_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+    def _transform_corpus(self, opts: TrendsComputeOpts) -> VectorizedCorpus:
         ...
 
     @property
@@ -67,15 +72,15 @@ class ITrendsData(abc.ABC):
             self._gof_data = GofData.compute(self.corpus, n_count=self.n_count)
         return self._gof_data
 
-    def find_word_indices(self, opts: TrendsOpts) -> List[int]:
+    def find_word_indices(self, opts: TrendsComputeOpts) -> List[int]:
         indices: List[int] = self._transform_corpus(opts).find_matching_words_indices(
-            opts.words, opts.word_count, descending=opts.descending
+            opts.words, opts.top_count, descending=opts.descending
         )
         return indices
 
-    def find_words(self, opts: TrendsOpts) -> List[str]:
+    def find_words(self, opts: TrendsComputeOpts) -> List[str]:
         words: List[int] = self._transform_corpus(opts).find_matching_words(
-            opts.words, opts.word_count, descending=opts.descending
+            opts.words, opts.top_count, descending=opts.descending
         )
         return words
 
@@ -85,7 +90,7 @@ class ITrendsData(abc.ABC):
         )
         return top_terms
 
-    def transform(self, opts: TrendsOpts) -> "ITrendsData":
+    def transform(self, opts: TrendsComputeOpts) -> "ITrendsData":
 
         if self._transformed_corpus is not None:
             if not self._trends_opts.invalidates_corpus(opts):
@@ -99,7 +104,7 @@ class ITrendsData(abc.ABC):
 
     def reset(self) -> "ITrendsData":
         self._transformed_corpus = None
-        self._trends_opts = TrendsOpts(normalize=False, keyness=KeynessMetric.TF, group_by='year')
+        self._trends_opts = TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, time_period='year')
         self._gof_data = None
         return self
 
@@ -108,7 +113,7 @@ class TrendsData(ITrendsData):
     def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_count: int = 100000):
         super().__init__(corpus=corpus, corpus_folder=corpus_folder, corpus_tag=corpus_tag, n_count=n_count)
 
-    def _transform_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+    def _transform_corpus(self, opts: TrendsComputeOpts) -> VectorizedCorpus:
 
         transformed_corpus: VectorizedCorpus = self.corpus
 
@@ -119,7 +124,7 @@ class TrendsData(ITrendsData):
             transformed_corpus = transformed_corpus.normalize_by_raw_counts()
 
         transformed_corpus = transformed_corpus.group_by_time_period(
-            time_period_specifier=opts.group_by,
+            time_period_specifier=opts.time_period,
             target_column_name=self.category_column,
             fill_gaps=opts.fill_gaps,
         )
@@ -134,14 +139,16 @@ class BundleTrendsData(ITrendsData):
     def __init__(self, bundle: Bundle = None, n_count: int = 100000):
         super().__init__(corpus=bundle.corpus, corpus_folder=bundle.folder, corpus_tag=bundle.tag, n_count=n_count)
         self.bundle = bundle
+        self.keyness_source: KeynessMetricSource = KeynessMetricSource.Full
+        self.tf_threshold: int = 1
 
-    def _transform_corpus(self, opts: TrendsOpts) -> VectorizedCorpus:
+    def _transform_corpus(self, opts: TrendsComputeOpts) -> VectorizedCorpus:
 
         transformed_corpus: VectorizedCorpus = self.bundle.keyness_transform(
             opts=ComputeKeynessOpts(
-                period_pivot=opts.group_by,
-                tf_threshold=1,
-                keyness_source=KeynessMetricSource.Full,
+                period_pivot=opts.time_period,
+                tf_threshold=self.tf_threshold,
+                keyness_source=self.keyness_source,
                 keyness=opts.keyness,
                 pivot_column_name=self.category_column,
                 normalize=opts.normalize,

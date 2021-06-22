@@ -1,8 +1,11 @@
+import abc
 from typing import Sequence
 
 from ipywidgets import (
+    HTML,
     BoundedIntText,
     Dropdown,
+    GridBox,
     HBox,
     Label,
     Layout,
@@ -13,11 +16,12 @@ from ipywidgets import (
     ToggleButton,
     VBox,
 )
-from penelope.common.keyness import KeynessMetric
+from penelope.co_occurrence.bundle import Bundle
+from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.utility import get_logger
 
 from .displayers import ITrendDisplayer
-from .interface import TrendsData, TrendsOpts
+from .interface import TrendsComputeOpts, TrendsData
 
 logger = get_logger()
 
@@ -25,8 +29,12 @@ BUTTON_LAYOUT = Layout(width='120px')
 OUTPUT_LAYOUT = Layout(width='600px')
 
 
-class TrendsGUI:
+class TrendsBaseGUI(abc.ABC):
     """GUI component that displays word trends"""
+
+    @abc.abstractmethod
+    def keyness_widget(self) -> Dropdown:
+        ...
 
     def __init__(self, n_top_count: int = 5000):
         self.trends_data: TrendsData = None
@@ -38,24 +46,17 @@ class TrendsGUI:
         self._normalize: ToggleButton = ToggleButton(
             description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
         )
-        self._keyness: ToggleButton = Dropdown(
-            description="",
-            value=KeynessMetric.TF,
-            options={
-                "TF": KeynessMetric.TF,
-                "TF-IDF": KeynessMetric.TF_IDF,
-            },
-            layout=BUTTON_LAYOUT,
-        )
+        self._keyness: ToggleButton = self.keyness_widget()
+        self._placeholder: VBox = VBox()
         self._smooth: ToggleButton = ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
-        self._group_by: Dropdown = Dropdown(
+        self._time_period: Dropdown = Dropdown(
             options=['year', 'lustrum', 'decade'],
             value='decade',
             description='',
             disabled=False,
             layout=Layout(width='75px'),
         )
-        self._status: Label = Label(layout=Layout(width='50%', border="0px transparent white"))
+        self._alert: Label = Label(layout=Layout(width='50%', border="0px transparent white"))
         self._words: Textarea = Textarea(
             description="",
             rows=2,
@@ -63,7 +64,7 @@ class TrendsGUI:
             placeholder='Enter words, wildcards and/or regexps such as "information", "info*", "*ment",  "|.*tion$|"',
             layout=Layout(width='98%'),
         )
-        self._word_count: BoundedIntText = BoundedIntText(
+        self._top_count: BoundedIntText = BoundedIntText(
             value=n_top_count,
             min=3,
             max=100000,
@@ -74,23 +75,26 @@ class TrendsGUI:
         )
         self._displayers: Sequence[ITrendDisplayer] = []
 
-    def layout(self) -> VBox:
-        return VBox(
+    def layout(self) -> GridBox:
+        layout: GridBox = GridBox(
             [
                 HBox(
                     [
-                        self._keyness,
-                        self._normalize,
-                        self._smooth,
-                        self._group_by,
-                        self._word_count,
-                        self._status,
+                        VBox([HTML("<b>Keyness</b>"), self._keyness]),
+                        self._placeholder,
+                        VBox([HTML("<b>Top count</b>"), self._top_count]),
+                        VBox([HTML("<b>Grouping</b>"), self._time_period]),
+                        VBox([self._normalize, self._smooth]),
+                        VBox([HTML("📌"), self._alert]),
                     ]
                 ),
                 self._words,
                 HBox([self._picker, self._tab], layout={'width': '98%'}),
-            ]
+            ],
+            layout=Layout(width='auto'),
         )
+
+        return layout
 
     def _plot_trends(self, *_):
 
@@ -112,7 +116,7 @@ class TrendsGUI:
                 category_name=self.trends_data.category_column,
             )
 
-            self.alert("✔")
+            self.alert("🙂")
 
         except ValueError as ex:
             self.alert(str(ex))
@@ -131,10 +135,10 @@ class TrendsGUI:
         self._picker.value = _values
 
         if len(_words) == 0:
-            self.alert("😢 Found no matching words!")
+            self.alert("😫 Found no matching words!")
         else:
             self.alert(
-                f"✔ Displaying {len(_words)} matching tokens. {'' if len(_words) < self.word_count else ' (result truncated)'}"
+                f"✔ Displaying {len(_words)} matching tokens. {'' if len(_words) < self.top_count else ' (result truncated)'}"
             )
 
     def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "TrendsGUI":
@@ -155,7 +159,7 @@ class TrendsGUI:
         self._normalize.observe(self._plot_trends, names='value')
         self._keyness.observe(self._plot_trends, names='value')
         self._smooth.observe(self._plot_trends, names='value')
-        self._group_by.observe(self._plot_trends, names='value')
+        self._time_period.observe(self._plot_trends, names='value')
         self._picker.observe(self._plot_trends, names='value')
 
         return self
@@ -180,7 +184,7 @@ class TrendsGUI:
         return self.current_displayer.output
 
     def alert(self, msg: str):
-        self._status.value = msg
+        self._alert.value = msg
 
     def warn(self, msg: str):
         self.alert(f"<span style='color=red'>{msg}</span>")
@@ -206,21 +210,84 @@ class TrendsGUI:
         return self._normalize.value
 
     @property
-    def group_by(self) -> str:
-        return self._group_by.value
+    def time_period(self) -> str:
+        return self._time_period.value
 
     @property
-    def word_count(self) -> int:
-        return self._word_count.value
+    def top_count(self) -> int:
+        return self._top_count.value
 
     @property
-    def options(self) -> TrendsOpts:
-        return TrendsOpts(
+    def options(self) -> TrendsComputeOpts:
+        return TrendsComputeOpts(
             normalize=self.normalize,
             smooth=self.smooth,
             keyness=self.keyness,
-            group_by=self.group_by,
-            word_count=self.word_count,
+            time_period=self.time_period,
+            top_count=self.top_count,
             words=self.words_or_regexp,
             descending=True,
         )
+
+
+class TrendsGUI(TrendsBaseGUI):
+    def keyness_widget(self) -> Dropdown:
+        return Dropdown(
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
+            },
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
+
+
+class CoOccurrenceTrendsGUI(TrendsGUI):
+    def __init__(self, bundle: Bundle, n_top_count: int = 5000):
+        super().__init__(n_top_count=n_top_count)
+        self.bundle = bundle
+        self._keyness_source: Dropdown = Dropdown(
+            options={
+                "Full corpus": KeynessMetricSource.Full,
+                "Concept corpus": KeynessMetricSource.Concept,
+                "Weighed corpus": KeynessMetricSource.Weighed,
+            }
+            if bundle.concept_corpus is not None
+            else {
+                "Full corpus": KeynessMetricSource.Full,
+            },
+            value=KeynessMetricSource.Weighed if bundle.concept_corpus is not None else KeynessMetricSource.Full,
+            layout=Layout(width='auto'),
+        )
+
+    def keyness_widget(self) -> Dropdown:
+        return Dropdown(
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
+                "HAL CWR": KeynessMetric.HAL_cwr,
+                "PPMI": KeynessMetric.PPMI,
+                "LLR": KeynessMetric.LLR,
+                "LLR(D)": KeynessMetric.LLR_Dunning,
+                "DICE": KeynessMetric.DICE,
+            },
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
+
+    def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "TrendsGUI":
+        super().setup(displayers=displayers)
+
+        self._keyness_source.observe(self._plot_trends, names='value')
+
+    @property
+    def keyness_source(self) -> KeynessMetricSource:
+        return self._keyness_source.value
+
+    @property
+    def options(self) -> TrendsComputeOpts:
+        trends_opts: TrendsComputeOpts = super().options
+        trends_opts.keyness_source = self.keyness_source
+        return trends_opts

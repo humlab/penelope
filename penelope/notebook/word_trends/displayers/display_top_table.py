@@ -18,8 +18,8 @@ TABLE = None
 DATA = None
 # pylint: disable=too-many-instance-attributes
 
-class TopTokensDisplayer(ITrendDisplayer):
 
+class TopTokensDisplayer(ITrendDisplayer):
     def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
         super().__init__(name=name)
 

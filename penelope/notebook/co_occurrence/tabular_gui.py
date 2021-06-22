@@ -14,7 +14,7 @@ from penelope.common.keyness.significance import KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
-from perspective import Table, PerspectiveWidget
+from perspective import PerspectiveWidget
 
 # pylint: disable=too-many-instance-attributes
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
@@ -70,7 +70,6 @@ CURRENT_BUNDLE = None
 class PerspectiveTableView:
     def __init__(self, data: pd.DataFrame = None):
         data = data if data is not None else empty_data()
-        #self.table: Table = Table(data, index=['time_period', 'w1', 'w2'])
         self.widget: PerspectiveWidget = PerspectiveWidget(data, client=True)
         self.container = self.widget
         self.precision: int = 6
