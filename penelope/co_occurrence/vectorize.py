@@ -47,7 +47,7 @@ class DocumentWindowsVectorizer:
             if context_opts.ignore_concept:
                 ignore_ids.update(context_opts.get_concepts())
 
-        data: Mapping[VectorizeType, VectorizedTTM] = self.vectorize(
+        data: Mapping[VectorizeType, VectorizedTTM] = self._vectorize(
             document_id=document_id,
             windows=windows,
             concept=context_opts.concept,
@@ -59,7 +59,7 @@ class DocumentWindowsVectorizer:
 
         return data
 
-    def vectorize(
+    def _vectorize(
         self,
         *,
         document_id: int,
