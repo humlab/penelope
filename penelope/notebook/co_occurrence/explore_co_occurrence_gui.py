@@ -15,12 +15,16 @@ class ExploreGUI:
         self.trends_gui: word_trends.TrendsGUI = None
         self.gofs_gui: word_trends.GoFsGUI = None
         self.gofs_enabled: bool = False
+        self.n_top_count: int = 5000
 
     def setup(self) -> "ExploreGUI":
         self.tab_main = notebook_utility.OutputsTabExt(
             ["Data", "Trends", "Options", "GoF", "TopTokens"], layout={'width': '98%'}
         )
-        self.trends_gui = word_trends.TrendsGUI().setup(displayers=word_trends.DEFAULT_WORD_TREND_DISPLAYERS)
+        self.trends_gui = word_trends.CoOccurrenceTrendsGUI(
+            bundle=self.bundle,
+            n_top_count=self.n_top_count,
+        ).setup(displayers=word_trends.DEFAULT_WORD_TREND_DISPLAYERS)
         self.gofs_gui = word_trends.GoFsGUI().setup() if self.gofs_enabled else None
 
         return self
@@ -35,10 +39,6 @@ class ExploreGUI:
             if self.gofs_gui:
                 self.gofs_gui.display(trends_data=trends_data)
 
-            # self.tab_main.display_fx_result(0, display_grid, trends_data.memory.get('co_occurrences'), clear=True)
-            # self.tab_main.display_fx_result(
-            #     0, display_table, self.trim_data(trends_data.memory.get('co_occurrences')), clear=True
-            # )
             self.tab_main.display_content(0, TabularCoOccurrenceGUI(bundle=self.bundle).setup(), clear=True)
             self.tab_main.display_as_yaml(2, self.bundle.compute_options, clear=True, width='800px', height='600px')
 
