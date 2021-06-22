@@ -1,5 +1,4 @@
 import abc
-import contextlib
 from typing import Sequence
 
 from ipywidgets import (
@@ -193,7 +192,6 @@ class TrendsBaseGUI(abc.ABC):
         # self._normalize.observe(self._plot_trends, names='value')
 
         # self._keyness.observe(self._plot_trends, names='value')
-        # self._keyness_source.observe(self._plot_trends, names='value')
         # self._top_count.observe(self._plot_trends, names='value')
         # self._time_period.observe(self._plot_trends, names='value')
 
@@ -206,7 +204,6 @@ class TrendsBaseGUI(abc.ABC):
         self._normalize.disable = value
         self._words.disable = value
         self._keyness.disable = value
-        self._keyness_source.disable = value
         self._top_count.disable = value
         self._time_period.disable = value
 
