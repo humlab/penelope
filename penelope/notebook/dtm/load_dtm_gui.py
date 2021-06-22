@@ -54,8 +54,12 @@ class LoadGUI:
             self._load_button.disabled = True
             folder, filename = os.path.split(self.corpus_filename)
             tag = right_chop(filename, self.filename_pattern[1:])
+            self.info("⌛ Loading data...")
             corpus = self.load_callback(folder=folder, tag=tag)
+            self.info("⌛ Preparing display...")
             self.done_callback(corpus, corpus_folder=folder, corpus_tag=tag)
+            self.info("✔")
+
         except (ValueError, FileNotFoundError, Exception) as ex:
             logger.error(ex)
             self.warn(f"‼ ‼ {ex} ‼ ‼</b>")
@@ -105,6 +109,9 @@ class LoadGUI:
 
     def warn(self, msg: str):
         self.alert(f"<span style='color=red'>{msg}</span>")
+
+    def info(self, msg: str) -> None:
+        self._alert.value = f"<span style='color: green; font-weight: bold;'>{msg or '😃'}</span>"
 
 
 def create_load_gui(
