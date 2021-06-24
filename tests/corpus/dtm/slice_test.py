@@ -4,7 +4,7 @@ import pytest
 import scipy
 from penelope.corpus import VectorizedCorpus
 
-from .utils import create_vectorized_corpus
+from .utils import create_abc_corpus, create_vectorized_corpus
 
 # pylint: disable=redefined-outer-name
 
@@ -108,3 +108,48 @@ def test_slice_by_term_frequency(slice_corpus):
 
     corpus = slice_corpus.slice_by_term_frequency(12)
     assert corpus.term_frequencies.tolist() == []
+
+
+def test_compress():
+
+    corpus: VectorizedCorpus = create_abc_corpus(
+        [
+            [2, 1, 4, 1],
+            [2, 2, 3, 0],
+            [2, 3, 2, 0],
+        ]
+    )
+
+    compressed_corpus, _, _ = corpus.compress()
+    assert (corpus.data.todense() == compressed_corpus.data.todense()).all().all()
+    assert compressed_corpus is not corpus
+
+    compressed_corpus, _, _ = corpus.compress(inplace=True)
+    assert (corpus.data.todense() == compressed_corpus.data.todense()).all().all()
+    assert compressed_corpus is corpus
+
+    corpus: VectorizedCorpus = create_abc_corpus(
+        [
+            [0, 2, 1, 0, 4, 1, 0],
+            [0, 2, 2, 0, 3, 0, 0],
+            [0, 2, 3, 0, 2, 0, 0],
+        ]
+    )
+    compressed_corpus, m, indicies = corpus.compress(inplace=False)
+    assert (
+        (
+            compressed_corpus.data.todense()
+            == [
+                [2, 1, 4, 1],
+                [2, 2, 3, 0],
+                [2, 3, 2, 0],
+            ]
+        )
+        .all()
+        .all()
+    )
+
+    assert compressed_corpus.token2id == {w: i for i, w in enumerate(['b', 'c', 'e', 'f'])}
+    assert (indicies == [1, 2, 4, 5]).all()
+    assert m == {j: i for i, j in enumerate(indicies)}
+    assert compressed_corpus.term_frequency_mapping == {i: corpus.term_frequency_mapping[j] for j, i in m.items()}

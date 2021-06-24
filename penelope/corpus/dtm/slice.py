@@ -132,3 +132,20 @@ class SliceMixIn:
         """Returns indicies of words having a frequency below a given threshold"""
         indicies = np.argwhere(self.term_frequencies >= threshold).ravel()
         return indicies
+
+    def compress(self, inplace=False) -> Tuple[IVectorizedCorpus, Mapping[int, int], Sequence[int]]:
+        """Compresses corpus by eliminating zero-TF terms.
+
+        Returns:
+            Tuple[IVectorizedCorpus, Mapping[int,int], Sequence[int]]: compressed corpus, mapping between old/new vocabularies and affected original indicies
+        """
+        indicies = self.term_frequencies_greater_than_or_equal_to_threshold(1)
+
+        if len(indicies) == 0:
+            return self, {}, []
+
+        mapping: Mapping[int, int] = {old_id: new_id for new_id, old_id in enumerate(indicies)}
+
+        corpus: IVectorizedCorpus = self.slice_by_indicies(indicies, inplace=inplace)
+
+        return (corpus, mapping, indicies)
