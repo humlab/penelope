@@ -92,34 +92,34 @@ def test_load_of_uncompressed_corpus(text_corpus):
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     # Arrange
-    dumped_v_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
+    dumped_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
 
-    dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
+    dumped_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
 
     # Act
     loaded_v_corpus: VectorizedCorpus = VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
     # Assert
-    assert dumped_v_corpus.term_frequency_mapping == loaded_v_corpus.term_frequency_mapping
-    assert dumped_v_corpus.document_index.to_dict() == loaded_v_corpus.document_index.to_dict()
-    assert dumped_v_corpus.token2id == loaded_v_corpus.token2id
+    assert dumped_corpus.term_frequency_mapping == loaded_v_corpus.term_frequency_mapping
+    assert dumped_corpus.document_index.to_dict() == loaded_v_corpus.document_index.to_dict()
+    assert dumped_corpus.token2id == loaded_v_corpus.token2id
 
 
 def test_load_of_compressed_corpus(text_corpus):
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     # Arrange
-    dumped_v_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
+    dumped_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
 
-    dumped_v_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=True)
+    dumped_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=True)
 
     # Act
     loaded_v_corpus: VectorizedCorpus = VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
     # Assert
-    assert dumped_v_corpus.term_frequency_mapping == loaded_v_corpus.term_frequency_mapping
-    assert dumped_v_corpus.document_index.to_dict() == loaded_v_corpus.document_index.to_dict()
-    assert dumped_v_corpus.token2id == loaded_v_corpus.token2id
+    assert dumped_corpus.term_frequency_mapping == loaded_v_corpus.term_frequency_mapping
+    assert dumped_corpus.document_index.to_dict() == loaded_v_corpus.document_index.to_dict()
+    assert dumped_corpus.token2id == loaded_v_corpus.token2id
 
 
 def test_id2token_is_reversed_token2id(corpus):
