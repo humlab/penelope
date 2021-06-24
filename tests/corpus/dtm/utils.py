@@ -50,6 +50,7 @@ def create_abc_corpus(dtm: List[List[int]]):
     v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
     return v_corpus
 
+
 def create_vectorized_corpus() -> VectorizedCorpus:
     bag_term_matrix = np.array(
         [
