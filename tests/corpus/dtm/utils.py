@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -34,6 +35,20 @@ def create_corpus() -> corpora.TokenizedCorpus:
     corpus = corpora.TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
 
+
+def create_abc_corpus(dtm: List[List[int]]):
+
+    bag_term_matrix = np.array(dtm)
+    token2id = {chr(ord('a') + i): i for i in range(0, bag_term_matrix.shape[1])}
+    document_index = pd.DataFrame(
+        {
+            'year': [2000 + i for i in range(0, bag_term_matrix.shape[0])],
+            'filename': [f'{2000+i}.txt' for i in range(0, bag_term_matrix.shape[0])],
+            'document_id': [i for i in range(0, bag_term_matrix.shape[0])],
+        }
+    )
+    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    return v_corpus
 
 def create_vectorized_corpus() -> VectorizedCorpus:
     bag_term_matrix = np.array(
