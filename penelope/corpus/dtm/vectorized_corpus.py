@@ -398,7 +398,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             self.data = data
         return self
 
-    def mask_by_nonzero_other(self, other: VectorizedCorpus) -> VectorizedCorpus:
+    def zero_out_by_others_zeros(self, other: VectorizedCorpus) -> VectorizedCorpus:
         """Zeroes out elements in `self` where corresponding element in `other` is zero"""
         mask = other.data > 0
         data = self.data
