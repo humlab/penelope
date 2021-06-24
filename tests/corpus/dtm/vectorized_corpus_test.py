@@ -176,14 +176,6 @@ def test_to_n_top_dataframe(corpus):
     assert corpus.to_n_top_dataframe(1) is not None
 
 
-def test_year_range(corpus):
-    assert corpus.year_range() == (2013, 2014)
-
-
-def test_xs_years(corpus):
-    assert corpus.xs_years().tolist() == [2013, 2014]
-
-
 def test_token_indices(corpus):
     assert corpus.token_indices(['a', 'c', 'z']) == [0, 2]
 

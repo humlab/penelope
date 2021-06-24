@@ -3,6 +3,7 @@ import itertools
 import bokeh
 import penelope.common.curve_fit as cf
 from penelope.common.cluster_analysis import smooth_matrix
+from penelope.corpus import DocumentIndexHelper
 
 from . import cluster_plot
 
@@ -32,7 +33,7 @@ class ClustersMeanPlot:
         colors = itertools.cycle(bokeh.palettes.Category20[20])
 
         smoothers = smoothers or self.smoothers
-        xs = x_corpus.xs_years()
+        xs = DocumentIndexHelper.xs_years(x_corpus.document_index)
 
         smoothers = None  # []
 

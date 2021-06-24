@@ -156,14 +156,6 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def year_range(self) -> Tuple[Optional[int], Optional[int]]:
-        ...
-
-    @abc.abstractmethod
-    def xs_years(self) -> Tuple[int, int]:
-        ...
-
-    @abc.abstractmethod
     def token_indices(self, tokens: Iterable[str]):
         ...
 

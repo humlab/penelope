@@ -335,6 +335,32 @@ class DocumentIndexHelper:
             self._document_index['document_id'] = range(0, len(self._document_index))
         return self
 
+    @staticmethod
+    def year_range(document_index: pd.DataFrame) -> Tuple[Optional[int], Optional[int]]:
+        """Returns document's year range
+
+        Returns
+        -------
+        Tuple[Optional[int],Optional[int]]
+            Min/max document year
+        """
+        if 'year' in document_index.columns:
+            return (document_index.year.min(), document_index.year.max())
+        return (None, None)
+
+    @staticmethod
+    def xs_years(document_index: pd.DataFrame) -> Tuple[int, int]:
+        """Returns an array that contains a no-gap year sequence from min year to max year
+
+        Returns
+        -------
+        numpy.array
+            Sequence from min year to max year
+        """
+        (low, high) = DocumentIndexHelper.year_range(document_index)
+        xs = np.arange(low, high + 1, 1)
+        return xs
+
 
 KNOWN_TIME_PERIODS: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
 

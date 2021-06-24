@@ -7,6 +7,7 @@ import numpy as np
 import penelope.common.curve_fit as cf
 from bokeh.plotting import Figure
 from penelope.corpus import VectorizedCorpus
+from penelope.corpus.document_index import DocumentIndexHelper
 from penelope.utility import get_logger, take
 
 logger = get_logger()
@@ -29,7 +30,7 @@ def yearly_token_distributions_datasource(x_corpus: VectorizedCorpus, indices: L
     -------
     Mapping
     """
-    xs = x_corpus.xs_years()
+    xs = DocumentIndexHelper.xs_years(x_corpus.document_index)
     data = {x_corpus.id2token[token_id]: x_corpus.bag_term_matrix[:, token_id] for token_id in indices}
     data["year"] = xs
 
@@ -67,7 +68,7 @@ def yearly_token_distributions_multiline_datasource(
     -------
     Mapping
     """
-    xs = x_corpus.xs_years()
+    xs = DocumentIndexHelper.xs_years(x_corpus.document_index)
 
     if len(smoothers or []) > 0:
         xs_data = []
@@ -294,7 +295,7 @@ def yearly_token_distribution_multiple_line_plot(
     smoothers = smoothers or [cf.rolling_average_smoother('nearest', 3), cf.pchip_spline]
 
     colors = itertools.cycle(bokeh.palettes.Category10[10])
-    x_range = x_corpus.year_range()
+    x_range = DocumentIndexHelper.year_range(x_corpus.document_index)
     xs = np.arange(x_range[0], x_range[1] + 1, 1)
 
     plots = []
