@@ -81,7 +81,7 @@ def compute_weighed_corpus_keyness(
 
     if opts.tf_threshold > 1:
         # corpus = corpus.slice_by_term_frequency(opts.tf_threshold)
-        indicies = np.argwhere(corpus.term_frequencies < opts.tf_threshold).ravel()
+        indicies = np.argwhere(corpus.term_frequency < opts.tf_threshold).ravel()
         if len(indicies) > 0:
             corpus.data[:, indicies] = 0
             corpus.data.eliminate_zeros()
@@ -119,7 +119,7 @@ def weigh_corpora(corpus: VectorizedCorpus, concept_corpus: VectorizedCorpus) ->
         bag_term_matrix=M,
         token2id=concept_corpus.token2id,
         document_index=concept_corpus.document_index,
-        term_frequency_mapping=concept_corpus.term_frequency_mapping,
+        override_term_frequency=concept_corpus.term_frequency_mapping,
         **concept_corpus.payload,
     )
     return weighed_corpus
