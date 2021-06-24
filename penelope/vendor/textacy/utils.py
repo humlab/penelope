@@ -102,10 +102,10 @@ def infrequent_words(
     if weighting == 'count' and threshold <= 1:
         return set([])
 
-    term_frequency_mapping = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=as_strings)
-    words = {w for w in term_frequency_mapping if term_frequency_mapping[w] < threshold}
+    _word_counts = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=as_strings)
+    _words = {w for w in _word_counts if _word_counts[w] < threshold}
 
-    return words
+    return _words
 
 
 def frequent_document_words(
