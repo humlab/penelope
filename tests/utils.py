@@ -1,8 +1,11 @@
 import os
-from typing import Callable
+from typing import Callable, List
 
+import numpy as np
+import pandas as pd
 import penelope.topic_modelling as topic_modelling
-from penelope.corpus import TextTransformOpts
+from penelope.co_occurrence import Bundle, to_filename
+from penelope.corpus import TextTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
 
 from .fixtures import TranströmerCorpus
@@ -35,6 +38,39 @@ if __file__ in globals():
 
 # http://www.nltk.org/howto/collocations.html
 # PMI
+
+
+def create_abc_corpus(dtm: List[List[int]], document_years: List[int] = None) -> VectorizedCorpus:
+
+    bag_term_matrix = np.array(dtm)
+    token2id = {chr(ord('a') + i): i for i in range(0, bag_term_matrix.shape[1])}
+
+    years: List[int] = (
+        document_years if document_years is not None else [2000 + i for i in range(0, bag_term_matrix.shape[0])]
+    )
+
+    document_index = pd.DataFrame(
+        {
+            'year': years,
+            'filename': [f'{2000+i}_{i}.txt' for i in years],
+            'document_id': [i for i in range(0, bag_term_matrix.shape[0])],
+        }
+    )
+    corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    return corpus
+
+
+def create_vectorized_corpus() -> VectorizedCorpus:
+    return create_abc_corpus(
+        dtm=[
+            [2, 1, 4, 1],
+            [2, 2, 3, 0],
+            [2, 3, 2, 0],
+            [2, 4, 1, 1],
+            [2, 0, 1, 1],
+        ],
+        document_years=[2013, 2013, 2014, 2014, 2014],
+    )
 
 
 def create_text_reader(
@@ -103,3 +139,10 @@ def create_inferred_model(method="gensim_lda-multicore") -> topic_modelling.Infe
         engine_args=TOPIC_MODELING_OPTS,
     )
     return inferred_model
+
+
+def create_bundle(tag: str = 'DUMMY') -> Bundle:
+    folder = f'./tests/test_data/{tag}'
+    filename = to_filename(folder=folder, tag=tag)
+    bundle: Bundle = Bundle.load(filename, compute_frame=False)
+    return bundle

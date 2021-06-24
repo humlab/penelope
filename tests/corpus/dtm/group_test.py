@@ -6,7 +6,7 @@ from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .utils import create_bundle, create_vectorized_corpus
+from ...utils import create_bundle, create_vectorized_corpus
 
 #  # pylint: disable=redefined-outer-name
 

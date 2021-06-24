@@ -3,10 +3,14 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-from penelope.corpus import CorpusVectorizer, VectorizedCorpus, find_matching_words_in_vocabulary
-from tests.utils import OUTPUT_FOLDER
-
-from .utils import create_corpus, create_vectorized_corpus
+from penelope.corpus import (
+    CorpusVectorizer,
+    TokenizedCorpus,
+    TokensTransformOpts,
+    VectorizedCorpus,
+    find_matching_words_in_vocabulary,
+)
+from tests.utils import OUTPUT_FOLDER, create_tokens_reader, create_vectorized_corpus
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -14,8 +18,19 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
 @pytest.fixture
-def text_corpus() -> VectorizedCorpus:
-    return create_corpus()
+def text_corpus() -> TokenizedCorpus:
+    filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
+    reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+    transform_opts = TokensTransformOpts(
+        only_any_alphanumeric=True,
+        to_lower=True,
+        remove_accents=False,
+        min_len=2,
+        max_len=None,
+        keep_numerals=False,
+    )
+    corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
+    return corpus
 
 
 @pytest.fixture
