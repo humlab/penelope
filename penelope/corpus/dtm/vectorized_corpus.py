@@ -106,6 +106,11 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return self.bag_term_matrix.sum(axis=0).A1.ravel()
 
     @property
+    def override_term_frequency(self) -> np.ndarray:
+        """Overriden global token frequencies (source corpus size)"""
+        return self._override_term_frequency
+
+    @property
     def TF(self) -> np.ndarray:
         """Term frequencies (TF)"""
         return self.term_frequency
