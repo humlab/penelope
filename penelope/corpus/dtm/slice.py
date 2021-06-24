@@ -105,6 +105,9 @@ class SliceMixIn:
     def slice_by_indicies(self: IVectorizedCorpusProtocol, indices: Sequence[int], inplace=False) -> IVectorizedCorpus:
         """Create (or modifies inplace) a subset corpus from given `indices`"""
 
+        if indices is None or len(indices) == 0:
+            return self
+
         indices.sort()
 
         sliced_bag_term_matrix = self.bag_term_matrix[:, indices]

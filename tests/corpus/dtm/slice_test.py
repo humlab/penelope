@@ -1,10 +1,12 @@
+from typing import Callable
+
 import numpy as np
 import pandas as pd
 import pytest
 import scipy
 from penelope.corpus import VectorizedCorpus
 
-from .utils import create_abc_corpus, create_vectorized_corpus
+from ...utils import create_abc_corpus, create_vectorized_corpus
 
 # pylint: disable=redefined-outer-name
 
@@ -12,6 +14,36 @@ from .utils import create_abc_corpus, create_vectorized_corpus
 @pytest.fixture
 def slice_corpus() -> VectorizedCorpus:
     return create_vectorized_corpus()
+
+
+def test_slice_by_indicies():
+    ...
+
+    make_corpus: Callable[[], VectorizedCorpus] = lambda: create_abc_corpus(
+        [
+            [2, 1, 4, 1],
+            [2, 2, 3, 0],
+            [2, 3, 2, 0],
+        ]
+    )
+
+    corpus: VectorizedCorpus = make_corpus()
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies([])
+    assert sliced_corpus is corpus
+
+    corpus = make_corpus()
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies(None)
+    assert sliced_corpus is corpus
+
+    corpus = make_corpus()
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies([0, 2])
+    assert sliced_corpus is not corpus
+    assert (sliced_corpus.data.todense() == [[2, 4], [2, 3], [2, 2]]).all().all()
+
+    corpus = make_corpus()
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies([0, 2], inplace=True)
+    assert sliced_corpus is corpus
+    assert (sliced_corpus.data.todense() == [[2, 4], [2, 3], [2, 2]]).all().all()
 
 
 def test_normalize_with_default_arguments_returns_matrix_normalized_by_l1_norm_for_each_row():
