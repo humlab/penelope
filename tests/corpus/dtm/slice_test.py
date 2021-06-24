@@ -123,7 +123,7 @@ def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_
 
 
 def test_term_frequencies(slice_corpus):
-    assert slice_corpus.term_frequencies.tolist() == [10, 10, 11, 3]
+    assert slice_corpus.term_frequency.tolist() == [10, 10, 11, 3]
 
 
 def test_slice_by_term_frequency(slice_corpus):
@@ -133,13 +133,13 @@ def test_slice_by_term_frequency(slice_corpus):
     assert corpus.data.sum() == slice_corpus.data.sum()
 
     corpus = slice_corpus.slice_by_term_frequency(4)
-    assert corpus.term_frequencies.tolist() == [10, 10, 11]
+    assert corpus.term_frequency.tolist() == [10, 10, 11]
 
     corpus = slice_corpus.slice_by_term_frequency(10)
-    assert corpus.term_frequencies.tolist() == [10, 10, 11]
+    assert corpus.term_frequency.tolist() == [10, 10, 11]
 
     corpus = slice_corpus.slice_by_term_frequency(12)
-    assert corpus.term_frequencies.tolist() == []
+    assert corpus.term_frequency.tolist() == []
 
 
 def test_compress():

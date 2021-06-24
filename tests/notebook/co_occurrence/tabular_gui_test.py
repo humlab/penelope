@@ -55,7 +55,7 @@ def test_table_gui_to_corpus(bundle, time_period):
 
     corpus: VectorizedCorpus = gui.to_corpus()
 
-    assert ((corpus.term_frequencies >= 100) | (corpus.term_frequencies == 0)).all()
+    assert ((corpus.term_frequency >= 100) | (corpus.term_frequency == 0)).all()
 
     gui.save()
 

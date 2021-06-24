@@ -39,12 +39,12 @@ class IVectorizedCorpus(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def term_frequency_mapping(self) -> Dict[str, int]:
+    def override_term_frequency(self) -> Dict[str, int]:
         ...
 
     @property
     @abc.abstractproperty
-    def term_frequencies(self) -> np.ndarray:
+    def term_frequency(self) -> np.ndarray:
         ...
 
     @property
@@ -216,7 +216,7 @@ class IVectorizedCorpus(abc.ABC):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        term_frequency_mapping: Dict[str, int] = None,
+        override_term_frequency: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         ...
 
@@ -229,7 +229,7 @@ class IVectorizedCorpusProtocol(Protocol):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        term_frequency_mapping: Dict[str, int] = None,
+        override_term_frequency: Dict[str, int] = None,
         **kwargs,
     ) -> IVectorizedCorpus:
         ...

@@ -102,7 +102,7 @@ def test_zero_out_by_tf_threshold():
 
     corpus: VectorizedCorpus = bundle.corpus
 
-    assert (corpus.term_frequencies == expected_sums).all()
+    assert (corpus.term_frequency == expected_sums).all()
 
     tf_threshold: int = 10
     indicies = [i for i, v in enumerate(expected_sums) if v < tf_threshold]
@@ -111,4 +111,4 @@ def test_zero_out_by_tf_threshold():
 
     corpus.zero_out_by_tf_threshold(tf_threshold)
 
-    assert (corpus.term_frequencies == expected_sums).all()
+    assert (corpus.term_frequency == expected_sums).all()

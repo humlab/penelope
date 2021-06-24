@@ -48,7 +48,7 @@ def test_vocabulary(corpus):
 
 
 def test_term_frequencies(corpus):
-    assert corpus.term_frequencies.tolist() == [10, 10, 11, 3]
+    assert corpus.term_frequency.tolist() == [10, 10, 11, 3]
 
 
 def test_document_token_counts(corpus):

@@ -76,7 +76,7 @@ class GroupByMixIn:
             bag_term_matrix,
             token2id=self.token2id,
             document_index=document_index,
-            term_frequency_mapping=self.term_frequency_mapping,
+            override_term_frequency=self.term_frequency_mapping,
             **self.payload,
         )
 
@@ -183,7 +183,7 @@ class GroupByMixIn:
             matrix.tocsr(),
             token2id=self.token2id,
             document_index=document_index,
-            term_frequency_mapping=self.term_frequency_mapping,
+            override_term_frequency=self.term_frequency_mapping,
             **self.payload,
         )
         return grouped_corpus

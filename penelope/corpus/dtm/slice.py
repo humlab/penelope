@@ -133,7 +133,7 @@ class SliceMixIn:
 
     def term_frequencies_greater_than_or_equal_to_threshold(self, threshold: Union[int, float]) -> np.ndarray:
         """Returns indicies of words having a frequency below a given threshold"""
-        indicies = np.argwhere(self.term_frequencies >= threshold).ravel()
+        indicies = np.argwhere(self.term_frequency >= threshold).ravel()
         return indicies
 
     def compress(self, inplace=False) -> Tuple[IVectorizedCorpus, Mapping[int, int], Sequence[int]]:
