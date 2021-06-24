@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import fnmatch
 import re
 import warnings
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Union
 
 import numpy as np
 import scipy
@@ -52,18 +53,11 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             bag_term_matrix = bag_term_matrix.tocsr()
 
         self._bag_term_matrix: scipy.sparse.csr_matrix = bag_term_matrix
-
-        assert scipy.sparse.issparse(self.bag_term_matrix), "only sparse data allowed"
-
         self._token2id: Mapping[str, int] = token2id
         self._id2token: Optional[Mapping[int, str]] = None
-
         self._document_index: DocumentIndex = self._ingest_document_index(document_index=document_index)
         self._term_frequency_mapping: Optional[Dict[str, int]] = term_frequency_mapping
-
         self._payload: dict = dict(**kwargs)
-
-        CoOccurrenceMixIn.__init__(self)
 
     def _ingest_document_index(self, document_index: DocumentIndex):
         if not utility.is_strictly_increasing(document_index.index):
@@ -267,30 +261,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         return corpus
 
-    def year_range(self) -> Tuple[Optional[int], Optional[int]]:
-        """Returns document's year range
-
-        Returns
-        -------
-        Tuple[Optional[int],Optional[int]]
-            Min/max document year
-        """
-        if 'year' in self.document_index.columns:
-            return (self.document_index.year.min(), self.document_index.year.max())
-        return (None, None)
-
-    def xs_years(self) -> Tuple[int, int]:
-        """Returns an array that contains a no-gap year sequence from min year to max year
-
-        Returns
-        -------
-        numpy.array
-            Sequence from min year to max year
-        """
-        (low, high) = self.year_range()
-        xs = np.arange(low, high + 1, 1)
-        return xs
-
     def token_indices(self, tokens: Iterable[str]) -> List[int]:
         """Returns token (column) indices for words `tokens`
 
@@ -307,7 +277,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return [self.token2id[token] for token in tokens if token in self.token2id]
 
     def tf_idf(self, norm: str = 'l2', use_idf: bool = True, smooth_idf: bool = True) -> IVectorizedCorpus:
-        """Returns a (nomalized) TF-IDF transformed version of the corpus
+        """Returns a (normalized) TF-IDF transformed version of the corpus
 
         Calls sklearn's TfidfTransformer
 
@@ -395,15 +365,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         ]
         return indices
 
-    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> IVectorizedCorpus:
-        """Clears (inplace) tokens (columns) having a TF-value (xolumn sum) less than threshold"""
-        # FIXME Column zero-out gives SparseEfficiencyWarning
-        indicies = np.argwhere(self.term_frequencies < tf_threshold).ravel()
-        if len(indicies) > 0:
-            self.data[:, indicies] = 0
-            self.data.eliminate_zeros()
-        return self
-
     @staticmethod
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
@@ -419,6 +380,32 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             term_frequency_mapping=term_frequency_mapping,
             **kwargs,
         )
+
+    def nbytes(self, kind="bytes") -> float:
+        k = {'bytes': 0, 'kb': 1, 'mb': 2, 'gb': 3}.get(kind.lower(), 0)
+        with contextlib.suppress(Exception):
+            return (self.data.data.nbytes + self.data.indptr.nbytes + self.data.indices.nbytes) / pow(1024, k)
+        return None
+
+    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> IVectorizedCorpus:
+        """Clears (inplace) tokens (columns) having a TF-value (column sum) less than threshold"""
+        # FIXME Column zero-out gives SparseEfficiencyWarning
+        indicies = np.argwhere(self.term_frequencies < tf_threshold).ravel()
+        if len(indicies) > 0:
+            data = self.data.tolil()
+            data[:, indicies] = 0
+            data.eliminate_zeros()
+            self.data = data
+        return self
+
+    def mask_by_nonzero_other(self, other: VectorizedCorpus) -> VectorizedCorpus:
+        """Zeroes out elements in `self` where corresponding element in `other` is zero"""
+        mask = other.data > 0
+        data = self.data
+        data = data.multiply(mask)
+        data.eliminate_zeros()
+        self.data = data
+        return self
 
 
 def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: Set[str]) -> Set[str]:
