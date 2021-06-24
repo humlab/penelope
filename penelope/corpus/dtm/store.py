@@ -17,7 +17,7 @@ def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
     token2id: Dict[str, int],
     document_index: DocumentIndex,
-    term_frequency_mapping: Dict[str, int] = None,
+    override_term_frequency: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
     module = importlib.import_module(name="penelope.corpus.dtm.vectorized_corpus")
@@ -26,7 +26,7 @@ def create_corpus_instance(
         bag_term_matrix=bag_term_matrix,
         token2id=token2id,
         document_index=document_index,
-        term_frequency_mapping=term_frequency_mapping,
+        override_term_frequency=override_term_frequency,
     )
 
 
@@ -137,7 +137,7 @@ class StoreMixIn:
             bag_term_matrix,
             token2id=token2id,
             document_index=document_index,
-            term_frequency_mapping=term_frequency_mapping,
+            override_term_frequency=term_frequency_mapping,
         )
 
     @staticmethod
