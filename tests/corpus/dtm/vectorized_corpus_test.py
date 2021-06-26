@@ -43,31 +43,27 @@ def slice_corpus() -> VectorizedCorpus:
     return create_vectorized_corpus()
 
 
-def test_vocabulary(corpus):
+def test_vocabulary(corpus: VectorizedCorpus):
     assert corpus.vocabulary == ['a', 'b', 'c', 'd']
 
 
-def test_term_frequencies(corpus):
+def test_term_frequencies(corpus: VectorizedCorpus):
     assert corpus.term_frequency.tolist() == [10, 10, 11, 3]
 
 
-def test_document_token_counts(corpus):
+def test_document_token_counts(corpus: VectorizedCorpus):
     assert corpus.document_token_counts.tolist() == [8, 7, 7, 8, 4]
 
 
-def test_document_term_frequency_mapping(corpus):
-    assert corpus.term_frequency_mapping == {'a': 10, 'b': 10, 'c': 11, 'd': 3}
-
-
-def test_n_terms(corpus):
+def test_n_terms(corpus: VectorizedCorpus):
     assert corpus.n_terms == 4
 
 
-def test_n_docs(corpus):
+def test_n_docs(corpus: VectorizedCorpus):
     assert corpus.n_docs == 5
 
 
-def test_bag_term_matrix_to_bag_term_docs(corpus):
+def test_bag_term_matrix_to_bag_term_docs(corpus: VectorizedCorpus):
 
     doc_ids = (
         0,
@@ -92,20 +88,20 @@ def test_load_of_uncompressed_corpus(text_corpus):
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     # Arrange
-    dumped_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
 
-    dumped_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
+    corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=False)
 
     # Act
-    loaded_v_corpus: VectorizedCorpus = VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
+    loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
     # Assert
-    assert dumped_corpus.term_frequency_mapping == loaded_v_corpus.term_frequency_mapping
-    assert dumped_corpus.document_index.to_dict() == loaded_v_corpus.document_index.to_dict()
-    assert dumped_corpus.token2id == loaded_v_corpus.token2id
+    assert (corpus.term_frequency == loaded_corpus.term_frequency).all()
+    assert corpus.document_index.to_dict() == loaded_corpus.document_index.to_dict()
+    assert corpus.token2id == loaded_corpus.token2id
 
 
-def test_load_of_compressed_corpus(text_corpus):
+def test_load_of_compressed_corpus(text_corpus: TokenizedCorpus):
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     # Arrange
@@ -114,15 +110,15 @@ def test_load_of_compressed_corpus(text_corpus):
     dumped_corpus.dump(tag='dump_test', folder=OUTPUT_FOLDER, compressed=True)
 
     # Act
-    loaded_v_corpus: VectorizedCorpus = VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
+    loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(tag='dump_test', folder=OUTPUT_FOLDER)
 
     # Assert
-    assert dumped_corpus.term_frequency_mapping == loaded_v_corpus.term_frequency_mapping
-    assert dumped_corpus.document_index.to_dict() == loaded_v_corpus.document_index.to_dict()
-    assert dumped_corpus.token2id == loaded_v_corpus.token2id
+    assert (dumped_corpus.term_frequency == loaded_corpus.term_frequency).all()
+    assert dumped_corpus.document_index.to_dict() == loaded_corpus.document_index.to_dict()
+    assert dumped_corpus.token2id == loaded_corpus.token2id
 
 
-def test_id2token_is_reversed_token2id(corpus):
+def test_id2token_is_reversed_token2id(corpus: VectorizedCorpus):
     id2token = {0: 'a', 1: 'b', 2: 'c', 3: 'd'}
     assert id2token == corpus.id2token
 
@@ -167,39 +163,39 @@ def test_find_matching_words_in_vocabulary():
     assert find_matching_words_in_vocabulary(token2id, ["*"]) == {"bengt", "bertil", "eva", "julia"}
 
 
-def test_to_dense(corpus):
+def test_to_dense(corpus: VectorizedCorpus):
     assert corpus.todense() is not None
 
 
-def test_get_word_vector(corpus):
+def test_get_word_vector(corpus: VectorizedCorpus):
     assert corpus.get_word_vector('b').tolist() == [1, 2, 3, 4, 0]
 
 
-def test_filter(corpus):
+def test_filter(corpus: VectorizedCorpus):
     assert len(corpus.filter(lambda x: x['year'] == 2013).document_index) == 2
 
 
-def test_n_global_top_tokens(corpus):
-    assert corpus.n_global_top_tokens(2) == {'a': 10, 'c': 11}
+def test_pick_top_tf_map(corpus: VectorizedCorpus):
+    assert corpus.pick_top_tf_map(2) == {'a': 10, 'c': 11}
 
 
-def test_stats(corpus):
+def test_stats(corpus: VectorizedCorpus):
     assert corpus.stats() is not None
 
 
-def test_to_n_top_dataframe(corpus):
+def test_to_n_top_dataframe(corpus: VectorizedCorpus):
     assert corpus.to_n_top_dataframe(1) is not None
 
 
-def test_token_indices(corpus):
+def test_token_indices(corpus: VectorizedCorpus):
     assert corpus.token_indices(['a', 'c', 'z']) == [0, 2]
 
 
-def test_tf_idf(corpus):
+def test_tf_idf(corpus: VectorizedCorpus):
     assert corpus.tf_idf() is not None
 
 
-def test_to_bag_of_terms(corpus):
+def test_to_bag_of_terms(corpus: VectorizedCorpus):
     expected_docs = [
         ['a', 'a', 'b', 'c', 'c', 'c', 'c', 'd'],
         ['a', 'a', 'b', 'b', 'c', 'c', 'c'],
@@ -210,11 +206,11 @@ def test_to_bag_of_terms(corpus):
     assert [list(x) for x in corpus.to_bag_of_terms()] == expected_docs
 
 
-def test_get_top_n_words(corpus):
+def test_get_top_n_words(corpus: VectorizedCorpus):
     assert corpus.get_top_n_words(n=2) == [('c', 11), ('a', 10)]
 
 
-def test_co_occurrence_matrix(corpus):
+def test_co_occurrence_matrix(corpus: VectorizedCorpus):
     m = corpus.co_occurrence_matrix()
     assert m is not None
     assert (
