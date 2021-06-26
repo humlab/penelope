@@ -6,7 +6,7 @@ import os
 import pickle
 from collections import Counter
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Mapping, Optional, Tuple, Type
+from typing import TYPE_CHECKING, List, Mapping, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -232,17 +232,33 @@ class TokenWindowCountStatistics:
 
     """Corpus-wide tokens' window counts"""
 
-    # FIXME Is this realy needed? Sum of matrix axis=0?
-    corpus_counts: Mapping[int, int] = None
+    total_term_window_counts: Mapping[int, int] = None
 
     """Document-level token window counts"""
-    document_counts: scipy.sparse.spmatrix = None
+    document_term_window_counts: scipy.sparse.spmatrix = None
+
+    def clip(self, keep_single_ids: List(int), inplace=True) -> TokenWindowCountStatistics:
+
+        ttwc: dict = self.total_term_window_counts
+
+        total_term_window_counts: dict = {token_id: ttwc[token_id] for token_id in keep_single_ids}
+        document_term_window_counts: scipy.sparse.spmatrix = self.document_term_window_counts[:, keep_single_ids]
+
+        if inplace:
+            self.total_term_window_counts = total_term_window_counts
+            self.document_term_window_counts = document_term_window_counts
+            return self
+
+        return TokenWindowCountStatistics(
+            total_term_window_counts=total_term_window_counts,
+            document_term_window_counts=document_term_window_counts,
+        )
 
     @staticmethod
     def load(folder: str, tag: str) -> "TokenWindowCountStatistics":
         return TokenWindowCountStatistics(
-            corpus_counts=TokenWindowCountStatistics._load_corpus_counts(folder=folder, tag=tag),
-            document_counts=TokenWindowCountStatistics._load_document_counts(folder=folder, tag=tag),
+            total_term_window_counts=TokenWindowCountStatistics._load_corpus_counts(folder=folder, tag=tag),
+            document_term_window_counts=TokenWindowCountStatistics._load_document_counts(folder=folder, tag=tag),
         )
 
     def store(self, folder: str, tag: str) -> None:
@@ -250,9 +266,9 @@ class TokenWindowCountStatistics:
         self._store_document_counts(folder, tag)
 
     def _store_corpus_counts(self, folder: str, tag: str):
-        if self.corpus_counts:
+        if self.total_term_window_counts:
             with open(self._corpus_counts_filename(folder, tag), 'wb') as fp:
-                pickle.dump(self.corpus_counts, fp, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump(self.total_term_window_counts, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def _load_corpus_counts(folder: str, tag: str) -> Optional[Mapping[int, int]]:
@@ -267,10 +283,12 @@ class TokenWindowCountStatistics:
         """Stores documents' (rows) token (column) window counts matrix"""
         filename = TokenWindowCountStatistics._document_counts_filename(folder, tag)
         if compressed:
-            assert scipy.sparse.issparse(self.document_counts)
-            scipy.sparse.save_npz(replace_extension(filename, '.npz'), self.document_counts, compressed=True)
+            assert scipy.sparse.issparse(self.document_term_window_counts)
+            scipy.sparse.save_npz(
+                replace_extension(filename, '.npz'), self.document_term_window_counts, compressed=True
+            )
         else:
-            np.save(replace_extension(filename, '.npy'), self.document_counts, allow_pickle=True)
+            np.save(replace_extension(filename, '.npy'), self.document_term_window_counts, allow_pickle=True)
 
     @staticmethod
     def _load_document_counts(folder: str, tag: str) -> scipy.sparse.spmatrix:
