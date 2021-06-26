@@ -37,14 +37,23 @@ class IVectorizedCorpus(abc.ABC):
     def vocabulary(self) -> List[str]:
         ...
 
+    @abc.abstractmethod
+    def nlargest(self, n_top: int, sort_indices: bool = False, override: bool = False) -> np.ndarray:
+        ...
+
     @property
     @abc.abstractproperty
-    def override_term_frequency(self) -> Dict[str, int]:
+    def overridden_term_frequency(self) -> Dict[str, int]:
         ...
 
     @property
     @abc.abstractproperty
     def term_frequency(self) -> np.ndarray:
+        ...
+
+    @property
+    @abc.abstractproperty
+    def term_frequency0(self) -> np.ndarray:
         ...
 
     @property
@@ -128,11 +137,11 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def n_global_top_tokens(self, n_top: int) -> Dict[str, int]:
+    def pick_top_tf_map(self, n_top: int) -> Dict[str, int]:
         ...
 
     @abc.abstractmethod
-    def slice_by_n_count(self, n_count: int) -> "IVectorizedCorpus":
+    def slice_by_tf(self, n_count: int) -> "IVectorizedCorpus":
         ...
 
     @abc.abstractmethod
@@ -164,7 +173,7 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def to_bag_of_terms(self, indicies: Optional[Iterable[int]] = None) -> Iterable[Iterable[str]]:
+    def to_bag_of_terms(self, indices: Optional[Iterable[int]] = None) -> Iterable[Iterable[str]]:
         ...
 
     @abc.abstractmethod
@@ -216,7 +225,7 @@ class IVectorizedCorpus(abc.ABC):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        override_term_frequency: Dict[str, int] = None,
+        overridden_term_frequency: Dict[str, int] = None,
     ) -> "IVectorizedCorpus":
         ...
 
@@ -229,9 +238,17 @@ class IVectorizedCorpusProtocol(Protocol):
         bag_term_matrix: scipy.sparse.csr_matrix,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
-        override_term_frequency: Dict[str, int] = None,
+        overridden_term_frequency: Dict[str, int] = None,
         **kwargs,
     ) -> IVectorizedCorpus:
+        ...
+
+    @property
+    def term_frequency(self) -> np.ndarray:
+        ...
+
+    @property
+    def term_frequency0(self) -> np.ndarray:
         ...
 
     @property
@@ -258,4 +275,7 @@ class IVectorizedCorpusProtocol(Protocol):
         ...
 
     def recall(self, key: str) -> Optional[Any]:
+        ...
+
+    def nlargest(self, n_top: int, *, sort_indices: bool = False, override: bool = False) -> np.ndarray:
         ...
