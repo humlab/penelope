@@ -1,4 +1,3 @@
-from heapq import nlargest
 from numbers import Number
 from typing import Container, Dict, List, Sequence, Tuple
 
@@ -21,13 +20,26 @@ class StatsMixIn:
 
         sum_of_token_counts: np.ndarray = (self.data if indices is None else self.data[indices, :]).sum(axis=0).A1
 
-        largest_token_indicies = (-sum_of_token_counts).argsort()[:n]
+        largest_token_indices = (-sum_of_token_counts).argsort()[:n]
 
         largest_tokens = [
-            (self.id2token[i], sum_of_token_counts[i]) for i in largest_token_indicies if sum_of_token_counts[i] > 0
+            (self.id2token[i], sum_of_token_counts[i]) for i in largest_token_indices if sum_of_token_counts[i] > 0
         ]
 
         return largest_tokens
+
+    def nlargest(
+        self: IVectorizedCorpusProtocol, n_top: int, *, sort_indices: bool = False, override: bool = False
+    ) -> np.ndarray:
+        """Return indices for the `n_top` most frequent terms in DTM
+        Note: indices are sorted by TF count as default."""
+        n_top = min(n_top, len(self.term_frequency))
+        indices: np.ndarray = np.argpartition(self.term_frequency if not override else self.term_frequency0, -n_top)[
+            -n_top:
+        ]
+        if sort_indices:
+            indices.sort()
+        return indices
 
     def get_partitioned_top_n_words(
         self: IVectorizedCorpusProtocol,
@@ -51,13 +63,13 @@ class StatsMixIn:
             dict:
         """
         categories = sorted(self.document_index[category_column].unique().tolist())
-        indicies_groups = {
+        indices_groups = {
             category: self.document_index[(self.document_index[category_column] == category)].index
             for category in categories
         }
         data = {
-            str(category): self.get_top_n_words(n=n_count, indices=indicies_groups[category])
-            for category in indicies_groups
+            str(category): self.get_top_n_words(n=n_count, indices=indices_groups[category])
+            for category in indices_groups
         }
 
         if keep_empty is False:
@@ -118,24 +130,9 @@ class StatsMixIn:
         df = df[sorted(df.columns.tolist())]
         return df
 
-    def n_global_top_tokens(self: IVectorizedCorpusProtocol, n_top: int) -> Dict[str, int]:
-        """Returns `n_top` most frequent words.
-
-        Parameters
-        ----------
-        n_top : int
-            Number of words to return
-
-        Returns
-        -------
-        Dict[str, int]
-            Most frequent words and their counts, subset of dict `term_frequency_mapping`
-
-        """
-        tokens = {
-            w: self.term_frequency_mapping[w]
-            for w in nlargest(n_top, self.term_frequency_mapping, key=self.term_frequency_mapping.get)
-        }
+    def pick_top_tf_map(self: IVectorizedCorpusProtocol, n_top: int) -> Dict[str, int]:
+        """Returns `n_top` largest tokens and TF as a dict"""
+        tokens = {self.id2token[i]: self.term_frequency[i] for i in self.nlargest(n_top)}
         return tokens
 
     def stats(self: IVectorizedCorpusProtocol):
@@ -149,7 +146,7 @@ class StatsMixIn:
             'bags': self.bag_term_matrix.shape[0],
             'vocabulay_size': self.bag_term_matrix.shape[1],
             'sum_over_bags': self.bag_term_matrix.sum(),
-            '10_top_tokens': ' '.join(self.n_global_top_tokens(10).keys()),
+            '10_top_tokens': ' '.join(self.pick_top_tf_map(10).keys()),
         }
         for key in stats_data:
             logger.info('   {}: {}'.format(key, stats_data[key]))
@@ -177,21 +174,6 @@ class StatsMixIn:
         )
         return df
 
-    # def get_top_n_words(self, n=1000, indices=None):
-    #     """Returns the top n words in a subset of the corpus sorted according to occurrence. """
-    #     if indices is None:
-    #         sum_words = self.bag_term_matrix.sum(axis=0)
-    #     else:
-    #         sum_words = self.bag_term_matrix[indices, :].sum(axis=0)
-
-    #     id2token = self.id2token
-    #     token_ids = sum_words.nonzero()[1]
-    #     words_freq = [(id2token[i], sum_words[0, i]) for i in token_ids]
-
-    #     words_freq = sorted(words_freq, key=lambda x: x[1], reverse=True)
-
-    #     return words_freq[:n]
-
     def pick_n_top_words(
         self: IVectorizedCorpusProtocol,
         words: Container[str],
@@ -203,7 +185,10 @@ class StatsMixIn:
         n_top = n_top or len(words)
         if len(words) < n_top:
             return words
-        token_counts = [self.term_frequency_mapping.get(w, 0) for w in words]
+        # FIXME: What to do if overriden term frequency?
+        fg = self.token2id.get
+        tf = self.term_frequency
+        token_counts = [tf[fg(w)] for w in words]
         most_frequent_words = [words[x] for x in np.argsort(token_counts)[-n_top:]]
         if descending:
             most_frequent_words = list(sorted(most_frequent_words, reverse=descending))
