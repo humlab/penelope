@@ -1,9 +1,12 @@
+import sys
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
+from pprint import pformat as pf
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import scipy
 import scipy.sparse as sp
+from loguru import logger
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
@@ -21,21 +24,20 @@ from penelope.type_alias import DocumentIndex
 
 from ..interfaces import ContentType, DocumentPayload, ITask, PipelineError
 
+sj = WORD_PAIR_DELIMITER.join
+
+logger.remove()
+logger.add(sys.stdout, format="{message}", level="INFO", enqueue=True)
+logger.add("co_occurrence_trace.py", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
+
+DEBUG_TRACE: bool = False
+
 
 @dataclass
 class CoOccurrencePayload:
     document_id: int
-    vectorized_data: Mapping[VectorizeType, VectorizedTTM]
-
-
-# def to_token_pairs(term_term_matrix: sp.spmatrix, single_vocabulary: Token2Id) -> Iterable[str]:
-#     fg = single_vocabulary.id2token.get
-#     sep: str = WORD_PAIR_DELIMITER
-#     return (
-#         f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
-#         for (a, b) in zip(term_term_matrix.row, term_term_matrix.col)
-#     )
-#     # return (to_word_pair_token(a, b, fg) for (a, b) in zip(term_term_matrix.row, term_term_matrix.col))
+    document_name: str
+    ttm_data_map: Mapping[VectorizeType, VectorizedTTM]
 
 
 class CoOccurrenceCorpusBuilder:
@@ -45,13 +47,13 @@ class CoOccurrenceCorpusBuilder:
         self,
         vectorize_type: VectorizeType,
         document_index: DocumentIndex,
-        pair_vocabulary: Token2Id,
-        single_vocabulary: Token2Id,
+        pair2id: Token2Id,
+        token2id: Token2Id,
     ):
         self.vectorize_type: VectorizeType = vectorize_type
         self.document_index: DocumentIndex = document_index
-        self.pair_vocabulary: Token2Id = pair_vocabulary
-        self.single_vocabulary: Token2Id = single_vocabulary
+        self.pair2id: Token2Id = pair2id
+        self.token2id: Token2Id = token2id
 
         """ Co-occurrence DTM matrix """
         self.matrix: sp.spmatrix = None
@@ -59,96 +61,104 @@ class CoOccurrenceCorpusBuilder:
         self.col = []
         self.data = []
 
-        """ Token window counts per document """
-        self.counts_row = []
-        self.counts_col = []
-        self.counts_data = []
+        """ Per document term window counts """
+        self.dtw_counts_row = []
+        self.dtw_counts_col = []
+        self.dtw_counts_data = []
 
-        self._single_id2token_without_sep: dict = None
-
-    @property
-    def single_id2token_without_sep(self) -> dict:
-        if self._single_id2token_without_sep is None:
-            self._single_id2token_without_sep = {
-                w_id: w.replace(WORD_PAIR_DELIMITER, '') for w_id, w in self.single_vocabulary.id2token.items()
-            }
-        return self._single_id2token_without_sep
-
-    def ingest(self, payloads: Iterable[CoOccurrencePayload]) -> "CoOccurrenceCorpusBuilder":
-        for payload in payloads:
-            self.add(payload)
-        return self
+    # def ingest(self, payloads: Iterable[CoOccurrencePayload]) -> "CoOccurrenceCorpusBuilder":
+    #     for payload in payloads:
+    #         self.add(payload)
+    #     return self
 
     def add(self, payload: CoOccurrencePayload) -> None:
+        """Adds payload to the DTM-data under construction.
+        Note! Assumes that data has been ingested to both vocabulary and vocabs mapping."""
 
-        item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
+        item: VectorizedTTM = payload.ttm_data_map.get(self.vectorize_type)
 
+        if DEBUG_TRACE:
+            item.trace()
+
+        pair2id: Token2Id = self.pair2id
+
+        """Translate token-pair ids into new COO-vocabulary ids"""
         TTM: scipy.sparse.spmatrix = item.term_term_matrix
+        pair_ids = (pair2id[p] for p in zip(TTM.row, TTM.col))
 
-        """Translate token-pair ids into id in new COO-vocabulary"""
-
-        # START: OPTIMIZED PERFORMENCE SECTION
-        # token_ids = [
-        #     self.pair_vocabulary[
-        #         sep.join([fg(a, '').replace(sep, ''), fg(b, '').replace(sep, '')])
-        #         # f"{fg(a, '').replace(sep, '')}{sep}{fg(b, '').replace(sep, '')}"
-        #         # to_word_pair_token(a, b, fg)
-        #     ]
-        #     for (a, b) in zip(TTM.row, TTM.col)
-        # ]
-
-        fg: Callable[[int], str] = self.single_id2token_without_sep.get
-        r = TTM.row
-        c = TTM.col
-        pv = self.pair_vocabulary
-        sj = WORD_PAIR_DELIMITER.join
-        token_ids = [pv[sj([fg(r[i], ''), fg(c[i], '')])] for i in range(0, len(r))]
-        # END: OPTIMIZED PERFORMENCE SECTION
-
-        self.row.extend([item.document_id] * len(token_ids))
-        self.col.extend(token_ids)
+        self.row.extend([item.document_id] * len(TTM.row))
+        self.col.extend(pair_ids)
         self.data.extend(TTM.data)
 
         """ Add term windows counts """
         counts: Mapping[int, int] = item.term_window_counts
-        # self.window_count_matrix[item.document_id, list(counts.keys())] = list(counts.values())
-        self.counts_row.extend([item.document_id] * len(counts))
-        self.counts_col.extend(counts.keys())
-        self.counts_data.extend(counts.values())
+
+        self.dtw_counts_row.extend([item.document_id] * len(counts))
+        self.dtw_counts_col.extend(counts.keys())
+        self.dtw_counts_data.extend(counts.values())
+
+        if DEBUG_TRACE:
+            self.trace(f"Document ID {item.document_id}")
 
     @property
     def corpus(self) -> VectorizedCorpus:
-        shape: Tuple[int, int] = (len(self.document_index), len(self.pair_vocabulary))
+        shape: Tuple[int, int] = (len(self.document_index), len(self.pair2id))
         self.matrix = sp.coo_matrix((self.data, (self.row, self.col)), shape=shape)
         corpus: VectorizedCorpus = VectorizedCorpus(
             bag_term_matrix=self.matrix.tocsr(),
-            token2id=dict(self.pair_vocabulary.data),
+            token2id=dict(self.pair2id.data),
             document_index=self.document_index.set_index('document_id', drop=False),
         )
 
         return corpus
 
     def compile_window_count_statistics(self, total_term_window_counts: Counter) -> TokenWindowCountStatistics:
-        window_count_matrix: sp.spmatrix = sp.coo_matrix((self.counts_data, (self.counts_row, self.counts_col))).tocsr()
+        window_count_matrix: sp.spmatrix = sp.coo_matrix(
+            (self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col))
+        ).tocsr()
         window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics(
-            corpus_counts=total_term_window_counts,
-            document_counts=window_count_matrix,
+            total_term_window_counts=total_term_window_counts,
+            document_term_window_counts=window_count_matrix,
         )
         return window_counts
 
-    def ingest_tokens(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":
-        item: VectorizedTTM = payload.vectorized_data.get(self.vectorize_type)
-        # START: OPTIMIZED PERFORMENCE SECTION
-        # self.pair_vocabulary.ingest(to_token_pairs(item.term_term_matrix, self.single_vocabulary))
+    def ingest_pairs(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":
+        """Ingests tokens into pair-vocabulary.
+        Note: Tokens are at this stage ingested as `integer tuple pairs` i.e. (w1_id, w2_id) instead of tokens string
+              The integer pairs are later updated to `w1/w2` string tokens.
+              In this way the pair vocabulary keeps a (w1_id, w2_id) to pair_id mapping
+        """
 
-        r = item.term_term_matrix.row
-        c = item.term_term_matrix.col
-        sj = WORD_PAIR_DELIMITER.join
-        fg: Callable[[int], str] = self.single_id2token_without_sep.get
-        self.pair_vocabulary.ingest(sj([fg(r[i], ''), fg(c[i], '')]) for i in range(0, len(r)))
+        ttm_item: VectorizedTTM = payload.ttm_data_map.get(self.vectorize_type)
 
-        # END: OPTIMIZED PERFORMENCE SECTION
+        pairs = list(zip(ttm_item.term_term_matrix.row, ttm_item.term_term_matrix.col))
+
+        self.pair2id.ingest(pairs)
+
         return self
+
+    def trace(self, msg: str) -> None:
+        logger.info(
+            "\n#################################################################################################"
+        )
+        logger.info("# CoOccurrenceCorpusBuilder")
+        logger.info(f"# VectorizeType.{self.vectorize_type.name}")
+        logger.info(f"# {msg}")
+        logger.info(
+            "#################################################################################################\n"
+        )
+        logger.info(f"vectorize_type = VectorizeType.{self.vectorize_type.name}")
+        # logger.info(f"co_occurrence_dtm_matrix: {pf(list(zip(self.row, self.col, self.data)))}")
+        # logger.info(
+        #     f"document_term_windows_counts = {pf(list(zip(self.dtw_counts_row, self.dtw_counts_col, self.dtw_counts_data)))}"
+        # )
+        logger.info(f"token2id = {pf(dict(self.token2id.data), compact=True, width=200)}")
+        logger.info(f"pair2id = {pf(dict(self.pair2id.data), compact=True, width=1000)}")
+        logger.info(f"co_occurrence_corpus = {pf(self.corpus.data.todense())}")
+        shape = (len(self.document_index), len(self.token2id))
+        logger.info(
+            f"document_term_windows_counts = {pf( sp.coo_matrix((self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col)), shape=shape).todense())}"
+        )
 
 
 @dataclass
@@ -193,7 +203,7 @@ class ToCoOccurrenceDTM(VocabularyIngestMixIn, ITask):
         self.token2id = self.pipeline.payload.token2id
         fg = self.token2id.data.get
 
-        document_id = self.get_document_id(payload)
+        document_id: int = self.get_document_id(payload)
 
         if len(payload.content) == 0:
             return payload.empty(self.out_content_type)
@@ -212,18 +222,40 @@ class ToCoOccurrenceDTM(VocabularyIngestMixIn, ITask):
             pad_id=fg(self.context_opts.pad),
         )
 
-        data: Mapping[VectorizeType, VectorizedTTM] = self.vectorizer.fit_transform(
+        windows = list(windows)
+
+        ttm_map: Mapping[VectorizeType, VectorizedTTM] = self.vectorizer.fit_transform(
             document_id=document_id, windows=windows, context_opts=self.context_opts
         )
 
+        if DEBUG_TRACE:
+            self.trace(payload, windows, token_ids)
+
         return payload.update(
             self.out_content_type,
-            content=CoOccurrencePayload(document_id=document_id, vectorized_data=data),
+            content=CoOccurrencePayload(
+                document_id=document_id, document_name=payload.document_name, ttm_data_map=ttm_map
+            ),
         )
 
     def get_document_id(self, payload: DocumentPayload) -> int:
         document_id = self.document_index.loc[payload.document_name]['document_id']
         return document_id
+
+    def trace(self, payload: DocumentPayload, windows: Iterable[Iterable[int]], token_ids: Iterable[int]) -> None:
+        logger.info(
+            "\n#################################################################################################"
+        )
+        logger.info(f"# ToCoOccurrence {payload.document_name}")
+        logger.info(
+            "#################################################################################################\n"
+        )
+        logger.info(f"document_name = '{payload.document_name}'")
+        logger.info(f"document_id = {self.get_document_id(payload)}")
+        logger.info(f"tokens = {pf(payload.content)}")
+        logger.info(f"token_ids = {pf(token_ids)}")
+        logger.info(f"windows = {pf(windows)}")
+        logger.info(f"context_opts = {pf(self.context_opts, compact=True)}")
 
 
 @dataclass
@@ -251,16 +283,15 @@ class ToCorpusCoOccurrenceDTM(ITask):
         if self.document_index is None:
             raise CoOccurrenceError("expected document index found no such thing")
 
-        """Ingest token-pairs into new COO-vocabulary using existing token vocabulary"""
-
-        single_vocabulary: Token2Id = self.pipeline.payload.token2id
-        pair_vocabulary: Token2Id = Token2Id()
+        token2id: Token2Id = self.pipeline.payload.token2id
+        pair2id: Token2Id = Token2Id()
 
         normal_builder: CoOccurrenceCorpusBuilder = CoOccurrenceCorpusBuilder(
-            VectorizeType.Normal, self.document_index, pair_vocabulary, single_vocabulary
+            VectorizeType.Normal, self.document_index, pair2id, token2id
         )
+
         concept_builder: CoOccurrenceCorpusBuilder = (
-            CoOccurrenceCorpusBuilder(VectorizeType.Concept, self.document_index, pair_vocabulary, single_vocabulary)
+            CoOccurrenceCorpusBuilder(VectorizeType.Concept, self.document_index, pair2id, token2id)
             if self.context_opts.concept
             else None
         )
@@ -271,25 +302,67 @@ class ToCorpusCoOccurrenceDTM(ITask):
             if payload.content is not None
         )
         for coo_payload in coo_payloads:
-            normal_builder.ingest_tokens(coo_payload).add(payload=coo_payload)
+            normal_builder.ingest_pairs(coo_payload).add(payload=coo_payload)
             if concept_builder:
                 concept_builder.add(payload=coo_payload)
 
-        pair_vocabulary.close()
+        pair2id.close()
+
+        """Translation between id-pair (single vocab IDs) and pair-pid (pair vocab IDs)"""
+        vocabs_mapping: Mapping[Tuple[int, int]] = dict(pair2id.data)
+
+        self.translate_id_pair_to_token(pair2id, token2id)
+
+        concept_corpus: VectorizedCorpus = (
+            concept_builder.corpus.remember(window_counts=self.get_window_counts(concept_builder))
+            if concept_builder
+            else None
+        )
+
+        corpus: VectorizedCorpus = normal_builder.corpus.remember(window_counts=self.get_window_counts(normal_builder))
+
+        if concept_corpus:
+            """Compress corpora"""
+            # corpus = corpus.zero_out_by_others_zeros(concept_corpus)
+
+            """Vocab translation is a mapping between uncompressed vocab IDs and compressed vocab IDs"""
+            _, pair_vocab_ids_map, keep_pair_ids = concept_corpus.compress(inplace=True)
+
+            inv_vocabs_mapping: dict = {v: k for k, v in vocabs_mapping.items()}
+            keep_single_ids: List[int] = sorted(
+                i for sub in (inv_vocabs_mapping[old_id] for old_id in keep_pair_ids) for i in sub
+            )
+            keep_single_ids: List[int] = sorted([])
+
+            # FIXME FIXME MÅSTE grupper DOUMENT TOKEN COUNTS när CORPUS grupperas!!!!!!
+            # FIXME FIXME MÅSTE se till att corpus-TF tas från grupperings Token2Id!!!!!!
+
+            corpus.slice_by_indices(keep_pair_ids, inplace=False)
+
+            vocabs_mapping = {pair: pair_id for pair, pair_id in vocabs_mapping if pair_id in pair_vocab_ids_map}
+
+            corpus.window_counts.clip(keep_single_ids, inplace=True)
+            concept_corpus.window_counts.clip(keep_single_ids, inplace=True)
+            token2id.clip(keep_single_ids, inplace=True)
 
         payload: DocumentPayload = DocumentPayload(
             content=Bundle(
-                corpus=normal_builder.corpus.remember(window_counts=self.get_window_counts(normal_builder)),
-                token2id=self.pipeline.payload.token2id,
+                corpus=corpus,
+                token2id=token2id,
                 document_index=self.pipeline.payload.document_index,
-                concept_corpus=concept_builder.corpus.remember(window_counts=self.get_window_counts(concept_builder))
-                if concept_builder
-                else None,
+                concept_corpus=concept_corpus,
                 compute_options=self.pipeline.payload.stored_opts(),
+                vocabs_mapping=vocabs_mapping,
             )
         )
 
         yield payload
+
+    def translate_id_pair_to_token(self, pair2id: Token2Id, token2id: Token2Id) -> None:
+        """Translates `id pairs` (w1_id, w2_id) to pair-token `w1/w2`"""
+        _single_without_sep = {w_id: w.replace(WORD_PAIR_DELIMITER, '') for w_id, w in token2id.id2token.items()}
+        sg = _single_without_sep.get
+        pair2id.data = {sj([sg(w1_id), sg(w2_id)]): pair_id for (w1_id, w2_id), pair_id in pair2id.data.items()}
 
     def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountStatistics:
         return (
@@ -308,3 +381,18 @@ class ToCorpusCoOccurrenceDTM(ITask):
         if task is not None:
             return task.vectorizer
         return task
+
+    def trace(self, payload: DocumentPayload, windows: Iterable[Iterable[int]], token_ids: Iterable[int]) -> None:
+        logger.info(
+            "\n#################################################################################################"
+        )
+        logger.info(f"# ToCoOccurrence {payload.document_name}")
+        logger.info(
+            "#################################################################################################\n"
+        )
+        logger.info(f"document_name = '{payload.document_name}'")
+        logger.info(f"document_id = {self.get_document_id(payload)}")
+        logger.info(f"tokens = {pf(payload.content)}")
+        logger.info(f"token_ids = {pf(token_ids)}")
+        logger.info(f"windows = {pf(windows)}")
+        logger.info(f"context_opts = {pf(self.context_opts, compact=True)}")
