@@ -3,15 +3,14 @@ from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
-from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_7DOCS
+from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, SIMPLE_CORPUS_ABCDEFG_7DOCS
 
 from .utils import create_simple_bundle_by_pipeline
 
 
 def test_keyness_transform_with_simple_corpus():
-    # FIXME: Check compute when concept does not exist in corpys!!
     context_opts: ContextOpts = ContextOpts(concept={'g'}, ignore_concept=False, context_width=2)
-    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDEFG_7DOCS, context_opts=context_opts)
+    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDEFG_3DOCS, context_opts=context_opts)
     keyness_source: KeynessMetricSource = KeynessMetricSource.Weighed
     keyness: KeynessMetric = KeynessMetric.TF_normalized
     opts: ComputeKeynessOpts = ComputeKeynessOpts(
@@ -105,8 +104,8 @@ def test_zero_out_by_tf_threshold():
     assert (corpus.term_frequency == expected_sums).all()
 
     tf_threshold: int = 10
-    indicies = [i for i, v in enumerate(expected_sums) if v < tf_threshold]
-    for i in indicies:
+    indices = [i for i, v in enumerate(expected_sums) if v < tf_threshold]
+    for i in indices:
         expected_sums[i] = 0
 
     corpus.zero_out_by_tf_threshold(tf_threshold)
