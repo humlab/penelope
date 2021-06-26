@@ -18,7 +18,7 @@ class ClosedVocabularyError(Exception):
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
-    def __init__(self, data: Optional[Union[dict, defaultdict]] = None, tf: Counter = None):
+    def __init__(self, data: Optional[Union[dict, defaultdict]] = None, tf: Counter = None, fallback_token: str = None):
         if isinstance(data, defaultdict):
             self.data = data
         elif isinstance(data, dict):
@@ -27,7 +27,7 @@ class Token2Id(MutableMapping):
             self.data = data or defaultdict()
         self.tf: Counter = tf
         self._id2token: dict = None
-        self._fallback_token = None
+        self._fallback_token: str = fallback_token
         self.data.default_factory = self.data.__len__
         self._is_open = True
 
@@ -236,3 +236,49 @@ class Token2Id(MutableMapping):
         token2id: Token2Id = Token2Id(data=new_data, tf=new_tf).close(fallback=mask_id)
 
         return token2id
+
+    def clip(self, keep_ids: List[int], inplace: bool = True) -> "Token2Id":
+        """Removes tokens not found in `keep_ids` """
+        keep_ids = set(keep_ids)
+        dg, tg = self.data, self.tf
+        data = defaultdict(None, dict({token_id: dg[token_id] for token_id in keep_ids}))
+        tf = Counter({token_id: tg[token_id] for token_id in keep_ids})
+
+        if inplace:
+            self.data, self.tf, self._id2token = data, tf, None
+            return self.sync_state(self.is_open)
+
+        token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
+
+        return token2id
+
+    def translate(self, vocab_translation: Mapping[int, int], inplace: bool = True) -> "Token2Id":
+        """Translates ID in vocabulary according to mapping specified in `vocab_translation`
+        Translation is a mapping from old ID to new ID.
+        Old items IDs that don't exist in translation are filtered out.
+        """
+        data = defaultdict(
+            None,
+            dict(
+                {token: vocab_translation[old_id] for token, old_id in self.data.items() if old_id in vocab_translation}
+            ),
+        )
+
+        cg = self.tf.get
+        tf = Counter({vocab_translation[old_id]: cg[old_id] for old_id in vocab_translation})
+
+        if inplace:
+            self.data, self.tf, self._id2token = data, tf, None
+            return self.sync_state(self.is_open)
+
+        token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
+
+        return token2id
+
+    def sync_state(self, is_open: bool = None) -> "Token2Id":
+        is_open = self.is_open if is_open is None else is_open
+        if is_open:
+            self.open()
+        else:
+            self.close()
+        return self
