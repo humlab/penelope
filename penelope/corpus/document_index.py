@@ -287,7 +287,7 @@ class DocumentIndexHelper:
             target_column_name (str, optional): Category column name. Defaults to 'time_period'.
 
         Returns:
-            Tuple[pd.DataFrame, dict]: grouped document index and group indicies
+            Tuple[pd.DataFrame, dict]: grouped document index and group indices
         """
 
         """Add new column `target_column_name`"""
@@ -297,8 +297,8 @@ class DocumentIndexHelper:
             else self._document_index.year.apply(create_time_period_categorizer(time_period_specifier))
         )
 
-        """Store indicies for documents in each group"""
-        category_indicies = self._document_index.groupby(target_column_name).apply(lambda x: x.index.tolist()).to_dict()
+        """Store indices for documents in each group"""
+        category_indices = self._document_index.groupby(target_column_name).apply(lambda x: x.index.tolist()).to_dict()
 
         """Group by 'target_column_name' column"""
         grouped_document_index = (
@@ -315,7 +315,7 @@ class DocumentIndexHelper:
         """Fix result names"""
         grouped_document_index.columns = [name.replace('_sum', '') for name in grouped_document_index.columns]
 
-        return grouped_document_index, category_indicies
+        return grouped_document_index, category_indices
 
     def set_strictly_increasing_index(self) -> "DocumentIndexHelper":
         """Sets a strictly increasing index"""

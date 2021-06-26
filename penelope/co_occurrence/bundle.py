@@ -42,7 +42,7 @@ class Bundle:
         self._co_occurrences: pd.DataFrame = co_occurrences
         self._vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = vocabs_mapping
 
-        self.remember_vocab_mapping()
+        self.remember_vocabs_mapping()
 
     def keyness_transform(self, *, opts: ComputeKeynessOpts) -> VectorizedCorpus:
         """Returns a grouped, keyness adjusted corpus filtered by  threshold."""
@@ -50,7 +50,7 @@ class Bundle:
         corpus: VectorizedCorpus = compute_weighed_corpus_keyness(
             self.corpus,
             self.concept_corpus,
-            single_vocabulary=self.token2id,
+            token2id=self.token2id,
             opts=opts,
         )
 
@@ -70,7 +70,7 @@ class Bundle:
     @property
     def vocabs_mapping(self) -> Mapping[Tuple[int, int], int]:
         if self._vocabs_mapping is None:
-            self._vocabs_mapping = self.corpus.get_pair_vocabulary_mapping(self.token2id)
+            self._vocabs_mapping = self.corpus.get_pair2token2id_mapping(self.token2id)
         return self._vocabs_mapping
 
     @vocabs_mapping.setter
@@ -100,7 +100,7 @@ class Bundle:
 
         bundle: Bundle = persistence.load(
             filename=filename, folder=folder, tag=tag, compute_frame=compute_frame
-        ).remember_vocab_mapping()
+        ).remember_vocabs_mapping()
 
         if bundle.co_occurrences is None and compute_frame:
             raise NotImplementedError("THIS IS PROBABLY A BUG")
@@ -108,11 +108,9 @@ class Bundle:
 
         return bundle
 
-    def remember_vocab_mapping(self) -> "Bundle":
+    def remember_vocabs_mapping(self) -> "Bundle":
         if self.vocabs_mapping is None:
-            self.vocabs_mapping = CoOccurrenceVocabularyHelper.extract_pair_to_single_vocabulary_mapping(
-                self.corpus, self.token2id
-            )
+            self.vocabs_mapping = CoOccurrenceVocabularyHelper.extract_pair2token2id_mapping(self.corpus, self.token2id)
 
         if self.corpus.vocabs_mapping is None:
             self.corpus.remember(vocabs_mapping=self.vocabs_mapping)

@@ -53,7 +53,7 @@ def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, t
 def compute_weighed_corpus_keyness(
     corpus: VectorizedCorpus,
     concept_corpus: Optional[VectorizedCorpus],
-    single_vocabulary: Token2Id,
+    token2id: Token2Id,
     opts: ComputeKeynessOpts,
 ) -> VectorizedCorpus:
     """Computes a keyness corpus for `corpus` and optionally `concept_corpus`.
@@ -61,7 +61,7 @@ def compute_weighed_corpus_keyness(
     Args:
         corpus (VectorizedCorpus): [description]
         concept_corpus (VectorizedCorpus): [description]
-        single_vocabulary (Token2Id): [description]
+        token2id (Token2Id): [description]
         vocabs_mapping (VocabularyMapping): Mapping between single/pair vocabs
         opts (KeynessOpts): Compute opts
 
@@ -81,22 +81,22 @@ def compute_weighed_corpus_keyness(
 
     if opts.tf_threshold > 1:
         # corpus = corpus.slice_by_term_frequency(opts.tf_threshold)
-        indicies = np.argwhere(corpus.term_frequency < opts.tf_threshold).ravel()
-        if len(indicies) > 0:
-            corpus.data[:, indicies] = 0
+        indices = np.argwhere(corpus.term_frequency < opts.tf_threshold).ravel()
+        if len(indices) > 0:
+            corpus.data[:, indices] = 0
             corpus.data.eliminate_zeros()
             if concept_corpus is not None:
-                concept_corpus.data[:, indicies] = 0
+                concept_corpus.data[:, indices] = 0
                 concept_corpus.data.eliminate_zeros()
 
     corpus: VectorizedCorpus = (
-        compute_corpus_keyness(corpus=corpus, opts=opts, token2id=single_vocabulary)
+        compute_corpus_keyness(corpus=corpus, opts=opts, token2id=token2id)
         if opts.keyness_source in (KeynessMetricSource.Full, KeynessMetricSource.Weighed)
         else None
     )
 
     concept_corpus: VectorizedCorpus = (
-        compute_corpus_keyness(corpus=concept_corpus, opts=opts, token2id=single_vocabulary)
+        compute_corpus_keyness(corpus=concept_corpus, opts=opts, token2id=token2id)
         if opts.keyness_source in (KeynessMetricSource.Concept, KeynessMetricSource.Weighed)
         else None
     )
@@ -119,7 +119,7 @@ def weigh_corpora(corpus: VectorizedCorpus, concept_corpus: VectorizedCorpus) ->
         bag_term_matrix=M,
         token2id=concept_corpus.token2id,
         document_index=concept_corpus.document_index,
-        override_term_frequency=concept_corpus.term_frequency_mapping,
+        overridden_term_frequency=concept_corpus.overridden_term_frequency,
         **concept_corpus.payload,
     )
     return weighed_corpus

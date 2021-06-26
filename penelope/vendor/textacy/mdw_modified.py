@@ -58,7 +58,7 @@ def compute_most_discriminating_terms(
     max_n_terms: int = 1000,
 ) -> pd.DataFrame:
 
-    """Computes most discriminating words between corpus sub-groups defined by `groupX_indicies`
+    """Computes most discriminating words between corpus sub-groups defined by `groupX_indices`
 
     Args:
         group1_indices (Sequence[int]): [description]

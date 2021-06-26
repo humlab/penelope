@@ -24,10 +24,10 @@ def bundle() -> Bundle:
 def test_categorize_document_index(bundle: Bundle):
     corpus: VectorizedCorpus = bundle.corpus
     document_index: pd.DataFrame = bundle.corpus.document_index
-    document_index, category_indicies = DocumentIndexHelper(document_index).group_by_time_period(
+    document_index, category_indices = DocumentIndexHelper(document_index).group_by_time_period(
         time_period_specifier='year',
     )
-    assert category_indicies == corpus.document_index.groupby("year").apply(lambda x: x.index.tolist()).to_dict()
+    assert category_indices == corpus.document_index.groupby("year").apply(lambda x: x.index.tolist()).to_dict()
     assert document_index is not None
 
 

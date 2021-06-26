@@ -26,17 +26,18 @@ def test_co_occurrence_matrix_of_corpus_returns_correct_result():
 def test_TTM_to_co_occurrence_DTM_using_LIL_matrix():
 
     source_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
-    single_vocabulary = Token2Id(source_corpus.token2id)
+    token2id = Token2Id(source_corpus.token2id)
     document_index: DocumentIndex = source_corpus.document_index
 
     stream: Iterable[CoOccurrencePayload] = (
         CoOccurrencePayload(
             document_id,
-            vectorized_data={
+            document_name="-",
+            ttm_data_map={
                 VectorizeType.Normal: VectorizedTTM(
                     vectorize_type=VectorizeType.Normal,
                     term_term_matrix=CorpusVectorizer()
-                    .fit_transform([doc], already_tokenized=True, vocabulary=single_vocabulary.data)
+                    .fit_transform([doc], already_tokenized=True, vocabulary=token2id.data)
                     .co_occurrence_matrix(),
                     term_window_counts={},
                     document_id=document_id,
@@ -46,17 +47,17 @@ def test_TTM_to_co_occurrence_DTM_using_LIL_matrix():
         for document_id, doc in enumerate(source_corpus)
     )
 
-    pair_vocabulary: Token2Id = Token2Id()
+    pair2id: Token2Id = Token2Id()
 
     builder: CoOccurrenceCorpusBuilder = CoOccurrenceCorpusBuilder(
         vectorize_type=VectorizeType.Normal,
         document_index=document_index,
-        pair_vocabulary=pair_vocabulary,
-        single_vocabulary=single_vocabulary,
+        pair2id=pair2id,
+        token2id=token2id,
     )
 
     for payload in stream:
-        builder.ingest_tokens(payload).add(payload)
+        builder.ingest_pairs(payload).add(payload)
 
     corpus: VectorizedCorpus = builder.corpus
 

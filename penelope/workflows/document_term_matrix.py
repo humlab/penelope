@@ -33,7 +33,7 @@ def compute(
         ).value()
 
         if (args.tf_threshold or 1) > 1:
-            corpus = corpus.slice_by_n_count(args.tf_threshold)
+            corpus = corpus.slice_by_tf(args.tf_threshold)
 
         if args.persist:
             store_corpus_bundle(corpus, args)

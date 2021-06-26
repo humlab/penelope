@@ -76,7 +76,7 @@ class GroupByMixIn:
             bag_term_matrix,
             token2id=self.token2id,
             document_index=document_index,
-            override_term_frequency=self.term_frequency_mapping,
+            overridden_term_frequency=self.overridden_term_frequency,
             **self.payload,
         )
 
@@ -166,14 +166,14 @@ class GroupByMixIn:
         if fill_gaps:
             raise NotImplementedError("group_by_time_period_optimized: fill gaps when specifier not year")
 
-        document_index, category_indicies = DocumentIndexHelper(self.document_index).group_by_time_period(
+        document_index, category_indices = DocumentIndexHelper(self.document_index).group_by_time_period(
             time_period_specifier=time_period_specifier,
             target_column_name=target_column_name,
         )
 
-        matrix: scipy.sparse.spmatrix = group_DTM_by_category_indicies_mapping(
+        matrix: scipy.sparse.spmatrix = group_DTM_by_category_indices_mapping(
             bag_term_matrix=self.bag_term_matrix,
-            category_indicies=category_indicies,
+            category_indices=category_indices,
             aggregate=aggregate,
             document_index=document_index,
             pivot_column_name=target_column_name,
@@ -183,16 +183,16 @@ class GroupByMixIn:
             matrix.tocsr(),
             token2id=self.token2id,
             document_index=document_index,
-            override_term_frequency=self.term_frequency_mapping,
+            overridden_term_frequency=self.overridden_term_frequency,
             **self.payload,
         )
         return grouped_corpus
 
 
-def group_DTM_by_category_indicies_mapping(
+def group_DTM_by_category_indices_mapping(
     *,
     bag_term_matrix: scipy.sparse.spmatrix,
-    category_indicies: Mapping[int, List[int]],
+    category_indices: Mapping[int, List[int]],
     aggregate: str,
     document_index: DocumentIndex,
     pivot_column_name: str,
@@ -202,7 +202,7 @@ def group_DTM_by_category_indicies_mapping(
     matrix: scipy.sparse.lil_matrix = scipy.sparse.lil_matrix(shape, dtype=dtype)
 
     for document_id, category_value in document_index[pivot_column_name].to_dict().items():
-        indices = category_indicies.get(category_value, [])
+        indices = category_indices.get(category_value, [])
         if len(indices) == 0:
             continue
         matrix[document_id, :] = (

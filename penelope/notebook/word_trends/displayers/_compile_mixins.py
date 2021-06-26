@@ -17,7 +17,7 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 class LinesDataMixin:
     def compile(self, corpus: VectorizedCorpus, indices: List[int], category_name: str = 'category', **kwargs) -> Any:
-        """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
+        """Compile multiline plot data for token ids `indices`, optionally applying `smoothers` functions"""
 
         column_exists_guard(corpus.document_index, category_name)
 

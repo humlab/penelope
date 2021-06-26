@@ -25,7 +25,7 @@ def create_helper(bundle: Bundle, period_specifier: str, pivot_key: str):
         target_column_name=pivot_key,
     )
 
-    co_occurrences = corpus.to_co_occurrences(source_token2id=bundle.token2id, partition_key=pivot_key)
+    co_occurrences = corpus.to_co_occurrences(token2id=bundle.token2id, partition_key=pivot_key)
 
     helper: CoOccurrenceHelper = CoOccurrenceHelper(
         corpus=bundle.corpus,
@@ -117,17 +117,17 @@ def test_create_co_occurrence_vocabulary():
     bundle: Bundle = create_bundle()
     co_occurrences: pd.DataFrame = bundle.co_occurrences
     co_occurrences = decode_tokens(co_occurrences, bundle.token2id.id2token, bundle.corpus.id2token)
-    vocab, vocab_mapping = CoOccurrenceVocabularyHelper.create_pair_vocabulary(co_occurrences, bundle.token2id)
+    vocab, vocabs_mapping = CoOccurrenceVocabularyHelper.create_pair2id(co_occurrences, bundle.token2id)
 
     id2token = {v: k for k, v in vocab.items()}
 
     fg = bundle.token2id.id2token.get
-    assert all(to_word_pair_token(k[0], k[1], fg) == id2token[v] for k, v in vocab_mapping.items())
+    assert all(to_word_pair_token(k[0], k[1], fg) == id2token[v] for k, v in vocabs_mapping.items())
 
     tokens: pd.Series = (
-        co_occurrences[['w1_id', 'w2_id']].apply(lambda x: vocab_mapping.get((x[0], x[1])), axis=1).apply(id2token.get)
+        co_occurrences[['w1_id', 'w2_id']].apply(lambda x: vocabs_mapping.get((x[0], x[1])), axis=1).apply(id2token.get)
     )
 
     assert vocab is not None
-    assert len(vocab) == len(vocab_mapping)
+    assert len(vocab) == len(vocabs_mapping)
     assert all(tokens == co_occurrences.token)

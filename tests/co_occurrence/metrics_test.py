@@ -122,7 +122,7 @@ def create_helper(bundle: Bundle, period_specifier: str, pivot_key: str):
         target_column_name=pivot_key,
     )
 
-    co_occurrences = corpus.to_co_occurrences(source_token2id=bundle.token2id, partition_key=pivot_key)
+    co_occurrences = corpus.to_co_occurrences(token2id=bundle.token2id, partition_key=pivot_key)
 
     helper: CoOccurrenceHelper = CoOccurrenceHelper(
         corpus=bundle.corpus,

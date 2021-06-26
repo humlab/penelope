@@ -44,7 +44,7 @@ def yearly_token_distributions_multiline_datasource(
         The data is prepared for a bokeh `multiline` plot which requires the distribution data
         to be stored as two lists `xs` and `ys` containing coordinates (i.e. a list) for each line.
 
-        The i:th elements in `xs` and `ys` specifies the distribution for token `i` in index `indicies`
+        The i:th elements in `xs` and `ys` specifies the distribution for token `i` in index `indices`
 
         The `year` vectors in `xs` are the same for all distributions.
 

@@ -36,7 +36,7 @@ def plot_dataframe(
     *, data_frame: pd.DataFrame, x_ticks: Sequence[int] = None, smoother: Callable = None, figopts: dict = None
 ):
     def data_frame_to_data_source(data: pd.DataFrame, smoother: Callable = None) -> dict:
-        """Compile multiline plot data for token ids `indicies`, optionally applying `smoothers` functions"""
+        """Compile multiline plot data for token ids `indices`, optionally applying `smoothers` functions"""
 
         columns = data.columns.tolist()
 
