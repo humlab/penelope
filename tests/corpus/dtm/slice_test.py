@@ -16,7 +16,7 @@ def slice_corpus() -> VectorizedCorpus:
     return create_vectorized_corpus()
 
 
-def test_slice_by_indicies():
+def test_slice_by_indices():
     ...
 
     make_corpus: Callable[[], VectorizedCorpus] = lambda: create_abc_corpus(
@@ -28,20 +28,20 @@ def test_slice_by_indicies():
     )
 
     corpus: VectorizedCorpus = make_corpus()
-    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies([])
-    assert sliced_corpus is corpus
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indices([])
+    assert sliced_corpus.data.shape[1] == 0
 
     corpus = make_corpus()
-    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies(None)
-    assert sliced_corpus is corpus
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indices(None)
+    assert sliced_corpus.data.shape[1] == 0
 
     corpus = make_corpus()
-    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies([0, 2])
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indices([0, 2])
     assert sliced_corpus is not corpus
     assert (sliced_corpus.data.todense() == [[2, 4], [2, 3], [2, 2]]).all().all()
 
     corpus = make_corpus()
-    sliced_corpus: VectorizedCorpus = corpus.slice_by_indicies([0, 2], inplace=True)
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indices([0, 2], inplace=True)
     assert sliced_corpus is corpus
     assert (sliced_corpus.data.todense() == [[2, 4], [2, 3], [2, 2]]).all().all()
 
@@ -71,34 +71,68 @@ def test_normalize_with_keep_magnitude():
     assert np.allclose(E, n_corpus.bag_term_matrix.todense())
 
 
+def test_slice_by_indices2():
+    ...
+    # self: IVectorizedCorpusProtocol, n_top: int, sort_indices: bool=False, override: bool=False) -> np.ndarray:
+    corpus: VectorizedCorpus = create_abc_corpus(
+        [
+            [4, 1, 3, 3, 1],
+            [3, 2, 0, 1, 0],
+            [2, 3, 2, 3, 0],
+        ]
+    )
+    corpus._overridden_term_frequency = np.array([4, 5, 5, 3, 1])  # pylint: disable=protected-access
+
+    sliced_corpus: VectorizedCorpus = corpus.slice_by_indices([1, 2, 4])
+
+    assert (
+        (
+            sliced_corpus.data.todense()
+            == (
+                [
+                    [1, 3, 1],
+                    [2, 0, 0],
+                    [3, 2, 0],
+                ]
+            )
+        )
+        .all()
+        .all()
+    )
+    assert sliced_corpus.token2id == {'b': 0, 'c': 1, 'e': 2}
+    assert sliced_corpus.overridden_term_frequency.tolist() == [5, 5, 1]
+    assert sliced_corpus.term_frequency.tolist() == [6, 5, 1]
+    assert sliced_corpus.term_frequency0.tolist() == [5, 5, 1]
+
+
 def test_slice_by_n_count_when_exists_tokens_below_count_returns_filtered_corpus(slice_corpus):
 
     # Act
-    t_corpus: VectorizedCorpus = slice_corpus.slice_by_n_count(6)
+    t_corpus: VectorizedCorpus = slice_corpus.slice_by_tf(6)
 
     # Assert
     expected_bag_term_matrix = np.array([[2, 1, 4], [2, 2, 3], [2, 3, 2], [2, 4, 1], [2, 0, 1]])
 
     assert {'a': 0, 'b': 1, 'c': 2} == t_corpus.token2id
-    assert {'a': 10, 'b': 10, 'c': 11} == t_corpus.term_frequency_mapping
+    assert [10, 10, 11] == t_corpus.term_frequency.tolist()
     assert (expected_bag_term_matrix == t_corpus.bag_term_matrix).all()
 
 
 def test_slice_by_n_count_when_all_below_below_n_count_returns_empty_corpus(slice_corpus):
 
-    t_corpus: VectorizedCorpus = slice_corpus.slice_by_n_count(20)
+    t_corpus: VectorizedCorpus = slice_corpus.slice_by_tf(20)
 
     assert {} == t_corpus.token2id
-    assert {} == t_corpus.term_frequency_mapping
+    assert [] == t_corpus.term_frequency.tolist()
     assert (np.empty((5, 0)) == t_corpus.bag_term_matrix).all()
 
 
 def test_slice_by_n_count_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus):
 
-    t_corpus = slice_corpus.slice_by_n_count(1)
+    t_corpus = slice_corpus.slice_by_tf(1)
 
     assert slice_corpus.token2id == t_corpus.token2id
-    assert slice_corpus.term_frequency_mapping == t_corpus.term_frequency_mapping
+    assert (slice_corpus.term_frequency == t_corpus.term_frequency).all()
     assert np.allclose(slice_corpus.bag_term_matrix.todense().A, t_corpus.bag_term_matrix.todense().A)
 
 
@@ -107,7 +141,7 @@ def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_
     t_corpus = slice_corpus.slice_by_n_top(4)
 
     assert slice_corpus.token2id == t_corpus.token2id
-    assert slice_corpus.term_frequency_mapping == t_corpus.term_frequency_mapping
+    assert (slice_corpus.term_frequency == t_corpus.term_frequency).all()
     assert np.allclose(slice_corpus.bag_term_matrix.todense().A, t_corpus.bag_term_matrix.todense().A)
 
 
@@ -118,7 +152,7 @@ def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_
     expected_bag_term_matrix = np.array([[2, 4], [2, 3], [2, 2], [2, 1], [2, 1]])
 
     assert {'a': 0, 'c': 1} == t_corpus.token2id
-    assert {'a': 10, 'c': 11} == t_corpus.term_frequency_mapping
+    assert t_corpus.term_frequency.tolist() == [10, 11]
     assert (expected_bag_term_matrix == t_corpus.bag_term_matrix).all()
 
 
@@ -154,7 +188,7 @@ def test_compress():
 
     compressed_corpus, _, _ = corpus.compress()
     assert (corpus.data.todense() == compressed_corpus.data.todense()).all().all()
-    assert compressed_corpus is not corpus
+    assert compressed_corpus is corpus
 
     compressed_corpus, _, _ = corpus.compress(inplace=True)
     assert (corpus.data.todense() == compressed_corpus.data.todense()).all().all()
@@ -167,7 +201,7 @@ def test_compress():
             [0, 2, 3, 0, 2, 0, 0],
         ]
     )
-    compressed_corpus, m, indicies = corpus.compress(inplace=False)
+    compressed_corpus, m, indices = corpus.compress(inplace=False)
     assert (
         (
             compressed_corpus.data.todense()
@@ -182,6 +216,33 @@ def test_compress():
     )
 
     assert compressed_corpus.token2id == {w: i for i, w in enumerate(['b', 'c', 'e', 'f'])}
-    assert (indicies == [1, 2, 4, 5]).all()
-    assert m == {j: i for i, j in enumerate(indicies)}
-    assert compressed_corpus.term_frequency_mapping == {i: corpus.term_frequency_mapping[j] for j, i in m.items()}
+    assert (indices == [1, 2, 4, 5]).all()
+    assert m == {j: i for i, j in enumerate(indices)}
+
+    inv_m = {new_id: old_id for old_id, new_id in m.items()}
+    assert compressed_corpus.term_frequency.tolist() == [
+        corpus.term_frequency[inv_m[new_id]] for new_id in sorted(inv_m)
+    ]
+
+
+def test_nlargest():
+    ...
+    # self: IVectorizedCorpusProtocol, n_top: int, sort_indices: bool=False, override: bool=False) -> np.ndarray:
+    corpus: VectorizedCorpus = create_abc_corpus(
+        [
+            [4, 1, 3, 3, 1],
+            [3, 2, 0, 1, 0],
+            [2, 3, 2, 3, 0],
+        ]
+    )
+    assert corpus.term_frequency.tolist() == [9, 6, 5, 7, 1]
+    assert corpus.overridden_term_frequency is None
+
+    assert corpus.nlargest(2).tolist() == [3, 0]
+    assert corpus.nlargest(2, sort_indices=False, override=False).tolist() == [3, 0]
+    assert corpus.nlargest(2, sort_indices=False, override=True).tolist() == [3, 0]
+    assert corpus.nlargest(3, sort_indices=True, override=True).tolist() == [0, 1, 3]
+
+    corpus._overridden_term_frequency = np.array([4, 5, 5, 3, 1])  # pylint: disable=protected-access
+    assert (corpus.overridden_term_frequency == np.array([4, 5, 5, 3, 1])).all()
+    assert corpus.nlargest(3, sort_indices=True, override=True).tolist() == [0, 1, 2]

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from heapq import nlargest
 from typing import Mapping, Sequence, Tuple, Union
 
 import numpy as np
@@ -12,7 +11,7 @@ from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 class SliceMixIn:
 
     # @autojit
-    def slice_by_n_count(self: IVectorizedCorpusProtocol, n_count: int) -> IVectorizedCorpus:
+    def slice_by_tf(self: IVectorizedCorpusProtocol, n_count: int) -> IVectorizedCorpus:
         """Create a subset corpus where words having a count less than 'n_count' are removed
 
         Parameters
@@ -26,14 +25,10 @@ class SliceMixIn:
             Subset of self where words having a count less than 'n_count' are removed
         """
 
-        tokens = set(w for w, c in self.term_frequency_mapping.items() if c >= n_count)
+        indices: np.ndarray = np.argwhere(self.term_frequency >= n_count).ravel()
+        return self.slice_by_indices(indices)
 
-        def _px(w):
-            return w in tokens
-
-        return self.slice_by(_px)
-
-    def slice_by_n_top(self: IVectorizedCorpusProtocol, n_top) -> IVectorizedCorpus:
+    def slice_by_n_top(self: IVectorizedCorpusProtocol, n_top: int) -> IVectorizedCorpus:
         """Create a subset corpus that only contains most frequent `n_top` words
 
         Parameters
@@ -46,12 +41,7 @@ class SliceMixIn:
         VectorizedCorpus
             Subset of self where words having a count less than 'n_count' are removed
         """
-        tokens = set(nlargest(n_top, self.term_frequency_mapping, key=self.term_frequency_mapping.get))
-
-        def _px(w):
-            return w in tokens
-
-        return self.slice_by(_px)
+        return self.slice_by_indices(self.nlargest(n_top=n_top))
 
     def slice_by_document_frequency(
         self: IVectorizedCorpusProtocol, max_df=1.0, min_df=1, max_n_terms=None
@@ -72,14 +62,18 @@ class SliceMixIn:
             [description], by default None
         """
 
-        sliced_bag_term_matrix, token2id = textacy.vsm.matrix_utils.filter_terms_by_df(
+        bag_term_matrix, token2id = textacy.vsm.matrix_utils.filter_terms_by_df(
             self.bag_term_matrix, self.token2id, max_df=max_df, min_df=min_df, max_n_terms=max_n_terms
         )
-        term_frequency_mapping = {w: c for w, c in self.term_frequency_mapping.items() if w in token2id}
+        overridden_term_frequency = (
+            self._overridden_term_frequency[list(sorted(self.token2id[w] for w in token2id))]
+            if self._overridden_term_frequency is not None
+            else None
+        )
 
-        v_corpus = self.create(sliced_bag_term_matrix, token2id, self.document_index, term_frequency_mapping)
+        corpus = self.create(bag_term_matrix, token2id, self.document_index, overridden_term_frequency)
 
-        return v_corpus
+        return corpus
 
     # @autojit
     def slice_by(self: IVectorizedCorpusProtocol, px) -> IVectorizedCorpus:
@@ -97,58 +91,66 @@ class SliceMixIn:
         """
         indices = [self.token2id[w] for w in self.token2id.keys() if px(w)]
 
-        corpus = self.slice_by_indicies(indices)
+        corpus = self.slice_by_indices(indices)
 
         return corpus
 
     # @autojit
-    def slice_by_indicies(self: IVectorizedCorpusProtocol, indices: Sequence[int], inplace=False) -> IVectorizedCorpus:
+    def slice_by_indices(self: IVectorizedCorpusProtocol, indices: Sequence[int], inplace=False) -> IVectorizedCorpus:
         """Create (or modifies inplace) a subset corpus from given `indices`"""
 
-        if indices is None or len(indices) == 0:
+        if indices is None:
+            indices = []
+
+        if len(indices) == self.bag_term_matrix.shape[1]:
             return self
 
         indices.sort()
 
-        sliced_bag_term_matrix = self.bag_term_matrix[:, indices]
+        bag_term_matrix = self.bag_term_matrix[:, indices]
         token2id = {self.id2token[indices[i]]: i for i in range(0, len(indices))}
-        term_frequency_mapping = {w: c for w, c in self.term_frequency_mapping.items() if w in token2id}
+
+        overridden_term_frequency = (
+            self._overridden_term_frequency[indices] if self._overridden_term_frequency is not None else None
+        )
 
         if not inplace:
-            corpus = self.create(sliced_bag_term_matrix, token2id, self.document_index, term_frequency_mapping)
+            corpus = self.create(bag_term_matrix, token2id, self.document_index, overridden_term_frequency)
             return corpus
 
-        self._bag_term_matrix = sliced_bag_term_matrix
+        self._bag_term_matrix = bag_term_matrix
         self._token2id = token2id
         self._id2token = None
-        self._term_frequency_mapping = term_frequency_mapping
+        self._overridden_term_frequency = overridden_term_frequency
 
         return self
 
     def slice_by_term_frequency(self, threshold: Union[int, float], inplace=False) -> IVectorizedCorpus:
         """Returns subset of corpus where low frequenct words are filtered out"""
-        indicies = self.term_frequencies_greater_than_or_equal_to_threshold(threshold)
-        corpus: IVectorizedCorpus = self.slice_by_indicies(indicies, inplace=inplace)
+        indices = self.term_frequencies_greater_than_or_equal_to_threshold(threshold)
+        corpus: IVectorizedCorpus = self.slice_by_indices(indices, inplace=inplace)
         return corpus
 
     def term_frequencies_greater_than_or_equal_to_threshold(self, threshold: Union[int, float]) -> np.ndarray:
-        """Returns indicies of words having a frequency below a given threshold"""
-        indicies = np.argwhere(self.term_frequency >= threshold).ravel()
-        return indicies
+        """Returns indices of words having a frequency below a given threshold"""
+        indices = np.argwhere(self.term_frequency >= threshold).ravel()
+        return indices
 
-    def compress(self, inplace=False) -> Tuple[IVectorizedCorpus, Mapping[int, int], Sequence[int]]:
+    def compress(
+        self, tf_threshold: int = 1, inplace=False
+    ) -> Tuple[IVectorizedCorpus, Mapping[int, int], Sequence[int]]:
         """Compresses corpus by eliminating zero-TF terms.
 
         Returns:
-            Tuple[IVectorizedCorpus, Mapping[int,int], Sequence[int]]: compressed corpus, mapping between old/new vocabularies and affected original indicies
+            Tuple[IVectorizedCorpus, Mapping[int,int], Sequence[int]]: compressed corpus, mapping between old/new vocabularies and affected original indices
         """
-        indicies = self.term_frequencies_greater_than_or_equal_to_threshold(1)
+        keep_ids = self.term_frequencies_greater_than_or_equal_to_threshold(tf_threshold)
 
-        if len(indicies) == 0:
+        if len(keep_ids) == 0:
             return self, {}, []
 
-        mapping: Mapping[int, int] = {old_id: new_id for new_id, old_id in enumerate(indicies)}
+        vocab_ids_map: Mapping[int, int] = {old_id: new_id for new_id, old_id in enumerate(keep_ids)}
 
-        corpus: IVectorizedCorpus = self.slice_by_indicies(indicies, inplace=inplace)
+        corpus: IVectorizedCorpus = self.slice_by_indices(keep_ids, inplace=inplace)
 
-        return (corpus, mapping, indicies)
+        return (corpus, vocab_ids_map, keep_ids)
