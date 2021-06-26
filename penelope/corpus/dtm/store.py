@@ -17,7 +17,7 @@ def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
     token2id: Dict[str, int],
     document_index: DocumentIndex,
-    override_term_frequency: Dict[str, int] = None,
+    overridden_term_frequency: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
     module = importlib.import_module(name="penelope.corpus.dtm.vectorized_corpus")
@@ -26,7 +26,7 @@ def create_corpus_instance(
         bag_term_matrix=bag_term_matrix,
         token2id=token2id,
         document_index=document_index,
-        override_term_frequency=override_term_frequency,
+        overridden_term_frequency=overridden_term_frequency,
     )
 
 
@@ -39,7 +39,7 @@ class StoreMixIn:
 
         The two files are stored in files with names based on the specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `term_frequency_mapping`
+            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `overridden_term_frequency`
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
 
@@ -57,7 +57,7 @@ class StoreMixIn:
 
         data = {
             'token2id': self.token2id,
-            'term_frequency_mapping': self.term_frequency_mapping,
+            'overridden_term_frequency': self.overridden_term_frequency,
             'document_index': self.document_index,
         }
         data_filename = StoreMixIn._data_filename(tag, folder)
@@ -103,7 +103,7 @@ class StoreMixIn:
 
         Two files are loaded based on specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `term_frequency_mapping`
+            {tag}_vectorizer_data.pickle         Contains metadata `token2id`, `document_index` and `overridden_term_frequency`
             {tag}_vector_data.[npz|npy]          Contains the document-term matrix (numpy or sparse format)
 
 
@@ -125,7 +125,17 @@ class StoreMixIn:
 
         token2id: Mapping = data["token2id"]
         document_index: DocumentIndex = data.get("document_index")
-        term_frequency_mapping: dict = data.get("term_frequency_mapping", data.get("token_counter", None))
+
+        """Load TF override, convert if in older (dict) format"""
+        overridden_term_frequency: np.ndarray = (
+            data.get("overridden_term_frequency", None)
+            or data.get("term_frequency_mapping", None)
+            or data.get("token_counter", None)
+        )
+        if isinstance(overridden_term_frequency, dict):
+            fg = {v: k for k, v in token2id.items()}.get
+            overridden_term_frequency = np.array([overridden_term_frequency[fg(i)] for i in range(0, len(token2id))])
+
         matrix_basename = StoreMixIn._matrix_filename(tag, folder)
 
         if os.path.isfile(matrix_basename + '.npz'):
@@ -137,7 +147,7 @@ class StoreMixIn:
             bag_term_matrix,
             token2id=token2id,
             document_index=document_index,
-            override_term_frequency=term_frequency_mapping,
+            overridden_term_frequency=overridden_term_frequency,
         )
 
     @staticmethod
@@ -202,7 +212,7 @@ def load_corpus(
         v_corpus = v_corpus.group_by_year()
 
     if n_count is not None:
-        v_corpus = v_corpus.slice_by_n_count(n_count)
+        v_corpus = v_corpus.slice_by_tf(n_count)
 
     if n_top is not None:
         v_corpus = v_corpus.slice_by_n_top(n_top)
