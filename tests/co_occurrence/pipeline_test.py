@@ -148,7 +148,7 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
 
         assert isinstance(payload.content, CoOccurrencePayload)
 
-        TTM: sp.spmatrix = payload.content.vectorized_data.get(VectorizeType.Normal).term_term_matrix.tocoo()
+        TTM: sp.spmatrix = payload.content.ttm_data_map.get(VectorizeType.Normal).term_term_matrix.tocoo()
 
         document_TTM_data = {(fg(TTM.row[i]), fg(TTM.col[i])): TTM.data[i] for i in range(0, len(TTM.data))}
 
