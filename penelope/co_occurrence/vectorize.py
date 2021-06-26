@@ -1,13 +1,20 @@
 import array
+import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from enum import IntEnum
+from pprint import pformat as pf
 from typing import Any, Iterable, Iterator, Mapping, Optional, Set
 
 import numpy as np
 import scipy
+from loguru import logger
 from penelope.co_occurrence.interface import ContextOpts
 from penelope.corpus import Token2Id
+
+logger.remove()
+logger.add(sys.stdout, format="{message}", level="INFO", enqueue=True)
+logger.add("co_occurrence_trace.py", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
 
 
 class VectorizeType(IntEnum):
@@ -21,6 +28,19 @@ class VectorizedTTM:
     term_term_matrix: scipy.sparse.spmatrix
     term_window_counts: Mapping[int, int]
     document_id: int
+
+    def trace(self):
+        logger.info(
+            "\n#################################################################################################"
+        )
+        logger.info(f"# VectorizedTTM state #{self.document_id}")
+        logger.info(
+            "#################################################################################################\n"
+        )
+        logger.info(f"document_id = {self.document_id}")
+        logger.info(f"vectorize_type = VectorizeType.{self.vectorize_type.name}")
+        logger.info(f"term_term_matrix = {pf(self.term_term_matrix.todense())}")
+        logger.info(f"term_window_counts = {pf(self.term_window_counts)}")
 
 
 class DocumentWindowsVectorizer:
@@ -51,7 +71,7 @@ class DocumentWindowsVectorizer:
         data: Mapping[VectorizeType, VectorizedTTM] = self._vectorize(
             document_id=document_id,
             windows=windows,
-            concept=concept_ids,
+            concept_ids=concept_ids,
             ignore_ids=ignore_ids,
         )
 
@@ -65,14 +85,14 @@ class DocumentWindowsVectorizer:
         *,
         document_id: int,
         windows: Iterator[Iterable[int]],
-        concept: Set[int],
+        concept_ids: Set[int],
         ignore_ids: Set[int],
     ) -> Mapping[VectorizeType, VectorizedTTM]:
 
-        if len(concept) > 1:
+        if len(concept_ids) > 1:
             raise NotImplementedError("Multiple concepts disabled (performance")
 
-        concept_word: Optional[str] = list(concept)[0] if concept else None
+        concept_id: Optional[str] = list(concept_ids)[0] if concept_ids else None
 
         counters: Mapping[VectorizeType, WindowsTermsCounter] = defaultdict(WindowsTermsCounter)
 
@@ -97,11 +117,11 @@ class DocumentWindowsVectorizer:
 
         count_tokens = _count_tokens_with_ignores if ignore_ids else _count_tokens_without_ignores
 
-        if concept_word:
+        if concept_id:
             cwu = counters[VectorizeType.Concept].update
             for window in windows:
                 token_counts: dict = count_tokens(window)
-                if concept_word in window:  # any(x in window for x in concept):
+                if concept_id in window:  # any(x in window for x in concept):
                     cwu(token_counts)
                 ewu(token_counts)
         else:
@@ -117,6 +137,9 @@ class DocumentWindowsVectorizer:
 
 
 class WindowsTermsCounter:
+    """Contains term window counts collected during TTM construction.
+    Compiles the stored term window counts into a TTM matrix."""
+
     def __init__(self, dtype: Any = np.int32):
         self.dtype = dtype
         self.indptr = []
@@ -135,6 +158,7 @@ class WindowsTermsCounter:
         self._indptr_append(len(self.jj))
 
     def compile(self, *, document_id: int, vectorize_type: VectorizeType, vocab_size: int) -> VectorizedTTM:
+        """Computes the final TTM and a global term window counter"""
         self.jj = np.asarray(self.jj, dtype=np.int64)
         self.indptr = np.asarray(self.indptr, dtype=np.int32)
         self.values = np.frombuffer(self.values, dtype=np.intc)
@@ -148,7 +172,7 @@ class WindowsTermsCounter:
             np.dot(window_term_matrix.T, window_term_matrix),
             1,
         )
-        term_window_counts: Mapping[int, int] = self.to_term_window_counter(window_term_matrix)
+        term_window_counts: Mapping[int, int] = self._to_term_window_counter(window_term_matrix)
         return VectorizedTTM(
             vectorize_type=vectorize_type,
             document_id=document_id,
@@ -156,7 +180,7 @@ class WindowsTermsCounter:
             term_window_counts=term_window_counts,
         )
 
-    def to_term_window_counter(self, window_term_matrix: scipy.sparse.spmatrix) -> Mapping[int, int]:
+    def _to_term_window_counter(self, window_term_matrix: scipy.sparse.spmatrix) -> Mapping[int, int]:
         """Returns tuples (token_id, window count) for non-zero tokens in window_term_matrix"""
 
         window_counts: np.ndarray = (window_term_matrix != 0).sum(axis=0).A1
