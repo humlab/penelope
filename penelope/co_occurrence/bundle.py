@@ -47,16 +47,15 @@ class Bundle:
 
     def compress(self) -> "Bundle":
         def _token_ids_to_keep(kept_pair_ids: Set[int]) -> List[int]:
-            token_id_tuples: dict = {k for k, pair_id in self.token_ids_2_pair_id.items() if pair_id in kept_pair_ids}
-            token_ids_in_kept_pairs: Set[int] = set(flatten(token_id_tuples.values()))
-            kept_token_ids: List[int] = sorted(list(token_ids_in_kept_pairs.union(self.token2id.magic_token_ids)))
+            token_ids_in_kept_pairs: Set[int] = set(flatten((k for k, pair_id in self.token_ids_2_pair_id.items() if pair_id in kept_pair_ids)))
+            kept_token_ids: List[int] = sorted(list(token_ids_in_kept_pairs.union(set(self.token2id.magic_token_ids))))
             return kept_token_ids
 
         if not self.concept_corpus:
             return self
 
         """Compress concep corpus (remove zero-columns)"""
-        _, pair_id_translation, kept_pair_ids = self.concept_corpus.compress(tf_threshold=1, inplace=True)
+        _, ids_translation, kept_pair_ids = self.concept_corpus.compress(tf_threshold=1, inplace=True)
 
         """Slice full corpus to match compressed concept corpus columns"""
         self.corpus.slice_by_indices(kept_pair_ids, inplace=True)
@@ -66,10 +65,11 @@ class Bundle:
 
         self.corpus.window_counts.clip(kept_token_ids, inplace=True)
         self.concept_corpus.window_counts.clip(kept_token_ids, inplace=True)
-        self.token2id.clip(kept_token_ids, inplace=True)
+
+        self.token2id.translate(ids_translation=ids_translation, inplace=True)
 
         self._token_ids_2_pair_id = {
-            pair: pair_id for pair, pair_id in self._token_ids_2_pair_id if pair_id in pair_id_translation
+            pair: pair_id for pair, pair_id in self._token_ids_2_pair_id if pair_id in ids_translation
         }
 
         return self
