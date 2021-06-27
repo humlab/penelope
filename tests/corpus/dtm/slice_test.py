@@ -224,6 +224,21 @@ def test_compress():
         corpus.term_frequency[inv_m[new_id]] for new_id in sorted(inv_m)
     ]
 
+    compressed_corpus, m, indices = corpus.compress(inplace=False, extra_keep_ids=[0, 6])
+    assert (indices == [0, 1, 2, 4, 5, 6]).all()
+    assert (
+        (
+            compressed_corpus.data.todense()
+            == [
+                [0, 2, 1, 4, 1, 0],
+                [0, 2, 2, 3, 0, 0],
+                [0, 2, 3, 2, 0, 0],
+            ]
+        )
+        .all()
+        .all()
+    )
+
 
 def test_nlargest():
     ...
@@ -246,3 +261,17 @@ def test_nlargest():
     corpus._overridden_term_frequency = np.array([4, 5, 5, 3, 1])  # pylint: disable=protected-access
     assert (corpus.overridden_term_frequency == np.array([4, 5, 5, 3, 1])).all()
     assert corpus.nlargest(3, sort_indices=True, override=True).tolist() == [0, 1, 2]
+
+
+def test_where_is_above_threshold_with_keeps():
+
+    values = np.array([0, 0, 2, 5, 1, 8, 4, 0])
+
+    indices = VectorizedCorpus.where_is_above_threshold_with_keeps(values, threshold=4)
+    assert indices.tolist() == [3, 5, 6]
+
+    indices = VectorizedCorpus.where_is_above_threshold_with_keeps(values, threshold=4, keep_indices=[])
+    assert indices.tolist() == [3, 5, 6]
+
+    indices = VectorizedCorpus.where_is_above_threshold_with_keeps(values, threshold=4, keep_indices=[0, 1])
+    assert indices.tolist() == [0, 1, 3, 5, 6]
