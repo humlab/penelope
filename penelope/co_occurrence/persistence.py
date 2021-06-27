@@ -237,12 +237,15 @@ class TokenWindowCountStatistics:
     """Document-level token window counts"""
     document_term_window_counts: scipy.sparse.spmatrix = None
 
-    def clip(self, keep_single_ids: List(int), inplace=True) -> TokenWindowCountStatistics:
+    def clip(self, keep_token_ids: List(int), inplace=True) -> TokenWindowCountStatistics:
+
+        if len(keep_token_ids) == self.document_term_window_counts.shape[1]:
+            return self
 
         ttwc: dict = self.total_term_window_counts
 
-        total_term_window_counts: dict = {token_id: ttwc[token_id] for token_id in keep_single_ids}
-        document_term_window_counts: scipy.sparse.spmatrix = self.document_term_window_counts[:, keep_single_ids]
+        total_term_window_counts: dict = {token_id: ttwc[token_id] for token_id in keep_token_ids}
+        document_term_window_counts: scipy.sparse.spmatrix = self.document_term_window_counts[:, keep_token_ids]
 
         if inplace:
             self.total_term_window_counts = total_term_window_counts
