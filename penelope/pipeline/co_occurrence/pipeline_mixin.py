@@ -32,7 +32,7 @@ class PipelineShortcutMixIn:
         *,
         context_opts: ContextOpts = None,
         global_threshold_count: int = 1,
-        compress: bool = False
+        compress: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ TOKENS => CO_OCCURRENCE_DTM_CORPUS """
         return self.add(

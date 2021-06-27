@@ -145,6 +145,7 @@ def test_token2id_compress_with_threshold_and_keeps_scuccee3():
     assert tf_to_string(token2id) == {'adam': 3, 'anton': 2, 'felicia': 1, 'beata': 2, '__low-tf__': 2}
     assert translation == {0: 0, 1: 1, 3: 2, 5: 3}
 
+
 # def test_clip():
 #     ...
 #     data = {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
@@ -166,8 +167,9 @@ def test_translation():
     tf = {0: 1, 1: 1, 2: 5, 3: 2, 4: 5, 5: 2, 6: 4}
 
     assert dict(token2id.data) == {'*': 0, '__low-tf__': 1, 'a': 2, 'c': 3, 'e': 4}
-    assert dict(token2id.tf) ==  {0: 1, 1: 5, 2: 5, 3: 5, 4: 4}
+    assert dict(token2id.tf) == {0: 1, 1: 5, 2: 5, 3: 5, 4: 4}
     assert dict(translation) == {0: 0, 1: 1, 2: 2, 4: 3, 6: 4}
+
 
 def test_translate():
 
@@ -181,5 +183,4 @@ def test_translate():
     assert dict(token2id.data) == {'*': 0, '__low-tf__': 1, 'a': 2, 'c': 3, 'e': 4}
 
     """Note that translate doesn't add LF-counts to LF-marker"""
-    assert dict(token2id.tf) ==  {0: 1, 1: 1, 2: 5, 3: 5, 4: 4}
-
+    assert dict(token2id.tf) == {0: 1, 1: 1, 2: 5, 3: 5, 4: 4}

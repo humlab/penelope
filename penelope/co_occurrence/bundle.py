@@ -47,7 +47,9 @@ class Bundle:
 
     def compress(self) -> "Bundle":
         def _token_ids_to_keep(kept_pair_ids: Set[int]) -> List[int]:
-            token_ids_in_kept_pairs: Set[int] = set(flatten((k for k, pair_id in self.token_ids_2_pair_id.items() if pair_id in kept_pair_ids)))
+            token_ids_in_kept_pairs: Set[int] = set(
+                flatten((k for k, pair_id in self.token_ids_2_pair_id.items() if pair_id in kept_pair_ids))
+            )
             kept_token_ids: List[int] = sorted(list(token_ids_in_kept_pairs.union(set(self.token2id.magic_token_ids))))
             return kept_token_ids
 

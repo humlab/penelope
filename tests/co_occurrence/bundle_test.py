@@ -25,6 +25,7 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 
 # pylint: disable=protected-access
 
+
 def test_compress_corpus():
 
     context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1)

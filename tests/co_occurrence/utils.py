@@ -58,7 +58,7 @@ def create_simple_bundle_by_pipeline(
     context_opts: ContextOpts,
     tag: str = "TERRA",
     folder: str = None,
-    compress: bool = False
+    compress: bool = False,
 ):
     folder = folder or OUTPUT_FOLDER
     if folder.startswith('./tests') and folder != OUTPUT_FOLDER:
