@@ -3,7 +3,7 @@ import zipfile
 from collections import Counter, defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from typing import Any, Callable, Container, Iterator, List, Mapping, Optional, Union
+from typing import Any, Callable, Container, Iterator, List, Mapping, Optional, Tuple, Union
 
 import pandas as pd
 from loguru import logger
@@ -13,6 +13,7 @@ from penelope.utility import path_add_suffix, pickle_to_file, replace_extension,
 MAGIC_TOKENS = {"*", GLOBAL_TF_THRESHOLD_MASK_TOKEN}
 
 # pylint: disable=too-many-public-methods
+
 
 class ClosedVocabularyError(Exception):
     ...
@@ -89,7 +90,7 @@ class Token2Id(MutableMapping):
     # def data(self, value: Any) -> None:
     #     self.replace(value)
 
-    def replace(self, *, data: Any, tf: Counter = None) -> None:
+    def replace(self, *, data: Any, tf: Counter = None) -> "Token2Id":
         """Replace current data with `data`"""
         if isinstance(data, defaultdict):
             self._data = data
@@ -101,6 +102,7 @@ class Token2Id(MutableMapping):
         if tf is not None:
             self._tf = tf
         self.sync_state()
+        return self
 
     @property
     def payload(self) -> Mapping[Any, Any]:
@@ -231,11 +233,13 @@ class Token2Id(MutableMapping):
 
         return [self[w] for w in set(matches)]
 
-    def compress(self, *, tf_threshold: int = 1, inplace=False, keeps: Container[Union[int, str]] = None) -> "Token2Id":
-        """Returns a compressed version of corpus where tokens below threshold are removed"""
+    def compress(
+        self, *, tf_threshold: int = 1, inplace=False, keeps: Container[Union[int, str]] = None
+    ) -> Tuple["Token2Id", Mapping[int, int]]:
+        """Returns a compressed version of corpus, with ID translation, where tokens below threshold are removed"""
 
         if tf_threshold <= 1:
-            return self
+            return self, None
 
         keeps: Container[int] = {self[x] if isinstance(x, str) else x for x in keeps} if keeps else set()
         keeps |= set(self.magic_token_ids)
@@ -276,46 +280,42 @@ class Token2Id(MutableMapping):
 
         new_tf[mask_id] += sum(tf[i] for i in self.data.values() if i not in translation and i != old_mask_id)
 
+        ids_translation = {k: v[0] for k, v in translation.items()}
         if inplace:
             self.replace(data=new_data, tf=new_tf)
-            return self.close(fallback=mask_id)
+            return self.close(fallback=mask_id), ids_translation
 
         token2id: Token2Id = Token2Id(data=new_data, tf=new_tf).close(fallback=mask_id)
 
-        return token2id
+        return token2id, ids_translation
 
-    def clip(self, keep_ids: List[int], inplace: bool = True) -> "Token2Id":
-        """Removes tokens not found in `keep_ids` """
-        keep_ids = set(keep_ids)
-        dg, tg = self._data, self._tf
-        data = defaultdict(None, dict({token_id: dg[token_id] for token_id in keep_ids}))
-        tf = Counter({token_id: tg[token_id] for token_id in keep_ids})
+    # @deprecated
+    # def clip(self, keep_ids: List[int], inplace: bool = True) -> "Token2Id":
+    #     """Removes tokens not found in `keep_ids` """
+    #     keep_ids = set(keep_ids)
+    #     dg, tg = self.id2token.get, self._tf.get
+    #     data = defaultdict(None, dict({dg(token_id): token_id for token_id in keep_ids}))
+    #     tf = Counter({token_id: tg(token_id) for token_id in keep_ids})
+
+    #     if inplace:
+    #         return self.replace(data=data, tf=tf)
+
+    #     token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
+
+    #     return token2id
+
+    def translate(self, ids_translation: Mapping[int, int], inplace: bool = True) -> "Token2Id":
+        """Translates ID in vocabulary according to mapping specified in `vocab_translation`
+        Translation is a mapping from old ID to new ID.
+        Old item IDs that don't exist in translation are filtered out.
+        """
+        data = defaultdict(None, {w: ids_translation[oid] for w, oid in self.data.items() if oid in ids_translation})
+
+        cg = self.tf.get
+        tf = Counter({ids_translation[oid]: cg(oid, 0) for oid in ids_translation})
 
         if inplace:
             return self.replace(data=data, tf=tf)
-
-        token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
-
-        return token2id
-
-    def translate(self, vocab_translation: Mapping[int, int], inplace: bool = True) -> "Token2Id":
-        """Translates ID in vocabulary according to mapping specified in `vocab_translation`
-        Translation is a mapping from old ID to new ID.
-        Old items IDs that don't exist in translation are filtered out.
-        """
-        data = defaultdict(
-            None,
-            dict(
-                {token: vocab_translation[old_id] for token, old_id in self.data.items() if old_id in vocab_translation}
-            ),
-        )
-
-        cg = self.tf.get
-        tf = Counter({vocab_translation[old_id]: cg(old_id) for old_id in vocab_translation})
-
-        if inplace:
-            self.data, self.tf, self._id2token = data, tf, None
-            return self.sync_state(self.is_open)
 
         token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
 
