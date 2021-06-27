@@ -3,14 +3,19 @@ from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
-from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
 from .utils import create_simple_bundle_by_pipeline
 
 
+SIMPLE_CORPUS_ABCDE_3DOCS = [
+    ('tran_2019_01_test.txt', ['a', 'b', 'c', 'c', 'd', 'c', 'e']),
+    ('tran_2019_02_test.txt', ['a', 'a', 'c', 'e', 'c', 'd', 'd']),
+    ('tran_2019_03_test.txt', ['d', 'e', 'e', 'b']),
+]
+
 def test_keyness_transform_with_simple_corpus():
-    context_opts: ContextOpts = ContextOpts(concept={'g'}, ignore_concept=False, context_width=2)
-    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDEFG_3DOCS, context_opts=context_opts)
+    context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1)
+    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts)
     keyness_source: KeynessMetricSource = KeynessMetricSource.Weighed
     keyness: KeynessMetric = KeynessMetric.TF_normalized
     opts: ComputeKeynessOpts = ComputeKeynessOpts(
