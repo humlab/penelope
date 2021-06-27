@@ -88,7 +88,7 @@ class Token2Id(MutableMapping):
     # def data(self, value: Any) -> None:
     #     self.replace(value)
 
-    def replace(self, *, data: Any, tf: Counter=None) -> None:
+    def replace(self, *, data: Any, tf: Counter = None) -> None:
         """Replace current data with `data`"""
         if isinstance(data, defaultdict):
             self._data = data
@@ -252,11 +252,15 @@ class Token2Id(MutableMapping):
 
         translation: Mapping[int, int] = {
             old_token_id: (new_token_id, v)
-            for new_token_id, (old_token_id, v) in enumerate((k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keeps))
+            for new_token_id, (old_token_id, v) in enumerate(
+                (k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keeps)
+            )
         }
 
         new_tf: Counter = Counter({k: v for (k, v) in translation.values()})
-        new_data = {w: translation[old_token_id][0] for (w, old_token_id) in self.data.items() if old_token_id in translation}
+        new_data = {
+            w: translation[old_token_id][0] for (w, old_token_id) in self.data.items() if old_token_id in translation
+        }
 
         """Add and sum-up masked low-tf marker"""
 
