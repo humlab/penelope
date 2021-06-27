@@ -19,7 +19,6 @@ from penelope.corpus import (
     default_tokenizer,
 )
 from penelope.corpus.readers import (
-    GLOBAL_TF_THRESHOLD_MASK_TOKEN,
     ExtractTaggedTokensOpts,
     TextReader,
     TextReaderOpts,
@@ -705,8 +704,6 @@ class TextToDTM(ITask):
         return None
 
 
-MAGIC_TOKENS = {"*", GLOBAL_TF_THRESHOLD_MASK_TOKEN}
-
 # FIXME #115 Enable optional one-pass creation of vocabulary and TF frequencies
 @dataclass
 class Vocabulary(DefaultResolveMixIn, ITask):
@@ -742,8 +739,8 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         ingest = self.token2id.ingest
 
-        ingest(MAGIC_TOKENS)
-        self.tf_keeps |= MAGIC_TOKENS
+        ingest(self.token2id.magic_tokens)
+        self.tf_keeps |= self.token2id.magic_tokens
 
         for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab:"):
             ingest(self.tokens_stream(payload))
