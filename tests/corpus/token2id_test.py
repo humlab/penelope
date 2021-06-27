@@ -98,16 +98,18 @@ def test_token2id_compress_with_no_threshold_and_no_keeps_returns_self():
     assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4, 'beata': 5}
     assert dict(token2id.tf) == {0: 3, 1: 2, 2: 1, 3: 1, 4: 1, 5: 2}
 
-    token2id_compressed = token2id.compress(tf_threshold=1, inplace=False, keeps=None)
+    token2id_compressed, translation = token2id.compress(tf_threshold=1, inplace=False, keeps=None)
     assert token2id_compressed is token2id
+    assert translation is None
 
 
 def test_token2id_inplace_compress_with_threshold_and_no_keeps():
 
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
-    token2id_compressed = token2id.compress(tf_threshold=2, inplace=False)
+    token2id_compressed, translation = token2id.compress(tf_threshold=2, inplace=False)
     assert dict(token2id_compressed.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
     assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 2, 3: 3}
+    assert translation == {0: 0, 1: 1, 5: 2}
     assert token2id.fallback_token is None
     assert token2id_compressed.fallback_token is not None
     assert token2id_compressed["roger"] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
@@ -118,7 +120,7 @@ def test_token2id_compress_with_threshold_and_keeps_adds_masked_magic_token_with
 
     mask_token: str = GLOBAL_TF_THRESHOLD_MASK_TOKEN
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
-    token2id_compressed = token2id.compress(tf_threshold=2, keeps={4}, inplace=False)
+    token2id_compressed, _ = token2id.compress(tf_threshold=2, keeps={4}, inplace=False)
 
     assert mask_token not in token2id
     assert mask_token in token2id_compressed
@@ -130,13 +132,54 @@ def test_token2id_compress_with_threshold_and_keeps_adds_masked_magic_token_with
 
 def test_token2id_compress_with_ingested_mask_token_and_threshold_has_correct_magic_token_sum():
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
-    token2id.compress(tf_threshold=2, inplace=True)
+    _, translation = token2id.compress(tf_threshold=2, inplace=True)
     assert dict(token2id.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
     assert dict(token2id.tf) == {0: 3, 1: 2, 2: 2, 3: 4}
+    assert translation == {0: 0, 1: 1, 5: 2, 6: 3}
 
 
 def test_token2id_compress_with_threshold_and_keeps_scuccee3():
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
-    token2id.compress(tf_threshold=2, inplace=True, keeps={token2id["felicia"]})
+    _, translation = token2id.compress(tf_threshold=2, inplace=True, keeps={token2id["felicia"]})
     assert dict(token2id.data) == {'adam': 0, 'anton': 1, 'felicia': 2, 'beata': 3, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 4}
     assert tf_to_string(token2id) == {'adam': 3, 'anton': 2, 'felicia': 1, 'beata': 2, '__low-tf__': 2}
+    assert translation == {0: 0, 1: 1, 3: 2, 5: 3}
+
+# def test_clip():
+#     ...
+#     data = {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
+#     tf = {0: 1, 1: 1, 2: 3, 3: 2, 4: 5, 5: 4, 6: 4}
+#     token2id = Token2Id(data=data, tf=tf)
+#     assert dict(token2id.data) == data
+#     assert dict(token2id.tf) == tf
+
+#     token2id.clip([0, 1, 2, 4, 6], inplace=True)
+#     assert dict(token2id.data) == {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
+#     assert dict(token2id.tf) == {0: 1, 1: 1, 2: 3, 3: 2, 4: 5, 5: 4, 6: 4}
+
+
+def test_translation():
+    data = {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
+    tf = {0: 1, 1: 1, 2: 5, 3: 2, 4: 5, 5: 2, 6: 4}
+    token2id = Token2Id(data=data, tf=tf)
+    _, translation = token2id.compress(tf_threshold=4, inplace=True)
+    tf = {0: 1, 1: 1, 2: 5, 3: 2, 4: 5, 5: 2, 6: 4}
+
+    assert dict(token2id.data) == {'*': 0, '__low-tf__': 1, 'a': 2, 'c': 3, 'e': 4}
+    assert dict(token2id.tf) ==  {0: 1, 1: 5, 2: 5, 3: 5, 4: 4}
+    assert dict(translation) == {0: 0, 1: 1, 2: 2, 4: 3, 6: 4}
+
+def test_translate():
+
+    data = {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
+    tf = {0: 1, 1: 1, 2: 5, 3: 2, 4: 5, 5: 2, 6: 4}
+    ids_translation = {0: 0, 1: 1, 2: 2, 4: 3, 6: 4}
+    token2id = Token2Id(data=data, tf=tf)
+
+    token2id.translate(ids_translation=ids_translation, inplace=True)
+
+    assert dict(token2id.data) == {'*': 0, '__low-tf__': 1, 'a': 2, 'c': 3, 'e': 4}
+
+    """Note that translate doesn't add LF-counts to LF-marker"""
+    assert dict(token2id.tf) ==  {0: 1, 1: 1, 2: 5, 3: 5, 4: 4}
+

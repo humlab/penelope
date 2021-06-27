@@ -223,7 +223,8 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_f
     """ Alternative #2: Use token2id to mask low TF tokens"""
     df: pd.DataFrame = tagged_frame.copy()
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(df.baseform)
-    token2id.compress(tf_threshold=2, inplace=True)
+    """Note that translation must be used to map token-ids if used elsewhere"""
+    _, translation = token2id.compress(tf_threshold=2, inplace=True)  # pylint: disable=unused-variable
     token2id.close()
     tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
     assert len(tokens) == len(df)
@@ -253,7 +254,8 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagg
     """ Alternative #2: Use token2id to mask low TF tokens"""
     df: pd.DataFrame = tagged_frame.copy()
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(df.baseform)
-    token2id.compress(tf_threshold=2, inplace=True)
+    """Note that translation must be used to map token-ids if used elsewhere"""
+    _, translation = token2id.compress(tf_threshold=2, inplace=True)  # pylint: disable=unused-variable
     token2id.close()
     tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
     assert len(tokens) == expected_count
