@@ -267,6 +267,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
     context_opts: ContextOpts = None
     global_threshold_count: int = 1
+    compress: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
@@ -330,7 +331,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
             vocabs_mapping=token_ids_2_pair_id,
         )
 
-        bundle.compress()
+        if self.compress:
+            bundle.compress()
 
         payload: DocumentPayload = DocumentPayload(content=bundle)
 
