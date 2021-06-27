@@ -3,12 +3,14 @@ import zipfile
 from collections import Counter, defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from typing import Callable, Container, Iterator, List, Mapping, Optional, Union
+from typing import Any, Callable, Container, Iterator, List, Mapping, Optional, Union
 
 import pandas as pd
 from loguru import logger
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.utility import path_add_suffix, pickle_to_file, replace_extension, strip_paths, unpickle_from_file
+
+MAGIC_TOKENS = {"*", GLOBAL_TF_THRESHOLD_MASK_TOKEN}
 
 
 class ClosedVocabularyError(Exception):
@@ -18,31 +20,31 @@ class ClosedVocabularyError(Exception):
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
-    def __init__(self, data: Optional[Union[dict, defaultdict]] = None, tf: Counter = None, fallback_token: str = None):
-        if isinstance(data, defaultdict):
-            self.data = data
-        elif isinstance(data, dict):
-            self.data = defaultdict(int, data)
-        else:
-            self.data = data or defaultdict()
-        self.tf: Counter = tf
+    def __init__(
+        self, data: Optional[Union[dict, defaultdict]] = None, tf: Counter = None, fallback_token: str = None, **kwargs
+    ):
+
+        self._data: defaultdict = None
+        self._tf: Counter = None
+        self._is_open = True
         self._id2token: dict = None
         self._fallback_token: str = fallback_token
-        self.data.default_factory = self.data.__len__
-        self._is_open = True
+        self._payload: dict = dict(**kwargs)
+
+        self.replace(data=data or defaultdict(), tf=tf)
 
     def __contains__(self, key):
-        return key in self.data
+        return key in self._data
 
     def __getitem__(self, key):
         if not self._is_open:
             if self._fallback_token:
-                return self.data.get(key, self._fallback_token)
-        return self.data[key]
+                return self._data.get(key, self._fallback_token)
+        return self._data[key]
 
     def __optimized__getitem__(self) -> Callable[[str], int]:
         """Optimises __getitem__ by wireing up a replacement closure without conditional constructs"""
-        data = self.data
+        data = self._data
         if self._is_open:
             return lambda w: data[w]
         fallback_token = self._fallback_token
@@ -55,27 +57,73 @@ class Token2Id(MutableMapping):
             self._id2token = None
         if not self.is_open:
             raise ClosedVocabularyError(f"cannot add item to a closed vocabulary: '{value}'")
-        self.data[key] = value
+        self._data[key] = value
 
     def __delitem__(self, key):
-        del self.data[key]
+        del self._data[key]
 
     def __iter__(self):
-        return iter(self.data)
+        return iter(self._data)
 
     def __len__(self):
-        return len(self.data)
+        return len(self._data)
+
+    @property
+    def data(self) -> defaultdict:
+        return self._data
+
+    @property
+    def tf(self) -> Counter:
+        return self._tf
+
+    @property
+    def magic_tokens(self) -> List[str]:
+        return MAGIC_TOKENS
+
+    @property
+    def magic_token_ids(self) -> List[str]:
+        return [self[w] for w in MAGIC_TOKENS if w in self._data]
+
+    # @data.setter
+    # def data(self, value: Any) -> None:
+    #     self.replace(value)
+
+    def replace(self, *, data: Any, tf: Counter=None) -> None:
+        """Replace current data with `data`"""
+        if isinstance(data, defaultdict):
+            self._data = data
+        elif isinstance(data, dict):
+            self._data = defaultdict(int, data)
+        else:
+            self._data = data or defaultdict()
+        self._id2token = None
+        if tf is not None:
+            self._tf = tf
+        self.sync_state()
+
+    @property
+    def payload(self) -> Mapping[Any, Any]:
+        return self._payload
+
+    def remember(self, **kwargs) -> "Token2Id":
+        """Stores items in payload"""
+        self.payload.update(kwargs)
+        return self
+
+    def recall(self, key: str) -> Optional[Any]:
+        """Retrieves item from payload"""
+        return self.payload.get(key)
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
         if not self._is_open:
             raise ClosedVocabularyError("cannot ingest into a closed vocabulary")
 
-        if self.tf is None:
-            self.tf = Counter()
+        if self._tf is None:
+            self._tf = Counter()
 
         self._id2token = None
         data = self.data
-        self.tf.update(data[t] for t in tokens)
+        self._tf.update(data[t] for t in tokens)
         return self
 
     @property
@@ -99,19 +147,10 @@ class Token2Id(MutableMapping):
         return self
 
     def open(self) -> "Token2Id":
-
-        if self.is_open:
-            return self
-
-        if self.data.default_factory is not None:
-            raise ValueError("Token2Id cannot be opened with current state")
-
         self.data.default_factory = self.data.__len__
         self._id2token = None
         self._is_open = True
-
         self.__getitem__ = self.__optimized__getitem__()
-
         return self
 
     def default(self, value: int) -> "Token2Id":
@@ -145,7 +184,7 @@ class Token2Id(MutableMapping):
 
     @staticmethod
     def load(filename: str) -> "Token2Id":
-        """Store dictionary as CSV"""
+        """Load vocabulary from CSV"""
         if not pathlib.Path(filename).exists():
             logger.info(f"Token2Id.load: filename {filename} not found")
             return None
@@ -162,10 +201,10 @@ class Token2Id(MutableMapping):
         return tf
 
     def store_tf(self, filename: str) -> None:
-        if not self.tf:
+        if not self._tf:
             return
         tf_filename: str = path_add_suffix(filename, "_tf", new_extension=".pbz2")
-        pickle_to_file(tf_filename, self.tf)
+        pickle_to_file(tf_filename, self._tf)
 
     def to_ids(self, tokens: List[str]) -> List[int]:
         return [self.data[w] for w in tokens]
@@ -198,6 +237,7 @@ class Token2Id(MutableMapping):
             return self
 
         keeps: Container[int] = {self[x] if isinstance(x, str) else x for x in keeps} if keeps else set()
+        keeps |= set(self.magic_token_ids)
 
         logger.info(
             f"Compressing vocab: TF-threshold={tf_threshold} Keeping: {' '.join([self.id2token[x] for x in keeps])}"
@@ -208,29 +248,31 @@ class Token2Id(MutableMapping):
 
         tf: Counter = self.tf
 
+        """Create translation between old IDs and new IDs"""
+
         translation: Mapping[int, int] = {
-            token_id: (i, v)
-            for i, (token_id, v) in enumerate((k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keeps))
+            old_token_id: (new_token_id, v)
+            for new_token_id, (old_token_id, v) in enumerate((k, v) for (k, v) in tf.items() if (v >= tf_threshold or k in keeps))
         }
 
         new_tf: Counter = Counter({k: v for (k, v) in translation.values()})
-        new_data = {w: translation[i][0] for (w, i) in self.data.items() if i in translation}
+        new_data = {w: translation[old_token_id][0] for (w, old_token_id) in self.data.items() if old_token_id in translation}
+
+        """Add and sum-up masked low-tf marker"""
 
         if GLOBAL_TF_THRESHOLD_MASK_TOKEN not in new_data:
             new_data[GLOBAL_TF_THRESHOLD_MASK_TOKEN] = len(new_data)
 
+        old_mask_id = self.data[GLOBAL_TF_THRESHOLD_MASK_TOKEN] if GLOBAL_TF_THRESHOLD_MASK_TOKEN in self else -1
         mask_id = new_data[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 
         if mask_id not in new_tf:
             new_tf[mask_id] = 0
 
-        new_tf[mask_id] += sum(tf[i] for i in self.data.values() if i not in translation)
+        new_tf[mask_id] += sum(tf[i] for i in self.data.values() if i not in translation and i != old_mask_id)
 
         if inplace:
-            self._id2token = None
-            self.data = defaultdict(None, new_data)
-            self.tf = new_tf
-
+            self.replace(data=new_data, tf=new_tf)
             return self.close(fallback=mask_id)
 
         token2id: Token2Id = Token2Id(data=new_data, tf=new_tf).close(fallback=mask_id)
@@ -240,13 +282,12 @@ class Token2Id(MutableMapping):
     def clip(self, keep_ids: List[int], inplace: bool = True) -> "Token2Id":
         """Removes tokens not found in `keep_ids` """
         keep_ids = set(keep_ids)
-        dg, tg = self.data, self.tf
+        dg, tg = self._data, self._tf
         data = defaultdict(None, dict({token_id: dg[token_id] for token_id in keep_ids}))
         tf = Counter({token_id: tg[token_id] for token_id in keep_ids})
 
         if inplace:
-            self.data, self.tf, self._id2token = data, tf, None
-            return self.sync_state(self.is_open)
+            return self.replace(data=data, tf=tf)
 
         token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
 

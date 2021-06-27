@@ -1,10 +1,62 @@
 import os
+from collections import Counter
+from typing import Mapping
 
 import pytest
 from penelope.corpus import Token2Id
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.corpus.token2id import ClosedVocabularyError
 from penelope.utility import path_add_suffix
+
+TEST_TOKENS_STREAM1 = ['adam', 'anton', 'anton', 'beatrice', 'felicia', 'niklas', 'adam', 'adam']
+TEST_TOKENS_STREAM2 = ['adam', 'anton', 'anton', 'beatrice', 'felicia', 'niklas', 'adam', 'adam', 'beata', 'beata']
+EXPECTED_COUNTS2 = {'adam': 3, 'anton': 2, 'beatrice': 1, 'felicia': 1, 'niklas': 1, 'beata': 2, '__low-tf__': 1}
+
+
+def tf_to_string(token2id: Token2Id) -> Mapping[str, int]:
+    return {token2id.id2token[k]: n for k, n in dict(token2id.tf).items()}
+
+
+def test_token2id_ingest():
+
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM1)
+
+    assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4}
+    assert token2id.tf is not None
+    assert dict(token2id.tf) == {0: 3, 1: 2, 2: 1, 3: 1, 4: 1}
+    assert tf_to_string(token2id) == {'adam': 3, 'anton': 2, 'beatrice': 1, 'felicia': 1, 'niklas': 1}
+
+
+def test_dunders():
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM1)
+    assert 'adam' in token2id
+    assert 'roger' not in token2id
+    assert token2id['adam'] == 0
+    assert len([x for x in token2id]) == len(set(TEST_TOKENS_STREAM1))
+
+
+def test_token2id_insert_into_closed_vocabulary_raises_error():
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
+    with pytest.raises(ClosedVocabularyError):
+        token2id["roger"] = 99
+
+
+def test_replace():
+
+    tokens = ['a', 'a', 'b', 'c']
+
+    ingested: Token2Id = Token2Id().ingest(tokens)
+
+    token2id: Token2Id = Token2Id()
+    token2id.replace(data={'a': 0, 'b': 1, 'c': 2}, tf=Counter({0: 2, 1: 1, 2: 1}))
+
+    assert dict(token2id.data) == dict(ingested.data)
+    assert dict(token2id.tf) == dict(ingested.tf)
+
+
+def test_token2id_insert_into_closed_vocabulary_with_fallback_succeeds():
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close(fallback=GLOBAL_TF_THRESHOLD_MASK_TOKEN)
+    assert token2id['word_that_dont_exists'] == token2id[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 
 
 def test_token2id_find():
@@ -15,38 +67,20 @@ def test_token2id_find():
     assert set(token2id.find(what='a*')) == set([0, 1])
     assert set(token2id.find(what=['a*', 'f*'])) == set([0, 1, 3])
     assert set(token2id.find(what=['a*', 'beatrice'])) == set([0, 1, 2])
-    assert token2id.tf is None
 
 
-def test_token2id_ingest():
+def test_token2id_store_and_load():
+
     os.makedirs('./tests/output', exist_ok=True)
 
-    tokens = ['adam', 'anton', 'anton', 'beatrice', 'felicia', 'niklas', 'adam', 'adam']
-    token2id: Token2Id = Token2Id().ingest(tokens)
-
-    assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4}
-
-    assert token2id.tf is not None
-
-    assert token2id.tf[0] == 3
-    assert token2id.tf[1] == 2
-    assert token2id.tf[2] == 1
-    assert token2id.tf[3] == 1
-    assert token2id.tf[4] == 1
-
-    assert token2id.tf[token2id['adam']] == 3
-    assert token2id.tf[token2id['anton']] == 2
-    assert token2id.tf[token2id['beatrice']] == 1
-    assert token2id.tf[token2id['felicia']] == 1
-    assert token2id.tf[token2id['niklas']] == 1
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM1)
 
     filename = './tests/output/test_vocabulary.zip'
     tf_filename = path_add_suffix(filename, "_tf", new_extension=".pbz2")
 
     token2id.store(filename=filename)
 
-    assert os.path.isfile(filename)
-    assert os.path.isfile(tf_filename)
+    assert os.path.isfile(filename) and os.path.isfile(tf_filename)
 
     token2id_loaded: Token2Id = Token2Id.load(filename=filename)
 
@@ -54,38 +88,23 @@ def test_token2id_ingest():
     assert token2id_loaded.tf is not None
 
     assert token2id_loaded.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4}
-    assert token2id_loaded.tf[0] == 3
-    assert token2id_loaded.tf[1] == 2
-    assert token2id_loaded.tf[2] == 1
-    assert token2id_loaded.tf[3] == 1
-    assert token2id_loaded.tf[4] == 1
+    assert dict(token2id_loaded.tf) == {0: 3, 1: 2, 2: 1, 3: 1, 4: 1}
 
 
-def test_token2id_compress():
+def test_token2id_compress_with_no_threshold_and_no_keeps_returns_self():
 
-    tokens = [
-        'adam',
-        'anton',
-        'anton',
-        'beatrice',
-        'felicia',
-        'niklas',
-        'adam',
-        'adam',
-        'beata',
-        'beata',
-    ]
-    token2id: Token2Id = Token2Id().ingest(tokens).close()
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
 
     assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4, 'beata': 5}
     assert dict(token2id.tf) == {0: 3, 1: 2, 2: 1, 3: 1, 4: 1, 5: 2}
 
-    token2id_compressed = token2id.compress(tf_threshold=1, inplace=False)
+    token2id_compressed = token2id.compress(tf_threshold=1, inplace=False, keeps=None)
     assert token2id_compressed is token2id
-    assert token2id_compressed.fallback_token is None
-    with pytest.raises(KeyError):
-        _ = token2id_compressed["roger"]
 
+
+def test_token2id_inplace_compress_with_threshold_and_no_keeps():
+
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
     token2id_compressed = token2id.compress(tf_threshold=2, inplace=False)
     assert dict(token2id_compressed.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
     assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 2, 3: 3}
@@ -94,37 +113,32 @@ def test_token2id_compress():
     assert token2id_compressed["roger"] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
     assert "roger" not in token2id_compressed
 
-    with pytest.raises(ClosedVocabularyError):
-        token2id_compressed["roger"] = 99
 
-    assert token2id_compressed['word_that_dont_exists'] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
+def test_token2id_compress_with_threshold_and_keeps_adds_masked_magic_token_with_correct_sum():
 
+    mask_token: str = GLOBAL_TF_THRESHOLD_MASK_TOKEN
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
     token2id_compressed = token2id.compress(tf_threshold=2, keeps={4}, inplace=False)
-    assert dict(token2id_compressed.data) == {
-        'adam': 0,
-        'anton': 1,
-        'niklas': 2,
-        'beata': 3,
-        GLOBAL_TF_THRESHOLD_MASK_TOKEN: 4,
-    }
-    assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 1, 3: 2, 4: 2}
 
-    token2id: Token2Id = Token2Id().ingest(tokens).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
-    token2id_compressed = token2id.compress(tf_threshold=2, inplace=False)
-    assert dict(token2id_compressed.data) == {
-        'adam': 0,
-        'anton': 1,
-        'beata': 2,
-        GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3,
-    }
-    assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 2, 3: 4}
+    assert mask_token not in token2id
+    assert mask_token in token2id_compressed
 
-    token2id: Token2Id = Token2Id().ingest(tokens).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
+    sum_of_masked_tokens = sum([v for k, v in EXPECTED_COUNTS2.items() if k not in token2id_compressed])
+
+    assert token2id_compressed.tf[token2id_compressed[mask_token]] == sum_of_masked_tokens
+
+
+def test_token2id_compress_with_ingested_mask_token_and_threshold_has_correct_magic_token_sum():
+    """"""
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
     token2id.compress(tf_threshold=2, inplace=True)
-    assert dict(token2id.data) == {
-        'adam': 0,
-        'anton': 1,
-        'beata': 2,
-        GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3,
-    }
+    assert dict(token2id.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
     assert dict(token2id.tf) == {0: 3, 1: 2, 2: 2, 3: 4}
+
+
+def test_token2id_compress_with_threshold_and_keeps_scuccee3():
+    """"""
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
+    token2id.compress(tf_threshold=2, inplace=True, keeps={token2id["felicia"]})
+    assert dict(token2id.data) == {'adam': 0, 'anton': 1, 'felicia': 2, 'beata': 3, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 4}
+    assert tf_to_string(token2id) == {'adam': 3, 'anton': 2, 'felicia': 1, 'beata': 2, '__low-tf__': 2}
