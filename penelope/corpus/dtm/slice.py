@@ -203,8 +203,8 @@ class SliceMixIn:
         if len(keep_ids) == 0:
             return self, {}, []
 
-        vocab_ids_map: Mapping[int, int] = {old_id: new_id for new_id, old_id in enumerate(keep_ids)}
+        ids_translation: Mapping[int, int] = {old_id: new_id for new_id, old_id in enumerate(keep_ids)}
 
         corpus: IVectorizedCorpus = self.slice_by_indices(keep_ids, inplace=inplace)
 
-        return (corpus, vocab_ids_map, keep_ids)
+        return (corpus, ids_translation, keep_ids)

@@ -746,7 +746,8 @@ class Vocabulary(DefaultResolveMixIn, ITask):
             ingest(self.tokens_stream(payload))
 
         if self.tf_threshold and self.tf_threshold > 1:
-            self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
+            """We don't need translation since vocab hasn't been used yet"""
+            _ = self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
 
         if self.close:
             self.token2id.close()
