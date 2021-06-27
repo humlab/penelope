@@ -12,9 +12,11 @@ from loguru import logger
 from penelope.co_occurrence.interface import ContextOpts
 from penelope.corpus import Token2Id
 
-logger.remove()
-logger.add(sys.stdout, format="{message}", level="INFO", enqueue=True)
-logger.add("co_occurrence_trace.py", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
+DEBUG_TRACE: bool = False
+if DEBUG_TRACE:
+    logger.remove()
+    logger.add(sys.stdout, format="{message}", level="INFO", enqueue=True)
+    logger.add("co_occurrence_trace.py", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
 
 
 class VectorizeType(IntEnum):
