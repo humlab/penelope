@@ -3,7 +3,7 @@ from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
-from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, SIMPLE_CORPUS_ABCDEFG_7DOCS
+from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS
 
 from .utils import create_simple_bundle_by_pipeline
 

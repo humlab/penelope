@@ -129,7 +129,6 @@ def test_token2id_compress_with_threshold_and_keeps_adds_masked_magic_token_with
 
 
 def test_token2id_compress_with_ingested_mask_token_and_threshold_has_correct_magic_token_sum():
-    """"""
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).ingest([GLOBAL_TF_THRESHOLD_MASK_TOKEN]).close()
     token2id.compress(tf_threshold=2, inplace=True)
     assert dict(token2id.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
@@ -137,7 +136,6 @@ def test_token2id_compress_with_ingested_mask_token_and_threshold_has_correct_ma
 
 
 def test_token2id_compress_with_threshold_and_keeps_scuccee3():
-    """"""
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
     token2id.compress(tf_threshold=2, inplace=True, keeps={token2id["felicia"]})
     assert dict(token2id.data) == {'adam': 0, 'anton': 1, 'felicia': 2, 'beata': 3, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 4}

@@ -12,6 +12,7 @@ from penelope.utility import path_add_suffix, pickle_to_file, replace_extension,
 
 MAGIC_TOKENS = {"*", GLOBAL_TF_THRESHOLD_MASK_TOKEN}
 
+# pylint: disable=too-many-public-methods
 
 class ClosedVocabularyError(Exception):
     ...
@@ -310,7 +311,7 @@ class Token2Id(MutableMapping):
         )
 
         cg = self.tf.get
-        tf = Counter({vocab_translation[old_id]: cg[old_id] for old_id in vocab_translation})
+        tf = Counter({vocab_translation[old_id]: cg(old_id) for old_id in vocab_translation})
 
         if inplace:
             self.data, self.tf, self._id2token = data, tf, None

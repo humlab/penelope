@@ -369,7 +369,6 @@ class ToCorpusCoOccurrenceDTM(ITask):
             "#################################################################################################\n"
         )
         logger.info(f"document_name = '{payload.document_name}'")
-        logger.info(f"document_id = {self.get_document_id(payload)}")
         logger.info(f"tokens = {pf(payload.content)}")
         logger.info(f"token_ids = {pf(token_ids)}")
         logger.info(f"windows = {pf(windows)}")
