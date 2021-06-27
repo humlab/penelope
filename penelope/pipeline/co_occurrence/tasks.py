@@ -2,7 +2,7 @@ import sys
 from collections import Counter
 from dataclasses import dataclass, field
 from pprint import pformat as pf
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, Optional, Tuple
 
 import scipy
 import scipy.sparse as sp
@@ -309,7 +309,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         pair2id.close()
 
         """Translation between id-pair (single vocab IDs) and pair-pid (pair vocab IDs)"""
-        vocabs_mapping: Mapping[Tuple[int, int]] = dict(pair2id.data)
+        token_ids_2_pair_id: Mapping[Tuple[int, int], int] = dict(pair2id.data)
 
         self.translate_id_pair_to_token(pair2id, token2id)
 
@@ -321,40 +321,18 @@ class ToCorpusCoOccurrenceDTM(ITask):
 
         corpus: VectorizedCorpus = normal_builder.corpus.remember(window_counts=self.get_window_counts(normal_builder))
 
-        if concept_corpus:
-            """Compress corpora"""
-            # corpus = corpus.zero_out_by_others_zeros(concept_corpus)
-
-            """Vocab translation is a mapping between uncompressed vocab IDs and compressed vocab IDs"""
-            _, pair_vocab_ids_map, keep_pair_ids = concept_corpus.compress(inplace=True)
-
-            inv_vocabs_mapping: dict = {v: k for k, v in vocabs_mapping.items()}
-            keep_single_ids: List[int] = sorted(
-                i for sub in (inv_vocabs_mapping[old_id] for old_id in keep_pair_ids) for i in sub
-            )
-            keep_single_ids: List[int] = sorted([])
-
-            # FIXME FIXME MÅSTE grupper DOUMENT TOKEN COUNTS när CORPUS grupperas!!!!!!
-            # FIXME FIXME MÅSTE se till att corpus-TF tas från grupperings Token2Id!!!!!!
-
-            corpus.slice_by_indices(keep_pair_ids, inplace=False)
-
-            vocabs_mapping = {pair: pair_id for pair, pair_id in vocabs_mapping if pair_id in pair_vocab_ids_map}
-
-            corpus.window_counts.clip(keep_single_ids, inplace=True)
-            concept_corpus.window_counts.clip(keep_single_ids, inplace=True)
-            token2id.clip(keep_single_ids, inplace=True)
-
-        payload: DocumentPayload = DocumentPayload(
-            content=Bundle(
-                corpus=corpus,
-                token2id=token2id,
-                document_index=self.pipeline.payload.document_index,
-                concept_corpus=concept_corpus,
-                compute_options=self.pipeline.payload.stored_opts(),
-                vocabs_mapping=vocabs_mapping,
-            )
+        bundle: Bundle = Bundle(
+            corpus=corpus,
+            token2id=token2id,
+            document_index=self.pipeline.payload.document_index,
+            concept_corpus=concept_corpus,
+            compute_options=self.pipeline.payload.stored_opts(),
+            vocabs_mapping=token_ids_2_pair_id,
         )
+
+        bundle.compress()
+
+        payload: DocumentPayload = DocumentPayload(content=bundle)
 
         yield payload
 
@@ -362,7 +340,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         """Translates `id pairs` (w1_id, w2_id) to pair-token `w1/w2`"""
         _single_without_sep = {w_id: w.replace(WORD_PAIR_DELIMITER, '') for w_id, w in token2id.id2token.items()}
         sg = _single_without_sep.get
-        pair2id.data = {sj([sg(w1_id), sg(w2_id)]): pair_id for (w1_id, w2_id), pair_id in pair2id.data.items()}
+        pair2id.replace(data={sj([sg(w1_id), sg(w2_id)]): pair_id for (w1_id, w2_id), pair_id in pair2id.data.items()})
 
     def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountStatistics:
         return (

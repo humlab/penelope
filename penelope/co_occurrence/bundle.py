@@ -1,9 +1,10 @@
-from typing import Mapping, Optional, Tuple
+from typing import List, Mapping, Optional, Set, Tuple
 
 import pandas as pd
 from loguru import logger
 from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper
 from penelope.type_alias import CoOccurrenceDataFrame
+from penelope.utility import flatten
 
 from ..corpus import DocumentIndex, Token2Id, VectorizedCorpus
 from . import persistence
@@ -40,9 +41,38 @@ class Bundle:
         self.concept_corpus: VectorizedCorpus = concept_corpus
 
         self._co_occurrences: pd.DataFrame = co_occurrences
-        self._vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = vocabs_mapping
+        self._token_ids_2_pair_id: Optional[Mapping[Tuple[int, int], int]] = vocabs_mapping
 
         self.remember_vocabs_mapping()
+
+    def compress(self) -> "Bundle":
+        def _token_ids_to_keep(kept_pair_ids: Set[int]) -> List[int]:
+            token_id_tuples: dict = {k for k, pair_id in self.token_ids_2_pair_id.items() if pair_id in kept_pair_ids}
+            token_ids_in_kept_pairs: Set[int] = set(flatten(token_id_tuples.values()))
+            kept_token_ids: List[int] = sorted(list(token_ids_in_kept_pairs.union(self.token2id.magic_token_ids)))
+            return kept_token_ids
+
+        if not self.concept_corpus:
+            return self
+
+        """Compress concep corpus (remove zero-columns)"""
+        _, pair_id_translation, kept_pair_ids = self.concept_corpus.compress(tf_threshold=1, inplace=True)
+
+        """Slice full corpus to match compressed concept corpus columns"""
+        self.corpus.slice_by_indices(kept_pair_ids, inplace=True)
+
+        """Update token count and token2id"""
+        kept_token_ids = _token_ids_to_keep(set(kept_pair_ids))
+
+        self.corpus.window_counts.clip(kept_token_ids, inplace=True)
+        self.concept_corpus.window_counts.clip(kept_token_ids, inplace=True)
+        self.token2id.clip(kept_token_ids, inplace=True)
+
+        self._token_ids_2_pair_id = {
+            pair: pair_id for pair, pair_id in self._token_ids_2_pair_id if pair_id in pair_id_translation
+        }
+
+        return self
 
     def keyness_transform(self, *, opts: ComputeKeynessOpts) -> VectorizedCorpus:
         """Returns a grouped, keyness adjusted corpus filtered by  threshold."""
@@ -68,14 +98,14 @@ class Bundle:
         self._co_occurrences = value
 
     @property
-    def vocabs_mapping(self) -> Mapping[Tuple[int, int], int]:
-        if self._vocabs_mapping is None:
-            self._vocabs_mapping = self.corpus.get_pair2token2id_mapping(self.token2id)
-        return self._vocabs_mapping
+    def token_ids_2_pair_id(self) -> Mapping[Tuple[int, int], int]:
+        if self._token_ids_2_pair_id is None:
+            self._token_ids_2_pair_id = self.corpus.get_token_ids_2_pair_id(self.token2id)
+        return self._token_ids_2_pair_id
 
-    @vocabs_mapping.setter
-    def vocabs_mapping(self, value: Mapping[Tuple[int, int], int]):
-        self._vocabs_mapping = value
+    @token_ids_2_pair_id.setter
+    def token_ids_2_pair_id(self, value: Mapping[Tuple[int, int], int]):
+        self._token_ids_2_pair_id = value
 
     @property
     def context_opts(self) -> Optional[ContextOpts]:
@@ -109,14 +139,16 @@ class Bundle:
         return bundle
 
     def remember_vocabs_mapping(self) -> "Bundle":
-        if self.vocabs_mapping is None:
-            self.vocabs_mapping = CoOccurrenceVocabularyHelper.extract_pair2token2id_mapping(self.corpus, self.token2id)
+        if self.token_ids_2_pair_id is None:
+            self.token_ids_2_pair_id = CoOccurrenceVocabularyHelper.extract_pair2token2id_mapping(
+                self.corpus, self.token2id
+            )
 
         if self.corpus.vocabs_mapping is None:
-            self.corpus.remember(vocabs_mapping=self.vocabs_mapping)
+            self.corpus.remember(vocabs_mapping=self.token_ids_2_pair_id)
 
         if self.concept_corpus and self.concept_corpus.vocabs_mapping is None:
-            self.concept_corpus.remember(vocabs_mapping=self.vocabs_mapping)
+            self.concept_corpus.remember(vocabs_mapping=self.token_ids_2_pair_id)
 
         return self
 
