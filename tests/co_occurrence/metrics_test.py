@@ -70,7 +70,7 @@ def test_chen_lu_test():
 def test_compute_hal_score_by_co_occurrence_matrix(bundle: Bundle):
     co_occurrences = bundle.co_occurrences
     co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
-        bundle.co_occurrences, bundle.corpus.window_counts.document_counts
+        bundle.co_occurrences, bundle.corpus.window_counts.document_term_window_counts
     )
     assert 'cwr' in co_occurrences.columns
 
@@ -84,14 +84,14 @@ def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
     bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
     co_occurrences = bundle.co_occurrences
     co_occurrences['cwr'] = compute_hal_score_by_co_occurrence_matrix(
-        bundle.co_occurrences, bundle.corpus.window_counts.document_counts
+        bundle.co_occurrences, bundle.corpus.window_counts.document_term_window_counts
     )
     assert 'cwr' in co_occurrences.columns
 
 
 def test_HAL_cwr_corpus(bundle: Bundle):
     corpus: VectorizedCorpus = bundle.corpus
-    nw_x = corpus.window_counts.document_counts  # .todense().astype(np.float)
+    nw_x = corpus.window_counts.document_term_window_counts  # .todense().astype(np.float)
     nw_xy = corpus.data  # .copy().astype(np.float)
     nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, corpus.vocabs_mapping)
 

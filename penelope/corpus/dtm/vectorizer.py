@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 from ..document_index import DocumentIndex
 from ..tokenized_corpus import TokenizedCorpus
-from .vectorized_corpus import VectorizedCorpus
+from .corpus import VectorizedCorpus
 
 logger = logging.getLogger("corpus_vectorizer")
 

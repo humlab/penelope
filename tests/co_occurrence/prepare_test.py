@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, to_filename
 from penelope.co_occurrence.prepare import decode_tokens
+from penelope.corpus import VectorizedCorpus
 from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper, to_word_pair_token
-from penelope.corpus.dtm.vectorized_corpus import VectorizedCorpus
 
 jj = os.path.join
 

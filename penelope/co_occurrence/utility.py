@@ -103,7 +103,7 @@
 #         document_index=document_index,
 #         window_counts=TokenWindowCountStatistics(
 #             corpus_counts=total_term_window_counts,
-#             document_counts=window_counts_matrix,
+#             document_term_window_counts=window_counts_matrix,
 #         ),
 #     )
 

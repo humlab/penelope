@@ -20,7 +20,7 @@ def create_corpus_instance(
     overridden_term_frequency: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
-    module = importlib.import_module(name="penelope.corpus.dtm.vectorized_corpus")
+    module = importlib.import_module(name="penelope.corpus.dtm.corpus")
     cls = getattr(module, "VectorizedCorpus")
     return cls(
         bag_term_matrix=bag_term_matrix,

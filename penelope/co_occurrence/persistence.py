@@ -340,7 +340,7 @@ def store(bundle: "Bundle"):
     store_options(options=bundle.compute_options, filename=options_filename(folder, tag))
     store_co_occurrences(filename=co_occurrence_filename(folder, tag), co_occurrences=bundle.co_occurrences)
 
-    store_vocabs_mapping(bundle.vocabs_mapping, folder, tag)
+    store_vocabs_mapping(bundle.token_ids_2_pair_id, folder, tag)
 
 
 def load(filename: str = None, folder: str = None, tag: str = None, compute_frame: bool = True) -> Bundle:

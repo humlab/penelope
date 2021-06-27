@@ -15,7 +15,7 @@ from .interface import IVectorizedCorpusProtocol
 if TYPE_CHECKING:
     from penelope.co_occurrence import TokenWindowCountStatistics
 
-    from .vectorized_corpus import VectorizedCorpus
+    from .corpus import VectorizedCorpus
 
 
 def empty_data() -> pd.DataFrame:
@@ -106,11 +106,11 @@ class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
     def vocabs_mapping(self, value: TokenWindowCountStatistics) -> None:
         ...
 
-    def get_pair2token2id_mapping(self, token2id: Token2Id) -> VocabularyMapping:
+    def get_token_ids_2_pair_id(self, token2id: Token2Id) -> Optional[Mapping[Tuple[int, int], int]]:
         ...
 
-    # def get_token2id2pair_mapping(self, token2id: Token2Id = None) -> Mapping[int, Tuple[int, int]]:
-    #     ...
+    def get_pair_id_2_token_ids(self, token2id: Token2Id = None) -> Mapping[int, Tuple[int, int]]:
+        ...
 
     def to_co_occurrences(self, source_token2id: Token2Id, partition_key: str = None) -> pd.DataFrame:
         ...
@@ -144,6 +144,11 @@ class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
 
 class CoOccurrenceMixIn:
     @property
+    def pair_token2id(self: ICoOccurrenceVectorizedCorpusProtocol) -> Token2Id:
+        """Alias for token2id for co-occurrence corpus 8where a `token` is actually a token pair)"""
+        return self.token2id
+
+    @property
     def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[TokenWindowCountStatistics]:
         """ Token window count statistics collected during co-occurrence computation"""
         return self.payload.get("window_counts")
@@ -158,10 +163,10 @@ class CoOccurrenceMixIn:
         return self.payload.get("vocabs_mapping")
 
     @vocabs_mapping.setter
-    def vocabs_mapping(self: ICoOccurrenceVectorizedCorpusProtocol, value: TokenWindowCountStatistics) -> None:
+    def vocabs_mapping(self: ICoOccurrenceVectorizedCorpusProtocol, value: VocabularyMapping) -> None:
         self.remember(vocabs_mapping=value)
 
-    def get_pair2token2id_mapping(self: ICoOccurrenceVectorizedCorpusProtocol, token2id: Token2Id) -> VocabularyMapping:
+    def get_token_ids_2_pair_id(self: ICoOccurrenceVectorizedCorpusProtocol, token2id: Token2Id) -> VocabularyMapping:
         """Returns cached vocabulary mapping"""
         if "vocabs_mapping" not in self.payload:
             if token2id is None:
@@ -169,14 +174,12 @@ class CoOccurrenceMixIn:
             self.remember(vocabs_mapping=CoOccurrenceVocabularyHelper.extract_pair2token2id_mapping(self, token2id))
         return self.payload.get("vocabs_mapping")
 
-    # def get_term_vocabulary_mapping(
-    #     self: ICoOccurrenceVectorizedCorpusProtocol, token2id: Token2Id = None
-    # ) -> Mapping[int, Tuple[int, int]]:
-    #     if "reversed_vocabs_mapping" not in self.payload:
-    #         self.remember(
-    #             reversed_vocabs_mapping={v: k for k, v in self.get_pair2token2id_mapping(token2id).items()}
-    #         )
-    #     return self.payload.get("reversed_vocabs_mapping")
+    def get_pair_id_2_token_ids(
+        self: ICoOccurrenceVectorizedCorpusProtocol, token2id: Token2Id = None
+    ) -> Mapping[int, Tuple[int, int]]:
+        if "reversed_vocabs_mapping" not in self.payload:
+            self.remember(reversed_vocabs_mapping={v: k for k, v in self.get_token_ids_2_pair_id(token2id).items()})
+        return self.payload.get("reversed_vocabs_mapping")
 
     def to_co_occurrences(
         self: ICoOccurrenceVectorizedCorpusProtocol, token2id: Token2Id, partition_key: str = None
@@ -209,7 +212,7 @@ class CoOccurrenceMixIn:
         """Add a time period column that can be used as a pivot column"""
         df['time_period'] = self.document_index.loc[df.document_id][partition_key].astype(np.int16).values
 
-        pg = self.get_token2id2pair_mapping(token2id).get
+        pg = self.get_pair_id_2_token_ids(token2id).get
 
         df[['w1_id', 'w2_id']] = pd.DataFrame(df.token_id.apply(pg).tolist())
 
@@ -265,7 +268,7 @@ class CoOccurrenceMixIn:
             )
 
         """Create the final corpus (dynamically to avoid cyclic dependency)"""
-        corpus_cls: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
+        corpus_cls: type = create_instance("penelope.corpus.dtm.corpus.VectorizedCorpus")
         corpus: VectorizedCorpus = corpus_cls(
             bag_term_matrix=matrix,
             token2id=vocabulary,
@@ -308,7 +311,7 @@ class CoOccurrenceMixIn:
             normalize=normalize,
         )
 
-        mg = self.get_pair2token2id_mapping(token2id=token2id).get
+        mg = self.get_token_ids_2_pair_id(token2id=token2id).get
 
         co_occurrences['token_id'] = co_occurrences[['w1_id', 'w2_id']].apply(lambda x: mg((x[0], x[1])), axis=1)
 
@@ -382,7 +385,7 @@ class CoOccurrenceMixIn:
     def create_co_occurrence_corpus(
         self, bag_term_matrix: scipy.sparse.spmatrix, token2id: Token2Id = None
     ) -> "VectorizedCorpus":
-        corpus_class: type = create_instance("penelope.corpus.dtm.vectorized_corpus.VectorizedCorpus")
+        corpus_class: type = create_instance("penelope.corpus.dtm.corpus.VectorizedCorpus")
         corpus: "VectorizedCorpus" = corpus_class(
             bag_term_matrix=bag_term_matrix,
             token2id=self.token2id,
@@ -392,7 +395,7 @@ class CoOccurrenceMixIn:
         vocabs_mapping: Any = self.payload.get("vocabs_mapping")
 
         if vocabs_mapping is None and token2id is not None:
-            vocabs_mapping = self.get_pair2token2id_mapping(token2id)
+            vocabs_mapping = self.get_token_ids_2_pair_id(token2id)
 
         if vocabs_mapping is not None:
             corpus.remember(vocabs_mapping=vocabs_mapping)
