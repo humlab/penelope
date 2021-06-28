@@ -88,10 +88,17 @@ corpus_config.pipeline_payload.files(
 # corpus_config.checkpoint_opts.abort_at_index = 50
 # compute_opts.corpus_filename = '/data/westac/data/riksdagens-protokoll.1920-2019.sparv4.csv.zip'
 
-bundle = workflows.co_occurrence.compute(
-    args=compute_opts,
-    corpus_config=corpus_config,
-    checkpoint_file=jj(OUTPUT_FOLDER, 'test.zip'),
-)
 
-assert bundle is not None
+def run_workflow():
+    _ = workflows.co_occurrence.compute(
+        args=compute_opts,
+        corpus_config=corpus_config,
+        checkpoint_file=jj(OUTPUT_FOLDER, 'test.zip'),
+    )
+
+
+if __name__ == '__main__':
+
+    import cProfile
+
+    cProfile.run('run_workflow()')

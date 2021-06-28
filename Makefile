@@ -191,9 +191,13 @@ requirements.txt: poetry.lock
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
-profile-co_occurrence:
+profile-co_occurrence-pyinstrument:
 	@mkdir -p ./profile-reports
-	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_co_occurrence_profile.html ./tests/profiling/pipeline_co_occurrence.py
+	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.html ./tests/profiling/profile-workflow-pyinstrument.py
+
+profile-co_occurrence-cprofile:
+	@mkdir -p ./profile-reports
+	@poetry run python ./tests/profiling/profile-workflow-cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.txt
 
 .PHONY: stubs
 stubs:
