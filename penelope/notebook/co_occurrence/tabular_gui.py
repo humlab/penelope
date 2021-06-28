@@ -17,7 +17,7 @@ from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
 from perspective import PerspectiveWidget
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
 
 
@@ -278,7 +278,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             self.alert(str(ex))
         except Exception as ex:
             logger.exception(ex)
-            self.warn(str(ex))
+            self.alert(str(ex))
             raise
 
         self.set_buzy(False)
