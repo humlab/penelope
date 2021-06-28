@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from typing import List, Set
 
 import IPython.display as IPython_display
+from loguru import logger
 import numpy as np
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
@@ -157,13 +158,7 @@ TableViewerClass = PerspectiveTableView
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
-    def __init__(
-        self,
-        *,
-        bundle: Bundle,
-        default_token_filter: str = None,
-        **kwargs,
-    ):
+    def __init__(self, *, bundle: Bundle, default_token_filter: str = None, **kwargs):
         global CURRENT_BUNDLE
         CURRENT_BUNDLE = bundle
 
@@ -221,11 +216,6 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         )
 
         """Properties that don't change current corpus"""
-        # self._rank: Dropdown = Dropdown(
-        #     options=[10 ** i for i in range(0, 7)],
-        #     value=10000,
-        #     layout=Layout(width='auto'),
-        # )
         self._token_filter: Text = Text(
             value=default_token_filter, placeholder='token match', layout=Layout(width='auto')
         )
@@ -247,30 +237,23 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             layout=Layout(width='auto'),
         )
         self._message: HTML = HTML()
+        self._compute: Button = Button(description="Compute", button_style='success', layout=Layout(width='auto'))
         self._save = Button(description='Save', layout=Layout(width='auto'))
-        # self._display = Button(description='Update', layout=Layout(width='auto'))
         self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
         self._table_view = TableViewerClass(data=empty_data())
 
-        # self._toggle2 = ToggleButton(description='Use Load', value=True, icon='', layout=Layout(width='auto'))
-        # self._toggle2 = ToggleButton(description='🔨', value=True, icon='', layout=Layout(width='auto'))
-
         self._button_bar = HBox(
             children=[
                 VBox([HTML("<b>Token match</b>"), self._token_filter]),
-                VBox([HTML("<b>Keyness source</b>"), self._keyness_source]),
-                VBox([HTML("<b>Keyness metric</b>"), self._keyness]),
+                VBox([HTML("<b>Source</b>"), self._keyness_source]),
+                VBox([HTML("<b>Keyness</b>"), self._keyness]),
                 VBox([HTML("🙂"), self._show_concept]),
                 VBox([HTML("<b>Group by</b>"), self._pivot]),
                 VBox([HTML("<b>Global threshold</b>"), self._global_threshold_filter]),
                 VBox([HTML("<b>Group limit</b>"), self._largest]),
-                # VBox([HTML("<b>Group ranks</b>"), self._rank]),
-                # VBox([HTML("<b>Result limit</b>"), self._head]),
                 VBox([self._save, self._download]),
-                # VBox([self._toggle2, self._toggle2]),
-                # VBox([self._display]),
-                VBox([HTML("📌"), self._message]),
+                VBox([self._compute, self._message]),
                 self._download_output,
             ],
             layout=Layout(width='auto'),
@@ -278,10 +261,27 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         super().__init__(children=[self._button_bar, self._table_view.container], layout=Layout(width='auto'), **kwargs)
 
         self._save.on_click(self.save)
-        # self._display.on_click(self.save)
         self._download.on_click(self.download)
 
         self.start_observe()
+
+    def _compute_handler(self, *_):
+        try:
+            self.set_buzy(True, "Computing...")
+
+            self.update_corpus()
+            self.update_co_occurrences()
+
+            self.set_buzy(False, "✔")
+
+        except ValueError as ex:
+            self.alert(str(ex))
+        except Exception as ex:
+            logger.exception(ex)
+            self.warn(str(ex))
+            raise
+
+        self.set_buzy(False)
 
     def set_buzy(self, is_buzy: bool = True, message: str = None):
 
@@ -301,18 +301,12 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         self.stop_observe()
 
-        self._keyness_source.observe(self._update_corpus, 'value')
-        self._keyness.observe(self._update_corpus, 'value')
+        self._compute.on_click(self._compute_handler)
 
-        self._show_concept.observe(self._update_co_occurrences, 'value')
+        self._show_concept.observe(self.update_co_occurrences, 'value')
+        self._largest.observe(self.update_co_occurrences, 'value')
         self._show_concept.observe(self._update_toggle_icon, 'value')
-
-        self._pivot.observe(self._update_corpus, 'value')
-        self._global_threshold_filter.observe(self._update_corpus, 'value')
-
-        # self._head.observe(self._update_co_occurrences, 'value')
         self._token_filter.observe(self._filter_co_occurrences, 'value')
-        self._largest.observe(self._update_co_occurrences, 'value')
 
         return self
 
@@ -320,18 +314,10 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
         with contextlib.suppress(Exception):
 
-            self._keyness_source.unobserve(self._update_corpus, 'value')
-            self._keyness.unobserve(self._update_corpus, 'value')
-
-            self._show_concept.unobserve(self._update_co_occurrences, 'value')
-            self._show_concept.unobserve(self._update_toggle_icon, 'value')
-
-            self._pivot.unobserve(self._update_corpus, 'value')
-            self._global_threshold_filter.unobserve(self._update_corpus, 'value')
-
-            # self._head.unobserve(self._update_co_occurrences, 'value')
+            self._show_concept.unobserve(self.update_co_occurrences, 'value')
+            self._largest.unobserve(self.update_co_occurrences, 'value')
             self._token_filter.unobserve(self._filter_co_occurrences, 'value')
-            self._largest.unobserve(self._update_co_occurrences, 'value')
+            self._show_concept.unobserve(self._update_toggle_icon, 'value')
 
     def alert(self, message: str) -> None:
         self._message.value = f"<span style='color: red; font-weight: bold;'>{message}</span>"
@@ -339,29 +325,26 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
     def info(self, message: str) -> None:
         self._message.value = f"<span style='color: green; font-weight: bold;'>{message}</span>"
 
-    def _update_corpus(self, *_):
+    def update_corpus(self, *_):
 
+        self.set_buzy(True, "⌛ Computing...")
         self.corpus = self.to_corpus()
+        self.set_buzy(False, "✔")
 
-        self._update_co_occurrences()
+    def update_co_occurrences(self, *_) -> pd.DataFrame:
 
-    def _update_co_occurrences(self, *_) -> pd.DataFrame:
-
+        self.set_buzy(True, "⌛ Preparing data...")
         self.co_occurrences = self.to_co_occurrences()
+        self.set_buzy(False, "✔")
 
-        # with contextlib.suppress(PerspectiveError, TraitError):
-
-        self.set_buzy(True, "⌛ loading table...")
-
+        self.set_buzy(True, "⌛ Loading table...")
         self._table_view.update(self.co_occurrences[DISPLAY_COLUMNS])
-
-        self.set_buzy(False)
+        self.set_buzy(False, "✔")
 
         self.info(f"Data size: {len(self.co_occurrences)}")
 
     def _filter_co_occurrences(self, *_) -> pd.DataFrame:
 
-        # with contextlib.suppress(PerspectiveError, TraitError):
         co_occurrences: pd.DataFrame = self.to_filtered_co_occurrences()
 
         self._table_view.update(co_occurrences[DISPLAY_COLUMNS])
@@ -459,7 +442,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
     def to_co_occurrences(self) -> pd.DataFrame:
 
-        self.set_buzy(True, "⌛ preparing co-occurrences...")
+        self.set_buzy(True, "⌛ Preparing co-occurrences...")
 
         try:
 
@@ -507,15 +490,8 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         """Returns a grouped, optionally TF-IDF, corpus filtered by token & threshold."""
         self.set_buzy(True, "⌛ updating corpus...")
 
-        # print(f"to_corpus: keyness={self.keyness}")
-        # print(f"to_corpus: global_threshold={self.global_threshold}")
-        # print(f"to_corpus: pivot={self.pivot}")
-        # print(f"to_corpus: pivot_column_name={self.pivot_column_name}")
-        # print(f"to_corpus: corpus.shape (pre)={self.bundle.corpus.data.shape}")
-
         try:
             corpus: VectorizedCorpus = self.bundle.keyness_transform(opts=self.compute_opts())
-            # print(f"to_corpus: corpus.shape (post)={corpus.data.shape}")
             self.set_buzy(False, None)
             self.alert("✔")
         except Exception as ex:
@@ -526,7 +502,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         return corpus
 
     def setup(self) -> "TabularCoOccurrenceGUI":
-        self._update_corpus()
+        self.update_corpus()
         return self
 
     def compute_opts(self) -> ComputeKeynessOpts:
