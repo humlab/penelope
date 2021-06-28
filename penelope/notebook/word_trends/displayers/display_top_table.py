@@ -34,6 +34,7 @@ class TopTokensDisplayer(ITrendDisplayer):
             placeholder='Record count limit',
             layout=Layout(width='auto'),
         )
+        self._compute: Button = Button(description="Compute", button_style='success', layout=Layout(width='auto'))
         self._save = Button(description='Save data', layout=Layout(width='auto'))
         self._download = Button(description='Download data', layout=Layout(width='auto'))
         self._download_output: Output = Output()
@@ -67,23 +68,39 @@ class TopTokensDisplayer(ITrendDisplayer):
             layout=Layout(width='auto'),
         )
 
+    def start_observe(self):
+
+        with contextlib.suppress(Exception):
+            self._download.on_click(self.download, remove=True)
+
+        self._download.on_click(self.download)
+
+        with contextlib.suppress(Exception):
+            self._compute.on_click(self.load, remove=True)
+            
+        self._compute.on_click(self.load)
+
+        return self
+
     def setup(self, *_, **__) -> "TopTokensDisplayer":
 
         self._table = PerspectiveWidget(self.data, client=True) if not self.simple_display else None
         self._output = Output() if self.simple_display else None
-        self._download.on_click(self.download)
-        self._top_count.observe(self.load, 'value')
-        self._time_period.observe(self.load, 'value')
-        self._keyness.observe(self.load, 'value')
-        self._kind.observe(self.load, 'value')
+
+        self.start_observe()
 
         return self
 
     def transform(self) -> VectorizedCorpus:
-        self.alert(f"⌛ Grouping data by {self.time_period}...")
-        corpus = self.corpus.group_by_time_period(
-            time_period_specifier=self.time_period, target_column_name=self.category_name
-        )
+        self.set_buzy(True, "⌛ Preparing data...")
+        try:
+            corpus = self.corpus.group_by_time_period(
+                time_period_specifier=self.time_period, target_column_name=self.category_name
+            )
+            self.set_buzy(False, "✔")
+        except Exception as ex:
+            self.set_buzy(False, f"😮 {str(ex)}")
+
         return corpus
 
     def compile(self, **_) -> Any:  # pylint: disable=arguments-differ
@@ -93,70 +110,46 @@ class TopTokensDisplayer(ITrendDisplayer):
         return top_terms
 
     def plot(self, **_) -> "TopTokensDisplayer":  # pylint: disable=arguments-differ
-        self.alert("⌛ Preparing data...")
-        self.clear()
-        self.data = self.compile()
-        self.load()
+        self.set_buzy(True, "⌛ Preparing data...")
+        try:
+            self.clear()
+            self.data = self.compile()
+            self.load()
+            self.set_buzy(False, "✔")
+        except Exception as ex:
+            self.set_buzy(False, f"😮 {str(ex)}")
+
         return self
 
     def load(self, *_):
         global TABLE, DATA
         TABLE = self._table
         DATA = self.data
-        self.alert("⌛ Loading data...")
+        try:
+            self.set_buzy(True, "⌛ Loading data...")
 
-        if self._output:
-            with pd.option_context(
-                'display.precision',
-                2,
-                'display.max_columns',
-                300,
-            ):
-                pd.options.display.max_columns = 300
-                self._output.clear_output()
-                # thp = [
-                #     ('position', 'sticky'),
-                #     ('top', '0'),
-                #     ('font-size', '12px'),
-                #     ('text-align', 'center'),
-                #     ('font-weight', 'bold'),
-                #     ('padding', '5px 5px'),
-                #     ('color', 'white'),
-                #     ('background-color', 'slategray'),
-                # ]
-                # tdp = [
-                #     ('font-size', '10px'),
-                #     ('padding', '5px 5px'),
-                #     ('text-align', 'left'),
-                #     # ('color', 'darkblue'),
-                #     # ('background-color', 'silver'),
-                #     ('position', 'sticky'),
-                #     ('top', '0'),
-                # ]
-                # style_dict = [dict(selector="thead th", props=thp)] #, dict(selector="td", props=tdp)]
-                style_dict = [
-                    {
-                        'selector': 'thead th',
-                        'props': [('position', 'sticky'), ('top', '0'), ('background-color', 'grey')],
-                    }
-                ]
-                #     [
-                #     {'selector': 'thead th', 'props': 'position: sticky; top:0; background-color:red;'},
-                #     {'selector': 'tbody th', 'props': 'position: sticky; left:0; background-color:green;'}
-                # ])
-                with self._output:  # pylint: disable=not-context-manager
-                    df: pd.DataFrame = self.data.style.format({'H': "{:.2%}"}).set_table_styles(style_dict).hide_index()
-                    display(HTML(df.style.render()))
-        # df.style
-        #      .format({'H': "{:.2%}"})
-        #      .set_caption('This is a custom caption')
-        #      .set_table_styles(styles)
-        #      .hide_index()
-        if self._table is not None:
-            self._table.clear()
-            self._table.load(self.data)
+            if self._output:
+                with pd.option_context('display.precision', 2, 'display.max_columns', 300):
+                    pd.options.display.max_columns = 300
+                    self._output.clear_output()
+                    style_dict = [
+                        {
+                            'selector': 'thead th',
+                            'props': [('position', 'sticky'), ('top', '0'), ('background-color', 'grey')],
+                        }
+                    ]
+                    with self._output:  # pylint: disable=not-context-manager
+                        df: pd.DataFrame = self.data.style.format({'H': "{:.2%}"}).set_table_styles(style_dict).hide_index()
+                        display(HTML(df.style.render()))
 
-        self.alert("")
+            if self._table is not None:
+                self._table.clear()
+                self._table.load(self.data)
+
+            self.set_buzy(False, "✔")
+
+        except Exception as ex:
+            self.set_buzy(False, f"😮 {str(ex)}")
 
     def clear(self, *_) -> "TopTokensDisplayer":
         if self._table is not None:
@@ -172,19 +165,32 @@ class TopTokensDisplayer(ITrendDisplayer):
                 if js_download is not None:
                     IPython.display.display(js_download)
 
+    def set_buzy(self, is_buzy: bool = True, message: str = None):
+
+        if message:
+            self.alert(message)
+
+        self._keyness.disabled = is_buzy
+        self._top_count.disabled = is_buzy
+        self._compute.disabled = is_buzy
+        self._save.disabled = is_buzy
+        self._download.disabled = is_buzy
+        self._kind.disabled = is_buzy
+        self._time_period.disabled = is_buzy
+
     def layout(self) -> GridBox:
         layout: GridBox = GridBox(
             [
                 HBox(
                     [
-                        VBox([HTML("<b>Keyness</b>"), self._keyness]),
                         self._placeholder,
+                        VBox([HTML("<b>Keyness</b>"), self._keyness]),
                         VBox([HTML("<b>Top count</b>"), self._top_count]),
                         VBox([HTML("<b>Grouping</b>"), self._time_period]),
                         VBox([HTML("<b>Kind</b>"), self._kind]),
                         VBox(
                             [
-                                HTML('🩸'),
+                                self._compute,
                                 self._download,
                             ]
                         ),
@@ -227,21 +233,6 @@ class TopTokensDisplayer(ITrendDisplayer):
 
 
 class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
-    def keyness_dropdown(self) -> Dropdown:
-        return Dropdown(
-            options={
-                "TF": KeynessMetric.TF,
-                "TF (norm)": KeynessMetric.TF_normalized,
-                "TF-IDF": KeynessMetric.TF_IDF,
-                "HAL CWR": KeynessMetric.HAL_cwr,
-                "PPMI": KeynessMetric.PPMI,
-                "LLR": KeynessMetric.LLR,
-                "LLR(D)": KeynessMetric.LLR_Dunning,
-                "DICE": KeynessMetric.DICE,
-            },
-            value=KeynessMetric.TF,
-            layout=Layout(width='auto'),
-        )
 
     def __init__(self, bundle: Bundle, name: str = "TopTokens"):
         super().__init__(corpus=bundle.corpus, name=name)
@@ -260,24 +251,48 @@ class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
             layout=Layout(width='auto'),
         )
 
-        self._placeholder.children = [HTML("<b>Keyness source</b>"), self._keyness_source]
+        self._placeholder.children = [VBox([HTML("<b>Source</b>"), self._keyness_source])]
+
+    def keyness_widget(self) -> Dropdown:
+        return Dropdown(
+            options={
+                "TF": KeynessMetric.TF,
+                "TF (norm)": KeynessMetric.TF_normalized,
+                "TF-IDF": KeynessMetric.TF_IDF,
+                "HAL CWR": KeynessMetric.HAL_cwr,
+                "PPMI": KeynessMetric.PPMI,
+                "LLR": KeynessMetric.LLR,
+                "LLR(D)": KeynessMetric.LLR_Dunning,
+                "DICE": KeynessMetric.DICE,
+            },
+            value=KeynessMetric.TF,
+            layout=Layout(width='auto'),
+        )
 
     @property
     def keyness_source(self) -> KeynessMetricSource:
         return self._keyness_source.value
 
     def transform(self) -> VectorizedCorpus:
-        self.alert(f"⌛ Computing {self.keyness.name}...")
-        corpus: VectorizedCorpus = self.bundle.keyness_transform(
-            opts=ComputeKeynessOpts(
-                period_pivot=self.time_period,
-                keyness=self.keyness,
-                keyness_source=self.keyness_source,
-                fill_gaps=False,
-                normalize=False,
-                tf_threshold=1,
-                pivot_column_name=self.category_name,
+        self.set_buzy(True, f"⌛ Computing {self.keyness.name}...")
+        try:
+            corpus: VectorizedCorpus = self.bundle.keyness_transform(
+                opts=ComputeKeynessOpts(
+                    period_pivot=self.time_period,
+                    keyness=self.keyness,
+                    keyness_source=self.keyness_source,
+                    fill_gaps=False,
+                    normalize=False,
+                    tf_threshold=1,
+                    pivot_column_name=self.category_name,
+                )
             )
-        )
-        self.alert("")
+            self.set_buzy(False, "✔")
+        except Exception as ex:
+            self.set_buzy(False, f"😮 {str(ex)}")
+
         return corpus
+
+    def set_buzy(self, is_buzy: bool = True, message: str = None):
+        super().set_buzy(is_buzy=is_buzy, message=message)
+        self._keyness_source.disabled = is_buzy

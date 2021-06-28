@@ -250,7 +250,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
                 VBox([HTML("<b>Keyness</b>"), self._keyness]),
                 VBox([HTML("🙂"), self._show_concept]),
                 VBox([HTML("<b>Group by</b>"), self._pivot]),
-                VBox([HTML("<b>Global threshold</b>"), self._global_threshold_filter]),
+                VBox([HTML("<b>Threshold</b>"), self._global_threshold_filter]),
                 VBox([HTML("<b>Group limit</b>"), self._largest]),
                 VBox([self._save, self._download]),
                 VBox([self._compute, self._message]),
@@ -289,6 +289,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
             self.alert(message)
 
         self._keyness.disabled = is_buzy
+        self._keyness_source.disabled = is_buzy
         self._show_concept.disabled = is_buzy or self.bundle.concept_corpus is None
         self._pivot.disabled = is_buzy
         self._global_threshold_filter.disabled = is_buzy
