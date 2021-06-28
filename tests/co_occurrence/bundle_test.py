@@ -100,14 +100,14 @@ def test_step_by_step_compress_with_simple_corpus():
     }
 
     windows = [
-            [
-                [bundle.token2id.id2token[x] for x in window]
-                for window in generate_windows(
-                    token_ids=[bundle.token2id[t] for t in tokens],
-                    context_width=context_opts.context_width,
-                    pad_id=bundle.token2id[context_opts.pad],
-                )
-            ]
+        [
+            [bundle.token2id.id2token[x] for x in window]
+            for window in generate_windows(
+                token_ids=[bundle.token2id[t] for t in tokens],
+                context_width=context_opts.context_width,
+                pad_id=bundle.token2id[context_opts.pad],
+            )
+        ]
         for _, tokens in SIMPLE_CORPUS_ABCDE_3DOCS
     ]
     assert windows == [

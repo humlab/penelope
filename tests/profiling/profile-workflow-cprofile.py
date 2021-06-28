@@ -11,8 +11,6 @@ from workflow import run_workflow
 sys.path.append('./tests/profiling')
 
 
-
-
 def workflow():
     profiler = cProfile.Profile()
     profiler.enable()

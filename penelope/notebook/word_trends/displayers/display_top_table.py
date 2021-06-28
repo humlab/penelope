@@ -77,7 +77,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
         with contextlib.suppress(Exception):
             self._compute.on_click(self.load, remove=True)
-            
+
         self._compute.on_click(self.load)
 
         return self
@@ -139,7 +139,9 @@ class TopTokensDisplayer(ITrendDisplayer):
                         }
                     ]
                     with self._output:  # pylint: disable=not-context-manager
-                        df: pd.DataFrame = self.data.style.format({'H': "{:.2%}"}).set_table_styles(style_dict).hide_index()
+                        df: pd.DataFrame = (
+                            self.data.style.format({'H': "{:.2%}"}).set_table_styles(style_dict).hide_index()
+                        )
                         display(HTML(df.style.render()))
 
             if self._table is not None:
@@ -233,7 +235,6 @@ class TopTokensDisplayer(ITrendDisplayer):
 
 
 class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
-
     def __init__(self, bundle: Bundle, name: str = "TopTokens"):
         super().__init__(corpus=bundle.corpus, name=name)
         self.bundle = bundle

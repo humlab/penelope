@@ -4,10 +4,10 @@ from collections.abc import Iterable
 from typing import List, Set
 
 import IPython.display as IPython_display
-from loguru import logger
 import numpy as np
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
+from loguru import logger
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric
