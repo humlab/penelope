@@ -1,6 +1,5 @@
-import collections
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping
 
 import pandas as pd
 from penelope.co_occurrence import (
@@ -8,7 +7,7 @@ from penelope.co_occurrence import (
     ContextOpts,
     CoOccurrenceError,
     DocumentWindowsVectorizer,
-    TokenWindowCountStatistics,
+    TokenWindowCountMatrix,
     term_term_matrix_to_co_occurrences,
 )
 from penelope.co_occurrence.vectorize import VectorizedTTM, VectorizeType
@@ -130,23 +129,12 @@ class ToCorpusDocumentCoOccurrence(ITask):
 
         yield DocumentPayload(
             content=Bundle(
-                corpus=corpus.remember(
-                    window_counts=TokenWindowCountStatistics(
-                        corpus_counts=self.get_window_counts_global(),
-                    )
-                ),
+                corpus=corpus.remember(window_counts=TokenWindowCountMatrix()),
                 co_occurrences=co_occurrences,
                 token2id=token2id,
                 document_index=self.document_index,
             )
         )
-
-    def get_window_counts_global(self) -> Optional[collections.Counter]:
-
-        task: ToDocumentCoOccurrence = self.pipeline.find(ToDocumentCoOccurrence, self.__class__)
-        if task is not None:
-            return task.vectorizer.total_term_window_counts.get(VectorizeType.Normal)
-        return task
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None

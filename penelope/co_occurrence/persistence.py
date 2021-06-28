@@ -4,7 +4,6 @@ import contextlib
 import json
 import os
 import pickle
-from collections import Counter
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Mapping, Optional, Tuple, Type
 
@@ -228,63 +227,33 @@ def create_options_bundle(
 
 
 @dataclass
-class TokenWindowCountStatistics:
-
-    """Corpus-wide tokens' window counts"""
-
-    total_term_window_counts: Mapping[int, int] = None
+class TokenWindowCountMatrix:
 
     """Document-level token window counts"""
+
     document_term_window_counts: scipy.sparse.spmatrix = None
 
-    def clip(self, keep_token_ids: List(int), inplace=True) -> TokenWindowCountStatistics:
+    # @property
+    # def total_term_window_counts(self):
+    #     """Corpus-wide tokens' window counts"""
+    #     return self.document_term_window_counts.sum(axis=0).A1
+
+    def slice(self, keep_token_ids: List(int), inplace=True) -> TokenWindowCountMatrix:
 
         if len(keep_token_ids) == self.document_term_window_counts.shape[1]:
             return self
 
-        ttwc: dict = self.total_term_window_counts
-
-        total_term_window_counts: dict = {token_id: ttwc[token_id] for token_id in keep_token_ids}
-        document_term_window_counts: scipy.sparse.spmatrix = self.document_term_window_counts[:, keep_token_ids]
+        matrix: scipy.sparse.spmatrix = self.document_term_window_counts[:, keep_token_ids]
 
         if inplace:
-            self.total_term_window_counts = total_term_window_counts
-            self.document_term_window_counts = document_term_window_counts
+            self.document_term_window_counts = matrix
             return self
 
-        return TokenWindowCountStatistics(
-            total_term_window_counts=total_term_window_counts,
-            document_term_window_counts=document_term_window_counts,
-        )
+        return TokenWindowCountMatrix(document_term_window_counts=matrix)
 
-    @staticmethod
-    def load(folder: str, tag: str) -> "TokenWindowCountStatistics":
-        return TokenWindowCountStatistics(
-            total_term_window_counts=TokenWindowCountStatistics._load_corpus_counts(folder=folder, tag=tag),
-            document_term_window_counts=TokenWindowCountStatistics._load_document_counts(folder=folder, tag=tag),
-        )
-
-    def store(self, folder: str, tag: str) -> None:
-        self._store_corpus_counts(folder, tag)
-        self._store_document_counts(folder, tag)
-
-    def _store_corpus_counts(self, folder: str, tag: str):
-        if self.total_term_window_counts:
-            with open(self._corpus_counts_filename(folder, tag), 'wb') as fp:
-                pickle.dump(self.total_term_window_counts, fp, protocol=pickle.HIGHEST_PROTOCOL)
-
-    @staticmethod
-    def _load_corpus_counts(folder: str, tag: str) -> Optional[Mapping[int, int]]:
-        filename = to_filename(folder=folder, tag=tag, postfix=CORPUS_COUNTS_POSTFIX)
-        if not os.path.isfile(filename):
-            return None
-        with open(filename, 'rb') as fp:
-            counts: Counter = pickle.load(fp)
-        return counts
-
-    def _store_document_counts(self, folder: str, tag: str, compressed: bool = True) -> None:
+    def store(self, folder: str, tag: str, compressed: bool = True) -> None:
         """Stores documents' (rows) token (column) window counts matrix"""
-        filename = TokenWindowCountStatistics._document_counts_filename(folder, tag)
+        filename = to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
         if compressed:
             assert scipy.sparse.issparse(self.document_term_window_counts)
             scipy.sparse.save_npz(
@@ -294,24 +263,21 @@ class TokenWindowCountStatistics:
             np.save(replace_extension(filename, '.npy'), self.document_term_window_counts, allow_pickle=True)
 
     @staticmethod
-    def _load_document_counts(folder: str, tag: str) -> scipy.sparse.spmatrix:
+    def load(folder: str, tag: str) -> "TokenWindowCountMatrix":
         """Loads documents' (rows) token (column) window counts matrix"""
-        filename = TokenWindowCountStatistics._document_counts_filename(folder, tag)
+        matrix: scipy.sparse.spmatrix = None
+        filename = to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
         if os.path.isfile(replace_extension(filename, '.npz')):
-            return scipy.sparse.load_npz(replace_extension(filename, '.npz'))
+            matrix = scipy.sparse.load_npz(replace_extension(filename, '.npz'))
 
         if os.path.isfile(replace_extension(filename, '.npy')):
-            return np.load(replace_extension(filename, '.npy'), allow_pickle=True).item()
+            matrix = np.load(replace_extension(filename, '.npy'), allow_pickle=True).item()
 
-        return None
+        return TokenWindowCountMatrix(document_term_window_counts=matrix)
 
-    @staticmethod
-    def _corpus_counts_filename(folder: str, tag: str) -> str:
-        return to_filename(folder=folder, tag=tag, postfix=CORPUS_COUNTS_POSTFIX)
-
-    @staticmethod
-    def _document_counts_filename(folder: str, tag: str) -> str:
-        return to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
+    @property
+    def corpus_term_window_counts0(self):
+        return self.document_term_window_counts.sum(axis=0).A1
 
 
 def store(bundle: "Bundle"):
@@ -361,14 +327,13 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = load_vocabs_mapping(folder=folder, tag=tag)
 
     corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag).remember(
-        window_counts=TokenWindowCountStatistics.load(folder, tag),
-        vocabs_mapping=vocabs_mapping,
+        window_counts=TokenWindowCountMatrix.load(folder, tag), vocabs_mapping=vocabs_mapping
     )
 
     concept_corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag + "_concept")
     if concept_corpus:
         concept_corpus.remember(
-            window_counts=TokenWindowCountStatistics.load(folder=folder, tag=tag + "_concept"),
+            window_counts=TokenWindowCountMatrix.load(folder=folder, tag=tag + "_concept"),
             vocabs_mapping=vocabs_mapping,
         )
 

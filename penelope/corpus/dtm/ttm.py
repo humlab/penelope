@@ -13,7 +13,7 @@ from ..token2id import Token2Id
 from .interface import IVectorizedCorpusProtocol
 
 if TYPE_CHECKING:
-    from penelope.co_occurrence import TokenWindowCountStatistics
+    from penelope.co_occurrence import TokenWindowCountMatrix
 
     from .corpus import VectorizedCorpus
 
@@ -91,11 +91,11 @@ class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
     ...
 
     @property
-    def window_counts(self) -> Optional[TokenWindowCountStatistics]:
+    def window_counts(self) -> Optional[TokenWindowCountMatrix]:
         ...
 
     @window_counts.setter
-    def window_counts(self, value: TokenWindowCountStatistics) -> None:
+    def window_counts(self, value: TokenWindowCountMatrix) -> None:
         ...
 
     @property
@@ -103,7 +103,7 @@ class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
         ...
 
     @vocabs_mapping.setter
-    def vocabs_mapping(self, value: TokenWindowCountStatistics) -> None:
+    def vocabs_mapping(self, value: VocabularyMapping) -> None:
         ...
 
     def get_token_ids_2_pair_id(self, token2id: Token2Id) -> Optional[Mapping[Tuple[int, int], int]]:
@@ -149,12 +149,13 @@ class CoOccurrenceMixIn:
         return self.token2id
 
     @property
-    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[TokenWindowCountStatistics]:
+    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[TokenWindowCountMatrix]:
         """ Token window count statistics collected during co-occurrence computation"""
-        return self.payload.get("window_counts")
+        matrix: TokenWindowCountMatrix = self.payload.get("window_counts")
+        return matrix
 
     @window_counts.setter
-    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol, value: TokenWindowCountStatistics) -> None:
+    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol, value: TokenWindowCountMatrix) -> None:
         self.remember(window_counts=value)
 
     @property

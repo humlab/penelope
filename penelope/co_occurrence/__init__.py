@@ -13,7 +13,7 @@ from .persistence import (
     DOCUMENT_INDEX_POSTFIX,
     FILENAME_PATTERN,
     FILENAME_POSTFIX,
-    TokenWindowCountStatistics,
+    TokenWindowCountMatrix,
     create_options_bundle,
     load_co_occurrences,
     load_document_index,

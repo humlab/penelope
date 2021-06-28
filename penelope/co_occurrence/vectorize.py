@@ -50,7 +50,6 @@ class DocumentWindowsVectorizer:
 
     def __init__(self, vocabulary: Token2Id, dtype: Any = np.int32):
 
-        self.total_term_window_counts: Mapping[VectorizeType, Counter] = defaultdict(Counter)
         self.vocabulary: Token2Id = vocabulary
         self.dtype = dtype
 
@@ -76,9 +75,6 @@ class DocumentWindowsVectorizer:
             concept_ids=concept_ids,
             ignore_ids=ignore_ids,
         )
-
-        for item in data.values():
-            self.total_term_window_counts[item.vectorize_type].update(item.term_window_counts)
 
         return data
 

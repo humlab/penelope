@@ -8,7 +8,7 @@ from typing import Iterable, List, Set
 
 import numpy as np
 import pandas as pd
-from penelope.co_occurrence import Bundle, ContextOpts, TokenWindowCountStatistics
+from penelope.co_occurrence import Bundle, ContextOpts, TokenWindowCountMatrix
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus.dtm.corpus import VectorizedCorpus
 from penelope.utility.utils import flatten
@@ -23,7 +23,7 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 # {0: 1, 1: 1, 2: 3, 3: 2, 4: 5, 5: 4, 6: 4}
 # {'c/d': 0, '*/e': 1, 'd/e': 2, 'c/e': 3, '*/d': 4}
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access,too-many-statements
 
 
 def test_compress_corpus():
@@ -100,7 +100,6 @@ def test_step_by_step_compress_with_simple_corpus():
     }
 
     windows = [
-        list(
             [
                 [bundle.token2id.id2token[x] for x in window]
                 for window in generate_windows(
@@ -109,7 +108,6 @@ def test_step_by_step_compress_with_simple_corpus():
                     pad_id=bundle.token2id[context_opts.pad],
                 )
             ]
-        )
         for _, tokens in SIMPLE_CORPUS_ABCDE_3DOCS
     ]
     assert windows == [
@@ -324,13 +322,13 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    corpus.window_counts.clip(kept_token_ids, inplace=True)
+    corpus.window_counts.slice(kept_token_ids, inplace=True)
 
     """Nothing is changed since all original tokens are kepts"""
     assert corpus.window_counts.document_term_window_counts.shape == (3, 7)
 
     """Simulate removed token `b` """
-    wc: TokenWindowCountStatistics = corpus.window_counts.clip([x for x in kept_token_ids if x != 3], inplace=False)
+    wc: TokenWindowCountMatrix = corpus.window_counts.slice([x for x in kept_token_ids if x != 3], inplace=False)
 
     assert (
         (
@@ -349,16 +347,12 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    wc: TokenWindowCountStatistics = corpus.window_counts
-    total_term_window_counts_A1 = wc.document_term_window_counts.todense().sum(axis=0).A1
+    wc: TokenWindowCountMatrix = corpus.window_counts
 
-    assert all(total_term_window_counts_A1[i] == c for i, c in wc.total_term_window_counts.items())
-    # total_term_window_counts: Counter = Counter({4: 11, 6: 9, 5: 8, 0: 6, 2: 5, 3: 5})
-
-    wc: TokenWindowCountStatistics = concept_corpus.window_counts
+    wc: TokenWindowCountMatrix = concept_corpus.window_counts
     assert (
         (
-            wc.clip(kept_token_ids, inplace=False).document_term_window_counts.todense()
+            wc.slice(kept_token_ids, inplace=False).document_term_window_counts.todense()
             == np.matrix(
                 [
                     # *  -  a  b  c  d  e
@@ -372,9 +366,6 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
         .all()
     )
-    total_term_window_counts_A1 = wc.document_term_window_counts.todense().sum(axis=0).A1
-    assert all(total_term_window_counts_A1[i] == c for i, c in wc.total_term_window_counts.items())
-
     assert ids_translation == {1: 0, 6: 1, 7: 2, 8: 3, 9: 4, 10: 5}
     translated_token2id = bundle.token2id.translate(ids_translation, inplace=False)
 

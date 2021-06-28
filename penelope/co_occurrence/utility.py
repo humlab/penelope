@@ -12,7 +12,7 @@
 # from .bundle import Bundle
 # from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 # from .interface import ContextOpts, CoOccurrenceError
-# from .persistence import TokenWindowCountStatistics
+# from .persistence import TokenWindowCountMatrix
 # from .vectorize import DocumentWindowsVectorizer, VectorizedTTM, VectorizeType
 # from .windows import generate_windows
 
@@ -95,14 +95,11 @@
 #             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= global_threshold_count
 #         ]
 
-#     total_term_window_counts = vectorizer.total_term_window_counts.get(vectorize_type)
-
 #     return Bundle(
 #         co_occurrences=co_occurrences,
 #         token2id=token2id,
 #         document_index=document_index,
-#         window_counts=TokenWindowCountStatistics(
-#             corpus_counts=total_term_window_counts,
+#         window_counts=TokenWindowCountMatrix(
 #             document_term_window_counts=window_counts_matrix,
 #         ),
 #     )

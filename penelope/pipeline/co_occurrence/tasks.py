@@ -1,5 +1,4 @@
 import sys
-from collections import Counter
 from dataclasses import dataclass, field
 from pprint import pformat as pf
 from typing import Any, Iterable, Mapping, Optional, Tuple
@@ -12,7 +11,7 @@ from penelope.co_occurrence import (
     ContextOpts,
     CoOccurrenceError,
     DocumentWindowsVectorizer,
-    TokenWindowCountStatistics,
+    TokenWindowCountMatrix,
     VectorizedTTM,
     VectorizeType,
 )
@@ -112,15 +111,12 @@ class CoOccurrenceCorpusBuilder:
 
         return corpus
 
-    def compile_window_count_statistics(self, total_term_window_counts: Counter) -> TokenWindowCountStatistics:
+    def compile_window_count_matrix(self) -> TokenWindowCountMatrix:
         window_count_matrix: sp.spmatrix = sp.coo_matrix(
             (self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col))
         ).tocsr()
-        window_counts: TokenWindowCountStatistics = TokenWindowCountStatistics(
-            total_term_window_counts=total_term_window_counts,
-            document_term_window_counts=window_count_matrix,
-        )
-        return window_counts
+        matrix: TokenWindowCountMatrix = TokenWindowCountMatrix(document_term_window_counts=window_count_matrix)
+        return matrix
 
     def ingest_pairs(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":
         """Ingests tokens into pair-vocabulary.
@@ -344,14 +340,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
         sg = _single_without_sep.get
         pair2id.replace(data={sj([sg(w1_id), sg(w2_id)]): pair_id for (w1_id, w2_id), pair_id in pair2id.data.items()})
 
-    def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountStatistics:
-        return (
-            builder.compile_window_count_statistics(
-                self.vectorizer().total_term_window_counts.get(builder.vectorize_type)
-            )
-            if builder is not None
-            else None
-        )
+    def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountMatrix:
+        return builder.compile_window_count_matrix() if builder is not None else None
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
