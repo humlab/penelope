@@ -152,7 +152,7 @@ METRIC_FUNCTION = {
 def significance(
     TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False, n_contexts=None
 ) -> sp.csc_matrix:
-    """Computes statistical significance if co-occurrences using `metric`.
+    """Computes statistical significance tf co-occurrences using `metric`.
 
     Args:
         TTM (sp.csc_matrix): [description]
@@ -207,7 +207,7 @@ def partitioned_significances(
     vocabulary_size: int = None,
     normalize: bool = False,
 ) -> pd.DataFrame:
-    """Computes PPMI values for `co-occurrences` data frame
+    """Computes keyness values for `co-occurrences` data frame
 
     Args:
         co_occurrences (pd.DataFrame): Must have columns [ "w1_id", "w2_id". "value" ]
@@ -236,8 +236,8 @@ def partitioned_significances(
         co_occurrence_partitions.append(
             pd.DataFrame(data={pivot_key: period, 'w1_id': w1_ids, 'w2_id': w2_ids, 'value': weights})
         )
-    weighed_co_occurrences = pd.concat(co_occurrence_partitions, ignore_index=True)
-    return weighed_co_occurrences
+    keyness_co_occurrences = pd.concat(co_occurrence_partitions, ignore_index=True)
+    return keyness_co_occurrences
 
 
 def _get_documents_count(document_index: pd.DataFrame, co_occurrences: pd.DataFrame) -> int:
