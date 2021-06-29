@@ -2,9 +2,11 @@ import os
 import pathlib
 import shutil
 import uuid
-from typing import List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceHelper
+from penelope.co_occurrence.keyness import ComputeKeynessOpts
+from penelope.common.keyness.metrics import KeynessMetric, KeynessMetricSource
 from penelope.corpus import TokenizedCorpus
 from penelope.pipeline import CorpusConfig, CorpusPipeline, sparv
 
@@ -12,6 +14,32 @@ from ..fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus
 from ..utils import OUTPUT_FOLDER
 
 jj = os.path.join
+
+
+def create_keyness_test_bundle(data: Any, concept: str = 'd', context_width: int = 1) -> Bundle:
+    context_opts: ContextOpts = ContextOpts(concept={concept}, ignore_concept=False, context_width=context_width)
+    bundle: Bundle = create_simple_bundle_by_pipeline(
+        data=data,
+        context_opts=context_opts,
+    )
+    return bundle
+
+
+def create_keyness_opts(
+    keyness: KeynessMetric = KeynessMetric.TF_IDF,
+    tf_threshold: int = 1,
+) -> ComputeKeynessOpts:
+    keyness_source: KeynessMetricSource = KeynessMetricSource.Weighed
+    opts: ComputeKeynessOpts = ComputeKeynessOpts(
+        period_pivot="year",
+        keyness_source=keyness_source,
+        keyness=keyness,
+        tf_threshold=tf_threshold,
+        pivot_column_name='time_period',
+        normalize=False,
+        fill_gaps=False,
+    )
+    return opts
 
 
 def create_tranströmer_to_tagged_frame_pipeline() -> CorpusPipeline:
