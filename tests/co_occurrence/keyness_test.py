@@ -1,10 +1,19 @@
-import pytest
-from penelope.co_occurrence import Bundle, ContextOpts
-from penelope.co_occurrence.keyness import ComputeKeynessOpts
-from penelope.common.keyness import KeynessMetric, KeynessMetricSource
-from penelope.corpus import VectorizedCorpus
+# type: ignore
+# pylint: disable=unused-import
 
-from .utils import create_simple_bundle_by_pipeline
+from pprint import pprint as pp
+from typing import Sequence
+
+import numpy as np
+import pytest
+import scipy
+from penelope.co_occurrence import Bundle, ContextOpts
+from penelope.co_occurrence.keyness import ComputeKeynessOpts, compute_corpus_keyness, significance_ratio
+from penelope.common.keyness import KeynessMetric, KeynessMetricSource, metrics
+from penelope.corpus import VectorizedCorpus
+from tests.utils import incline_code
+
+from .utils import create_keyness_opts, create_keyness_test_bundle, create_simple_bundle_by_pipeline
 
 SIMPLE_CORPUS_ABCDE_3DOCS = [
     ('tran_2019_01_test.txt', ['a', 'b', 'c', 'c', 'd', 'c', 'e']),
@@ -12,24 +21,94 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
     ('tran_2019_03_test.txt', ['d', 'e', 'e', 'b']),
 ]
 
+# pylint: disable=protected-access
+
 
 def test_keyness_transform_with_simple_corpus():
-    context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1)
-    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts)
-    keyness_source: KeynessMetricSource = KeynessMetricSource.Weighed
-    keyness: KeynessMetric = KeynessMetric.TF_normalized
-    opts: ComputeKeynessOpts = ComputeKeynessOpts(
-        period_pivot="year",
-        keyness_source=keyness_source,
-        keyness=keyness,
-        tf_threshold=1,
-        pivot_column_name='time_period',
-        normalize=False,
-        fill_gaps=False,
-    )
+
+    bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
+    opts: ComputeKeynessOpts = create_keyness_opts()
+
     corpus: VectorizedCorpus = bundle.keyness_transform(opts=opts)
 
     assert corpus is not None
+
+
+def test_step_by_step_tfidf_keyness_transform():
+    ...
+    bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
+    opts: ComputeKeynessOpts = create_keyness_opts()
+
+    corpus: VectorizedCorpus = bundle.corpus
+    concept_corpus: VectorizedCorpus = bundle.concept_corpus
+
+    """ STEP: Reduce corpus size if TF threshold is specified
+        @filename: keyness.py, compute_weighed_corpus_keyness:75"""
+
+    assert corpus.term_frequency.tolist() == [3, 2, 2, 1, 3, 4, 8, 3, 5, 6, 3, 1, 3]
+    zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
+    assert zero_out_indices.tolist() == [1, 2, 3, 11]
+    assert corpus.term_frequency.tolist() == [3, 0, 0, 0, 3, 4, 8, 3, 5, 6, 3, 0, 3]
+
+    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 0, 0, 8, 1, 5, 2, 3, 0, 0]
+    concept_corpus.zero_out_by_indices(zero_out_indices)
+    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 0, 0, 8, 1, 5, 2, 3, 0, 0]
+
+    """ STEP: Compute corpus keyness for both corpora
+        @filename: penelope/co_occurrence/keyness.py:23, compute_corpus_keyness
+        Compute keyness (TF-IDF in this case - must be done before grouping)
+    """
+    with incline_code(source=compute_corpus_keyness):
+        assert (
+            (
+                corpus.data.todense()
+                == np.matrix(
+                    [
+                        [1, 0, 0, 0, 3, 1, 5, 1, 1, 2, 0, 0, 0],
+                        [2, 0, 0, 0, 0, 3, 3, 0, 1, 4, 2, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 1, 0, 3],
+                    ],
+                    dtype=np.int32,
+                )
+            )
+            .all()
+            .all()
+        )
+
+        corpus = corpus.tf_idf()
+        corpus = corpus.group_by_time_period_optimized(
+            time_period_specifier=opts.period_pivot,
+            target_column_name=opts.pivot_column_name,
+            fill_gaps=opts.fill_gaps,
+        )
+
+        concept_corpus = concept_corpus.tf_idf()
+        concept_corpus = concept_corpus.group_by_time_period_optimized(
+            time_period_specifier=opts.period_pivot,
+            target_column_name=opts.pivot_column_name,
+            fill_gaps=opts.fill_gaps,
+        )
+
+        M: scipy.sparse.spmatrix = significance_ratio(concept_corpus.data, corpus.data)
+
+    assert M is not None
+
+
+def test_significant_ratio():
+    A = scipy.sparse.csr_matrix(np.array([[1, 2, 4], [2, 4, 5], [25, 15, 20]]))
+    B = A.copy()
+
+    R = metrics.significance_ratio(A, B)
+
+    assert (R == 1.0).todense().all().all()
+
+    B = scipy.sparse.csr_matrix(np.array([[1, 2, 2], [4, 1, 25], [5, 5, 0]]))
+    R = metrics.significance_ratio(A, B)
+    assert (
+        (R.todense() == scipy.sparse.csr_matrix(np.array([[1.0, 1.0, 2.0], [0.5, 4.0, 0.2], [5.0, 3.0, 0.0]])))
+        .all()
+        .all()
+    )
 
 
 @pytest.mark.parametrize(
