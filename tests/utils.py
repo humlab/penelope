@@ -1,5 +1,5 @@
 import os
-from typing import Callable, List
+from typing import Any, Callable, List
 
 import numpy as np
 import pandas as pd
@@ -38,6 +38,18 @@ if __file__ in globals():
 
 # http://www.nltk.org/howto/collocations.html
 # PMI
+
+
+class incline_code:
+    def __init__(self, source: Any, msg: str = ""):
+        self.source: str = source
+        self.msg: str = msg
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        ...
 
 
 def create_abc_corpus(dtm: List[List[int]], document_years: List[int] = None) -> VectorizedCorpus:
