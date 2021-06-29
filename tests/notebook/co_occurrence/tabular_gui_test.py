@@ -76,6 +76,7 @@ def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
     gui.start_observe()
 
     gui.update_corpus()
+    gui.update_co_occurrences()
 
     co_occurrences = gui.to_filtered_co_occurrences()
 
