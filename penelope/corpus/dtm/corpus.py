@@ -4,7 +4,7 @@ import contextlib
 import fnmatch
 import re
 import warnings
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 import scipy
@@ -96,7 +96,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     @property
     def T(self) -> scipy.sparse.csr_matrix:
         """Returns transpose of BoW matrix """
-        return self.bag_term_matrix.T
+        return self._bag_term_matrix.T
 
     @property
     def term_frequency0(self) -> np.ndarray:
@@ -108,7 +108,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     @property
     def term_frequency(self) -> np.ndarray:
         """Global TF (absolute term count)"""
-        return self.bag_term_matrix.sum(axis=0).A1.ravel()
+        return self._bag_term_matrix.sum(axis=0).A1.ravel()
 
     @property
     def overridden_term_frequency(self) -> np.ndarray:
@@ -128,22 +128,25 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     @property
     def document_token_counts(self) -> np.ndarray:
         """Number of tokens per document"""
-        return self.bag_term_matrix.sum(axis=1).A1
+        return self._bag_term_matrix.sum(axis=1).A1
 
     @property
     def data(self) -> scipy.sparse.csr_matrix:
         """Returns BoW matrix """
-        return self.bag_term_matrix
+        return self._bag_term_matrix
+
+    def shape(self) -> Tuple[int, int]:
+        return self._bag_term_matrix.shape
 
     @property
     def n_docs(self) -> int:
         """Returns number of documents """
-        return self.bag_term_matrix.shape[0]
+        return self._bag_term_matrix.shape[0]
 
     @property
     def n_terms(self) -> int:
         """Returns number of types (unique words) """
-        return self.bag_term_matrix.shape[1]
+        return self._bag_term_matrix.shape[1]
 
     @property
     def document_index(self) -> DocumentIndex:
@@ -163,9 +166,10 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """Retrieves item from payload"""
         return self.payload.get(key)
 
+    @utility.deprecated
     def todense(self) -> VectorizedCorpus:
-        """Returns dense BoW matrix"""
-        dtm = self.data
+        """Returns dense BoW matrix DO NOT USE IF LARGE CORPUS!"""
+        dtm = self._bag_term_matrix
 
         if scipy.sparse.issparse(dtm):
             dtm = dtm.todense()
@@ -189,7 +193,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         np.array
             BoW matrix column values found in column `token2id[word]`
         """
-        return self.bag_term_matrix[:, self.token2id[word]].todense().A1  # x.A1 == np.asarray(x).ravel()
+        return self._bag_term_matrix[:, self.token2id[word]].todense().A1  # x.A1 == np.asarray(x).ravel()
 
     def filter(self, px) -> VectorizedCorpus:
         """Returns a new corpus that only contains docs for which `px` is true.
@@ -210,7 +214,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         indices = list(document_index.index)
 
         corpus = VectorizedCorpus(
-            bag_term_matrix=self.bag_term_matrix[indices, :],
+            bag_term_matrix=self._bag_term_matrix[indices, :],
             token2id=self.token2id,
             document_index=document_index,
             **self.payload,
@@ -237,10 +241,10 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         VectorizedCorpus
             New corpus normalized in given `axis`
         """
-        btm = sklearn.preprocessing.normalize(self.bag_term_matrix, axis=axis, norm=norm)
+        btm = sklearn.preprocessing.normalize(self._bag_term_matrix, axis=axis, norm=norm)
 
         if keep_magnitude is True:
-            factor = self.bag_term_matrix[0, :].sum() / btm[0, :].sum()
+            factor = self._bag_term_matrix[0, :].sum() / btm[0, :].sum()
             btm = btm * factor
 
         corpus = VectorizedCorpus(
@@ -261,7 +265,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             raise VectorizedCorpusError("raw count normalize attempted but no n_raw_tokens in document index")
 
         token_counts = self.document_index.n_raw_tokens.values
-        btm = utility.normalize_sparse_matrix_by_vector(self.bag_term_matrix, token_counts)
+        btm = utility.normalize_sparse_matrix_by_vector(self._bag_term_matrix, token_counts)
         corpus = VectorizedCorpus(
             bag_term_matrix=btm,
             token2id=self.token2id,
@@ -291,7 +295,8 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """Returns a (normalized) TF-IDF transformed version of the corpus
 
         Calls sklearn's TfidfTransformer
-
+        https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html#sklearn-feature-extraction-text-tfidftransformer
+        https://scikit-learn.org/stable/modules/feature_extraction.html#tfidf-term-weighting
         Parameters
         ----------
         norm : str, optional
@@ -308,7 +313,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """
         transformer = TfidfTransformer(norm=norm, use_idf=use_idf, smooth_idf=smooth_idf)
 
-        tfidf_bag_term_matrix = transformer.fit_transform(self.bag_term_matrix)
+        tfidf_bag_term_matrix = transformer.fit_transform(self._bag_term_matrix)
 
         n_corpus = VectorizedCorpus(
             bag_term_matrix=tfidf_bag_term_matrix,
@@ -335,7 +340,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         Iterable[Iterable[str]]
             Documenttoken stream.
         """
-        dtm = self.bag_term_matrix
+        dtm = self._bag_term_matrix
         indices = indices or range(0, dtm.shape[0])
         id2token = self.id2token
         return (
@@ -351,7 +356,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         Tuple[scipy.sparce.spmatrix. Dict[int,str]]
             The co-occurrence matrix
         """
-        term_term_matrix = np.dot(self.bag_term_matrix.T, self.bag_term_matrix)
+        term_term_matrix = np.dot(self._bag_term_matrix.T, self._bag_term_matrix)
         term_term_matrix = scipy.sparse.triu(term_term_matrix, 1)
 
         return term_term_matrix
@@ -398,16 +403,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             return (self.data.data.nbytes + self.data.indptr.nbytes + self.data.indices.nbytes) / pow(1024, k)
         return None
 
-    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> IVectorizedCorpus:
+    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> Sequence[int]:
         """Clears (inplace) tokens (columns) having a TF-value (column sum) less than threshold
         Does not change shape."""
         indices = np.argwhere(self.term_frequency < tf_threshold).ravel()
         if len(indices) > 0:
-            data = self._bag_term_matrix.tolil()
-            data[:, indices] = 0
-            self._bag_term_matrix = data.tocsr()
-            self._bag_term_matrix.eliminate_zeros()
-        return self
+            self.zero_out_by_indices(indices)
+        return indices
 
     def zero_out_by_others_zeros(self, other: VectorizedCorpus) -> VectorizedCorpus:
         """Zeroes out elements in `self` where corresponding element in `other` is zero
@@ -417,6 +419,27 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         data = data.multiply(mask)
         data.eliminate_zeros()
         return self
+
+    def zero_out_by_indices(self, indices: Sequence[int]) -> Sequence[int]:
+        """Zeros out values for given column indicies"""
+
+        if indices is None or len(indices) == 0:
+            return indices
+
+        term_frequency = self.term_frequency
+
+        indices: Sequence[int] = [i for i in indices if term_frequency[i] > 0]
+
+        if len(indices) == 0:
+            return indices
+
+        data = self._bag_term_matrix.tolil()
+        data[:, indices] = 0
+        data = data.tocsr()
+        data.eliminate_zeros()
+
+        self._bag_term_matrix = data
+        return indices
 
 
 def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: Set[str]) -> Set[str]:
