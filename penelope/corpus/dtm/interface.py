@@ -216,7 +216,11 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> "IVectorizedCorpus":
+    def zero_out_by_tf_threshold(self, tf_threshold: Union[int, float]) -> Sequence[int]:
+        ...
+
+    @abc.abstractmethod
+    def zero_out_by_indices(self, indices: Sequence[int]) -> Sequence[int]:
         ...
 
     @staticmethod
