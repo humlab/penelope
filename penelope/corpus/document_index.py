@@ -219,6 +219,7 @@ class DocumentIndexHelper:
 
         document_index = document_index.rename(
             columns={
+                'document_id': 'n_documents',
                 'document_id_nunique': 'n_documents',
                 'n_documents_sum': 'n_documents',
                 'n_raw_tokens_sum': 'n_raw_tokens',
