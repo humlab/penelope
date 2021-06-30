@@ -5,7 +5,6 @@ import pandas as pd
 import scipy
 from penelope.corpus import (
     CorpusVectorizer,
-    DocumentIndex,
     ITokenizedCorpus,
     Token2Id,
     TokenizedCorpus,
@@ -13,7 +12,6 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import ICorpusReader
 from penelope.type_alias import CoOccurrenceDataFrame
-from penelope.utility import mark_as_disabled
 
 
 def to_co_occurrence_matrix(
