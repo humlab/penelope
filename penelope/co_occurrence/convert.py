@@ -97,23 +97,6 @@ def term_term_matrix_to_co_occurrences(
     return co_occurrences
 
 
-@mark_as_disabled
-def co_occurrences_to_co_occurrence_corpus(
-    *,
-    co_occurrences: CoOccurrenceDataFrame,
-    document_index: DocumentIndex,
-    token2id: Token2Id,
-) -> VectorizedCorpus:
-    """Creates a co-occurrence DTM corpus from a co-occurrence data frame."""
-
-    corpus = VectorizedCorpus.from_co_occurrences(
-        co_occurrences=co_occurrences,
-        document_index=document_index,
-        token2id=token2id,
-    )
-    return corpus
-
-
 def co_occurrence_corpus_to_co_occurrence(
     *,
     coo_corpus: VectorizedCorpus,
