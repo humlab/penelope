@@ -112,6 +112,7 @@ def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
     assert len(heads) == 10
 
 
+@pytest.mark.skip("create_pair2id and to_word_pair_token is deprecated/not used")
 def test_create_co_occurrence_vocabulary():
 
     bundle: Bundle = create_bundle()
