@@ -45,6 +45,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             document_index (DocumentIndex): Corpus document/row metadata
             overridden_term_frequency (np.ndarrys, optional): Supplied if source TF
         """
+        self._class_name: str = "penelope.corpus.dtm.corpus.VectorizedCorpus"
 
         # Ensure that we have a sparse matrix (CSR)
         if not scipy.sparse.issparse(bag_term_matrix):
@@ -135,6 +136,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """Returns BoW matrix """
         return self._bag_term_matrix
 
+    @property
     def shape(self) -> Tuple[int, int]:
         return self._bag_term_matrix.shape
 
@@ -440,6 +442,14 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         self._bag_term_matrix = data
         return indices
+
+    # def zero_out_by_indices(self, indices: Sequence[int]) -> None:
+    #     """Zeros out columns for indicies"""
+    #     if indices is None or len(indices) == 0:
+    #         return
+
+    #     self.data[:, indices] = 0
+    #     self.data.eliminate_zeros()
 
 
 def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: Set[str]) -> Set[str]:
