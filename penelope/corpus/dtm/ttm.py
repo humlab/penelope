@@ -142,11 +142,14 @@ class CoOccurrenceMixIn:
         """Reconstruct ttm row by row"""
         for i in range(0, self.shape[0]):
             document: scipy.sparse.spmatrix = self.data[i, :]
-            rows, cols = zip(*(token2pairs[i] for i in document.indices))
-            term_term_matrix: scipy.sparse.spmatrix = scipy.sparse.csc_matrix(
-                (document.data, (rows, cols)), shape=(len(token2id), len(token2id)), dtype=self.data.dtype
-            )
-            yield i, term_term_matrix
+            if len(document.data) == 0:
+                yield i, None
+            else:
+                rows, cols = zip(*(token2pairs[i] for i in document.indices))
+                term_term_matrix: scipy.sparse.spmatrix = scipy.sparse.csc_matrix(
+                    (document.data, (rows, cols)), shape=(len(token2id), len(token2id)), dtype=self.data.dtype
+                )
+                yield i, term_term_matrix
 
     def to_keyness(self: IVectorizedCorpusProtocol, token2id: Token2Id, opts: ComputeKeynessOpts):
 
@@ -156,6 +159,8 @@ class CoOccurrenceMixIn:
         rows, cols, data = [], [], []
         pairs2token = self.vocabs_mapping.get
         for document_id, term_term_matrix in self.to_term_term_matrix_stream(token2id):
+            if term_term_matrix is None:
+                continue
             n_documents = int(self.document_index[self.document_index.document_id == 0]['n_documents'])
             weights, (w1_ids, w2_ids) = metrics.significance(
                 TTM=term_term_matrix,
@@ -172,7 +177,7 @@ class CoOccurrenceMixIn:
             (data, (rows, cols)), shape=(len(self.document_index), len(self.token2id)), dtype=np.float64
         )
 
-        keyness_corpus = self.create_class(
+        keyness_corpus = self.corpus_class(
             bag_term_matrix=bag_term_matrix,
             token2id=self.token2id,
             document_index=self.document_index,
@@ -196,7 +201,7 @@ class CoOccurrenceMixIn:
 
         nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, self.vocabs_mapping)
 
-        cwr_corpus: "VectorizedCorpus" = self.create_class(
+        cwr_corpus: "VectorizedCorpus" = self.corpus_class(
             bag_term_matrix=nw_cwr,
             token2id=self.token2id,
             document_index=self.document_index,
@@ -205,8 +210,8 @@ class CoOccurrenceMixIn:
         return cwr_corpus
 
     @property
-    def create_class(self) -> type:
-        return create_class(self.__class_name)
+    def corpus_class(self) -> type:
+        return create_class(self._class_name)
 
     @staticmethod
     def empty_data() -> pd.DataFrame:
