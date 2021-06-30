@@ -3,13 +3,10 @@ import os
 import penelope.co_occurrence as co_occurrence
 import pytest
 import scipy
-from penelope.co_occurrence import (
-    co_occurrences_to_co_occurrence_corpus,
-    term_term_matrix_to_co_occurrences,
-    truncate_by_global_threshold,
-)
+from penelope.co_occurrence import term_term_matrix_to_co_occurrences, truncate_by_global_threshold
 from penelope.co_occurrence.persistence import co_occurrence_filename, document_index_filename, vocabulary_filename
 from penelope.corpus import DocumentIndexHelper, Token2Id, dtm
+from penelope.corpus.dtm.ttm_legacy import LegacyCoOccurrenceMixIn
 from penelope.type_alias import CoOccurrenceDataFrame, DocumentIndex
 from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus, very_simple_term_term_matrix
 
@@ -36,7 +33,7 @@ def test_co_occurrences_to_co_occurrence_corpus():
     document_index: DocumentIndex = DocumentIndexHelper.load(document_index_filename(folder, tag)).document_index
     token2id: Token2Id = Token2Id.load(vocabulary_filename(folder, tag))
 
-    corpus = co_occurrences_to_co_occurrence_corpus(
+    corpus = LegacyCoOccurrenceMixIn.from_co_occurrences(
         co_occurrences=co_occurrences,
         document_index=document_index,
         token2id=token2id,

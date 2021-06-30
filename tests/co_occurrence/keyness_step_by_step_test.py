@@ -1,7 +1,7 @@
 # type: ignore
 
 from pprint import pprint as pp  # pylint: disable=unused-import
-from typing import Sequence
+from typing import Callable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,7 @@ from penelope.co_occurrence import Bundle, keyness
 from penelope.co_occurrence.keyness import ComputeKeynessOpts, KeynessMetric
 from penelope.common.keyness import metrics
 from penelope.corpus import Token2Id, VectorizedCorpus
+from penelope.corpus.dtm import ttm_legacy
 
 from ..utils import incline_code
 from .utils import create_keyness_opts, create_keyness_test_bundle
@@ -119,9 +120,9 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
             )  # matrix([[3, 0, 0, 0, 3, 4, 8, 3, 5, 6, 3, 0, 3]])
 
             """Current implementation"""
-            with incline_code(source=corpus.to_keyness_co_occurrence_corpus):
+            with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrence_corpus):
 
-                with incline_code(source=corpus.to_keyness_co_occurrences):
+                with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrences):
 
                     co_occurrences: pd.DataFrame = corpus.to_co_occurrences(token2id)
                     #    document_id  token_id  value  time_period  w1_id  w2_id
@@ -174,8 +175,25 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
                         for x in keyness_co_occurrences[['w1_id', 'w2_id']].to_records(index=False)
                     ]
 
-                llr_matrix = corpus._to_co_occurrence_matrix(keyness_co_occurrences, pivot_key)
-                llr_corpus = corpus.create_co_occurrence_corpus(llr_matrix, token2id=token2id)
+                with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn._to_co_occurrence_matrix):
+                    pg: Callable = {v: k for k, v in corpus.document_index[pivot_key].to_dict().items()}.get
+                    llr_matrix: scipy.sparse.spmatrix = scipy.sparse.coo_matrix(
+                        (
+                            keyness_co_occurrences.value,
+                            (
+                                keyness_co_occurrences[pivot_key].apply(pg).astype(np.int32),
+                                keyness_co_occurrences.token_id.astype(np.int32),
+                            ),
+                        ),
+                        shape=corpus.data.shape,
+                    )
+
+                llr_corpus: VectorizedCorpus = VectorizedCorpus(
+                    bag_term_matrix=llr_matrix,
+                    token2id=corpus.token2id,
+                    document_index=corpus.document_index,
+                    vocabs_mapping=corpus.vocabs_mapping,
+                )
 
     assert llr_corpus is not None
     pp(llr_corpus.data.todense())
