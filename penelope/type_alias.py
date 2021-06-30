@@ -1,6 +1,7 @@
 from typing import Callable, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
 
 import pandas as pd
+import scipy
 
 PartitionKeys = Union[str, List[str], Callable]
 FilenameTokensTuple = Tuple[str, Iterable[str]]
@@ -17,3 +18,4 @@ DocumentIndex = pd.DataFrame
 WindowsStream = Iterator[Tuple[str, int, Iterable[Token]]]
 CoOccurrenceDataFrame = pd.DataFrame
 VocabularyMapping = Optional[Mapping[Tuple[int, int], int]]
+SparseMatrix = scipy.sparse.spmatrix
