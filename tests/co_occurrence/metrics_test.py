@@ -98,7 +98,7 @@ def test_HAL_cwr_corpus(bundle: Bundle):
     assert nw_cwr is not None
     assert nw_cwr.sum() > 0
 
-    hal_cwr_corpus: VectorizedCorpus = corpus.HAL_cwr_corpus()
+    hal_cwr_corpus: VectorizedCorpus = corpus.to_HAL_cwr_keyness()
     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
 
 
@@ -111,7 +111,7 @@ def test_HAL_cwr_corpus_burgess_litmus():
     )
     bundle: Bundle = create_simple_bundle_by_pipeline(data, context_opts)
 
-    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.HAL_cwr_corpus()
+    hal_cwr_corpus: VectorizedCorpus = bundle.corpus.to_HAL_cwr_keyness()
 
     assert hal_cwr_corpus is not None
 
