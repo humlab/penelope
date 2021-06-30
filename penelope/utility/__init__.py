@@ -97,6 +97,7 @@ from .utils import (
     clamp,
     clamp_values,
     complete_value_range,
+    create_class,
     create_dataclass_instance_from_kwargs,
     create_instance,
     dataframe_to_tuples,

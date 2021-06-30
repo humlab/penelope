@@ -535,13 +535,16 @@ class DummyContext:
         pass
 
 
-def create_instance(class_or_function_path: str) -> Union[Callable, Type]:
+def create_class(class_or_function_path: str) -> Union[Callable, Type]:
     try:
         module_path, cls_or_function_name = class_or_function_path.rsplit('.', 1)
         module = import_module(module_path)
         return getattr(module, cls_or_function_name)
     except (ImportError, AttributeError, ValueError) as e:
         raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
+
+
+create_instance = create_class
 
 
 def create_dataclass_instance_from_kwargs(cls: Type[U], **kwargs) -> U:
