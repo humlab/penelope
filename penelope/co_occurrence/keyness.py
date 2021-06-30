@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Union
 
-import numpy as np
 import scipy
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, significance_ratio
 
@@ -36,16 +35,11 @@ def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, t
         fill_gaps=opts.fill_gaps,
     )
 
-    """Metrics computed on partitioned corpus"""
+    """Metrics computed on grouped corpus"""
     if opts.keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
-        corpus = corpus.to_keyness_co_occurrence_corpus(
-            keyness=opts.keyness,
-            token2id=token2id,
-            pivot_key=opts.pivot_column_name,
-            normalize=opts.normalize,
-        )
+        corpus = corpus.to_keyness(token2id=token2id, opts=opts)
     elif opts.keyness == KeynessMetric.HAL_cwr:
-        corpus = corpus.HAL_cwr_corpus()
+        corpus = corpus.to_HAL_cwr_keyness()
 
     return corpus
 
@@ -80,14 +74,9 @@ def compute_weighed_corpus_keyness(
             raise ValueError(f"Keyness {opts.keyness_source.name} requested when concept corpus is None!")
 
     if opts.tf_threshold > 1:
-        # corpus = corpus.slice_by_term_frequency(opts.tf_threshold)
-        indices = np.argwhere(corpus.term_frequency < opts.tf_threshold).ravel()
-        if len(indices) > 0:
-            corpus.data[:, indices] = 0
-            corpus.data.eliminate_zeros()
-            if concept_corpus is not None:
-                concept_corpus.data[:, indices] = 0
-                concept_corpus.data.eliminate_zeros()
+        zero_out_indices = corpus.zero_out_by_tf_threshold(opts.tf_threshold)
+        if len(zero_out_indices) > 0:
+            concept_corpus.zero_out_by_indices(zero_out_indices)
 
     corpus: VectorizedCorpus = (
         compute_corpus_keyness(corpus=corpus, opts=opts, token2id=token2id)
