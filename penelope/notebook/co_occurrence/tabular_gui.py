@@ -10,8 +10,7 @@ from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Te
 from loguru import logger
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
-from penelope.common.keyness import KeynessMetric
-from penelope.common.keyness.significance import KeynessMetricSource
+from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
