@@ -101,3 +101,22 @@ def compute_hal_cwr_score(
     nw_xy.eliminate_zeros()
 
     return nw_xy
+
+    # # nw_xy = (nw_xy if inplace else nw_xy.copy()).astype(np.float)
+
+    # reverse_mapping = {v: k for k, v in vocabs_mapping.items()}
+
+    # w1_indices = [reverse_mapping[i][0] for i in range(0, nw_xy.shape[1])]
+    # w2_indices = [reverse_mapping[i][1] for i in range(0, nw_xy.shape[1])]
+
+    # out_nw_xy: SparseMatrix = sp.lil_matrix(nw_xy.shape, dtype=np.float64)
+
+    # for d in range(0, nw_xy.shape[0]):
+    #     # nw_xy[d, :] = nw_xy[d, :] / (nw_x[d, w1_indices] + nw_x[d, w2_indices] - nw_xy[d, :])
+    #     out_nw_xy[d,:] = nw_xy[d, :] / (nw_x[d, w1_indices] + nw_x[d, w2_indices] - nw_xy[d, :])
+
+    # out_nw_xy.data[np.isnan(out_nw_xy.data)] = 0.0
+    # out_nw_xy.data[out_nw_xy.data < 0] = 0
+    # out_nw_xy.eliminate_zeros()
+
+    # return out_nw_xy.tocsr()

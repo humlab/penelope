@@ -102,6 +102,24 @@ def test_HAL_cwr_corpus(bundle: Bundle):
     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
 
 
+# def test_HAL_cwr_corpus_bug():
+
+#     folder, tag = '/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/TEST-information/', 'TEST-information'
+#     filename = to_filename(folder=folder, tag=tag)
+#     bundle: Bundle = Bundle.load(filename, compute_frame=False)
+
+#     corpus: VectorizedCorpus = bundle.corpus
+#     nw_x = corpus.window_counts.document_term_window_counts  # .todense().astype(np.float)
+#     nw_xy = corpus.data  # .copy().astype(np.float)
+#     nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, corpus.vocabs_mapping)
+
+#     assert nw_cwr is not None
+#     assert nw_cwr.sum() > 0
+
+#     hal_cwr_corpus: VectorizedCorpus = corpus.to_HAL_cwr_keyness()
+#     assert hal_cwr_corpus.data.sum() == nw_cwr.sum()
+
+
 def test_HAL_cwr_corpus_burgess_litmus():
     data = [('document_01.txt', 'The Horse Raced Past The Barn Fell .'.lower().split())]
     context_opts: ContextOpts = ContextOpts(
