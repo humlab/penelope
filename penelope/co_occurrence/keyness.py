@@ -75,7 +75,7 @@ def compute_weighed_corpus_keyness(
 
     if opts.tf_threshold > 1:
         zero_out_indices = corpus.zero_out_by_tf_threshold(opts.tf_threshold)
-        if len(zero_out_indices) > 0:
+        if len(zero_out_indices) > 0 and concept_corpus is not None:
             concept_corpus.zero_out_by_indices(zero_out_indices)
 
     corpus: VectorizedCorpus = (
