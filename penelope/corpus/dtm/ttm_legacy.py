@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
 import scipy
 from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
-from penelope.utility import create_instance, deprecated
+from penelope.utility import create_class, deprecated
 
 from ..token2id import Token2Id
+from .ttm import CoOccurrenceVocabularyHelper
 
 if TYPE_CHECKING:
     from .corpus import VectorizedCorpus
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 WORD_PAIR_DELIMITER = "/"
 
 
-class LegacyCoOccurrenceKeynessMixIn:
+class LegacyCoOccurrenceMixIn:
     @deprecated
     def to_keyness_co_occurrences(
         self: IVectorizedCorpusProtocol,
@@ -94,7 +95,7 @@ class LegacyCoOccurrenceKeynessMixIn:
 
         matrix = self._to_co_occurrence_matrix(co_occurrences, pivot_key)
 
-        corpus = self.create_co_occurrence_corpus(matrix, token2id=token2id)
+        corpus = self.corpus_class(bag_term_matrix=matrix, token2id=token2id, document_index=self.document_index)
 
         return corpus
 
@@ -120,7 +121,7 @@ class LegacyCoOccurrenceKeynessMixIn:
     def create_co_occurrence_corpus(
         self, bag_term_matrix: scipy.sparse.spmatrix, token2id: Token2Id = None
     ) -> "VectorizedCorpus":
-        corpus_class: type = create_instance("penelope.corpus.dtm.corpus.VectorizedCorpus")
+        corpus_class: type = create_class("penelope.corpus.dtm.corpus.VectorizedCorpus")
         corpus: "VectorizedCorpus" = corpus_class(
             bag_term_matrix=bag_term_matrix,
             token2id=self.token2id,
@@ -134,5 +135,66 @@ class LegacyCoOccurrenceKeynessMixIn:
 
         if vocabs_mapping is not None:
             corpus.remember(vocabs_mapping=vocabs_mapping)
+
+        return corpus
+
+    @deprecated
+    @staticmethod
+    def from_co_occurrences(
+        *, co_occurrences: pd.DataFrame, document_index: pd.DataFrame, token2id: Token2Id
+    ) -> Tuple[VectorizedCorpus, Mapping[Tuple[int, int], int]]:
+        """Creates a co-occurrence DTM corpus from a co-occurrences data frame.
+
+           A "word-pair token" in the corpus' vocabulary has the form "w1 WORD_PAIR_DELIMITER w2".
+
+           The mapping between the two vocabulary is stored in self.payload['vocabs_mapping]
+           The mapping translates identities for (w1,w2) to identity for "w1 WORD_PAIR_DELIMITER w2".
+
+
+        Args:
+            co_occurrences (CoOccurrenceDataFrame): [description]
+            document_index (DocumentIndex): [description]
+            token2id (Token2Id): source corpus vocabulary
+
+        Returns:
+            VectorizedCorpus: The co-occurrence corpus
+        """
+
+        if not isinstance(token2id, Token2Id):
+            token2id = Token2Id(data=token2id)
+
+        vocabulary, vocabs_mapping = CoOccurrenceVocabularyHelper.create_pair2id(co_occurrences, token2id)
+
+        """Set document_id as unique key for DTM document index """
+        document_index = document_index.set_index('document_id', drop=False).rename_axis('').sort_index()
+
+        """Make certain that the matrix gets right shape (to avoid offset errors)"""
+
+        shape = (len(document_index), len(vocabulary))
+
+        if len(vocabulary) == 0:
+            matrix = scipy.sparse.coo_matrix(([], (co_occurrences.document_id, [])), shape=shape)
+        else:
+            fg = vocabs_mapping.get
+            matrix = scipy.sparse.coo_matrix(
+                (
+                    co_occurrences.value.astype(np.int32),
+                    (
+                        co_occurrences.document_id.astype(np.int32),
+                        co_occurrences[['w1_id', 'w2_id']].apply(lambda x: fg((x[0], x[1])), axis=1),
+                    ),
+                ),
+                shape=shape,
+            )
+
+        """Create the final corpus (dynamically to avoid cyclic dependency)"""
+        corpus_cls: type = create_class("penelope.corpus.dtm.corpus.VectorizedCorpus")
+        corpus: VectorizedCorpus = corpus_cls(
+            bag_term_matrix=matrix,
+            token2id=vocabulary,
+            document_index=document_index,
+        )
+
+        corpus.remember(vocabs_mapping=vocabs_mapping)
 
         return corpus
