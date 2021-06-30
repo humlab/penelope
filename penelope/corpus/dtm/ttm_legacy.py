@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.common.keyness import KeynessMetric, compute_hal_cwr_score, metrics, partitioned_significances
+from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
 from penelope.utility import create_instance, deprecated
 
 from ..token2id import Token2Id
-from .ttm import CoOccurrenceVocabularyHelper, empty_data
 
 if TYPE_CHECKING:
     from .corpus import VectorizedCorpus
