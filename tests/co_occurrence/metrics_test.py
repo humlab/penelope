@@ -152,7 +152,7 @@ def create_helper(bundle: Bundle, period_specifier: str, pivot_key: str):
 
 
 @pytest.mark.parametrize(
-    'keyness', [KeynessMetric.PPMI, KeynessMetric.DICE, KeynessMetric.LLR, KeynessMetric.LLR_Z, KeynessMetric.LLR_N]
+    'keyness', [KeynessMetric.PPMI, KeynessMetric.DICE, KeynessMetric.LLR, KeynessMetric.LLR_Z]
 )
 def test_compute_significance(bundle: Bundle, keyness: KeynessMetric):  # pylint: disable=unused-argument
     document_pivot_key = 'year'
