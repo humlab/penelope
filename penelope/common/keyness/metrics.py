@@ -15,7 +15,8 @@ class KeynessMetric(IntEnum):
     PPMI = 4
     DICE = 5
     LLR = 6
-    LLR_Dunning = 7
+    LLR_Z = 7
+    LLR_N = 8
 
 
 @unique
@@ -62,50 +63,94 @@ LLR_significance = 2 * ((k * log(k)) - (ki * log(ki)) - (kj * log(kj)) + (kij * 
 # FIXME: How to normalize?
 
 
-def _pmi(Cij, Z, Zr, ii, jj, *_, normalize=False):
+def _pmi(*, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, **_):
     """Computes PMI (pointwise mutual information)"""
     with np.errstate(divide='ignore'):
         values = np.log(Cij * Z / (Zr[ii] * Zr[jj]))
     return values
 
 
-def _ppmi(Cij, Z, Zr, ii, jj, *_, normalize=False):
+def _ppmi(*, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, normalize=False, **_):
     """Computes PPMI (positive PMI)"""
-    values = _pmi(Cij, Z, Zr, ii, jj)
+    values = _pmi(Cij=Cij, Z=Z, Zr=Zr, ii=ii, jj=jj)
     if normalize:
         values = values / -np.log(Cij * Z)
     return np.maximum(0, values)
 
 
-def _dice(Cij, Z, Zr, ii, jj, *_, normalize=False):
+def _dice(*, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, **_):
     """Computes DICE coefficient ratio"""
     with np.errstate(divide='ignore'):
         values = 2.0 * Cij / (Zr[ii] + Zr[jj])
     return values
 
 
-def _llr(Cij, Z, Zr, ii, jj, k, *_, normalize=False):
-    """Computes log-likelihood ratio"""
+def _llr(
+    *, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, K: float, normalize: bool = False, **_
+):
+    """
+        Word association score using Dunning's [Dunning 1993] hypothesis test.
+    Args:
+        Cij (np.ndarray): Co-occurrence counts for (wi, wj)
+        Z (float): Total number of co-occurrences
+        Zr (np.ndarray): Occurrence counts for wi
+        ii (np.ndarray): Word wi indices
+        jj (np.ndarray): Word wi indices
+        k: Number of contexts (windows, documents)???
+
+    Returns:
+        np.ndarray: Dunning's LLR score
+    """
 
     def ln(a: np.ndarray) -> np.ndarray:
         return np.log(np.clip(a, a_min=1e-10, a_max=None))
 
+    K = Z
     values = 2.0 * (
-        (k * ln(k))
+        (K * ln(K))
         - (Zr[ii] * ln(Zr[ii]))
         - (Zr[jj] * ln(Zr[jj]))
         + (Cij * ln(Cij))
-        + (k - Zr[ii] - Zr[jj] + Cij) * ln(k - Zr[ii] - Zr[jj] + Cij)
+        + (K - Zr[ii] - Zr[jj] + Cij) * ln(K - Zr[ii] - Zr[jj] + Cij)
         + (Zr[ii] - Cij) * ln(Zr[ii] - Cij)
         + (Zr[jj] - Cij) * ln(Zr[jj] - Cij)
-        - (k - Zr[ii]) * ln(k - Zr[ii])
-        - (k - Zr[jj]) * ln(k - Zr[jj])
+        - (K - Zr[ii]) * ln(K - Zr[ii])
+        - (K - Zr[jj]) * ln(K - Zr[jj])
     )
     return values
 
 
-def _llr_dunning(Cij, Z, Zr, ii, jj, *_):
-    def l(k, n, x):  # noqa: E741, E743
+def _llr_dunning(*, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, **_) -> np.ndarray:
+    """
+            This code is a modified version of https://github.com/amueller/word_cloud (c)
+
+            Word association score using Dunning's [Dunning 1993] hypothesis test.
+
+        Args:
+            Cij (np.ndarray): Co-occurrence counts for (wi, wj)
+            Z (float): Total number of co-occurrences (or words?)
+
+            Zr (np.ndarray): Occurrence counts for wi
+            ii (np.ndarray): Word wi indices
+            jj (np.ndarray): Word wi indices
+
+
+    log-likelihood_dunning =
+
+                   L(O11; C1; r) · L(O12; C2; r)
+    LLR  = −2 log --------------------------------
+                  L(O11; C1; r1) · L(O12; C2; r2)
+
+    L(k; n; r) = pow(r, k) ∙ pow(1 − r, n − k)
+            r  = R1 / N
+           r1  = O11 / C1
+           r2  = O12 / C2
+
+        Returns:
+            np.ndarray: Dunning's LLR score
+    """
+
+    def l(k: np.ndarray, n: np.ndarray, x: np.ndarray) -> np.ndarray:  # noqa: E741, E743
         # dunning's likelihood ratio with notation from
         # http://nlp.stanford.edu/fsnlp/promo/colloc.pdf p162
         # np.log(max(x, 1e-10)) * k + np.log(max(1 - x, 1e-10)) * (n - k)
@@ -113,27 +158,155 @@ def _llr_dunning(Cij, Z, Zr, ii, jj, *_):
             n - k
         )
 
-    p = Zr[jj] / Z
+    P = Zr[jj] / Z
     Pi = Cij / Zr[ii]
     Pj = (Zr[jj] - Cij) / (Z - Zr[ii])
 
-    score = l(Cij, Zr[ii], p) + l(Zr[jj] - Cij, Z - Zr[ii], p) - l(Cij, Zr[ii], Pi) - l(Zr[jj] - Cij, Z - Zr[ii], Pj)
+    return (
+        -2.0 * l(Cij, Zr[ii], P) + l(Zr[jj] - Cij, Z - Zr[ii], P) - l(Cij, Zr[ii], Pi) - l(Zr[jj] - Cij, Z - Zr[ii], Pj)
+    )
 
-    return -2.0 * score
 
-
-def _llr_not_used(k, K, n, N):
+def _llr_dunning_colloc(
+    *, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, **_
+) -> np.ndarray:
     """
-    Compute the Log Likelihood Ratio.
+
+    http://tdunning.blogspot.com/2008/03/surprise-and-coincidence.html
+
+            This code is a modified version of https://github.com/amueller/word_cloud (c)
+
+            Word association score using Dunning's [Dunning 1993] hypothesis test.
+
+        Args:
+            Cij (np.ndarray): Co-occurrence counts for (wi, wj)
+            Z (float): Total number of co-occurrences (or words?)
+
+            Zr (np.ndarray): Occurrence counts for wi
+            ii (np.ndarray): Word wi indices
+            jj (np.ndarray): Word wi indices
+
+
+    log-likelihood_dunning =
+
+                   L(O11; C1; r) · L(O12; C2; r)
+    LLR  = −2 log --------------------------------
+                  L(O11; C1; r1) · L(O12; C2; r2)
+
+    L(k; n; r) = pow(r, k) ∙ pow(1 − r, n − k)
+            r  = R1 / N
+           r1  = O11 / C1
+           r2  = O12 / C2
+
+        Returns:
+            np.ndarray: Dunning's LLR score
     """
-    val = k * np.log((k * N) / (n * K))
-    if n > k:
-        val += (n - k) * np.log(((n - k) * N) / (n * (N - K)))
-    if K > k:
-        val += (K - k) * np.log((N * (K - k)) / (K * (N - n)))
-    if (N - K - n + k) > 0:
-        val += (N - K - n + k) * np.log((N * (N - K - n + k)) / ((N - K) * (N - n)))
-    return val
+
+    def l(k: np.ndarray, n: np.ndarray, x: np.ndarray) -> np.ndarray:  # noqa: E741, E743
+        # dunning's likelihood ratio with notation from
+        # http://nlp.stanford.edu/fsnlp/promo/colloc.pdf p162
+        # np.log(max(x, 1e-10)) * k + np.log(max(1 - x, 1e-10)) * (n - k)
+        return np.log(np.clip(x, a_min=1e-10, a_max=None)) * k + np.log(np.clip(1 - x, a_min=1e-10, a_max=None)) * (
+            n - k
+        )
+
+    P = Zr[jj] / Z
+    Pi = Cij / Zr[ii]
+    Pj = (Zr[jj] - Cij) / (Z - Zr[ii])
+
+    return (
+        -2.0 * l(Cij, Zr[ii], P) + l(Zr[jj] - Cij, Z - Zr[ii], P) - l(Cij, Zr[ii], Pi) - l(Zr[jj] - Cij, Z - Zr[ii], Pj)
+    )
+
+
+def _nltk_col_log_likelihood(count_a, count_b, count_ab, N):
+    """
+
+    https://www.nltk.org/_modules/nltk/tokenize/punkt.html
+
+    A function that will just compute log-likelihood estimate, in
+    the original paper it's decribed in algorithm 6 and 7.
+    This *should* be the original Dunning log-likelihood values,
+    unlike the previous log_l function where it used modified
+    Dunning log-likelihood values
+    """
+    import math
+
+    p = 1.0 * count_b / N
+    p1 = 1.0 * count_ab / count_a
+    p2 = 1.0 * (count_b - count_ab) / (N - count_a)
+
+    summand1 = count_ab * math.log(p) + (count_a - count_ab) * math.log(1.0 - p)
+
+    summand2 = (count_b - count_ab) * math.log(p) + (N - count_a - count_b + count_ab) * math.log(1.0 - p)
+
+    if count_a == count_ab:
+        summand3 = 0
+    else:
+        summand3 = count_ab * math.log(p1) + (count_a - count_ab) * math.log(1.0 - p1)
+
+    if count_b == count_ab:
+        summand4 = 0
+    else:
+        summand4 = (count_b - count_ab) * math.log(p2) + (N - count_a - count_b + count_ab) * math.log(1.0 - p2)
+
+    likelihood = summand1 + summand2 - summand3 - summand4
+
+    return -2.0 * likelihood
+
+
+# https://github.com/DrDub/icsisumm/blob/1cb583f86dddd65bfeec7bb9936c97561fd7811b/icsisumm-primary-sys34_v1/nltk/nltk-0.9.2/nltk/tokenize/punkt.py
+
+
+def _llr_dunning_n_words(
+    *, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, N: float, **_
+) -> np.ndarray:
+    return _llr_dunning(Cij=Cij, Z=N, Zr=Zr, ii=ii, jj=jj)
+
+
+# ### Evaluate the "surprise factor" of two proportions that are expressed as counts.
+# ###  ie x1 "heads" out of n1 flips.
+# def dunning_score(x1, x2, n1, n2):
+#     p1 = float(x1) / n1
+#     p2 = float(x2) / n2
+#     p = float(x1 + x2) / (n1 + n2)
+
+#     return -2 * ( x1 * math.log(p / p1) + (n1 - x1) * math.log((1 - p)/(1 - p1)) +
+#                   x2 * math.log(p / p2) + (n2 - x2) * math.log((1 - p)/(1 - p2)) )
+
+
+# def dunning_log_likelihood(f1, s1, f2, s2):
+#     """Calculates Dunning log likelihood of an observation in two groups.
+#     This determines if an observation is more strongly associated with
+#     one of two groups, and the strength of that association.
+#     Args:
+#         f1: Integer, observation frequency in group one.
+#         s1: Integer, total data points in group one.
+#         f2: Integer, observation frequency in group two.
+#         s2: Integer, total data points in group two.
+#     Returns:
+#         Float log likelihood. This will be positive if the
+#         observation is more likely in group one. More extreme
+#         values indicate a stronger association.
+#     """
+#     if f1 + f2 == 0:
+#         return 0.0
+#     if s1 == 0 or s2 == 0:
+#         return 0.0
+#     f1, s1, f2, s2 = float(f1), float(s1), float(f2), float(s2)
+#     # Expected values
+#     e1 = s1 * (f1 + f2) / (s1 + s2)
+#     e2 = s2 * (f1 + f2) / (s1 + s2)
+#     l1, l2 = 0, 0
+#     if e1 != 0 and f1 != 0:
+#         l1 = f1 * math.log(f1 / e1)
+#     if e2 != 0 and f2 != 0:
+#         l2 = f2 * math.log(f2 / e2)
+
+#     likelihood = 2 * (l1 + l2)
+#     if f2 / s2 > f1 / s1:
+#         likelihood = -likelihood
+#     return likelihood
 
 
 def _undefined(Cij, Z, Zr, ii, jj, k, *_):
@@ -141,16 +314,40 @@ def _undefined(Cij, Z, Zr, ii, jj, k, *_):
     raise ValueError("metric is not applicable in current context")
 
 
+def _hal_cwr(*, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, N: float, **_) -> np.ndarray:
+    """Computes HAL common windows ratio (CWR) score for co-occurrings terms.
+    The formula for CWR is:
+
+        cwr_xy = nw_xy / (nw_x + nw_y - nw_xy)
+
+    """
+
+    nw_xy = Cij
+    nw_x = Zr[ii]
+    nw_y = Zr[jj]
+
+    with np.errstate(divide='ignore'):
+        score = nw_xy / (nw_x + nw_y - nw_xy)
+
+    return score
+
+
 METRIC_FUNCTION = {
     KeynessMetric.PPMI: _ppmi,
     KeynessMetric.DICE: _dice,
     KeynessMetric.LLR: _llr,
-    KeynessMetric.LLR_Dunning: _llr_dunning,
+    KeynessMetric.LLR_Z: _llr_dunning,
+    KeynessMetric.LLR_N: _llr_dunning_n_words,
+    KeynessMetric.HAL_cwr: _hal_cwr,
 }
 
 
 def significance(
-    TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False, n_contexts=None
+    TTM: sp.csc_matrix,
+    metric: Union[Callable, KeynessMetric],
+    normalize: bool = False,
+    n_contexts=None,
+    n_words=None,
 ) -> sp.csc_matrix:
     """Computes statistical significance tf co-occurrences using `metric`.
 
@@ -163,24 +360,30 @@ def significance(
     """
     metric = metric if callable(metric) else METRIC_FUNCTION.get(metric, _undefined)
 
-    # Number of contexts (documents)
-    k = n_contexts
+    K: float = n_contexts
+    N: float = n_words
 
-    # Total number of observations (counts)
-    Z: float = float(TTM.sum())  # Total number of observations (counts)
+    """Total number of observations (counts)"""
+    Z: float = float(TTM.sum())
 
-    # Number of observations per context (document, row sum)
+    """Number of observations per context (document, row sum)"""
     Zr = np.array(TTM.sum(axis=1), dtype=np.float64).flatten()
 
-    # Row and column indices of non-zero elements.
+    """Row and column indices of non-zero elements."""
     ii, jj = TTM.nonzero()
 
     Cij: np.ndarray = np.array(TTM[ii, jj], dtype=np.float64).flatten()
 
-    # Compute weights (with optional normalize).
-    weights: np.ndarray = metric(Cij, Z, Zr, ii, jj, k)
+    """Compute weights (with optional normalize)."""
+    weights: np.ndarray = metric(Cij=Cij, Z=Z, Zr=Zr, ii=ii, jj=jj, K=K, N=N, normalize=normalize)
 
-    weights = np.nan_to_num(weights, posinf=0.0, neginf=0.0, nan=0.0)
+    np.nan_to_num(
+        weights,
+        copy=False,
+        posinf=0.0,
+        neginf=0.0,
+        nan=0.0,
+    )
 
     nz_indices: np.ndarray = weights.nonzero()
 

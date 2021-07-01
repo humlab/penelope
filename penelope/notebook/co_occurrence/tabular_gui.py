@@ -26,45 +26,12 @@ def empty_data():
             'time_period': pd.Series(data=[], dtype=np.int),
             'w1': pd.Series(data=[], dtype=str),
             'w2': pd.Series(data=[], dtype=str),
-            'value': pd.Series(data=[], dtype=str),
+            'value': pd.Series(data=[], dtype=np.float),
         }
     )
 
 
 CURRENT_BUNDLE = None
-
-# from IPython.display import display
-# import panel as pn
-# from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
-# PANEL_FORMATTERS = {
-#     'category': NumberFormatter(format='0'),
-#     'time_period': NumberFormatter(format='0'),
-#     'year': NumberFormatter(format='0'),
-#     'index': StringFormatter(),
-# }
-
-# class TabulatorTableView:
-#     def __init__(self, data=None):  # pylint: disable=unused-argument
-#         self.container = Output()
-#         self.table: pn.widgets.Tabulator = None
-
-#     def update(self, data):
-#         if self.table is None:
-#             self.table: pn.widgets.Tabulator = pn.widgets.Tabulator(
-#                 value=data,
-#                 formatters=PANEL_FORMATTERS,
-#                 layout='fit_data_table',
-#                 # pagination='remote',
-#                 # hidden_columns=['index'],
-#                 row_height=24,
-#                 show_index=False,
-#             )
-#             self.table.auto_edit = False
-#             self.container.clear_output()
-#             with self.container:
-#                 display(self.table)
-#         else:
-#             self.table.value = data
 
 
 class PerspectiveTableView:
@@ -72,33 +39,9 @@ class PerspectiveTableView:
         data = data if data is not None else empty_data()
         self.widget: PerspectiveWidget = PerspectiveWidget(data, client=True)
         self.container = self.widget
-        self.precision: int = 6
 
     def update(self, data: pd.DataFrame) -> None:
         self.widget.replace(data=data)
-        # self.table.replace(
-        #     data=pd.DataFrame(
-        #         {
-        #             'time_period': data.time_period.apply(str),
-        #             'w1': data.w1,
-        #             'w2': data.w2,
-        #             'value': (
-        #                 data.value.apply(str)
-        #                 if np.issubdtype(data.value.dtype, np.integer)
-        #                 else data.value.apply(f"{{:10.{self.precision}f}}".format)
-        #             ),
-        #         }
-        #     )
-        # )
-
-    # def format_columns(self, data: pd.DataFrame, precision: int = 6):
-    #     data = pd.DataFrame(data=data)
-    #     for column in data.columns:
-    #         if np.issubdtype(data[column].dtype, np.integer):
-    #             data[column] = data[column].apply(str)
-    #         if np.issubdtype(data[column].dtype, np.inexact):
-    #             data[column] = data[column].apply(f"{{:10.{precision}f}}".format)
-    #     return data
 
 
 class PandasTableView:
@@ -108,28 +51,11 @@ class PandasTableView:
         self.style_dict = [
             dict(
                 selector="thead th",
-                props=[
-                    # ('background-color', 'slategray'),
-                    # ('color', 'white'),
-                    ('font-size', '12px'),
-                    ('font-weight', 'bold'),
-                    ('padding', '5px 5px'),
-                    # ('position', 'sticky'),
-                    # ('text-align', 'center'),
-                    # ('top', '0'),
-                ],
+                props=[('font-size', '12px'), ('font-weight', 'bold'), ('padding', '5px 5px')],
             ),
             dict(
                 selector="td",
-                props=[
-                    # ('background-color', 'silver'),
-                    # ('color', 'darkblue'),
-                    ('font-size', '10px'),
-                    ('padding', '5px 5px'),
-                    # ('position', 'sticky'),
-                    ('text-align', 'left'),
-                    # ('top', '0'),
-                ],
+                props=[('font-size', '10px'), ('padding', '5px 5px'), ('text-align', 'left')],
             ),
         ]
 
@@ -207,7 +133,8 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
                 "HAL CWR": KeynessMetric.HAL_cwr,
                 "PPMI": KeynessMetric.PPMI,
                 "LLR": KeynessMetric.LLR,
-                "LLR(D)": KeynessMetric.LLR_Dunning,
+                "LLR(Z)": KeynessMetric.LLR_Z,
+                "LLR(N)": KeynessMetric.LLR_N,
                 "DICE": KeynessMetric.DICE,
             },
             value=KeynessMetric.TF,

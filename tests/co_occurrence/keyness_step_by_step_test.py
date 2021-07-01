@@ -26,7 +26,7 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 
 def test_step_by_step_llr_compute_corpus_keyness_alternative():
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
-    opts: ComputeKeynessOpts = create_keyness_opts(keyness=KeynessMetric.LLR)
+    opts: ComputeKeynessOpts = create_keyness_opts(keyness=KeynessMetric.HAL_cwr)
 
     corpus: VectorizedCorpus = bundle.corpus
     concept_corpus: VectorizedCorpus = bundle.concept_corpus
@@ -61,12 +61,13 @@ def test_step_by_step_llr_compute_corpus_keyness_alternative():
                 #         [0, 0, 0, 0, 0, 8, 6],
                 #         [0, 0, 0, 0, 0, 0, 5],
                 #         [0, 0, 0, 0, 0, 0, 0]])
-                n_documents = int(corpus.document_index[corpus.document_index.document_id == 0]['n_documents'])  # 3
+                meta_data = corpus.document_index[corpus.document_index.document_id == 0].to_dict(orient='record')[0]
                 weights, (w1_ids, w2_ids) = metrics.significance(
                     TTM=term_term_matrix,
                     metric=opts.keyness,
                     normalize=opts.normalize,
-                    n_contexts=n_documents,
+                    n_contexts=meta_data['n_documents'],
+                    n_words=meta_data['n_tokens'],
                 )
                 # (array([-279.97270999,  -23.03480975, -120.70153416,  -85.94256279,
                 #         -17.99472463, -182.2522578 ,  -20.19035001,  144.74677931]),
@@ -125,16 +126,6 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
                 with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrences):
 
                     co_occurrences: pd.DataFrame = corpus.to_co_occurrences(token2id)
-                    #    document_id  token_id  value  time_period  w1_id  w2_id
-                    # 0            0         0      3         2019      0      2
-                    # 1            0         4      3         2019      3      4
-                    # 2            0         5      4         2019      2      4
-                    # 3            0         6      8         2019      4      5
-                    # 4            0         7      3         2019      0      6
-                    # 5            0         8      5         2019      5      6
-                    # 6            0         9      6         2019      4      6
-                    # 7            0        10      3         2019      0      5
-                    # 8            0        12      3         2019      3      6
 
                     with incline_code(source=metrics.partitioned_significances):
                         vocabulary_size: int = len(token2id)
@@ -146,13 +137,6 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
                                 shape=(vocabulary_size, vocabulary_size),
                                 dtype=np.float64,
                             )
-                            # matrix([[0., 0., 3., 0., 0., 3., 3.],
-                            #         [0., 0., 0., 0., 0., 0., 0.],
-                            #         [0., 0., 0., 0., 4., 0., 0.],
-                            #         [0., 0., 0., 0., 3., 0., 3.],
-                            #         [0., 0., 0., 0., 0., 8., 6.],
-                            #         [0., 0., 0., 0., 0., 0., 5.],
-                            #         [0., 0., 0., 0., 0., 0., 0.]])
 
                             n_contexts = metrics._get_documents_count(corpus.document_index, pivot_co_occurrences)
                             weights, (w1_ids, w2_ids) = metrics.significance(
@@ -198,25 +182,7 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
     assert llr_corpus is not None
     pp(llr_corpus.data.todense())
 
-    np.matrix(
-        [
-            [
-                -15.95593619,
-                0.0,
-                0.0,
-                0.0,
-                -22.86600166,
-                -67.3019315,
-                -120.72753604,
-                -11.45725503,
-                144.74677931,
-                -19.12142693,
-                -18.1873717,
-                0.0,
-                -8.31776617,
-            ]
-        ]
-    )
+    # np.matrix([[-15.9, 0.0, 0.0, 0.0, -22.86, -67.30, -120.7, -11.45, 144.74, -19.12, -18.18, 0.0, -8.31]])
 
 
 def test_dtm_to_ttm_stream():

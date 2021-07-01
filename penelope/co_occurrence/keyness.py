@@ -36,10 +36,17 @@ def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, t
     )
 
     """Metrics computed on grouped corpus"""
-    if opts.keyness in (KeynessMetric.PPMI, KeynessMetric.LLR, KeynessMetric.DICE, KeynessMetric.LLR_Dunning):
+    if opts.keyness in (
+        KeynessMetric.PPMI,
+        KeynessMetric.LLR,
+        KeynessMetric.DICE,
+        KeynessMetric.LLR_Z,
+        KeynessMetric.LLR_N,
+        KeynessMetric.HAL_cwr,
+    ):
         corpus = corpus.to_keyness(token2id=token2id, opts=opts)
-    elif opts.keyness == KeynessMetric.HAL_cwr:
-        corpus = corpus.to_HAL_cwr_keyness()
+    # elif opts.keyness == KeynessMetric.HAL_cwr:
+    #     corpus = corpus.to_HAL_cwr_keyness()
 
     return corpus
 

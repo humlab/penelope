@@ -161,12 +161,13 @@ class CoOccurrenceMixIn:
         for document_id, term_term_matrix in self.to_term_term_matrix_stream(token2id):
             if term_term_matrix is None:
                 continue
-            n_documents = int(self.document_index[self.document_index.document_id == 0]['n_documents'])
+            doc_info: dict = self.document_index[self.document_index.document_id == 0].to_dict(orient='record')[0]
             weights, (w1_ids, w2_ids) = metrics.significance(
                 TTM=term_term_matrix,
                 metric=opts.keyness,
                 normalize=opts.normalize,
-                n_contexts=n_documents,
+                n_contexts=doc_info['n_documents'],
+                n_words=doc_info['n_tokens'],
             )
             token_ids = (pairs2token(p) for p in zip(w1_ids, w2_ids))
             rows.extend([document_id] * len(weights))
