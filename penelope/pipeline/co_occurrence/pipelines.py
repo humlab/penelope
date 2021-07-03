@@ -39,10 +39,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
             transform_opts=transform_opts,
         )
         # .tokens_transform(transform_opts=transform_opts)
-        .to_document_co_occurrence(
-            context_opts=context_opts,
-            ingest_tokens=False,
-        )
+        .to_document_co_occurrence(context_opts=context_opts)
         # .tqdm(desc="Processing documents")
         .to_corpus_co_occurrence(
             context_opts=context_opts,
