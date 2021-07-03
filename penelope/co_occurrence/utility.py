@@ -13,7 +13,7 @@
 # from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 # from .interface import ContextOpts, CoOccurrenceError
 # from .persistence import TokenWindowCountMatrix
-# from .vectorize import DocumentWindowsVectorizer, VectorizedTTM, VectorizeType
+# from .vectorize import windows_to_ttm, VectorizedTTM, VectorizeType
 # from .windows import generate_windows
 
 
@@ -49,7 +49,7 @@
 #     computed_data_frames: List[pd.DataFrame] = []
 #     computed_window_counts: Mapping[int, Mapping[int, int]] = dict()
 
-#     vectorizer: DocumentWindowsVectorizer = DocumentWindowsVectorizer(token2id)
+#     vectorizer: DocumentWindowsVectorizer = DocumentWindowsVectorizer(token2id) USE windows_to_ttm!!
 
 #     ignore_ids: Set[int] = None
 
