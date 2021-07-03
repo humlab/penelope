@@ -5,7 +5,6 @@ from penelope import pipeline, utility, workflows
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
 
-
 # DATA_FOLDER = "./tests/test_data"
 # CONFIG_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.yml")
 # OUTPUT_FOLDER = jj(DATA_FOLDER, '../output')

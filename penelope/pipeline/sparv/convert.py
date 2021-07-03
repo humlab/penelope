@@ -3,6 +3,7 @@ from io import StringIO
 
 import pandas as pd
 from penelope.utility import deprecated
+
 from ..checkpoint import CheckpointOpts, CsvContentSerializer
 from ..tagged_frame import TaggedFrame
 

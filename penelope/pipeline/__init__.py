@@ -9,9 +9,9 @@ from .checkpoint import (
     TextContentSerializer,
     TokensContentSerializer,
     create_serializer,
-    sequential_deserialized_payload_stream,
-    parallel_deserialized_payload_stream,
     load_archive,
+    parallel_deserialized_payload_stream,
+    sequential_deserialized_payload_stream,
     store_archive,
 )
 from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline

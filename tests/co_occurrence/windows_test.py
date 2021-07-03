@@ -54,7 +54,6 @@ def test_tokens_to_windows():
 
     assert list(windows) == [[token2id[t] for t in w] for w in expected_windows]
 
-
     expected_windows = [
         ['a'],
         ['a', 'c'],

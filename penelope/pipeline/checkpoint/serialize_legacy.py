@@ -4,14 +4,12 @@ from multiprocessing import Pool
 from typing import Any, Iterable, List, Sequence, Tuple
 
 from loguru import logger
-
 from penelope.utility import deprecated
 
 from ..interfaces import DocumentPayload
 from .interface import CheckpointOpts, IContentSerializer
-
-
 from .serialize import create_serializer
+
 
 def chunker(seq: Sequence[Any], size: int) -> Sequence[Any]:
     return (seq[pos : pos + size] for pos in range(0, len(seq), size))
@@ -73,4 +71,3 @@ def parallel_deserialized_payload_stream_read_ahead_with_chunks(
 
                 for payload in payloads_futures:
                     yield payload
-
