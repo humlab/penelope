@@ -21,9 +21,9 @@ def test_sparv_csv_serializer():
 
     assert tagged_frame is not None
     assert tagged_frame.token.tolist()[:5] == ['RIKSDAGENS', 'PROTOKOLL', '1950', 'ANDRA', 'KAMMAREN']
-    assert tagged_frame.token.tolist()[-5:] == ['bandelen', 'Öster-', 'sund', '—', 'Gällivare']
+    assert tagged_frame.token.tolist()[-5:] == ['sund', '—', 'Gällivare', 'Roger', 'Mähler']
     assert tagged_frame.baseform.tolist()[:5] == ['riksdag', 'protokoll', '1950', 'andra', 'kammare']
-    assert tagged_frame.baseform.tolist()[-5:] == ['bandel', 'Öster-', 'sund', '—', 'Gällivare']
+    assert tagged_frame.baseform.tolist()[-5:] == ['sund', '—', 'Gällivare', 'Roger', 'super_man']
     assert all(~tagged_frame.token.isna())
     assert all(~tagged_frame.baseform.isna())
     assert all(~tagged_frame.pos.isna())

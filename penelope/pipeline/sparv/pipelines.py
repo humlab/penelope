@@ -20,7 +20,7 @@ def to_tagged_frame_pipeline(
     *,
     corpus_config: config.CorpusConfig,
     corpus_filename: str = None,
-    enable_checkpoint: bool = True,
+    enable_checkpoint: bool = False,
     force_checkpoint: bool = False,
     **_,
 ):
@@ -28,7 +28,6 @@ def to_tagged_frame_pipeline(
     p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config)
 
     corpus_filename: str = corpus_filename or corpus_config.pipeline_payload.source
-    checkpoint_folder: str = checkpoint_folder_name(corpus_filename)
 
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
 
@@ -45,7 +44,8 @@ def to_tagged_frame_pipeline(
 
     p.add(task)
 
-    if enable_checkpoint:
+    if enable_checkpoint and not corpus_config.checkpoint_opts.feather_folder:
+        checkpoint_folder: str = checkpoint_folder_name(corpus_filename)
         p = p.checkpoint_feather(checkpoint_folder, force=force_checkpoint)
 
     return p

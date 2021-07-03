@@ -1,6 +1,8 @@
 import contextlib
+import itertools
 import os
 import shutil
+import sys
 import zipfile
 from contextlib import suppress
 from dataclasses import dataclass, field
@@ -247,12 +249,28 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TAGGED_FRAME
 
+    def enter(self):
+
+        if self.checkpoint_opts.feather_folder:
+            os.makedirs(self.checkpoint_opts.feather_folder, exist_ok=True)
+
+    def exit(self):
+
+        if self.checkpoint_opts.feather_folder:
+            cp.feather.write_document_index(self.checkpoint_opts.feather_folder, self.document_index)
+
     def setup(self) -> ITask:
         super().setup()
 
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.checkpoint_data: cp.CheckpointData = self.load_archive()
-        self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
+
+        if self.checkpoint_opts.feather_folder and cp.feather.document_index_exists(
+            self.checkpoint_opts.feather_folder
+        ):
+            self.pipeline.payload.set_reader_index(cp.feather.read_document_index(self.checkpoint_opts.feather_folder))
+        else:
+            self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
 
         self.pipeline.put("reader_opts", self.extra_reader_opts.props)
         self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
@@ -260,7 +278,8 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         return self
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-        return self.checkpoint_data.create_stream()
+
+        return itertools.islice(self.checkpoint_data.create_stream(), 0, 100, 1)
 
     def load_archive(self) -> cp.CheckpointData:
         checkpoint_data: cp.CheckpointData = cp.load_archive(
@@ -704,7 +723,6 @@ class TextToDTM(ITask):
         return None
 
 
-# FIXME #115 Enable optional one-pass creation of vocabulary and TF frequencies
 @dataclass
 class Vocabulary(DefaultResolveMixIn, ITask):
     class TokenType(IntEnum):
@@ -741,7 +759,6 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
-
         for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab:"):
             ingest(self.tokens_stream(payload))
 

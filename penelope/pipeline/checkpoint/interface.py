@@ -1,11 +1,12 @@
 import abc
 import copy
 import csv
+import os
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, List, Optional, Union
 
 from penelope.corpus import DocumentIndex, Token2Id
-from penelope.utility import create_instance, dictify
+from penelope.utility import create_instance, dictify, strip_path_and_extension
 
 from ..interfaces import ContentType, DocumentPayload
 from ..tagged_frame import TaggedFrame
@@ -39,7 +40,7 @@ class CheckpointOpts:
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
     index_column: Union[int, None] = field(default=0)
-
+    feather_folder: Optional[str] = field(default=None)
     # abort_at_index: int = field(default=None)
 
     @property
@@ -79,6 +80,11 @@ class CheckpointOpts:
 
     def text_column_name(self, lemmatized: bool = False):
         return self.lemma_column if lemmatized else self.text_column
+
+    def feather_filename(self, filename: str) -> str:
+        if not self.feather_folder:
+            return None
+        return os.path.join(self.feather_folder, f'{strip_path_and_extension(filename)}.feather')
 
 
 @dataclass

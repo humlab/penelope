@@ -1,16 +1,15 @@
+import os
 import zipfile
 from io import StringIO
-from multiprocessing import Pool
-from typing import Any, Iterable, List, Sequence, Tuple
+from multiprocessing import get_context
+from typing import Callable, Iterable, List, Sequence, Tuple, Union
 
 import pandas as pd
-from penelope.utility import deprecated, getLogger
+from loguru import logger
 
 from ..interfaces import ContentType, DocumentPayload
 from ..tagged_frame import TaggedFrame
 from .interface import CheckpointOpts, IContentSerializer
-
-logger = getLogger("penelope")
 
 
 class TextContentSerializer(IContentSerializer):
@@ -60,18 +59,49 @@ def create_serializer(options: CheckpointOpts) -> "IContentSerializer":
     raise ValueError(f"non-serializable content type: {options.content_type}")
 
 
-def deserialized_payload_stream(
+Serializer = Callable[[str, CheckpointOpts], pd.DataFrame]
+
+
+def read_and_deserialize_tagged_frame(
+    source: Union[str, zipfile.ZipFile], filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
+) -> TaggedFrame:
+    content: str = source.read(filename).decode(encoding='utf-8') if isinstance(source, zipfile.ZipFile) else source
+    tagged_frame: TaggedFrame = serializer.deserialize(content, checkpoint_opts)
+    return tagged_frame
+
+
+def read_and_deserialize_tagged_frame_with_feather_cache(
+    zf: zipfile.ZipFile, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
+) -> TaggedFrame:
+    feather_filename: str = checkpoint_opts.feather_filename(filename)
+    if os.path.isfile(feather_filename):
+        tagged_frame: pd.DataFrame = pd.read_feather(feather_filename)
+    else:
+        tagged_frame = read_and_deserialize_tagged_frame(zf, filename, checkpoint_opts, serializer)
+        tagged_frame.to_feather(feather_filename, compression="lz4")
+    return tagged_frame
+
+
+# FIXME: This only works if input is tagged frame (not tokens, text)
+
+
+def sequential_deserialized_payload_stream(
     source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str]
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
-    logger.info("Using sequential deserialization")
+    logger.debug("Using sequential deserialization")
+
+    if checkpoint_opts.feather_folder:
+        logger.debug(f"Using feather checkpoint folder {checkpoint_opts.feather_folder}.")
+        reader = read_and_deserialize_tagged_frame_with_feather_cache
+    else:
+        reader = read_and_deserialize_tagged_frame
 
     with zipfile.ZipFile(source_name, mode="r") as zf:
         for filename in filenames:
-            content: str = zf.read(filename).decode(encoding='utf-8')
-            tagged_frame: TaggedFrame = serializer.deserialize(content, checkpoint_opts)
+            tagged_frame = reader(zf, filename, checkpoint_opts, serializer)
             yield DocumentPayload(
                 content_type=checkpoint_opts.content_type,
                 content=tagged_frame,
@@ -79,79 +109,20 @@ def deserialized_payload_stream(
             )
 
 
-def _process_document_file(args: List[Tuple]) -> DocumentPayload:
-
-    filename, content, serializer, checkpoint_opts = args
-
-    return DocumentPayload(
-        content_type=checkpoint_opts.content_type,
-        content=serializer.deserialize(content, checkpoint_opts),
-        filename=filename,
-    )
-
-
-def _process_document_with_read(args: Tuple) -> DocumentPayload:
-
+def open_read_and_deserialize_tagged_frame(args: Tuple) -> DocumentPayload:
     filename, source, serializer, checkpoint_opts = args
-
     with zipfile.ZipFile(source, mode="r") as zf:
-        content = zf.read(filename).decode(encoding='utf-8')
-
-    return DocumentPayload(
-        content_type=checkpoint_opts.content_type,
-        content=serializer.deserialize(content, checkpoint_opts),
-        filename=filename,
-    )
+        tagged_frame = read_and_deserialize_tagged_frame(zf, filename, checkpoint_opts, serializer)
+    return DocumentPayload(content_type=checkpoint_opts.content_type, content=tagged_frame, filename=filename)
 
 
-@deprecated
-def parallel_deserialized_payload_stream_read_ahead_without_chunks(
-    source_name: str, checkpoint_opts: CheckpointOpts, filenames: List[str]
-) -> Iterable[DocumentPayload]:
-    """Yields a deserialized payload stream read from given source"""
-
-    logger.info(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
-    serializer: IContentSerializer = create_serializer(checkpoint_opts)
-
-    with zipfile.ZipFile(source_name, mode="r") as zf:
-        args: str = [
-            (filename, zf.read(filename).decode(encoding='utf-8'), serializer, checkpoint_opts)
-            for filename in filenames
-        ]
-
-    with Pool(processes=checkpoint_opts.deserialize_processes) as executor:
-        payloads_futures: Iterable[DocumentPayload] = executor.map(_process_document_file, args)
-
-        for payload in payloads_futures:
-            yield payload
-
-
-def chunker(seq: Sequence[Any], size: int) -> Sequence[Any]:
-    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
-
-
-@deprecated
-def parallel_deserialized_payload_stream_read_ahead_with_chunks(
-    source_name: str,
-    checkpoint_opts: CheckpointOpts,
-    filenames: List[str],
-) -> Iterable[DocumentPayload]:
-    """Yields a deserialized payload stream read from given source"""
-
-    logger.info(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
-    serializer: IContentSerializer = create_serializer(checkpoint_opts)
-
-    with zipfile.ZipFile(source_name, mode="r") as zf:
-        with Pool(processes=checkpoint_opts.deserialize_processes) as executor:
-            for filenames_chunk in chunker(filenames, checkpoint_opts.deserialize_chunksize):
-                args: str = [
-                    (filename, zf.read(filename).decode(encoding='utf-8'), serializer, checkpoint_opts)
-                    for filename in filenames_chunk
-                ]
-                payloads_futures: Iterable[DocumentPayload] = executor.map(_process_document_file, args)
-
-                for payload in payloads_futures:
-                    yield payload
+def open_read_and_deserialize_tagged_frame_with_feather_cache(args: Tuple) -> DocumentPayload:
+    filename, source, serializer, checkpoint_opts = args
+    with zipfile.ZipFile(source, mode="r") as zf:
+        tagged_frame: pd.DataFrame = read_and_deserialize_tagged_frame_with_feather_cache(
+            zf, filename, checkpoint_opts, serializer
+        )
+    return DocumentPayload(content_type=checkpoint_opts.content_type, content=tagged_frame, filename=filename)
 
 
 def parallel_deserialized_payload_stream(
@@ -160,39 +131,19 @@ def parallel_deserialized_payload_stream(
     filenames: List[str],
 ) -> Iterable[DocumentPayload]:
 
-    logger.info(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
+    logger.trace(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
+    _process_document = open_read_and_deserialize_tagged_frame
+    if checkpoint_opts.feather_folder:
+        logger.trace(f"Using feather checkpoint folder {checkpoint_opts.feather_folder}.")
+        _process_document = open_read_and_deserialize_tagged_frame_with_feather_cache
+
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
 
-    with Pool(processes=checkpoint_opts.deserialize_processes) as executor:
+    with get_context("spawn").Pool(processes=checkpoint_opts.deserialize_processes) as executor:
         args: str = [(filename, source_name, serializer, checkpoint_opts) for filename in filenames]
         payloads_futures: Iterable[DocumentPayload] = executor.imap(
-            _process_document_with_read, args, chunksize=checkpoint_opts.deserialize_chunksize
+            _process_document, args, chunksize=checkpoint_opts.deserialize_chunksize
         )
 
         for payload in payloads_futures:
             yield payload
-
-
-# def parallel_deserialized_payload_stream(
-#     source_name: str,
-#     checkpoint_opts: CheckpointOpts,
-#     filenames: List[str],
-# ) -> Iterable[DocumentPayload]:
-
-#     logger.info(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
-#     serializer: IContentSerializer = create_serializer(checkpoint_opts)
-
-#     N: int = checkpoint_opts.abort_at_index
-
-#     with Pool(processes=checkpoint_opts.deserialize_processes) as executor:
-#         args: str = [(filename, source_name, serializer, checkpoint_opts) for filename in filenames]
-#         payloads_futures: Iterable[DocumentPayload] = executor.imap(
-#             _process_document_with_read, args, chunksize=checkpoint_opts.deserialize_chunksize
-#         )
-
-#         q, i = 1 if N > 0 else 0, 0
-#         for payload in payloads_futures:
-#             yield payload
-#             if (i := i + q) == N:
-#                 logger.info("abort_at_index: stopping processing since count limit is exceeded")
-#                 break

@@ -52,6 +52,7 @@ def create_checkpoint_opts() -> CheckpointOpts:
         deserialize_in_parallel=False,
         deserialize_processes=4,
         deserialize_chunksize=4,
+        feather_folder=None,
         text_column="token",
         lemma_column="baseform",
         pos_column="pos",
