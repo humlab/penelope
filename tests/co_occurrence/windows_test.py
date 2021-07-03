@@ -49,6 +49,28 @@ def test_tokens_to_windows():
         token_ids=[token2id[t] for t in tokens],
         context_width=context_opts.context_width,
         pad_id=token2id[context_opts.pad],
+        ignore_pads=False,
+    )
+
+    assert list(windows) == [[token2id[t] for t in w] for w in expected_windows]
+
+
+    expected_windows = [
+        ['a'],
+        ['a', 'c'],
+        ['c', 'a'],
+        ['c', 'a', 'e'],
+        ['a', 'e'],
+        ['e'],
+        ['h'],
+        ['h'],
+    ]
+
+    windows: Iterable[Iterable[str]] = generate_windows(
+        token_ids=[token2id[t] for t in tokens],
+        context_width=context_opts.context_width,
+        pad_id=token2id[context_opts.pad],
+        ignore_pads=True,
     )
 
     assert list(windows) == [[token2id[t] for t in w] for w in expected_windows]

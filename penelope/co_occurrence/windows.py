@@ -152,6 +152,7 @@ def generate_windows(
     token_ids: Iterable[int],
     context_width: int,
     pad_id: int,
+    ignore_pads: bool = True,
 ) -> Iterable[Iterable[int]]:
     """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens_ids`
 
@@ -159,21 +160,29 @@ def generate_windows(
     The yelded windows are all equal-sized with the focus `*`-padded at the beginning and end
     of the token sequence.
 
-    Parameters
-    ----------
-    tokens_ids : Iterable[int]
-        The sequence of tokens_ids to be windowed
-    context_opts: ContextOpts (width, concept, etc)
 
-    Yields
-    -------
-    Iterable[Tuple[List[str]]]
-        The sequence of windows
+    Args:
+        token_ids (Iterable[int]): The sequence of tokens_ids to be windowed
+        context_width (int): (window size - 1) / 2
+        pad_id (int): Token used as magic pad for non-target words (and start/end filler).
+        ignore_pads (bool, optional): If true, pad tokens are filtered out. Defaults to True.
+
+    Returns:
+        Iterable[Iterable[int]]: [description]
+
+    Yields:
+        Iterator[Iterable[Iterable[int]]]: [description]
     """
 
     n_window = 2 * context_width + 1
     padded_tokens = itertools.chain([pad_id] * context_width, token_ids, [pad_id] * context_width)
     window = collections.deque((next(padded_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
-    for token in padded_tokens:
-        window.append(token)
-        yield list(window)
+
+    if ignore_pads:
+        for token in padded_tokens:
+            window.append(token)
+            yield [w for w in window if w != pad_id]
+    else:
+        for token in padded_tokens:
+            window.append(token)
+            yield list(window)
