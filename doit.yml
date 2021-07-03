@@ -14,9 +14,10 @@ checkpoint_opts:
     extra_columns: []
     custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
     deserialize_in_parallel: true
-    deserialize_processes: 6
+    deserialize_processes: 4
     deserialize_chunksize: 4
     index_column: null
+    feather_folder: /data/westac/data/shared/checkpoints/riksdagens-protokoll.1920-2019.sparv4.csv_feather
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:

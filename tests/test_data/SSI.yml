@@ -19,6 +19,7 @@ checkpoint_opts:
     deserialize_processes: 1
     deserialize_chunksize: 4
     index_column: null
+    feather_folder: null
 pipeline_payload:
   source: legal_instrument_corpus.zip
   document_index_source: legal_instrument_index.csv
