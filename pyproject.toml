@@ -61,6 +61,7 @@ bokeh = "*"
 ipycytoscape = "*"
 perspective-python = "*"
 msgpack = "^1.0.2"
+numba = "^0.53.1"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
