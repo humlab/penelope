@@ -137,6 +137,16 @@ class CoOccurrenceMixIn:
     def to_term_term_matrix_stream(
         self: IVectorizedCorpusProtocol, token2id: Token2Id
     ) -> Tuple[int, Iterable[scipy.sparse.spmatrix]]:
+
+        # if USE_NUMBA:
+        #     token2pairs: dict = {token_id: pair_ids for pair_ids, token_id in self.vocabs_mapping.items()}
+        #     vocab_size: int = len(token2id)
+
+        #     for document_id, term_term_matrix in numba_to_term_term_matrix_stream(
+        #         self.data, token2pairs=token2pairs, vocab_size=vocab_size
+        #     ):
+        #         yield document_id, term_term_matrix
+        # else:
         """Generates a sequence of term-term matrices for each document (row)"""
         token2pairs: dict = {token_id: pair_ids for pair_ids, token_id in self.vocabs_mapping.items()}
         """Reconstruct ttm row by row"""
@@ -152,9 +162,6 @@ class CoOccurrenceMixIn:
                 yield i, term_term_matrix
 
     def to_keyness(self: IVectorizedCorpusProtocol, token2id: Token2Id, opts: ComputeKeynessOpts):
-
-        # zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
-        # concept_corpus.zero_out_by_indices(zero_out_indices)
 
         rows, cols, data = [], [], []
         pairs2token = self.vocabs_mapping.get
