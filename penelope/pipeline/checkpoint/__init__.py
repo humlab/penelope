@@ -8,6 +8,6 @@ from .serialize import (
     TextContentSerializer,
     TokensContentSerializer,
     create_serializer,
-    deserialized_payload_stream,
+    sequential_deserialized_payload_stream,
     parallel_deserialized_payload_stream,
 )
