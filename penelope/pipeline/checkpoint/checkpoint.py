@@ -18,7 +18,7 @@ from .interface import (
     CheckpointOpts,
     IContentSerializer,
 )
-from .serialize import create_serializer, deserialized_payload_stream, parallel_deserialized_payload_stream
+from .serialize import create_serializer, sequential_deserialized_payload_stream, parallel_deserialized_payload_stream
 
 logger = getLogger("penelope")
 
@@ -110,7 +110,7 @@ def load_archive(
             document_index = document_index[document_index.filename.isin(filenames)]
 
     deserialized_stream = deserialize_stream or (
-        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else deserialized_payload_stream
+        parallel_deserialized_payload_stream if checkpoint_opts.deserialize_in_parallel else sequential_deserialized_payload_stream
     )
 
     create_stream = lambda: deserialized_stream(source_name, checkpoint_opts, filenames)
