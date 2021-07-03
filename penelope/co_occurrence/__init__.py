@@ -19,5 +19,5 @@ from .persistence import (
     to_folder_and_tag,
 )
 from .prepare import CoOccurrenceHelper
-from .vectorize import DocumentWindowsVectorizer, VectorizedTTM, VectorizeType
+from .vectorize import windows_to_ttm, VectorizedTTM, VectorizeType
 from .windows import WindowsCorpus, generate_windows

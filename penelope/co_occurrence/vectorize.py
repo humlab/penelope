@@ -9,8 +9,6 @@ from typing import Any, Iterable, Iterator, Mapping, Optional, Set
 import numpy as np
 import scipy
 from loguru import logger
-from penelope.co_occurrence.interface import ContextOpts
-from penelope.corpus import Token2Id
 
 DEBUG_TRACE: bool = False
 if DEBUG_TRACE:
@@ -45,93 +43,58 @@ class VectorizedTTM:
         logger.info(f"term_window_counts = {pf(self.term_window_counts)}")
 
 
-class DocumentWindowsVectorizer:
-    """Creates a term-term-matrix from a sequence of windows (tokens)"""
+def windows_to_ttm(
+    *,
+    document_id: int,
+    windows: Iterator[Iterable[int]],
+    concept_ids: Set[int],
+    ignore_ids: Set[int],
+    vocab_size: int,
+) -> Mapping[VectorizeType, VectorizedTTM]:
 
-    def __init__(self, vocabulary: Token2Id, dtype: Any = np.int32):
+    if len(concept_ids) > 1:
+        raise NotImplementedError("Multiple concepts disabled (performance")
 
-        self.vocabulary: Token2Id = vocabulary
-        self.dtype = dtype
+    concept_id: Optional[str] = list(concept_ids)[0] if concept_ids else None
 
-    def fit_transform(
-        self, *, document_id: int, windows: Iterator[Iterator[str]], context_opts: ContextOpts
-    ) -> Mapping[VectorizeType, VectorizedTTM]:
-        """Fits windows generated from a __single__ document"""
+    def _count_tokens_without_ignores(windows: Iterable[int]) -> dict:
+        token_counter: dict = {}
+        tg = token_counter.get
+        for t in windows:
+            token_counter[t] = tg(t, 0) + 1
+        return token_counter
 
-        fg = self.vocabulary.get
-        ignore_ids: Set[int] = set()
-        concept_ids: Set[int] = {fg(t) for t in context_opts.get_concepts()}
+    def _count_tokens_with_ignores(windows: Iterable[str]) -> dict:
+        token_counter: dict = {}
+        tg = token_counter.get
+        for t in windows:
+            if t in ignore_ids:
+                continue
+            token_counter[t] = tg(t, 0) + 1
+        return token_counter
 
-        if context_opts.ignore_padding:
-            ignore_ids.add(fg(context_opts.pad))
+    counters: Mapping[VectorizeType, WindowsTermsCounter] = defaultdict(WindowsTermsCounter)
+    count_tokens = _count_tokens_with_ignores if ignore_ids else _count_tokens_without_ignores
 
-        if concept_ids:
-            if context_opts.ignore_concept:
-                ignore_ids.update(concept_ids)
+    ewu = counters[VectorizeType.Normal].update
+    if concept_id is not None:
+        cwu = counters[VectorizeType.Concept].update
+        for window in windows:
+            token_counts: dict = count_tokens(window)
+            if concept_id in window:  # any(x in window for x in concept):
+                cwu(token_counts)
+            ewu(token_counts)
+    else:
+        logger.info("no concept")
+        for window in windows:
+            ewu(count_tokens(window))
 
-        data: Mapping[VectorizeType, VectorizedTTM] = self._vectorize(
-            document_id=document_id,
-            windows=windows,
-            concept_ids=concept_ids,
-            ignore_ids=ignore_ids,
-        )
+    data: Mapping[VectorizeType, VectorizedTTM] = {
+        key: counter.compile(vectorize_type=key, document_id=document_id, vocab_size=vocab_size)
+        for key, counter in counters.items()
+    }
 
-        return data
-
-    def _vectorize(
-        self,
-        *,
-        document_id: int,
-        windows: Iterator[Iterable[int]],
-        concept_ids: Set[int],
-        ignore_ids: Set[int],
-    ) -> Mapping[VectorizeType, VectorizedTTM]:
-
-        if len(concept_ids) > 1:
-            raise NotImplementedError("Multiple concepts disabled (performance")
-
-        concept_id: Optional[str] = list(concept_ids)[0] if concept_ids else None
-
-        counters: Mapping[VectorizeType, WindowsTermsCounter] = defaultdict(WindowsTermsCounter)
-
-        ewu = counters[VectorizeType.Normal].update
-
-        def _count_tokens_without_ignores(windows: Iterable[int]) -> dict:
-            token_counter: dict = {}
-            tg = token_counter.get
-            for t in windows:
-                token_counter[t] = tg(t, 0) + 1
-            return token_counter
-
-        def _count_tokens_with_ignores(windows: Iterable[str]) -> dict:
-            token_counter: dict = {}
-            tg = token_counter.get
-            for t in windows:
-                if t in ignore_ids:
-                    continue
-                token_counter[t] = tg(t, 0) + 1
-            return token_counter
-            # return Counter(t for t in windows if t not in ignore_ids)
-
-        count_tokens = _count_tokens_with_ignores if ignore_ids else _count_tokens_without_ignores
-
-        if concept_id:
-            cwu = counters[VectorizeType.Concept].update
-            for window in windows:
-                token_counts: dict = count_tokens(window)
-                if concept_id in window:  # any(x in window for x in concept):
-                    cwu(token_counts)
-                ewu(token_counts)
-        else:
-            for window in windows:
-                ewu(count_tokens(window))
-
-        data: Mapping[VectorizeType, VectorizedTTM] = {
-            key: counter.compile(vectorize_type=key, document_id=document_id, vocab_size=len(self.vocabulary))
-            for key, counter in counters.items()
-        }
-
-        return data
+    return data
 
 
 class WindowsTermsCounter:
