@@ -2,7 +2,6 @@ import contextlib
 import itertools
 import os
 import shutil
-import sys
 import zipfile
 from contextlib import suppress
 from dataclasses import dataclass, field
@@ -759,7 +758,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
-        for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab:"):
+        for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab"):
             ingest(self.tokens_stream(payload))
 
         if self.tf_threshold and self.tf_threshold > 1:
