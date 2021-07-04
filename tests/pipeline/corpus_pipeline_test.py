@@ -295,7 +295,11 @@ def test_load_data_frame_succeeds():
     )
     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
     task = tasks.LoadTaggedCSV(
-        pipeline=pipeline, filename="dummy.zip", prior=prior, extra_reader_opts=TextReaderOpts()
+        pipeline=pipeline,
+        filename="dummy.zip",
+        prior=prior,
+        extra_reader_opts=TextReaderOpts(),
+        checkpoint_opts=CheckpointOpts(feather_folder=None)
     ).setup()
     task.register_token_counts = lambda _: task
     for payload in task.outstream():
