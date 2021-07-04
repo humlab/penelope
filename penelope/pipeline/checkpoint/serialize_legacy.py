@@ -1,4 +1,3 @@
-import os
 import zipfile
 from multiprocessing import Pool
 from typing import Any, Iterable, List, Sequence, Tuple
