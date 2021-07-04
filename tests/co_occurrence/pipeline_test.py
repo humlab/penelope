@@ -23,7 +23,6 @@ def test_pipeline_to_co_occurrence_ingest_prohobited_if_vocabulary_exists():
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     config: CorpusConfig = CorpusConfig.tokenized_corpus_config()
 
-    ingest_tokens = True
     with pytest.raises(ClosedVocabularyError):
         _: Bundle = (
             CorpusPipeline(config=config)
@@ -41,7 +40,6 @@ def test_pipeline_to_co_occurrence_can_create_new_vocabulary():
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     config: CorpusConfig = CorpusConfig.tokenized_corpus_config()
 
-    ingest_tokens = False
     bundle: Bundle = (
         CorpusPipeline(config=config)
         .load_corpus(tokenized_corpus)
