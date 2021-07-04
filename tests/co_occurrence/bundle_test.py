@@ -106,6 +106,7 @@ def test_step_by_step_compress_with_simple_corpus():
                 token_ids=[bundle.token2id[t] for t in tokens],
                 context_width=context_opts.context_width,
                 pad_id=bundle.token2id[context_opts.pad],
+                ignore_pads=False,
             )
         ]
         for _, tokens in SIMPLE_CORPUS_ABCDE_3DOCS
