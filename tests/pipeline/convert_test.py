@@ -3,6 +3,7 @@ from io import StringIO
 from typing import List
 
 import pandas as pd
+import penelope.utility.pos_tags as pos_tags
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
@@ -10,6 +11,7 @@ from penelope.pipeline import CheckpointOpts
 from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
 from penelope.pipeline.sparv import SparvCsvSerializer
 from penelope.pipeline.sparv.convert import to_lemma_form
+from penelope.type_alias import TaggedFrame
 
 # pylint: disable=redefined-outer-name
 
@@ -492,3 +494,25 @@ utskotten	NN	|utskott|
     transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, keep_numerals=False, keep_symbols=False)
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == ['herr', 'talman', 'kammaren', 'måste', 'besluta', 'att', 'välja', 'suppleanter', 'i', 'utskotten']
+
+
+def test_tagged_frame_to_token_counts(tagged_frame: TaggedFrame):
+
+    pos_schema: pos_tags.PoS_Tag_Scheme = pos_tags.PoS_Tag_Schemes.SUC
+    pos_column: str = "pos"
+
+    group_counts = pos_schema.PoS_group_counts(PoS_sequence=tagged_frame[pos_column])
+    assert group_counts == {
+        'Adjective': 2,
+        'Adverb': 2,
+        'Conjunction': 0,
+        'Delimiter': 3,
+        'Noun': 7,
+        'Numeral': 1,
+        'Other': 1,
+        'Preposition': 1,
+        'Pronoun': 3,
+        'Verb': 3,
+        'n_raw_tokens': 20,
+        'n_tokens': 20,
+    }
