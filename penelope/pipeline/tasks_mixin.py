@@ -5,7 +5,7 @@ from typing import List, Optional
 import pandas as pd
 from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
 
-from . import convert, interfaces
+from . import interfaces
 
 
 class DefaultResolveMixIn:
@@ -21,14 +21,17 @@ class CountTaggedTokensMixIn:
             if not isinstance(payload.content, pd.DataFrame):
                 raise ValueError("setup error: register_token_counts only applicable for tagged frames")
 
-            token_counts = convert.tagged_frame_to_token_counts(
-                tagged_frame=payload.content,
-                pos_schema=self.pipeline.payload.pos_schema,
-                pos_column=self.pipeline.payload.get('pos_column'),
-            )
-            self.update_document_properties(payload, **token_counts)
+            PoS_token_counts: dict = payload.recall('pos_frequency')
+
+            if PoS_token_counts is None:
+                PoS_token_counts: dict = self.pipeline.payload.pos_schema.PoS_group_counts(
+                    PoS_sequence=payload.content[self.pipeline.get('pos_column', None)]
+                )
+
+            self.update_document_properties(payload, **PoS_token_counts)
             return payload
         except Exception as ex:
+            logging.error(f"error occured when processing file {payload.document_name}")
             logging.exception(ex)
             raise
 
