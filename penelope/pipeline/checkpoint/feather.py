@@ -1,6 +1,6 @@
 import glob
 import os
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import pandas as pd
 from penelope.corpus import DocumentIndex
@@ -40,7 +40,9 @@ def get_matching_paths(*, folder: str) -> List[str]:
     return paths
 
 
-def document_index_exists(folder: str) -> bool:
+def document_index_exists(folder: Optional[str]) -> bool:
+    if folder is None:
+        return False
     return os.path.isfile(os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME))
 
 
