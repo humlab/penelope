@@ -72,7 +72,7 @@ def test_spaCy_co_occurrence_pipeline(config):
     os.remove(target_filename)
 
 
-@pytest.mark.long_running
+# @pytest.mark.long_running
 def test_spaCy_co_occurrence_workflow():
     """Note: Use the output from this test case to update the tests/test_data/VENUS test data VENUS-TESTDATA"""
 
@@ -89,7 +89,7 @@ def test_spaCy_co_occurrence_workflow():
 
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
-
+    args.context_opts.processes = None
     bundle: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
