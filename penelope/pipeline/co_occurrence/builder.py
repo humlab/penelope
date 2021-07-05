@@ -29,7 +29,7 @@ class CoOccurrencePayload:
 
 
 class CoOccurrenceCorpusBuilder:
-    """Creates icrementally a DTM co-occurrence corpus from a stream of document TTM matrices"""
+    """Creates incrementally a DTM co-occurrence corpus from a stream of (document) TTM matrices"""
 
     def __init__(
         self,
@@ -116,7 +116,7 @@ class CoOccurrenceCorpusBuilder:
 
         ttm_item: VectorizedTTM = payload.ttm_data_map.get(self.vectorize_type)
 
-        pairs = list(zip(ttm_item.term_term_matrix.row, ttm_item.term_term_matrix.col))
+        pairs = zip(ttm_item.term_term_matrix.row, ttm_item.term_term_matrix.col)
 
         self.pair2id.ingest(pairs)
 
