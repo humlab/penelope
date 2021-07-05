@@ -1,3 +1,4 @@
+import itertools
 import pathlib
 import zipfile
 from collections import Counter, defaultdict
@@ -128,6 +129,37 @@ class Token2Id(MutableMapping):
         data = self.data
         self._tf.update(data[t] for t in tokens)
         return self
+
+    def ingest_stream(self, tokens_stream: Iterator[Union[Iterator[str], dict]]) -> "Token2Id":
+        if not self._is_open:
+            raise ClosedVocabularyError("cannot ingest into a closed vocabulary")
+
+        if self._tf is None:
+            self._tf = Counter()
+
+        self._id2token = None
+
+        self._ingest_stream(self._tf, self.data, tokens_stream)
+        # self._tf.update(data[t] for tokens in tokens_stream for t in tokens )
+        return self
+
+    def _ingest_stream(self, _tf: Counter, data: dict, tokens_stream: Iterator[Iterator[str]]) -> None:
+        counts: defaultdict = defaultdict(int)
+
+        for d in tokens_stream:
+            if isinstance(d, dict):
+                for t, v in d.items():
+                    if t is None:
+                        breakpoint()
+                    counts[t] += v
+            else:
+                for t in d:
+                    if t is None:
+                        breakpoint()
+                    counts[t] += 1
+        for t in counts:
+            _ = data[t]
+        _tf.update(counts)
 
     @property
     def is_open(self) -> bool:
