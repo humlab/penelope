@@ -12,22 +12,11 @@ TRANSLATE_TABLE = " :".maketrans({" ": "_", ":": "|"})
 
 def deserialize_lemma_form(tagged_frame: pd.DataFrame) -> pd.Series:
 
-    # baseform = tagged_frame['baseform'].str.strip('|').str.replace(' ', '_').str.replace(":", "|")
     baseform = tagged_frame['baseform'].apply(lambda x: x.strip('|').replace(' ', '_').replace(":", "|"))
-
-    # multi_baseform = baseform.loc[baseform.str.contains('|', regex=False)]
-    # if len(multi_baseform) > 0:
-    #     baseform.update(multi_baseform.str.split('|', n=1, expand=True)[0]) #.str[0])
-    baseform.update(
-        baseform.loc[baseform.str.contains('|', regex=False)].str.split('|', n=1, expand=True)[0]
-    )  # .str[0])
-
-    # colon_in_baseform = baseform.loc[baseform.str.contains(':', regex=False)]
-    # if len(colon_in_baseform) > 0:
-    #     baseform.update(colon_in_baseform.str.split(':', n=1, expand=True)[0])
-
+    multi_baseform: pd.Series = baseform.str.contains('|', regex=False)
+    if multi_baseform.any():
+        baseform.update(baseform.loc[multi_baseform].str.split('|', n=1, expand=True)[0])  # .str[0])
     baseform.update(tagged_frame[baseform == ''].token)
-
     return baseform
 
 
@@ -65,6 +54,5 @@ class SparvCsvSerializer(CsvContentSerializer):
         )  # .fillna('')
 
         tagged_frame['baseform'] = deserialize_lemma_form(tagged_frame)
-        # tagged_frame['baseform'] = tagged_frame.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1)
 
         return tagged_frame
