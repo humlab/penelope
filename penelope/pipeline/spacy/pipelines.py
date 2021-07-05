@@ -47,8 +47,8 @@ def to_tagged_frame_pipeline(
                 source=corpus_filename,
             )
             .text_to_spacy()
-            .tqdm()
-            .passthrough()
+            # .tqdm()
+            # .passthrough()
             .spacy_to_pos_tagged_frame()
         )
 
