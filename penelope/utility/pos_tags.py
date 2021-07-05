@@ -1,7 +1,9 @@
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any, Container, Dict, List, Union
 
 import pandas as pd
+from loguru import logger
 from more_itertools import collapse
 
 SUC_tags = {
@@ -207,6 +209,7 @@ class PoS_Tag_Scheme:
         self.pos_to_id: dict = df['pos_id'].to_dict()
         self.id_to_pos: dict = {v: k for k, v in self.pos_to_id.items()}
         self.groups: Dict[str, List[str]] = self.PD_PoS_groups.to_dict()
+        self.tag_to_group: Dict[str, str] = self.PD_PoS_tags.set_index('tag')['tag_group_name'].to_dict()
 
     @property
     def tags(self) -> List[str]:
@@ -283,6 +286,35 @@ class PoS_Tag_Scheme:
     @property
     def description(self) -> Dict[str, str]:
         return self.PD_PoS_tags.set_index('tag')['description'].to_dict()
+
+    def PoS_group_counts(self, PoS_sequence: pd.Series) -> dict:
+        """Computes word counts (total and per part-of-speech) given tagged_frame"""
+
+        if PoS_sequence is None or len(PoS_sequence) == 0:
+            return {}
+
+        if not isinstance(PoS_sequence, pd.Series):
+            raise ValueError(f"Expected pd.Series, found {type(PoS_sequence)}")
+
+        tag_counts = defaultdict(int)
+        for PoS in PoS_sequence:
+            tag_counts[PoS] += 1
+
+        group_counts = {k: 0 for k in self.groups.keys()}
+        tg = self.tag_to_group.get
+        n_tokens: int = 0
+        for k, v in tag_counts.items():
+            group_name: str = tg(k)
+            if group_name:
+                group_counts[group_name] += v
+            else:
+                logger.error(f"skipped {v} tokens in tagged_frame_to_PoS_group_counts with unknown PoS tags")
+            if group_name != 'Delimiter':
+                n_tokens += v
+
+        group_counts.update(n_raw_tokens=n_tokens, n_tokens=n_tokens)
+
+        return group_counts
 
 
 Known_PoS_Tag_Schemes = dict(
