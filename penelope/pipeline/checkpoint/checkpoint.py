@@ -115,7 +115,9 @@ def load_archive(
         else sequential_deserialized_payload_stream
     )
 
-    create_stream = lambda: deserialized_stream(source_name, checkpoint_opts, filenames)
+    create_stream = lambda: deserialized_stream(
+        zip_or_filename=source_name, checkpoint_opts=checkpoint_opts, filenames=filenames
+    )
 
     data: CheckpointData = CheckpointData(
         content_type=checkpoint_opts.content_type,
