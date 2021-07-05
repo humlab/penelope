@@ -129,6 +129,8 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
         """ Co-occurrence with concept words """
 
         for token in padded_tokens:
+            if token is None:
+                breakpoint()
 
             window.append(token)
 
@@ -152,7 +154,7 @@ def generate_windows(
     token_ids: Iterable[int],
     context_width: int,
     pad_id: int,
-    ignore_pads: bool = True,
+    ignore_pads: bool = False,
 ) -> Iterable[Iterable[int]]:
     """Yields sliding windows of size `2 * context_opts.context_width + 1` for `tokens_ids`
 
