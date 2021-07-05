@@ -368,6 +368,11 @@ KNOWN_TIME_PERIODS: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
 TimePeriodSpecifier = Union[str, dict, Callable[[Any], Any]]
 
 
+def get_document_id(document_index: DocumentIndex, document_name: str) -> int:
+    document_id = document_index.loc[document_name]['document_id']
+    return document_id
+
+
 def create_time_period_categorizer(time_period_specifier: TimePeriodSpecifier) -> Callable[[Any], Any]:
     # FIXME: Move to pandas_utils or time_period_utils.py
 

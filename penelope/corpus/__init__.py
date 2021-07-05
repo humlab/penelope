@@ -5,6 +5,7 @@ from .document_index import (
     DocumentIndexHelper,
     consolidate_document_index,
     document_index_upgrade,
+    get_document_id,
     load_document_index,
     load_document_index_from_str,
     metadata_to_document_index,
