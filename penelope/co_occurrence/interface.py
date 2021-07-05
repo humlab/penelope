@@ -27,8 +27,10 @@ class ContextOpts:
     ignore_concept: bool = False
     pad: Token = field(default="*")
     partition_keys: List[str] = field(default_factory=list)
-    ignore_padding: bool = False
+    ignore_padding: bool = True
     min_window_size: int = 1
+    processes: int = 6
+    chunksize: int = 4
 
     @property
     def props(self):
