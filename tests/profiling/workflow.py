@@ -13,7 +13,8 @@ from penelope.notebook.interface import ComputeOpts
 DATA_FOLDER = "/data/westac/data"
 CONFIG_FILENAME = "/home/roger/source/penelope/doit.yml"
 OUTPUT_FOLDER = './tests/output'
-CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1970.sparv4.csv.zip")
+CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.sparv4.csv.zip")
+# CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1970.sparv4.csv.zip")
 
 corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
 
@@ -78,18 +79,18 @@ COMPUTE_OPTS = ComputeOpts(
         concept=set(['kammare']),
         ignore_concept=False,
         partition_keys=['document_name'],
+        processes=5,
+        chunksize=3,
     ),
     enable_checkpoint=False,
     force_checkpoint=False,
 )
 
 
-corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
-
-corpus_config.pipeline_payload.files(source=COMPUTE_OPTS.corpus_filename, document_index_source=None)
-
-
 def run_workflow():
+    corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
+
+    corpus_config.pipeline_payload.files(source=COMPUTE_OPTS.corpus_filename, document_index_source=None)
     _ = workflows.co_occurrence.compute(
         args=COMPUTE_OPTS,
         corpus_config=corpus_config,
