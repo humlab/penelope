@@ -28,7 +28,9 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 
 def test_compress_corpus():
 
-    context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1)
+    context_opts: ContextOpts = ContextOpts(
+        concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False
+    )
 
     bundle: Bundle = create_simple_bundle_by_pipeline(
         data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, compress=False
