@@ -299,7 +299,7 @@ def test_load_data_frame_succeeds():
         filename="dummy.zip",
         prior=prior,
         extra_reader_opts=TextReaderOpts(),
-        checkpoint_opts=CheckpointOpts(feather_folder=None)
+        checkpoint_opts=CheckpointOpts(feather_folder=None),
     ).setup()
     task.register_token_counts = lambda _: task
     for payload in task.outstream():
