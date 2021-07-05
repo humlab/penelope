@@ -73,10 +73,14 @@ class DocumentPayload:
     def empty(self, content_type: ContentType) -> "DocumentPayload":
         return self.update(content_type, None)
 
-    def update_properties(self, **properties) -> "DocumentPayload":
+    def remember(self, **properties) -> "DocumentPayload":
         """Save document properties to property bag"""
         self.property_bag.update(properties)
         return self
+
+    def recall(self, property_name) -> Any:
+        """Save document properties to property bag"""
+        return self.property_bag.get(property_name)
 
     @property
     def document_name(self) -> str:
@@ -324,7 +328,7 @@ class ITask(abc.ABC):
 
     def update_document_properties(self, payload: DocumentPayload, **properties) -> None:
         """Stores document properties to document index"""
-        payload.update_properties(**properties)
+        payload.remember(**properties)
         self.pipeline.payload.update_document_properties(payload.document_name, **properties)
 
     def get_filenames(self) -> List[str]:
