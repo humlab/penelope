@@ -39,6 +39,7 @@ class CheckpointOpts:
     lemma_column: str = field(default="lemma")
     pos_column: str = field(default="pos")
     extra_columns: List[str] = field(default_factory=list)
+    frequency_column: Optional[str] = field(default=None)
     index_column: Union[int, None] = field(default=0)
     feather_folder: Optional[str] = field(default=None)
     # abort_at_index: int = field(default=None)
