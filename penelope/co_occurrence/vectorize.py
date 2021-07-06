@@ -57,17 +57,17 @@ def windows_to_ttm(
 
     concept_id: Optional[str] = list(concept_ids)[0] if concept_ids else None
 
-    def _count_tokens_without_ignores(windows: Iterable[int]) -> dict:
+    def _count_tokens_without_ignores(window: Iterable[int]) -> dict:
         token_counter: dict = {}
         tg = token_counter.get
-        for t in windows:
+        for t in window:
             token_counter[t] = tg(t, 0) + 1
         return token_counter
 
-    def _count_tokens_with_ignores(windows: Iterable[str]) -> dict:
+    def _count_tokens_with_ignores(window: Iterable[str]) -> dict:
         token_counter: dict = {}
         tg = token_counter.get
-        for t in windows:
+        for t in window:
             if t in ignore_ids:
                 continue
             token_counter[t] = tg(t, 0) + 1
@@ -112,8 +112,10 @@ class WindowsTermsCounter:
         self._indptr_append = self.indptr.append
 
     def update(self, token_counter: Counter):
+
         if None in token_counter.keys():
             raise ValueError("BugCheck: None in TokenCounter not allowed!")
+
         self._jj_extend(token_counter.keys())
         self._values_extend(token_counter.values())
         self._indptr_append(len(self.jj))
