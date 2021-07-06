@@ -141,10 +141,13 @@ class ToCoOccurrenceDTM(ITask):
             context_opts=self.context_opts,
         )
         for item in tokens_to_ttm_stream(
-            stream, processes=self.context_opts.processes, chunksize=self.context_opts.chunksize
+            stream,
+            processes=self.context_opts.processes,
+            chunksize=self.context_opts.chunksize,
         ):
             yield DocumentPayload(
-                self.out_content_type,
+                content_type=self.out_content_type,
+                filename=item['filename'],
                 content=CoOccurrencePayload(
                     document_id=item.get('document_id'),
                     document_name=item.get('document_name'),
@@ -159,6 +162,7 @@ class ToCoOccurrenceDTM(ITask):
             (
                 self.get_document_id(payload),
                 payload.document_name,
+                payload.filename,
                 payload.content if self.in_content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
                 fg(context_opts.pad),
                 context_opts,
