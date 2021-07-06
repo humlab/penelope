@@ -27,7 +27,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     pipeline: pipelines.CorpusPipeline = (
         pipelines.wildcard()
         .vocabulary(
-            lemmatize=extract_opts,
+            lemmatize=extract_opts.lemmatize,
             progress=True,
             tf_threshold=extract_opts.global_tf_threshold,
             tf_keeps=passthroughs,
