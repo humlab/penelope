@@ -232,7 +232,7 @@ class Token2Id(MutableMapping):
         tf_filename: str = path_add_suffix(filename, "_tf", new_extension=".pbz2")
         tf: Any = unpickle_from_file(tf_filename) if pathlib.Path(tf_filename).exists() else None
         if not isinstance(tf, defaultdict):
-            tf = defaultdict(tf)
+            tf = defaultdict(int, tf)
         return tf
 
     def store_tf(self, filename: str) -> None:
@@ -294,7 +294,7 @@ class Token2Id(MutableMapping):
             )
         }
 
-        new_tf: dict = defaultdict({k: v for (k, v) in translation.values()})
+        new_tf: dict = defaultdict(int, {k: v for (k, v) in translation.values()})
         new_data = {
             w: translation[old_token_id][0] for (w, old_token_id) in self._data.items() if old_token_id in translation
         }
@@ -327,7 +327,7 @@ class Token2Id(MutableMapping):
     #     keep_ids = set(keep_ids)
     #     dg, tg = self.id2token.get, self._tf.get
     #     data = defaultdict(None, dict({dg(token_id): token_id for token_id in keep_ids}))
-    #     tf = defaultdict({token_id: tg(token_id) for token_id in keep_ids})
+    #     tf = defaultdict(int, {token_id: tg(token_id) for token_id in keep_ids})
 
     #     if inplace:
     #         return self.replace(data=data, tf=tf)
@@ -344,7 +344,7 @@ class Token2Id(MutableMapping):
         data = defaultdict(None, {w: ids_translation[oid] for w, oid in self._data.items() if oid in ids_translation})
 
         cg = self.tf.get
-        tf = defaultdict({ids_translation[oid]: cg(oid, 0) for oid in ids_translation})
+        tf = defaultdict(int, {ids_translation[oid]: cg(oid, 0) for oid in ids_translation})
 
         if inplace:
             return self.replace(data=data, tf=tf)
