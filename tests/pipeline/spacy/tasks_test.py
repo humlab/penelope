@@ -2,9 +2,9 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import spacy
-from penelope.pipeline import ContentType, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
-from penelope.pipeline.config import CorpusConfig
+from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
 from penelope.pipeline.spacy.tasks import SetSpacyModel, SpacyDocToTaggedFrame, ToSpacyDoc, ToSpacyDocToTaggedFrame
+from penelope.utility.pos_tags import PoS_Tag_Schemes
 from penelope.vendor.spacy import prepend_spacy_path
 from spacy.tokens import Doc
 
@@ -36,17 +36,19 @@ MEMORY_STORE = {
 
 @pytest.fixture
 def test_payload():
-    mock = Mock(spec=PipelinePayload, memory_store=MEMORY_STORE)  # document_index=MagicMock(pd.DataFrame),
+    mock = Mock(
+        spec=PipelinePayload, memory_store=MEMORY_STORE, pos_schema=PoS_Tag_Schemes.Universal
+    )  # document_index=MagicMock(pd.DataFrame),
     return mock
 
 
 def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
-    return MagicMock(spec=spacy.language.Language, return_value=Mock(spec=spacy.tokens.Doc))
+    return MagicMock(spec=spacy.language.Language, return_value=MagicMock(spec=spacy.tokens.Doc))
 
 
 def patch_spacy_pipeline(payload: PipelinePayload):
-    config = Mock(spec=CorpusConfig, pipeline_payload=payload)
-    pipeline = CorpusPipeline(config=config, tasks=[]).setup()
+    config: MagicMock = MagicMock(spec=CorpusConfig, pipeline_payload=payload)
+    pipeline: CorpusPipeline = CorpusPipeline(config=config, tasks=[], payload=payload).setup()
     return pipeline
 
 
@@ -68,22 +70,25 @@ def test_to_spacy_doc(test_payload):
 
 
 @patch('spacy.load', patch_spacy_load)
-@patch('penelope.pipeline.convert.tagged_frame_to_token_counts', return_value={})
 def test_spacy_doc_to_tagged_frame(looking_back, test_payload):
     payload = DocumentPayload(content_type=ContentType.SPACYDOC, filename='hello.txt', content=looking_back)
     prior = Mock(spec=ITask, outstream=lambda: [payload])
     task = SpacyDocToTaggedFrame(prior=prior, attributes=POS_ATTRIBUTES)
+    task.register_token_counts = lambda p: p
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME
 
 
 @patch('spacy.load', patch_spacy_load)
-@patch('penelope.pipeline.convert.tagged_frame_to_token_counts', return_value={})
+@patch('penelope.pipeline.spacy.convert.filter_tokens_by_attribute_values', lambda *_, **__: ['a'])
 def test_to_spacy_doc_to_tagged_frame(test_payload):
     payload = DocumentPayload(content_type=ContentType.TEXT, filename='hello.txt', content=SAMPLE_TEXT)
-    prior = Mock(spec=ITask, outstream=lambda: [payload])
-    task = ToSpacyDocToTaggedFrame(prior=prior, attributes=POS_ATTRIBUTES)
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+    pipeline: CorpusPipeline = CorpusPipeline(config=config, tasks=[], payload=payload).setup()
+    prior = MagicMock(spec=ITask, outstream=lambda: [payload])
+    task = ToSpacyDocToTaggedFrame(pipeline=pipeline, prior=prior, attributes=POS_ATTRIBUTES)
+    task.register_token_counts = lambda p: p
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME
