@@ -17,7 +17,6 @@ from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.pipeline.co_occurrence.tasks_pool import tokens_to_ttm_stream
-from tqdm import tqdm
 
 from ..interfaces import ContentType, DocumentPayload, ITask, PipelineError
 from .builder import CoOccurrenceCorpusBuilder, CoOccurrencePayload
