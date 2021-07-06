@@ -93,7 +93,11 @@ class ExtractTaggedTokensOpts:
         return set(self.pos_excludes.strip('|').split('|')) if self.pos_excludes is not None else set()
 
     def get_pos_paddings(self) -> Set[str]:
-        return set(self.pos_paddings.strip('|').split('|')) if self.pos_paddings is not None else set()
+        return (
+            set(x for x in self.pos_paddings.strip('|').split('|') if x != '')
+            if self.pos_paddings is not None
+            else set()
+        )
 
     def get_passthrough_tokens(self) -> Set[str]:
         if self.passthrough_tokens is None:
