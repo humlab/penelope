@@ -1,7 +1,6 @@
-import itertools
 import pathlib
 import zipfile
-from collections import Counter, defaultdict
+from collections import defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
 from typing import Any, Callable, Container, Iterator, List, Mapping, Optional, Tuple, Union
@@ -24,11 +23,11 @@ class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 
     def __init__(
-        self, data: Optional[Union[dict, defaultdict]] = None, tf: Counter = None, fallback_token: str = None, **kwargs
+        self, data: Optional[Union[dict, defaultdict]] = None, tf: dict = None, fallback_token: str = None, **kwargs
     ):
 
         self._data: defaultdict = None
-        self._tf: Counter = None
+        self._tf: dict = None
         self._is_open = True
         self._id2token: dict = None
         self._fallback_token: str = fallback_token
@@ -76,7 +75,7 @@ class Token2Id(MutableMapping):
         return self._data
 
     @property
-    def tf(self) -> Counter:
+    def tf(self) -> dict:
         return self._tf
 
     @property
@@ -91,7 +90,7 @@ class Token2Id(MutableMapping):
     # def data(self, value: Any) -> None:
     #     self.replace(value)
 
-    def replace(self, *, data: Any, tf: Counter = None) -> "Token2Id":
+    def replace(self, *, data: Any, tf: dict = None) -> "Token2Id":
         """Replace current data with `data`"""
         if isinstance(data, defaultdict):
             self._data = data
@@ -119,15 +118,21 @@ class Token2Id(MutableMapping):
         return self.payload.get(key)
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
+
         if not self._is_open:
             raise ClosedVocabularyError("cannot ingest into a closed vocabulary")
 
         if self._tf is None:
-            self._tf = Counter()
+            self._tf = defaultdict(int)
 
         self._id2token = None
-        data = self.data
-        self._tf.update(data[t] for t in tokens)
+
+        data = self._data
+        tf = self._tf
+
+        for t in tokens:
+            tf[data[t]] += 1
+
         return self
 
     def ingest_stream(self, tokens_stream: Iterator[Union[Iterator[str], dict]]) -> "Token2Id":
@@ -135,31 +140,24 @@ class Token2Id(MutableMapping):
             raise ClosedVocabularyError("cannot ingest into a closed vocabulary")
 
         if self._tf is None:
-            self._tf = Counter()
+            self._tf = defaultdict(int)
 
         self._id2token = None
 
-        self._ingest_stream(self._tf, self.data, tokens_stream)
+        self._ingest_stream(tokens_stream)
         # self._tf.update(data[t] for tokens in tokens_stream for t in tokens )
         return self
 
-    def _ingest_stream(self, _tf: Counter, data: dict, tokens_stream: Iterator[Iterator[str]]) -> None:
-        counts: defaultdict = defaultdict(int)
-
+    def _ingest_stream(self, tokens_stream: Iterator[Iterator[str]]) -> None:
+        tf: defaultdict = self._tf
+        data = self._data
         for d in tokens_stream:
             if isinstance(d, dict):
                 for t, v in d.items():
-                    if t is None:
-                        breakpoint()
-                    counts[t] += v
+                    tf[data[t]] += v
             else:
                 for t in d:
-                    if t is None:
-                        breakpoint()
-                    counts[t] += 1
-        for t in counts:
-            _ = data[t]
-        _tf.update(counts)
+                    tf[data[t]] += 1
 
     @property
     def is_open(self) -> bool:
@@ -175,21 +173,21 @@ class Token2Id(MutableMapping):
         self.__getitem__ = self.__optimized__getitem__()
 
     def close(self, fallback: int = None) -> "Token2Id":
-        self.data.default_factory = None
+        self._data.default_factory = None
         self._fallback_token = fallback
         self._is_open = False
         self.__getitem__ = self.__optimized__getitem__()
         return self
 
     def open(self) -> "Token2Id":
-        self.data.default_factory = self.data.__len__
+        self._data.default_factory = self._data.__len__
         self._id2token = None
         self._is_open = True
         self.__getitem__ = self.__optimized__getitem__()
         return self
 
     def default(self, value: int) -> "Token2Id":
-        self.data.default_factory = lambda: value
+        self._data.default_factory = lambda: value
         self._is_open = False
         self.__getitem__ = self.__optimized__getitem__()
         return self
@@ -198,11 +196,11 @@ class Token2Id(MutableMapping):
     def id2token(self) -> dict:
         # FIXME: Always create new reversed mapping if vocabulay is open
         if self._id2token is None or len(self) != len(self._id2token):  # or self.is_open:
-            self._id2token = {v: k for k, v in self.data.items()}
+            self._id2token = {v: k for k, v in self._data.items()}
         return self._id2token
 
     def to_dataframe(self) -> pd.DataFrame:
-        df: pd.DataFrame = pd.DataFrame({'token': self.data.keys(), 'token_id': self.data.values()}).set_index('token')
+        df: pd.DataFrame = pd.DataFrame({'token': self._data.keys(), 'token_id': self._data.values()}).set_index('token')
         return df
 
     def store(self, filename: str) -> "Token2Id":
@@ -225,14 +223,16 @@ class Token2Id(MutableMapping):
             return None
         df: pd.DataFrame = pd.read_csv(filename, sep='\t', index_col=0, na_filter=False)
         data: dict = df['token_id'].to_dict()
-        tf: Counter = Token2Id.load_tf(filename)
+        tf: defaultdict = Token2Id.load_tf(filename)
         token2id: Token2Id = Token2Id(data=data, tf=tf)
         return token2id
 
     @staticmethod
-    def load_tf(filename: str) -> Optional[Counter]:
+    def load_tf(filename: str) -> Optional[dict]:
         tf_filename: str = path_add_suffix(filename, "_tf", new_extension=".pbz2")
-        tf: Counter = unpickle_from_file(tf_filename) if pathlib.Path(tf_filename).exists() else None
+        tf: Any = unpickle_from_file(tf_filename) if pathlib.Path(tf_filename).exists() else None
+        if not isinstance(tf, defaultdict):
+            tf = defaultdict(tf)
         return tf
 
     def store_tf(self, filename: str) -> None:
@@ -242,7 +242,7 @@ class Token2Id(MutableMapping):
         pickle_to_file(tf_filename, self._tf)
 
     def to_ids(self, tokens: List[str]) -> List[int]:
-        return [self.data[w] for w in tokens]
+        return [self._data[w] for w in tokens]
 
     def find(self, what: Union[List[str], str]):
 
@@ -258,10 +258,10 @@ class Token2Id(MutableMapping):
         matches = []
 
         if tokens:
-            matches.extend([w for w in tokens if w in self.data])
+            matches.extend([w for w in tokens if w in self._data])
 
         if wildcards:
-            matches.extend([w for w in self.data.keys() if any(fnmatch(w, x) for x in wildcards)])
+            matches.extend([w for w in self._data.keys() if any(fnmatch(w, x) for x in wildcards)])
 
         return [self[w] for w in set(matches)]
 
@@ -283,7 +283,7 @@ class Token2Id(MutableMapping):
         if self.tf is None:
             raise ValueError("Token2Id.compress: cannot compress when TF counts is none!")
 
-        tf: Counter = self.tf
+        tf: dict = self.tf
 
         """Create translation between old IDs and new IDs"""
 
@@ -294,9 +294,9 @@ class Token2Id(MutableMapping):
             )
         }
 
-        new_tf: Counter = Counter({k: v for (k, v) in translation.values()})
+        new_tf: dict = defaultdict({k: v for (k, v) in translation.values()})
         new_data = {
-            w: translation[old_token_id][0] for (w, old_token_id) in self.data.items() if old_token_id in translation
+            w: translation[old_token_id][0] for (w, old_token_id) in self._data.items() if old_token_id in translation
         }
 
         """Add and sum-up masked low-tf marker"""
@@ -304,13 +304,13 @@ class Token2Id(MutableMapping):
         if GLOBAL_TF_THRESHOLD_MASK_TOKEN not in new_data:
             new_data[GLOBAL_TF_THRESHOLD_MASK_TOKEN] = len(new_data)
 
-        old_mask_id = self.data[GLOBAL_TF_THRESHOLD_MASK_TOKEN] if GLOBAL_TF_THRESHOLD_MASK_TOKEN in self else -1
+        old_mask_id = self._data[GLOBAL_TF_THRESHOLD_MASK_TOKEN] if GLOBAL_TF_THRESHOLD_MASK_TOKEN in self else -1
         mask_id = new_data[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 
         if mask_id not in new_tf:
             new_tf[mask_id] = 0
 
-        new_tf[mask_id] += sum(tf[i] for i in self.data.values() if i not in translation and i != old_mask_id)
+        new_tf[mask_id] += sum(tf[i] for i in self._data.values() if i not in translation and i != old_mask_id)
 
         ids_translation = {k: v[0] for k, v in translation.items()}
         if inplace:
@@ -327,7 +327,7 @@ class Token2Id(MutableMapping):
     #     keep_ids = set(keep_ids)
     #     dg, tg = self.id2token.get, self._tf.get
     #     data = defaultdict(None, dict({dg(token_id): token_id for token_id in keep_ids}))
-    #     tf = Counter({token_id: tg(token_id) for token_id in keep_ids})
+    #     tf = defaultdict({token_id: tg(token_id) for token_id in keep_ids})
 
     #     if inplace:
     #         return self.replace(data=data, tf=tf)
@@ -341,10 +341,10 @@ class Token2Id(MutableMapping):
         Translation is a mapping from old ID to new ID.
         Old item IDs that don't exist in translation are filtered out.
         """
-        data = defaultdict(None, {w: ids_translation[oid] for w, oid in self.data.items() if oid in ids_translation})
+        data = defaultdict(None, {w: ids_translation[oid] for w, oid in self._data.items() if oid in ids_translation})
 
         cg = self.tf.get
-        tf = Counter({ids_translation[oid]: cg(oid, 0) for oid in ids_translation})
+        tf = defaultdict({ids_translation[oid]: cg(oid, 0) for oid in ids_translation})
 
         if inplace:
             return self.replace(data=data, tf=tf)
