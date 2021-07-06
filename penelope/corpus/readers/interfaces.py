@@ -75,7 +75,6 @@ class ExtractTaggedTokensOpts:
 
     passthrough_tokens: List[str] = field(default_factory=list)
     append_pos: bool = False
-    to_lowercase: bool = False
 
     phrases: Optional[PhraseSubstitutions] = None
 
@@ -123,7 +122,6 @@ class ExtractTaggedTokensOpts:
             block_tokens=list(self.block_tokens or []),
             append_pos=self.append_pos,
             phrases=None if self.phrases is None else list(self.phrases),
-            to_lowercase=self.to_lowercase,
         )
 
 

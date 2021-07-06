@@ -49,7 +49,7 @@ def test_CLI_process_co_ocurrence():
         pos_paddings="|AB|HA|IE|IN|PL|KN|SN|RG|RO|UO|PP|DT|HD|HP|HS|PN|PS|",
         pos_excludes="|MAD|MID|PAD|",
         append_pos=False,
-        to_lowercase=True,
+        to_lower=True,
         lemmatize=True,
         remove_stopwords=False,
         min_word_length=1,

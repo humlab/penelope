@@ -46,7 +46,7 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 @click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
 @click.option('-z', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
-@click.option('-l', '--to-lowercase/--no-to-lowercase', default=True, is_flag=True, help='Lowercase words')
+@click.option('-l', '--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
 @click.option(
     '-r',
     '--remove-stopwords',
@@ -109,7 +109,7 @@ def main(
     pos_paddings: str = '',
     pos_excludes: str = '',
     append_pos: bool = False,
-    to_lowercase: bool = True,
+    to_lower: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
     min_word_length: int = 2,
@@ -143,7 +143,7 @@ def main(
         pos_paddings=pos_paddings,
         pos_excludes=pos_excludes,
         append_pos=append_pos,
-        to_lowercase=to_lowercase,
+        to_lower=to_lowe,
         lemmatize=lemmatize,
         remove_stopwords=remove_stopwords,
         min_word_length=min_word_length,
@@ -177,7 +177,7 @@ def process_co_ocurrence(
     pos_paddings: str = None,
     pos_excludes: str = None,
     append_pos: bool = False,
-    to_lowercase: bool = True,
+    to_lower: bool = True,
     lemmatize: bool = True,
     remove_stopwords: str = None,
     min_word_length: int = 2,
@@ -219,7 +219,7 @@ def process_co_ocurrence(
             target_folder=output_folder,
             corpus_tag=output_tag,
             transform_opts=TokensTransformOpts(
-                to_lower=to_lowercase,
+                to_lower=to_lower,
                 to_upper=False,
                 min_len=min_word_length,
                 max_len=max_word_length,
@@ -240,7 +240,6 @@ def process_co_ocurrence(
                 pos_excludes=pos_excludes,
                 lemmatize=lemmatize,
                 phrases=phrases,
-                to_lowercase=to_lowercase,
                 append_pos=append_pos,
                 global_tf_threshold=tf_threshold,
                 global_tf_threshold_mask=tf_threshold_mask,

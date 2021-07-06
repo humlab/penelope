@@ -56,7 +56,6 @@ COMPUTE_OPTS = ComputeOpts(
         pos_excludes='MAD|MID|PAD',
         pos_paddings='AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|PC|PL|PN|PP|PS|RG|RO|SN|UO|VB',
         lemmatize=True,
-        to_lowercase=True,
         append_pos=False,
         global_tf_threshold=1,
         global_tf_threshold_mask=False,

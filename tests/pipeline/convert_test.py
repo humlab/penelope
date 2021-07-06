@@ -297,7 +297,7 @@ def test_tagged_frame_to_tokens_detect_phrases(tagged_frame: pd.DataFrame):
 
     expected_tokens = tagged_frame.baseform[:4].tolist() + ['romansk_kyrka'] + tagged_frame.baseform[6:].tolist()
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes=None, phrases=[["romansk", "kyrka"]], to_lowercase=False
+        lemmatize=True, pos_includes=None, phrases=[["romansk", "kyrka"]]
     )
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == expected_tokens
@@ -308,7 +308,7 @@ def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame)
     opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
 
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=False, pos_includes='VB', pos_excludes=None, append_pos=True, to_lowercase=False
+        lemmatize=False, pos_includes='VB', pos_excludes=None, append_pos=True
     )
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == ['trängdes@VB', 'gapade@VB', 'fladdrade@VB']
@@ -319,7 +319,6 @@ def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame)
         pos_excludes='MID|MAD|PAD',
         pos_paddings="VB|NN",
         append_pos=True,
-        to_lowercase=False,
     )
     tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
     assert tokens == ['väldig@JJ', 'romansk@JJ', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
@@ -401,14 +400,14 @@ utskotten	NN	|utskott|
 
     tagged_frame: pd.DataFrame = pd.read_csv(StringIO(data_str), sep='\t', index_col=None)
 
-    phrases = {'herr_talman': 'herr talman'.split()}
+    phrases = {'herr_talman': 'Herr talman'.split()}
     phrased_tokens = tagged_frame_to_tokens(
         tagged_frame,
         filter_opts=None,
         text_column='token',
         lemma_column='pos',
         pos_column='baseform',
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases, to_lowercase=True),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases),
     )
     assert phrased_tokens[:9] == ['herr_talman', '!', 'jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
 
@@ -421,7 +420,7 @@ def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> L
         text_column='token',
         lemma_column='pos',
         pos_column='baseform',
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, to_lowercase=False),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False),
         transform_opts=transform_opts,
     )
     return tokens

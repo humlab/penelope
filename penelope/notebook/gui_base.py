@@ -414,7 +414,6 @@ class BaseGUI:
             passthrough_tokens=[],
             block_tokens=[],
             phrases=self.phrases,
-            to_lowercase=self._to_lowercase.value,
             append_pos=self._append_pos_tag.value,
             global_tf_threshold=self.tf_threshold,
             global_tf_threshold_mask=self.tf_threshold_mask,

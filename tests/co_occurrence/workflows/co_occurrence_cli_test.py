@@ -27,7 +27,7 @@ def test_process_co_ocurrence():
         pos_includes="|NN|PM|VB|JJ|",
         pos_paddings="|UO|",
         pos_excludes="|MAD|MID|PAD|",
-        to_lowercase=True,
+        to_lower=True,
         lemmatize=True,
         remove_stopwords='swedish',
         min_word_length=1,
