@@ -143,7 +143,7 @@ def main(
         pos_paddings=pos_paddings,
         pos_excludes=pos_excludes,
         append_pos=append_pos,
-        to_lower=to_lowe,
+        to_lower=to_lower,
         lemmatize=lemmatize,
         remove_stopwords=remove_stopwords,
         min_word_length=min_word_length,
