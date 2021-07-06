@@ -752,11 +752,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         self.tf_keeps |= self.token2id.magic_tokens
 
         self.token2id.ingest_stream(
-            payload.content
-            if payload.content_type == ContentType.TOKENS
-            else payload.recall('term_frequency')
-            if payload.recall('term_frequency')
-            else payload.content[self.target]
+            self.tokens_stream(payload)
             for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab")
         )
 
@@ -770,12 +766,18 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         return self
 
     def tokens_stream(self, payload: DocumentPayload) -> Iterable[str]:
+
         if payload.content_type == ContentType.TOKENS:
             return payload.content
+
+        stored_frequency: dict = payload.recall('term_frequency')
+        if stored_frequency:
+            return stored_frequency
+
+        tokens: Sequence[str] = payload.content[self.target]
         if self.token_type == Vocabulary.TokenType.Lemma:
-            tokens = payload.content[self.target].str.lower()
-        else:
-            tokens = payload.content[self.target]
+            tokens = tokens.str.lower()
+
         return tokens
 
     def get_column_name(self, token_type: TokenType) -> str:
