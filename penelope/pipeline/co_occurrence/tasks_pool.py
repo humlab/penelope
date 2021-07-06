@@ -13,7 +13,17 @@ logger.add("tokens_to_ttm.log", rotation=None, format="{message}", serialize=Fal
 
 def tokens_to_ttm(args) -> dict:
     try:
-        document_id, document_name, filename, token_ids, pad_id, context_opts, concept_ids, ignore_ids, vocab_size = args
+        (
+            document_id,
+            document_name,
+            filename,
+            token_ids,
+            pad_id,
+            context_opts,
+            concept_ids,
+            ignore_ids,
+            vocab_size,
+        ) = args
         windows: Iterable[Iterable[int]] = generate_windows(
             token_ids=token_ids,
             context_width=context_opts.context_width,

@@ -111,7 +111,7 @@ def checkpoint_opts() -> CheckpointOpts:
         pos_column='pos_',
         sep='\t',
         quoting=csv.QUOTE_NONE,
-        feather_folder = None,
+        feather_folder=None,
     )
     return opts
 

@@ -200,7 +200,9 @@ class Token2Id(MutableMapping):
         return self._id2token
 
     def to_dataframe(self) -> pd.DataFrame:
-        df: pd.DataFrame = pd.DataFrame({'token': self._data.keys(), 'token_id': self._data.values()}).set_index('token')
+        df: pd.DataFrame = pd.DataFrame({'token': self._data.keys(), 'token_id': self._data.values()}).set_index(
+            'token'
+        )
         return df
 
     def store(self, filename: str) -> "Token2Id":
