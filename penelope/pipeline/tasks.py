@@ -243,6 +243,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     checkpoint_opts: Optional[cp.CheckpointOpts] = None
     extra_reader_opts: Optional[TextReaderOpts] = None
     checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
+    stop_at_index: int = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -263,10 +264,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
 
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.checkpoint_data: cp.CheckpointData = self.load_archive()
-
-        if self.checkpoint_opts.feather_folder and cp.feather.document_index_exists(
-            self.checkpoint_opts.feather_folder
-        ):
+        if cp.feather.document_index_exists(self.checkpoint_opts.feather_folder):
             self.pipeline.payload.set_reader_index(cp.feather.read_document_index(self.checkpoint_opts.feather_folder))
         else:
             self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
@@ -278,7 +276,11 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
 
     def create_instream(self) -> Iterable[DocumentPayload]:
 
-        return itertools.islice(self.checkpoint_data.create_stream(), 0, 100, 1)
+        if self.stop_at_index:
+            logger.info(f"LoadTaggedCSV: will stop at index {self.stop_at_index}")
+            return itertools.islice(self.checkpoint_data.create_stream(), 0, self.stop_at_index, 1)
+
+        return self.checkpoint_data.create_stream()
 
     def load_archive(self) -> cp.CheckpointData:
         checkpoint_data: cp.CheckpointData = cp.load_archive(
@@ -362,16 +364,6 @@ class ReadFeather(DefaultResolveMixIn, ITask):
         for filename in self.document_index.filename.tolist():
             payload: DocumentPayload = cp.feather.read_payload(os.path.join(self.folder, filename))
             yield payload
-
-    # def process_stream(self) -> Iterable[DocumentPayload]:
-    #     N: int = self.pipeline.config.checkpoint_opts.abort_at_index
-    #     q, i = 1 if N > 0 else 0, 0
-    #     for filename in self.document_index.filename.tolist():
-    #         payload: DocumentPayload = cp.feather.read_payload(os.path.join(self.folder, filename))
-    #         yield payload
-    #         if (i := i + q) == N:
-    #             logger.info("abort_at_index: stopping processing since count limit is exceeded")
-    #             break
 
 
 @dataclass
@@ -758,8 +750,15 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
-        for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab"):
-            ingest(self.tokens_stream(payload))
+
+        self.token2id.ingest_stream(
+            payload.content
+            if payload.content_type == ContentType.TOKENS
+            else payload.recall('term_frequency')
+            if payload.recall('term_frequency')
+            else payload.content[self.target]
+            for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab")
+        )
 
         if self.tf_threshold and self.tf_threshold > 1:
             """We don't need translation since vocab hasn't been used yet"""
