@@ -66,6 +66,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     """
     pad: str = "*"
     phrase_pad: str = "(*)"
+    to_lower: bool = transform_opts and transform_opts.to_lower
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
@@ -85,7 +86,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     blocks: Set[str] = extract_opts.get_block_tokens().union('')
     pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
-    if extract_opts.lemmatize or (transform_opts and transform_opts.to_lower):
+    if extract_opts.lemmatize or to_lower:
         doc[target] = doc[target].str.lower()
         passthroughs = {x.lower() for x in passthroughs}
 
@@ -95,7 +96,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
 
     """ Phrase detection """
     if extract_opts.phrases is not None:
-        found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=transform_opts.to_lower)
+        found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=to_lower)
         if found_phrases:
             doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
             passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
@@ -111,7 +112,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     if len(extract_opts.get_pos_excludes()) > 0:
         mask &= ~(doc[pos_column].isin(extract_opts.get_pos_excludes()))
 
-    # TODO: Merge extract_opts och transform_opts
     if transform_opts:
         mask &= transform_opts.mask(doc[target])
 
