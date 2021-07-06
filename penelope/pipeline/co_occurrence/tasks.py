@@ -17,6 +17,7 @@ from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.pipeline.co_occurrence.tasks_pool import tokens_to_ttm_stream
+from tqdm import tqdm
 
 from ..interfaces import ContentType, DocumentPayload, ITask, PipelineError
 from .builder import CoOccurrenceCorpusBuilder, CoOccurrencePayload
@@ -91,7 +92,7 @@ class ToCoOccurrenceDTM(ITask):
         if self.context_opts.pad not in self.pipeline.payload.token2id:
             _ = self.pipeline.payload.token2id[self.context_opts.pad]
 
-    def process_payload3(self, payload: DocumentPayload) -> Any:
+    def _process_payload(self, payload: DocumentPayload) -> Any:
 
         token2id = self.pipeline.payload.token2id
         fg = token2id.data.get
@@ -136,27 +137,13 @@ class ToCoOccurrenceDTM(ITask):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
         """Processes stream of payloads. Overridable. """
-
-        token2id = self.pipeline.payload.token2id
-        fg = token2id.data.get
-
-        pad_id: int = fg(self.context_opts.pad)
-
-        args: str = (
-            (
-                self.get_document_id(payload),
-                payload.document_name,
-                payload.content if self.in_content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
-                pad_id,
-                self.context_opts,
-                self.concept_ids,
-                self.ignore_ids,
-                len(self.pipeline.payload.token2id),
-            )
-            for payload in self.prior.outstream()
+        stream: Iterable[Tuple] = self.prepare_task_stream(
+            token2id=self.pipeline.payload.token2id,
+            context_opts=self.context_opts,
         )
-
-        for item in tokens_to_ttm_stream(args):
+        for item in tokens_to_ttm_stream(
+            stream, processes=self.context_opts.processes, chunksize=self.context_opts.chunksize
+        ):
             yield DocumentPayload(
                 self.out_content_type,
                 content=CoOccurrencePayload(
@@ -165,6 +152,24 @@ class ToCoOccurrenceDTM(ITask):
                     ttm_data_map=item.get('ttm_map'),
                 ),
             )
+
+    def prepare_task_stream(self, token2id: Token2Id, context_opts: ContextOpts) -> Iterable[Tuple]:
+
+        fg = token2id.data.get
+        task_stream: str = (
+            (
+                self.get_document_id(payload),
+                payload.document_name,
+                payload.content if self.in_content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
+                fg(context_opts.pad),
+                context_opts,
+                self.concept_ids,
+                self.ignore_ids,
+                len(token2id),
+            )
+            for payload in self.prior.outstream()
+        )
+        return task_stream
 
     def get_document_id(self, payload: DocumentPayload) -> int:
         document_id = self.document_index.loc[payload.document_name]['document_id']
