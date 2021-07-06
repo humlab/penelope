@@ -32,6 +32,8 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
     help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
     type=click.INT,
 )
+@click.option('-cp', '--compute-processes', default=None, help='Number of compute processes', type=click.INT)
+@click.option('-cc', '--compute-chunksize', default=10, help='Compute process chunksize', type=click.INT)
 @click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
 @click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
 @click.option('-m', '--pos-paddings', default='', help='POS tags to replace with a padding marker.', type=click.STRING)
@@ -101,6 +103,8 @@ def main(
     ignore_concept: bool = False,
     ignore_padding: bool = False,
     context_width: int = None,
+    compute_processes: int = None,
+    compute_chunksize: int = 10,
     partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,
@@ -135,6 +139,8 @@ def main(
         ignore_concept=ignore_concept,
         ignore_padding=ignore_padding,
         context_width=context_width,
+        compute_processes=compute_processes,
+        compute_chunksize=compute_chunksize,
         phrase=phrase,
         phrase_file=phrase_file,
         partition_key=partition_key,
@@ -169,6 +175,8 @@ def process_co_ocurrence(
     ignore_concept: bool = False,
     ignore_padding: bool = False,
     context_width: int = None,
+    compute_processes: int = None,
+    compute_chunksize: int = 10,
     partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,
@@ -255,6 +263,8 @@ def process_co_ocurrence(
                 ignore_concept=ignore_concept,
                 ignore_padding=ignore_padding,
                 partition_keys=partition_key,
+                processes=compute_processes,
+                chunksize=compute_chunksize,
             ),
             filter_opts=PropertyValueMaskingOpts(),
             enable_checkpoint=enable_checkpoint,
