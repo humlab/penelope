@@ -68,7 +68,7 @@ def simple_co_occurrence(windows: Iterable[Iterable[str]]):
 
 
 def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
-    context_opts: ContextOpts = ContextOpts(context_width=2, concept={}, ignore_concept=False, ignore_padding=False)
+    context_opts: ContextOpts = ContextOpts(context_width=2, concept={}, ignore_concept=False, ignore_padding=False, processes=None)
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     config: CorpusConfig = CorpusConfig(
         corpus_name=uuid.uuid1(),

@@ -36,7 +36,7 @@ def test_keyness_transform_with_simple_corpus():
 
 def test_step_by_step_tfidf_keyness_transform():
 
-    bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS, processes=None)
+    bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS, processes=None, ignore_padding=False)
     opts: ComputeKeynessOpts = create_keyness_opts()
 
     corpus: VectorizedCorpus = bundle.corpus

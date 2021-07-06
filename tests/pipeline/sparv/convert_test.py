@@ -59,6 +59,7 @@ A	IN	|
         pos_column='pos',
         index_column=None,
         sep='\t',
+        feather_folder=None,
     )
     tagged_frame: pd.DataFrame = serializer.deserialize(tagged_frame_str, checkpoint_opts)
 

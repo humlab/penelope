@@ -409,7 +409,7 @@ utskotten	NN	|utskott|
         pos_column='baseform',
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases),
     )
-    assert phrased_tokens[:9] == ['herr_talman', '!', 'jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
+    assert phrased_tokens[:9] == ['herr_talman', '!', 'Jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
 
 
 def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> List[str]:

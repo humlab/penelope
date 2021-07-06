@@ -16,17 +16,17 @@ from ..utils import OUTPUT_FOLDER
 jj = os.path.join
 
 
-def create_keyness_test_bundle(data: Any, concept: str = 'd', context_width: int = 1, processes: int = 2) -> Bundle:
+def create_keyness_test_bundle(
+    data: Any, *, concept: str = 'd', ignore_padding=True, context_width: int = 1, processes: int = 2
+) -> Bundle:
     context_opts: ContextOpts = ContextOpts(
         concept={concept},
         ignore_concept=False,
+        ignore_padding=ignore_padding,
         context_width=context_width,
         processes=processes,
     )
-    bundle: Bundle = create_simple_bundle_by_pipeline(
-        data=data,
-        context_opts=context_opts,
-    )
+    bundle: Bundle = create_simple_bundle_by_pipeline(data=data, context_opts=context_opts)
     return bundle
 
 
