@@ -14,9 +14,9 @@ from penelope.corpus import (
     default_tokenizer,
 )
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts, PhraseSubstitutions
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
+from penelope.utility import PropertyValueMaskingOpts
 
-from .interfaces import ContentType, DocumentPayload, PipelineError
+from .interfaces import ContentType, DocumentPayload
 from .tagged_frame import TaggedFrame
 
 
@@ -274,29 +274,62 @@ def parse_phrases(phrase_file: str, phrases: List[str]):
         raise ValueError("failed to decode phrases. please review file and/or arguments") from ex
 
 
-def tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
-    """Computes word counts (total and per part-of-speech) given tagged_frame"""
+# def slower_tagged_frame_to_token_counts(tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str) -> dict:
+#     """Computes word counts (total and per part-of-speech) given tagged_frame"""
 
-    if tagged_frame is None or len(tagged_frame) == 0:
-        return {}
+#     if tagged_frame is None or len(tagged_frame) == 0:
+#         return {}
 
-    if not isinstance(tagged_frame, TaggedFrame):
-        raise PipelineError(f"Expected tagged dataframe, found {type(tagged_frame)}")
+#     if not isinstance(tagged_frame, TaggedFrame):
+#         raise PipelineError(f"Expected tagged dataframe, found {type(tagged_frame)}")
 
-    if not pos_column:
-        raise PipelineError("Name of PoS column in tagged frame MUST be specified (pipeline.payload.memory_store)")
+#     if not pos_column:
+#         raise PipelineError("Name of PoS column in tagged frame MUST be specified (pipeline.payload.memory_store)")
 
-    pos_statistics = (
-        tagged_frame.merge(
-            pos_schema.PD_PoS_tags,
-            how='inner',
-            left_on=pos_column,
-            right_index=True,
-        )
-        .groupby('tag_group_name')['tag']
-        .size()
-    )
-    n_raw_tokens = pos_statistics[~(pos_statistics.index == 'Delimiter')].sum()
-    token_counts = pos_statistics.to_dict()
-    token_counts.update(n_raw_tokens=n_raw_tokens, n_tokens=n_raw_tokens)
-    return token_counts
+#     pos_statistics = (
+#         tagged_frame.merge(
+#             pos_schema.PD_PoS_tags,
+#             how='inner',
+#             left_on=pos_column,
+#             right_index=True,
+#         )
+#         .groupby('tag_group_name')['tag']
+#         .size()
+#     )
+#     n_raw_tokens = pos_statistics[~(pos_statistics.index == 'Delimiter')].sum()
+#     token_counts = pos_statistics.to_dict()
+#     token_counts.update(n_raw_tokens=n_raw_tokens, n_tokens=n_raw_tokens)
+#     return token_counts
+
+
+# def tagged_frame_to_PoS_group_counts(
+#     tagged_frame: TaggedFrame, pos_schema: PoS_Tag_Scheme, pos_column: str
+# ) -> dict:
+#     """Computes word counts (total and per part-of-speech) given tagged_frame"""
+
+#     if tagged_frame is None or len(tagged_frame) == 0:
+#         return {}
+
+#     if not isinstance(tagged_frame, TaggedFrame):
+#         raise PipelineError(f"Expected tagged dataframe, found {type(tagged_frame)}")
+
+#     if not pos_column:
+#         raise PipelineError("Name of PoS column in tagged frame MUST be specified (pipeline.payload.memory_store)")
+
+#     tag_counts = Counter(tagged_frame[pos_column])
+
+#     group_counts = {k: 0 for k in pos_schema.groups.keys()}
+#     tg = pos_schema.tag_to_group.get
+#     n_tokens: int = 0
+#     for k, v in tag_counts.items():
+#         group_name: str = tg(k)
+#         if group_name:
+#             group_counts[group_name] += v
+#         else:
+#             logger.error(f"skipped {v} tokens in tagged_frame_to_PoS_group_counts with unknown PoS tags")
+#         if group_name != 'Delimiter':
+#             n_tokens += v
+
+#     group_counts.update(n_raw_tokens=n_tokens, n_tokens=n_tokens)
+
+#     return group_counts
