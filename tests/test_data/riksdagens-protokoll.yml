@@ -17,7 +17,7 @@ checkpoint_opts:
     deserialize_processes: 4
     deserialize_chunksize: 4
     index_column: null
-    feather_folder: ./tests/output/
+    feather_folder: null
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
