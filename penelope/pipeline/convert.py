@@ -14,10 +14,10 @@ from penelope.corpus import (
     default_tokenizer,
 )
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts, PhraseSubstitutions
+from penelope.type_alias import TaggedFrame
 from penelope.utility import PropertyValueMaskingOpts
 
 from .interfaces import ContentType, DocumentPayload
-from .tagged_frame import TaggedFrame
 
 
 def _payload_tokens(payload: DocumentPayload) -> List[str]:
@@ -87,7 +87,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
     if extract_opts.lemmatize or to_lower:
-        doc[target] = doc[target].str.lower()
+        doc[target] = pd.Series([x.lower() for x in doc[target]])
         passthroughs = {x.lower() for x in passthroughs}
 
     # if extract_opts.block_chars:
