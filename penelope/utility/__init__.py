@@ -148,6 +148,7 @@ from .utils import (
     sort_chained,
     split,
     take,
+    term_frequency,
     timecall,
     timestamp,
     to_text,

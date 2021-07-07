@@ -10,8 +10,8 @@ from .checkpoint import (
     TokensContentSerializer,
     create_serializer,
     load_archive,
-    parallel_deserialized_payload_stream,
-    sequential_deserialized_payload_stream,
+    load_payloads_multiprocess,
+    load_payloads_singleprocess,
     store_archive,
 )
 from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline
@@ -22,5 +22,4 @@ from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, Pipe
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
 from .pipelines import CorpusPipeline, wildcard
-from .tagged_frame import TaggedFrame
 from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn

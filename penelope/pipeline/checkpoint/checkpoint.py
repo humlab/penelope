@@ -18,7 +18,8 @@ from .interface import (
     CheckpointOpts,
     IContentSerializer,
 )
-from .serialize import create_serializer, parallel_deserialized_payload_stream, sequential_deserialized_payload_stream
+from .load import load_payloads_multiprocess, load_payloads_singleprocess
+from .serialize import create_serializer
 
 logger = getLogger("penelope")
 
@@ -60,7 +61,7 @@ def load_archive(
     source_name: str,
     checkpoint_opts: CheckpointOpts = None,
     reader_opts: TextReaderOpts = None,
-    deserialize_stream: Callable[[str, CheckpointOpts, List[str]], Iterable[DocumentPayload]] = None,
+    payload_loader: Callable[[str, CheckpointOpts, List[str]], Iterable[DocumentPayload]] = None,
 ) -> CheckpointData:
     """Load a TAGGED FRAME checkpoint stored in a ZIP FILE with CSV-filed and optionally a document index
 
@@ -86,11 +87,7 @@ def load_archive(
         if document_index is None:
             document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
 
-    if document_index is None:
-
-        logger.warning(f"Checkpoint {source_name} has no document index (I hope you have one separately")
-
-    elif filenames != document_index.filename.to_list():
+    if filenames != document_index.filename.to_list():
 
         """ Check that filenames and document index are in sync """
         if set(filenames) != set(document_index.filename.to_list()):
@@ -102,26 +99,23 @@ def load_archive(
 
     if reader_opts:
 
-        filenames = filenames_satisfied_by(
+        filenames: List[str] = filenames_satisfied_by(
             filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern
         )
 
-        if document_index is not None:
-            document_index = document_index[document_index.filename.isin(filenames)]
+        document_index = document_index[document_index.filename.isin(filenames)]
 
-    deserialized_stream = deserialize_stream or (
-        parallel_deserialized_payload_stream
-        if checkpoint_opts.deserialize_in_parallel
-        else sequential_deserialized_payload_stream
+    load_payload_stream = payload_loader or (
+        load_payloads_multiprocess if checkpoint_opts.deserialize_in_parallel else load_payloads_singleprocess
     )
 
-    create_stream = lambda: deserialized_stream(
+    create_payload_stream = lambda: load_payload_stream(
         zip_or_filename=source_name, checkpoint_opts=checkpoint_opts, filenames=filenames
     )
 
     data: CheckpointData = CheckpointData(
         content_type=checkpoint_opts.content_type,
-        create_stream=create_stream,
+        create_stream=create_payload_stream,
         document_index=document_index,
         token2id=token2id,
         checkpoint_opts=checkpoint_opts,
