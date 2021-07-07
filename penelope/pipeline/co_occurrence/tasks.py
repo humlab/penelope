@@ -158,7 +158,7 @@ class ToCoOccurrenceDTM(ITask):
     def prepare_task_stream(self, token2id: Token2Id, context_opts: ContextOpts) -> Iterable[Tuple]:
 
         fg = token2id.data.get
-        task_stream: str = (
+        task_stream: Iterable[Tuple] = (
             (
                 self.get_document_id(payload),
                 payload.document_name,
