@@ -2,16 +2,16 @@ import abc
 import copy
 import csv
 import os
+import zipfile
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, List, Optional, Union
 
+import pandas as pd
 from penelope.corpus import DocumentIndex, Token2Id
+from penelope.type_alias import SerializableContent
 from penelope.utility import create_instance, dictify, strip_path_and_extension
 
 from ..interfaces import ContentType, DocumentPayload
-from ..tagged_frame import TaggedFrame
-
-SerializableContent = Union[str, Iterable[str], TaggedFrame]
 
 CHECKPOINT_OPTS_FILENAME = "options.json"
 DOCUMENT_INDEX_FILENAME = "document_index.csv"
@@ -42,6 +42,7 @@ class CheckpointOpts:
     frequency_column: Optional[str] = field(default=None)
     index_column: Union[int, None] = field(default=0)
     feather_folder: Optional[str] = field(default=None)
+    lower_lemma: bool = field(default=True)
     # abort_at_index: int = field(default=None)
 
     @property
@@ -88,6 +89,10 @@ class CheckpointOpts:
         return os.path.join(self.feather_folder, f'{strip_path_and_extension(filename)}.feather')
 
 
+Serializer = Callable[[str, CheckpointOpts], pd.DataFrame]
+TaggedFrameStore = Union[str, zipfile.ZipFile]
+
+
 @dataclass
 class CheckpointData:
     source_name: Any = None
@@ -106,4 +111,8 @@ class IContentSerializer(abc.ABC):
 
     @abc.abstractmethod
     def deserialize(self, content: str, options: CheckpointOpts) -> SerializableContent:
+        ...
+
+    @abc.abstractmethod
+    def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:
         ...
