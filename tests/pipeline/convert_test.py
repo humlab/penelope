@@ -401,8 +401,8 @@ utskotten	NN	|utskott|
         tagged_frame,
         filter_opts=None,
         text_column='token',
-        lemma_column='pos',
-        pos_column='baseform',
+        lemma_column='baseform',
+        pos_column='pos',
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases),
     )
     assert phrased_tokens[:9] == ['herr_talman', '!', 'Jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
@@ -414,8 +414,8 @@ def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> L
         tagged_frame,
         filter_opts=None,
         text_column='token',
-        lemma_column='pos',
-        pos_column='baseform',
+        lemma_column='baseform',
+        pos_column='pos',
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False),
         transform_opts=transform_opts,
     )
