@@ -2,31 +2,28 @@ import re
 from io import StringIO
 
 import pandas as pd
+from penelope.type_alias import TaggedFrame
 from penelope.utility import deprecated
 
 from ..checkpoint import CheckpointOpts, CsvContentSerializer
-from ..tagged_frame import TaggedFrame
 
 TRANSLATE_TABLE = " :".maketrans({" ": "_", ":": "|"})
 
 
 def deserialize_lemma_form(tagged_frame: pd.DataFrame) -> pd.Series:
+    """Extracts first part of baseform (format of baseform is `|lemma|xyz|`
 
-    baseform = tagged_frame['baseform'].apply(lambda x: x.strip('|').replace(' ', '_').replace(":", "|"))
+    Note that lemmas are always lower cased
+    """
+    baseform = tagged_frame['baseform'].apply(lambda x: x.strip('|').replace(' ', '_').replace(":", "|").lower())
+
     multi_baseform: pd.Series = baseform.str.contains('|', regex=False)
+
     if multi_baseform.any():
         baseform.update(baseform.loc[multi_baseform].str.split('|', n=1, expand=True)[0])  # .str[0])
-    baseform.update(tagged_frame[baseform == ''].token)
-    return baseform
 
-
-@deprecated
-def deserialize_lemma_form_using_translate_id_slower(tagged_frame: pd.DataFrame) -> pd.Series:
-    baseform = tagged_frame['baseform'].str.strip('|').str.translate(TRANSLATE_TABLE)
-    multi_baseform = baseform.loc[baseform.str.contains('|', regex=False)]
-    if len(multi_baseform) > 0:
-        baseform.update(multi_baseform.str.split('|', n=1, expand=True)[0])  # .str[0])
     baseform.update(tagged_frame[baseform == ''].token)
+
     return baseform
 
 
@@ -43,7 +40,6 @@ def to_lemma_form(token: str, baseform: str) -> str:
 
 class SparvCsvSerializer(CsvContentSerializer):
     def deserialize(self, content: str, options: CheckpointOpts) -> TaggedFrame:
-        """Extracts first part of baseform (format of baseform is `|lemma|xyz|`"""
         tagged_frame: TaggedFrame = pd.read_csv(
             StringIO(content),
             sep=options.sep,
