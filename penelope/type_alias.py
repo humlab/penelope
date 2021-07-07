@@ -17,3 +17,5 @@ WindowsStream = Iterator[Tuple[str, int, Iterable[Token]]]
 CoOccurrenceDataFrame = pd.DataFrame
 VocabularyMapping = Optional[Mapping[Tuple[int, int], int]]
 SparseMatrix = sp.spmatrix
+
+SerializableContent = Union[str, Iterable[str], TaggedFrame]
