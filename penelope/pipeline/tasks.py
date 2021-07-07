@@ -776,7 +776,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         tokens: Sequence[str] = payload.content[self.target]
         if self.token_type == Vocabulary.TokenType.Lemma:
-            tokens = tokens.str.lower()
+            tokens = [x.lower() for x in tokens]
 
         return tokens
 
