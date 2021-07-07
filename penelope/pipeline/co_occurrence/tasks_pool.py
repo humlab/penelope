@@ -2,6 +2,7 @@ from multiprocessing import get_context
 from typing import Iterable, Mapping, Tuple
 
 from loguru import logger
+from more_itertools import peekable
 from penelope.co_occurrence import VectorizedTTM, VectorizeType, windows_to_ttm
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
@@ -61,12 +62,19 @@ def tokens_to_ttm_stream(args: Iterable[Tuple], processes: int = 4, chunksize: i
             for arg in args:
                 item: dict = tokens_to_ttm(arg)
                 yield item
+
         else:
+
+            """Force preceeding task to initialize before we spawn processes"""
+            args = peekable(args)
+            _ = args.peek()
+
             logger.info(f"Spawning: {processes} processes (chunksize {chunksize}) ")
             with get_context("spawn").Pool(processes=processes) as pool:
                 data_futures: Iterable[dict] = pool.imap(tokens_to_ttm, args, chunksize=chunksize)
                 for item in data_futures:
                     yield item
+
     except Exception as ex:
         logger.exception(ex)
         raise ex
