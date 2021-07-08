@@ -588,6 +588,22 @@ def update_document_index_properties(
     # document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
 
 
+def update_document_index_key_values(
+    document_index: DocumentIndex,
+    key_column_name: str,
+    key_value_bag: dict,
+    default_value: Any = np.nan,  # Mapping[str, Any]
+) -> DocumentIndex:
+    """Updates column with values found in key_value_bag dictionary (keys are index, and value is column value). Creates column if missing."""
+    df_property_bag: pd.DataFrame = pd.DataFrame.from_dict(key_value_bag, orient='index').rename(
+        {0: 'n_tokens'}, axis=1
+    )
+    if key_column_name not in document_index.columns:
+        document_index[key_column_name] = default_value
+    document_index.update(df_property_bag)
+    return document_index
+
+
 def overload_by_document_index_properties(
     document_index: DocumentIndex, df: pd.DataFrame, column_names: List[str] = None
 ) -> DocumentIndex:
