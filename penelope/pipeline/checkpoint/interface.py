@@ -4,14 +4,13 @@ import csv
 import os
 import zipfile
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 import pandas as pd
-from penelope.corpus import DocumentIndex, Token2Id
 from penelope.type_alias import SerializableContent
 from penelope.utility import create_instance, dictify, strip_path_and_extension
 
-from ..interfaces import ContentType, DocumentPayload
+from ..interfaces import ContentType
 
 CHECKPOINT_OPTS_FILENAME = "options.json"
 DOCUMENT_INDEX_FILENAME = "document_index.csv"
@@ -91,17 +90,6 @@ class CheckpointOpts:
 
 Serializer = Callable[[str, CheckpointOpts], pd.DataFrame]
 TaggedFrameStore = Union[str, zipfile.ZipFile]
-
-
-@dataclass
-class CheckpointData:
-    source_name: Any = None
-    content_type: ContentType = ContentType.NONE
-    document_index: DocumentIndex = None
-    token2id: Token2Id = None
-    create_stream: Callable[[], Iterable[DocumentPayload]] = None
-    checkpoint_opts: CheckpointOpts = None
-    filenames: List[str] = None
 
 
 class IContentSerializer(abc.ABC):

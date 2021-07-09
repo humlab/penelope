@@ -3,25 +3,96 @@ import os
 import zipfile
 from dataclasses import asdict
 from io import StringIO
-from os.path import basename, dirname
+from os.path import dirname
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
+from loguru import logger
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index
-from penelope.utility import filenames_satisfied_by, getLogger, zip_utils
+from penelope.utility import filenames_satisfied_by, zip_utils
 
-from ..interfaces import DocumentPayload, PipelineError
+from ..interfaces import ContentType, DocumentPayload, PipelineError
 from .interface import (
     CHECKPOINT_OPTS_FILENAME,
     DICTIONARY_FILENAME,
     DOCUMENT_INDEX_FILENAME,
-    CheckpointData,
     CheckpointOpts,
     IContentSerializer,
 )
-from .load import load_payloads_multiprocess, load_payloads_singleprocess
+from .load import PayloadLoader, load_payloads_multiprocess, load_payloads_singleprocess
 from .serialize import create_serializer
 
-logger = getLogger("penelope")
+
+class CheckpointData:
+    """Container/Proxy for pipeline checkpoint data"""
+
+    def __init__(
+        self,
+        *,
+        source_name: Any = None,
+        filenames: List[str] = None,
+        document_index: DocumentIndex = None,
+        token2id: Token2Id = None,
+        checkpoint_opts: CheckpointOpts = None,
+        payload_loader_override: PayloadLoader = None,
+        reader_opts: TextReaderOpts = None,
+    ):
+        self.source_name: Any = source_name
+        self.document_index: DocumentIndex = document_index
+        self.token2id: Token2Id = token2id
+        self.checkpoint_opts: CheckpointOpts = checkpoint_opts
+        self.filenames: List[str] = filenames
+        self.reader_opts: TextReaderOpts = reader_opts
+        self.content_type: ContentType = checkpoint_opts.content_type
+
+        self.document_index: DocumentIndex = (
+            self.document_index
+            if self.document_index is not None
+            else DocumentIndexHelper.from_filenames2(self.filenames, self.reader_opts)
+        )
+
+        self._sync_filenames()
+        self._filter_documents()
+
+        self.create_stream: Callable[[], Iterable[DocumentPayload]] = self._payload_stream_abstract_factory(
+            payload_loader_override
+        )
+
+    def _payload_stream_abstract_factory(self, payload_loader_override: PayloadLoader) -> PayloadLoader:
+        load_payload_stream = payload_loader_override or (
+            load_payloads_multiprocess if self.checkpoint_opts.deserialize_in_parallel else load_payloads_singleprocess
+        )
+        return lambda: load_payload_stream(
+            zip_or_filename=self.source_name, checkpoint_opts=self.checkpoint_opts, filenames=self.filenames
+        )
+
+    def _filter_documents(self) -> None:
+        """Filter documents and document index based on criterias in reader_opts"""
+
+        if self.reader_opts is not None:
+            self.filenames = filenames_satisfied_by(
+                self.filenames,
+                filename_filter=self.reader_opts.filename_filter,
+                filename_pattern=self.reader_opts.filename_pattern,
+            )
+
+        if self.document_index is not None:
+            self.document_index = self.document_index[self.document_index.filename.isin(self.filenames)]
+
+    def _sync_filenames(self) -> None:
+        """Syncs sort order for archive filenames and filenames in document index """
+
+        if self.document_index is None:
+            return
+
+        if self.filenames == self.document_index.filename.to_list():
+            return
+
+        if set(self.filenames) != set(self.document_index.filename.to_list()):
+            raise Exception(f"{self.source_name} filenames in archive and document index differs")
+
+        logger.warning(f"{self.source_name} filename sort order mismatch (using document index sort order)")
+
+        self.filenames = self.document_index.filename.to_list()
 
 
 def store_archive(
@@ -43,9 +114,7 @@ def store_archive(
         zf.writestr(CHECKPOINT_OPTS_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
 
         for payload in payload_stream:
-            data = serializer.serialize(payload.content, checkpoint_opts)
-            zf.writestr(payload.filename, data=data)
-
+            zf.writestr(payload.filename, data=serializer.serialize(payload.content, checkpoint_opts))
             yield payload
 
         if document_index is not None:
@@ -61,14 +130,14 @@ def load_archive(
     source_name: str,
     checkpoint_opts: CheckpointOpts = None,
     reader_opts: TextReaderOpts = None,
-    payload_loader: Callable[[str, CheckpointOpts, List[str]], Iterable[DocumentPayload]] = None,
+    payload_loader: PayloadLoader = None,
 ) -> CheckpointData:
     """Load a TAGGED FRAME checkpoint stored in a ZIP FILE with CSV-filed and optionally a document index
 
     Args:
         source_name (str): [description]
-        options (CheckpointOpts, optional): deserialize opts. Defaults to None.
-        reader_opts (TextReaderOpts, optional): Settings for creatin a document index or filtering files. Defaults to None.
+        checkpoint_opts (CheckpointOpts, optional): deserialize opts. Defaults to None.
+        reader_opts (TextReaderOpts, optional): Settings for creating a document index or filtering files. Defaults to None.
 
     Raises:
         PipelineError: Something is wrong
@@ -79,51 +148,15 @@ def load_archive(
 
     with _CheckpointZipFile(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
 
-        filenames: List[str] = zf.document_filenames
-        document_index: DocumentIndex = zf.document_index
-        checkpoint_opts: CheckpointOpts = zf.checkpoint_opts
-        token2id: Token2Id = zf.token2id
-
-        if document_index is None:
-            document_index = DocumentIndexHelper.from_filenames2(filenames, reader_opts)
-
-    if filenames != document_index.filename.to_list():
-
-        """ Check that filenames and document index are in sync """
-        if set(filenames) != set(document_index.filename.to_list()):
-            raise Exception(f"{source_name} archive filenames and document index filenames differs")
-
-        logger.warning(f"{source_name} filename sort order mismatch (using document index sort order)")
-
-        filenames = document_index.filename.to_list()
-
-    if reader_opts:
-
-        filenames: List[str] = filenames_satisfied_by(
-            filenames, filename_filter=reader_opts.filename_filter, filename_pattern=reader_opts.filename_pattern
+        return CheckpointData(
+            source_name=source_name,
+            filenames=zf.document_filenames,
+            document_index=zf.document_index,
+            token2id=zf.token2id,
+            checkpoint_opts=zf.checkpoint_opts or checkpoint_opts,
+            payload_loader_override=payload_loader,
+            reader_opts=reader_opts,
         )
-
-        document_index = document_index[document_index.filename.isin(filenames)]
-
-    load_payload_stream = payload_loader or (
-        load_payloads_multiprocess if checkpoint_opts.deserialize_in_parallel else load_payloads_singleprocess
-    )
-
-    create_payload_stream = lambda: load_payload_stream(
-        zip_or_filename=source_name, checkpoint_opts=checkpoint_opts, filenames=filenames
-    )
-
-    data: CheckpointData = CheckpointData(
-        content_type=checkpoint_opts.content_type,
-        create_stream=create_payload_stream,
-        document_index=document_index,
-        token2id=token2id,
-        checkpoint_opts=checkpoint_opts,
-        source_name=basename(source_name),
-        filenames=filenames,
-    )
-
-    return data
 
 
 class _CheckpointZipFile(zipfile.ZipFile):
