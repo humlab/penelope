@@ -13,6 +13,8 @@ from ..interfaces import ContentType, DocumentPayload
 from .interface import CheckpointOpts, IContentSerializer, Serializer, TaggedFrameStore
 from .serialize import create_serializer
 
+PayloadLoader = Callable[[str, CheckpointOpts, List[str], bool], Iterable[DocumentPayload]]
+
 
 @zipfile_or_filename(mode='r')
 def load_tagged_frame(
