@@ -1,7 +1,7 @@
 import csv
 import os
 import pathlib
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Tuple
 from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
@@ -265,14 +265,12 @@ def patch_store_archive(
         yield p
 
 
-def patch_load_archive(*_, **__) -> Tuple[Iterable[DocumentPayload], Optional[pd.DataFrame]]:
+def patch_load_archive(*_, **__) -> CheckpointData:
     return CheckpointData(
-        content_type=ContentType.TAGGED_FRAME,
-        document_index=None,
-        create_stream=lambda: fake_data_frame_stream(1),
-        checkpoint_opts=CheckpointOpts().as_type(ContentType.TAGGED_FRAME),
         source_name="source-name",
         filenames=['dummy_1.csv'],
+        document_index=None,
+        checkpoint_opts=CheckpointOpts().as_type(ContentType.TAGGED_FRAME),
     )
 
 
@@ -286,7 +284,6 @@ def test_save_data_frame_succeeds():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
 
-@patch('penelope.pipeline.checkpoint.load_archive', patch_load_archive)
 def test_load_data_frame_succeeds():
     pipeline = Mock(
         spec=CorpusPipeline,
@@ -295,14 +292,22 @@ def test_load_data_frame_succeeds():
         },
     )
     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
-    task = tasks.LoadTaggedCSV(
+
+    task: tasks.LoadTaggedCSV = tasks.LoadTaggedCSV(
         pipeline=pipeline,
         filename="dummy.zip",
         prior=prior,
         extra_reader_opts=TextReaderOpts(),
         checkpoint_opts=CheckpointOpts(feather_folder=None),
-    ).setup()
+    )
+
     task.register_token_counts = lambda _: task
+    fake_data: CheckpointData = patch_load_archive()
+    fake_data.create_stream = lambda: fake_data_frame_stream(2)
+    task.load_archive = lambda: fake_data
+
+    task.setup()
+
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGED_FRAME
 

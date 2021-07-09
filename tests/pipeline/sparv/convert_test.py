@@ -16,8 +16,8 @@ def test_sparv_csv_serializer():
         'penelope.pipeline.sparv.SparvCsvSerializer'
     )
     serializer: sparv.SparvCsvSerializer = serializer_cls()
-    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts()
 
+    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False)
     tagged_frame: pd.DataFrame = serializer.deserialize(content, options)
 
     assert tagged_frame is not None
@@ -28,6 +28,11 @@ def test_sparv_csv_serializer():
     assert all(~tagged_frame.token.isna())
     assert all(~tagged_frame.baseform.isna())
     assert all(~tagged_frame.pos.isna())
+
+    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=True)
+    tagged_frame: pd.DataFrame = serializer.deserialize(content, options)
+
+    assert tagged_frame.baseform.tolist()[-5:] == ['sund', '—', 'gällivare', 'roger', 'super_man']
 
 
 def test_sparv_csv_deserialize_lemma_form():
@@ -65,6 +70,6 @@ A	IN	|
 
     assert tagged_frame is not None
 
-    lemma: pd.Series = deserialize_lemma_form(tagged_frame)
+    lemma: pd.Series = deserialize_lemma_form(tagged_frame, checkpoint_opts)
 
     assert lemma is not None

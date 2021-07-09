@@ -16,7 +16,7 @@ def test_load_tagged_frame_checkpoint():
 
     assert data is not None
 
-    assert data.source_name == "legal_instrument_five_docs_test_pos_csv.zip"
+    assert os.path.basename(data.source_name) == "legal_instrument_five_docs_test_pos_csv.zip"
     assert len(data.document_index) == 5
 
     payloads = [x for x in data.create_stream()]
