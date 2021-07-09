@@ -3,19 +3,18 @@ import os
 from typing import Iterable, List, Optional
 
 import pandas as pd
-from penelope.corpus import DocumentIndex
 from penelope.utility import replace_extension, strip_paths
 
 from ..interfaces import ContentType, DocumentPayload, PipelineError
-from ..tagged_frame import TaggedFrame
 
 FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
 
 
 def write_payload(folder: str, payload: DocumentPayload) -> Iterable[DocumentPayload]:
-    tagged_frame: TaggedFrame = payload.content
-    filename = os.path.join(folder, replace_extension(payload.filename, ".feather"))
-    tagged_frame.to_feather(filename, compression="lz4")
+    payload.content.to_feather(
+        os.path.join(folder, replace_extension(payload.filename, ".feather")),
+        compression="lz4",
+    )
     return payload
 
 
@@ -46,22 +45,35 @@ def document_index_exists(folder: Optional[str]) -> bool:
     return os.path.isfile(os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME))
 
 
-def read_document_index(folder: str) -> DocumentIndex:
+def read_document_index(folder: str) -> pd.DataFrame:
 
     filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
 
     if os.path.isfile(filename):
-        document_index: DocumentIndex = pd.read_feather(filename).set_index('document_name', drop=False)
-        if '' in document_index.columns:
-            document_index.drop(columns='', inplace=True)
+        document_index: pd.DataFrame = pd.read_feather(filename).set_index('document_name', drop=False)
+        _sanitize_document_index(document_index)
         return document_index
 
     raise PipelineError("Feather checkpoint is missing document index. Please force new checkpoint!")
 
 
-def write_document_index(folder: str, document_index: DocumentIndex):
+def write_document_index(folder: str, document_index: pd.DataFrame):
+
+    if document_index is None:
+        return
+
+    _sanitize_document_index(document_index)
     filename = os.path.join(folder, FEATHER_DOCUMENT_INDEX_NAME)
-    if document_index is not None:
-        if document_index.index.name in document_index.columns:
-            document_index.rename_axis('', inplace=True)
-        document_index.reset_index().to_feather(filename, compression="lz4")
+    document_index.reset_index(drop=True).to_feather(filename, compression="lz4")
+
+
+def _sanitize_document_index(document_index: pd.DataFrame):
+
+    if document_index is None:
+        return
+
+    if '' in document_index.columns:
+        document_index.drop(columns='', inplace=True)
+
+    if document_index.index.name in document_index.columns:
+        document_index.rename_axis('', inplace=True)
