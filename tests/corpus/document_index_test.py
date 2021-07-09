@@ -9,6 +9,7 @@ from penelope.corpus import (
     document_index_upgrade,
     load_document_index,
     load_document_index_from_str,
+    update_document_index_key_values,
     update_document_index_properties,
 )
 from penelope.utility import assert_is_strictly_increasing, is_strictly_increasing
@@ -160,6 +161,23 @@ def test_update_counts():
 
     statistics = {'extra_1': 10, 'extra_2': 22}
     update_document_index_properties(index, document_name='tran_2020_01_test', property_bag=statistics)
+
+
+def test_update_document_index_key_values():
+
+    test_document_index = """
+;filename;year;document_name;document_id
+a;a.txt;2019;a;0
+b;b.txt;2019;b;1
+c;c.txt;2019;c;2
+d;d.txt;2020;d;3
+e;e.txt;2020;e;4
+"""
+    document_index = load_document_index(filename=StringIO(test_document_index), sep=';')
+    key_value_bag = {'a': 5}
+    update_document_index_key_values(document_index, key_column_name='n_tokens', key_value_bag=key_value_bag)
+
+    assert True
 
 
 def test_add_attributes():

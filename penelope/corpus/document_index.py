@@ -596,11 +596,14 @@ def update_document_index_key_values(
 ) -> DocumentIndex:
     """Updates column with values found in key_value_bag dictionary (keys are index, and value is column value). Creates column if missing."""
     df_property_bag: pd.DataFrame = pd.DataFrame.from_dict(key_value_bag, orient='index').rename(
-        {0: 'n_tokens'}, axis=1
+        {0: key_column_name}, axis=1
     )
-    if key_column_name not in document_index.columns:
-        document_index[key_column_name] = default_value
-    document_index.update(df_property_bag)
+    if len(df_property_bag) == len(document_index):
+        document_index[key_column_name] = df_property_bag[key_column_name]
+    else:
+        if key_column_name not in document_index.columns:
+            document_index[key_column_name] = default_value
+        document_index.update(df_property_bag)
     return document_index
 
 
