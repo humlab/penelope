@@ -29,8 +29,7 @@ class TokensContentSerializer(IContentSerializer):
         return content.split(' ')
 
     def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:
-        tfs = dict(term_frequency=term_frequency(content))
-        return tfs
+        return dict(term_frequency=term_frequency(content))
 
 
 class CsvContentSerializer(IContentSerializer):
@@ -45,8 +44,7 @@ class CsvContentSerializer(IContentSerializer):
         if any(x not in data.columns for x in options.columns):
             raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
         if options.lower_lemma:
-            tokens: Sequence[str] = data[options.lemma_column]
-            data[options.lemma_column] = pd.Series([x.lower() for x in tokens])
+            data[options.lemma_column] = pd.Series([x.lower() for x in data[options.lemma_column]])
         return data[options.columns]
 
     def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:

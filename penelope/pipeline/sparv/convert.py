@@ -10,12 +10,13 @@ from ..checkpoint import CheckpointOpts, CsvContentSerializer
 TRANSLATE_TABLE = " :".maketrans({" ": "_", ":": "|"})
 
 
-def deserialize_lemma_form(tagged_frame: pd.DataFrame) -> pd.Series:
+def deserialize_lemma_form(tagged_frame: pd.DataFrame, options: CheckpointOpts) -> pd.Series:
     """Extracts first part of baseform (format of baseform is `|lemma|xyz|`
 
     Note that lemmas are always lower cased
     """
-    baseform = tagged_frame['baseform'].apply(lambda x: x.strip('|').replace(' ', '_').replace(":", "|").lower())
+    baseform = pd.Series([x.strip('|').replace(' ', '_').replace(":", "|") for x in tagged_frame['baseform']])
+    # .apply(lambda x: x.strip('|').replace(' ', '_').replace(":", "|"))
 
     multi_baseform: pd.Series = baseform.str.contains('|', regex=False)
 
@@ -24,6 +25,8 @@ def deserialize_lemma_form(tagged_frame: pd.DataFrame) -> pd.Series:
 
     baseform.update(tagged_frame[baseform == ''].token)
 
+    if options.lower_lemma:
+        baseform = pd.Series([x.lower() for x in baseform])
     return baseform
 
 
@@ -49,6 +52,6 @@ class SparvCsvSerializer(CsvContentSerializer):
             keep_default_na=False,
         )  # .fillna('')
 
-        tagged_frame['baseform'] = deserialize_lemma_form(tagged_frame)
+        tagged_frame['baseform'] = deserialize_lemma_form(tagged_frame, options)
 
         return tagged_frame
