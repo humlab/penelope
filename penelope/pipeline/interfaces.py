@@ -12,6 +12,7 @@ from penelope.corpus import (
     Token2Id,
     consolidate_document_index,
     load_document_index,
+    update_document_index_key_values,
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
@@ -188,6 +189,13 @@ class PipelinePayload:
             property_bag=properties,
         )
 
+    def update_document_index_key_values(self, key_column_name: str, key_value_bag: dict) -> None:
+        update_document_index_key_values(
+            self.document_index,
+            key_column_name=key_column_name,
+            key_value_bag=key_value_bag,
+        )
+
     @property
     def tagged_columns_names(self) -> dict:
         return {k: v for k, v in self.memory_store.items() if k in ['text_column', 'pos_column', 'lemma_column']}
@@ -330,6 +338,9 @@ class ITask(abc.ABC):
         """Stores document properties to document index"""
         payload.remember(**properties)
         self.pipeline.payload.update_document_properties(payload.document_name, **properties)
+
+    def update_document_index_key_values(self, key_column_name: str, key_value_bag: dict) -> None:
+        self.pipeline.payload.update_document_index_key_values(key_column_name, key_value_bag)
 
     def get_filenames(self) -> List[str]:
         """Override this function if task can return expected filenames in stream"""
