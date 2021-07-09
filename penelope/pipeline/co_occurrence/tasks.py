@@ -1,3 +1,4 @@
+import pickle
 import sys
 from dataclasses import dataclass, field
 from pprint import pformat as pf
@@ -136,12 +137,18 @@ class ToCoOccurrenceDTM(ITask):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
         """Processes stream of payloads. Overridable. """
-        stream: Iterable[Tuple] = self.prepare_task_stream(
+        # stream: Iterable[Tuple] = self.prepare_task_stream(
+        #     token2id=self.pipeline.payload.token2id,
+        #     context_opts=self.context_opts,
+        # )
+
+        for item in tokens_to_ttm_stream(
+            payload_stream=self.prior.outstream(),
+            document_index=self.document_index,
             token2id=self.pipeline.payload.token2id,
             context_opts=self.context_opts,
-        )
-        for item in tokens_to_ttm_stream(
-            stream,
+            concept_ids=self.concept_ids,
+            ignore_ids=self.ignore_ids,
             processes=self.context_opts.processes,
             chunksize=self.context_opts.chunksize,
         ):
@@ -158,12 +165,13 @@ class ToCoOccurrenceDTM(ITask):
     def prepare_task_stream(self, token2id: Token2Id, context_opts: ContextOpts) -> Iterable[Tuple]:
 
         fg = token2id.data.get
+        name_to_id: dict = self.document_index.document_id.to_dict()
         task_stream: Iterable[Tuple] = (
             (
-                self.get_document_id(payload),
+                name_to_id[payload.document_name],
                 payload.document_name,
                 payload.filename,
-                payload.content if self.in_content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
+                payload.content if self.content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
                 fg(context_opts.pad),
                 context_opts,
                 self.concept_ids,

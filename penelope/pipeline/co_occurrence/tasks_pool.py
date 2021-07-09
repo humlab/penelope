@@ -1,18 +1,28 @@
-from multiprocessing import get_context
-from typing import Iterable, Mapping, Tuple
+import multiprocessing as mp
+from typing import Iterable, Mapping, Set, Tuple
 
 from loguru import logger
 from more_itertools import peekable
-from penelope.co_occurrence import VectorizedTTM, VectorizeType, windows_to_ttm
-from penelope.co_occurrence.windows import generate_windows
-from penelope.corpus.dtm import WORD_PAIR_DELIMITER
+from penelope.co_occurrence import ContextOpts, VectorizedTTM, VectorizeType, generate_windows, windows_to_ttm
+from penelope.corpus import Token2Id
+from penelope.type_alias import DocumentIndex
 
-sj = WORD_PAIR_DELIMITER.join
+from ..interfaces import ContentType, DocumentPayload
 
-logger.add("tokens_to_ttm.log", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
+# logger.add("tokens_to_ttm.log", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
+
+# token2id: dict = None
+
+# def load_token2id(token2id_filename):
+#     global token2id
+#     if token2id is None:
+#         logger.info(f"{mp.current_process().name}: intialize_process_state args={token2id_filename}")
+#         with open(token2id_filename, 'rb') as handle:
+#             token2id = pickle.load(handle)
 
 
 def tokens_to_ttm(args) -> dict:
+    # global token2id
     try:
         (
             document_id,
@@ -25,6 +35,7 @@ def tokens_to_ttm(args) -> dict:
             ignore_ids,
             vocab_size,
         ) = args
+
         windows: Iterable[Iterable[int]] = generate_windows(
             token_ids=token_ids,
             context_width=context_opts.context_width,
@@ -54,11 +65,57 @@ def tokens_to_ttm(args) -> dict:
         # return ex
 
 
-def tokens_to_ttm_stream(args: Iterable[Tuple], processes: int = 4, chunksize: int = 25) -> Iterable[dict]:
+def prepare_task_stream(
+    payload_stream: Iterable[DocumentPayload],
+    document_index: DocumentIndex,
+    token2id: Token2Id,
+    context_opts: ContextOpts,
+    concept_ids: Set[int],
+    ignore_ids: Set[int],
+) -> Iterable[Tuple]:
+
+    fg = token2id.data.get
+    name_to_id: dict = document_index.document_id.to_dict()
+    task_stream: Iterable[Tuple] = (
+        (
+            name_to_id[payload.document_name],
+            payload.document_name,
+            payload.filename,
+            payload.content if payload.content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
+            fg(context_opts.pad),
+            context_opts,
+            concept_ids,
+            ignore_ids,
+            len(token2id),
+        )
+        for payload in payload_stream
+    )
+    return task_stream
+
+
+def tokens_to_ttm_stream(
+    payload_stream: Iterable[DocumentPayload],
+    document_index: DocumentIndex,
+    token2id: Token2Id,
+    context_opts: ContextOpts,
+    concept_ids: Set[int],
+    ignore_ids: Set[int],
+    processes: int = 4,
+    chunksize: int = 25,
+) -> Iterable[dict]:
 
     try:
 
+        args = prepare_task_stream(
+            payload_stream=payload_stream,
+            document_index=document_index,
+            token2id=token2id,
+            context_opts=context_opts,
+            concept_ids=concept_ids,
+            ignore_ids=ignore_ids,
+        )
         if processes is None:
+
             for arg in args:
                 item: dict = tokens_to_ttm(arg)
                 yield item
@@ -69,9 +126,15 @@ def tokens_to_ttm_stream(args: Iterable[Tuple], processes: int = 4, chunksize: i
             args = peekable(args)
             _ = args.peek()
 
+            # token2id_filename: str = f"/tmp/{uuid.uuid4()}.pickle"
+
+            # with open(token2id_filename, 'wb') as handle:
+            #     pickle.dump(dict(token2id.data), handle, protocol=pickle.HIGHEST_PROTOCOL)
+
             logger.info(f"Spawning: {processes} processes (chunksize {chunksize}) ")
-            with get_context("spawn").Pool(processes=processes) as pool:
-                data_futures: Iterable[dict] = pool.imap(tokens_to_ttm, args, chunksize=chunksize)
+            with mp.get_context("spawn").Pool(processes=processes) as pool:
+                # , initializer=load_token2id, initargs=(token2id_filename,)) as pool:
+                data_futures: Iterable[dict] = pool.imap_unordered(tokens_to_ttm, args, chunksize=chunksize)
                 for item in data_futures:
                     yield item
 
