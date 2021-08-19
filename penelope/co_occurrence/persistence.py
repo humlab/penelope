@@ -132,7 +132,7 @@ def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
     """ Read CSV if exists """
     if os.path.isfile(filename):
 
-        co_occurrences: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0)
+        co_occurrences: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0, engine='c')
 
         with contextlib.suppress(Exception):
             logger.info("caching to FEATHER file")
