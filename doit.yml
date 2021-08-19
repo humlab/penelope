@@ -14,7 +14,6 @@ checkpoint_opts:
     frequency_column: baseform
     extra_columns: []
     custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
-    deserialize_in_parallel: true
     deserialize_processes: 4
     deserialize_chunksize: 4
     index_column: null
