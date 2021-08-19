@@ -7,7 +7,6 @@ from typing import Any, Callable, Container, Iterator, List, Mapping, Optional, 
 
 import pandas as pd
 from loguru import logger
-from more_itertools import peekable
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.utility import path_add_suffix, pickle_to_file, replace_extension, strip_paths, unpickle_from_file
 
@@ -151,17 +150,14 @@ class Token2Id(MutableMapping):
 
     def _ingest_stream(self, tokens_stream: Iterator[Iterator[str]]) -> None:
 
-        tokens_stream = peekable(tokens_stream)
-
         tf: defaultdict = self._tf
         data = self._data
 
-        if isinstance(tokens_stream.peek(), dict):
-            for d in tokens_stream:
+        for d in tokens_stream:
+            if isinstance(d, dict):
                 for t, v in d.items():
                     tf[data[t]] += v
-        else:
-            for d in tokens_stream:
+            else:
                 for t in d:
                     tf[data[t]] += 1
 
