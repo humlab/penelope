@@ -2,7 +2,6 @@ from io import StringIO
 from typing import Sequence
 
 import pandas as pd
-from penelope.type_alias import TaggedFrame
 from penelope.utility import term_frequency
 
 from ..interfaces import ContentType
@@ -52,12 +51,10 @@ class CsvContentSerializer(IContentSerializer):
         if not checkpoint_opts.frequency_column:
             return {}
 
-        tagged_frame: TaggedFrame = content
-        tfs = dict(
-            term_frequency=term_frequency(tagged_frame[checkpoint_opts.frequency_column]),
-            pos_frequency=term_frequency(tagged_frame[checkpoint_opts.pos_column]),
+        return dict(
+            term_frequency=term_frequency(content[checkpoint_opts.frequency_column]),
+            pos_frequency=term_frequency(content[checkpoint_opts.pos_column]),
         )
-        return tfs
 
 
 def create_serializer(options: CheckpointOpts) -> "IContentSerializer":
