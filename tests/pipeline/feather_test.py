@@ -38,10 +38,7 @@ def test_pipeline_can_can_be_saved_in_feather(config: CorpusConfig):
         if len(tagged_frame) == 0:
             continue
 
-        tagged_frame.to_feather(
-            filename,
-            compression="lz4",
-        )
+        tagged_frame.to_feather(filename, compression="lz4")
 
         assert os.path.isfile(filename)
 
