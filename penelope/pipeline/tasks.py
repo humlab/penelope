@@ -30,11 +30,9 @@ from penelope.corpus.readers import (
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
 from penelope.utility import PropertyValueMaskingOpts
 from tqdm.auto import tqdm
-
 from . import checkpoint as cp
 from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
-from .tagged_frame import TaggedFrame
 from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn, VocabularyIngestMixIn
 
 
@@ -193,20 +191,17 @@ class Checkpoint(DefaultResolveMixIn, ITask):
         checkpoint_data: cp.CheckpointData = cp.load_archive(self.filename, checkpoint_opts=self.checkpoint_opts)
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
         self.out_content_type = checkpoint_data.content_type
-
-        payload_stream = checkpoint_data.create_stream()
-        return payload_stream
+        return checkpoint_data.create_stream()
 
     def _store_payload_stream(self):
         self.out_content_type = self.get_out_content_type()
         checkpoint_opts = self.checkpoint_opts.as_type(self.out_content_type)
-        payload_stream = cp.store_archive(
+        return cp.store_archive(
             checkpoint_opts=checkpoint_opts,
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.prior.outstream(),
         )
-        return payload_stream
 
     def get_out_content_type(self):
         prior_content_type = self.pipeline.get_prior_content_type(self)
@@ -283,12 +278,11 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         return self.checkpoint_data.create_stream()
 
     def load_archive(self) -> cp.CheckpointData:
-        checkpoint_data: cp.CheckpointData = cp.load_archive(
+        return cp.load_archive(
             self.filename,
             checkpoint_opts=self.checkpoint_opts,
             reader_opts=self.extra_reader_opts,
         )
-        return checkpoint_data
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
@@ -361,9 +355,10 @@ class ReadFeather(DefaultResolveMixIn, ITask):
         self.pipeline.payload.effective_document_index = cp.feather.read_document_index(self.folder)
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-        for filename in self.document_index.filename.tolist():
-            payload: DocumentPayload = cp.feather.read_payload(os.path.join(self.folder, filename))
-            yield payload
+        return (
+            cp.feather.read_payload(os.path.join(self.folder, filename))
+            for filename in self.document_index.filename.tolist()
+        )
 
 
 @dataclass
@@ -390,13 +385,15 @@ class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
         self.pipeline.payload.set_reader_index(self.corpus_reader.document_index)
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-        for document, content in self.corpus_reader:
-            yield DocumentPayload(
+        return (
+            DocumentPayload(
                 content_type=ContentType.TAGGED_FRAME,
                 filename=document,
                 content=content,
                 filename_values=None,
             )
+            for document, content in self.corpus_reader
+        )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_token_counts(payload)
@@ -460,13 +457,14 @@ class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
-        tagged_frame: TaggedFrame = self.tagger(
-            payload=payload,
-            attributes=self.attributes,
-            attribute_value_filters=self.attribute_value_filters,
+        payload.update(
+            self.out_content_type,
+            self.tagger(
+                payload=payload,
+                attributes=self.attributes,
+                attribute_value_filters=self.attribute_value_filters,
+            ),
         )
-
-        payload = payload.update(self.out_content_type, tagged_frame)
 
         self.register_token_counts(payload)
 
@@ -484,6 +482,9 @@ class TaggedFrameToTokens(
 
     extract_opts: ExtractTaggedTokensOpts = None
     filter_opts: PropertyValueMaskingOpts = None
+
+    update_counts_on_exit: bool = True
+    token_counts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -516,11 +517,20 @@ class TaggedFrameToTokens(
 
         tokens = list(tokens)
 
-        self.ingest(tokens)
+        if self.ingest_tokens:
+            self.ingest(tokens)
 
+        # if self.update_counts_on_exit:
+        #     self.token_counts[payload.document_name] = len(tokens)
+        # else:
         self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
 
         return payload.update(self.out_content_type, tokens)
+
+    def exit(self) -> ITask:  # pylint: disable=useless-super-delegation
+        super().exit()
+        # if self.update_counts_on_exit:
+        #     self.update_document_index_key_values('n_tokens', self.token_counts)
 
 
 @dataclass
@@ -668,9 +678,8 @@ class TokensTransform(TransformTokensMixIn, ITask):
         self.transformer = TokensTransformer(transform_opts=self.transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        tokens: List[str] = self.transform(payload.content)
         # FIXME: call self.update_document_properties(payload, n_tokens=len(tokens))??
-        return payload.update(self.out_content_type, tokens)
+        return payload.update(self.out_content_type, self.transform(payload.content))
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":
         self.transformer.add(transform)
@@ -703,12 +712,14 @@ class TextToDTM(ITask):
         return self
 
     def process_stream(self) -> VectorizedCorpus:
-        corpus = convert.to_vectorized_corpus(
-            stream=self.create_instream(),
-            vectorize_opts=self.vectorize_opts,
-            document_index=lambda: self.pipeline.payload.document_index,
+        yield DocumentPayload(
+            content_type=ContentType.VECTORIZED_CORPUS,
+            content=convert.to_vectorized_corpus(
+                stream=self.create_instream(),
+                vectorize_opts=self.vectorize_opts,
+                document_index=lambda: self.pipeline.payload.document_index,
+            ),
         )
-        yield DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=corpus)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
@@ -736,9 +747,10 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         self.target = self.get_column_name(self.token_type)
-        if self.in_content_type == ContentType.TAGGED_FRAME:
-            if self.token_type is None:
-                raise ValueError("token_type text or lemma not specfied")
+
+        # if self.pipeline.get_next_to(self).in_content_type == ContentType.TAGGED_FRAME:
+        #     if self.token_type is None:
+        #         raise ValueError("token_type text or lemma not specfied")
 
         self.token2id: Token2Id = Token2Id()
         self.pipeline.payload.token2id = self.token2id
@@ -746,15 +758,18 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
     def enter(self):
 
-        ingest = self.token2id.ingest
-
-        ingest(self.token2id.magic_tokens)
+        self.token2id.ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
 
-        self.token2id.ingest_stream(
-            self.tokens_stream(payload)
-            for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab")
-        )
+        for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab"):
+            self.token2id.ingest_stream([self.tokens_stream(payload)])
+            del payload.content
+            del payload
+
+        # self.token2id.ingest_stream(
+        #     self.tokens_stream(payload)
+        #     for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab")
+        # )
 
         if self.tf_threshold and self.tf_threshold > 1:
             """We don't need translation since vocab hasn't been used yet"""
@@ -770,15 +785,14 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         if payload.content_type == ContentType.TOKENS:
             return payload.content
 
-        stored_frequency: dict = payload.recall('term_frequency')
-        if stored_frequency:
-            return stored_frequency
+        if payload.recall('term_frequency'):
+            return payload.recall('term_frequency')
 
-        tokens: Sequence[str] = payload.content[self.target]
-        if self.token_type == Vocabulary.TokenType.Lemma:
-            tokens = [x.lower() for x in tokens]
-
-        return tokens
+        return (
+            (x.lower() for x in payload.content[self.target])
+            if self.token_type == Vocabulary.TokenType.Lemma
+            else payload.content[self.target]
+        )
 
     def get_column_name(self, token_type: TokenType) -> str:
         if token_type == Vocabulary.TokenType.Lemma:

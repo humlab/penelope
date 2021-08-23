@@ -59,7 +59,7 @@ class CheckpointData:
 
     def _payload_stream_abstract_factory(self, payload_loader_override: PayloadLoader) -> PayloadLoader:
         load_payload_stream = payload_loader_override or (
-            load_payloads_multiprocess if self.checkpoint_opts.deserialize_in_parallel else load_payloads_singleprocess
+            load_payloads_multiprocess if self.checkpoint_opts.deserialize_processes else load_payloads_singleprocess
         )
         return lambda: load_payload_stream(
             zip_or_filename=self.source_name, checkpoint_opts=self.checkpoint_opts, filenames=self.filenames
@@ -197,9 +197,12 @@ class _CheckpointZipFile(zipfile.ZipFile):
         if self.document_index_name not in self.namelist():
             return None
 
-        data_str = zip_utils.read_file_content(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
-        document_index = load_document_index(StringIO(data_str), sep=self.checkpoint_opts.document_index_sep)
-        return document_index
+        return load_document_index(
+            StringIO(
+                zip_utils.read_file_content(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
+            ),
+            sep=self.checkpoint_opts.document_index_sep,
+        )
 
     def _token2id(self) -> Optional[Token2Id]:
         """Returns dictionary stored in archive, or None if not found in archive"""
@@ -207,11 +210,8 @@ class _CheckpointZipFile(zipfile.ZipFile):
         if DICTIONARY_FILENAME not in self.namelist():
             return None
 
-        _token2id_dict: dict = zip_utils.read_json(zip_or_filename=self, filename=DICTIONARY_FILENAME)
-        _token2id: Token2Id = Token2Id(_token2id_dict)
-        return _token2id
+        return Token2Id(zip_utils.read_json(zip_or_filename=self, filename=DICTIONARY_FILENAME))
 
     @property
     def document_filenames(self) -> List[str]:
-        filenames = [f for f in self.namelist() if f not in [self.document_index_name, CHECKPOINT_OPTS_FILENAME]]
-        return filenames
+        return [f for f in self.namelist() if f not in [self.document_index_name, CHECKPOINT_OPTS_FILENAME]]
