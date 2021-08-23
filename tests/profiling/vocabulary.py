@@ -45,8 +45,7 @@ def run_workflow():
     # filter_opts: utility.PropertyValueMaskingOpts=utility.PropertyValueMaskingOpts()
 
     (
-        CorpusPipeline(config=corpus_config)
-        .load_tagged_frame(
+        CorpusPipeline(config=corpus_config).load_tagged_frame(
             filename=CORPUS_FILENAME,
             checkpoint_opts=corpus_config.checkpoint_opts,
             extra_reader_opts=corpus_config.text_reader_opts,

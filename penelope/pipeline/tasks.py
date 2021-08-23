@@ -30,6 +30,7 @@ from penelope.corpus.readers import (
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
 from penelope.utility import PropertyValueMaskingOpts
 from tqdm.auto import tqdm
+
 from . import checkpoint as cp
 from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
