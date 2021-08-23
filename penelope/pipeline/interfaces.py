@@ -76,7 +76,8 @@ class DocumentPayload:
 
     def remember(self, **properties) -> "DocumentPayload":
         """Save document properties to property bag"""
-        self.property_bag.update(properties)
+        if properties:
+            self.property_bag.update(properties)
         return self
 
     def recall(self, property_name) -> Any:
@@ -296,8 +297,7 @@ class ITask(abc.ABC):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
         """Processes stream of payloads. Overridable. """
-        for payload in self.create_instream():
-            yield self.process(payload)
+        return (self.process(payload) for payload in self.create_instream())
 
     def outstream(self, **kwargs) -> Iterable[DocumentPayload]:
         """Returns stream of payloads. Non-overridable! """
