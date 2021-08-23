@@ -209,6 +209,30 @@ profile-compute-keyness-cprofile:
 	# @poetry run python -m cProfile -o ./profile-reports/$(RUN_TIMESTAMP)_keyness-cprofile.cprof ./tests/profiling/profile-compute-keyness.py
 	# @poetry run pyprof2calltree -k -i ./profile-reports/$(RUN_TIMESTAMP)_keyness-cprofile.cprof
 
+.PHONY: install-mkl install-gfortran install-mkl-basekit reinstall-numpy-scipy numpy-site-config
+install-mkl: install-gfortran install-mkl-basekit reinstall-numpy-scipy numpy-site-config
+	echo "installed: MKL (Math Kernel Library)"
+
+TARGET_MKL_BASE_KIT := https://registrationcenter-download.intel.com/akdlm/irc_nas/17977/l_BaseKit_p_2021.3.0.3219.sh
+install-mkl-basekit:
+	wget -q -O /tmp/mkl-installer.sh $(TARGET_MKL_BASE_KIT)
+	sudo bash /tmp/mkl-installer.sh
+
+install-gfortran:
+	sudo apt-get update
+	sudo apt-get install gfortran
+
+# Template https://github.com/numpy/numpy/blob/main/site.cfg.example
+NUMPY_CONFIG := $(HOME)/.numpy-site.cfg
+numpy-site-config: $(HOME)/.numpy-site.cfg
+	echo "[mkl]" > $(NUMPY_CONFIG)
+	"library_dirs = /opt/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64" >> $(NUMPY_CONFIG)
+	"include_dirs = /opt/intel/compilers_and_libraries_2019.4.243/linux/mkl/include" >> $(NUMPY_CONFIG)
+	"libraries = mkl_rt" >> $(NUMPY_CONFIG)
+
+reinstall-numpy-scipy:
+	@pip install numpy scipy --no-binary numpy,scipy --force-reinstall
+
 .PHONY: stubs
 stubs:
 	@stubgen penelope/corpus/dtm/vectorized_corpus.py --output ./typings
