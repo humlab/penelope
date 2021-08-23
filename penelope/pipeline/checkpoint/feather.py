@@ -25,10 +25,9 @@ def payload_exists(folder: str, payload: DocumentPayload) -> DocumentPayload:
 
 def read_payload(filename: str) -> DocumentPayload:
     filename = replace_extension(filename, ".feather")
-    tagged_frame: pd.DataFrame = pd.read_feather(filename)
     return DocumentPayload(
         content_type=ContentType.TAGGED_FRAME,
-        content=tagged_frame,
+        content=pd.read_feather(filename),
         filename=replace_extension(strip_paths(filename), ".csv"),
     )
 
