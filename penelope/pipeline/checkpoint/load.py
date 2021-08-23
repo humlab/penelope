@@ -1,7 +1,7 @@
 import os
 import zipfile
 from multiprocessing import get_context
-from typing import Any, Callable, Iterable, List, Tuple, Union
+from typing import Callable, Iterable, List, Tuple, Union
 
 import pandas as pd
 from loguru import logger
@@ -20,8 +20,9 @@ PayloadLoader = Callable[[str, CheckpointOpts, List[str], bool], Iterable[Docume
 def load_tagged_frame(
     *, zip_or_filename: TaggedFrameStore, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
 ) -> TaggedFrame:
-    content: str = zip_or_filename.read(filename).decode(encoding='utf-8')
-    tagged_frame: TaggedFrame = serializer.deserialize(content, checkpoint_opts)
+    tagged_frame: TaggedFrame = serializer.deserialize(
+        zip_or_filename.read(filename).decode(encoding='utf-8'), checkpoint_opts
+    )
     if checkpoint_opts.lower_lemma:
         tagged_frame[checkpoint_opts.lemma_column] = pd.Series(
             [x.lower() for x in tagged_frame[checkpoint_opts.lemma_column]]
@@ -31,7 +32,7 @@ def load_tagged_frame(
 
 def load_feathered_tagged_frame(
     *, zip_or_filename: TaggedFrameStore, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
-) -> TaggedFrame:
+) -> pd.DataFrame:
     feather_filename: str = checkpoint_opts.feather_filename(filename)
     if os.path.isfile(feather_filename):
         tagged_frame: pd.DataFrame = pd.read_feather(feather_filename)
@@ -65,16 +66,17 @@ def load_payload(
     zip_or_filename: str, filename: str, checkpoint_opts: CheckpointOpts, serializer: IContentSerializer
 ) -> DocumentPayload:
 
-    loader = get_checkpoint_loader(checkpoint_opts)
-
-    data: Any = loader(
-        zip_or_filename=zip_or_filename, filename=filename, checkpoint_opts=checkpoint_opts, serializer=serializer
-    )
-
     payload: DocumentPayload = DocumentPayload(
-        content_type=checkpoint_opts.content_type, content=data, filename=filename
+        content_type=checkpoint_opts.content_type,
+        content=get_checkpoint_loader(checkpoint_opts)(
+            zip_or_filename=zip_or_filename,
+            filename=filename,
+            checkpoint_opts=checkpoint_opts,
+            serializer=serializer,
+        ),
+        filename=filename,
     )
-    tfs: dict = serializer.compute_term_frequency(data, checkpoint_opts)
+    tfs: dict = serializer.compute_term_frequency(payload.content, checkpoint_opts)
     if tfs:
         payload.remember(**tfs)
     return payload
