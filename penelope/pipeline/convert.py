@@ -14,10 +14,11 @@ from penelope.corpus import (
     default_tokenizer,
 )
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts, PhraseSubstitutions
-from penelope.type_alias import TaggedFrame
 from penelope.utility import PropertyValueMaskingOpts
 
 from .interfaces import ContentType, DocumentPayload
+
+PHRASE_PAD: str = "(*)"
 
 
 def _payload_tokens(payload: DocumentPayload) -> List[str]:
@@ -43,7 +44,7 @@ def to_vectorized_corpus(
 
 
 def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-statements
-    doc: TaggedFrame,
+    doc: pd.DataFrame,
     extract_opts: ExtractTaggedTokensOpts,
     token2id: Token2Id = None,
     filter_opts: PropertyValueMaskingOpts = None,
@@ -65,7 +66,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         Iterable[str]: Sequence of extracted tokens
     """
     pad: str = "*"
-    phrase_pad: str = "(*)"
+    phrase_pad: str = None
     to_lower: bool = transform_opts and transform_opts.to_lower
 
     if extract_opts.lemmatize is None and extract_opts.target_override is None:
@@ -98,6 +99,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     if extract_opts.phrases is not None:
         found_phrases = detect_phrases(doc[target], extract_opts.phrases, ignore_case=to_lower)
         if found_phrases:
+            phrase_pad: str = PHRASE_PAD
             doc = merge_phrases(doc, found_phrases, target_column=target, pad=phrase_pad)
             passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
 
@@ -122,7 +124,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     if len(blocks) > 0:
         mask &= ~doc[target].isin(blocks)
 
-    filtered_data = doc.loc[mask][[target, pos_column]].copy()
+    filtered_data: pd.DataFrame = doc.loc[mask][[target, pos_column]]  # .copy()
 
     if extract_opts.global_tf_threshold > 1:
         """
@@ -159,21 +161,19 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     token_pos_tuples = filtered_data[[target, pos_column]].itertuples(index=False, name=None)
 
     if len(pos_paddings) > 0:
-        # token_pos_tuples = map(
-        #     lambda x: (pad, x[1]) if x[1] in pos_paddings and x[0] not in passthroughs else x, token_pos_tuples
-        # )
-        token_pos_tuples = [
+        token_pos_tuples = (
             (pad, x[1]) if x[1] in pos_paddings and x[0] not in passthroughs else x for x in token_pos_tuples
-        ]
+        )
 
     if extract_opts.append_pos:
-        tokens = [
+        return [
             pad if x[0] == pad else f"{x[0].replace(' ', '_')}@{x[1]}" for x in token_pos_tuples if x[0] != phrase_pad
         ]
-    else:
-        tokens = [x[0].replace(' ', '_') for x in token_pos_tuples if x[0] != phrase_pad]
 
-    return tokens
+    if phrase_pad:
+        return [x[0].replace(' ', '_') for x in token_pos_tuples if x[0] != phrase_pad]
+
+    return [x[0] for x in token_pos_tuples]
 
 
 def detect_phrases(
