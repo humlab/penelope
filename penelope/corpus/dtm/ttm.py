@@ -162,7 +162,7 @@ class CoOccurrenceMixIn:
                 yield i, term_term_matrix
 
     def to_keyness(self: IVectorizedCorpusProtocol, token2id: Token2Id, opts: ComputeKeynessOpts):
-        """Apply keyness to cporpus. Return new corpus."""
+        """Apply keyness to corpus. Return new corpus."""
         rows, cols, data = [], [], []
         pairs2token = self.vocabs_mapping.get
         for document_id, term_term_matrix in self.to_term_term_matrix_stream(token2id):
