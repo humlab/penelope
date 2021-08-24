@@ -1,19 +1,24 @@
 # type: ignore
 # pylint: disable=unused-import
 
+import collections
+from itertools import combinations
 from pprint import pprint as pp
-from typing import Sequence
+from typing import Callable, Iterable, Mapping, Sequence
 
 import numpy as np
 import pytest
 import scipy
-from penelope.co_occurrence import Bundle, ContextOpts
+from penelope.co_occurrence import Bundle, ContextOpts, VectorizedTTM, VectorizeType, generate_windows, windows_to_ttm
 from penelope.co_occurrence.keyness import ComputeKeynessOpts, compute_corpus_keyness, significance_ratio
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, metrics
-from penelope.corpus import VectorizedCorpus
+from penelope.corpus import Token2Id, VectorizedCorpus
+from penelope.corpus.tokenized_corpus import TokenizedCorpus
+from penelope.pipeline.co_occurrence.tasks_pool import tokens_to_ttm
+from penelope.utility import flatten
 from tests.utils import incline_code
 
-from .utils import create_keyness_opts, create_keyness_test_bundle, create_simple_bundle_by_pipeline
+from .utils import create_keyness_opts, create_keyness_test_bundle, create_simple_bundle_by_pipeline, very_simple_corpus
 
 SIMPLE_CORPUS_ABCDE_3DOCS = [
     ('tran_2019_01_test.txt', ['a', 'b', 'c', 'c', 'd', 'c', 'e']),
@@ -22,6 +27,173 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 ]
 
 # pylint: disable=protected-access
+
+
+def test_tasks_pool_tokens_to_ttm_step_by_step():
+
+    # Arrange
+    context_opts: ContextOpts = ContextOpts(
+        concept={'d'},
+        ignore_concept=False,
+        ignore_padding=False,
+        context_width=1,
+        processes=None,
+    )
+    corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_3DOCS)
+
+    pad_id = len(corpus.token2id)
+    corpus.token2id[context_opts.pad] = pad_id
+
+    token2id: dict = corpus.token2id
+    id2token: dict = corpus.id2token
+
+    filename, tokens = next(corpus)
+    doc_info = corpus.document_index[corpus.document_index.filename == filename].to_dict(orient='record')[0]
+    document_id = doc_info['document_id']
+    token_ids = [token2id[t] for t in tokens]
+    concept_ids = {token2id[x] for x in context_opts.concept}
+
+    # Act
+
+    windows: Iterable[Iterable[int]] = generate_windows(
+        token_ids=token_ids,
+        context_width=context_opts.context_width,
+        pad_id=pad_id,
+        ignore_pads=context_opts.ignore_padding,
+    )
+
+    # Assert
+    windows = [w for w in windows]
+    assert windows == [[5, 0, 1], [0, 1, 2], [1, 2, 2], [2, 2, 3], [2, 3, 2], [3, 2, 4], [2, 4, 5]]
+    assert [[id2token[i] for i in w] for w in windows] == [
+        ['*', 'a', 'b'],
+        ['a', 'b', 'c'],
+        ['b', 'c', 'c'],
+        ['c', 'c', 'd'],
+        ['c', 'd', 'c'],
+        ['d', 'c', 'e'],
+        ['c', 'e', '*'],
+    ]
+    # ['a', 'b', 'c', 'c', 'd', 'c', 'e']
+    ttm_map: Mapping[VectorizeType, VectorizedTTM] = windows_to_ttm(
+        document_id=document_id,
+        windows=windows,
+        concept_ids=concept_ids,
+        ignore_ids=set(),
+        vocab_size=len(token2id),
+    )
+    expected_normal_ttm = [
+        # a  b  c  d  e  *
+        [0, 2, 1, 0, 0, 1],  # a
+        [0, 0, 3, 0, 0, 1],  # b
+        [0, 0, 0, 5, 2, 1],  # c
+        [0, 0, 0, 0, 1, 0],  # d
+        [0, 0, 0, 0, 0, 1],  # e
+        [0, 0, 0, 0, 0, 0],  # *
+    ]
+    assert (ttm_map[VectorizeType.Normal].term_term_matrix.todense() == expected_normal_ttm).all()
+
+    expected_concept_ttm = [
+        # a  b  c  d  e  *
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 5, 1, 0],
+        [0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+    ]
+
+    assert (ttm_map[VectorizeType.Concept].term_term_matrix.todense() == expected_concept_ttm).all()
+
+
+def test_compute_ttm_alternative_method():
+
+    corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_3DOCS)
+    corpus.token2id['*'] = (pad_id := len(corpus.token2id))
+    id2token: dict = corpus.id2token
+
+    """Convert corpus to numeric ids """
+    corpus_token_ids = [[corpus.token2id[t] for t in tokens] for _, tokens in corpus]
+
+    corpus_document_windows = [
+        [
+            w
+            for w in generate_windows(
+                token_ids=token_ids,
+                context_width=1,
+                pad_id=pad_id,
+                ignore_pads=False,
+            )
+        ]
+        for token_ids in corpus_token_ids
+    ]
+
+    corpus_document_text_windows = [[''.join([id2token[t] for t in w]) for w in d] for d in corpus_document_windows]
+    corpus_document_text_windows = flatten(corpus_document_text_windows)
+
+    assert corpus_document_text_windows == flatten(
+        [
+            ['*ab', 'abc', 'bcc', 'ccd', 'cdc', 'dce', 'ce*'],
+            ['*aa', 'aac', 'ace', 'cec', 'ecd', 'cdd', 'dd*'],
+            ['*de', 'dee', 'eeb', 'eb*'],
+        ]
+    )
+
+    co_occurrence_instances = flatten(list(map(''.join, combinations(x, 2))) for x in corpus_document_text_windows)
+    co_occurrence_counts = collections.Counter(
+        x if x[0] < x[1] else x[::-1] for x in co_occurrence_instances if x[0] != x[1]
+    )
+
+    assert dict(co_occurrence_counts) == {
+        '*a': 3,
+        '*b': 2,
+        'ab': 2,
+        'ac': 4,
+        'bc': 3,
+        'cd': 8,
+        'de': 5,
+        'ce': 6,
+        '*c': 1,
+        '*e': 3,
+        'ae': 1,
+        '*d': 3,
+        'be': 3,
+    }
+
+    assert True
+
+
+def test_tasks_pool_tokens_to_ttm():
+    corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_3DOCS)
+    token2id: dict = corpus.token2id
+    context_opts: ContextOpts = ContextOpts(
+        concept={'d'},
+        ignore_concept=False,
+        ignore_padding=False,
+        context_width=1,
+        processes=None,
+    )
+    token2id[context_opts.pad] = len(token2id)
+    concept_ids = {token2id[x] for x in context_opts.concept}
+    ignore_ids = set()
+    filename, tokens = next(corpus)
+    doc_info = corpus.document_index[corpus.document_index.filename == filename].to_dict(orient='record')[0]
+    token_ids = [token2id[t] for t in tokens]
+    pad_id = token2id[context_opts.pad]
+    args = (
+        doc_info['document_id'],
+        doc_info['document_name'],
+        doc_info['filename'],
+        token_ids,
+        pad_id,
+        context_opts,
+        concept_ids,
+        ignore_ids,
+        len(token2id),
+    )
+
+    item: dict = tokens_to_ttm(args)
+    assert item is not None
 
 
 def test_keyness_transform_with_simple_corpus():
@@ -45,14 +217,35 @@ def test_step_by_step_tfidf_keyness_transform():
     """ STEP: Reduce corpus size if TF threshold is specified
         @filename: keyness.py, compute_weighed_corpus_keyness:75"""
 
-    assert corpus.term_frequency.tolist() == [3, 2, 2, 1, 3, 4, 8, 3, 5, 6, 3, 1, 3]
+    """Expected result (see test_compute_ttm_alternative_method above)"""
+    expected_result = {
+        '*/a': 3,
+        '*/b': 2,
+        'a/b': 2,
+        'a/c': 4,
+        'b/c': 3,
+        'd/c': 8,
+        'd/e': 5,
+        'c/e': 6,
+        '*/c': 1,
+        '*/e': 3,
+        'a/e': 1,
+        '*/d': 3,
+        'b/e': 3,
+    }
+    fg = corpus.id2token.get
+    tf = {fg(i): x for i, x in enumerate(corpus.term_frequency)}
+    # tf = {x if x[0] < x[2] else x[::-1]: i for x,i in tf.items()}
+
+    assert tf == expected_result
+
     zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
     assert zero_out_indices.tolist() == [1, 2, 3, 11]
-    assert corpus.term_frequency.tolist() == [3, 0, 0, 0, 3, 4, 8, 3, 5, 6, 3, 0, 3]
+    assert corpus.term_frequency.tolist() == [3, 0, 0, 0, 8, 3, 4, 3, 6, 5, 3, 0, 3]
 
-    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 0, 0, 8, 1, 5, 2, 3, 0, 0]
+    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 8, 0, 0, 1, 2, 5, 3, 0, 0]
     concept_corpus.zero_out_by_indices(zero_out_indices)
-    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 0, 0, 8, 1, 5, 2, 3, 0, 0]
+    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 8, 0, 0, 1, 2, 5, 3, 0, 0]
 
     """ STEP: Compute corpus keyness for both corpora
         @filename: penelope/co_occurrence/keyness.py:23, compute_corpus_keyness
@@ -64,9 +257,9 @@ def test_step_by_step_tfidf_keyness_transform():
                 corpus.data.todense()
                 == np.matrix(
                     [
-                        [1, 0, 0, 0, 3, 1, 5, 1, 1, 2, 0, 0, 0],
-                        [2, 0, 0, 0, 0, 3, 3, 0, 1, 4, 2, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 1, 0, 3],
+                        [1, 0, 0, 0, 5, 3, 1, 1, 2, 1, 0, 0, 0],
+                        [2, 0, 0, 0, 3, 0, 3, 0, 4, 1, 2, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 1, 0, 3],
                     ],
                     dtype=np.int32,
                 )
