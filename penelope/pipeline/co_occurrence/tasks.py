@@ -171,7 +171,7 @@ class ToCoOccurrenceDTM(ITask):
                 name_to_id[payload.document_name],
                 payload.document_name,
                 payload.filename,
-                payload.content if self.content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
+                payload.content if payload.content_type == ContentType.TOKEN_IDS else [fg(t) for t in payload.content],
                 fg(context_opts.pad),
                 context_opts,
                 self.concept_ids,
