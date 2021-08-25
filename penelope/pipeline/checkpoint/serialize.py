@@ -8,7 +8,7 @@ from ..interfaces import ContentType
 from .interface import CheckpointOpts, IContentSerializer, SerializableContent
 
 
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument, no-member
 class TextContentSerializer(IContentSerializer):
     def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
         return content

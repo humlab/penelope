@@ -11,6 +11,8 @@ from tests.fixtures import SAMPLE_WINDOW_STREAM
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
 
+# pylint: disable=unsubscriptable-object
+
 
 def log_json(filename, d):
     with open(filename, "w", encoding="utf8") as f:

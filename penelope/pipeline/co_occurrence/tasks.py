@@ -1,4 +1,3 @@
-import pickle
 import sys
 from dataclasses import dataclass, field
 from pprint import pformat as pf

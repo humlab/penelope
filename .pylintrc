@@ -35,7 +35,8 @@ disable=invalid-name,
         wrong-spelling-in-docstring,
         duplicate-code,
         consider-using-from-import,
-        consider-using-dict-items
+        consider-using-dict-items,
+        unused-private-member
         # apply-builtin,
         # backtick,
         # bad-inline-option,

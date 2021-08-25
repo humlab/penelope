@@ -13,7 +13,7 @@ from penelope.pipeline.sparv import SparvCsvSerializer
 from penelope.pipeline.sparv.convert import to_lemma_form
 from penelope.type_alias import TaggedFrame
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name, no-member, unsubscriptable-object
 
 TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
 # text

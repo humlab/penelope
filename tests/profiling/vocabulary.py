@@ -1,6 +1,5 @@
 from os.path import join as jj
 
-from penelope import corpus as corpora
 from penelope import pipeline
 from penelope.pipeline.pipelines import CorpusPipeline
 
