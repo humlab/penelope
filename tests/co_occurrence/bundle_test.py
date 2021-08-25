@@ -44,7 +44,7 @@ def test_compress_corpus():
                 [
                     [0, 0, 0, 0, 5, 0, 0, 0, 1, 1, 0, 0, 0],
                     [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0]
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0],
                 ],
                 dtype=np.int32,
             )
@@ -59,11 +59,7 @@ def test_compress_corpus():
         (
             concept_corpus.data.todense()
             == np.matrix(
-                [
-[0, 5, 0, 1, 1, 0],
-        [0, 3, 0, 1, 1, 2],
-        [0, 0, 1, 0, 3, 1]
-                ],
+                [[0, 5, 0, 1, 1, 0], [0, 3, 0, 1, 1, 2], [0, 0, 1, 0, 3, 1]],
                 dtype=np.int32,
             )
         )
@@ -151,7 +147,6 @@ def test_step_by_step_compress_with_simple_corpus():
                     [0, 0, 0, 0, 5, 0, 0, 0, 1, 1, 0, 0, 0],
                     [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0],
-
                 ],
                 dtype=np.int32,
             )
@@ -286,7 +281,7 @@ def test_step_by_step_compress_with_simple_corpus():
     token_ids_in_kept_pairs: Set[int] = set(
         flatten((k for k, pair_id in bundle.token_ids_2_pair_id.items() if pair_id in keep_ids))
     )
-    assert token_ids_in_kept_pairs == {0, 1, 3, 4, 5, 6} # all except masked token
+    assert token_ids_in_kept_pairs == {0, 1, 3, 4, 5, 6}  # all except masked token
 
     kept_token_ids = sorted(list(token_ids_in_kept_pairs.union(set(bundle.token2id.magic_token_ids))))
     assert kept_token_ids == [0, 1, 2, 3, 4, 5, 6]
@@ -303,7 +298,7 @@ def test_step_by_step_compress_with_simple_corpus():
                     # *  -  a  b  c  d  e
                     [2, 3, 0, 2, 3, 6, 2],
                     [2, 3, 0, 3, 0, 5, 3],
-                    [2, 2, 0, 0, 2, 0, 4]
+                    [2, 2, 0, 0, 2, 0, 4],
                 ],
                 dtype=np.int32,
             )
@@ -324,11 +319,7 @@ def test_step_by_step_compress_with_simple_corpus():
         (
             wc.document_term_window_counts.todense()
             == np.matrix(
-                [
-                    [2, 3, 0, 3, 6, 2],
-                    [2, 3, 0, 0, 5, 3],
-                    [2, 2, 0, 2, 0, 4]
-                ],
+                [[2, 3, 0, 3, 6, 2], [2, 3, 0, 0, 5, 3], [2, 2, 0, 2, 0, 4]],
                 dtype=np.int32,
             )
         )
@@ -343,11 +334,7 @@ def test_step_by_step_compress_with_simple_corpus():
         (
             wc.slice(kept_token_ids, inplace=False).document_term_window_counts.todense()
             == np.matrix(
-                [
-                    [0, 3, 0, 0, 0, 3, 1],
-                    [1, 3, 0, 0, 0, 2, 1],
-                    [1, 2, 0, 0, 0, 0, 2]
-                ],
+                [[0, 3, 0, 0, 0, 3, 1], [1, 3, 0, 0, 0, 2, 1], [1, 2, 0, 0, 0, 0, 2]],
                 dtype=np.int32,
             )
         )
