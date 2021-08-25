@@ -111,7 +111,7 @@ class ExtTextCorpus(TextCorpus):
             'document_name': filename,
         }
 
-    def ___compile_documents(self):
+    def ___compile_documents(self):  # pylint: disable=unused-private-member
 
         document_data = map(self.__get_document_info, self.filenames)
 
