@@ -155,8 +155,9 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    id2pair = bundle.corpus.id2token
-    co_occurrence_dtm_frame = pd.DataFrame(co_occurrence_dtm, columns=[id2pair[i] for i in range(0, len(id2pair))])
+    # id2pair = bundle.corpus.id2token
+    # co_occurrence_dtm_frame = pd.DataFrame(co_occurrence_dtm, columns=[id2pair[i] for i in range(0, len(id2pair))])
+    # assert co_occurrence_dtm_frame is not None
     """
         print(co_occurrence_dtm_frame)
 
@@ -343,6 +344,7 @@ def test_step_by_step_compress_with_simple_corpus():
     )
     assert ids_translation == {1: 0, 4: 1, 7: 2, 8: 3, 9: 4, 10: 5}
     translated_token2id = bundle.token2id.translate(ids_translation, inplace=False)
+    assert translated_token2id is not None
 
     bundle._token_ids_2_pair_id = {
         pair: pair_id for pair, pair_id in bundle._token_ids_2_pair_id if pair_id in ids_translation
