@@ -1,6 +1,7 @@
 import json
 from typing import Iterable
 
+import pandas as pd
 from penelope.co_occurrence import ContextOpts, WindowsCorpus
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import CorpusVectorizer, generate_token2id
@@ -95,7 +96,7 @@ def test_windows_iterator():
 
     windows_iter = WindowsCorpus(windows)
     _ = [x for x in windows_iter]
-    document_index = windows_iter.document_index
+    document_index: pd.DataFrame = windows_iter.document_index
 
     assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_windows']) == 2
     assert int(document_index[document_index.filename == 'tran_2019_03_test.txt']['n_windows']) == 8
