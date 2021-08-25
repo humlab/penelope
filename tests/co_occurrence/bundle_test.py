@@ -42,9 +42,9 @@ def test_compress_corpus():
             concept_corpus.data.todense()
             == np.matrix(
                 [
-                    [0, 0, 0, 0, 0, 0, 5, 0, 1, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 2, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 5, 0, 0, 0, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0]
                 ],
                 dtype=np.int32,
             )
@@ -60,9 +60,9 @@ def test_compress_corpus():
             concept_corpus.data.todense()
             == np.matrix(
                 [
-                    [0, 5, 0, 1, 1, 0],
-                    [0, 3, 0, 1, 1, 2],
-                    [0, 0, 1, 3, 0, 1],
+[0, 5, 0, 1, 1, 0],
+        [0, 3, 0, 1, 1, 2],
+        [0, 0, 1, 0, 3, 1]
                 ],
                 dtype=np.int32,
             )
@@ -70,8 +70,8 @@ def test_compress_corpus():
         .all()
         .all()
     )
-    assert keep_ids.tolist() == [1, 6, 7, 8, 9, 10]
-    assert ids_translation == {1: 0, 6: 1, 7: 2, 8: 3, 9: 4, 10: 5}
+    assert keep_ids.tolist() == [1, 4, 7, 8, 9, 10]
+    assert ids_translation == {1: 0, 4: 1, 7: 2, 8: 3, 9: 4, 10: 5}
 
 
 def test_step_by_step_compress_with_simple_corpus():
@@ -83,23 +83,7 @@ def test_step_by_step_compress_with_simple_corpus():
     )
 
     token2id = dict(bundle.token2id.data)
-    assert token2id == {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
-
-    pair2id = {
-        '*/a': 0,
-        'a/b': 1,
-        '*/b': 2,
-        '*/c': 3,
-        'b/c': 4,
-        'a/c': 5,
-        'c/d': 6,
-        '*/e': 7,
-        'd/e': 8,
-        'c/e': 9,
-        '*/d': 10,
-        'a/e': 11,
-        'b/e': 12,
-    }
+    assert token2id == {'*': 0, 'd': 1, '__low-tf__': 2, 'a': 3, 'b': 4, 'c': 5, 'e': 6}
 
     windows = [
         [
@@ -164,9 +148,10 @@ def test_step_by_step_compress_with_simple_corpus():
             co_occurrence_dtm
             == np.matrix(
                 [
-                    [0, 0, 0, 0, 0, 0, 5, 0, 1, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 2, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 5, 0, 0, 0, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0],
+
                 ],
                 dtype=np.int32,
             )
@@ -175,20 +160,22 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    id2pair = {v: k for k, v in pair2id.items()}
-    co_occurrence_dtm_frame = pd.DataFrame(co_occurrence_dtm, columns=[id2pair[i] for i in range(0, len(pair2id))])
+    id2pair = bundle.corpus.id2token
+    co_occurrence_dtm_frame = pd.DataFrame(co_occurrence_dtm, columns=[id2pair[i] for i in range(0, len(id2pair))])
     """
         print(co_occurrence_dtm_frame)
 
-              *                        *    *    *    *    *
+                             *              *    *    *    *
          0    1    2    3    4    5    6    7    8    9   10   11   12
-       */a  a/b  */b  */c  b/c  a/c  c/d  */e  d/e  c/e  */d  a/e  b/e
+        */a  a/b  */b  */c  d/c  b/c  a/c  */e  c/e  d/e  */d  a/e  b/e
         --------------------------------------------------------------
-    0    0    0    0    0    0    0    5    0    1    1    0    0    0
-    1    0    0    0    0    0    0    3    0    1    1    2    0    0
-    2    0    0    0    0    0    0    0    1    3    0    1    0    0
+    0    0    0    0    0    5    0    0    0    1    1    0    0    0
+    1    0    0    0    0    3    0    0    0    1    1    2    0    0
+    2    0    0    0    0    0    0    0    1    0    3    1    0    0
         --------------------------------------------------------------
-  SUM    0    0    0    0    0    0    8    1    5    2    3    0    0
+  SUM    0    0    0    0    8    0    0    1    2    5    3    0    0
+
+
     """
 
     """ Compress concept corpus (inlined code) """
@@ -199,18 +186,18 @@ def test_step_by_step_compress_with_simple_corpus():
 
     extra_keep_ids = []
     keep_ids = concept_corpus.term_frequencies_greater_than_or_equal_to_threshold(1, keep_indices=extra_keep_ids)
-    assert keep_ids.tolist() == [6, 7, 8, 9, 10]
+    assert keep_ids.tolist() == [4, 7, 8, 9, 10]
 
     extra_keep_ids = [1]
     keep_ids = concept_corpus.term_frequencies_greater_than_or_equal_to_threshold(1, keep_indices=extra_keep_ids)
 
-    assert keep_ids.tolist() == [1, 6, 7, 8, 9, 10]
+    assert keep_ids.tolist() == [1, 4, 7, 8, 9, 10]
 
     ids_translation = {old_id: new_id for new_id, old_id in enumerate(keep_ids)}
-    assert ids_translation == {1: 0, 6: 1, 7: 2, 8: 3, 9: 4, 10: 5}
+    assert ids_translation == {1: 0, 4: 1, 7: 2, 8: 3, 9: 4, 10: 5}
 
     concept_corpus.slice_by_indices(keep_ids, inplace=True)
-    assert concept_corpus.token2id == {'a/b': 0, 'c/d': 1, '*/e': 2, 'd/e': 3, 'c/e': 4, '*/d': 5}
+    assert concept_corpus.token2id == {'a/b': 0, 'd/c': 1, '*/e': 2, 'c/e': 3, 'd/e': 4, '*/d': 5}
 
     #  1    6    7    8    9   10
     # a/b  c/d  */e  d/e  c/e  */d
@@ -223,7 +210,7 @@ def test_step_by_step_compress_with_simple_corpus():
                     # 0  1  2  3  4  5
                     [0, 5, 0, 1, 1, 0],
                     [0, 3, 0, 1, 1, 2],
-                    [0, 0, 1, 3, 0, 1],
+                    [0, 0, 1, 0, 3, 1],
                 ],
                 dtype=np.int32,
             )
@@ -232,7 +219,7 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    assert concept_corpus.term_frequency.tolist() == [0, 8, 1, 5, 2, 3]
+    assert concept_corpus.term_frequency.tolist() == [0, 8, 1, 2, 5, 3]
     assert concept_corpus.overridden_term_frequency is None
 
     """ Slice full corpus """
@@ -245,9 +232,9 @@ def test_step_by_step_compress_with_simple_corpus():
             == np.matrix(
                 [
                     # 0  1  2  3  4  5  6  7  8  9 10 11 12
-                    [1, 2, 1, 1, 3, 1, 5, 1, 1, 2, 0, 0, 0],
-                    [2, 0, 0, 0, 0, 3, 3, 0, 1, 4, 2, 1, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 2, 3, 0, 1, 0, 3],
+                    [1, 2, 1, 1, 5, 3, 1, 1, 2, 1, 0, 0, 0],
+                    [2, 0, 0, 0, 3, 0, 3, 0, 4, 1, 2, 1, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 2, 0, 3, 1, 0, 3],
                 ],
                 dtype=np.int32,
             )
@@ -268,9 +255,9 @@ def test_step_by_step_compress_with_simple_corpus():
                     # ----------------
                     # 0  1  2  3  4  5
                     # ----------------
-                    [2, 5, 1, 1, 2, 0],
-                    [0, 3, 0, 1, 4, 2],
-                    [0, 0, 2, 3, 0, 1],
+                    [2, 5, 1, 2, 1, 0],
+                    [0, 3, 0, 4, 1, 2],
+                    [0, 0, 2, 0, 3, 1],
                     # ----------------
                     # 2  8  3  5  6  3
                 ],
@@ -281,8 +268,8 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    assert corpus.token2id == {'a/b': 0, 'c/d': 1, '*/e': 2, 'd/e': 3, 'c/e': 4, '*/d': 5}
-    assert corpus.term_frequency.tolist() == [2, 8, 3, 5, 6, 3]
+    assert corpus.token2id == {'a/b': 0, 'd/c': 1, '*/e': 2, 'c/e': 3, 'd/e': 4, '*/d': 5}
+    assert corpus.term_frequency.tolist() == [2, 8, 3, 6, 5, 3]
     assert corpus.overridden_term_frequency is None
 
     """Update token count and token2id"""
@@ -299,7 +286,7 @@ def test_step_by_step_compress_with_simple_corpus():
     token_ids_in_kept_pairs: Set[int] = set(
         flatten((k for k, pair_id in bundle.token_ids_2_pair_id.items() if pair_id in keep_ids))
     )
-    assert token_ids_in_kept_pairs == {0, 2, 3, 4, 5, 6}  # all except masked token
+    assert token_ids_in_kept_pairs == {0, 1, 3, 4, 5, 6} # all except masked token
 
     kept_token_ids = sorted(list(token_ids_in_kept_pairs.union(set(bundle.token2id.magic_token_ids))))
     assert kept_token_ids == [0, 1, 2, 3, 4, 5, 6]
@@ -314,9 +301,9 @@ def test_step_by_step_compress_with_simple_corpus():
             == np.matrix(
                 [
                     # *  -  a  b  c  d  e
-                    [2, 0, 2, 3, 6, 3, 2],
-                    [2, 0, 3, 0, 5, 3, 3],
-                    [2, 0, 0, 2, 0, 2, 4],
+                    [2, 3, 0, 2, 3, 6, 2],
+                    [2, 3, 0, 3, 0, 5, 3],
+                    [2, 2, 0, 0, 2, 0, 4]
                 ],
                 dtype=np.int32,
             )
@@ -338,10 +325,9 @@ def test_step_by_step_compress_with_simple_corpus():
             wc.document_term_window_counts.todense()
             == np.matrix(
                 [
-                    # *  -  a  c  d  e
-                    [2, 0, 2, 6, 3, 2],
-                    [2, 0, 3, 5, 3, 3],
-                    [2, 0, 0, 0, 2, 4],
+                    [2, 3, 0, 3, 6, 2],
+                    [2, 3, 0, 0, 5, 3],
+                    [2, 2, 0, 2, 0, 4]
                 ],
                 dtype=np.int32,
             )
@@ -358,10 +344,9 @@ def test_step_by_step_compress_with_simple_corpus():
             wc.slice(kept_token_ids, inplace=False).document_term_window_counts.todense()
             == np.matrix(
                 [
-                    # *  -  a  b  c  d  e
-                    [0, 0, 0, 0, 3, 3, 1],
-                    [1, 0, 0, 0, 2, 3, 1],
-                    [1, 0, 0, 0, 0, 2, 2],
+                    [0, 3, 0, 0, 0, 3, 1],
+                    [1, 3, 0, 0, 0, 2, 1],
+                    [1, 2, 0, 0, 0, 0, 2]
                 ],
                 dtype=np.int32,
             )
@@ -369,7 +354,7 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
         .all()
     )
-    assert ids_translation == {1: 0, 6: 1, 7: 2, 8: 3, 9: 4, 10: 5}
+    assert ids_translation == {1: 0, 4: 1, 7: 2, 8: 3, 9: 4, 10: 5}
     translated_token2id = bundle.token2id.translate(ids_translation, inplace=False)
 
     bundle._token_ids_2_pair_id = {
