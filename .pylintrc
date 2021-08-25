@@ -33,7 +33,9 @@ disable=invalid-name,
         wrong-import-order,
         wrong-spelling-in-comment,
         wrong-spelling-in-docstring,
-        duplicate-code
+        duplicate-code,
+        consider-using-from-import,
+        consider-using-dict-items
         # apply-builtin,
         # backtick,
         # bad-inline-option,
