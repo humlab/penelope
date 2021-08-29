@@ -80,11 +80,19 @@ class ExtractTaggedTokensOpts:
 
     """Tokens that will be filtered out"""
     block_tokens: List[str] = field(default_factory=list)
+
     # block_chars: str = ""
+    
     """Global term frequency threshold"""
     global_tf_threshold: int = 1
+
     """Global term frequency threshold"""
     global_tf_threshold_mask: bool = False
+
+    def get_target_column(self, lemma_column: str, text_column: str) -> str:
+        if self.target_override:
+            return self.target_override
+        return lemma_column if self.lemmatize else text_column
 
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
