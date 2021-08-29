@@ -43,7 +43,7 @@ def to_vectorized_corpus(
     return corpus
 
 
-def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-statements
+def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-statements
     doc: pd.DataFrame,
     extract_opts: ExtractTaggedTokensOpts,
     token2id: Token2Id = None,
@@ -65,7 +65,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     Returns:
         Iterable[str]: Sequence of extracted tokens
     """
-    pad: str = "*"
     phrase_pad: str = None
     to_lower: bool = transform_opts and transform_opts.to_lower
 
@@ -75,17 +74,13 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     if pos_column not in doc.columns:
         raise ValueError(f"configuration error: {pos_column} not in document")
 
-    if extract_opts.target_override:
-        target = extract_opts.target_override
-    else:
-        target = lemma_column if extract_opts.lemmatize else text_column
+    target: str = extract_opts.get_target_column(lemma_column, text_column)
 
     if target not in doc.columns:
         raise ValueError(f"{target} is not valid target for given document (missing column)")
 
     passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
     blocks: Set[str] = extract_opts.get_block_tokens().union('')
-    pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
     if extract_opts.lemmatize or to_lower:
         doc[target] = pd.Series([x.lower() for x in doc[target]])
@@ -157,6 +152,49 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         else:
             """Filter out low frequency terms"""
             filtered_data = filtered_data[~low_frequency_mask]
+
+    return filtered_data
+
+
+def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-statements
+    doc: pd.DataFrame,
+    extract_opts: ExtractTaggedTokensOpts,
+    token2id: Token2Id = None,
+    filter_opts: PropertyValueMaskingOpts = None,
+    text_column: str = 'text',
+    lemma_column: str = 'lemma_',
+    pos_column: str = 'pos_',
+    transform_opts: TokensTransformOpts = None,
+) -> Iterable[str]:
+    """Extracts tokens from a tagged document represented as a Pandas data frame.
+
+    Args:
+        extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
+        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+        text_column (str, optional): Name of text column in data frame. Defaults to 'text'.
+        lemma_column (str, optional): Name of `lemma` column in data frame. Defaults to 'lemma_'.
+        pos_column (str, optional): Name of PoS column. Defaults to 'pos_'.
+
+    Returns:
+        Iterable[str]: Sequence of extracted tokens
+    """
+    pad: str = "*"
+    pos_paddings: Set[str] = extract_opts.get_pos_paddings()
+    phrase_pad: str = PHRASE_PAD
+    passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
+
+    target: str = extract_opts.get_target_column(lemma_column, text_column)
+
+    filtered_data = filter_tagged_frame(
+        doc,
+        extract_opts,
+        token2id,
+        filter_opts,
+        text_column,
+        lemma_column,
+        pos_column,
+        transform_opts,
+    )
 
     token_pos_tuples = filtered_data[[target, pos_column]].itertuples(index=False, name=None)
 
