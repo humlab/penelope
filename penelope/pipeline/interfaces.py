@@ -19,7 +19,7 @@ from penelope.corpus.readers import TextSource
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
 from tqdm.auto import tqdm
 
-from .tagged_frame import TaggedFrame
+from penelope.type_alias import TaggedFrame
 
 if TYPE_CHECKING:
     from . import pipelines

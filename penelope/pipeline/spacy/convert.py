@@ -6,7 +6,7 @@ from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 
-from ..tagged_frame import TaggedFrame
+from penelope.type_alias import TaggedFrame
 
 
 def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: dict) -> Iterable[Token]:
