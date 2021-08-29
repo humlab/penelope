@@ -753,7 +753,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         #     if self.token_type is None:
         #         raise ValueError("token_type text or lemma not specfied")
 
-        self.token2id: Token2Id = Token2Id()
+        self.token2id: Token2Id = self.token2id or Token2Id()
         self.pipeline.payload.token2id = self.token2id
         return self
 
