@@ -3,7 +3,7 @@ import zipfile
 from collections import defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from typing import Any, Callable, Container, Iterator, List, Mapping, Optional, Tuple, Union
+from typing import Any, Callable, Container, Iterable, Iterator, List, Mapping, Optional, Set, Tuple, Union
 
 import pandas as pd
 from loguru import logger
@@ -247,6 +247,9 @@ class Token2Id(MutableMapping):
 
     def to_ids(self, tokens: List[str]) -> List[int]:
         return [self._data[w] for w in tokens]
+
+    def to_id_set(self, tokens: Iterable[str]) -> Set[int]:
+        return {self._data[w] for w in tokens}
 
     def find(self, what: Union[List[str], str]):
 
