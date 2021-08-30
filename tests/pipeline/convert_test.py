@@ -8,7 +8,8 @@ import pytest
 from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.pipeline import CheckpointOpts
-from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
+from penelope.pipeline.convert import filter_tagged_frame, tagged_frame_to_tokens
+from penelope.pipeline.phrases import detect_phrases, merge_phrases, parse_phrases
 from penelope.pipeline.sparv import SparvCsvSerializer
 from penelope.pipeline.sparv.convert import to_lemma_form
 from penelope.type_alias import TaggedFrame
@@ -80,6 +81,53 @@ def create_tagged_frame():
 def tagged_frame():
     tagged_frame: pd.DataFrame = create_tagged_frame()
     return tagged_frame
+
+
+@pytest.fixture()
+def tagged_id_frame():
+    tagged_frame: pd.DataFrame = create_tagged_frame()
+    return tagged_frame
+
+
+@pytest.mark.parametrize('tagged_frame', [create_tagged_frame()])
+def test_filter_tagged_frame(tagged_frame: pd.DataFrame):
+
+    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes=None, pos_excludes=None)
+    filtered_frame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame.token.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert (
+        filtered_frame.token.tolist()
+        == tagged_frame.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1).tolist()
+    )
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='VB', pos_excludes=None)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == ['trängdes', 'gapade', 'fladdrade']
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='VB', pos_excludes=None)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == ['tränga', 'gapa', 'fladdra_omkring']
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|NN|', pos_excludes=None)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB', 'NN'])].baseform.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[~tagged_frame.pos.isin(['MID', 'MAD'])].baseform.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
 
 
 # @pytest.mark.parametrize("extract_opts,expected", [(dict(lemmatize=False, pos_includes=None, pos_excludes=None),[])])
