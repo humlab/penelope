@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
+from penelope.corpus import Token2Id
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import numpy as np
@@ -38,7 +39,14 @@ class TokensTransformOpts:
     def props(self):
         return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
 
-    def mask(self, tokens: pd.Series) -> np.ndarray:
+    def mask(self, tokens: pd.Series, token2id: Token2Id) -> np.ndarray:
+
+        if not np.issubdtype(tokens.dtype, np.integer):
+            if token2id is None:
+                raise ValueError("mask(id): vocabulary is missing")
+
+            tokens = tokens.map(token2id.id2token)
+
         mask = np.repeat(True, len(tokens))
         if self.min_len > 1:
             mask &= tokens.str.len() >= self.min_len
