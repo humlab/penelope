@@ -7,7 +7,7 @@ from loguru import logger
 from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
-from penelope.pipeline.convert import parse_phrases
+from penelope.pipeline.phrases import parse_phrases
 from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
