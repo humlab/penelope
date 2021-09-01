@@ -1,9 +1,8 @@
-from loguru import logger
-from penelope.utility.pos_tags import PoS_Tag_Scheme
 from typing import Callable, Iterable, List, Set, Union
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 from penelope.corpus import (
     CorpusVectorizer,
     DocumentIndex,
@@ -14,10 +13,10 @@ from penelope.corpus import (
     default_tokenizer,
 )
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts
-from penelope.utility import PropertyValueMaskingOpts
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
 
 from .interfaces import ContentType, DocumentPayload
-from .phrases import detect_phrases, merge_phrases, PHRASE_PAD
+from .phrases import PHRASE_PAD, detect_phrases, merge_phrases
 
 
 def _payload_tokens(payload: DocumentPayload) -> List[str]:
