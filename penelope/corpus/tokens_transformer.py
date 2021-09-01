@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from penelope.corpus import Token2Id
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import numpy as np
@@ -10,6 +9,7 @@ import pandas as pd
 import textacy.preprocessing.remove as textacy_remove
 
 from . import transforms
+from .token2id import Token2Id
 
 # pylint: disable=too-many-arguments
 
@@ -39,7 +39,12 @@ class TokensTransformOpts:
     def props(self):
         return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
 
-    def mask(self, tokens: pd.Series, token2id: Token2Id) -> np.ndarray:
+    def mask(self, tokens: pd.Series, token2id: Token2Id = None) -> np.ndarray:
+
+        mask = np.repeat(True, len(tokens))
+
+        if len(tokens) == 0:
+            return mask
 
         if not np.issubdtype(tokens.dtype, np.integer):
             if token2id is None:
@@ -47,25 +52,33 @@ class TokensTransformOpts:
 
             tokens = tokens.map(token2id.id2token)
 
-        mask = np.repeat(True, len(tokens))
         if self.min_len > 1:
             mask &= tokens.str.len() >= self.min_len
+
         if self.max_len:
             mask &= tokens.str.len() <= self.max_len
+
         if self.only_alphabetic:
             mask &= tokens.apply(lambda t: all(c in transforms.ALPHABETIC_CHARS for c in t))
+
         if self.only_any_alphanumeric:
             mask &= tokens.apply(lambda t: any(c.isalnum() for c in t))
+
         if self.remove_accents:
             # FIXME Not implemented
             pass
+
         if self.remove_stopwords:
             mask &= ~tokens.isin(transforms.load_stopwords(self.stopwords, self.extra_stopwords))
+
         if not self.keep_numerals:
             mask &= ~tokens.str.isnumeric()
+
         if not self.keep_symbols:
             mask &= ~tokens.apply(lambda t: all(c in transforms.SYMBOLS_CHARS for c in t))
+
         mask &= tokens != ''
+
         return mask
 
 
