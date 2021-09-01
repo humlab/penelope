@@ -82,7 +82,7 @@ class ExtractTaggedTokensOpts:
     block_tokens: List[str] = field(default_factory=list)
 
     # block_chars: str = ""
-    
+
     """Global term frequency threshold"""
     global_tf_threshold: int = 1
 

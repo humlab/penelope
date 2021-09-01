@@ -2,11 +2,10 @@ from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
 import spacy
+from penelope.type_alias import TaggedFrame
 from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language
 from spacy.tokens import Doc, Token
-
-from penelope.type_alias import TaggedFrame
 
 
 def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: dict) -> Iterable[Token]:

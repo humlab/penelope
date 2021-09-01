@@ -111,14 +111,14 @@ class ExtTextCorpus(TextCorpus):
             'document_name': filename,
         }
 
-    def ___compile_documents(self):  # pylint: disable=unused-private-member
+    # def ___compile_documents(self):
 
-        document_data = map(self.__get_document_info, self.filenames)
+    #     document_data = map(self.__get_document_info, self.filenames)
 
-        document_index: DocumentIndex = pd.DataFrame(list(document_data))
-        document_index.index.names = ['document_id']
+    #     document_index: DocumentIndex = pd.DataFrame(list(document_data))
+    #     document_index.index.names = ['document_id']
 
-        return document_index
+    #     return document_index
 
 
 class SimpleExtTextCorpus(ExtTextCorpus):

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import IntEnum
-import numpy as np
 
+import numpy as np
 import pandas as pd
 from penelope.utility import PoS_Tag_Scheme
 
@@ -9,19 +9,23 @@ from .interfaces import ITask
 from .pipeline import ContentType, DocumentPayload
 from .tasks import Vocabulary
 
+
 class IngestVocabType(IntEnum):
     """Use supplied vocab"""
+
     Supplied = 0
     """Build vocab in separate pass on enter"""
     Prebuild = 1
     """Ingest tokens from each document incrementally"""
     Incremental = 2
 
+
 @dataclass
 class ToIdTaggedFrame(Vocabulary):
     """Encode a TaggedFrame to a numerical representation.
     Return data frame with columns `token_id` and `pos_id`.
     """
+
     ingest_vocab_type: str = field(default=IngestVocabType.Incremental)
 
     def __post_init__(self):
@@ -30,7 +34,6 @@ class ToIdTaggedFrame(Vocabulary):
 
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_ID_FRAME
-
 
     def setup(self) -> ITask:
 
@@ -45,7 +48,6 @@ class ToIdTaggedFrame(Vocabulary):
                 self.pipeline.payload.token2id = self.token2id
 
         return super().setup()
-
 
     def enter(self):
 
@@ -70,4 +72,3 @@ class ToIdTaggedFrame(Vocabulary):
             )
         )
         return payload.update(ContentType.TAGGED_ID_FRAME, id_tagged_frame)
-
