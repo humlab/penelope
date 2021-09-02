@@ -7,6 +7,12 @@ from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 
+TAGGED_COLUMNS: dict = dict(
+    text_column='text',
+    lemma_column='lemma_',
+    pos_column='pos_',
+)
+
 
 def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: dict) -> Iterable[Token]:
     """Filters out tokens based on given attribute value (dict[attribute, bool])
