@@ -46,7 +46,7 @@ class TokensTransformOpts:
         if len(tokens) == 0:
             return mask
 
-        if not np.issubdtype(tokens.dtype, np.integer):
+        if np.issubdtype(tokens.dtype, np.integer):
             if token2id is None:
                 raise ValueError("mask(id): vocabulary is missing")
 
