@@ -3,9 +3,7 @@ name = "humlab-penelope"
 version = "0.5.16"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
-packages = [
-    { include = "penelope" }
-]
+packages = [{ include = "penelope" }]
 classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
@@ -95,28 +93,35 @@ co_occurrence = "penelope.scripts.co_occurrence:main"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
-     "-rfE",
-     "-q",
+    "-rfE",
+    "-q",
     # "-s",
     #"-n4",
 ]
 log_cli = "False"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 norecursedirs = [
     "test_data",
     "output",
     "__pycache__",
+    "deprecated",
+    "penelope",
+    "docs",
+    ".git",
+    ".github",
+    ".vscode",
+    "profile-reports",
+    "tmp",
+
 ]
 python_files = "*_test.py"
 python_functions = "test_*"
 filterwarnings = [
-  "ignore::_pytest.warning_types.PytestCollectionWarning",
-  "ignore::DeprecationWarning",
-  "ignore::PendingDeprecationWarning",
-  "ignore::RuntimeWarning",
-  "ignore::UserWarning"
+    "ignore::_pytest.warning_types.PytestCollectionWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::RuntimeWarning",
+    "ignore::UserWarning",
 ]
 # timeout = 300
 
@@ -141,7 +146,7 @@ profile = "black"
 line_length = 120
 py_version = "auto"
 float_to_top = true
-src_paths = [ "penelope", "tests" ]
+src_paths = ["penelope", "tests"]
 
 # [tool.taskipy.tasks]
 # pytest = "pytest --junitxml=test-results/junit.xml"
@@ -169,14 +174,11 @@ omit = [
     "interfaces.py",
     "interface.py",
     "penelope/notebook/*",
-    "*_gui.py"
+    "*_gui.py",
 ]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "raise NotImplementedError"
-]
+exclude_lines = ["pragma: no cover", "raise NotImplementedError"]
 show_missing = true
 sort = "Name"
 
