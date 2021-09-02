@@ -2,10 +2,10 @@ from typing import List
 from unittest.mock import MagicMock, Mock
 
 import pandas as pd
-from penelope.pipeline import checkpoint, sparv, interfaces, pipelines, tasks
-from penelope.pipeline.tagged_frame import IngestVocabType, ToIdTaggedFrame
-from penelope import utility
 import pytest
+from penelope import utility
+from penelope.pipeline import checkpoint, interfaces, pipelines, sparv, tasks
+from penelope.pipeline.tagged_frame import IngestVocabType, ToIdTaggedFrame
 
 TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
 # text
@@ -38,27 +38,26 @@ fladdrade	VB	|fladdra omkring:10|
 @pytest.mark.parametrize(
     'token_type, ingest_vocab_type, expected_tokens, expected_pos',
     [
-        # (
-        #     tasks.Vocabulary.TokenType.Lemma,
-        #     IngestVocabType.Incremental,
-        #     ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
-        #     ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
-        # ),
+        (
+            tasks.Vocabulary.TokenType.Lemma,
+            IngestVocabType.Incremental,
+            ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
+            ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
+        ),
         (
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Prebuild,
             ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
         ),
-        # (
-        #     tasks.Vocabulary.TokenType.Text,
-        #     IngestVocabType.Incremental,
-        #     ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
-        #     ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
-        # ),
+        (
+            tasks.Vocabulary.TokenType.Text,
+            IngestVocabType.Incremental,
+            ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
+            ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
+        ),
     ],
 )
-
 def test_id_tagged_frame_process_payload(
     token_type: tasks.Vocabulary.TokenType,
     ingest_vocab_type: IngestVocabType,

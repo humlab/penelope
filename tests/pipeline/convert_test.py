@@ -2,6 +2,7 @@ import os
 from io import StringIO
 from typing import List
 
+import numpy as np
 import pandas as pd
 import penelope.utility.pos_tags as pos_tags
 import pytest
@@ -83,51 +84,66 @@ def tagged_frame():
     return tagged_frame
 
 
-@pytest.fixture()
-def tagged_id_frame():
+def create_tagged_id_frame(tagged_frame, target: str):
     tagged_frame: pd.DataFrame = create_tagged_frame()
-    return tagged_frame
+    pos_column: str = 'pos'
+    token2id: Token2Id = Token2Id().ingest(tagged_frame[target])
+    pos_schema: pos_tags.PoS_Tag_Scheme = pos_tags.PoS_Tag_Schemes.SUC
+
+    id_tagged_frame: pd.DataFrame = pd.DataFrame(
+        data=dict(
+            token_id=tagged_frame[target].map(token2id).astype(np.int32),
+            pos_id=tagged_frame[pos_column].map(pos_schema.pos_to_id).astype(np.int8),
+        )
+    )
+    return id_tagged_frame
 
 
-@pytest.mark.parametrize('tagged_frame', [create_tagged_frame()])
-def test_filter_tagged_frame(tagged_frame: pd.DataFrame):
+def create_test_frames():
+    tagged_frame = create_tagged_frame()
+    return [create_tagged_id_frame(tagged_frame, 'token')]
+
+
+# FIXME: Add target column as argument, create new vocab by ingesting that column
+# @pytest.mark.parametrize('doc', [create_tagged_frame(), create_tagged_id_frame(create_tagged_frame())])
+@pytest.mark.parametrize('doc', create_test_frames())
+def test_filter_tagged_frame(doc: pd.DataFrame):
 
     opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes=None, pos_excludes=None)
-    filtered_frame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
-    assert filtered_frame.token.tolist() == tagged_frame.token.tolist()
+    filtered_frame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == doc.token.tolist()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
     assert (
-        filtered_frame.token.tolist()
-        == tagged_frame.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1).tolist()
+        filtered_frame.token.tolist() == doc.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1).tolist()
     )
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='VB', pos_excludes=None)
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
     assert filtered_frame.token.tolist() == ['trängdes', 'gapade', 'fladdrade']
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='VB', pos_excludes=None)
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
     assert filtered_frame.token.tolist() == ['tränga', 'gapa', 'fladdra_omkring']
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
-    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == doc[doc.pos.isin(['VB'])].baseform.tolist()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|NN|', pos_excludes=None)
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
-    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB', 'NN'])].baseform.tolist()
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == doc[doc.pos.isin(['VB', 'NN'])].baseform.tolist()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD')
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
-    assert filtered_frame.token.tolist() == tagged_frame[~tagged_frame.pos.isin(['MID', 'MAD'])].baseform.tolist()
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == doc[~doc.pos.isin(['MID', 'MAD'])].baseform.tolist()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
-    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, **opts, extract_opts=extract_opts)
-    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+    filtered_frame: pd.DataFrame = filter_tagged_frame(doc, **opts, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == doc[doc.pos.isin(['VB'])].baseform.tolist()
 
 
 # @pytest.mark.parametrize("extract_opts,expected", [(dict(lemmatize=False, pos_includes=None, pos_excludes=None),[])])
