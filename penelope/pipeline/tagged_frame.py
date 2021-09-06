@@ -54,6 +54,9 @@ class ToIdTaggedFrame(Vocabulary):
         if self.ingest_vocab_type == IngestVocabType.Prebuild:
             super().enter()
 
+        if self.ingest_vocab_type == IngestVocabType.Incremental:
+            self.token2id.ingest(self.token2id.magic_tokens)
+
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
         tagged_frame: pd.DataFrame = payload.content
