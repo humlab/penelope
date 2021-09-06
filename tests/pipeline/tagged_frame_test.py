@@ -36,25 +36,28 @@ fladdrade	VB	|fladdra omkring:10|
 
 
 @pytest.mark.parametrize(
-    'token_type, ingest_vocab_type, expected_tokens, expected_pos',
+    'token_type, ingest_vocab_type, expected_tokens, expected_pos, expected_vocab_count',
     [
         (
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Incremental,
             ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
+            21,
         ),
         (
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Prebuild,
             ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
+            21,
         ),
         (
             tasks.Vocabulary.TokenType.Text,
             IngestVocabType.Incremental,
             ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
+            22,
         ),
     ],
 )
@@ -63,6 +66,7 @@ def test_id_tagged_frame_process_payload(
     ingest_vocab_type: IngestVocabType,
     expected_tokens: List[str],
     expected_pos: List[str],
+    expected_vocab_count: int,
 ):
     memory_store = {
         'text_column': 'token',
@@ -76,6 +80,7 @@ def test_id_tagged_frame_process_payload(
             'config.pipeline_payload.pos_schema': utility.PoS_TAGS_SCHEMES.SUC,
             'payload.memory_store': memory_store,
             'get': lambda key, _: memory_store[key],
+            'payload.document_index.index': [None],
         },
     )
 
@@ -85,7 +90,7 @@ def test_id_tagged_frame_process_payload(
     )
 
     payload = interfaces.DocumentPayload(content_type=interfaces.ContentType.TAGGED_FRAME, content=tagged_frame)
-    prior = MagicMock(spec=interfaces.ITask, outstream=lambda: [payload])
+    prior = MagicMock(spec=interfaces.ITask, outstream=lambda **_: [payload])
 
     task: ToIdTaggedFrame = ToIdTaggedFrame(
         pipeline=pipeline,
@@ -98,7 +103,16 @@ def test_id_tagged_frame_process_payload(
     ).setup()
 
     task.enter()
+
+    assert task.token2id is not None
+
+    if ingest_vocab_type == IngestVocabType.Prebuild:
+        assert len(task.token2id) == expected_vocab_count
+
     next_payload: interfaces.DocumentPayload = task.process_payload(payload)
+
+    if ingest_vocab_type == IngestVocabType.Incremental:
+        assert len(task.token2id) == expected_vocab_count
 
     assert next_payload is not None
     assert next_payload.content_type == interfaces.ContentType.TAGGED_ID_FRAME
