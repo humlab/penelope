@@ -417,6 +417,7 @@ class BaseGUI:
             append_pos=self._append_pos_tag.value,
             global_tf_threshold=self.tf_threshold,
             global_tf_threshold_mask=self.tf_threshold_mask,
+            **self.corpus_config.pipeline_payload.tagged_columns_names,
         )
 
     @property

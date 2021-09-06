@@ -29,7 +29,7 @@ def config():
 
 
 @pytest.mark.long_running
-def test_spaCy_co_occurrence_pipeline(config):
+def test_spaCy_co_occurrence_pipeline(config: CorpusConfig):
 
     os.makedirs('./tests/output', exist_ok=True)
     checkpoint_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
@@ -44,6 +44,7 @@ def test_spaCy_co_occurrence_pipeline(config):
         lemmatize=True,
         pos_includes=pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun),
         pos_paddings=pos_tags_to_str(pos_scheme.Conjunction),
+        **config.pipeline_payload.tagged_columns_names,
     )
     filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
         is_punct=False,

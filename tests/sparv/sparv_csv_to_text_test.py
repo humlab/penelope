@@ -1,5 +1,6 @@
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
 
@@ -16,7 +17,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False
+            pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
         )
     )
 
@@ -31,7 +32,7 @@ def test_reader_when_only_nn_returns_only_nn():
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN', pos_paddings='VB', pos_excludes=None, lemmatize=False
+            pos_includes='NN', pos_paddings='VB', pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
         )
     )
 
@@ -46,7 +47,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN', pos_paddings='VB', pos_excludes=None, lemmatize=True
+            pos_includes='NN', pos_paddings='VB', pos_excludes=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
         )
     )
 
@@ -61,7 +62,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN|VB', pos_paddings='JJ', pos_excludes='', lemmatize=True
+            pos_includes='NN|VB', pos_paddings='JJ', pos_excludes='', lemmatize=True, **SPARV_TAGGED_COLUMNS
         )
     )
 
@@ -76,7 +77,12 @@ def test_reader_when_lemmatized_nn_vb_pos_appended_returns_lemmatized_nn_vb_pos(
 
     reader = SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN|VB', pos_paddings='JJ', pos_excludes='', lemmatize=True, append_pos=True
+            pos_includes='NN|VB',
+            pos_paddings='JJ',
+            pos_excludes='',
+            lemmatize=True,
+            append_pos=True,
+            **SPARV_TAGGED_COLUMNS,
         )
     )
 

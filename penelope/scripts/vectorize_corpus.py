@@ -191,6 +191,7 @@ def process(
 
         corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
 
+        tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
             corpus_filename=input_filename,
@@ -221,6 +222,7 @@ def process(
                 append_pos=append_pos,
                 global_tf_threshold=tf_threshold,
                 global_tf_threshold_mask=tf_threshold_mask,
+                **tagged_columns,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
             tf_threshold=tf_threshold,

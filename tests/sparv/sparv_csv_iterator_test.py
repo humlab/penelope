@@ -2,6 +2,7 @@ import os
 
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_CSV_EXPORT_FILENAME = './tests/test_data/prot_197677__27.tsv'
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
@@ -23,7 +24,9 @@ def test_reader_when_no_transforms_returns_source_tokens():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False),
+        extract_opts=ExtractTaggedTokensOpts(
+            pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
+        ),
     )
 
     expected = "Rödräven är ett hunddjur som har en mycket vidsträckt utbredning över norra halvklotet .".split()
@@ -39,7 +42,9 @@ def test_reader_when_only_nn_returns_only_nn():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=False),
+        extract_opts=ExtractTaggedTokensOpts(
+            pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
+        ),
     )
 
     expected = "Rödräven hunddjur utbredning halvklotet".split()
@@ -55,7 +60,9 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(
+            pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
+        ),
     )
 
     expected = "rödräv hunddjur utbredning halvklot".split()
@@ -72,7 +79,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN|VB', pos_paddings=None, pos_excludes=None, lemmatize=True
+            pos_includes='NN|VB', pos_paddings=None, pos_excludes=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
         ),
     )
 
@@ -90,7 +97,12 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
         extract_opts=ExtractTaggedTokensOpts(
-            pos_includes='NN|VB', pos_paddings=None, pos_excludes=None, lemmatize=True, append_pos=True
+            pos_includes='NN|VB',
+            pos_paddings=None,
+            pos_excludes=None,
+            lemmatize=True,
+            append_pos=True,
+            **SPARV_TAGGED_COLUMNS,
         ),
     )
 
@@ -116,6 +128,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
             pos_includes='|NN|',
             pos_paddings=None,
             lemmatize=True,
+            **SPARV_TAGGED_COLUMNS,
         ),
         chunk_size=None,
     )

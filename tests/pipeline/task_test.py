@@ -9,6 +9,7 @@ from penelope.pipeline.checkpoint import feather
 from penelope.pipeline.interfaces import ContentType, DocumentPayload, ITask
 from penelope.pipeline.pipelines import CorpusPipeline
 from penelope.pipeline.tasks import Vocabulary
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 
 def test_task_vocabulary_token2id():
@@ -21,7 +22,7 @@ def test_task_vocabulary_token2id():
     pipeline = Mock(
         spec=CorpusPipeline,
         **{
-            'payload.memory_store': {'text_column': 'token', 'lemma_column': 'baseform'},
+            'payload.memory_store': SPARV_TAGGED_COLUMNS,
         },
     )
 
