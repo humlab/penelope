@@ -5,10 +5,10 @@ import zipfile
 from io import StringIO
 from typing import List
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from .interface import FILE_PATTERN, DOCUMENT_INDEX_FILENAME
+from .interface import DOCUMENT_INDEX_FILENAME, FILE_PATTERN
 
 
 def find_checkpoints(source_folder: str, file_pattern: str = FILE_PATTERN) -> List[str]:
@@ -43,7 +43,7 @@ def read_document_index(checkpoint_filename: str) -> pd.DataFrame:
                     'num_tokens': np.int32,
                     'num_words': np.int32,
                 },
-                engine='c'
+                engine='c',
             )
 
             return df
