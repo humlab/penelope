@@ -123,6 +123,7 @@ def test_table_gui_debug_setup(tag: str, keyness: KeynessMetric):
     gui.update_corpus()
 
 
+@pytest.mark.skip(reason="Bug is fixed")
 def test_table_gui_n_tokens_bug():
 
     tag: str = '1970-information'

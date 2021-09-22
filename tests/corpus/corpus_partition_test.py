@@ -1,5 +1,6 @@
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTokenizer
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
 
@@ -11,7 +12,7 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=True, **SPARV_TAGGED_COLUMNS),
     )
 
     return corpus
@@ -217,7 +218,9 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
         reader_opts=TextReaderOpts(
             filename_fields="year:_:1",
         ),
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|NN|', pos_paddings=None),
+        extract_opts=ExtractTaggedTokensOpts(
+            lemmatize=True, pos_includes='|NN|', pos_paddings=None, **SPARV_TAGGED_COLUMNS
+        ),
         transform_opts=TokensTransformOpts(
             min_len=2,
             to_upper=True,

@@ -1,68 +1,77 @@
-# from collections import defaultdict
-# from typing import Any,  Iterator
-# from penelope.corpus import DocumentIndex
+from dataclasses import dataclass, field
+from enum import IntEnum
+
+import numpy as np
 import pandas as pd
+from penelope.utility import PoS_Tag_Scheme
 
-TaggedFrame = pd.core.api.DataFrame
-# IdTaggedFrame = pd.core.api.DataFrame
-
-# class TaggedFrameCorpora:
-
-#     def __init__(self, source: Any, document_index: DocumentIndex):
-#         self.document_index: DocumentIndex = document_index
+from .interfaces import ITask
+from .pipeline import ContentType, DocumentPayload
+from .tasks import Vocabulary
 
 
-# TODO Create combined dictionary both TEXT and LEMMA
-# TODO Handle codes for PoS (depending on PoS-schema, might be better to store mapping[int, PoS-tag])
-# TODO Function that switches or combines TaggedDocumentFrame =>
-# class IdTaggedFrame:
-#     """A tagged document represented as a pandas dataframe"""
+class IngestVocabType(IntEnum):
+    """Use supplied vocab"""
 
-#     def __init__(
-#         self,
-#         tagged_frame: TaggedFrame,
-#         token2id: Token2Id = None,
-#         token_column="token",
-#         lemma_column="baseform",
-#         pos_column="pos",
-#     ):
-#         self.columns_names = {
-#             "text_column": token_column,
-#             "lemma_column": lemma_column,
-#             "pos_column": pos_column,
-#         }
-#         self.tagged_frame = tagged_frame
-#         self.id2token = id2token
-
-#         if 'token_id' not in self.tagged_frame.columns:
-#             self.tagged_frame['pos_id'] = map(token2id, self.tagged_frame[]
+    Supplied = 0
+    """Build vocab in separate pass on enter"""
+    Prebuild = 1
+    """Ingest tokens from each document incrementally"""
+    Incremental = 2
 
 
-# @dataclass
-# class ToIdTaggedFrame(CountTaggedTokensMixIn, ITask):
-#     """Convert a string based tagged frame to id based tagged frame """
-#     attributes: List[str] = None
-#     attribute_value_filters: Dict[str, Any] = None
+@dataclass
+class ToIdTaggedFrame(Vocabulary):
+    """Encode a TaggedFrame to a numerical representation.
+    Return data frame with columns `token_id` and `pos_id`.
+    """
 
-#     def setup(self) -> ITask:
-#         self.pipeline.put("tagged_attributes", self.attributes)
-#         return self
+    ingest_vocab_type: str = field(default=IngestVocabType.Incremental)
 
-#     def __post_init__(self):
-#         self.in_content_type = [ContentType.TAGGED_FRAME]
-#         self.out_content_type = ContentType.TAGGED_ID_FRAME
+    def __post_init__(self):
 
-#     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        super().__post_init__()
 
-#         tagged_frame: IdTaggedFrame = self.convert(
-#             payload=payload,
-#             attributes=self.attributes,
-#             attribute_value_filters=self.attribute_value_filters,
-#         )
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TAGGED_ID_FRAME
 
-#         payload = payload.update(self.out_content_type, tagged_frame)
+    def setup(self) -> ITask:
 
-#         return payload
+        if self.ingest_vocab_type == IngestVocabType.Supplied:
 
-#     def convert(self, payload):
-#         pass
+            self.token2id = self.token2id or self.pipeline.payload.token2id
+
+            if self.token2id is None or len(self.token2id) == 0:
+                raise ValueError("Non-empty token2id must be supplied when ingest type is Supplied")
+
+            if self.pipeline.payload.token2id is not self.token2id:
+                self.pipeline.payload.token2id = self.token2id
+
+        return super().setup()
+
+    def enter(self):
+
+        if self.ingest_vocab_type == IngestVocabType.Prebuild:
+            super().enter()
+
+        if self.ingest_vocab_type == IngestVocabType.Incremental:
+            self.token2id.ingest(self.token2id.magic_tokens)
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        tagged_frame: pd.DataFrame = payload.content
+
+        pos_schema: PoS_Tag_Scheme = self.pipeline.config.pipeline_payload.pos_schema
+        token_column: str = self.target
+        pos_column: str = self.pipeline.get('pos_column', None)
+
+        if self.ingest_vocab_type == IngestVocabType.Incremental:
+            self.token2id.ingest(tagged_frame[token_column])  # type: ignore
+
+        id_tagged_frame: pd.DataFrame = pd.DataFrame(
+            data=dict(
+                token_id=tagged_frame[token_column].map(self.token2id).astype(np.int32),
+                pos_id=tagged_frame[pos_column].map(pos_schema.pos_to_id).astype(np.int8),
+            )
+        )
+        return payload.update(ContentType.TAGGED_ID_FRAME, id_tagged_frame)

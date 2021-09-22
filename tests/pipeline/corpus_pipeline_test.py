@@ -23,6 +23,7 @@ from penelope.pipeline import (
 )
 from penelope.pipeline.interfaces import ITask
 from penelope.utility import PropertyValueMaskingOpts
+from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 from tests.utils import TEST_DATA_FOLDER
 
 # pylint: disable=redefined-outer-name
@@ -250,7 +251,7 @@ def test_tagged_frame_to_tokens_succeeds():
     pipeline = Mock(spec=CorpusPipeline, payload=Mock(spec=PipelinePayload, tagged_columns_names={}))
     task = tasks.TaggedFrameToTokens(
         pipeline=pipeline,
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=True, **SPACY_TAGGED_COLUMNS),
         filter_opts=PropertyValueMaskingOpts(is_punct=False),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))

@@ -511,7 +511,6 @@ class TaggedFrameToTokens(
             doc=payload.content,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
-            **(self.pipeline.payload.tagged_columns_names or {}),
             transform_opts=self.transform_opts,
             token2id=self.pipeline.payload.token2id,
         )
@@ -753,7 +752,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         #     if self.token_type is None:
         #         raise ValueError("token_type text or lemma not specfied")
 
-        self.token2id: Token2Id = Token2Id()
+        self.token2id: Token2Id = self.token2id or Token2Id()
         self.pipeline.payload.token2id = self.token2id
         return self
 
@@ -762,15 +761,8 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         self.token2id.ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
 
-        for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab"):
+        for payload in self.prior.outstream(total=len(self.document_index.index), desc="Vocab"):
             self.token2id.ingest_stream([self.tokens_stream(payload)])
-            del payload.content
-            del payload
-
-        # self.token2id.ingest_stream(
-        #     self.tokens_stream(payload)
-        #     for payload in self.prior.outstream(total=len(self.document_index), desc="Vocab")
-        # )
 
         if self.tf_threshold and self.tf_threshold > 1:
             """We don't need translation since vocab hasn't been used yet"""

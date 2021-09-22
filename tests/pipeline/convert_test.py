@@ -2,16 +2,24 @@ import os
 from io import StringIO
 from typing import List
 
+import numpy as np
 import pandas as pd
 import penelope.utility.pos_tags as pos_tags
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.pipeline import CheckpointOpts
-from penelope.pipeline.convert import detect_phrases, merge_phrases, parse_phrases, tagged_frame_to_tokens
+from penelope.pipeline.convert import (
+    PoSTagSchemaMissingError,
+    Token2IdMissingError,
+    filter_tagged_frame,
+    tagged_frame_to_tokens,
+)
+from penelope.pipeline.phrases import detect_phrases, merge_phrases, parse_phrases
 from penelope.pipeline.sparv import SparvCsvSerializer
 from penelope.pipeline.sparv.convert import to_lemma_form
 from penelope.type_alias import TaggedFrame
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 # pylint: disable=redefined-outer-name, no-member, unsubscriptable-object
 
@@ -82,58 +90,228 @@ def tagged_frame():
     return tagged_frame
 
 
+def test_filter_tagged_frame(tagged_frame: pd.DataFrame):
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    filtered_frame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame.token.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert (
+        filtered_frame.token.tolist()
+        == tagged_frame.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1).tolist()
+    )
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False, pos_includes='VB', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == ['trängdes', 'gapade', 'fladdrade']
+
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='VB', pos_excludes=None, **SPARV_TAGGED_COLUMNS)
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == ['tränga', 'gapa', 'fladdra_omkring']
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes='|VB|', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes='|VB|NN|', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB', 'NN'])].baseform.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD', **SPARV_TAGGED_COLUMNS
+    )
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[~tagged_frame.pos.isin(['MID', 'MAD'])].baseform.tolist()
+
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes='|VB|', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    filtered_frame: pd.DataFrame = filter_tagged_frame(tagged_frame, extract_opts=extract_opts)
+    assert filtered_frame.token.tolist() == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+
+
+def create_encoded_tagged_frame(
+    tagged_frame: pd.DataFrame,
+    token2id: Token2Id,
+    pos_schema: pos_tags.PoS_Tag_Scheme,
+    target_column: str,
+    pos_column: str,
+) -> pd.DataFrame:
+
+    id_tagged_frame: pd.DataFrame = pd.DataFrame(
+        data=dict(
+            token_id=tagged_frame[target_column].map(token2id).astype(np.int32),
+            pos_id=tagged_frame[pos_column].map(pos_schema.pos_to_id).astype(np.int8),
+        )
+    )
+
+    return id_tagged_frame
+
+
+def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
+
+    pos_schema: pos_tags.PoS_Tag_Scheme = pos_tags.PoS_Tag_Schemes.SUC
+
+    """TEXT (NON-LEMMATIZED)"""
+    token2id: Token2Id = Token2Id().ingest(tagged_frame['token'])
+    tagged_id_frame: pd.DataFrame = create_encoded_tagged_frame(
+        tagged_frame=tagged_frame,
+        token2id=token2id,
+        pos_schema=pos_schema,
+        pos_column='pos',
+        target_column='token',
+    )
+    with pytest.raises(Token2IdMissingError):
+        _ = filter_tagged_frame(
+            tagged_id_frame,
+            extract_opts=ExtractTaggedTokensOpts(),
+            token2id=None,
+            pos_schema=pos_schema,
+        )
+
+    with pytest.raises(PoSTagSchemaMissingError):
+        _ = filter_tagged_frame(
+            tagged_id_frame,
+            extract_opts=ExtractTaggedTokensOpts(),
+            token2id=token2id,
+            pos_schema=None,
+        )
+
+    filtered_frame = filter_tagged_frame(
+        tagged_id_frame,
+        extract_opts=ExtractTaggedTokensOpts(),
+        token2id=token2id,
+        pos_schema=pos_schema,
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(tagged_frame.token.tolist())
+
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='VB')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(
+        tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(['trängdes', 'gapade', 'fladdrade'])
+
+    """LEMMATIZED"""
+    token2id: Token2Id = Token2Id().ingest(tagged_frame['baseform'])
+    tagged_id_frame: pd.DataFrame = create_encoded_tagged_frame(
+        tagged_frame=tagged_frame,
+        token2id=token2id,
+        pos_schema=pos_schema,
+        pos_column='pos',
+        target_column='baseform',
+    )
+
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='VB')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(
+        tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(['tränga', 'gapa', 'fladdra_omkring'])
+
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(
+        tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(
+        tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+    )
+
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|NN|')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(
+        tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(
+        tagged_frame[tagged_frame.pos.isin(['VB', 'NN'])].baseform.tolist()
+    )
+
+    extract_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='MID|MAD|PAD')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(
+        tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(
+        tagged_frame[~tagged_frame.pos.isin(['MID', 'MAD'])].baseform.tolist()
+    )
+
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|')
+    filtered_frame: pd.DataFrame = filter_tagged_frame(
+        tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
+    )
+    assert filtered_frame.token_id.tolist() == token2id.to_ids(
+        tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
+    )
+
+
 # @pytest.mark.parametrize("extract_opts,expected", [(dict(lemmatize=False, pos_includes=None, pos_excludes=None),[])])
 def test_tagged_frame_to_tokens_pos_and_lemma(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes=None, pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == tagged_frame.token.tolist()
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == tagged_frame.apply(lambda x: to_lemma_form(x['token'], x['baseform']), axis=1).tolist()
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='VB', pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False, pos_includes='VB', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['trängdes', 'gapade', 'fladdrade']
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='VB', pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='VB', pos_excludes=None, **SPARV_TAGGED_COLUMNS)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['tränga', 'gapa', 'fladdra_omkring']
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes='|VB|', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|NN|', pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes='|VB|NN|', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == tagged_frame[tagged_frame.pos.isin(['VB', 'NN'])].baseform.tolist()
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD')
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD', **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == tagged_frame[~tagged_frame.pos.isin(['MID', 'MAD'])].baseform.tolist()
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes='|VB|', pos_excludes=None)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes='|VB|', pos_excludes=None, **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
 
 
 def test_tagged_frame_to_tokens_with_passthrough(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=False, pos_includes='VB', pos_excludes=None, passthrough_tokens=['kyrkan', 'ljuslågor']
+        lemmatize=False,
+        pos_includes='VB',
+        pos_excludes=None,
+        passthrough_tokens=['kyrkan', 'ljuslågor'],
+        **SPARV_TAGGED_COLUMNS,
     )
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['kyrkan', 'trängdes', 'gapade', 'ljuslågor', 'fladdrade']
 
 
 def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.DataFrame):
-
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
 
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False,
@@ -141,8 +319,9 @@ def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.Dat
         pos_excludes=None,
         passthrough_tokens=['kyrkan', 'ljuslågor'],
         block_tokens=['fladdrade'],
+        **SPARV_TAGGED_COLUMNS,
     )
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['kyrkan', 'trängdes', 'gapade', 'ljuslågor']
 
 
@@ -172,10 +351,9 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
         'överblick': 1,
     }
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS)
 
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert set(expected_counts.keys()) == set(tokens)
 
     extract_opts.global_tf_threshold = 2
@@ -183,33 +361,32 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
 
     with pytest.raises(ValueError):
         """Raises error since token2id not supplied (i.e. token2id.TF is needed)"""
-        tokens = tagged_frame_to_tokens(tagged_frame, token2id=None, **opts, extract_opts=extract_opts)
+        tokens = tagged_frame_to_tokens(tagged_frame, token2id=None, extract_opts=extract_opts)
 
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(tagged_frame.baseform)
 
     extract_opts.global_tf_threshold = 2
     extract_opts.global_tf_threshold_mask = False
-    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, extract_opts=extract_opts)
     assert tokens == ['i', 'i', '.', 'valv', 'valv', '.', '.']
 
     extract_opts.global_tf_threshold = 2
     extract_opts.global_tf_threshold_mask = True
-    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, extract_opts=extract_opts)
     assert len(tokens) == len(tagged_frame)
     assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.'])
 
     extract_opts.global_tf_threshold = 2
     extract_opts.global_tf_threshold_mask = True
     extract_opts.passthrough_tokens = {'överblick'}
-    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=token2id, extract_opts=extract_opts)
     assert len(tokens) == len(tagged_frame)
     assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.', 'överblick'])
 
 
 def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS)
 
     """ Alternative #1: tagged_frame_to_tokens does the filtering """
 
@@ -218,7 +395,7 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_f
     extract_opts.global_tf_threshold_mask = True
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(df.baseform)
 
-    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, extract_opts=extract_opts)
     assert len(tokens) == len(df)
     assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.'])
 
@@ -228,16 +405,20 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_f
     """Note that translation must be used to map token-ids if used elsewhere"""
     _, translation = token2id.compress(tf_threshold=2, inplace=True)  # pylint: disable=unused-variable
     token2id.close()
-    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, extract_opts=extract_opts)
     assert len(tokens) == len(df)
     assert set(tokens) == set([GLOBAL_TF_THRESHOLD_MASK_TOKEN, 'i', 'i', '.', 'valv', 'valv', '.', '.'])
 
 
 def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes=None, pos_excludes=None, global_tf_threshold=2, global_tf_threshold_mask=False
+        lemmatize=True,
+        pos_includes=None,
+        pos_excludes=None,
+        global_tf_threshold=2,
+        global_tf_threshold_mask=False,
+        **SPARV_TAGGED_COLUMNS,
     )
     """ Alternative #1: tagged_frame_to_tokens does the filtering """
 
@@ -249,7 +430,7 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagg
     )
 
     df: pd.DataFrame = tagged_frame.copy()
-    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, extract_opts=extract_opts)
     assert len(tokens) == expected_count
     assert set(tokens) == set(['i', 'i', '.', 'valv', 'valv', '.', '.'])
 
@@ -259,53 +440,51 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagg
     """Note that translation must be used to map token-ids if used elsewhere"""
     _, translation = token2id.compress(tf_threshold=2, inplace=True)  # pylint: disable=unused-variable
     token2id.close()
-    tokens = tagged_frame_to_tokens(df, token2id=token2id, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(df, token2id=token2id, extract_opts=extract_opts)
     assert len(tokens) == expected_count
     assert set(tokens) == set(['i', 'i', '.', 'valv', 'valv', '.', '.'])
 
 
 def test_tagged_frame_to_tokens_replace_pos(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes="NN", pos_excludes='MID|MAD|PAD', pos_paddings="VB"
+        lemmatize=True, pos_includes="NN", pos_excludes='MID|MAD|PAD', pos_paddings="VB", **SPARV_TAGGED_COLUMNS
     )
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ["kyrka", "*", "turist", "halvmörker", "valv", "*", "valv", "överblick", "ljuslåga", "*"]
 
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD', pos_paddings="VB|NN"
+        lemmatize=True, pos_includes=None, pos_excludes='MID|MAD|PAD', pos_paddings="VB|NN", **SPARV_TAGGED_COLUMNS
     )
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == (
         ['inne', 'i', 'den', 'väldig', 'romansk', '*', '*', '*', 'i', '*', '*', '*']
         + ['bakom', '*', 'och', 'ingen', '*', 'någon', '*', '*']
     )
 
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes="JJ", pos_excludes='MID|MAD|PAD', pos_paddings="VB|NN"
+        lemmatize=True, pos_includes="JJ", pos_excludes='MID|MAD|PAD', pos_paddings="VB|NN", **SPARV_TAGGED_COLUMNS
     )
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['väldig', 'romansk', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
 
 
 def test_tagged_frame_to_tokens_detect_phrases(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-
     expected_tokens = tagged_frame.baseform[:4].tolist() + ['romansk_kyrka'] + tagged_frame.baseform[6:].tolist()
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, phrases=[["romansk", "kyrka"]])
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, pos_includes=None, phrases=[["romansk", "kyrka"]], **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == expected_tokens
 
 
 def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame):
 
-    opts = dict(filter_opts=None, text_column='token', lemma_column='baseform', pos_column='pos')
-
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, pos_includes='VB', pos_excludes=None, append_pos=True)
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False, pos_includes='VB', pos_excludes=None, append_pos=True, **SPARV_TAGGED_COLUMNS
+    )
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['trängdes@VB', 'gapade@VB', 'fladdrade@VB']
 
     extract_opts = ExtractTaggedTokensOpts(
@@ -314,8 +493,9 @@ def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame)
         pos_excludes='MID|MAD|PAD',
         pos_paddings="VB|NN",
         append_pos=True,
+        **SPARV_TAGGED_COLUMNS,
     )
-    tokens = tagged_frame_to_tokens(tagged_frame, **opts, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert tokens == ['väldig@JJ', 'romansk@JJ', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
 
 
@@ -399,10 +579,7 @@ utskotten	NN	|utskott|
     phrased_tokens = tagged_frame_to_tokens(
         tagged_frame,
         filter_opts=None,
-        text_column='token',
-        lemma_column='baseform',
-        pos_column='pos',
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases, **SPARV_TAGGED_COLUMNS),
     )
     assert phrased_tokens[:9] == ['herr_talman', '!', 'Jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
 
@@ -412,10 +589,7 @@ def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> L
     tokens = tagged_frame_to_tokens(
         tagged_frame,
         filter_opts=None,
-        text_column='token',
-        lemma_column='baseform',
-        pos_column='pos',
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=False),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=False, **SPARV_TAGGED_COLUMNS),
         transform_opts=transform_opts,
     )
     return tokens

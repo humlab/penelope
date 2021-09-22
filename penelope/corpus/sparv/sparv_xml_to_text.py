@@ -3,7 +3,8 @@ import logging
 import os
 
 from lxml import etree
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+
+from ..readers import ExtractTaggedTokensOpts
 
 logger = logging.getLogger(__name__)
 

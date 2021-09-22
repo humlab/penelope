@@ -14,6 +14,18 @@ from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_7DOCS
 from tests.notebook.co_occurrence.load_co_occurrences_gui_test import DATA_FOLDER
 from tests.utils import OUTPUT_FOLDER
 
+SPARV_TAGGED_COLUMNS: dict = dict(
+    text_column='token',
+    lemma_column='baseform',
+    pos_column='pos',
+)
+
+SPACY_TAGGED_COLUMNS: dict = dict(
+    text_column='text',
+    lemma_column='lemma_',
+    pos_column='pos_',
+)
+
 
 def ComputeOptsSpacyCSV(
     *,
@@ -59,6 +71,7 @@ def ComputeOptsSpacyCSV(
             append_pos=False,
             global_tf_threshold=1,
             global_tf_threshold_mask=False,
+            **SPACY_TAGGED_COLUMNS,
         ),
         filter_opts=PropertyValueMaskingOpts(
             is_alpha=False,
@@ -118,6 +131,7 @@ def ComputeOptsSparvCSV(
             pos_excludes='|MAD|MID|PAD|',
             pos_paddings=None,
             lemmatize=False,
+            **SPARV_TAGGED_COLUMNS,
         ),
         filter_opts=PropertyValueMaskingOpts(
             is_alpha=False,

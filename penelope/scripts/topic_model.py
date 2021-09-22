@@ -30,7 +30,7 @@ from penelope.corpus.readers.interfaces import TextReaderOpts
 @click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
-def main(
+def click_main(
     name,
     n_topics,
     corpus_folder,
@@ -61,7 +61,7 @@ def main(
         if v is not None
     }
 
-    run_model(
+    main(
         name=name,
         corpus_folder=corpus_folder,
         corpus_filename=corpus_filename,
@@ -73,7 +73,7 @@ def main(
     )
 
 
-def run_model(
+def main(
     name: str = None,
     corpus_folder: str = None,
     corpus_filename: str = None,

@@ -51,7 +51,7 @@ def store_model(data, filename):
 @click.option('--alpha', default='symmetric', help='Prior belief of topic probability.')
 @click.option('--workers', default=None, help='Number of workers (if applicable).')
 @click.option('--prefix', default=None, help='Prefix.')
-def compute(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers, prefix):
+def main(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers, prefix):
     """ runner """
     raise NotImplementedError("This script is specfic to political case - needs to be adapted")
     # if engine not in [y for x, y in ENGINE_OPTIONS]:
@@ -76,4 +76,4 @@ def compute(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers
 
 
 if __name__ == '__main__':
-    compute()  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter

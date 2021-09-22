@@ -40,6 +40,7 @@ def run_workflow():
     #     append_pos=False,
     #     global_tf_threshold=1,
     #     global_tf_threshold_mask=False,
+    #     **corpus_config.pipeline_payload.tagged_columns_names,
     # )
     # filter_opts: utility.PropertyValueMaskingOpts=utility.PropertyValueMaskingOpts()
 

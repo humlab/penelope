@@ -11,6 +11,8 @@ from penelope.utility import FilenameFieldSpecs
 if TYPE_CHECKING:
     from ..document_index import DocumentIndex
 
+# pylint: disable=too-many-instance-attributes
+
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
 FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
@@ -59,7 +61,11 @@ PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
 @dataclass
 class ExtractTaggedTokensOpts:
 
-    lemmatize: bool
+    lemmatize: Optional[bool] = None
+
+    text_column: str = 'token'
+    lemma_column: str = 'baseform'
+    pos_column: str = 'pos'
 
     target_override: Optional[str] = None
 
@@ -80,11 +86,20 @@ class ExtractTaggedTokensOpts:
 
     """Tokens that will be filtered out"""
     block_tokens: List[str] = field(default_factory=list)
+
     # block_chars: str = ""
+
     """Global term frequency threshold"""
     global_tf_threshold: int = 1
+
     """Global term frequency threshold"""
     global_tf_threshold_mask: bool = False
+
+    @property
+    def target_column(self) -> str:
+        if self.target_override:
+            return self.target_override
+        return self.lemma_column if self.lemmatize else self.text_column
 
     def get_pos_includes(self) -> Set[str]:
         return set(self.pos_includes.strip('|').split('|')) if self.pos_includes else set()
@@ -126,6 +141,9 @@ class ExtractTaggedTokensOpts:
             block_tokens=list(self.block_tokens or []),
             append_pos=self.append_pos,
             phrases=None if self.phrases is None else list(self.phrases),
+            text_column=self.text_column,
+            lemma_column=self.lemma_column,
+            pos_column=self.pos_column,
         )
 
 

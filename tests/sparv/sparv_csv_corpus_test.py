@@ -1,5 +1,6 @@
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
 
@@ -163,7 +164,9 @@ def test_tokenize_when_nn_lemmatized_lower_returns_correct_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(
+            pos_includes='|NN|', pos_paddings=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
+        ),
         transform_opts=TokensTransformOpts(to_lower=True),
     )
 
@@ -280,7 +283,9 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
 
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='|VB|', pos_paddings=None, lemmatize=True),
+        extract_opts=ExtractTaggedTokensOpts(
+            pos_includes='|VB|', pos_paddings=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
+        ),
         reader_opts=TextReaderOpts(),
         chunk_size=None,
         transform_opts=TokensTransformOpts(

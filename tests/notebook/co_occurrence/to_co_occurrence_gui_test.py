@@ -8,6 +8,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTrans
 from penelope.notebook import interface
 from penelope.pipeline import CorpusConfig
 from penelope.utility import PropertyValueMaskingOpts
+from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 
 def dummy_config():
@@ -105,6 +106,7 @@ def test_generate_cli_opts():
             append_pos=False,
             global_tf_threshold=1,
             global_tf_threshold_mask=False,
+            **SPARV_TAGGED_COLUMNS,
         ),
         filter_opts=PropertyValueMaskingOpts(),
         vectorize_opts=VectorizeOpts(
