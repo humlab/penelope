@@ -13,6 +13,7 @@ from .checkpoint import (
     load_payloads_multiprocess,
     load_payloads_singleprocess,
     store_archive,
+    CorruptCheckpointError, EmptyCheckpointError, find_checkpoints, read_document_index
 )
 from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline
 from .config import CorpusConfig, CorpusType

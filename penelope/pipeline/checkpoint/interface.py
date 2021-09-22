@@ -12,10 +12,10 @@ from penelope.utility import create_instance, dictify, strip_path_and_extension
 
 from ..interfaces import ContentType
 
-CHECKPOINT_OPTS_FILENAME = "options.json"
-DOCUMENT_INDEX_FILENAME = "document_index.csv"
-DICTIONARY_FILENAME = "dictionary.csv"
-
+CHECKPOINT_OPTS_FILENAME: str = "options.json"
+DOCUMENT_INDEX_FILENAME: str = "document_index.csv"
+DICTIONARY_FILENAME: str = "dictionary.csv"
+FILE_PATTERN: str = "*.zip"
 # pylint: disable=too-many-instance-attributes
 
 
