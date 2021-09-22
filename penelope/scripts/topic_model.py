@@ -1,6 +1,7 @@
 import os
 import sys
 from os.path import join as jj
+from tkinter import mainloop
 
 import click
 import penelope.corpus.readers.text_tokenizer as text_tokenizer
@@ -61,7 +62,7 @@ def main(
         if v is not None
     }
 
-    run_model(
+    mainloop(
         name=name,
         corpus_folder=corpus_folder,
         corpus_filename=corpus_filename,
@@ -73,7 +74,7 @@ def main(
     )
 
 
-def run_model(
+def mainloop(
     name: str = None,
     corpus_folder: str = None,
     corpus_filename: str = None,

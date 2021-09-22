@@ -6,7 +6,7 @@ import gensim
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest
-from penelope.scripts.compute_topic_model import run_model
+from penelope.scripts.topic_model import main as run_model
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
