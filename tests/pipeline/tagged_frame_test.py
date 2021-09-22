@@ -41,21 +41,21 @@ fladdrade	VB	|fladdra omkring:10|
         (
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Incremental,
-            ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
+            'inne i den väldig någon ljuslåga fladdra_omkring .',
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
             21,
         ),
         (
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Prebuild,
-            ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
+            'inne i den väldig någon ljuslåga fladdra_omkring .',
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
             21,
         ),
         (
             tasks.Vocabulary.TokenType.Text,
             IngestVocabType.Incremental,
-            ['inne', 'i', 'den', 'väldig', 'någon', 'ljuslåga', 'fladdra_omkring', '.'],
+            'Inne i den väldiga Några ljuslågor fladdrade .',
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
             22,
         ),
@@ -64,7 +64,7 @@ fladdrade	VB	|fladdra omkring:10|
 def test_id_tagged_frame_process_payload(
     token_type: tasks.Vocabulary.TokenType,
     ingest_vocab_type: IngestVocabType,
-    expected_tokens: List[str],
+    expected_tokens: str,
     expected_pos: List[str],
     expected_vocab_count: int,
 ):
@@ -126,7 +126,7 @@ def test_id_tagged_frame_process_payload(
     assert not tagged_id_frame.pos_id.isna().any()
 
     tokens: List[str] = tagged_id_frame.token_id.map(task.token2id.id2token).tolist()
-    assert tokens[:4] + tokens[-4:] == expected_tokens
+    assert tokens[:4] + tokens[-4:] == expected_tokens.split()
 
     pos: List[str] = tagged_id_frame.pos_id.map(utility.PoS_TAGS_SCHEMES.SUC.id_to_pos).tolist()
     assert pos[:4] + pos[-4:] == expected_pos
