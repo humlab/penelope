@@ -32,7 +32,7 @@ def config():
 def test_spaCy_co_occurrence_pipeline(config: CorpusConfig):
 
     os.makedirs('./tests/output', exist_ok=True)
-    checkpoint_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
+    tagged_frames_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
     target_filename = './tests/output/SSI-co-occurrence-JJVBNN-window-9.csv'
     if os.path.isfile(target_filename):
         os.remove(target_filename)
@@ -63,7 +63,7 @@ def test_spaCy_co_occurrence_pipeline(config: CorpusConfig):
         extract_opts=extract_opts,
         filter_opts=filter_opts,
         global_threshold_count=global_threshold_count,
-        checkpoint_filename=checkpoint_filename,
+        checkpoint_filename=tagged_frames_filename,
     ).value()
 
     value.co_occurrences.to_csv(target_filename, sep='\t')
@@ -89,7 +89,7 @@ def test_spaCy_co_occurrence_workflow():
     args.context_opts = co_occurrence.ContextOpts(context_width=4, ignore_concept=True, partition_keys=['document_id'])
 
     os.makedirs('./tests/output', exist_ok=True)
-    checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
+    tagged_frames_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
     args.context_opts.processes = None
     bundle: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
@@ -99,7 +99,7 @@ def test_spaCy_co_occurrence_workflow():
         filter_opts=args.filter_opts,
         context_opts=args.context_opts,
         global_threshold_count=args.tf_threshold,
-        checkpoint_filename=checkpoint_filename,
+        checkpoint_filename=tagged_frames_filename,
     ).value()
 
     assert bundle.corpus is not None

@@ -103,7 +103,7 @@ def store_archive(
     payload_stream: Iterator[DocumentPayload],
     token2id: Token2Id = None,
 ) -> Iterable[DocumentPayload]:
-
+    """Store payload stream as a compressed ZIP archive"""
     target_folder: bool = dirname(target_filename)
     serializer: IContentSerializer = create_serializer(checkpoint_opts)
 

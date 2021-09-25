@@ -241,11 +241,11 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
         logger.info(f"corpus file {corpus_config.pipeline_payload.source} not found. please check configuration.")
         return None
 
-    checkpoint_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
+    tagged_frames_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
 
     p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
         "tagged_frame_pipeline",
-        checkpoint_filename=checkpoint_filename,
+        checkpoint_filename=tagged_frames_filename,
         enable_checkpoint=True,
     )
 

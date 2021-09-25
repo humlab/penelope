@@ -169,7 +169,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
     os.makedirs(target_folder, exist_ok=True)
     shutil.rmtree(target_folder, ignore_errors=True)
 
-    checkpoint_filename: str = f"./tests/output/{str(uuid.uuid1())}_test_pos_csv.zip"
+    tagged_frames_filename: str = f"./tests/output/{str(uuid.uuid1())}_test_pos_csv.zip"
 
     bundle: Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
@@ -179,7 +179,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
         filter_opts=args.filter_opts,
         context_opts=args.context_opts,
         global_threshold_count=args.tf_threshold,
-        checkpoint_filename=checkpoint_filename,
+        checkpoint_filename=tagged_frames_filename,
     ).value()
 
     assert bundle.corpus is not None
