@@ -1,6 +1,6 @@
 import glob
 import os
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 import pandas as pd
 from penelope.utility import replace_extension, strip_paths
@@ -10,7 +10,7 @@ from ..interfaces import ContentType, DocumentPayload, PipelineError
 FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
 
 
-def write_payload(folder: str, payload: DocumentPayload) -> Iterable[DocumentPayload]:
+def write_payload(folder: str, payload: DocumentPayload) -> DocumentPayload:
     payload.content.to_feather(
         os.path.join(folder, replace_extension(payload.filename, ".feather")),
         compression="lz4",
