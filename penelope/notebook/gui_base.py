@@ -41,7 +41,7 @@ class BaseGUI:
         self, default_corpus_path: str = None, default_corpus_filename: str = '', default_data_folder: str = None
     ):
         self.default_corpus_path: str = default_corpus_path
-        self.default_corpus_filename: str = default_corpus_filename
+        self.default_corpus_filename: str = os.path.basename(default_corpus_filename or '')
         self.default_data_folder: str = default_data_folder
 
         self._config: CorpusConfig = None

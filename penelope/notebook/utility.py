@@ -198,7 +198,8 @@ class FileChooserExt2(ipyfilechooser.FileChooser):
                 shorten_path_with_ellipsis(p, label_max_length), c
             )
         )
-
+        """ Strip dirs from filename (raises error otherwise) """
+        filename = os.path.basename(filename or '')
         super().__init__(
             path=path,
             filename=filename,
