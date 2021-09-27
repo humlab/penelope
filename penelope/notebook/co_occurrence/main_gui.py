@@ -2,7 +2,8 @@ from typing import Callable, Optional, Union
 
 import ipywidgets as widgets
 from IPython.core.display import display
-from penelope import co_occurrence, pipeline, workflows
+from penelope import co_occurrence, pipeline
+from penelope.workflows import co_occurrence as workflow
 
 from .. import co_occurrence as co_occurrence_gui
 from ..interface import ComputeOpts
@@ -33,7 +34,7 @@ def create(
 def compute_co_occurrence_callback(
     corpus_config: pipeline.CorpusConfig,
     args: ComputeOpts,
-    checkpoint_file: Optional[str] = None,
+    tagged_frames_filename: Optional[str] = None,
 ) -> co_occurrence.Bundle:
     try:
         global LAST_ARGS, LAST_CONFIG
@@ -44,10 +45,10 @@ def compute_co_occurrence_callback(
             print(args.command_line("co_occurrence"))
             return None
 
-        bundle: co_occurrence.Bundle = workflows.co_occurrence.compute(
+        bundle: co_occurrence.Bundle = workflow.compute(
             args=args,
             corpus_config=corpus_config,
-            checkpoint_file=checkpoint_file,
+            tagged_frames_filename=tagged_frames_filename,
         )
         return bundle
     except co_occurrence.ZeroComputeError:

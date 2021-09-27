@@ -245,7 +245,7 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
         "tagged_frame_pipeline",
-        checkpoint_filename=tagged_frames_filename,
+        tagged_frames_filename=tagged_frames_filename,
         enable_checkpoint=True,
     )
 

@@ -24,9 +24,10 @@ class CorruptCheckpointError(Exception):
     ...
 
 
-def read_document_index(checkpoint_filename: str) -> pd.DataFrame:
+def read_document_index(archive_filename: str) -> pd.DataFrame:
     try:
-        with zipfile.ZipFile(checkpoint_filename, mode="r") as fp:
+        # FIXME: #123 Remove Parla-CLARIN fields
+        with zipfile.ZipFile(archive_filename, mode="r") as fp:
             csv_str: str = fp.read(DOCUMENT_INDEX_FILENAME).decode("utf-8")
             df: pd.DataFrame = pd.read_csv(
                 StringIO(csv_str),
@@ -48,6 +49,6 @@ def read_document_index(checkpoint_filename: str) -> pd.DataFrame:
 
             return df
     except Exception as ex:
-        if os.stat(checkpoint_filename).st_size == 0:
+        if os.stat(archive_filename).st_size == 0:
             raise EmptyCheckpointError() from ex
         raise CorruptCheckpointError() from ex
