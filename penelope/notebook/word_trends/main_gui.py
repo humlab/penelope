@@ -37,11 +37,12 @@ def loaded_callback(
         n_count=25000,
     )
 
-    gui: GofTrendsGUI = GofTrendsGUI(
-        gofs_gui=GoFsGUI().setup(),
-        trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
-    )
+    # gui: GofTrendsGUI = GofTrendsGUI(
+    #     gofs_gui=GoFsGUI().setup(),
+    #     trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
+    # )
 
+    gui: TrendsGUI = TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
     display(gui.layout())
     gui.display(trends_data=trends_data)
 
