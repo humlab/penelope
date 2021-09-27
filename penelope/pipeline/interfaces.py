@@ -52,6 +52,8 @@ class ContentType(IntEnum):
 
     TOKEN_IDS = 21
 
+    TOPIC_MODEL = 22
+
 
 @dataclass
 class DocumentPayload:

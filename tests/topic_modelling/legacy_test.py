@@ -6,7 +6,7 @@ import gensim
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest
-from penelope.scripts.topic_model import main as run_model
+from penelope.scripts.topic_model_legacy import main as run_model
 from penelope.topic_modelling.container import InferredModel, InferredTopicsData
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
@@ -57,8 +57,8 @@ def test_load_inferred_model_fixture():
 def test_store_compressed_inferred_model(inferred_model: InferredModel):
 
     # Arrange
-    name = f"{uuid.uuid1()}"
-    target_folder = os.path.join(OUTPUT_FOLDER, name)
+    target_name = f"{uuid.uuid1()}"
+    target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
     # Act
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=True)
@@ -75,8 +75,8 @@ def test_store_compressed_inferred_model(inferred_model: InferredModel):
 def test_store_uncompressed_inferred_model(inferred_model):
 
     # Arrange
-    name = f"{uuid.uuid1()}"
-    target_folder = os.path.join(OUTPUT_FOLDER, name)
+    target_name = f"{uuid.uuid1()}"
+    target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
     # Act
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=False)
@@ -94,8 +94,8 @@ def test_store_uncompressed_inferred_model(inferred_model):
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
 
     # Arrange
-    name = f"{uuid.uuid1()}"
-    target_folder = os.path.join(OUTPUT_FOLDER, name)
+    target_name = f"{uuid.uuid1()}"
+    target_folder = os.path.join(OUTPUT_FOLDER, target_name)
     test_inferred_model = create_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=True, store_compressed=True)
 
@@ -123,8 +123,8 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
 def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(method):
 
     # Arrange
-    name = f"{uuid.uuid1()}"
-    target_folder = os.path.join(OUTPUT_FOLDER, name)
+    target_name = f"{uuid.uuid1()}"
+    target_folder = os.path.join(OUTPUT_FOLDER, target_name)
     test_inferred_model = create_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
 
@@ -147,8 +147,8 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
 def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 
     # Arrange
-    name = f"{uuid.uuid1()}"
-    target_folder = jj(OUTPUT_FOLDER, name)
+    target_name = f"{uuid.uuid1()}"
+    target_folder = jj(OUTPUT_FOLDER, target_name)
     test_inferred_model = create_inferred_model(method)
     topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
 
@@ -288,20 +288,20 @@ def test_load_inferred_topics_data(method):
 def test_run_cli():
 
     kwargs = {
-        'name': f"{uuid.uuid1()}",
+        'target_name': f"{uuid.uuid1()}",
         'corpus_folder': OUTPUT_FOLDER,
         'corpus_filename': './tests/test_data/test_corpus.zip',
         'engine': 'gensim_lda-multicore',
-        'topic_modeling_opts': {
+        'engine_args': {
             'n_topics': 5,
             'alpha': 'asymmetric',
         },
-        'filename_field': ('year:_:1', 'sequence_id:_:2'),
+        # 'filename_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
     run_model(**kwargs)
 
-    target_folder = jj(kwargs['corpus_folder'], kwargs['name'])
+    target_folder = jj(kwargs['corpus_folder'], kwargs['target_name'])
 
     assert os.path.isdir(target_folder)
     assert os.path.isfile(jj(target_folder, 'topic_model.pickle.pbz2'))
@@ -312,14 +312,14 @@ def test_run_cli():
 
 def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
 
-    name = "test_corpus.xyz"
-    target_folder = jj(OUTPUT_FOLDER, name)
+    target_name = "test_corpus.xyz"
+    target_folder = jj(OUTPUT_FOLDER, target_name)
     options = dict(
-        name=name,
+        target_name=target_name,
         corpus_folder=OUTPUT_FOLDER,
         corpus_filename='./tests/test_data/test_corpus.zip',
         engine="gensim_lda-multicore",
-        topic_modeling_opts=dict(
+        engine_args=dict(
             n_topics=5,
             workers=2,
             max_iter=2000,
