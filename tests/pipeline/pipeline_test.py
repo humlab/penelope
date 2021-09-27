@@ -16,8 +16,6 @@ from penelope.pipeline.spacy import pipelines as spacy_pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER, inline_code
 
-from .fixtures import ComputeOptsSpacyCSV
-
 CORPUS_FOLDER = './tests/test_data'
 
 # pylint: disable=redefined-outer-name
