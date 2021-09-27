@@ -15,7 +15,7 @@ dirname = os.path.dirname
 def compute(
     args: interface.ComputeOpts,
     corpus_config: pipeline.CorpusConfig,
-    checkpoint_file: Optional[str] = None,
+    tagged_frames_filename: Optional[str] = None,
 ) -> co_occurrence.Bundle:
     """Creates and stores a concept co-occurrence bundle using specified options."""
 
@@ -27,14 +27,14 @@ def compute(
 
         os.makedirs(args.target_folder, exist_ok=True)
 
-        tagged_frames_filename: Optional[str] = checkpoint_file or jj(
+        tagged_frames_filename: Optional[str] = tagged_frames_filename or jj(
             dirname(args.corpus_filename), f"{args.corpus_tag}{POS_TAGGED_FRAME_FILENAME_POSTFIX}"
         )
 
         tagged_frame_pipeline: pipeline.CorpusPipeline = corpus_config.get_pipeline(
             "tagged_frame_pipeline",
             corpus_filename=args.corpus_filename,
-            checkpoint_filename=tagged_frames_filename,
+            tagged_frames_filename=tagged_frames_filename,
             enable_checkpoint=args.enable_checkpoint,
             force_checkpoint=args.force_checkpoint,
         )
