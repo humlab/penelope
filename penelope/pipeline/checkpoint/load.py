@@ -48,7 +48,7 @@ def load_feathered_tagged_frame(
             checkpoint_opts=checkpoint_opts,
             serializer=serializer,
         )
-        tagged_frame.to_feather(feather_filename, compression="lz4")
+        tagged_frame.reset_index(drop=True).to_feather(feather_filename, compression="lz4")
     return tagged_frame
 
 
