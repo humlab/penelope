@@ -132,7 +132,7 @@ class ComputeOpts:
             options['--lemmatize'] = True
 
         if self.transform_opts.to_lower:
-            options['--to-lowercase'] = True
+            options['--to-lower'] = True
 
         if self.extract_opts.append_pos:
             options['--append-pos'] = True
