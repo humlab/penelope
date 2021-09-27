@@ -19,7 +19,7 @@ from .checkpoint import (
     store_archive,
 )
 from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline
-from .config import CorpusConfig, CorpusType
+from .config import CorpusConfig, CorpusType, create_pipeline_factory
 from .convert import filter_tagged_frame, tagged_frame_to_tokens, to_vectorized_corpus
 from .dtm import wildcard_to_DTM_pipeline
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError, PipelinePayload
