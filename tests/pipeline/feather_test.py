@@ -34,11 +34,10 @@ def test_pipeline_can_can_be_saved_in_feather(config: CorpusConfig):
     for payload in pipeline.resolve():
 
         tagged_frame: pd.DataFrame = payload.content
-        filename = os.path.join(OUTPUT_FOLDER, replace_extension(payload.filename, ".feather"))
-        if len(tagged_frame) == 0:
-            continue
 
-        tagged_frame.to_feather(filename, compression="lz4")
+        filename = os.path.join(OUTPUT_FOLDER, replace_extension(payload.filename, ".feather"))
+
+        tagged_frame.reset_index(drop=True).to_feather(filename, compression="lz4")
 
         assert os.path.isfile(filename)
 
