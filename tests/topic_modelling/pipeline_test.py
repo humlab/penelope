@@ -1,6 +1,6 @@
+import uuid
 from typing import List
 from unittest.mock import MagicMock, Mock
-import uuid
 
 import pytest
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
@@ -41,7 +41,7 @@ def test_topic_model_using_pipeline(config: CorpusConfig, en_nlp):
     transform_opts: TextTransformOpts = TextTransformOpts()
     reader_opts: TextReaderOpts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     attributes: List[str] = ['text', 'lemma_', 'pos_']
-    extract_opts:ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
+    extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes='|VERB|NOUN|', pos_paddings='|ADJ|', **config.pipeline_payload.tagged_columns_names
     )
     transform_opts = None

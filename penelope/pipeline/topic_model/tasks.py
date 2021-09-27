@@ -15,6 +15,7 @@ class ReiterableTerms:
     def __iter__(self):
         return (p.content for p in self.outstream())
 
+
 @dataclass
 class ToTopicModel(ITask):
     """Computes topic model.

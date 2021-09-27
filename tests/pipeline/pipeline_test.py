@@ -371,7 +371,7 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
         force_checkpoint=True,
         tf_threshold=1,
         tf_threshold_mask=False,
-     )
+    )
 
     corpus = workflow.compute(args=args, corpus_config=config)
 
