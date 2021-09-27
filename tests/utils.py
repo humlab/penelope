@@ -1,4 +1,7 @@
+import contextlib
+import glob
 import os
+import shutil
 from typing import Any, Callable, List
 
 import numpy as np
@@ -40,7 +43,16 @@ if __file__ in globals():
 # PMI
 
 
-class incline_code:
+def clear_output(path: str = './tests/output'):
+    with contextlib.suppress(Exception):
+        for f in glob.glob(path):
+            if os.path.isdir(f):
+                shutil.rmtree(f)
+            else:
+                os.unlink(f)
+
+
+class inline_code:
     def __init__(self, source: Any, msg: str = ""):
         self.source: str = source
         self.msg: str = msg
