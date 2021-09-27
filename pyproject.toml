@@ -60,6 +60,7 @@ ipycytoscape = "*"
 perspective-python = "*"
 msgpack = "^1.0.2"
 numba = "^0.53.1"
+tqdm = "^4.62.3"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -84,10 +85,11 @@ pyinstrument = "==3.*,>=3.4.1"
 tomlkit = "^0.7.2"
 pytest-timeout = "^1.4.2"
 memory-profiler = "^0.58.0"
+pyright = "^0.0.9"
 
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.vectorize:main"
-topic-model = "penelope.scripts.topic_model:main"
+topic-model = "penelope.scripts.topic_model:click_main"
 co-occurrence = "penelope.scripts.co_occurrence:main"
 pos-tag = "penelope.scripts.pos_tag:main"
 
