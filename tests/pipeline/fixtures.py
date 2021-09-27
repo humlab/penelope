@@ -31,7 +31,7 @@ def ComputeOptsSpacyCSV(
     *,
     corpus_tag: str = 'MARS',
     corpus_filename: str = './tests/test_data/legal_instrument_five_docs_test.zip',
-):  # pylint: disable=too-many-instance-attributes)
+) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
 
     return ComputeOpts(
         corpus_tag=corpus_tag,
@@ -179,7 +179,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
         filter_opts=args.filter_opts,
         context_opts=args.context_opts,
         global_threshold_count=args.tf_threshold,
-        checkpoint_filename=tagged_frames_filename,
+        tagged_frames_filename=tagged_frames_filename,
     ).value()
 
     assert bundle.corpus is not None
