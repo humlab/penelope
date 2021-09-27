@@ -354,6 +354,7 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
     args: ComputeOpts = ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
         corpus_filename='./tests/test_data/legal_instrument_five_docs_test.zip',
+        corpus_type=pipeline.CorpusType.Text,
         target_folder='./tests/output/',
         transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
         text_reader_opts=corpora.TextReaderOpts(filename_pattern='*.csv', filename_fields=['year:_:1']),
