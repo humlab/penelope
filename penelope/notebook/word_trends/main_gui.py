@@ -9,8 +9,6 @@ from penelope.corpus import VectorizedCorpus
 from .. import dtm as dtm_gui
 from .. import interface, utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
-from .gof_and_trends_gui import GofTrendsGUI
-from .gofs_gui import GoFsGUI
 from .interface import TrendsData
 from .trends_gui import TrendsGUI
 
