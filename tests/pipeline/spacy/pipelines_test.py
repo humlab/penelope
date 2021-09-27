@@ -1,21 +1,20 @@
 import os
+import shutil
+import uuid
 
 import penelope.co_occurrence as co_occurrence
-import penelope.workflows as workflows
+import penelope.workflows.co_occurrence as workflow
 import pytest
-from penelope.corpus import TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.pipeline.config import CorpusConfig
+from penelope import corpus as corpora
+from penelope import pipeline, utility
+from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
-from penelope.utility import PoS_Tag_Scheme, PoS_Tag_Schemes, PropertyValueMaskingOpts, pos_tags_to_str
-
-from ..fixtures import ComputeOptsSpacyCSV
 
 # pylint: disable=redefined-outer-name
 
 
-def fake_config() -> CorpusConfig:
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+def fake_config() -> pipeline.CorpusConfig:
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
@@ -29,24 +28,24 @@ def config():
 
 
 @pytest.mark.long_running
-def test_spaCy_co_occurrence_pipeline(config: CorpusConfig):
+def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
 
     os.makedirs('./tests/output', exist_ok=True)
-    checkpoint_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
+    tagged_frames_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
     target_filename = './tests/output/SSI-co-occurrence-JJVBNN-window-9.csv'
     if os.path.isfile(target_filename):
         os.remove(target_filename)
 
     # .folder(folder='./tests/test_data')
-    pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
-    transform_opts: TokensTransformOpts = TokensTransformOpts()
-    extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
+    pos_scheme: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.Universal
+    transform_opts: corpora.TokensTransformOpts = corpora.TokensTransformOpts()
+    extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
         lemmatize=True,
-        pos_includes=pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun),
-        pos_paddings=pos_tags_to_str(pos_scheme.Conjunction),
+        pos_includes=utility.pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun),
+        pos_paddings=utility.pos_tags_to_str(pos_scheme.Conjunction),
         **config.pipeline_payload.tagged_columns_names,
     )
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts(
+    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(
         is_punct=False,
     )
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
@@ -63,7 +62,7 @@ def test_spaCy_co_occurrence_pipeline(config: CorpusConfig):
         extract_opts=extract_opts,
         filter_opts=filter_opts,
         global_threshold_count=global_threshold_count,
-        checkpoint_filename=checkpoint_filename,
+        tagged_frames_filename=tagged_frames_filename,
     ).value()
 
     value.co_occurrences.to_csv(target_filename, sep='\t')
@@ -77,52 +76,94 @@ def test_spaCy_co_occurrence_pipeline(config: CorpusConfig):
 def test_spaCy_co_occurrence_workflow():
     """Note: Use the output from this test case to update the tests/test_data/VENUS test data VENUS-TESTDATA"""
 
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+    os.makedirs('./tests/output', exist_ok=True)
+
+    config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI.yml')
 
     config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    config.checkpoint_opts.feather_folder = f'tests/output/{uuid.uuid1()}'
+    corpus_tag: str = 'VENUS'
+    target_folder: str = f'./tests/output/{uuid.uuid1()}'
 
-    args = ComputeOptsSpacyCSV(
-        corpus_tag="VENUS",
-        corpus_filename=config.pipeline_payload.source,
-    )
-    args.context_opts = co_occurrence.ContextOpts(context_width=4, ignore_concept=True, partition_keys=['document_id'])
+    tagged_frames_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    os.makedirs('./tests/output', exist_ok=True)
-    checkpoint_filename: str = "./tests/output/co_occurrence_test_pos_csv.zip"
-    args.context_opts.processes = None
     bundle: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_filename=None,
-        transform_opts=args.transform_opts,
-        extract_opts=args.extract_opts,
-        filter_opts=args.filter_opts,
-        context_opts=args.context_opts,
-        global_threshold_count=args.tf_threshold,
-        checkpoint_filename=checkpoint_filename,
+        transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
+        extract_opts=corpora.ExtractTaggedTokensOpts(
+            lemmatize=True,
+            pos_includes='|NOUN|PROPN|VERB|',
+            pos_excludes='|PUNCT|EOL|SPACE|',
+            **config.pipeline_payload.tagged_columns_names,
+        ),
+        filter_opts=utility.PropertyValueMaskingOpts(is_alpha=False, is_punct=False, is_space=False),
+        context_opts=co_occurrence.ContextOpts(
+            context_width=4, ignore_concept=True, partition_keys=['document_id'], processes=None
+        ),
+        global_threshold_count=1,
+        tagged_frames_filename=tagged_frames_filename,
     ).value()
 
     assert bundle.corpus is not None
     assert bundle.token2id is not None
     assert bundle.document_index is not None
 
-    bundle.tag = args.corpus_tag
-    bundle.folder = args.target_folder
+    bundle.tag = corpus_tag
+    bundle.folder = target_folder
     bundle.co_occurrences = bundle.corpus.to_co_occurrences(bundle.token2id)
 
     bundle.store()
 
+    shutil.rmtree(bundle.folder, ignore_errors=True)
+    shutil.rmtree(tagged_frames_filename, ignore_errors=True)
+    shutil.rmtree(config.checkpoint_opts.feather_folder, ignore_errors=True)
+
 
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline3(config):
+
     corpus_filename = './tests/test_data/legal_instrument_five_docs_test.zip'
-    args = ComputeOptsSpacyCSV(
+    tagged_frames_filename = f'./tests/output/{uuid.uuid1()}_pos.csv.zip'
+    args: ComputeOpts = ComputeOpts(
+        corpus_tag=f'{uuid.uuid1()}',
         corpus_filename=corpus_filename,
-        corpus_tag="SATURNUS",
+        target_folder=f'./tests/output/{uuid.uuid1()}',
+        corpus_type=pipeline.CorpusType.SpacyCSV,
+        # pos_scheme: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.Universal
+        transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
+        text_reader_opts=corpora.TextReaderOpts(filename_pattern='*.csv', filename_fields=['year:_:1']),
+        extract_opts=corpora.ExtractTaggedTokensOpts(
+            lemmatize=True,
+            pos_includes='|NOUN|PROPN|VERB|',
+            pos_excludes='|PUNCT|EOL|SPACE|',
+            **config.pipeline_payload.tagged_columns_names,
+        ),
+        filter_opts=utility.PropertyValueMaskingOpts(is_alpha=False, is_punct=False, is_space=False),
+        create_subfolder=False,
+        persist=True,
+        vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
+        enable_checkpoint=True,
+        force_checkpoint=True,
+        tf_threshold=1,
+        tf_threshold_mask=False,
+        context_opts=co_occurrence.ContextOpts(
+            context_width=4,
+            concept=set(),
+            ignore_concept=False,
+            partition_keys=['document_id'],
+        ),
     )
 
-    workflows.co_occurrence.compute(
+    workflow.compute(
         args=args,
         corpus_config=config,
-        checkpoint_file='./tests/output/co_occurrence_checkpoint_pos.csv.zip',
+        tagged_frames_filename=tagged_frames_filename,
     )
+
+    assert os.path.isfile(tagged_frames_filename)
+    assert os.path.isdir(args.target_folder)
+
+    shutil.rmtree(args.target_folder, ignore_errors=True)
+    os.remove(tagged_frames_filename)

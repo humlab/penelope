@@ -2,7 +2,7 @@ from typing import List, Sequence
 
 import click
 import penelope.notebook.interface as interface
-import penelope.workflows as workflows
+import penelope.workflows.co_occurrence as workflow
 from loguru import logger
 from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
@@ -273,7 +273,7 @@ def process_co_ocurrence(
             force_checkpoint=force_checkpoint,
         )
 
-        workflows.co_occurrence.compute(args=args, corpus_config=corpus_config)
+        workflow.compute(args=args, corpus_config=corpus_config)
 
         logger.info('Done!')
 

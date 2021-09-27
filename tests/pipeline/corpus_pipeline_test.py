@@ -340,9 +340,9 @@ def test_tokens_to_text_when_text_instream_succeeds():
 @pytest.mark.long_running
 def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 
-    checkpoint_filename = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
+    tagged_frames_filename = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
-    pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
+    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
 
     text_reader_opts = TextReaderOpts(
         filename_fields=["doc_id:_:2", "year:_:1"],
@@ -366,20 +366,20 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
         .text_to_spacy()
         .passthrough()
         .spacy_to_pos_tagged_frame()
-        .checkpoint(checkpoint_filename, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
+        .checkpoint(tagged_frames_filename, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
         .to_content()
     )
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None
-    assert os.path.isfile(checkpoint_filename)
+    assert os.path.isfile(tagged_frames_filename)
 
-    # pathlib.Path(checkpoint_filename).unlink(missing_ok=True)
+    # pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
 
 
 def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts):
 
-    checkpoint_filename = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
+    tagged_frames_filename = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pipeline_payload = PipelinePayload(
         source=TEST_CORPUS,
@@ -391,7 +391,7 @@ def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts)
     pipeline = (
         CorpusPipeline(config=config)
         .checkpoint(
-            checkpoint_filename,
+            tagged_frames_filename,
             checkpoint_opts=checkpoint_opts,
             force_checkpoint=False,
         )

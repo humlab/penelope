@@ -3,12 +3,12 @@ from typing import Sequence
 
 import click
 import penelope.notebook.interface as interface
-import penelope.workflows as workflows
+import penelope.workflows.document_term_matrix as workflow
 from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.utility import pos_tags_to_str
+from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
 
@@ -21,7 +21,7 @@ def split_filename(filename, sep='_'):
 @click.command()
 @click.argument('corpus_config', type=click.STRING)
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
-@click.argument('output_filename', type=click.STRING)  # , help='Model name.')
+@click.argument('output_folder', type=click.STRING)  # , help='Model name.')
 @click.argument('output_tag')
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
 @click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
@@ -229,11 +229,12 @@ def process(
             tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,
             persist=True,
+            filter_opts=PropertyValueMaskingOpts(),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         )
 
-        workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
+        workflow.compute(args=args, corpus_config=corpus_config)
 
         logger.info('Done!')
 

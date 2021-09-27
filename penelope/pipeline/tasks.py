@@ -168,7 +168,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
-        self.pipeline.put("checkpoint_file", self.filename)
+        self.pipeline.put("tagged_frames_filename", self.filename)
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.pipeline.put("checkpoint_opts", self.checkpoint_opts)
         return self
@@ -233,7 +233,7 @@ class SaveTaggedCSV(Checkpoint):
 
 @dataclass
 class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
-    """Loads CSV files stored in a ZIP as Pandas data frames. """
+    """Load Pandas data frames from folder (CSV, feather), ZIP archive. """
 
     filename: str = None
     checkpoint_opts: Optional[cp.CheckpointOpts] = None

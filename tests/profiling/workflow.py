@@ -1,7 +1,8 @@
 from os.path import join as jj
 
+import penelope.workflows.co_occurrence.compute as workflow
 from penelope import corpus as corpora
-from penelope import pipeline, utility, workflows
+from penelope import pipeline, utility
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
 
@@ -92,10 +93,10 @@ def run_workflow():
         force_checkpoint=False,
     )
 
-    _ = workflows.co_occurrence.compute(
+    _ = workflow.compute(
         args=compute_opts,
         corpus_config=corpus_config,
-        checkpoint_file=jj(OUTPUT_FOLDER, 'test.zip'),
+        tagged_frames_filename=jj(OUTPUT_FOLDER, 'test.zip'),
     )
 
 

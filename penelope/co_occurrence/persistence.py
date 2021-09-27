@@ -155,7 +155,7 @@ def load_feather(filename: str) -> CoOccurrenceDataFrame:
 def store_feather(filename: str, co_occurrences: CoOccurrenceDataFrame) -> None:
     """Stores co-occurrences in Apache Arrow feather file format"""
     feather_filename: str = replace_extension(filename, ".feather")
-    co_occurrences = co_occurrences.reset_index()
+    co_occurrences = co_occurrences.reset_index(drop=True)
     co_occurrences.to_feather(feather_filename, compression="lz4")
 
 

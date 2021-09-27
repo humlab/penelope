@@ -1,6 +1,8 @@
 {
     "peacock.remoteColor": "#4e673c",
+    // "python.analysis.logLevel": "Trace",
     "python.formatting.provider": "black",
+    "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
     "python.linting.pylintEnabled": true,
     "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/python",
@@ -26,6 +28,5 @@
         "titleBar.activeForeground": "#e7e7e7",
         "titleBar.inactiveBackground": "#4e673c99",
         "titleBar.inactiveForeground": "#e7e7e799"
-    },
-    "python.linting.enabled": true
+    }
 }

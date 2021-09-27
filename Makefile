@@ -63,6 +63,17 @@ retest:
 init: tools
 	@poetry install
 
+info:
+	@poetry run python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
+
+TYPINGS_PACKAGES=scipy numpy statsmodels pandas bokeh sklearn gensim ipywidgets
+.PHONY: typings
+.ONESHELL: typings
+typings:
+	@for package in $(TYPINGS_PACKAGES); do \
+		poetry run pyright --createstub $$package ; \
+	done
+
 .ONESHELL: guard_clean_working_repository
 guard_clean_working_repository:
 	@status="$$(git status --porcelain)"

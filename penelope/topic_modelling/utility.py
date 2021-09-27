@@ -7,6 +7,7 @@ import gensim
 import numpy as np
 import pandas as pd
 import penelope.utility as utility
+import penelope.vendor.gensim.wrappers as wrappers
 import scipy
 
 logger = utility.getLogger('corpus_text_analysis')
@@ -54,9 +55,7 @@ def compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_s
 
 
 # FIXME #98 gensim 4.0: wrappers.ldamallet.LdaMallet is deeprecated/removed in Gensim 4.0
-def malletmodel2ldamodel(
-    mallet_model: gensim.models.wrappers.ldamallet.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50
-):
+def malletmodel2ldamodel(mallet_model: wrappers.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50):
     """Convert :class:`~gensim.models.wrappers.ldamallet.LdaMallet` to :class:`~gensim.models.ldamodel.LdaModel`.
     This works by copying the training model weights (alpha, beta...) from a trained mallet model into the gensim model.
     Parameters

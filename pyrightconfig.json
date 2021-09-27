@@ -23,6 +23,5 @@
     ],
     // "typeCheckingMode": "basic",
     // "reportGeneralTypeIssues": false,
-    // "reportMissingTypeStubs": false,
-
+    "reportMissingTypeStubs": true,
 }

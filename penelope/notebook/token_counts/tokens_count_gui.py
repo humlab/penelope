@@ -1,3 +1,4 @@
+import contextlib
 import os
 from typing import Callable, List
 
@@ -216,13 +217,15 @@ def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex
 
 def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFrame:
 
-    task: tasks.CheckpointFeather = pipe.find(tasks.CheckpointFeather)
-
-    if task:
-        try:
+    with contextlib.suppress(Exception):
+        task: tasks.CheckpointFeather = pipe.find(tasks.CheckpointFeather)
+        if task:
             return cp.feather.read_document_index(task.folder)
-        except interfaces.PipelineError:
-            ...
+
+    with contextlib.suppress(Exception):
+        task = pipe.find(tasks.LoadTaggedCSV)
+        if task:
+            return cp.feather.read_document_index(task.checkpoint_opts.feather_folder)
 
     return None
 
@@ -238,18 +241,18 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
         logger.info(f"corpus file {corpus_config.pipeline_payload.source} not found. please check configuration.")
         return None
 
-    checkpoint_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
+    tagged_frames_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
 
     p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
         "tagged_frame_pipeline",
-        checkpoint_filename=checkpoint_filename,
+        tagged_frames_filename=tagged_frames_filename,
         enable_checkpoint=True,
     )
 
     document_index: DocumentIndex = probe_checkpoint_document_index(p)
 
     if document_index is None:
-        p.tqdm().exhaust()
+        p.exhaust()
         document_index: DocumentIndex = p.payload.document_index
 
     if 'n_raw_tokens' not in document_index.columns:

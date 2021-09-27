@@ -2,7 +2,7 @@ import logging
 import os
 import re
 
-from gensim import models
+import penelope.vendor.gensim.wrappers as wrappers
 from gensim.utils import check_output
 from penelope.utility import inspect_filter_args
 
@@ -10,7 +10,7 @@ logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=lo
 logger = logging.getLogger(__name__)
 
 
-class MalletTopicModel(models.wrappers.LdaMallet):
+class MalletTopicModel(wrappers.LdaMallet):
     """Python wrapper for LDA using `MALLET <http://mallet.cs.umass.edu/>`_.
     This is a derived file of gensim.models.wrappers.LdaMallet
     The following has been added:

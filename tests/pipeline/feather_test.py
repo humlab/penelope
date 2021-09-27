@@ -27,18 +27,17 @@ def config():
 
 def test_pipeline_can_can_be_saved_in_feather(config: CorpusConfig):
 
-    checkpoint_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
-    pipeline = CorpusPipeline(config=config).checkpoint(checkpoint_filename, force_checkpoint=False)
+    pipeline = CorpusPipeline(config=config).checkpoint(tagged_frames_filename, force_checkpoint=False)
 
     for payload in pipeline.resolve():
 
         tagged_frame: pd.DataFrame = payload.content
-        filename = os.path.join(OUTPUT_FOLDER, replace_extension(payload.filename, ".feather"))
-        if len(tagged_frame) == 0:
-            continue
 
-        tagged_frame.to_feather(filename, compression="lz4")
+        filename = os.path.join(OUTPUT_FOLDER, replace_extension(payload.filename, ".feather"))
+
+        tagged_frame.reset_index(drop=True).to_feather(filename, compression="lz4")
 
         assert os.path.isfile(filename)
 

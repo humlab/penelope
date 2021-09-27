@@ -29,12 +29,27 @@ def to_tagged_frame_pipeline(
     corpus_filename: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
-    checkpoint_filename: str = None,
+    tagged_frames_filename: str = None,
     **_,
 ) -> CorpusPipeline:
+    """Tag corpus using spaCy pipeline. Store result as tagged (pos) data frames
+
+    Args:
+        corpus_config (CorpusConfig): [description]
+        corpus_filename (str, optional): [description]. Defaults to None.
+        enable_checkpoint (bool, optional): [description]. Defaults to True.
+        force_checkpoint (bool, optional): [description]. Defaults to False.
+        tagged_frames_filename (str, optional): [description]. Defaults to None.
+
+    Raises:
+        ex: [description]
+
+    Returns:
+        CorpusPipeline: [description]
+    """
     try:
 
-        _checkpoint_filename: str = checkpoint_filename or path_add_suffix(
+        tagged_frame_filename: str = tagged_frames_filename or path_add_suffix(
             corpus_config.pipeline_payload.source, '_pos_csv'
         )
 
@@ -47,13 +62,14 @@ def to_tagged_frame_pipeline(
                 source=corpus_filename,
             )
             .text_to_spacy()
-            # .tqdm()
-            # .passthrough()
             .spacy_to_pos_tagged_frame()
+            .checkpoint(filename=tagged_frame_filename, force_checkpoint=force_checkpoint)
         )
 
         if enable_checkpoint:
-            pipeline = pipeline.checkpoint(filename=_checkpoint_filename, force_checkpoint=force_checkpoint)
+            pipeline = pipeline.checkpoint_feather(
+                folder=corpus_config.get_feather_folder(corpus_filename), force=force_checkpoint
+            )
 
         return pipeline
 
@@ -68,14 +84,14 @@ def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
     transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     corpus_filename: str = None,
-    checkpoint_filename: str = None,
+    tagged_frames_filename: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
-            checkpoint_filename=checkpoint_filename,
+            tagged_frames_filename=tagged_frames_filename,
             corpus_filename=corpus_filename,
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
@@ -100,14 +116,14 @@ def spaCy_co_occurrence_pipeline(
     filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
-    checkpoint_filename: str = None,
+    tagged_frames_filename: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
     p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
         corpus_config=corpus_config,
         corpus_filename=corpus_filename,
-        checkpoint_filename=checkpoint_filename,
+        tagged_frames_filename=tagged_frames_filename,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,
     ) + wildcard_to_partition_by_document_co_occurrence_pipeline(

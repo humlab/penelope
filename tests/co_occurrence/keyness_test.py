@@ -16,7 +16,7 @@ from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.tokenized_corpus import TokenizedCorpus
 from penelope.pipeline.co_occurrence.tasks_pool import tokens_to_ttm
 from penelope.utility import flatten
-from tests.utils import incline_code
+from tests.utils import inline_code
 
 from .utils import create_keyness_opts, create_keyness_test_bundle, create_simple_bundle_by_pipeline, very_simple_corpus
 
@@ -251,7 +251,7 @@ def test_step_by_step_tfidf_keyness_transform():
         @filename: penelope/co_occurrence/keyness.py:23, compute_corpus_keyness
         Compute keyness (TF-IDF in this case - must be done before grouping)
     """
-    with incline_code(source=compute_corpus_keyness):
+    with inline_code(source=compute_corpus_keyness):
         assert (
             (
                 corpus.data.todense()

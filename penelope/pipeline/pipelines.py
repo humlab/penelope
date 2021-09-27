@@ -7,6 +7,7 @@ from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
 from .spacy import pipeline_mixin as spacy_mixin
 from .tasks import WildcardTask
+from .topic_model import pipeline_mixin as tm_mixin
 
 
 def register_pipeline_mixins():
@@ -23,6 +24,7 @@ class CorpusPipeline(
     PipelineShortcutMixIn,
     spacy_mixin.PipelineShortcutMixIn,
     coo_mixin.PipelineShortcutMixIn,
+    tm_mixin.PipelineShortcutMixIn,
     CorpusPipelineBase["CorpusPipeline"],
 ):
     def __add__(self, other: "CorpusPipeline") -> "CorpusPipeline":

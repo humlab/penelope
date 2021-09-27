@@ -1,5 +1,6 @@
 import fnmatch
 import glob
+import types
 import zipfile
 from multiprocessing import Pool
 from os.path import isdir, isfile, join
@@ -176,6 +177,9 @@ def list_any_source(
         elif isdir(text_source):
 
             filenames = glob.glob(join(text_source, filename_pattern))
+
+    elif isinstance(text_source, types.GeneratorType):
+        filenames = (x[0] for x in text_source)
 
     elif isinstance(text_source, list):
 

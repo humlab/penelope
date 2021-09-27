@@ -1,25 +1,34 @@
 import os
 import sys
-from os.path import join as jj
 
 import click
-import penelope.corpus.readers.text_tokenizer as text_tokenizer
-import penelope.corpus.tokenized_corpus as tokenized_corpus
-import penelope.topic_modelling as topic_modelling
-from penelope.corpus import TextTransformOpts, TokensTransformOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
+import penelope.corpus as penelope
+import yaml
+from penelope import pipeline
+from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
 
 @click.command()
-@click.argument('name')  # , help='Model name.')
-@click.option('--n-topics', default=50, help='Number of topics.', type=click.INT)
+@click.argument('config-filename', required=True)
+@click.argument('target-name', required=False)
+@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
 @click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
-@click.option(
-    '--corpus-filename',
-    help='Corpus filename (if text corpus file or folder, or Sparv XML). Corpus tag if vectorized corpus.',
-)
+@click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
+@click.option('--corpus-filename', default=None, help='Corpus filename (overrides config)')
+@click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
+@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
+@click.option('-x', '--pos-excludes', default='', help='POS tags to exclude e.g. "|MAD|MID|PAD|".', type=click.STRING)
+@click.option('-l', '--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
+@click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
+@click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
+@click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
+@click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
+@click.option('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']), help='Remove stopwords')
+@click.option('--only-alphabetic', default=False, is_flag=False, help='Remove tokens with non-alphabetic character(s)')
+@click.option('--only-any-alphanumeric', default=False, is_flag=True, help='Remove tokes with no alphanumeric char')
+@click.option('--n-topics', default=50, help='Number of topics.', type=click.INT)
 @click.option('--engine', default="gensim_lda-multicore", help='LDA implementation')
 @click.option('--passes', default=None, help='Number of passes.', type=click.INT)
 @click.option('--alpha', default='asymmetric', help='Prior belief of topic probability. symmetric/asymmertic/auto')
@@ -27,27 +36,93 @@ from penelope.corpus.readers.interfaces import TextReaderOpts
 @click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
 @click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
 @click.option('--prefix', default=None, help='Prefix.')
-@click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
-@click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
+@click.option('--store-compressed/--no-store-compressed', default=True, is_flag=True, help='')
+@click.option('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True, help='')
+@click.option('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='')
 def click_main(
-    name,
-    n_topics,
-    corpus_folder,
-    corpus_filename,
-    engine,
-    passes,
-    random_seed,
-    alpha,
-    workers,
-    max_iter,
-    prefix,
-    filename_field,
-    store_corpus,
-    compressed,
+    config_filename: str = None,
+    target_name: str = None,
+    options_filename: str = None,
+    corpus_filename: str = None,
+    corpus_folder: str = None,
+    target_folder: str = None,
+    lemmatize: bool = True,
+    pos_includes: str = '',
+    pos_excludes: str = '',
+    to_lower: bool = True,
+    remove_stopwords: str = None,
+    min_word_length: int = 2,
+    max_word_length: int = None,
+    keep_symbols: bool = False,
+    keep_numerals: bool = False,
+    only_any_alphanumeric: bool = False,
+    only_alphabetic: bool = False,
+    n_topics: int = 50,
+    engine: str = "gensim_lda-multicore",
+    passes: int = None,
+    random_seed: int = None,
+    alpha: str = 'asymmetric',
+    workers: int = None,
+    max_iter: int = None,
+    prefix: str = '',
+    store_corpus: bool = True,
+    store_compressed: bool = True,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ):
+    arguments: dict = locals()
+    del arguments['options_filename']
 
-    topic_modeling_opts = {
+    if options_filename is not None:
+        with open(options_filename, "r") as fp:
+            options: dict = yaml.load(fp, Loader=yaml.FullLoader)
+        arguments.update(options)
+
+    if not os.path.isfile(config_filename):
+        click.echo(f"error: file {config_filename} not found")
+        sys.exit(1)
+
+    if arguments.get('target_name') is None:
+        click.echo("error: target_name not specified")
+        sys.exit(1)
+
+    _main(**arguments)
+
+
+def _main(
+    config_filename: str = None,
+    target_name: str = None,
+    corpus_filename: str = None,
+    corpus_folder: str = None,
+    target_folder: str = None,
+    lemmatize: bool = True,
+    pos_includes: str = '',
+    pos_excludes: str = '',
+    to_lower: bool = True,
+    remove_stopwords: str = None,
+    min_word_length: int = 2,
+    max_word_length: int = None,
+    keep_symbols: bool = False,
+    keep_numerals: bool = False,
+    only_any_alphanumeric: bool = False,
+    only_alphabetic: bool = False,
+    n_topics: int = 50,
+    engine: str = "gensim_lda-multicore",
+    passes: int = None,
+    random_seed: int = None,
+    alpha: str = 'asymmetric',
+    workers: int = None,
+    max_iter: int = None,
+    prefix: str = '',
+    store_corpus: bool = True,
+    store_compressed: bool = True,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
+):
+    config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
+
+    engine_args = {
         k: v
         for k, v in {
             'n_topics': n_topics,
@@ -61,104 +136,100 @@ def click_main(
         if v is not None
     }
 
+    transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
+        to_lower=to_lower,
+        to_upper=False,
+        min_len=min_word_length,
+        max_len=max_word_length,
+        remove_accents=False,
+        remove_stopwords=(remove_stopwords is not None),
+        stopwords=None,
+        extra_stopwords=None,
+        language=remove_stopwords,
+        keep_numerals=keep_numerals,
+        keep_symbols=keep_symbols,
+        only_alphabetic=only_alphabetic,
+        only_any_alphanumeric=only_any_alphanumeric,
+    )
+
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
+    extract_opts = penelope.ExtractTaggedTokensOpts(
+        lemmatize=lemmatize,
+        pos_includes=pos_includes,
+        pos_excludes=pos_excludes,
+        **config.pipeline_payload.tagged_columns_names,
+    )
+
     main(
-        name=name,
-        corpus_folder=corpus_folder,
+        config=config,
+        target_name=target_name,
         corpus_filename=corpus_filename,
+        corpus_folder=corpus_folder,
+        target_folder=target_folder,
+        extract_opts=extract_opts,
+        transform_opts=transform_opts,
+        filter_opts=filter_opts,
         engine=engine,
-        topic_modeling_opts=topic_modeling_opts,
-        filename_field=filename_field,
+        engine_args=engine_args,
         store_corpus=store_corpus,
-        compressed=compressed,
+        store_compressed=store_compressed,
+        enable_checkpoint=enable_checkpoint,
+        force_checkpoint=force_checkpoint,
     )
 
 
 def main(
-    name: str = None,
-    corpus_folder: str = None,
+    *,
+    config: pipeline.CorpusConfig,
+    target_name: str,
     corpus_filename: str = None,
+    corpus_folder: str = None,
+    target_folder: str = None,
+    extract_opts: penelope.ExtractTaggedTokensOpts = None,
+    transform_opts: penelope.TokensTransformOpts = None,
+    filter_opts: PropertyValueMaskingOpts = None,
     engine: str = "gensim_lda-multicore",
-    topic_modeling_opts: dict = None,
-    filename_field: str = None,
+    engine_args: dict = None,
     store_corpus: bool = False,
-    compressed: bool = True,
+    store_compressed: bool = True,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
 ):
     """ runner """
+
+    corpus_filename: str = corpus_filename or config.pipeline_payload.source
 
     if corpus_filename is None and corpus_folder is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")
         sys.exit(1)
 
-    if len(filename_field or []) == 0:
-        click.echo("warning: no filename metadata fields specified (use option --filename-field)")
-        # sys.exit(1)
-
     if corpus_folder is None:
         corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
 
-    target_folder = jj(corpus_folder, name)
-
-    os.makedirs(target_folder, exist_ok=True)
-
-    transformer_opts = TokensTransformOpts(
-        only_alphabetic=False,
-        only_any_alphanumeric=True,
-        to_lower=True,
-        min_len=2,
-        max_len=99,
-        remove_accents=False,
-        remove_stopwords=True,
-        stopwords=None,
-        extra_stopwords=None,
-        language="swedish",
-        keep_numerals=False,
-        keep_symbols=False,
-    )
-
-    reader_opts = TextReaderOpts(
-        filename_pattern="*.txt",
-        filename_filter=None,
-        filename_fields=filename_field,
-    )
-
-    transform_opts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
-
-    tokens_reader = text_tokenizer.TextTokenizer(
-        source=corpus_filename,
-        transform_opts=transform_opts,
-        reader_opts=reader_opts,
-        chunk_size=None,
-    )
-
-    corpus = tokenized_corpus.TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)
-
-    train_corpus = topic_modelling.TrainingCorpus(
-        terms=corpus.terms,
-        doc_term_matrix=None,
-        id2word=None,
-        document_index=corpus.document_index,
-        corpus_options=dict(
-            reader_opts=reader_opts.props,
-            transform_opts=transformer_opts.props,
-        ),
-    )
-
-    inferred_model = topic_modelling.infer_model(
-        train_corpus=train_corpus,
-        method=engine,
-        engine_args=topic_modeling_opts,
-    )
-
-    inferred_model.topic_model.save(jj(target_folder, 'gensim.model.gz'))
-
-    topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus, store_compressed=compressed)
-
-    inferred_topics = topic_modelling.compile_inferred_topics_data(
-        inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.document_index
-    )
-
-    inferred_topics.store(target_folder)
+    _: dict = (
+        config.get_pipeline(
+            "tagged_frame_pipeline",
+            corpus_filename=corpus_filename,
+            enable_checkpoint=enable_checkpoint,
+            force_checkpoint=force_checkpoint,
+        )
+        .tagged_frame_to_tokens(
+            extract_opts=extract_opts,
+            transform_opts=transform_opts,
+            filter_opts=filter_opts,
+        )
+        .to_topic_model(
+            corpus_filename=None,
+            # corpus_folder=corpus_folder,
+            target_folder=target_folder,
+            target_name=target_name,
+            engine=engine,
+            engine_args=engine_args,
+            store_corpus=store_corpus,
+            store_compressed=store_compressed,
+        )
+    ).value()
 
 
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    click_main()  # pylint: disable=no-value-for-parameter

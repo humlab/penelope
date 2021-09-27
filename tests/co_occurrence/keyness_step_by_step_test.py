@@ -12,7 +12,7 @@ from penelope.common.keyness import metrics
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import ttm_legacy
 
-from ..utils import incline_code
+from ..utils import inline_code
 from .utils import create_keyness_opts, create_keyness_test_bundle
 
 SIMPLE_CORPUS_ABCDE_3DOCS = [
@@ -33,12 +33,12 @@ def test_step_by_step_llr_compute_corpus_keyness_alternative():
     token2id: Token2Id = bundle.token2id
     pivot_key: str = opts.pivot_column_name
 
-    with incline_code(source=keyness.compute_weighed_corpus_keyness):
+    with inline_code(source=keyness.compute_weighed_corpus_keyness):
 
         zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
         concept_corpus.zero_out_by_indices(zero_out_indices)
 
-        with incline_code(source=keyness.compute_corpus_keyness):
+        with inline_code(source=keyness.compute_corpus_keyness):
 
             corpus = corpus.group_by_time_period_optimized(
                 time_period_specifier=opts.period_pivot,
@@ -106,12 +106,12 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
     token2id: Token2Id = bundle.token2id
     pivot_key: str = opts.pivot_column_name
 
-    with incline_code(source=keyness.compute_weighed_corpus_keyness):
+    with inline_code(source=keyness.compute_weighed_corpus_keyness):
 
         zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
         concept_corpus.zero_out_by_indices(zero_out_indices)
 
-        with incline_code(source=keyness.compute_corpus_keyness):
+        with inline_code(source=keyness.compute_corpus_keyness):
 
             corpus = corpus.group_by_time_period_optimized(
                 time_period_specifier=opts.period_pivot,
@@ -121,13 +121,13 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
             )  # matrix([[3, 0, 0, 0, 3, 4, 8, 3, 5, 6, 3, 0, 3]])
 
             """Current implementation"""
-            with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrence_corpus):
+            with inline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrence_corpus):
 
-                with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrences):
+                with inline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrences):
 
                     co_occurrences: pd.DataFrame = corpus.to_co_occurrences(token2id)
 
-                    with incline_code(source=metrics.partitioned_significances):
+                    with inline_code(source=metrics.partitioned_significances):
                         vocabulary_size: int = len(token2id)
                         co_occurrence_partitions = []
                         for period in co_occurrences[pivot_key].unique():
@@ -159,7 +159,7 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
                         for x in keyness_co_occurrences[['w1_id', 'w2_id']].to_records(index=False)
                     ]
 
-                with incline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn._to_co_occurrence_matrix):
+                with inline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn._to_co_occurrence_matrix):
                     pg: Callable = {v: k for k, v in corpus.document_index[pivot_key].to_dict().items()}.get
                     llr_matrix: scipy.sparse.spmatrix = scipy.sparse.coo_matrix(
                         (

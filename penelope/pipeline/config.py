@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Uni
 import yaml
 from penelope.corpus.readers import TextReaderOpts
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, create_instance, get_pos_schema
+from penelope.utility.filename_utils import strip_extensions
 
 from . import checkpoint, interfaces
 
@@ -170,3 +171,16 @@ class CorpusConfig:
             language=language,
         )
         return config
+
+    def get_feather_folder(self, corpus_filename: str | None) -> str | None:
+
+        if self.checkpoint_opts.feather_folder is not None:
+            return self.checkpoint_opts.feather_folder
+
+        corpus_filename: str = corpus_filename or self.pipeline_payload.source
+
+        if corpus_filename is None:
+            return None
+
+        folder, filename = os.path.split(corpus_filename)
+        return os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
