@@ -1,5 +1,5 @@
 # type: ignore
-# pylint: disable=unused-variable, too-many-arguments, consider-using-with, no-else-return, too-many-nested-blocks
+# pylint: disable=unused-variable, too-many-arguments, consider-using-with, no-else-return, too-many-nested-blocks, redundant-u-string-prefix
 
 # Copyright (C) 2014 Radim Rehurek <radimrehurek@seznam.cz>
 # Licensed under the GNU LGPL v2.1 - http://www.gnu.org/licenses/lgpl.html

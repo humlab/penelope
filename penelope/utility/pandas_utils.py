@@ -118,7 +118,7 @@ class PropertyValueMaskingOpts:
     """A simple key-value filter that returns a mask set to True for items that fulfills all criterias"""
 
     def __init__(self, **kwargs):
-        super().__setattr__('data', kwargs or dict())
+        super().__setattr__('data', kwargs or {})
 
     def __getitem__(self, key: int):
         return self.data[key]

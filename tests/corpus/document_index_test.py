@@ -96,13 +96,13 @@ def test_load():
     ]
     assert index2.document_id.tolist() == [0, 1, 2, 3, 4]
     assert index2.index.name == ''
-    assert ((index == index2).all()).all()
+    assert ((index == index2).all()).all()  # pylint: disable=no-member
 
     index3 = load_document_index_from_str(TEST_DOCUMENT_INDEX, sep=';')
-    assert ((index == index3).all()).all()
+    assert ((index == index3).all()).all()  # pylint: disable=no-member
 
     index4 = load_document_index_from_str(TEST_DOCUMENT_INDEX2, sep=';')
-    assert ((index == index4).all()).all()
+    assert ((index == index4).all()).all()  # pylint: disable=no-member
 
 
 def test_load_versions():
