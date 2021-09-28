@@ -221,16 +221,16 @@ class InferredTopicsData:
                     na_filter=False,
                 ),
                 dictionary=pd.read_csv(
-                    os.path.join(folder, 'dictionary.zip'), '\t', header=0, index_col=0, na_filter=False
+                    os.path.join(folder, 'dictionary.zip'), sep='\t', header=0, index_col=0, na_filter=False
                 ),
                 topic_token_weights=pd.read_csv(
-                    os.path.join(folder, 'topic_token_weights.zip'), '\t', header=0, index_col=0, na_filter=False
+                    os.path.join(folder, 'topic_token_weights.zip'), sep='\t', header=0, index_col=0, na_filter=False
                 ),
                 topic_token_overview=pd.read_csv(
-                    os.path.join(folder, 'topic_token_overview.zip'), '\t', header=0, index_col=0, na_filter=False
+                    os.path.join(folder, 'topic_token_overview.zip'), sep='\t', header=0, index_col=0, na_filter=False
                 ),
                 document_topic_weights=pd.read_csv(
-                    os.path.join(folder, 'document_topic_weights.zip'), '\t', header=0, index_col=0, na_filter=False
+                    os.path.join(folder, 'document_topic_weights.zip'), sep='\t', header=0, index_col=0, na_filter=False
                 ),
             )
 

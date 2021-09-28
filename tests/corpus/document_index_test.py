@@ -107,7 +107,7 @@ def test_load():
 
 def test_load_versions():
     filename = './tests/test_data/documents_index_doc_id.zip'
-    document_index = pd.read_csv(filename, '\t', header=0, index_col=0, na_filter=False)
+    document_index = pd.read_csv(filename, sep='\t', header=0, index_col=0, na_filter=False)
     document_index = document_index_upgrade(document_index)
     expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_raw_tokens'])
     assert set(document_index.columns.tolist()).intersection(expected_columns) == expected_columns
@@ -127,7 +127,7 @@ def test_consolidate():
 
 def test_upgrade():
     filename = './tests/test_data/documents_index_doc_id.zip'
-    document_index = pd.read_csv(filename, '\t', header=0, index_col=0, na_filter=False)
+    document_index = pd.read_csv(filename, sep='\t', header=0, index_col=0, na_filter=False)
     document_index = DocumentIndexHelper(document_index).upgrade().document_index
     expected_columns = set(['filename', 'document_id', 'document_name', 'n_raw_tokens', 'n_tokens', 'n_raw_tokens'])
     assert set(document_index.columns.tolist()).intersection(expected_columns) == expected_columns
