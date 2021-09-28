@@ -56,10 +56,10 @@ class PipelineShortcutMixIn:
         )
 
     def load_tagged_xml(
-        self: pipelines.CorpusPipeline, filename: str, options: CheckpointOpts
+        self: pipelines.CorpusPipeline, filename: str, options: TextReaderOpts
     ) -> pipelines.CorpusPipeline:
         """ SparvXML => DATAFRAME """
-        return self.add(tasks.LoadTaggedXML(filename=filename, options=options))
+        return self.add(tasks.LoadTaggedXML(filename=filename, reader_opts=options))
 
     def checkpoint(
         self: pipelines.CorpusPipeline,
