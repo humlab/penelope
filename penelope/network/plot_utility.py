@@ -149,7 +149,7 @@ def _plot_network(
 
     r_nodes.glyph.fill_color = 'lightgreen'  # 'community_color'
 
-    nodes_source.data['name'] = [ str(x) for x in nodes_source.data['name'] ]
+    nodes_source.data['name'] = [str(x) for x in nodes_source.data['name']]
     p.add_layout(
         bm.LabelSet(source=nodes_source, text_align='center', text_baseline='middle', text_color='black', **text_opts)
     )
