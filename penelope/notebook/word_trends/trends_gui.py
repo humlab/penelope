@@ -45,7 +45,11 @@ class TrendsBaseGUI(abc.ABC):
             description="", options=[], value=[], rows=30, layout={'width': '250px'}
         )
         self._normalize: ToggleButton = ToggleButton(
-            description="Normalize", icon='check', value=False, layout=BUTTON_LAYOUT
+            description="Normalize",
+            icon='check',
+            value=False,
+            layout=BUTTON_LAYOUT,
+            tooltip="Normalize entire corpus by selected period",
         )
         self._keyness: ToggleButton = self.keyness_widget()
         self._placeholder: VBox = VBox()
@@ -76,6 +80,17 @@ class TrendsBaseGUI(abc.ABC):
         )
         self._compute: Button = Button(description="Compute", button_style='success', layout=BUTTON_LAYOUT)
         self._displayers: Sequence[ITrendDisplayer] = []
+
+    def _invalidate(self, value: bool = True):
+        self._compute.disabled = not value
+        self._words.disabled = value
+        if value:
+            for displayer in self._displayers:
+                displayer.clear()
+            self.alert(" 🗑 Data invalidated (press compute to update).")
+
+    def _invalidate_handler(self, *_):
+        self._invalidate(True)
 
     def layout(self) -> GridBox:
         layout: GridBox = GridBox(
@@ -117,6 +132,7 @@ class TrendsBaseGUI(abc.ABC):
             self.trends_data.transform(self.options)
 
             self.alert("✔")
+            self._invalidate(False)
 
             self._plot_trends()
         except ValueError as ex:
@@ -188,12 +204,11 @@ class TrendsBaseGUI(abc.ABC):
 
         self._compute.on_click(self._compute_keyness)
 
-        # self._smooth.observe(self._plot_trends, names='value')
-        # self._normalize.observe(self._plot_trends, names='value')
-
-        # self._keyness.observe(self._plot_trends, names='value')
-        # self._top_count.observe(self._plot_trends, names='value')
-        # self._time_period.observe(self._plot_trends, names='value')
+        self._smooth.observe(self._invalidate_handler, names='value')
+        self._normalize.observe(self._invalidate_handler, names='value')
+        self._keyness.observe(self._invalidate_handler, names='value')
+        self._top_count.observe(self._invalidate_handler, names='value')
+        self._time_period.observe(self._invalidate_handler, names='value')
 
         return self
 
@@ -293,6 +308,11 @@ class TrendsGUI(TrendsBaseGUI):
             },
             value=KeynessMetric.TF,
             layout=Layout(width='auto'),
+            tooltips=[
+                "Show raw term frequency (TF) counts",
+                "Show normalized word TF counts (normalize over time)",
+                "Show TF-IDF weighed TF counts",
+            ],
         )
 
 
