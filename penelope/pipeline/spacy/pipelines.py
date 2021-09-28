@@ -10,12 +10,13 @@ from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
 if TYPE_CHECKING:
     from penelope.co_occurrence import ContextOpts
-    from penelope.corpus import TokensTransformOpts, VectorizeOpts
+    from penelope.corpus import TextTransformOpts, TokensTransformOpts, VectorizeOpts
     from penelope.corpus.readers import ExtractTaggedTokensOpts
 
     # from ..checkpoint.interface import CheckpointOpts
     from ..config import CorpusConfig
     from ..pipelines import CorpusPipeline
+
 # pylint: disable=too-many-locals
 
 
@@ -30,6 +31,7 @@ def to_tagged_frame_pipeline(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
     tagged_frames_filename: str = None,
+    text_transform_opts: TextTransformOpts = None,
     **_,
 ) -> CorpusPipeline:
     """Tag corpus using spaCy pipeline. Store result as tagged (pos) data frames
@@ -58,7 +60,7 @@ def to_tagged_frame_pipeline(
             .set_spacy_model(corpus_config.pipeline_payload.memory_store['spacy_model'])
             .load_text(
                 reader_opts=corpus_config.text_reader_opts,
-                transform_opts=None,
+                transform_opts=text_transform_opts,
                 source=corpus_filename,
             )
             .text_to_spacy()
