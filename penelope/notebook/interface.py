@@ -139,7 +139,6 @@ class ComputeOpts:
 
         options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
         options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
-        options[f'--{"" if self.transform_opts.to_lower else "no" }to-lowercase'] = True
 
         if self.transform_opts.min_len > 1:
             options['--min-word-length'] = self.transform_opts.min_len
@@ -195,6 +194,6 @@ class ComputeOpts:
 
         config_filename: str = "doit.yml"
         target_filename: str = to_filename(folder=self.target_folder, tag=self.corpus_tag)
-        command: str = f"{script} {' '.join(options)} {config_filename} {self.corpus_filename} {target_filename}"
+        command: str = f"{script} {' '.join(options)} {config_filename} {self.corpus_filename} {target_filename} {self.corpus_tag}"
 
         return command
