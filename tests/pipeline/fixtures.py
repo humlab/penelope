@@ -148,6 +148,7 @@ def ComputeOptsSparvCSV(
             partition_keys=['document_id'],
         ),
         tf_threshold=1,
+        tf_threshold_mask=False,
         vectorize_opts=VectorizeOpts(
             already_tokenized=True,
         ),
