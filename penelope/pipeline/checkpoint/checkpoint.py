@@ -114,7 +114,7 @@ def store_archive(
         zf.writestr(CHECKPOINT_OPTS_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
 
         for payload in payload_stream:
-            zf.writestr(payload.filename, data=serializer.serialize(payload.content, checkpoint_opts))
+            zf.writestr(payload.filename, data=serializer.serialize(content=payload.content, options=checkpoint_opts))
             yield payload
 
         if document_index is not None:
