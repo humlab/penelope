@@ -264,24 +264,26 @@ def test_load_inferred_topics_data(method):
         inferred_topics_data.document_index, test_inferred_topics_data.document_index, check_dtype=False
     )
 
-    assert inferred_topics_data.topic_token_overview.round(5).equals(
-        test_inferred_topics_data.topic_token_overview.round(5)
-    )
-    # assert inferred_topics_data.document_topic_weights.round(5).equals(test_inferred_topics_data.document_topic_weights.round(5))
     assert (
-        inferred_topics_data.topic_token_weights.round(5)
-        .eq(test_inferred_topics_data.topic_token_weights.round(5))
-        .all()
-        .all()
+        test_inferred_topics_data.topic_token_overview.alpha.tolist()
+        == inferred_topics_data.topic_token_overview.alpha.tolist()
     )
-    # assert inferred_topics_data.topic_token_weights.round(5).equals(test_inferred_topics_data.topic_token_weights.round(5))
     assert (
-        inferred_topics_data.topic_token_weights.round(5)
-        .eq(test_inferred_topics_data.topic_token_weights.round(5))
-        .all()
-        .all()
+        test_inferred_topics_data.topic_token_overview.tokens.tolist()
+        == inferred_topics_data.topic_token_overview.tokens.tolist()
     )
 
+    assert (
+        (inferred_topics_data.topic_token_weights.weight - test_inferred_topics_data.topic_token_weights.weight)
+        < 0.000000005
+    ).all()
+    assert (
+        inferred_topics_data.topic_token_weights.topic_id == test_inferred_topics_data.topic_token_weights.topic_id
+    ).all()
+    assert (
+        inferred_topics_data.topic_token_weights.token_id == test_inferred_topics_data.topic_token_weights.token_id
+    ).all()
+    assert (inferred_topics_data.topic_token_weights.token == test_inferred_topics_data.topic_token_weights.token).all()
     shutil.rmtree(target_folder, ignore_errors=True)
 
 
