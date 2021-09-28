@@ -7,9 +7,7 @@ engines = ['neato', 'dot', 'circo', 'fdp', 'sfdp']
 
 def layout_network(G, layout_algorithm, **kwargs):
 
-    global layout_setup_map
-
-    setup = layout_setup_map[layout_algorithm]
+    setup = LAYOUT_SETUP_MAP[layout_algorithm]
 
     G.graph['K'] = kwargs.get('K', 0.1)
     G.graph['overlap'] = False
@@ -33,7 +31,7 @@ layout_setups = [
     for engine in engines
 ]
 
-layout_setup_map = {x.key: x for x in layout_setups}
+LAYOUT_SETUP_MAP = {x.key: x for x in layout_setups}
 
 
 def normalize_layout(layout):

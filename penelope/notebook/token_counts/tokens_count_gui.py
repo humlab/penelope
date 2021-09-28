@@ -18,7 +18,7 @@ from .plot import plot_by_bokeh as plot_dataframe
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']
 
-debug_view = widgets.Output()
+DEBUG_VIEW = widgets.Output()
 # pylint: disable=too-many-instance-attributes
 
 
@@ -67,7 +67,6 @@ class TokenCountsGUI:
         self._tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
 
     def layout(self) -> widgets.HBox:
-        global debug_view
         return widgets.HBox(
             [
                 widgets.VBox(
@@ -94,7 +93,7 @@ class TokenCountsGUI:
                             ],
                             layout={'width': '98%'},
                         ),
-                        debug_view,
+                        DEBUG_VIEW,
                     ],
                     layout={'width': '98%'},
                 ),
@@ -150,9 +149,8 @@ class TokenCountsGUI:
     def _display(self, _):
         self.display()
 
-    @debug_view.capture(clear_output=CLEAR_OUTPUT)
+    @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
     def display(self) -> "TokenCountsGUI":
-        global debug_view
 
         if self._corpus_configs.value is None:
             return self
@@ -196,7 +194,7 @@ class TokenCountsGUI:
         self._categories.values = ['#Tokens']
 
 
-@debug_view.capture(clear_output=False)
+@DEBUG_VIEW.capture(clear_output=False)
 def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex) -> pd.DataFrame:
 
     if len(args.categories or []) > 0:
@@ -230,7 +228,7 @@ def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFra
     return None
 
 
-@debug_view.capture(clear_output=CLEAR_OUTPUT)
+@DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
 def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     if not corpus_config.pipeline_payload.source:
