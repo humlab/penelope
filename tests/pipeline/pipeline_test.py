@@ -110,7 +110,7 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: pipeline.CorpusConfig):
 
     pipe = pipeline.CorpusPipeline(config=config).checkpoint(tagged_frames_filename, force_checkpoint=False)
 
-    payloads: List[pipe.DocumentPayload] = pipe.to_list()
+    payloads: List[pipeline.DocumentPayload] = pipe.to_list()
 
     assert len(payloads) == 5
     assert len(pipe.payload.document_index) == 5
