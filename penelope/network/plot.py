@@ -150,6 +150,9 @@ def plot(  # pylint: disable=W0102
         **(text_opts or {}),
     }
 
+    # if label_opts.get('text'):
+    #     nodes_source.data[label_opts.get('text')] = [ str(x) for x in nodes_source.data[label_opts.get('text')] ]
+
     p.add_layout(bokeh.models.LabelSet(source=nodes_source, **label_opts))
 
     return p
@@ -201,6 +204,7 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
     node_label = plot_opts.get('node_label', None)
     if node_label is not None and node_label in nodes.keys():
         label_opts = {**DFLT_LABEL_OPTS, **plot_opts.get('node_label_opts', {})}
+        nodes_source.data['node_label'] = [str(x) for x in nodes_source.data['node_label']]
         p.add_layout(bokeh.models.LabelSet(source=nodes_source, x='x', y='y', text=node_label, **label_opts))
 
     edge_label = plot_opts.get('edge_label', None)

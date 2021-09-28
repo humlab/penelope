@@ -81,6 +81,7 @@ def plot_document_topic_network(
             source=document_source, text_color="black", text_align="center", text_baseline="middle", **text_opts
         )
     )
+    topic_source.data['name'] = [str(x) for x in topic_source.data['name']]  # pylint: disable=unsubscriptable-object
     p.add_layout(
         bokeh.models.LabelSet(
             source=topic_source, text_color="black", text_align="center", text_baseline="middle", **text_opts
