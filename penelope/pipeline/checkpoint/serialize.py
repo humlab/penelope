@@ -10,32 +10,32 @@ from .interface import CheckpointOpts, IContentSerializer, SerializableContent
 
 # pylint: disable=unused-argument, no-member
 class TextContentSerializer(IContentSerializer):
-    def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
+    def serialize(self, *, content: SerializableContent, options: CheckpointOpts) -> str:
         return content
 
-    def deserialize(self, content: str, options: CheckpointOpts) -> SerializableContent:
+    def deserialize(self, *, content: str, options: CheckpointOpts) -> SerializableContent:
         return content
 
-    def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:
+    def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
         return {}
 
 
 class TokensContentSerializer(IContentSerializer):
-    def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
+    def serialize(self, *, content: SerializableContent, options: CheckpointOpts) -> str:
         return ' '.join(content)
 
-    def deserialize(self, content: str, options: CheckpointOpts) -> Sequence[str]:
+    def deserialize(self, *, content: str, options: CheckpointOpts) -> Sequence[str]:
         return content.split(' ')
 
-    def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:
+    def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
         return dict(term_frequency=term_frequency(content))
 
 
 class CsvContentSerializer(IContentSerializer):
-    def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
+    def serialize(self, *, content: SerializableContent, options: CheckpointOpts) -> str:
         return content.to_csv(sep=options.sep, header=True)
 
-    def deserialize(self, content: str, options: CheckpointOpts) -> SerializableContent:
+    def deserialize(self, *, content: str, options: CheckpointOpts) -> SerializableContent:
         data: pd.DataFrame = pd.read_csv(
             StringIO(content), sep=options.sep, quoting=options.quoting, index_col=options.index_column
         )
@@ -43,17 +43,18 @@ class CsvContentSerializer(IContentSerializer):
         if any(x not in data.columns for x in options.columns):
             raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
         if options.lower_lemma:
+            # FIXME #127 AttributeError: 'int' object has no attribute 'lower' (filename='1955_069029_026.txt')
             data[options.lemma_column] = pd.Series([x.lower() for x in data[options.lemma_column]])
         return data[options.columns]
 
-    def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:
+    def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
 
-        if not checkpoint_opts.frequency_column:
+        if not options.frequency_column:
             return {}
 
         return dict(
-            term_frequency=term_frequency(content[checkpoint_opts.frequency_column]),
-            pos_frequency=term_frequency(content[checkpoint_opts.pos_column]),
+            term_frequency=term_frequency(content[options.frequency_column]),
+            pos_frequency=term_frequency(content[options.pos_column]),
         )
 
 

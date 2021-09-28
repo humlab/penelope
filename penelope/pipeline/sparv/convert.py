@@ -42,7 +42,7 @@ def to_lemma_form(token: str, baseform: str) -> str:
 
 
 class SparvCsvSerializer(CsvContentSerializer):
-    def deserialize(self, content: str, options: CheckpointOpts) -> TaggedFrame:
+    def deserialize(self, *, content: str, options: CheckpointOpts) -> TaggedFrame:
         tagged_frame: TaggedFrame = pd.read_csv(
             StringIO(content),
             sep=options.sep,

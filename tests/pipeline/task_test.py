@@ -31,8 +31,8 @@ def test_task_vocabulary_token2id():
     task: Vocabulary = Vocabulary(pipeline=pipeline, prior=prior, token_type=Vocabulary.TokenType.Lemma).setup()
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
-        content,
-        checkpoint.CheckpointOpts(),
+        content=content,
+        options=checkpoint.CheckpointOpts(),
     )
 
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)

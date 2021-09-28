@@ -93,13 +93,13 @@ TaggedFrameStore = Union[str, zipfile.ZipFile]
 
 class IContentSerializer(abc.ABC):
     @abc.abstractmethod
-    def serialize(self, content: SerializableContent, options: CheckpointOpts) -> str:
+    def serialize(self, *, content: SerializableContent, options: CheckpointOpts) -> str:
         ...
 
     @abc.abstractmethod
-    def deserialize(self, content: str, options: CheckpointOpts) -> SerializableContent:
+    def deserialize(self, *, content: str, options: CheckpointOpts) -> SerializableContent:
         ...
 
     @abc.abstractmethod
-    def compute_term_frequency(self, content: SerializableContent, checkpoint_opts: CheckpointOpts) -> dict:
+    def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
         ...

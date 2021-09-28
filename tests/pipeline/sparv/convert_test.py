@@ -18,7 +18,7 @@ def test_sparv_csv_serializer():
     serializer: sparv.SparvCsvSerializer = serializer_cls()
 
     options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False)
-    tagged_frame: pd.DataFrame = serializer.deserialize(content, options)
+    tagged_frame: pd.DataFrame = serializer.deserialize(content=content, options=options)
 
     assert tagged_frame is not None
     assert tagged_frame.token.tolist()[:5] == ['RIKSDAGENS', 'PROTOKOLL', '1950', 'ANDRA', 'KAMMAREN']
@@ -30,7 +30,7 @@ def test_sparv_csv_serializer():
     assert all(~tagged_frame.pos.isna())
 
     options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=True)
-    tagged_frame: pd.DataFrame = serializer.deserialize(content, options)
+    tagged_frame: pd.DataFrame = serializer.deserialize(content=content, options=options)
 
     assert tagged_frame.baseform.tolist()[-5:] == ['sund', '—', 'gällivare', 'roger', 'super_man']
 
@@ -66,7 +66,7 @@ A	IN	|
         sep='\t',
         feather_folder=None,
     )
-    tagged_frame: pd.DataFrame = serializer.deserialize(tagged_frame_str, checkpoint_opts)
+    tagged_frame: pd.DataFrame = serializer.deserialize(content=tagged_frame_str, options=checkpoint_opts)
 
     assert tagged_frame is not None
 

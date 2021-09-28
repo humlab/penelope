@@ -21,7 +21,8 @@ def load_tagged_frame(
     *, zip_or_filename: TaggedFrameStore, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
 ) -> TaggedFrame:
     tagged_frame: TaggedFrame = serializer.deserialize(
-        zip_or_filename.read(filename).decode(encoding='utf-8'), checkpoint_opts
+        content=zip_or_filename.read(filename).decode(encoding='utf-8'),
+        options=checkpoint_opts,
     )
     if checkpoint_opts.lower_lemma:
         tagged_frame[checkpoint_opts.lemma_column] = pd.Series(
@@ -76,7 +77,7 @@ def load_payload(
         ),
         filename=filename,
     )
-    tfs: dict = serializer.compute_term_frequency(payload.content, checkpoint_opts)
+    tfs: dict = serializer.compute_term_frequency(content=payload.content, options=checkpoint_opts)
     if tfs:
         payload.remember(**tfs)
     return payload
