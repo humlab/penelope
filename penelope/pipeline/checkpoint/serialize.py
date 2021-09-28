@@ -37,13 +37,20 @@ class CsvContentSerializer(IContentSerializer):
 
     def deserialize(self, *, content: str, options: CheckpointOpts) -> SerializableContent:
         data: pd.DataFrame = pd.read_csv(
-            StringIO(content), sep=options.sep, quoting=options.quoting, index_col=options.index_column
+            StringIO(content),
+            sep=options.sep,
+            quoting=options.quoting,
+            index_col=options.index_column,
+            dtype={
+                options.lemma_column: str,
+                options.text_column: str,
+                options.pos_column: str,
+            }
         )
         data.fillna("", inplace=True)
         if any(x not in data.columns for x in options.columns):
             raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
         if options.lower_lemma:
-            # FIXME #127 AttributeError: 'int' object has no attribute 'lower' (filename='1955_069029_026.txt')
             data[options.lemma_column] = pd.Series([x.lower() for x in data[options.lemma_column]])
         return data[options.columns]
 

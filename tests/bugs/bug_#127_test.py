@@ -3,6 +3,7 @@ import pytest
 from penelope import pipeline
 
 
+@pytest.mark.skip("FIXED")
 def test_bug():
 
     serializer: pipeline.CsvContentSerializer = pipeline.CsvContentSerializer()
@@ -35,7 +36,7 @@ def test_bug():
     assert tagged_frame is not None
 
 
-@pytest.mark.skip("APA")
+@pytest.mark.skip("FIXED")
 def test_read_from_zip():
     zip_or_filename = '/data/inidun/courier_page_20210921_pos_csv.zip'
     filename = '1955_069029_029.txt'
