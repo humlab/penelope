@@ -814,7 +814,7 @@ class ChunkTokens(ITask):
                 yield payload
             else:
                 for chunk_id, i in enumerate(range(0, len(tokens), self.chunk_size)):
-                    yield DocumentPayload(
+                    yield DocumentPayload(  # pylint: disable=unexpected-keyword-arg
                         filename=payload.filename,
                         content_type=ContentType.TOKENS,
                         content=tokens[i : i + self.chunk_size],
