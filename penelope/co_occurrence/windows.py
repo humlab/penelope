@@ -129,8 +129,6 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
         """ Co-occurrence with concept words """
 
         for token in padded_tokens:
-            if token is None:
-                breakpoint()
 
             window.append(token)
 
