@@ -61,7 +61,7 @@ def test_step_by_step_llr_compute_corpus_keyness_alternative():
                 #         [0, 0, 0, 0, 0, 8, 6],
                 #         [0, 0, 0, 0, 0, 0, 5],
                 #         [0, 0, 0, 0, 0, 0, 0]])
-                meta_data = corpus.document_index[corpus.document_index.document_id == 0].to_dict(orient='record')[0]
+                meta_data = corpus.document_index[corpus.document_index.document_id == 0].to_dict('records')[0]
                 weights, (w1_ids, w2_ids) = metrics.significance(
                     TTM=term_term_matrix,
                     metric=opts.keyness,

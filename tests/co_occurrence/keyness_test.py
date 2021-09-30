@@ -48,7 +48,7 @@ def test_tasks_pool_tokens_to_ttm_step_by_step():
     id2token: dict = corpus.id2token
 
     filename, tokens = next(corpus)
-    doc_info = corpus.document_index[corpus.document_index.filename == filename].to_dict(orient='record')[0]
+    doc_info = corpus.document_index[corpus.document_index.filename == filename].to_dict('records')[0]
     document_id = doc_info['document_id']
     token_ids = [token2id[t] for t in tokens]
     concept_ids = {token2id[x] for x in context_opts.concept}
@@ -177,7 +177,7 @@ def test_tasks_pool_tokens_to_ttm():
     concept_ids = {token2id[x] for x in context_opts.concept}
     ignore_ids = set()
     filename, tokens = next(corpus)
-    doc_info = corpus.document_index[corpus.document_index.filename == filename].to_dict(orient='record')[0]
+    doc_info = corpus.document_index[corpus.document_index.filename == filename].to_dict('records')[0]
     token_ids = [token2id[t] for t in tokens]
     pad_id = token2id[context_opts.pad]
     args = (
