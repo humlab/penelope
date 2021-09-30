@@ -157,12 +157,21 @@ class TokenCountsGUI:
 
         corpus_config: pipeline.CorpusConfig = self.load_corpus_config_callback(self._corpus_configs.value)
 
+        if not corpus_config.corpus_source_exists():
+            self.alert(f"Config {corpus_config.corpus_name} has no specified corpus.")
+            return self
+
         self.set_schema(corpus_config.pos_schema)
 
-        self.document_index: DocumentIndex = self.load_document_index_callback(corpus_config)
+        try:
 
-        if isinstance(self.document_index, pd.DataFrame):
-            self._plot_counts()
+            self.document_index: DocumentIndex = self.load_document_index_callback(corpus_config)
+
+            if isinstance(self.document_index, pd.DataFrame):
+                self._plot_counts()
+
+        except Exception as ex:
+            self.alert("failed: {ex}")
 
         return self
 
