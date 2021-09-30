@@ -171,7 +171,7 @@ class TokenCountsGUI:
                 self._plot_counts()
 
         except Exception as ex:
-            self.alert("failed: {ex}")
+            self.alert(f"failed: {ex}")
 
         return self
 

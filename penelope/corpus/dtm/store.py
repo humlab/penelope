@@ -160,14 +160,12 @@ class StoreMixIn:
             Corpus folder to look in
         """
         return any(
-            [
-                os.path.isfile(jj(folder, f"{tag}_{suffix}"))
-                for suffix in [
-                    'vector_data.npz',
-                    'vector_data.npy',
-                    'vectorizer_data.pickle',
-                    'document_index.csv.gz',
-                ]
+            os.path.isfile(jj(folder, f"{tag}_{suffix}"))
+            for suffix in [
+                'vector_data.npz',
+                'vector_data.npy',
+                'vectorizer_data.pickle',
+                'document_index.csv.gz',
             ]
         )
 
