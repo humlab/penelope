@@ -22,6 +22,8 @@ from .dtm import (
     VectorizeOpts,
     find_matching_words_in_vocabulary,
     load_corpus,
+    load_metadata,
+    store_metadata,
 )
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers.interfaces import ExtractTaggedTokensOpts, PhraseSubstitutions, TextReaderOpts

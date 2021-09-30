@@ -1,11 +1,16 @@
+import contextlib
+import gzip
 import importlib
+import json
 import os
 import pickle
 import time
+from os.path import join as jj
 from pathlib import Path
-from typing import Dict, Mapping, Optional
+from typing import Dict, Literal, Mapping, Optional
 
 import numpy as np
+import pandas as pd
 import scipy
 from penelope.utility import read_json, write_json
 
@@ -30,16 +35,84 @@ def create_corpus_instance(
     )
 
 
+def matrix_filename(tag: str, folder: str, extension: str = '') -> str:
+    """Returns BoW matrix basename for given tag and folder"""
+    return jj(folder, f"{tag}_vector_data{extension}")
+
+
+def load_metadata(*, tag: str, folder: str) -> dict:
+
+    pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
+    if os.path.isfile(pickle_filename):
+        with open(pickle_filename, 'rb') as f:
+            data = pickle.load(f)
+        return data
+
+    if os.path.isfile(jj(folder, f"{tag}_document_index.csv.gz")):
+
+        document_index: pd.DataFrame = pd.read_csv(
+            jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip", index_col=0
+        )
+
+        with gzip.open(jj(folder, f"{tag}_token2id.json.gz"), 'r') as fp:
+            token2id: dict = json.loads(fp.read().decode('utf-8'))
+
+        term_frequency = (
+            np.load(jj(folder, f"{tag}_overridden_term_frequency.npy"), allow_pickle=True)
+            if os.path.isfile(jj(folder, f"{tag}_overridden_term_frequency.npy"))
+            else None
+        )
+
+        return {
+            'token2id': token2id,
+            'document_index': document_index,
+            'overridden_term_frequency': term_frequency,
+        }
+
+    raise ValueError("No metadata in folder")
+
+
+def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'bundle', **data) -> None:
+
+    if mode.startswith('bundle'):
+
+        pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
+        with open(pickle_filename, 'wb') as f:
+            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+
+        return
+
+    if mode.startswith('files'):
+
+        data.get('document_index').to_csv(jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip")
+
+        with gzip.open(jj(folder, f"{tag}_token2id.json.gz"), 'w') as fp:  # 4. fewer bytes (i.e. gzip)
+            fp.write(json.dumps(data.get('token2id')).encode('utf-8'))
+
+        term_frequency: np.ndarray = data.get('overridden_term_frequency')
+        if term_frequency is not None:
+            np.save(jj(folder, f"{tag}_overridden_term_frequency.npy"), term_frequency, allow_pickle=True)
+
+        return
+
+    raise ValueError(f"Invalid mode {mode}")
+
+
 class StoreMixIn:
-    def dump(self: IVectorizedCorpusProtocol, *, tag: str, folder: str, compressed: bool = True) -> IVectorizedCorpus:
+    def dump(
+        self: IVectorizedCorpusProtocol, *, tag: str, folder: str, compressed: bool = True, mode: str = 'bundle'
+    ) -> IVectorizedCorpus:
         """Store corpus on disk.
 
         The file is stored as two files: one that contains the BoW matrix (.npy or .npz)
-        and a pickled file that contains dictionary, word counts and the document index
+        and a pickled/gzipped file that contains dictionary, word counts and the document index
 
-        The two files are stored in files with names based on the specified `tag`:
+        The files are stored in files with names prefixed with the specified `tag`:
 
-            {tag}_vectorizer_data.pickle         Metadata `token2id`, `document_index` and `overridden_term_frequency`
+            {tag}_vectorizer_data.pickle         Bundle with `token2id`, `document_index` and `overridden_term_frequency`
+            {tag}_document_index.csv.gz          Document index as compressed CSV (if mode is `files`)
+            {tag}_token2id.json.gz               Vocabluary as compressed JSON (if mode is `files`)
+            {tag}_term_frequency.npy             Term frequency to use, overrides TF sums in DTM (if mode is `files`)
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
 
@@ -51,29 +124,29 @@ class StoreMixIn:
             Target folder, by default './output'
         compressed : bool, optional
             Specifies if matrix is stored as .npz or .npy, by default .npz
+        mode : str, optional, values 'bundle' or 'files'
+            Specifies if metadata should be bundled in a pickle file or stored as individual compressed files.
 
         """
         tag = tag or time.strftime("%Y%m%d_%H%M%S")
 
-        data = {
+        store_metadata(tag=tag, folder=folder, mode=mode, **self.metadata)
+
+        if compressed:
+            assert scipy.sparse.issparse(self.bag_term_matrix)
+            scipy.sparse.save_npz(jj(folder, f"{tag}_vector_data"), self.bag_term_matrix, compressed=True)
+        else:
+            np.save(jj(folder, f"{tag}_vector_data.npy"), self.bag_term_matrix, allow_pickle=True)
+
+        return self
+
+    @property
+    def metadata(self) -> dict:
+        return {
             'token2id': self.token2id,
             'overridden_term_frequency': self.overridden_term_frequency,
             'document_index': self.document_index,
         }
-        data_filename = StoreMixIn._data_filename(tag, folder)
-
-        with open(data_filename, 'wb') as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-
-        matrix_filename = StoreMixIn._matrix_filename(tag, folder)
-
-        if compressed:
-            assert scipy.sparse.issparse(self.bag_term_matrix)
-            scipy.sparse.save_npz(matrix_filename, self.bag_term_matrix, compressed=True)
-        else:
-            np.save(matrix_filename + '.npy', self.bag_term_matrix, allow_pickle=True)
-
-        return self
 
     @staticmethod
     def dump_exists(*, tag: str, folder: str) -> bool:
@@ -84,16 +157,30 @@ class StoreMixIn:
         tag : str
             Corpus prefix tag
         folder : str, optional
-            Corpus folder to look in, by default './output'
+            Corpus folder to look in
         """
-        return os.path.isfile(StoreMixIn._data_filename(tag, folder))
+        return any(
+            [
+                os.path.isfile(jj(folder, f"{tag}_{suffix}"))
+                for suffix in [
+                    'vector_data.npz',
+                    'vector_data.npy',
+                    'vectorizer_data.pickle',
+                    'document_index.csv.gz',
+                ]
+            ]
+        )
 
     @staticmethod
     def remove(*, tag: str, folder: str):
-        Path(os.path.join(folder, f'{tag}_vector_data.npz')).unlink(missing_ok=True)
-        Path(os.path.join(folder, f'{tag}_vector_data.npy')).unlink(missing_ok=True)
-        Path(os.path.join(folder, f'{tag}_vectorizer_data.pickle')).unlink(missing_ok=True)
-        Path(os.path.join(folder, f'{tag}_vectorizer_data.json')).unlink(missing_ok=True)
+        with contextlib.suppress(Exception):
+            Path(jj(folder, f'{tag}_vector_data.npz')).unlink(missing_ok=True)
+            Path(jj(folder, f'{tag}_vector_data.npy')).unlink(missing_ok=True)
+            Path(jj(folder, f"{tag}_vectorizer_data.json")).unlink(missing_ok=True)
+            Path(jj(folder, f"{tag}_vectorizer_data.pickle")).unlink(missing_ok=True)
+            Path(jj(folder, f"{tag}_document_index.csv.gz")).unlink(missing_ok=True)
+            Path(jj(folder, f"{tag}_token2id.json.gz")).unlink(missing_ok=True)
+            Path(jj(folder, f"{tag}_overridden_term_frequency.npy")).unlink(missing_ok=True)
 
     @staticmethod
     def load(*, tag: str, folder: str) -> IVectorizedCorpus:
@@ -119,16 +206,15 @@ class StoreMixIn:
         VectorizedCorpus
             Loaded corpus
         """
-        data_filename = StoreMixIn._data_filename(tag, folder)
-        with open(data_filename, 'rb') as f:
-            data = pickle.load(f)
 
-        token2id: Mapping = data["token2id"]
-        document_index: DocumentIndex = data.get("document_index")
+        data: dict = load_metadata(tag=tag, folder=folder)
+
+        token2id: Mapping = data.get("token2id")
 
         """Load TF override, convert if in older (dict) format"""
         overridden_term_frequency: np.ndarray = (
-            data.get("overridden_term_frequency", None)
+            data.get("term_frequency", None)
+            or data.get("overridden_term_frequency", None)
             or data.get("term_frequency_mapping", None)
             or data.get("token_counter", None)
         )
@@ -136,42 +222,31 @@ class StoreMixIn:
             fg = {v: k for k, v in token2id.items()}.get
             overridden_term_frequency = np.array([overridden_term_frequency[fg(i)] for i in range(0, len(token2id))])
 
-        matrix_basename = StoreMixIn._matrix_filename(tag, folder)
-
-        if os.path.isfile(matrix_basename + '.npz'):
-            bag_term_matrix = scipy.sparse.load_npz(matrix_basename + '.npz')
+        """Document-term-matrix"""
+        if os.path.isfile(jj(folder, f"{tag}_vector_data.npz")):
+            bag_term_matrix = scipy.sparse.load_npz(jj(folder, f"{tag}_vector_data.npz"))
         else:
-            bag_term_matrix = np.load(matrix_basename + '.npy', allow_pickle=True).item()
+            bag_term_matrix = np.load(jj(folder, f"{tag}_vector_data.npy"), allow_pickle=True).item()
 
         return create_corpus_instance(
             bag_term_matrix,
             token2id=token2id,
-            document_index=document_index,
+            document_index=data.get("document_index"),
             overridden_term_frequency=overridden_term_frequency,
         )
 
     @staticmethod
     def dump_options(*, tag: str, folder: str, options: Dict):
-        json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
+        json_filename = jj(folder, f"{tag}_vectorizer_data.json")
         write_json(json_filename, options, default=lambda _: "<not serializable>")
 
     @staticmethod
     def load_options(*, tag: str, folder: str) -> Dict:
         """Loads vectrize options if they exists"""
-        json_filename = os.path.join(folder, f"{tag}_vectorizer_data.json")
+        json_filename = jj(folder, f"{tag}_vectorizer_data.json")
         if os.path.isfile(json_filename):
             return read_json(json_filename)
         return dict()
-
-    @staticmethod
-    def _data_filename(tag: str, folder: str) -> str:
-        """Returns pickled basename for given tag and folder"""
-        return os.path.join(folder, f"{tag}_vectorizer_data.pickle")
-
-    @staticmethod
-    def _matrix_filename(tag: str, folder: str) -> str:
-        """Returns BoW matrix basename for given tag and folder"""
-        return os.path.join(folder, f"{tag}_vector_data")
 
 
 def load_corpus(
