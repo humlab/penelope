@@ -121,27 +121,3 @@ def test_table_gui_debug_setup(tag: str, keyness: KeynessMetric):
     gui.start_observe()
 
     gui.update_corpus()
-
-
-@pytest.mark.skip(reason="Bug is fixed")
-def test_table_gui_n_tokens_bug():
-
-    tag: str = '1970-information'
-    folder: str = '/data/westac/data/1970-information/'
-
-    bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
-
-    gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
-
-    gui.stop_observe()
-    gui.pivot = "year"
-    gui.keyness_source = KeynessMetricSource.Full
-    gui.keyness = KeynessMetric.LLR
-    gui.token_filter = ""
-    gui.global_threshold = 1
-    gui.concepts = set()
-    gui.largest = 10
-    gui.start_observe()
-
-    gui.update_corpus()
-    gui.update_co_occurrences()

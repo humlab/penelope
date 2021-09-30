@@ -447,25 +447,3 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     corpus = pipeline.value()
 
     assert isinstance(corpus, VectorizedCorpus)
-
-
-@pytest.mark.skipif(SPACY_DATA == "", reason="SPACY_DATA not set")
-@pytest.mark.long_running
-def test_spacy_data_location():
-
-    spacy_data: str = "/data/lib/spacy_data/2.3.1"
-
-    if not os.path.isdir(spacy_data):
-        return
-
-    nlp: Language = spacy.load(os.path.join(spacy_data, "en_core_web_sm"))
-    assert isinstance(nlp, Language)
-
-    nlp: Language = spacy.load(os.path.join(spacy_data, "en"))
-    assert isinstance(nlp, Language)
-
-    nlp: Language = spacy.load(prepend_path("en_core_web_sm", spacy_data))
-    assert isinstance(nlp, Language)
-
-    nlp: Language = spacy.load(prepend_path(nlp, ""))
-    assert isinstance(nlp, Language)

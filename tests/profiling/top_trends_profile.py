@@ -6,7 +6,7 @@ from penelope.notebook.word_trends.displayers import TopTokensDisplayer
 
 DEFAULT_SMOOTHERS = [pchip_spline]
 
-folder = "/data/westac/shared/propaganda_w5_NNPM_PASSTHROUGH_LEMMA_STOPS"
+folder = "/path/to/data"
 tag = os.path.split(folder)[1]
 
 corpus: VectorizedCorpus = VectorizedCorpus.load(folder=folder, tag=tag)
@@ -17,12 +17,5 @@ displayer.setup()
 
 indices = [x[1] for x in top_tokens]
 smooth = False
-print(len(indices))
-plot_data = displayer.compile(corpus=corpus, indices=indices, smoothers=[DEFAULT_SMOOTHERS] if smooth else [])
-# displayer.plot(plot_data=plot_data)
 
-# displayer.display(
-#     corpus=corpus,
-#     indices=indices,
-#     smooth=smooth,
-# )
+plot_data = displayer.compile(corpus=corpus, indices=indices, smoothers=[DEFAULT_SMOOTHERS] if smooth else [])

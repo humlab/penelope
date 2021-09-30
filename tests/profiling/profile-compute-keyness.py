@@ -14,8 +14,8 @@ def load_bundle(folder: str, tag: str):
 def compute():
 
     folder, tag = (
-        '/home/roger/source/welfare-state-analytics/welfare_state_analytics/data/1970-information',
-        '1970-information',
+        '/path/to/data',
+        'data-tag',
     )
     bundle: Bundle = load_bundle(folder, tag)
 
@@ -24,26 +24,12 @@ def compute():
         keyness=KeynessMetric.LLR,
         tf_threshold=1,
         pivot_column_name="time_period",
-        period_pivot="decade",  # ["year", "lustrum", "decade"],
+        period_pivot="decade",
         fill_gaps=False,
         normalize=False,
     )
 
     bundle.keyness_transform(opts=opts)
-
-    # gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
-    # gui.stop_observe()
-    # gui.pivot = time_period
-    # gui.keyness_source = KeynessMetricSource.Full
-    # gui.keyness = KeynessMetric.TF
-    # gui.token_filter = "educational/*"
-    # gui.global_threshold = 50
-    # gui.concepts = set(["general"])
-    # gui.largest = 10
-    # gui.start_observe()
-
-    # gui.update_corpus()
-    # gui.update_co_occurrences()
 
 
 if __name__ == '__main__':
