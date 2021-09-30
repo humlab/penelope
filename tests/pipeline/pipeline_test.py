@@ -370,6 +370,7 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
         force_checkpoint=True,
         tf_threshold=1,
         tf_threshold_mask=False,
+        tagged_frames_filename='./tests/output/legal_instrument_five_docs_test_pos_csv.zip',
     )
 
     corpus = workflow.compute(args=args, corpus_config=config)

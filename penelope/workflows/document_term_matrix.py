@@ -23,6 +23,7 @@ def compute(
                 corpus_filename=args.corpus_filename,
                 enable_checkpoint=args.enable_checkpoint,
                 force_checkpoint=args.force_checkpoint,
+                tagged_frames_filename=args.tagged_frames_filename,
             )
             + wildcard_to_DTM_pipeline(
                 transform_opts=args.transform_opts,

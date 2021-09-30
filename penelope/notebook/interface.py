@@ -34,6 +34,7 @@ class ComputeOpts:
 
     enable_checkpoint: bool = field(init=True, default=True)
     force_checkpoint: bool = field(init=True, default=False)
+    tagged_frames_filename: str = field(init=True, default=None)
     context_opts: Optional[ContextOpts] = None
 
     dry_run: bool = field(init=False, default=False)
