@@ -45,7 +45,7 @@ class CsvContentSerializer(IContentSerializer):
                 options.lemma_column: str,
                 options.text_column: str,
                 options.pos_column: str,
-            }
+            },
         )
         data.fillna("", inplace=True)
         if any(x not in data.columns for x in options.columns):
