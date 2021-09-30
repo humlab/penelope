@@ -4,13 +4,10 @@ from unittest.mock import Mock
 import pandas as pd
 import penelope.pipeline.spacy.convert as convert
 import pytest
-import spacy
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
 from penelope.utility import PropertyValueMaskingOpts
-from penelope.vendor.spacy import SPACY_DATA, prepend_path
-from spacy.language import Language
 from spacy.tokens import Doc
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 
