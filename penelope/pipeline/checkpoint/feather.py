@@ -58,6 +58,41 @@ def read_document_index(folder: str) -> pd.DataFrame:
     raise PipelineError("Feather checkpoint is missing document index. Please force new checkpoint!")
 
 
+def drop_document_index(folder: str) -> None:
+    filename = jj(folder, FEATHER_DOCUMENT_INDEX_NAME)
+    if os.path.isfile(filename):
+        os.remove(filename)
+
+
+def get_document_index(folder: str, document_index: pd.DataFrame) -> pd.DataFrame:
+
+    if not document_index_exists(folder):
+        return document_index
+
+    stored_document_index: pd.DataFrame = read_document_index(folder)
+
+    # if is_invalidated_document_index(stored_document_index, document_index):
+    if len(stored_document_index) != len(document_index):
+        drop_document_index(folder)
+        return document_index
+
+    return stored_document_index
+
+
+def is_invalidated_document_index(stored_document_index: pd.DataFrame, document_index: pd.DataFrame) -> bool:
+    # FIXME Add tests and use in get_document_index
+    if len(stored_document_index) != len(document_index):
+        return True
+
+    if stored_document_index.document_name.isna().any():
+        return True
+
+    # if not stored_document_index.document_name.equals(document_index.index):
+    #     return True
+
+    return False
+
+
 def write_document_index(folder: str, document_index: pd.DataFrame):
 
     if document_index is None:

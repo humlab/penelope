@@ -253,6 +253,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     def exit(self):
 
         if self.checkpoint_opts.feather_folder:
+            # Check validity of document index, fillna()?
             cp.feather.write_document_index(self.checkpoint_opts.feather_folder, self.document_index)
 
     def setup(self) -> ITask:
@@ -260,10 +261,12 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
 
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.checkpoint_data: cp.CheckpointData = self.load_archive()
-        if cp.feather.document_index_exists(self.checkpoint_opts.feather_folder):
-            self.pipeline.payload.set_reader_index(cp.feather.read_document_index(self.checkpoint_opts.feather_folder))
-        else:
-            self.pipeline.payload.set_reader_index(self.checkpoint_data.document_index)
+
+        document_index: pd.DataFrame = cp.feather.get_document_index(
+            self.checkpoint_opts.feather_folder, self.checkpoint_data.document_index
+        )
+
+        self.pipeline.payload.set_reader_index(document_index)
 
         self.pipeline.put("reader_opts", self.extra_reader_opts.props)
         self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
