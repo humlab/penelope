@@ -151,3 +151,4 @@ checkpoints
 *.swp
 profile-reports
 typings
+data
