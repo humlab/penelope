@@ -189,3 +189,8 @@ class CorpusConfig:
 
         folder, filename = os.path.split(corpus_filename)
         return os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
+
+    def corpus_source_exists(self):
+        if self.pipeline_payload.source is None:
+            return False
+        return os.path.isfile(self.pipeline_payload.source)
