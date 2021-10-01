@@ -6,6 +6,8 @@ import yaml
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.interfaces import PipelinePayload
 
+# pylint: disable=redefined-outer-name
+
 
 @pytest.fixture
 def corpus_config() -> CorpusConfig:
