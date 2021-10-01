@@ -49,3 +49,7 @@ text_reader_opts:
   index_field: null
   sep: "\t"
   quoting: 3
+text_transform_opts:
+  fix_hyphenation: true
+  fix_whitespaces: true
+  
