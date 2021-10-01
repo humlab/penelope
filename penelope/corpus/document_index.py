@@ -455,9 +455,9 @@ def load_document_index(
     if isinstance(filename, DocumentIndex):
         document_index: DocumentIndex = filename
     else:
-
-        if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
-            raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
+        if isinstance(filename, str):
+            if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
+                raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
 
         document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
