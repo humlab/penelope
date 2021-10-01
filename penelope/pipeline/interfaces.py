@@ -24,6 +24,9 @@ if TYPE_CHECKING:
     from . import pipelines
 
 
+DEFAULT_TAGGED_FRAMES_FILENAME_SUFFIX = '_pos_csv'
+
+
 @unique
 class ContentType(IntEnum):
     NONE = 0

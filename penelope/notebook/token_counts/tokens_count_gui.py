@@ -248,7 +248,9 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
         logger.info(f"corpus file {corpus_config.pipeline_payload.source} not found. please check configuration.")
         return None
 
-    tagged_frames_filename: str = path_add_suffix(corpus_config.pipeline_payload.source, '_pos_csv')
+    tagged_frames_filename: str = path_add_suffix(
+        corpus_config.pipeline_payload.source, interfaces.DEFAULT_TAGGED_FRAMES_FILENAME_SUFFIX
+    )
 
     p: pipeline.CorpusPipeline = corpus_config.get_pipeline(
         "tagged_frame_pipeline",

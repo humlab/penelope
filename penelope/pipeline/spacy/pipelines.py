@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from penelope.utility import PropertyValueMaskingOpts, path_add_suffix
 
-from .. import pipelines
+from .. import interfaces, pipelines
 from ..co_occurrence.pipelines import wildcard_to_partition_by_document_co_occurrence_pipeline
 from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
@@ -52,7 +52,7 @@ def to_tagged_frame_pipeline(
     try:
 
         tagged_frame_filename: str = tagged_frames_filename or path_add_suffix(
-            corpus_config.pipeline_payload.source, '_pos_csv'
+            corpus_config.pipeline_payload.source, interfaces.DEFAULT_TAGGED_FRAMES_FILENAME_SUFFIX
         )
 
         pipeline: pipelines.CorpusPipeline = (
@@ -60,7 +60,7 @@ def to_tagged_frame_pipeline(
             .set_spacy_model(corpus_config.pipeline_payload.memory_store['spacy_model'])
             .load_text(
                 reader_opts=corpus_config.text_reader_opts,
-                transform_opts=text_transform_opts,
+                transform_opts=text_transform_opts or corpus_config.text_transform_opts,
                 source=corpus_filename,
             )
             .text_to_spacy()
