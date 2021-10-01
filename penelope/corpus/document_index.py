@@ -15,6 +15,7 @@ from penelope.utility import (
     extract_filenames_metadata,
     is_strictly_increasing,
     list_of_dicts_to_dict_of_lists,
+    probe_extension,
     strip_path_and_extension,
     strip_paths,
 )
@@ -431,7 +432,10 @@ def store_document_index(document_index: DocumentIndex, filename: str) -> None:
         document_index (DocumentIndex): [description]
         filename (str): [description]
     """
-    document_index.to_csv(filename, sep='\t', header=True)
+
+    compression: dict = dict(method='zip', archive_name="document_index.csv") if filename.endswith('zip') else 'infer'
+
+    document_index.to_csv(filename, sep='\t', compression=compression, header=True)
 
 
 def load_document_index(
@@ -440,6 +444,7 @@ def load_document_index(
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
+    probe_extensions: str = 'zip,csv,gz',
     **read_csv_kwargs,
 ) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -450,6 +455,10 @@ def load_document_index(
     if isinstance(filename, DocumentIndex):
         document_index: DocumentIndex = filename
     else:
+
+        if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
+            raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
+
         document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
