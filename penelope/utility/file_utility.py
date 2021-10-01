@@ -11,6 +11,8 @@ from typing import Any, AnyStr, Dict, Tuple
 
 import pandas as pd
 
+from .filename_utils import replace_extension
+
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
@@ -46,6 +48,25 @@ def find_parent_folder_with_child(folder: str, target: str) -> pathlib.Path:
         if path in ('', '/'):
             break
         path = path.parent
+    return None
+
+
+def touch(filename: str) -> str:
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    Path(filename).touch()
+    return filename
+
+
+def probe_extension(filename: str, extensions: str = 'csv,zip') -> str:
+    """Checks if `filename` exists, or with any of given extensions"""
+    if os.path.isfile(filename):
+        return filename
+
+    for extension in extensions.split(','):
+        probe_name: str = replace_extension(filename, extension.strip())
+        if os.path.isfile(probe_name):
+            return probe_name
+
     return None
 
 

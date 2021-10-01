@@ -1,14 +1,44 @@
+import uuid
+
 import pytest  # pylint: disable=unused-import
 from penelope.utility import (
     extract_filename_metadata,
     filename_satisfied_by,
+    probe_extension,
+    strip_extensions,
     strip_path_and_add_counter,
     strip_path_and_extension,
     strip_paths,
+    touch,
 )
-from penelope.utility.filename_utils import strip_extensions
+from penelope.utility.filename_utils import replace_extension
+from pyright import os
 
 OUTPUT_FOLDER = './tests/output'
+
+
+def test_touch():
+
+    filename = f'./tests/output/{uuid.uuid1()}'
+    assert os.path.isfile(touch(filename))
+
+    filename = f'./tests/output/{uuid.uuid1()}/{uuid.uuid1()}'
+    assert os.path.isfile(touch(filename))
+
+
+def test_probe_extension():
+
+    filename = f'./tests/output/{uuid.uuid1()}.txt'
+
+    assert probe_extension(filename) is None
+    assert probe_extension(filename, extensions='txt') is None
+
+    touch(filename)
+    assert probe_extension(filename) == filename
+    assert probe_extension(filename, 'txt') == filename
+
+    filename = replace_extension(filename, 'zip')
+    assert probe_extension(filename, 'zip,csv,txt') == replace_extension(filename, 'txt')
 
 
 def test_extract_filename_fields_when_valid_regexp_returns_metadata_values():
