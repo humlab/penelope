@@ -1,9 +1,9 @@
 from dataclasses import dataclass
+from tempfile import tempdir
 from typing import Any, Dict, List, Union
 
-import spacy
 from penelope.type_alias import TaggedFrame
-from penelope.vendor.spacy import prepend_spacy_path
+from penelope.vendor.spacy import load_model
 from spacy.language import Language
 
 from .. import interfaces
@@ -23,12 +23,15 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
 
     lang_or_nlp: Union[str, Language] = None
     disables: List[str] = None
+    version: str = "2.3.1"
+    folder: str = "/tmp"
 
     def setup(self):
-        disables = DEFAULT_SPACY_DISABLES if self.disables is None else self.disables
-        name: Union[str, Language] = prepend_spacy_path(self.lang_or_nlp)
-        nlp: Language = spacy.load(name, disable=disables) if isinstance(self.lang_or_nlp, str) else self.lang_or_nlp
-        self.pipeline.put("spacy_nlp", nlp)
+        self.disables = DEFAULT_SPACY_DISABLES if self.disables is None else self.disables
+        self.lang_or_nlp: Language = load_model(
+            name_or_nlp=self.lang_or_nlp, disables=self.disables, version=self.version, folder=self.folder
+        )
+        self.pipeline.put("spacy_nlp", self.lang_or_nlp)
         self.pipeline.put("disables", self.disables)
         return self
 

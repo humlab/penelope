@@ -6,7 +6,7 @@ from textacy import Corpus
 
 # pylint: disable=redefined-outer-name
 @pytest.fixture(scope="module")
-def mary_had_a_little_lamb_corpus():
+def mary_had_a_little_lamb_corpus(en_nlp):
     """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py """
     texts = [
         "Mary had a little lamb. Its fleece was white as snow.",
@@ -18,17 +18,8 @@ def mary_had_a_little_lamb_corpus():
         "Why does the lamb love Mary so? The eager children cry.",
         "Mary loves the lamb, you know, the teacher did reply.",
     ]
-    corpus = Corpus("en_core_web_sm", data=texts)
+    corpus = Corpus(en_nlp, data=texts)
     return corpus
-
-
-@pytest.fixture(scope="module")
-def mary_had_a_little_lamb_tokens():
-    tokenized_docs = [
-        list(doc._.to_terms_list(ngrams=1, entities=None, normalize="lower", as_strings=True))
-        for doc in mary_had_a_little_lamb_corpus()
-    ]
-    return tokenized_docs
 
 
 @pytest.mark.long_running

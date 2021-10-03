@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import pathlib
 import shutil
@@ -6,6 +8,7 @@ from os.path import join as jj
 from typing import Union
 
 import requests
+import spacy
 from loguru import logger
 from spacy.language import Language
 
@@ -34,16 +37,46 @@ def prepend_spacy_path(model: Union[Language, str]) -> Union[Language, str]:
     return model
 
 
+def load_model(*, name_or_nlp: str | Language, disables: str, version: str, folder: str) -> Language:
+    if isinstance(name_or_nlp, str):
+        try:
+            name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
+            name_or_nlp = spacy.load(name, disable=disables)
+        except OSError:
+            model_path: str = download_model_by_name(model_name=name_or_nlp, version=version, folder=folder)
+            name_or_nlp = spacy.load(model_path, disable=disables)
+
+    return name_or_nlp
+
+
+def download_model_by_name(
+    *,
+    model_name: str = 'sm',
+    version: str = '2.3.1',
+    folder: str = '/tmp',
+) -> str:
+    lang, model_type, model_source, model_size = model_name.split('_')
+    return download_model(
+        lang=lang,
+        model_type=model_type,
+        model_source=model_source,
+        model_size=model_size,
+        version=version,
+        folder=folder,
+    )
+
+
 def download_model(
     *,
     lang: str = 'en',
-    version: str = '2.3.1',
-    model_size: str = 'sm',
     model_type: str = 'core',
+    model_source: str = 'web',
+    model_size: str = 'sm',
+    version: str = '2.3.1',
     folder: str = '/tmp',
 ) -> str:
 
-    model_name: str = f'{lang}_{model_type}_web_{model_size}-{version}'
+    model_name: str = f'{lang}_{model_type}_{model_source}_{model_size}-{version}'
 
     # https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.1/en_core_web_sm-2.3.1.tar.gz'
     if not os.path.isdir(jj(folder, model_name)):
@@ -66,7 +99,7 @@ def download_model(
         """Move, and only keep, actual model directory"""
         shutil.move(jj(folder, model_name), jj(folder, f'{model_name}.tmp'))
         shutil.move(
-            jj(folder, f'{model_name}.tmp', f'{lang}_{model_type}_web_{model_size}', model_name),
+            jj(folder, f'{model_name}.tmp', f'{lang}_{model_type}_{model_source}_{model_size}', model_name),
             jj(folder, f'{model_name}'),
         )
 
