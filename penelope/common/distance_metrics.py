@@ -1,10 +1,13 @@
 import math
+
+# from numpy.typing import ArrayLike
 import warnings
+from typing import Any, Tuple
 
 import numpy as np
 import scipy
-import statsmodels.api as sm
 from numpy.polynomial.polynomial import polyfit
+from scipy import stats
 
 warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynomial.polynomial')
 
@@ -36,8 +39,12 @@ def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = T
     return l2_norm
 
 
-# FIXME: Use scipy.stats.linregress instead (remove statmodels as dependency)
-def fit_ordinary_least_square(ys, xs=None):
+Point = Tuple[float, float]
+
+# FIXME: #132 Use scipy.stats.linregress instead (remove statmodels as dependency)
+
+
+def fit_ordinary_least_square(ys, xs=None) -> Tuple[float, float, Any, Point, Point]:
     """[summary]
 
     Parameters
@@ -56,15 +63,11 @@ def fit_ordinary_least_square(ys, xs=None):
     if xs is None:
         xs = np.arange(len(ys))  # 0.0, len(ys), 1.0))
 
-    xs = sm.add_constant(xs)
+    slope, intercept, _, p, _ = stats.linregress(xs, ys)
 
-    model = sm.OLS(endog=ys, exog=xs)
-    result = model.fit()
-    coeffs = result.params
-    predicts = result.predict()
-    (x1, x2), (y1, y2) = (xs[0][1], xs[-1][1]), (predicts[0], predicts[-1])
+    (x1, x2), (y1, y2) = (xs[0], xs[-1]), (intercept + slope * xs[0], intercept + slope * xs[-1])
 
-    return coeffs[0], coeffs[1], result.pvalues, (x1, x2), (y1, y2)
+    return intercept, slope, p, (x1, x2), (y1, y2)
 
 
 def fit_ordinary_least_square_ravel(Y, xs):
