@@ -1,7 +1,6 @@
 from typing import List, Tuple
 
 import pandas as pd
-import panel as pn
 from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
 
 
@@ -32,45 +31,42 @@ def low_bound(categories: List[int], n_tick: int) -> int:
     return (lambda x: x - (x % n_tick))(int(min(categories)))
 
 
-def tabulator_widget(df: pd.DataFrame) -> pn.widgets.Tabulator:
+# @deprecated
+# def tabulator_widget(df: pd.DataFrame) -> pn.widgets.Tabulator:
 
-    formatters = {
-        'category': NumberFormatter(format='0'),
-        'time_period': NumberFormatter(format='0'),
-        'year': NumberFormatter(format='0'),
-        'index': StringFormatter(),
-    }
+#     formatters = {
+#         'category': NumberFormatter(format='0'),
+#         'time_period': NumberFormatter(format='0'),
+#         'year': NumberFormatter(format='0'),
+#         'index': StringFormatter(),
+#     }
 
-    # def contains_filter(df, pattern, column):
-    #     if not pattern:
-    #         return df
-    #     return df[df[column].str.contains(pattern)]
+#     # def contains_filter(df, pattern, column):
+#     #     if not pattern:
+#     #         return df
+#     #     return df[df[column].str.contains(pattern)]
 
-    table = pn.widgets.Tabulator(
-        df,
-        formatters=formatters,
-        layout='fit_data_table',
-        # pagination='remote',
-        # hidden_columns=['index'],
-        row_height=24,
-        show_index=False,
-    )
-    table.auto_edit = False
-    # filename, button = table.download_menu(
-    #     text_kwargs={'name': 'Enter filename', 'value': 'default.csv'},
-    #     button_kwargs={'name': 'Download table', 'width': 50}
-    # )
-    button = pn.widgets.Button(name='Export to CSV', button_type="success", width=75)
-    button.js_on_click(
-        {'table': table},
-        code="""
-    table.filename = 'table_data.csv';
-    table.download = !table.download
-    """,
-    )
-    widget = pn.Column(button, table)
-    return widget
-
-    # tokens_filter = pn.widgets.TextInput(name='Tokens filter', value='')
-    # table.add_filter(pn.bind(contains_filter, pattern=tokens_filter, column='token'))
-    # return pn.Column(pn.Row(tokens_filter, pn.Column(filename, button)), table)
+#     table = pn.widgets.Tabulator(
+#         df,
+#         formatters=formatters,
+#         layout='fit_data_table',
+#         # pagination='remote',
+#         # hidden_columns=['index'],
+#         row_height=24,
+#         show_index=False,
+#     )
+#     table.auto_edit = False
+#     # filename, button = table.download_menu(
+#     #     text_kwargs={'name': 'Enter filename', 'value': 'default.csv'},
+#     #     button_kwargs={'name': 'Download table', 'width': 50}
+#     # )
+#     button = pn.widgets.Button(name='Export to CSV', button_type="success", width=75)
+#     button.js_on_click(
+#         {'table': table},
+#         code="""
+#     table.filename = 'table_data.csv';
+#     table.download = !table.download
+#     """,
+#     )
+#     widget = pn.Column(button, table)
+#     return widget
