@@ -5,7 +5,6 @@ import spacy
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
 from penelope.pipeline.spacy.tasks import SetSpacyModel, SpacyDocToTaggedFrame, ToSpacyDoc, ToSpacyDocToTaggedFrame
 from penelope.utility.pos_tags import PoS_Tag_Schemes
-from penelope.vendor.spacy import prepend_spacy_path
 from spacy.tokens import Doc
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
@@ -14,13 +13,8 @@ SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at m
 
 
 @pytest.fixture
-def nlp() -> Doc:
-    return spacy.load(prepend_spacy_path("en_core_web_sm"))
-
-
-@pytest.fixture
-def looking_back(nlp) -> Doc:
-    return nlp(SAMPLE_TEXT)
+def looking_back(en_nlp) -> Doc:
+    return en_nlp(SAMPLE_TEXT)
 
 
 POS_ATTRIBUTES = ['text', 'pos_', 'lemma_']
