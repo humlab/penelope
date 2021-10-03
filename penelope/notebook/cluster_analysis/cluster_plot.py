@@ -1,10 +1,9 @@
 import itertools
-from typing import Iterable
+from typing import Any, Iterable
 
 import bokeh
 import bokeh.models as bm
 import bokeh.plotting as bp
-import holoviews as hv
 import IPython.display as display
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +13,50 @@ from penelope.common import distance_metrics
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import nth
 from scipy.cluster.hierarchy import dendrogram, linkage
+
+try:
+
+    import holoviews as hv
+
+    def create_cluster_boxplot(
+        x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, color: str
+    ) -> hv.opts:
+
+        xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
+
+        token_ids = list(token_clusters[token_clusters.cluster == n_cluster].index)
+
+        Y = x_corpus.data[:, token_ids]
+        xsr = np.repeat(xs, Y.shape[1])
+        ysr = Y.ravel()
+
+        data = pd.DataFrame(data={'year': xsr, 'frequency': ysr})
+
+        violin: hv.BoxWhisker = hv.BoxWhisker(data, ('year', 'Year'), ('frequency', 'Frequency'))
+
+        violin_opts = {
+            'height': 600,
+            'width': 900,
+            'box_fill_color': color,
+            'xrotation': 90,
+            # 'violin_width': 0.8
+        }
+        return violin.opts(**violin_opts)
+
+    def render_cluster_boxplot(p: hv.opts):
+        p = hv.render(p)
+        bp.show(p)
+        return p
+
+
+except ImportError:
+
+    # pylint: disable=unused-argument
+    def render_cluster_boxplot(*_, **__) -> Any:
+        return None
+
+    def create_cluster_boxplot(*_, **__) -> Any:
+        return None
 
 
 def default_palette(index: int) -> Iterable[str]:
@@ -94,38 +137,6 @@ def create_cluster_plot(
 
 def render_cluster_plot(figure: bp.Figure):
     bp.show(figure)
-
-
-def create_cluster_boxplot(
-    x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, color: str
-) -> hv.opts:
-
-    xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
-
-    token_ids = list(token_clusters[token_clusters.cluster == n_cluster].index)
-
-    Y = x_corpus.data[:, token_ids]
-    xsr = np.repeat(xs, Y.shape[1])
-    ysr = Y.ravel()
-
-    data = pd.DataFrame(data={'year': xsr, 'frequency': ysr})
-
-    violin: hv.BoxWhisker = hv.BoxWhisker(data, ('year', 'Year'), ('frequency', 'Frequency'))
-
-    violin_opts = {
-        'height': 600,
-        'width': 900,
-        'box_fill_color': color,
-        'xrotation': 90,
-        # 'violin_width': 0.8
-    }
-    return violin.opts(**violin_opts)
-
-
-def render_cluster_boxplot(p: hv.opts):
-    p = hv.render(p)
-    bp.show(p)
-    return p
 
 
 def plot_clusters_count(source: bm.ColumnDataSource):
