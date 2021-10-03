@@ -1,4 +1,3 @@
-import os
 from unittest.mock import Mock
 
 import pandas as pd
@@ -33,11 +32,6 @@ ATTRIBUTES = [
     "is_space",
     "is_digit",
 ]
-
-
-def spacy_model_path(model_name: str) -> str:
-    path: str = os.path.join(os.environ.get("SPACY_DATA", ""), model_name)
-    return path
 
 
 def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
@@ -282,6 +276,12 @@ def test_spacy_pipeline_load_text_resolves():
     assert payloads == [x[1] for x in source]
     assert len(pipeline.payload.document_index) == len(source)
     assert all(pipeline.payload.document_index.filename == [x[0] for x in source])
+
+
+# def  test_download():
+
+#     path = download_model(lang='en', version='2.3.1', folder='./tests/output')
+#     assert path is not None
 
 
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):

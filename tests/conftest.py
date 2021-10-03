@@ -1,8 +1,9 @@
 import os
 
-import penelope.pipeline.spacy.convert as convert
 import pytest
 import spacy
+from penelope.pipeline.spacy import convert
+from penelope.vendor.spacy.utility import download_model
 from spacy.language import Language
 
 from .fixtures import MARY_TEST_CORPUS
@@ -12,7 +13,9 @@ from .fixtures import MARY_TEST_CORPUS
 
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
-    return spacy.load(os.path.join(os.environ.get("SPACY_DATA", ""), "en_core_web_sm"))
+
+    model_folder: str = download_model(lang='en', version='2.3.1', folder='./tests/test_data/tmp/')
+    return spacy.load(model_folder)
 
 
 @pytest.fixture(scope="session")
