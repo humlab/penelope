@@ -6,7 +6,7 @@ from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 
 
 @pytest.fixture(scope="module")
-def mary_had_a_little_lamb_corpusen_nlp(en_nlp) -> textacy.Corpus:
+def mary_had_a_little_lamb_corpus(en_nlp) -> textacy.Corpus:
     """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py """
     texts = [
         "Mary had a little lamb. Its fleece was white as snow.",
