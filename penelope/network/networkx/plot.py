@@ -1,6 +1,15 @@
+import types
+
 import networkx as nx
-import pydotplus
 from IPython.display import Image
+from loguru import logger
+from penelope.utility import deprecated
+
+try:
+    import pydotplus  # pylint: disable=import-error
+except ImportError:
+    logger.info("pydotplus not installed (skipping plot)")
+    pydotplus = False
 
 
 def apply_styles(graph, styles):
@@ -37,16 +46,17 @@ STYLES = {
 }
 
 
-def plot(G, **kwargs):  # pylint: disable=unused-argument
+@deprecated
+def plot(G: nx.Graph, **kwargs) -> Image:  # pylint: disable=unused-argument
+
+    if not isinstance(pydotplus, types.ModuleType):
+        return None
 
     P = nx.nx_pydot.to_pydot(G)
     P.format = 'svg'
-    # if root is not None :
-    #    P.set("root",make_str(root))
     D = P.create_dot(prog='circo')
     if D == "":
         return None
     Q = pydotplus.graph_from_dot_data(D)
-
     image = Image(Q.create_png())
     return image
