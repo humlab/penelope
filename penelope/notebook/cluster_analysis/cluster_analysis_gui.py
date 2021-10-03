@@ -5,7 +5,6 @@ from typing import Callable, List
 import IPython.display as display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, FloatSlider, HBox, IntSlider, Layout, Output, VBox
-from markdown import markdown as md
 from penelope.common.cluster_analysis import CorpusClusters, compute_clusters
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import clamp, get_logger
@@ -103,7 +102,7 @@ class ClusterAnalysisGUI:
                             [
                                 HBox(
                                     [
-                                        HTML(md("Select method, number of clusters and press compute.")),
+                                        HTML("Select method, number of clusters and press compute."),
                                         VBox([self.method_key, self.metric, self.n_metric_top]),
                                         VBox(
                                             [
@@ -114,7 +113,7 @@ class ClusterAnalysisGUI:
                                         ),
                                     ]
                                 ),
-                                HTML(md("## Clusters overview")),
+                                HTML("<h2> Clusters overview</h2>"),
                                 HBox([self.clusters_count_output, self.clusters_mean_output]),
                             ]
                         )
@@ -124,7 +123,7 @@ class ClusterAnalysisGUI:
                     [
                         VBox(
                             [
-                                HTML(md("## Browse cluster")),
+                                HTML("<h1>Browse cluster</h2>"),
                                 HBox([self.cluster_output_type, self.threshold]),
                                 HBox([self.cluster_index, self.back, self.forward]),
                                 self.cluster_output,
@@ -132,7 +131,7 @@ class ClusterAnalysisGUI:
                         ),
                     ]
                 ),
-                HTML(md("## Explore words in cluster")),
+                HTML("<h2>Explore words in cluster</h2>"),
                 self.cluster_words_output,
             ]
         )
