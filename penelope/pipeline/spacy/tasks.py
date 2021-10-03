@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from tempfile import tempdir
 from typing import Any, Dict, List, Union
 
 from penelope.type_alias import TaggedFrame

@@ -1,5 +1,3 @@
-import os
-
 import pytest
 import spacy
 from penelope.pipeline.spacy import convert
