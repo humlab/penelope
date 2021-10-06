@@ -6,11 +6,14 @@ checkpoint_opts:
     content_type_code: 1
     sep: "\t"
     quoting: 3
-    document_index_name: "tranströmer.csv"
+    document_index_name: null
     document_index_sep: "\t"
     text_column: token
     lemma_column: baseform
     pos_column: pos
+    custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
+    deserialize_processes: 2
+    deserialize_chunksize: 2
     index_column: null
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline

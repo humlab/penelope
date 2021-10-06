@@ -15,7 +15,7 @@ checkpoint_opts:
     pos_column: pos_
     extra_columns: []
     custom_serializer_classname: null
-    deserialize_processes: 1
+    deserialize_processes: 0
     deserialize_chunksize: 4
     index_column: null
     feather_folder: null
@@ -52,4 +52,3 @@ text_reader_opts:
 text_transform_opts:
   fix_hyphenation: true
   fix_whitespaces: true
-  

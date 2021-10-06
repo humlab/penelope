@@ -13,7 +13,7 @@ checkpoint_opts:
     pos_column: pos
     extra_columns: []
     custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
-    deserialize_processes: 4
+    deserialize_processes: 1
     deserialize_chunksize: 4
     index_column: null
     feather_folder: null
