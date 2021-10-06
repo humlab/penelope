@@ -131,7 +131,7 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Resolves stream and returns all payloads in a list"""
         return [x for x in self.resolve()]
 
-    def single(self) -> List[DocumentPayload]:
+    def single(self) -> DocumentPayload:
         """Resolves stream by returning the head of the stream"""
         return next(self.resolve())
 
