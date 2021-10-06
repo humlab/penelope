@@ -3,6 +3,7 @@ import os
 from penelope import topic_modelling
 from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import TextTokenizer
+from penelope.topic_modelling.engine_gensim.options import SUPPORTED_ENGINES
 
 
 def compute(
@@ -15,6 +16,9 @@ def compute(
     store_corpus: bool = False,
     compressed: bool = True,
 ):
+
+    if engine not in SUPPORTED_ENGINES:
+        raise ValueError(f"Engine {engine} nopt supported or deprecated")
 
     if corpus_filename is None and corpus_folder is None:
         raise ValueError("corpus filename")

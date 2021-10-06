@@ -7,7 +7,9 @@ import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.scripts.topic_model_legacy import main as run_model
-from penelope.topic_modelling.container import InferredModel, InferredTopicsData
+from penelope.topic_modelling import InferredModel, InferredTopicsData
+from penelope.topic_modelling.interfaces import ITopicModelEngine
+from penelope.topic_modelling.utility import get_engine_by_model_type
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
@@ -31,13 +33,16 @@ def test_tranströmers_corpus():
         assert len(tokens) > 0
 
 
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_model(method):
 
     inferred_model = create_inferred_model(method)
+
+    engine: ITopicModelEngine = get_engine_by_model_type(inferred_model.topic_model)
+
     assert inferred_model is not None
     assert inferred_model.method == method
-    assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
+    assert isinstance(inferred_model.topic_model, engine.supported_models())
     assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
     assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.document_index)

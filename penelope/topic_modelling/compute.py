@@ -1,26 +1,10 @@
 import os
 from typing import Any, Mapping, Optional
 
-import penelope.utility as utility
-
-from . import engine_gensim, engine_textacy
-from .container import InferredModel, TrainingCorpus
-from .utility import add_document_terms_count
-
-logger = utility.getLogger("")
+from .interfaces import InferredModel, TrainingCorpus
+from .utility import add_document_terms_count, get_engine_cls_by_method_name
 
 TEMP_PATH = './tmp/'
-
-# OBS OBS! https://scikit-learn.org/stable/auto_examples/applications/plot_topics_extraction_with_nmf_lda.html
-
-engines = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
-
-
-def _find_engine(method: str):
-    for key in engines:
-        if method.startswith(key):
-            return engines[key]
-    raise ValueError(f"Unknown method {method}")
 
 
 def infer_model(
@@ -32,7 +16,7 @@ def infer_model(
 
     os.makedirs(TEMP_PATH, exist_ok=True)
 
-    inferred_model = _find_engine(method).compute(
+    inferred_model = get_engine_cls_by_method_name(method).compute(
         train_corpus,
         method,
         engine_args,

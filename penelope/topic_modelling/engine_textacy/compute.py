@@ -4,7 +4,7 @@ import gensim
 import penelope.vendor.textacy as textacy_utility
 import textacy
 
-from ..container import InferredModel, TrainingCorpus
+from ..interfaces import InferredModel, TrainingCorpus
 
 
 def compute(

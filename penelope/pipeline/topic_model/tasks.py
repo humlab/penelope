@@ -1,11 +1,14 @@
 import os
 from dataclasses import dataclass
+from os.path import join as jj
 from typing import Iterable
 
-from penelope import topic_modelling
+from penelope import topic_modelling as tm
+from penelope.topic_modelling.engine_gensim.options import EngineKey
 from tqdm.auto import tqdm
 
 from ..interfaces import ContentType, DocumentPayload, ITask
+from ..tasks_mixin import DefaultResolveMixIn
 
 
 class ReiterableTerms:
@@ -16,8 +19,59 @@ class ReiterableTerms:
         return (p.content for p in self.outstream())
 
 
+class TopicModelMixin:
+    def instream_to_corpus(self) -> tm.TrainingCorpus:
+
+        terms = tqdm(ReiterableTerms(self.prior.outstream), total=len(self.document_index))
+
+        corpus: tm.TrainingCorpus = tm.TrainingCorpus(
+            terms=terms, document_index=self.document_index, corpus_options={}
+        )
+
+        return corpus
+
+    def predict(
+        self, *, inferred_model: tm.InferredModel, corpus: tm.InferredModel, target_folder: str
+    ) -> tm.InferredTopicsData:
+
+        inferred_topics: tm.InferredTopicsData = tm.compile_inferred_topics_data(
+            inferred_model.topic_model, corpus.corpus, corpus.id2word, corpus.document_index
+        )
+
+        inferred_topics.store(target_folder)
+        return inferred_topics
+
+    def infer(self, train_corpus: tm.TrainingCorpus) -> tm.InferredModel:
+
+        inferred_model: tm.InferredModel = tm.infer_model(
+            train_corpus=train_corpus, method=self.engine, engine_args=self.engine_args
+        )
+
+        inferred_model.topic_model.save(jj(self.target_subfolder, 'gensim.model.gz'))
+
+        tm.store_model(
+            inferred_model=inferred_model,
+            folder=self.target_subfolder,
+            store_corpus=self.store_corpus,
+            store_compressed=self.store_compressed,
+        )
+
+        return inferred_model
+
+    def ensure_target_path(self):
+
+        if self.target_folder is None or self.target_name is None:
+            raise ValueError("expected target folder and target name, found None")
+
+        os.makedirs(jj(self.target_folder, self.target_name), exist_ok=True)
+
+    @property
+    def target_subfolder(self) -> str:
+        return jj(self.target_folder, self.target_name)
+
+
 @dataclass
-class ToTopicModel(ITask):
+class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     """Computes topic model.
 
     Iterable[DocumentPayload] => ComputeResult
@@ -27,7 +81,7 @@ class ToTopicModel(ITask):
     corpus_folder: str = None
     target_folder: str = None
     target_name: str = None
-    engine: str = "gensim_lda-multicore"
+    engine: EngineKey = "gensim_lda-multicore"
     engine_args: dict = None
     store_corpus: bool = False
     store_compressed: bool = True
@@ -45,74 +99,66 @@ class ToTopicModel(ITask):
         self.pipeline.put("topic_modeling_opts", self.engine_args)
         return self
 
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return None
-
     def process_stream(self) -> Iterable[DocumentPayload]:
 
-        if self.target_folder is None or self.target_name is None:
-            raise ValueError("expceted target folder and target name, found None")
+        self.input_type_guard(self.prior.out_content_type)
 
-        target_folder: str = os.path.join(self.target_folder, self.target_name)
-        os.makedirs(target_folder, exist_ok=True)
+        self.ensure_target_path()
 
-        # content_type: ContentType = self.prior.out_content_type if self.prior else None
-        # terms, document_index = self.get_tokens_stream(content_type)
+        train_corpus: tm.TrainingCorpus = self.instream_to_corpus()
 
-        terms = tqdm(ReiterableTerms(self.prior.outstream), total=len(self.document_index))
+        inferred_model: tm.InferredModel = self.infer(train_corpus)
 
-        train_corpus: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
-            terms=terms,
-            document_index=self.document_index,
-            corpus_options={},
-        )
-
-        inferred_model: topic_modelling.InferredModel = topic_modelling.infer_model(
-            train_corpus=train_corpus, method=self.engine, engine_args=self.engine_args
-        )
-
-        inferred_model.topic_model.save(os.path.join(target_folder, 'gensim.model.gz'))
-
-        topic_modelling.store_model(
-            inferred_model, target_folder, store_corpus=self.store_corpus, store_compressed=self.store_compressed
-        )
-
-        inferred_topics: topic_modelling.InferredTopicsData = topic_modelling.compile_inferred_topics_data(
-            inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.document_index
-        )
-
-        inferred_topics.store(target_folder)
+        _ = self.predict(inferred_model=inferred_model, corpus=train_corpus, target_folder=self.target_subfolder)
 
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,
-            content=dict(target_name=self.target_name, target_folder=self.target_folder),
+            content=dict(
+                target_name=self.target_name,
+                target_folder=self.target_folder,
+            ),
         )
 
         yield payload
 
-    # # FIXME: Finalize implementation of function if multipe in_content_type should be allwoed
-    # def get_tokens_stream(self, content_type: ContentType) -> Tuple[Iterable[Iterable[str]], DocumentIndex]:
 
-    #     # TODO Implement these content types? Or defer to previous tasks in chain? (simpler)
-    #     # if content_type is None:
-    #     #     corpus: TokenizedCorpus = TokenizedCorpus(
-    #     #         reader=TextTokenizer(
-    #     #             source=self.corpus_filename,
-    #     #             reader_opts=self.reader_opts or self.pipeline.config.text_reader_opts,
-    #     #         ),
-    #     #     )
+@dataclass
+class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
+    """Predicts topics.
 
-    #     #     return corpus.terms, self.document_index or corpus.document_index
+    Iterable[DocumentPayload] => ComputeResult
+    """
 
-    #     # if content_type == ContentType.TEXT:
-    #     #     corpus: TokenizedCorpus = TokenizedCorpus(
-    #     #         reader=TextTokenizer(
-    #     #             source=((p.filename, p.content) for p in self.prior.outstream()),
-    #     #         ),
-    #     #     )
-    #     #     return corpus.terms, self.document_index or corpus.document_index
+    model_folder: str = None
+    model_name: str = None
+    target_folder: str = None
+    target_name: str = None
 
-    #     if content_type == ContentType.TOKENS:
-    #         return (p.content for p in self.prior.outstream()), self.document_index
+    @property
+    def model_subfolder(self) -> str:
+        return jj(self.model_folder, self.model_name)
 
-    #     raise ValueError("content type not valid")
+    def __post_init__(self):
+
+        self.in_content_type = ContentType.TOKENS
+        self.out_content_type = ContentType.TOPIC_MODEL
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+
+        self.ensure_target_path()
+
+        corpus: tm.TrainingCorpus = self.instream_to_corpus()
+        corpus.id2word = self.pipeline.payload.token2id.id2token
+        inferred_model: tm.InferredModel = tm.load_model(folder=self.model_subfolder, lazy=False)
+
+        _ = self.predict(inferred_model=inferred_model, corpus=corpus, target_folder=self.target_subfolder)
+
+        payload: DocumentPayload = DocumentPayload(
+            ContentType.TOPIC_MODEL,
+            content=dict(
+                target_name=self.target_name,
+                target_folder=self.target_folder,
+            ),
+        )
+
+        yield payload

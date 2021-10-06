@@ -79,6 +79,7 @@ pre-commit = "^2.15.0"
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.vectorize:main"
 topic-model = "penelope.scripts.topic_model:click_main"
+predict-model = "penelope.scripts.predict_model:click_main"
 co-occurrence = "penelope.scripts.co_occurrence:main"
 pos-tag = "penelope.scripts.pos_tag:main"
 

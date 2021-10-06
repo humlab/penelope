@@ -1,12 +1,10 @@
 from typing import Any, Dict
 
 import gensim
-import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
+from loguru import logger
 
 from . import options
-
-logger = utility.getLogger("")
 
 
 def compute_score(id2word, model, corpus) -> float:

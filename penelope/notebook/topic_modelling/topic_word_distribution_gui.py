@@ -66,7 +66,9 @@ def display_topic_tokens(
     tick(1)
 
     tokens = (
-        topic_modelling.get_topic_tokens(state.inferred_topics.topic_token_weights, topic_id=topic_id, n_tokens=n_words)
+        topic_modelling.get_topic_top_tokens(
+            state.inferred_topics.topic_token_weights, topic_id=topic_id, n_tokens=n_words
+        )
         .copy()
         .drop('topic_id', axis=1)
         .assign(weight=lambda x: 100.0 * x.weight)

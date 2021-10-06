@@ -4,11 +4,8 @@ from enum import Enum
 from typing import Any, Dict
 
 import penelope.utility as utility
-from penelope.utility.file_utility import pickle_to_file, unpickle_from_file
 
-from .container import InferredModel, TrainingCorpus
-
-logger = utility.getLogger("")
+from .interfaces import InferredModel, TrainingCorpus
 
 
 class StoreCorpusOptions(Enum):
@@ -22,7 +19,7 @@ def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compres
     terms: Iterable[Iterable[str]]                               Never stored
     document_index: DocumentIndex                                 TODO Stored as csv.zip
     doc_term_matrix: scipy.sparse.csr_matrix                     Never stored
-    id2word: Union[gensim.corpora.Dictionary, Dict[int, str]]    TODO Stored compressed as gensim.Dictionar
+    id2word: Union[gensim.corpora.Dictionary, Dict[int, str]]    TODO Stored compressed as gensim.Dictionary
     vectorizer_args: Dict[str, Any]                              TODO Stored as json
     corpus: ???                                                  Stored as SparseCorpus
     """
@@ -37,7 +34,7 @@ def _store_train_corpus(folder: str, train_corpus: TrainingCorpus, store_compres
         vectorizer_args=train_corpus.vectorizer_args,
         corpus_options=train_corpus.corpus_options,
     )
-    pickle_to_file(filename, _train_corpus)
+    utility.pickle_to_file(filename, _train_corpus)
 
     if _train_corpus.corpus_options is not None:
         store_corpus_options(folder=folder, options=_train_corpus.corpus_options)
@@ -63,18 +60,18 @@ def _load_train_corpus(folder: str) -> TrainingCorpus:
     filename = os.path.join(folder, "training_corpus.pickle.pbz2")
     if not os.path.isfile(filename):
         return None
-    return unpickle_from_file(os.path.join(folder, "training_corpus.pickle.pbz2"))
+    return utility.unpickle_from_file(os.path.join(folder, "training_corpus.pickle.pbz2"))
 
 
 def _store_topic_model(folder: str, topic_model: Any, store_compressed: bool = True):
     """Stores topic model in pickled format """
     filename = os.path.join(folder, f"topic_model.pickle{'.pbz2' if store_compressed else ''}")
-    pickle_to_file(filename, topic_model)
+    utility.pickle_to_file(filename, topic_model)
 
 
 def _load_topic_model(folder: str) -> Any:
     """Loads an train corpus from av previously pickled file."""
-    return unpickle_from_file(os.path.join(folder, "topic_model.pickle.pbz2"))
+    return utility.unpickle_from_file(os.path.join(folder, "topic_model.pickle.pbz2"))
 
 
 def _store_model_options(folder: str, method: str, options: Dict[str, Any]):

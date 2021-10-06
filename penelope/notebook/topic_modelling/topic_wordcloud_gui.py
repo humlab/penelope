@@ -45,7 +45,7 @@ def display_wordcloud(state: TopicModelContainer, topic_id=0, n_words=100, outpu
         if output_format == 'Wordcloud':
             plot_utility.plot_wordcloud(df, token='token', weight='weight', max_words=n_words, **opts)
         else:
-            df = topic_modelling.get_topic_tokens(topic_token_weights, topic_id=topic_id, n_tokens=n_words)
+            df = topic_modelling.get_topic_top_tokens(topic_token_weights, topic_id=topic_id, n_tokens=n_words)
             if output_format == 'Table':
                 display(df)
             if output_format == 'Excel':

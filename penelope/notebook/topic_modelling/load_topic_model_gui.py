@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
 from penelope import pipeline, topic_modelling, utility
-from penelope.topic_modelling.container import InferredModel, InferredTopicsData
+from penelope.topic_modelling import InferredModel, InferredTopicsData
 
 from ..co_occurrence.main_gui import MainGUI
 from . import display_topic_titles

@@ -1,4 +1,6 @@
-import gensim
+from typing import Literal
+
+import gensim.models as models
 
 from .wrappers import MalletTopicModel, STTMTopicModel
 
@@ -8,16 +10,50 @@ TEMP_PATH = './tmp/'
 # DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 
 # default_options = {
-#     'LSI': {'engine': gensim.models.LsiModel, 'options': {'corpus': None, 'num_topics': 20, 'id2word': None}}
+#     'LSI': {'engine': models.LsiModel, 'options': {'corpus': None, 'num_topics': 20, 'id2word': None}}
 # }
 
+SUPPORTED_ENGINES = {
+    'gensim_mallet-lda': {
+        'key': 'gensim_mallet-lda',
+        'description': 'MALLET LDA',
+        'engine': MalletTopicModel,
+        'algorithm': 'MALLET-LDA',
+    },
+    'gensim_lda-multicore': {
+        'key': 'gensim_lda',
+        'description': 'gensim LDA',
+        'engine': models.LdaMulticore,
+        'algorithm': 'LDA-MULTICORE',
+    },
+    'gensim_lda': {
+        'key': 'gensim_lda',
+        'description': 'gensim LDA',
+        'engine': models.LdaModel,
+        'algorithm': 'LDA',
+    },
+    # 'gensim_lsi': {'key': 'gensim_lsi', 'description': 'gensim LSI', 'engine': models.LsiModel, 'algorithm': 'LSI'},
+    # 'gensim_hdp': {'key': 'gensim_hdp', 'description': 'gensim HDP', 'engine': models.HdpModel, 'algorithm': 'HDP'},
+    # 'gensim_dtm': {'key': 'gensim_dtm', 'description': 'gensim DTM', 'engine': models.LdaSeqModel, 'algorithm': 'DTM'},
+    # 'sklearn_lda': {'key': 'sklearn_lda', 'description': 'scikit LDA', 'engine': None, 'algorithm': 'XXX'},
+    # 'sklearn_nmf': {'key': 'sklearn_nmf', 'description': 'scikit NMF', 'engine': None, 'algorithm': 'XXX'},
+    # 'sklearn_lsa': {'key': 'sklearn_lsa', 'description': 'scikit LSA', 'engine': None, 'algorithm': 'XXX'},
+    # 'gensim_sttm-lda': {'key': 'gensim_sttm-lda', 'description': 'STTM   LDA', 'engine': STTMTopicModel, 'algorithm': 'STTM-LDA'},
+    # 'gensim_sttm-btm': {'key': 'gensim_sttm-btm', 'description': 'STTM   BTM', 'engine': STTMTopicModel, 'algorithm': 'STTM-BTM'},
+    # 'gensim_sttm-ptm': {'key': 'gensim_sttm-ptm', 'description': 'STTM   PTM', 'engine': STTMTopicModel, 'algorithm': 'STTM-PTM'},
+    # 'gensim_sttm-satm': {'key': 'gensim_sttm-satm', 'description': 'STTM  SATM', 'engine': STTMTopicModel, 'algorithm': 'STTM-SATM'},
+    # 'gensim_sttm-dmm': {'key': 'gensim_sttm-dmm', 'description': 'STTM   DMM', 'engine': STTMTopicModel, 'algorithm': 'STTM-DMM'},
+    # 'gensim_sttm-watm': {'key': 'gensim_sttm-watm', 'description': 'STTM  WATM', 'engine': STTMTopicModel, 'algorithm': 'STTM-ATM'},
+}
+
+EngineKey = Literal[list(SUPPORTED_ENGINES.keys())]
 
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
 def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
 
     if algorithm == 'LSI':
         return {
-            'engine': gensim.models.LsiModel,
+            'engine': models.LsiModel,
             'options': {
                 'corpus': corpus,
                 'num_topics': kwargs.get('n_topics', 0),
@@ -29,7 +65,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
 
     if algorithm == 'LDA':
         return {
-            'engine': gensim.models.LdaModel,
+            'engine': models.LdaModel,
             'options': {
                 # distributed=False, chunksize=2000, passes=1, update_every=1, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, minimum_probability=0.01, random_state=None, ns_conf=None, minimum_phi_value=0.01, per_word_topics=False, callbacks=None, dtype=<class 'numpy.float32'>)¶
                 'corpus': corpus,
@@ -48,15 +84,15 @@ def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
                 # 'offset': 1.0,
                 # 'dtype': np.float64
                 # 'callbacks': [
-                #    gensim.models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
-                #    gensim.models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
+                #    models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
+                #    models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
                 # ]
             },
         }
 
     if algorithm == 'LDA-MULTICORE':
         return {
-            'engine': gensim.models.LdaMulticore,
+            'engine': models.LdaMulticore,
             'options': {
                 # workers=None, chunksize=2000, passes=1, batch=False, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, random_state=None, minimum_probability=0.01, minimum_phi_value=0.01, per_word_topics=False, dtype=<class 'numpy.float32'>)v
                 'corpus': corpus,  # Sream of document vectors or sparse matrix of shape (num_terms, num_documents).
@@ -78,8 +114,8 @@ def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
                 # 'offset': 1.0,                                 # Tau_0 from Matthew D. Hoffman, David M. Blei, Francis Bach
                 # 'dtype': np.float64
                 # 'callbacks': [
-                #    gensim.models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
-                #    gensim.models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
+                #    models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
+                #    models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
                 # ]
                 # gamma_threshold                               # Minimum change in the value of the gamma parameters to continue iterating.
                 # minimum_probability                           # Topics with a probability lower than this threshold will be filtered out.
@@ -91,7 +127,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
 
     if algorithm == 'HDP':
         return {
-            'engine': gensim.models.HdpModel,
+            'engine': models.HdpModel,
             'options': {
                 'corpus': corpus,
                 'T': kwargs.get('n_topics', 0),
@@ -105,7 +141,7 @@ def engine_options(algorithm: str, corpus, id2word, kwargs) -> dict:
     if algorithm == 'DTM':
         # Note, mandatory: 'time_slice': textacy_utility.count_documents_in_index_by_pivot(documents, year_column)
         return {
-            'engine': gensim.models.LdaSeqModel,
+            'engine': models.LdaSeqModel,
             'options': {
                 'corpus': corpus,
                 'num_topics': kwargs.get('n_topics', 0),
