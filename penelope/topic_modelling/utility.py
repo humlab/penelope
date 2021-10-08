@@ -12,13 +12,13 @@ from penelope.topic_modelling.interfaces import ITopicModelEngine
 
 from . import engine_gensim, engine_textacy
 
-SUPPORTED_ENGINES = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
+ENGINES = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
 
 
 def get_engine_module_by_method_name(method: str) -> types.ModuleType:
-    for key in SUPPORTED_ENGINES:
+    for key in ENGINES:
         if method.startswith(key):
-            return SUPPORTED_ENGINES[key]
+            return ENGINES[key]
     raise ValueError(f"Unknown method {method}")
 
 

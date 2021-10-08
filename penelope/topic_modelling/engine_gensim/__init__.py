@@ -3,7 +3,8 @@
 from typing import Any, Dict, Iterable, List, Sequence, Tuple, Type, get_args
 
 from .. import interfaces
-from . import compute, predict
+from . import predict, train
+from .options import SUPPORTED_ENGINES
 from .predict import SupportedModels
 from .utility import malletmodel2ldamodel
 
@@ -14,7 +15,7 @@ def is_supported(model: Any) -> bool:
 
 class TopicModelEngine(interfaces.ITopicModelEngine):
     def __init__(self, model: SupportedModels):
-        self.model = model
+        super().__init__(model)
 
     @staticmethod
     def is_supported(model: Any):
@@ -53,10 +54,10 @@ class TopicModelEngine(interfaces.ITopicModelEngine):
         return self.model.show_topic(topic_id, topn=n_tokens)
 
     @staticmethod
-    def compute(
+    def train(
         train_corpus: interfaces.TrainingCorpus, method: str, engine_args: Dict[str, Any], **kwargs: Dict[str, Any]
     ) -> interfaces.InferredModel:
-        return compute.compute(train_corpus=train_corpus, method=method, engine_args=engine_args, **kwargs)
+        return train.train(train_corpus=train_corpus, method=method, engine_args=engine_args, **kwargs)
 
     def predict(self, corpus: Any, minimum_probability: float = 0.0, **kwargs) -> Iterable:
-        predict.predict(self.model, corpus=corpus, minimum_probability=minimum_probability, **kwargs)
+        return predict.predict(self.model, corpus=corpus, minimum_probability=minimum_probability, **kwargs)

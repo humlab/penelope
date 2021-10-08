@@ -3,7 +3,7 @@
 from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Type, get_args
 
 from .. import interfaces
-from . import compute, predict
+from . import predict, train
 from .predict import SupportedModels
 
 
@@ -13,7 +13,7 @@ def is_supported(model: Any) -> bool:
 
 class TopicModelEngine(interfaces.ITopicModelEngine):
     def __init__(self, model: SupportedModels):
-        self.model = model
+        super().__init__(model)
 
     @staticmethod
     def is_supported(model: Any):
@@ -47,13 +47,13 @@ class TopicModelEngine(interfaces.ITopicModelEngine):
         return topic_words[0][1]
 
     @staticmethod
-    def compute(
+    def train(
         train_corpus: interfaces.TrainingCorpus,
         method: str,
         engine_args: Mapping[str, Any],
         **kwargs: Mapping[str, Any],
     ) -> interfaces.InferredModel:
-        return compute.compute(train_corpus=train_corpus, method=method, engine_args=engine_args, **kwargs)
+        return train.train(train_corpus=train_corpus, method=method, engine_args=engine_args, **kwargs)
 
     def predict(self, corpus: Any, minimum_probability: float = 0.0, **kwargs) -> Iterable:
         predict.predict(self.model, corpus=corpus, minimum_probability=minimum_probability, **kwargs)

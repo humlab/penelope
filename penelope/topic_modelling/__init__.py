@@ -1,9 +1,10 @@
 # type: ignore
-from .compute import infer_model
+
 from .interfaces import InferredModel, InferredTopicsData, TrainingCorpus
 from .persist import load_model, store_model
-from .predict import compile_inferred_topics_data, predict_document_topics
+from .predict import predict_document_topics, predict_topics
 from .saliency import compute_KL_divergence, compute_term_frequency, compute_term_info, compute_topic_metrics
+from .train import train_model
 from .utility import (
     compute_topic_yearly_means,
     find_models,

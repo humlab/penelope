@@ -6,7 +6,7 @@ from ..interfaces import InferredModel, TrainingCorpus
 from . import coherence, options
 
 
-def compute(
+def train(
     train_corpus: TrainingCorpus,
     method: str,
     engine_args: Dict[str, Any],

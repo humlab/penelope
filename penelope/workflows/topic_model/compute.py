@@ -61,7 +61,7 @@ def compute(
         ),
     )
 
-    inferred_model = topic_modelling.infer_model(
+    inferred_model = topic_modelling.train_model(
         train_corpus=train_corpus,
         method=engine,
         engine_args=topic_modeling_opts,
@@ -71,8 +71,11 @@ def compute(
 
     topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus, store_compressed=compressed)
 
-    inferred_topics = topic_modelling.compile_inferred_topics_data(
-        inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.document_index
+    inferred_topics = topic_modelling.predict_topics(
+        inferred_model.topic_model,
+        corpus=train_corpus.corpus,
+        id2token=train_corpus.id2word,
+        document_index=train_corpus.document_index,
     )
 
     inferred_topics.store(target_folder)
