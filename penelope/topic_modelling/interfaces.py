@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import os
 import pickle
@@ -47,7 +49,7 @@ class ITopicModelEngine(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def compute(
+    def train(
         train_corpus: "TrainingCorpus", method: str, engine_args: Dict[str, Any], **kwargs: Dict[str, Any]
     ) -> "InferredModel":
         ...
@@ -57,17 +59,14 @@ class ITopicModelEngine(abc.ABC):
         ...
 
     def get_topic_token_weights(
-        self, dictionary: pd.DataFrame, n_tokens: int = 200, minimum_probability: float = 0.000001
+        self, vocabulary: Any, n_tokens: int = 200, minimum_probability: float = 0.000001
     ) -> pd.DataFrame:
         """Compile document topic weights. Return DataFrame."""
 
-        id2term = dictionary.token.to_dict() if isinstance(dictionary, pd.DataFrame) else dictionary
+        id2token: dict = Token2Id.any_to_id2token(vocabulary)
+        topic_data = self.topics_tokens(n_tokens=n_tokens, id2term=id2token)
 
-        term2id = {v: k for k, v in id2term.items()}
-
-        topic_data = self.topics_tokens(n_tokens=n_tokens, id2term=id2term)
-
-        df_topic_weights: pd.DataFrame = pd.DataFrame(
+        topic_token_weights: pd.DataFrame = pd.DataFrame(
             [
                 (topic_id, token, weight)
                 for topic_id, tokens in topic_data
@@ -77,12 +76,13 @@ class ITopicModelEngine(abc.ABC):
             columns=['topic_id', 'token', 'weight'],
         )
 
-        df_topic_weights['topic_id'] = df_topic_weights.topic_id.astype(np.uint16)
+        topic_token_weights['topic_id'] = topic_token_weights.topic_id.astype(np.uint16)
 
-        term2id = {v: k for k, v in id2term.items()}
-        df_topic_weights['token_id'] = df_topic_weights.token.apply(lambda x: term2id[x])
+        fg = {v: k for k, v in id2token.items()}.get
 
-        return df_topic_weights[['topic_id', 'token_id', 'token', 'weight']]
+        topic_token_weights['token_id'] = topic_token_weights.token.apply(fg)
+
+        return topic_token_weights[['topic_id', 'token_id', 'token', 'weight']]
 
     def get_topic_token_overview(self, topic_token_weights: pd.DataFrame, n_tokens: int = 200) -> pd.DataFrame:
         """
@@ -215,7 +215,8 @@ class InferredTopicsData:
             document_topic_weights, 'year'
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview
-        self._id2token = None
+        self._id2token: dict = None
+        self._token2id: Token2Id = None
 
     @property
     def num_topics(self) -> int:
@@ -276,7 +277,7 @@ class InferredTopicsData:
                 utility.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     @staticmethod
-    def load(*, folder: str, filename_fields: utility.FilenameFieldSpecs, pickled: bool = False):
+    def load(*, folder: str, filename_fields: utility.FilenameFieldSpecs = None, pickled: bool = False):
         """Loads previously stored aggregate"""
         data = None
 
@@ -328,15 +329,21 @@ class InferredTopicsData:
             print('{:>20s}: {:.4f} Mb {}'.format(o_name, o_size / (1024 * 1024), type(o_data)))
 
     @property
-    def id2term(self):
+    def id2term(self) -> dict:
         if self._id2token is None:
             # id2token = inferred_topics.dictionary.to_dict()['token']
             self._id2token = self.dictionary.token.to_dict()
         return self._id2token
 
     @property
-    def term2id(self):
+    def term2id(self) -> dict:
         return {v: k for k, v in self.id2term.items()}
+
+    @property
+    def token2id(self) -> Token2Id:
+        if not self._token2id:
+            self._token2id = Token2Id(data=self.term2id)
+        return self._token2id
 
     @staticmethod
     def load_token2id(folder: str) -> Token2Id:
