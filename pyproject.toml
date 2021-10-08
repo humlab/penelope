@@ -87,7 +87,9 @@ pos-tag = "penelope.scripts.pos_tag:main"
 minversion = "6.0"
 addopts = [
     "-rfE",
-    "-q",
+    "--no-cov",
+    "--durations=0"
+    # "-q",
     # "-s",
     #"-n4",
 ]
