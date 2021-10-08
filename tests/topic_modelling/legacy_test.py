@@ -1,28 +1,42 @@
+import functools
 import os
 import shutil
 import uuid
 
-import gensim
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.scripts.topic_model_legacy import main as run_model
 from penelope.topic_modelling import InferredModel, InferredTopicsData
+from penelope.topic_modelling.engine_gensim import SUPPORTED_ENGINES
 from penelope.topic_modelling.interfaces import ITopicModelEngine
 from penelope.topic_modelling.utility import get_engine_by_model_type
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
-from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, TOPIC_MODELING_OPTS, create_inferred_model
+from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, TOPIC_MODELING_OPTS
 
 jj = os.path.join
 
 # pylint: disable=protected-access,redefined-outer-name)
 
 
-@pytest.fixture
-def inferred_model() -> InferredModel:
-    return create_inferred_model()
+@functools.lru_cache(maxsize=None)
+def create_inferred_model(method) -> topic_modelling.InferredModel:
+
+    corpus: TranströmerCorpus = TranströmerCorpus()
+    train_corpus: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
+        terms=corpus.terms,
+        document_index=corpus.document_index,
+    )
+
+    inferred_model: topic_modelling.InferredModel = topic_modelling.train_model(
+        train_corpus=train_corpus,
+        method=method,
+        engine_args=TOPIC_MODELING_OPTS,
+    )
+
+    return inferred_model
 
 
 def test_tranströmers_corpus():
@@ -58,10 +72,11 @@ def test_load_inferred_model_fixture():
     assert inferred_model is not None
 
 
-@pytest.mark.long_running
-def test_store_compressed_inferred_model(inferred_model: InferredModel):
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
+def test_store_compressed_inferred_model(method):
 
-    # Arrange
+    inferred_model = create_inferred_model(method)
+
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
@@ -76,8 +91,10 @@ def test_store_compressed_inferred_model(inferred_model: InferredModel):
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.long_running
-def test_store_uncompressed_inferred_model(inferred_model):
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
+def test_store_uncompressed_inferred_model(method):
+
+    inferred_model = create_inferred_model(method)
 
     # Arrange
     target_name = f"{uuid.uuid1()}"
@@ -94,8 +111,7 @@ def test_store_uncompressed_inferred_model(inferred_model):
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.long_running
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
 
     # Arrange
@@ -111,7 +127,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     # Assert
     assert inferred_model is not None
     assert inferred_model.method == method
-    assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
+    assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
     assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
     assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.document_index)
@@ -123,8 +139,7 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.long_running
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(method):
 
     # Arrange
@@ -140,15 +155,15 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
     # Assert
     assert inferred_model is not None
     assert inferred_model.method == method
-    assert isinstance(inferred_model.topic_model, gensim.models.ldamodel.LdaModel)
+    assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
+
     assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert inferred_model.train_corpus is None
 
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.long_running
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 
     # Arrange
@@ -177,8 +192,7 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.long_running
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_topics_data(method):
 
     # Arrange
@@ -186,10 +200,10 @@ def test_infer_topics_data(method):
 
     # Act
 
-    inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
+    inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
-        id2word=inferred_model.train_corpus.id2word,
+        id2token=inferred_model.train_corpus.id2word,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
@@ -209,17 +223,16 @@ def test_infer_topics_data(method):
     assert list(inferred_topics_data.document_topic_weights.topic_id.unique()) == [0, 1, 2, 3]
 
 
-@pytest.mark.long_running
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_inferred_topics_data(method):
 
     # Arrange
     inferred_model = create_inferred_model(method)
 
-    inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
+    inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
-        id2word=inferred_model.train_corpus.id2word,
+        id2token=inferred_model.train_corpus.id2word,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
@@ -238,17 +251,16 @@ def test_store_inferred_topics_data(method):
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.long_running
-@pytest.mark.parametrize("method", ["gensim_lda-multicore"])
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_topics_data(method):
 
     # Arrange
     inferred_model = create_inferred_model(method)
 
-    test_inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
+    test_inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
-        id2word=inferred_model.train_corpus.id2word,
+        id2token=inferred_model.train_corpus.id2word,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
@@ -292,18 +304,19 @@ def test_load_inferred_topics_data(method):
     shutil.rmtree(target_folder, ignore_errors=True)
 
 
-def test_run_cli():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
+def test_run_cli(method):
 
     kwargs = {
         'target_name': f"{uuid.uuid1()}",
         'corpus_folder': OUTPUT_FOLDER,
         'corpus_filename': './tests/test_data/test_corpus.zip',
-        'engine': 'gensim_lda-multicore',
+        'engine': method,
         'engine_args': {
             'n_topics': 5,
             'alpha': 'asymmetric',
         },
-        # 'filename_field': ('year:_:1', 'sequence_id:_:2'),
+        'filename_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
     run_model(**kwargs)
@@ -313,29 +326,6 @@ def test_run_cli():
     assert os.path.isdir(target_folder)
     assert os.path.isfile(jj(target_folder, 'topic_model.pickle.pbz2'))
     assert os.path.isfile(jj(target_folder, 'model_options.json'))
-
-    shutil.rmtree(target_folder)
-
-
-def test_run_model_by_cli_stores_a_model_that_can_be_loaded():
-
-    target_name = "test_corpus.xyz"
-    target_folder = jj(OUTPUT_FOLDER, target_name)
-    options = dict(
-        target_name=target_name,
-        corpus_folder=OUTPUT_FOLDER,
-        corpus_filename='./tests/test_data/test_corpus.zip',
-        engine="gensim_lda-multicore",
-        engine_args=dict(
-            n_topics=5,
-            workers=2,
-            max_iter=2000,
-        ),
-        store_corpus=True,
-        filename_field="year:_:1",
-    )
-
-    run_model(**options)
 
     inferred_model = topic_modelling.load_model(target_folder)
     inferred_topic_data = InferredTopicsData.load(folder=target_folder, filename_fields=None)

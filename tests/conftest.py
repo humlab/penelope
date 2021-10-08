@@ -11,7 +11,6 @@ from .fixtures import MARY_TEST_CORPUS
 
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
-
     model_folder: str = download_model(lang='en', version='2.3.1', folder='./tests/test_data/tmp/')
     return spacy.load(model_folder)
 

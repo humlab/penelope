@@ -6,12 +6,9 @@ from typing import Any, Callable, List
 
 import numpy as np
 import pandas as pd
-import penelope.topic_modelling as topic_modelling
 from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus import TextTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
-
-from .fixtures import TranströmerCorpus
 
 OUTPUT_FOLDER = './tests/output'
 TEST_DATA_FOLDER = './tests/test_data'
@@ -31,7 +28,7 @@ TOPIC_MODELING_OPTS = {
     'alpha': 'auto',
     'workers': 1,
     'max_iter': 100,
-    'prefix': '',
+    'prefix': './tests/output/',
 }
 
 if __file__ in globals():
@@ -147,22 +144,6 @@ def create_tokens_reader(
         chunk_size=chunk_size,
     )
     return reader
-
-
-def create_inferred_model(method="gensim_lda-multicore") -> topic_modelling.InferredModel:
-
-    corpus: TranströmerCorpus = TranströmerCorpus()
-    train_corpus: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
-        terms=corpus.terms,
-        document_index=corpus.document_index,
-    )
-
-    inferred_model: topic_modelling.InferredModel = topic_modelling.infer_model(
-        train_corpus=train_corpus,
-        method=method,
-        engine_args=TOPIC_MODELING_OPTS,
-    )
-    return inferred_model
 
 
 def create_bundle(tag: str = 'DUMMY') -> Bundle:

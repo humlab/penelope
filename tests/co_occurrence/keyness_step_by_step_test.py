@@ -5,6 +5,7 @@ from typing import Callable, Sequence
 
 import numpy as np
 import pandas as pd
+import pytest
 import scipy
 from penelope.co_occurrence import Bundle, keyness
 from penelope.co_occurrence.keyness import ComputeKeynessOpts, KeynessMetric
@@ -24,6 +25,7 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 # pylint: disable=protected-access
 
 
+@pytest.mark.long_running
 def test_step_by_step_llr_compute_corpus_keyness_alternative():
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
     opts: ComputeKeynessOpts = create_keyness_opts(keyness=KeynessMetric.HAL_cwr)

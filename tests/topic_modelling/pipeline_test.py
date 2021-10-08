@@ -3,10 +3,9 @@ import uuid
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
-from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
+from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask
 from penelope.pipeline.topic_model.tasks import ToTopicModel
-from penelope.topic_modelling import InferredTopicsData
 from penelope.utility import PropertyValueMaskingOpts
 from tests.fixtures import TranströmerCorpus
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
@@ -37,7 +36,8 @@ def topic_model_payload() -> DocumentPayload:
     )
 
 
-def test_infer_topic_model(topic_model_payload: DocumentPayload):
+@pytest.mark.long_running
+def test_train_topic_model(topic_model_payload: DocumentPayload):
     """Verify model created by fixture function"""
     assert topic_model_payload is not None
     assert topic_model_payload.content_type == ContentType.TOPIC_MODEL
@@ -50,6 +50,7 @@ def test_infer_topic_model(topic_model_payload: DocumentPayload):
     )
 
 
+# FIXME Add MALLET to test
 def test_predict_topics(topic_model_payload: DocumentPayload):
 
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
@@ -60,22 +61,17 @@ def test_predict_topics(topic_model_payload: DocumentPayload):
 
     model_folder: str = topic_model_payload.content.get("target_folder")
     model_name: str = topic_model_payload.content.get("target_name")
-    model_subfolder: str = os.path.join(model_folder, model_name)
-
-    token2id: Token2Id = InferredTopicsData.load_token2id(folder=model_subfolder)
 
     transform_opts = TokensTransformOpts()
     filter_opts = PropertyValueMaskingOpts()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='',
-        pos_excludes='MAD||MID|PAD',
-        text_column='token',
-        lemma_column='baseform',
-        pos_column='pos',
+        pos_excludes='MAD|MID|PAD',
+        **config.checkpoint_opts.tagged_columns,
     )
     payload: DocumentPayload = (
-        CorpusPipeline(config=config, payload=PipelinePayload(token2id=token2id))
+        CorpusPipeline(config=config)
         .load_tagged_frame(
             filename=corpus_filename,
             checkpoint_opts=config.checkpoint_opts,
@@ -93,7 +89,8 @@ def test_predict_topics(topic_model_payload: DocumentPayload):
     assert payload is not None
 
 
-def test_topic_model_task_with_token_stream_and_document_index():
+@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
+def test_topic_model_task_with_token_stream_and_document_index(method):
 
     target_name: str = f'{uuid.uuid1()}'
     corpus = TranströmerCorpus()
@@ -116,7 +113,7 @@ def test_topic_model_task_with_token_stream_and_document_index():
         corpus_filename=None,
         target_folder="./tests/output",
         target_name=target_name,
-        engine="gensim_lda-multicore",
+        engine=method,
         engine_args=utility.DEFAULT_ENGINE_ARGS,
         store_corpus=True,
         store_compressed=True,

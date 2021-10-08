@@ -40,6 +40,7 @@ def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
     assert 'year' in p.payload.document_index.columns
 
 
+@pytest.mark.long_running
 def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
@@ -69,6 +70,7 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
 
 
+@pytest.mark.long_running
 def test_to_tagged_frame_pipeline_checkpoint_adds_token_counts():
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
