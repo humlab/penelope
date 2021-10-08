@@ -30,6 +30,8 @@ from penelope.corpus.readers.interfaces import TextReaderOpts
 @click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
+@click.option('--n-tokens', default=200, help='Number tokens per topic.', type=click.INT)
+@click.option('--minimum-probability', default=0.001, help='minimum-probability.', type=click.FLOAT)
 def click_main(
     target_name,
     n_topics,
@@ -43,8 +45,10 @@ def click_main(
     max_iter,
     prefix,
     filename_field,
-    store_corpus,
-    compressed,
+    store_corpus: bool = True,
+    compressed: bool = True,
+    n_tokens: int = 200,
+    minimum_probability: float = 0.001,
 ):
 
     topic_modeling_opts = {
@@ -70,6 +74,8 @@ def click_main(
         filename_field=filename_field,
         store_corpus=store_corpus,
         store_compressed=compressed,
+        n_tokens=n_tokens,
+        minimum_probability=minimum_probability,
     )
 
 
@@ -83,6 +89,8 @@ def main(
     filename_field: str = None,
     store_corpus: bool = False,
     store_compressed: bool = True,
+    n_tokens: int = 200,
+    minimum_probability: float = 0.001,
 ):
     """ runner """
 
@@ -144,7 +152,7 @@ def main(
         ),
     )
 
-    inferred_model = topic_modelling.infer_model(
+    inferred_model = topic_modelling.train_model(
         train_corpus=train_corpus,
         method=engine,
         engine_args=engine_args,
@@ -156,8 +164,13 @@ def main(
         inferred_model, target_folder, store_corpus=store_corpus, store_compressed=store_compressed
     )
 
-    inferred_topics = topic_modelling.compile_inferred_topics_data(
-        inferred_model.topic_model, train_corpus.corpus, train_corpus.id2word, train_corpus.document_index
+    inferred_topics = topic_modelling.predict_topics(
+        inferred_model.topic_model,
+        corpus=train_corpus.corpus,
+        id2token=train_corpus.id2word,
+        document_index=train_corpus.document_index,
+        n_tokens=n_tokens,
+        minimum_probability=minimum_probability,
     )
 
     inferred_topics.store(target_folder)
