@@ -168,6 +168,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 
 
 @pytest.mark.long_running
+@pytest.mark.skip("deprecated Sparv v3")
 def test_reader_when_source_is_sparv3_succeeds():
 
     sparv_zipped_xml_export_v3_filename = './tests/test_data/sou_test_sparv3_xml.zip'

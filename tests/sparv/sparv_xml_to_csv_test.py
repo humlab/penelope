@@ -40,6 +40,7 @@ def test_extract_to_tsv():
 
 
 @pytest.mark.long_running
+@pytest.mark.skip("deprecated Sparv v3")
 def test_xml_to_csv_corpus_reader():
 
     source_path = './tests/test_data/sou_test_sparv3_xml.zip'
