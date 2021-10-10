@@ -49,35 +49,3 @@ def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
         )
     ).single()
     return payload
-
-
-def tranströmer_topic_model_payload(
-    transform_opts: TokensTransformOpts,
-    extract_opts: ExtractTaggedTokensOpts,
-    filter_opts: PropertyValueMaskingOpts,
-) -> DocumentPayload:
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_filename: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
-    target_name: str = f'{uuid.uuid1()}'
-    p: CorpusPipeline = (
-        CorpusPipeline(config=config)
-        .load_tagged_frame(
-            filename=corpus_filename,
-            checkpoint_opts=config.checkpoint_opts,
-            extra_reader_opts=config.text_reader_opts,
-        )
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
-        .to_topic_model(
-            corpus_filename=None,
-            target_folder="./tests/output",
-            target_name=target_name,
-            engine="gensim_lda-multicore",
-            engine_args=DEFAULT_ENGINE_ARGS,
-            store_corpus=True,
-            store_compressed=True,
-        )
-    )
-
-    payload: DocumentPayload = p.single()
-
-    return payload
