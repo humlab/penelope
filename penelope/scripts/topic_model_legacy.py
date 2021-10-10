@@ -3,11 +3,9 @@ import sys
 from os.path import join as jj
 
 import click
-import penelope.corpus.readers.text_tokenizer as text_tokenizer
-import penelope.corpus.tokenized_corpus as tokenized_corpus
-import penelope.topic_modelling as topic_modelling
-from penelope.corpus import TextTransformOpts, TokensTransformOpts
-from penelope.corpus.readers.interfaces import TextReaderOpts
+import penelope.topic_modelling as tm
+from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
+from penelope.corpus.readers import TextTokenizer
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -105,11 +103,11 @@ def main(
     if corpus_folder is None:
         corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
 
-    target_folder = jj(corpus_folder, target_name)
+    target_folder: str = jj(corpus_folder, target_name)
 
     os.makedirs(target_folder, exist_ok=True)
 
-    transformer_opts = TokensTransformOpts(
+    transformer_opts: TokensTransformOpts = TokensTransformOpts(
         only_alphabetic=False,
         only_any_alphanumeric=True,
         to_lower=True,
@@ -124,27 +122,27 @@ def main(
         keep_symbols=False,
     )
 
-    reader_opts = TextReaderOpts(
+    reader_opts: TextReaderOpts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=None,
         filename_fields=filename_field,
     )
 
-    transform_opts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
+    transform_opts: TextTransformOpts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
 
-    tokens_reader = text_tokenizer.TextTokenizer(
+    tokens_reader = TextTokenizer(
         source=corpus_filename,
         transform_opts=transform_opts,
         reader_opts=reader_opts,
         chunk_size=None,
     )
 
-    corpus = tokenized_corpus.TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)
+    corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)
 
-    train_corpus = topic_modelling.TrainingCorpus(
+    train_corpus: tm.TrainingCorpus = tm.TrainingCorpus(
         terms=corpus.terms,
         doc_term_matrix=None,
-        id2word=None,
+        id2token=None,
         document_index=corpus.document_index,
         corpus_options=dict(
             reader_opts=reader_opts.props,
@@ -152,7 +150,7 @@ def main(
         ),
     )
 
-    inferred_model = topic_modelling.train_model(
+    inferred_model: tm.InferredModel = tm.train_model(
         train_corpus=train_corpus,
         method=engine,
         engine_args=engine_args,
@@ -160,14 +158,12 @@ def main(
 
     inferred_model.topic_model.save(jj(target_folder, 'gensim.model.gz'))
 
-    topic_modelling.store_model(
-        inferred_model, target_folder, store_corpus=store_corpus, store_compressed=store_compressed
-    )
+    inferred_model.store(target_folder, store_corpus=store_corpus, store_compressed=store_compressed)
 
-    inferred_topics = topic_modelling.predict_topics(
+    inferred_topics: tm.InferredTopicsData = tm.predict_topics(
         inferred_model.topic_model,
         corpus=train_corpus.corpus,
-        id2token=train_corpus.id2word,
+        id2token=train_corpus.id2token,
         document_index=train_corpus.document_index,
         n_tokens=n_tokens,
         minimum_probability=minimum_probability,
