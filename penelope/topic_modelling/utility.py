@@ -1,4 +1,3 @@
-import contextlib
 import glob
 import itertools
 import os
@@ -96,28 +95,6 @@ def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFr
 #     df['weight'] = df.apply(lambda x: x['weight'] / x['sum_weight'], axis=1)
 #     df = df.drop(['sum_weight'], axis=1)
 #     return df
-
-
-def add_document_terms_count(document_index: pd.DataFrame, corpus: Any) -> pd.DataFrame:
-
-    if 'n_terms' in document_index.columns:
-        return document_index
-
-    n_terms = None
-
-    with contextlib.suppress(Exception):
-
-        if hasattr(corpus, 'sparse'):
-            n_terms = corpus.sparse.sum(axis=0).A1
-        elif isinstance(corpus, list):
-            n_terms = [sum((w[1] for w in d)) for d in corpus]
-        else:
-            n_terms = [len(d) for d in corpus]
-
-    if n_terms is not None:
-        document_index['n_terms'] = n_terms
-
-    return document_index
 
 
 def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
