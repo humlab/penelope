@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pathlib
 import zipfile
 from collections import defaultdict
@@ -369,7 +371,7 @@ class Token2Id(MutableMapping):
         return self
 
     @staticmethod
-    def id2token_to_dataframe(id2token: Any) -> pd.DataFrame:
+    def id2token_to_dataframe(id2token: dict | pd.DataFrame) -> pd.DataFrame:
         """Convert id-to-word mapping `id2token` as a pandas DataFrane. Add DFS id exists."""
 
         if isinstance(id2token, pd.DataFrame):
