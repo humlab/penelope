@@ -25,8 +25,6 @@ from .ttm import CoOccurrenceMixIn
 
 warnings.simplefilter('ignore', SparseEfficiencyWarning)
 
-logger = utility.getLogger("penelope")
-
 # FIXME #109 Refactor VectorizedCorpus to use Token2Id?
 class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccurrenceMixIn, IVectorizedCorpus):
     def __init__(
