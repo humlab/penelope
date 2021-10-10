@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass
 from typing import Callable, Iterable, List, Mapping, Tuple, Union
 
@@ -11,9 +10,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from ..document_index import DocumentIndex
 from ..tokenized_corpus import TokenizedCorpus
 from .corpus import VectorizedCorpus
-
-logger = logging.getLogger("corpus_vectorizer")
-
 
 DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
 
