@@ -1,8 +1,10 @@
 import os
 from typing import Any, Mapping, Optional
 
+from penelope.corpus import DocumentIndexHelper
+
 from .interfaces import InferredModel, TrainingCorpus
-from .utility import add_document_terms_count, get_engine_cls_by_method_name
+from .utility import get_engine_cls_by_method_name
 
 TEMP_PATH = './tmp/'
 
@@ -23,6 +25,8 @@ def train_model(
         tfidf_weiging=kwargs.get('tfidf_weiging', False),
     )
 
-    train_corpus.documents = add_document_terms_count(train_corpus.document_index, train_corpus.corpus)
+    train_corpus.document_index = (
+        DocumentIndexHelper(train_corpus.document_index).update_counts_by_corpus(train_corpus.corpus).document_index
+    )
 
     return trained_model
