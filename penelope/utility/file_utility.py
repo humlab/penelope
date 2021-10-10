@@ -88,10 +88,16 @@ def save_excel(data: pd.DataFrame, filename: str):
         writer.save()
 
 
-def read_json(path: str) -> Dict:
+def read_json(path: str, default: dict = None) -> Dict:
     """Reads JSON from file"""
+
     if not isfile(path):
+
+        if default:
+            return default
+
         raise FileNotFoundError(path)
+
     with open(path) as fp:
         return json.load(fp)
 
