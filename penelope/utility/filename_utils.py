@@ -63,7 +63,7 @@ def filename_satisfied_by(
 
 
 def filenames_satisfied_by(
-    filenames: List[str], filename_filter: Union[List[str], Callable] = None, filename_pattern: str = None, sort=False
+    filenames: List[str], filename_filter: Union[List[str], Callable] = None, filename_pattern: str = None, sort=True
 ) -> List[str]:
     """Filters list of filenames based on `filename_pattern` and `filename_filter`
 
@@ -75,15 +75,22 @@ def filenames_satisfied_by(
     Returns:
         List[str]: [description]
     """
-    if filename_filter is None and filename_pattern is None:
-        return filenames
 
-    return [
-        filename
-        for filename in (sorted(filenames) if sort else filenames)
-        if filename_satisfied_by(filename, filename_filter)
-        and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
-    ]
+    satisfied_filenames: List[str] = (
+        filenames
+        if filename_filter is None and filename_pattern is None
+        else [
+            filename
+            for filename in filenames
+            if filename_satisfied_by(filename, filename_filter)
+            and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
+        ]
+    )
+
+    if sort:
+        satisfied_filenames = sorted(satisfied_filenames)
+
+    return satisfied_filenames
 
 
 def filename_whitelist(filename: str) -> str:
