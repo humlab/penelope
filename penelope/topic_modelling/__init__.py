@@ -1,8 +1,7 @@
 # type: ignore
 
 from .interfaces import InferredModel, InferredTopicsData, TrainingCorpus
-from .persist import load_model, store_model
-from .predict import predict_document_topics, predict_topics
+from .predict import predict_topics
 from .saliency import compute_KL_divergence, compute_term_frequency, compute_term_info, compute_topic_metrics
 from .train import train_model
 from .utility import (
