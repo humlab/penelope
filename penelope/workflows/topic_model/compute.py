@@ -1,6 +1,6 @@
 import os
 
-from penelope import topic_modelling
+from penelope import topic_modelling as tm
 from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import TextTokenizer
 from penelope.topic_modelling.engine_gensim.options import SUPPORTED_ENGINES
@@ -48,12 +48,12 @@ def compute(
         chunk_size=None,
     )
 
-    corpus = TokenizedCorpus(reader=tokens_reader, transform_opts=None)
+    corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=None)
 
-    train_corpus = topic_modelling.TrainingCorpus(
+    train_corpus: tm.TrainingCorpus = tm.TrainingCorpus(
         terms=corpus.terms,
         doc_term_matrix=None,
-        id2word=None,
+        id2token=None,
         document_index=corpus.document_index,
         corpus_options=dict(
             reader_opts=reader_opts.props,
@@ -61,7 +61,7 @@ def compute(
         ),
     )
 
-    inferred_model = topic_modelling.train_model(
+    inferred_model: tm.InferredModel = tm.train_model(
         train_corpus=train_corpus,
         method=engine,
         engine_args=topic_modeling_opts,
@@ -69,12 +69,12 @@ def compute(
 
     inferred_model.topic_model.save(os.path.join(target_folder, 'gensim.model.gz'))
 
-    topic_modelling.store_model(inferred_model, target_folder, store_corpus=store_corpus, store_compressed=compressed)
+    inferred_model.store(target_folder, store_corpus=store_corpus, store_compressed=compressed)
 
-    inferred_topics = topic_modelling.predict_topics(
+    inferred_topics: tm.InferredTopicsData = tm.predict_topics(
         inferred_model.topic_model,
         corpus=train_corpus.corpus,
-        id2token=train_corpus.id2word,
+        id2token=train_corpus.id2token,
         document_index=train_corpus.document_index,
     )
 
