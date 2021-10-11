@@ -8,20 +8,11 @@ from typing import Iterable
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
-from penelope.corpus.dtm.corpus import VectorizedCorpus
+from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 from penelope.topic_modelling.engine_gensim.options import EngineKey
-from tqdm.auto import tqdm
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn
-
-
-class ReiterableTerms:
-    def __init__(self, outstream):
-        self.outstream = outstream
-
-    def __iter__(self):
-        return (p.content for p in self.outstream())
 
 
 class TopicModelMixin:
@@ -58,6 +49,11 @@ class TopicModelMixin:
         if not isinstance(corpus, (VectorizedCorpus, Sparse2Corpus)):
             raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict")
 
+        if isinstance(corpus, VectorizedCorpus):
+            """Make sure we use corpus' own data"""
+            document_index = corpus.document_index
+            id2token = corpus.id2token
+
         topics_data: tm.InferredTopicsData = tm.predict_topics(
             inferred_model.topic_model,
             corpus=corpus,
@@ -79,8 +75,7 @@ class TopicModelMixin:
 
         inferred_model.topic_model.save(jj(self.target_subfolder, 'gensim.model.gz'))
 
-        tm.store_model(
-            inferred_model=inferred_model,
+        inferred_model.store(
             folder=self.target_subfolder,
             store_corpus=self.store_corpus,
             store_compressed=self.store_compressed,
@@ -131,9 +126,8 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
     def instream_to_corpus(self) -> tm.TrainingCorpus:
 
-        terms = tqdm(ReiterableTerms(self.prior.outstream), total=len(self.document_index))
         corpus: tm.TrainingCorpus = tm.TrainingCorpus(
-            terms=terms, document_index=self.document_index, corpus_options={}
+            terms=self.prior.content_stream(), document_index=self.document_index, corpus_options={}
         )
         return corpus
 
@@ -149,8 +143,8 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         _ = self.predict(
             inferred_model=inferred_model,
-            corpus=train_corpus,
-            id2token=None,
+            corpus=train_corpus.corpus,
+            id2token=train_corpus.id2token,
             document_index=self.document_index,
             target_folder=self.target_subfolder,
         )
@@ -186,14 +180,23 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
 
     def __post_init__(self):
 
-        self.in_content_type = ContentType.TOKENS
+        self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
         self.out_content_type = ContentType.TOPIC_MODEL
 
-    def instream_to_sparse_corpus(self) -> tm.TrainingCorpus:
+    def instream_to_vectorized_corpus(self, token2id: dict) -> VectorizedCorpus:
+        """Create a sparse corpus of instream terms. Return `VectorizedCorpus`.
+        Note that terms not found in token2id are ignored. This will happen
+        when a new corpus is predicted that have terms not found in the training corpus.
+        """
+        if self.prior.out_content_type == ContentType.VECTORIZED_CORPUS:
+            payload: DocumentPayload = next(self.prior.outstream())
+            return payload.content
 
-        terms = tqdm(ReiterableTerms(self.prior.outstream), total=len(self.document_index))
-        corpus: tm.TrainingCorpus = tm.TrainingCorpus(
-            terms=terms, document_index=self.document_index, corpus_options={}
+        corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
+            corpus=self.prior.filename_content_stream(),
+            already_tokenized=True,
+            document_index=self.document_index.set_index('document_id', drop=False),
+            vocabulary=token2id,
         )
         return corpus
 
@@ -201,24 +204,26 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         self.ensure_target_path()
 
-        inferred_model: tm.InferredModel = tm.load_model(folder=self.model_subfolder, lazy=False)
+        inferred_model: tm.InferredModel = tm.InferredModel.load(folder=self.model_subfolder, lazy=True)
         topics_data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=self.model_subfolder)
 
-        corpus: VectorizedCorpus = self.instream_to_sparse_corpus()
+        corpus: VectorizedCorpus = self.instream_to_vectorized_corpus(token2id=topics_data.term2id)
 
         self.pipeline.payload.token2id = topics_data.token2id
 
         _ = self.predict(
             inferred_model=inferred_model,
             corpus=corpus,
-            id2token=topics_data.id2term,
-            document_index=self.document_index,
+            id2token=corpus.id2token,
+            document_index=corpus.document_index,
             topic_token_weights=topics_data.topic_token_weights,
             topic_token_overview=topics_data.topic_token_overview,
             n_tokens=self.n_tokens,
             minimum_probability=self.minimum_probability,
             target_folder=self.target_subfolder,
         )
+
+        corpus.dump(tag='predict', folder=jj(self.target_folder, self.target_name), mode='files')
 
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,

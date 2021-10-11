@@ -1,6 +1,6 @@
-from typing import Any, Dict
+from __future__ import annotations
 
-import gensim
+from typing import Any, Dict
 
 from ..interfaces import InferredModel, TrainingCorpus
 from . import coherence, options
@@ -39,21 +39,12 @@ def train(
     """
     algorithm_name: str = method.split('_')[1].upper()
 
-    if train_corpus.doc_term_matrix is None:
-        train_corpus.id2word = gensim.corpora.Dictionary(train_corpus.terms)
-        bow_corpus = [train_corpus.id2word.doc2bow(tokens) for tokens in train_corpus.terms]
-        csc_matrix = gensim.matutils.corpus2csc(
-            bow_corpus, num_terms=len(train_corpus.id2word), num_docs=len(bow_corpus), num_nnz=sum(map(len, bow_corpus))
-        )
-        train_corpus.corpus = gensim.matutils.Sparse2Corpus(csc_matrix, documents_columns=True)
-    else:
-        assert train_corpus.id2word is not None
-        train_corpus.corpus = gensim.matutils.Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)
+    train_corpus.to_sparse_corpus()
 
     if kwargs.get('tfidf_weiging', False):
-        train_corpus.corpus = _tfi_idf_model(train_corpus.corpus)
+        train_corpus.to_tf_idf()
 
-    algorithm: dict = options.engine_options(algorithm_name, train_corpus.corpus, train_corpus.id2word, engine_args)
+    algorithm: dict = options.engine_options(algorithm_name, train_corpus.corpus, train_corpus.id2token, engine_args)
 
     engine = algorithm['engine']
     engine_options = algorithm['options']
@@ -67,7 +58,7 @@ def train(
         else 2 ** model.log_perplexity(train_corpus.corpus, len(train_corpus.corpus))
     )
 
-    coherence_score = coherence.compute_score(train_corpus.id2word, model, train_corpus.corpus)
+    coherence_score = coherence.compute_score(train_corpus.id2token, model, train_corpus.corpus)
 
     return InferredModel(
         train_corpus=train_corpus,
@@ -78,10 +69,3 @@ def train(
         engine_options=engine_args,
         extra_options=kwargs,
     )
-
-
-def _tfi_idf_model(corpus):
-    # assert algorithm_name != 'MALLETLDA', 'MALLET training model cannot (currently) use TFIDF weighed corpus'
-    tfidf_model = gensim.models.tfidfmodel.TfidfModel(corpus)
-    corpus = [tfidf_model[d] for d in corpus]
-    return corpus

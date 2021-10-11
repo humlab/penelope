@@ -6,15 +6,16 @@ import gensim.corpora as corpora
 import numpy as np
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
+from loguru import logger
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus
 
 from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData, ITopicModelEngine
-from .utility import add_document_terms_count, get_engine_by_model_type
+from .utility import get_engine_by_model_type
 
 # pylint: disable=unused-argument
 
 
-def document_topics_iter_to_dataframe(document_index: pd.DataFrame, data: DocumentTopicsWeightsIter) -> pd.DataFrame:
+def to_dataframe(document_index: pd.DataFrame, data: DocumentTopicsWeightsIter) -> pd.DataFrame:
     """Convert document-topic-weight stream into a data frame."""
     document_topics = pd.DataFrame(data, columns=['document_id', 'topic_id', 'weight'])
     document_topics['document_id'] = document_topics.document_id.astype(np.uint32)
@@ -23,39 +24,12 @@ def document_topics_iter_to_dataframe(document_index: pd.DataFrame, data: Docume
     return document_topics
 
 
-def predict_document_topics(
-    model: Any,
-    corpus: Any,
-    document_index: DocumentIndex = None,
-    minimum_probability: float = 0.001,
-    **kwargs,
-) -> pd.DataFrame:
-    """Predict topocs fpr `corpus`using `model`. Return document-topic dataframe.
-
-    Args:
-        model (Any): The topic model.
-        corpus (Any): The corpus to predict topics on.
-        document_index (DocumentIndex, optional): [description]. Defaults to None.
-        minimum_probability (float, optional): [description]. Defaults to 0.001.
-
-    Returns:
-        pd.DataFrame:  Document topics
-    """
-
-    document_topic_weights: pd.DataFrame = document_topics_iter_to_dataframe(
-        document_index,
-        get_engine_by_model_type(model).predict(corpus, minimum_probability, **kwargs),
-    )
-
-    return document_topic_weights
-
-
 def predict_topics(
     topic_model: Any,
     *,
     corpus: Sparse2Corpus | VectorizedCorpus,
     id2token: corpora.Dictionary | dict | Token2Id,
-    document_index: DocumentIndex,
+    document_index: DocumentIndex = None,
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
     **kwargs,
@@ -74,17 +48,22 @@ def predict_topics(
         topic_token_overview (pd.DataFrame, optional): existing overview. Defaults to None.
     """
 
-    if not isinstance(
-        corpus,
-        (
-            Sparse2Corpus,
-            VectorizedCorpus,
-        ),
-    ):
+    if not isinstance(corpus, (Sparse2Corpus, VectorizedCorpus)):
         raise ValueError(f"expected `Sparse2Corpus` or `VectorizedCorpus`, got `{type(corpus)}`")
 
     if isinstance(corpus, VectorizedCorpus):
-        corpus: Sparse2Corpus = Sparse2Corpus(corpus.data)
+
+        if document_index is not None:
+            if document_index is not corpus.document_index:
+                logger.warning("using corpus document index (ignoring supplied document index)")
+
+        id2token: dict = id2token or corpus.id2token
+        document_index: dict = corpus.document_index
+        corpus: Sparse2Corpus = Sparse2Corpus(corpus.data, documents_columns=False)
+
+    if isinstance(id2token, (corpora.Dictionary, Token2Id)):
+        """We only need the dict"""
+        id2token = id2token.id2token
 
     engine: ITopicModelEngine = get_engine_by_model_type(topic_model)
 
@@ -96,21 +75,19 @@ def predict_topics(
 
     topic_token_overview: pd.DataFrame = (
         kwargs.get('topic_token_overview')
-        if kwargs.get('topic_token_overview')
+        if kwargs.get('topic_token_overview') is not None
         else engine.get_topic_token_overview(topic_token_weights, n_tokens=n_tokens)
     )
 
-    document_index: pd.DataFrame = add_document_terms_count(document_index, corpus)
+    document_index: pd.DataFrame = DocumentIndexHelper(document_index).update_counts_by_corpus(corpus).document_index
 
-    document_topic_weights: pd.DataFrame = predict_document_topics(
-        topic_model, corpus, document_index=document_index, minimum_probability=minimum_probability
-    )
+    data: DocumentTopicsWeightsIter = engine.predict(corpus, minimum_probability, **kwargs)
 
     topics_data: InferredTopicsData = InferredTopicsData(
-        document_index,
-        Token2Id.id2token_to_dataframe(id2token),
-        topic_token_weights,
-        topic_token_overview,
-        document_topic_weights,
+        dictionary=Token2Id.id2token_to_dataframe(id2token),
+        topic_token_weights=topic_token_weights,
+        topic_token_overview=topic_token_overview,
+        document_index=document_index,
+        document_topic_weights=to_dataframe(document_index, data),
     )
     return topics_data
