@@ -4,8 +4,8 @@ from os.path import join as jj
 from typing import Any, Callable, Dict, List, Optional
 
 from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
-from penelope import pipeline, topic_modelling, utility
-from penelope.topic_modelling.container import InferredModel, InferredTopicsData
+from penelope import pipeline, utility
+from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
 
 from ..co_occurrence.main_gui import MainGUI
 from . import display_topic_titles
@@ -26,11 +26,11 @@ def load_model(
     model_infos: List[Dict[str, Any]] = None,
 ):
 
-    model_infos = model_infos or topic_modelling.find_models(corpus_folder)
+    model_infos = model_infos or find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
     filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
-    inferred_model: InferredModel = topic_modelling.load_model(model_info["folder"], lazy=True)
-    inferred_topics: InferredTopicsData = topic_modelling.InferredTopicsData.load(
+    inferred_model: InferredModel = InferredModel.load(model_info["folder"], lazy=True)
+    inferred_topics: InferredTopicsData = InferredTopicsData.load(
         folder=jj(corpus_folder, model_info["name"]),
         filename_fields=filename_fields,
     )
@@ -90,7 +90,7 @@ def create_load_topic_model_gui(
     corpus_config: Optional[pipeline.CorpusConfig], corpus_folder: str, state: TopicModelContainer
 ) -> MainGUI:
 
-    model_infos: List[dict] = topic_modelling.find_models(corpus_folder)
+    model_infos: List[dict] = find_models(corpus_folder)
     model_names: List[str] = list(x["name"] for x in model_infos)
 
     def load_callback(model_name: str):

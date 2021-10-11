@@ -23,8 +23,10 @@ def fake_config() -> pipeline.CorpusConfig:
 
 
 @pytest.fixture(scope='module')
-def config():
-    return fake_config()
+def config(en_nlp) -> pipeline.CorpusConfig:
+    config: pipeline.CorpusConfig = fake_config()
+    config.pipeline_payload.memory_store['spacy_model'] = en_nlp
+    return config
 
 
 @pytest.mark.long_running
@@ -73,12 +75,10 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
 
 
 @pytest.mark.long_running
-def test_spaCy_co_occurrence_workflow():
+def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
     """Note: Use the output from this test case to update the tests/test_data/VENUS test data VENUS-TESTDATA"""
 
     os.makedirs('./tests/output', exist_ok=True)
-
-    config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI.yml')
 
     config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
     config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'

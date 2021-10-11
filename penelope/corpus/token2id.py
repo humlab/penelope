@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pathlib
 import zipfile
 from collections import defaultdict
@@ -367,3 +369,33 @@ class Token2Id(MutableMapping):
         else:
             self.close()
         return self
+
+    @staticmethod
+    def id2token_to_dataframe(id2token: dict | pd.DataFrame) -> pd.DataFrame:
+        """Convert id-to-word mapping `id2token` as a pandas DataFrane. Add DFS id exists."""
+
+        if isinstance(id2token, pd.DataFrame):
+            return id2token
+
+        assert id2token is not None, 'id2token is empty'
+
+        dfs = list(id2token.dfs.values()) or 0 if hasattr(id2token, 'dfs') else 0
+
+        token_ids, tokens = list(zip(*id2token.items()))
+
+        data: pd.DataFrame = pd.DataFrame({'token_id': token_ids, 'token': tokens, 'dfs': dfs}).set_index('token_id')[
+            ['token', 'dfs']
+        ]
+
+        return data
+
+    @staticmethod
+    def any_to_id2token(id2token: Any) -> dict:
+        """Cast dictionary mapping to a id2token map"""
+        return (
+            id2token.token.to_dict()
+            if isinstance(id2token, pd.DataFrame)
+            else id2token.id2token
+            if isinstance(id2token, Token2Id)
+            else id2token
+        )

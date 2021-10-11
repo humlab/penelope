@@ -8,6 +8,7 @@ from typing import Iterable, List, Set
 
 import numpy as np
 import pandas as pd
+import pytest
 from penelope.co_occurrence import Bundle, ContextOpts, TokenWindowCountMatrix
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus.dtm.corpus import VectorizedCorpus
@@ -70,6 +71,7 @@ def test_compress_corpus():
     assert ids_translation == {1: 0, 4: 1, 7: 2, 8: 3, 9: 4, 10: 5}
 
 
+@pytest.mark.long_running
 def test_step_by_step_compress_with_simple_corpus():
 
     context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1, ignore_padding=False)

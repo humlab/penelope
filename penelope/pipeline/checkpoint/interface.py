@@ -86,6 +86,14 @@ class CheckpointOpts:
             return None
         return os.path.join(self.feather_folder, f'{strip_path_and_extension(filename)}.feather')
 
+    @property
+    def tagged_columns(self) -> dict:
+        return dict(
+            text_column=self.text_column,
+            lemma_column=self.lemma_column,
+            pos_column=self.pos_column,
+        )
+
 
 Serializer = Callable[[str, CheckpointOpts], pd.DataFrame]
 TaggedFrameStore = Union[str, zipfile.ZipFile]

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, 
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 from penelope.utility import (
     FilenameFieldSpecs,
     PD_PoS_tag_groups,
@@ -33,6 +34,8 @@ T = TypeVar("T", int, str)
 DOCUMENT_INDEX_COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
 
 DocumentIndex = pd.core.api.DataFrame
+
+# pylint: disable=too-many-public-methods
 
 
 class DocumentIndexHelper:
@@ -113,6 +116,12 @@ class DocumentIndexHelper:
     def update_counts(self, doc_token_counts: List[Tuple[str, int, int]]) -> "DocumentIndexHelper":
         self._document_index = update_document_index_token_counts(
             self._document_index, doc_token_counts=doc_token_counts
+        )
+        return self
+
+    def update_counts_by_corpus(self, corpus: Any, column_name: str = 'n_terms') -> "DocumentIndexHelper":
+        self._document_index = update_document_index_token_counts_by_corpus(
+            self._document_index, corpus=corpus, column_name=column_name
         )
         return self
 
@@ -570,6 +579,39 @@ def update_document_index_token_counts(
 
     except Exception as ex:
         logging.error(ex)
+
+    return document_index
+
+
+def update_document_index_token_counts_by_corpus(
+    document_index: pd.DataFrame, corpus: Any, column_name: str = 'n_terms'
+) -> pd.DataFrame:
+    """Variant used in topic modeling"""
+    if column_name in document_index.columns:
+        return document_index
+
+    n_terms: List[int] = None
+
+    try:
+
+        if hasattr(corpus, 'sparse'):
+            # Gensim Sparse2Corpus
+            # FIXME: Kolla att detta är rätt! Ska det vara axis=0???
+            n_terms = corpus.sparse.sum(axis=0).A1
+        elif hasattr(corpus, 'data'):
+            # Vectorized corpus
+            n_terms = corpus.document_token_counts
+        elif isinstance(corpus, list):
+            # BoW, men hur vara säker?
+            n_terms = [sum((w[1] for w in d)) for d in corpus]
+        else:
+            n_terms = [len(d) for d in corpus]
+
+    except Exception as ex:
+        logger.exception(ex)
+
+    if n_terms is not None:
+        document_index[column_name] = n_terms
 
     return document_index
 

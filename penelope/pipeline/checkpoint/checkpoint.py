@@ -88,7 +88,10 @@ class CheckpointData:
             return
 
         if set(self.filenames) != set(self.document_index.filename.to_list()):
-            raise Exception(f"{self.source_name} filenames in archive and document index differs")
+            raise ValueError(f"{self.source_name} filenames in archive and document index differs")
+
+        if 'document_id' in self.document_index:
+            self.document_index.sort_values(by=['document_id'], inplace=True)
 
         logger.warning(f"{self.source_name} filename sort order mismatch (using document index sort order)")
 

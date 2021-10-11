@@ -14,7 +14,7 @@ from IPython import display
 from penelope import topic_modelling, utility
 from penelope.network import layout_source
 from penelope.network.networkx import utility as network_utility
-from penelope.topic_modelling.container import InferredTopicsData
+from penelope.topic_modelling import InferredTopicsData
 
 from .. import widgets_utils
 from .display_utility import display_document_topics_as_grid

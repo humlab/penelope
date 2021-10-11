@@ -46,6 +46,7 @@ def test_reader_store_result():
 
 
 @pytest.mark.long_running
+@pytest.mark.skip("deprecated Sparv v3")
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
 
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)

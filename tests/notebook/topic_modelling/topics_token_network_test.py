@@ -4,7 +4,7 @@ import ipycytoscape
 import pandas as pd
 import pytest
 from penelope.notebook.topic_modelling import topics_token_network_gui as ttn_gui
-from penelope.topic_modelling.container import InferredTopicsData
+from penelope.topic_modelling import InferredTopicsData
 
 INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer_inferred_model'
 

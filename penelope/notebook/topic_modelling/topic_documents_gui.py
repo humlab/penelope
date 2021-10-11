@@ -111,7 +111,7 @@ def get_topic_documents(
     return topic_documents
 
 
-def get_topic_tokens(topic_token_weights: pd.DataFrame, topic_id: int):
+def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int):
 
     if len(topic_token_weights[topic_token_weights.topic_id == topic_id]) == 0:
         tokens = "Topics has no significant presence in any documents in the entire corpus"
@@ -136,7 +136,7 @@ def display_gui(state: TopicModelContainer):
 
         with gui.output:
 
-            gui.text.value = get_topic_tokens(topic_token_weights, gui.topic_id.value)
+            gui.text.value = get_topic_title(topic_token_weights, gui.topic_id.value)
 
             topic_documents = get_topic_documents(
                 document_topic_weights=document_topic_weights,

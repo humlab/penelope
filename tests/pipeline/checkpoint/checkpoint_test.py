@@ -1,9 +1,11 @@
 import os
 
 import penelope.pipeline.checkpoint as checkpoint
+import pytest
 from penelope.corpus.readers.interfaces import TextReaderOpts
 
 
+@pytest.mark.long_running
 def test_load_tagged_frame_checkpoint():
     """Loads CSV files stored in a ZIP as Pandas data frames. """
 

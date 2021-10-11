@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.5.24"
+version = "0.5.25"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
@@ -79,6 +79,7 @@ pre-commit = "^2.15.0"
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.vectorize:main"
 topic-model = "penelope.scripts.topic_model:click_main"
+predict-model = "penelope.scripts.predict_model:click_main"
 co-occurrence = "penelope.scripts.co_occurrence:main"
 pos-tag = "penelope.scripts.pos_tag:main"
 
@@ -86,7 +87,9 @@ pos-tag = "penelope.scripts.pos_tag:main"
 minversion = "6.0"
 addopts = [
     "-rfE",
-    "-q",
+    "--no-cov",
+    "--durations=0"
+    # "-q",
     # "-s",
     #"-n4",
 ]

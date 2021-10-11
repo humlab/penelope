@@ -1,25 +1,20 @@
 from typing import Any, Dict
 
-import gensim
-import penelope.utility as utility
 import penelope.vendor.gensim as gensim_utility
+from gensim.models.coherencemodel import CoherenceModel
+from loguru import logger
 
 from . import options
-
-logger = utility.getLogger("")
 
 
 def compute_score(id2word, model, corpus) -> float:
     try:
         dictionary = gensim_utility.create_dictionary(id2word)
-        coherence_model = gensim.models.CoherenceModel(
-            model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
-        )
-        coherence_score = coherence_model.get_coherence()
-    except Exception as ex:  # pylint: disable=broad-except
+        coherence_model = CoherenceModel(model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass')
+        return coherence_model.get_coherence()
+    except Exception as ex:
         logger.error(ex)
-        coherence_score = None
-    return coherence_score
+    return None
 
 
 def compute_scores(
@@ -47,9 +42,7 @@ def compute_scores(
 
         model = engine(**engine_options)
 
-        coherence_score = gensim.models.CoherenceModel(
-            model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
-        )
+        coherence_score = CoherenceModel(model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass')
 
         perplexity_score = 2 ** model.log_perplexity(corpus, len(corpus))
 

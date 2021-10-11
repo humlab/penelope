@@ -15,20 +15,12 @@ def monkey_patch(*_, **__):
 
 # @pytest.fixture
 # def inferred_model() -> InferredModel:
-#     _inferred_model: InferredModel = topic_modelling.load_model(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
+#     _inferred_model: InferredModel = InferredModel.load(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
 #     return _inferred_model
 
 
 @pytest.fixture
 def inferred_topics_data() -> InferredTopicsData:
-    # _inferred_topics_data: InferredTopicsData = topic_modelling.compile_inferred_topics_data(
-    #     topic_model=inferred_model.topic_model,
-    #     corpus=inferred_model.train_corpus.corpus,
-    #     id2word=inferred_model.train_corpus.id2word,
-    #     document_index=inferred_model.train_corpus.document_index,
-    #     n_tokens=5,
-    # )
-    # _inferred_topics_data.store(target_folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, pickled=False)
     filename_fields = ["year:_:1", "year_serial_id:_:2"]
     _inferred_topics_data = InferredTopicsData.load(
         folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, filename_fields=filename_fields

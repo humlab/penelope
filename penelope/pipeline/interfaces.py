@@ -352,5 +352,39 @@ class ITask(abc.ABC):
             return self.prior.get_filenames()
         return []
 
+    def content_stream(self):
+        """Transform outstrem to a payload content stream."""
+        return ContentStream(self.outstream)
+
+    def filename_content_stream(self):
+        return DocumentContentStream(self.outstream)
+
+
+class ReiterablePayloadStream:
+    """Transform payload stream to an iterable item stream"""
+
+    def __init__(self, factory: Callable):
+        self.factory = factory
+
+    def __iter__(self):
+        return (self.to_item(p) for p in self.factory())
+
+    def to_item(self, p: DocumentPayload) -> Any:
+        return p
+
+
+class ContentStream(ReiterablePayloadStream):
+    """Transform payload stream to a content stream"""
+
+    def to_item(self, p: DocumentPayload) -> Any:
+        return p.content
+
+
+class DocumentContentStream(ReiterablePayloadStream):
+    """Transform payload stream to a (filename, tokens) stream"""
+
+    def to_item(self, p: DocumentPayload) -> Any:
+        return (p.filename, p.content)
+
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]

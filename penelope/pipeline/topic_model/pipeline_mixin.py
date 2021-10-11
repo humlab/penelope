@@ -18,7 +18,7 @@ class PipelineShortcutMixIn:
         corpus_folder: str = None,
         target_folder: str = None,
         target_name: str = None,
-        engine: str = "gensim_lda-multicore",
+        engine: str = "not-specified",
         engine_args: dict = None,
         store_corpus: bool = False,
         store_compressed: bool = True,
@@ -34,5 +34,23 @@ class PipelineShortcutMixIn:
                 engine_args=engine_args,
                 store_corpus=store_corpus,
                 store_compressed=store_compressed,
+            )
+        )
+
+    def predict_topics(
+        self: pipelines.CorpusPipeline,
+        *,
+        model_folder: str = None,
+        model_name: str = None,
+        target_folder: str = None,
+        target_name: str = None,
+    ) -> pipelines.CorpusPipeline:
+        """ TOKENS => TOPIC MODEL """
+        return self.add(
+            tasks.PredictTopics(
+                model_folder=model_folder,
+                model_name=model_name,
+                target_folder=target_folder,
+                target_name=target_name,
             )
         )

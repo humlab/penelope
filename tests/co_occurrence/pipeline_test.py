@@ -35,6 +35,7 @@ def test_pipeline_to_co_occurrence_ingest_prohobited_if_vocabulary_exists():
         )
 
 
+@pytest.mark.long_running
 def test_pipeline_to_co_occurrence_can_create_new_vocabulary():
 
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
