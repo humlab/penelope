@@ -3,10 +3,12 @@ from typing import Any, Dict
 import gensim
 import penelope.vendor.textacy as textacy_utility
 import textacy
+from penelope.utility import deprecated
 
 from ..interfaces import InferredModel, TrainingCorpus
 
 
+@deprecated
 def train(
     train_corpus: TrainingCorpus,
     method: str,
@@ -39,7 +41,7 @@ def train(
     """
     if train_corpus.doc_term_matrix is None:
         assert train_corpus.terms is not None
-        train_corpus.doc_term_matrix, train_corpus.id2word = textacy_utility.vectorize_terms(
+        train_corpus.doc_term_matrix, train_corpus.id2token = textacy_utility.vectorize_terms(
             train_corpus.terms, train_corpus.vectorizer_args
         )
 
