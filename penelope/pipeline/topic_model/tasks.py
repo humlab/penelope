@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 from os.path import join as jj
@@ -10,6 +11,7 @@ from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 from penelope.topic_modelling.engine_gensim.options import EngineKey
+from penelope.utility.file_utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn
@@ -178,6 +180,10 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
     def model_subfolder(self) -> str:
         return jj(self.model_folder, self.model_name)
 
+    @property
+    def target_subfolder(self) -> str:
+        return jj(self.target_folder, self.target_name)
+
     def __post_init__(self):
 
         self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
@@ -223,7 +229,13 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
             target_folder=self.target_subfolder,
         )
 
-        corpus.dump(tag='predict', folder=jj(self.target_folder, self.target_name), mode='files')
+        corpus.dump(tag='predict', folder=self.target_subfolder, mode='files')
+
+        write_json(
+            path=jj(self.target_subfolder, "model_options.json"),
+            data=inferred_model.options,
+            default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>",
+        )
 
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,

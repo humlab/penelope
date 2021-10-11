@@ -103,8 +103,13 @@ def read_json(path: str, default: dict = None) -> Dict:
 
 
 def write_json(path: str, data: Dict, default=None):
+
+    if default is not None:
+        if not callable(default):
+            default = lambda _: default
+
     with open(path, 'w') as json_file:
-        json.dump(data, json_file, indent=4, default=(lambda _: default) if default else None)
+        json.dump(data, json_file, indent=4, default=default)
 
 
 def pickle_compressed_to_file(filename: str, thing: Any):

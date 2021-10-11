@@ -6,6 +6,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
+from penelope.topic_modelling.utility import find_models
 from penelope.utility import PropertyValueMaskingOpts
 from tests.fixtures import TranströmerCorpus
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
@@ -98,6 +99,9 @@ def test_predict_topics(method: str):
 
     assert payload is not None
 
+    output_models = find_models('./tests/output')
+    assert any(m['name'] == target_name for m in output_models)
+
 
 @pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
@@ -142,3 +146,6 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
     assert payload is not None
     assert payload.content_type == ContentType.TOPIC_MODEL
     assert isinstance(payload.content, dict)
+
+    output_models = find_models('./tests/output')
+    assert any(m['name'] == target_name for m in output_models)

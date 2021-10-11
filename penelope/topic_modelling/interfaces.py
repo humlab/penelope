@@ -268,10 +268,6 @@ class InferredModel:
             tbar.close()
         return self._train_corpus
 
-    class StoreCorpusOptions(Enum):
-        NONE = 1
-        PICKLED = 2
-
     def store_topic_model(self, folder: str, store_compressed: bool = True):
         """Stores topic model in pickled format """
         filename: str = jj(folder, f"topic_model.pickle{'.pbz2' if store_compressed else ''}")
