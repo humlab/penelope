@@ -68,22 +68,19 @@ def test_infer_model(method):
 
 def test_load_inferred_model_fixture():
 
-    inferred_model: InferredModel = topic_modelling.load_model(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
+    inferred_model: InferredModel = InferredModel.load(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
     assert inferred_model is not None
 
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_compressed_inferred_model(method):
 
-    inferred_model = create_inferred_model(method)
-
+    inferred_model: InferredModel = create_inferred_model(method)
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    # Act
-    topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=True)
+    inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
 
-    # Assert
     assert os.path.isfile(os.path.join(target_folder, "topic_model.pickle.pbz2"))
     assert os.path.isfile(os.path.join(target_folder, "training_corpus.pickle.pbz2"))
     assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
@@ -94,14 +91,11 @@ def test_store_compressed_inferred_model(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_uncompressed_inferred_model(method):
 
-    inferred_model = create_inferred_model(method)
-
-    # Arrange
+    inferred_model: InferredModel = create_inferred_model(method)
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    # Act
-    topic_modelling.store_model(inferred_model, target_folder, store_corpus=True, store_compressed=False)
+    inferred_model.store(target_folder, store_corpus=True, store_compressed=False)
 
     # Assert
     assert os.path.isfile(os.path.join(target_folder, "topic_model.pickle"))
@@ -114,17 +108,13 @@ def test_store_uncompressed_inferred_model(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
 
-    # Arrange
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
-    test_inferred_model = create_inferred_model(method)
-    topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=True, store_compressed=True)
+    test_inferred_model: InferredModel = create_inferred_model(method)
+    test_inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
 
-    # Act
+    inferred_model: InferredModel = InferredModel.load(target_folder)
 
-    inferred_model: InferredModel = topic_modelling.load_model(target_folder)
-
-    # Assert
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
@@ -142,21 +132,16 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(method):
 
-    # Arrange
-    target_name = f"{uuid.uuid1()}"
-    target_folder = os.path.join(OUTPUT_FOLDER, target_name)
-    test_inferred_model = create_inferred_model(method)
-    topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
+    target_name: str = f"{uuid.uuid1()}"
+    target_folder: str = os.path.join(OUTPUT_FOLDER, target_name)
+    test_inferred_model: InferredModel = create_inferred_model(method)
+    test_inferred_model.store(target_folder, store_corpus=False)
 
-    # Act
+    inferred_model = InferredModel.load(target_folder)
 
-    inferred_model = topic_modelling.load_model(target_folder)
-
-    # Assert
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
-
     assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert inferred_model.train_corpus is None
 
@@ -169,20 +154,16 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     # Arrange
     target_name = f"{uuid.uuid1()}"
     target_folder = jj(OUTPUT_FOLDER, target_name)
-    test_inferred_model = create_inferred_model(method)
-    topic_modelling.store_model(test_inferred_model, target_folder, store_corpus=False)
+    test_inferred_model: InferredModel = create_inferred_model(method)
+    test_inferred_model.store(target_folder, store_corpus=False)
 
-    # Act
+    inferred_model: InferredModel = InferredModel.load(target_folder, lazy=True)
 
-    inferred_model = topic_modelling.load_model(target_folder, lazy=True)
-
-    # Assert
     assert callable(inferred_model._topic_model)
 
     _ = inferred_model.topic_model
 
     assert not callable(inferred_model._topic_model)
-
     assert inferred_model._train_corpus is None or callable(inferred_model._train_corpus)
 
     _ = inferred_model.topic_model
@@ -195,20 +176,16 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_topics_data(method):
 
-    # Arrange
-    inferred_model = create_inferred_model(method)
-
-    # Act
+    inferred_model: InferredModel = create_inferred_model(method)
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
-        id2token=inferred_model.train_corpus.id2word,
+        id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
 
-    # Assert
     assert inferred_topics_data is not None
     assert isinstance(inferred_topics_data.document_index, pd.DataFrame)
     assert isinstance(inferred_topics_data.dictionary, pd.DataFrame)
@@ -226,22 +203,19 @@ def test_infer_topics_data(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_inferred_topics_data(method):
 
-    # Arrange
-    inferred_model = create_inferred_model(method)
+    inferred_model: InferredModel = create_inferred_model(method)
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
-        id2token=inferred_model.train_corpus.id2word,
+        id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
 
-    # Act
     inferred_topics_data.store(target_folder)
 
-    # Assert
     assert os.path.isfile(jj(target_folder, "dictionary.zip"))
     assert os.path.isfile(jj(target_folder, "document_topic_weights.zip"))
     assert os.path.isfile(jj(target_folder, "documents.zip"))
@@ -254,27 +228,23 @@ def test_store_inferred_topics_data(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_topics_data(method):
 
-    # Arrange
-    inferred_model = create_inferred_model(method)
+    inferred_model: InferredModel = create_inferred_model(method)
 
     test_inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
         corpus=inferred_model.train_corpus.corpus,
-        id2token=inferred_model.train_corpus.id2word,
+        id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
     test_inferred_topics_data.store(target_folder)
 
-    # Act
     inferred_topics_data: InferredTopicsData = topic_modelling.InferredTopicsData.load(
         folder=target_folder, filename_fields=None
     )
 
-    # Assert
     assert inferred_topics_data is not None
-
     assert inferred_topics_data.dictionary.equals(test_inferred_topics_data.dictionary)
 
     pd.testing.assert_frame_equal(
@@ -327,7 +297,7 @@ def test_run_cli(method):
     assert os.path.isfile(jj(target_folder, 'topic_model.pickle.pbz2'))
     assert os.path.isfile(jj(target_folder, 'model_options.json'))
 
-    inferred_model = topic_modelling.load_model(target_folder)
+    inferred_model: InferredModel = InferredModel.load(target_folder)
     inferred_topic_data = InferredTopicsData.load(folder=target_folder, filename_fields=None)
 
     assert inferred_model is not None

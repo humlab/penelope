@@ -15,7 +15,7 @@ def monkey_patch(*_, **__):
 
 # @pytest.fixture
 # def inferred_model() -> InferredModel:
-#     _inferred_model: InferredModel = topic_modelling.load_model(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
+#     _inferred_model: InferredModel = InferredModel.load(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
 #     return _inferred_model
 
 
