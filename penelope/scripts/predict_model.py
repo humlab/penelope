@@ -1,3 +1,4 @@
+from curses import echo
 import os
 import sys
 
@@ -13,7 +14,7 @@ from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 @click.command()
 @click.argument('config-filename', required=True)
 @click.argument('model-folder', required=True)
-@click.argument('model-name', required=True)
+# @click.argument('model-name', required=True)
 @click.argument('target-folder', required=True)
 @click.argument('target-name', required=False)
 @click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
@@ -35,7 +36,7 @@ from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 def click_main(
     config_filename: str = None,
     model_folder: str = None,
-    model_name: str = None,
+    # model_name: str = None,
     target_folder: str = None,
     target_name: str = None,
     options_filename: str = None,
@@ -57,6 +58,15 @@ def click_main(
 ):
     arguments: dict = locals()
     del arguments['options_filename']
+
+    if not os.path.isfile(os.path.join(model_folder, "model_options.json")):
+        click.echo("error: no model in specified folder")
+        sys.exit(1)
+
+    model_folder, model_name = os.path.split(model_folder)
+
+    arguments['model_folder'] = model_folder
+    arguments['model_name'] = model_name
 
     if options_filename is not None:
         with open(options_filename, "r") as fp:
