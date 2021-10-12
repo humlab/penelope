@@ -282,7 +282,7 @@ class InferredModel:
             json.dump(options, fp, indent=4, default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>")
 
     def store(self, folder: str, store_corpus=True, store_compressed=True):
-        """Stores the inferred model on disk in folder `folder`"""
+        """Store model on disk in `folder`."""
         self.store_topic_model(folder, store_compressed=store_compressed)
         if store_corpus:
             self.train_corpus.store(folder, store_compressed=store_compressed)
@@ -290,8 +290,11 @@ class InferredModel:
 
     @staticmethod
     def load_topic_model(folder: str) -> Any:
-        """Loads an train corpus from av previously pickled file."""
-        return utility.unpickle_from_file(jj(folder, "topic_model.pickle.pbz2"))
+        """Load a topic model from pickled file."""
+        for filename in ["topic_model.pickle.pbz2", "topic_model.pickle"]:
+            if os.path.isfile(jj(folder, filename)):
+                return utility.unpickle_from_file(jj(folder, filename))
+        return None
 
     @staticmethod
     def load_model_options(folder: str) -> Dict[str, Any]:
@@ -302,7 +305,7 @@ class InferredModel:
 
     @staticmethod
     def load(folder: str, lazy=True) -> InferredModel:
-        """Loads inferred model data from previously pickled files."""
+        """Load inferred model data from pickled files."""
         topic_model = lambda: InferredModel.load_topic_model(folder) if lazy else InferredModel.load_topic_model(folder)
         train_corpus = lambda: TrainingCorpus.load(folder) if lazy else TrainingCorpus.load(folder)
         options = InferredModel.load_model_options(folder)
