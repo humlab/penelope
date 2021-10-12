@@ -7,7 +7,6 @@ import pickle
 import sys
 import types
 from dataclasses import dataclass
-from enum import Enum
 from os.path import join as jj
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Type
 
