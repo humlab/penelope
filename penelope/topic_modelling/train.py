@@ -6,8 +6,6 @@ from penelope.corpus import DocumentIndexHelper
 from .interfaces import InferredModel, TrainingCorpus
 from .utility import get_engine_cls_by_method_name
 
-TEMP_PATH = './tmp/'
-
 
 def train_model(
     train_corpus: TrainingCorpus,
@@ -16,7 +14,8 @@ def train_model(
     **kwargs,
 ) -> InferredModel:
 
-    os.makedirs(TEMP_PATH, exist_ok=True)
+    if 'work_folder' in engine_args:
+        os.makedirs(engine_args.get('work_folder'), exist_ok=True)
 
     trained_model = get_engine_cls_by_method_name(method).train(
         train_corpus,

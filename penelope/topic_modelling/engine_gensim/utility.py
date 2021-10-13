@@ -20,7 +20,7 @@ def malletmodel2ldamodel(mallet_model: wrappers.LdaMallet, gamma_threshold: floa
     :class:`~gensim.models.ldamodel.LdaModel`
         Gensim native LDA.
     """
-    model_gensim = models.LdaModel(
+    model_gensim: models.LdaModel = models.LdaModel(
         id2word=mallet_model.id2word,
         num_topics=mallet_model.num_topics,
         alpha=mallet_model.alpha,

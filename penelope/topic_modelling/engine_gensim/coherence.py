@@ -35,7 +35,9 @@ def compute_scores(
 
     for num_topics in range(start, stop, step):
 
-        algorithm = options.engine_options(algorithm_name, corpus, id2word, engine_args)
+        algorithm = options.get_engine_options(
+            algorithm=algorithm_name, corpus=corpus, id2word=id2word, engine_args=engine_args
+        )
 
         engine = algorithm['engine']
         engine_options = algorithm['options']

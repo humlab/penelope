@@ -52,10 +52,20 @@ def store_model(data, filename):
 @click.option('--passes', default=None, help='Number of passes.')
 @click.option('--alpha', default='symmetric', help='Prior belief of topic probability.')
 @click.option('--workers', default=None, help='Number of workers (if applicable).')
-@click.option('--prefix', default=None, help='Prefix.')
-def main(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers, prefix):
+@click.option('--work-folder', default=None, help='Work folder (MALLET).')
+def main(
+    n_start: str,
+    n_stop: int,
+    n_step: int,
+    data_folder: str,
+    engine: str,
+    passes: int,
+    alpha: float,
+    workers: int,
+    work_folder: str,
+):
     """ runner """
-    raise NotImplementedError("This script is specfic to political case - needs to be adapted")
+    raise NotImplementedError("This script is specific to political case - needs to be adapted to other use cases")
     # if engine not in [y for x, y in ENGINE_OPTIONS]:
     #     logging.error("Unknown method {}".format(engine))
 
@@ -69,8 +79,8 @@ def main(n_start, n_stop, n_step, data_folder, engine, passes, alpha, workers, p
     # if passes is not None:
     #     kwargs.update(dict(passes=passes))
 
-    # if prefix is not None:
-    #     kwargs.update(dict(prefix=prefix))
+    # if work_folder is not None:
+    #     kwargs.update(dict(work_folder=work_folder))
 
     # _, inferred_topics = topic_modelling.compute_model(
     #     doc_term_matrix=dtm, id2word=id2token, document_index=document_index, method=engine, engine_args=kwargs

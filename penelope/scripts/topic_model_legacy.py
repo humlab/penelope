@@ -24,7 +24,7 @@ from penelope.corpus.readers import TextTokenizer
 @click.option('--random-seed', default=None, help="Random seed value", type=click.INT)
 @click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
 @click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
-@click.option('--prefix', default=None, help='Prefix.')
+@click.option('--work-folder', default=None, help='Work folder (MALLET `prefix`).')
 @click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
@@ -39,9 +39,9 @@ def click_main(
     passes,
     random_seed,
     alpha,
-    workers,
-    max_iter,
-    prefix,
+    workers: int,
+    max_iter: int,
+    work_folder: str,
     filename_field,
     store_corpus: bool = True,
     compressed: bool = True,
@@ -58,7 +58,7 @@ def click_main(
             'alpha': alpha,
             'workers': workers,
             'max_iter': max_iter,
-            'prefix': prefix,
+            'work_folder': work_folder,
         }.items()
         if v is not None
     }

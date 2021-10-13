@@ -112,11 +112,8 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     store_corpus: bool = False
     store_compressed: bool = True
 
-    # reader_opts: TextReaderOpts = None
-
     def __post_init__(self):
 
-        # self.in_content_type = [ContentType.NONE, ContentType.TOKENS, ContentType.TEXT]
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOPIC_MODEL
 
@@ -142,6 +139,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         inferred_model: tm.InferredModel = self.train(train_corpus)
 
+        # FIXME: MALLET PREDICTION!
         _ = self.predict(
             inferred_model=inferred_model,
             corpus=train_corpus.corpus,

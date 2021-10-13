@@ -77,3 +77,12 @@ def test_texts_to_tagged_frames(en_nlp):
     )
     for tagged_frame in tagged_frames:
         assert_test_xyz_to_tagged_frame(tagged_frame)
+
+
+def test_spaCy_pronoun_tagging(en_nlp):
+
+    doc = "Your car is blue. Our bus is red. Their bus is green."
+
+    spacy_doc = en_nlp(doc)
+
+    assert spacy_doc is not None

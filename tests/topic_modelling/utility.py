@@ -11,7 +11,7 @@ DEFAULT_ENGINE_ARGS = {
     'alpha': 'auto',
     'workers': 1,
     'max_iter': 100,
-    'prefix': './tests/output/',
+    'work_folder': './tests/output/',
 }
 
 

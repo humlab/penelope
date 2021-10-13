@@ -44,7 +44,12 @@ def train(
     if kwargs.get('tfidf_weiging', False):
         train_corpus.to_tf_idf()
 
-    algorithm: dict = options.engine_options(algorithm_name, train_corpus.corpus, train_corpus.id2token, engine_args)
+    algorithm: dict = options.get_engine_options(
+        algorithm=algorithm_name,
+        corpus=train_corpus.corpus,
+        id2word=train_corpus.id2token,
+        engine_args=engine_args,
+    )
 
     engine = algorithm['engine']
     engine_options = algorithm['options']

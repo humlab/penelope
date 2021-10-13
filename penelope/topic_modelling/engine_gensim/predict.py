@@ -36,8 +36,8 @@ def gensim_lda_predict(model: models.LdaModel, corpus: Any, minimum_probability:
 
 
 def mallet_lda_predict(model: wrappers.LdaMallet, corpus: Any) -> Iterable:
-    # FIXME: Must do topic inference on corpus!
-    data_iter = enumerate(model.load_document_topics())
+    # data_iter = enumerate(model.load_document_topics())
+    data_iter = enumerate(model[corpus])
     return data_iter
 
 

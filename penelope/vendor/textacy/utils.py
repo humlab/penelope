@@ -69,7 +69,7 @@ def count_documents_in_index_by_pivot(document_index: DocumentIndex, attribute: 
     Same as count_documents_by_pivot but uses document index instead of (spaCy) corpus
     """
     assert document_index[attribute].is_monotonic_increasing, 'Documents *MUST* be sorted by TIME-SLICE attribute!'
-    # TODO: Either sort documents (and corpus or term stream!) prior to this call - OR force sortorder by filename (i.e add year-prefix)
+    # TODO: Either sort documents (and corpus or term stream!) prior to this call - OR force sortorder by filename (add year to filename)
     return list(document_index.groupby(attribute).size().values)
 
 

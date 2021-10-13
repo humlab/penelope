@@ -28,7 +28,7 @@ TOPIC_MODELING_OPTS = {
     'alpha': 'auto',
     'workers': 1,
     'max_iter': 100,
-    'prefix': './tests/output/',
+    'work_folder': './tests/output/',
 }
 
 if __file__ in globals():

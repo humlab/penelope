@@ -35,7 +35,6 @@ from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 @click.option('--random-seed', default=None, help="Random seed value", type=click.INT)
 @click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
 @click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
-@click.option('--prefix', default=None, help='Prefix.')
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--store-compressed/--no-store-compressed', default=True, is_flag=True, help='')
 @click.option('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True, help='')
@@ -65,7 +64,6 @@ def click_main(
     alpha: str = 'asymmetric',
     workers: int = None,
     max_iter: int = None,
-    prefix: str = '',
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
@@ -114,7 +112,6 @@ def _main(
     alpha: str = 'asymmetric',
     workers: int = None,
     max_iter: int = None,
-    prefix: str = '',
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
@@ -131,7 +128,7 @@ def _main(
             'alpha': alpha,
             'workers': workers,
             'max_iter': max_iter,
-            'prefix': prefix,
+            'work_folder': os.path.join(target_folder, target_name),
         }.items()
         if v is not None
     }
