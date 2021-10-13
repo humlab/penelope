@@ -155,7 +155,7 @@ class StoreMixIn:
         Parameters
         ----------
         tag : str
-            Corpus prefix tag
+            Corpus tag
         folder : str, optional
             Corpus folder to look in
         """
@@ -195,7 +195,7 @@ class StoreMixIn:
         Parameters
         ----------
         tag : str
-            Corpus prefix tag
+            Corpus identifier (prefixed to filename)
         folder : str, optional
             Corpus folder to look in, by default './output'
 
@@ -262,7 +262,7 @@ def load_corpus(
     Parameters
     ----------
     tag : str
-        Corpus filename prefix
+        Corpus filename identifier (prefixed to filename)
     folder : str
         Source folder where corpus reside
     n_count : int, optional
