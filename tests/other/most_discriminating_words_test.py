@@ -1,6 +1,5 @@
 import penelope.vendor.textacy.mdw_modified as mdw
 from sklearn.feature_extraction.text import CountVectorizer
-from textacy import ke
 
 flatten = lambda l: [x for ws in l for x in ws]
 
@@ -28,14 +27,13 @@ def test_modified_most_discriminating_terms():
     doc1 = [line.split() for line in text1.split("\n")]
     doc2 = [line.split() for line in text2.split("\n")]
 
-    expected = (["Friedman", "Times"], ["General", "malls"])
-    observed = ke.utils.most_discriminating_terms(doc1 + doc2, [True] * len(doc1) + [False] * len(doc2), top_n_terms=2)
-    assert expected == observed
-
+    expected = (["friedman", "times"], ["general", "malls"])
     vectorizer = CountVectorizer()
     corpus = text1.split("\n") + text2.split("\n")
     bag_term_matrix = vectorizer.fit_transform(corpus)
     token2id = vectorizer.vocabulary_
     id2token = {v: k for k, v in token2id.items()}
-    mdw.most_discriminating_terms(bag_term_matrix, id2token, [True] * len(doc1) + [False] * len(doc2), top_n_terms=2)
+    observed = mdw.most_discriminating_terms(
+        bag_term_matrix, id2token, [True] * len(doc1) + [False] * len(doc2), top_n_terms=2
+    )
     assert expected == observed

@@ -134,7 +134,7 @@ def patch_spacy_pipeline(task):
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
     pipeline = CorpusPipeline(config=fake_config())
-    _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, lang_or_nlp="en_core_web_sm").setup()
+    _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, name_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
 
 

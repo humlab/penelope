@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
-import textacy.preprocessing.remove as textacy_remove
+from textacy.preprocessing import remove as textacy_remove
 
 from . import transforms
 from .token2id import Token2Id
@@ -150,7 +150,8 @@ class TokensTransformerMixin:
         return self.add(transforms.remove_stopwords(language_or_stopwords, extra_stopwords))
 
     def remove_accents(self) -> TokensTransformer:
-        return self.add(textacy_remove.remove_accents)
+
+        return self.add(textacy_remove.accents)
 
     def only_any_alphanumeric(self) -> TokensTransformer:
         return self.add(transforms.only_any_alphanumeric())

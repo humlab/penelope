@@ -4,6 +4,7 @@ from .document_index import (
     DocumentIndex,
     DocumentIndexHelper,
     consolidate_document_index,
+    count_documents_in_index_by_pivot,
     document_index_upgrade,
     get_document_id,
     load_document_index,

@@ -3,15 +3,19 @@ from __future__ import annotations
 import abc
 import os
 import zipfile
-from typing import List, Sequence, Union
+from typing import Any, Callable, Dict, List, Sequence, Union
 
 import penelope.vendor.textacy as textacy_utility
 import textacy
+from loguru import logger
 from penelope.corpus import DocumentIndex
-from penelope.corpus.readers import TextReaderOpts, TextTransformer, ZipTextIterator
-from penelope.utility import path_add_suffix, streamify_any_source
+from penelope.corpus.readers import ICorpusReader, TextReaderOpts, TextTransformer, ZipTextIterator
+from penelope.utility import lists_of_dicts_merged_by_key, noop, path_add_suffix, streamify_any_source
 from spacy.language import Language as SpacyLanguage
+from spacy.tokens import Doc as SpacyDoc
 from tqdm.auto import tqdm
+
+from ..spacy import load_model_by_parts
 
 
 class PipelineError(Exception):
@@ -35,7 +39,7 @@ class TextacyCorpusPipeline:
         self._tasks: List[ITask] = tasks or []
         self.document_index = document_index
         self.lang = lang
-        self.nlp: SpacyLanguage = textacy_utility.create_nlp(lang, disable=tuple(disables.split(',')))
+        self.nlp: SpacyLanguage = load_model_by_parts(lang=lang, disable=tuple(disables.split(',')))
         self.corpus: textacy.Corpus = None
         self.force = force
         self.suffix = '_preprocessed'
@@ -76,8 +80,46 @@ class CreateTask(ITask):
             reader_opts=pipeline.reader_opts,
         )
         extra_metadata = pipeline.document_index.to_dict('records')
-        pipeline.corpus = textacy_utility.create_corpus(stream, pipeline.nlp, extra_metadata=extra_metadata)
+        pipeline.corpus = self.create_corpus(stream, pipeline.nlp, extra_metadata=extra_metadata)
         return pipeline
+
+    def create_corpus(
+        self,
+        reader: ICorpusReader,
+        nlp: SpacyLanguage,
+        *,
+        extra_metadata: List[Dict[str, Any]] = None,
+        tick: Callable = noop,
+        n_chunk_threshold: int = 100000,
+    ) -> textacy.Corpus:
+
+        corpus: textacy.Corpus = textacy.Corpus(nlp)
+        counter = 0
+
+        metadata_mapping = {
+            x['filename']: x for x in lists_of_dicts_merged_by_key(reader.metadata, extra_metadata, key='filename')
+        }
+
+        for filename, text in reader:
+
+            metadata = metadata_mapping[filename]
+
+            if len(text) > n_chunk_threshold:
+                doc: SpacyDoc = textacy.spacier.utils.make_doc_from_text_chunks(
+                    text, lang=nlp, chunk_size=n_chunk_threshold
+                )
+                corpus.add_doc(doc)
+                doc._.meta = metadata
+            else:
+                corpus.add((text, metadata))
+
+            counter += 1
+            if counter % 100 == 0:
+                logger.info('%s documents added...', counter)
+
+            tick(counter)
+
+        return corpus
 
 
 class PreprocessTask(ITask):
@@ -102,19 +144,43 @@ class PreprocessTask(ITask):
         return pipeline
 
 
-class SaveTask(ITask):
+class SaveLoadMixIn:
+    def generate_corpus_filename(
+        self,
+        source_path: str,
+        language: str,
+        nlp_args=None,
+        preprocess_args=None,
+        compression: str = 'bz2',
+        extension: str = 'bin',
+    ) -> str:
+        nlp_args = nlp_args or {}
+        preprocess_args = preprocess_args or {}
+        disabled_pipes = nlp_args.get('disable', ())
+        suffix = '_{}_{}{}'.format(
+            language,
+            '_'.join([k for k in preprocess_args if preprocess_args[k]]),
+            '_disable({})'.format(','.join(disabled_pipes)) if len(disabled_pipes) > 0 else '',
+        )
+        filename = path_add_suffix(source_path, suffix, new_extension='.' + extension)
+        if (compression or '') != '':
+            filename += '.' + compression
+        return filename
+
+
+class SaveTask(SaveLoadMixIn, ITask):
     def execute(self, pipeline: TextacyCorpusPipeline):
         if pipeline.corpus is None:
             raise PipelineError("save when corpus is None")
-        textacy_corpus_path = textacy_utility.generate_corpus_filename(pipeline.filename, pipeline.lang)
+        textacy_corpus_path = self.generate_corpus_filename(pipeline.filename, pipeline.lang)
         if os.path.isfile(textacy_corpus_path) or pipeline.force:
             pipeline.corpus.save(textacy_corpus_path)
         return pipeline
 
 
-class LoadTask(ITask):
+class LoadTask(SaveLoadMixIn, ITask):
     def execute(self, pipeline: TextacyCorpusPipeline):
         if pipeline.corpus is None:
-            textacy_corpus_path = textacy_utility.generate_corpus_filename(pipeline.filename, pipeline.lang)
+            textacy_corpus_path = self.generate_corpus_filename(pipeline.filename, pipeline.lang)
             pipeline.corpus = textacy_utility.load_corpus(textacy_corpus_path, pipeline.nlp)
         return pipeline

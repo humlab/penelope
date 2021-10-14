@@ -22,7 +22,7 @@ import pandas as pd
 from memoization import cached
 from penelope.corpus import IVectorizedCorpus
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
-from textacy import vsm
+from textacy import representations
 
 logger = logging.getLogger("")
 logger.setLevel(logging.INFO)
@@ -137,12 +137,12 @@ def most_discriminating_terms(dtm, id2term, bool_array_grp1, *, max_n_terms=1000
     # get doc freqs for all terms in grp1 documents
     dtm_grp1 = dtm[bool_array_grp1, :]
     n_docs_grp1 = dtm_grp1.shape[0]  # Number of docs in R
-    doc_freqs_grp1 = vsm.get_doc_freqs(dtm_grp1)
+    doc_freqs_grp1 = representations.get_doc_freqs(dtm_grp1)
 
     # get doc freqs for all terms in grp2 documents
     dtm_grp2 = dtm[bool_array_grp2, :]
     n_docs_grp2 = dtm_grp2.shape[0]  # Number of docs in S
-    doc_freqs_grp2 = vsm.get_doc_freqs(dtm_grp2)
+    doc_freqs_grp2 = representations.get_doc_freqs(dtm_grp2)
 
     # get terms that occur in a larger fraction of grp1 docs than grp2 docs
     term_ids_grp1 = np.where(doc_freqs_grp1 / n_docs_grp1 > doc_freqs_grp2 / n_docs_grp2)[0]

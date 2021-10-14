@@ -26,7 +26,7 @@ def mary_had_a_little_lamb_corpus(en_nlp):
 def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: textacy.Corpus):
 
     terms = (
-        textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
+        textacy_utility.ExtractPipeline(corpus=mary_had_a_little_lamb_corpus, target='lemma')
         .pos(
             include_pos=(
                 'NOUN',

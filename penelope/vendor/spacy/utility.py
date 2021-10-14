@@ -2,17 +2,34 @@ from __future__ import annotations
 
 import os
 import pathlib
+import re
 import shutil
 import tarfile
 from os.path import join as jj
-from typing import Union
+from typing import Iterable, Union
 
 import requests
 import spacy
 from loguru import logger
+from spacy.cli import download
 from spacy.language import Language
+from spacy.tokens import Doc
 
 SPACY_DATA = os.environ.get("SPACY_DATA", "")
+
+
+def keep_hyphen_tokenizer(nlp: Language) -> spacy.tokenizer.Tokenizer:
+    infix_re = re.compile(r'''[.\,\?\:\;\...\‘\’\`\“\”\"\'~]''')
+    prefix_re = spacy.util.compile_prefix_regex(nlp.Defaults.prefixes)
+    suffix_re = spacy.util.compile_suffix_regex(nlp.Defaults.suffixes)
+
+    return spacy.tokenizer.Tokenizer(
+        nlp.vocab,
+        prefix_search=prefix_re.search,
+        suffix_search=suffix_re.search,
+        infix_finditer=infix_re.finditer,
+        token_match=None,
+    )
 
 
 def prepend_path(model: Union[Language, str], path: str) -> Union[Language, str]:
@@ -37,33 +54,76 @@ def prepend_spacy_path(model: Union[Language, str]) -> Union[Language, str]:
     return model
 
 
-def load_model(*, name_or_nlp: str | Language, disables: str, version: str, folder: str) -> Language:
-    if isinstance(name_or_nlp, str):
-        try:
-            name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
-            name_or_nlp = spacy.load(name, disable=disables)
-        except OSError:
-            model_path: str = download_model_by_name(model_name=name_or_nlp, version=version, folder=folder)
-            name_or_nlp = spacy.load(model_path, disable=disables)
-
-    return name_or_nlp
+def skip_none_values(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v}
 
 
-def download_model_by_name(
+def remove_whitespace_entities(doc: Doc) -> Doc:
+    doc.ents = [e for e in doc.ents if not e.text.isspace()]
+    return doc
+
+
+def load_model(
     *,
-    model_name: str = 'sm',
-    version: str = '2.3.1',
-    folder: str = '/tmp',
+    name_or_nlp: str | Language,
+    vocab: Union[spacy.Vocab, bool] = True,
+    disable: Iterable[str] = None,
+    exclude: Iterable[str] = None,
+    keep_hyphens: bool = False,
+    remove_whitespace_ents: bool = False,
+) -> Language:
+
+    if remove_whitespace_ents:
+        Language.factories['remove_whitespace_entities'] = lambda _nlp, **_cfg: remove_whitespace_entities
+
+    args: dict = skip_none_values(dict(vocab=vocab, disable=disable, exclude=exclude))
+
+    if isinstance(name_or_nlp, Language):
+        return name_or_nlp
+
+    if isinstance(name_or_nlp, str):
+
+        try:
+            nlp: Language = spacy.load(name_or_nlp, **args)
+        except Exception:
+            try:
+                name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
+                nlp: Language = spacy.load(name, **args)
+            except OSError:
+                model_path: str = download_model_by_name(model_name=name_or_nlp)
+                nlp: Language = spacy.load(model_path, **args)
+
+    if keep_hyphens:
+        nlp.tokenizer = keep_hyphen_tokenizer(nlp)
+
+    return nlp
+
+
+def load_model_by_parts(
+    *,
+    lang: str = 'en',
+    model_type: str = 'core',
+    model_source: str = 'web',
+    model_size: str = 'sm',
+    vocab: Union[spacy.Vocab, bool] = True,
+    disable: Iterable[str] = None,
+    exclude: Iterable[str] = None,
+    keep_hyphens: bool = False,
+    remove_whitespace_ents: bool = False,
 ) -> str:
-    lang, model_type, model_source, model_size = model_name.split('_')
-    return download_model(
-        lang=lang,
-        model_type=model_type,
-        model_source=model_source,
-        model_size=model_size,
-        version=version,
-        folder=folder,
+    model_name: str = f'{lang}_{model_type}_{model_source}_{model_size}'
+    return load_model(
+        name_or_nlp=model_name,
+        vocab=vocab,
+        disable=disable,
+        exclude=exclude,
+        keep_hyphens=keep_hyphens,
+        remove_whitespace_ents=remove_whitespace_ents,
     )
+
+
+def download_model_by_name(*, model_name: str) -> str:
+    download(model_name)
 
 
 def download_model(
@@ -78,7 +138,6 @@ def download_model(
 
     model_name: str = f'{lang}_{model_type}_{model_source}_{model_size}-{version}'
 
-    # https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.1/en_core_web_sm-2.3.1.tar.gz'
     if not os.path.isdir(jj(folder, model_name)):
 
         logger.info(f"Downloading spaCy model: {model_name}")

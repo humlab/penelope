@@ -31,5 +31,20 @@ class PipelineShortcutMixIn:
             ),
         )
 
-    def set_spacy_model(self: CorpusPipeline, language: Union[str, Language]) -> CorpusPipeline:
-        return self.add(tasks.SetSpacyModel(lang_or_nlp=language))
+    def set_spacy_model(
+        self: CorpusPipeline,
+        name_or_nlp: Union[str, Language],
+        disable: List[str] = None,
+        exclude: List[str] = None,
+        keep_hyphens: bool = False,
+        remove_whitespace_ents: bool = False,
+    ) -> CorpusPipeline:
+        return self.add(
+            tasks.SetSpacyModel(
+                name_or_nlp=name_or_nlp,
+                disable=disable,
+                exclude=exclude,
+                keep_hyphens=keep_hyphens,
+                remove_whitespace_ents=remove_whitespace_ents,
+            )
+        )

@@ -20,18 +20,24 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
         self.in_content_type = interfaces.ContentType.ANY
         self.out_content_type = interfaces.ContentType.ANY
 
-    lang_or_nlp: Union[str, Language] = None
-    disables: List[str] = None
-    version: str = "2.3.1"
-    folder: str = "/tmp"
+    name_or_nlp: Union[str, Language] = None
+
+    disable: List[str] = None
+    exclude: List[str] = None
+    keep_hyphens: bool = False
+    remove_whitespace_ents: bool = False
 
     def setup(self):
-        self.disables = DEFAULT_SPACY_DISABLES if self.disables is None else self.disables
-        self.lang_or_nlp: Language = load_model(
-            name_or_nlp=self.lang_or_nlp, disables=self.disables, version=self.version, folder=self.folder
+        self.disable = DEFAULT_SPACY_DISABLES if self.disable is None else self.disable
+        self.name_or_nlp: Language = load_model(
+            name_or_nlp=self.name_or_nlp,
+            disable=self.disable,
+            exclude=self.exclude,
+            keep_hyphens=self.keep_hyphens,
+            remove_whitespace_ents=self.remove_whitespace_ents,
         )
-        self.pipeline.put("spacy_nlp", self.lang_or_nlp)
-        self.pipeline.put("disables", self.disables)
+        self.pipeline.put("spacy_nlp", self.name_or_nlp)
+        self.pipeline.put("disables", self.disable)
         return self
 
 

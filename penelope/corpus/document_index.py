@@ -695,8 +695,17 @@ def overload_by_document_index_properties(
     if len(column_names) == 1:
         return df
 
-    overload_data = document_index[column_names].set_index('document_id')
+    overload_data: pd.DataFrame = document_index[column_names].set_index('document_id')
 
     df = df.merge(overload_data, how='inner', left_on='document_id', right_index=True)
 
     return df
+
+
+def count_documents_in_index_by_pivot(document_index: DocumentIndex, attribute: str) -> List[int]:
+    """Return a list of document counts per group defined by attribute
+    Assumes documents are sorted by attribute!
+    """
+    assert document_index[attribute].is_monotonic_increasing, 'Documents *MUST* be sorted by TIME-SLICE attribute!'
+    # TODO: Either sort documents (and corpus or term stream!) prior to this call - OR force sortorder by filename (add year to filename)
+    return list(document_index.groupby(attribute).size().values)

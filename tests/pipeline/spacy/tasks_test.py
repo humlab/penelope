@@ -48,7 +48,7 @@ def patch_spacy_pipeline(payload: PipelinePayload):
 
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model(test_payload):
-    task = SetSpacyModel(lang_or_nlp="en")
+    task = SetSpacyModel(name_or_nlp="en_core_web_sm")
     pipeline = patch_spacy_pipeline(test_payload)
     pipeline.add(task).setup()
     assert pipeline.get("spacy_nlp") is not None
@@ -57,7 +57,7 @@ def test_set_spacy_model(test_payload):
 @patch('spacy.load', patch_spacy_load)
 def test_to_spacy_doc(test_payload):
     task = ToSpacyDoc()
-    _ = patch_spacy_pipeline(test_payload).add(SetSpacyModel(lang_or_nlp="en")).add(task).setup()
+    _ = patch_spacy_pipeline(test_payload).add(SetSpacyModel(name_or_nlp="en_core_web_sm")).add(task).setup()
     payload = DocumentPayload(content_type=ContentType.TEXT, filename='hello.txt', content="Hello world!")
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.SPACYDOC
@@ -69,7 +69,7 @@ def test_spacy_doc_to_tagged_frame(looking_back, test_payload):
     prior = Mock(spec=ITask, outstream=lambda: [payload])
     task = SpacyDocToTaggedFrame(prior=prior, attributes=POS_ATTRIBUTES)
     task.register_token_counts = lambda p: p
-    _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
+    _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(name_or_nlp="en_core_web_sm"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME
 
@@ -83,6 +83,6 @@ def test_to_spacy_doc_to_tagged_frame(test_payload):
     prior = MagicMock(spec=ITask, outstream=lambda: [payload])
     task = ToSpacyDocToTaggedFrame(pipeline=pipeline, prior=prior, attributes=POS_ATTRIBUTES)
     task.register_token_counts = lambda p: p
-    _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(lang_or_nlp="en"), task]).setup()
+    _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(name_or_nlp="en_core_web_sm"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME

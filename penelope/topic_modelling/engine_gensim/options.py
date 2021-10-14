@@ -50,6 +50,7 @@ SUPPORTED_ENGINES = {
 
 EngineKey = Literal[list(SUPPORTED_ENGINES.keys())]
 
+
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
 def get_engine_options(
     *,
@@ -147,14 +148,14 @@ def get_engine_options(
         }
 
     if algorithm == 'DTM':
-        # Note, mandatory: 'time_slice': textacy_utility.count_documents_in_index_by_pivot(documents, year_column)
+        # Note, mandatory: 'time_slice': document_index.count_documents_in_index_by_pivot(documents, year_column)
         return {
             'engine': models.LdaSeqModel,
             'options': {
                 'corpus': corpus,
                 'num_topics': engine_args.get('n_topics', 0),
                 'id2word': id2word,
-                # 'time_slice': textacy_utility.count_documents_in_index_by_pivot(documents, year_column),
+                # 'time_slice': document_index.count_documents_in_index_by_pivot(documents, year_column),
                 # 'initialize': 'gensim/own/ldamodel',
                 # 'lda_model': model # if initialize='gensim'
                 # 'lda_inference_max_iter': kwargs.get('max_iter', 0),
