@@ -9,16 +9,6 @@ from penelope.vendor.spacy import prepend_spacy_path
 from spacy import attrs
 from spacy.language import Language as SpacyLanguage
 from textacy import Corpus as TextacyCorpus
-from textacy.representations.vectorizers import Vectorizer
-
-
-def generate_word_count_score(corpus: textacy.Corpus, normalize: str, count: int, weighting: str = 'count'):
-    wc = corpus.word_counts(normalize=normalize, weighting=weighting, as_strings=True)
-    d = {i: set([]) for i in range(1, count + 1)}
-    for k, v in wc.items():
-        if v <= count:
-            d[v].add(k)
-    return d
 
 
 def infrequent_words(
@@ -65,7 +55,7 @@ def get_most_frequent_words(
     include = lambda x: x.pos_ in include_pos
     token_counter = collections.Counter()
     for doc in corpus:
-        bow = doc_to_bow(doc, target=normalize, weighting=weighting, as_strings=True, include=include)
+        bow = _doc_to_bow(doc, target=normalize, weighting=weighting, as_strings=True, include=include)
         token_counter.update(bow)
         if normalize == 'lemma':
             lower_cased_word_counts = collections.Counter()
@@ -75,7 +65,7 @@ def get_most_frequent_words(
     return token_counter.most_common(n_top)
 
 
-def doc_to_bow(
+def _doc_to_bow(
     doc: spacy.tokens.Doc,
     target: str = 'lemma',
     weighting: str = 'count',
@@ -142,34 +132,16 @@ def term_substitutions(data_folder: str, filename: str = 'term_substitutions.txt
     return data
 
 
-def vectorize_terms(terms, vectorizer_args: Dict):
-    vectorizer = Vectorizer(**vectorizer_args)
-    doc_term_matrix = vectorizer.fit_transform(terms)
-    id2word = vectorizer.id_to_term
-    return doc_term_matrix, id2word
-
-
-def save_corpus(
-    corpus: textacy.Corpus, filename: str, lang=None, include_tensor: bool = False
-):  # pylint: disable=unused-argument
-    if not include_tensor:
-        for doc in corpus:
-            doc.tensor = None
-    corpus.save(filename)
+# def save_corpus(
+#     corpus: textacy.Corpus, filename: str, lang=None, include_tensor: bool = False
+# ):  # pylint: disable=unused-argument
+#     if not include_tensor:
+#         for doc in corpus:
+#             doc.tensor = None
+#     corpus.save(filename)
 
 
 def load_corpus(filename: str, lang: Union[str, SpacyLanguage]) -> textacy.Corpus:
     lang: Union[str, SpacyLanguage] = prepend_spacy_path(lang)
     corpus = textacy.Corpus.load(lang, filename)
     return corpus
-
-
-def merge_named_entities(corpus: textacy.Corpus):
-    logger.info('Working: Merging named entities...')
-    try:
-        for doc in corpus:
-            named_entities = textacy.extract.entities(doc)
-            textacy.spacier.utils.merge_spans(named_entities, doc)
-    except TypeError as ex:
-        logger.error(ex)
-        logger.info('NER merge failed')
