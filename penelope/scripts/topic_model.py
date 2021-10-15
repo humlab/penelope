@@ -5,7 +5,8 @@ import click
 import penelope.corpus as penelope
 import yaml
 from penelope import pipeline
-from penelope.utility.pandas_utils import PropertyValueMaskingOpts
+from penelope.corpus import TextTransformOpts, remove_hyphens
+from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -17,6 +18,8 @@ from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 @click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
 @click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
 @click.option('--corpus-filename', default=None, help='Corpus filename (overrides config)')
+@click.option('--fix-hyphenation/--no-fix-hyphenation', default=True, is_flag=True, help='Fix hyphens')
+@click.option('--fix-accents/--no-fix-accents', default=True, is_flag=True, help='Fix accents')
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
 @click.option('-x', '--pos-excludes', default='', help='POS tags to exclude e.g. "|MAD|MID|PAD|".', type=click.STRING)
@@ -46,6 +49,8 @@ def click_main(
     corpus_filename: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
+    fix_hyphenation: bool = True,
+    fix_accents: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
@@ -94,6 +99,8 @@ def _main(
     corpus_filename: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
+    fix_hyphenation: bool = True,
+    fix_accents: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
@@ -118,6 +125,23 @@ def _main(
     force_checkpoint: bool = False,
 ):
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
+
+    text_transform_opts: TextTransformOpts = TextTransformOpts()
+
+    text_transform_opts = TextTransformOpts()
+
+    if fix_accents:
+        text_transform_opts.fix_accents = True
+
+    if fix_hyphenation:
+        """Replace default dehyphen function"""
+        # fix_hyphens: Callable[[str], str] = (
+        #     remove_hyphens_fx(config.text_reader_opts.dehyphen_expr)
+        #     if config.text_reader_opts.dehyphen_expr is not None
+        #     else remove_hyphens
+        # )
+        text_transform_opts.fix_hyphenation = False
+        text_transform_opts.extra_transforms.append(remove_hyphens)
 
     engine_args = {
         k: v
@@ -163,6 +187,7 @@ def _main(
         corpus_filename=corpus_filename,
         corpus_folder=corpus_folder,
         target_folder=target_folder,
+        text_transform_opts=text_transform_opts,
         extract_opts=extract_opts,
         transform_opts=transform_opts,
         filter_opts=filter_opts,
@@ -182,6 +207,7 @@ def main(
     corpus_filename: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
+    text_transform_opts: TextTransformOpts = None,
     extract_opts: penelope.ExtractTaggedTokensOpts = None,
     transform_opts: penelope.TokensTransformOpts = None,
     filter_opts: PropertyValueMaskingOpts = None,
@@ -209,6 +235,7 @@ def main(
             corpus_filename=corpus_filename,
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
+            text_transform_opts=text_transform_opts,
         )
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,

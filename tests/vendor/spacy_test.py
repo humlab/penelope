@@ -438,3 +438,12 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     corpus = pipeline.value()
 
     assert isinstance(corpus, VectorizedCorpus)
+
+
+# def test_spacy3():
+#     ...
+#     tagged_frame_231 = pd.read_feather("/data/inidun/archive/courier_page_20210921.feather/1982_074798_024.feather")
+#     tagged_frame_313 = pd.read_feather("/data/inidun/courier_page_20210921.feather/1982_074798_024.feather")
+
+#     assert tagged_frame_231 is not None
+#     assert tagged_frame_313 is not None

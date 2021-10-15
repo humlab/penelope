@@ -33,12 +33,18 @@ def remove_empty_filter():
     return lambda t: (x for x in t if x != '')
 
 
-hyphen_regexp = re.compile(r'\b(\w+)-\s*\r?\n\s*(\w+)\b', re.UNICODE)
+DEFAULT_HYPHEN_REGEXP = r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b'
+COMPILED_HYPHEN_REGEXP = re.compile(DEFAULT_HYPHEN_REGEXP, re.UNICODE)
 
 
 def remove_hyphens(text: str) -> str:
-    result = re.sub(hyphen_regexp, r"\1\2\n", text)
+    result = re.sub(COMPILED_HYPHEN_REGEXP, r"\1\2\n", text)
     return result
+
+
+def remove_hyphens_fx(text: str, hyphen_regexp: str = DEFAULT_HYPHEN_REGEXP) -> Callable[[str], str]:
+    expr = re.compile(hyphen_regexp, re.UNICODE)
+    return lambda t: re.sub(expr, r"\1\2\n", text)
 
 
 def has_alpha_filter() -> TokensTransformerFunction:

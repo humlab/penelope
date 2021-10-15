@@ -31,6 +31,7 @@ class TextReaderOpts:
     quoting: Optional[int] = csv.QUOTE_NONE
     n_processes: int = 1
     n_chunksize: int = 2
+    dehyphen_expr: str = field(default=r"\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b")
 
     @property
     def props(self) -> dict:
@@ -44,6 +45,7 @@ class TextReaderOpts:
             quoting=self.quoting,
             n_processes=self.n_processes,
             n_chunksize=self.n_chunksize,
+            # dehyphen_expr=self.dehyphen_expr,
         )
 
     def copy(self, **kwargs) -> TextReaderOpts:
