@@ -447,3 +447,10 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
 
 #     assert tagged_frame_231 is not None
 #     assert tagged_frame_313 is not None
+
+
+# def test_load_model():
+
+#     nlp: Language = load_model(name_or_nlp="en_core_web_sm")
+
+#     assert nlp is not None

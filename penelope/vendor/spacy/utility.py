@@ -12,7 +12,7 @@ import requests
 import spacy
 from loguru import logger
 from spacy import attrs
-from spacy.cli import download
+from spacy.cli.download import download
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 
@@ -83,16 +83,17 @@ def load_model(
         return name_or_nlp
 
     if isinstance(name_or_nlp, str):
-
         try:
             nlp: Language = spacy.load(name_or_nlp, **args)
-        except Exception:
-            try:
-                name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
-                nlp: Language = spacy.load(name, **args)
-            except OSError:
-                model_path: str = download_model_by_name(model_name=name_or_nlp)
-                nlp: Language = spacy.load(model_path, **args)
+        except OSError:
+            download(name_or_nlp)
+            nlp: Language = spacy.load(name_or_nlp, **args)
+
+            # try:
+            #     name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
+            #     nlp: Language = spacy.load(name, **args)
+            # except OSError:
+            #     ...
 
     if keep_hyphens:
         nlp.tokenizer = keep_hyphen_tokenizer(nlp)
@@ -123,7 +124,7 @@ def load_model_by_parts(
     )
 
 
-def download_model_by_name(*, model_name: str) -> str:
+def download_model_by_name(*, model_name: str):
     download(model_name)
 
 
