@@ -41,7 +41,7 @@ def test_filter_tokens_by_attribute_values(looking_back: Doc):  # pylint: disabl
 def assert_test_xyz_to_tagged_frame(tagged_frame: pd.DataFrame):
     words = ['Looking', 'back', 'Looking', 'back', 'to', 'see', 'if', 'someone', 'is', 'looking', 'back', 'at', 'me']
     pos = ['VERB', 'ADV', 'VERB', 'ADV', 'PART', 'VERB', 'SCONJ', 'PRON', 'AUX', 'VERB', 'ADV', 'ADP', 'PRON']
-    lemma = ['look', 'back', 'look', 'back', 'to', 'see', 'if', 'someone', 'be', 'look', 'back', 'at', '-PRON-']
+    lemma = ['look', 'back', 'look', 'back', 'to', 'see', 'if', 'someone', 'be', 'look', 'back', 'at', 'I']
     assert tagged_frame.text.tolist() == words
     assert tagged_frame.pos_.tolist() == pos
     assert tagged_frame.lemma_.tolist() == lemma

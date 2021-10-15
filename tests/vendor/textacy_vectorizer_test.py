@@ -38,11 +38,13 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy.Corpus):  # pylint: d
         ]
     )
 
+    opts: textacy_utility.ExtractPipeline.ExtractOpts = textacy_utility.ExtractPipeline.ExtractOpts(
+        include_pos=('NOUN', 'PROPN'), filter_nums=True, filter_punct=True
+    )
     terms = (
-        textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
-        .pos(include_pos=('NOUN', 'PROPN'))
+        textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma', extract_opts=opts)
         .remove_stopwords(extra_stopwords=[])
-        .ingest(filter_nums=True, filter_punct=True)
+        # .ingest(filter_nums=True, filter_punct=True)
         .min_character_filter(2)
         .transform(transformer=lambda x: x.lower())
         .process()

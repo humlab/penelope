@@ -278,12 +278,6 @@ def test_spacy_pipeline_load_text_resolves():
     assert all(pipeline.payload.document_index.filename == [x[0] for x in source])
 
 
-# def  test_download():
-
-#     path = download_model(lang='en', version='2.3.1', folder='./tests/output')
-#     assert path is not None
-
-
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
@@ -348,8 +342,8 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
         ['*', 'planet'],
         ['volcano', 'erupt', 'year'],
         ['eruption', 'occur', 'year', 'region', 'call'],
-        ['*', '*', 'eruption'],
-        ['volcanos', 'erupt', 'surface', '*', 'interval'],
+        ['know', '*', 'eruption'],
+        ['volcano', 'erupt', 'surface', '*', 'interval'],
     ]
 
     assert set(list(pipeline.payload.document_index.columns)) == set(

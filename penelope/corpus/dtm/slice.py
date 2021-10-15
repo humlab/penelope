@@ -4,6 +4,7 @@ from typing import List, Mapping, Sequence, Tuple, Union
 
 import numpy as np
 import textacy
+import textacy.representations
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
@@ -96,7 +97,7 @@ class SliceMixIn:
             [description], by default None
         """
 
-        bag_term_matrix, token2id = textacy.vsm.matrix_utils.filter_terms_by_df(
+        bag_term_matrix, token2id = textacy.representations.matrix_utils.filter_terms_by_df(
             self.bag_term_matrix, self.token2id, max_df=max_df, min_df=min_df, max_n_terms=max_n_terms
         )
         overridden_term_frequency = (

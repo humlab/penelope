@@ -1,54 +1,79 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from dataclasses import asdict, dataclass
+from typing import Any, Callable, Collection, Iterable, List, Literal, Mapping, Optional, Sequence, Union
 
+import itertoolz
 import penelope.utility as utility
-from penelope.corpus import CorpusVectorizer, DocumentIndex, TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from spacy.tokens import Doc
-from textacy.spacier.doc_extensions import to_terms_list
+from loguru import logger
+from penelope.corpus import TokensTransformOpts
+from spacy.tokens import Doc, Token
+from textacy.extract.basics import words
 
-from .utils import frequent_document_words, infrequent_words, load_term_substitutions
+from .utils import frequent_document_words, infrequent_words
 
-logger = utility.getLogger('corpus_text_analysis')
-
-# FIXME: PoS-replace (dummy marker) not fully implemented
+# FIXME: PoS-padding (dummy marker) not fully implemented
 
 
-def chunks(lst, n):
-    '''Returns list l in n-sized chunks'''
-    if (n or 0) == 0:
-        yield lst
+def to_terms_list(
+    doc: Doc,
+    *,
+    filter_stops: bool = True,
+    filter_punct: bool = True,
+    filter_nums: bool = False,
+    include_pos: Optional[str | Collection[str]] = None,
+    exclude_pos: Optional[str | Collection[str]] = None,
+    min_freq: int = 1,
+    target: Literal['lemma', 'lower', 'text'] = 'lemma',
+) -> Iterable[str]:
+
+    tokens: Iterable[Token] = words(
+        doc,
+        filter_stops=filter_stops,
+        filter_punct=filter_punct,
+        filter_nums=filter_nums,
+        include_pos=include_pos,
+        exclude_pos=exclude_pos,
+        min_freq=0,
+    )
+
+    if target == 'lemma':
+        terms: Iterable[str] = (t.lemma_ for t in tokens)
+    elif target == 'lower':
+        terms: Iterable[str] = (t.lower_ for t in tokens)
     else:
-        for i in range(0, len(lst), n):
-            yield lst[i : i + n]
+        terms: Iterable[str] = (t.text for t in tokens)
+
+    if min_freq > 1:
+        terms = list(tokens)
+        frequency: dict = itertoolz.frequencies(terms)
+        terms = (t for t in terms if frequency[t] >= min_freq)
+
+    return terms
 
 
 class ExtractPipeline:
-    def __init__(self, corpus: Iterable[Doc], target: Union[str, Callable] = 'lemma', tasks: List[Any] = None):
+    @dataclass
+    class ExtractOpts:
+        filter_stops: bool = True
+        filter_punct: bool = True
+        filter_nums: bool = False
+        include_pos: Optional[str | Collection[str]] = None
+        exclude_pos: Optional[str | Collection[str]] = None
+        min_freq: int = 1
 
-        self.corpus = corpus
+    def __init__(
+        self,
+        corpus: Iterable[Doc],
+        target: Literal['lemma', 'lower', 'text'] = 'lemma',
+        tasks: List[Any] = None,
+        extract_opts: ExtractOpts = None,
+    ):
+        self.corpus: Iterable[Doc] = corpus
+        self.target: Union[str, Callable] = target
         self.tasks = tasks or []
-        self.to_terms_list_args = dict(
-            ngrams=1,
-            entities=None,
-            normalize=target,
-            as_strings=True,
-        )
-        self.to_terms_list_kwargs = dict(
-            filter_stops=False,  # (bool)
-            filter_punct=True,  # (bool)
-            filter_nums=False,  # (bool)
-            # POS types
-            include_pos=None,  # (str or Set[str])
-            exclude_pos=None,  # (str or Set[str])
-            # entity types
-            include_types=None,  # (str or Set[str])
-            exclude_types=None,  # (str or Set[str]
-            min_freq=1,  # (int)
-            drop_determiners=True,  # (bool)
-        )
+        self.extract_opts: ExtractPipeline.ExtractOpts = extract_opts or ExtractPipeline.ExtractOpts()
 
     def add(self, task) -> ExtractPipeline:
         self.tasks.append(task)
@@ -64,7 +89,7 @@ class ExtractPipeline:
 
         for doc in self.corpus:
 
-            terms = to_terms_list(doc, **self.to_terms_list_args, **self.to_terms_list_kwargs)
+            terms = to_terms_list(doc, **asdict(self.extract_opts))
 
             for task in self.tasks:
                 if hasattr(task, 'apply'):
@@ -80,25 +105,6 @@ class ExtractPipeline:
     def remove_stopwords(self, extra_stopwords=None) -> ExtractPipeline:
         return self.add(StopwordFilter(extra_stopwords=extra_stopwords))
 
-    def ngram(self, ngram: Union[int, Tuple[int]]) -> ExtractPipeline:
-        return self.add(NGram(ngram=ngram))
-
-    def ner(
-        self,
-        include_types: Optional[Union[str, Set[str]]] = None,
-        exclude_types: Optional[Union[str, Set[str]]] = None,
-        drop_determiners: bool = True,
-        min_freq: int = 1,
-    ) -> ExtractPipeline:
-        return self.add(
-            NamedEntityTask(
-                include_types=include_types,
-                exclude_types=exclude_types,
-                drop_determiners=drop_determiners,
-                min_freq=min_freq,
-            )
-        )
-
     def predicate(self, predicate: Callable[[str], bool]) -> ExtractPipeline:
         return self.add(PredicateFilter(predicate=predicate))
 
@@ -106,7 +112,6 @@ class ExtractPipeline:
         return self.add(TransformTask(transformer=transformer))
 
     def substitute(self, subst_map: Mapping[str, str] = None, filename: str = None) -> ExtractPipeline:
-
         return self.add(SubstitutionTask(subst_map=subst_map, filename=filename))
 
     def min_character_filter(self, min_length: int = 1) -> ExtractPipeline:
@@ -121,10 +126,9 @@ class ExtractPipeline:
     def pos(
         self,
         include_pos: Sequence[str] = None,
-        replace_pos: Sequence[str] = None,
         exclude_pos: Sequence[str] = None,
     ) -> ExtractPipeline:
-        return self.add(PoSFilter(include_pos=include_pos, replace_pos=replace_pos, exclude_pos=exclude_pos))
+        return self.add(PoSFilter(include_pos=include_pos, exclude_pos=exclude_pos))
 
     def ingest_transform_opts(self, transform_opts: TokensTransformOpts) -> ExtractPipeline:
 
@@ -146,27 +150,16 @@ class ExtractPipeline:
         if transform_opts.to_upper:
             self.add(TransformTask(transformer=str.upper))
 
-        # only_alphabetic: bool = False
-        # only_any_alphanumeric: bool = False
-        # remove_accents: bool = False
-        # keep_symbols: bool = True
-
         return self
 
-    def ingest(self, **options):
+    def ingest(self, **options) -> ExtractPipeline:
         for k, v in options.items():
-            if k in self.to_terms_list_args:
-                self.to_terms_list_args[k] = v
-            elif self.to_terms_list_kwargs:
-                self.to_terms_list_kwargs[k] = v
+            if hasattr(self.extract_opts, k):
+                setattr(self.extract_opts, k, v)
             else:
-                logger.warning("ignoring unknown option %s", k)
+                raise ValueError(f"deprecated option {k}")
+                # logger.warning("ignoring unknown option %s", k)
         return self
-
-    @staticmethod
-    def build(corpus: Iterable[Doc], target: str, **options):
-        pipeline = ExtractPipeline(corpus, target).ingest(**options)
-        return pipeline
 
 
 class StopwordFilter:
@@ -174,7 +167,7 @@ class StopwordFilter:
         self.filter_words = extra_stopwords
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-        pipeline.to_terms_list_kwargs['filter_stops'] = True
+        pipeline.extract_opts.filter_stops = True
         return pipeline
 
     def filter(self, terms: Iterable[str]) -> Iterable[str]:
@@ -182,63 +175,18 @@ class StopwordFilter:
 
 
 class PoSFilter:
-    def __init__(
-        self, include_pos: Sequence[str] = None, replace_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None
-    ):
+    def __init__(self, include_pos: Sequence[str] = None, exclude_pos: Sequence[str] = None):
         self.include_pos = include_pos
-        self.replace_pos = replace_pos
         self.exclude_pos = exclude_pos
 
         universal_tags = utility.PoS_TAGS_SCHEMES.Universal.tags
 
         assert all(x in universal_tags for x in (self.include_pos or []))
         assert all(x in universal_tags for x in (self.exclude_pos or []))
-        assert all(x in universal_tags for x in (self.replace_pos or []))
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-        pipeline.to_terms_list_kwargs['include_pos'] = self.include_pos
-        pipeline.to_terms_list_kwargs['replace_pos'] = self.replace_pos
-        pipeline.to_terms_list_kwargs['exclude_pos'] = self.exclude_pos
-        return pipeline
-
-
-class NGram:
-    def __init__(self, ngram=1):
-        self.ngram = ngram
-
-    def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-        pipeline.to_terms_list_kwargs['ngram'] = self.ngram
-        return pipeline
-
-
-class NamedEntityTask:
-    def __init__(
-        self,
-        include_types: Optional[Union[str, Set[str]]] = None,
-        exclude_types: Optional[Union[str, Set[str]]] = None,
-        drop_determiners: bool = True,
-        min_freq: int = 1,
-    ):
-        self.include_types = include_types
-        self.exclude_types = exclude_types
-        self.drop_determiners = drop_determiners
-        self.min_freq = min_freq
-
-    def setup(self, pipeline: ExtractPipeline):
-        pipeline.to_terms_list_args['entities'] = True
-        pipeline.to_terms_list_kwargs['include_types'] = self.include_types
-        pipeline.to_terms_list_kwargs['exclude_types'] = self.exclude_types
-        pipeline.to_terms_list_kwargs['drop_determiners'] = self.drop_determiners
-        pipeline.to_terms_list_kwargs['min_freq'] = self.min_freq
-        return pipeline
-
-
-class ExtractOptions:
-    def __init__(self, **options):
-        self.options = options
-
-    def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-        pipeline.ingest(**self.options)
+        pipeline.extract_opts.include_pos = self.include_pos
+        pipeline.extract_opts.exclude_pos = self.exclude_pos
         return pipeline
 
 
@@ -274,7 +222,7 @@ class SubstitutionTask:
                 raise FileNotFoundError(f"terms substitions file {self.filename} not found")
 
             self.subst_map.update(
-                load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
+                utility.load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
             )
 
         return pipeline
@@ -301,7 +249,7 @@ class InfrequentWordsFilter(StopwordFilter):
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
 
-        words = infrequent_words(
+        _words = infrequent_words(
             pipeline.corpus,
             normalize=self.target,
             weighting='count',
@@ -309,8 +257,8 @@ class InfrequentWordsFilter(StopwordFilter):
             as_strings=True,
         )
 
-        self.filter_words = words
-        logger.info('Ignoring {} low-frequent words!'.format(len(words)))
+        self.filter_words = _words
+        logger.info('Ignoring {} low-frequent words!'.format(len(_words)))
         return pipeline
 
 
@@ -326,7 +274,7 @@ class FrequentWordsFilter(StopwordFilter):
             logger.info("max document frequency filter ignored (value >= 100 not allowed")
             return pipeline
 
-        words = frequent_document_words(
+        _words = frequent_document_words(
             pipeline.corpus,
             normalize=self.target,
             weighting='freq',
@@ -334,61 +282,6 @@ class FrequentWordsFilter(StopwordFilter):
             as_strings=True,
         )
 
-        self.filter_words = words
-        logger.info('Ignoring {} high-frequent words!'.format(len(words)))
+        self.filter_words = _words
+        logger.info('Ignoring {} high-frequent words!'.format(len(_words)))
         return pipeline
-
-
-def extract_document_tokens(
-    *,
-    spacy_docs: Iterable[Doc],
-    document_index: DocumentIndex,
-    extract_tokens_opts: ExtractTaggedTokensOpts = None,
-    transform_opts: TokensTransformOpts = None,
-    extract_args: Dict[str, Any] = None,
-) -> Iterable[Tuple[str, Iterable[str]]]:
-
-    target = "lemma" if extract_tokens_opts.lemmatize else "text"
-    tokens_stream = (
-        ExtractPipeline.build(corpus=spacy_docs, target=target)
-        .pos(
-            include_pos=extract_tokens_opts.pos_includes,
-            replace_pos=extract_tokens_opts.replace_pos,
-            exclude_pos=extract_tokens_opts.pos_excludes,
-        )
-        .ingest_transform_opts(transform_opts)
-        .ingest(**extract_args)
-        .process()
-    )
-    document_tokens = zip(document_index.filename, tokens_stream)
-
-    return document_tokens
-
-
-def vectorize_textacy_corpus(
-    *,
-    spacy_docs: Iterable[Doc],
-    document_index: DocumentIndex,
-    extract_tokens_opts: ExtractTaggedTokensOpts = None,
-    transform_opts: TokensTransformOpts = None,
-    extract_args: Dict[str, Any] = None,
-    vectorizer_args=None,
-):
-    document_tokens = extract_document_tokens(
-        spacy_docs=spacy_docs,
-        document_index=document_index,
-        extract_tokens_opts=extract_tokens_opts,
-        transform_opts=transform_opts,
-        extract_args=extract_args,
-    )
-
-    v_corpus = CorpusVectorizer().fit_transform(
-        corpus=document_tokens,
-        document_index=document_index,
-        verbose=True,
-        **{
-            **vectorizer_args,
-        },
-    )
-
-    return v_corpus

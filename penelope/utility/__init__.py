@@ -24,6 +24,7 @@ from .file_utility import (
     find_folder,
     find_parent_folder,
     find_parent_folder_with_child,
+    load_term_substitutions,
     pickle_compressed_to_file,
     pickle_to_file,
     probe_extension,

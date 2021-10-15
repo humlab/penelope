@@ -16,11 +16,11 @@ class ITextTransform:
 
 
 class TEXT_TRANSFORMS:
-    fix_hyphenation = preprocessing.normalize_hyphenated_words
-    fix_unicode = preprocessing.normalize_unicode
-    fix_whitespaces = preprocessing.normalize_whitespace
-    fix_accents = preprocessing.remove_accents
-    fix_currency_symbols = preprocessing.replace_currency_symbols
+    fix_hyphenation = preprocessing.normalize.hyphenated_words
+    fix_unicode = preprocessing.normalize.unicode
+    fix_whitespaces = preprocessing.normalize.whitespace
+    fix_accents = preprocessing.remove.accents
+    fix_currency_symbols = preprocessing.replace.currency_symbols
     fix_ftfy_text = ftfy.fix_text
 
 

@@ -70,8 +70,6 @@ class MalletTopicModel(wrappers.LdaMallet):
             str(self.random_seed),
         )
 
-        # NOTE "--keep-sequence-bigrams" / "--use-ngrams true" poorer results + runs out of memory
-
         logger.info("training MALLET LDA with %s", cmd)
         check_output(args=cmd, shell=True)
         self.word_topics = self.load_word_topics()
