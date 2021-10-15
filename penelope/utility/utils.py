@@ -423,6 +423,7 @@ def extract_counter_items_within_threshold(counter: Mapping, low: Number, high: 
 
 
 def chunks(lst: List[T], n: int) -> List[T]:
+    '''Returns list l in n-sized chunks'''
 
     if (n or 0) == 0:
         yield lst

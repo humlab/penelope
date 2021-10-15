@@ -6,24 +6,14 @@ from typing import Any, Callable, Collection, Iterable, List, Literal, Mapping, 
 
 import itertoolz
 import penelope.utility as utility
+from loguru import logger
 from penelope.corpus import TokensTransformOpts
 from spacy.tokens import Doc, Token
 from textacy.extract.basics import words
 
-from .utils import frequent_document_words, infrequent_words, load_term_substitutions
-
-logger = utility.getLogger('corpus_text_analysis')
+from .utils import frequent_document_words, infrequent_words
 
 # FIXME: PoS-padding (dummy marker) not fully implemented
-
-
-def chunks(lst, n):
-    '''Returns list l in n-sized chunks'''
-    if (n or 0) == 0:
-        yield lst
-    else:
-        for i in range(0, len(lst), n):
-            yield lst[i : i + n]
 
 
 def to_terms_list(
@@ -232,7 +222,7 @@ class SubstitutionTask:
                 raise FileNotFoundError(f"terms substitions file {self.filename} not found")
 
             self.subst_map.update(
-                load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
+                utility.load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
             )
 
         return pipeline

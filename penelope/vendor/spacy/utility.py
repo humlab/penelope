@@ -6,14 +6,15 @@ import re
 import shutil
 import tarfile
 from os.path import join as jj
-from typing import Iterable, Union
+from typing import Callable, Iterable, Literal, Mapping, Union
 
 import requests
 import spacy
 from loguru import logger
+from spacy import attrs
 from spacy.cli import download
 from spacy.language import Language
-from spacy.tokens import Doc
+from spacy.tokens import Doc, Token
 
 SPACY_DATA = os.environ.get("SPACY_DATA", "")
 
@@ -166,3 +167,35 @@ def download_model(
         os.remove(filename)
 
     return jj(folder, model_name)
+
+
+def token_count_by(
+    *,
+    doc: Doc,
+    target: Literal['lemma', 'lower', 'orth', 'text'] = 'lemma',
+    weighting: Literal['count', 'freq'] = 'count',
+    include: Callable[[Token], bool] = None,
+    n_min_count: int = 2,
+    as_strings: bool = False,
+) -> Mapping[str | int, int | float]:
+    """Return frequency count for `target` in `doc`."""
+    target_keys = {'lemma': attrs.LEMMA, 'lower': attrs.LOWER, 'orth': attrs.ORTH, 'text': attrs.TEXT}
+
+    default_exclude: Callable[[Token], bool] = lambda x: x.is_stop or x.is_punct or x.is_space
+    exclude: Callable[[Token], bool] = (
+        default_exclude if include is None else lambda x: x.is_stop or x.is_punct or x.is_space or not include(x)
+    )
+
+    target_weights: Mapping[str | int, int | float] = doc.count_by(target_keys[target], exclude=exclude)
+
+    if weighting == 'freq':
+        n_tokens: int = len(doc)
+        target_weights = {id_: weight / n_tokens for id_, weight in target_weights.items()}
+
+    store = doc.vocab.strings
+    if as_strings:
+        bow = {store[word_id]: count for word_id, count in target_weights.items() if count >= n_min_count}
+    else:
+        bow = target_weights
+
+    return bow

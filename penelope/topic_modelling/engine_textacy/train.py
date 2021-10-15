@@ -1,7 +1,6 @@
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict
 
 import gensim
-import scipy.sparse as sp
 import textacy
 from penelope.utility import deprecated
 from textacy.representations.vectorizers import Vectorizer

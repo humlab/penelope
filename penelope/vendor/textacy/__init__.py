@@ -7,15 +7,7 @@ from .extract import (
     MinCharactersFilter,
     PredicateFilter,
     StopwordFilter,
-    chunks,
 )
 from .mdw_modified import compute_most_discriminating_terms
 from .pipeline import CreateTask, ITask, LoadTask, PipelineError, PreprocessTask, SaveTask, TextacyCorpusPipeline
-from .utils import (
-    frequent_document_words,
-    get_most_frequent_words,
-    infrequent_words,
-    load_corpus,
-    load_term_substitutions,
-    term_substitutions,
-)
+from .utils import frequent_document_words, get_most_frequent_words, infrequent_words, load_corpus

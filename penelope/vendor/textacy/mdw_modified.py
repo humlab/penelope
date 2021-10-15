@@ -15,10 +15,11 @@
 
 import logging
 import operator
-from typing import Sequence
+from typing import List, Sequence
 
 import numpy as np
 import pandas as pd
+import scipy.sparse as sp
 from memoization import cached
 from penelope.corpus import IVectorizedCorpus
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
@@ -76,11 +77,11 @@ def compute_most_discriminating_terms(
     if len(set(group1_indices).intersection(set(group2_indices))) > 0:
         return None
 
-    indices = group1_indices.append(group2_indices)
+    indices: List[int] = group1_indices.append(group2_indices)
 
-    in_group1 = [True] * group1_indices.size + [False] * group2_indices.size
+    in_group1: List[bool] = [True] * group1_indices.size + [False] * group2_indices.size
 
-    dtm = corpus.data[indices, :]
+    dtm: sp.csr_matrix = corpus.data[indices, :]
     terms = most_discriminating_terms(dtm, corpus.id2token, in_group1, top_n_terms=top_n_terms, max_n_terms=max_n_terms)
     min_terms = min(len(terms[0]), len(terms[1]))
     df = pd.DataFrame({'Group 1': terms[0][:min_terms], 'Group 2': terms[1][:min_terms]})
@@ -88,9 +89,11 @@ def compute_most_discriminating_terms(
     return df
 
 
-# This modified version takes a document-term-matrix and a vocubulary as arguments instead of a terms list
-def most_discriminating_terms(dtm, id2term, bool_array_grp1, *, max_n_terms=1000, top_n_terms=25):
+def most_discriminating_terms(dtm: sp.csr_matrix, id2term, bool_array_grp1, *, max_n_terms=1000, top_n_terms=25):
     """
+    NOTE: This modified version takes a document-term-matrix and a vocubulary as arguments instead of a terms list
+    It also uses memoization to cache function call to ain improved performance.
+
     Given a collection of documents assigned to 1 of 2 exclusive groups, get the
     ``top_n_terms`` most discriminating terms for group1-and-not-group2 and
     group2-and-not-group1.

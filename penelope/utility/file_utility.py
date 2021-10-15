@@ -7,7 +7,7 @@ import pathlib
 import pickle
 from os.path import basename, exists, isdir, isfile, join
 from pathlib import Path
-from typing import Any, AnyStr, Dict, Tuple
+from typing import Any, AnyStr, Dict, Mapping, Tuple
 
 import pandas as pd
 
@@ -168,3 +168,32 @@ def read_textfile2(filename: str, as_binary: bool = False) -> Tuple[str, AnyStr]
     """Reads text in `filename` and return a tuple filename and text"""
     data = read_textfile(filename, as_binary=as_binary)
     return basename(filename), data
+
+
+def load_term_substitutions(
+    filepath: str, default_term: str = '_masked_', delim: str = ';', vocab=None
+) -> Mapping[str, str]:
+    """Load term substitution map from file. Return dict."""
+    substitutions: Mapping[str, str] = {}
+
+    if not os.path.isfile(filepath):
+        return {}
+
+    with open(filepath) as f:
+        substitutions = {
+            x[0].strip(): x[1].strip()
+            for x in (tuple(line.lower().split(delim)) + (default_term,) for line in f.readlines())
+            if x[0].strip() != ''
+        }
+
+    if vocab is not None:
+
+        extras = {x.norm_: substitutions[x.lower_] for x in vocab if x.lower_ in substitutions}
+        substitutions.update(extras)
+
+        extras = {x.lower_: substitutions[x.norm_] for x in vocab if x.norm_ in substitutions}
+        substitutions.update(extras)
+
+    substitutions = {k: v for k, v in substitutions.items() if k != v}
+
+    return substitutions
