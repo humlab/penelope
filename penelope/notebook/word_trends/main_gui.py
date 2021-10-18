@@ -2,9 +2,9 @@ from typing import Union
 
 import ipywidgets as widgets
 import penelope.pipeline as pipeline
-import penelope.workflows as workflows
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
+from penelope.workflows import document_term_matrix as workflow
 
 from .. import dtm as dtm_gui
 from .. import interface, utility
@@ -65,8 +65,7 @@ def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.Corpus
     if args.dry_run:
         print(args.command_line("vectorize_corpus"))
         return None
-
-    corpus: VectorizedCorpus = workflows.document_term_matrix.compute(args=args, corpus_config=corpus_config)
+    corpus: VectorizedCorpus = workflow.compute(args=args, corpus_config=corpus_config)
     return corpus
 
 
