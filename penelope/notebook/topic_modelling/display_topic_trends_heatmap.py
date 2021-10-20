@@ -1,9 +1,12 @@
 import warnings
+from typing import List, Sequence
 
 import bokeh
 import bokeh.plotting
 import bokeh.transform
+import pandas as pd
 import penelope.utility as utility
+from bokeh.models import ColumnDataSource, BasicTicker, LinearColorMapper, ColorBar, PrintfTickFormatter, HoverTool
 from IPython.display import display
 
 from .. import ipyaggrid_utility, widgets_utils
@@ -29,19 +32,19 @@ def _setup_glyph_coloring(_, color_high=0.3):
         '#006d2c',
         '#00441b',
     ]
-    mapper = bokeh.models.LinearColorMapper(palette=colors, low=0.0, high=color_high)
+    mapper = LinearColorMapper(palette=colors, low=0.0, high=color_high)
     color_transform = bokeh.transform.transform('weight', mapper)
-    color_bar = bokeh.models.ColorBar(
+    color_bar = ColorBar(
         color_mapper=mapper,
         location=(0, 0),
-        ticker=bokeh.models.BasicTicker(desired_num_ticks=len(colors)),
-        formatter=bokeh.models.PrintfTickFormatter(format=" %5.2f"),
+        ticker=BasicTicker(desired_num_ticks=len(colors)),
+        formatter=PrintfTickFormatter(format=" %5.2f"),
     )
     return color_transform, color_bar
 
 
-def compute_int_range_categories(values):
-    categories = values.unique()
+def compute_int_range_categories(values: pd.Series) -> List[str]:
+    categories: Sequence[int] = values.unique()
     if all(map(utility.isint, categories)):
         # values = [ int(v) for v in values]
         categories = [str(x) for x in sorted([int(y) for y in categories])]
@@ -53,29 +56,27 @@ HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_l
 
 
 def plot_topic_relevance_by_year(
-    df, xs, ys, flip_axis, titles, text_id, **figopts
+    df: pd.DataFrame,
+    xs: Sequence[int],
+    ys: Sequence[int],
+    flip_axis: bool,
+    titles: pd.DataFrame,
+    text_id: str,
+    **figopts,
 ):  # pylint: disable=too-many-arguments, too-many-locals
 
-    line_height = 7
-    if flip_axis is True:
+    line_height: int = 7
+    if flip_axis:
         xs, ys = ys, xs
         line_height = 10
 
-    # import holoviews as hv
-    # from holoviews import opts
-
-    # heatmap = hv.HeatMap((df[xs], df[ys], np.random.randn(100), np.random.randn(100)), vdims=['z', 'z2']).redim.range(z=(-2, 2))
-    # heatmap.opts(opts.HeatMap(tools=['hover'], colorbar=True, width=325, toolbar='above'))
-
-    # return heatmap
-
-    x_range = compute_int_range_categories(df[xs])
-    y_range = compute_int_range_categories(df[ys])
+    x_range: List[str] = compute_int_range_categories(df[xs])
+    y_range: List[str] = compute_int_range_categories(df[ys])
 
     color_high = max(df.weight.max(), 0.3)
     color_transform, color_bar = _setup_glyph_coloring(df, color_high=color_high)
 
-    source = bokeh.models.ColumnDataSource(df)
+    source: ColumnDataSource = ColumnDataSource(df)
 
     if x_range is not None:
         figopts['x_range'] = x_range
@@ -101,9 +102,15 @@ def plot_topic_relevance_by_year(
     p.add_layout(color_bar, 'right')
 
     p.add_tools(
-        bokeh.models.HoverTool(
+        HoverTool(
             tooltips=None,
-            callback=widgets_utils.glyph_hover_callback2(source, 'topic_id', titles.index, titles, text_id),
+            callback=widgets_utils.glyph_hover_callback2(
+                glyph_source=source,
+                glyph_id='topic_id',
+                text_ids=titles.index,
+                text=titles,
+                element_id=text_id,
+            ),
             renderers=[cr],
         )
     )
