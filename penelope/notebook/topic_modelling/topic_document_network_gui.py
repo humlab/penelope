@@ -31,7 +31,7 @@ class PlotMode(IntEnum):
 
 
 def plot_document_topic_network(
-    network: nx.Graph, layout_data, scale: float = 1.0, titles=None, highlight_topic_ids=None, text_id: str = "nx_id1"
+    network: nx.Graph, layout_data, scale: float = 1.0, titles: pd.DataFrame=None, highlight_topic_ids=None, text_id: str = "nx_id1"
 ):  # pylint: disable=unused-argument, too-many-locals
 
     tools: str = "pan,wheel_zoom,box_zoom,reset,hover,save"
@@ -69,7 +69,11 @@ def plot_document_topic_network(
     r_topics = p.circle(x="x", y="y", size=25, source=topic_source, color=color_specifier, alpha=1.00)
 
     callback = widgets_utils.glyph_hover_callback2(
-        topic_source, "node_id", text_ids=titles.index, text=titles, element_id=text_id
+        glyph_source=topic_source,
+        glyph_id="node_id",
+        text_ids=titles.index,
+        text=titles,
+        element_id=text_id
     )
 
     p.add_tools(bokeh.models.HoverTool(renderers=[r_topics], tooltips=None, callback=callback))
@@ -109,7 +113,7 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
 
         layout_data = (network_plot.layout_algorithms[opts.layout_algorithm])(network, **args)
 
-        titles = topic_modelling.get_topic_titles(opts.inferred_topics.topic_token_weights)
+        titles: pd.DataFrame = topic_modelling.get_topic_titles(opts.inferred_topics.topic_token_weights)
 
         p = plot_document_topic_network(
             network,

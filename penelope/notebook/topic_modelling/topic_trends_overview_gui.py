@@ -40,7 +40,7 @@ def display_gui(state: TopicModelContainer):
         with gui.output:
 
             weights = topic_modelling.compute_topic_yearly_means(state.inferred_topics.document_topic_weights).fillna(0)
-
+        
             display_heatmap(
                 weights,
                 titles,

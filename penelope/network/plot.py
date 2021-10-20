@@ -111,8 +111,8 @@ def plot(  # pylint: disable=W0102
     edges = {k: list(edges[k]) for k in edges}
     nodes = {k: list(nodes[k]) for k in nodes}
 
-    edges_source = bokeh.models.ColumnDataSource(edges)
-    nodes_source = bokeh.models.ColumnDataSource(nodes)
+    edges_source: ColumnDataSource = ColumnDataSource(edges)
+    nodes_source: ColumnDataSource = ColumnDataSource(nodes)
 
     node_opts = utility.extend(DFLT_NODE_OPTS, node_opts or {})
     line_opts = utility.extend(DFLT_EDGE_OPTS, line_opts or {})
@@ -160,8 +160,8 @@ def plot(  # pylint: disable=W0102
 
 def plot_network(nodes, edges, plot_opts, fig_opts=None):
 
-    edges_source = bokeh.models.ColumnDataSource(edges)
-    nodes_source = bokeh.models.ColumnDataSource(nodes)
+    edges_source = ColumnDataSource(edges)
+    nodes_source = ColumnDataSource(nodes)
 
     node_opts = utility.extend(DFLT_NODE_OPTS, plot_opts.get('node_opts', {}))
     line_opts = utility.extend(DFLT_EDGE_OPTS, plot_opts.get('line_opts', {}))

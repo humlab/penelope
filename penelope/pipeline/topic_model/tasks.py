@@ -139,7 +139,6 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         inferred_model: tm.InferredModel = self.train(train_corpus)
 
-        # FIXME: MALLET PREDICTION!
         _ = self.predict(
             inferred_model=inferred_model,
             corpus=train_corpus.corpus,
