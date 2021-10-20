@@ -2,6 +2,7 @@ import functools
 import os
 import shutil
 import uuid
+from io import StringIO
 
 import pandas as pd
 import penelope.topic_modelling as topic_modelling
@@ -10,7 +11,7 @@ from penelope.scripts.topic_model_legacy import main as run_model
 from penelope.topic_modelling import InferredModel, InferredTopicsData
 from penelope.topic_modelling.engine_gensim import SUPPORTED_ENGINES
 from penelope.topic_modelling.interfaces import ITopicModelEngine
-from penelope.topic_modelling.utility import get_engine_by_model_type
+from penelope.topic_modelling.utility import compute_topic_yearly_means, get_engine_by_model_type
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
@@ -304,3 +305,49 @@ def test_run_cli(method):
     assert inferred_topic_data is not None
 
     shutil.rmtree(target_folder)
+
+
+def test_compute_topic_yearly_means():
+    """Returs yearly mean topic weight based on data in `document_topic_weight`"""
+
+    data_csv_str = """	document_id	topic_id	weight	year
+0	0	0	0.41	2019
+1	0	1	0.14	2019
+2	0	2	0.21	2019
+3	0	3	0.23	2019
+4	1	0	0.20	2019
+5	1	1	0.28	2019
+6	1	2	0.26	2019
+7	1	3	0.23	2019
+8	2	0	0.26	2019
+9	2	1	0.23	2019
+10	2	2	0.22	2019
+11	2	3	0.28	2019
+12	3	0	0.21	2020
+13	3	1	0.27	2020
+14	3	2	0.20	2020
+15	3	3	0.31	2020
+16	4	0	0.24	2020
+17	4	1	0.38	2020
+18	4	2	0.19	2020
+19	4	3	0.17	2020"""
+
+    document_topic_weights: pd.DataFrame = pd.read_csv(StringIO(data_csv_str), sep='\t', index_col=0)
+
+    topic_yerly_means: pd.DataFrame = compute_topic_yearly_means(document_topic_weights)
+
+    assert (
+        document_topic_weights.groupby(['year', 'topic_id'])['weight'].mean()
+        == topic_yerly_means.groupby(['year', 'topic_id']).sum().false_mean
+    ).all()
+
+    assert topic_yerly_means is not None
+
+    topic_yerly_means: pd.DataFrame = compute_topic_yearly_means(document_topic_weights, relevence_mean_threshold=0.20)
+
+    assert topic_yerly_means is not None
+
+    assert (
+        document_topic_weights[document_topic_weights.weight >= 0.20].groupby(['year', 'topic_id'])['weight'].mean()
+        == topic_yerly_means.groupby(['year', 'topic_id']).sum().false_mean
+    ).all()

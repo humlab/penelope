@@ -62,7 +62,9 @@ def find_models(path: str):
 #         )
 
 
-def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFrame:
+def compute_topic_yearly_means(
+    document_topic_weight: pd.DataFrame, relevence_mean_threshold: float = None
+) -> pd.DataFrame:
     """Returs yearly mean topic weight based on data in `document_topic_weight`"""
 
     cross_iter = itertools.product(
@@ -75,8 +77,23 @@ def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFr
     dfs = dfs.join(
         document_topic_weight.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]), how='left'
     ).fillna(0)
+
     dfs.columns = ['max_weight', 'sum_weight', 'false_mean', 'n_topic_docs']
+
     dfs['n_topic_docs'] = dfs.n_topic_docs.astype(np.uint32)
+
+    if relevence_mean_threshold is not None:
+
+        dfs.drop(columns='false_mean', inplace=True)
+
+        df_mean_relevance = (
+            document_topic_weight[document_topic_weight.weight >= relevence_mean_threshold]
+            .groupby(['year', 'topic_id'])['weight']
+            .agg([np.mean])
+        )
+        df_mean_relevance.columns = ['false_mean']
+
+        dfs = dfs.join(df_mean_relevance, how='left').fillna(0)
 
     doc_counts = document_topic_weight.groupby('year').document_id.nunique().rename('n_total_docs')
 
@@ -98,7 +115,7 @@ def compute_topic_yearly_means(document_topic_weight: pd.DataFrame) -> pd.DataFr
 
 
 def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
-    """Returns a DataFrame containing a string of `n_tokens` most probable words per topic"""
+    """Returns a DataFrame containing a string of the `n_tokens` most probable words per topic"""
 
     weights: pd.DataFrame = (
         topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
