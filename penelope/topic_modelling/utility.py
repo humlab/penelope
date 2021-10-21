@@ -114,20 +114,20 @@ def compute_topic_yearly_means(
 #     return df
 
 
-def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
-    """Returns a DataFrame containing a string of the `n_tokens` most probable words per topic"""
+def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.Series:
+    """Create string of `n_tokens` most probable words per topic."""
 
     weights: pd.DataFrame = (
         topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
     )
 
-    df = (
+    topic_titles: pd.DataFrame = (
         weights.sort_values('weight', ascending=False)
         .groupby('topic_id')
         .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
     )
 
-    return df
+    return topic_titles
 
 
 def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 100) -> str:
