@@ -4,6 +4,8 @@ from typing import List, Sequence
 import bokeh
 import bokeh.plotting
 import bokeh.transform
+from bokeh.models import CustomJS
+
 import pandas as pd
 import penelope.utility as utility
 from bokeh.models import ColumnDataSource, BasicTicker, LinearColorMapper, ColorBar, PrintfTickFormatter, HoverTool
@@ -43,12 +45,14 @@ def _setup_glyph_coloring(_, color_high=0.3):
     return color_transform, color_bar
 
 
-def compute_int_range_categories(values: pd.Series) -> List[str]:
+def to_categories(values: pd.Series) -> List[str]:
+    """Make unique and sorted string categories. """
+
     categories: Sequence[int] = values.unique()
-    if all(map(utility.isint, categories)):
-        # values = [ int(v) for v in values]
-        categories = [str(x) for x in sorted([int(y) for y in categories])]
-        return categories
+
+    if all(utility.isint(x) for x in categories):
+        return [str(x) for x in sorted([int(y) for y in categories])]
+
     return sorted(list(categories))
 
 
@@ -56,12 +60,12 @@ HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_l
 
 
 def plot_topic_relevance_by_year(
-    df: pd.DataFrame,
+    weights: pd.DataFrame,
     xs: Sequence[int],
     ys: Sequence[int],
     flip_axis: bool,
-    titles: pd.DataFrame,
-    text_id: str,
+    titles: pd.Series,
+    element_id: str,
     **figopts,
 ):  # pylint: disable=too-many-arguments, too-many-locals
 
@@ -70,13 +74,13 @@ def plot_topic_relevance_by_year(
         xs, ys = ys, xs
         line_height = 10
 
-    x_range: List[str] = compute_int_range_categories(df[xs])
-    y_range: List[str] = compute_int_range_categories(df[ys])
+    x_range: List[str] = to_categories(weights[xs])
+    y_range: List[str] = to_categories(weights[ys])
 
-    color_high = max(df.weight.max(), 0.3)
-    color_transform, color_bar = _setup_glyph_coloring(df, color_high=color_high)
+    color_high = max(weights.weight.max(), 0.3)
+    color_transform, color_bar = _setup_glyph_coloring(weights, color_high=color_high)
 
-    source: ColumnDataSource = ColumnDataSource(df)
+    source: ColumnDataSource = ColumnDataSource(weights)
 
     if x_range is not None:
         figopts['x_range'] = x_range
@@ -87,9 +91,17 @@ def plot_topic_relevance_by_year(
 
     p = bokeh.plotting.figure(**figopts)
 
-    args = dict(x=xs, y=ys, source=source, alpha=1.0, hover_color='red')
-
-    cr = p.rect(width=1, height=1, line_color=None, fill_color=color_transform, **args)
+    cr = p.rect(
+        x=xs,
+        y=ys,
+        source=source,
+        alpha=1.0,
+        hover_color='red',
+        width=1,
+        height=1,
+        line_color=None,
+        fill_color=color_transform,
+    )
 
     p.x_range.range_padding = 0
     p.ygrid.grid_line_color = None
@@ -101,30 +113,30 @@ def plot_topic_relevance_by_year(
     p.xaxis.major_label_orientation = 1.0
     p.add_layout(color_bar, 'right')
 
-    p.add_tools(
-        HoverTool(
-            tooltips=None,
-            callback=widgets_utils.glyph_hover_callback2(
-                glyph_source=source,
-                glyph_id='topic_id',
-                text_ids=titles.index,
-                text=titles,
-                element_id=text_id,
-            ),
-            renderers=[cr],
-        )
+    text_source: ColumnDataSource = ColumnDataSource(dict(text_id=titles.index.tolist(), text=titles.tolist()))
+
+    code: str = widgets_utils.display_text_on_hover_js_code(
+        element_id=element_id, id_name='topic_id', text_name='text', glyph_name='glyph', glyph_data='glyph_data'
     )
+    callback: CustomJS = CustomJS(args={'glyph': cr.data_source, 'glyph_data': text_source}, code=code)
+
+    p.add_tools(HoverTool(tooltips=None, callback=callback, renderers=[cr]))
     return p
 
 
 def display_heatmap(
-    weights, titles, key='max', flip_axis=False, glyph='Circle', aggregate=None, output_format=None
-):  # pylint: disable=unused-argument
+    weights: pd.DataFrame,
+    titles: pd.DataFrame,
+    key: str = 'max',  # pylint: disable=unused-argument
+    flip_axis: bool = False,
+    glyph: str = 'Circle',  # pylint: disable=unused-argument
+    aggregate: str = None,
+    output_format: str = None,
+):
+    ''' Display aggregate value grouped by year  '''
     try:
 
-        ''' Display aggregate value grouped by year  '''
         weights['weight'] = weights[aggregate]
-
         weights['year'] = weights.year.astype(str)
         weights['topic_id'] = weights.topic_id.astype(str)
 
@@ -140,7 +152,7 @@ def display_heatmap(
                 ys='topic_id',
                 flip_axis=flip_axis,
                 titles=titles,
-                text_id='topic_relevance',
+                element_id='topic_relevance',
                 **HEATMAP_FIGOPTS,
             )
 

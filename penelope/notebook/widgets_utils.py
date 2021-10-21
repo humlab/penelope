@@ -1,11 +1,8 @@
-# from __future__ import print_function
-# import collections
 from typing import Any, List, Sequence
 
 import ipywidgets as widgets
 import numpy as np
-
-from bokeh.models import CustomJS, ColumnDataSource
+from bokeh.models import ColumnDataSource, CustomJS
 
 AGGREGATES = {'mean': np.mean, 'sum': np.sum, 'max': np.max, 'std': np.std}
 
@@ -40,47 +37,36 @@ MATPLOTLIB_PLOT_STYLES = [
 ]
 
 
-def glyph_hover_js_code(
+def display_text_on_hover_js_code(
     element_id: str, id_name: str, text_name: str, glyph_name: str = 'glyph', glyph_data: str = 'glyph_data'
 ) -> str:
-    return (
-        """
-        var indices = cb_data.index['1d'].indices;
+    return f"""
+        const indices = cb_data.index.indices;
         var current_id = -1;
-        if (indices.length > 0) {
+        if (indices.length > 0) {{
             var index = indices[0];
-            var id = parseInt("""
-        + glyph_name
-        + """.data."""
-        + id_name
-        + """[index]);
-            if (id !== current_id) {
+            var id = parseInt({glyph_name}.data.{id_name}[index]);
+            if (id !== current_id) {{
                 current_id = id;
-                var text = """
-        + glyph_data
-        + """.data."""
-        + text_name
-        + """[id];
-                $('."""
-        + element_id
-        + """').html('ID ' + id.toString() + ': ' + text);
-                #document.getElementsByClassName('"""
-        + element_id
-        + """')[0].innerText = 'ID ' + id.toString() + ': ' + text;
-            }
-    }
+                const text = {glyph_data}.data.{text_name}[id];
+                document.getElementsByClassName('{element_id}')[0].innerText = 'ID ' + id.toString() + ': ' + text;
+            }}
+        }}
     """
-    )
 
 
-def glyph_hover_callback2(glyph_source: ColumnDataSource, glyph_id: str, text_ids: List[str], text: Sequence[str], element_id: str):
+def glyph_hover_callback2(
+    glyph_source: ColumnDataSource, glyph_id: str, text_ids: List[str], text: Sequence[str], element_id: str
+):
     """Glyph hover callback that displays the text associated with glyph's id in text element `text_id`"""
     text_source: ColumnDataSource = ColumnDataSource(dict(text_id=text_ids, text=text))
     return glyph_hover_callback(glyph_source, glyph_id, text_source, element_id)
 
 
-def glyph_hover_callback(glyph_source: ColumnDataSource, glyph_id: str, text_source: ColumnDataSource, element_id: str) -> CustomJS:
-    code: str = glyph_hover_js_code(element_id, glyph_id, 'text', glyph_name='glyph', glyph_data='glyph_data')
+def glyph_hover_callback(
+    glyph_source: ColumnDataSource, glyph_id: str, text_source: ColumnDataSource, element_id: str
+) -> CustomJS:
+    code: str = display_text_on_hover_js_code(element_id, glyph_id, 'text', glyph_name='glyph', glyph_data='glyph_data')
     callback: CustomJS = CustomJS(args={'glyph': glyph_source, 'glyph_data': text_source}, code=code)
     return callback
 
