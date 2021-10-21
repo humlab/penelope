@@ -52,6 +52,7 @@ toml = "^0.10.2"
 tqdm = "^4.62.3"
 wordcloud = "^1.8.0"
 itertoolz = "^0.5"
+ipysheet = "^0.5.0"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
