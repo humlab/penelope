@@ -239,16 +239,10 @@ class TrainingCorpus:
 class InferredModel:
     """A container for the trained topic model """
 
-    def __init__(
-        self,
-        topic_model: Any,
-        train_corpus: TrainingCorpus,
-        method: str,
-        **options: Dict[str, Any],
-    ):
+    def __init__(self, topic_model: Any, train_corpus: TrainingCorpus, **options: Dict[str, Any]):
         self._topic_model = topic_model
         self._train_corpus = train_corpus
-        self.method = method
+        self.method = options.get('method')
         self.options = options
 
     @property

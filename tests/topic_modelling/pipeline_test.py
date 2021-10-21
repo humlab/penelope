@@ -99,8 +99,10 @@ def test_predict_topics(method: str):
 
     assert payload is not None
 
-    output_models = find_models('./tests/output')
-    assert any(m['name'] == target_name for m in output_models)
+    model_infos = find_models('./tests/output')
+    assert any(m['name'] == target_name for m in model_infos)
+    model_info = next(m for m in model_infos if m['name'] == target_name)
+    assert 'method' in model_info['options']
 
 
 @pytest.mark.long_running

@@ -206,7 +206,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         self.ensure_target_path()
 
-        inferred_model: tm.InferredModel = tm.InferredModel.load(folder=self.model_subfolder, lazy=True)
+        trained_model: tm.InferredModel = tm.InferredModel.load(folder=self.model_subfolder, lazy=True)
         topics_data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=self.model_subfolder)
 
         corpus: VectorizedCorpus = self.instream_to_vectorized_corpus(token2id=topics_data.term2id)
@@ -214,7 +214,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
         self.pipeline.payload.token2id = topics_data.token2id
 
         _ = self.predict(
-            inferred_model=inferred_model,
+            inferred_model=trained_model,
             corpus=corpus,
             id2token=corpus.id2token,
             document_index=corpus.document_index,
@@ -229,7 +229,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         write_json(
             path=jj(self.target_subfolder, "model_options.json"),
-            data=inferred_model.options,
+            data=trained_model.options,
             default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>",
         )
 
