@@ -31,8 +31,13 @@ class PlotMode(IntEnum):
 
 
 def plot_document_topic_network(
-    network: nx.Graph, layout_data, scale: float = 1.0, titles: pd.DataFrame=None, highlight_topic_ids=None, text_id: str = "nx_id1"
-):  # pylint: disable=unused-argument, too-many-locals
+    network: nx.Graph,
+    layout_data,
+    scale: float = 1.0, # pylint: disable=unused-argument, too-many-locals
+    titles: pd.DataFrame = None,
+    highlight_topic_ids=None,
+    text_id: str = "nx_id1",
+): 
 
     tools: str = "pan,wheel_zoom,box_zoom,reset,hover,save"
 
@@ -69,11 +74,7 @@ def plot_document_topic_network(
     r_topics = p.circle(x="x", y="y", size=25, source=topic_source, color=color_specifier, alpha=1.00)
 
     callback = widgets_utils.glyph_hover_callback2(
-        glyph_source=topic_source,
-        glyph_id="node_id",
-        text_ids=titles.index,
-        text=titles,
-        element_id=text_id
+        glyph_source=topic_source, glyph_id="node_id", text_ids=titles.index, text=titles, element_id=text_id
     )
 
     p.add_tools(bokeh.models.HoverTool(renderers=[r_topics], tooltips=None, callback=callback))

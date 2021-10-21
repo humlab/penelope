@@ -4,11 +4,17 @@ from typing import List, Sequence
 import bokeh
 import bokeh.plotting
 import bokeh.transform
-from bokeh.models import CustomJS
-
 import pandas as pd
 import penelope.utility as utility
-from bokeh.models import ColumnDataSource, BasicTicker, LinearColorMapper, ColorBar, PrintfTickFormatter, HoverTool
+from bokeh.models import (
+    BasicTicker,
+    ColorBar,
+    ColumnDataSource,
+    CustomJS,
+    HoverTool,
+    LinearColorMapper,
+    PrintfTickFormatter,
+)
 from IPython.display import display
 
 from .. import ipyaggrid_utility, widgets_utils
