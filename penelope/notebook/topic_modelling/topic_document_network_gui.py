@@ -33,11 +33,11 @@ class PlotMode(IntEnum):
 def plot_document_topic_network(
     network: nx.Graph,
     layout_data,
-    scale: float = 1.0, # pylint: disable=unused-argument, too-many-locals
+    scale: float = 1.0,  # pylint: disable=unused-argument, too-many-locals
     titles: pd.DataFrame = None,
     highlight_topic_ids=None,
     text_id: str = "nx_id1",
-): 
+):
 
     tools: str = "pan,wheel_zoom,box_zoom,reset,hover,save"
 
