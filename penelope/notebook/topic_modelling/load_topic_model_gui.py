@@ -4,7 +4,7 @@ from os.path import join as jj
 from typing import Any, Callable, Dict, List, Optional
 
 from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
 
 from ..co_occurrence.main_gui import MainGUI
@@ -14,8 +14,6 @@ from .model_container import TopicModelContainer
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
-
-logger = utility.get_logger()
 
 
 def load_model(
