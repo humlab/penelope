@@ -10,8 +10,8 @@ import pytest
 from penelope.scripts.topic_model_legacy import main as run_model
 from penelope.topic_modelling import InferredModel, InferredTopicsData
 from penelope.topic_modelling.engine_gensim import SUPPORTED_ENGINES
-from penelope.topic_modelling.interfaces import ITopicModelEngine
-from penelope.topic_modelling.utility import compute_topic_yearly_means, get_engine_by_model_type
+from penelope.topic_modelling.engines import ITopicModelEngine, get_engine_by_model_type
+from penelope.topic_modelling.utility import compute_topic_yearly_means
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 

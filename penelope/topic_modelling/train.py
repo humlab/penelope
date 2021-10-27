@@ -3,8 +3,8 @@ from typing import Any, Mapping, Optional
 
 from penelope.corpus import DocumentIndexHelper
 
+from .engines import get_engine_cls_by_method_name
 from .interfaces import InferredModel, TrainingCorpus
-from .utility import get_engine_cls_by_method_name
 
 
 def train_model(

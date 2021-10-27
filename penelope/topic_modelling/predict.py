@@ -9,8 +9,8 @@ from gensim.matutils import Sparse2Corpus
 from loguru import logger
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus
 
-from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData, ITopicModelEngine
-from .utility import get_engine_by_model_type
+from .engines import ITopicModelEngine, get_engine_by_model_type
+from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData
 
 # pylint: disable=unused-argument
 
