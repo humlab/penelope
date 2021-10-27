@@ -1,12 +1,12 @@
-import types
 import warnings
 
 import bokeh
 import bokeh.plotting
-import ipywidgets as widgets
 import numpy as np
+import pandas as pd
 import penelope.topic_modelling as topic_modelling
 from IPython.display import display
+from ipywidgets import HTML, Dropdown, HBox, IntProgress, IntSlider, VBox, fixed, interactive  # type: ignore
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -14,7 +14,7 @@ from .model_container import TopicModelContainer
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-def plot_topic_word_distribution(tokens, **args):
+def plot_topic_word_distribution(tokens: pd.DataFrame, **args):
 
     source = bokeh.models.ColumnDataSource(tokens)
 
@@ -95,46 +95,59 @@ def display_topic_tokens(
     tick(0)
 
 
-def display_gui(state: TopicModelContainer):
+TEXT_ID: str = 'wc01'
+OUTPUT_OPTIONS = ['Chart', 'Table']
 
-    text_id = 'wc01'
-    output_options = ['Chart', 'Table']
 
-    gui = types.SimpleNamespace(
-        n_topics=state.num_topics,
-        text_id=text_id,
-        text=widgets_utils.text_widget(text_id),
-        topic_id=widgets.IntSlider(description='Topic ID', min=0, max=state.num_topics - 1, step=1, value=0),
-        n_words=widgets.IntSlider(description='#Words', min=5, max=500, step=1, value=75),
-        output_format=widgets.Dropdown(
-            description='Format', options=output_options, value=output_options[0], layout=widgets.Layout(width="200px")
-        ),
-        progress=widgets.IntProgress(min=0, max=4, step=1, value=0, layout=widgets.Layout(width="95%")),
-        prev_topic_id=None,
-        next_topic_id=None,
-    )
+class TopicWordDistributionGUI:
+    def __init__(self, state: TopicModelContainer):
 
-    gui.prev_topic_id = widgets_utils.button_with_previous_callback(gui, 'topic_id', state.num_topics)
-    gui.next_topic_id = widgets_utils.button_with_next_callback(gui, 'topic_id', state.num_topics)
+        self.state: TopicModelContainer = state
+        self.n_topics: int = state.num_topics
+        self.text_id: str = TEXT_ID
+        self.text: HTML = widgets_utils.text_widget(TEXT_ID)
+        self.topic_id: IntSlider = IntSlider(description='Topic ID', min=0, max=state.num_topics - 1, step=1, value=0)
+        self.n_words: IntSlider = IntSlider(description='#Words', min=5, max=500, step=1, value=75)
+        self.output_format: Dropdown = Dropdown(
+            description='Format', options=OUTPUT_OPTIONS, value=OUTPUT_OPTIONS[0], layout=dict(width="200px")
+        )
+        self.progress: IntProgress = IntProgress(min=0, max=4, step=1, value=0, layout=dict(width="95%"))
+        self.prev_topic_id = None
+        self.next_topic_id = None
 
-    iw = widgets.interactive(
-        display_topic_tokens,
-        state=widgets.fixed(state),
-        topic_id=gui.topic_id,
-        n_words=gui.n_words,
-        output_format=gui.output_format,
-        gui=widgets.fixed(gui),
-    )
+        self.iw = None
 
-    display(
-        widgets.VBox(
+    def setup(self) -> "TopicWordDistributionGUI":
+
+        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.state.num_topics)
+        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.state.num_topics)
+
+        self.iw = interactive(
+            display_topic_tokens,
+            state=fixed(self.state),
+            topic_id=self.topic_id,
+            n_words=self.n_words,
+            output_format=self.output_format,
+            self=fixed(self),
+        )
+
+        return self
+
+    def layout(self) -> VBox:
+        return VBox(
             [
-                gui.text,
-                widgets.HBox([gui.prev_topic_id, gui.next_topic_id, gui.topic_id, gui.n_words, gui.output_format]),
-                gui.progress,
-                iw.children[-1],
+                self.text,
+                HBox([self.prev_topic_id, self.next_topic_id, self.topic_id, self.n_words, self.output_format]),
+                self.progress,
+                self.iw.children[-1],
             ]
         )
-    )
 
-    iw.update()
+
+def display_gui(state: TopicModelContainer):
+
+    gui = TopicWordDistributionGUI(state).setup()
+
+    display(gui.layout())
+
+    gui.iw.update()

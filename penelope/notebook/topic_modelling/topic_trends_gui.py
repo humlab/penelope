@@ -1,22 +1,20 @@
-import warnings
 from typing import Optional
 
-import penelope.topic_modelling as topic_modelling
+import pandas as pd
+import penelope.topic_modelling as tm
 from IPython.display import display
-from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, ToggleButton, VBox
+from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, ToggleButton, VBox  # type: ignore
 
 from .. import widgets_utils
 from .display_topic_trends import display_topic_trends
 from .model_container import TopicModelContainer
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-
 TEXT_ID = 'topic_share_plot'
 
 
-class GUI:  # pylint: disable=too-many-instance-attributes
+class TopicTrendsGUI:
     def __init__(self):
+        super().__init__()
 
         self.state: TopicModelContainer = None
 
@@ -26,7 +24,7 @@ class GUI:  # pylint: disable=too-many-instance-attributes
 
         self.aggregate = Dropdown(
             description='Aggregate',
-            options=[(x['description'], x['key']) for x in topic_modelling.YEARLY_MEAN_COMPUTE_METHODS],
+            options=[(x['description'], x['key']) for x in tm.YEARLY_MEAN_COMPUTE_METHODS],
             value='true_mean',
             layout=dict(width="200px"),
         )
@@ -44,20 +42,23 @@ class GUI:  # pylint: disable=too-many-instance-attributes
         self.prev_topic_id: Optional[Button] = None
         self.next_topic_id: Optional[Button] = None
 
+        self.extra_placeholder: VBox = HBox()
+
     def layout(self):
         return VBox(
-            children=[
+            [
                 HBox(
-                    children=[
+                    [
                         VBox(
-                            children=[
-                                HBox(children=[self.prev_topic_id, self.next_topic_id]),
+                            [
+                                HBox([self.prev_topic_id, self.next_topic_id]),
                                 self.progress,
                             ]
                         ),
-                        VBox(children=[self.topic_id]),
-                        VBox(children=[self.aggregate, self.output_format]),
-                        VBox(children=[self.normalize]),
+                        VBox([self.topic_id]),
+                        self.extra_placeholder,
+                        VBox([self.aggregate, self.output_format]),
+                        VBox([self.normalize]),
                     ]
                 ),
                 self.text,
@@ -65,7 +66,7 @@ class GUI:  # pylint: disable=too-many-instance-attributes
             ]
         )
 
-    def setup(self, state: TopicModelContainer) -> "GUI":
+    def setup(self, state: TopicModelContainer) -> "TopicTrendsGUI":
 
         self.state = state
         self.topic_id.max = state.num_topics - 1
@@ -85,9 +86,13 @@ class GUI:  # pylint: disable=too-many-instance-attributes
             self.topic_id.value = 0
             self.topic_id.max = self.state.num_topics - 1
 
-        tokens = topic_modelling.get_topic_title(self.state.inferred_topics.topic_token_weights, topic_id, n_tokens=200)
+        tokens = tm.get_topic_title(self.state.inferred_topics.topic_token_weights, topic_id, n_tokens=200)
 
         self.text.value = 'ID {}: {}'.format(topic_id, tokens)
+
+    def compute_weights(self) -> pd.DataFrame:
+        weights = tm.compute_topic_yearly_means(self.state.inferred_topics.document_topic_weights)
+        return weights
 
     def update_handler(self, *_):
 
@@ -97,7 +102,7 @@ class GUI:  # pylint: disable=too-many-instance-attributes
 
             self.on_topic_change_update_gui(self.topic_id.value)
 
-            weights = topic_modelling.compute_topic_yearly_means(self.state.inferred_topics.document_topic_weights)
+            weights = self.compute_weights()
 
             display_topic_trends(
                 weight_over_time=weights,
@@ -111,7 +116,7 @@ class GUI:  # pylint: disable=too-many-instance-attributes
 
 def display_gui(state: TopicModelContainer):
 
-    gui = GUI().setup(state)
+    gui = TopicTrendsGUI().setup(state)
 
     display(gui.layout())
 

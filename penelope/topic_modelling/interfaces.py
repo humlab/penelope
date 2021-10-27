@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import abc
 import json
 import os
 import pickle
@@ -8,17 +7,25 @@ import sys
 import types
 from dataclasses import dataclass
 from os.path import join as jj
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Type
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
-import numpy as np
 import pandas as pd
+import scipy.sparse as sp
 from gensim.matutils import Sparse2Corpus
 from gensim.models.tfidfmodel import TfidfModel
 from penelope import utility
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus, load_document_index
 from penelope.vendor.gensim import terms_to_sparse_corpus
-from scipy.sparse import coo_matrix, csr_matrix, issparse
 from tqdm.auto import tqdm
+
+from .utility import (
+    DocumentTopicWeights,
+    compute_topic_proportions,
+    get_topic_title,
+    get_topic_titles,
+    get_topic_top_tokens,
+    top_topic_token_weights,
+)
 
 CORPUS_OPTIONS_FILENAME: str = "train_corpus_options.json"
 VECTORIZER_ARGS_FILENAME: str = "train_vectorizer_args.json"
@@ -26,89 +33,6 @@ VECTORIZER_ARGS_FILENAME: str = "train_vectorizer_args.json"
 DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 
 DocumentTopicsWeightsIter = Iterable[Tuple[int, Iterable[Tuple[int, float]]]]
-
-
-class ITopicModelEngine(abc.ABC):
-    def __init__(self, model: Any):
-        self.model = model
-
-    @staticmethod
-    @abc.abstractmethod
-    def is_supported(model: Any) -> bool:
-        ...
-
-    @staticmethod
-    @abc.abstractmethod
-    def supported_models() -> Sequence[Type]:
-        ...
-
-    @abc.abstractmethod
-    def n_topics(self) -> int:
-        ...
-
-    @abc.abstractmethod
-    def topics_tokens(self, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[float, str]]:
-        ...
-
-    @abc.abstractmethod
-    def topic_tokens(self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[str, float]]:
-        ...
-
-    @staticmethod
-    @abc.abstractmethod
-    def train(
-        train_corpus: "TrainingCorpus", method: str, engine_args: Dict[str, Any], **kwargs: Dict[str, Any]
-    ) -> "InferredModel":
-        ...
-
-    @abc.abstractmethod
-    def predict(self, corpus: Any, minimum_probability: float = 0.0, **kwargs) -> Iterable:
-        ...
-
-    def get_topic_token_weights(
-        self, vocabulary: Any, n_tokens: int = 200, minimum_probability: float = 0.000001
-    ) -> pd.DataFrame:
-        """Compile document topic weights. Return DataFrame."""
-
-        id2token: dict = Token2Id.any_to_id2token(vocabulary)
-        topic_data = self.topics_tokens(n_tokens=n_tokens, id2term=id2token)
-
-        topic_token_weights: pd.DataFrame = pd.DataFrame(
-            [
-                (topic_id, token, weight)
-                for topic_id, tokens in topic_data
-                for token, weight in tokens
-                if weight > minimum_probability
-            ],
-            columns=['topic_id', 'token', 'weight'],
-        )
-
-        topic_token_weights['topic_id'] = topic_token_weights.topic_id.astype(np.uint16)
-
-        fg = {v: k for k, v in id2token.items()}.get
-
-        topic_token_weights['token_id'] = topic_token_weights.token.apply(fg)
-
-        return topic_token_weights[['topic_id', 'token_id', 'token', 'weight']]
-
-    def get_topic_token_overview(self, topic_token_weights: pd.DataFrame, n_tokens: int = 200) -> pd.DataFrame:
-        """
-        Group by topic_id and concatenate n_tokens words within group sorted by weight descending.
-        There must be a better way of doing this...
-        """
-
-        alpha: List[float] = self.model.alpha if 'alpha' in self.model.__dict__ else None
-
-        df = (
-            topic_token_weights.groupby('topic_id')
-            .apply(lambda x: sorted(list(zip(x["token"], x["weight"])), key=lambda z: z[1], reverse=True))
-            .apply(lambda x: ' '.join([z[0] for z in x][:n_tokens]))
-            .reset_index()
-        )
-        df.columns = ['topic_id', 'tokens']
-        df['alpha'] = df.topic_id.apply(lambda topic_id: alpha[topic_id]) if alpha is not None else 0.0
-
-        return df.set_index('topic_id')
 
 
 @dataclass
@@ -132,7 +56,7 @@ class TrainingCorpus:
     """
 
     terms: Iterable[Iterable[str]] = None
-    doc_term_matrix: csr_matrix = None
+    doc_term_matrix: sp.csr_matrix = None
     document_index: DocumentIndex = None
     id2token: Optional[Mapping[int, str]] = None
 
@@ -214,7 +138,7 @@ class TrainingCorpus:
             self.corpus = Sparse2Corpus(self.source, documents_columns=False)
             self.id2token = self.source.id2token
 
-        elif issparse(self.source):
+        elif sp.issparse(self.source):
 
             if self.id2token is None:
                 raise ValueError("expected valid token2id, found None")
@@ -472,44 +396,23 @@ class InferredTopicsData:
         token2id: Token2Id = Token2Id(data=data)
         return token2id
 
-    @staticmethod
-    def compute_topic_proportions2(document_topic_weights: pd.DataFrame, doc_length_series: np.ndarray):
-        """Compute topic proportations the LDAvis way. Fast version"""
-        theta = coo_matrix(
-            (document_topic_weights.weight, (document_topic_weights.document_id, document_topic_weights.topic_id))
-        )
-        theta_mult_doc_length = theta.T.multiply(doc_length_series).T
-        topic_frequency = theta_mult_doc_length.sum(axis=0).A1
-        topic_proportion = topic_frequency / topic_frequency.sum()
-        return topic_proportion
-
-    def compute_topic_proportions(self) -> pd.DataFrame:
-
-        if 'n_terms' not in self.document_index.columns:
-            return None
-
-        _topic_proportions = InferredTopicsData.compute_topic_proportions2(
-            self.document_topic_weights,
-            self.document_index.n_terms.values,
-        )
-
-        return _topic_proportions
-
-    def top_topic_token_weights_old(self, n_count: int) -> pd.DataFrame:
-        id2token = self.id2term
-        _largest = self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']].apply(
-            lambda x: x.nlargest(n_count, columns=['weight'])
-        )
-        _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
-        return _largest.set_index('topic_id')
+    def compute_topic_proportion(self) -> pd.DataFrame:
+        return compute_topic_proportions(self.document_topic_weights, self.document_index)
 
     def top_topic_token_weights(self, n_count: int) -> pd.DataFrame:
-        id2token = self.id2term
-        _largest = (
-            self.topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']]
-            .apply(lambda x: x.nlargest(n_count, columns=['weight']))
-            .reset_index(drop=True)
-        )
-        _largest['token'] = _largest.token_id.apply(lambda x: id2token[x])
-        _largest['position'] = _largest.groupby('topic_id').cumcount() + 1
-        return _largest.set_index('topic_id')
+        return top_topic_token_weights(self.document_topic_weights, self.id2term, n_count=n_count)
+
+    def document_topic_weights_helper(self) -> DocumentTopicWeights:
+        return DocumentTopicWeights(self.document_topic_weights, self.document_index)
+
+    def get_topic_titles(self, topic_id: int = None, n_tokens: int = 100) -> pd.Series:
+        """Return strings of `n_tokens` most probable words per topic."""
+        return get_topic_titles(self.topic_token_weights, topic_id, n_tokens=n_tokens)
+
+    def get_topic_title(self, topic_id: int, n_tokens: int = 100) -> str:
+        """Return string of `n_tokens` most probable words per topic"""
+        return get_topic_title(self.topic_token_weights, topic_id, n_tokens=n_tokens)
+
+    def get_topic_top_tokens(self, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
+        """Return most probable tokens for given topic sorted by probability descending"""
+        return get_topic_top_tokens(self.topic_token_weights, topic_id, n_tokens=n_tokens)

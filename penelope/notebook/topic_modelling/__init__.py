@@ -11,7 +11,9 @@ from .topic_document_network_gui import PlotMode
 from .topic_document_network_gui import display_gui as display_topic_document_network_gui
 from .topic_documents_gui import display_gui as display_topic_documents_gui
 from .topic_topic_network_gui import display_gui as display_topic_topic_network_gui
+from .topic_trends_gui import TopicTrendsGUI
 from .topic_trends_gui import display_gui as display_topic_trends_gui
+from .topic_trends_overview_gui import TopicOverviewGUI
 from .topic_trends_overview_gui import display_gui as display_topic_trends_overview_gui
 from .topic_word_distribution_gui import display_gui as display_topic_word_distribution_gui
 from .topic_wordcloud_gui import display_gui as display_topic_wordcloud_gui

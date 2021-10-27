@@ -1,8 +1,7 @@
 from typing import Any
 
 from IPython.display import display as ip_display
-from ipywidgets import HTML, FloatSlider, IntSlider, Output, Text, VBox
-from ipywidgets.widgets.widget_box import HBox
+from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
 
 from .display_topic_titles import reduce_topic_tokens_overview
 

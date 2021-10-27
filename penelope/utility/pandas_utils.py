@@ -43,7 +43,7 @@ def _create_mask(df: pd.DataFrame, name: str, value: Any, sign: bool = True) -> 
     elif isinstance(value, tuple):
         m = df[name].between(*value)
     elif isinstance(value, (bool, Number, str)):
-        m = df[name].between(*value)
+        m = df[name] == value
     else:
         m = df[name] == value
     if not sign:

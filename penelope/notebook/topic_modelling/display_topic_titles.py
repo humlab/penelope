@@ -2,12 +2,12 @@ import abc
 from typing import Callable
 
 import pandas as pd
+from ipysheet import from_dataframe
 from IPython.core.display import Javascript
 from IPython.display import display as IPython_display
-from ipywidgets import HBox, IntSlider, Output, Text, VBox
-from ipywidgets.widgets.widget_button import Button
+from ipywidgets import Button, HBox, IntSlider, Output, Text, VBox  # type: ignore
 from penelope.notebook.utility import create_js_download
-from ipysheet import from_dataframe
+
 from .utility import reduce_topic_tokens_overview
 
 
@@ -115,5 +115,5 @@ class EditTopicsGUI(DisplayPandasGUI):  # pylint: disable=too-many-instance-attr
         return self
 
 
-def display_gui(topics: pd.DataFrame, displayer_cls: type):
+def display_gui(topics: pd.DataFrame, displayer_cls: type = DisplayPandasGUI):
     _ = displayer_cls().display(topics=topics, callback=reduce_topic_tokens_overview)

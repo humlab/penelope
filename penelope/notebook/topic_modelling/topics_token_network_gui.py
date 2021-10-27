@@ -3,7 +3,7 @@ import os
 from typing import Any, Callable, List
 
 import ipycytoscape
-import ipywidgets as widgets
+import ipywidgets as widgets  # type: ignore
 import networkx as nx
 import pandas as pd
 from IPython.display import display
@@ -301,7 +301,7 @@ class ViewModel:
 
 
 def find_inferred_models(folder: str) -> List[str]:
-    """Return YAML filenames in `folder`"""
+    """Return inferred data in sub-folders to `folder`"""
     filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
     folders = [os.path.split(filename)[0] for filename in filenames]
     return folders
@@ -316,7 +316,7 @@ def default_loader(folder: str, filename_fields: Any = None) -> topic_modelling.
 
 
 @view.capture(clear_output=True)
-def default_displayer(opts: "GUI") -> None:
+def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
 
     if opts.model.top_topic_tokens is None:
         return
@@ -344,7 +344,7 @@ def default_displayer(opts: "GUI") -> None:
 
 
 # pylint: disable=too-many-instance-attributes
-class GUI:
+class TopicsTokenNetworkGUI:
     def __init__(self, network: ipycytoscape.CytoscapeWidget = None, model: ViewModel = None):
 
         self.network: ipycytoscape.CytoscapeWidget = network
@@ -410,7 +410,7 @@ class GUI:
         )
 
         self.loader: Callable[[str], topic_modelling.InferredTopicsData] = None
-        self.displayer: Callable[["GUI"], None] = None
+        self.displayer: Callable[["TopicsTokenNetworkGUI"], None] = None
         self._custom_styles: dict = None
         self._buzy: bool = False
 
@@ -492,9 +492,9 @@ class GUI:
         self,
         folders: str,
         loader: Callable[[str], topic_modelling.InferredTopicsData],
-        displayer: Callable[["GUI"], None],
+        displayer: Callable[["TopicsTokenNetworkGUI"], None],
         custom_styles: dict = None,
-    ) -> "GUI":
+    ) -> "TopicsTokenNetworkGUI":
         self.loader = loader
         self.displayer = displayer
         self._custom_styles = custom_styles
@@ -605,8 +605,12 @@ class GUI:
     #     return self._padding.value
 
 
-def create_gui(data_folder: str, custom_styles: dict = None):
-    gui = GUI(model=ViewModel(filename_fields=['year:_:1', 'sequence_id:_:2'])).setup(
+DFEAULT_FILDENAME_FIELDS: List[str] = ['year:_:1', 'sequence_id:_:2']
+
+
+def create_gui(data_folder: str, custom_styles: dict = None, filename_fields: List[str] = None):
+    filename_fields = filename_fields or DFEAULT_FILDENAME_FIELDS
+    gui = TopicsTokenNetworkGUI(model=ViewModel(filename_fields=filename_fields)).setup(
         folders=find_inferred_models(data_folder),
         loader=default_loader,
         displayer=default_displayer,

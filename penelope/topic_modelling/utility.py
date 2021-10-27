@@ -1,39 +1,12 @@
 import glob
 import itertools
 import os
-import types
-from typing import Any, Dict, List, Type
+from typing import Any, Mapping, Set
 
 import numpy as np
 import pandas as pd
 import penelope.utility as utility
-from penelope.topic_modelling.interfaces import ITopicModelEngine
-
-from . import engine_gensim, engine_textacy
-
-ENGINES = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
-
-
-def get_engine_module_by_method_name(method: str) -> types.ModuleType:
-    for key in ENGINES:
-        if method.startswith(key):
-            return ENGINES[key]
-    raise ValueError(f"Unknown method {method}")
-
-
-def get_engine_cls_by_method_name(method: str) -> Type[ITopicModelEngine]:
-    return get_engine_module_by_method_name(method).TopicModelEngine
-
-
-def get_engine_by_model_type(model: Any) -> ITopicModelEngine:
-
-    if engine_gensim.is_supported(model):
-        return engine_gensim.TopicModelEngine(model)
-
-    if engine_textacy.is_supported(model):
-        return engine_textacy.TopicModelEngine(model)
-
-    raise ValueError(f"unsupported model {type(model)}")
+import scipy.sparse as sp
 
 
 def find_models(path: str):
@@ -44,22 +17,6 @@ def find_models(path: str):
         for x in folders
     ]
     return models
-
-
-# @deprecated
-# def display_termite_plot(model, id2term, doc_term_matrix):
-#     if hasattr(model, 'termite_plot'):
-#         model.termite_plot(
-#             doc_term_matrix,
-#             id2term,
-#             topics=-1,
-#             sort_topics_by='index',
-#             highlight_topics=None,
-#             n_terms=50,
-#             rank_terms_by='topic_weight',
-#             sort_terms_by='seriation',
-#             save=False,
-#         )
 
 
 def compute_topic_yearly_means(
@@ -144,22 +101,91 @@ def get_topic_top_tokens(topic_token_weights: pd.DataFrame, topic_id: int = None
     return df
 
 
-def get_topics_unstacked(
-    model, n_tokens: int = 20, id2term: Dict[int, str] = None, topic_ids: List[int] = None
-) -> pd.DataFrame:
-    """Returns the top `n_tokens` tokens for each topic. The token's column index is in ascending probability"""
-
-    engine: types.ModuleType = get_engine_by_model_type(model)
-    n_topics = engine.n_topics()
-
-    topic_ids = topic_ids or range(n_topics)
-
-    return pd.DataFrame(
-        {
-            'Topic#{:02d}'.format(topic_id + 1): [
-                word[0]
-                for word in engine.topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
-            ]
-            for topic_id in topic_ids
-        }
+def top_topic_token_weights(topic_token_weights: pd.DataFrame, id2term: dict, n_count: int) -> pd.DataFrame:
+    _largest = (
+        topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']]
+        .apply(lambda x: x.nlargest(n_count, columns=['weight']))
+        .reset_index(drop=True)
     )
+    _largest['token'] = _largest.token_id.apply(lambda x: id2term[x])
+    _largest['position'] = _largest.groupby('topic_id').cumcount() + 1
+    return _largest.set_index('topic_id')
+
+
+def top_topic_token_weights_old(topic_token_weights: pd.DataFrame, id2term: dict, n_count: int) -> pd.DataFrame:
+    _largest = topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']].apply(
+        lambda x: x.nlargest(n_count, columns=['weight'])
+    )
+    _largest['token'] = _largest.token_id.apply(lambda x: id2term[x])
+    return _largest.set_index('topic_id')
+
+
+def _compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_series: np.ndarray) -> np.ndarray:
+    """Compute topic proportations the LDAvis way. Fast version"""
+    theta: sp.coo_matrix = sp.coo_matrix(
+        (document_topic_weights.weight, (document_topic_weights.document_id, document_topic_weights.topic_id))
+    )
+    theta_mult_doc_length: np.ndarray = theta.T.multiply(doc_length_series).T
+    topic_frequency: np.ndarray = theta_mult_doc_length.sum(axis=0).A1
+    topic_proportion: np.ndarray = topic_frequency / topic_frequency.sum()
+    return topic_proportion
+
+
+def compute_topic_proportions(document_topic_weights: pd.DataFrame, document_index: pd.DataFrame) -> pd.DataFrame:
+
+    if 'n_terms' not in document_index.columns:
+        return None
+
+    return _compute_topic_proportions(document_topic_weights, document_index.n_terms.values)
+
+
+class DocumentTopicWeights:
+    def __init__(self, document_topic_weights: pd.DataFrame, document_index: pd.DataFrame):
+
+        self.document_topic_weights: pd.DataFrame = document_topic_weights
+        self.document_index: pd.DataFrame = document_index
+        self.data: pd.DataFrame = document_topic_weights
+
+    def filter_by(
+        self,
+        threshold: float = 0.0,
+        key_values: Mapping[str, Any] = None,
+        document_key_values: Mapping[str, Any] = None,
+    ) -> "DocumentTopicWeights":
+        return self.threshold(threshold).filter_by_keys(key_values).filter_by_document_keys(document_key_values)
+
+    def threshold(self, threshold: float = 0.0) -> "DocumentTopicWeights":
+        """Filter document-topic weights by threshold"""
+
+        if threshold > 0:
+            self.data = self.data[self.data.weight >= threshold]
+
+        return self
+
+    @property
+    def copy(self) -> pd.DataFrame:
+        return self.data.copy()
+
+    @property
+    def value(self) -> pd.DataFrame:
+        return self.data
+
+    def filter_by_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeights":
+        """Filter data by key values. Returnm self."""
+        if key_values is not None:
+            self.data = self.data[utility.create_mask(self.data, key_values)]
+        return self
+
+    def filter_by_document_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeights":
+        """Filter data by key values. Returnm self."""
+
+        if key_values is not None:
+
+            mask: np.ndarray = utility.create_mask(self.document_index, key_values)
+
+            document_index: pd.DataFrame = self.document_index[mask]
+            document_ids: Set[int] = set(document_index.document_id.unique())
+
+            self.data = self.data[self.data.document_id.isin(document_ids)]
+
+        return self

@@ -3,12 +3,12 @@ from typing import Tuple
 import bokeh.models as bm
 import networkx as nx
 
-from .networkx.utility import layout_edges
+from .networkx.utility import NodesLayout, layout_edges
 
 
 def create_edges_layout_data_source(
     network: nx.Graph,
-    layout,
+    layout: NodesLayout,
     scale: float = 1.0,
     normalize: bool = False,
     weight: str = 'weight',

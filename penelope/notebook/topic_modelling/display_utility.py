@@ -1,4 +1,4 @@
-from ipyaggrid import Grid
+from ipyaggrid import Grid  # type: ignore
 
 from .. import ipyaggrid_utility
 

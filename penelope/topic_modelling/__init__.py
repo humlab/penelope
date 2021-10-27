@@ -1,19 +1,19 @@
 # type: ignore
 
+from .engines import get_engine_by_model_type, get_engine_cls_by_method_name, get_engine_module_by_method_name
 from .interfaces import InferredModel, InferredTopicsData, TrainingCorpus
 from .predict import predict_topics
 from .saliency import compute_KL_divergence, compute_term_frequency, compute_term_info, compute_topic_metrics
 from .train import train_model
 from .utility import (
+    DocumentTopicWeights,
+    compute_topic_proportions,
     compute_topic_yearly_means,
     find_models,
-    get_engine_by_model_type,
-    get_engine_cls_by_method_name,
-    get_engine_module_by_method_name,
     get_topic_title,
     get_topic_titles,
     get_topic_top_tokens,
-    get_topics_unstacked,
+    top_topic_token_weights,
 )
 
 YEARLY_MEAN_COMPUTE_METHODS = [

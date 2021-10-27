@@ -1,9 +1,7 @@
 from typing import Any, Dict
 
 import pandas as pd
-import penelope.utility as utility
-
-logger = utility.getLogger('corpus_text_analysis')
+from loguru import logger
 
 pd.options.mode.chained_assignment = None
 
@@ -51,7 +49,7 @@ def filter_document_topic_weights(
     pd.DataFrame
         [description]
     """
-    df = document_topic_weights
+    df: pd.DataFrame = document_topic_weights
 
     df = df[df.weight >= threshold]
 

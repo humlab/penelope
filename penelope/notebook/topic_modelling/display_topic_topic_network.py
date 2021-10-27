@@ -35,7 +35,9 @@ def get_filtered_network_data(
     n_docs: int,
 ) -> pd.DataFrame:
 
-    df = filter_document_topic_weights(inferred_topics.document_topic_weights, filters=filters, threshold=threshold)
+    df: pd.DataFrame = filter_document_topic_weights(
+        inferred_topics.document_topic_weights, filters=filters, threshold=threshold
+    )
 
     if ignores is not None:
         df = df[~df.topic_id.isin(ignores)]
@@ -55,6 +57,7 @@ def get_filtered_network_data(
 
     if n_docs > 1:
         df = df[df.n_docs >= n_docs]
+
     return df
 
 
@@ -69,7 +72,7 @@ def display_topic_topic_network(
     n_docs: int = 1,
     scale: float = 1.0,
     output_format: str = 'table',
-    text_id: str = '',
+    element_id: str = '',
     titles=None,
     topic_proportions=None,
     node_range: Tuple[int, int] = (20, 60),
@@ -99,7 +102,7 @@ def display_topic_topic_network(
                 node_proportions=topic_proportions,
                 weight_scale=1.0,
                 normalize_weights=False,
-                element_id=text_id,
+                element_id=element_id,
                 figsize=(1200, 800),
                 node_range=node_range,
                 edge_range=edge_range,
