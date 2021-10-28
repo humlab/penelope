@@ -1,5 +1,4 @@
 import abc
-from typing import Callable
 
 import pandas as pd
 from ipysheet import from_dataframe
@@ -12,8 +11,13 @@ from penelope.topic_modelling import filter_topic_tokens_overview
 pd.options.mode.chained_assignment = None
 
 
-class IDisplayGUI(abc.ABC):
+class TopicTitlesGUI(abc.ABC):
+
     def __init__(self):
+
+        self.topics: pd.DataFrame = None
+        self.reduced_topics: pd.DataFrame = None
+
         self.count_slider: IntSlider = IntSlider(
             description="Tokens",
             min=25,
@@ -24,9 +28,6 @@ class IDisplayGUI(abc.ABC):
         self.search_text: Text = Text(description="Find")
         self.download_button: Button = Button(description="Download")
         self.output: Output = Output()
-        self.topics: pd.DataFrame = None
-        self.reduced_topics: pd.DataFrame = None
-        self.callback: Callable = lambda *_: ()
         self.js_download: Javascript = None
 
     def layout(self):
@@ -45,14 +46,15 @@ class IDisplayGUI(abc.ABC):
             self.update()
 
     def reduce_topics(self):
-        self.reduced_topics = filter_topic_tokens_overview(self.topics, self.count_slider.value, self.search_text.value)
+        self.reduced_topics = filter_topic_tokens_overview(
+            self.topics, search_text=self.search_text.value, n_count=self.count_slider.value
+        )
 
     def update(self) -> None:
         IPython_display(self.reduced_topics)
 
-    def display(self, topics: pd.DataFrame, callback: Callable = None) -> "IDisplayGUI":
+    def display(self, topics: pd.DataFrame) -> "TopicTitlesGUI":
 
-        self.callback = callback or self.callback
         self.topics = topics
         self.count_slider.observe(self._update, "value")
         self.search_text.observe(self._update, "value")
@@ -63,7 +65,7 @@ class IDisplayGUI(abc.ABC):
         return self
 
 
-class DisplayPandasGUI(IDisplayGUI):
+class PandasTopicTitlesGUI(TopicTitlesGUI):
 
     PANDAS_TABLE_STYLE = [
         dict(
@@ -89,14 +91,14 @@ class DisplayPandasGUI(IDisplayGUI):
         styled_reduced_topics = self.reduced_topics.style.set_table_styles(self.PANDAS_TABLE_STYLE)
         IPython_display(styled_reduced_topics)
 
-    def display(self, topics: pd.DataFrame, callback: Callable = None) -> "IDisplayGUI":
-        super().display(topics=topics, callback=callback)
+    def display(self, topics: pd.DataFrame) -> "TopicTitlesGUI":
+        super().display(topics=topics)
         # pd.options.display.max_colwidth = None
         pd.set_option('colheader_justify', 'left')
         return self
 
 
-class EditTopicsGUI(DisplayPandasGUI):  # pylint: disable=too-many-instance-attributes
+class EditTopicTitlesGUI(PandasTopicTitlesGUI):  # pylint: disable=too-many-instance-attributes
     def __init__(self):
         super().__init__()
         self.save_button: Button = Button(description="Save")
@@ -109,12 +111,12 @@ class EditTopicsGUI(DisplayPandasGUI):  # pylint: disable=too-many-instance-attr
         ...
         # IPython_display(self.sheet)
 
-    def display(self, topics: pd.DataFrame, callback: Callable = None) -> "IDisplayGUI":
-        super().display(topics, callback)
+    def display(self, topics: pd.DataFrame) -> "TopicTitlesGUI":
+        super().display(topics)
         self.sheet = from_dataframe(self.topics)
         IPython_display(self.sheet)
         return self
 
 
-def display_gui(topics: pd.DataFrame, displayer_cls: type = DisplayPandasGUI):
-    _ = displayer_cls().display(topics=topics, callback=filter_topic_tokens_overview)
+def display_gui(topics: pd.DataFrame, displayer_cls: type = PandasTopicTitlesGUI):
+    _ = displayer_cls().display(topics=topics)

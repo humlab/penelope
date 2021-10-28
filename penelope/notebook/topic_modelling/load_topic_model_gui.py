@@ -47,7 +47,7 @@ def load_model(
     if topics is None:
         raise ValueError("bug-check: No topic_token_overview in loaded model!")
 
-    topic_titles_gui.display_gui(topics, topic_titles_gui.DisplayPandasGUI)
+    topic_titles_gui.display_gui(topics, topic_titles_gui.PandasTopicTitlesGUI)
 
 
 class LoadGUI:
