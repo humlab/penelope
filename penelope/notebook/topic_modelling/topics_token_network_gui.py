@@ -300,13 +300,6 @@ class ViewModel:
         return self._topics_data.num_topics
 
 
-def find_inferred_models(folder: str) -> List[str]:
-    """Return inferred data in sub-folders to `folder`"""
-    filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
-    folders = [os.path.split(filename)[0] for filename in filenames]
-    return folders
-
-
 @view.capture(clear_output=False)
 def default_loader(folder: str, filename_fields: Any = None) -> topic_modelling.InferredTopicsData:
     if folder is None:
@@ -611,7 +604,7 @@ DFEAULT_FILDENAME_FIELDS: List[str] = ['year:_:1', 'sequence_id:_:2']
 def create_gui(data_folder: str, custom_styles: dict = None, filename_fields: List[str] = None):
     filename_fields = filename_fields or DFEAULT_FILDENAME_FIELDS
     gui = TopicsTokenNetworkGUI(model=ViewModel(filename_fields=filename_fields)).setup(
-        folders=find_inferred_models(data_folder),
+        folders=topic_modelling.find_inferred_topics_folders(data_folder),
         loader=default_loader,
         displayer=default_displayer,
         custom_styles=custom_styles,
