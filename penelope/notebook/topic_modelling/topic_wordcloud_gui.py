@@ -93,6 +93,8 @@ class WordcloudGUI:
         self.word_count.observe(self.update_handler, 'value')
         self.output_format.observe(self.update_handler, 'value')
 
+        return self
+
     def tick(self, n=None):
         self.progress.value = (self.progress.value + 1) if n is None else n
 
