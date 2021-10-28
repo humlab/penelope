@@ -12,7 +12,6 @@ pd.options.mode.chained_assignment = None
 
 
 class TopicTitlesGUI(abc.ABC):
-
     def __init__(self):
 
         self.topics: pd.DataFrame = None

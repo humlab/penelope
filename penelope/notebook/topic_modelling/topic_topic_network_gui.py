@@ -14,8 +14,8 @@ from ipywidgets import (  # type: ignore
 )
 
 from .. import widgets_utils
-from .topic_topic_network_gui_utility import display_topic_topic_network
 from .model_container import TopicModelContainer
+from .topic_topic_network_gui_utility import display_topic_topic_network
 
 # bokeh.plotting.output_notebook()
 TEXT_ID = 'nx_topic_topic'
@@ -71,7 +71,7 @@ class TopicTopicGUI:
         self.output: Output = Output()
 
         self.topic_proportions = self.state.inferred_topics.compute_topic_proportions()
-        self.titles = topic_modelling.get_topic_titles(self.state.inferred_topics.topic_token_weights)
+        self.titles = self.state.inferred_topics.get_topic_titles()
 
     def layout(self) -> VBox:
         extra_widgets: VBox = self.extra_widgets()
@@ -112,7 +112,7 @@ class TopicTopicGUI:
                         VBox(
                             [
                                 HTML("<b>Network layout</b>"),
-                                self.layout,
+                                self.network_layout,
                                 HTML("<b>Output</b>"),
                                 self.output_format,
                                 self.progress,
