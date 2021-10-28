@@ -7,24 +7,9 @@ from IPython.core.display import Javascript
 from IPython.display import display as IPython_display
 from ipywidgets import Button, HBox, IntSlider, Output, Text, VBox  # type: ignore
 from penelope.notebook.utility import create_js_download
+from penelope.topic_modelling import filter_topic_tokens_overview
 
 pd.options.mode.chained_assignment = None
-
-
-def reduce_topic_tokens_overview(topics: pd.DataFrame, n_count: int, search: str) -> pd.DataFrame:
-
-    reduced_topics = topics[topics.tokens.str.contains(search)] if search else topics
-
-    tokens: pd.Series = reduced_topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))
-
-    if search:
-        tokens = reduced_topics.tokens.apply(
-            lambda x: x.replace(search, f'<b style="color:green;font-size:14px">{search}</b>')
-        )
-
-    reduced_topics['tokens'] = tokens
-
-    return reduced_topics
 
 
 class IDisplayGUI(abc.ABC):
@@ -60,7 +45,7 @@ class IDisplayGUI(abc.ABC):
             self.update()
 
     def reduce_topics(self):
-        self.reduced_topics = reduce_topic_tokens_overview(self.topics, self.count_slider.value, self.search_text.value)
+        self.reduced_topics = filter_topic_tokens_overview(self.topics, self.count_slider.value, self.search_text.value)
 
     def update(self) -> None:
         IPython_display(self.reduced_topics)
@@ -132,4 +117,4 @@ class EditTopicsGUI(DisplayPandasGUI):  # pylint: disable=too-many-instance-attr
 
 
 def display_gui(topics: pd.DataFrame, displayer_cls: type = DisplayPandasGUI):
-    _ = displayer_cls().display(topics=topics, callback=reduce_topic_tokens_overview)
+    _ = displayer_cls().display(topics=topics, callback=filter_topic_tokens_overview)

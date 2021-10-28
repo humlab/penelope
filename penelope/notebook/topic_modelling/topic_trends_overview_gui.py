@@ -4,8 +4,8 @@ from IPython.display import display
 from ipywidgets import HTML, Dropdown, HBox, Output, ToggleButton, VBox  # type: ignore
 
 from .. import widgets_utils
-from .display_topic_trends_heatmap import display_heatmap
 from .model_container import TopicModelContainer
+from .topic_trends_overview_gui_utility import display_heatmap
 
 TEXT_ID = 'topic_relevance'
 

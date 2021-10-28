@@ -5,7 +5,7 @@ from IPython.display import display
 from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
 from penelope.topic_modelling import InferredTopicsData  # type: ignore
 
-from .display_topic_titles import reduce_topic_tokens_overview
+from .display_topic_titles import filter_topic_tokens_overview
 from .model_container import TopicModelContainer
 
 
@@ -103,7 +103,7 @@ def get_document_topic_weights(
 
     if len(text) > 2:
 
-        topic_ids = reduce_topic_tokens_overview(topic_token_overview, n_top, text).index.tolist()
+        topic_ids = filter_topic_tokens_overview(topic_token_overview, n_top, text).index.tolist()
 
         weights = weights[weights.topic_id.isin(topic_ids)]
 

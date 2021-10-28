@@ -24,28 +24,20 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 logger = utility.get_logger()
 
+COLORS = ['#ffffff', '#f7fcf5', '#e5f5e0', '#c7e9c0', '#a1d99b', '#74c476', '#41ab5d', '#238b45', '#006d2c', '#00441b']
+HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_location="above", plot_width=1200)
+
 
 def _setup_glyph_coloring(_, color_high=0.3):
 
     # colors = list(reversed(bokeh.palettes.Greens[9]))
-    colors = [
-        '#ffffff',
-        '#f7fcf5',
-        '#e5f5e0',
-        '#c7e9c0',
-        '#a1d99b',
-        '#74c476',
-        '#41ab5d',
-        '#238b45',
-        '#006d2c',
-        '#00441b',
-    ]
-    mapper = LinearColorMapper(palette=colors, low=0.0, high=color_high)
+
+    mapper = LinearColorMapper(palette=COLORS, low=0.0, high=color_high)
     color_transform = bokeh.transform.transform('weight', mapper)
     color_bar = ColorBar(
         color_mapper=mapper,
         location=(0, 0),
-        ticker=BasicTicker(desired_num_ticks=len(colors)),
+        ticker=BasicTicker(desired_num_ticks=len(COLORS)),
         formatter=PrintfTickFormatter(format=" %5.2f"),
     )
     return color_transform, color_bar
@@ -60,9 +52,6 @@ def to_categories(values: pd.Series) -> List[str]:
         return [str(x) for x in sorted([int(y) for y in categories])]
 
     return sorted(list(categories))
-
-
-HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_location="above", plot_width=1200)
 
 
 def plot_topic_relevance_by_year(
