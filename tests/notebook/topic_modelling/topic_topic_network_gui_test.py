@@ -1,5 +1,5 @@
-from penelope.notebook.topic_modelling.topic_topic_network_gui import TopicTopicGUI
 from penelope.notebook.topic_modelling import TopicModelContainer
+from penelope.notebook.topic_modelling.topic_topic_network_gui import TopicTopicGUI
 
 
 def test_create_gui(state: TopicModelContainer):

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from penelope.corpus import Token2Id
 
-
 if TYPE_CHECKING:
     from ..interfaces import InferredModel, TrainingCorpus
 
