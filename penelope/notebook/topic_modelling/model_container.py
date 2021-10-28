@@ -14,10 +14,10 @@ class TopicModelContainer:
 
     def __init__(
         self,
-        _inferred_data: topic_modelling.InferredModel = None,
+        _trained_model: topic_modelling.InferredModel = None,
         _inferred_topics: topic_modelling.InferredTopicsData = None,
     ):
-        self._inferred_data: topic_modelling.InferredModel = _inferred_data
+        self._trained_model: topic_modelling.InferredModel = _trained_model
         self._inferred_topics: topic_modelling.InferredTopicsData = _inferred_topics
 
     @staticmethod
@@ -27,22 +27,22 @@ class TopicModelContainer:
 
     def set_data(
         self,
-        _inferred_data: Optional[topic_modelling.InferredModel],
+        _trained_model: Optional[topic_modelling.InferredModel],
         _inferred_topics: Optional[topic_modelling.InferredTopicsData],
     ):
         """ Fix missing document attribute n_terms """
         if 'n_terms' not in _inferred_topics.document_index.columns:
-            assert _inferred_data.train_corpus is not None
-            _inferred_topics.document_index['n_terms'] = _inferred_data.train_corpus.corpus.sparse.sum(axis=0).A1
+            assert _trained_model.train_corpus is not None
+            _inferred_topics.document_index['n_terms'] = _trained_model.train_corpus.corpus.sparse.sum(axis=0).A1
 
-        self._inferred_data = _inferred_data
+        self._trained_model = _trained_model
         self._inferred_topics = _inferred_topics
 
     @property
-    def inferred_model(self) -> topic_modelling.InferredModel:
-        if self._inferred_data is None:
+    def trained_model(self) -> topic_modelling.InferredModel:
+        if self._trained_model is None:
             raise TopicModelException('Model not loaded or computed')
-        return self._inferred_data
+        return self._trained_model
 
     @property
     def inferred_topics(self) -> topic_modelling.InferredTopicsData:
@@ -50,7 +50,7 @@ class TopicModelContainer:
 
     @property
     def topic_model(self):
-        return self.inferred_model.topic_model
+        return self.trained_model.topic_model
 
     @property
     def id2term(self):
