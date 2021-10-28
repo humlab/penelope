@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 import abc
-import types
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Sequence, Tuple, Type
 
 import numpy as np
 import pandas as pd
 from penelope.corpus import Token2Id
 
-from . import engine_gensim, engine_textacy
-
-ENGINES = {'sklearn': engine_textacy, 'gensim_': engine_gensim}
 
 if TYPE_CHECKING:
-    from .interfaces import InferredModel, TrainingCorpus
+    from ..interfaces import InferredModel, TrainingCorpus
 
 
 class ITopicModelEngine(abc.ABC):
@@ -98,24 +94,3 @@ class ITopicModelEngine(abc.ABC):
 
         return df.set_index('topic_id')
 
-
-def get_engine_module_by_method_name(method: str) -> types.ModuleType:
-    for key in ENGINES:
-        if method.startswith(key):
-            return ENGINES[key]
-    raise ValueError(f"Unknown method {method}")
-
-
-def get_engine_cls_by_method_name(method: str) -> Type[ITopicModelEngine]:
-    return get_engine_module_by_method_name(method).TopicModelEngine
-
-
-def get_engine_by_model_type(model: Any) -> ITopicModelEngine:
-
-    if engine_gensim.is_supported(model):
-        return engine_gensim.TopicModelEngine(model)
-
-    if engine_textacy.is_supported(model):
-        return engine_textacy.TopicModelEngine(model)
-
-    raise ValueError(f"unsupported model {type(model)}")

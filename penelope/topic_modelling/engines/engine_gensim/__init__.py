@@ -2,7 +2,8 @@
 
 from typing import Any, Dict, Iterable, List, Sequence, Tuple, Type, get_args
 
-from .. import engines, interfaces
+from ... import interfaces
+from ..interface import ITopicModelEngine
 from . import predict, train
 from .options import SUPPORTED_ENGINES
 from .predict import SupportedModels
@@ -13,7 +14,7 @@ def is_supported(model: Any) -> bool:
     return type(model) in get_args(SupportedModels)
 
 
-class TopicModelEngine(engines.ITopicModelEngine):
+class TopicModelEngine(ITopicModelEngine):
     def __init__(self, model: SupportedModels):  # pylint: disable=useless-super-delegation
         super().__init__(model)
 

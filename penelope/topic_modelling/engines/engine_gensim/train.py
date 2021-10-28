@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from ..interfaces import InferredModel, TrainingCorpus
+from ...interfaces import InferredModel, TrainingCorpus
 from . import coherence, options
 
 

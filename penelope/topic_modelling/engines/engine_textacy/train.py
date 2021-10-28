@@ -5,7 +5,7 @@ import textacy
 from penelope.utility import deprecated
 from textacy.representations.vectorizers import Vectorizer
 
-from ..interfaces import InferredModel, TrainingCorpus
+from ...interfaces import InferredModel, TrainingCorpus
 
 
 @deprecated
