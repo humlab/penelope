@@ -28,12 +28,13 @@ class TopicOverviewGUI:
         self.output: Output = Output()
         self.titles: pd.DataFrame = None
 
-    def setup(self, state: TopicModelContainer):
+    def setup(self, state: TopicModelContainer) -> "TopicOverviewGUI":
         self.state = state
         self.aggregate.observe(self.update_handler, names='value')
         self.output_format.observe(self.update_handler, names='value')
         self.flip_axis.observe(self.update_handler, names='value')
         self.titles: pd.DataFrame = tm.get_topic_titles(self.state.inferred_topics.topic_token_weights, n_tokens=100)
+        return self
 
     def update_handler(self, *_):
 
