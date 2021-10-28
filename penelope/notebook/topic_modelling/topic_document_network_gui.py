@@ -8,17 +8,16 @@ import ipywidgets as widgets  # type: ignore
 import networkx as nx
 import pandas as pd
 import penelope.network.plot_utility as network_plot
-from IPython import display
+from IPython.display import display
+from loguru import logger  # type: ignore
 from penelope import topic_modelling, utility
 from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility
 from penelope.topic_modelling import InferredTopicsData
 
 from .. import widgets_utils
-from .display_utility import display_document_topics_as_grid
 from .model_container import TopicModelContainer
-
-logger = utility.getLogger("westac")
+from .topic_document_network_utility import display_document_topics_as_grid
 
 NETWORK_LAYOUT_ALGORITHMS = ["Circular", "Kamada-Kawai", "Fruchterman-Reingold"]
 
@@ -61,7 +60,7 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
 
     elif opts.output_format == "table":
         g = display_document_topics_as_grid(df_network)
-        display.display(g)
+        display(g)
 
 
 def compile_network_data(opts: "GUI.GUI_opts") -> pd.DataFrame:
@@ -231,5 +230,5 @@ class GUI:
 def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer):
 
     gui: GUI = GUI(plot_mode=plot_mode).setup(inferred_topics=state.inferred_topics)
-    display.display(gui.layout())
+    display(gui.layout())
     # gui.update_handler()
