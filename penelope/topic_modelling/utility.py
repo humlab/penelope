@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import penelope.utility as utility
 import scipy.sparse as sp
+from loguru import logger
+from penelope.type_alias import DocumentIndex
 
 
 def find_models(path: str) -> dict:
@@ -99,6 +101,16 @@ def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: 
     return get_topic_titles(topic_token_weights, topic_id, n_tokens=n_tokens).iloc[0]
 
 
+def get_topic_title2(topic_token_weights: pd.DataFrame, topic_id: int) -> str:
+
+    if len(topic_token_weights[topic_token_weights.topic_id == topic_id]) == 0:
+        tokens = "Topics has no significant presence in any documents in the entire corpus"
+    else:
+        tokens = get_topic_title(topic_token_weights, topic_id, n_tokens=200)
+
+    return f'ID {topic_id}: {tokens}'
+
+
 def get_topic_top_tokens(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
     """Returns most probable tokens for given topic sorted by probability descending"""
     weights = (
@@ -144,6 +156,63 @@ def compute_topic_proportions(document_topic_weights: pd.DataFrame, document_ind
         return None
 
     return _compute_topic_proportions(document_topic_weights, document_index.n_terms.values)
+
+
+def filter_document_topic_weights(
+    document_topic_weights: pd.DataFrame, filters: Mapping[str, Any] = None, threshold: float = 0.0
+) -> pd.DataFrame:
+    """Returns document's topic weights for given `year`, `topic_id`, custom `filters` and threshold.
+
+    Parameters
+    ----------
+    document_topic_weights : pd.DataFrame
+        Document topic weights
+    filters : Dict[str, Any], optional
+        [description], by default None
+    threshold : float, optional
+        [description], by default 0.0
+
+    Returns
+    -------
+    pd.DataFrame
+        [description]
+    """
+    df: pd.DataFrame = document_topic_weights
+
+    df = df[df.weight >= threshold]
+
+    for k, v in (filters or {}).items():
+        if k not in df.columns:
+            logger.warning('Column %s does not exist in dataframe (_find_documents_for_topics)', k)
+            continue
+        df = df[df[k] == v]
+
+    return df.copy()
+
+
+def get_topic_documents(
+    document_topic_weights: pd.DataFrame,
+    document_index: DocumentIndex,
+    threshold: float = 0.0,
+    n_top: int = 500,
+    **filters,
+) -> pd.DataFrame:
+    topic_documents = filter_document_topic_weights(document_topic_weights, filters=filters, threshold=threshold)
+    if len(topic_documents) == 0:
+        return None
+
+    topic_documents = (
+        topic_documents.drop(['topic_id'], axis=1)
+        .set_index('document_id')
+        .sort_values('weight', ascending=False)
+        .head(n_top)
+    )
+    additional_columns = [x for x in document_index.columns.tolist() if x not in ['year', 'document_name']]
+    topic_documents = topic_documents.merge(
+        document_index[additional_columns], left_index=True, right_on='document_id', how='inner'
+    )
+    topic_documents.index.name = 'id'
+    return topic_documents
 
 
 class DocumentTopicWeights:

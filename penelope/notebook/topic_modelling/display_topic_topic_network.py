@@ -6,12 +6,9 @@ import bokeh.plotting
 import pandas as pd
 import penelope.network.networkx.utility as network_utility
 from IPython.display import display
+from loguru import logger
 from penelope import topic_modelling, utility
 from penelope.network import plot_utility
-
-from .utility import filter_document_topic_weights
-
-logger = utility.get_logger()
 
 
 def get_topic_titles(topic_token_weights, topic_id=None, n_words=100):
@@ -35,7 +32,7 @@ def get_filtered_network_data(
     n_docs: int,
 ) -> pd.DataFrame:
 
-    df: pd.DataFrame = filter_document_topic_weights(
+    df: pd.DataFrame = topic_modelling.filter_document_topic_weights(
         inferred_topics.document_topic_weights, filters=filters, threshold=threshold
     )
 

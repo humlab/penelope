@@ -8,7 +8,23 @@ from IPython.display import display as IPython_display
 from ipywidgets import Button, HBox, IntSlider, Output, Text, VBox  # type: ignore
 from penelope.notebook.utility import create_js_download
 
-from .utility import reduce_topic_tokens_overview
+pd.options.mode.chained_assignment = None
+
+
+def reduce_topic_tokens_overview(topics: pd.DataFrame, n_count: int, search: str) -> pd.DataFrame:
+
+    reduced_topics = topics[topics.tokens.str.contains(search)] if search else topics
+
+    tokens: pd.Series = reduced_topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))
+
+    if search:
+        tokens = reduced_topics.tokens.apply(
+            lambda x: x.replace(search, f'<b style="color:green;font-size:14px">{search}</b>')
+        )
+
+    reduced_topics['tokens'] = tokens
+
+    return reduced_topics
 
 
 class IDisplayGUI(abc.ABC):
