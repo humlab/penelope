@@ -10,6 +10,7 @@ from .utility import (
     compute_topic_proportions,
     compute_topic_yearly_means,
     filter_document_topic_weights,
+    filter_topic_tokens_overview,
     find_inferred_topics_folders,
     find_models,
     get_topic_documents,
@@ -18,7 +19,6 @@ from .utility import (
     get_topic_titles,
     get_topic_top_tokens,
     top_topic_token_weights,
-    filter_topic_tokens_overview
 )
 
 YEARLY_MEAN_COMPUTE_METHODS = [
