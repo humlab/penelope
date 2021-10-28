@@ -7,7 +7,6 @@ from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox  # type: ign
 from penelope import pipeline
 from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
 
-from ..co_occurrence.main_gui import MainGUI
 from . import display_topic_titles
 from .display_topic_titles import DisplayPandasGUI
 from .model_container import TopicModelContainer
@@ -62,14 +61,14 @@ class LoadGUI:
     def setup(self, model_names: List[str], load_callback: Callable = None) -> "LoadGUI":
         self.model_name.options = model_names
         self.load_callback = load_callback
-        self.load.on_click(self._load_handler)
+        self.load.on_click(self.load_handler)
         return self
 
     def layout(self) -> VBox:
         _layout = VBox([HBox([self.model_name, self.load]), VBox([self.output])])
         return _layout
 
-    def _load_handler(self, *_):
+    def load_handler(self, *_):
 
         if self.model_name.value is None:
             print("Please specify which model to load.")
@@ -86,7 +85,7 @@ class LoadGUI:
 
 def create_load_topic_model_gui(
     corpus_config: Optional[pipeline.CorpusConfig], corpus_folder: str, state: TopicModelContainer
-) -> MainGUI:
+) -> LoadGUI:
 
     model_infos: List[dict] = find_models(corpus_folder)
     model_names: List[str] = list(x["name"] for x in model_infos)
