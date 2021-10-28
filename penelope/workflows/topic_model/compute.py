@@ -3,7 +3,7 @@ import os
 from penelope import topic_modelling as tm
 from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import TextTokenizer
-from penelope.topic_modelling.engine_gensim.options import SUPPORTED_ENGINES
+from penelope.topic_modelling.engines.engine_gensim.options import SUPPORTED_ENGINES
 
 
 def compute(
