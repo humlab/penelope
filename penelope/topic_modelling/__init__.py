@@ -10,6 +10,7 @@ from .utility import (
     compute_topic_proportions,
     compute_topic_yearly_means,
     find_models,
+    find_inferred_topics_folders,
     get_topic_title,
     get_topic_titles,
     get_topic_top_tokens,

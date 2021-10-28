@@ -1,7 +1,7 @@
 import glob
 import itertools
 import os
-from typing import Any, Mapping, Set
+from typing import Any, List, Mapping, Set
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,7 @@ import penelope.utility as utility
 import scipy.sparse as sp
 
 
-def find_models(path: str):
+def find_models(path: str) -> dict:
     """Return subfolders containing a computed topic model in specified path"""
     folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "model_options.json"))]
     models = [
@@ -17,6 +17,12 @@ def find_models(path: str):
         for x in folders
     ]
     return models
+
+def find_inferred_topics_folders(folder: str) -> List[str]:
+    """Return inferred data in sub-folders to `folder`"""
+    filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
+    folders = [os.path.split(filename)[0] for filename in filenames]
+    return folders
 
 
 def compute_topic_yearly_means(
@@ -189,3 +195,4 @@ class DocumentTopicWeights:
             self.data = self.data[self.data.document_id.isin(document_ids)]
 
         return self
+
