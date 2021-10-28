@@ -7,8 +7,7 @@ from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox  # type: ign
 from penelope import pipeline
 from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
 
-from . import topic_title_gui
-from .topic_title_gui import DisplayPandasGUI
+from . import topic_titles_gui
 from .model_container import TopicModelContainer
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -48,7 +47,7 @@ def load_model(
     if topics is None:
         raise ValueError("bug-check: No topic_token_overview in loaded model!")
 
-    topic_title_gui.display_gui(topics, DisplayPandasGUI)
+    topic_titles_gui.display_gui(topics, topic_titles_gui.DisplayPandasGUI)
 
 
 class LoadGUI:
