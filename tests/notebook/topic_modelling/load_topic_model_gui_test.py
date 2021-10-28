@@ -1,6 +1,7 @@
 from typing import Callable, List
-from penelope.notebook.topic_modelling.load_topic_model_gui import LoadGUI, create_load_topic_model_gui
+
 from penelope import pipeline
+from penelope.notebook.topic_modelling.load_topic_model_gui import LoadGUI, create_load_topic_model_gui
 
 
 def test_load_gui():

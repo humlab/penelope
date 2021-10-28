@@ -1,13 +1,18 @@
-from typing import Any
+from typing import Callable
 
-from IPython.display import display as ip_display
+from IPython.display import display
 from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
+import pandas as pd
+
+from penelope.notebook.topic_modelling import TopicModelContainer
+from penelope.topic_modelling import InferredTopicsData  # type: ignore
 
 from .display_topic_titles import reduce_topic_tokens_overview
 
 
-class GUI:
-    def __init__(self):
+class FindTopicDocumentsGUI:
+    def __init__(self, state: TopicModelContainer):
+        self.state: TopicModelContainer = state
         self.threshold_slider: FloatSlider = FloatSlider(min=0.01, max=1.0, value=0.2)
         self.top_token_slider: IntSlider = IntSlider(min=3, max=200, value=3, disabled=True)
         self.find_text: Text = Text(description="")
@@ -44,19 +49,13 @@ class GUI:
             )
         )
 
-    def _callback(self, *_):
-        self.toplist_label.value = f"<b>Token must be within top {self.top_token_slider.value} topic tokens</b>"
-        self.callback(
-            gui=self,
-        )
-
     def _find_text(self, *_):
         self.top_token_slider.disabled = len(self.find_text.value) < 2
 
-    def setup(self, callback):
-        self.threshold_slider.observe(self._callback, 'value')
-        self.top_token_slider.observe(self._callback, 'value')
-        self.find_text.observe(self._callback, 'value')
+    def setup(self, callback: Callable):
+        self.threshold_slider.observe(self.update_handler, 'value')
+        self.top_token_slider.observe(self.update_handler, 'value')
+        self.find_text.observe(self.update_handler, 'value')
         self.find_text.observe(self._find_text, 'value')
         self.callback = callback or self.callback
         return self
@@ -70,31 +69,54 @@ class GUI:
         return self.find_text.value
 
     @property
-    def top(self) -> int:
+    def n_top(self) -> int:
         return self.top_token_slider.value
 
+    def update_handler(self, *_):
 
-def gui_controller(document_topic_weights, topic_token_overview):
-    def display_document_topic_weights(gui: Any):
-        gui.output.clear_output()
-        with gui.output:
+        inferred_topics: InferredTopicsData = self.state.inferred_topics
 
-            df = document_topic_weights
+        self.toplist_label.value = f"<b>Token must be within top {self.top_token_slider.value} topic tokens</b>"
+        self.output.clear_output()
 
-            if len(gui.text) > 2:
+        with self.output:
 
-                topic_ids = reduce_topic_tokens_overview(
-                    topic_token_overview,
-                    gui.top,
-                    gui.text,
-                ).index.tolist()
+            document_topics: pd.DataFrame = self.callback(
+                document_topic_weights=inferred_topics.document_topic_weights,
+                topic_token_overview=inferred_topics.topic_token_overview,
+                text=self.text,
+                n_top=self.n_top,
+                threshold=self.threshold,
+            )
 
-                df = df[df.topic_id.isin(topic_ids)]
+            display(document_topics)
 
-            df = df[df.weight >= gui.threshold]
 
-            ip_display(df)
+def get_document_topic_weights(
+    document_topic_weights: pd.DataFrame,
+    topic_token_overview: pd.DataFrame,
+    text: str,
+    n_top: int,
+    threshold: float,
+) -> pd.DataFrame:
 
-    gui = GUI().setup(callback=display_document_topic_weights)
+    weights: pd.DataFrame = document_topic_weights
 
-    ip_display(gui.layout())
+    if len(text) > 2:
+
+        topic_ids = reduce_topic_tokens_overview(topic_token_overview, n_top, text).index.tolist()
+
+        weights = weights[weights.topic_id.isin(topic_ids)]
+
+    weights = weights[weights.weight >= threshold]
+
+    return weights
+
+
+def create_gui(state: TopicModelContainer) -> FindTopicDocumentsGUI:
+
+    gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state).setup(callback=get_document_topic_weights)
+
+    display(gui.layout())
+
+    return gui
