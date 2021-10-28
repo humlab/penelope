@@ -12,6 +12,4 @@ def test_create_gui(state: TopicModelContainer):
     layout = gui.layout()
     assert layout is not None
 
-    gui.tick()
-
     gui.update_handler()

@@ -2,13 +2,14 @@ import fnmatch
 import zipfile
 from io import StringIO
 from numbers import Number
-from typing import Any, Dict, List, Sequence, Tuple, Union
+from typing import Any, Dict, List, Literal, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
 from .filename_utils import replace_extension
+from .utils import now_timestamp
 
 DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
 
@@ -211,3 +212,18 @@ def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> 
             df = pd.read_csv(StringIO(zf.read(filename).decode(encoding='utf-8')), **read_csv_opts)
             data[filename] = df
     return data
+
+
+def timestamped_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx'], basename: str):
+
+    filename = f"{now_timestamp()}_{basename}.{extension}"
+    if extension == 'xlsx':
+        data.to_excel(filename)
+    elif extension == 'csv':
+        data.to_csv(filename, sep='\t')
+    elif extension == 'clipboard':
+        data.to_clipboard(sep='\t')
+        filename = "clipboard"
+    else:
+        raise ValueError(f"unknown extension: {extension}")
+    logger.info(f'Data stored in {filename}')

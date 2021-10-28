@@ -1,5 +1,4 @@
 import warnings
-from typing import Callable
 
 import penelope.topic_modelling as tm
 from IPython.display import display

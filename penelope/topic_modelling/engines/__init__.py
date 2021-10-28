@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import types
-from typing import TYPE_CHECKING, Any
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, Type
 
 from . import engine_gensim, engine_textacy
 from .interface import ITopicModelEngine  # type: ignore
@@ -16,14 +16,14 @@ ENGINES = {
 }
 
 
-def get_engine_module_by_method_name(method: str) -> types.ModuleType:
+def get_engine_module_by_method_name(method: str) -> ModuleType:
     for key in ENGINES:
         if method.startswith(key):
             return ENGINES[key]
     raise ValueError(f"Unknown method {method}")
 
 
-def get_engine_cls_by_method_name(method: str) -> types.Type[interface.ITopicModelEngine]:
+def get_engine_cls_by_method_name(method: str) -> Type[interface.ITopicModelEngine]:
     return get_engine_module_by_method_name(method).TopicModelEngine
 
 

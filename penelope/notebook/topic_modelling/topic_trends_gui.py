@@ -6,8 +6,8 @@ from IPython.display import display
 from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, ToggleButton, VBox  # type: ignore
 
 from .. import widgets_utils
-from .display_topic_trends_gui_utility import display_topic_trends
 from .model_container import TopicModelContainer
+from .topic_trends_gui_utility import display_topic_trends
 
 TEXT_ID = 'topic_share_plot'
 

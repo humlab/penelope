@@ -130,4 +130,4 @@ def display_gui(state: TopicModelContainer):
 
     gui: WordcloudGUI = WordcloudGUI(state).setup()
     display(gui.layout())
-    gui.iw.update()
+    gui.update_handler()

@@ -1,4 +1,3 @@
-import glob
 import os
 from typing import Any, Callable, List
 
@@ -7,7 +6,7 @@ import ipywidgets as widgets  # type: ignore
 import networkx as nx
 import pandas as pd
 from IPython.display import display
-from penelope import topic_modelling
+from penelope import topic_modelling, utility
 from penelope.plot import get_color_palette
 from penelope.utility.filename_fields import FilenameFieldSpecs
 
@@ -334,6 +333,11 @@ def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
         topics_tokens.columns = ['Source', 'Target', 'Weight']
         g = display_grid(topics_tokens)
         display(g)
+
+    if opts.output_format.lower() in ('xlsx', 'csv'):
+        utility.timestamped_store(
+            data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network'
+        )
 
 
 # pylint: disable=too-many-instance-attributes

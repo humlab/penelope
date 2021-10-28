@@ -1,5 +1,5 @@
 # type: ignore
-from .display_topic_titles import display_gui as display_topic_titles_gui
+
 from .display_topic_topic_network import display_topic_topic_network
 from .find_topic_documents_gui import create_gui as find_topic_documents_gui
 from .load_topic_model_gui import create_load_topic_model_gui
@@ -8,6 +8,7 @@ from .topic_document_network_gui import PlotMode
 from .topic_document_network_gui import display_gui as display_topic_document_network_gui
 from .topic_document_network_utility import display_document_topics_as_grid
 from .topic_documents_gui import display_gui as display_topic_documents_gui
+from .topic_titles_gui import display_gui as display_topic_titles_gui
 from .topic_topic_network_gui import display_gui as display_topic_topic_network_gui
 from .topic_trends_gui import TopicTrendsGUI
 from .topic_trends_gui import display_gui as display_topic_trends_gui

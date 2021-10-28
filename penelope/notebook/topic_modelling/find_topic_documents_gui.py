@@ -3,9 +3,8 @@ from typing import Callable
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
-from penelope.topic_modelling import InferredTopicsData  # type: ignore
+from penelope.topic_modelling import InferredTopicsData, filter_topic_tokens_overview  # type: ignore
 
-from .display_topic_titles import filter_topic_tokens_overview
 from .model_container import TopicModelContainer
 
 
