@@ -1,6 +1,6 @@
 # type: ignore
 
-from .display_topic_topic_network import display_topic_topic_network
+from .topic_topic_network_gui_utility import display_topic_topic_network
 from .find_topic_documents_gui import create_gui as find_topic_documents_gui
 from .load_topic_model_gui import create_load_topic_model_gui
 from .model_container import TopicModelContainer

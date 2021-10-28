@@ -14,7 +14,7 @@ from ipywidgets import (  # type: ignore
 )
 
 from .. import widgets_utils
-from .display_topic_topic_network import display_topic_topic_network
+from .topic_topic_network_gui_utility import display_topic_topic_network
 from .model_container import TopicModelContainer
 
 # bokeh.plotting.output_notebook()
