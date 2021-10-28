@@ -21,7 +21,10 @@ from tqdm.auto import tqdm
 from .utility import (
     DocumentTopicWeights,
     compute_topic_proportions,
+    compute_topic_yearly_means,
+    filter_document_topic_weights,
     get_topic_title,
+    get_topic_title2,
     get_topic_titles,
     get_topic_top_tokens,
     top_topic_token_weights,
@@ -413,6 +416,19 @@ class InferredTopicsData:
         """Return string of `n_tokens` most probable words per topic"""
         return get_topic_title(self.topic_token_weights, topic_id, n_tokens=n_tokens)
 
+    def get_topic_title2(self, topic_id: int, n_tokens: int = 100) -> str:
+        """Return string of `n_tokens` most probable words per topic"""
+        return get_topic_title2(self.topic_token_weights, topic_id, n_tokens=n_tokens)
+
     def get_topic_top_tokens(self, topic_id: int = None, n_tokens: int = 100) -> pd.DataFrame:
         """Return most probable tokens for given topic sorted by probability descending"""
         return get_topic_top_tokens(self.topic_token_weights, topic_id, n_tokens=n_tokens)
+
+    def compute_topic_proportions(self) -> pd.DataFrame:
+        return compute_topic_proportions(self.document_topic_weights, self.document_index)
+
+    def compute_topic_yearly_means(self, relevence_mean_threshold: float = None):
+        return compute_topic_yearly_means(self.document_topic_weights, relevence_mean_threshold)
+
+    def filter_document_topic_weights(self, filters: Mapping[str, Any] = None, threshold: float = 0.0) -> pd.DataFrame:
+        return filter_document_topic_weights(self.document_topic_weights, filters=filters, threshold=threshold)

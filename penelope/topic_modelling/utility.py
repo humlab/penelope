@@ -97,16 +97,16 @@ def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_
 
 
 def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 100) -> str:
-    """Returns a string of `n_tokens` most probable words per topic"""
+    """Returns a string of `n_tokens` most probable words for topic `topic_id`"""
     return get_topic_titles(topic_token_weights, topic_id, n_tokens=n_tokens).iloc[0]
 
 
-def get_topic_title2(topic_token_weights: pd.DataFrame, topic_id: int) -> str:
-
+def get_topic_title2(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 200) -> str:
+    """Returns a string of `n_tokens` most probable words for topic `topic_id` or message if not tokens."""
     if len(topic_token_weights[topic_token_weights.topic_id == topic_id]) == 0:
         tokens = "Topics has no significant presence in any documents in the entire corpus"
     else:
-        tokens = get_topic_title(topic_token_weights, topic_id, n_tokens=200)
+        tokens = get_topic_title(topic_token_weights, topic_id, n_tokens=n_tokens)
 
     return f'ID {topic_id}: {tokens}'
 
@@ -121,6 +121,7 @@ def get_topic_top_tokens(topic_token_weights: pd.DataFrame, topic_id: int = None
 
 
 def top_topic_token_weights(topic_token_weights: pd.DataFrame, id2term: dict, n_count: int) -> pd.DataFrame:
+    """Find top `n_count` tokens for each topic. Return data frame."""
     _largest = (
         topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']]
         .apply(lambda x: x.nlargest(n_count, columns=['weight']))
@@ -151,7 +152,7 @@ def _compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_
 
 
 def compute_topic_proportions(document_topic_weights: pd.DataFrame, document_index: pd.DataFrame) -> pd.DataFrame:
-
+    """Compute topics' proportion in entire corpus."""
     if 'n_terms' not in document_index.columns:
         return None
 
@@ -215,17 +216,17 @@ def get_topic_documents(
     return topic_documents
 
 
-def filter_topic_tokens_overview(topic_tokens_overview: pd.DataFrame, n_count: int, search: str) -> pd.DataFrame:
+def filter_topic_tokens_overview(topic_tokens_overview: pd.DataFrame, *, search_text: str, n_count: int) -> pd.DataFrame:
     """Filter out topics where `search` string is in `n_counts` words. Return data frame."""
     reduced_topics = (
-        topic_tokens_overview[topic_tokens_overview.tokens.str.contains(search)] if search else topic_tokens_overview
+        topic_tokens_overview[topic_tokens_overview.tokens.str.contains(search_text)] if search_text else topic_tokens_overview
     )
 
     tokens: pd.Series = reduced_topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))
 
-    if search:
+    if search_text:
         tokens = reduced_topics.tokens.apply(
-            lambda x: x.replace(search, f'<b style="color:green;font-size:14px">{search}</b>')
+            lambda x: x.replace(search_text, f'<b style="color:green;font-size:14px">{search_text}</b>')
         )
 
     reduced_topics['tokens'] = tokens
