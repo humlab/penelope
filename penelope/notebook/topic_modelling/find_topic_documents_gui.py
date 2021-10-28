@@ -102,7 +102,7 @@ def get_document_topic_weights(
 
     if len(text) > 2:
 
-        topic_ids = filter_topic_tokens_overview(topic_token_overview, n_top, text).index.tolist()
+        topic_ids = filter_topic_tokens_overview(topic_token_overview, search_text=text, n_count=n_top).index.tolist()
 
         weights = weights[weights.topic_id.isin(topic_ids)]
 
