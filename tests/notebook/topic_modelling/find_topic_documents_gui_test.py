@@ -1,11 +1,10 @@
-from typing import Callable, List
+from typing import Callable
 
-from penelope import pipeline
 from penelope.notebook.topic_modelling.find_topic_documents_gui import FindTopicDocumentsGUI, create_gui
 
 
 def test_load_gui(state):
-    callback: Callable = lambda *_: None
+    callback: Callable = lambda **_: None
     gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state).setup(callback)
 
     layout = gui.layout()

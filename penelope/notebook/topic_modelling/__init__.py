@@ -5,7 +5,7 @@ from .display_topic_topic_network import display_topic_topic_network
 from .display_topic_trends import display_topic_trends
 from .display_topic_trends_heatmap import display_heatmap as display_topic_trends_heatmap
 from .display_utility import display_document_topics_as_grid
-from .find_topic_documents_gui import gui_controller as find_topic_documents_gui
+from .find_topic_documents_gui import create_gui as find_topic_documents_gui
 from .load_topic_model_gui import create_load_topic_model_gui
 from .model_container import TopicModelContainer
 from .topic_document_network_gui import PlotMode

@@ -1,13 +1,12 @@
 from typing import Callable
 
+import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
-import pandas as pd
-
-from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.topic_modelling import InferredTopicsData  # type: ignore
 
 from .display_topic_titles import reduce_topic_tokens_overview
+from .model_container import TopicModelContainer
 
 
 class FindTopicDocumentsGUI:
