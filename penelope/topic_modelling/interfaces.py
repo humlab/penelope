@@ -400,7 +400,7 @@ class InferredTopicsData:
         return compute_topic_proportions(self.document_topic_weights, self.document_index)
 
     def top_topic_token_weights(self, n_count: int) -> pd.DataFrame:
-        return top_topic_token_weights(self.document_topic_weights, self.id2term, n_count=n_count)
+        return top_topic_token_weights(self.topic_token_weights, self.id2term, n_count=n_count)
 
     def document_topic_weights_helper(self) -> DocumentTopicWeights:
         return DocumentTopicWeights(self.document_topic_weights, self.document_index)
