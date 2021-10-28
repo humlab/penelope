@@ -9,7 +9,7 @@ import pandas as pd
 from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
-from penelope.topic_modelling.engine_gensim.options import EngineKey
+from penelope.topic_modelling.engines.engine_gensim.options import EngineKey
 from penelope.utility.file_utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
