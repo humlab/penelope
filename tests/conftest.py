@@ -68,6 +68,7 @@ def inferred_topics_data() -> InferredTopicsData:
     )
     return _inferred_topics_data
 
+
 @pytest.fixture
 def state(inferred_topics_data: InferredTopicsData) -> TopicModelContainer:
     return TopicModelContainer(_trained_model=None, _inferred_topics=inferred_topics_data)

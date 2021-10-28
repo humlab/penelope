@@ -18,11 +18,13 @@ INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer_inferred_model'
 def inferred_topics_data() -> tm.InferredTopicsData:
     return load_inferred_topics_data()
 
+
 @pytest.fixture
 def topics_tokens() -> pd.DataFrame:
     topics_tokens_str = ';topic;token;weight;topic_id;position\n0;Topic #0;och;0.04476533457636833;0;1\n1;Topic #0;valv;0.02178177796304226;0;2\n2;Topic #0;i;0.02060970477759838;0;3\n3;Topic #1;och;0.02447959966957569;1;1\n4;Topic #1;som;0.02074943669140339;1;2\n5;Topic #1;av;0.020712170749902725;1;3\n6;Topic #2;som;0.02533087506890297;2;1\n7;Topic #2;en;0.023466676473617557;2;2\n8;Topic #2;är;0.022432737052440643;2;3\n9;Topic #3;de;0.02712307684123516;3;1\n10;Topic #3;är;0.023767853155732155;3;2\n11;Topic #3;i;0.019748181104660038;3;3\n'
     data: pd.DataFrame = pd.read_csv(io.StringIO(topics_tokens_str), sep=';', index_col=0)
     return data
+
 
 @pytest.fixture
 def network_widget(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
@@ -31,6 +33,7 @@ def network_widget(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
     w = ipycytoscape.CytoscapeWidget(cytoscape_layout={'name': 'euler'})
     w.graph.add_graph_from_json(source_network_data)
     return w
+
 
 def test_find_inferred_models():
     folders = tm.find_inferred_topics_folders(INFERRED_TOPICS_DATA_FOLDER)
@@ -218,8 +221,10 @@ def test_create_network_5():
     assert g is not None
     assert w is not None
 
+
 def find_inferred_topics_folders_patch(_):
     return [INFERRED_TOPICS_DATA_FOLDER]
+
 
 @patch('penelope.topic_modelling.find_inferred_topics_folders', find_inferred_topics_folders_patch)
 def test_create_gui(network_widget, inferred_topics_data):

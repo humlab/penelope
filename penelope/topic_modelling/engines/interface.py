@@ -93,4 +93,3 @@ class ITopicModelEngine(abc.ABC):
         df['alpha'] = df.topic_id.apply(lambda topic_id: alpha[topic_id]) if alpha is not None else 0.0
 
         return df.set_index('topic_id')
-

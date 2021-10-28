@@ -1,5 +1,3 @@
-
-
 from penelope.notebook.topic_modelling.topic_trends_gui import TopicTrendsGUI
 from penelope.notebook.topic_modelling import TopicModelContainer
 
@@ -15,4 +13,3 @@ def test_create_gui(state: TopicModelContainer):
     assert layout is not None
 
     gui.update_handler()
-

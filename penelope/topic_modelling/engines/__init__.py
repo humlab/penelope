@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import types
@@ -15,6 +14,7 @@ ENGINES = {
     'sklearn': engine_textacy,
     'gensim_': engine_gensim,
 }
+
 
 def get_engine_module_by_method_name(method: str) -> types.ModuleType:
     for key in ENGINES:

@@ -1,5 +1,3 @@
-
-
 from penelope.notebook.topic_modelling.topic_word_distribution_gui import TopicWordDistributionGUI
 from penelope.notebook.topic_modelling import TopicModelContainer
 
@@ -17,4 +15,3 @@ def test_create_gui(state: TopicModelContainer):
     gui.tick()
 
     gui.update_handler()
-

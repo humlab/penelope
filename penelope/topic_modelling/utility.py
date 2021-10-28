@@ -18,6 +18,7 @@ def find_models(path: str) -> dict:
     ]
     return models
 
+
 def find_inferred_topics_folders(folder: str) -> List[str]:
     """Return inferred data in sub-folders to `folder`"""
     filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
@@ -195,4 +196,3 @@ class DocumentTopicWeights:
             self.data = self.data[self.data.document_id.isin(document_ids)]
 
         return self
-

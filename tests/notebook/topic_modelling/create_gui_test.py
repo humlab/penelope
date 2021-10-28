@@ -15,4 +15,3 @@ def inferred_topics_data() -> InferredTopicsData:
 
 def test_display_gui(inferred_topics_data: InferredTopicsData):
     display_gui(inferred_topics_data.topic_titles())
-
