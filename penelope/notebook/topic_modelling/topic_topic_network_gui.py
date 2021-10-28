@@ -130,19 +130,19 @@ class TopicTopicGUI:
 
     def setup(self) -> "TopicTopicGUI":
 
-        self.threshold.observe(self.compute_handler, names='value')
-        self.n_docs.observe(self.compute_handler, names='value')
-        self.period.observe(self.compute_handler, names='value')
-        self.scale.observe(self.compute_handler, names='value')
-        self.node_range.observe(self.compute_handler, names='value')
-        self.edge_range.observe(self.compute_handler, names='value')
-        self.output_format.observe(self.compute_handler, names='value')
-        self.network_layout.observe(self.compute_handler, names='value')
-        self.ignores.observe(self.compute_handler, names='value')
+        self.threshold.observe(self.update_handler, names='value')
+        self.n_docs.observe(self.update_handler, names='value')
+        self.period.observe(self.update_handler, names='value')
+        self.scale.observe(self.update_handler, names='value')
+        self.node_range.observe(self.update_handler, names='value')
+        self.edge_range.observe(self.update_handler, names='value')
+        self.output_format.observe(self.update_handler, names='value')
+        self.network_layout.observe(self.update_handler, names='value')
+        self.ignores.observe(self.update_handler, names='value')
 
         return self
 
-    def compute_handler(self, *_):
+    def update_handler(self, *_):
 
         self.output.clear_output()
         self.tick(1)
@@ -180,4 +180,4 @@ def display_gui(state: TopicModelContainer):
 
     display(gui.layout())
 
-    gui.compute_handler()
+    gui.update_handler()
