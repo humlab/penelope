@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from penelope.utility import list_filenames, pandas_read_csv_zip, pandas_to_csv_zip, try_split_column
+from penelope.utility.pandas_utils import create_mask
 from tests.utils import OUTPUT_FOLDER
 
 
@@ -50,7 +51,7 @@ def test_pandas_to_csv_zip():
 
 def test_pandas_read_csv_zip():
 
-    filename = os.path.join(OUTPUT_FOLDER, "test_pandas_to_csv_zip.zip")
+    filename: str = os.path.join(OUTPUT_FOLDER, "test_pandas_to_csv_zip.zip")
     expected_data = create_pandas_test_data()
     pandas_to_csv_zip(filename, dfs=expected_data, extension='csv', sep='\t')
 
@@ -59,3 +60,22 @@ def test_pandas_read_csv_zip():
     assert 'df1.csv' in data and 'df2.csv' in data
     assert ((data['df1.csv'] == expected_data[0][0]).all()).all()
     assert ((data['df2.csv'] == expected_data[1][0]).all()).all()
+
+
+def test_create_mask():
+
+    df: pd.DataFrame = pd.DataFrame({'A': ['a', 'a', 'c', 'd'], 'B': [True, False, True, True], 'C': [1, 2, 3, 4]})
+
+    mask: np.ndarray = create_mask(df, {})
+    assert len(mask) == 4 and all(mask)
+
+    empty: pd.DataFrame = df[df.A == 'X']
+    mask: np.ndarray = create_mask(empty, {'A': 'a'})
+    assert len(mask) == 0
+
+    assert (create_mask(df, {'A': 'a'}) == [True, True, False, False]).all()
+    assert (create_mask(df, {'A': (True, 'a')}) == [True, True, False, False]).all()
+    assert (create_mask(df, {'A': (False, 'a')}) == [False, False, True, True]).all()
+    assert (create_mask(df, {'A': (False, ['c', 'd'])}) == [True, True, False, False]).all()
+    assert (create_mask(df, {'A': 'a', 'B': True}) == [True, False, False, False]).all()
+    assert (create_mask(df, {'A': 'a', 'B': True, 'C': 2}) == [False, False, False, False]).all()

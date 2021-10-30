@@ -60,6 +60,11 @@ def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
     return v
 
 
+class NegatedMaskError(Exception):
+    def __init__(self):
+        super().__init__("Tuple length must be 2 and first element must be boolean.")
+
+
 def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     """Creates a mask based on key-values in `criterias`
 
@@ -77,7 +82,7 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     """
     mask = np.repeat(True, len(doc.index))
 
-    if doc is None or len(doc) == 0:
+    if len(doc) == 0:
         return mask
 
     for attr_name, attr_value in args.items():
@@ -90,27 +95,17 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
             continue
 
         if isinstance(attr_value, tuple):
-            # if LIST and tuple is passed, then first element indicates if mask should be negated
-            if (
-                len(attr_value) != 2
-                or not isinstance(attr_value[0], bool)
-                or not isinstance(attr_value[1], (list, set))
-            ):
-                raise ValueError(
-                    "when tuple is passed: length must be 2 and first element must be boolean and second must be a list"
-                )
+            if len(attr_value) != 2 or not isinstance(attr_value[0], bool):
+                raise NegatedMaskError()
             attr_value_sign = attr_value[0]
             attr_value = attr_value[1]
 
         value_serie: pd.Series = doc[attr_name]
-        if isinstance(attr_value, bool):
-            # if value_serie.isna().sum() > 0:
-            #     raise ValueError(f"data error: boolean column {attr_name} contains np.nan")
-            mask &= value_serie == attr_value
-        elif isinstance(attr_value, (list, set)):
-            mask &= value_serie.isin(attr_value) if attr_value_sign else ~value_serie.isin(attr_value)
+        attr_mask = value_serie.isin(attr_value) if isinstance(attr_value, (list, set)) else value_serie == attr_value
+        if attr_value_sign:
+            mask &= attr_mask
         else:
-            mask &= value_serie == attr_value
+            mask &= ~attr_mask
 
     return mask
 
