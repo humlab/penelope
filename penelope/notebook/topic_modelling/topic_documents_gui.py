@@ -90,7 +90,7 @@ class TopicDocumentsGUI:
 
             self.text.value = tm.get_topic_title2(topic_token_weights, self.topic_id.value)
 
-            topic_documents = tm.get_topic_documents(
+            topic_documents = tm.get_relevant_topic_documents(
                 document_topic_weights=document_topic_weights,
                 document_index=document_index,
                 threshold=self.threshold.value,
