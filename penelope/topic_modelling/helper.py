@@ -19,12 +19,20 @@ class DocumentTopicWeightsReducer:
         self.data: pd.DataFrame = self.inferred_topics.document_topic_weights
 
     @property
-    def copy(self) -> pd.DataFrame:
-        return self.data.copy()
-
-    @property
     def value(self) -> pd.DataFrame:
         return self.data
+
+    @property
+    def document_index(self) -> pd.DataFrame:
+        return self.inferred_topics.document_index
+
+    def copy(self) -> "DocumentTopicWeightsReducer":
+        self.data = self.data.copy()
+        return self
+
+    def reset(self) -> "DocumentTopicWeightsReducer":
+        self.data: pd.DataFrame = self.inferred_topics.document_topic_weights
+        return self
 
     def threshold(self, threshold: float = 0.0) -> "DocumentTopicWeightsReducer":
         """Filter document-topic weights by threshold"""
@@ -74,14 +82,17 @@ class DocumentTopicWeightsReducer:
 
         return self
 
-    def overload(self, includes: str = None, ignores: str = 'year,document_name') -> "DocumentTopicWeightsReducer":
+    def overload(self, includes: str = None, ignores: str = None) -> "DocumentTopicWeightsReducer":
 
-        extra_columns: List[str] = (
-            includes.split(',') if includes else [x for x in self.document_index.columns.tolist()]
-        )
-        extra_columns = [c for c in extra_columns if c not in self.data.columns and c not in (ignores or '').split(',')]
+        exclude_columns: Set[str] = set(self.data.columns.tolist()) | set((ignores or '').split(','))
+        include_columns: Set[str] = set(includes.split(',') if includes else self.document_index.columns)
+        overload_columns: List[str] = (include_columns - exclude_columns).intersection(set(self.document_index.columns))
+
         self.data = self.data.merge(
-            self.document_index[extra_columns], left_on='document_id', right_on='document_id', how='inner'
+            self.document_index.set_index('document_id')[overload_columns],
+            left_on='document_id',
+            right_index=True,
+            how='inner',
         )
         return self
 
