@@ -1,8 +1,9 @@
 import fnmatch
+import operator
 import zipfile
 from io import StringIO
 from numbers import Number
-from typing import Any, Dict, List, Literal, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -60,9 +61,13 @@ def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
     return v
 
 
-class NegatedMaskError(Exception):
+class CreateMaskError(Exception):
     def __init__(self):
-        super().__init__("Tuple length must be 2 and first element must be boolean.")
+        super().__init__(
+            """
+        Tuple length must be 2 or 3 and first element must be sign, second (optional) a binary op.
+    """
+        )
 
 
 def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
@@ -87,7 +92,9 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
 
     for attr_name, attr_value in args.items():
 
-        attr_value_sign = True
+        attr_sign = True
+        attr_binary_operator: Union[str, Callable] = None
+
         if attr_value is None:
             continue
 
@@ -95,14 +102,31 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
             continue
 
         if isinstance(attr_value, tuple):
-            if len(attr_value) != 2 or not isinstance(attr_value[0], bool):
-                raise NegatedMaskError()
-            attr_value_sign = attr_value[0]
-            attr_value = attr_value[1]
+
+            if len(attr_value) not in (2, 3):
+                raise CreateMaskError()
+
+            if len(attr_value) == 3:
+                attr_sign, attr_binary_operator, attr_value = attr_value
+            elif isinstance(attr_value[0], bool):
+                attr_sign, attr_value = attr_value
+            else:
+                attr_binary_operator, attr_value = attr_value
+
+            if isinstance(attr_binary_operator, str):
+                attr_binary_operator = getattr(operator, attr_binary_operator)
 
         value_serie: pd.Series = doc[attr_name]
-        attr_mask = value_serie.isin(attr_value) if isinstance(attr_value, (list, set)) else value_serie == attr_value
-        if attr_value_sign:
+
+        attr_mask = (
+            attr_binary_operator(value_serie, attr_value)
+            if attr_binary_operator is not None
+            else value_serie.isin(attr_value)
+            if isinstance(attr_value, (list, set))
+            else value_serie == attr_value
+        )
+
+        if attr_sign:
             mask &= attr_mask
         else:
             mask &= ~attr_mask

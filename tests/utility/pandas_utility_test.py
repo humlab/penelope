@@ -1,3 +1,4 @@
+import operator
 import os
 
 import numpy as np
@@ -62,6 +63,8 @@ def test_pandas_read_csv_zip():
     assert ((data['df2.csv'] == expected_data[1][0]).all()).all()
 
 
+
+
 def test_create_mask():
 
     df: pd.DataFrame = pd.DataFrame({'A': ['a', 'a', 'c', 'd'], 'B': [True, False, True, True], 'C': [1, 2, 3, 4]})
@@ -79,3 +82,9 @@ def test_create_mask():
     assert (create_mask(df, {'A': (False, ['c', 'd'])}) == [True, True, False, False]).all()
     assert (create_mask(df, {'A': 'a', 'B': True}) == [True, False, False, False]).all()
     assert (create_mask(df, {'A': 'a', 'B': True, 'C': 2}) == [False, False, False, False]).all()
+
+    assert (create_mask(df, {'A': (operator.eq, 'a')}) == [True, True, False, False]).all()
+    assert (create_mask(df, {'A': (operator.gt, 'a')}) == [False, False, True, True]).all()
+    assert (create_mask(df, {'A': ('gt', 'a')}) == [False, False, True, True]).all()
+    assert (create_mask(df, {'A': (False, operator.gt, 'a')}) == [True, True, False, False]).all()
+    assert (create_mask(df, {'A': (False, 'gt', 'a')}) == [True, True, False, False]).all()
