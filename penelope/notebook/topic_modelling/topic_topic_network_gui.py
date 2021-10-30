@@ -1,4 +1,3 @@
-import penelope.topic_modelling as topic_modelling
 from IPython.display import display
 from ipywidgets import (  # type: ignore
     HTML,
