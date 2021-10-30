@@ -176,22 +176,22 @@ def get_relevant_topic_documents(
 
 
 def filter_topic_tokens_overview(
-    topic_tokens_overview: pd.DataFrame, *, search_text: str, n_count: int
+    topic_tokens_overview: pd.DataFrame,
+    *,
+    search_text: str,
+    n_count: int,
+    truncate_tokens: bool = False,
+    format_string: str = '<b style="color:green;font-size:14px">{}</b>',
 ) -> pd.DataFrame:
     """Filter out topics where `search` string is in `n_counts` words. Return data frame."""
-    reduced_topics = (
-        topic_tokens_overview[topic_tokens_overview.tokens.str.contains(search_text)]
-        if search_text
-        else topic_tokens_overview
-    )
 
-    tokens: pd.Series = reduced_topics.tokens.apply(lambda x: " ".join(x.split()[:n_count]))
+    data = pd.DataFrame(topic_tokens_overview)
 
     if search_text:
-        tokens = reduced_topics.tokens.apply(
-            lambda x: x.replace(search_text, f'<b style="color:green;font-size:14px">{search_text}</b>')
+        top_tokens = data.tokens.apply(lambda x: x.split(' ')[:n_count]).str.join(' ')
+        data = data[top_tokens.str.contains(search_text)]
+        data['tokens'] = (top_tokens if truncate_tokens else data.tokens).apply(
+            lambda x: x.replace(search_text, format_string.format(search_text))
         )
 
-    reduced_topics['tokens'] = tokens
-
-    return reduced_topics
+    return data
