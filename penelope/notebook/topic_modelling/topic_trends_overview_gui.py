@@ -1,7 +1,7 @@
 import pandas as pd
-import penelope.topic_modelling as tm
 from IPython.display import display
 from ipywidgets import HTML, Dropdown, HBox, Output, ToggleButton, VBox  # type: ignore
+from penelope import topic_modelling as tm
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -11,8 +11,8 @@ TEXT_ID = 'topic_relevance'
 
 
 class TopicOverviewGUI:
-    def __init__(self):
-
+    def __init__(self, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
+        self.calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = calculator
         weighings = [(x['description'], x['key']) for x in tm.YEARLY_MEAN_COMPUTE_METHODS]
 
         self.state: TopicModelContainer = None
@@ -61,12 +61,27 @@ class TopicOverviewGUI:
         return VBox([HBox([self.aggregate, self.output_format, self.flip_axis]), HBox([self.output]), self.text])
 
     def compute_weights(self) -> pd.DataFrame:
-        weights = tm.compute_topic_yearly_means(self.state.inferred_topics.document_topic_weights).fillna(0)
-        return weights
+        return self.calculator.compute(
+            inferred_topics=self.state.inferred_topics.document_topic_weights,
+            filters=self.get_filters(),
+            threshold=self.get_threshold(),
+            result_threshold=self.get_result_threshold(),
+        )
+
+    def get_filters(self) -> dict:
+        return {}
+
+    def get_threshold(self) -> float:
+        return 0.0
+
+    def get_result_threshold(self) -> float:
+        return 0.0
 
 
 def display_gui(state: TopicModelContainer):
-
-    gui: TopicOverviewGUI = TopicOverviewGUI().setup(state)
+    calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = tm.MemoizedTopicPrevalenceOverTimeCalculator(
+        calculator=tm.MeanTopicPrevalenceOverTimeCalculator()
+    )
+    gui: TopicOverviewGUI = TopicOverviewGUI(calculator=calculator).setup(state)
     display(gui.layout())
     gui.update_handler()

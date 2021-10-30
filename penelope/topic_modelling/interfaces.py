@@ -19,9 +19,7 @@ from penelope.vendor.gensim import terms_to_sparse_corpus
 from tqdm.auto import tqdm
 
 from .utility import (
-    DocumentTopicWeights,
     compute_topic_proportions,
-    compute_topic_yearly_means,
     filter_document_topic_weights,
     get_topic_title,
     get_topic_title2,
@@ -405,9 +403,6 @@ class InferredTopicsData:
     def top_topic_token_weights(self, n_count: int) -> pd.DataFrame:
         return top_topic_token_weights(self.topic_token_weights, self.id2term, n_count=n_count)
 
-    def document_topic_weights_helper(self) -> DocumentTopicWeights:
-        return DocumentTopicWeights(self.document_topic_weights, self.document_index)
-
     def get_topic_titles(self, topic_id: int = None, n_tokens: int = 100) -> pd.Series:
         """Return strings of `n_tokens` most probable words per topic."""
         return get_topic_titles(self.topic_token_weights, topic_id, n_tokens=n_tokens)
@@ -426,9 +421,6 @@ class InferredTopicsData:
 
     def compute_topic_proportions(self) -> pd.DataFrame:
         return compute_topic_proportions(self.document_topic_weights, self.document_index)
-
-    def compute_topic_yearly_means(self, relevence_mean_threshold: float = None):
-        return compute_topic_yearly_means(self.document_topic_weights, relevence_mean_threshold)
 
     def filter_document_topic_weights(self, filters: Mapping[str, Any] = None, threshold: float = 0.0) -> pd.DataFrame:
         return filter_document_topic_weights(self.document_topic_weights, filters=filters, threshold=threshold)

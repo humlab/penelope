@@ -6,14 +6,14 @@ from IPython.display import display
 from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, ToggleButton, VBox  # type: ignore
 
 from .. import widgets_utils
+from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
-from .topic_trends_gui_utility import display_topic_trends
 
 TEXT_ID = 'topic_share_plot'
 
 
 class TopicTrendsGUI:
-    def __init__(self):
+    def __init__(self, calculator: tm.TopicPrevalenceOverTimeCalculator = None):
         super().__init__()
 
         self.state: TopicModelContainer = None
@@ -43,6 +43,8 @@ class TopicTrendsGUI:
         self.next_topic_id: Optional[Button] = None
 
         self.extra_placeholder: VBox = HBox()
+
+        self.calculator: tm.TopicPrevalenceOverTimeCalculator = calculator or tm.prevelance.default_calculator()
 
     def layout(self):
         return VBox(
@@ -86,13 +88,26 @@ class TopicTrendsGUI:
             self.topic_id.value = 0
             self.topic_id.max = self.state.num_topics - 1
 
-        tokens = tm.get_topic_title(self.state.inferred_topics.topic_token_weights, topic_id, n_tokens=200)
+        tokens = self.state.inferred_topics.get_topic_title(topic_id, n_tokens=200)
 
         self.text.value = 'ID {}: {}'.format(topic_id, tokens)
 
     def compute_weights(self) -> pd.DataFrame:
-        weights = tm.compute_topic_yearly_means(self.state.inferred_topics.document_topic_weights)
-        return weights
+        return self.calculator.compute(
+            inferred_topics=self.state.inferred_topics.document_topic_weights,
+            filters=self.get_filters(),
+            threshold=self.get_threshold(),
+            result_threshold=self.get_result_threshold(),
+        )
+
+    def get_filters(self) -> dict:
+        return {}
+
+    def get_threshold(self) -> float:
+        return 0.0
+
+    def get_result_threshold(self) -> float:
+        return 0.0
 
     def update_handler(self, *_):
 
@@ -104,7 +119,7 @@ class TopicTrendsGUI:
 
             weights = self.compute_weights()
 
-            display_topic_trends(
+            gui_utils.display_topic_trends(
                 weight_over_time=weights,
                 topic_id=self.topic_id.value,
                 year_range=self.state.inferred_topics.year_period,
@@ -116,7 +131,7 @@ class TopicTrendsGUI:
 
 def display_gui(state: TopicModelContainer):
 
-    gui = TopicTrendsGUI().setup(state)
+    gui = TopicTrendsGUI(calculator=None).setup(state)
 
     display(gui.layout())
 

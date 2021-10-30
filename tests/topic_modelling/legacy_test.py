@@ -11,7 +11,7 @@ from penelope.scripts.topic_model_legacy import main as run_model
 from penelope.topic_modelling import InferredModel, InferredTopicsData
 from penelope.topic_modelling.engines import ITopicModelEngine, get_engine_by_model_type
 from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES
-from penelope.topic_modelling.utility import compute_topic_yearly_means
+from penelope.topic_modelling.prevelance import compute_yearly_mean_topic_weights
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
@@ -334,18 +334,20 @@ def test_compute_topic_yearly_means():
 
     document_topic_weights: pd.DataFrame = pd.read_csv(StringIO(data_csv_str), sep='\t', index_col=0)
 
-    topic_yerly_means: pd.DataFrame = compute_topic_yearly_means(document_topic_weights)
+    topic_yearly_mean_weights: pd.DataFrame = compute_yearly_mean_topic_weights(document_topic_weights)
 
     assert (
         document_topic_weights.groupby(['year', 'topic_id'])['weight'].mean()
-        == topic_yerly_means.groupby(['year', 'topic_id']).sum().false_mean
+        == topic_yearly_mean_weights.groupby(['year', 'topic_id']).sum().false_mean
     ).all()
 
-    assert topic_yerly_means is not None
+    assert topic_yearly_mean_weights is not None
 
-    topic_yerly_means: pd.DataFrame = compute_topic_yearly_means(document_topic_weights, relevence_mean_threshold=0.20)
+    topic_yearly_mean_weights: pd.DataFrame = compute_yearly_mean_topic_weights(
+        document_topic_weights, relevence_mean_threshold=0.20
+    )
 
-    assert topic_yerly_means is not None
+    assert topic_yearly_mean_weights is not None
 
     # assert (
     #     document_topic_weights[document_topic_weights.weight >= 0.20].groupby(['year', 'topic_id'])['weight'].mean()

@@ -1,7 +1,7 @@
 import glob
 import itertools
 import os
-from typing import Any, List, Mapping, Set
+from typing import Any, List, Mapping
 
 import numpy as np
 import pandas as pd
@@ -26,48 +26,6 @@ def find_inferred_topics_folders(folder: str) -> List[str]:
     filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
     folders = [os.path.split(filename)[0] for filename in filenames]
     return folders
-
-
-def compute_topic_yearly_means(
-    document_topic_weight: pd.DataFrame, relevence_mean_threshold: float = None
-) -> pd.DataFrame:
-    """Returs yearly mean topic weight based on data in `document_topic_weight`"""
-
-    cross_iter = itertools.product(
-        range(document_topic_weight.year.min(), document_topic_weight.year.max() + 1),
-        range(0, document_topic_weight.topic_id.max() + 1),
-    )
-    dfs = pd.DataFrame(list(cross_iter), columns=['year', 'topic_id']).set_index(['year', 'topic_id'])
-
-    """ Add the most basic stats """
-    dfs = dfs.join(
-        document_topic_weight.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]), how='left'
-    ).fillna(0)
-
-    dfs.columns = ['max_weight', 'sum_weight', 'false_mean', 'n_topic_docs']
-
-    dfs['n_topic_docs'] = dfs.n_topic_docs.astype(np.uint32)
-
-    if relevence_mean_threshold is not None:
-
-        dfs.drop(columns='false_mean', inplace=True)
-
-        df_mean_relevance = (
-            document_topic_weight[document_topic_weight.weight >= relevence_mean_threshold]
-            .groupby(['year', 'topic_id'])['weight']
-            .agg([np.mean])
-        )
-        df_mean_relevance.columns = ['false_mean']
-
-        dfs = dfs.join(df_mean_relevance, how='left').fillna(0)
-
-    doc_counts = document_topic_weight.groupby('year').document_id.nunique().rename('n_total_docs')
-
-    dfs = dfs.join(doc_counts, how='left').fillna(0)
-    dfs['n_total_docs'] = dfs.n_total_docs.astype(np.uint32)
-    dfs['true_mean'] = dfs.apply(lambda x: x['sum_weight'] / x['n_total_docs'], axis=1)
-
-    return dfs.reset_index()
 
 
 # @deprecated
@@ -159,6 +117,7 @@ def compute_topic_proportions(document_topic_weights: pd.DataFrame, document_ind
     return _compute_topic_proportions(document_topic_weights, document_index.n_terms.values)
 
 
+# FIXME: Deprecate method. Use DocumentTopicWeights instead
 def filter_document_topic_weights(
     document_topic_weights: pd.DataFrame, filters: Mapping[str, Any] = None, threshold: float = 0.0
 ) -> pd.DataFrame:
@@ -191,20 +150,20 @@ def filter_document_topic_weights(
     return df.copy()
 
 
-def get_topic_documents(
+def get_relevant_topic_documents(
     document_topic_weights: pd.DataFrame,
     document_index: DocumentIndex,
     threshold: float = 0.0,
     n_top: int = 500,
     **filters,
 ) -> pd.DataFrame:
+    """Generate list of documents where topics are deemed relevant"""
     topic_documents = filter_document_topic_weights(document_topic_weights, filters=filters, threshold=threshold)
     if len(topic_documents) == 0:
         return None
 
     topic_documents = (
-        topic_documents.drop(['topic_id'], axis=1)
-        .set_index('document_id')
+        topic_documents.set_index('document_id')  # .drop(['topic_id'], axis=1)
         .sort_values('weight', ascending=False)
         .head(n_top)
     )
@@ -236,55 +195,3 @@ def filter_topic_tokens_overview(
     reduced_topics['tokens'] = tokens
 
     return reduced_topics
-
-
-class DocumentTopicWeights:
-    def __init__(self, document_topic_weights: pd.DataFrame, document_index: pd.DataFrame):
-
-        self.document_topic_weights: pd.DataFrame = document_topic_weights
-        self.document_index: pd.DataFrame = document_index
-        self.data: pd.DataFrame = document_topic_weights
-
-    def filter_by(
-        self,
-        threshold: float = 0.0,
-        key_values: Mapping[str, Any] = None,
-        document_key_values: Mapping[str, Any] = None,
-    ) -> "DocumentTopicWeights":
-        return self.threshold(threshold).filter_by_keys(key_values).filter_by_document_keys(document_key_values)
-
-    def threshold(self, threshold: float = 0.0) -> "DocumentTopicWeights":
-        """Filter document-topic weights by threshold"""
-
-        if threshold > 0:
-            self.data = self.data[self.data.weight >= threshold]
-
-        return self
-
-    @property
-    def copy(self) -> pd.DataFrame:
-        return self.data.copy()
-
-    @property
-    def value(self) -> pd.DataFrame:
-        return self.data
-
-    def filter_by_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeights":
-        """Filter data by key values. Returnm self."""
-        if key_values is not None:
-            self.data = self.data[utility.create_mask(self.data, key_values)]
-        return self
-
-    def filter_by_document_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeights":
-        """Filter data by key values. Returnm self."""
-
-        if key_values is not None:
-
-            mask: np.ndarray = utility.create_mask(self.document_index, key_values)
-
-            document_index: pd.DataFrame = self.document_index[mask]
-            document_ids: Set[int] = set(document_index.document_id.unique())
-
-            self.data = self.data[self.data.document_id.isin(document_ids)]
-
-        return self
