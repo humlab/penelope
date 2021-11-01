@@ -246,3 +246,8 @@ def timestamped_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx'], 
     else:
         raise ValueError(f"unknown extension: {extension}")
     logger.info(f'Data stored in {filename}')
+
+
+def rename_columns(df: pd.DataFrame, columns: List[str] = None) -> pd.DataFrame:
+    df.columns = columns
+    return df

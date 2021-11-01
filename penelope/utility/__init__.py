@@ -77,6 +77,7 @@ from .pandas_utils import (
     create_mask2,
     pandas_read_csv_zip,
     pandas_to_csv_zip,
+    rename_columns,
     setup_pandas,
     timestamped_store,
     try_split_column,
