@@ -6,7 +6,7 @@ from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.topic_modelling import prevelance
 from penelope.topic_modelling.interfaces import InferredTopicsData
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access, redefined-outer-name
 
 
 def test_compute_topic_yearly_means(state: TopicModelContainer):
