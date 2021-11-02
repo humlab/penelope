@@ -15,7 +15,7 @@ def test_compute_topic_yearly_means(state: TopicModelContainer):
     document_index: pd.DataFrame = state.inferred_topics.document_index
 
     topic_yearly_mean_weights: pd.DataFrame = prevelance.compute_yearly_topic_weights(
-        document_topic_weights, document_index
+        document_topic_weights, document_index=document_index
     )
     assert len(topic_yearly_mean_weights) == 8
 
