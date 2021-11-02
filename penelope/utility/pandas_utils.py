@@ -108,12 +108,18 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
 
             if len(attr_value) == 3:
                 attr_sign, attr_binary_operator, attr_value = attr_value
-            elif isinstance(attr_value[0], bool):
-                attr_sign, attr_value = attr_value
             else:
-                attr_binary_operator, attr_value = attr_value
+
+                if isinstance(attr_value[0], bool):
+                    attr_sign, attr_value = attr_value
+                elif callable(attr_value[0]) or isinstance(attr_value[0], str):
+                    attr_binary_operator, attr_value = attr_value
+                else:
+                    raise ValueError(f"expected bool, callable or operator name, found {attr_value[0]}")
 
             if isinstance(attr_binary_operator, str):
+                if not hasattr(operator, attr_binary_operator):
+                    raise ValueError(f"operator.{attr_binary_operator} not found")
                 attr_binary_operator = getattr(operator, attr_binary_operator)
 
         value_serie: pd.Series = doc[attr_name]
