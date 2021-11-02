@@ -24,8 +24,8 @@ class TopicTrendsGUI:
 
         self.aggregate = Dropdown(
             description='Aggregate',
-            options=[(x['description'], x['key']) for x in tm.YEARLY_MEAN_COMPUTE_METHODS],
-            value='true_mean',
+            options=[(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS],
+            value='true_average_weight',
             layout=dict(width="200px"),
         )
 

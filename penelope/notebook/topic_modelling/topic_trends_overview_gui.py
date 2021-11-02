@@ -13,7 +13,7 @@ TEXT_ID = 'topic_relevance'
 class TopicOverviewGUI:
     def __init__(self, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
         self.calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = calculator
-        weighings = [(x['description'], x['key']) for x in tm.YEARLY_MEAN_COMPUTE_METHODS]
+        weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
 
         self.state: TopicModelContainer = None
         self.text_id: str = TEXT_ID
@@ -80,7 +80,7 @@ class TopicOverviewGUI:
 
 def display_gui(state: TopicModelContainer):
     calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = tm.MemoizedTopicPrevalenceOverTimeCalculator(
-        calculator=tm.MeanTopicPrevalenceOverTimeCalculator()
+        calculator=tm.AverageTopicPrevalenceOverTimeCalculator()
     )
     gui: TopicOverviewGUI = TopicOverviewGUI(calculator=calculator).setup(state)
     display(gui.layout())
