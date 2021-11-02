@@ -1,5 +1,3 @@
-from typing import Callable
-
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore

@@ -63,8 +63,6 @@ def test_pandas_read_csv_zip():
     assert ((data['df2.csv'] == expected_data[1][0]).all()).all()
 
 
-
-
 def test_create_mask():
 
     df: pd.DataFrame = pd.DataFrame({'A': ['a', 'a', 'c', 'd'], 'B': [True, False, True, True], 'C': [1, 2, 3, 4]})

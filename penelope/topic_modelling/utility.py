@@ -1,5 +1,4 @@
 import glob
-import itertools
 import os
 from typing import Any, List, Mapping
 

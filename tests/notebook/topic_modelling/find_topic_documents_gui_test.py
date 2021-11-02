@@ -1,11 +1,8 @@
-from typing import Callable
-
 from penelope.notebook.topic_modelling.find_topic_documents_gui import FindTopicDocumentsGUI, create_gui
 
 
 def test_load_gui(state):
-    callback: Callable = lambda **_: None
-    gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state).setup(callback)
+    gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state).setup()
 
     layout = gui.layout()
     assert layout is not None
