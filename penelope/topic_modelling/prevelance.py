@@ -1,5 +1,6 @@
 import abc
 import itertools
+from tkinter import N
 from typing import List, NamedTuple, Tuple
 
 import numpy as np
@@ -23,6 +24,7 @@ class TopicPrevalenceOverTimeCalculator(abc.ABC):
         filters: dict,
         threshold: float = 0.0,
         result_threshold: float = 0.0,
+        n_top_relevance: int = None,
     ) -> pd.DataFrame:
         ...
 
@@ -35,15 +37,29 @@ class AverageTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator
         filters: dict,
         threshold: float = 0.0,
         result_threshold: float = 0.0,
+        n_top_relevance: int = None,
     ) -> pd.DataFrame:
         document_topic_weights: pd.DataFrame = (
             DocumentTopicWeightsReducer(inferred_topics).threshold(threshold or 0).filter_by_keys(filters or {}).value
         )
-        return self.compute_yearly_topic_weights(document_topic_weights, threshold=result_threshold or 0)
+        return self.compute_yearly_topic_weights(
+            document_topic_weights,
+            document_index=inferred_topics.document_index,
+            threshold=result_threshold or 0,
+            n_top_relevance=n_top_relevance,
+        )
 
     @staticmethod
-    def compute_yearly_topic_weights(document_topic_weights: pd.DataFrame, threshold: float = None) -> pd.DataFrame:
-        return compute_yearly_topic_weights(document_topic_weights, threshold)
+    def compute_yearly_topic_weights(
+        document_topic_weights: pd.DataFrame,
+        *,
+        document_index: pd.DataFrame,
+        threshold: float = None,
+        n_top_relevance: int = None,
+    ) -> pd.DataFrame:
+        return compute_yearly_topic_weights(
+            document_topic_weights, document_index=document_index, threshold=threshold, n_top_relevance=n_top_relevance
+        )
 
 
 class RollingAverageTopicPrevalenceOverTimeCalculator(AverageTopicPrevalenceOverTimeCalculator):
@@ -62,6 +78,7 @@ class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculato
         filters: dict
         threshold: float = 0.0
         result_threshold: float = 0.0
+        n_top_relevance: int = 0
 
         def validate(
             self,
@@ -69,12 +86,14 @@ class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculato
             filters: dict,
             threshold: float = 0.0,
             result_threshold: float = 0.0,
+            n_top_relevance: int = None,
         ):
             return (
                 self.inferred_topics is inferred_topics
                 and self.filters == filters
                 and self.threshold == threshold
                 and self.result_threshold == result_threshold
+                and self.n_top_relevance == n_top_relevance
             )
 
     def __init__(self, calculator: TopicPrevalenceOverTimeCalculator):
@@ -90,13 +109,18 @@ class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculato
         filters: dict,
         threshold: float = 0.0,
         result_threshold: float = 0.0,
+        n_top_relevance: int = None,
     ) -> pd.DataFrame:
 
         if not (self.args and self.args.validate(inferred_topics, filters, threshold, result_threshold)):
 
             self.data = self.calculator.compute(inferred_topics, filters, threshold, result_threshold)
             self.args = MemoizedTopicPrevalenceOverTimeCalculator.ArgsMemory(
-                inferred_topics=inferred_topics, filters=filters, threshold=threshold, result_threshold=result_threshold
+                inferred_topics=inferred_topics,
+                filters=filters,
+                threshold=threshold,
+                result_threshold=result_threshold,
+                n_top_relevance=n_top_relevance,
             )
 
         return self.data
@@ -164,14 +188,14 @@ def _add_average_yearly_topic_weight_by_all_documents(yearly_weights: pd.DataFra
 
 
 def _add_top_n_topic_prevelance_weight(
-    yearly_weights: pd.DataFrame, document_topic_weights: pd.DataFrame, n_top: int = None
+    yearly_weights: pd.DataFrame, document_topic_weights: pd.DataFrame, n_top_relevance: int = None
 ) -> pd.DataFrame:
 
-    if not n_top:
+    if not n_top_relevance:
         return yearly_weights
 
     top_n_topics: pd.DataFrame = document_topic_weights.groupby(['year', 'document_id']).apply(
-        lambda grp: grp.nlargest(n_top, 'weight')
+        lambda grp: grp.nlargest(n_top_relevance, 'weight')
     )['topic_id']
     top_n_counts: pd.DataFrame = (
         top_n_topics.reset_index().groupby(['year', 'topic_id'])['document_id'].size().rename('top_n_documents')
@@ -183,7 +207,11 @@ def _add_top_n_topic_prevelance_weight(
 
 
 def compute_yearly_topic_weights(
-    document_topic_weights: pd.DataFrame, document_index: pd.DataFrame, *, threshold: float = None, n_top: int = None
+    document_topic_weights: pd.DataFrame,
+    *,
+    document_index: pd.DataFrame,
+    threshold: float = None,
+    n_top_relevance: int = None,
 ) -> pd.DataFrame:
     """Compute yearly document topic weights
          average_weight: average weight of all documents that has a weight in (i.e. assigned by engine) or a weight above a given threshold
@@ -198,7 +226,7 @@ def compute_yearly_topic_weights(
         .pipe(_add_yearly_corpus_document_count, document_index)
         .pipe(_add_average_yearly_topic_weight_by_all_documents)
         .pipe(_add_average_yearly_topic_weight_above_threshold, document_topic_weights, threshold, 'average_weight')
-        .pipe(_add_top_n_topic_prevelance_weight, document_topic_weights, n_top)
+        .pipe(_add_top_n_topic_prevelance_weight, document_topic_weights, n_top_relevance)
         .reset_index()
     )
 

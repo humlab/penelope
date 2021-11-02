@@ -21,7 +21,7 @@ def test_compute_topic_yearly_means(state: TopicModelContainer):
 
     assert (
         document_topic_weights.groupby(['year', 'topic_id'])['weight'].mean()
-        == topic_yearly_mean_weights.groupby(['year', 'topic_id']).sum().false_mean
+        == topic_yearly_mean_weights.groupby(['year', 'topic_id']).sum().average_weight
     ).all()
 
     assert topic_yearly_mean_weights is not None
@@ -30,7 +30,7 @@ def test_compute_topic_yearly_means(state: TopicModelContainer):
     assert (topic_yearly_mean_weights[topic_yearly_mean_weights.year == 2020].n_documents == 2).all()
 
     topic_yearly_mean_weights: pd.DataFrame = prevelance.compute_yearly_topic_weights(
-        document_topic_weights, document_index, threshold=0.20
+        document_topic_weights, document_index=document_index, threshold=0.20
     )
 
     assert topic_yearly_mean_weights is not None
@@ -81,12 +81,12 @@ e;e.txt;2020;2;4;e;44
 def test_n_top_prevelance_over_time(simple_test_data):
     document_index, document_topic_weights = simple_test_data
     yearly_weights: pd.DataFrame = prevelance.compute_yearly_topic_weights(
-        document_topic_weights, document_index, threshold=0.00, n_top=1
+        document_topic_weights, document_index=document_index, threshold=0.00, n_top_relevance=1
     )
     assert yearly_weights.sort_index().top_n_weight.round(2).tolist() == [0.33, 0.00, 0.0, 0.67, 0.5, 0.5, 0.0, 0.0]
 
 
-def test_xxx(simple_test_data):
+def test_compute_prevelance_parts(simple_test_data):
 
     document_index, dtw = simple_test_data
 
@@ -132,7 +132,7 @@ def test_xxx(simple_test_data):
     assert len(yearly_weights) == 8
     assert 'average_weight' in yearly_weights.columns.tolist()
 
-    yearly_weights = prevelance._add_top_n_topic_prevelance_weight(yearly_weights, dtw, n_top=1)
+    yearly_weights = prevelance._add_top_n_topic_prevelance_weight(yearly_weights, dtw, n_top_relevance=1)
     assert yearly_weights.sort_index().top_n_weight.round(2).tolist() == [0.33, 0.0, 0.0, 0.67, 0.5, 0.5, 0.0, 0.0]
     assert yearly_weights is not None
 

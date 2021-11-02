@@ -120,11 +120,8 @@ def test_tagged_tokens_filter_apply_when_unary_sign_operator_attribute_succeeds(
     with pytest.raises(ValueError):
         new_doc = PropertyValueMaskingOpts(pos=(None, ['X', 'Y'])).apply(doc)
 
-    with pytest.raises(ValueError):
-        new_doc = PropertyValueMaskingOpts(pos=(True, 'X')).apply(doc)
-
-    with pytest.raises(ValueError):
-        new_doc = PropertyValueMaskingOpts(pos=(True, 1)).apply(doc)
+    assert len(PropertyValueMaskingOpts(pos=(True, 'X')).apply(doc)) == 2
+    assert len(PropertyValueMaskingOpts(pos=(True, 0)).apply(doc)) == 0
 
 
 def test_hot_attributes():
