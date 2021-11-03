@@ -8,7 +8,7 @@ from penelope.topic_modelling import helper
 
 def test_weights_reducer(state: TopicModelContainer):
 
-    reducer: helper.DocumentTopicWeightsReducer = helper.DocumentTopicWeightsReducer(state.inferred_topics)
+    reducer: helper.FilterDocumentTopicWeights = helper.FilterDocumentTopicWeights(state.inferred_topics)
     default_columns: List[str] = state.inferred_topics.document_topic_weights.columns.tolist()
 
     assert reducer.data is state.inferred_topics.document_topic_weights

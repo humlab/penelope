@@ -2,7 +2,7 @@
 
 from . import prevelance
 from .engines import get_engine_by_model_type, get_engine_cls_by_method_name, get_engine_module_by_method_name
-from .helper import DocumentTopicWeightsReducer
+from .helper import FilterDocumentTopicWeights
 from .interfaces import InferredModel, InferredTopicsData, TrainingCorpus
 from .predict import predict_topics
 from .prevelance import (

@@ -8,7 +8,7 @@ from .interfaces import InferredTopicsData
 from .utility import filter_topic_tokens_overview
 
 
-class DocumentTopicWeightsReducer:
+class FilterDocumentTopicWeights:
     def __init__(
         self,
         inferred_topics: InferredTopicsData,
@@ -25,15 +25,15 @@ class DocumentTopicWeightsReducer:
     def document_index(self) -> pd.DataFrame:
         return self.inferred_topics.document_index
 
-    def copy(self) -> "DocumentTopicWeightsReducer":
+    def copy(self) -> "FilterDocumentTopicWeights":
         self.data = self.data.copy()
         return self
 
-    def reset(self) -> "DocumentTopicWeightsReducer":
+    def reset(self) -> "FilterDocumentTopicWeights":
         self.data: pd.DataFrame = self.inferred_topics.document_topic_weights
         return self
 
-    def threshold(self, threshold: float = 0.0) -> "DocumentTopicWeightsReducer":
+    def threshold(self, threshold: float = 0.0) -> "FilterDocumentTopicWeights":
         """Filter document-topic weights by threshold"""
 
         if threshold > 0:
@@ -46,10 +46,10 @@ class DocumentTopicWeightsReducer:
         threshold: float = 0.0,
         key_values: Mapping[str, Any] = None,
         document_key_values: Mapping[str, Any] = None,
-    ) -> "DocumentTopicWeightsReducer":
+    ) -> "FilterDocumentTopicWeights":
         return self.threshold(threshold).filter_by_data_keys(key_values).filter_by_document_keys(document_key_values)
 
-    def filter_by_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeightsReducer":
+    def filter_by_keys(self, key_values: Mapping[str, Any] = None) -> "FilterDocumentTopicWeights":
         """Filter data by key values. Return self."""
 
         return self.filter_by_data_keys(
@@ -58,7 +58,7 @@ class DocumentTopicWeightsReducer:
             {k: v for k, v in key_values.items() if k in self.document_index.columns and k not in self.data.columns}
         )
 
-    def filter_by_data_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeightsReducer":
+    def filter_by_data_keys(self, key_values: Mapping[str, Any] = None) -> "FilterDocumentTopicWeights":
         """Filter data by key values. Return self."""
 
         if key_values is not None:
@@ -67,7 +67,7 @@ class DocumentTopicWeightsReducer:
 
         return self
 
-    def filter_by_document_keys(self, key_values: Mapping[str, Any] = None) -> "DocumentTopicWeightsReducer":
+    def filter_by_document_keys(self, key_values: Mapping[str, Any] = None) -> "FilterDocumentTopicWeights":
         """Filter data by key values. Returnm self."""
 
         if key_values is not None:
@@ -81,7 +81,7 @@ class DocumentTopicWeightsReducer:
 
         return self
 
-    def overload(self, includes: str = None, ignores: str = None) -> "DocumentTopicWeightsReducer":
+    def overload(self, includes: str = None, ignores: str = None) -> "FilterDocumentTopicWeights":
 
         exclude_columns: Set[str] = set(self.data.columns.tolist()) | set((ignores or '').split(','))
         include_columns: Set[str] = set(includes.split(',') if includes else self.document_index.columns)
@@ -95,7 +95,7 @@ class DocumentTopicWeightsReducer:
         )
         return self
 
-    def filter_by_text(self, search_text: str, n_top: int) -> "DocumentTopicWeightsReducer":
+    def filter_by_text(self, search_text: str, n_top: int) -> "FilterDocumentTopicWeights":
 
         if len(search_text) > 2:
 
@@ -106,6 +106,6 @@ class DocumentTopicWeightsReducer:
 
         return self
 
-    def filter_by_topics(self, topic_ids: Sequence[int]) -> "DocumentTopicWeightsReducer":
+    def filter_by_topics(self, topic_ids: Sequence[int]) -> "FilterDocumentTopicWeights":
         self.data = self.data[self.data.topic_id.isin(topic_ids)]
         return self
