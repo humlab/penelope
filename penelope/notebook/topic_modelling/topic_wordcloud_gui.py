@@ -54,9 +54,7 @@ def display_wordcloud(
             if output_format == 'Table':
                 display(topic_top_tokens)
             elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-                utility.ts_store(
-                    data=topic_top_tokens, extension=output_format.lower(), basename='topic_top_tokens'
-                )
+                utility.ts_store(data=topic_top_tokens, extension=output_format.lower(), basename='topic_top_tokens')
 
     except IndexError:
         print('No data for topic')

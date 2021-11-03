@@ -335,9 +335,7 @@ def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
         display(g)
 
     if opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-        utility.ts_store(
-            data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network'
-        )
+        utility.ts_store(data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network')
 
 
 # pylint: disable=too-many-instance-attributes
