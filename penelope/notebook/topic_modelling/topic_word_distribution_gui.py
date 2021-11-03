@@ -56,7 +56,7 @@ def display_topic_tokens(
     topic_token_weights: pd.DataFrame, topic_id: int = 0, n_words: int = 100, output_format: str = 'Chart'
 ):
 
-    tokens = (
+    tokens: pd.DataFrame = (
         topic_modelling.get_topic_top_tokens(topic_token_weights, topic_id=topic_id, n_tokens=n_words)
         .copy()
         .drop('topic_id', axis=1)
@@ -76,14 +76,14 @@ def display_topic_tokens(
             tokens, plot_width=1200, plot_height=500, title='', tools='box_zoom,wheel_zoom,pan,reset'
         )
         bokeh.plotting.show(p)
-    elif output_format.lower() in ('xlsx', 'csv'):
-        utility.timestamped_store(data=tokens, extension=output_format.lower(), basename='topic_word_distribution')
+    elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+        utility.ts_store(data=tokens, extension=output_format.lower(), basename='topic_word_distribution')
     else:
         display(tokens)
 
 
 TEXT_ID: str = 'wc01'
-OUTPUT_OPTIONS = ['Chart', 'XLSX', 'CSV', 'Table']
+OUTPUT_OPTIONS = ['Chart', 'XLSX', 'CSV', 'Clipboard', 'Table']
 
 
 class TopicWordDistributionGUI:
@@ -130,7 +130,7 @@ class TopicWordDistributionGUI:
             )
         self.buzy(False)
 
-    def buzy(self, value: bool = False):
+    def buzy(self, value: bool = False) -> None:
         self.topic_id.disabled = value
         self.n_words.disabled = value
         self.output_format.disabled = value
@@ -145,7 +145,7 @@ class TopicWordDistributionGUI:
         )
 
 
-def display_gui(state: TopicModelContainer):
+def display_gui(state: TopicModelContainer) -> None:
     gui = TopicWordDistributionGUI(state).setup()
     display(gui.layout())
     gui.update_handler()

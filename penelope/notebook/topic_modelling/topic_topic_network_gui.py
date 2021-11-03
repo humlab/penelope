@@ -19,7 +19,7 @@ from .topic_topic_network_gui_utility import display_topic_topic_network
 # bokeh.plotting.output_notebook()
 TEXT_ID = 'nx_topic_topic'
 LAYOUT_OPTIONS = ['Circular', 'Kamada-Kawai', 'Fruchterman-Reingold']
-OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'excel', 'CSV': 'csv'}
+OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV': 'CSV', 'Clipboard': 'clipboard'}
 
 # pylint: disable=too-many-instance-attributes
 

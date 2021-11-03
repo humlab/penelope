@@ -79,7 +79,7 @@ from .pandas_utils import (
     pandas_to_csv_zip,
     rename_columns,
     setup_pandas,
-    timestamped_store,
+    ts_store,
     try_split_column,
 )
 from .pos_tags import (

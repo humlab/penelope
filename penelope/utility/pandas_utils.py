@@ -239,7 +239,7 @@ def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> 
     return data
 
 
-def timestamped_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx'], basename: str):
+def ts_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx', 'clipboard'], basename: str):
 
     filename = f"{now_timestamp()}_{basename}.{extension}"
     if extension == 'xlsx':

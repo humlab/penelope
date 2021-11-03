@@ -106,17 +106,12 @@ def display_topic_topic_network(
             )
             bokeh.plotting.show(p)
         else:
+
             df.columns = ['Source', 'Target', 'DocCount']
             if output_format == 'table':
                 display(df)
-            if output_format == 'excel':
-                filename = utility.timestamp("{}_topic_topic_network.xlsx")
-                df.to_excel(filename)
-                print('Data stored in file {}'.format(filename))
-            if output_format == 'csv':
-                filename = utility.timestamp("{}_topic_topic_network.csv")
-                df.to_csv(filename, sep='\t')
-                print('Data stored in file {}'.format(filename))
+            elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+                utility.ts_store(data=df, extension=output_format.lower(), basename='topic_topic_network')
 
     except Exception as ex:  # pylint: disable=bare-except
         print("No data: please adjust filters")

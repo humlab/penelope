@@ -15,7 +15,7 @@ pd.set_option('max_colwidth', 200)
 opts = {'max_font_size': 100, 'background_color': 'white', 'width': 900, 'height': 600}
 
 TEXT_ID: str = 'tx02'
-OUTPUT_OPTIONS = ['Wordcloud', 'Table', 'CSV', 'Excel']
+OUTPUT_OPTIONS = ['Wordcloud', 'Table', 'CSV', 'XLSX', 'Clipboard']
 
 
 def display_wordcloud(
@@ -53,10 +53,10 @@ def display_wordcloud(
             )
             if output_format == 'Table':
                 display(topic_top_tokens)
-            if output_format == 'Excel':
-                topic_top_tokens.to_excel(utility.timestamp("{}_wordcloud_tokens.xlsx"))
-            if output_format == 'CSV':
-                topic_top_tokens.to_csv(utility.timestamp("{}_wordcloud_tokens.csv"), sep='\t')
+            elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+                utility.ts_store(
+                    data=topic_top_tokens, extension=output_format.lower(), basename='topic_top_tokens'
+                )
 
     except IndexError:
         print('No data for topic')

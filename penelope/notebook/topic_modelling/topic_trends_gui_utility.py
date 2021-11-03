@@ -55,6 +55,8 @@ def display_topic_trends(
 
     if len(df) == 0:
         print('No data to display for this topic and theshold')
+    elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+        utility.ts_store(data=weight_over_time, extension=output_format.lower(), basename='topic_trends')
     elif output_format == 'Table':
         g = ipyaggrid_utility.display_grid(df)
         IPython_display(g)

@@ -334,8 +334,8 @@ def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
         g = display_grid(topics_tokens)
         display(g)
 
-    if opts.output_format.lower() in ('xlsx', 'csv'):
-        utility.timestamped_store(
+    if opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+        utility.ts_store(
             data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network'
         )
 

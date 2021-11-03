@@ -57,8 +57,9 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
         )
 
         bokeh.plotting.show(p)
-
-    elif opts.output_format == "table":
+    elif opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+        utility.ts_store(data=df_network, extension=opts.output_format.lower(), basename='topic_topic_network')
+    else:
         g = display_document_topics_as_grid(df_network)
         display(g)
 

@@ -153,6 +153,8 @@ def display_heatmap(
 
             bokeh.plotting.show(p)
 
+        elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+            utility.ts_store(data=weights, extension=output_format.lower(), basename='heatmap_weights')
         else:
             g = ipyaggrid_utility.display_grid(weights)
             display(g)
