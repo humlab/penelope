@@ -14,7 +14,7 @@ def train_model(
     **kwargs,
 ) -> InferredModel:
 
-    if 'work_folder' in engine_args:
+    if engine_args.get('work_folder', False):
         os.makedirs(engine_args.get('work_folder'), exist_ok=True)
 
     trained_model = get_engine_cls_by_method_name(method).train(
