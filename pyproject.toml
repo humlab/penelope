@@ -18,7 +18,6 @@ homepage = "https://github.com/humlab/penelope"
 repository = "https://github.com/humlab/penelope"
 
 # FIXME #75 Upgrade gensim to ^4.0
-# FIXME #76 Upgrade spaCy to ^4.0
 [tool.poetry.dependencies]
 bokeh = "*"
 click = "^7.1.2"
