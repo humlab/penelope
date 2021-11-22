@@ -5,6 +5,7 @@ from .interfaces import (
     ICorpusReader,
     PhraseSubstitutions,
     TextSource,
+    FilenameFilterSpec
 )
 from .pandas_reader import PandasCorpusReader
 from .sparv_csv_tokenizer import SparvCsvTokenizer

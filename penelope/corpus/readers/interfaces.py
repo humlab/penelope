@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
-FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
+FilenameFilterSpec = Union[Callable, Sequence[str]]
 
 GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "__low-tf__"
 
@@ -23,7 +23,7 @@ GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "__low-tf__"
 @dataclass
 class TextReaderOpts:
     filename_pattern: str = field(default="*.txt")
-    filename_filter: Optional[FilenameOrCallableOrSequenceFilter] = None
+    filename_filter: Optional[FilenameFilterSpec] = None
     filename_fields: Optional[FilenameFieldSpecs] = None
     index_field: Optional[str] = None
     as_binary: Optional[bool] = False

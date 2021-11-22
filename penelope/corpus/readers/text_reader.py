@@ -10,7 +10,7 @@ from penelope.utility import (
 )
 
 from ..document_index import DocumentIndex, metadata_to_document_index
-from .interfaces import FilenameOrCallableOrSequenceFilter, ICorpusReader, TextReaderOpts, TextSource
+from .interfaces import FilenameFilterSpec, ICorpusReader, TextReaderOpts, TextSource
 from .text_transformer import TextTransformer, TextTransformOpts
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
@@ -113,7 +113,7 @@ class TextReader(ICorpusReader):
         """Process of source text that happens before any tokenization e.g. XML to text transform """
         return content
 
-    def apply_filter(self, filename_filter: FilenameOrCallableOrSequenceFilter):
+    def apply_filter(self, filename_filter: FilenameFilterSpec):
         self.reader_opts.filename_filter = filename_filter
 
     def process(self, filename: str, content: str) -> Iterable[Tuple[str, str]]:  # pylint: disable=unused-argument
