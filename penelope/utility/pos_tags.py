@@ -308,7 +308,7 @@ class PoS_Tag_Scheme:
             if group_name:
                 group_counts[group_name] += v
             else:
-                logger.error(f"skipped {v} tokens in tagged_frame_to_PoS_group_counts with unknown PoS tags")
+                logger.error(f"skipped {v} tokens in tagged_frame_to_PoS_group_counts with unknown PoS tag {k}")
             if group_name != 'Delimiter':
                 n_tokens += v
 
