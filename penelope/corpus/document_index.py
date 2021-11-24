@@ -342,8 +342,19 @@ class DocumentIndexHelper:
         else:
             # if not self._document_index.columns.equals(self._document_index.columns):
             #     raise ValueError("Document index columns mismatch")
-            self._document_index = self._document_index.append(other_index, ignore_index=False)
-            self._document_index['document_id'] = range(0, len(self._document_index))
+
+            # self._document_index = self._document_index.append(other_index, ignore_index=False, verify_integrity=True)
+
+            already_present_index = self._document_index.index.intersection(other_index.index)
+            if len(already_present_index) > 0:
+                logger.warning("trying to item(s) to document index that already exist")
+
+            missing_index = other_index.index.difference(self._document_index.index)
+
+            if len(missing_index) > 0:
+                self._document_index = self._document_index.append(other_index.loc[missing_index, :])
+                self._document_index['document_id'] = range(0, len(self._document_index))
+
         return self
 
     @staticmethod
@@ -578,7 +589,7 @@ def update_document_index_token_counts(
         document_index.update(df_counts)
 
     except Exception as ex:
-        logging.error(ex)
+        logger.error(ex)
 
     return document_index
 
@@ -635,7 +646,10 @@ def update_document_index_properties(
     for key in [k for k in property_bag if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
 
-    document_index.loc[document_name, property_bag.keys()] = property_bag.values()
+    try:
+        document_index.loc[document_name, property_bag.keys()] = list(property_bag.values())
+    except Exception as ex:
+        print(ex)
     # document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
 
 
