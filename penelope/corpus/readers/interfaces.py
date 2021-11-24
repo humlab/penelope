@@ -148,6 +148,17 @@ class ExtractTaggedTokensOpts:
             pos_column=self.pos_column,
         )
 
+    def ingest(self, opts: dict) -> ExtractTaggedTokensOpts:
+        self.pos_includes = opts.get('pos_includes', self.pos_includes)
+        self.pos_paddings = opts.get('pos_paddings', self.pos_paddings)
+        self.pos_excludes = opts.get('pos_excludes', self.pos_excludes)
+        self.lemmatize = opts.get('lemmatize', self.lemmatize)
+        self.phrases = opts.get('phrases', self.phrases)
+        self.append_pos = opts.get('append_pos', self.append_pos)
+        self.global_tf_threshold = opts.get('tf_threshold', self.global_tf_threshold)
+        self.global_tf_threshold_mask = opts.get('tf_threshold_mask', self.global_tf_threshold_mask)
+        return self
+
 
 class ICorpusReader(abc.ABC):
     @property
