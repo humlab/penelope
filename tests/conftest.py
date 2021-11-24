@@ -43,8 +43,8 @@ def pytest_sessionstart(session):  # pylint: disable=unused-argument
     Called after the Session object has been created and
     before performing collection and entering the run test loop.
     """
-    shutil.rmtree('./tests/test_data/output', ignore_errors=True)
-    os.makedirs('./tests/test_data/output', exist_ok=True)
+    shutil.rmtree('./tests/output', ignore_errors=True)
+    os.makedirs('./tests/output', exist_ok=True)
 
 
 # def pytest_sessionfinish(session, exitstatus):
