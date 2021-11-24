@@ -1,5 +1,6 @@
 import os
 
+from penelope import pipeline
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusConfig
@@ -11,20 +12,23 @@ CheckpointPath = str
 def compute(
     args: ComputeOpts,
     corpus_config: CorpusConfig,
+    tagged_frame_pipeline: pipeline.CorpusPipeline = None,
 ) -> VectorizedCorpus:
 
     try:
 
         assert args.is_satisfied()
 
-        corpus: VectorizedCorpus = (
-            corpus_config.get_pipeline(
+        if tagged_frame_pipeline is None:
+            tagged_frame_pipeline = corpus_config.get_pipeline(
                 "tagged_frame_pipeline",
                 corpus_filename=args.corpus_filename,
                 enable_checkpoint=args.enable_checkpoint,
                 force_checkpoint=args.force_checkpoint,
                 tagged_frames_filename=args.tagged_frames_filename,
             )
+        corpus: VectorizedCorpus = (
+            tagged_frame_pipeline
             + wildcard_to_DTM_pipeline(
                 transform_opts=args.transform_opts,
                 extract_opts=args.extract_opts,
