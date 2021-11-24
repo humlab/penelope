@@ -24,8 +24,6 @@ def train_model(
         tfidf_weiging=kwargs.get('tfidf_weiging', False),
     )
 
-    train_corpus.document_index = (
-        DocumentIndexHelper(train_corpus.document_index).update_counts_by_corpus(train_corpus.corpus).document_index
-    )
+    train_corpus.update_word_counts()
 
     return trained_model

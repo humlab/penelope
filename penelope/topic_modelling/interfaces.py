@@ -160,6 +160,13 @@ class TrainingCorpus:
         self.corpus = [tfidf_model[d] for d in self.corpus]
         return self
 
+    def update_word_counts(self) -> TrainingCorpus:
+        """Updates document word counts based on current corpus"""
+        if self.document_index is not None:
+            self.document_index = (
+                DocumentIndexHelper(self.document_index).update_counts_by_corpus(self.corpus).document_index
+            )
+        return self
 
 class InferredModel:
     """A container for the trained topic model """
