@@ -18,6 +18,8 @@ from . import checkpoint, interfaces
 if TYPE_CHECKING:
     from .pipelines import CorpusPipeline
 
+jj = os.path.join
+
 
 def create_pipeline_factory(
     class_or_function_name: str,
@@ -88,7 +90,9 @@ class CorpusConfig:
     @staticmethod
     def list(folder: str) -> List[str]:
         """Return YAML filenames in given `folder`"""
-        filenames = sorted(glob.glob(os.path.join(folder, '*.yml')) + glob.glob(os.path.join(folder, '*.yaml')))
+        filenames = sorted(
+            glob.glob(jj(folder, '**', '*.yml'), recursive=True) + glob.glob(jj(folder, '**', '*.yaml'), recursive=True)
+        )
         return filenames
 
     @staticmethod
@@ -188,7 +192,7 @@ class CorpusConfig:
             return None
 
         folder, filename = os.path.split(corpus_filename)
-        return os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
+        return jj(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
 
     def corpus_source_exists(self):
         if self.pipeline_payload.source is None:
