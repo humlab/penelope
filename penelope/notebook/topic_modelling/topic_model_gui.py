@@ -7,12 +7,11 @@ from typing import Dict, List, Optional
 
 import ipywidgets as widgets  # type: ignore
 import pandas as pd
-import penelope.topic_modelling as topic_modelling
+import penelope.topic_modelling as tm
 import penelope.vendor.gensim as gensim_utility
 import penelope.vendor.textacy as textacy_utility
 from IPython.display import display
 from loguru import logger
-from penelope.topic_modelling import InferredModel, InferredTopicsData
 
 from .model_container import TopicModelContainer
 
@@ -59,7 +58,7 @@ def get_topics_unstacked(
 ) -> pd.DataFrame:
     """Returns the top `n_tokens` tokens for each topic. The token's column index is in ascending probability"""
 
-    engine: types.ModuleType = topic_modelling.get_engine_by_model_type(model)
+    engine: types.ModuleType = tm.get_engine_by_model_type(model)
     n_topics: int = engine.n_topics()
 
     topic_ids: List[int] = topic_ids or range(n_topics)
@@ -186,17 +185,17 @@ class ComputeTopicModelUserInterface:
 
                     method = self.model_widgets.method.value
 
-                    train_corpus = topic_modelling.TrainingCorpus(
+                    train_corpus = tm.TrainingCorpus(
                         terms=list(self.get_corpus_terms(corpus)),
                         document_index=self.document_index,
                         vectorizer_args=vectorizer_args,
                     )
 
-                    trained_model: InferredModel = topic_modelling.train_model(
+                    trained_model: tm.InferredModel = tm.train_model(
                         train_corpus=train_corpus, method=method, engine_args=topic_modeller_args
                     )
 
-                    inferred_topics: InferredTopicsData = topic_modelling.predict_topics(
+                    inferred_topics: tm.InferredTopicsData = tm.predict_topics(
                         topic_model=trained_model.topic_model,
                         corpus=train_corpus.corpus,
                         id2token=train_corpus.id2token,
