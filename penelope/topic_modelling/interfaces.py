@@ -168,6 +168,7 @@ class TrainingCorpus:
             )
         return self
 
+
 class InferredModel:
     """A container for the trained topic model """
 
