@@ -13,26 +13,15 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 # pylint: disable=too-many-arguments, unused-argument
 
 
-def split_filename(filename, sep='_'):
-    parts = filename.replace('.', sep).split(sep)
-    return parts
-
-
 @click.command()
 @click.argument('corpus_config', type=click.STRING)
-@click.argument('input_filename', type=click.STRING)  # , help='Model name.')
-@click.argument('output_folder', type=click.STRING)  # , help='Model name.')
+@click.argument('input_filename', type=click.STRING)
+@click.argument('output_folder', type=click.STRING)
 @click.argument('output_tag')
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
 @click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
 @click.option('-m', '--pos-paddings', default='', help='POS tags to replace with a padding marker.', type=click.STRING)
-@click.option(
-    '-x',
-    '--pos-excludes',
-    default='',
-    help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
-    type=click.STRING,
-)
+@click.option('-x', '--pos-excludes', default='', help='POS tags to exclude.', type=click.STRING)
 @click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
 @click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
 @click.option('-z', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
@@ -59,7 +48,6 @@ def split_filename(filename, sep='_'):
 )
 @click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
 @click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
-@click.option('--doc-chunk-size', default=None, help='Split document in chunks of chunk-size words.', type=click.INT)
 @click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
 @click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
 @click.option(
@@ -101,16 +89,15 @@ def main(
     remove_stopwords: str = None,
     min_word_length: int = 2,
     max_word_length: int = None,
-    doc_chunk_size: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
+    deserialize_processes: int = 4,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
-    deserialize_processes: int = 4,
 ):
 
     process(
@@ -137,9 +124,9 @@ def main(
         only_alphabetic=only_alphabetic,
         tf_threshold=tf_threshold,
         tf_threshold_mask=tf_threshold_mask,
+        deserialize_processes=deserialize_processes,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,
-        deserialize_processes=deserialize_processes,
     )
 
 
@@ -161,7 +148,6 @@ def process(
     remove_stopwords: str = None,
     min_word_length: int = 2,
     max_word_length: int = None,
-    doc_chunk_size: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
