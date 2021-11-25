@@ -181,17 +181,17 @@ class CorpusConfig:
         )
         return config
 
-    def get_feather_folder(self, corpus_filename: str | None) -> str | None:
+    def get_feather_folder(self, corpus_source: str | None) -> str | None:
 
         if self.checkpoint_opts.feather_folder is not None:
             return self.checkpoint_opts.feather_folder
 
-        corpus_filename: str = corpus_filename or self.pipeline_payload.source
+        corpus_source: str = corpus_source or self.pipeline_payload.source
 
-        if corpus_filename is None:
+        if corpus_source is None:
             return None
 
-        folder, filename = os.path.split(corpus_filename)
+        folder, filename = os.path.split(corpus_source)
         return jj(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
 
     def corpus_source_exists(self):

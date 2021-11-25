@@ -15,7 +15,7 @@ from penelope.corpus.readers import TextTokenizer
 @click.option('--n-topics', default=50, help='Number of topics.', type=click.INT)
 @click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
 @click.option(
-    '--corpus-filename',
+    '--corpus-source',
     help='Corpus filename (if text corpus file or folder, or Sparv XML). Corpus tag if vectorized corpus.',
 )
 @click.option('--engine', default="gensim_lda-multicore", help='LDA implementation')
@@ -34,7 +34,7 @@ def click_main(
     target_name,
     n_topics,
     corpus_folder,
-    corpus_filename,
+    corpus_source,
     engine,
     passes,
     random_seed,
@@ -66,7 +66,7 @@ def click_main(
     main(
         target_name=target_name,
         corpus_folder=corpus_folder,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         engine=engine,
         engine_args=topic_modeling_opts,
         filename_field=filename_field,
@@ -80,7 +80,7 @@ def click_main(
 def main(
     target_name: str = None,
     corpus_folder: str = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     filename_pattern="*.txt",
@@ -92,7 +92,7 @@ def main(
 ):
     """ runner """
 
-    if corpus_filename is None and corpus_folder is None:
+    if corpus_source is None and corpus_folder is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")
         sys.exit(1)
 
@@ -101,7 +101,7 @@ def main(
         # sys.exit(1)
 
     if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
+        corpus_folder, _ = os.path.split(os.path.abspath(corpus_source))
 
     target_folder: str = jj(corpus_folder, target_name)
 
@@ -131,7 +131,7 @@ def main(
     transform_opts: TextTransformOpts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
 
     tokens_reader = TextTokenizer(
-        source=corpus_filename,
+        source=corpus_source,
         transform_opts=transform_opts,
         reader_opts=reader_opts,
         chunk_size=None,

@@ -17,7 +17,7 @@ from penelope.utility import PropertyValueMaskingOpts
 @click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
 @click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
 @click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
-@click.option('--corpus-filename', default=None, help='Corpus filename (overrides config)')
+@click.option('--corpus-source', default=None, help='Corpus filename/folder (overrides config)')
 @click.option('--fix-hyphenation/--no-fix-hyphenation', default=True, is_flag=True, help='Fix hyphens')
 @click.option('--fix-accents/--no-fix-accents', default=True, is_flag=True, help='Fix accents')
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
@@ -46,7 +46,7 @@ def click_main(
     config_filename: str = None,
     target_name: str = None,
     options_filename: str = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
     fix_hyphenation: bool = True,
@@ -96,7 +96,7 @@ def click_main(
 def _main(
     config_filename: str = None,
     target_name: str = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
     fix_hyphenation: bool = True,
@@ -184,7 +184,7 @@ def _main(
     main(
         config=config,
         target_name=target_name,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         corpus_folder=corpus_folder,
         target_folder=target_folder,
         text_transform_opts=text_transform_opts,
@@ -204,7 +204,7 @@ def main(
     *,
     config: pipeline.CorpusConfig,
     target_name: str,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
     text_transform_opts: TextTransformOpts = None,
@@ -220,19 +220,19 @@ def main(
 ):
     """ runner """
 
-    corpus_filename: str = corpus_filename or config.pipeline_payload.source
+    corpus_source: str = corpus_source or config.pipeline_payload.source
 
-    if corpus_filename is None and corpus_folder is None:
+    if corpus_source is None and corpus_folder is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")
         sys.exit(1)
 
     if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
+        corpus_folder, _ = os.path.split(os.path.abspath(corpus_source))
 
     _: dict = (
         config.get_pipeline(
             "tagged_frame_pipeline",
-            corpus_filename=corpus_filename,
+            corpus_source=corpus_source,
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
             text_transform_opts=text_transform_opts,
@@ -243,8 +243,7 @@ def main(
             filter_opts=filter_opts,
         )
         .to_topic_model(
-            corpus_filename=None,
-            # corpus_folder=corpus_folder,
+            corpus_source=None,
             target_folder=target_folder,
             target_name=target_name,
             engine=engine,

@@ -22,7 +22,7 @@ def compute(
         if tagged_frame_pipeline is None:
             tagged_frame_pipeline = corpus_config.get_pipeline(
                 "tagged_frame_pipeline",
-                corpus_filename=args.corpus_filename,
+                corpus_source=args.corpus_source,
                 enable_checkpoint=args.enable_checkpoint,
                 force_checkpoint=args.force_checkpoint,
                 tagged_frames_filename=args.tagged_frames_filename,

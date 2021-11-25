@@ -103,8 +103,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     Iterable[DocumentPayload] => ComputeResult
     """
 
-    corpus_filename: str = None
-    corpus_folder: str = None
+    corpus_source: str = None
     target_folder: str = None
     target_name: str = None
     engine: EngineKey = "gensim_lda-multicore"

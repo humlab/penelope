@@ -64,7 +64,7 @@ def test_GUI_setup():  # pylint: disable=unused-argument
 def test_generate_cli_opts():
     compute_opts = interface.ComputeOpts(
         corpus_type=interface.CorpusType.SparvCSV,
-        corpus_filename="apa.txt",
+        corpus_source="apa.txt",
         target_folder='./tests/output',
         corpus_tag='APA',
         transform_opts=TokensTransformOpts(

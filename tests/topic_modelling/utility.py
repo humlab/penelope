@@ -39,7 +39,7 @@ def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
         .spacy_to_tagged_frame(attributes=['text', 'lemma_', 'pos_'])
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
         .to_topic_model(
-            corpus_filename=None,
+            corpus_source=None,
             target_folder="./tests/output",
             target_name=target_name,
             engine="gensim_lda-multicore",

@@ -279,7 +279,7 @@ def test_run_cli(method):
     kwargs = {
         'target_name': f"{uuid.uuid1()}",
         'corpus_folder': OUTPUT_FOLDER,
-        'corpus_filename': './tests/test_data/test_corpus.zip',
+        'corpus_source': './tests/test_data/test_corpus.zip',
         'engine': method,
         'engine_args': {
             'n_topics': 5,

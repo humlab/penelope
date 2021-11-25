@@ -58,7 +58,7 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
 
     value: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
-        corpus_filename=config.pipeline_payload.source,
+        corpus_source=config.pipeline_payload.source,
         transform_opts=transform_opts,
         context_opts=context_opts,
         extract_opts=extract_opts,
@@ -90,7 +90,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
     bundle: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
-        corpus_filename=None,
+        corpus_source=None,
         transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
         extract_opts=corpora.ExtractTaggedTokensOpts(
             lemmatize=True,
@@ -124,11 +124,11 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline3(config):
 
-    corpus_filename = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_source = './tests/test_data/legal_instrument_five_docs_test.zip'
     tagged_frames_filename = f'./tests/output/{uuid.uuid1()}_pos.csv.zip'
     args: ComputeOpts = ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         target_folder=f'./tests/output/{uuid.uuid1()}',
         corpus_type=pipeline.CorpusType.SpacyCSV,
         # pos_scheme: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.Universal

@@ -62,7 +62,7 @@ def create_tranströmer_to_tagged_frame_pipeline() -> CorpusPipeline:
 
     p: CorpusPipeline = sparv.to_tagged_frame_pipeline(
         corpus_config=corpus_config,
-        corpus_filename=source_filename,
+        corpus_source=source_filename,
         enable_checkpoint=True,
         force_checkpoint=False,
     )  # .checkpoint(tagged_frames_filename)

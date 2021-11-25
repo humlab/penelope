@@ -295,12 +295,12 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
 
     corpus_tag: str = uuid.uuid1()
     target_folder: str = "./tests/output"
-    corpus_filename: str = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip'
     tagged_frames_filename: str = f"./tests/output/{uuid.uuid1()}_pos_csv.zip"
 
     args: ComputeOpts = ComputeOpts(
         corpus_tag=corpus_tag,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         target_folder=target_folder,
         corpus_type=pipeline.CorpusType.SpacyCSV,
         # pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
@@ -333,7 +333,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
             .load_text(
                 reader_opts=config.text_reader_opts,
                 transform_opts=None,
-                source=corpus_filename,
+                source=corpus_source,
             )
             .text_to_spacy()
             .spacy_to_pos_tagged_frame()
@@ -341,7 +341,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
         )
 
         if args.enable_checkpoint:
-            p = p.checkpoint_feather(folder=config.get_feather_folder(corpus_filename), force=args.force_checkpoint)
+            p = p.checkpoint_feather(folder=config.get_feather_folder(corpus_source), force=args.force_checkpoint)
 
         p.exhaust()
 
@@ -351,7 +351,7 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
 
     args: ComputeOpts = ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
-        corpus_filename='./tests/test_data/legal_instrument_five_docs_test.zip',
+        corpus_source='./tests/test_data/legal_instrument_five_docs_test.zip',
         corpus_type=pipeline.CorpusType.Text,
         target_folder='./tests/output/',
         transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
