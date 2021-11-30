@@ -78,7 +78,7 @@ class CheckpointData:
         if self.document_index is not None:
             self.document_index = self.document_index[self.document_index.filename.isin(self.filenames)]
 
-    def _sync_filenames(self) -> None:
+    def _sync_filenames(self, verbose: bool=True) -> None:
         """Syncs sort order for archive filenames and filenames in document index """
 
         if self.document_index is None:
@@ -93,7 +93,8 @@ class CheckpointData:
         if 'document_id' in self.document_index:
             self.document_index.sort_values(by=['document_id'], inplace=True)
 
-        logger.warning(f"{self.source_name} filename sort order mismatch (using document index sort order)")
+        if not verbose:
+            logger.warning(f"{self.source_name} filename sort order mismatch (using document index sort order)")
 
         self.filenames = self.document_index.filename.to_list()
 
