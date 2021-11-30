@@ -764,7 +764,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         self.token2id.ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
 
-        total: int = len(self.document_index.index) if self.document_index else None
+        total: int = len(self.document_index.index) if self.document_index is not None else None
         for payload in self.prior.outstream(total=total, desc="Vocab"):
             self.token2id.ingest_stream([self.tokens_stream(payload)])
 
