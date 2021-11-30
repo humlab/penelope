@@ -335,18 +335,17 @@ class DocumentIndexHelper:
         self._document_index = self._document_index.set_index('document_id', drop=False).rename_axis('')
         return self
 
-    def extend(self, other_index: DocumentIndex) -> "DocumentIndexHelper":
+    def extend(self, other_index: DocumentIndex, ignore_if_exists: bool=True) -> "DocumentIndexHelper":
         if self._document_index is None:
             self._document_index = other_index
         else:
-            # if not self._document_index.columns.equals(self._document_index.columns):
-            #     raise ValueError("Document index columns mismatch")
-
             # self._document_index = self._document_index.append(other_index, ignore_index=False, verify_integrity=True)
 
             already_present_index = self._document_index.index.intersection(other_index.index)
             if len(already_present_index) > 0:
-                logger.warning("trying to item(s) to document index that already exist")
+                if not ignore_if_exists:
+                    raise DocumentIndexError("trying to add duplicate item(s) to document index")
+                    # logger.warning("trying to add duplicate item(s) to document indext")
 
             missing_index = other_index.index.difference(self._document_index.index)
 
