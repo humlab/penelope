@@ -82,7 +82,7 @@ class FilterDocumentTopicWeights:
         return self
 
     def overload(self, includes: str = None, ignores: str = None) -> "FilterDocumentTopicWeights":
-
+        """Add column(s) from document index to data."""
         exclude_columns: Set[str] = set(self.data.columns.tolist()) | set((ignores or '').split(','))
         include_columns: Set[str] = set(includes.split(',') if includes else self.document_index.columns)
         overload_columns: List[str] = (include_columns - exclude_columns).intersection(set(self.document_index.columns))

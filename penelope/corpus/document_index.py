@@ -335,7 +335,7 @@ class DocumentIndexHelper:
         self._document_index = self._document_index.set_index('document_id', drop=False).rename_axis('')
         return self
 
-    def extend(self, other_index: DocumentIndex, ignore_if_exists: bool=True) -> "DocumentIndexHelper":
+    def extend(self, other_index: DocumentIndex, ignore_if_exists: bool = True) -> "DocumentIndexHelper":
         if self._document_index is None:
             self._document_index = other_index
         else:
@@ -506,12 +506,14 @@ def load_document_index(
 
     return document_index
 
+
 def trim_series_type(series: pd.Series) -> pd.Series:
     max_value: int = series.max()
     for np_type in [np.int16, np.int32]:
         if max_value < np.iinfo(np_type).max:
             return series.astype(np_type)
     return series
+
 
 @deprecated
 def document_index_upgrade(document_index: DocumentIndex) -> DocumentIndex:
