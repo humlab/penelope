@@ -2,11 +2,12 @@ from os.path import join as jj
 
 from penelope import pipeline
 from penelope.pipeline.pipelines import CorpusPipeline
+from penelope.pipeline.sparv import pipelines
 
-DATA_FOLDER = "/data/westac/data"
-CONFIG_FILENAME = "/home/roger/source/penelope/doit.yml"
+DATA_FOLDER = "/data/riksdagen_corpus_data/"
+CONFIG_FILENAME = "/data/riksdagen_corpus_data/riksprot-parlaclarin.yml"
 OUTPUT_FOLDER = './tests/output'
-CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.sparv4.csv.zip")
+CORPUS_FILENAME = jj(DATA_FOLDER, "riksprot_parlaclarin_speech_sequence.stanza.csv.zip")
 # CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1970.sparv4.csv.zip")
 # CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.test.sparv4.csv.zip")
 # CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip")
@@ -16,7 +17,7 @@ def run_workflow():
     corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
     corpus_config.pipeline_payload.files(source=CORPUS_FILENAME, document_index_source=None)
     corpus_config.checkpoint_opts.deserialize_processes = 3
-
+    corpus_config.checkpoint_opts.feather_folder = None
     # transform_opts: corpora.TokensTransformOpts = corpora.TokensTransformOpts(
     #     to_lower=True,
     #     to_upper=False,
@@ -45,10 +46,25 @@ def run_workflow():
     # filter_opts: utility.PropertyValueMaskingOpts=utility.PropertyValueMaskingOpts()
 
     (
-        CorpusPipeline(config=corpus_config).load_tagged_frame(
-            filename=CORPUS_FILENAME,
-            checkpoint_opts=corpus_config.checkpoint_opts,
-            extra_reader_opts=corpus_config.text_reader_opts,
+        # CorpusPipeline(config=corpus_config).load_tagged_frame(
+        #     filename=CORPUS_FILENAME,
+        #     checkpoint_opts=corpus_config.checkpoint_opts,
+        #     extra_reader_opts=corpus_config.text_reader_opts,
+        # )
+        # pipelines.to_tagged_frame_pipeline(
+        #     corpus_config=corpus_config,
+        #     corpus_source=CORPUS_FILENAME,
+        #     enable_chekpoint=False,
+        #     force_chekpoint=False,
+        # )
+        corpus_config.get_pipeline(
+            "tagged_frame_pipeline",
+            corpus_source=CORPUS_FILENAME,
+            enable_checkpoint=False,
+            force_checkpoint=False,
+            text_transform_opts=None,
+            update_token_counts=False,
+            stop_at_index=10,
         )
         # .vocabulary(
         #     lemmatize=extract_opts.lemmatize,
@@ -57,7 +73,7 @@ def run_workflow():
         #     tf_keeps=set(),
         #     close=True,
         # )
-        .exhaust()
+        .tqdm().exhaust()
         # .tagged_frame_to_tokens(
         #     extract_opts=extract_opts,  # .clear_tf_threshold(),
         #     filter_opts=filter_opts,
