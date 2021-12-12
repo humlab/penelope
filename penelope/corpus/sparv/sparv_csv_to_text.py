@@ -26,7 +26,7 @@ class SparvCsvToText:
         self.fields_index: Dict[str, int] = fields_index or {
             extract_tokens_opts.text_column: 0,
             extract_tokens_opts.pos_column: 1,
-            extract_tokens_opts.lemma_column: 2
+            extract_tokens_opts.lemma_column: 2,
         }
 
     def transform(self, content: str):
