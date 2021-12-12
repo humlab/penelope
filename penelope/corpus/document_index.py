@@ -462,7 +462,7 @@ def load_document_index(
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
-    probe_extensions: str = 'zip,csv,gz',
+    probe_extensions: str = 'zip,csv,gz,feather',
     **read_csv_kwargs,
 ) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -477,7 +477,10 @@ def load_document_index(
             if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
                 raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
 
-        document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
+        if filename.endswith('feather'):
+            document_index: DocumentIndex = pd.read_feather(filename)
+        else:
+            document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
         if old_or_unnamed_index_column in document_index.columns:
@@ -503,6 +506,12 @@ def load_document_index(
 
     return document_index
 
+def trim_series_type(series: pd.Series) -> pd.Series:
+    max_value: int = series.max()
+    for np_type in [np.int16, np.int32]:
+        if max_value < np.iinfo(np_type).max:
+            return series.astype(np_type)
+    return series
 
 @deprecated
 def document_index_upgrade(document_index: DocumentIndex) -> DocumentIndex:
