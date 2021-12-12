@@ -202,6 +202,10 @@ requirements.txt: poetry.lock
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
+profile-vocabulary-pyinstrument:
+	@mkdir -p ./profile-reports
+	@PYTHONPATH=. poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_vocabulary-pyinstrument.html ./tests/profiling/vocabulary.py
+
 profile-co_occurrence-pyinstrument:
 	@mkdir -p ./profile-reports
 	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.html ./tests/profiling/profile-workflow-pyinstrument.py
