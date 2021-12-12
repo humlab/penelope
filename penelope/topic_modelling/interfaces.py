@@ -6,6 +6,7 @@ import pickle
 import sys
 import types
 from dataclasses import dataclass
+from functools import cached_property
 from os.path import join as jj
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
@@ -272,9 +273,6 @@ class InferredTopicsData:
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview
 
-        self._id2token: dict = None
-        self._token2id: Token2Id = None
-
     @property
     def num_topics(self) -> int:
         return int(self.topic_token_overview.index.max()) + 1
@@ -375,22 +373,17 @@ class InferredTopicsData:
             o_size = sys.getsizeof(o_data)
             print('{:>20s}: {:.4f} Mb {}'.format(o_name, o_size / (1024 * 1024), type(o_data)))
 
-    @property
+    @cached_property
     def id2term(self) -> dict:
-        if self._id2token is None:
-            # id2token = inferred_topics.dictionary.to_dict()['token']
-            self._id2token = self.dictionary.token.to_dict()
-        return self._id2token
+        return self.dictionary.token.to_dict()
 
-    @property
+    @cached_property
     def term2id(self) -> dict:
         return {v: k for k, v in self.id2term.items()}
 
-    @property
+    @cached_property
     def token2id(self) -> Token2Id:
-        if not self._token2id:
-            self._token2id = Token2Id(data=self.term2id)
-        return self._token2id
+        return Token2Id(data=self.term2id)
 
     @staticmethod
     def load_token2id(folder: str) -> Token2Id:
