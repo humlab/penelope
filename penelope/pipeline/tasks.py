@@ -240,6 +240,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     extra_reader_opts: Optional[TextReaderOpts] = None
     checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
     stop_at_index: int = None
+    update_token_counts: bool = True
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -289,6 +290,8 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        if not self.update_token_counts:
+            return payload
         self.register_token_counts(payload)
         return payload
 
@@ -409,7 +412,7 @@ class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
 
 @dataclass
 class TextToTokens(TransformTokensMixIn, ITask):
-    """Extracts tokens from payload.content, optinally transforming"""
+    """Extracts tokens from payload.content, optionally transforming"""
 
     tokenize: Callable[[str], List[str]] = None
     text_transform_opts: TextTransformOpts = None
