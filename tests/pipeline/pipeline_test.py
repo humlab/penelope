@@ -6,7 +6,7 @@ import uuid
 from typing import List
 
 import pandas as pd
-import penelope.workflows.document_term_matrix as workflow
+import penelope.workflows.vectorize.dtm as workflow
 import pytest
 from penelope import corpus as corpora
 from penelope import pipeline, utility

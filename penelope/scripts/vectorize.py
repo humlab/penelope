@@ -3,7 +3,7 @@ from typing import Sequence
 
 import click
 import penelope.notebook.interface as interface
-import penelope.workflows.document_term_matrix as workflow
+import penelope.workflows.vectorize.dtm as workflow
 from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig

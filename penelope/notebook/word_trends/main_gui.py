@@ -4,7 +4,7 @@ import ipywidgets as widgets
 import penelope.pipeline as pipeline
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
-from penelope.workflows import document_term_matrix as workflow
+from penelope.workflows.vectorize import dtm as workflow
 
 from .. import dtm as dtm_gui
 from .. import interface, utility
