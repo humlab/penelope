@@ -113,7 +113,12 @@ class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculato
 
         if not (self.args and self.args.validate(inferred_topics, filters, threshold, result_threshold)):
 
-            self.data = self.calculator.compute(inferred_topics, filters, threshold, result_threshold)
+            self.data = self.calculator.compute(
+                inferred_topics=inferred_topics,
+                filters=filters,
+                threshold=threshold,
+                result_threshold=result_threshold
+            )
             self.args = MemoizedTopicPrevalenceOverTimeCalculator.ArgsMemory(
                 inferred_topics=inferred_topics,
                 filters=filters,

@@ -62,7 +62,7 @@ class TopicOverviewGUI:
 
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(
-            inferred_topics=self.state.inferred_topics.document_topic_weights,
+            inferred_topics=self.state.inferred_topics,
             filters=self.get_filters(),
             threshold=self.get_threshold(),
             result_threshold=self.get_result_threshold(),
