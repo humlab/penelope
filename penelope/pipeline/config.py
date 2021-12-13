@@ -58,8 +58,18 @@ class CorpusConfig:
         """Returns a pipeline class by key from `pipelines` section"""
         if pipeline_key not in self.pipelines:
             raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
-        factory: Type[CorpusPipeline] = create_pipeline_factory(self.pipelines[pipeline_key])
-        return factory(corpus_config=self, **kwargs)
+        cfg: str | dict = self.pipelines[pipeline_key]
+        opts: dict = {}
+        if isinstance(cfg, dict):
+            if 'class_name' not in cfg:
+                raise ValueError("config error: pipeline class `class_name` not specified")
+            class_name: str = cfg.get('class_name')
+            if 'options' in cfg:
+                opts = cfg['options']
+        else:
+            class_name = cfg
+        factory: Type[CorpusPipeline] = create_pipeline_factory(class_name)
+        return factory(corpus_config=self, **opts, **kwargs)
 
     @property
     def pos_schema(self) -> PoS_Tag_Scheme:
