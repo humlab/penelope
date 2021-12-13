@@ -519,6 +519,7 @@ class TaggedFrameToTokens(
             filter_opts=self.filter_opts,
             transform_opts=self.transform_opts,
             token2id=self.pipeline.payload.token2id,
+            pos_schema=self.pipeline.payload.pos_schema,
         )
 
         tokens = list(tokens)
