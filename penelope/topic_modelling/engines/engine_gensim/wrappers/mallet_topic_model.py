@@ -40,14 +40,20 @@ class MalletTopicModel(wrappers.LdaMallet):
     def ftopicwordweights(self) -> str:
         return self.prefix + 'topicwordweights.txt'
 
-    def train(self, corpus: Iterable[Iterable[Tuple[int, int]]]):
+    def train(self, corpus: Iterable[Iterable[Tuple[int, int]]], **kwargs):
         """Train Mallet LDA.
         Parameters
         ----------
         corpus : iterable of iterable of (int, int)
             Corpus in BoW format
         """
-        self.convert_input(corpus, infer=False)
+        use_existing_corpus: bool = kwargs.get('use_existing_corpus', False)
+
+        if os.path.isfile(self.fcorpusmallet()) and use_existing_corpus:
+            logger.warning("using EXISTING corpus.mallet!")
+        else:
+            self.convert_input(corpus, infer=False)
+
         cmd = (
             self.mallet_path + ' train-topics --input %s --num-topics %s  --alpha %s --optimize-interval %s '
             '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --topic-word-weights-file %s '
