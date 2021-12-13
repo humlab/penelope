@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -203,6 +203,15 @@ class PipelinePayload:
     @property
     def tagged_columns_names(self) -> dict:
         return {k: v for k, v in self.memory_store.items() if k in ['text_column', 'pos_column', 'lemma_column']}
+
+    @property
+    def tagged_columns_names2(self) -> Tuple:
+        columns: dict = self.tagged_columns_names
+        return (
+            columns['text_column'],
+            columns['pos_column'],
+            columns['lemma_column'],
+        )
 
     def extend(self, _: DocumentPayload):
         """Add properties of `other` to self. Used when combining two pipelines"""
