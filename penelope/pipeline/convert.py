@@ -99,7 +99,9 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         blocks = token2id.to_id_set(blocks)
 
     if not is_numeric_frame and extract_opts.lemmatize or to_lower:
-        tagged_frame[target_column] = pd.Series([x.lower() for x in tagged_frame[target_column]])
+        tagged_frame[target_column] = tagged_frame[
+            target_column
+        ].str.lower()  # pd.Series([x.lower() for x in tagged_frame[target_column]])
         passthroughs = {x.lower() for x in passthroughs}
 
     # if extract_opts.block_chars:
@@ -138,7 +140,7 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         mask &= ~(tagged_frame[pos_column].isin(pos_excludes))
 
     if transform_opts:
-        mask &= transform_opts.mask(tagged_frame[target_column])
+        mask &= transform_opts.mask(tagged_frame[target_column], token2id=token2id)
 
     if len(passthroughs) > 0:
         mask |= tagged_frame[target_column].isin(passthroughs)
