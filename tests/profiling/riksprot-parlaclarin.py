@@ -1,5 +1,3 @@
-from os.path import join as jj
-
 from penelope import pipeline
 from penelope.pipeline.pipelines import CorpusPipeline
 
@@ -15,11 +13,13 @@ OUTPUT_FOLDER = './tests/output'
 # --random-seed 42 --alpha asymmetric --max-iter 3000 --store-corpus /data/riksdagen_corpus_data/riksprot-parlaclarin.yml
 # riksprot-parlaclarin-protokoll-50-lemma
 
+CORPUS_FOLDER = '/data/riksdagen_corpus_data/tagged-speech-corpus.numeric.feather'
+
 
 def run_workflow():
     corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME)  # .folders(DATA_FOLDER)
     #    corpus_config.pipeline_payload.files(source=CORPUS_FILENAME, document_index_source=None)
-    corpus_config.checkpoint_opts.deserialize_processes = 3
+    # corpus_config.checkpoint_opts.deserialize_processes = 3
 
     # transform_opts: corpora.TokensTransformOpts = corpora.TokensTransformOpts(
     #     to_lower=True,
@@ -49,10 +49,10 @@ def run_workflow():
     # filter_opts: utility.PropertyValueMaskingOpts=utility.PropertyValueMaskingOpts()
 
     (
-        CorpusPipeline(config=corpus_config).load_tagged_frame(
-            filename=corpus_config.pipeline_payload.source,
-            checkpoint_opts=corpus_config.checkpoint_opts,
-            extra_reader_opts=corpus_config.text_reader_opts,
+        CorpusPipeline(config=corpus_config).load_grouped_id_tagged_frame(
+            folder=CORPUS_FOLDER,
+            file_pattern='**/prot-*.feather',
+            to_tagged_frame=True,
         )
         # .tagged_frame_to_tokens(
         #     extract_opts=extract_opts,
@@ -75,7 +75,7 @@ def run_workflow():
         #     tf_keeps=set(),
         #     close=True,
         # )
-        .exhaust(n_count=100)
+        .exhaust(n_count=5000)
         # .tagged_frame_to_tokens(
         #     extract_opts=extract_opts,  # .clear_tf_threshold(),
         #     filter_opts=filter_opts,
