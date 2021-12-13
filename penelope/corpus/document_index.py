@@ -612,6 +612,8 @@ def update_document_index_token_counts_by_corpus(
 
     n_terms: List[int] = None
 
+    logger.info("updating document index word counts...")
+
     try:
 
         if hasattr(corpus, 'sparse'):
@@ -632,6 +634,8 @@ def update_document_index_token_counts_by_corpus(
 
     if n_terms is not None:
         document_index[column_name] = n_terms
+
+    logger.info("...done!")
 
     return document_index
 
