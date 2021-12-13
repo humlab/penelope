@@ -4,6 +4,7 @@ import sys
 import click
 import penelope.corpus as penelope
 import yaml
+from loguru import logger
 from penelope import pipeline
 from penelope.corpus import TextTransformOpts, remove_hyphens
 from penelope.utility import PropertyValueMaskingOpts
@@ -16,8 +17,9 @@ from penelope.utility import PropertyValueMaskingOpts
 @click.argument('target-name', required=False)
 @click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
 @click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
-@click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
 @click.option('--corpus-source', default=None, help='Corpus filename/folder (overrides config)')
+@click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
+@click.option('--train-corpus-folder', default=None, type=click.STRING, help='Use train corpus in folder if exists')
 @click.option('--fix-hyphenation/--no-fix-hyphenation', default=True, is_flag=True, help='Fix hyphens')
 @click.option('--fix-accents/--no-fix-accents', default=True, is_flag=True, help='Fix accents')
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
@@ -48,6 +50,7 @@ def click_main(
     options_filename: str = None,
     corpus_source: str = None,
     corpus_folder: str = None,
+    train_corpus_folder: str = None,
     target_folder: str = None,
     fix_hyphenation: bool = True,
     fix_accents: bool = True,
@@ -75,6 +78,7 @@ def click_main(
     force_checkpoint: bool = False,
 ):
     arguments: dict = locals()
+    print(arguments)
     del arguments['options_filename']
 
     if options_filename is not None:
@@ -98,6 +102,7 @@ def _main(
     target_name: str = None,
     corpus_source: str = None,
     corpus_folder: str = None,
+    train_corpus_folder: str = None,
     target_folder: str = None,
     fix_hyphenation: bool = True,
     fix_accents: bool = True,
@@ -186,6 +191,7 @@ def _main(
         target_name=target_name,
         corpus_source=corpus_source,
         corpus_folder=corpus_folder,
+        train_corpus_folder=train_corpus_folder,
         target_folder=target_folder,
         text_transform_opts=text_transform_opts,
         extract_opts=extract_opts,
@@ -206,6 +212,7 @@ def main(
     target_name: str,
     corpus_source: str = None,
     corpus_folder: str = None,
+    train_corpus_folder: str = None,
     target_folder: str = None,
     text_transform_opts: TextTransformOpts = None,
     extract_opts: penelope.ExtractTaggedTokensOpts = None,
@@ -244,6 +251,7 @@ def main(
         )
         .to_topic_model(
             corpus_source=None,
+            train_corpus_folder=train_corpus_folder,
             target_folder=target_folder,
             target_name=target_name,
             engine=engine,
@@ -254,5 +262,85 @@ def main(
     ).value()
 
 
+# def debug_main():
+
+#     arguments = {
+#         'config_filename': './riksprot-parlaclarin.yml',
+#         'target_name': 'riksprot-parlaclarin-protokoll-50-lemma',
+#         'corpus_source': None,
+#         'corpus_folder': None,
+#         'target_folder': './data',
+#         'fix_hyphenation': True,
+#         'fix_accents': True,
+#         'lemmatize': True,
+#         'pos_includes': '',
+#         'pos_excludes': '',
+#         'to_lower': True,
+#         'remove_stopwords': None,
+#         'min_word_length': 1,
+#         'max_word_length': None,
+#         'keep_symbols': True,
+#         'keep_numerals': True,
+#         'only_any_alphanumeric': True,
+#         'only_alphabetic': False,
+#         'n_topics': 50,
+#         'engine': 'gensim_lda-multicore',
+#         'passes': None,
+#         'random_seed': 42,
+#         'alpha': 'asymmetric',
+#         'workers': 6,
+#         'max_iter': 3000,
+#         'store_corpus': True,
+#         'store_compressed': True,
+#         'enable_checkpoint': True,
+#         'force_checkpoint': False,
+#     }
+#     _main(**arguments)
+
+RUN_MODE = "production"
+
 if __name__ == '__main__':
-    click_main()  # pylint: disable=no-value-for-parameter
+
+    if RUN_MODE == "production":
+
+        click_main()
+
+    # elif RUN_MODE == "debug":
+
+    #     logger.warning("RUNNING IN DEBUG MODE")
+    #     debug_main()
+
+    # else:
+
+    #     logger.warning("RUNNING IN DEBUG MODE")
+
+    #     from click.testing import CliRunner
+
+    #     runner = CliRunner()
+    #     result = runner.invoke(
+    #         click_main,
+    #         [
+    #             '--lemmatize',
+    #             '--to-lower',
+    #             '--min-word-length',
+    #             1,
+    #             '--only-any-alphanumeric',
+    #             '--engine',
+    #             'gensim_lda-multicore',
+    #             '--random-seed',
+    #             42,
+    #             '--alpha',
+    #             'asymmetric',
+    #             '--max-iter',
+    #             3000,
+    #             '--store-corpus',
+    #             '--workers',
+    #             6,
+    #             '--target-folder',
+    #             '/home/roger/source/penelope/data',
+    #             '/home/roger/source/penelope/riksprot-parlaclarin.yml',
+    #             'riksprot-parlaclarin-protokoll-50-lemma',
+    #             1,
+    #         ],
+    #     )
+    #     print(result.output)

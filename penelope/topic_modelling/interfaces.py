@@ -7,6 +7,7 @@ import sys
 import types
 from dataclasses import dataclass
 from functools import cached_property
+from os.path import isfile
 from os.path import join as jj
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
@@ -76,6 +77,8 @@ class TrainingCorpus:
     def store(self, folder: str, store_compressed: bool = True, pickled: bool = True):
         """Stores the corpus used in training. If not pickled, then stored as separate files"""
 
+        os.makedirs(folder, exist_ok=True)
+
         if pickled:
 
             filename = jj(folder, f"training_corpus.pickle{'.pbz2' if store_compressed else ''}")
@@ -109,10 +112,19 @@ class TrainingCorpus:
             corpus.dump(tag='train', folder=folder)
 
     @staticmethod
+    def exists(folder: str) -> bool:
+        if folder is None:
+            return False
+        for filename in ["training_corpus.pickle.pbz2", "training_corpus.pickle"]:
+            if isfile(jj(folder, filename)):
+                return True
+        return VectorizedCorpus.dump_exists(tag='train', folder=folder)
+
+    @staticmethod
     def load(folder: str) -> TrainingCorpus:
         """Loads an training corpus from pickled file."""
         for filename in ["training_corpus.pickle.pbz2", "training_corpus.pickle"]:
-            if os.path.isfile(jj(folder, filename)):
+            if isfile(jj(folder, filename)):
                 return utility.unpickle_from_file(jj(folder, filename))
 
         """Load from vectorized corpus if exists"""
@@ -219,7 +231,7 @@ class InferredModel:
     def load_topic_model(folder: str) -> Any:
         """Load a topic model from pickled file."""
         for filename in ["topic_model.pickle.pbz2", "topic_model.pickle"]:
-            if os.path.isfile(jj(folder, filename)):
+            if isfile(jj(folder, filename)):
                 return utility.unpickle_from_file(jj(folder, filename))
         return None
 

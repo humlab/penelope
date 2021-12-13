@@ -15,6 +15,7 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline,
         *,
         corpus_source: str = None,
+        train_corpus_folder: str = None,
         target_folder: str = None,
         target_name: str = None,
         engine: str = "not-specified",
@@ -26,6 +27,7 @@ class PipelineShortcutMixIn:
         return self.add(
             tasks.ToTopicModel(
                 corpus_source=corpus_source,
+                train_corpus_folder=train_corpus_folder,
                 target_folder=target_folder,
                 target_name=target_name,
                 engine=engine,
