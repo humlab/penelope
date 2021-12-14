@@ -44,6 +44,7 @@ from penelope.utility import PropertyValueMaskingOpts
 @click.option('--store-compressed/--no-store-compressed', default=True, is_flag=True, help='')
 @click.option('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True, help='')
 @click.option('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='')
+@click.option('--passthrough-column', default=None, type=click.STRING, help="Use tagged columns as-is (ignore filters)")
 def click_main(
     config_filename: str = None,
     target_name: str = None,
@@ -76,6 +77,7 @@ def click_main(
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
+    passthrough_column: str = None,
 ):
     arguments: dict = locals()
     print(arguments)
@@ -128,25 +130,58 @@ def _main(
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
+    passthrough_column: str = None,
 ):
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
 
-    text_transform_opts: TextTransformOpts = TextTransformOpts()
+    if passthrough_column is None:
 
-    text_transform_opts = TextTransformOpts()
+        text_transform_opts: TextTransformOpts = TextTransformOpts()
 
-    if fix_accents:
-        text_transform_opts.fix_accents = True
+        text_transform_opts = TextTransformOpts()
 
-    if fix_hyphenation:
-        """Replace default dehyphen function"""
-        # fix_hyphens: Callable[[str], str] = (
-        #     remove_hyphens_fx(config.text_reader_opts.dehyphen_expr)
-        #     if config.text_reader_opts.dehyphen_expr is not None
-        #     else remove_hyphens
-        # )
-        text_transform_opts.fix_hyphenation = False
-        text_transform_opts.extra_transforms.append(remove_hyphens)
+        if fix_accents:
+            text_transform_opts.fix_accents = True
+
+        if fix_hyphenation:
+            """Replace default dehyphen function"""
+            # fix_hyphens: Callable[[str], str] = (
+            #     remove_hyphens_fx(config.text_reader_opts.dehyphen_expr)
+            #     if config.text_reader_opts.dehyphen_expr is not None
+            #     else remove_hyphens
+            # )
+            text_transform_opts.fix_hyphenation = False
+            text_transform_opts.extra_transforms.append(remove_hyphens)
+
+        transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
+            to_lower=to_lower,
+            to_upper=False,
+            min_len=min_word_length,
+            max_len=max_word_length,
+            remove_accents=False,
+            remove_stopwords=(remove_stopwords is not None),
+            stopwords=None,
+            extra_stopwords=None,
+            language=remove_stopwords,
+            keep_numerals=keep_numerals,
+            keep_symbols=keep_symbols,
+            only_alphabetic=only_alphabetic,
+            only_any_alphanumeric=only_any_alphanumeric,
+        )
+
+        extract_opts = penelope.ExtractTaggedTokensOpts(
+            lemmatize=lemmatize,
+            pos_includes=pos_includes,
+            pos_excludes=pos_excludes,
+            **config.pipeline_payload.tagged_columns_names,
+        )
+
+    else:
+        extract_opts: str = passthrough_column
+        text_transform_opts: TextTransformOpts = None
+        transform_opts: penelope.TokensTransformOpts = None
+
+    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
 
     engine_args = {
         k: v
@@ -161,30 +196,6 @@ def _main(
         }.items()
         if v is not None
     }
-
-    transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
-        to_lower=to_lower,
-        to_upper=False,
-        min_len=min_word_length,
-        max_len=max_word_length,
-        remove_accents=False,
-        remove_stopwords=(remove_stopwords is not None),
-        stopwords=None,
-        extra_stopwords=None,
-        language=remove_stopwords,
-        keep_numerals=keep_numerals,
-        keep_symbols=keep_symbols,
-        only_alphabetic=only_alphabetic,
-        only_any_alphanumeric=only_any_alphanumeric,
-    )
-
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
-    extract_opts = penelope.ExtractTaggedTokensOpts(
-        lemmatize=lemmatize,
-        pos_includes=pos_includes,
-        pos_excludes=pos_excludes,
-        **config.pipeline_payload.tagged_columns_names,
-    )
 
     main(
         config=config,
@@ -310,37 +321,38 @@ if __name__ == '__main__':
     #     logger.warning("RUNNING IN DEBUG MODE")
     #     debug_main()
 
-    # else:
+    else:
 
-    #     logger.warning("RUNNING IN DEBUG MODE")
+        logger.warning("RUNNING IN DEBUG MODE")
 
-    #     from click.testing import CliRunner
+        from click.testing import CliRunner
 
-    #     runner = CliRunner()
-    #     result = runner.invoke(
-    #         click_main,
-    #         [
-    #             '--lemmatize',
-    #             '--to-lower',
-    #             '--min-word-length',
-    #             1,
-    #             '--only-any-alphanumeric',
-    #             '--engine',
-    #             'gensim_lda-multicore',
-    #             '--random-seed',
-    #             42,
-    #             '--alpha',
-    #             'asymmetric',
-    #             '--max-iter',
-    #             3000,
-    #             '--store-corpus',
-    #             '--workers',
-    #             6,
-    #             '--target-folder',
-    #             '/home/roger/source/penelope/data',
-    #             '/home/roger/source/penelope/riksprot-parlaclarin.yml',
-    #             'riksprot-parlaclarin-protokoll-50-lemma',
-    #             1,
-    #         ],
-    #     )
-    #     print(result.output)
+        runner = CliRunner()
+        result = runner.invoke(
+            click_main,
+            [
+                '--n-topics 200',
+                # '--lemmatize',
+                # '--to-lower',
+                # '--min-word-length',
+                1,
+                '--only-any-alphanumeric',
+                '--engine',
+                'gensim_lda-multicore',
+                '--random-seed',
+                42,
+                '--alpha',
+                'asymmetric',
+                '--max-iter',
+                3000,
+                '--store-corpus',
+                '--workers',
+                6,
+                '--target-folder',
+                '/home/roger/source/penelope/data',
+                '/home/roger/source/penelope/riksprot-parlaclarin.yml',
+                'riksprot-parlaclarin-protokoll-50-lemma',
+                1,
+            ],
+        )
+        print(result.output)

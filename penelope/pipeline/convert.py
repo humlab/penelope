@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable, Iterable, List, Set, Union
 
 import numpy as np
@@ -253,7 +255,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     pos_schema: PoS_Tag_Scheme = None,
-) -> Iterable[str]:
+) -> Iterable[str | int]:
     """Extracts tokens from a tagged document represented as a Pandas data frame.
 
     Args:
@@ -264,6 +266,15 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         Iterable[str]: Sequence of extracted tokens
     """
     is_numeric_frame: bool = is_encoded_tagged_frame(doc)
+
+    if isinstance(extract_opts, str):
+        passthrough_column: str = extract_opts
+        """If extracts_opts is a string: return column with what name"""
+        if transform_opts is not None:
+            raise ValueError("transform_opts must be None when passthrough is specified")
+        if transform_opts is not None:
+            raise ValueError("transform_opts must be None when passthrough is specified")
+        return doc[passthrough_column].tolist()
 
     # if is_numeric_frame:
     #     raise NotImplementedError("tagged_frame_to_tokens cannot handle encoded frames yet")

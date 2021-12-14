@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import itertools
 import os
@@ -487,7 +489,7 @@ class TaggedFrameToTokens(
 ):
     """Extracts text from payload.content based on annotations etc. """
 
-    extract_opts: ExtractTaggedTokensOpts = None
+    extract_opts: ExtractTaggedTokensOpts | str = None
     filter_opts: PropertyValueMaskingOpts = None
 
     update_counts_on_exit: bool = True
@@ -506,6 +508,7 @@ class TaggedFrameToTokens(
         return self
 
     def enter(self) -> ITask:  # pylint: disable=useless-super-delegation
+
         super().enter()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
@@ -527,17 +530,17 @@ class TaggedFrameToTokens(
         if self.ingest_tokens:
             self.ingest(tokens)
 
-        # if self.update_counts_on_exit:
-        #     self.token_counts[payload.document_name] = len(tokens)
-        # else:
-        self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
+        if self.update_counts_on_exit:
+            self.token_counts[payload.document_name] = len(tokens)
+        else:
+            self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
 
         return payload.update(self.out_content_type, tokens)
 
     def exit(self) -> ITask:  # pylint: disable=useless-super-delegation
         super().exit()
-        # if self.update_counts_on_exit:
-        #     self.update_document_index_key_values('n_tokens', self.token_counts)
+        if self.update_counts_on_exit:
+            self.update_document_index_key_values('n_tokens', self.token_counts)
 
 
 @dataclass
