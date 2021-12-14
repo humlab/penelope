@@ -73,6 +73,7 @@ def get_engine_options(
         }
 
     if algorithm == 'LDA':
+        raise ValueError("LdaModel is deprecated")
         return {
             'engine': models.LdaModel,
             'options': {
@@ -99,7 +100,7 @@ def get_engine_options(
             },
         }
 
-    if algorithm == 'LDA-MULTICORE':
+    if algorithm in ('LDA-MULTICORE', 'LDA_MULTICORE', 'MULTICORE'):
         return {
             'engine': models.LdaMulticore,
             'options': {

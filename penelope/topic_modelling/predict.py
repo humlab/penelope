@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import gensim.corpora as corpora
 import numpy as np
@@ -9,8 +9,12 @@ from gensim.matutils import Sparse2Corpus
 from loguru import logger
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus
 
-from .engines import ITopicModelEngine, get_engine_by_model_type
+from .engines import get_engine_by_model_type
 from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData
+
+if TYPE_CHECKING:
+    from .engines.interface import ITopicModelEngine
+
 
 # pylint: disable=unused-argument
 

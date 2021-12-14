@@ -4,7 +4,6 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Type
 
 from . import engine_gensim, engine_textacy
-from .interface import ITopicModelEngine  # type: ignore
 
 if TYPE_CHECKING:
     from . import interface
