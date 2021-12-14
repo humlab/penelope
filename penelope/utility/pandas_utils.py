@@ -15,6 +15,12 @@ from .utils import now_timestamp
 DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
 
 
+def faster_to_dict_records(df: pd.DataFrame) -> List[dict]:
+    data: List[Any] = df.values.tolist()
+    columns: List[str] = df.columns.tolist()
+    return [dict(zip(columns, datum)) for datum in data]
+
+
 def setup_pandas():
 
     pd.set_option("max_rows", None)

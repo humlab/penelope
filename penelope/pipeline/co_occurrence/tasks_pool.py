@@ -75,7 +75,8 @@ def prepare_task_stream(
 ) -> Iterable[Tuple]:
 
     fg = token2id.data.get
-    name_to_id: dict = document_index.document_id.to_dict()
+    # name_to_id: dict = document_index.document_id.to_dict()
+    name_to_id: dict = {n: i for n, i in zip(document_index.index, document_index.document_id)}
     task_stream: Iterable[Tuple] = (
         (
             name_to_id[payload.document_name],

@@ -75,6 +75,7 @@ from .pandas_utils import (
     PropertyValueMaskingOpts,
     create_mask,
     create_mask2,
+    faster_to_dict_records,
     pandas_read_csv_zip,
     pandas_to_csv_zip,
     rename_columns,

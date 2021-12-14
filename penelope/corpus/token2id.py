@@ -228,7 +228,9 @@ class Token2Id(MutableMapping):
             logger.info(f"Token2Id.load: filename {filename} not found")
             return None
         df: pd.DataFrame = pd.read_csv(filename, sep='\t', index_col=0, na_filter=False)
-        data: dict = df['token_id'].to_dict()
+        # FIXME: use dict comprehension:
+        # data: dict = df['token_id'].to_dict()
+        data: dict = {t: i for t, i in zip(df.index, df.token_id)}
         tf: defaultdict = Token2Id.load_tf(filename)
         token2id: Token2Id = Token2Id(data=data, tf=tf)
         return token2id

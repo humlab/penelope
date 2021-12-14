@@ -1,7 +1,4 @@
-import contextlib
 import glob
-import json
-import types
 from dataclasses import dataclass, field
 from enum import IntEnum
 from os.path import join as jj
@@ -9,9 +6,7 @@ from typing import Iterable, List, Mapping
 
 import numpy as np
 import pandas as pd
-from loguru import logger
 from penelope.corpus import DocumentIndexHelper, Token2Id
-from penelope.utility.utils import term_frequency
 from tqdm import tqdm
 
 from ..utility import PoS_Tag_Scheme
@@ -130,21 +125,27 @@ class LoadGroupedIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITas
             jj(self.corpus_source, 'document_index.feather')
         ).document_index
 
-        self.document_id2name: Mapping[int, str] = self.document_index.set_index('document_id')[
-            'document_name'
-        ].to_dict()
+        self.document_id2name: Mapping[int, str] = {
+            doc_id: doc_name
+            for doc_id, doc_name in zip(self.document_index.document_id, self.document_index.document_name)
+        }
 
-        self.token2id: Token2Id = Token2Id(data=self.vocabulary.set_index('token').token_id.to_dict())
+        # self.document_id2name: Mapping[int, str] = self.document_index.set_index('document_id')[
+        #     'document_name'
+        # ].to_dict()
+
+        # self.token2id: Token2Id = Token2Id(data=self.vocabulary.set_index('token').token_id.to_dict())
+        self.token2id: Token2Id = Token2Id(data={t: i for t, i in zip(self.vocabulary.token, self.vocabulary.token_id)})
 
         self.pipeline.payload.effective_document_index = self.document_index
         self.pipeline.payload.token2id = self.token2id
         self.document_tfs = {}
 
-    def exit(self):
-        super().exit()
-        # with contextlib.suppress(Exception):
-        #     with open(jj(self.corpus_source, 'document_tfs.json'), "w", encoding='utf-8') as fp:
-        #         json.dump(self.document_tfs, fp)
+    # def exit(self):
+    #     super().exit()
+    # with contextlib.suppress(Exception):
+    #     with open(jj(self.corpus_source, 'document_tfs.json'), "w", encoding='utf-8') as fp:
+    #         json.dump(self.document_tfs, fp)
 
     def read_vocabulary(self):
         """Read vocabulary. Return data frame."""
@@ -169,13 +170,17 @@ class LoadGroupedIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITas
 
             if self.to_tagged_frame:
 
-                group_frame[text_column] = group_frame.token_id.apply(fg)
+                if 'token_id' in group_frame.columns:
+                    group_frame[text_column] = group_frame.token_id.apply(fg)
+
+                if 'lemma_id' in group_frame.columns:
+                    group_frame[lemma_column] = group_frame.lemma_id.apply(fg)
+
                 group_frame[pos_column] = group_frame.pos_id.apply(pg)
-                group_frame[lemma_column] = group_frame.lemma_id.apply(fg)
 
                 # group_frame.update(tagged_frame[tagged_frame.lemma_id.isna()].token_id)
 
-                group_frame.drop(columns=['token_id', 'pos_id', 'lemma_id'], inplace=True)
+                group_frame.drop(columns=['token_id', 'pos_id', 'lemma_id'], inplace=True, errors='ignore')
 
             for document_id, tagged_frame in group_frame.groupby('document_id'):
 
@@ -195,7 +200,7 @@ class LoadGroupedIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITas
 
     def load_tagged_frame(self, filename) -> pd.DataFrame:
         tagged_frame: pd.DataFrame = pd.read_feather(filename)
-        tagged_frame.update(tagged_frame[tagged_frame.lemma_id.isna()].token_id)
+        # tagged_frame.update(tagged_frame[tagged_frame.lemma_id.isna()].token_id)
         return tagged_frame
 
     def corpus_filenames(self) -> List[str]:
