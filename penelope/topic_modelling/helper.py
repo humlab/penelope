@@ -100,7 +100,7 @@ class FilterDocumentTopicWeights:
         if len(search_text) > 2:
 
             topic_ids: List[int] = filter_topic_tokens_overview(
-                self.inferred_topics.topic_token_overview, search_text=search_text, n_count=n_top
+                self.inferred_topics.topic_token_overview, search_text=search_text, n_top=n_top
             ).index.tolist()
             self.filter_by_topics(topic_ids)
 

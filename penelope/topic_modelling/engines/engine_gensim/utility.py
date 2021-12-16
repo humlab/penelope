@@ -3,7 +3,7 @@ import numpy as np
 from penelope.vendor.gensim import wrappers
 
 
-# FIXME #98 gensim 4.0: wrappers.ldamallet.LdaMallet is deeprecated/removed in Gensim 4.0
+# NOTE gensim 4.0: wrappers.ldamallet.LdaMallet is deprecated/removed in Gensim 4.0
 def malletmodel2ldamodel(mallet_model: wrappers.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50):
     """Convert :class:`~gensim.models.wrappers.ldamallet.LdaMallet` to :class:`~gensim.models.ldamodel.LdaModel`.
     This works by copying the training model weights (alpha, beta...) from a trained mallet model into the gensim model.

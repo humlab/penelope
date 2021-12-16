@@ -251,8 +251,8 @@ def load_corpus(
     *,
     tag: str,
     folder: str,
-    n_count: int = 10000,
-    n_top: int = 100000,
+    tf_threshold: int = None,
+    n_top: int = None,
     axis: Optional[int] = 1,
     keep_magnitude: bool = True,
     group_by_year: bool = True,
@@ -265,7 +265,7 @@ def load_corpus(
         Corpus filename identifier (prefixed to filename)
     folder : str
         Source folder where corpus reside
-    n_count : int, optional
+    tf_threshold : int, optional
         Words having a (global) count below this limit are discarded, by default 10000
     n_top : int, optional
         Only the 'n_top' words sorted by word counts should be loaded, by default 100000
@@ -284,8 +284,8 @@ def load_corpus(
     if group_by_year:
         v_corpus = v_corpus.group_by_year()
 
-    if n_count is not None:
-        v_corpus = v_corpus.slice_by_tf(n_count)
+    if tf_threshold is not None:
+        v_corpus = v_corpus.slice_by_tf(tf_threshold)
 
     if n_top is not None:
         v_corpus = v_corpus.slice_by_n_top(n_top)

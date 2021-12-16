@@ -2,10 +2,12 @@ import collections
 from dataclasses import dataclass
 from typing import Dict, List
 
-import bokeh
 import numpy as np
 import pandas as pd
 import scipy
+from bokeh import layouts as bl
+from bokeh import models as bm
+from bokeh import plotting as bp
 from pandas.core.frame import DataFrame
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import chunks
@@ -34,12 +36,12 @@ class GofData:
     most_deviating: pd.DataFrame = None
 
     @staticmethod
-    def compute(corpus: VectorizedCorpus, n_count: int) -> "GofData":
+    def compute(corpus: VectorizedCorpus, n_top: int) -> "GofData":
 
         goodness_of_fit = compute_goddness_of_fits_to_uniform(corpus, None, verbose=True, metrics=['l2_norm', 'slope'])
-        most_deviating_overview = compile_most_deviating_words(goodness_of_fit, n_count=n_count)
+        most_deviating_overview = compile_most_deviating_words(goodness_of_fit, n_top=n_top)
         most_deviating = get_most_deviating_words(
-            goodness_of_fit, 'l2_norm', n_count=n_count, ascending=False, abs_value=True
+            goodness_of_fit, 'l2_norm', n_top=n_top, ascending=False, abs_value=True
         )
 
         gof_data: GofData = GofData(
@@ -206,45 +208,45 @@ def compute_goddness_of_fits_to_uniform(
 
 
 def get_most_deviating_words(
-    df_gof: pd.DataFrame, metric: str, n_count: int = 500, ascending: bool = False, abs_value: bool = False
-):
+    df_gof: pd.DataFrame, metric: str, n_top: int = 500, ascending: bool = False, abs_value: bool = False
+) -> pd.DataFrame:
     # better sorting: df.iloc[df['b'].abs().argsort()]
     # descending: df.iloc[(-df['b'].abs()).argsort()]
 
     # df = (
     #     df_gof.reindex(df_gof[metric].abs().sort_values(ascending=False).index)
     #     if abs_value
-    #     else df_gof.nlargest(n_count, columns=metric).sort_values(by=metric, ascending=ascending)
+    #     else df_gof.nlargest(n_top, columns=metric).sort_values(by=metric, ascending=ascending)
     # )
 
     # df = df.reset_index()[['token', metric]].rename(columns={'token': metric + '_token'})
 
-    abs_metric = f'abs_{metric}'
-    df = df_gof[['token', metric]].rename(columns={'token': metric + '_token'})
+    abs_metric: str = f'abs_{metric}'
+    df: pd.DataFrame = df_gof[['token', metric]].rename(columns={'token': metric + '_token'})
     df[abs_metric] = df[metric].abs()
 
-    sort_column = abs_metric if abs_value else metric
+    sort_column: str = abs_metric if abs_value else metric
 
     df = df.sort_values(by=sort_column, ascending=ascending)
 
-    if n_count > 0:
-        df = df.nlargest(n_count, columns=abs_metric)
+    if n_top > 0:
+        df = df.nlargest(n_top, columns=abs_metric)
 
     return df
 
 
-def compile_most_deviating_words(df, n_count=500):
+def compile_most_deviating_words(df: pd.DataFrame, n_top: int = 500) -> pd.DataFrame:
 
     computed_metrics = list(set(df.columns) - set(["token", "word_count"]))
     xf = df[["token", "word_count"]]
     for metric in computed_metrics:
-        xf = xf.join(get_most_deviating_words(df, metric, n_count, abs_value=True))
+        xf = xf.join(get_most_deviating_words(df, metric, n_top, abs_value=True))
     return xf
 
 
-def plot_metric_histogram(df_gof, metric='l2_norm', bins=100):
+def plot_metric_histogram(df_gof: pd.DataFrame, metric: str = 'l2_norm', bins: int = 100):
 
-    p = bokeh.plotting.figure(plot_width=300, plot_height=300)
+    p: bp.Figure = bp.figure(plot_width=300, plot_height=300)
 
     hist, edges = np.histogram(df_gof[metric].fillna(0), bins=bins)
     p.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], alpha=0.4)
@@ -254,7 +256,7 @@ def plot_metric_histogram(df_gof, metric='l2_norm', bins=100):
     return p
 
 
-def plot_metrics(df_gof, bins=100):
+def plot_metrics(df_gof: pd.DataFrame, bins: int = 100):
     plots = []
     for metric in METRIC_FUNCTIONS:
         if metric in df_gof.columns:
@@ -262,9 +264,9 @@ def plot_metrics(df_gof, bins=100):
 
     plots = chunks(list(plots), 3)
 
-    gp = bokeh.layouts.gridplot(plots)
+    gp = bl.gridplot(plots)
 
-    bokeh.plotting.show(gp)
+    bp.show(gp)
 
 
 def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
@@ -293,11 +295,11 @@ def plot_slopes(
 
     data = generate_slopes(x_corpus, most_deviating, metric)
 
-    source = bokeh.models.ColumnDataSource(data)
+    source = bm.ColumnDataSource(data)
 
-    color_mapper = bokeh.models.LinearColorMapper(palette='Magma256', low=min(data['k']), high=max(data['k']))
+    color_mapper = bm.LinearColorMapper(palette='Magma256', low=min(data['k']), high=max(data['k']))
 
-    p = bokeh.plotting.figure(plot_height=plot_height, plot_width=plot_width, tools='pan,wheel_zoom,box_zoom,reset')
+    p: bp.Figure = bp.figure(plot_height=plot_height, plot_width=plot_width, tools='pan,wheel_zoom,box_zoom,reset')
     p.multi_line(
         xs='xs',
         ys='ys',
@@ -309,13 +311,13 @@ def plot_slopes(
     )  # , legend="token"
 
     p.add_tools(
-        bokeh.models.HoverTool(
+        bm.HoverTool(
             show_arrow=False,
             line_policy='next',
             tooltips=[('Token', '@token'), ('Slope', '@k{1.1111}')],  # , ('P-value', '@p{1.1111}')]
         )
     )
 
-    bokeh.plotting.show(p)
+    bp.show(p)
 
     # return p

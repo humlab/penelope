@@ -45,18 +45,18 @@ class StatsMixIn:
         self: IVectorizedCorpusProtocol,
         *,
         category_column: str = 'category',
-        n_count: int = 100,
+        n_top: int = 100,
         pad: str = None,
         keep_empty: bool = False,
     ) -> dict:
-        """Returns top `n_count` terms per category (as defined by `category_column`) as a dict.
+        """Returns top `n_top` terms per category (as defined by `category_column`) as a dict.
 
         The dict is keyed by category value and each value is a list of tuples (token, count)
         sorted in descending order based on token count.
 
         Args:
             category_column (str, optional): Column in document index that defines categories. Defaults to 'category'.
-            n_count (int, optional): Number of words to return per category. Defaults to 100.
+            n_top (int, optional): Number of words to return per category. Defaults to 100.
             pad (str, optional): If specified, the lists are padded to be of equal length by appending tuples (`pad`, 0)
             keep_empty (bool, optional): If false, then empty categories are removed
         Returns:
@@ -68,7 +68,7 @@ class StatsMixIn:
             for category in categories
         }
         data = {
-            str(category): self.get_top_n_words(n=n_count, indices=indices_groups[category])
+            str(category): self.get_top_n_words(n=n_top, indices=indices_groups[category])
             for category in indices_groups
         }
 
@@ -87,7 +87,7 @@ class StatsMixIn:
         self: IVectorizedCorpusProtocol,
         *,
         category_column: str = 'category',
-        n_count: int = 100,
+        n_top: int = 100,
         kind: str = 'token',
     ) -> pd.DataFrame:
         """Returns top terms per category (as defined by `category_column`) as a dict or pandas data frame.
@@ -95,7 +95,7 @@ class StatsMixIn:
 
         Args:
             category_column (str, optional): Column in document index that defines categories. Defaults to 'category'.
-            n_count (int, optional): Number of words to return per category. Defaults to 100.
+            n_top (int, optional): Number of words to return per category. Defaults to 100.
             kind (str, optional): Specifies each category column(s), 'token', 'token+count' (two columns) or single 'token/count' column.
 
         Returns:
@@ -104,7 +104,7 @@ class StatsMixIn:
 
         partitioned_top_n_words = self.get_partitioned_top_n_words(
             category_column=category_column,
-            n_count=n_count,
+            n_top=n_top,
             pad='*',
             keep_empty=False,
         )

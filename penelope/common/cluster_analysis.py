@@ -247,7 +247,7 @@ def get_top_tokens_by_metric(
     *, metric: str, n_metric_top: int, corpus: VectorizedCorpus, df_gof: pd.DataFrame
 ) -> Tuple[List[int], List[str]]:
     """Computes most deviating tokens by metric"""
-    df_top = gof.get_most_deviating_words(df_gof, metric, n_count=n_metric_top, ascending=False, abs_value=False)
+    df_top = gof.get_most_deviating_words(df_gof, metric, n_top=n_metric_top, ascending=False, abs_value=False)
     tokens = df_top[metric + '_token'].tolist()
     indices = [corpus.token2id[w] for w in tokens]
     return indices, tokens

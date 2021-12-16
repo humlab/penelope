@@ -43,11 +43,11 @@ class TrendsComputeOpts:
 
 
 class ITrendsData(abc.ABC):
-    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_count: int = 100000):
+    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_top: int = 100000):
         self.corpus: VectorizedCorpus = corpus
         self.corpus_folder: str = corpus_folder
         self.corpus_tag: str = corpus_tag
-        self.n_count: int = n_count
+        self.n_top: int = n_top
 
         self._compute_options: Dict = None
         self._gof_data: GofData = None
@@ -69,7 +69,7 @@ class ITrendsData(abc.ABC):
     @property
     def gof_data(self) -> GofData:
         if self._gof_data is None:
-            self._gof_data = GofData.compute(self.corpus, n_count=self.n_count)
+            self._gof_data = GofData.compute(self.corpus, n_top=self.n_top)
         return self._gof_data
 
     def find_word_indices(self, opts: TrendsComputeOpts) -> List[int]:
@@ -84,10 +84,8 @@ class ITrendsData(abc.ABC):
         )
         return words
 
-    def get_top_terms(self, n_count: int = 100, kind='token+count') -> pd.DataFrame:
-        top_terms = self._transformed_corpus.get_top_terms(
-            category_column=self.category_column, n_count=n_count, kind=kind
-        )
+    def get_top_terms(self, n_top: int = 100, kind='token+count') -> pd.DataFrame:
+        top_terms = self._transformed_corpus.get_top_terms(category_column=self.category_column, n_top=n_top, kind=kind)
         return top_terms
 
     def transform(self, opts: TrendsComputeOpts) -> "ITrendsData":
@@ -110,8 +108,8 @@ class ITrendsData(abc.ABC):
 
 
 class TrendsData(ITrendsData):
-    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_count: int = 100000):
-        super().__init__(corpus=corpus, corpus_folder=corpus_folder, corpus_tag=corpus_tag, n_count=n_count)
+    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_top: int = 100000):
+        super().__init__(corpus=corpus, corpus_folder=corpus_folder, corpus_tag=corpus_tag, n_top=n_top)
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> VectorizedCorpus:
 
@@ -136,8 +134,8 @@ class TrendsData(ITrendsData):
 
 
 class BundleTrendsData(ITrendsData):
-    def __init__(self, bundle: Bundle = None, n_count: int = 100000):
-        super().__init__(corpus=bundle.corpus, corpus_folder=bundle.folder, corpus_tag=bundle.tag, n_count=n_count)
+    def __init__(self, bundle: Bundle = None, n_top: int = 100000):
+        super().__init__(corpus=bundle.corpus, corpus_folder=bundle.folder, corpus_tag=bundle.tag, n_top=n_top)
         self.bundle = bundle
         self.keyness_source: KeynessMetricSource = KeynessMetricSource.Full
         self.tf_threshold: int = 1

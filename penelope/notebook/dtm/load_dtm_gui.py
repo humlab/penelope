@@ -126,7 +126,7 @@ def create_load_gui(
     def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:
 
         corpus: VectorizedCorpus = load_corpus(
-            folder=folder, tag=tag, n_count=None, n_top=None, axis=None, group_by_year=False
+            folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
         )
 
         return corpus

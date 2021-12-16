@@ -141,7 +141,7 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def slice_by_tf(self, n_count: int) -> "IVectorizedCorpus":
+    def slice_by_tf(self, tf_threshold: int) -> "IVectorizedCorpus":
         ...
 
     @abc.abstractmethod
@@ -184,7 +184,7 @@ class IVectorizedCorpus(abc.ABC):
     def get_partitioned_top_n_words(
         self,
         category_column: str = 'category',
-        n_count: int = 100,
+        n_top: int = 100,
         pad: str = None,
         keep_empty: bool = False,
     ) -> dict:
@@ -194,7 +194,7 @@ class IVectorizedCorpus(abc.ABC):
     def get_top_terms(
         self,
         category_column: str = 'category',
-        n_count: int = 100,
+        n_top: int = 100,
         kind: str = 'token',
     ) -> pd.DataFrame:
         ...

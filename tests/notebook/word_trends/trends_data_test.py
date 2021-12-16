@@ -42,7 +42,7 @@ def test_TrendsData_update():
         corpus=simple_corpus(),
         corpus_folder=OUTPUT_FOLDER,
         corpus_tag="dummy",
-        n_count=10,
+        n_top=10,
     )
 
     assert isinstance(data.gof_data.goodness_of_fit, pd.DataFrame)
@@ -57,7 +57,7 @@ def test_TrendsData_remember():
 def test_TrendsData_get_corpus():
     expected_category_column: str = 'time_period'
     trends_data: TrendsData = TrendsData(
-        corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_count=100
+        corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
     )
 
     corpus: VectorizedCorpus = trends_data.transform(
@@ -123,7 +123,7 @@ def test_TrendsData_get_corpus():
 
 # def test_trends_data_tf_idf():
 #     trends_data: TrendsData = TrendsData().update(
-#         corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_count=100
+#         corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
 #     )
 #     corpus: VectorizedCorpus = trends_data.get_corpus(TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF_IDF, time_period='year'))
 #     assert corpus.data.shape == (9, 4)
@@ -133,27 +133,27 @@ def test_TrendsData_get_corpus():
 def test_trends_data_top_terms():
     expected_category_column: str = 'time_period'
     trends_data: TrendsData = TrendsData(
-        corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_count=100
+        corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
     )
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, time_period='year')
     ).transformed_corpus
     assert expected_category_column in corpus.document_index
 
-    n_count = 4
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token')
+    n_top = 4
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token')
     assert df is not None
     assert df.columns.tolist() == ['2009', '2013', '2014', '2017']
     assert df['2009'].tolist() == ['c', 'a', 'b', 'd']
     assert df['2013'].tolist() == ['c', 'a', 'b', '*']
 
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token/count')
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token/count')
     assert df is not None
     assert df.columns.tolist() == ['2009', '2013', '2014', '2017']
     assert df['2009'].tolist() == ['c/4', 'a/2', 'b/1', 'd/1']
     assert df['2013'].tolist() == ['c/3', 'a/2', 'b/2', '*/0']
 
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token+count')
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token+count')
     assert df is not None
     assert df.columns.tolist() == [
         '2009',
@@ -171,7 +171,7 @@ def test_trends_data_top_terms():
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, time_period='lustrum')
     ).transformed_corpus
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token')
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token')
     assert df is not None
     assert df.columns.tolist() == ['2005', '2010', '2015']
     assert df['2005'].tolist() == ['c', 'a', 'b', 'd']
@@ -180,7 +180,7 @@ def test_trends_data_top_terms():
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, time_period='decade')
     ).transformed_corpus
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token')
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token')
     assert df is not None
     assert df.columns.tolist() == ['2000', '2010']
     assert df['2000'].tolist() == ['c', 'a', 'b', 'd']
@@ -189,7 +189,7 @@ def test_trends_data_top_terms():
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF, time_period='decade')
     ).transformed_corpus
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token+count')
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token+count')
     assert df is not None
     assert df.columns.tolist() == ['2000', '2000/Count', '2010', '2010/Count']
     assert np.allclose(
@@ -199,7 +199,7 @@ def test_trends_data_top_terms():
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF_IDF, time_period='decade')
     ).transformed_corpus
-    df = corpus.get_top_terms(category_column=trends_data.category_column, n_count=n_count, kind='token+count')
+    df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token+count')
     assert df is not None
     assert df.columns.tolist() == ['2000', '2000/Count', '2010', '2010/Count']
     assert np.allclose(
@@ -221,7 +221,7 @@ def test_group_by_year():
         corpus=corpus,
         corpus_folder=corpus_folder,
         corpus_tag=corpus_tag,
-        n_count=100,
+        n_top=100,
     )
 
     assert trends_data is not None

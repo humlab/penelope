@@ -46,7 +46,7 @@ class TopicTitlesGUI(abc.ABC):
 
     def reduce_topics(self):
         self.reduced_topics = filter_topic_tokens_overview(
-            self.topics, search_text=self.search_text.value, n_count=self.count_slider.value
+            self.topics, search_text=self.search_text.value, n_top=self.count_slider.value
         )
 
     def update(self) -> None:

@@ -10,7 +10,7 @@ from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
 
 class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
-    def slice_by_tf(self, n_count: int) -> IVectorizedCorpus:
+    def slice_by_tf(self, tf_threshold: int) -> IVectorizedCorpus:
         ...
 
     def slice_by_n_top(self, n_top: int) -> IVectorizedCorpus:
@@ -46,21 +46,21 @@ class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
 class SliceMixIn:
 
     # @autojit
-    def slice_by_tf(self: ISlicedCorpusProtocol, n_count: int) -> IVectorizedCorpus:
-        """Create a subset corpus where words having a count less than 'n_count' are removed
+    def slice_by_tf(self: ISlicedCorpusProtocol, tf_threshold: int) -> IVectorizedCorpus:
+        """Create a subset corpus where words having a count less than 'tf_threshold' are removed
 
         Parameters
         ----------
-        n_count : int
+        tf_threshold : int
             Specifies min word count to keep.
 
         Returns
         -------
         VectorizedCorpus
-            Subset of self where words having a count less than 'n_count' are removed
+            Subset of self where words having a count less than 'tf_threshold' are removed
         """
 
-        indices: np.ndarray = np.argwhere(self.term_frequency >= n_count).ravel()
+        indices: np.ndarray = np.argwhere(self.term_frequency >= tf_threshold).ravel()
         return self.slice_by_indices(indices)
 
     def slice_by_n_top(self: ISlicedCorpusProtocol, n_top: int) -> IVectorizedCorpus:
@@ -74,7 +74,7 @@ class SliceMixIn:
         Returns
         -------
         VectorizedCorpus
-            Subset of self where words having a count less than 'n_count' are removed
+            Subset of self where words having a count less than 'tf_threshold' are removed
         """
         return self.slice_by_indices(self.nlargest(n_top=n_top))
 

@@ -8,6 +8,7 @@ import penelope.utility as utility
 import scipy.sparse as sp
 from loguru import logger
 from penelope.type_alias import DocumentIndex
+from penelope.utility import deprecated
 
 
 def find_models(path: str) -> dict:
@@ -77,11 +78,11 @@ def get_topic_top_tokens(topic_token_weights: pd.DataFrame, topic_id: int = None
     return df
 
 
-def top_topic_token_weights(topic_token_weights: pd.DataFrame, id2term: dict, n_count: int) -> pd.DataFrame:
-    """Find top `n_count` tokens for each topic. Return data frame."""
+def top_topic_token_weights(topic_token_weights: pd.DataFrame, id2term: dict, n_top: int) -> pd.DataFrame:
+    """Find top `n_top` tokens for each topic. Return data frame."""
     _largest = (
         topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']]
-        .apply(lambda x: x.nlargest(n_count, columns=['weight']))
+        .apply(lambda x: x.nlargest(n_top, columns=['weight']))
         .reset_index(drop=True)
     )
     _largest['token'] = _largest.token_id.apply(lambda x: id2term[x])
@@ -89,9 +90,10 @@ def top_topic_token_weights(topic_token_weights: pd.DataFrame, id2term: dict, n_
     return _largest.set_index('topic_id')
 
 
-def top_topic_token_weights_old(topic_token_weights: pd.DataFrame, id2term: dict, n_count: int) -> pd.DataFrame:
+@deprecated
+def top_topic_token_weights_old(topic_token_weights: pd.DataFrame, id2term: dict, n_top: int) -> pd.DataFrame:
     _largest = topic_token_weights.groupby(['topic_id'])[['topic_id', 'token_id', 'weight']].apply(
-        lambda x: x.nlargest(n_count, columns=['weight'])
+        lambda x: x.nlargest(n_top, columns=['weight'])
     )
     _largest['token'] = _largest.token_id.apply(lambda x: id2term[x])
     return _largest.set_index('topic_id')
@@ -178,7 +180,7 @@ def filter_topic_tokens_overview(
     topic_tokens_overview: pd.DataFrame,
     *,
     search_text: str,
-    n_count: int,
+    n_top: int,
     truncate_tokens: bool = False,
     format_string: str = '<b style="color:green;font-size:14px">{}</b>',
 ) -> pd.DataFrame:
@@ -187,7 +189,7 @@ def filter_topic_tokens_overview(
     data = pd.DataFrame(topic_tokens_overview)
 
     if search_text:
-        top_tokens = data.tokens.apply(lambda x: x.split(' ')[:n_count]).str.join(' ')
+        top_tokens = data.tokens.apply(lambda x: x.split(' ')[:n_top]).str.join(' ')
         data = data[top_tokens.str.contains(search_text)]
         data['tokens'] = (top_tokens if truncate_tokens else data.tokens).apply(
             lambda x: x.replace(search_text, format_string.format(search_text))

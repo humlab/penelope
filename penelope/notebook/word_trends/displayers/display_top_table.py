@@ -105,7 +105,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
     def compile(self, **_) -> Any:  # pylint: disable=arguments-differ
         top_terms: pd.DataFrame = self.transform().get_top_terms(
-            category_column=self.category_name, n_count=self.top_count, kind=self.kind
+            category_column=self.category_name, n_top=self.top_count, kind=self.kind
         )
         return top_terms
 

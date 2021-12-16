@@ -417,8 +417,8 @@ class InferredTopicsData:
     def compute_topic_proportion(self) -> pd.DataFrame:
         return compute_topic_proportions(self.document_topic_weights, self.document_index)
 
-    def top_topic_token_weights(self, n_count: int) -> pd.DataFrame:
-        return top_topic_token_weights(self.topic_token_weights, self.id2term, n_count=n_count)
+    def top_topic_token_weights(self, n_top: int) -> pd.DataFrame:
+        return top_topic_token_weights(self.topic_token_weights, self.id2term, n_top=n_top)
 
     def get_topic_titles(self, topic_id: int = None, n_tokens: int = 100) -> pd.Series:
         """Return strings of `n_tokens` most probable words per topic."""

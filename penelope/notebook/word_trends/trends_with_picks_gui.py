@@ -62,7 +62,7 @@ class TokensSelector(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def get_tokens_slice(self, start: int = 0, n_count: int = 0):
+    def get_tokens_slice(self, start: int = 0, n: int = 0):
         return None
 
     @abc.abstractmethod
@@ -127,9 +127,9 @@ class SelectMultipleTokensSelector(TokensSelector):
 
         return [self._token_to_index[w] for w in self._tokens_widget.value]
 
-    def get_tokens_slice(self, start: int = 0, n_count: int = 0):
+    def get_tokens_slice(self, start: int = 0, n: int = 0):
 
-        return self._tokens_widget.options[start : start + n_count]
+        return self._tokens_widget.options[start : start + n]
 
     def set_selected_indices(self, indices: List[int]):
         _options = self._tokens_widget.options

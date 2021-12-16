@@ -78,5 +78,5 @@ class TopTokens2MixIn:
     def compile(self, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str = 'category', **_) -> Any:
         """Extracts trend vectors for tokens ´indices` and returns a dict keyed by token"""
         column_exists_guard(corpus.document_index, category_name)
-        top_terms = corpus.get_top_terms(category_column=category_name, n_count=10000, kind='token+count')
+        top_terms = corpus.get_top_terms(category_column=category_name, n_top=10000, kind='token+count')
         return top_terms
