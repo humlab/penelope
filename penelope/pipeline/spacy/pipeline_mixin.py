@@ -9,6 +9,8 @@ if TYPE_CHECKING:
 
     from ..pipelines import CorpusPipeline
 
+# pylint: disable=no-member
+
 
 class PipelineShortcutMixIn:
     def text_to_spacy(self: CorpusPipeline) -> CorpusPipeline:

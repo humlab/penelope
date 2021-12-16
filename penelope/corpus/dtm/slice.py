@@ -8,6 +8,8 @@ import textacy.representations
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
+# pylint: disable=no-member, attribute-defined-outside-init, access-member-before-definition
+
 
 class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
     def slice_by_tf(self, tf_threshold: int) -> IVectorizedCorpus:

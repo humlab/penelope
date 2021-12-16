@@ -7,6 +7,8 @@ from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
 
 from . import interfaces
 
+# pylint: disable=no-member
+
 
 class DefaultResolveMixIn:
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:

@@ -194,7 +194,7 @@ class FileChooserExt2(ipyfilechooser.FileChooser):
         **kwargs,
     ):
         self._LBL_TEMPLATE = types.SimpleNamespace(
-            format=lambda p, c: ipyfilechooser.FileChooser._LBL_TEMPLATE.format(
+            format=lambda p, c: ipyfilechooser.FileChooser._LBL_TEMPLATE.format(  # pylint: disable=protected-access
                 shorten_path_with_ellipsis(p, label_max_length), c
             )
         )

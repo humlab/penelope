@@ -17,6 +17,8 @@ from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol, VectorizedC
 
 T = TypeVar("T", int, str)
 
+# pylint: disable=no-member
+
 
 class GroupByMixIn:
     def group_by_pivot_column(

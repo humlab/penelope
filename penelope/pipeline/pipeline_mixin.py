@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
     from . import pipelines
     from .checkpoint import CheckpointOpts
-# pylint: disable=too-many-public-methods
+
+# pylint: disable=too-many-public-methods, no-member
 
 
 class PipelineShortcutMixIn:

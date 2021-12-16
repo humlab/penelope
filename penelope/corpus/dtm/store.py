@@ -98,6 +98,9 @@ def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 
     raise ValueError(f"Invalid mode {mode}")
 
 
+# pylint: disable=no-member
+
+
 class StoreMixIn:
     def dump(
         self: IVectorizedCorpusProtocol, *, tag: str, folder: str, compressed: bool = True, mode: str = 'bundle'

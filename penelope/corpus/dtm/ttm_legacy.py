@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 WORD_PAIR_DELIMITER = "/"
 
+# pylint: disable=no-member
+
 
 class LegacyCoOccurrenceMixIn:
     @deprecated

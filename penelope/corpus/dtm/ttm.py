@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
     from .corpus import VectorizedCorpus
 
+# pylint: disable=no-member
+
 
 class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
     ...

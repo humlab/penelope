@@ -54,7 +54,7 @@ def run_workflow():
     extract_opts = "lemma"
     transform_opts = None
     filter_opts = None
-    value = (
+    _ = (
         CorpusPipeline(config=corpus_config)
         .load_grouped_id_tagged_frame(
             folder=CORPUS_FOLDER,

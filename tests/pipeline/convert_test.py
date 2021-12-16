@@ -502,10 +502,10 @@ def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame)
 def test_detect_phrases(tagged_frame: pd.DataFrame):
 
     found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[], ignore_case=True)
-    assert found_phrases == []
+    assert not found_phrases
 
     found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[["romansk"]], ignore_case=True)
-    assert found_phrases == []
+    assert not found_phrases
 
     found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[["romansk", "kyrka"]], ignore_case=True)
     assert found_phrases == [(4, "romansk_kyrka", 2)]

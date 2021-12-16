@@ -3,11 +3,11 @@ from typing import Container, Dict, List, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
-from penelope.utility import getLogger
+from loguru import logger
 
 from .interface import IVectorizedCorpusProtocol
 
-logger = getLogger("penelope")
+# pylint: disable=no-member
 
 
 class StatsMixIn:

@@ -3,6 +3,8 @@ from typing import Any, Dict, List
 
 from penelope.type_alias import PartitionKeys
 
+# pylint: disable=no-member
+
 
 class PartitionMixIn:
     def partition_documents(self, by: PartitionKeys) -> Dict[Any, List[str]]:

@@ -7,6 +7,8 @@ from . import tasks
 if TYPE_CHECKING:
     from .. import pipelines
 
+# pylint: disable=no-member
+
 
 class PipelineShortcutMixIn:
     """Shortcuts for specific tasks that can be injected to derived pipelines"""
