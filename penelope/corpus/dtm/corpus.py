@@ -25,7 +25,6 @@ from .ttm import CoOccurrenceMixIn
 
 warnings.simplefilter('ignore', SparseEfficiencyWarning)
 
-# FIXME #109 Refactor VectorizedCorpus to use Token2Id?
 class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccurrenceMixIn, IVectorizedCorpus):
     def __init__(
         self,
