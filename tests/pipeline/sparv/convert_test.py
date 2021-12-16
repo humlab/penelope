@@ -19,9 +19,7 @@ def test_sparv_csv_serializer():
     )
     serializer: sparv.SparvCsvSerializer = serializer_cls()
 
-    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(
-        lower_lemma=False, **SPARV_TAGGED_COLUMNS
-    )
+    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False, **SPARV_TAGGED_COLUMNS)
     tagged_frame: pd.DataFrame = serializer.deserialize(content=content, options=options)
 
     assert tagged_frame is not None
