@@ -404,7 +404,7 @@ class InferredTopicsData:
         dictionary: pd.DataFrame = pd.read_csv(
             jj(folder, 'dictionary.zip'), sep='\t', header=0, index_col=0, na_filter=False
         )
-        data: dict = {t: i for (t, i) in zip(dictionary.token, dictionary.index)}
+        data: dict = {t: i for (t, i) in zip(dictionary.token, dictionary.index)}  # pylint: disable=no-member
         token2id: Token2Id = Token2Id(data=data)
         return token2id
 
