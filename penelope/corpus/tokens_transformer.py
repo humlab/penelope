@@ -163,7 +163,6 @@ class TokensTransformerMixin:
         return self.add(transforms.remove_stopwords(language_or_stopwords, extra_stopwords))
 
     def remove_accents(self) -> TokensTransformer:
-
         return self.add(textacy_remove.accents)
 
     def only_any_alphanumeric(self) -> TokensTransformer:

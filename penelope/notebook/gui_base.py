@@ -422,7 +422,6 @@ class BaseGUI:
 
     @property
     def filter_opts(self) -> PropertyValueMaskingOpts:
-        # FIXME #48 Check if _only_alphabetic is valid for Stanza & Sparv (or ignored)
         return PropertyValueMaskingOpts(
             is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None
         )
@@ -495,7 +494,6 @@ class BaseGUI:
             text_reader_opts=self.corpus_config.text_reader_opts,
             extract_opts=self.extract_opts,
             filter_opts=self.filter_opts,
-            # FIXME Replace these with ExtractOpts.global_tf_threshold* (or vice versa)
             tf_threshold=self.tf_threshold,
             tf_threshold_mask=self.tf_threshold_mask,
             create_subfolder=self.create_subfolder,

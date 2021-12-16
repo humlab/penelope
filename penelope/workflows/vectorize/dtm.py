@@ -63,7 +63,6 @@ def store_corpus_bundle(corpus: VectorizedCorpus, args: ComputeOpts):
 
     corpus.dump(tag=args.corpus_tag, folder=target_folder)
 
-    # FIXME #79 Co-occurrence context options not stored in JSON
     VectorizedCorpus.dump_options(
         tag=args.corpus_tag,
         folder=target_folder,

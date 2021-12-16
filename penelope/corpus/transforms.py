@@ -5,6 +5,7 @@ from typing import Callable, Iterable, Set, Union
 
 import nltk
 import penelope.vendor.nltk as nltk_utility
+from penelope.utility import deprecated
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -89,7 +90,6 @@ def remove_numerals() -> TokensTransformerFunction:
 def remove_symbols() -> TokensTransformerFunction:
     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
 
-
-def remove_accents() -> TokensTransformerFunction:
-    # FIXME: Wrongly implemented
-    return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
+# @deprecated
+# def remove_accents() -> TokensTransformerFunction:
+#     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)

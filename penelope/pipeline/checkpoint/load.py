@@ -37,11 +37,9 @@ def load_feathered_tagged_frame(
     feather_filename: str = checkpoint_opts.feather_filename(filename)
     if os.path.isfile(feather_filename):
         tagged_frame: pd.DataFrame = pd.read_feather(feather_filename)
-        # FIXME: Legacy support, deprecate this line (lemma is lower cased in load_tagged_frame)
         if checkpoint_opts.lower_lemma:
-            tagged_frame[checkpoint_opts.lemma_column] = pd.Series(
-                [x.lower() for x in tagged_frame[checkpoint_opts.lemma_column]]
-            )
+            if len(tagged_frame) > 0:
+                tagged_frame[checkpoint_opts.lemma_column] = tagged_frame[checkpoint_opts.lemma_column].str.lower()
     else:
         tagged_frame = load_tagged_frame(
             zip_or_filename=zip_or_filename,

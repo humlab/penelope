@@ -292,7 +292,6 @@ def test_step_by_step_compress_with_simple_corpus():
     """" Equals function call """
     assert kept_token_ids == _token_ids_to_keep(set(keep_ids))
 
-    """FIXME Must translate ID????"""
     assert (
         (
             corpus.window_counts.document_term_window_counts.todense()

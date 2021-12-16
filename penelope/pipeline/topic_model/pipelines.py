@@ -16,7 +16,6 @@ def from_grouped_feather_id_to_tagged_frame_pipeline(
     p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config).load_grouped_id_tagged_frame(
         folder=corpus_source,
         to_tagged_frame=True,
-        # FIXME: Must be in config!
         file_pattern='**/prot-*.feather',
     )
 
