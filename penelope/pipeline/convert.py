@@ -66,6 +66,9 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         Iterable[str]: Sequence of extracted tokens
     """
 
+    if len(tagged_frame) == 0:
+        return []
+
     is_numeric_frame: bool = is_encoded_tagged_frame(tagged_frame)
     to_lower: bool = transform_opts and transform_opts.to_lower
 
@@ -100,7 +103,7 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         passthroughs = token2id.to_id_set(passthroughs)
         blocks = token2id.to_id_set(blocks)
 
-    if not is_numeric_frame and extract_opts.lemmatize or to_lower:
+    if not is_numeric_frame and (extract_opts.lemmatize or to_lower):
         tagged_frame[target_column] = tagged_frame[
             target_column
         ].str.lower()  # pd.Series([x.lower() for x in tagged_frame[target_column]])
@@ -265,6 +268,10 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     Returns:
         Iterable[str]: Sequence of extracted tokens
     """
+
+    if len(doc) == 0:
+        return []
+
     is_numeric_frame: bool = is_encoded_tagged_frame(doc)
 
     if isinstance(extract_opts, str):
