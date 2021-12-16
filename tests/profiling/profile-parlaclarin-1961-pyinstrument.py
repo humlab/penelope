@@ -2,19 +2,13 @@ from penelope import corpus as corpora
 from penelope import pipeline, utility
 from penelope.pipeline.pipelines import CorpusPipeline
 
-# DATA_FOLDER = "/data/westac/data"
-CONFIG_FILENAME = "/data/riksdagen_corpus_data/riksprot-parlaclarin.yml"
+CONFIG_FILENAME = "./tests/profiling/riksprot-parlaclarin-1960.yml"
 OUTPUT_FOLDER = './tests/output'
-# CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.sparv4.csv.zip")
-# CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1970.sparv4.csv.zip")
-# CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.test.sparv4.csv.zip")
-# CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip")
+CORPUS_FOLDER = '/data/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather'
 
 # PYTHONPATH=. topic-model --target-folder ./data --lemmatize --to-lower --min-word-length 1 --only-any-alphanumeric --engine gensim_mallet-lda
 # --random-seed 42 --alpha asymmetric --max-iter 3000 --store-corpus /data/riksdagen_corpus_data/riksprot-parlaclarin.yml
 # riksprot-parlaclarin-protokoll-50-lemma
-
-CORPUS_FOLDER = '/data/riksdagen_corpus_data/tagged-speech-corpus.numeric.feather'
 
 
 def run_workflow():
@@ -54,13 +48,13 @@ def run_workflow():
         'random_seed': 42,
         'alpha': 'auto',
         'workers': 1,
-        'max_iter': 100,
+        'max_iter': 500,
         'work_folder': './tests/output/',
     }
     extract_opts = "lemma"
     transform_opts = None
     filter_opts = None
-    (
+    value = (
         CorpusPipeline(config=corpus_config)
         .load_grouped_id_tagged_frame(
             folder=CORPUS_FOLDER,
@@ -81,8 +75,7 @@ def run_workflow():
             store_corpus=True,
             store_compressed=True,
         )
-        # .exhaust(n_count=1000)
-    )
+    ).value()
 
 
 if __name__ == '__main__':

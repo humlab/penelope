@@ -202,35 +202,36 @@ requirements.txt: poetry.lock
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
-profile-vocabulary-pyinstrument:
-	@mkdir -p ./profile-reports
+profile-vocabulary-pyinstrument: make-profile-reports
 	@PYTHONPATH=. poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_vocabulary-pyinstrument.html ./tests/profiling/vocabulary.py
 
-profile-co_occurrence-pyinstrument:
-	@mkdir -p ./profile-reports
+profile-co_occurrence-pyinstrument: make-profile-reports
 	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.html ./tests/profiling/profile-workflow-pyinstrument.py
 
-profile-co_occurrence-cprofile:
-	@mkdir -p ./profile-reports
+profile-co_occurrence-cprofile: make-profile-reports
 	@poetry run python ./tests/profiling/profile-workflow-cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.txt
 
-profile-compute-keyness-pyinstrument:
-	@mkdir -p ./profile-reports
+profile-compute-keyness-pyinstrument: make-profile-reports
 	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_keyness-pyinstrument.html ./tests/profiling/profile-compute-keyness.py
 
-profile-compute-keyness-cprofile:
-	@mkdir -p ./profile-reports
+profile-compute-keyness-cprofile: make-profile-reports
 	@poetry run python -m cProfile ./tests/profiling/profile-compute-keyness.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-cprofile.txt
-	# @poetry run python -m cProfile -o ./profile-reports/$(RUN_TIMESTAMP)_keyness-cprofile.cprof ./tests/profiling/profile-compute-keyness.py
-	# @poetry run pyprof2calltree -k -i ./profile-reports/$(RUN_TIMESTAMP)_keyness-cprofile.cprof
 
-profile-load-riksprot-parlaclarin-pyinstrument::
-	@mkdir -p ./profile-reports
+profile-load-riksprot-parlaclarin-pyinstrument: make-profile-reports
 	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_riksprot-parlaclarin-pyinstrument.html ./tests/profiling/riksprot-parlaclarin.py
 
-profile-load-riksprot-parlaclarin-cprofile:
-	@mkdir -p ./profile-reports
+profile-load-riksprot-parlaclarin-cprofile: make-profile-reports
 	@PYTHONPATH=. python -m cProfile ./tests/profiling/riksprot-parlaclarin.py &> ./profile-reports/$(RUN_TIMESTAMP)_riksprot-parlaclarin-cprofile.txt
+
+profile-parlaclarin-1961-pyinstrument: make-profile-reports
+	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-pyinstrument.html ./tests/profiling/profile-parlaclarin-1961-pyinstrument.py
+
+profile-parlaclarin-1961-cprofile: make-profile-reports
+	@PYTHONPATH=. python -m cProfile ./tests/profiling/profile-parlaclarin-1961-pyinstrument.py &> ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-pyinstrument.txt
+
+.PHONY: make-profile-reports
+make-profile-reports:
+	@mkdir -p ./profile-reports
 
 .PHONY: install-mkl install-gfortran install-mkl-basekit reinstall-numpy-scipy numpy-site-config
 install-mkl: install-gfortran install-mkl-basekit reinstall-numpy-scipy numpy-site-config
