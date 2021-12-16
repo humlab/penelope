@@ -50,7 +50,6 @@ from .transforms import (
     min_chars_filter,
     only_alphabetic_filter,
     only_any_alphanumeric,
-    remove_accents,
     remove_empty_filter,
     remove_hyphens,
     remove_numerals,
