@@ -474,13 +474,14 @@ def load_document_index(
         document_index: DocumentIndex = filename
     else:
         if isinstance(filename, str):
+
             if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
                 raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
 
-        if filename.endswith('feather'):
-            document_index: DocumentIndex = pd.read_feather(filename)
-        else:
-            document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
+            if filename.endswith('feather'):
+                document_index: DocumentIndex = pd.read_feather(filename)
+
+        document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
         if old_or_unnamed_index_column in document_index.columns:
