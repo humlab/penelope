@@ -1,8 +1,6 @@
 from os.path import join as jj
 
 from penelope import pipeline
-from penelope.pipeline.pipelines import CorpusPipeline
-from penelope.pipeline.sparv import pipelines
 
 DATA_FOLDER = "/data/riksdagen_corpus_data/"
 CONFIG_FILENAME = "/data/riksdagen_corpus_data/riksprot-parlaclarin.yml"

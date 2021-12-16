@@ -5,7 +5,6 @@ from typing import Callable, Iterable, Set, Union
 
 import nltk
 import penelope.vendor.nltk as nltk_utility
-from penelope.utility import deprecated
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 

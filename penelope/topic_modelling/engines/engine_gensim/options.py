@@ -1,5 +1,4 @@
 import os
-from typing import Literal
 
 import gensim.models as models
 from gensim.matutils import Sparse2Corpus
@@ -72,33 +71,33 @@ def get_engine_options(
             },
         }
 
-    if algorithm == 'LDA':
-        raise ValueError("LdaModel is deprecated")
-        return {
-            'engine': models.LdaModel,
-            'options': {
-                # distributed=False, chunksize=2000, passes=1, update_every=1, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, minimum_probability=0.01, random_state=None, ns_conf=None, minimum_phi_value=0.01, per_word_topics=False, callbacks=None, dtype=<class 'numpy.float32'>)¶
-                'corpus': corpus,
-                'num_topics': int(engine_args.get('n_topics', 20)),
-                'id2word': id2word,
-                'iterations': engine_args.get('max_iter', 3000),
-                'passes': int(engine_args.get('passes', 1)),
-                'eval_every': 2,
-                'update_every': 10,  # Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.
-                'alpha': 'auto',
-                'eta': 'auto',  # None
-                # 'decay': 0.1, # 0.5
-                # 'chunksize': int(kwargs.get('chunksize', 1)),
-                'per_word_topics': True,
-                # 'random_state': 100
-                # 'offset': 1.0,
-                # 'dtype': np.float64
-                # 'callbacks': [
-                #    models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
-                #    models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
-                # ]
-            },
-        }
+    # if algorithm == 'LDA':
+    #     raise ValueError("LdaModel is deprecated")
+    #     return {  # pylint: unreachable
+    #         'engine': models.LdaModel,
+    #         'options': {
+    #             # distributed=False, chunksize=2000, passes=1, update_every=1, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, minimum_probability=0.01, random_state=None, ns_conf=None, minimum_phi_value=0.01, per_word_topics=False, callbacks=None, dtype=<class 'numpy.float32'>)¶
+    #             'corpus': corpus,
+    #             'num_topics': int(engine_args.get('n_topics', 20)),
+    #             'id2word': id2word,
+    #             'iterations': engine_args.get('max_iter', 3000),
+    #             'passes': int(engine_args.get('passes', 1)),
+    #             'eval_every': 2,
+    #             'update_every': 10,  # Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.
+    #             'alpha': 'auto',
+    #             'eta': 'auto',  # None
+    #             # 'decay': 0.1, # 0.5
+    #             # 'chunksize': int(kwargs.get('chunksize', 1)),
+    #             'per_word_topics': True,
+    #             # 'random_state': 100
+    #             # 'offset': 1.0,
+    #             # 'dtype': np.float64
+    #             # 'callbacks': [
+    #             #    models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
+    #             #    models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
+    #             # ]
+    #         },
+    #     }
 
     if algorithm in ('LDA-MULTICORE', 'LDA_MULTICORE', 'MULTICORE'):
         return {
