@@ -404,12 +404,6 @@ class InferredTopicsData:
         dictionary: pd.DataFrame = pd.read_csv(
             jj(folder, 'dictionary.zip'), sep='\t', header=0, index_col=0, na_filter=False
         )
-        # FIXME: use dict comprehension (to_dict is slow)
-        # data: dict = (
-        #     dictionary.assign(token_id=dictionary.index)  # pylint: disable=no-member
-        #     .set_index('token')
-        #     .token_id.to_dict()
-        # )
         data: dict = {t: i for (t, i) in zip(dictionary.token, dictionary.index)}
         token2id: Token2Id = Token2Id(data=data)
         return token2id
