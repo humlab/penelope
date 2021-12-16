@@ -49,7 +49,6 @@ def test_truncate_by_global_threshold():
     co_occurrences: CoOccurrenceDataFrame = co_occurrence.load_co_occurrences(co_occurrence_filename(folder, tag))
     truncated_co_occurrences = truncate_by_global_threshold(co_occurrences=co_occurrences, threshold=2)
     assert len(truncated_co_occurrences) < len(co_occurrences) is not None
-    # FIXME Add more tests/asserts
 
 
 def test_term_term_matrix_to_co_occurrences_with_ignore_ids():

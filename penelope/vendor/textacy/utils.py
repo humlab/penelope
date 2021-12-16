@@ -55,7 +55,7 @@ def get_most_frequent_words(
         frequencies: Mapping[str, int] = token_count_by(
             doc=doc, target=normalize, weighting=weighting, as_strings=True, include=include
         )
-        # FIXME: if normalize is lemma then make count case-insensitive
+        # FIXME: #138 if normalize is lemma then make count case-insensitive
         # if normalize == 'lemma':
         #     frequencies = to_lowercased_key_counts(frequencies)
         token_counter.update(frequencies)

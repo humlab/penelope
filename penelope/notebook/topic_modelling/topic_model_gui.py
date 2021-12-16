@@ -169,7 +169,6 @@ class ComputeTopicModelUserInterface:
 
                 try:
 
-                    # FIXME: Generate folder name based on corpus filename and options
                     name: str = str(uuid.uuid1())
 
                     target_folder = os.path.join(self.data_folder, name)

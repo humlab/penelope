@@ -688,7 +688,6 @@ class TokensTransform(TransformTokensMixIn, ITask):
         self.transformer = TokensTransformer(transform_opts=self.transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        # FIXME: call self.update_document_properties(payload, n_tokens=len(tokens))??
         return payload.update(self.out_content_type, self.transform(payload.content))
 
     def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":

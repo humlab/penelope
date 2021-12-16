@@ -60,7 +60,6 @@
 
 #         windows = tokens_to_windows_(tokens=tokens, context_opts=self.context_opts)
 
-#         # FIXME CO-OCCURRENCE VectorizeType
 #         data: Mapping[VectorizeType, VectorizedTTM] = self.vectorizer.fit_transform(
 #             document_id=payload.document_id, windows=windows, context_opts=self.context_opts
 #         )

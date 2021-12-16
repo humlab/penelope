@@ -18,7 +18,6 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     context_opts: ContextOpts = None,
-    # FIXME: Move into context_opts:
     global_tf_threshold: int = None,
     **kwargs,  # pylint: disable=unused-argument
 ) -> CorpusPipeline:

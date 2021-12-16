@@ -118,7 +118,7 @@ class CoOccurrenceHelper:
             data['value_n_t'] = self._normalize(data, pivot_keys=document_pivot_keys, normalize_key=normalize_key)
 
         if target_pivot_key not in data.columns:
-            # FIXME: only handles single key:
+            """ Only handles single keys!"""
             assert document_pivot_keys[0] in data.columns
             data[target_pivot_key] = data[document_pivot_keys[0]]
 

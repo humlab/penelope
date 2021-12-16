@@ -118,7 +118,6 @@ class LoadGroupedIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITas
 
         self.vocabulary = self.read_vocabulary()
 
-        # FIXME: THIS IS A TEMPORARY BUGFIX, SOME TOKENS ARE NONE!!!
         self.vocabulary['token'] = self.vocabulary['token'].fillna('')
 
         self.document_index: pd.DataFrame = DocumentIndexHelper.load(

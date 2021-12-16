@@ -57,7 +57,7 @@ class PipelineShortcutMixIn:
     def load_grouped_id_tagged_frame(
         self: pipelines.CorpusPipeline,
         folder: str,
-        file_pattern: str = '**/*.feather',  # FIXME: exclude document_index.feather and nya other non-corpus file
+        file_pattern: str = '**/*.feather',  # NOTE: document_index.feather must be excluded
         to_tagged_frame: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
