@@ -41,8 +41,6 @@ def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = T
 
 Point = Tuple[float, float]
 
-# FIXME: #132 Use scipy.stats.linregress instead (remove statmodels as dependency)
-
 
 def fit_ordinary_least_square(ys, xs=None) -> Tuple[float, float, Any, Point, Point]:
     """[summary]
