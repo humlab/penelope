@@ -90,6 +90,7 @@ def remove_numerals() -> TokensTransformerFunction:
 def remove_symbols() -> TokensTransformerFunction:
     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
 
+
 # @deprecated
 # def remove_accents() -> TokensTransformerFunction:
 #     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)

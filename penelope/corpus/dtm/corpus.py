@@ -25,6 +25,7 @@ from .ttm import CoOccurrenceMixIn
 
 warnings.simplefilter('ignore', SparseEfficiencyWarning)
 
+
 class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccurrenceMixIn, IVectorizedCorpus):
     def __init__(
         self,
