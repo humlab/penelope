@@ -5,6 +5,8 @@ from penelope import utility
 from penelope.pipeline import CheckpointOpts, CsvContentSerializer, checkpoint, sparv
 from penelope.pipeline.sparv import deserialize_lemma_form
 
+from ..fixtures import SPARV_TAGGED_COLUMNS
+
 
 def test_sparv_csv_serializer():
 
@@ -17,7 +19,7 @@ def test_sparv_csv_serializer():
     )
     serializer: sparv.SparvCsvSerializer = serializer_cls()
 
-    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False)
+    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False, **SPARV_TAGGED_COLUMNS)
     tagged_frame: pd.DataFrame = serializer.deserialize(content=content, options=options)
 
     assert tagged_frame is not None
@@ -29,7 +31,7 @@ def test_sparv_csv_serializer():
     assert all(~tagged_frame.baseform.isna())
     assert all(~tagged_frame.pos.isna())
 
-    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=True)
+    options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=True, **SPARV_TAGGED_COLUMNS)
     tagged_frame: pd.DataFrame = serializer.deserialize(content=content, options=options)
 
     assert tagged_frame.baseform.tolist()[-5:] == ['sund', '—', 'gällivare', 'roger', 'super_man']

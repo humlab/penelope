@@ -29,7 +29,7 @@ def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
     """Loads a tagged data frame"""
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config=config,
-        corpus_filename=config.pipeline_payload.source,
+        corpus_source=config.pipeline_payload.source,
         enable_checkpoint=False,
         force_checkpoint=False,
     )
@@ -54,7 +54,7 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
 
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config=corpus_config,
-        corpus_filename=source_filename,
+        corpus_source=source_filename,
         enable_checkpoint=False,
         force_checkpoint=False,
     ).checkpoint(tagged_frames_filename)
@@ -81,7 +81,7 @@ def test_to_tagged_frame_pipeline_checkpoint_adds_token_counts():
 
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config=corpus_config,
-        corpus_filename=source_filename,
+        corpus_source=source_filename,
         enable_checkpoint=True,
         force_checkpoint=True,
     )

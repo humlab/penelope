@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
-from penelope.corpus import TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.corpus.interfaces import ITokenizedCorpus
+from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.utility import PropertyValueMaskingOpts, deprecated
 
-from . import tasks
+from . import tagged_frame, tasks
 
 if TYPE_CHECKING:
     from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
@@ -53,6 +52,21 @@ class PipelineShortcutMixIn:
         """ _ => DATAFRAME """
         return self.add(
             tasks.LoadTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts, extra_reader_opts=extra_reader_opts)
+        )
+
+    def load_grouped_id_tagged_frame(
+        self: pipelines.CorpusPipeline,
+        folder: str,
+        file_pattern: str = '**/*.feather',  # FIXME: exclude document_index.feather and nya other non-corpus file
+        to_tagged_frame: bool = False,
+    ) -> pipelines.CorpusPipeline:
+        """ _ => DATAFRAME """
+        return self.add(
+            tagged_frame.LoadGroupedIdTaggedFrame(
+                corpus_source=folder,
+                file_pattern=file_pattern,
+                to_tagged_frame=to_tagged_frame,
+            )
         )
 
     def load_tagged_xml(

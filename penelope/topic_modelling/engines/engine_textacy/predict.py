@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-import textacy.tm as tm
+import textacy.tm as tm  # type: ignore
 from gensim.matutils import Sparse2Corpus
 from penelope.utility import deprecated
 

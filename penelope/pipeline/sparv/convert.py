@@ -15,7 +15,8 @@ def deserialize_lemma_form(tagged_frame: pd.DataFrame, options: CheckpointOpts) 
 
     Note that lemmas are always lower cased
     """
-    baseform = pd.Series([x.strip('|').replace(' ', '_').replace(":", "|") for x in tagged_frame['baseform']])
+    lemma_column: str = options.lemma_column
+    baseform = pd.Series([x.strip('|').replace(' ', '_').replace(":", "|") for x in tagged_frame[lemma_column]])
     # .apply(lambda x: x.strip('|').replace(' ', '_').replace(":", "|"))
 
     multi_baseform: pd.Series = baseform.str.contains('|', regex=False)

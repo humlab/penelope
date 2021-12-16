@@ -33,18 +33,18 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
         pos_column='pos',
     )
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_filename: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
     target_name: str = f'{uuid.uuid1()}'
     p: CorpusPipeline = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
-            filename=corpus_filename,
+            filename=corpus_source,
             checkpoint_opts=config.checkpoint_opts,
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
         .to_topic_model(
-            corpus_filename=None,
+            corpus_source=None,
             target_folder="./tests/output",
             target_name=target_name,
             engine=method,
@@ -65,7 +65,7 @@ def test_predict_topics(method: str):
 
     payload: DocumentPayload = tranströmer_topic_model_payload(method=method)
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_filename: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
 
     target_folder: str = './tests/output'
     target_name: str = f'{uuid.uuid1()}'
@@ -84,7 +84,7 @@ def test_predict_topics(method: str):
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
-            filename=corpus_filename,
+            filename=corpus_source,
             checkpoint_opts=config.checkpoint_opts,
             extra_reader_opts=config.text_reader_opts,
         )
@@ -132,7 +132,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
     task: ToTopicModel = ToTopicModel(
         pipeline=pipeline,
         prior=prior,
-        corpus_filename=None,
+        corpus_source=None,
         target_folder="./tests/output",
         target_name=target_name,
         engine=method,

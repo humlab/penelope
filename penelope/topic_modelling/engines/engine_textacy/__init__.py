@@ -2,7 +2,8 @@
 
 from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Type, get_args
 
-from .. import interfaces
+from ... import interfaces
+from ..interface import ITopicModelEngine
 from . import predict, train
 from .predict import SupportedModels
 
@@ -11,7 +12,7 @@ def is_supported(model: Any) -> bool:
     return type(model) in get_args(SupportedModels)
 
 
-class TopicModelEngine(interfaces.ITopicModelEngine):
+class TopicModelEngine(ITopicModelEngine):
     def __init__(self, model: SupportedModels):
         super().__init__(model)
 

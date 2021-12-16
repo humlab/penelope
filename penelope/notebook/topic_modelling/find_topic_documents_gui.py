@@ -1,19 +1,18 @@
-from typing import Any
+import pandas as pd
+from IPython.display import display
+from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
+from penelope.topic_modelling import FilterDocumentTopicWeights, InferredTopicsData
 
-from IPython.display import display as ip_display
-from ipywidgets import HTML, FloatSlider, IntSlider, Output, Text, VBox
-from ipywidgets.widgets.widget_box import HBox
-
-from .display_topic_titles import reduce_topic_tokens_overview
+from .model_container import TopicModelContainer
 
 
-class GUI:
-    def __init__(self):
+class FindTopicDocumentsGUI:
+    def __init__(self, state: TopicModelContainer):
+        self.state: TopicModelContainer = state
         self.threshold_slider: FloatSlider = FloatSlider(min=0.01, max=1.0, value=0.2)
         self.top_token_slider: IntSlider = IntSlider(min=3, max=200, value=3, disabled=True)
         self.find_text: Text = Text(description="")
         self.output: Output = Output()
-        self.callback = lambda *_: ()
         self.toplist_label: HTML = HTML("Tokens toplist threshold for token")
 
     def layout(self):
@@ -45,21 +44,14 @@ class GUI:
             )
         )
 
-    def _callback(self, *_):
-        self.toplist_label.value = f"<b>Token must be within top {self.top_token_slider.value} topic tokens</b>"
-        self.callback(
-            gui=self,
-        )
-
     def _find_text(self, *_):
         self.top_token_slider.disabled = len(self.find_text.value) < 2
 
-    def setup(self, callback):
-        self.threshold_slider.observe(self._callback, 'value')
-        self.top_token_slider.observe(self._callback, 'value')
-        self.find_text.observe(self._callback, 'value')
+    def setup(self):
+        self.threshold_slider.observe(self.update_handler, 'value')
+        self.top_token_slider.observe(self.update_handler, 'value')
+        self.find_text.observe(self.update_handler, 'value')
         self.find_text.observe(self._find_text, 'value')
-        self.callback = callback or self.callback
         return self
 
     @property
@@ -71,31 +63,35 @@ class GUI:
         return self.find_text.value
 
     @property
-    def top(self) -> int:
+    def n_top(self) -> int:
         return self.top_token_slider.value
 
+    def update_handler(self, *_):
 
-def gui_controller(document_topic_weights, topic_token_overview):
-    def display_document_topic_weights(gui: Any):
-        gui.output.clear_output()
-        with gui.output:
+        inferred_topics: InferredTopicsData = self.state.inferred_topics
 
-            df = document_topic_weights
+        self.toplist_label.value = f"<b>Token must be within top {self.top_token_slider.value} topic tokens</b>"
+        self.output.clear_output()
 
-            if len(gui.text) > 2:
+        with self.output:
 
-                topic_ids = reduce_topic_tokens_overview(
-                    topic_token_overview,
-                    gui.top,
-                    gui.text,
-                ).index.tolist()
+            document_topics: pd.DataFrame = (
+                FilterDocumentTopicWeights(inferred_topics)
+                .filter_by_text(
+                    search_text=self.text,
+                    n_top=self.n_top,
+                )
+                .threshold(self.threshold)
+                .value
+            )
 
-                df = df[df.topic_id.isin(topic_ids)]
+            display(document_topics)
 
-            df = df[df.weight >= gui.threshold]
 
-            ip_display(df)
+def create_gui(state: TopicModelContainer) -> FindTopicDocumentsGUI:
 
-    gui = GUI().setup(callback=display_document_topic_weights)
+    gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state).setup()
 
-    ip_display(gui.layout())
+    display(gui.layout())
+
+    return gui

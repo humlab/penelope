@@ -1,4 +1,6 @@
 import os
+import shutil
+import uuid
 
 import pandas as pd
 import penelope.co_occurrence as co_occurrence
@@ -58,12 +60,15 @@ def test_load_options():
 
 def test_store_co_occurrences():
 
-    filename = f'VENUS{co_occurrence.FILENAME_POSTFIX}'
+    filename: str = f'VENUS{co_occurrence.FILENAME_POSTFIX}'
+    target_folder: str = f'./tests/output/{uuid.uuid4()}'
 
-    source_filename = jj('./tests/test_data/VENUS', filename)
-    target_filename = jj('./tests/output', filename)
+    source_filename: str = jj('./tests/test_data/VENUS', filename)
+    target_filename: str = jj(target_folder, filename)
 
     co_occurrences = co_occurrence.load_co_occurrences(source_filename)
+
+    os.makedirs(target_folder)
 
     co_occurrence.store_co_occurrences(filename=target_filename, co_occurrences=co_occurrences)
 
@@ -72,12 +77,13 @@ def test_store_co_occurrences():
     co_occurrences = co_occurrence.load_co_occurrences(target_filename)
     assert co_occurrences is not None
 
-    os.remove(target_filename)
+    shutil.rmtree(target_folder, ignore_errors=True)
 
 
 def test_load_and_store_bundle():
 
     filename = co_occurrence.to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
+    target_folder: str = f'./tests/output/{uuid.uuid4()}'
 
     bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename)
 
@@ -88,22 +94,25 @@ def test_load_and_store_bundle():
     assert bundle.folder == './tests/test_data/VENUS'
     assert bundle.tag == 'VENUS'
 
-    os.makedirs('./tests/output/MARS', exist_ok=True)
+    os.makedirs(target_folder)
 
-    expected_filename = co_occurrence.to_filename(folder='./tests/output/MARS', tag='MARS')
+    expected_filename = co_occurrence.to_filename(folder=target_folder, tag='MARS')
 
-    bundle.store(folder='./tests/output/MARS', tag='MARS')
+    bundle.store(folder=target_folder, tag='MARS')
 
     assert os.path.isfile(expected_filename)
+
+    shutil.rmtree(target_folder, ignore_errors=True)
 
 
 def test_compute_and_store_bundle():
 
-    tag: str = "JUPYTER"
-    folder: str = jj(OUTPUT_FOLDER, tag)
-    filename: str = co_occurrence.to_filename(folder=folder, tag=tag)
+    tag: str = f'{uuid.uuid4()}'
 
-    os.makedirs(folder, exist_ok=True)
+    target_folder: str = jj(OUTPUT_FOLDER, tag)
+    target_filename: str = co_occurrence.to_filename(folder=target_folder, tag=tag)
+
+    os.makedirs(target_folder, exist_ok=True)
 
     simple_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDEFG_3DOCS)
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
@@ -112,12 +121,12 @@ def test_compute_and_store_bundle():
     bundle: co_occurrence.Bundle = test_utils.create_simple_bundle_by_pipeline(
         data=simple_corpus,
         context_opts=context_opts,
-        folder=folder,
+        folder=target_folder,
         tag=tag,
     )
 
     bundle.store()
 
-    assert os.path.isfile(filename)
+    assert os.path.isfile(target_filename)
 
-    os.remove(filename)
+    shutil.rmtree(target_folder, ignore_errors=True)

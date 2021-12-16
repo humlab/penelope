@@ -1,16 +1,24 @@
 import fnmatch
+import operator
 import zipfile
 from io import StringIO
 from numbers import Number
-from typing import Any, Dict, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
 from .filename_utils import replace_extension
+from .utils import now_timestamp
 
 DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
+
+
+def faster_to_dict_records(df: pd.DataFrame) -> List[dict]:
+    data: List[Any] = df.values.tolist()
+    columns: List[str] = df.columns.tolist()
+    return [dict(zip(columns, datum)) for datum in data]
 
 
 def setup_pandas():
@@ -43,7 +51,7 @@ def _create_mask(df: pd.DataFrame, name: str, value: Any, sign: bool = True) -> 
     elif isinstance(value, tuple):
         m = df[name].between(*value)
     elif isinstance(value, (bool, Number, str)):
-        m = df[name].between(*value)
+        m = df[name] == value
     else:
         m = df[name] == value
     if not sign:
@@ -57,6 +65,15 @@ def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
     for m in masks:
         v &= _create_mask(df, **m)
     return v
+
+
+class CreateMaskError(Exception):
+    def __init__(self):
+        super().__init__(
+            """
+        Tuple length must be 2 or 3 and first element must be sign, second (optional) a binary op.
+    """
+        )
 
 
 def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
@@ -76,12 +93,14 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     """
     mask = np.repeat(True, len(doc.index))
 
-    if doc is None or len(doc) == 0:
+    if len(doc) == 0:
         return mask
 
     for attr_name, attr_value in args.items():
 
-        attr_value_sign = True
+        attr_sign = True
+        attr_binary_operator: Union[str, Callable] = None
+
         if attr_value is None:
             continue
 
@@ -89,27 +108,40 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
             continue
 
         if isinstance(attr_value, tuple):
-            # if LIST and tuple is passed, then first element indicates if mask should be negated
-            if (
-                len(attr_value) != 2
-                or not isinstance(attr_value[0], bool)
-                or not isinstance(attr_value[1], (list, set))
-            ):
-                raise ValueError(
-                    "when tuple is passed: length must be 2 and first element must be boolean and second must be a list"
-                )
-            attr_value_sign = attr_value[0]
-            attr_value = attr_value[1]
+
+            if len(attr_value) not in (2, 3):
+                raise CreateMaskError()
+
+            if len(attr_value) == 3:
+                attr_sign, attr_binary_operator, attr_value = attr_value
+            else:
+
+                if isinstance(attr_value[0], bool):
+                    attr_sign, attr_value = attr_value
+                elif callable(attr_value[0]) or isinstance(attr_value[0], str):
+                    attr_binary_operator, attr_value = attr_value
+                else:
+                    raise ValueError(f"expected bool, callable or operator name, found {attr_value[0]}")
+
+            if isinstance(attr_binary_operator, str):
+                if not hasattr(operator, attr_binary_operator):
+                    raise ValueError(f"operator.{attr_binary_operator} not found")
+                attr_binary_operator = getattr(operator, attr_binary_operator)
 
         value_serie: pd.Series = doc[attr_name]
-        if isinstance(attr_value, bool):
-            # if value_serie.isna().sum() > 0:
-            #     raise ValueError(f"data error: boolean column {attr_name} contains np.nan")
-            mask &= value_serie == attr_value
-        elif isinstance(attr_value, (list, set)):
-            mask &= value_serie.isin(attr_value) if attr_value_sign else ~value_serie.isin(attr_value)
+
+        attr_mask = (
+            attr_binary_operator(value_serie, attr_value)
+            if attr_binary_operator is not None
+            else value_serie.isin(attr_value)
+            if isinstance(attr_value, (list, set))
+            else value_serie == attr_value
+        )
+
+        if attr_sign:
+            mask &= attr_mask
         else:
-            mask &= value_serie == attr_value
+            mask &= ~attr_mask
 
     return mask
 
@@ -211,3 +243,23 @@ def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> 
             df = pd.read_csv(StringIO(zf.read(filename).decode(encoding='utf-8')), **read_csv_opts)
             data[filename] = df
     return data
+
+
+def ts_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx', 'clipboard'], basename: str):
+
+    filename = f"{now_timestamp()}_{basename}.{extension}"
+    if extension == 'xlsx':
+        data.to_excel(filename)
+    elif extension == 'csv':
+        data.to_csv(filename, sep='\t')
+    elif extension == 'clipboard':
+        data.to_clipboard(sep='\t')
+        filename = "clipboard"
+    else:
+        raise ValueError(f"unknown extension: {extension}")
+    logger.info(f'Data stored in {filename}')
+
+
+def rename_columns(df: pd.DataFrame, columns: List[str] = None) -> pd.DataFrame:
+    df.columns = columns
+    return df

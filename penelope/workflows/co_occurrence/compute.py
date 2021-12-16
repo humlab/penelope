@@ -28,12 +28,12 @@ def compute(
         os.makedirs(args.target_folder, exist_ok=True)
 
         tagged_frames_filename: Optional[str] = tagged_frames_filename or jj(
-            dirname(args.corpus_filename), f"{args.corpus_tag}{POS_TAGGED_FRAME_FILENAME_POSTFIX}"
+            dirname(args.corpus_source), f"{args.corpus_tag}{POS_TAGGED_FRAME_FILENAME_POSTFIX}"
         )
 
         tagged_frame_pipeline: pipeline.CorpusPipeline = corpus_config.get_pipeline(
             "tagged_frame_pipeline",
-            corpus_filename=args.corpus_filename,
+            corpus_source=args.corpus_source,
             tagged_frames_filename=tagged_frames_filename,
             enable_checkpoint=args.enable_checkpoint,
             force_checkpoint=args.force_checkpoint,
@@ -94,7 +94,7 @@ def compile_compute_options(args: interface.ComputeOpts, target_filename: str = 
         transform_opts=args.transform_opts,
         context_opts=args.context_opts,
         extract_opts=args.extract_opts,
-        input_filename=args.corpus_filename,
+        input_filename=args.corpus_source,
         output_filename=target_filename,
         tf_threshold=10,
         tf_threshold_mask=False,

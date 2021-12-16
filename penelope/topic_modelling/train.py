@@ -1,10 +1,8 @@
 import os
 from typing import Any, Mapping, Optional
 
-from penelope.corpus import DocumentIndexHelper
-
+from .engines import get_engine_cls_by_method_name
 from .interfaces import InferredModel, TrainingCorpus
-from .utility import get_engine_cls_by_method_name
 
 
 def train_model(
@@ -14,7 +12,7 @@ def train_model(
     **kwargs,
 ) -> InferredModel:
 
-    if 'work_folder' in engine_args:
+    if engine_args.get('work_folder', False):
         os.makedirs(engine_args.get('work_folder'), exist_ok=True)
 
     trained_model = get_engine_cls_by_method_name(method).train(
@@ -24,8 +22,6 @@ def train_model(
         tfidf_weiging=kwargs.get('tfidf_weiging', False),
     )
 
-    train_corpus.document_index = (
-        DocumentIndexHelper(train_corpus.document_index).update_counts_by_corpus(train_corpus.corpus).document_index
-    )
+    train_corpus.update_word_counts()
 
     return trained_model

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 TextSource = Union[str, zipfile.ZipFile, List, Any]
 
-FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
+FilenameFilterSpec = Union[Callable, Sequence[str]]
 
 GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "__low-tf__"
 
@@ -23,7 +23,7 @@ GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "__low-tf__"
 @dataclass
 class TextReaderOpts:
     filename_pattern: str = field(default="*.txt")
-    filename_filter: Optional[FilenameOrCallableOrSequenceFilter] = None
+    filename_filter: Optional[FilenameFilterSpec] = None
     filename_fields: Optional[FilenameFieldSpecs] = None
     index_field: Optional[str] = None
     as_binary: Optional[bool] = False
@@ -147,6 +147,17 @@ class ExtractTaggedTokensOpts:
             lemma_column=self.lemma_column,
             pos_column=self.pos_column,
         )
+
+    def ingest(self, opts: dict) -> ExtractTaggedTokensOpts:
+        self.pos_includes = opts.get('pos_includes', self.pos_includes)
+        self.pos_paddings = opts.get('pos_paddings', self.pos_paddings)
+        self.pos_excludes = opts.get('pos_excludes', self.pos_excludes)
+        self.lemmatize = opts.get('lemmatize', self.lemmatize)
+        self.phrases = opts.get('phrases', self.phrases)
+        self.append_pos = opts.get('append_pos', self.append_pos)
+        self.global_tf_threshold = opts.get('tf_threshold', self.global_tf_threshold)
+        self.global_tf_threshold_mask = opts.get('tf_threshold_mask', self.global_tf_threshold_mask)
+        return self
 
 
 class ICorpusReader(abc.ABC):

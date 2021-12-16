@@ -1,26 +1,23 @@
 # Visualize year-to-topic network by means of topic-document-weights
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import List, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import bokeh
-import ipywidgets as widgets
+import ipywidgets as widgets  # type: ignore
 import networkx as nx
 import pandas as pd
-import penelope.network.metrics as network_metrics
 import penelope.network.plot_utility as network_plot
-from bokeh.models.sources import ColumnDataSource
-from IPython import display
+from IPython.display import display
+from loguru import logger  # type: ignore
 from penelope import topic_modelling, utility
-from penelope.network import layout_source
+from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility
 from penelope.topic_modelling import InferredTopicsData
 
 from .. import widgets_utils
-from .display_utility import display_document_topics_as_grid
 from .model_container import TopicModelContainer
-
-logger = utility.getLogger("westac")
+from .topic_document_network_utility import display_document_topics_as_grid
 
 NETWORK_LAYOUT_ALGORITHMS = ["Circular", "Kamada-Kawai", "Fruchterman-Reingold"]
 
@@ -28,72 +25,6 @@ NETWORK_LAYOUT_ALGORITHMS = ["Circular", "Kamada-Kawai", "Fruchterman-Reingold"]
 class PlotMode(IntEnum):
     Default = 1
     FocusTopics = 2
-
-
-def plot_document_topic_network(
-    network: nx.Graph,
-    layout_data,
-    scale: float = 1.0,  # pylint: disable=unused-argument, too-many-locals
-    titles: pd.DataFrame = None,
-    highlight_topic_ids=None,
-    text_id: str = "nx_id1",
-):
-
-    tools: str = "pan,wheel_zoom,box_zoom,reset,hover,save"
-
-    document_nodes, topic_nodes = network_utility.get_bipartite_node_set(network, bipartite=0)
-
-    color_map: dict = (
-        {x: "brown" if x in highlight_topic_ids else "skyblue" for x in topic_nodes}
-        if highlight_topic_ids is not None
-        else None
-    )
-    color_specifier: str = "colors" if highlight_topic_ids is not None else "skyblue"
-
-    document_source: ColumnDataSource = layout_source.create_nodes_subset_data_source(
-        network, layout_data, document_nodes
-    )
-    topic_source: ColumnDataSource = layout_source.create_nodes_subset_data_source(
-        network, layout_data, topic_nodes, color_map=color_map
-    )
-    lines_source: ColumnDataSource = layout_source.create_edges_layout_data_source(
-        network, layout_data, scale=6.0, normalize=False
-    )
-
-    edges_alphas: List[float] = network_metrics.compute_alpha_vector(lines_source.data["weights"])
-
-    lines_source.add(edges_alphas, "alphas")
-
-    p = bokeh.plotting.figure(plot_width=1000, plot_height=600, x_axis_type=None, y_axis_type=None, tools=tools)
-
-    _ = p.multi_line(
-        xs="xs", ys="ys", line_width="weights", alpha="alphas", level="underlay", color="black", source=lines_source
-    )
-    _ = p.circle(x="x", y="y", size=40, source=document_source, color="lightgreen", line_width=1, alpha=1.0)
-
-    r_topics = p.circle(x="x", y="y", size=25, source=topic_source, color=color_specifier, alpha=1.00)
-
-    callback = widgets_utils.glyph_hover_callback2(
-        glyph_source=topic_source, glyph_id="node_id", text_ids=titles.index, text=titles, element_id=text_id
-    )
-
-    p.add_tools(bokeh.models.HoverTool(renderers=[r_topics], tooltips=None, callback=callback))
-
-    text_opts = dict(x="x", y="y", text="name", level="overlay", x_offset=0, y_offset=0, text_font_size="8pt")
-
-    p.add_layout(
-        bokeh.models.LabelSet(
-            source=document_source, text_color="black", text_align="center", text_baseline="middle", **text_opts
-        )
-    )
-    topic_source.data['name'] = [str(x) for x in topic_source.data['name']]  # pylint: disable=unsubscriptable-object
-    p.add_layout(
-        bokeh.models.LabelSet(
-            source=topic_source, text_color="black", text_align="center", text_baseline="middle", **text_opts
-        )
-    )
-
-    return p
 
 
 def display_document_topic_network(opts: "GUI.GUI_opts"):
@@ -116,20 +47,21 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
 
         titles: pd.DataFrame = topic_modelling.get_topic_titles(opts.inferred_topics.topic_token_weights)
 
-        p = plot_document_topic_network(
+        p = plot_bipartite_network(
             network,
             layout_data,
             scale=opts.scale,
             titles=titles,
             highlight_topic_ids=None if opts.plot_mode is None else opts.topic_ids,
-            text_id=f"ID_{opts.plot_mode.name}",
+            element_id=f"ID_{opts.plot_mode.name}",
         )
 
         bokeh.plotting.show(p)
-
-    elif opts.output_format == "table":
+    elif opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+        utility.ts_store(data=df_network, extension=opts.output_format.lower(), basename='topic_topic_network')
+    else:
         g = display_document_topics_as_grid(df_network)
-        display.display(g)
+        display(g)
 
 
 def compile_network_data(opts: "GUI.GUI_opts") -> pd.DataFrame:
@@ -224,12 +156,7 @@ class GUI:
 
         self.text = widgets_utils.text_widget(f"ID_{self.plot_mode.name}")
         self.button.on_click(self.update_handler)
-        # self.threshold.observe(self.update_handler, names='value')
-        # self.period.observe(self.update_handler, names='value')
-        # self.scale.observe(self.update_handler, names='value')
-        # self.output_format.observe(self.update_handler, names='value')
-        # self.layout_algorithm.observe(self.update_handler, names='value')
-        # self.topic_ids.observe(self.update_handler, names='value')
+
         return self
 
     def update_handler(self, *_):
@@ -304,5 +231,5 @@ class GUI:
 def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer):
 
     gui: GUI = GUI(plot_mode=plot_mode).setup(inferred_topics=state.inferred_topics)
-    display.display(gui.layout())
+    display(gui.layout())
     # gui.update_handler()

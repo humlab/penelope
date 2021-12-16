@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import os
 from io import StringIO
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, TypeVar, Union
@@ -336,14 +335,24 @@ class DocumentIndexHelper:
         self._document_index = self._document_index.set_index('document_id', drop=False).rename_axis('')
         return self
 
-    def extend(self, other_index: DocumentIndex) -> "DocumentIndexHelper":
+    def extend(self, other_index: DocumentIndex, ignore_if_exists: bool = True) -> "DocumentIndexHelper":
         if self._document_index is None:
             self._document_index = other_index
         else:
-            # if not self._document_index.columns.equals(self._document_index.columns):
-            #     raise ValueError("Document index columns mismatch")
-            self._document_index = self._document_index.append(other_index, ignore_index=False)
-            self._document_index['document_id'] = range(0, len(self._document_index))
+            # self._document_index = self._document_index.append(other_index, ignore_index=False, verify_integrity=True)
+
+            already_present_index = self._document_index.index.intersection(other_index.index)
+            if len(already_present_index) > 0:
+                if not ignore_if_exists:
+                    raise DocumentIndexError("trying to add duplicate item(s) to document index")
+                    # logger.warning("trying to add duplicate item(s) to document indext")
+
+            missing_index = other_index.index.difference(self._document_index.index)
+
+            if len(missing_index) > 0:
+                self._document_index = self._document_index.append(other_index.loc[missing_index, :])
+                self._document_index['document_id'] = range(0, len(self._document_index))
+
         return self
 
     @staticmethod
@@ -453,7 +462,7 @@ def load_document_index(
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
-    probe_extensions: str = 'zip,csv,gz',
+    probe_extensions: str = 'zip,csv,gz,feather',
     **read_csv_kwargs,
 ) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -465,8 +474,12 @@ def load_document_index(
         document_index: DocumentIndex = filename
     else:
         if isinstance(filename, str):
+
             if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
                 raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
+
+            if filename.endswith('feather'):
+                document_index: DocumentIndex = pd.read_feather(filename)
 
         document_index: DocumentIndex = pd.read_csv(filename, sep=sep, **read_csv_kwargs)
 
@@ -493,6 +506,14 @@ def load_document_index(
         document_index['year'] = document_index.year.astype(np.int16)
 
     return document_index
+
+
+def trim_series_type(series: pd.Series) -> pd.Series:
+    max_value: int = series.max()
+    for np_type in [np.int16, np.int32]:
+        if max_value < np.iinfo(np_type).max:
+            return series.astype(np_type)
+    return series
 
 
 @deprecated
@@ -578,7 +599,7 @@ def update_document_index_token_counts(
         document_index.update(df_counts)
 
     except Exception as ex:
-        logging.error(ex)
+        logger.error(ex)
 
     return document_index
 
@@ -591,6 +612,8 @@ def update_document_index_token_counts_by_corpus(
         return document_index
 
     n_terms: List[int] = None
+
+    logger.info("updating document index word counts...")
 
     try:
 
@@ -612,6 +635,8 @@ def update_document_index_token_counts_by_corpus(
 
     if n_terms is not None:
         document_index[column_name] = n_terms
+
+    logger.info("...done!")
 
     return document_index
 
@@ -635,7 +660,10 @@ def update_document_index_properties(
     for key in [k for k in property_bag if k not in document_index.columns]:
         document_index.insert(len(document_index.columns), key, np.nan)
 
-    document_index.loc[document_name, property_bag.keys()] = property_bag.values()
+    try:
+        document_index.loc[document_name, property_bag.keys()] = list(property_bag.values())
+    except Exception as ex:
+        print(ex)
     # document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
 
 

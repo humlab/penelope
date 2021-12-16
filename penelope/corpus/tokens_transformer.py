@@ -81,6 +81,19 @@ class TokensTransformOpts:
 
         return mask
 
+    def ingest(self, opts: dict) -> TokensTransformOpts:
+        self.to_lower = opts.get('to_lower', self.to_lower)
+        self.to_upper = opts.get('to_upper', self.to_upper)
+        self.min_len = opts.get('min_word_length', self.min_len)
+        self.max_len = opts.get('max_word_length', self.max_len)
+        self.remove_stopwords = opts.get('remove_stopwords', self.remove_stopwords) is not None
+        self.language = opts.get('remove_stopwords', self.language)
+        self.keep_numerals = opts.get('keep_numerals', self.keep_numerals)
+        self.keep_symbols = opts.get('keep_symbols', self.keep_symbols)
+        self.only_alphabetic = opts.get('only_alphabetic', self.only_alphabetic)
+        self.only_any_alphanumeric = opts.get('only_any_alphanumeric', self.only_any_alphanumeric)
+        return self
+
 
 DEFAULT_TOKENS_TRANSFORM_OPTIONS = TokensTransformOpts().props
 

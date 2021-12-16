@@ -272,7 +272,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         logger.info("converting temporary corpus to MALLET format with %s", cmd)
         check_output(args=cmd, shell=True)
 
-    def train(self, corpus):
+    def train(self, corpus, **_):
         """Train Mallet LDA.
 
         Parameters

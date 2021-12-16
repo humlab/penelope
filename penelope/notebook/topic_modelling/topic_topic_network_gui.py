@@ -1,142 +1,182 @@
-# Visualize topic co-occurrence
-import types
-
-import ipywidgets as widgets
-import penelope.topic_modelling as topic_modelling
 from IPython.display import display
+from ipywidgets import (  # type: ignore
+    HTML,
+    Dropdown,
+    FloatSlider,
+    HBox,
+    IntProgress,
+    IntRangeSlider,
+    IntSlider,
+    Output,
+    SelectMultiple,
+    VBox,
+)
 
 from .. import widgets_utils
-from .display_topic_topic_network import display_topic_topic_network
 from .model_container import TopicModelContainer
+from .topic_topic_network_gui_utility import display_topic_topic_network
 
 # bokeh.plotting.output_notebook()
+TEXT_ID = 'nx_topic_topic'
+LAYOUT_OPTIONS = ['Circular', 'Kamada-Kawai', 'Fruchterman-Reingold']
+OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV': 'CSV', 'Clipboard': 'clipboard'}
+
+# pylint: disable=too-many-instance-attributes
 
 
-def display_gui(state: TopicModelContainer):
+class TopicTopicGUI:
+    def __init__(self, state: TopicModelContainer):
 
-    lw = lambda w: widgets.Layout(width=w)
-    n_topics = state.num_topics
+        self.state: TopicModelContainer = state
 
-    text_id = 'nx_topic_topic'
-    layout_options = ['Circular', 'Kamada-Kawai', 'Fruchterman-Reingold']
-    output_options = {'Network': 'network', 'Table': 'table', 'Excel': 'excel', 'CSV': 'csv'}
-    ignore_options = [('', None)] + [('Topic #' + str(i), i) for i in range(0, n_topics)]
-    year_min, year_max = state.inferred_topics.year_period
+        n_topics: int = self.state.num_topics
 
-    topic_proportions = state.inferred_topics.compute_topic_proportions()
+        ignore_options = [('', None)] + [('Topic #' + str(i), i) for i in range(0, n_topics)]
+        year_min, year_max = state.inferred_topics.year_period
 
-    titles = topic_modelling.get_topic_titles(state.inferred_topics.topic_token_weights)
-
-    gui = types.SimpleNamespace(
-        n_topics=n_topics,
-        text=widgets_utils.text_widget(text_id),
-        period=widgets.IntRangeSlider(
+        self.n_topics = n_topics
+        self.text = widgets_utils.text_widget(TEXT_ID)
+        self.period: IntRangeSlider = IntRangeSlider(
             description='',
             min=year_min,
             max=year_max,
             step=1,
             value=(year_min, year_min + 5),
             continues_update=False,
-        ),
-        scale=widgets.FloatSlider(description='', min=0.0, max=1.0, step=0.01, value=0.1, continues_update=False),
-        n_docs=widgets.IntSlider(description='', min=1, max=100, step=1, value=10, continues_update=False),
-        threshold=widgets.FloatSlider(description='', min=0.01, max=1.0, step=0.01, value=0.20, continues_update=False),
-        output_format=widgets.Dropdown(description='', options=output_options, value='network', layout=lw('200px')),
-        layout=widgets.Dropdown(
-            description='', options=layout_options, value='Fruchterman-Reingold', layout=lw('250px')
-        ),
-        progress=widgets.IntProgress(min=0, max=4, step=1, value=0, layout=widgets.Layout(width="99%")),
-        ignores=widgets.SelectMultiple(description='', options=ignore_options, value=[], rows=10, layout=lw('250px')),
-        node_range=widgets.IntRangeSlider(
+        )
+        self.scale: FloatSlider = FloatSlider(
+            description='', min=0.0, max=1.0, step=0.01, value=0.1, continues_update=False
+        )
+        self.n_docs: IntSlider = IntSlider(description='', min=1, max=100, step=1, value=10, continues_update=False)
+        self.threshold: FloatSlider = FloatSlider(
+            description='', min=0.01, max=1.0, step=0.01, value=0.20, continues_update=False
+        )
+        self.output_format: Dropdown = Dropdown(
+            description='', options=OUTPUT_OPTIONS, value='network', layout=dict(width='200px')
+        )
+        self.network_layout: Dropdown = Dropdown(
+            description='', options=LAYOUT_OPTIONS, value='Fruchterman-Reingold', layout=dict(width='250px')
+        )
+        self.progress: IntProgress = IntProgress(min=0, max=4, step=1, value=0, layout=dict(width="99%"))
+        self.ignores: SelectMultiple = SelectMultiple(
+            description='', options=ignore_options, value=[], rows=10, layout=dict(width='250px')
+        )
+        self.node_range: IntRangeSlider = IntRangeSlider(
             description='', min=10, max=100, step=1, value=(20, 60), continues_update=False
-        ),
-        edge_range=widgets.IntRangeSlider(description='', min=1, max=20, step=1, value=(2, 6), continues_update=False),
-        output=widgets.Output(),
-    )
+        )
+        self.edge_range: IntRangeSlider = IntRangeSlider(
+            description='', min=1, max=20, step=1, value=(2, 6), continues_update=False
+        )
+        self.output: Output = Output()
 
-    def tick(x=None):
-        gui.progress.value = gui.progress.value + 1 if x is None else x
+        self.topic_proportions = self.state.inferred_topics.compute_topic_proportions()
+        self.titles = self.state.inferred_topics.get_topic_titles()
 
-    def compute_handler(*_):
+    def layout(self) -> VBox:
+        extra_widgets: VBox = self.extra_widgets()
 
-        gui.output.clear_output()
-        tick(1)
-        with gui.output:
-
-            display_topic_topic_network(
-                inferred_topics=state.inferred_topics,
-                filters=dict(),
-                period=gui.period.value,
-                ignores=gui.ignores.value,
-                threshold=gui.threshold.value,
-                layout=gui.layout.value,
-                n_docs=gui.n_docs.value,
-                scale=gui.scale.value,
-                node_range=gui.node_range.value,
-                edge_range=gui.edge_range.value,
-                output_format=gui.output_format.value,
-                text_id=text_id,
-                titles=titles,
-                topic_proportions=topic_proportions,
-            )
-        tick(0)
-
-    gui.threshold.observe(compute_handler, names='value')
-    gui.n_docs.observe(compute_handler, names='value')
-    gui.period.observe(compute_handler, names='value')
-    gui.scale.observe(compute_handler, names='value')
-    gui.node_range.observe(compute_handler, names='value')
-    gui.edge_range.observe(compute_handler, names='value')
-    gui.output_format.observe(compute_handler, names='value')
-    gui.layout.observe(compute_handler, names='value')
-    gui.ignores.observe(compute_handler, names='value')
-
-    display(
-        widgets.VBox(
+        return VBox(
             [
-                widgets.HBox(
+                HBox(
                     [
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HTML("<b>Co-occurrence threshold</b>"),
-                                gui.threshold,
-                                widgets.HTML("<b>Documents in common</b>"),
-                                gui.n_docs,
-                                widgets.HTML("<b>Year range</b>"),
-                                gui.period,
+                                HTML("<b>Co-occurrence threshold</b>"),
+                                self.threshold,
+                                HTML("<b>Documents in common</b>"),
+                                self.n_docs,
+                                HTML("<b>Year range</b>"),
+                                self.period,
                             ]
                         ),
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HTML("<b>Ignore topics</b>"),
-                                gui.ignores,
+                                HTML("<b>Ignore topics</b>"),
+                                self.ignores,
                             ]
                         ),
-                        widgets.VBox(
+                    ]
+                    + ([extra_widgets] if extra_widgets else [])
+                    + [
+                        VBox(
                             [
-                                widgets.HTML("<b>Node size</b>"),
-                                gui.node_range,
-                                widgets.HTML("<b>Edge size</b>"),
-                                gui.edge_range,
-                                widgets.HTML("<b>Scale</b>"),
-                                gui.scale,
+                                HTML("<b>Node size</b>"),
+                                self.node_range,
+                                HTML("<b>Edge size</b>"),
+                                self.edge_range,
+                                HTML("<b>Scale</b>"),
+                                self.scale,
                             ]
                         ),
-                        widgets.VBox(
+                        VBox(
                             [
-                                widgets.HTML("<b>Network layout</b>"),
-                                gui.layout,
-                                widgets.HTML("<b>Output</b>"),
-                                gui.output_format,
-                                gui.progress,
+                                HTML("<b>Network layout</b>"),
+                                self.network_layout,
+                                HTML("<b>Output</b>"),
+                                self.output_format,
+                                self.progress,
                             ]
                         ),
                     ]
                 ),
-                gui.output,
-                gui.text,
+                self.output,
+                self.text,
             ]
         )
-    )
 
-    compute_handler()
+    def extra_widgets(self) -> VBox:
+        return None
+
+    def setup(self) -> "TopicTopicGUI":
+
+        self.threshold.observe(self.update_handler, names='value')
+        self.n_docs.observe(self.update_handler, names='value')
+        self.period.observe(self.update_handler, names='value')
+        self.scale.observe(self.update_handler, names='value')
+        self.node_range.observe(self.update_handler, names='value')
+        self.edge_range.observe(self.update_handler, names='value')
+        self.output_format.observe(self.update_handler, names='value')
+        self.network_layout.observe(self.update_handler, names='value')
+        self.ignores.observe(self.update_handler, names='value')
+
+        return self
+
+    def update_handler(self, *_):
+
+        self.output.clear_output()
+        self.tick(1)
+        with self.output:
+
+            display_topic_topic_network(
+                inferred_topics=self.state.inferred_topics,
+                filters=self.get_data_filter(),
+                period=self.period.value,
+                ignores=self.ignores.value,
+                threshold=self.threshold.value,
+                layout=self.network_layout.value,
+                n_docs=self.n_docs.value,
+                scale=self.scale.value,
+                node_range=self.node_range.value,
+                edge_range=self.edge_range.value,
+                output_format=self.output_format.value,
+                element_id=TEXT_ID,
+                titles=self.titles,
+                topic_proportions=self.topic_proportions,
+            )
+
+        self.tick(0)
+
+    def get_data_filter(self):
+        return dict()
+
+    def tick(self, x=None):
+        self.progress.value = self.progress.value + 1 if x is None else x
+
+
+def display_gui(state: TopicModelContainer):
+
+    gui: TopicTopicGUI = TopicTopicGUI(state).setup()
+
+    display(gui.layout())
+
+    gui.update_handler()

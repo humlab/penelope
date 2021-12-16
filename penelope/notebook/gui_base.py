@@ -488,7 +488,7 @@ class BaseGUI:
     def compute_opts(self) -> interface.ComputeOpts:
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=self.corpus_type,
-            corpus_filename=self.corpus_filename,
+            corpus_source=self.corpus_filename,
             target_folder=self.target_folder,
             corpus_tag=self.corpus_tag,
             transform_opts=self.transform_opts,

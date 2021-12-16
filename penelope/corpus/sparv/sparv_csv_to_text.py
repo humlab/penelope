@@ -21,9 +21,13 @@ class SparvCsvToText:
         delimiter: str = '\t',
         fields_index: Dict[str, int] = None,
     ):
-        self.extract_tokens_opts = extract_tokens_opts
-        self.delimiter = delimiter
-        self.fields_index = fields_index or {'token': 0, 'pos': 1, 'baseform': 2}
+        self.extract_tokens_opts: ExtractTaggedTokensOpts = extract_tokens_opts
+        self.delimiter: str = delimiter
+        self.fields_index: Dict[str, int] = fields_index or {
+            extract_tokens_opts.text_column: 0,
+            extract_tokens_opts.pos_column: 1,
+            extract_tokens_opts.lemma_column: 2,
+        }
 
     def transform(self, content: str):
         reader = csv.reader(content.splitlines(), delimiter=self.delimiter, quoting=csv.QUOTE_NONE)
@@ -44,9 +48,9 @@ class SparvCsvToText:
         _append_pos: bool = _opts.append_pos
         _pad: str = "*"
 
-        _pos = self.fields_index['pos']
-        _tok = self.fields_index['token']
-        _lem = self.fields_index['baseform']
+        _pos = self.fields_index[self.extract_tokens_opts.pos_column]
+        _tok = self.fields_index[self.extract_tokens_opts.text_column]
+        _lem = self.fields_index[self.extract_tokens_opts.lemma_column]
 
         data = (x for x in reader if len(x) == 3 and x[_tok] != '' and x[_pos] != '')
 

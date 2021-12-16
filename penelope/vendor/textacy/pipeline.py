@@ -10,7 +10,13 @@ import textacy
 from loguru import logger
 from penelope.corpus import DocumentIndex
 from penelope.corpus.readers import ICorpusReader, TextReaderOpts, TextTransformer, ZipTextIterator
-from penelope.utility import lists_of_dicts_merged_by_key, noop, path_add_suffix, streamify_any_source
+from penelope.utility import (
+    faster_to_dict_records,
+    lists_of_dicts_merged_by_key,
+    noop,
+    path_add_suffix,
+    streamify_any_source,
+)
 from spacy.language import Language as SpacyLanguage
 from spacy.tokens import Doc as SpacyDoc
 from tqdm.auto import tqdm
@@ -79,7 +85,8 @@ class CreateTask(ITask):
             pipeline.filename,
             reader_opts=pipeline.reader_opts,
         )
-        extra_metadata = pipeline.document_index.to_dict('records')
+        extra_metadata = faster_to_dict_records(pipeline.document_index)
+        # extra_metadata = pipeline.document_index.to_dict('records')
         pipeline.corpus = self.create_corpus(stream, pipeline.nlp, extra_metadata=extra_metadata)
         return pipeline
 

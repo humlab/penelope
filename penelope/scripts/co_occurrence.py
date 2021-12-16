@@ -224,7 +224,7 @@ def process_co_ocurrence(
         tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
         args: interface.ComputeOpts = interface.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
-            corpus_filename=input_filename,
+            corpus_source=input_filename,
             target_folder=output_folder,
             corpus_tag=output_tag,
             transform_opts=TokensTransformOpts(

@@ -6,12 +6,9 @@ import bokeh.plotting
 import pandas as pd
 import penelope.network.networkx.utility as network_utility
 from IPython.display import display
+from loguru import logger
 from penelope import topic_modelling, utility
 from penelope.network import plot_utility
-
-from .utility import filter_document_topic_weights
-
-logger = utility.get_logger()
 
 
 def get_topic_titles(topic_token_weights, topic_id=None, n_words=100):
@@ -35,7 +32,9 @@ def get_filtered_network_data(
     n_docs: int,
 ) -> pd.DataFrame:
 
-    df = filter_document_topic_weights(inferred_topics.document_topic_weights, filters=filters, threshold=threshold)
+    df: pd.DataFrame = topic_modelling.filter_document_topic_weights(
+        inferred_topics.document_topic_weights, filters=filters, threshold=threshold
+    )
 
     if ignores is not None:
         df = df[~df.topic_id.isin(ignores)]
@@ -55,6 +54,7 @@ def get_filtered_network_data(
 
     if n_docs > 1:
         df = df[df.n_docs >= n_docs]
+
     return df
 
 
@@ -69,7 +69,7 @@ def display_topic_topic_network(
     n_docs: int = 1,
     scale: float = 1.0,
     output_format: str = 'table',
-    text_id: str = '',
+    element_id: str = '',
     titles=None,
     topic_proportions=None,
     node_range: Tuple[int, int] = (20, 60),
@@ -99,24 +99,19 @@ def display_topic_topic_network(
                 node_proportions=topic_proportions,
                 weight_scale=1.0,
                 normalize_weights=False,
-                element_id=text_id,
+                element_id=element_id,
                 figsize=(1200, 800),
                 node_range=node_range,
                 edge_range=edge_range,
             )
             bokeh.plotting.show(p)
         else:
+
             df.columns = ['Source', 'Target', 'DocCount']
             if output_format == 'table':
                 display(df)
-            if output_format == 'excel':
-                filename = utility.timestamp("{}_topic_topic_network.xlsx")
-                df.to_excel(filename)
-                print('Data stored in file {}'.format(filename))
-            if output_format == 'csv':
-                filename = utility.timestamp("{}_topic_topic_network.csv")
-                df.to_csv(filename, sep='\t')
-                print('Data stored in file {}'.format(filename))
+            elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
+                utility.ts_store(data=df, extension=output_format.lower(), basename='topic_topic_network')
 
     except Exception as ex:  # pylint: disable=bare-except
         print("No data: please adjust filters")

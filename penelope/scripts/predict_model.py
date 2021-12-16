@@ -18,7 +18,7 @@ from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 @click.argument('target-name', required=False)
 @click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
 @click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
-@click.option('--corpus-filename', default=None, help='Corpus filename (overrides config)')
+@click.option('--corpus-source', default=None, help='Corpus folder/filename (overrides config)')
 @click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
 @click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
 @click.option('-x', '--pos-excludes', default='', help='POS tags to exclude e.g. "|MAD|MID|PAD|".', type=click.STRING)
@@ -39,7 +39,7 @@ def click_main(
     target_folder: str = None,
     target_name: str = None,
     options_filename: str = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     corpus_folder: str = None,
     lemmatize: bool = True,
     pos_includes: str = '',
@@ -88,7 +88,7 @@ def _main(
     model_name: str = None,
     config_filename: str = None,
     target_name: str = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     corpus_folder: str = None,
     target_folder: str = None,
     lemmatize: bool = True,
@@ -137,7 +137,7 @@ def _main(
         model_folder=model_folder,
         target_name=target_name,
         target_folder=target_folder,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         corpus_folder=corpus_folder,
         extract_opts=extract_opts,
         transform_opts=transform_opts,
@@ -154,7 +154,7 @@ def main(
     model_name: str = None,
     target_folder: str = None,
     target_name: str,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     corpus_folder: str = None,
     extract_opts: penelope.ExtractTaggedTokensOpts = None,
     transform_opts: penelope.TokensTransformOpts = None,
@@ -162,19 +162,19 @@ def main(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ):
-    corpus_filename: str = corpus_filename or config.pipeline_payload.source
+    corpus_source: str = corpus_source or config.pipeline_payload.source
 
-    if corpus_filename is None and corpus_folder is None:
+    if corpus_source is None and corpus_folder is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")
         sys.exit(1)
 
     if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
+        corpus_folder, _ = os.path.split(os.path.abspath(corpus_source))
 
     _: dict = (
         config.get_pipeline(
             "tagged_frame_pipeline",
-            corpus_filename=corpus_filename,
+            corpus_source=corpus_source,
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         )

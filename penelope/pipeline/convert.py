@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable, Iterable, List, Set, Union
 
 import numpy as np
@@ -64,6 +66,9 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         Iterable[str]: Sequence of extracted tokens
     """
 
+    if len(tagged_frame) == 0:
+        return []
+
     is_numeric_frame: bool = is_encoded_tagged_frame(tagged_frame)
     to_lower: bool = transform_opts and transform_opts.to_lower
 
@@ -98,8 +103,10 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         passthroughs = token2id.to_id_set(passthroughs)
         blocks = token2id.to_id_set(blocks)
 
-    if not is_numeric_frame and extract_opts.lemmatize or to_lower:
-        tagged_frame[target_column] = pd.Series([x.lower() for x in tagged_frame[target_column]])
+    if not is_numeric_frame and (extract_opts.lemmatize or to_lower):
+        tagged_frame[target_column] = tagged_frame[
+            target_column
+        ].str.lower()  # pd.Series([x.lower() for x in tagged_frame[target_column]])
         passthroughs = {x.lower() for x in passthroughs}
 
     # if extract_opts.block_chars:
@@ -138,7 +145,7 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         mask &= ~(tagged_frame[pos_column].isin(pos_excludes))
 
     if transform_opts:
-        mask &= transform_opts.mask(tagged_frame[target_column])
+        mask &= transform_opts.mask(tagged_frame[target_column], token2id=token2id)
 
     if len(passthroughs) > 0:
         mask |= tagged_frame[target_column].isin(passthroughs)
@@ -251,7 +258,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     pos_schema: PoS_Tag_Scheme = None,
-) -> Iterable[str]:
+) -> Iterable[str | int]:
     """Extracts tokens from a tagged document represented as a Pandas data frame.
 
     Args:
@@ -261,7 +268,20 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     Returns:
         Iterable[str]: Sequence of extracted tokens
     """
+
+    if len(doc) == 0:
+        return []
+
     is_numeric_frame: bool = is_encoded_tagged_frame(doc)
+
+    if isinstance(extract_opts, str):
+        passthrough_column: str = extract_opts
+        """If extracts_opts is a string: return column with what name"""
+        if transform_opts is not None:
+            raise ValueError("transform_opts must be None when passthrough is specified")
+        if transform_opts is not None:
+            raise ValueError("transform_opts must be None when passthrough is specified")
+        return doc[passthrough_column].tolist()
 
     # if is_numeric_frame:
     #     raise NotImplementedError("tagged_frame_to_tokens cannot handle encoded frames yet")

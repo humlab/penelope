@@ -202,6 +202,10 @@ requirements.txt: poetry.lock
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
+profile-vocabulary-pyinstrument:
+	@mkdir -p ./profile-reports
+	@PYTHONPATH=. poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_vocabulary-pyinstrument.html ./tests/profiling/vocabulary.py
+
 profile-co_occurrence-pyinstrument:
 	@mkdir -p ./profile-reports
 	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.html ./tests/profiling/profile-workflow-pyinstrument.py
@@ -219,6 +223,14 @@ profile-compute-keyness-cprofile:
 	@poetry run python -m cProfile ./tests/profiling/profile-compute-keyness.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-cprofile.txt
 	# @poetry run python -m cProfile -o ./profile-reports/$(RUN_TIMESTAMP)_keyness-cprofile.cprof ./tests/profiling/profile-compute-keyness.py
 	# @poetry run pyprof2calltree -k -i ./profile-reports/$(RUN_TIMESTAMP)_keyness-cprofile.cprof
+
+profile-load-riksprot-parlaclarin-pyinstrument::
+	@mkdir -p ./profile-reports
+	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_riksprot-parlaclarin-pyinstrument.html ./tests/profiling/riksprot-parlaclarin.py
+
+profile-load-riksprot-parlaclarin-cprofile:
+	@mkdir -p ./profile-reports
+	@PYTHONPATH=. python -m cProfile ./tests/profiling/riksprot-parlaclarin.py &> ./profile-reports/$(RUN_TIMESTAMP)_riksprot-parlaclarin-cprofile.txt
 
 .PHONY: install-mkl install-gfortran install-mkl-basekit reinstall-numpy-scipy numpy-site-config
 install-mkl: install-gfortran install-mkl-basekit reinstall-numpy-scipy numpy-site-config

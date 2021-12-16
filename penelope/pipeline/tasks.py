@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import itertools
 import os
@@ -240,6 +242,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     extra_reader_opts: Optional[TextReaderOpts] = None
     checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
     stop_at_index: int = None
+    update_token_counts: bool = True
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -289,6 +292,8 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        if not self.update_token_counts:
+            return payload
         self.register_token_counts(payload)
         return payload
 
@@ -409,7 +414,7 @@ class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
 
 @dataclass
 class TextToTokens(TransformTokensMixIn, ITask):
-    """Extracts tokens from payload.content, optinally transforming"""
+    """Extracts tokens from payload.content, optionally transforming"""
 
     tokenize: Callable[[str], List[str]] = None
     text_transform_opts: TextTransformOpts = None
@@ -484,7 +489,7 @@ class TaggedFrameToTokens(
 ):
     """Extracts text from payload.content based on annotations etc. """
 
-    extract_opts: ExtractTaggedTokensOpts = None
+    extract_opts: ExtractTaggedTokensOpts | str = None
     filter_opts: PropertyValueMaskingOpts = None
 
     update_counts_on_exit: bool = True
@@ -503,6 +508,7 @@ class TaggedFrameToTokens(
         return self
 
     def enter(self) -> ITask:  # pylint: disable=useless-super-delegation
+
         super().enter()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
@@ -516,6 +522,7 @@ class TaggedFrameToTokens(
             filter_opts=self.filter_opts,
             transform_opts=self.transform_opts,
             token2id=self.pipeline.payload.token2id,
+            pos_schema=self.pipeline.payload.pos_schema,
         )
 
         tokens = list(tokens)
@@ -523,17 +530,17 @@ class TaggedFrameToTokens(
         if self.ingest_tokens:
             self.ingest(tokens)
 
-        # if self.update_counts_on_exit:
-        #     self.token_counts[payload.document_name] = len(tokens)
-        # else:
-        self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
+        if self.update_counts_on_exit:
+            self.token_counts[payload.document_name] = len(tokens)
+        else:
+            self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
 
         return payload.update(self.out_content_type, tokens)
 
     def exit(self) -> ITask:  # pylint: disable=useless-super-delegation
         super().exit()
-        # if self.update_counts_on_exit:
-        #     self.update_document_index_key_values('n_tokens', self.token_counts)
+        if self.update_counts_on_exit:
+            self.update_document_index_key_values('n_tokens', self.token_counts)
 
 
 @dataclass
@@ -764,7 +771,8 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         self.token2id.ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
 
-        for payload in self.prior.outstream(total=len(self.document_index.index), desc="Vocab"):
+        total: int = len(self.document_index.index) if self.document_index is not None else None
+        for payload in self.prior.outstream(total=total, desc="Vocab"):
             self.token2id.ingest_stream([self.tokens_stream(payload)])
 
         if self.tf_threshold and self.tf_threshold > 1:

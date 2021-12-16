@@ -9,7 +9,7 @@ import pandas as pd
 from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
-from penelope.topic_modelling.engine_gensim.options import EngineKey
+from penelope.topic_modelling.engines.engine_gensim.options import EngineKey
 from penelope.utility.file_utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
@@ -103,14 +103,15 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     Iterable[DocumentPayload] => ComputeResult
     """
 
-    corpus_filename: str = None
-    corpus_folder: str = None
+    corpus_source: str = None
+    train_corpus_folder: str = None
     target_folder: str = None
     target_name: str = None
     engine: EngineKey = "gensim_lda-multicore"
     engine_args: dict = None
     store_corpus: bool = False
     store_compressed: bool = True
+    use_existing_corpus: bool = True
 
     def __post_init__(self):
 
@@ -123,10 +124,20 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         return self
 
     def instream_to_corpus(self) -> tm.TrainingCorpus:
+        """Creates train corpus from instream OR load existing from disk."""
+        if tm.TrainingCorpus.exists(self.train_corpus_folder):
+            """Shortcut pipeline and load training corpus from disk"""
+            corpus = tm.TrainingCorpus.load(self.train_corpus_folder)
+        else:
+            corpus = tm.TrainingCorpus(
+                terms=self.prior.content_stream(),
+                document_index=self.document_index,
+                corpus_options={},
+            )
+            # if self.train_corpus_folder is not None:
+            #     corpus.to_sparse_corpus()
+            #     corpus.store(self.train_corpus_folder)
 
-        corpus: tm.TrainingCorpus = tm.TrainingCorpus(
-            terms=self.prior.content_stream(), document_index=self.document_index, corpus_options={}
-        )
         return corpus
 
     def process_stream(self) -> Iterable[DocumentPayload]:

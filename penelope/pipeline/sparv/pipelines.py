@@ -11,22 +11,26 @@ if TYPE_CHECKING:
 def to_tagged_frame_pipeline(
     *,
     corpus_config: config.CorpusConfig,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     enable_checkpoint: bool = False,
     force_checkpoint: bool = False,
+    update_token_counts: bool = True,
+    stop_at_index: int = None,
     **_,
 ):
     """Loads a tagged data frame"""
     p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config)
 
-    corpus_filename: str = corpus_filename or corpus_config.pipeline_payload.source
+    corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
 
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
 
         task: ITask = tasks.LoadTaggedCSV(
-            filename=corpus_filename,
+            filename=corpus_source,
             checkpoint_opts=corpus_config.checkpoint_opts,
             extra_reader_opts=corpus_config.text_reader_opts,
+            stop_at_index=stop_at_index,
+            update_token_counts=update_token_counts,
         )
 
     elif corpus_config.corpus_type == config.CorpusType.SparvXML:
@@ -39,6 +43,6 @@ def to_tagged_frame_pipeline(
     if enable_checkpoint:
         """NOTE! If self.checkpoint_opts.feather_folder is set then LoadTaggedCSV handles feather files"""
         if not corpus_config.checkpoint_opts.feather_folder:
-            p = p.checkpoint_feather(folder=corpus_config.get_feather_folder(corpus_filename), force=force_checkpoint)
+            p = p.checkpoint_feather(folder=corpus_config.get_feather_folder(corpus_source), force=force_checkpoint)
 
     return p

@@ -18,6 +18,8 @@ from . import checkpoint, interfaces
 if TYPE_CHECKING:
     from .pipelines import CorpusPipeline
 
+jj = os.path.join
+
 
 def create_pipeline_factory(
     class_or_function_name: str,
@@ -56,8 +58,18 @@ class CorpusConfig:
         """Returns a pipeline class by key from `pipelines` section"""
         if pipeline_key not in self.pipelines:
             raise ValueError(f"request of unknown pipeline failed: {pipeline_key}")
-        factory: Type[CorpusPipeline] = create_pipeline_factory(self.pipelines[pipeline_key])
-        return factory(corpus_config=self, **kwargs)
+        cfg: str | dict = self.pipelines[pipeline_key]
+        opts: dict = {}
+        if isinstance(cfg, dict):
+            if 'class_name' not in cfg:
+                raise ValueError("config error: pipeline class `class_name` not specified")
+            class_name: str = cfg.get('class_name')
+            if 'options' in cfg:
+                opts = cfg['options']
+        else:
+            class_name = cfg
+        factory: Type[CorpusPipeline] = create_pipeline_factory(class_name)
+        return factory(corpus_config=self, **opts, **kwargs)
 
     @property
     def pos_schema(self) -> PoS_Tag_Scheme:
@@ -88,7 +100,9 @@ class CorpusConfig:
     @staticmethod
     def list(folder: str) -> List[str]:
         """Return YAML filenames in given `folder`"""
-        filenames = sorted(glob.glob(os.path.join(folder, '*.yml')) + glob.glob(os.path.join(folder, '*.yaml')))
+        filenames = sorted(
+            glob.glob(jj(folder, '**', '*.yml'), recursive=True) + glob.glob(jj(folder, '**', '*.yaml'), recursive=True)
+        )
         return filenames
 
     @staticmethod
@@ -177,18 +191,18 @@ class CorpusConfig:
         )
         return config
 
-    def get_feather_folder(self, corpus_filename: str | None) -> str | None:
+    def get_feather_folder(self, corpus_source: str | None) -> str | None:
 
         if self.checkpoint_opts.feather_folder is not None:
             return self.checkpoint_opts.feather_folder
 
-        corpus_filename: str = corpus_filename or self.pipeline_payload.source
+        corpus_source: str = corpus_source or self.pipeline_payload.source
 
-        if corpus_filename is None:
+        if corpus_source is None:
             return None
 
-        folder, filename = os.path.split(corpus_filename)
-        return os.path.join(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
+        folder, filename = os.path.split(corpus_source)
+        return jj(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
 
     def corpus_source_exists(self):
         if self.pipeline_payload.source is None:

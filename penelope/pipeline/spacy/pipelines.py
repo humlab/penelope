@@ -27,7 +27,7 @@ def default_done_callback(*_: Any, **__: Any) -> None:
 def to_tagged_frame_pipeline(
     *,
     corpus_config: CorpusConfig,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
     tagged_frames_filename: str = None,
@@ -38,7 +38,7 @@ def to_tagged_frame_pipeline(
 
     Args:
         corpus_config (CorpusConfig): [description]
-        corpus_filename (str, optional): [description]. Defaults to None.
+        corpus_source (str, optional): [description]. Defaults to None.
         enable_checkpoint (bool, optional): [description]. Defaults to True.
         force_checkpoint (bool, optional): [description]. Defaults to False.
         tagged_frames_filename (str, optional): [description]. Defaults to None.
@@ -61,7 +61,7 @@ def to_tagged_frame_pipeline(
             .load_text(
                 reader_opts=corpus_config.text_reader_opts,
                 transform_opts=text_transform_opts or corpus_config.text_transform_opts,
-                source=corpus_filename,
+                source=corpus_source,
             )
             .text_to_spacy()
             .spacy_to_pos_tagged_frame()
@@ -70,7 +70,7 @@ def to_tagged_frame_pipeline(
 
         if enable_checkpoint:
             pipeline = pipeline.checkpoint_feather(
-                folder=corpus_config.get_feather_folder(corpus_filename), force=force_checkpoint
+                folder=corpus_config.get_feather_folder(corpus_source), force=force_checkpoint
             )
 
         return pipeline
@@ -85,7 +85,7 @@ def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
     filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     tagged_frames_filename: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
@@ -94,7 +94,7 @@ def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
             tagged_frames_filename=tagged_frames_filename,
-            corpus_filename=corpus_filename,
+            corpus_source=corpus_source,
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         ) + wildcard_to_DTM_pipeline(
@@ -112,7 +112,7 @@ def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
 # pylint: disable=too-many-arguments
 def spaCy_co_occurrence_pipeline(
     corpus_config: CorpusConfig,
-    corpus_filename: str,
+    corpus_source: str,
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
     filter_opts: PropertyValueMaskingOpts = None,
@@ -124,7 +124,7 @@ def spaCy_co_occurrence_pipeline(
 ) -> pipelines.CorpusPipeline:
     p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
         corpus_config=corpus_config,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         tagged_frames_filename=tagged_frames_filename,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,

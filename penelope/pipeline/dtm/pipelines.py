@@ -9,7 +9,7 @@ def wildcard_to_DTM_pipeline(
     extract_opts: ExtractTaggedTokensOpts = None,
     filter_opts: PropertyValueMaskingOpts = None,
     vectorize_opts: VectorizeOpts = None,
-):
+) -> CorpusPipeline:
     try:
         p: CorpusPipeline = (
             wildcard()

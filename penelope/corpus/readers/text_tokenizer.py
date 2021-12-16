@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 
-FilenameOrCallableOrSequenceFilter = Union[Callable, Sequence[str]]
+FilenameFilterSpec = Union[Callable, Sequence[str]]
 
 # TODO: Consider removing inheritence and instead use a TextReader as source?
 # TODO: Move TextTransformOpts into this class?

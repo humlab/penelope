@@ -28,7 +28,7 @@ from .dtm import (
     store_metadata,
 )
 from .interfaces import ICorpus, ITokenizedCorpus
-from .readers.interfaces import ExtractTaggedTokensOpts, PhraseSubstitutions, TextReaderOpts
+from .readers.interfaces import ExtractTaggedTokensOpts, FilenameFilterSpec, PhraseSubstitutions, TextReaderOpts
 from .readers.text_transformer import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (

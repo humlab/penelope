@@ -1,7 +1,8 @@
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import cached_property
 from pprint import pformat as pf
-from typing import Any, Iterable, Mapping, Set, Tuple
+from typing import Any, Iterable, Mapping, Tuple
 
 from loguru import logger
 from penelope.co_occurrence import (
@@ -47,32 +48,26 @@ class ToCoOccurrenceDTM(ITask):
 
     context_opts: ContextOpts = None
 
-    __concept_ids: Set[int] = field(init=False, default=None)
-    __ignore_ids: Set[int] = field(init=False, default=None)
-
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TOKEN_IDS]
         self.out_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
 
-    @property
+    @cached_property
     def concept_ids(self):
-        if self.__concept_ids is None:
-            self.__concept_ids = {self.pipeline.payload.token2id[t] for t in self.context_opts.get_concepts()}
-        return self.__concept_ids
+        return {self.pipeline.payload.token2id[t] for t in self.context_opts.get_concepts()}
 
-    @property
+    @cached_property
     def ignore_ids(self):
 
-        if self.__ignore_ids is None:
-            self.__ignore_ids = set()
+        ignore_ids = set()
 
-            if self.context_opts.ignore_padding:
-                self.__ignore_ids.add(self.pipeline.payload.token2id[self.context_opts.pad])
+        if self.context_opts.ignore_padding:
+            ignore_ids.add(self.pipeline.payload.token2id[self.context_opts.pad])
 
-            if self.context_opts.ignore_concept:
-                self.__ignore_ids.update(self.concept_ids)
+        if self.context_opts.ignore_concept:
+            ignore_ids.update(self.concept_ids)
 
-        return self.__ignore_ids
+        return ignore_ids
 
     def setup(self) -> ITask:
         super().setup()
@@ -164,7 +159,8 @@ class ToCoOccurrenceDTM(ITask):
     def prepare_task_stream(self, token2id: Token2Id, context_opts: ContextOpts) -> Iterable[Tuple]:
 
         fg = token2id.data.get
-        name_to_id: dict = self.document_index.document_id.to_dict()
+        # name_to_id: dict = self.document_index.document_id.to_dict()
+        name_to_id: dict = {n: i for n, i in zip(self.document_index.index, self.document_index.document_id)}
         task_stream: Iterable[Tuple] = (
             (
                 name_to_id[payload.document_name],

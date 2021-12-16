@@ -32,7 +32,7 @@ def test_task_vocabulary_token2id():
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content=content,
-        options=checkpoint.CheckpointOpts(),
+        options=checkpoint.CheckpointOpts(**SPARV_TAGGED_COLUMNS),
     )
 
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)

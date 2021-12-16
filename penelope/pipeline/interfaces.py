@@ -4,7 +4,8 @@ import abc
 import os
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Union
+from functools import cached_property
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -114,7 +115,6 @@ class PipelinePayload:
 
     memory_store: Mapping[str, Any] = field(default_factory=dict)
     pos_schema_name: str = field(default="Universal")
-    _pos_schema: str = field(default=None, init=False)
 
     filenames: List[str] = None
     metadata: List[Dict[str, Any]] = None
@@ -176,15 +176,14 @@ class PipelinePayload:
     def document_lookup(self, document_name: str) -> Dict[str, Any]:
         return self.document_index.loc[strip_path_and_extension(document_name)]
 
-    @property
+    @cached_property
     def pos_schema(self) -> PoS_Tag_Scheme:
 
-        if self._pos_schema is None:
-            self._pos_schema = Known_PoS_Tag_Schemes.get(self.pos_schema_name, None)
-            if self._pos_schema is None:
-                raise PipelineError("expected PoS schema found None")
+        pos_schema: PoS_Tag_Scheme = Known_PoS_Tag_Schemes.get(self.pos_schema_name, None)
+        if pos_schema is None:
+            raise PipelineError("expected PoS schema found None")
 
-        return self._pos_schema
+        return pos_schema
 
     def update_document_properties(self, document_name: str, **properties):
         """Updates document index with given property values"""
@@ -204,6 +203,15 @@ class PipelinePayload:
     @property
     def tagged_columns_names(self) -> dict:
         return {k: v for k, v in self.memory_store.items() if k in ['text_column', 'pos_column', 'lemma_column']}
+
+    @property
+    def tagged_columns_names2(self) -> Tuple:
+        columns: dict = self.tagged_columns_names
+        return (
+            columns['text_column'],
+            columns['pos_column'],
+            columns['lemma_column'],
+        )
 
     def extend(self, _: DocumentPayload):
         """Add properties of `other` to self. Used when combining two pipelines"""

@@ -27,7 +27,7 @@ def run_workflow():
 
     compute_opts = ComputeOpts(
         corpus_type=pipeline.CorpusType.SparvCSV,
-        corpus_filename=CORPUS_FILENAME,
+        corpus_source=CORPUS_FILENAME,
         target_folder=jj(OUTPUT_FOLDER, 'APA'),
         corpus_tag='APA',
         transform_opts=corpora.TokensTransformOpts(

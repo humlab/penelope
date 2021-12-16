@@ -2,7 +2,8 @@
 
 from typing import Any, Dict, Iterable, List, Sequence, Tuple, Type, get_args
 
-from .. import interfaces
+from ... import interfaces
+from ..interface import ITopicModelEngine
 from . import predict, train
 from .options import SUPPORTED_ENGINES
 from .predict import SupportedModels
@@ -13,8 +14,8 @@ def is_supported(model: Any) -> bool:
     return type(model) in get_args(SupportedModels)
 
 
-class TopicModelEngine(interfaces.ITopicModelEngine):
-    def __init__(self, model: SupportedModels):
+class TopicModelEngine(ITopicModelEngine):
+    def __init__(self, model: SupportedModels):  # pylint: disable=useless-super-delegation
         super().__init__(model)
 
     @staticmethod
@@ -35,7 +36,9 @@ class TopicModelEngine(interfaces.ITopicModelEngine):
 
         raise ValueError(f"{type(self.model)} is not supported")
 
-    def topics_tokens(self, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[float, str]]:
+    def topics_tokens(
+        self, n_tokens: int = 200, id2term: dict = None, **_  # pylint: disable=unused-argument
+    ) -> List[Tuple[float, str]]:
 
         if not is_supported(self.model):
             raise ValueError(f"{type(self.model)} is not supported")
@@ -45,7 +48,9 @@ class TopicModelEngine(interfaces.ITopicModelEngine):
 
         return self.model.show_topics(num_topics=-1, num_words=n_tokens, formatted=False)
 
-    def topic_tokens(self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[str, float]]:
+    def topic_tokens(
+        self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_  # pylint: disable=unused-argument
+    ) -> List[Tuple[str, float]]:
         """Return `n_tokens` top tokens from topic `topic_id`"""
 
         if not is_supported(self.model):

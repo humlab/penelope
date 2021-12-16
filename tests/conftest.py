@@ -4,9 +4,12 @@ import os
 import shutil
 
 import pytest
+from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.pipeline.spacy import convert
+from penelope.topic_modelling import InferredTopicsData
 from penelope.vendor.spacy.utility import load_model
 from spacy.language import Language
+from tests.utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
 
 from .fixtures import MARY_TEST_CORPUS
 
@@ -40,8 +43,8 @@ def pytest_sessionstart(session):  # pylint: disable=unused-argument
     Called after the Session object has been created and
     before performing collection and entering the run test loop.
     """
-    shutil.rmtree('./tests/test_data/output', ignore_errors=True)
-    os.makedirs('./tests/test_data/output', exist_ok=True)
+    shutil.rmtree('./tests/output', ignore_errors=True)
+    os.makedirs('./tests/output', exist_ok=True)
 
 
 # def pytest_sessionfinish(session, exitstatus):
@@ -55,3 +58,17 @@ def pytest_sessionstart(session):  # pylint: disable=unused-argument
 #     """
 #     called before test process is exited.
 #     """
+
+
+@pytest.fixture
+def inferred_topics_data() -> InferredTopicsData:
+    filename_fields = ["year:_:1", "year_serial_id:_:2"]
+    _inferred_topics_data = InferredTopicsData.load(
+        folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, filename_fields=filename_fields
+    )
+    return _inferred_topics_data
+
+
+@pytest.fixture
+def state(inferred_topics_data: InferredTopicsData) -> TopicModelContainer:
+    return TopicModelContainer(_trained_model=None, _inferred_topics=inferred_topics_data)

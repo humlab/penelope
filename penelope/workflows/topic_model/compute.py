@@ -3,13 +3,13 @@ import os
 from penelope import topic_modelling as tm
 from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import TextTokenizer
-from penelope.topic_modelling.engine_gensim.options import SUPPORTED_ENGINES
+from penelope.topic_modelling.engines.engine_gensim.options import SUPPORTED_ENGINES
 
 
 def compute(
     name: str = None,
     corpus_folder: str = None,
-    corpus_filename: str = None,
+    corpus_source: str = None,
     engine: str = "gensim_lda-multicore",
     topic_modeling_opts: dict = None,
     filename_field: str = None,
@@ -20,14 +20,14 @@ def compute(
     if engine not in SUPPORTED_ENGINES:
         raise ValueError(f"Engine {engine} nopt supported or deprecated")
 
-    if corpus_filename is None and corpus_folder is None:
+    if corpus_source is None and corpus_folder is None:
         raise ValueError("corpus filename")
 
     if len(filename_field or []) == 0:
         raise ValueError("corpus filename fields")
 
     if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_filename))
+        corpus_folder, _ = os.path.split(os.path.abspath(corpus_source))
 
     target_folder = os.path.join(corpus_folder, name)
 
@@ -42,7 +42,7 @@ def compute(
     transform_opts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
 
     tokens_reader = TextTokenizer(
-        source=corpus_filename,
+        source=corpus_source,
         transform_opts=transform_opts,
         reader_opts=reader_opts,
         chunk_size=None,

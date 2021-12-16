@@ -30,12 +30,12 @@ SPACY_TAGGED_COLUMNS: dict = dict(
 def ComputeOptsSpacyCSV(
     *,
     corpus_tag: str = 'MARS',
-    corpus_filename: str = './tests/test_data/legal_instrument_five_docs_test.zip',
+    corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
 
     return ComputeOpts(
         corpus_tag=corpus_tag,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         target_folder="./tests/output",
         corpus_type=CorpusType.SpacyCSV,
         # pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
@@ -103,12 +103,12 @@ def ComputeOptsSpacyCSV(
 def ComputeOptsSparvCSV(
     *,
     corpus_tag: str = 'TELLUS',
-    corpus_filename: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
+    corpus_source: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
 
     return ComputeOpts(
         corpus_tag=corpus_tag,
-        corpus_filename=corpus_filename,
+        corpus_source=corpus_source,
         target_folder="./tests/output",
         corpus_type=CorpusType.SparvCSV,
         transform_opts=TokensTransformOpts(
@@ -162,7 +162,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
 
     args = ComputeOptsSpacyCSV(
         corpus_tag=tag,
-        corpus_filename=config.pipeline_payload.source,
+        corpus_source=config.pipeline_payload.source,
     )
     args.target_folder = target_folder
     args.context_opts = context_opts
@@ -174,7 +174,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
 
     bundle: Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
-        corpus_filename=None,
+        corpus_source=None,
         transform_opts=args.transform_opts,
         extract_opts=args.extract_opts,
         filter_opts=args.filter_opts,

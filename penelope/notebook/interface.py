@@ -19,7 +19,7 @@ class WorkflowException(Exception):
 class ComputeOpts:
 
     corpus_type: CorpusType
-    corpus_filename: Optional[str]
+    corpus_source: Optional[str]
     target_folder: Optional[str]
     corpus_tag: Optional[str]
     transform_opts: TokensTransformOpts
@@ -41,11 +41,11 @@ class ComputeOpts:
 
     def is_satisfied(self):
 
-        if not self.corpus_filename:
+        if not self.corpus_source:
             raise ValueError("please specify corpus file")
 
-        if not os.path.isfile(self.corpus_filename):
-            raise FileNotFoundError(self.corpus_filename)
+        if not os.path.isfile(self.corpus_source) and not os.path.isdir(self.corpus_source):
+            raise FileNotFoundError(self.corpus_source)
 
         if not self.corpus_tag:
             raise ValueError("please specify output tag")
@@ -76,7 +76,7 @@ class ComputeOpts:
     def props(self) -> dict:
         options = {
             'corpus_type': int(self.corpus_type),
-            'input_filename': self.corpus_filename,
+            'input_filename': self.corpus_source,
             'output_folder': self.target_folder,
             'output_tag': self.corpus_tag,
             'transform_opts': self.transform_opts.props,
@@ -196,7 +196,7 @@ class ComputeOpts:
         config_filename: str = "doit.yml"
         target_filename: str = to_filename(folder=self.target_folder, tag=self.corpus_tag)
         command: str = (
-            f"{script} {' '.join(options)} {config_filename} {self.corpus_filename} {target_filename} {self.corpus_tag}"
+            f"{script} {' '.join(options)} {config_filename} {self.corpus_source} {target_filename} {self.corpus_tag}"
         )
 
         return command

@@ -2,6 +2,7 @@
 from .interfaces import (
     GLOBAL_TF_THRESHOLD_MASK_TOKEN,
     ExtractTaggedTokensOpts,
+    FilenameFilterSpec,
     ICorpusReader,
     PhraseSubstitutions,
     TextSource,

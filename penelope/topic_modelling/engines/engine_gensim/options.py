@@ -23,8 +23,8 @@ SUPPORTED_ENGINES = {
         'algorithm': 'MALLET-LDA',
     },
     'gensim_lda-multicore': {
-        'key': 'gensim_lda',
-        'description': 'gensim LDA',
+        'key': 'gensim_lda-multicore',
+        'description': 'gensim LDA Multicore',
         'engine': models.LdaMulticore,
         'algorithm': 'LDA-MULTICORE',
     },
@@ -48,7 +48,7 @@ SUPPORTED_ENGINES = {
     # 'gensim_sttm-watm': {'key': 'gensim_sttm-watm', 'description': 'STTM  WATM', 'engine': STTMTopicModel, 'algorithm': 'STTM-ATM'},
 }
 
-EngineKey = Literal[list(SUPPORTED_ENGINES.keys())]
+EngineKey = str  # Literal[list(SUPPORTED_ENGINES.keys())]
 
 
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
@@ -73,6 +73,7 @@ def get_engine_options(
         }
 
     if algorithm == 'LDA':
+        raise ValueError("LdaModel is deprecated")
         return {
             'engine': models.LdaModel,
             'options': {
@@ -99,7 +100,7 @@ def get_engine_options(
             },
         }
 
-    if algorithm == 'LDA-MULTICORE':
+    if algorithm in ('LDA-MULTICORE', 'LDA_MULTICORE', 'MULTICORE'):
         return {
             'engine': models.LdaMulticore,
             'options': {
@@ -112,7 +113,7 @@ def get_engine_options(
                 ),  # Maximum number of iterations through the corpus when inferring the topic distribution of a corpus
                 'passes': int(engine_args.get('passes', 1)),  # Number of passes through the corpus during training.
                 'workers': engine_args.get(
-                    'workers', 2
+                    'workers', 3
                 ),  # set workers directly to the number of your real cores (not hyperthreads) minus one
                 'eta': 'auto',  # A-priori belief on word probability
                 'per_word_topics': True,
