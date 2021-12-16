@@ -619,7 +619,6 @@ def update_document_index_token_counts_by_corpus(
 
         if hasattr(corpus, 'sparse'):
             # Gensim Sparse2Corpus
-            # FIXME: Kolla att detta är rätt! Ska det vara axis=0???
             n_terms = corpus.sparse.sum(axis=0).A1
         elif hasattr(corpus, 'data'):
             # Vectorized corpus

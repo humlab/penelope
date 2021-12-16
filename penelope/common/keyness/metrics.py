@@ -60,8 +60,6 @@ LLR_significance = 2 * ((k * log(k)) - (ki * log(ki)) - (kj * log(kj)) + (kij * 
 
 # pylint: disable=unused-argument
 
-# FIXME: How to normalize?
-
 
 def _pmi(*, Cij: np.ndarray, Z: float, Zr: np.ndarray, ii: np.ndarray, jj: np.ndarray, **_):
     """Computes PMI (pointwise mutual information)"""

@@ -67,7 +67,6 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         super().__init__(tokens_reader, transform_opts=transform_opts)
 
 
-# FIXME: Implemented pos_paddings
 def sparv_xml_extract_and_store(
     source: str,
     target: str,
