@@ -11,6 +11,7 @@ CORPUS_FOLDER = './tests/test_data'
 
 
 @pytest.mark.long_running
+@pytest.mark.skip('debug test')
 def test_workflow_to_dtm():
 
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksprot-kb-parlaclarin.yml')

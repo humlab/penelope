@@ -86,7 +86,7 @@ def test_id_tagged_frame_process_payload(
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content=TEST_CSV_POS_DOCUMENT,
-        options=checkpoint.CheckpointOpts(),
+        options=checkpoint.CheckpointOpts(**memory_store),
     )
 
     payload = interfaces.DocumentPayload(content_type=interfaces.ContentType.TAGGED_FRAME, content=tagged_frame)
