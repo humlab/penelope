@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, Tuple, Union
 
 import more_itertools
 import numpy as np
@@ -30,6 +30,14 @@ def _no_tokenize(tokens):
 
 def _no_tokenize_lowercase(tokens):
     return [t.lower() for t in tokens]
+
+
+def isiterable(x: Any) -> bool:
+    try:
+        _ = iter(x)
+        return True
+    except TypeError:
+        return False
 
 
 class CorpusVectorizer:
@@ -94,9 +102,30 @@ class CorpusVectorizer:
                 vocabulary = corpus.token2id
 
         if already_tokenized:
-            head, corpus = more_itertools.spy(corpus)
-            if len(head) > 0 and isinstance(head[0][1], str):
-                raise ValueError("CorpusVectorizer expects List[str] when already_tokenized is True but found str")
+
+            heads, corpus = more_itertools.spy(corpus, n=1)
+
+            if heads:
+
+                head: Any = heads[0]
+
+                if not isinstance(head, tuple):
+                    raise ValueError(f"expected str ✕ text/tokens, found {type(head)}")
+
+                if len(head) != 2:
+                    raise ValueError(f"expected str ✕ text/tokens, found {' ✕ '.join(type(x) for x in head)}]")
+
+                if not isinstance(head[0], str):
+                    raise ValueError(f"expected str (document name) as first element in tuple {type(head[1])}")
+
+                if isinstance(head[1], str):
+                    raise ValueError(
+                        f"expected Iterable as second element when already_tokenized is set to true, found {type(head[1])}"
+                    )
+
+                if not isiterable(head[1]):
+                    raise ValueError(f"expected Iterable[str] when already_tokenized is True but found {type(head[1])}")
+
             if lowercase:
                 tokenizer = _no_tokenize_lowercase
                 lowercase = False

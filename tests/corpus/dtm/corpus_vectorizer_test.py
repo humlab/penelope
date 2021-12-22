@@ -1,10 +1,12 @@
-from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts
+import numpy as np
+import pandas as pd
+from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
 from tests.fixtures import MockedProcessedCorpus
 from tests.utils import TEST_CORPUS_FILENAME, create_tokens_reader
 
 
-def mock_corpus():
+def mock_corpus() -> MockedProcessedCorpus:
     mock_corpus_data = [
         ('document_2013_1.txt', "a a b c c c c d"),
         ('document_2013_2.txt', "a a b b c c c"),
@@ -12,7 +14,7 @@ def mock_corpus():
         ('document_2014_2.txt', "a a b b b b c d"),
         ('document_2014_3.txt', "a a c d"),
     ]
-    corpus = MockedProcessedCorpus(mock_corpus_data)
+    corpus: MockedProcessedCorpus = MockedProcessedCorpus(mock_corpus_data)
     return corpus
 
 
@@ -175,3 +177,28 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
     )
 
     assert expected_vocabulary_reversed == vocabulary
+
+
+def test_from_token_ids_stream():
+
+    tokenized_corpus: MockedProcessedCorpus = mock_corpus()
+    token2id: dict = tokenized_corpus.token2id
+    id2token: dict = {v: k for k, v in tokenized_corpus.token2id.items()}
+
+    """Arrange: simulate tagged ID frame payloads by turning corpus into a stream of document_id ✕ pd.Series"""
+    document_index: pd.DataFrame = tokenized_corpus.document_index
+    name2id = document_index.set_index('filename')['document_id'].to_dict().get
+    tokens2series = lambda tokens: pd.Series([token2id[t] for t in tokens], dtype=np.int64)
+    stream = [(name2id(filename), tokens2series(tokens)) for filename, tokens in tokenized_corpus]
+    assert [id2token[t] for t in stream[0][1]] == tokenized_corpus.data[0][1]
+
+    """Act: create a vectorized corpus out of stream"""
+
+    vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(stream, token2id, document_index)
+
+    assert vectorized_corpus is not None
+
+    """Check results"""
+    expected_dtm = np.matrix([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
+
+    assert (vectorized_corpus.data.todense() == expected_dtm).all()

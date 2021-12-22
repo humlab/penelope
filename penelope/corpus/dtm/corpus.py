@@ -7,12 +7,14 @@ import warnings
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
+import pandas as pd
 import scipy
 import sklearn.preprocessing
+from loguru import logger
 from penelope import utility
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
-from scipy.sparse import SparseEfficiencyWarning
+from scipy.sparse import SparseEfficiencyWarning, lil_matrix
 from sklearn.feature_extraction.text import TfidfTransformer
 
 from ..document_index import DocumentIndex
@@ -52,13 +54,24 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             bag_term_matrix = bag_term_matrix.tocsr()
 
         self._bag_term_matrix: scipy.sparse.csr_matrix = bag_term_matrix
-        self._token2id: Mapping[str, int] = token2id
+        self._token2id: Mapping[str, int] = (
+            token2id
+            if isinstance(token2id, (dict, type(None)))
+            else token2id.data
+            if hasattr(token2id, 'data')
+            else token2id
+        )
         self._id2token: Optional[Mapping[int, str]] = None
         self._document_index: DocumentIndex = self._ingest_document_index(document_index=document_index)
         self._overridden_term_frequency: Optional[np.ndarray] = overridden_term_frequency
         self._payload: dict = dict(**kwargs)
 
     def _ingest_document_index(self, document_index: DocumentIndex):
+
+        if not np.issubdtype(document_index.index.dtype, np.number):
+            logger.warning("VectorizedCorpus: supplied document index has not an integral index")
+            document_index = document_index.set_index('document_id', drop=False).rename_axis('')
+
         if not utility.is_strictly_increasing(document_index.index):
             raise ValueError(
                 "supplied `document index` must have an integer typed, strictly increasing index starting from 0"
@@ -396,6 +409,24 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             overridden_term_frequency=overridden_term_frequency,
             **kwargs,
         )
+
+    @staticmethod
+    def from_token_id_stream(
+        stream: Iterable[Tuple[int, Iterable[int]]], token2id: Mapping[str, int], document_index: pd.DataFrame
+    ) -> VectorizedCorpus:
+        """Convert a stream of (document_id, Iterable[token_id]) into a VectorizedCorpus"""
+
+        D, T = document_index.document_id.max() + 1, max(token2id.values()) + 1
+
+        M: lil_matrix = lil_matrix((D, T), dtype=int)
+
+        for document_id, document_token_ids in stream:
+            token_ids, counts = np.unique(document_token_ids, return_counts=True)
+            M[document_id, token_ids] = counts
+
+        corpus: VectorizedCorpus = VectorizedCorpus(M.tocsr(), token2id=token2id, document_index=document_index)
+
+        return corpus
 
     def nbytes(self, kind="bytes") -> float:
         k = {'bytes': 0, 'kb': 1, 'mb': 2, 'gb': 3}.get(kind.lower(), 0)

@@ -10,10 +10,12 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Sequence, Union
 
+import numpy as np
 import pandas as pd
 from loguru import logger
 from penelope import utility
 from penelope.corpus import (
+    CorpusVectorizer,
     ITokenizedCorpus,
     Token2Id,
     TokensTransformer,
@@ -30,7 +32,6 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
-from penelope.utility import PropertyValueMaskingOpts
 from tqdm.auto import tqdm
 
 from . import checkpoint as cp
@@ -99,7 +100,7 @@ class Tqdm(ITask):
 
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
-        self.out_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
 
     def setup(self) -> ITask:
         super().setup()
@@ -138,26 +139,10 @@ class Project(ITask):
 class ToContent(ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.ANY
-        self.out_content_type = Any
+        self.out_content_type = ContentType.ANY
 
     def process_payload(self, payload: DocumentPayload) -> Any:
         return payload.content
-
-
-@dataclass
-class ToDocumentContentTuple(ITask):
-    def __post_init__(self):
-        self.in_content_type = ContentType.ANY
-        self.out_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
-
-    def process_payload(self, payload: DocumentPayload) -> Any:
-        return payload.update(
-            self.out_content_type,
-            content=(
-                payload.filename,
-                payload.content,
-            ),
-        )
 
 
 @dataclass
@@ -490,7 +475,7 @@ class TaggedFrameToTokens(
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts | str = None
-    filter_opts: PropertyValueMaskingOpts = None
+    filter_opts: utility.PropertyValueMaskingOpts = None
 
     update_counts_on_exit: bool = True
     token_counts: dict = field(init=False, default_factory=dict)
@@ -708,12 +693,21 @@ class TokensToText(ITask):
 
 
 @dataclass
-class TextToDTM(ITask):
-    def __post_init__(self):
-        self.in_content_type = ContentType.DOCUMENT_CONTENT_TUPLE
-        self.out_content_type = ContentType.VECTORIZED_CORPUS
+class ToDTM(ITask):
 
     vectorize_opts: VectorizeOpts = None
+    target: Optional[str] = field(default=None)
+    tokenizer: Callable[[str], Iterable[str]] = field(default=None)
+
+    def __post_init__(self):
+        self.in_content_type = [
+            ContentType.TEXT,
+            ContentType.TOKENS,
+            ContentType.TOKEN_IDS,
+            ContentType.TAGGED_FRAME,
+            ContentType.TAGGED_ID_FRAME,
+        ]
+        self.out_content_type = ContentType.VECTORIZED_CORPUS
 
     def setup(self) -> ITask:
         super().setup()
@@ -721,14 +715,53 @@ class TextToDTM(ITask):
         return self
 
     def process_stream(self) -> VectorizedCorpus:
-        yield DocumentPayload(
-            content_type=ContentType.VECTORIZED_CORPUS,
-            content=convert.to_vectorized_corpus(
-                stream=self.create_instream(),
-                vectorize_opts=self.vectorize_opts,
+
+        content_type: ContentType = self.resolved_prior_out_content_type()
+        name2id: dict = self.document_index['document_id'].to_dict().get
+
+        self.vectorize_opts.already_tokenized = True
+
+        if content_type == ContentType.TOKENS:
+            fg: dict = self.pipeline.payload.token2id.data.get
+            tokens2series = lambda tokens: pd.Series([fg(t) for t in tokens], dtype=np.int32)
+            stream = [(name2id(p.document_name), tokens2series(p.content)) for p in self.create_instream()]
+            vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
+                stream, self.pipeline.payload.token2id, self.document_index
+            )
+
+        elif content_type == ContentType.TOKEN_IDS:
+            stream = [(name2id(p.document_name), pd.Series(p.content, dtype=np.int32)) for p in self.create_instream()]
+            vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
+                stream, self.pipeline.payload.token2id, self.document_index
+            )
+
+        elif content_type == ContentType.TAGGED_ID_FRAME:
+
+            if self.target is None:
+                raise ValueError("target column name must be specified!")
+
+            target: str = self.target
+            stream = ((name2id[p.document_name], p.content[target]) for p in self.create_instream())
+            vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
+                stream, self.pipeline.payload.token2id, self.document_index
+            )
+
+        elif content_type == ContentType.TEXT:
+            tokenizer = self.tokenizer or default_tokenizer
+            stream = ((p.filename, tokenizer(p.content)) for p in self.create_instream())
+            vectorized_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform_(
+                stream,
                 document_index=lambda: self.pipeline.payload.document_index,
-            ),
-        )
+                vectorize_opts=self.vectorize_opts,
+            )
+
+        elif content_type == ContentType.TAGGED_FRAME:
+            raise NotImplementedError("Obselete: use TaggedFrameToTokens")
+
+        else:
+            raise ValueError(f"not supported: {content_type}")
+
+        yield DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=vectorized_corpus)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None

@@ -1,30 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable, Iterable, List, Set, Union
+from typing import Iterable, Set
 
 import numpy as np
 import pandas as pd
 from loguru import logger
-from penelope.corpus import (
-    CorpusVectorizer,
-    DocumentIndex,
-    Token2Id,
-    TokensTransformOpts,
-    VectorizedCorpus,
-    VectorizeOpts,
-    default_tokenizer,
-)
+from penelope.corpus import Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
 
-from .interfaces import ContentType, DocumentPayload
 from .phrases import PHRASE_PAD, detect_phrases, merge_phrases
-
-
-def _payload_tokens(payload: DocumentPayload) -> List[str]:
-    if payload.previous_content_type == ContentType.TEXT:
-        return (payload.content[0], default_tokenizer(payload.content[1]))
-    return payload.content
 
 
 def is_encoded_tagged_frame(tagged_frame: pd.DataFrame) -> bool:
@@ -172,22 +157,6 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
         filtered_data.rename(columns={target_column: 'token', pos_column: 'pos'}, inplace=True)
 
     return filtered_data
-
-
-def to_vectorized_corpus(
-    stream: Iterable[DocumentPayload],
-    vectorize_opts: VectorizeOpts,
-    document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
-) -> VectorizedCorpus:
-    vectorizer = CorpusVectorizer()
-    vectorize_opts.already_tokenized = True
-    terms = (_payload_tokens(payload) for payload in stream)
-    corpus = vectorizer.fit_transform_(
-        terms,
-        document_index=document_index,
-        vectorize_opts=vectorize_opts,
-    )
-    return corpus
 
 
 def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments, too-many-statements
