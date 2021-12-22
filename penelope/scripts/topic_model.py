@@ -1,12 +1,13 @@
 import os
 import sys
+from os.path import dirname, isdir, isfile
 
 import click
 import penelope.corpus as penelope
 import yaml
-from loguru import logger
 from penelope import pipeline
 from penelope.corpus import TextTransformOpts, remove_hyphens
+from penelope.pipeline.topic_model.pipelines import from_tagged_frame_pipeline
 from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -16,7 +17,6 @@ from penelope.utility import PropertyValueMaskingOpts
 @click.argument('config-filename', required=True)
 @click.argument('target-name', required=False)
 @click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
-@click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
 @click.option('--corpus-source', default=None, help='Corpus filename/folder (overrides config)')
 @click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
 @click.option('--train-corpus-folder', default=None, type=click.STRING, help='Use train corpus in folder if exists')
@@ -50,7 +50,6 @@ def click_main(
     target_name: str = None,
     options_filename: str = None,
     corpus_source: str = None,
-    corpus_folder: str = None,
     train_corpus_folder: str = None,
     target_folder: str = None,
     fix_hyphenation: bool = True,
@@ -103,7 +102,6 @@ def _main(
     config_filename: str = None,
     target_name: str = None,
     corpus_source: str = None,
-    corpus_folder: str = None,
     train_corpus_folder: str = None,
     target_folder: str = None,
     fix_hyphenation: bool = True,
@@ -133,6 +131,12 @@ def _main(
     passthrough_column: str = None,
 ):
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
+    if config.pipeline_payload.source is None:
+        config.pipeline_payload.source = corpus_source
+        if isdir(corpus_source):
+            config.folders(corpus_source, method='replace')
+        elif isfile(corpus_source):
+            config.folders(dirname(corpus_source), method='replace')
 
     if passthrough_column is None:
 
@@ -197,11 +201,14 @@ def _main(
         if v is not None
     }
 
-    main(
+    if corpus_source is None and config.pipeline_payload.source is None:
+        click.echo("usage: corpus source must be specified")
+        sys.exit(1)
+
+    _: dict = from_tagged_frame_pipeline(
         config=config,
         target_name=target_name,
         corpus_source=corpus_source,
-        corpus_folder=corpus_folder,
         train_corpus_folder=train_corpus_folder,
         target_folder=target_folder,
         text_transform_opts=text_transform_opts,
@@ -214,99 +221,8 @@ def _main(
         store_compressed=store_compressed,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,
-    )
-
-
-def main(
-    *,
-    config: pipeline.CorpusConfig,
-    target_name: str,
-    corpus_source: str = None,
-    corpus_folder: str = None,
-    train_corpus_folder: str = None,
-    target_folder: str = None,
-    text_transform_opts: TextTransformOpts = None,
-    extract_opts: penelope.ExtractTaggedTokensOpts = None,
-    transform_opts: penelope.TokensTransformOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
-    engine: str = "gensim_lda-multicore",
-    engine_args: dict = None,
-    store_corpus: bool = False,
-    store_compressed: bool = True,
-    enable_checkpoint: bool = True,
-    force_checkpoint: bool = False,
-):
-    """ runner """
-
-    corpus_source: str = corpus_source or config.pipeline_payload.source
-
-    if corpus_source is None and corpus_folder is None:
-        click.echo("usage: either corpus-folder or corpus filename must be specified")
-        sys.exit(1)
-
-    if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_source))
-
-    _: dict = (
-        config.get_pipeline(
-            "tagged_frame_pipeline",
-            corpus_source=corpus_source,
-            enable_checkpoint=enable_checkpoint,
-            force_checkpoint=force_checkpoint,
-            text_transform_opts=text_transform_opts,
-        )
-        .tagged_frame_to_tokens(
-            extract_opts=extract_opts,
-            transform_opts=transform_opts,
-            filter_opts=filter_opts,
-        )
-        .to_topic_model(
-            corpus_source=None,
-            train_corpus_folder=train_corpus_folder,
-            target_folder=target_folder,
-            target_name=target_name,
-            engine=engine,
-            engine_args=engine_args,
-            store_corpus=store_corpus,
-            store_compressed=store_compressed,
-        )
     ).value()
 
-
-# def debug_main():
-
-#     arguments = {
-#         'config_filename': './riksprot-parlaclarin.yml',
-#         'target_name': 'riksprot-parlaclarin-protokoll-50-lemma',
-#         'corpus_source': None,
-#         'corpus_folder': None,
-#         'target_folder': './data',
-#         'fix_hyphenation': True,
-#         'fix_accents': True,
-#         'lemmatize': True,
-#         'pos_includes': '',
-#         'pos_excludes': '',
-#         'to_lower': True,
-#         'remove_stopwords': None,
-#         'min_word_length': 1,
-#         'max_word_length': None,
-#         'keep_symbols': True,
-#         'keep_numerals': True,
-#         'only_any_alphanumeric': True,
-#         'only_alphabetic': False,
-#         'n_topics': 50,
-#         'engine': 'gensim_lda-multicore',
-#         'passes': None,
-#         'random_seed': 42,
-#         'alpha': 'asymmetric',
-#         'workers': 6,
-#         'max_iter': 3000,
-#         'store_corpus': True,
-#         'store_compressed': True,
-#         'enable_checkpoint': True,
-#         'force_checkpoint': False,
-#     }
-#     _main(**arguments)
 
 RUN_MODE = "production"
 
@@ -316,43 +232,38 @@ if __name__ == '__main__':
 
         click_main()
 
-    # elif RUN_MODE == "debug":
-
+    # else:
     #     logger.warning("RUNNING IN DEBUG MODE")
-    #     debug_main()
 
-    else:
+    #     from click.testing import CliRunner
 
-        logger.warning("RUNNING IN DEBUG MODE")
-
-        from click.testing import CliRunner
-
-        runner = CliRunner()
-        result = runner.invoke(
-            click_main,
-            [
-                '--n-topics 200',
-                # '--lemmatize',
-                # '--to-lower',
-                # '--min-word-length',
-                1,
-                '--only-any-alphanumeric',
-                '--engine',
-                'gensim_lda-multicore',
-                '--random-seed',
-                42,
-                '--alpha',
-                'asymmetric',
-                '--max-iter',
-                3000,
-                '--store-corpus',
-                '--workers',
-                6,
-                '--target-folder',
-                '/home/roger/source/penelope/data',
-                '/home/roger/source/penelope/riksprot-parlaclarin.yml',
-                'riksprot-parlaclarin-protokoll-50-lemma',
-                1,
-            ],
-        )
-        print(result.output)
+    #     runner = CliRunner()
+    #     result = runner.invoke(
+    #         click_main,
+    #         [
+    #             '--n-topics',
+    #             '200',
+    #             # '--lemmatize',
+    #             # '--to-lower',
+    #             # '--min-word-length',
+    #             1,
+    #             '--only-any-alphanumeric',
+    #             '--engine',
+    #             'gensim_lda-multicore',
+    #             '--random-seed',
+    #             42,
+    #             '--alpha',
+    #             'asymmetric',
+    #             '--max-iter',
+    #             3000,
+    #             '--store-corpus',
+    #             '--workers',
+    #             6,
+    #             '--target-folder',
+    #             '/home/roger/source/penelope/data',
+    #             '/home/roger/source/penelope/riksprot-parlaclarin.yml',
+    #             'riksprot-parlaclarin-protokoll-200-lemma',
+    #             1,
+    #         ],
+    #     )
+    #     print(result.output)
