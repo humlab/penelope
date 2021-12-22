@@ -149,7 +149,7 @@ class TrainingCorpus:
 
         if isinstance(self.source, VectorizedCorpus):
 
-            self.corpus = Sparse2Corpus(self.source, documents_columns=False)
+            self.corpus = Sparse2Corpus(self.source.data, documents_columns=False)
             self.id2token = self.source.id2token
 
         elif sp.issparse(self.source):
