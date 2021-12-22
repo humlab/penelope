@@ -23,8 +23,8 @@ pipelines:
       to_tagged_fram: true
       file_pattern: '**/prot-*.feather'
 pipeline_payload:
-  source: /data/riksdagen_corpus_data/tagged-speech-corpus.lemma.no-stopwords.lowercase.feather
-  document_index_source: /data/riksdagen_corpus_data/tagged-speech-corpus.lemma.no-stopwords.lowercase.feather/document_index.feather
+  source: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather
+  document_index_source: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/document_index.feather
   document_index_sep: "\t"
   filenames: null
   memory_store:
