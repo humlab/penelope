@@ -3,14 +3,14 @@ from __future__ import annotations
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Type
 
-from . import engine_gensim, engine_textacy
+from . import engine_gensim  # , engine_textacy
 
 if TYPE_CHECKING:
     from . import interface
 
 
 ENGINES = {
-    'sklearn': engine_textacy,
+    # 'sklearn': engine_textacy,
     'gensim_': engine_gensim,
 }
 
