@@ -236,14 +236,11 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: pipeline.CorpusConfig):
         .checkpoint(tagged_frames_filename, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
-        .to_document_content_tuple()
         .to_list()
     )
     assert len(payloads) == 5
 
-    assert all(isinstance(payload.content, tuple) for payload in payloads)
-    assert all(isinstance(payload.content[0], str) for payload in payloads)
-    assert all(isinstance(payload.content[1], str) for payload in payloads)
+    assert all(isinstance(payload.content, str) for payload in payloads)
 
 
 def test_pipeline_find_task(config: pipeline.CorpusConfig):
@@ -272,7 +269,6 @@ def test_pipeline_to_dtm_succeeds(config: pipeline.CorpusConfig):
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
             .tokens_transform(transform_opts=corpora.TokensTransformOpts())
             .tokens_to_text()
-            .to_document_content_tuple()
             .tqdm()
             .to_dtm()
         )

@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Union
 
 from penelope.corpus import (
     DocumentIndex,
@@ -43,7 +43,6 @@ class ContentType(IntEnum):
     # BOW = 10
     ANY = 11
     PASSTHROUGH = 12
-    DOCUMENT_CONTENT_TUPLE = 13
     CO_OCCURRENCE_DATAFRAME = 14
     STREAM = 15
     TAGGED_ID_FRAME = 16
@@ -227,7 +226,7 @@ class PipelinePayload:
         return self
 
     @staticmethod
-    def update_path(new_path: str, old_path: str, method: str) -> str:
+    def update_path(new_path: str, old_path: str, method: Literal['join', 'replace']) -> str:
         """Updates folder path or old_path, either by replacing existing path or by joining"""
         if method not in {"join", "replace"}:
             raise ValueError("only strategies `merge` or `replace` are allowed")
@@ -235,7 +234,7 @@ class PipelinePayload:
             return os.path.join(new_path, old_path)
         return replace_path(old_path, new_path)
 
-    def folders(self, path: str, method: str = "replace") -> "PipelinePayload":
+    def folders(self, path: str, method: Literal['join', 'replace'] = "replace") -> "PipelinePayload":
         """Replaces (any) existing source path specification for corpus/index to `path`"""
 
         if isinstance(self.document_index_source, str):
@@ -366,6 +365,15 @@ class ITask(abc.ABC):
 
     def filename_content_stream(self):
         return DocumentContentStream(self.outstream)
+
+    def resolved_prior_out_content_type(self):
+        """Returns prior content type (if any). Resolves PASSTHROUGH"""
+        prior = self.prior
+        while prior is not None:
+            if prior.out_content_type != ContentType.PASSTHROUGH:
+                return prior.out_content_type
+            prior = prior.prior
+        return self.prior.out_content_type
 
 
 class ReiterablePayloadStream:

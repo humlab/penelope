@@ -63,10 +63,10 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
         return self.add(
-            tagged_frame.LoadGroupedIdTaggedFrame(
+            tagged_frame.LoadIdTaggedFrame(
                 corpus_source=folder,
                 file_pattern=file_pattern,
-                to_tagged_frame=to_tagged_frame,
+                decode_text=to_tagged_frame,
             )
         )
 
@@ -125,7 +125,7 @@ class PipelineShortcutMixIn:
 
     def to_dtm(self: pipelines.CorpusPipeline, vectorize_opts: VectorizeOpts = None) -> pipelines.CorpusPipeline:
         """ (filename, TEXT => DTM) """
-        return self.add(tasks.TextToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
+        return self.add(tasks.ToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())
@@ -135,9 +135,6 @@ class PipelineShortcutMixIn:
 
     def passthrough(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.Passthrough())
-
-    def to_document_content_tuple(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
-        return self.add(tasks.ToDocumentContentTuple())
 
     def project(self: pipelines.CorpusPipeline, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
         return self.add(tasks.Project(project=project))

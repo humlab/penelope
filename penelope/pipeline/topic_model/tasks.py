@@ -142,7 +142,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
 
-        self.input_type_guard(self.prior.out_content_type)
+        self.input_type_guard(self.resolved_prior_out_content_type())
 
         self.ensure_target_path()
 
@@ -201,7 +201,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
         Note that terms not found in token2id are ignored. This will happen
         when a new corpus is predicted that have terms not found in the training corpus.
         """
-        if self.prior.out_content_type == ContentType.VECTORIZED_CORPUS:
+        if self.resolved_prior_out_content_type() == ContentType.VECTORIZED_CORPUS:
             payload: DocumentPayload = next(self.prior.outstream())
             return payload.content
 

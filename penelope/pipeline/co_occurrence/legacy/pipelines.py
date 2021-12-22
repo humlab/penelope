@@ -24,7 +24,6 @@
 #                 transform_opts=transform_opts,
 #             )
 #             .vocabulary(lemmatize=extract_opts.lemmatize, progress=True)
-#             .to_document_content_tuple()
 #             .tqdm()
 #             .to_corpus_co_occurrence(
 #                 context_opts=context_opts,

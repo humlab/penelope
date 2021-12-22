@@ -22,7 +22,6 @@ def wildcard_to_DTM_pipeline(
             )
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
             # .tokens_transform(transform_opts=transform_opts)
-            .to_document_content_tuple()
             .tqdm()
             .to_dtm(vectorize_opts=vectorize_opts)
         )

@@ -7,7 +7,7 @@ import os
 import pathlib
 import uuid
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Type, Union
 
 import yaml
 from penelope.corpus import TextReaderOpts, TextTransformOpts
@@ -170,7 +170,7 @@ class CorpusConfig:
                 pass
         raise FileNotFoundError(filename)
 
-    def folders(self, path: str, method: str = "join") -> "CorpusConfig":
+    def folders(self, path: str, method: Literal['join', 'replace'] = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""
         self.pipeline_payload.folders(path, method=method)
         return self
