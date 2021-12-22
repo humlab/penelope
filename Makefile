@@ -227,7 +227,20 @@ profile-parlaclarin-1961-pyinstrument: make-profile-reports
 	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-pyinstrument.html ./tests/profiling/profile-parlaclarin-1961-pyinstrument.py
 
 profile-parlaclarin-1961-cprofile: make-profile-reports
-	@PYTHONPATH=. python -m cProfile ./tests/profiling/profile-parlaclarin-1961-pyinstrument.py &> ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-pyinstrument.txt
+	@PYTHONPATH=. python -m cProfile ./tests/profiling/profile-parlaclarin-1961-cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-cprofile.txt
+
+profile-topic_model-tagged-id-frame-pyinstrument: make-profile-reports
+	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_topic_model-tagged-id-frame-pyinstrument.html ./tests/profiling/profile-topic_model-tagged-id-frame.py
+
+profile-topic_model-tagged-id-frame-cprofile: make-profile-reports
+	@PYTHONPATH=. python -m cProfile tests/profiling/profile-topic_model-tagged-id-frame.py &> ./profile-reports/$(RUN_TIMESTAMP)_topic_model-tagged-id-frame-cprofiler.txt
+
+
+bugger-pyinstrument: make-profile-reports
+	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_bugger-pyinstrument.html ./tests/profiling/bugger.py
+
+bugger-cprofile: make-profile-reports
+	@PYTHONPATH=. python -m cProfile tests/profiling/bugger.py &> ./profile-reports/$(RUN_TIMESTAMP)_bugger-cprofiler.txt
 
 .PHONY: make-profile-reports
 make-profile-reports:
