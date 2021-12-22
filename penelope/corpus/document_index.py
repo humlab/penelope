@@ -471,8 +471,9 @@ def load_document_index(
         return None
 
     if isinstance(filename, str):
-        if (filename := probe_extension(filename, extensions=probe_extensions)) is None:
+        if (probe_filename := probe_extension(filename, extensions=probe_extensions)) is None:
             raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
+        filename = probe_filename
 
     document_index: DocumentIndex = (
         filename
