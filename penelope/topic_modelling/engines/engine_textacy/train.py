@@ -1,12 +1,12 @@
 from typing import Any, Dict
 
-import gensim
 import textacy
 from penelope.utility import deprecated
 from textacy.representations.vectorizers import Vectorizer
 
 from ...interfaces import InferredModel, TrainingCorpus
 
+from gensim.matutils import Sparse2Corpus
 
 @deprecated
 def train(
@@ -39,6 +39,7 @@ def train(
         engine_ptions       Used engine options (algorithm specific)
         extra_options       Any other compute option passed as a kwarg
     """
+    # FIXME: Move to train_corpus.to_dtm()
     if train_corpus.doc_term_matrix is None:
 
         if train_corpus.terms is None:
@@ -54,7 +55,7 @@ def train(
     model.fit(train_corpus.doc_term_matrix)
 
     # We use gensim's corpus as common result format
-    train_corpus.corpus = gensim.matutils.Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)
+    train_corpus.corpus = Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)
 
     return InferredModel(
         train_corpus=train_corpus,
