@@ -8,9 +8,9 @@ from typing import Iterable
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
-from penelope.corpus import CorpusVectorizer, VectorizedCorpus
+from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
 from penelope.topic_modelling.engines.engine_gensim.options import EngineKey
-from penelope.utility.file_utility import write_json
+from penelope.utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn
@@ -115,7 +115,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
     def __post_init__(self):
 
-        self.in_content_type = ContentType.TOKENS
+        self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
         self.out_content_type = ContentType.TOPIC_MODEL
 
     def setup(self) -> ITask:
@@ -124,19 +124,32 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         return self
 
     def instream_to_corpus(self) -> tm.TrainingCorpus:
-        """Creates train corpus from instream OR load existing from disk."""
-        if tm.TrainingCorpus.exists(self.train_corpus_folder):
-            """Shortcut pipeline and load training corpus from disk"""
-            corpus = tm.TrainingCorpus.load(self.train_corpus_folder)
-        else:
+
+        content_type: ContentType = self.resolved_prior_out_content_type()
+
+        if content_type == ContentType.VECTORIZED_CORPUS:
+            payload: DocumentPayload = next(self.prior.outstream())
+            vectorized_corpus: VectorizedCorpus = payload.content
+            vectorize_opts: VectorizeOpts = payload.recall('vectorize_opts')
             corpus = tm.TrainingCorpus(
-                terms=self.prior.content_stream(),
-                document_index=self.document_index,
+                doc_term_matrix=vectorized_corpus.data,
+                document_index=vectorized_corpus.document_index,
+                id2token=vectorized_corpus.id2token,
                 corpus_options={},
+                vectorizer_args={} if vectorize_opts is None else vectorize_opts.props,
             )
-            # if self.train_corpus_folder is not None:
-            #     corpus.to_sparse_corpus()
-            #     corpus.store(self.train_corpus_folder)
+
+        elif content_type == ContentType.TOKENS:
+            """Creates train corpus from instream OR load existing from disk."""
+            if tm.TrainingCorpus.exists(self.train_corpus_folder):
+                """Shortcut pipeline and load training corpus from disk"""
+                corpus = tm.TrainingCorpus.load(self.train_corpus_folder)
+            else:
+                corpus = tm.TrainingCorpus(
+                    terms=self.prior.content_stream(),
+                    document_index=self.document_index,
+                    corpus_options={},
+                )
 
         return corpus
 
