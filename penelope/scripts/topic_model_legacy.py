@@ -141,8 +141,6 @@ def main(
 
     train_corpus: tm.TrainingCorpus = tm.TrainingCorpus(
         terms=corpus.terms,
-        doc_term_matrix=None,
-        id2token=None,
         document_index=corpus.document_index,
         corpus_options=dict(
             reader_opts=reader_opts.props,
