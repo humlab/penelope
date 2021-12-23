@@ -37,7 +37,10 @@ DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smo
 
 DocumentTopicsWeightsIter = Iterable[Tuple[int, Iterable[Tuple[int, float]]]]
 
-class DeprecatedError(Exception): ...
+
+class DeprecatedError(Exception):
+    ...
+
 
 @dataclass
 class TrainingCorpus:

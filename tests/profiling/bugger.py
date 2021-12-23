@@ -160,9 +160,8 @@ def debug_main(
             force_checkpoint=force_checkpoint,
             text_transform_opts=text_transform_opts,
         )
-        #.filter_tagged_frame()
-        .to_dtm(vectorize_opts=None)
-        .to_topic_model(
+        # .filter_tagged_frame()
+        .to_dtm(vectorize_opts=None).to_topic_model(
             corpus_source=None,
             train_corpus_folder=train_corpus_folder,
             target_folder=target_folder,

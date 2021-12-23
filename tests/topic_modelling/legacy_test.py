@@ -4,9 +4,9 @@ import shutil
 import uuid
 
 import pandas as pd
-from penelope.corpus.dtm.corpus import VectorizedCorpus
 import penelope.topic_modelling as topic_modelling
 import pytest
+from penelope.corpus.dtm.corpus import VectorizedCorpus
 from penelope.scripts.topic_model_legacy import main as run_model
 from penelope.topic_modelling import InferredModel, InferredTopicsData
 from penelope.topic_modelling.engines import get_engine_by_model_type

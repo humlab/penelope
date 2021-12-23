@@ -761,7 +761,9 @@ class ToDTM(ITask):
         else:
             raise ValueError(f"not supported: {content_type}")
 
-        payload: DocumentPayload = DocumentPayload(content_type=ContentType.VECTORIZED_CORPUS, content=vectorized_corpus)
+        payload: DocumentPayload = DocumentPayload(
+            content_type=ContentType.VECTORIZED_CORPUS, content=vectorized_corpus
+        )
 
         payload.remember(vectorize_opts=self.vectorize_opts)
 

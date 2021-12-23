@@ -1,12 +1,12 @@
 from typing import Any, Dict
 
 import textacy
+from gensim.matutils import Sparse2Corpus
 from penelope.utility import deprecated
 from textacy.representations.vectorizers import Vectorizer
 
 from ...interfaces import InferredModel, TrainingCorpus
 
-from gensim.matutils import Sparse2Corpus
 
 @deprecated
 def train(
