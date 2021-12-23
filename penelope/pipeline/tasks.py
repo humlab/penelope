@@ -19,6 +19,7 @@ from penelope.corpus import (
     ITokenizedCorpus,
     Token2Id,
     TokensTransformer,
+    TokensTransformOpts,
     VectorizedCorpus,
     VectorizeOpts,
     default_tokenizer,
@@ -466,18 +467,52 @@ class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 
 
 @dataclass
-class TaggedFrameToTokens(
-    CountTaggedTokensMixIn,
-    VocabularyIngestMixIn,
-    TransformTokensMixIn,
-    ITask,
-):
+class FilterTaggedFrame(ITask):
+    """Filters tagged frame text from payload.content based on annotations etc. """
+
+    extract_opts: ExtractTaggedTokensOpts = None
+    filter_opts: utility.PropertyValueMaskingOpts = None
+
+    token2id: Token2Id = None
+    pos_schema: utility.PoS_Tag_Scheme = None
+    transform_opts: TokensTransformOpts = None
+    normalize_column_names: bool = False
+
+    token_counts: dict = field(init=False, default_factory=dict)
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TAGGED_FRAME
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        tagged_frame: pd.DataFrame = convert.filter_tagged_frame(
+            tagged_frame=payload.content,
+            extract_opts=self.extract_opts,
+            token2id=self.token2id,
+            pos_schema=self.pos_schema,
+            filter_opts=self.filter_opts,
+            transform_opts=self.transform_opts,
+            normalize_column_names=self.normalize_column_names,
+        )
+
+        self.token_counts[payload.document_name] = len(tagged_frame)
+
+        return payload.update(self.out_content_type, tagged_frame)
+
+    def exit(self) -> ITask:
+        super().exit()
+        self.update_document_index_key_values('n_tokens', self.token_counts)
+
+
+@dataclass
+class TaggedFrameToTokens(CountTaggedTokensMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts | str = None
     filter_opts: utility.PropertyValueMaskingOpts = None
+    normalize_column_names: bool = True
 
-    update_counts_on_exit: bool = True
     token_counts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
@@ -489,17 +524,12 @@ class TaggedFrameToTokens(
         self.pipeline.put("extract_opts", self.extract_opts)
         self.pipeline.put("filter_opts", self.filter_opts)
         self.pipeline.put("transform_opts", self.transform_opts)
-
         return self
 
     def enter(self) -> ITask:  # pylint: disable=useless-super-delegation
-
         super().enter()
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
-        if self.pipeline.get('pos_column', None) is None:
-            raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
 
         tokens: Iterable[str] = convert.tagged_frame_to_tokens(
             doc=payload.content,
@@ -515,17 +545,13 @@ class TaggedFrameToTokens(
         if self.ingest_tokens:
             self.ingest(tokens)
 
-        if self.update_counts_on_exit:
-            self.token_counts[payload.document_name] = len(tokens)
-        else:
-            self.update_document_properties(payload, n_tokens=len(tokens))  # , n_raw_tokens=len(payload.content))
+        self.token_counts[payload.document_name] = len(tokens)
 
         return payload.update(self.out_content_type, tokens)
 
-    def exit(self) -> ITask:  # pylint: disable=useless-super-delegation
+    def exit(self) -> ITask:
         super().exit()
-        if self.update_counts_on_exit:
-            self.update_document_index_key_values('n_tokens', self.token_counts)
+        self.update_document_index_key_values('n_tokens', self.token_counts)
 
 
 @dataclass
@@ -915,36 +941,6 @@ class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.update_document_properties(payload, n_tokens=len(payload.content))
         return payload
-
-
-# @dataclass
-# class FilterTaggedFrame(CountTaggedTokensMixIn, ITask):
-#     """Filters tagged frame text from payload.content based on annotations etc. """
-
-#     extract_opts: ExtractTaggedTokensOpts = None
-#     filter_opts: PropertyValueMaskingOpts = None
-
-#     def __post_init__(self):
-#         self.in_content_type = ContentType.TAGGED_FRAME
-#         self.out_content_type = ContentType.TOKENS
-
-#     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
-#         if self.pipeline.get('pos_column', None) is None:
-#             raise PipelineError("expected `pos_column` in `payload.memory_store` found None")
-
-#         tokens: Iterable[str] = convert.tagged_frame_to_tokens(
-#             doc=payload.content,
-#             extract_opts=self.extract_opts,
-#             filter_opts=self.filter_opts,
-#             **(self.pipeline.payload.tagged_columns_names or {}),
-#         )
-
-#         tokens = list(tokens)
-
-#         self.update_document_properties(payload, n_tokens=len(tokens))
-
-#         return payload.update(self.out_content_type, tokens)
 
 
 class Split(ITask):

@@ -28,29 +28,37 @@ class PoSTagSchemaMissingError(ValueError):
 class TaggedFrameColumnNameError(ValueError):
     ...
 
+# pylint: disable=too-many-arguments, too-many-statements
 
-def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-statements
+def filter_tagged_frame(
     tagged_frame: pd.DataFrame,
     *,
     extract_opts: ExtractTaggedTokensOpts,
     token2id: Token2Id = None,
     pos_schema: PoS_Tag_Scheme = None,
     filter_opts: PropertyValueMaskingOpts = None,
+    normalize_column_names: bool = True,
     transform_opts: TokensTransformOpts = None,
-) -> Iterable[str]:
-    """Filter tagged frame `doc` based on `extract_opts` and `filter_opts`.
-    Return tagged frame with columns `token` and `pos`.
-    Columns `token` is lemmatized word or source word depending on `extract_opts.lemmatize`.
+) -> pd.DataFrame:
+    """Filters tagged frame (text or numeric). Returns tagged frame
 
     Args:
-        extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-        token2id (Token2Id, optional): Vocabulary.
-        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
+        tagged_frame ([pd.DataFrame]): Document frame to be filtered, can be text or numeric
+        extract_opts (ExtractTaggedTokensOpts): PoS and lemma extract/filter opts
+        token2id (Token2Id, optional): Vocabulary. Defaults to None.
+        pos_schema (PoS_Tag_Scheme, optional): PoS schema. Defaults to None.
+        filter_opts (PropertyValueMaskingOpts, optional): Additional key/value filters. Defaults to None.
+        transform_opts (TokensTransformOpts, optional): Filters and transforms. Defaults to None.
+        normalize_column_names (bool, optional): If text, rename columns to `token` and `pos`. Defaults to True.
+
+    Raises:
+        Token2IdMissingError: Token2Id is mandatory if frame is numeric.
+        PoSTagSchemaMissingError: PoS-schema is mandatory if frame is numeric.
+        TaggedFrameColumnNameError: Missing target column (corrupt data)
 
     Returns:
-        Iterable[str]: Sequence of extracted tokens
+        pd.DataFrame: Filtered and transformed document frame.
     """
-
     if len(tagged_frame) == 0:
         return []
 
@@ -112,9 +120,9 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
     if filter_opts is not None:
         mask &= filter_opts.mask(tagged_frame)
 
-    pos_includes = extract_opts.get_pos_includes()
-    pos_excludes = extract_opts.get_pos_excludes()
-    pos_paddings = extract_opts.get_pos_paddings()
+    pos_includes: Set[str] = extract_opts.get_pos_includes()
+    pos_excludes: Set[str] = extract_opts.get_pos_excludes()
+    pos_paddings: Set[str] = extract_opts.get_pos_paddings()
 
     if is_numeric_frame:
         pg = pos_schema.pos_to_id.get
@@ -152,7 +160,7 @@ def filter_tagged_frame(  # pylint: disable=too-many-arguments, too-many-stateme
                 passthroughs=passthroughs,
             )
 
-    if not is_numeric_frame:
+    if not is_numeric_frame and normalize_column_names:
 
         filtered_data.rename(columns={target_column: 'token', pos_column: 'pos'}, inplace=True)
 

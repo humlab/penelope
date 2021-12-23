@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
-from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.utility import PropertyValueMaskingOpts, deprecated
+from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, TokensTransformOpts, VectorizeOpts
+from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, deprecated
 
 from . import tagged_frame, tasks
 
@@ -162,6 +162,26 @@ class PipelineShortcutMixIn:
             )
         )
 
+    def filter_tagged_frame(
+        self: pipelines.CorpusPipeline,
+        extract_opts: ExtractTaggedTokensOpts,
+        filter_opts: PropertyValueMaskingOpts,
+        token2id: Token2Id = None,
+        pos_schema: PoS_Tag_Scheme = None,
+        transform_opts: TokensTransformOpts = None,
+        normalize_column_names: bool = False,
+    ) -> pipelines.CorpusPipeline:
+        return self.add(
+            tasks.FilterTaggedFrame(
+                extract_opts=extract_opts,
+                filter_opts=filter_opts,
+                token2id=token2id,
+                pos_schema=pos_schema,
+                transform_opts=transform_opts,
+                normalize_column_names=normalize_column_names,
+            )
+        )
+
     def tagged_frame_to_tokens(
         self: pipelines.CorpusPipeline,
         *,
@@ -204,15 +224,3 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline, exit_test: Callable[[Any], bool], *exit_test_args: Any
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.AssertOnExit(exit_test=exit_test, *exit_test_args))
-
-    # def filter_tagged_frame(
-    #     self: pipelines.CorpusPipeline,
-    #     extract_opts: ExtractTaggedTokensOpts,
-    #     filter_opts: PropertyValueMaskingOpts,
-    # ) -> pipelines.CorpusPipeline:
-    #     return self.add(
-    #         tasks.FilterTaggedFrame(
-    #             extract_opts=extract_opts,
-    #             filter_opts=filter_opts,
-    #         )
-    #     )
