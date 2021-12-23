@@ -208,7 +208,7 @@ class InferredModel:
         """Store model on disk in `folder`."""
         self.store_topic_model(folder, store_compressed=store_compressed)
         if store_corpus:
-            self.train_corpus.store(folder, store_compressed=store_compressed)
+            self.train_corpus.store(folder)
         self.store_model_options(folder)
 
     @staticmethod
