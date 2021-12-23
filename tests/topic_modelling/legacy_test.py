@@ -4,6 +4,7 @@ import shutil
 import uuid
 
 import pandas as pd
+from penelope.corpus.dtm.corpus import VectorizedCorpus
 import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.scripts.topic_model_legacy import main as run_model
@@ -79,10 +80,9 @@ def test_store_compressed_inferred_model(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
+    inferred_model.store(target_folder, store_corpus=True)
 
-    assert os.path.isfile(os.path.join(target_folder, "topic_model.pickle.pbz2"))
-    assert os.path.isfile(os.path.join(target_folder, "training_corpus.pickle.pbz2"))
+    assert VectorizedCorpus.dump_exists(folder=target_folder, tag="train")
     assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
 
     shutil.rmtree(target_folder)
@@ -95,11 +95,10 @@ def test_store_uncompressed_inferred_model(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    inferred_model.store(target_folder, store_corpus=True, store_compressed=False)
+    inferred_model.store(target_folder, store_corpus=True)
 
     # Assert
-    assert os.path.isfile(os.path.join(target_folder, "topic_model.pickle"))
-    assert os.path.isfile(os.path.join(target_folder, "training_corpus.pickle"))
+    assert VectorizedCorpus.dump_exists(folder=target_folder, tag="train")
     assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
 
     shutil.rmtree(target_folder)

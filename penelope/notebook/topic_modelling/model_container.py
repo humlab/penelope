@@ -33,7 +33,7 @@ class TopicModelContainer:
         """ Fix missing document attribute n_terms """
         if 'n_terms' not in _inferred_topics.document_index.columns:
             assert _trained_model.train_corpus is not None
-            _inferred_topics.document_index['n_terms'] = _trained_model.train_corpus.corpus.sparse.sum(axis=0).A1
+            _inferred_topics.document_index['n_terms'] = _trained_model.train_corpus.n_terms
 
         self._trained_model = _trained_model
         self._inferred_topics = _inferred_topics

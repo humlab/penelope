@@ -84,9 +84,9 @@ class DocumentPayload:
             self.property_bag.update(properties)
         return self
 
-    def recall(self, property_name) -> Any:
+    def recall(self, property_name, default: Any = None) -> Any:
         """Save document properties to property bag"""
-        return self.property_bag.get(property_name)
+        return self.property_bag.get(property_name, default)
 
     @property
     def document_name(self) -> str:

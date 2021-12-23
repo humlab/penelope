@@ -37,6 +37,7 @@ DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smo
 
 DocumentTopicsWeightsIter = Iterable[Tuple[int, Iterable[Tuple[int, float]]]]
 
+class DeprecatedError(Exception): ...
 
 @dataclass
 class TrainingCorpus:
@@ -58,12 +59,14 @@ class TrainingCorpus:
         Options to use when vectorizing `terms`, ony used if DTM is None,
     """
 
+    # FIXME: Refactor code. Merge terms, doc_term_matrix and corpus into a single property
     terms: Iterable[Iterable[str]] = None
     doc_term_matrix: sp.csr_matrix = None
     document_index: DocumentIndex = None
     id2token: Optional[Mapping[int, str]] = None
 
     vectorizer_args: Mapping[str, Any] = None
+    # FIXME: Make Sparse2Corpus a property?
     corpus: Sparse2Corpus = None
     corpus_options: dict = None
 
@@ -74,65 +77,40 @@ class TrainingCorpus:
     def source(self) -> Any:
         return self.doc_term_matrix or self.terms
 
-    def store(self, folder: str, store_compressed: bool = True, pickled: bool = True):
+    def store(self, folder: str):
         """Stores the corpus used in training. If not pickled, then stored as separate files"""
 
         os.makedirs(folder, exist_ok=True)
+        utility.write_json(jj(folder, VECTORIZER_ARGS_FILENAME), data=self.vectorizer_args or {})
+        utility.write_json(jj(folder, CORPUS_OPTIONS_FILENAME), data=self.corpus_options or {})
 
-        if pickled:
+        corpus: VectorizedCorpus = VectorizedCorpus(
+            self.corpus.sparse,
+            token2id=self.id2token,
+            document_index=self.document_index,
+        )
 
-            filename = jj(folder, f"training_corpus.pickle{'.pbz2' if store_compressed else ''}")
+        corpus.dump(tag='train', folder=folder)
 
-            utility.pickle_to_file(
-                filename,
-                TrainingCorpus(
-                    doc_term_matrix=None,
-                    terms=None,
-                    corpus=self.corpus,
-                    document_index=self.document_index,
-                    id2token=self.id2token,
-                    vectorizer_args=self.vectorizer_args,
-                    corpus_options=self.corpus_options,
-                ),
-            )
-
-            utility.write_json(jj(folder, CORPUS_OPTIONS_FILENAME), data=self.corpus_options or {})
-
-        else:
-
-            utility.write_json(jj(folder, VECTORIZER_ARGS_FILENAME), data=self.vectorizer_args or {})
-            utility.write_json(jj(folder, CORPUS_OPTIONS_FILENAME), data=self.corpus_options or {})
-
-            corpus: VectorizedCorpus = VectorizedCorpus(
-                self.corpus.sparse,
-                token2id=self.id2token,
-                document_index=self.document_index,
-            )
-
-            corpus.dump(tag='train', folder=folder)
+    @property
+    def n_terms(self):
+        return self.corpus.sparse.sum(axis=0).A1
 
     @staticmethod
     def exists(folder: str) -> bool:
         if folder is None:
             return False
-        for filename in ["training_corpus.pickle.pbz2", "training_corpus.pickle"]:
-            if isfile(jj(folder, filename)):
-                return True
         return VectorizedCorpus.dump_exists(tag='train', folder=folder)
 
     @staticmethod
     def load(folder: str) -> TrainingCorpus:
         """Loads an training corpus from pickled file."""
-        for filename in ["training_corpus.pickle.pbz2", "training_corpus.pickle"]:
-            if isfile(jj(folder, filename)):
-                return utility.unpickle_from_file(jj(folder, filename))
 
         """Load from vectorized corpus if exists"""
         if VectorizedCorpus.dump_exists(tag='train', folder=folder):
 
             corpus: VectorizedCorpus = VectorizedCorpus.load(tag='train', folder=folder)
             return TrainingCorpus(
-                corpus=None,  # Sparse2Corpus(corpus.data),
                 doc_term_matrix=corpus.data,
                 document_index=corpus.document_index,
                 id2token=corpus.id2token,
@@ -143,8 +121,12 @@ class TrainingCorpus:
 
     def to_sparse_corpus(self) -> TrainingCorpus:
         """Create a Gensim Sparse2Corpus from `source`. Store in `corpus`."""
-        if isinstance(self.source, Sparse2Corpus):
 
+        if isinstance(self.corpus, Sparse2Corpus):
+            return self
+
+        if isinstance(self.source, Sparse2Corpus):
+            self.corpus = self.source
             return self
 
         if isinstance(self.source, VectorizedCorpus):
@@ -166,7 +148,6 @@ class TrainingCorpus:
         return self
 
     def to_tf_idf(self) -> TrainingCorpus:
-        # assert algorithm_name != 'MALLETLDA', 'MALLET training model cannot (currently) use TFIDF weighed corpus'
         if self.corpus is None:
             raise ValueError("no corpus")
         tfidf_model = TfidfModel(self.corpus)
@@ -187,12 +168,12 @@ class InferredModel:
 
     def __init__(self, topic_model: Any, train_corpus: TrainingCorpus, **options: Dict[str, Any]):
         self._topic_model = topic_model
-        self._train_corpus = train_corpus
+        self._train_corpus: TrainingCorpus = train_corpus
         self.method = options.get('method')
         self.options = options
 
     @property
-    def topic_model(self):
+    def topic_model(self) -> Any:
         if callable(self._topic_model):
             tbar = tqdm(desc="Lazy loading topic model...", position=0, leave=True)
             self._topic_model = self._topic_model()
@@ -200,7 +181,7 @@ class InferredModel:
         return self._topic_model
 
     @property
-    def train_corpus(self):
+    def train_corpus(self) -> TrainingCorpus:
         if callable(self._train_corpus):
             tbar = tqdm(desc="Lazy loading corpus...", position=0, leave=True)
             self._train_corpus = self._train_corpus()
