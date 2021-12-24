@@ -13,6 +13,8 @@ IntOrStr = Union[int, str]
 TaggedFrame = pd.core.api.DataFrame
 Token = Union[int, str]
 
+DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
+
 WindowsStream = Iterator[Tuple[str, int, Iterable[Token]]]
 CoOccurrenceDataFrame = pd.DataFrame
 VocabularyMapping = Optional[Mapping[Tuple[int, int], int]]
