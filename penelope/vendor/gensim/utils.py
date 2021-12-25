@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import collections
-from typing import Iterable, Tuple
+from typing import Iterable
 
 from gensim.corpora.dictionary import Dictionary
-from gensim.matutils import Sparse2Corpus, corpus2csc
 from loguru import logger
 
 
@@ -33,18 +32,3 @@ def create_dictionary(id2word: dict) -> Dictionary:
     dictionary.token2id = dict((v, k) for v, k in id2word.items())
 
     return dictionary
-
-
-def terms_to_sparse_corpus(source: Iterable[Iterable[str]]) -> Tuple[Sparse2Corpus, Dictionary]:
-    """Convert stream of (stream of) tokens to a Gensim sparse corpus"""
-
-    id2word: Dictionary = Dictionary(source)
-    bow_corpus: Iterable[Iterable[int | float]] = [id2word.doc2bow(tokens) for tokens in source]
-    csc_matrix = corpus2csc(
-        bow_corpus,
-        num_terms=len(id2word),
-        num_docs=len(bow_corpus),
-        num_nnz=sum(map(len, bow_corpus)),
-    )
-    corpus: Sparse2Corpus = Sparse2Corpus(csc_matrix, documents_columns=True)
-    return corpus, id2word
