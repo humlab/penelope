@@ -3,8 +3,14 @@ import os
 
 import numpy as np
 import pandas as pd
-from penelope.utility import list_filenames, pandas_read_csv_zip, pandas_to_csv_zip, try_split_column
-from penelope.utility.pandas_utils import create_mask
+import scipy.sparse as sp
+from penelope.utility import (
+    create_mask,
+    list_filenames,
+    pandas_read_csv_zip,
+    pandas_to_csv_zip,
+    try_split_column,
+)
 from tests.utils import OUTPUT_FOLDER
 
 
