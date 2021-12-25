@@ -160,8 +160,8 @@ class CorpusVectorizer:
 
         dtm_corpus: VectorizedCorpus = VectorizedCorpus(
             bag_term_matrix,
-            token2id,
-            document_index_,
+            token2id=token2id,
+            document_index=document_index_,
         )
 
         return dtm_corpus

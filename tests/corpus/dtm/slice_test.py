@@ -50,7 +50,7 @@ def test_normalize_with_default_arguments_returns_matrix_normalized_by_l1_norm_f
     bag_term_matrix = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     df = pd.DataFrame({'year': [2013, 2014]})
-    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, df)
+    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=df)
     n_corpus = v_corpus.normalize()
     E = np.array([[4, 3, 7, 1], [6, 7, 4, 2]]) / (np.array([[15, 19]]).T)
     assert (E == n_corpus.bag_term_matrix).all()
@@ -63,7 +63,7 @@ def test_normalize_with_keep_magnitude():
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     df = pd.DataFrame({'year': [2013, 2014]})
 
-    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, df)
+    v_corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=df)
     n_corpus = v_corpus.normalize(keep_magnitude=True)
 
     factor = 15.0 / 19.0
