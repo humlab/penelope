@@ -18,7 +18,6 @@ from .document_index import (
 )
 from .dtm import (
     CorpusVectorizer,
-    DocumentTermsStream,
     IVectorizedCorpus,
     VectorizedCorpus,
     VectorizeOpts,
