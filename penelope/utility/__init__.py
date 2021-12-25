@@ -106,6 +106,7 @@ from .utils import (
     create_class,
     create_dataclass_instance_from_kwargs,
     create_instance,
+    csr2bow,
     dataframe_to_tuples,
     dict_of_key_values_inverted_to_dict_of_value_key,
     dict_of_lists_to_list_of_dicts,

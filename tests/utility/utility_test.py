@@ -2,6 +2,7 @@ import numpy as np
 import penelope.utility as utility
 import pytest
 import scipy
+import scipy.sparse as sp
 
 
 def test_utils():
@@ -105,3 +106,20 @@ def test_multiple_replace():
     }
 
     assert utility.multiple_replace(tokens_str, replace_map) == "a b c d_e_f g h i_j"
+
+
+def test_csr2bow():
+
+    A = np.array(
+        [
+            [0, 0, 0, 0],
+            [5, 8, 0, 0],
+            [0, 0, 3, 0],
+            [0, 6, 0, 0],
+        ]
+    )
+    M = sp.csr_matrix(A)
+
+    BOW = list(utility.csr2bow(M))
+
+    assert BOW == [[], [(0, 5), (1, 8)], [(2, 3)], [(1, 6)]]
