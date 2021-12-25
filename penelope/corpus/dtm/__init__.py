@@ -8,7 +8,6 @@ from .convert import (
     from_stream_of_text,
     from_stream_of_tokens,
     from_tokenized_corpus,
-    id2token2token2id,
 )
 from .corpus import VectorizedCorpus, find_matching_words_in_vocabulary
 from .group import GroupByMixIn

@@ -21,6 +21,15 @@ class ClosedVocabularyError(Exception):
     ...
 
 
+def id2token2token2id(id2token: Mapping[int, str]) -> dict:
+    if id2token is None:
+        return None
+    if hasattr(id2token, 'token2id'):
+        return id2token.token2id
+    token2id: dict = {v: k for k, v in id2token.items()}
+    return token2id
+
+
 class Token2Id(MutableMapping):
     """A token-to-id mapping (dictionary)"""
 

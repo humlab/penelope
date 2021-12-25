@@ -106,35 +106,35 @@ def debug_main(
             text_transform_opts.fix_hyphenation = False
             text_transform_opts.extra_transforms.append(remove_hyphens)
 
-        transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
-            to_lower=to_lower,
-            to_upper=False,
-            min_len=min_word_length,
-            max_len=max_word_length,
-            remove_accents=False,
-            remove_stopwords=(remove_stopwords is not None),
-            stopwords=None,
-            extra_stopwords=None,
-            language=remove_stopwords,
-            keep_numerals=keep_numerals,
-            keep_symbols=keep_symbols,
-            only_alphabetic=only_alphabetic,
-            only_any_alphanumeric=only_any_alphanumeric,
-        )
+        # transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
+        #     to_lower=to_lower,
+        #     to_upper=False,
+        #     min_len=min_word_length,
+        #     max_len=max_word_length,
+        #     remove_accents=False,
+        #     remove_stopwords=(remove_stopwords is not None),
+        #     stopwords=None,
+        #     extra_stopwords=None,
+        #     language=remove_stopwords,
+        #     keep_numerals=keep_numerals,
+        #     keep_symbols=keep_symbols,
+        #     only_alphabetic=only_alphabetic,
+        #     only_any_alphanumeric=only_any_alphanumeric,
+        # )
 
-        extract_opts = penelope.ExtractTaggedTokensOpts(
-            lemmatize=lemmatize,
-            pos_includes=pos_includes,
-            pos_excludes=pos_excludes,
-            **config.pipeline_payload.tagged_columns_names,
-        )
+        # extract_opts = penelope.ExtractTaggedTokensOpts(
+        #     lemmatize=lemmatize,
+        #     pos_includes=pos_includes,
+        #     pos_excludes=pos_excludes,
+        #     **config.pipeline_payload.tagged_columns_names,
+        # )
 
     else:
-        extract_opts: str = passthrough_column
+        # extract_opts: str = passthrough_column
         text_transform_opts: TextTransformOpts = None
-        transform_opts: penelope.TokensTransformOpts = None
+        # transform_opts: penelope.TokensTransformOpts = None
 
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
+    # filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
 
     engine_args = {
         k: v

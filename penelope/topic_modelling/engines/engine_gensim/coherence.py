@@ -9,7 +9,7 @@ from . import options
 
 def compute_score(id2word, model, corpus) -> float:
     try:
-        dictionary = gensim_utility.create_dictionary(id2word)
+        dictionary = gensim_utility.from_id2token_dict_to_dictionary(id2word)
         coherence_model = CoherenceModel(model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass')
         return coherence_model.get_coherence()
     except Exception as ex:
@@ -31,7 +31,7 @@ def compute_scores(
 
     metrics = []
 
-    dictionary = gensim_utility.create_dictionary(id2word)
+    dictionary = gensim_utility.from_id2token_dict_to_dictionary(id2word)
 
     for num_topics in range(start, stop, step):
 

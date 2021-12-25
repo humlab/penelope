@@ -8,6 +8,7 @@ from gensim.matutils import Sparse2Corpus
 from more_itertools import peekable
 from textacy.representations.vectorizers import Vectorizer
 
+from ..token2id import id2token2token2id
 from ..tokenized_corpus import TokenizedCorpus
 from .corpus import VectorizedCorpus
 from .vectorizer import CorpusVectorizer, DocumentTermsStream
@@ -27,15 +28,6 @@ Returns:
 """
 
 
-def id2token2token2id(id2token: Mapping[int, str]) -> dict:
-    if id2token is None:
-        return None
-    if hasattr(id2token, 'token2id'):
-        return id2token.token2id
-    token2id: dict = {v: k for k, v in id2token.items()}
-    return token2id
-
-
 def from_sparse2corpus(
     source: Sparse2Corpus, *, token2id: Mapping[str, int], document_index: pd.DataFrame
 ) -> VectorizedCorpus:
@@ -45,6 +37,11 @@ def from_sparse2corpus(
         document_index=document_index,
     )
     return corpus
+
+
+def to_sparse2corpus(corpus: VectorizedCorpus):
+
+    return Sparse2Corpus(corpus.data, documents_columns=False)
 
 
 def from_spmatrix(
@@ -134,7 +131,9 @@ def from_stream_of_text(
 
     return corpus
 
+
 # pylint: disable=too-many-return-statements
+
 
 class TranslateCorpus:
     @staticmethod

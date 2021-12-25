@@ -6,7 +6,8 @@ import gensim.corpora as corpora
 import numpy as np
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus, dtm
+from penelope import corpus as pc
+from penelope.corpus import dtm
 
 from .engines import get_engine_by_model_type
 from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData
@@ -23,16 +24,16 @@ def to_dataframe(document_index: pd.DataFrame, data: DocumentTopicsWeightsIter) 
     document_topics = pd.DataFrame(data, columns=['document_id', 'topic_id', 'weight'])
     document_topics['document_id'] = document_topics.document_id.astype(np.uint32)
     document_topics['topic_id'] = document_topics.topic_id.astype(np.uint16)
-    document_topics = DocumentIndexHelper(document_index).overload(document_topics, 'year')
+    document_topics = pc.DocumentIndexHelper(document_index).overload(document_topics, 'year')
     return document_topics
 
 
 def predict_topics(
     topic_model: Any,
     *,
-    corpus: Sparse2Corpus | VectorizedCorpus,
-    id2token: corpora.Dictionary | dict | Token2Id,
-    document_index: DocumentIndex = None,
+    corpus: Sparse2Corpus | pc.VectorizedCorpus,
+    id2token: corpora.Dictionary | dict | pc.Token2Id,
+    document_index: pc.DocumentIndex = None,
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
     **kwargs,
@@ -51,8 +52,8 @@ def predict_topics(
         topic_token_overview (pd.DataFrame, optional): existing overview. Defaults to None.
     """
 
-    vectorized_corpus: VectorizedCorpus = dtm.TranslateCorpus.translate(
-        corpus, token2id=dtm.id2token2token2id(id2token), document_index=document_index, **kwargs
+    vectorized_corpus: pc.VectorizedCorpus = dtm.TranslateCorpus.translate(
+        corpus, token2id=pc.id2token2token2id(id2token), document_index=document_index, **kwargs
     )
 
     engine: ITopicModelEngine = get_engine_by_model_type(topic_model)
@@ -72,11 +73,11 @@ def predict_topics(
     )
 
     document_index: pd.DataFrame = (
-        DocumentIndexHelper(document_index).update_counts_by_corpus(vectorized_corpus).document_index
+        pc.DocumentIndexHelper(document_index).update_counts_by_corpus(vectorized_corpus).document_index
     )
 
     topics_data: InferredTopicsData = InferredTopicsData(
-        dictionary=Token2Id.id2token_to_dataframe(id2token),
+        dictionary=pc.Token2Id.id2token_to_dataframe(id2token),
         topic_token_weights=topic_token_weights,
         topic_token_overview=topic_token_overview,
         document_index=document_index,

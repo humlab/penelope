@@ -41,12 +41,7 @@ def train(
     """
     algorithm_name: str = method.split('_')[1].upper()
 
-    corpus, dictionary = convert.TranslateCorpus().translate(
-        train_corpus.corpus,
-        id2token=train_corpus.id2token,
-        document_index=train_corpus.document_index,
-        **kwargs,
-    )
+    corpus, dictionary = convert.TranslateCorpus().translate(train_corpus.corpus, id2token=train_corpus.id2token)
 
     if kwargs.get('tfidf_weiging', False):
         logger.warning("TF-IDF weighing of effective corpus has been disabled")

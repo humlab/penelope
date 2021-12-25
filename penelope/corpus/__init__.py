@@ -38,7 +38,7 @@ from .sparv_corpus import (
 )
 from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
-from .token2id import ClosedVocabularyError, Token2Id
+from .token2id import ClosedVocabularyError, Token2Id, id2token2token2id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
 from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer, TokensTransformOpts
 from .transforms import (
@@ -56,4 +56,4 @@ from .transforms import (
     remove_symbols,
     upper_transform,
 )
-from .utils import bow_to_text, generate_token2id
+from .utils import bow2text, csr2bow, generate_token2id, term_frequency
