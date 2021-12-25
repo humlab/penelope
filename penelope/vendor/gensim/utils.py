@@ -22,9 +22,8 @@ GensimBowCorpus = Iterable[Iterable[Tuple[int, float]]]
 
 def from_stream_of_tokens_to_sparse2corpus(source: Any, vocabulary: Dictionary | dict) -> Sparse2Corpus:
 
-    if isinstance(vocabulary, dict):
-        vocabulary: Dictionary = Dictionary()
-        vocabulary.token2id = vocabulary
+    if not hasattr(vocabulary, 'doc2bow'):
+        vocabulary: Dictionary = from_token2id_to_dictionary(vocabulary)
 
     bow_corpus: GensimBowCorpus = [vocabulary.doc2bow(tokens) for _, tokens in source]
     csc_matrix: sp.csc_matrix = corpus2csc(
