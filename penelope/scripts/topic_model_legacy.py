@@ -140,8 +140,9 @@ def main(
     corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)
 
     train_corpus: tm.TrainingCorpus = tm.TrainingCorpus(
-        terms=corpus.terms,
+        corpus=corpus,
         document_index=corpus.document_index,
+        token2id=corpus.token2id,
         corpus_options=dict(
             reader_opts=reader_opts.props,
             transform_opts=transformer_opts.props,
@@ -160,7 +161,7 @@ def main(
 
     inferred_topics: tm.InferredTopicsData = tm.predict_topics(
         inferred_model.topic_model,
-        corpus=train_corpus.corpus,
+        corpus=train_corpus.effective_corpus,
         id2token=train_corpus.id2token,
         document_index=train_corpus.document_index,
         n_tokens=n_tokens,

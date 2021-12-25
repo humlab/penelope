@@ -1,9 +1,9 @@
 from typing import Any, Dict
 
 import textacy
-from gensim.matutils import Sparse2Corpus
+from penelope.corpus import VectorizedCorpus
+from penelope.corpus.dtm import convert
 from penelope.utility import deprecated
-from textacy.representations.vectorizers import Vectorizer
 
 from ...interfaces import InferredModel, TrainingCorpus
 
@@ -39,23 +39,19 @@ def train(
         engine_ptions       Used engine options (algorithm specific)
         extra_options       Any other compute option passed as a kwarg
     """
-    # FIXME: Move to train_corpus.to_dtm()
-    if train_corpus.doc_term_matrix is None:
 
-        if train_corpus.terms is None:
-            raise ValueError("terms and doc_term_matrix cannot both be null")
-
-        vectorizer: Vectorizer = Vectorizer(**train_corpus.vectorizer_args)
-
-        train_corpus.doc_term_matrix = vectorizer.fit_transform(train_corpus.terms)
-        train_corpus.id2token = vectorizer.id_to_term
+    corpus: VectorizedCorpus = convert.TranslateCorpus.translate(
+        train_corpus.corpus,
+        id2token=train_corpus.token2id.data,
+        document_index=train_corpus.document_index,
+        **kwargs,
+    )
 
     model = textacy.tm.TopicModel(method.split('_')[1], **engine_args)
 
-    model.fit(train_corpus.doc_term_matrix)
+    model.fit(corpus.data)
 
-    # We use gensim's corpus as common result format
-    train_corpus.corpus = Sparse2Corpus(train_corpus.doc_term_matrix, documents_columns=False)
+    train_corpus.effective_corpus = corpus
 
     return InferredModel(
         train_corpus=train_corpus,

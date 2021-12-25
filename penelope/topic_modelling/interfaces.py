@@ -9,15 +9,13 @@ from dataclasses import dataclass
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union
 
 import pandas as pd
 import scipy.sparse as sp
 from gensim.matutils import Sparse2Corpus
-from gensim.models.tfidfmodel import TfidfModel
 from penelope import utility
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus, load_document_index
-from penelope.vendor.gensim import terms_to_sparse_corpus
+from penelope.corpus import DocumentIndexHelper, Token2Id, TokenizedCorpus, VectorizedCorpus, load_document_index
 from tqdm.auto import tqdm
 
 from .utility import (
@@ -42,6 +40,16 @@ class DeprecatedError(Exception):
     ...
 
 
+AnyCorpus = Union[
+    Iterable[Iterable[str]],
+    Iterable[Tuple[str, Iterable[str]]],
+    sp.spmatrix,
+    VectorizedCorpus,
+    Sparse2Corpus,
+    TokenizedCorpus,
+]
+
+
 @dataclass
 class TrainingCorpus:
     """A container for the corpus data used during learning/inference
@@ -62,42 +70,62 @@ class TrainingCorpus:
         Options to use when vectorizing `terms`, ony used if DTM is None,
     """
 
-    # FIXME: Refactor code. Merge terms, doc_term_matrix and corpus into a single property
-    terms: Iterable[Iterable[str]] = None
-    doc_term_matrix: sp.csr_matrix = None
-    document_index: DocumentIndex = None
-    id2token: Optional[Mapping[int, str]] = None
+    corpus: AnyCorpus = None
+    document_index: pd.DataFrame = None
+    token2id: Token2Id = None
 
     vectorizer_args: Mapping[str, Any] = None
-    # FIXME: Make Sparse2Corpus a property?
-    corpus: Sparse2Corpus = None
     corpus_options: dict = None
+    effective_corpus: Any = None
 
     def __post_init__(self):
+
+        if isinstance(self.corpus, (VectorizedCorpus, TokenizedCorpus)):
+
+            if not isinstance(self.token2id, Token2Id):
+                self.token2id = Token2Id(data=self.corpus.token2id)
+
+            self.document_index = self.corpus.document_index
+
+        if isinstance(self.token2id, dict):
+            self.token2id = Token2Id(data=self.token2id)
+
         self.vectorizer_args = {**DEFAULT_VECTORIZE_PARAMS, **(self.vectorizer_args or {})}
 
     @property
-    def source(self) -> Any:
-        return self.doc_term_matrix or self.terms
+    def id2token(self) -> dict[int, str]:
+        if self.token2id is None:
+            return None
+        if hasattr(self.token2id, 'id2token'):
+            return self.token2id.id2token
+        return {v: k for k, v in self.token2id.items()}
 
     def store(self, folder: str):
-        """Stores the corpus used in training. If not pickled, then stored as separate files"""
+        """Stores the corpus used in training."""
+        if isinstance(self.effective_corpus, VectorizedCorpus):
+            corpus: VectorizedCorpus = self.effective_corpus
+        elif isinstance(self.effective_corpus, Sparse2Corpus):
+            corpus: VectorizedCorpus = VectorizedCorpus(
+                bag_term_matrix=self.effective_corpus.sparse.tocsr().T,
+                token2id=self.token2id,
+                document_index=self.document_index,
+            )
+        else:
+            raise NotImplementedError(f"type: {type(self.effective_corpus)} save not implemented")
+
+        assert len(self.document_index) == corpus.data.shape[0], 'bug check: corpus transpose needed?'
 
         os.makedirs(folder, exist_ok=True)
         utility.write_json(jj(folder, VECTORIZER_ARGS_FILENAME), data=self.vectorizer_args or {})
         utility.write_json(jj(folder, CORPUS_OPTIONS_FILENAME), data=self.corpus_options or {})
 
-        corpus: VectorizedCorpus = VectorizedCorpus(
-            self.corpus.sparse,
-            token2id=self.id2token,
-            document_index=self.document_index,
-        )
-
         corpus.dump(tag='train', folder=folder)
 
     @property
     def n_terms(self):
-        return self.corpus.sparse.sum(axis=0).A1
+        if isinstance(self.corpus, VectorizedCorpus):
+            return self.corpus.n_terms
+        return ValueError(f"expected VectorizedCorpus, found {type(self.corpus)}")
 
     @staticmethod
     def exists(folder: str) -> bool:
@@ -111,51 +139,16 @@ class TrainingCorpus:
 
         """Load from vectorized corpus if exists"""
         if VectorizedCorpus.dump_exists(tag='train', folder=folder):
-
             corpus: VectorizedCorpus = VectorizedCorpus.load(tag='train', folder=folder)
             return TrainingCorpus(
-                doc_term_matrix=corpus.data,
+                corpus=corpus,
                 document_index=corpus.document_index,
-                id2token=corpus.id2token,
+                token2id=Token2Id(data=corpus.token2id),
                 corpus_options=utility.read_json(jj(folder, CORPUS_OPTIONS_FILENAME), default={}),
                 vectorizer_args=utility.read_json(jj(folder, VECTORIZER_ARGS_FILENAME), default={}),
             )
+
         return None
-
-    def to_sparse_corpus(self) -> TrainingCorpus:
-        """Create a Gensim Sparse2Corpus from `source`. Store in `corpus`."""
-
-        if isinstance(self.corpus, Sparse2Corpus):
-            return self
-
-        if isinstance(self.source, Sparse2Corpus):
-            self.corpus = self.source
-            return self
-
-        if isinstance(self.source, VectorizedCorpus):
-
-            self.corpus = Sparse2Corpus(self.source.data, documents_columns=False)
-            self.id2token = self.source.id2token
-
-        elif sp.issparse(self.source):
-
-            if self.id2token is None:
-                raise ValueError("expected valid token2id, found None")
-
-            self.corpus = Sparse2Corpus(self.source, documents_columns=False)
-
-        else:
-
-            self.corpus, self.id2token = terms_to_sparse_corpus(self.source)
-
-        return self
-
-    def to_tf_idf(self) -> TrainingCorpus:
-        if self.corpus is None:
-            raise ValueError("no corpus")
-        tfidf_model = TfidfModel(self.corpus)
-        self.corpus = [tfidf_model[d] for d in self.corpus]
-        return self
 
     def update_word_counts(self) -> TrainingCorpus:
         """Updates document word counts based on current corpus"""

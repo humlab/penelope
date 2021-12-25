@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+from loguru import logger
+
 from ...interfaces import InferredModel, TrainingCorpus
-from . import coherence, options
+from . import coherence, convert, options
 
 
 def train(
@@ -17,20 +19,20 @@ def train(
     Parameters
     ----------
     train_corpus : TrainingCorpus
-        A container for the training corpus data (terms or DTM, id2word, document_index)
+        A container for the training data (terms or DTM, id2word, document_index)
     method : str
         The method to use (see `options` module for mappings)
     engine_args : Dict[str, Any]
         Generic topic modelling options that are translated to algorithm-specific options (see `options` module for translation)
     kwargs : Dict[str,Any], optional
-        Additional options:
+        Additional vectorize options:
             `tfidf_weiging` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
 
     Returns
     -------
     InferredModel
         train_corpus        Training corpus data (updated)
-        model               The textaCy topic model
+        model               The engine specific topic model
         options:
             perplexity_score    Computed perplexity scores
             coherence_score     Computed coherence scores
@@ -39,14 +41,26 @@ def train(
     """
     algorithm_name: str = method.split('_')[1].upper()
 
-    train_corpus.to_sparse_corpus()
+    corpus, dictionary = convert.TranslateCorpus().translate(
+        train_corpus.corpus,
+        id2token=train_corpus.id2token,
+        document_index=train_corpus.document_index,
+        **kwargs,
+    )
 
     if kwargs.get('tfidf_weiging', False):
-        train_corpus.to_tf_idf()
+        logger.warning("TF-IDF weighing of effective corpus has been disabled")
+        # tfidf_model = TfidfModel(corpus)
+        # corpus = [tfidf_model[d] for d in corpus]
+
+    # todo: translate to VectorizedCorpus?
+    train_corpus.effective_corpus = corpus
+    if train_corpus.token2id is None:
+        train_corpus.token2id = dictionary.token2id
 
     algorithm: dict = options.get_engine_options(
         algorithm=algorithm_name,
-        corpus=train_corpus.corpus,
+        corpus=train_corpus.effective_corpus,
         id2word=train_corpus.id2token,
         engine_args=engine_args,
     )
@@ -60,10 +74,10 @@ def train(
     perplexity_score = (
         None
         if not hasattr(model, 'log_perplexity')
-        else 2 ** model.log_perplexity(train_corpus.corpus, len(train_corpus.corpus))
+        else 2 ** model.log_perplexity(train_corpus.effective_corpus, len(train_corpus.effective_corpus))
     )
 
-    coherence_score = coherence.compute_score(train_corpus.id2token, model, train_corpus.corpus)
+    coherence_score = coherence.compute_score(train_corpus.id2token, model, train_corpus.effective_corpus)
 
     return InferredModel(
         train_corpus=train_corpus,

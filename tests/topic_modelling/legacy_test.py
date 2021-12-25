@@ -15,7 +15,7 @@ from penelope.topic_modelling.engines.interface import ITopicModelEngine
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
-from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, TOPIC_MODELING_OPTS
+from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
 
 jj = os.path.join
 
@@ -27,14 +27,22 @@ def create_inferred_model(method) -> topic_modelling.InferredModel:
 
     corpus: TranströmerCorpus = TranströmerCorpus()
     train_corpus: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
-        terms=corpus.terms,
+        corpus=corpus,
         document_index=corpus.document_index,
     )
 
     inferred_model: topic_modelling.InferredModel = topic_modelling.train_model(
         train_corpus=train_corpus,
         method=method,
-        engine_args=TOPIC_MODELING_OPTS,
+        engine_args={
+            'n_topics': 4,
+            'passes': 1,
+            'random_seed': 42,
+            'alpha': 'auto',
+            'workers': 1,
+            'max_iter': 100,
+            'work_folder': f'./tests/output/{uuid.uuid4()}',
+        },
     )
 
     return inferred_model
@@ -58,9 +66,8 @@ def test_infer_model(method):
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, engine.supported_models())
-    assert inferred_model.options["engine_options"] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
-    assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.document_index)
+    assert len(inferred_model.train_corpus.effective_corpus) == len(inferred_model.train_corpus.document_index)
     assert len(inferred_model.train_corpus.document_index) == 5
     assert len(inferred_model.train_corpus.document_index.columns) == 7
     assert 'n_terms' in inferred_model.train_corpus.document_index.columns
@@ -80,7 +87,7 @@ def test_store_compressed_inferred_model(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    inferred_model.store(target_folder, store_corpus=True)
+    inferred_model.store(target_folder, store_corpus=True, store_compressed=False)
 
     assert VectorizedCorpus.dump_exists(folder=target_folder, tag="train")
     assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
@@ -95,7 +102,7 @@ def test_store_uncompressed_inferred_model(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    inferred_model.store(target_folder, store_corpus=True)
+    inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
 
     # Assert
     assert VectorizedCorpus.dump_exists(folder=target_folder, tag="train")
@@ -117,11 +124,10 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
-    assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
-    assert len(inferred_model.train_corpus.corpus) == len(inferred_model.train_corpus.document_index)
+    assert len(test_inferred_model.train_corpus.effective_corpus) == len(inferred_model.train_corpus.document_index)
     assert len(inferred_model.train_corpus.document_index) == 5
-    assert len(inferred_model.train_corpus.document_index.columns) == 7
+    assert len(inferred_model.train_corpus.document_index.columns) == 8
     assert 'n_terms' in inferred_model.train_corpus.document_index.columns
     assert inferred_model.train_corpus.corpus is not None
 
@@ -141,7 +147,6 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(m
     assert inferred_model is not None
     assert inferred_model.method == method
     assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
-    assert inferred_model.options['engine_options'] == TOPIC_MODELING_OPTS
     assert inferred_model.train_corpus is None
 
     shutil.rmtree(target_folder)
@@ -179,7 +184,7 @@ def test_infer_topics_data(method):
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
-        corpus=inferred_model.train_corpus.corpus,
+        corpus=inferred_model.train_corpus.effective_corpus,
         id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,
@@ -231,7 +236,7 @@ def test_load_inferred_topics_data(method):
 
     test_inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
-        corpus=inferred_model.train_corpus.corpus,
+        corpus=inferred_model.train_corpus.effective_corpus,
         id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
         n_tokens=5,

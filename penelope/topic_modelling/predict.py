@@ -6,8 +6,7 @@ import gensim.corpora as corpora
 import numpy as np
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
-from loguru import logger
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus
+from penelope.corpus import DocumentIndex, DocumentIndexHelper, Token2Id, VectorizedCorpus, dtm
 
 from .engines import get_engine_by_model_type
 from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData
@@ -52,24 +51,13 @@ def predict_topics(
         topic_token_overview (pd.DataFrame, optional): existing overview. Defaults to None.
     """
 
-    if not isinstance(corpus, (Sparse2Corpus, VectorizedCorpus)):
-        raise ValueError(f"expected `Sparse2Corpus` or `VectorizedCorpus`, got `{type(corpus)}`")
-
-    if isinstance(corpus, VectorizedCorpus):
-
-        if document_index is not None:
-            if document_index is not corpus.document_index:
-                logger.warning("using corpus document index (ignoring supplied document index)")
-
-        id2token: dict = id2token or corpus.id2token
-        document_index: dict = corpus.document_index
-        corpus: Sparse2Corpus = Sparse2Corpus(corpus.data, documents_columns=False)
-
-    if isinstance(id2token, (corpora.Dictionary, Token2Id)):
-        """We only need the dict"""
-        id2token = id2token.id2token
+    vectorized_corpus: VectorizedCorpus = dtm.TranslateCorpus.translate(
+        corpus, token2id=dtm.id2token2token2id(id2token), document_index=document_index, **kwargs
+    )
 
     engine: ITopicModelEngine = get_engine_by_model_type(topic_model)
+
+    document_topic_weights: DocumentTopicsWeightsIter = engine.predict(vectorized_corpus, minimum_probability, **kwargs)
 
     topic_token_weights: pd.DataFrame = (
         kwargs.get('topic_token_weights')
@@ -83,15 +71,15 @@ def predict_topics(
         else engine.get_topic_token_overview(topic_token_weights, n_tokens=n_tokens)
     )
 
-    document_index: pd.DataFrame = DocumentIndexHelper(document_index).update_counts_by_corpus(corpus).document_index
-
-    data: DocumentTopicsWeightsIter = engine.predict(corpus, minimum_probability, **kwargs)
+    document_index: pd.DataFrame = (
+        DocumentIndexHelper(document_index).update_counts_by_corpus(vectorized_corpus).document_index
+    )
 
     topics_data: InferredTopicsData = InferredTopicsData(
         dictionary=Token2Id.id2token_to_dataframe(id2token),
         topic_token_weights=topic_token_weights,
         topic_token_overview=topic_token_overview,
         document_index=document_index,
-        document_topic_weights=to_dataframe(document_index, data),
+        document_topic_weights=to_dataframe(document_index, document_topic_weights),
     )
     return topics_data

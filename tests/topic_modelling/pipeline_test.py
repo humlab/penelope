@@ -119,7 +119,11 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
 
     pipeline = Mock(
         spec=CorpusPipeline,
-        **{'payload.memory_store': SPARV_TAGGED_COLUMNS, 'payload.document_index': corpus.document_index},
+        **{
+            'payload.memory_store': SPARV_TAGGED_COLUMNS,
+            'payload.document_index': corpus.document_index,
+            'payload.token2id': None,
+        },
     )
 
     prior = MagicMock(
@@ -127,6 +131,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
         outstream=payload_stream,
         content_stream=lambda: ContentStream(payload_stream),
         out_content_type=ContentType.TOKENS,
+        filename_content_stream=lambda: [(p.filename, p.content) for p in payload_stream()],
     )
 
     task: ToTopicModel = ToTopicModel(
@@ -140,6 +145,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
         store_corpus=True,
         store_compressed=True,
     )
+    task.resolved_prior_out_content_type = lambda: ContentType.TOKENS
 
     task.setup()
     task.enter()

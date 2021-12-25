@@ -132,9 +132,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             vectorized_corpus: VectorizedCorpus = payload.content
             vectorize_opts: VectorizeOpts = payload.recall('vectorize_opts')
             corpus = tm.TrainingCorpus(
-                doc_term_matrix=vectorized_corpus.data,
-                document_index=vectorized_corpus.document_index,
-                id2token=vectorized_corpus.id2token,
+                corpus=vectorized_corpus,
                 corpus_options={},
                 vectorizer_args={} if vectorize_opts is None else vectorize_opts.props,
             )
@@ -144,10 +142,14 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             if tm.TrainingCorpus.exists(self.train_corpus_folder):
                 """Shortcut pipeline and load training corpus from disk"""
                 corpus = tm.TrainingCorpus.load(self.train_corpus_folder)
+
             else:
+
                 corpus = tm.TrainingCorpus(
-                    terms=self.prior.content_stream(),
+                    corpus=self.prior.filename_content_stream(),
+                    # corpus=self.prior.content_stream(),
                     document_index=self.document_index,
+                    token2id=self.pipeline.payload.token2id,
                     corpus_options={},
                 )
 
@@ -165,7 +167,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         _ = self.predict(
             inferred_model=inferred_model,
-            corpus=train_corpus.corpus,
+            corpus=train_corpus.effective_corpus,
             id2token=train_corpus.id2token,
             document_index=self.document_index,
             target_folder=self.target_subfolder,

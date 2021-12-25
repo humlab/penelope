@@ -185,7 +185,7 @@ class ComputeTopicModelUserInterface:
                     method = self.model_widgets.method.value
 
                     train_corpus = tm.TrainingCorpus(
-                        terms=list(self.get_corpus_terms(corpus)),
+                        corpus=list(self.get_corpus_terms(corpus)),
                         document_index=self.document_index,
                         vectorizer_args=vectorizer_args,
                     )
