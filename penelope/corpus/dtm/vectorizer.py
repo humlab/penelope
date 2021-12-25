@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Callable, Iterable, List, Literal, Mapping, Tuple, Union
 
 import more_itertools
 import numpy as np
@@ -40,6 +40,26 @@ def isiterable(x: Any) -> bool:
         return False
 
 
+def check_tokens_stream(head: Any) -> None:
+
+    if not isinstance(head, tuple):
+        raise ValueError(f"expected str ✕ text/tokens, found {type(head)}")
+
+    if len(head) != 2:
+        raise ValueError(f"expected str ✕ text/tokens, found {' ✕ '.join(type(x) for x in head)}]")
+
+    if not isinstance(head[0], str):
+        raise ValueError(f"expected str (document name) as first element in tuple {type(head[1])}")
+
+    if isinstance(head[1], str):
+        raise ValueError(
+            f"expected Iterable as second element when already_tokenized is set to true, found {type(head[1])}"
+        )
+
+    if not isiterable(head[1]):
+        raise ValueError(f"expected Iterable[str] when already_tokenized is True but found {type(head[1])}")
+
+
 class CorpusVectorizer:
     def __init__(self):
         self.vectorizer = None
@@ -64,10 +84,13 @@ class CorpusVectorizer:
         vocabulary: Mapping[str, int] = None,
         document_index: Union[Callable[[], DocumentIndex], DocumentIndex] = None,
         lowercase: bool = False,
-        stop_words: str = None,
+        stop_words: Union[Literal['english'], List[str]] = None,
         max_df: float = 1.0,
         min_df: int = 1,
         verbose: bool = True,  # pylint: disable=unused-argument
+        dtype: Any = np.int32,
+        tokenizer: Callable[[str], Iterable[str]] = None,
+        token_pattern=r"(?u)\b\w+\b",
     ) -> VectorizedCorpus:
         """Returns a `VectorizedCorpus` (document-term-matrix, bag-of-word) by applying sklearn's `CountVecorizer` on `corpus`
         If `already_tokenized` is True then the input stream is expected to be tokenized.
@@ -94,7 +117,7 @@ class CorpusVectorizer:
         Yields:
             Iterator[VectorizedCorpus]: [description]
         """
-
+        tokenizer: Callable[[str], Iterable[str]] = None
         if vocabulary is None:
             if hasattr(corpus, 'vocabulary'):
                 vocabulary = corpus.vocabulary
@@ -106,33 +129,13 @@ class CorpusVectorizer:
             heads, corpus = more_itertools.spy(corpus, n=1)
 
             if heads:
-
-                head: Any = heads[0]
-
-                if not isinstance(head, tuple):
-                    raise ValueError(f"expected str ✕ text/tokens, found {type(head)}")
-
-                if len(head) != 2:
-                    raise ValueError(f"expected str ✕ text/tokens, found {' ✕ '.join(type(x) for x in head)}]")
-
-                if not isinstance(head[0], str):
-                    raise ValueError(f"expected str (document name) as first element in tuple {type(head[1])}")
-
-                if isinstance(head[1], str):
-                    raise ValueError(
-                        f"expected Iterable as second element when already_tokenized is set to true, found {type(head[1])}"
-                    )
-
-                if not isiterable(head[1]):
-                    raise ValueError(f"expected Iterable[str] when already_tokenized is True but found {type(head[1])}")
+                check_tokens_stream(heads[0])
 
             if lowercase:
                 tokenizer = _no_tokenize_lowercase
                 lowercase = False
             else:
                 tokenizer = _no_tokenize
-        else:
-            tokenizer = None
 
         vectorizer_opts: dict = dict(
             tokenizer=tokenizer,
@@ -141,6 +144,8 @@ class CorpusVectorizer:
             max_df=max_df,
             min_df=min_df,
             vocabulary=vocabulary,
+            token_pattern=token_pattern,
+            dtype=dtype,
         )
 
         seen_document_names: List[str] = []
@@ -150,7 +155,7 @@ class CorpusVectorizer:
                 seen_document_names.append(name)
                 yield terms
 
-        self.vectorizer = CountVectorizer(**vectorizer_opts, dtype=np.int32)
+        self.vectorizer = CountVectorizer(**vectorizer_opts)
         self.vectorizer_opts = vectorizer_opts
 
         bag_term_matrix = self.vectorizer.fit_transform(terms_stream())
