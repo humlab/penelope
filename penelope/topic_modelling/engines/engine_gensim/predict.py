@@ -5,11 +5,10 @@ from typing import Any, Iterable, Union
 import gensim.models as models
 import penelope.utility as utility
 import penelope.vendor.gensim.wrappers as wrappers
+from gensim.matutils import Sparse2Corpus
+from penelope.corpus.dtm.corpus import VectorizedCorpus
 
 from .wrappers.mallet_topic_model import MalletTopicModel
-
-logger = utility.get_logger('corpus_text_analysis')
-
 
 # pylint: disable=unused-argument
 
@@ -59,6 +58,9 @@ def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.
         ),
     ):
         raise ValueError(f"Gensim model {type(model)} is not supported")
+
+    if isinstance(corpus, VectorizedCorpus):
+        corpus = Sparse2Corpus(corpus.data, documents_columns=False)
 
     if isinstance(model, (models.LdaMulticore, models.LdaModel)):
         data_iter = gensim_lda_predict(model, corpus, minimum_probability=minimum_probability)
