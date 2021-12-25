@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Iterator, List, Sequence, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Tuple, Union
 
 from penelope import utility
 
@@ -10,8 +10,6 @@ from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
 from .tokens_transformer import TokensTransformer, TokensTransformOpts
 from .utils import generate_token2id
-
-logger = utility.getLogger("__penelope__")
 
 
 class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
@@ -50,12 +48,14 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
         self.reader: ICorpusReader = reader
         self._document_index: DocumentIndex = metadata_to_document_index(reader.metadata)
-        self.transformer = TokensTransformer(transform_opts=(transform_opts or TokensTransformOpts()))
-        self.iterator = None
-        self._token2id = None
+        self.transformer: TokensTransformer = TokensTransformer(
+            transform_opts=(transform_opts or TokensTransformOpts())
+        )
+        self.iterator: Iterable[Tuple[str, Iterable[str]]] = None
+        self._token2id: Mapping[str, int] = None
 
-    def _create_document_tokens_stream(self):
-        token_counts = []
+    def _create_document_tokens_stream(self) -> Iterable[Tuple[str, Iterable[str]]]:
+        token_counts: list[int] = []
         for filename, tokens in self.reader:
             raw_tokens = [x for x in tokens]
             cooked_tokens = [x for x in self.transformer.transform(raw_tokens)]
@@ -107,13 +107,13 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
         return len(self.document_index)
 
     @property
-    def token2id(self):
+    def token2id(self) -> Mapping[str, int]:
         if self._token2id is None:
             self._token2id = generate_token2id(self.terms, len(self))
         return self._token2id
 
     @property
-    def id2token(self):
+    def id2token(self) -> Mapping[int, str]:
         return {v: k for k, v in self.token2id.items()}
 
     @property
