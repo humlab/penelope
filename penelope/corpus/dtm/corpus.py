@@ -32,6 +32,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     def __init__(
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
+        *,
         token2id: Dict[str, int],
         document_index: DocumentIndex,
         overridden_term_frequency: Optional[Dict[int, int]] = None,
