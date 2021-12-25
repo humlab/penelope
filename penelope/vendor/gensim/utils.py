@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Tuple
 import scipy.sparse as sp
 from gensim.corpora.dictionary import Dictionary
 from gensim.matutils import Sparse2Corpus, corpus2csc
+from penelope.corpus.token2id import id2token2token2id
 
 
 def _id2token2token2id(id2token: Mapping[int, str]) -> dict:
@@ -19,7 +20,12 @@ def _id2token2token2id(id2token: Mapping[int, str]) -> dict:
 GensimBowCorpus = Iterable[Iterable[Tuple[int, float]]]
 
 
-def from_stream_of_tokens_to_sparse2corpus(source: Any, vocabulary) -> Sparse2Corpus:
+def from_stream_of_tokens_to_sparse2corpus(source: Any, vocabulary: Dictionary | dict) -> Sparse2Corpus:
+
+    if isinstance(vocabulary, dict):
+        vocabulary: Dictionary = Dictionary()
+        vocabulary.token2id = vocabulary
+
     bow_corpus: GensimBowCorpus = [vocabulary.doc2bow(tokens) for _, tokens in source]
     csc_matrix: sp.csc_matrix = corpus2csc(
         bow_corpus,
@@ -41,17 +47,17 @@ def from_stream_of_tokens_to_dictionary(source: Any, id2token: dict) -> Dictiona
     return vocabulary
 
 
-def from_id2token_dict_to_dictionary(id2token: dict) -> Dictionary:
-    """Creates a `Dictionary` from a id2word dict.
-    TODO: Deprecate function. Not useful since the existing dict is sufficient in gensim"""
-    if isinstance(id2token, Dictionary):
-        return id2token
+def from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
 
-    if not isinstance(id2token, dict):
-        raise ValueError(f"expected dict, found {type(id2token)}")
+    if isinstance(token2id, Dictionary):
+        return token2id
 
     dictionary: Dictionary = Dictionary()
-    dictionary.id2token = id2token
-    dictionary.token2id = dict((v, k) for v, k in id2token.items())
+    dictionary.token2id = token2id
 
     return dictionary
+
+
+def from_id2token_to_dictionary(id2token: dict) -> Dictionary:
+    """Creates a `Dictionary` from a id2token dict."""
+    return from_token2id_to_dictionary(id2token2token2id(id2token))
