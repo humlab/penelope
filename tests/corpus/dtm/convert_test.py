@@ -9,6 +9,8 @@ from penelope.corpus.dtm import convert
 from penelope.corpus.readers import tng
 from pytest import fixture
 
+# pylint: disable=redefined-outer-name
+
 SIMPLE_CORPUS_ABC_5DOCS = [
     ('d_01.txt', ['a', 'b', 'c', 'c']),
     ('d_02.txt', ['a', 'a', 'b']),

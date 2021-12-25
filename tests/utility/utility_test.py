@@ -1,8 +1,9 @@
 import numpy as np
-import penelope.utility as utility
 import pytest
 import scipy
 import scipy.sparse as sp
+from penelope import corpus as pc
+from penelope import utility
 
 
 def test_utils():
@@ -120,6 +121,6 @@ def test_csr2bow():
     )
     M = sp.csr_matrix(A)
 
-    BOW = list(utility.csr2bow(M))
+    BOW = list(pc.csr2bow(M))
 
     assert BOW == [[], [(0, 5), (1, 8)], [(2, 3)], [(1, 6)]]

@@ -2,7 +2,7 @@ from io import StringIO
 from typing import Sequence
 
 import pandas as pd
-from penelope.utility import term_frequency
+from penelope.corpus import term_frequency
 
 from ..interfaces import ContentType
 from .interface import CheckpointOpts, IContentSerializer, SerializableContent

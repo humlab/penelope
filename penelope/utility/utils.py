@@ -11,7 +11,6 @@ import platform
 import re
 import time
 import uuid
-from collections import defaultdict
 from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number

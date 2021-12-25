@@ -1,10 +1,8 @@
 import os
 from os.path import dirname, isdir, isfile, join
 
-import penelope.corpus as penelope
 from penelope import pipeline
 from penelope.corpus import TextTransformOpts, remove_hyphens
-from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
