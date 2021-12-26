@@ -2,7 +2,6 @@ import os
 import shutil
 import uuid
 from io import StringIO
-from os.path import isfile
 from os.path import join as jj
 
 import numpy as np
@@ -36,6 +35,12 @@ def text_corpus() -> TokenizedCorpus:
         keep_numerals=False,
     )
     corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
+    return corpus
+
+
+@pytest.fixture
+def vectorized_corpus(text_corpus: TokenizedCorpus) -> VectorizedCorpus:
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
     return corpus
 
 
@@ -75,43 +80,50 @@ def test_load_stored_metadata_simple(mode: str):
 
 
 @pytest.mark.parametrize('mode', ['bundle', 'files'])
-def test_load_stored_metadata(mode: str, text_corpus: TokenizedCorpus):
+def test_load_stored_metadata(mode: str, vectorized_corpus: VectorizedCorpus):
 
     tag: str = f'{uuid.uuid1()}'
     folder: str = jj(OUTPUT_FOLDER, tag)
 
     os.makedirs(folder, exist_ok=True)
 
-    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
-
-    store_metadata(tag=tag, folder=folder, mode=mode, **corpus.metadata)
+    store_metadata(tag=tag, folder=folder, mode=mode, **vectorized_corpus.metadata)
 
     metadata = load_metadata(tag=tag, folder=folder)
 
     assert metadata is not None
-    assert metadata['token2id'] == corpus.token2id
-    assert (metadata['document_index'] == corpus.document_index).all().all()
-    assert metadata['overridden_term_frequency'] == corpus.overridden_term_frequency
+    assert metadata['token2id'] == vectorized_corpus.token2id
+    assert (metadata['document_index'] == vectorized_corpus.document_index).all().all()
+    assert metadata['overridden_term_frequency'] == vectorized_corpus.overridden_term_frequency
 
     shutil.rmtree(folder)
 
 
-def test_load_dumped_corpus(text_corpus: TokenizedCorpus):
+@pytest.mark.parametrize('mode', ['bundle', 'files'])
+def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
 
     tag: str = f'{uuid.uuid1()}'
     folder: str = jj(OUTPUT_FOLDER, tag)
 
     os.makedirs(folder, exist_ok=True)
 
-    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(text_corpus, already_tokenized=True)
-    corpus.dump(tag=tag, folder=folder, compressed=True)
+    vectorized_corpus.dump(tag=tag, folder=folder, compressed=True, mode=mode)
 
-    assert isfile(jj(folder, f"{tag}_vectorizer_data.pickle"))
+    assert VectorizedCorpus.dump_exists(tag=tag, folder=folder)
 
     loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(tag=tag, folder=folder)
+    assert (vectorized_corpus.term_frequency == loaded_corpus.term_frequency).all()
+    assert vectorized_corpus.document_index.to_dict() == loaded_corpus.document_index.to_dict()
+    assert vectorized_corpus.token2id == loaded_corpus.token2id
 
-    assert (corpus.term_frequency == loaded_corpus.term_frequency).all()
-    assert corpus.document_index.to_dict() == loaded_corpus.document_index.to_dict()
-    assert corpus.token2id == loaded_corpus.token2id
+    loaded_options: dict = VectorizedCorpus.load_options(tag=tag, folder=folder)
+    assert loaded_options == dict()
+
+    VectorizedCorpus.dump_options(tag=tag, folder=folder, options=dict(apa=1))
+    loaded_options: dict = VectorizedCorpus.load_options(tag=tag, folder=folder)
+    assert loaded_options == dict(apa=1)
+
+    VectorizedCorpus.remove(tag=tag, folder=folder)
+    assert not VectorizedCorpus.dump_exists(tag=tag, folder=folder)
 
     shutil.rmtree(folder)

@@ -133,9 +133,6 @@ def test_from_stream_of_text(document_index, token2id):
     assert corpus.data.astype(int).todense().tolist() == EXPECTED_DENSE_VALUES
 
 
-# pylint: disable=too-many-return-statements
-
-
 def test_translate():
 
     ...
