@@ -3,13 +3,15 @@ from os.path import dirname, isdir, isfile, join
 
 from penelope import pipeline
 from penelope.corpus import TextTransformOpts, remove_hyphens
+from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipeline
 
 # pylint: disable=unused-argument, too-many-arguments
 
 # DATA_PATH: str = join(abspath(join(dirname(__file__), '..')), 'test_data', 'tagged_id_frame_feather')
 
 # DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'
-DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
+# DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
+DATA_PATH: str = '/home/roger/source/penelope/tests/test_data/tagged_id_frame_feather'
 
 ARGUMENTS: dict = dict(
     config_filename=join(DATA_PATH, 'corpus.yml'),
@@ -35,7 +37,7 @@ ARGUMENTS: dict = dict(
     passes=None,
     random_seed=None,
     alpha='asymmetric',
-    workers=None,
+    workers=4,
     max_iter=None,
     store_corpus=True,
     store_compressed=True,
@@ -150,26 +152,19 @@ def debug_main(
 
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
-    _: dict = (
-        config.get_pipeline(
-            "tagged_frame_pipeline",
-            corpus_source=corpus_source,
-            enable_checkpoint=enable_checkpoint,
-            force_checkpoint=force_checkpoint,
-            text_transform_opts=text_transform_opts,
-        )
-        # .filter_tagged_frame()
-        .to_dtm(vectorize_opts=None).to_topic_model(
-            corpus_source=None,
-            train_corpus_folder=train_corpus_folder,
-            target_folder=target_folder,
-            target_name=target_name,
-            engine=engine,
-            engine_args=engine_args,
-            store_corpus=store_corpus,
-            store_compressed=store_compressed,
-        )
-    ).exhaust()
+    _: dict = from_id_tagged_frame_pipeline(
+        corpus_config=config,
+        corpus_source=corpus_source,
+        file_pattern='**/prot-*.feather',
+        tagged_column='lemma_id',
+        target_name=target_name,
+        train_corpus_folder=train_corpus_folder,
+        target_folder=target_folder,
+        engine=engine,
+        engine_args=engine_args,
+        store_corpus=store_corpus,
+        store_compressed=store_compressed,
+    ).value()
 
 
 debug_main(**ARGUMENTS)
