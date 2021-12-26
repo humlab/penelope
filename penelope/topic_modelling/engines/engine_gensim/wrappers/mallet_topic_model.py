@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 from typing import Iterable, Tuple
@@ -6,10 +5,8 @@ from typing import Iterable, Tuple
 import penelope.vendor.gensim.wrappers as wrappers
 from gensim.corpora.dictionary import Dictionary
 from gensim.utils import check_output
+from loguru import logger
 from penelope.utility import inspect_filter_args
-
-logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class MalletTopicModel(wrappers.LdaMallet):
