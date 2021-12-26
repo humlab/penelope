@@ -15,8 +15,8 @@ Notes
 """
 
 import logging
-import numpy as np
 
+import numpy as np
 from gensim import utils
 from gensim.models.keyedvectors import KeyedVectors
 from gensim.models.word2vec import Vocab
@@ -33,6 +33,7 @@ class VarEmbed(KeyedVectors):
     this allows to load pre-trained models only.
 
     """
+
     def __init__(self):
         self.vector_size = 0
         self.vocab_size = 0
@@ -66,6 +67,7 @@ class VarEmbed(KeyedVectors):
         if morfessor_model:
             try:
                 import morfessor
+
                 morfessor_model = morfessor.MorfessorIO().read_binary_model_file(morfessor_model)
                 result.add_morphemes_to_embeddings(morfessor_model, morpho_embeddings, morpho_to_ix)
             except ImportError:
@@ -102,7 +104,7 @@ class VarEmbed(KeyedVectors):
             self.vocab[word] = Vocab(index=word_id, count=counts[word])
             self.vectors[word_id] = word_embeddings[word_to_ix[word]]
             self.index2word[word_id] = word
-        assert((len(self.vocab), self.vector_size) == self.vectors.shape)
+        assert (len(self.vocab), self.vector_size) == self.vectors.shape
         logger.info("Loaded matrix of %d size and %d dimensions", self.vocab_size, self.vector_size)
 
     def add_morphemes_to_embeddings(self, morfessor_model, morpho_embeddings, morpho_to_ix):
@@ -120,10 +122,7 @@ class VarEmbed(KeyedVectors):
         """
         for word in self.vocab:
             morpheme_embedding = np.array(
-                [
-                    morpho_embeddings[morpho_to_ix.get(m, -1)]
-                    for m in morfessor_model.viterbi_segment(word)[0]
-                ]
+                [morpho_embeddings[morpho_to_ix.get(m, -1)] for m in morfessor_model.viterbi_segment(word)[0]]
             ).sum(axis=0)
             self.vectors[self.vocab[word].index] += morpheme_embedding
         logger.info("Added morphemes to word vectors")

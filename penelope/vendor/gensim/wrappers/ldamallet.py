@@ -1,6 +1,9 @@
 # type: ignore
 # pylint: disable=unused-variable, too-many-arguments, consider-using-with, no-else-return, too-many-nested-blocks, redundant-u-string-prefix
 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) 2014 Radim Rehurek <radimrehurek@seznam.cz>
 # Licensed under the GNU LGPL v2.1 - http://www.gnu.org/licenses/lgpl.html
 
@@ -302,6 +305,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             self.topic_threshold,
             str(self.random_seed),
         )
+        # NOTE "--keep-sequence-bigrams" / "--use-ngrams true" poorer results + runs out of memory
         logger.info("training MALLET LDA with %s", cmd)
         check_output(args=cmd, shell=True)
         self.word_topics = self.load_word_topics()

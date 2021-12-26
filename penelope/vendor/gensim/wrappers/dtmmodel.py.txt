@@ -43,14 +43,14 @@ Examples
 
 
 import logging
-import random
-import warnings
-import tempfile
 import os
+import random
+import tempfile
+import warnings
 from subprocess import PIPE
-import numpy as np
 
-from gensim import utils, corpora, matutils
+import numpy as np
+from gensim import corpora, matutils, utils
 from gensim.utils import check_output
 
 logger = logging.getLogger(__name__)
@@ -68,9 +68,25 @@ class DtmModel(utils.SaveLoad):
     you need to install original implementation first and pass the path to binary to ``dtm_path``.
 
     """
-    def __init__(self, dtm_path, corpus=None, time_slices=None, mode='fit', model='dtm', num_topics=100,
-                 id2word=None, prefix=None, lda_sequence_min_iter=6, lda_sequence_max_iter=20, lda_max_em_iter=10,
-                 alpha=0.01, top_chain_var=0.005, rng_seed=0, initialize_lda=True):
+
+    def __init__(
+        self,
+        dtm_path,
+        corpus=None,
+        time_slices=None,
+        mode='fit',
+        model='dtm',
+        num_topics=100,
+        id2word=None,
+        prefix=None,
+        lda_sequence_min_iter=6,
+        lda_sequence_max_iter=20,
+        lda_max_em_iter=10,
+        alpha=0.01,
+        top_chain_var=0.005,
+        rng_seed=0,
+        initialize_lda=True,
+    ):
         """
 
         Parameters
@@ -133,16 +149,19 @@ class DtmModel(utils.SaveLoad):
         if lencorpus == 0:
             raise ValueError("cannot compute DTM over an empty corpus")
         if model == "fixed" and any(not text for text in corpus):
-            raise ValueError("""There is a text without words in the input corpus.
-                    This breaks method='fixed' (The DIM model).""")
+            raise ValueError(
+                """There is a text without words in the input corpus.
+                    This breaks method='fixed' (The DIM model)."""
+            )
         if lencorpus != sum(time_slices):
             raise ValueError(
-                "mismatched timeslices %{slices} for corpus of len {clen}"
-                .format(slices=sum(time_slices), clen=lencorpus)
+                "mismatched timeslices %{slices} for corpus of len {clen}".format(
+                    slices=sum(time_slices), clen=lencorpus
+                )
             )
         self.lencorpus = lencorpus
         if prefix is None:
-            rand_prefix = hex(random.randint(0, 0xffffff))[2:] + '_'
+            rand_prefix = hex(random.randint(0, 0xFFFFFF))[2:] + '_'
             prefix = os.path.join(tempfile.gettempdir(), rand_prefix)
 
         self.prefix = prefix
@@ -350,19 +369,29 @@ class DtmModel(utils.SaveLoad):
         """
         self.convert_input(corpus, time_slices)
 
-        arguments = \
-            "--ntopics={p0} --model={mofrl}  --mode={p1} --initialize_lda={p2} --corpus_prefix={p3} " \
+        arguments = (
+            "--ntopics={p0} --model={mofrl}  --mode={p1} --initialize_lda={p2} --corpus_prefix={p3} "
             "--outname={p4} --alpha={p5}".format(
-                p0=self.num_topics, mofrl=model, p1=mode, p2=self.initialize_lda,
-                p3=self.fcorpus(), p4=self.foutname(), p5=self.alpha
+                p0=self.num_topics,
+                mofrl=model,
+                p1=mode,
+                p2=self.initialize_lda,
+                p3=self.fcorpus(),
+                p4=self.foutname(),
+                p5=self.alpha,
             )
+        )
 
-        params = \
-            "--lda_max_em_iter={p0} --lda_sequence_min_iter={p1}  --lda_sequence_max_iter={p2} " \
+        params = (
+            "--lda_max_em_iter={p0} --lda_sequence_min_iter={p1}  --lda_sequence_max_iter={p2} "
             "--top_chain_var={p3} --rng_seed={p4} ".format(
-                p0=self.lda_max_em_iter, p1=self.lda_sequence_min_iter, p2=self.lda_sequence_max_iter,
-                p3=self.top_chain_var, p4=self.rng_seed
+                p0=self.lda_max_em_iter,
+                p1=self.lda_sequence_min_iter,
+                p2=self.lda_sequence_max_iter,
+                p3=self.top_chain_var,
+                p4=self.rng_seed,
             )
+        )
 
         arguments = arguments + " " + params
         logger.info("training DTM with args %s", arguments)

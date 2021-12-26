@@ -52,17 +52,15 @@ Note that the wrapper might not work in a docker container for large datasets du
 
 from __future__ import division
 
-import logging
-import os
 import copy
+import logging
 import multiprocessing
+import os
+from shutil import copyfile, rmtree
 
 from gensim import utils
 from gensim.models.keyedvectors import KeyedVectors
 from gensim.scripts.glove2word2vec import glove2word2vec
-
-from shutil import copyfile, rmtree
-
 
 logger = logging.getLogger(__name__)
 
@@ -80,10 +78,34 @@ class Wordrank(KeyedVectors):
     you need to install original implementation first and pass the path to wordrank dir to ``wr_path``.
 
     """
+
     @classmethod
-    def train(cls, wr_path, corpus_file, out_name, size=100, window=15, symmetric=1, min_count=5, max_vocab_size=0,
-              sgd_num=100, lrate=0.001, period=10, iter=90, epsilon=0.75, dump_period=10, reg=0, alpha=100,
-              beta=99, loss='hinge', memory=4.0, np=1, cleanup_files=False, sorted_vocab=1, ensemble=0):
+    def train(
+        cls,
+        wr_path,
+        corpus_file,
+        out_name,
+        size=100,
+        window=15,
+        symmetric=1,
+        min_count=5,
+        max_vocab_size=0,
+        sgd_num=100,
+        lrate=0.001,
+        period=10,
+        iter=90,
+        epsilon=0.75,
+        dump_period=10,
+        reg=0,
+        alpha=100,
+        beta=99,
+        loss='hinge',
+        memory=4.0,
+        np=1,
+        cleanup_files=False,
+        sorted_vocab=1,
+        ensemble=0,
+    ):
         """Train model.
 
         Parameters
@@ -156,11 +178,21 @@ class Wordrank(KeyedVectors):
 
         cmd_vocab_count = [
             os.path.join(wr_path, 'glove', 'vocab_count'),
-            '-min-count', str(min_count), '-max-vocab', str(max_vocab_size)
+            '-min-count',
+            str(min_count),
+            '-max-vocab',
+            str(max_vocab_size),
         ]
         cmd_cooccurence_count = [
-            os.path.join(wr_path, 'glove', 'cooccur'), '-memory', str(memory),
-            '-vocab-file', temp_vocab_file, '-window-size', str(window), '-symmetric', str(symmetric)
+            os.path.join(wr_path, 'glove', 'cooccur'),
+            '-memory',
+            str(memory),
+            '-vocab-file',
+            temp_vocab_file,
+            '-window-size',
+            str(window),
+            '-symmetric',
+            str(symmetric),
         ]
         cmd_shuffle_cooccurences = [os.path.join(wr_path, 'glove', 'shuffle'), '-memory', str(memory)]
         cmd_del_vocab_freq = ['cut', '-d', " ", '-f', '1', temp_vocab_file]
@@ -169,7 +201,7 @@ class Wordrank(KeyedVectors):
         input_fnames = [
             os.path.join(meta_dir, os.path.split(corpus_file)[-1]),
             os.path.join(meta_dir, os.path.split(corpus_file)[-1]),
-            cooccurrence_file
+            cooccurrence_file,
         ]
         output_fnames = [temp_vocab_file, cooccurrence_file, cooccurrence_shuf_file]
 
@@ -189,8 +221,7 @@ class Wordrank(KeyedVectors):
             numlines = sum(1 for _ in f)
         with utils.open(meta_file, 'wb') as f:
             meta_info = "{0} {1}\n{2} {3}\n{4} {5}".format(
-                numwords, numwords, numlines, cooccurrence_shuf_file.split('/')[-1],
-                numwords, vocab_file.split('/')[-1]
+                numwords, numwords, numlines, cooccurrence_shuf_file.split('/')[-1], numwords, vocab_file.split('/')[-1]
             )
             f.write(meta_info.encode('utf-8'))
 
@@ -202,7 +233,8 @@ class Wordrank(KeyedVectors):
                 "as wordrank dumps the embedding only at dump_period intervals. "
                 "Input an appropriate combination of parameters (iter, dump_period) "
                 "such that \"iter mod dump_period\" is zero.",
-                iter - (iter % dump_period), iter
+                iter - (iter % dump_period),
+                iter,
             )
 
         wr_args = {
@@ -219,7 +251,7 @@ class Wordrank(KeyedVectors):
             'reg': reg,
             'alpha': alpha,
             'beta': beta,
-            'loss': loss
+            'loss': loss,
         }
 
         # run wordrank executable with wr_args
@@ -235,8 +267,11 @@ class Wordrank(KeyedVectors):
         os.rename('model_word_%d.txt' % max_iter_dump, os.path.join(model_dir, 'wordrank.words'))
         os.rename('model_context_%d.txt' % max_iter_dump, os.path.join(model_dir, 'wordrank.contexts'))
         model = cls.load_wordrank_model(
-            os.path.join(model_dir, 'wordrank.words'), vocab_file,
-            os.path.join(model_dir, 'wordrank.contexts'), sorted_vocab, ensemble
+            os.path.join(model_dir, 'wordrank.words'),
+            vocab_file,
+            os.path.join(model_dir, 'wordrank.contexts'),
+            sorted_vocab,
+            ensemble,
         )
 
         if cleanup_files:
