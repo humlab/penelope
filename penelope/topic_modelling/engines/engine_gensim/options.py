@@ -1,5 +1,5 @@
 import os
-from typing import Literal
+from typing import Literal, Mapping
 
 import gensim.models as models
 from gensim.matutils import Sparse2Corpus
@@ -173,21 +173,6 @@ class DTMEngineSpec(EngineSpec):
         }
 
 
-SUPPORTED_ENGINES = {
-    'gensim_mallet-lda': MalletEngineSpec(),
-    'gensim_lda-multicore': LdaMulticoreEngineSpec(),  # 'LDA-MULTICORE', 'LDA_MULTICORE', 'MULTICORE'
-    'gensim_lda': LdaEngineSpec(),
-    'gensim_lsi': LsiEngineSpec(),
-    'gensim_hdp': HDPEngineSpec(),
-    'gensim_dtm': DTMEngineSpec(),
-    'gensim_sttm-lda': STTMEngineSpec(sub_key='lda'),
-    'gensim_sttm-btm': STTMEngineSpec(sub_key='btm'),
-    'gensim_sttm-ptm': STTMEngineSpec(sub_key='ptm'),
-    'gensim_sttm-satm': STTMEngineSpec(sub_key='satm'),
-    'gensim_sttm-dmm': STTMEngineSpec(sub_key='dmm'),
-    'gensim_sttm-watm': STTMEngineSpec(sub_key='watm'),
-}
-
 EngineKey = Literal[
     'gensim_mallet-lda',
     'gensim_lda-multicore',
@@ -202,6 +187,21 @@ EngineKey = Literal[
     'gensim_sttm-dmm',
     'gensim_sttm-watm',
 ]
+
+SUPPORTED_ENGINES: Mapping[EngineKey, EngineSpec] = {
+    'gensim_mallet-lda': MalletEngineSpec(),
+    'gensim_lda-multicore': LdaMulticoreEngineSpec(),  # 'LDA-MULTICORE', 'LDA_MULTICORE', 'MULTICORE'
+    'gensim_lda': LdaEngineSpec(),
+    'gensim_lsi': LsiEngineSpec(),
+    'gensim_hdp': HDPEngineSpec(),
+    'gensim_dtm': DTMEngineSpec(),
+    'gensim_sttm-lda': STTMEngineSpec(sub_key='lda'),
+    'gensim_sttm-btm': STTMEngineSpec(sub_key='btm'),
+    'gensim_sttm-ptm': STTMEngineSpec(sub_key='ptm'),
+    'gensim_sttm-satm': STTMEngineSpec(sub_key='satm'),
+    'gensim_sttm-dmm': STTMEngineSpec(sub_key='dmm'),
+    'gensim_sttm-watm': STTMEngineSpec(sub_key='watm'),
+}
 
 
 def get_engine_specification(*, engine_key: EngineKey) -> EngineSpec:

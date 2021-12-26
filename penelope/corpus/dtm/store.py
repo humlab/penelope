@@ -76,7 +76,9 @@ def load_metadata(*, tag: str, folder: str) -> dict:
 def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'bundle', **data) -> None:
 
     if isinstance(data.get('token2id'), defaultdict):
-        data['token2id'] = dict(data.get('token2id'),)
+        data['token2id'] = dict(
+            data.get('token2id'),
+        )
 
     if mode.startswith('bundle'):
 

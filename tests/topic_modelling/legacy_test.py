@@ -111,19 +111,19 @@ def test_store_uncompressed_inferred_model(method):
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
-def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(method):
+@pytest.mark.parametrize("engine_key", ["gensim_lda-multicore", "gensim_mallet-lda"])
+def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_corpus(engine_key):
 
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
-    test_inferred_model: InferredModel = create_inferred_model(method)
+    test_inferred_model: InferredModel = create_inferred_model(engine_key)
     test_inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
 
     inferred_model: InferredModel = InferredModel.load(target_folder)
 
     assert inferred_model is not None
-    assert inferred_model.method == method
-    assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
+    assert inferred_model.method == engine_key
+    assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[engine_key].engine)
     assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
     assert len(test_inferred_model.train_corpus.effective_corpus) == len(inferred_model.train_corpus.document_index)
     assert len(inferred_model.train_corpus.document_index) == 5
@@ -134,19 +134,19 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     shutil.rmtree(target_folder)
 
 
-@pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
-def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(method):
+@pytest.mark.parametrize("engine_key", ["gensim_lda-multicore", "gensim_mallet-lda"])
+def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(engine_key):
 
     target_name: str = f"{uuid.uuid1()}"
     target_folder: str = os.path.join(OUTPUT_FOLDER, target_name)
-    test_inferred_model: InferredModel = create_inferred_model(method)
+    test_inferred_model: InferredModel = create_inferred_model(engine_key)
     test_inferred_model.store(target_folder, store_corpus=False)
 
     inferred_model = InferredModel.load(target_folder)
 
     assert inferred_model is not None
-    assert inferred_model.method == method
-    assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[method]['engine'])
+    assert inferred_model.method == engine_key
+    assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[engine_key].engine)
     assert inferred_model.train_corpus is None
 
     shutil.rmtree(target_folder)

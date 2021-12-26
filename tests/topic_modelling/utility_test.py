@@ -1,6 +1,9 @@
 import pandas as pd
+import pytest
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.topic_modelling import (
+    EngineKey,
+    EngineSpec,
     filter_topic_tokens_overview,
     get_engine_cls_by_method_name,
     get_engine_module_by_method_name,
@@ -31,19 +34,16 @@ def test_filter_topic_tokens_overview(state: TopicModelContainer):
     )
 
 
-def test_get_engine_cls_by_method_name():
+@pytest.mark.parametrize('engine_key', ['gensim_lda-multicore', 'gensim_mallet-lda'])
+def test_get_engine_cls_by_method_name(engine_key: EngineKey):
 
-    method: str = 'gensim_lda-multicore'
-
-    module = get_engine_module_by_method_name(method)
+    module = get_engine_module_by_method_name(engine_key)
     assert module is not None
 
-    cls = get_engine_cls_by_method_name(method)
+    cls = get_engine_cls_by_method_name(engine_key)
     assert cls is not None
 
-    options = module.options
-
-    engine_spec: options.EngineSpec = options.get_engine_specification(engine_key=method)
+    engine_spec: EngineSpec = module.options.get_engine_specification(engine_key=engine_key)
 
     assert engine_spec.engine is not None
-    assert engine_spec.get_engine_options(None, None, dict()) is not None
+    assert engine_spec.get_options(None, None, dict()) is not None

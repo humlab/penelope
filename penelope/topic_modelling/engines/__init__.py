@@ -4,6 +4,8 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Type
 
 from . import engine_gensim  # , engine_textacy
+from .engine_gensim.options import EngineKey  # pylint: disable=unused-import
+from .interface import EngineSpec  # pylint: disable=unused-import
 
 if TYPE_CHECKING:
     from . import interface
