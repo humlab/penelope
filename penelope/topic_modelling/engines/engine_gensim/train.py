@@ -39,7 +39,6 @@ def train(
             engine_ptions       Passed engine options (not the interpreted algorithm specific options)
             extra_options       Any other compute option passed as a kwarg
     """
-    algorithm_name: str = method.split('_')[1].upper()
 
     corpus, dictionary = convert.TranslateCorpus().translate(train_corpus.corpus, id2token=train_corpus.id2token)
 
@@ -53,17 +52,14 @@ def train(
     if train_corpus.token2id is None:
         train_corpus.token2id = dictionary.token2id
 
-    algorithm: dict = options.get_engine_options(
-        algorithm=algorithm_name,
-        corpus=train_corpus.effective_corpus,
-        id2word=train_corpus.id2token,
-        engine_args=engine_args,
+    engine_spec: options.EngineSpec = options.get_engine_specification(engine_key=method)
+    model = engine_spec.engine(
+        **engine_spec.get_options(
+            corpus=train_corpus.effective_corpus,
+            id2word=train_corpus.id2token,
+            engine_args=engine_args,
+        )
     )
-
-    engine = algorithm['engine']
-    engine_options = algorithm['options']
-
-    model = engine(**engine_options)
 
     # FIXME: These metrics must be computed on a held-out corpus - not the training corpus
     perplexity_score = (

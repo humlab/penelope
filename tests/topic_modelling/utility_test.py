@@ -43,19 +43,7 @@ def test_get_engine_cls_by_method_name():
 
     options = module.options
 
-    algorithm_name: str = method.split('_')[1].upper()
+    engine_spec: options.EngineSpec = options.get_engine_specification(engine_key=method)
 
-    algorithm: dict = options.get_engine_options(
-        algorithm=algorithm_name,
-        corpus=None,
-        id2word=None,
-        engine_args=dict(),
-    )
-
-    engine = algorithm.get('engine')
-
-    assert engine is not None
-
-    engine_options = algorithm.get('options')
-
-    assert engine_options is not None
+    assert engine_spec.engine is not None
+    assert engine_spec.get_engine_options(None, None, dict()) is not None

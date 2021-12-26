@@ -11,6 +11,27 @@ if TYPE_CHECKING:
     from ..interfaces import InferredModel, TrainingCorpus
 
 
+class EngineSpec:
+    def __init__(self, key: str, engine: Type[Any]):
+        self.key: str = key
+        self.engine: Type[Any] = engine
+
+    def get_options(self, corpus: Any, id2word: dict, engine_args: dict) -> dict:  # pylint: disable=unused-argument
+        return dict()
+
+    @property
+    def algorithm(self):
+        return self.engine_meta.key.split('_', maxsplit=1)[1].upper()
+
+    @property
+    def engine_name(self):
+        return self.engine_meta.key.split('_', maxsplit=1)[0].title()
+
+    @property
+    def description(self):
+        return f"{self.engine_name} {self.algorithm.replace('-', ' ')}"
+
+
 class ITopicModelEngine(abc.ABC):
     def __init__(self, model: Any):
         self.model = model

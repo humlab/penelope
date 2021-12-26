@@ -9,7 +9,6 @@ import pandas as pd
 from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
-from penelope.topic_modelling.engines.engine_gensim.options import EngineKey
 from penelope.utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
@@ -109,7 +108,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     train_corpus_folder: str = None
     target_folder: str = None
     target_name: str = None
-    engine: EngineKey = "gensim_lda-multicore"
+    engine: str = "gensim_lda-multicore"
     engine_args: dict = None
     store_corpus: bool = False
     store_compressed: bool = True

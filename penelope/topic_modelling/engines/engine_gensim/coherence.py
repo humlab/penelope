@@ -18,7 +18,7 @@ def compute_score(id2word, model, corpus) -> float:
 
 
 def compute_scores(
-    method: str,
+    engine_key: options.EngineKey,
     id2word: Dict[int, str],
     corpus: Any,
     start=10,
@@ -27,22 +27,15 @@ def compute_scores(
     engine_args: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
 
-    algorithm_name = method.split('_')[1].upper()
-
     metrics = []
 
     dictionary = gensim_utility.from_id2token_to_dictionary(id2word)
 
     for num_topics in range(start, stop, step):
 
-        algorithm = options.get_engine_options(
-            algorithm=algorithm_name, corpus=corpus, id2word=id2word, engine_args=engine_args
-        )
+        engine_spec: options.EngineSpec = options.get_engine_specification(engine_key=engine_key)
 
-        engine = algorithm['engine']
-        engine_options = algorithm['options']
-
-        model = engine(**engine_options)
+        model = engine_spec.engine(**engine_spec.get_options(corpus=corpus, id2word=id2word, engine_args=engine_args))
 
         coherence_score = CoherenceModel(model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass')
 
