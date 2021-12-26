@@ -74,6 +74,8 @@ class TopicModelMixin:
             train_corpus=train_corpus, method=self.engine, engine_args=self.engine_args
         )
 
+        os.makedirs(self.target_subfolder, exist_ok=True)
+
         inferred_model.topic_model.save(jj(self.target_subfolder, 'gensim.model.gz'))
 
         inferred_model.store(
