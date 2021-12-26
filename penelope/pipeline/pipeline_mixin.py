@@ -55,19 +55,15 @@ class PipelineShortcutMixIn:
             tasks.LoadTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts, extra_reader_opts=extra_reader_opts)
         )
 
-    def load_grouped_id_tagged_frame(
+    def load_id_tagged_frame(
         self: pipelines.CorpusPipeline,
         folder: str,
         file_pattern: str = '**/*.feather',  # NOTE: document_index.feather must be excluded
-        to_tagged_frame: bool = False,
+        id_to_token: bool = False,
     ) -> pipelines.CorpusPipeline:
         """ _ => DATAFRAME """
         return self.add(
-            tagged_frame.LoadIdTaggedFrame(
-                corpus_source=folder,
-                file_pattern=file_pattern,
-                decode_text=to_tagged_frame,
-            )
+            tagged_frame.LoadIdTaggedFrame(corpus_source=folder, file_pattern=file_pattern, id_to_token=id_to_token)
         )
 
     def load_tagged_xml(
@@ -123,9 +119,13 @@ class PipelineShortcutMixIn:
             return self.add(tasks.TokensTransform(transform_opts=transform_opts, transformer=transformer))
         return self
 
-    def to_dtm(self: pipelines.CorpusPipeline, vectorize_opts: VectorizeOpts = None) -> pipelines.CorpusPipeline:
+    def to_dtm(
+        self: pipelines.CorpusPipeline,
+        vectorize_opts: VectorizeOpts = None,
+        tagged_column: str = None,
+    ) -> pipelines.CorpusPipeline:
         """ (filename, TEXT => DTM) """
-        return self.add(tasks.ToDTM(vectorize_opts=vectorize_opts or VectorizeOpts()))
+        return self.add(tasks.ToDTM(vectorize_opts=vectorize_opts or VectorizeOpts(), tagged_column=tagged_column))
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())
@@ -165,17 +165,15 @@ class PipelineShortcutMixIn:
     def filter_tagged_frame(
         self: pipelines.CorpusPipeline,
         extract_opts: ExtractTaggedTokensOpts,
-        filter_opts: PropertyValueMaskingOpts,
-        token2id: Token2Id = None,
         pos_schema: PoS_Tag_Scheme = None,
         transform_opts: TokensTransformOpts = None,
+        filter_opts: PropertyValueMaskingOpts = None,
         normalize_column_names: bool = False,
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.FilterTaggedFrame(
                 extract_opts=extract_opts,
                 filter_opts=filter_opts,
-                token2id=token2id,
                 pos_schema=pos_schema,
                 transform_opts=transform_opts,
                 normalize_column_names=normalize_column_names,
