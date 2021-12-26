@@ -132,7 +132,7 @@ class STTMEngineSpec(EngineSpec):
         work_folder: str = f"{engine_args.get('work_folder', DEFAULT_WORK_FOLDER).rstrip('/')}/sttm/"
         return {
             'sstm_jar_path': './lib/STTM.jar',
-            'model': sttm,
+            'model': self.sttm_type,
             'corpus': corpus,
             'id2word': id2word,
             'num_topics': engine_args.get('n_topics', 20),
