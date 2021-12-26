@@ -17,10 +17,16 @@ checkpoint_opts:
     deserialize_chunksize: 4
     index_column: null
 pipelines:
-  tagged_frame_pipeline:
-    class_name: penelope.pipeline.topic_model.pipelines.from_grouped_feather_id_to_tagged_frame_pipeline
+  topic_modeling_pipeline:
+    class_name: 'penelope.pipeline.topic_model.pipelines.from_id_tagged_frame_pipeline'
     options:
-      to_tagged_fram: true
+      id_to_token: false
+      file_pattern: '**/prot-*.feather'
+      tagged_column: lemma_id
+  tagged_frame_pipeline:
+    class_name: penelope.pipeline.topic_model.pipelines.load_id_tagged_frame_pipeline
+    options:
+      id_to_token: true
       file_pattern: '**/prot-*.feather'
 pipeline_payload:
   source: ./tests/test_data/tagged_id_frame_feather
