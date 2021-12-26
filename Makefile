@@ -235,7 +235,6 @@ profile-topic_model-tagged-id-frame-pyinstrument: make-profile-reports
 profile-topic_model-tagged-id-frame-cprofile: make-profile-reports
 	@PYTHONPATH=. python -m cProfile tests/profiling/profile-topic_model-tagged-id-frame.py &> ./profile-reports/$(RUN_TIMESTAMP)_topic_model-tagged-id-frame-cprofiler.txt
 
-
 bugger-pyinstrument: make-profile-reports
 	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_bugger-pyinstrument.html ./tests/profiling/bugger.py
 
