@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
-from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, TokensTransformOpts, VectorizeOpts
+from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, deprecated
 
 from . import tagged_frame, tasks
