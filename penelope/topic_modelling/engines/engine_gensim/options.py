@@ -124,9 +124,12 @@ class STTMEngineSpec(EngineSpec):
     def __init__(self, sub_key: Literal['lda', 'btm', 'ptm', 'satm', 'dmm', 'watm']):
         super().__init__(f"gensim_sttm-{sub_key}", STTMTopicModel)
 
+    @property
+    def sttm_type(self) -> str:
+        return self.algorithm[5:]
+
     def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         work_folder: str = f"{engine_args.get('work_folder', DEFAULT_WORK_FOLDER).rstrip('/')}/sttm/"
-        sttm = self.engine_meta.algorithm[5:]
         return {
             'sstm_jar_path': './lib/STTM.jar',
             'model': sttm,
@@ -135,7 +138,7 @@ class STTMEngineSpec(EngineSpec):
             'num_topics': engine_args.get('n_topics', 20),
             'iterations': engine_args.get('max_iter', 2000),
             'prefix': work_folder,
-            'name': '{}_model'.format(sttm)
+            'name': '{}_model'.format(self.sttm_type)
             # 'vectors', 'alpha'=0.1, 'beta'=0.01, 'twords'=20,sstep=0
         }
 

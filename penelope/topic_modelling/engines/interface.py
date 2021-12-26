@@ -21,11 +21,11 @@ class EngineSpec:
 
     @property
     def algorithm(self):
-        return self.engine_meta.key.split('_', maxsplit=1)[1].upper()
+        return self.key.split('_', maxsplit=1)[1].upper()
 
     @property
     def engine_name(self):
-        return self.engine_meta.key.split('_', maxsplit=1)[0].title()
+        return self.key.split('_', maxsplit=1)[0].title()
 
     @property
     def description(self):
