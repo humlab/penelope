@@ -5,6 +5,7 @@ import json
 import os
 import pickle
 import time
+from collections import defaultdict
 from os.path import join as jj
 from pathlib import Path
 from typing import Dict, Literal, Mapping, Optional
@@ -73,6 +74,9 @@ def load_metadata(*, tag: str, folder: str) -> dict:
 
 
 def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'bundle', **data) -> None:
+
+    if isinstance(data.get('token2id'), defaultdict):
+        data['token2id'] = dict(defaultdict)
 
     if mode.startswith('bundle'):
 
