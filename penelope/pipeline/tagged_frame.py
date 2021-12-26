@@ -93,12 +93,12 @@ class LoadIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
 
     corpus_source: str = ""
     file_pattern: str = "**/*.feather"
-    decode_text: bool = False
+    id_to_token: bool = False
     # document_tfs: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
-        self.out_content_type = ContentType.TAGGED_FRAME if self.decode_text else ContentType.TAGGED_ID_FRAME
+        self.out_content_type = ContentType.TAGGED_FRAME if self.id_to_token else ContentType.TAGGED_ID_FRAME
 
         if not self.file_pattern.endswith('.feather'):
             raise ValueError("Only feather files are currently supported")
@@ -151,7 +151,7 @@ class LoadIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
 
             loaded_frame: pd.DataFrame = self.load_tagged_frame(filename)
 
-            if self.decode_text:
+            if self.id_to_token:
 
                 if 'token_id' in loaded_frame.columns:
                     loaded_frame[text_column] = loaded_frame.token_id.apply(fg)

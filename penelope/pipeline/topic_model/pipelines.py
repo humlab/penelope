@@ -1,24 +1,29 @@
 from __future__ import annotations
 
+from penelope.corpus.dtm.vectorizer import VectorizeOpts
+
 from ... import corpus, utility
 from .. import pipelines
 from ..config import CorpusConfig
 
 
-def from_grouped_feather_id_to_tagged_frame_pipeline(
+# FIXME: Move out of topic modeling module (this is a more generic pipeline)
+def load_id_tagged_frame_pipeline(
     *,
     corpus_config: CorpusConfig,
     corpus_source: str = None,
+    id_to_token: bool = False,
+    file_pattern: str = '**/prot-*.feather',
     **_,
 ):
     """Loads a tagged data frame"""
 
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
 
-    p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config).load_grouped_id_tagged_frame(
+    p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config).load_id_tagged_frame(
         folder=corpus_source,
-        to_tagged_frame=True,
-        file_pattern='**/prot-*.feather',
+        id_to_token=id_to_token,
+        file_pattern=file_pattern,
     )
 
     return p
@@ -26,9 +31,9 @@ def from_grouped_feather_id_to_tagged_frame_pipeline(
 
 def from_tagged_frame_pipeline(
     *,
-    config: CorpusConfig,
-    target_name: str,
+    corpus_config: CorpusConfig,
     corpus_source: str = None,
+    target_name: str,
     train_corpus_folder: str = None,
     target_folder: str = None,
     text_transform_opts: corpus.TextTransformOpts = None,
@@ -41,12 +46,13 @@ def from_tagged_frame_pipeline(
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
+    **_,
 ) -> pipelines.CorpusPipeline:
 
-    corpus_source: str = corpus_source or config.pipeline_payload.source
+    corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
 
     p: pipelines.CorpusPipeline = (
-        config.get_pipeline(
+        corpus_config.get_pipeline(
             "tagged_frame_pipeline",
             corpus_source=corpus_source,
             enable_checkpoint=enable_checkpoint,
@@ -75,39 +81,38 @@ def from_tagged_frame_pipeline(
 
 def from_id_tagged_frame_pipeline(
     *,
-    config: CorpusConfig,
-    target_name: str,
+    corpus_config: CorpusConfig,
     corpus_source: str = None,
+    tagged_column: str = 'lemma_id',
+    file_pattern: str = '**/prot-*.feather',
+    target_name: str,
     train_corpus_folder: str = None,
     target_folder: str = None,
-    text_transform_opts: corpus.TextTransformOpts = None,
-    extract_opts: corpus.ExtractTaggedTokensOpts = None,
-    transform_opts: corpus.TokensTransformOpts = None,
-    filter_opts: utility.PropertyValueMaskingOpts = None,
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     store_corpus: bool = False,
     store_compressed: bool = True,
-    enable_checkpoint: bool = True,
-    force_checkpoint: bool = False,
+    # extract_opts: corpus.ExtractTaggedTokensOpts = None,
+    **_,
+    # transform_opts: corpus.TokensTransformOpts = None,
+    # enable_checkpoint: bool = True,
+    # force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
 
-    corpus_source: str = corpus_source or config.pipeline_payload.source
-
+    corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
+    vectorize_opts: VectorizeOpts = VectorizeOpts(
+        already_tokenized=True,
+        lowercase=False,
+    )
     p: pipelines.CorpusPipeline = (
-        config.get_pipeline(
-            "tagged_frame_pipeline",
+        load_id_tagged_frame_pipeline(
+            corpus_config=corpus_config,
             corpus_source=corpus_source,
-            enable_checkpoint=enable_checkpoint,
-            force_checkpoint=force_checkpoint,
-            text_transform_opts=text_transform_opts,
+            id_to_token=False,
+            file_pattern=file_pattern,
         )
-        .to_dtm(
-            extract_opts=extract_opts,
-            transform_opts=transform_opts,
-            filter_opts=filter_opts,
-        )
-        .to_topic_model(
+        # .filter_tagged_frame(extract_opts=extract_opts)
+        .to_dtm(vectorize_opts=vectorize_opts, tagged_column=tagged_column).to_topic_model(
             corpus_source=None,
             train_corpus_folder=train_corpus_folder,
             target_folder=target_folder,

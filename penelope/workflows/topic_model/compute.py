@@ -51,8 +51,7 @@ def compute(
     corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=None)
 
     train_corpus: tm.TrainingCorpus = tm.TrainingCorpus(
-        terms=corpus.terms,
-        document_index=corpus.document_index,
+        corpus=corpus,
         corpus_options=dict(
             reader_opts=reader_opts.props,
             transform_opts=transform_opts.props,

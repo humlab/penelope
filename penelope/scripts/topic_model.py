@@ -1,13 +1,12 @@
 import os
 import sys
 from os.path import dirname, isdir, isfile
+from typing import Optional
 
 import click
-import penelope.corpus as penelope
+import penelope.corpus as pc
 import yaml
 from penelope import pipeline
-from penelope.corpus import TextTransformOpts, remove_hyphens
-from penelope.pipeline.topic_model.pipelines import from_tagged_frame_pipeline
 from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -48,35 +47,35 @@ from penelope.utility import PropertyValueMaskingOpts
 def click_main(
     config_filename: str = None,
     target_name: str = None,
-    options_filename: str = None,
-    corpus_source: str = None,
-    train_corpus_folder: str = None,
-    target_folder: str = None,
+    options_filename: Optional[str] = None,
+    corpus_source: Optional[str] = None,
+    train_corpus_folder: Optional[str] = None,
+    target_folder: Optional[str] = None,
     fix_hyphenation: bool = True,
     fix_accents: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
     to_lower: bool = True,
-    remove_stopwords: str = None,
+    remove_stopwords: Optional[str] = None,
     min_word_length: int = 2,
-    max_word_length: int = None,
+    max_word_length: Optional[int] = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
     n_topics: int = 50,
     engine: str = "gensim_lda-multicore",
-    passes: int = None,
-    random_seed: int = None,
+    passes: Optional[int] = None,
+    random_seed: Optional[int] = None,
     alpha: str = 'asymmetric',
-    workers: int = None,
-    max_iter: int = None,
+    workers: Optional[int] = None,
+    max_iter: Optional[int] = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
-    passthrough_column: str = None,
+    passthrough_column: Optional[str] = None,
 ):
     arguments: dict = locals()
     print(arguments)
@@ -99,18 +98,18 @@ def click_main(
 
 
 def _main(
-    config_filename: str = None,
-    target_name: str = None,
-    corpus_source: str = None,
-    train_corpus_folder: str = None,
-    target_folder: str = None,
+    config_filename: Optional[str] = None,
+    target_name: Optional[str] = None,
+    corpus_source: Optional[str] = None,
+    train_corpus_folder: Optional[str] = None,
+    target_folder: Optional[str] = None,
     fix_hyphenation: bool = True,
     fix_accents: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
     to_lower: bool = True,
-    remove_stopwords: str = None,
+    remove_stopwords: Optional[str] = None,
     min_word_length: int = 2,
     max_word_length: int = None,
     keep_symbols: bool = False,
@@ -128,8 +127,42 @@ def _main(
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
-    passthrough_column: str = None,
+    passthrough_column: Optional[str] = None,
 ):
+    """Create a topic model.
+
+    Args:
+        config_filename (Optional[str], optional): [description]. Defaults to None.
+        target_name (Optional[str], optional): [description]. Defaults to None.
+        corpus_source (Optional[str], optional): [description]. Defaults to None.
+        train_corpus_folder (Optional[str], optional): [description]. Defaults to None.
+        target_folder (Optional[str], optional): [description]. Defaults to None.
+        fix_hyphenation (bool, optional): [description]. Defaults to True.
+        fix_accents (bool, optional): [description]. Defaults to True.
+        lemmatize (bool, optional): [description]. Defaults to True.
+        pos_includes (str, optional): [description]. Defaults to ''.
+        pos_excludes (str, optional): [description]. Defaults to ''.
+        to_lower (bool, optional): [description]. Defaults to True.
+        remove_stopwords (Optional[str], optional): [description]. Defaults to None.
+        min_word_length (int, optional): [description]. Defaults to 2.
+        max_word_length (int, optional): [description]. Defaults to None.
+        keep_symbols (bool, optional): [description]. Defaults to False.
+        keep_numerals (bool, optional): [description]. Defaults to False.
+        only_any_alphanumeric (bool, optional): [description]. Defaults to False.
+        only_alphabetic (bool, optional): [description]. Defaults to False.
+        n_topics (int, optional): [description]. Defaults to 50.
+        engine (str, optional): [description]. Defaults to "gensim_lda-multicore".
+        passes (int, optional): [description]. Defaults to None.
+        random_seed (int, optional): [description]. Defaults to None.
+        alpha (str, optional): [description]. Defaults to 'asymmetric'.
+        workers (int, optional): [description]. Defaults to None.
+        max_iter (int, optional): [description]. Defaults to None.
+        store_corpus (bool, optional): [description]. Defaults to True.
+        store_compressed (bool, optional): [description]. Defaults to True.
+        enable_checkpoint (bool, optional): [description]. Defaults to True.
+        force_checkpoint (bool, optional): [description]. Defaults to False.
+        passthrough_column (Optional[str], optional): [description]. Defaults to None.
+    """
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
     if config.pipeline_payload.source is None:
         config.pipeline_payload.source = corpus_source
@@ -140,9 +173,7 @@ def _main(
 
     if passthrough_column is None:
 
-        text_transform_opts: TextTransformOpts = TextTransformOpts()
-
-        text_transform_opts = TextTransformOpts()
+        text_transform_opts: pc.TextTransformOpts = pc.TextTransformOpts()
 
         if fix_accents:
             text_transform_opts.fix_accents = True
@@ -155,9 +186,9 @@ def _main(
             #     else remove_hyphens
             # )
             text_transform_opts.fix_hyphenation = False
-            text_transform_opts.extra_transforms.append(remove_hyphens)
+            text_transform_opts.extra_transforms.append(pc.remove_hyphens)
 
-        transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
+        transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts(
             to_lower=to_lower,
             to_upper=False,
             min_len=min_word_length,
@@ -173,7 +204,7 @@ def _main(
             only_any_alphanumeric=only_any_alphanumeric,
         )
 
-        extract_opts = penelope.ExtractTaggedTokensOpts(
+        extract_opts = pc.ExtractTaggedTokensOpts(
             lemmatize=lemmatize,
             pos_includes=pos_includes,
             pos_excludes=pos_excludes,
@@ -182,8 +213,8 @@ def _main(
 
     else:
         extract_opts: str = passthrough_column
-        text_transform_opts: TextTransformOpts = None
-        transform_opts: penelope.TokensTransformOpts = None
+        text_transform_opts: pc.TextTransformOpts = None
+        transform_opts: pc.TokensTransformOpts = None
 
     filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
 
@@ -205,7 +236,12 @@ def _main(
         click.echo("usage: corpus source must be specified")
         sys.exit(1)
 
-    _: dict = from_tagged_frame_pipeline(
+    if not config.pipeline_key_exists("topic_modeling_pipeline"):
+        click.echo("config error: `topic_modeling_pipeline` not specified")
+        sys.exit(1)
+
+    _: dict = config.get_pipeline(
+        pipeline_key="topic_modeling_pipeline",
         config=config,
         target_name=target_name,
         corpus_source=corpus_source,

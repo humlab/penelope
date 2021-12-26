@@ -73,7 +73,7 @@ def compute_hal_or_glove_co_occurrences(
 
     if token2id is None:
         raise CoOccurrenceError("expected `token2id` found None")
-        # token2id = gensim_utility.build_vocab(doc_terms)
+        # token2id = generate_token2id(doc_terms)
 
     def get_bucket_key(item: Tuple[str, Iterable[str]]) -> int:
 

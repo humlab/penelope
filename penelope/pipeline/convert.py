@@ -28,7 +28,9 @@ class PoSTagSchemaMissingError(ValueError):
 class TaggedFrameColumnNameError(ValueError):
     ...
 
+
 # pylint: disable=too-many-arguments, too-many-statements
+
 
 def filter_tagged_frame(
     tagged_frame: pd.DataFrame,

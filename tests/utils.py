@@ -21,15 +21,6 @@ PERSISTED_INFERRED_MODEL_SOURCE_FOLDER: str = './tests/test_data/tranströmer_in
 
 # pylint: disable=too-many-arguments
 
-TOPIC_MODELING_OPTS = {
-    'n_topics': 4,
-    'passes': 1,
-    'random_seed': 42,
-    'alpha': 'auto',
-    'workers': 1,
-    'max_iter': 100,
-    'work_folder': './tests/output/',
-}
 
 if __file__ in globals():
     this_file = os.path.dirname(__file__)
@@ -77,7 +68,7 @@ def create_abc_corpus(dtm: List[List[int]], document_years: List[int] = None) ->
             'document_id': [i for i in range(0, bag_term_matrix.shape[0])],
         }
     )
-    corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
     return corpus
 
 

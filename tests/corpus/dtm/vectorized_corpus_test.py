@@ -142,7 +142,7 @@ def test_dump_and_store_of_corpus_with_empty_trailing_row() -> VectorizedCorpus:
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [0, 0, 0, 0]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     document_index = pd.DataFrame({'year': [2013, 2013, 2014]})
-    corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus: VectorizedCorpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
 
     corpus.dump(tag="ZERO", folder="./tests/output")
 

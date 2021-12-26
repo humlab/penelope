@@ -91,6 +91,7 @@ SIMPLE_CORPUS_ABCDEFG_3DOCS = [
     ('rand_1993_7.txt', ['f', 'c', 'f', 'g']),
 ]
 
+
 SAMPLE_WINDOW_STREAM = [
     ['rand_1991_1.txt', 0, ['*', '*', 'b', 'd', 'a']],
     ['rand_1991_1.txt', 1, ['c', 'e', 'b', 'a', 'd']],
@@ -208,7 +209,7 @@ def create_smaller_vectorized_corpus():
             'document_id': [0, 1, 2, 3, 4],
         }
     )
-    v_corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    v_corpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
     return v_corpus
 
 

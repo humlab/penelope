@@ -12,12 +12,22 @@ checkpoint_opts:
     lemma_column: baseform
     pos_column: pos
     extra_columns: []
-    custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
+    custom_serializer_classname: null
     deserialize_processes: 8
     deserialize_chunksize: 4
     index_column: null
 pipelines:
-  tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
+  topic_modeling_pipeline:
+    class_name: 'penelope.pipeline.topic_model.pipelines.from_id_tagged_frame_pipeline'
+    options:
+      id_to_token: false
+      file_pattern: '**/prot-*.feather'
+      tagged_column: lemma_id
+  tagged_frame_pipeline:
+    class_name: penelope.pipeline.topic_model.pipelines.load_id_tagged_frame_pipeline
+    options:
+      id_to_token: true
+      file_pattern: '**/prot-*.feather'
 pipeline_payload:
   source: pyriksprot_parlaclarin_basic_protocol_stanza.csv.zip
   document_index_source: document_index.csv

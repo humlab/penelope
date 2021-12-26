@@ -9,7 +9,6 @@ import pandas as pd
 from gensim.matutils import Sparse2Corpus
 from penelope import topic_modelling as tm
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
-from penelope.topic_modelling.engines.engine_gensim.options import EngineKey
 from penelope.utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
@@ -74,6 +73,8 @@ class TopicModelMixin:
             train_corpus=train_corpus, method=self.engine, engine_args=self.engine_args
         )
 
+        os.makedirs(self.target_subfolder, exist_ok=True)
+
         inferred_model.topic_model.save(jj(self.target_subfolder, 'gensim.model.gz'))
 
         inferred_model.store(
@@ -107,7 +108,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     train_corpus_folder: str = None
     target_folder: str = None
     target_name: str = None
-    engine: EngineKey = "gensim_lda-multicore"
+    engine: str = "gensim_lda-multicore"
     engine_args: dict = None
     store_corpus: bool = False
     store_compressed: bool = True
@@ -132,9 +133,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             vectorized_corpus: VectorizedCorpus = payload.content
             vectorize_opts: VectorizeOpts = payload.recall('vectorize_opts')
             corpus = tm.TrainingCorpus(
-                doc_term_matrix=vectorized_corpus.data,
-                document_index=vectorized_corpus.document_index,
-                id2token=vectorized_corpus.id2token,
+                corpus=vectorized_corpus,
                 corpus_options={},
                 vectorizer_args={} if vectorize_opts is None else vectorize_opts.props,
             )
@@ -144,10 +143,14 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             if tm.TrainingCorpus.exists(self.train_corpus_folder):
                 """Shortcut pipeline and load training corpus from disk"""
                 corpus = tm.TrainingCorpus.load(self.train_corpus_folder)
+
             else:
+
                 corpus = tm.TrainingCorpus(
-                    terms=self.prior.content_stream(),
+                    corpus=self.prior.filename_content_stream(),
+                    # corpus=self.prior.content_stream(),
                     document_index=self.document_index,
+                    token2id=self.pipeline.payload.token2id,
                     corpus_options={},
                 )
 
@@ -165,7 +168,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         _ = self.predict(
             inferred_model=inferred_model,
-            corpus=train_corpus.corpus,
+            corpus=train_corpus.effective_corpus,
             id2token=train_corpus.id2token,
             document_index=self.document_index,
             target_folder=self.target_subfolder,

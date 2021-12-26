@@ -56,10 +56,10 @@ def run_workflow():
     filter_opts = None
     _ = (
         CorpusPipeline(config=corpus_config)
-        .load_grouped_id_tagged_frame(
+        .load_id_tagged_frame(
             folder=CORPUS_FOLDER,
             file_pattern='**/prot-*.feather',
-            to_tagged_frame=True,
+            id_to_token=True,
         )
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,

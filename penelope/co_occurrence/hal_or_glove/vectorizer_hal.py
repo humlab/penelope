@@ -4,8 +4,8 @@ from typing import Iterable, Mapping
 import numpy as np
 import pandas as pd
 import penelope.utility as utility
-import penelope.vendor.gensim as gensim_utility
 import scipy.sparse as sp
+from penelope.corpus import generate_token2id
 
 logger = utility.getLogger('corpus_text_analysis')
 
@@ -38,7 +38,7 @@ class HyperspaceAnalogueToLanguageVectorizer:
         self.term_count = sum(map(len, value or []))
 
         if self.token2id is None and value is not None:
-            self.token2id = gensim_utility.build_vocab(value)
+            self.token2id = generate_token2id(value)
             self._id2token = None
 
     @property

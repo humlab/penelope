@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Sequence, Union
 
+import more_itertools
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -468,16 +469,13 @@ class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
 
 @dataclass
 class FilterTaggedFrame(ITask):
-    """Filters tagged frame text from payload.content based on annotations etc. """
+    """Filters and transforms tagged frame (can be numeric or text). """
 
     extract_opts: ExtractTaggedTokensOpts = None
     filter_opts: utility.PropertyValueMaskingOpts = None
-
-    token2id: Token2Id = None
     pos_schema: utility.PoS_Tag_Scheme = None
     transform_opts: TokensTransformOpts = None
     normalize_column_names: bool = False
-
     token_counts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
@@ -489,7 +487,7 @@ class FilterTaggedFrame(ITask):
         tagged_frame: pd.DataFrame = convert.filter_tagged_frame(
             tagged_frame=payload.content,
             extract_opts=self.extract_opts,
-            token2id=self.token2id,
+            token2id=self.pipeline.payload.token2id,
             pos_schema=self.pos_schema,
             filter_opts=self.filter_opts,
             transform_opts=self.transform_opts,
@@ -722,7 +720,7 @@ class TokensToText(ITask):
 class ToDTM(ITask):
 
     vectorize_opts: VectorizeOpts = None
-    target: Optional[str] = field(default=None)
+    tagged_column: Optional[str] = field(default=None)
     tokenizer: Callable[[str], Iterable[str]] = field(default=None)
 
     def __post_init__(self):
@@ -747,34 +745,37 @@ class ToDTM(ITask):
 
         self.vectorize_opts.already_tokenized = True
 
+        """Hack: trigger execution of stream's enter() methods so that token2id and index are read"""
+        _, payloads = more_itertools.spy(self.create_instream(), n=1)
+
         if content_type == ContentType.TOKENS:
             fg: dict = self.pipeline.payload.token2id.data.get
             tokens2series = lambda tokens: pd.Series([fg(t) for t in tokens], dtype=np.int32)
-            stream = [(name2id(p.document_name), tokens2series(p.content)) for p in self.create_instream()]
+            stream = [(name2id(p.document_name), tokens2series(p.content)) for p in payloads]
             vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
                 stream, self.pipeline.payload.token2id, self.document_index
             )
 
         elif content_type == ContentType.TOKEN_IDS:
-            stream = [(name2id(p.document_name), pd.Series(p.content, dtype=np.int32)) for p in self.create_instream()]
+            stream = [(name2id(p.document_name), pd.Series(p.content, dtype=np.int32)) for p in payloads]
             vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
                 stream, self.pipeline.payload.token2id, self.document_index
             )
 
         elif content_type == ContentType.TAGGED_ID_FRAME:
 
-            if self.target is None:
-                raise ValueError("target column name must be specified!")
+            if self.tagged_column is None:
+                raise ValueError("tagged column name in source must be specified!")
 
-            target: str = self.target
-            stream = ((name2id[p.document_name], p.content[target]) for p in self.create_instream())
+            tagged_column: str = self.tagged_column
+            stream = ((name2id(p.document_name), p.content[tagged_column]) for p in payloads)
             vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
-                stream, self.pipeline.payload.token2id, self.document_index
+                stream, token2id=self.pipeline.payload.token2id, document_index=self.document_index
             )
 
         elif content_type == ContentType.TEXT:
             tokenizer = self.tokenizer or default_tokenizer
-            stream = ((p.filename, tokenizer(p.content)) for p in self.create_instream())
+            stream = ((p.filename, tokenizer(p.content)) for p in payloads)
             vectorized_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform_(
                 stream,
                 document_index=lambda: self.pipeline.payload.document_index,

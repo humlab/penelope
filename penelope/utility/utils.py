@@ -11,7 +11,6 @@ import platform
 import re
 import time
 import uuid
-from collections import defaultdict
 from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number
@@ -590,10 +589,3 @@ def get_smiley() -> str:
 
 def dictify(o: Any) -> dict:
     return json.loads(json.dumps(o, default=lambda _: "<not serializable"))
-
-
-def term_frequency(tokens: Sequence[str], counts: dict = None) -> Mapping[str, int]:
-    counts = counts or defaultdict(int)
-    for v in tokens:
-        counts[v] += 1
-    return counts

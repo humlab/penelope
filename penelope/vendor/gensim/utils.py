@@ -1,50 +1,62 @@
 from __future__ import annotations
 
-import collections
-from typing import Iterable, Tuple
+from typing import Any, Iterable, Mapping, Tuple
 
+import scipy.sparse as sp
 from gensim.corpora.dictionary import Dictionary
 from gensim.matutils import Sparse2Corpus, corpus2csc
-from loguru import logger
+from penelope.corpus.token2id import id2token2token2id
 
 
-def build_vocab(corpus: Iterable[Iterable[str]]) -> dict:
-    ''' Iterates corpus and add distinct terms to vocabulary '''
-    logger.info('Builiding vocabulary...')
-    token2id = collections.defaultdict()
-    token2id.default_factory = token2id.__len__
-    for doc in corpus:
-        for term in doc:
-            token2id[term]  # pylint: disable=pointless-statement
-    logger.info('Vocabulary of size {} built.'.format(len(token2id)))
+def _id2token2token2id(id2token: Mapping[int, str]) -> dict:
+    if id2token is None:
+        return None
+    if hasattr(id2token, 'token2id'):
+        return id2token.token2id
+    token2id: dict = {v: k for k, v in id2token.items()}
     return token2id
 
 
-def create_dictionary(id2word: dict) -> Dictionary:
-
-    if isinstance(id2word, Dictionary):
-        return id2word
-
-    if not isinstance(id2word, dict):
-        raise ValueError(f"expected dict, found {type(id2word)}")
-
-    dictionary: Dictionary = Dictionary()
-    dictionary.id2token = id2word
-    dictionary.token2id = dict((v, k) for v, k in id2word.items())
-
-    return dictionary
+GensimBowCorpus = Iterable[Iterable[Tuple[int, float]]]
 
 
-def terms_to_sparse_corpus(source: Iterable[Iterable[str]]) -> Tuple[Sparse2Corpus, Dictionary]:
-    """Convert stream of (stream of) tokens to a Gensim sparse corpus"""
+def from_stream_of_tokens_to_sparse2corpus(source: Any, vocabulary: Dictionary | dict) -> Sparse2Corpus:
 
-    id2word: Dictionary = Dictionary(source)
-    bow_corpus: Iterable[Iterable[int | float]] = [id2word.doc2bow(tokens) for tokens in source]
-    csc_matrix = corpus2csc(
+    if not hasattr(vocabulary, 'doc2bow'):
+        vocabulary: Dictionary = from_token2id_to_dictionary(vocabulary)
+
+    bow_corpus: GensimBowCorpus = [vocabulary.doc2bow(tokens) for _, tokens in source]
+    csc_matrix: sp.csc_matrix = corpus2csc(
         bow_corpus,
-        num_terms=len(id2word),
+        num_terms=len(vocabulary),
         num_docs=len(bow_corpus),
         num_nnz=sum(map(len, bow_corpus)),
     )
     corpus: Sparse2Corpus = Sparse2Corpus(csc_matrix, documents_columns=True)
-    return corpus, id2word
+    return corpus
+
+
+def from_stream_of_tokens_to_dictionary(source: Any, id2token: dict) -> Dictionary:
+    """Creates a Dictionary from source using existing `id2token` mapping.
+    Useful if cfs/dfs are needed, otherwise just use the existing mapping."""
+    vocabulary: Dictionary = Dictionary()
+    if id2token is not None:
+        vocabulary.token2id = _id2token2token2id(id2token)
+    vocabulary.add_documents(tokens for _, tokens in source)
+    return vocabulary
+
+
+def from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
+
+    if isinstance(token2id, Dictionary):
+        return token2id
+
+    dictionary: Dictionary = Dictionary()
+    dictionary.token2id = token2id
+
+    return dictionary
+
+
+def from_id2token_to_dictionary(id2token: dict) -> Dictionary:
+    """Creates a `Dictionary` from a id2token dict."""
+    return from_token2id_to_dictionary(id2token2token2id(id2token))

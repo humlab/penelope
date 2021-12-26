@@ -76,7 +76,7 @@ def test_group_by_year_category_aggregates_DTM_to_PTM():
             'document_id': [0, 1, 2, 3, 4],
         }
     )
-    corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
 
     grouped_corpus = corpus.group_by_time_period(time_period_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
@@ -120,7 +120,7 @@ def test_group_by_time_period_aggregates_DTM_to_PTM():
             'document_id': [0, 1, 2, 3, 4],
         }
     )
-    corpus = VectorizedCorpus(bag_term_matrix, token2id, document_index)
+    corpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
 
     grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
