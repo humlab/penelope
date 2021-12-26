@@ -1,3 +1,6 @@
+# type: ignore
+# pylint: disable=unused-variable, unused-argument
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #

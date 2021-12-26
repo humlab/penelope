@@ -1,3 +1,5 @@
+# type: ignore
+
 # Copyright (C) 2017 Parul Sethi <parul1sethi@gmail.com>
 # Copyright (C) 2017 Radim Rehurek <me@radimrehurek.com>
 # Licensed under the GNU LGPL v2.1 - http://www.gnu.org/licenses/lgpl.html

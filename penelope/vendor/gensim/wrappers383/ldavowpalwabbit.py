@@ -1,3 +1,6 @@
+# type: ignore
+# pylint: disable=protected-access
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
