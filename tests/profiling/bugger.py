@@ -10,8 +10,8 @@ from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipelin
 # DATA_PATH: str = join(abspath(join(dirname(__file__), '..')), 'test_data', 'tagged_id_frame_feather')
 
 # DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'
-# DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
-DATA_PATH: str = '/home/roger/source/penelope/tests/test_data/tagged_id_frame_feather'
+DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
+# DATA_PATH: str = '/home/roger/source/penelope/tests/test_data/tagged_id_frame_feather'
 
 ARGUMENTS: dict = dict(
     config_filename=join(DATA_PATH, 'corpus.yml'),
@@ -32,18 +32,18 @@ ARGUMENTS: dict = dict(
     keep_numerals=True,
     only_any_alphanumeric=False,
     only_alphabetic=False,
-    n_topics=50,
+    n_topics=200,
     engine="gensim_lda-multicore",
-    passes=None,
+    passes=2,
     random_seed=None,
     alpha='asymmetric',
     workers=4,
-    max_iter=None,
+    max_iter=4000,
     store_corpus=True,
     store_compressed=True,
     enable_checkpoint=True,
     force_checkpoint=False,
-    passthrough_column='lemma',
+    # passthrough_column='lemma',
 )
 
 

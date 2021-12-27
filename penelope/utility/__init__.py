@@ -37,6 +37,7 @@ from .file_utility import (
     touch,
     unpickle_compressed_from_file,
     unpickle_from_file,
+    update_dict_from_yaml_file,
     write_json,
 )
 from .filename_fields import (

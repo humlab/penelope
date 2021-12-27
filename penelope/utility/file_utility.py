@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, AnyStr, Dict, Mapping, Tuple
 
 import pandas as pd
+import yaml
 
 from .filename_utils import replace_extension
 
@@ -197,3 +198,14 @@ def load_term_substitutions(
     substitutions = {k: v for k, v in substitutions.items() if k != v}
 
     return substitutions
+
+
+def update_dict_from_yaml_file(yaml_file: str, arguments: dict) -> dict:
+    if yaml_file is None:
+        return arguments
+    if not os.path.isfile(yaml_file):
+        raise FileNotFoundError(f"file not found {yaml_file}")
+    with open(yaml_file, "r") as fp:
+        options: dict = yaml.load(fp, Loader=yaml.FullLoader)
+    arguments.update(options)
+    return arguments
