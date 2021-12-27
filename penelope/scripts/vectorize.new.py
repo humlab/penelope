@@ -1,6 +1,6 @@
 import functools
 import sys
-from typing import Sequence
+from typing import Optional, Sequence
 
 import click
 import penelope.notebook.interface as interface
@@ -9,6 +9,7 @@ from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
+from penelope.scripts.utils import update_arguments_from_options_file
 from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
@@ -60,6 +61,7 @@ def tokens_transform_options(func):
 @click.argument('input_filename', type=click.STRING)
 @click.argument('output_folder', type=click.STRING)
 @click.argument('output_tag')
+@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
 @extract_tokens_options
 @tokens_transform_options
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
@@ -67,6 +69,7 @@ def tokens_transform_options(func):
 @click.option('-f', '--force-checkpoint', default=False, is_flag=True, help='Force new checkpoints (if enabled)')
 @click.option('-n', '--deserialize-processes', default=4, type=click.IntRange(1, 99), help='Deserialize process count')
 def main(
+    options_filename: Optional[str] = None,
     corpus_config: str = None,
     input_filename: str = None,
     output_folder: str = None,
@@ -94,35 +97,9 @@ def main(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ):
+    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
 
-    process(
-        corpus_config=corpus_config,
-        input_filename=input_filename,
-        output_folder=output_folder,
-        output_tag=output_tag,
-        filename_pattern=filename_pattern,
-        phrase=phrase,
-        phrase_file=phrase_file,
-        create_subfolder=create_subfolder,
-        pos_includes=pos_includes,
-        pos_paddings=pos_paddings,
-        pos_excludes=pos_excludes,
-        append_pos=append_pos,
-        to_lower=to_lower,
-        lemmatize=lemmatize,
-        remove_stopwords=remove_stopwords,
-        min_word_length=min_word_length,
-        max_word_length=max_word_length,
-        keep_symbols=keep_symbols,
-        keep_numerals=keep_numerals,
-        only_any_alphanumeric=only_any_alphanumeric,
-        only_alphabetic=only_alphabetic,
-        tf_threshold=tf_threshold,
-        tf_threshold_mask=tf_threshold_mask,
-        deserialize_processes=deserialize_processes,
-        enable_checkpoint=enable_checkpoint,
-        force_checkpoint=force_checkpoint,
-    )
+    process(**arguments)
 
 
 def process(

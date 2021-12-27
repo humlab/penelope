@@ -1,12 +1,11 @@
 import os
 import sys
-from os.path import dirname, isdir, isfile
 from typing import Optional
 
 import click
 import penelope.corpus as pc
-import yaml
 from penelope import pipeline
+from penelope.scripts.utils import load_config, remove_none, update_arguments_from_options_file
 from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -77,14 +76,7 @@ def click_main(
     force_checkpoint: bool = False,
     passthrough_column: Optional[str] = None,
 ):
-    arguments: dict = locals()
-    print(arguments)
-    del arguments['options_filename']
-
-    if options_filename is not None:
-        with open(options_filename, "r") as fp:
-            options: dict = yaml.load(fp, Loader=yaml.FullLoader)
-        arguments.update(options)
+    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
 
     if not os.path.isfile(config_filename):
         click.echo(f"error: file {config_filename} not found")
@@ -163,13 +155,7 @@ def _main(
         force_checkpoint (bool, optional): [description]. Defaults to False.
         passthrough_column (Optional[str], optional): [description]. Defaults to None.
     """
-    config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
-    if config.pipeline_payload.source is None:
-        config.pipeline_payload.source = corpus_source
-        if isdir(corpus_source):
-            config.folders(corpus_source, method='replace')
-        elif isfile(corpus_source):
-            config.folders(dirname(corpus_source), method='replace')
+    config: pipeline.CorpusConfig = load_config(config_filename, corpus_source)
 
     if passthrough_column is None:
 
@@ -218,9 +204,8 @@ def _main(
 
     filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
 
-    engine_args = {
-        k: v
-        for k, v in {
+    engine_args: dict = remove_none(
+        {
             'n_topics': n_topics,
             'passes': passes,
             'random_seed': random_seed,
@@ -228,9 +213,8 @@ def _main(
             'workers': workers,
             'max_iter': max_iter,
             'work_folder': os.path.join(target_folder, target_name),
-        }.items()
-        if v is not None
-    }
+        }
+    )
 
     if corpus_source is None and config.pipeline_payload.source is None:
         click.echo("usage: corpus source must be specified")

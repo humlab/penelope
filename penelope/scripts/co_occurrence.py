@@ -1,4 +1,4 @@
-from typing import List, Sequence
+from typing import List, Optional, Sequence
 
 import click
 import penelope.notebook.interface as interface
@@ -8,6 +8,7 @@ from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
+from penelope.scripts.utils import update_arguments_from_options_file
 from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
@@ -17,6 +18,7 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
 @click.argument('corpus_config', type=click.STRING)
 @click.argument('input_filename', type=click.STRING)  # , help='Model name.')
 @click.argument('output_filename', type=click.STRING)  # , help='Model name.')
+@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
 @click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
 @click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
 @click.option(
@@ -95,6 +97,7 @@ from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
     help='Number of processes during deserialization',
 )
 def main(
+    options_filename: Optional[str] = None,
     corpus_config: str = None,
     input_filename: str = None,
     output_filename: str = None,
@@ -129,41 +132,9 @@ def main(
     force_checkpoint: bool = False,
     deserialize_processes: int = 4,
 ):
+    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
 
-    process_co_ocurrence(
-        corpus_config=corpus_config,
-        input_filename=input_filename,
-        output_filename=output_filename,
-        filename_pattern=filename_pattern,
-        concept=concept,
-        ignore_concept=ignore_concept,
-        ignore_padding=ignore_padding,
-        context_width=context_width,
-        compute_processes=compute_processes,
-        compute_chunksize=compute_chunksize,
-        phrase=phrase,
-        phrase_file=phrase_file,
-        partition_key=partition_key,
-        create_subfolder=create_subfolder,
-        pos_includes=pos_includes,
-        pos_paddings=pos_paddings,
-        pos_excludes=pos_excludes,
-        append_pos=append_pos,
-        to_lower=to_lower,
-        lemmatize=lemmatize,
-        remove_stopwords=remove_stopwords,
-        min_word_length=min_word_length,
-        max_word_length=max_word_length,
-        keep_symbols=keep_symbols,
-        keep_numerals=keep_numerals,
-        only_any_alphanumeric=only_any_alphanumeric,
-        only_alphabetic=only_alphabetic,
-        tf_threshold=tf_threshold,
-        tf_threshold_mask=tf_threshold_mask,
-        enable_checkpoint=enable_checkpoint,
-        force_checkpoint=force_checkpoint,
-        deserialize_processes=deserialize_processes,
-    )
+    process_co_ocurrence(**arguments)
 
 
 def process_co_ocurrence(
