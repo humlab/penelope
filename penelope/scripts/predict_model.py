@@ -5,6 +5,7 @@ import click
 import penelope.corpus as penelope
 import yaml
 from penelope import pipeline
+from penelope.scripts.utils import update_arguments_from_options_file
 from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -56,7 +57,6 @@ def click_main(
     force_checkpoint: bool = False,
 ):
     arguments: dict = locals()
-    del arguments['options_filename']
 
     if not os.path.isfile(os.path.join(model_folder, "model_options.json")):
         click.echo("error: no model in specified folder")
@@ -66,11 +66,7 @@ def click_main(
 
     arguments['model_folder'] = model_folder
     arguments['model_name'] = model_name
-
-    if options_filename is not None:
-        with open(options_filename, "r") as fp:
-            options: dict = yaml.load(fp, Loader=yaml.FullLoader)
-        arguments.update(options)
+    arguments = update_arguments_from_options_file(arguments=arguments, filename_key='options_filename')
 
     if not os.path.isfile(config_filename):
         click.echo(f"error: file {config_filename} not found")

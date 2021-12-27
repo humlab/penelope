@@ -1,11 +1,9 @@
 import os
 import sys
-from os.path import dirname, isdir, isfile
 from typing import Optional
 
 import click
 import penelope.corpus as pc
-import yaml
 from penelope import pipeline
 from penelope.scripts.utils import load_config, remove_none, update_arguments_from_options_file
 from penelope.utility import PropertyValueMaskingOpts

@@ -36,9 +36,9 @@ from penelope.scripts.utils import load_config, remove_none, update_arguments_fr
 @click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
 @click.option('--store-compressed/--no-store-compressed', default=True, is_flag=True, help='')
 def typer_main(
+    options_filename: Optional[str] = None,
     target_name: Optional[str] = None,
     corpus_source: Optional[str] = None,
-    options_filename: Optional[str] = None,
     config_filename: Optional[str] = None,
     train_corpus_folder: Optional[str] = None,
     target_folder: Optional[str] = None,
