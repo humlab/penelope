@@ -51,21 +51,21 @@ def create_tranströmer_to_tagged_frame_pipeline() -> CorpusPipeline:
 
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
-    tagged_frames_filename = f'./tests/output/{uuid.uuid1()}.tagged_frame.zip'
+    tagged_corpus_source = f'./tests/output/{uuid.uuid1()}.tagged_frame.zip'
 
     corpus_config: CorpusConfig = CorpusConfig.load(config_filename)
 
     corpus_config.pipeline_payload.source = source_filename
     corpus_config.pipeline_payload.document_index_source = None
 
-    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
     p: CorpusPipeline = sparv.to_tagged_frame_pipeline(
         corpus_config=corpus_config,
         corpus_source=source_filename,
         enable_checkpoint=True,
         force_checkpoint=False,
-    )  # .checkpoint(tagged_frames_filename)
+    )  # .checkpoint(tagged_corpus_source)
 
     return p
 

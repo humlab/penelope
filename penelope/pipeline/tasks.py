@@ -157,7 +157,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
-        self.pipeline.put("tagged_frames_filename", self.filename)
+        self.pipeline.put("tagged_corpus_source", self.filename)
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.pipeline.put("checkpoint_opts", self.checkpoint_opts)
         return self
@@ -483,6 +483,9 @@ class FilterTaggedFrame(ITask):
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        if self.extract_opts is None and self.transform_opts is None:
+            return payload
 
         tagged_frame: pd.DataFrame = convert.filter_tagged_frame(
             tagged_frame=payload.content,

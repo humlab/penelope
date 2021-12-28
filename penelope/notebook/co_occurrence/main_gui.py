@@ -34,7 +34,7 @@ def create(
 def compute_co_occurrence_callback(
     corpus_config: pipeline.CorpusConfig,
     args: ComputeOpts,
-    tagged_frames_filename: Optional[str] = None,
+    corpus_source: Optional[str] = None,
 ) -> co_occurrence.Bundle:
     try:
         global LAST_ARGS, LAST_CONFIG
@@ -48,7 +48,7 @@ def compute_co_occurrence_callback(
         bundle: co_occurrence.Bundle = workflow.compute(
             args=args,
             corpus_config=corpus_config,
-            tagged_frames_filename=tagged_frames_filename,
+            tagged_corpus_source=corpus_source,
         )
         return bundle
     except co_occurrence.ZeroComputeError:

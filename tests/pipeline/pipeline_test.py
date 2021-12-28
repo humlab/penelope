@@ -83,12 +83,12 @@ def test_load_text_returns_payload_with_expected_document_index(config: pipeline
 @pytest.mark.long_running
 def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_corpus_source: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     transform_opts = corpora.TextTransformOpts()
 
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
     _ = (
         pipeline.CorpusPipeline(config=config)
@@ -97,18 +97,18 @@ def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.Co
         .text_to_spacy()
         .tqdm()
         .spacy_to_pos_tagged_frame()
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
     ).exhaust()
 
-    assert os.path.isfile(tagged_frames_filename)
-    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    assert os.path.isfile(tagged_corpus_source)
+    pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
 
 def test_pipeline_can_load_pos_tagged_checkpoint(config: pipeline.CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
-    pipe = pipeline.CorpusPipeline(config=config).checkpoint(tagged_frames_filename, force_checkpoint=False)
+    pipe = pipeline.CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False)
 
     payloads: List[pipeline.DocumentPayload] = pipe.to_list()
 
@@ -120,7 +120,7 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: pipeline.CorpusConfig):
 @pytest.mark.long_running
 def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes='|NOUN|', pos_paddings=None, **config.pipeline_payload.tagged_columns_names
@@ -128,12 +128,12 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig)
     filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     tagged_payload = next(
-        pipeline.CorpusPipeline(config=config).checkpoint(tagged_frames_filename, force_checkpoint=False).resolve()
+        pipeline.CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False).resolve()
     )
 
     tokens_payload = next(
         pipeline.CorpusPipeline(config=config)
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .resolve()
     )
@@ -145,11 +145,11 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig)
 @pytest.mark.long_running
 def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     pipe: pipeline.CorpusPipeline = (
         pipeline.CorpusPipeline(config=config)
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .vocabulary(lemmatize=True, progress=False)
         .exhaust()
     )
@@ -165,7 +165,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
 
     pipe: pipeline.CorpusPipeline = (
         pipeline.CorpusPipeline(config=config)
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .vocabulary(lemmatize=False, progress=False)
         .exhaust()
     )
@@ -180,7 +180,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
 @pytest.mark.long_running
 def test_pipeline_tagged_frame_to_text_succeeds(config: pipeline.CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes='|NOUN|', pos_paddings=None, **config.pipeline_payload.tagged_columns_names
@@ -188,12 +188,12 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: pipeline.CorpusConfig):
     filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     tagged_payload = next(
-        pipeline.CorpusPipeline(config=config).checkpoint(tagged_frames_filename, force_checkpoint=False).resolve()
+        pipeline.CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False).resolve()
     )
 
     text_payload = next(
         pipeline.CorpusPipeline(config=config)
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .resolve()
@@ -204,7 +204,7 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: pipeline.CorpusConfig):
 
 
 def test_pipeline_take_succeeds(config: pipeline.CorpusConfig):
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
         lemmatize=True, **config.pipeline_payload.tagged_columns_names
@@ -213,7 +213,7 @@ def test_pipeline_take_succeeds(config: pipeline.CorpusConfig):
 
     take_payloads = (
         pipeline.CorpusPipeline(config=config)
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .take(2)
@@ -224,7 +224,7 @@ def test_pipeline_take_succeeds(config: pipeline.CorpusConfig):
 
 def test_pipeline_tagged_frame_to_tuple_succeeds(config: pipeline.CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes='|NOUN|', pos_paddings='|VERB|', **config.pipeline_payload.tagged_columns_names
@@ -233,7 +233,7 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: pipeline.CorpusConfig):
 
     payloads = (
         pipeline.CorpusPipeline(config=config)
-        .checkpoint(tagged_frames_filename, force_checkpoint=False)
+        .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
         .tokens_to_text()
         .to_list()
@@ -255,7 +255,7 @@ def test_pipeline_to_dtm_succeeds(config: pipeline.CorpusConfig):
 
     target_tag: str = uuid.uuid1()
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes='|NOUN|', pos_paddings=None, **config.pipeline_payload.tagged_columns_names
@@ -265,7 +265,7 @@ def test_pipeline_to_dtm_succeeds(config: pipeline.CorpusConfig):
     corpus: corpora.VectorizedCorpus = (
         (
             pipeline.CorpusPipeline(config=config)
-            .checkpoint(tagged_frames_filename, force_checkpoint=False)
+            .checkpoint(tagged_corpus_source, force_checkpoint=False)
             .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
             .tokens_transform(transform_opts=corpora.TokensTransformOpts())
             .tokens_to_text()
@@ -292,7 +292,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
     corpus_tag: str = uuid.uuid1()
     target_folder: str = "./tests/output"
     corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip'
-    tagged_frames_filename: str = f"./tests/output/{uuid.uuid1()}_pos_csv.zip"
+    tagged_corpus_source: str = f"./tests/output/{uuid.uuid1()}_pos_csv.zip"
 
     args: ComputeOpts = ComputeOpts(
         corpus_tag=corpus_tag,
@@ -319,7 +319,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
     )
     with inline_code(spacy_pipeline.to_tagged_frame_pipeline):
 
-        tagged_frame_filename: str = tagged_frames_filename or utility.path_add_suffix(
+        tagged_frame_filename: str = tagged_corpus_source or utility.path_add_suffix(
             config.pipeline_payload.source, '_pos_csv'
         )
 
@@ -366,7 +366,7 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
         force_checkpoint=True,
         tf_threshold=1,
         tf_threshold_mask=False,
-        tagged_frames_filename='./tests/output/legal_instrument_five_docs_test_pos_csv.zip',
+        tagged_corpus_source='./tests/output/legal_instrument_five_docs_test_pos_csv.zip',
     )
 
     corpus = workflow.compute(args=args, corpus_config=config)

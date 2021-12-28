@@ -27,9 +27,9 @@ def config():
 
 def test_pipeline_can_can_be_saved_in_feather(config: CorpusConfig):
 
-    tagged_frames_filename: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
-    pipeline = CorpusPipeline(config=config).checkpoint(tagged_frames_filename, force_checkpoint=False)
+    pipeline = CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False)
 
     for payload in pipeline.resolve():
 

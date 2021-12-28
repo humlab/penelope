@@ -11,11 +11,11 @@ def test_load_tagged_frame_checkpoint():
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    tagged_frames_filename: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
+    tagged_corpus_source: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
 
     checkpoint_opts: checkpoint.CheckpointOpts = None  # CheckpointOpts()
     data = checkpoint.load_archive(
-        source_name=tagged_frames_filename, checkpoint_opts=checkpoint_opts, reader_opts=None
+        source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None
     )
 
     assert data is not None
@@ -30,7 +30,7 @@ def test_load_tagged_frame_checkpoint():
     """Test reader_opts filter by list of filenames"""
     whitelist = {'RECOMMENDATION_0201_049455_2017.txt', 'DECLARATION_0201_013178_1997.txt'}
     data = checkpoint.load_archive(
-        source_name=tagged_frames_filename,
+        source_name=tagged_corpus_source,
         checkpoint_opts=checkpoint_opts,
         reader_opts=TextReaderOpts(filename_filter=whitelist),
     )
@@ -42,7 +42,7 @@ def test_load_tagged_frame_checkpoint():
     expected_documents = {'CONSTITUTION_0201_015244_1945_london.txt', 'CONVENTION_0201_015395_1958_paris.txt'}
     whitelister = lambda x: x.split('_')[3] in map(str, years)
     data = checkpoint.load_archive(
-        source_name=tagged_frames_filename,
+        source_name=tagged_corpus_source,
         checkpoint_opts=checkpoint_opts,
         reader_opts=TextReaderOpts(filename_filter=whitelister),
     )

@@ -44,30 +44,30 @@ def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
 def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
-    tagged_frames_filename = f'./tests/output/{inspect.currentframe().f_code.co_name}.tagged_frame.zip'
+    tagged_corpus_source = f'./tests/output/{inspect.currentframe().f_code.co_name}.tagged_frame.zip'
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename)
 
     corpus_config.pipeline_payload.source = source_filename
     corpus_config.pipeline_payload.document_index_source = None
 
-    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config=corpus_config,
         corpus_source=source_filename,
         enable_checkpoint=False,
         force_checkpoint=False,
-    ).checkpoint(tagged_frames_filename)
+    ).checkpoint(tagged_corpus_source)
 
     for _ in p.resolve():
         assert 'n_raw_tokens' in p.payload.document_index.columns
 
-    assert os.path.isfile(tagged_frames_filename)
+    assert os.path.isfile(tagged_corpus_source)
 
     assert p.payload.document_index is not None
     assert 'year' in p.payload.document_index.columns
 
-    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
 
 @pytest.mark.long_running

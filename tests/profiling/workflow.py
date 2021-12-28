@@ -96,7 +96,7 @@ def run_workflow():
     _ = workflow.compute(
         args=compute_opts,
         corpus_config=corpus_config,
-        tagged_frames_filename=jj(OUTPUT_FOLDER, 'test.zip'),
+        tagged_corpus_source=jj(OUTPUT_FOLDER, 'test.zip'),
     )
 
 

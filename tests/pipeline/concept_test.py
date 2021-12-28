@@ -12,10 +12,10 @@ def test_phrased_tagged_frame():
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    tagged_frames_filename: str = "./tests/test_data/tranströmer_corpus_export.sparv4.csv.zip"
+    tagged_corpus_source: str = "./tests/test_data/tranströmer_corpus_export.sparv4.csv.zip"
     checkpoint_opts: checkpoint.CheckpointOpts = None
     data = checkpoint.load_archive(
-        source_name=tagged_frames_filename, checkpoint_opts=checkpoint_opts, reader_opts=None
+        source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None
     )
     payload = next(data.create_stream())
 

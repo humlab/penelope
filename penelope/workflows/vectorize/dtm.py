@@ -25,7 +25,7 @@ def compute(
                 corpus_source=args.corpus_source,
                 enable_checkpoint=args.enable_checkpoint,
                 force_checkpoint=args.force_checkpoint,
-                tagged_frames_filename=args.tagged_frames_filename,
+                tagged_corpus_source=args.tagged_corpus_source,
             )
         corpus: VectorizedCorpus = (
             tagged_frame_pipeline
