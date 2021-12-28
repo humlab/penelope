@@ -61,14 +61,40 @@ def typer_main(
     store_compressed: bool = True,
 ):
     """Create a topic model."""
-
     arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
+    main(**arguments)
+
+
+def main(
+    target_name: Optional[str] = None,
+    corpus_source: Optional[str] = None,
+    config_filename: Optional[str] = None,
+    train_corpus_folder: Optional[str] = None,
+    target_folder: Optional[str] = None,
+    lemmatize: bool = True,
+    # pos_includes: str = '',
+    # pos_excludes: str = '',
+    # remove_stopwords: Optional[str] = None,
+    # min_word_length: int = 2,
+    # max_word_length: int = None,
+    # keep_symbols: bool = False,
+    # keep_numerals: bool = False,
+    n_topics: int = 50,
+    engine: str = "gensim_lda-multicore",
+    passes: int = None,
+    random_seed: int = None,
+    alpha: str = 'asymmetric',
+    workers: int = None,
+    max_iter: int = None,
+    store_corpus: bool = True,
+    store_compressed: bool = True,
+):
 
     if not config_filename or not os.path.isfile(config_filename):
         click.echo("error: config file not specified/found")
         raise sys.exit(1)
 
-    if arguments.get('target_name') is None:
+    if target_name is None:
         click.echo("error: target_name not specified")
         raise sys.exit(1)
 

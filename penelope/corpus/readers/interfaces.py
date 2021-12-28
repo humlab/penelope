@@ -77,7 +77,7 @@ class ExtractTaggedTokensOpts:
     """ These PoS are always removed """
     pos_excludes: str = ''
 
-    """ The PoS define tokens that are replaced with a dummy marker `*` """
+    """ These PoS define tokens that are replaced with a dummy marker `*` """
     pos_paddings: Optional[str] = ''
     pos_replace_marker: str = '*'
 
