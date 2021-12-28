@@ -6,7 +6,6 @@ from loguru import logger
 from penelope.co_occurrence import ContextOpts, to_filename
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusType
-from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=too-many-instance-attributes
 
@@ -25,7 +24,6 @@ class ComputeOpts:
     transform_opts: TokensTransformOpts
     text_reader_opts: TextReaderOpts
     extract_opts: ExtractTaggedTokensOpts
-    filter_opts: Optional[PropertyValueMaskingOpts]
     vectorize_opts: VectorizeOpts
     tf_threshold: Optional[int]
     tf_threshold_mask: Optional[bool]
@@ -34,7 +32,7 @@ class ComputeOpts:
 
     enable_checkpoint: bool = field(init=True, default=True)
     force_checkpoint: bool = field(init=True, default=False)
-    tagged_frames_filename: str = field(init=True, default=None)
+    tagged_corpus_source: str = field(init=True, default=None)
     context_opts: Optional[ContextOpts] = None
 
     dry_run: bool = field(init=False, default=False)

@@ -9,7 +9,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTrans
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
 from penelope.scripts.utils import update_arguments_from_options_file
-from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
+from penelope.utility import pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
 
@@ -239,7 +239,6 @@ def process_co_ocurrence(
                 processes=compute_processes,
                 chunksize=compute_chunksize,
             ),
-            filter_opts=PropertyValueMaskingOpts(),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         )

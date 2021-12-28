@@ -4,7 +4,7 @@ import uuid
 import penelope.workflows.vectorize.dtm as workflow
 import pytest
 from penelope import corpus as corpora
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.notebook.interface import ComputeOpts
 
 CORPUS_FOLDER = './tests/test_data'
@@ -30,7 +30,6 @@ def test_workflow_to_dtm():
             pos_excludes='|MID|MAD|PAD|',
             **config.pipeline_payload.tagged_columns_names,
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(),
         vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
         create_subfolder=True,
         persist=True,

@@ -22,7 +22,6 @@ from penelope.pipeline import (
     PipelinePayload,
 )
 from penelope.pipeline.interfaces import ITask
-from penelope.utility import PropertyValueMaskingOpts
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 from tests.utils import TEST_DATA_FOLDER
 
@@ -251,8 +250,11 @@ def test_tagged_frame_to_tokens_succeeds():
     pipeline = Mock(spec=CorpusPipeline, payload=Mock(spec=PipelinePayload, tagged_columns_names={}))
     task = tasks.TaggedFrameToTokens(
         pipeline=pipeline,
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=True, **SPACY_TAGGED_COLUMNS),
-        filter_opts=PropertyValueMaskingOpts(is_punct=False),
+        extract_opts=ExtractTaggedTokensOpts(
+            lemmatize=True,
+            **SPACY_TAGGED_COLUMNS,
+            filter_opts=dict(is_punct=False),
+        ),
     ).setup()
     current_payload = next(fake_data_frame_stream(1))
     next_payload = task.process(current_payload)
@@ -340,9 +342,9 @@ def test_tokens_to_text_when_text_instream_succeeds():
 @pytest.mark.long_running
 def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 
-    tagged_frames_filename = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
+    tagged_corpus_source = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
-    pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
     text_reader_opts = TextReaderOpts(
         filename_fields=["doc_id:_:2", "year:_:1"],
@@ -366,20 +368,20 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
         .text_to_spacy()
         .passthrough()
         .spacy_to_pos_tagged_frame()
-        .checkpoint(tagged_frames_filename, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
+        .checkpoint(tagged_corpus_source, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
         .to_content()
     )
 
     df_docs = pipeline.resolve()
     assert next(df_docs) is not None
-    assert os.path.isfile(tagged_frames_filename)
+    assert os.path.isfile(tagged_corpus_source)
 
-    # pathlib.Path(tagged_frames_filename).unlink(missing_ok=True)
+    # pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
 
 def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts):
 
-    tagged_frames_filename = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
+    tagged_corpus_source = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pipeline_payload = PipelinePayload(
         source=TEST_CORPUS,
@@ -391,7 +393,7 @@ def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts)
     pipeline = (
         CorpusPipeline(config=config)
         .checkpoint(
-            tagged_frames_filename,
+            tagged_corpus_source,
             checkpoint_opts=checkpoint_opts,
             force_checkpoint=False,
         )

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
-from penelope.utility import PropertyValueMaskingOpts
 
 from .. import pipelines
 
@@ -15,7 +14,6 @@ if TYPE_CHECKING:
 def wildcard_to_partition_by_document_co_occurrence_pipeline(
     *,
     extract_opts: ExtractTaggedTokensOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     context_opts: ContextOpts = None,
     global_tf_threshold: int = None,
@@ -34,7 +32,6 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
         )
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,  # .clear_tf_threshold(),
-            filter_opts=filter_opts,
             transform_opts=transform_opts,
         )
         # .tokens_transform(transform_opts=transform_opts)

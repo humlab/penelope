@@ -2,7 +2,7 @@ from os.path import join as jj
 
 import penelope.workflows.co_occurrence.compute as workflow
 from penelope import corpus as corpora
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
 
@@ -68,7 +68,6 @@ def run_workflow():
             global_tf_threshold_mask=False,
             **corpus_config.pipeline_payload.tagged_columns_names,
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(),
         vectorize_opts=corpora.VectorizeOpts(
             already_tokenized=True,
             lowercase=False,
@@ -96,7 +95,7 @@ def run_workflow():
     _ = workflow.compute(
         args=compute_opts,
         corpus_config=corpus_config,
-        tagged_frames_filename=jj(OUTPUT_FOLDER, 'test.zip'),
+        tagged_corpus_source=jj(OUTPUT_FOLDER, 'test.zip'),
     )
 
 

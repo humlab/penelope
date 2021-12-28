@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
 
-from ... import corpus, utility
+from ... import corpus
 from .. import pipelines
 from ..config import CorpusConfig
 
@@ -39,7 +39,6 @@ def from_tagged_frame_pipeline(
     text_transform_opts: corpus.TextTransformOpts = None,
     extract_opts: corpus.ExtractTaggedTokensOpts = None,
     transform_opts: corpus.TokensTransformOpts = None,
-    filter_opts: utility.PropertyValueMaskingOpts = None,
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     store_corpus: bool = False,
@@ -62,7 +61,6 @@ def from_tagged_frame_pipeline(
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,
             transform_opts=transform_opts,
-            filter_opts=filter_opts,
         )
         .to_topic_model(
             corpus_source=None,

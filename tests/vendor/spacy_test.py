@@ -6,7 +6,6 @@ import pytest
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
-from penelope.utility import PropertyValueMaskingOpts
 from spacy.tokens import Doc
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 
@@ -189,9 +188,8 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds(en_nlp):
 def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc: pd.DataFrame):
     df_doc = df_doc.copy()
 
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, **SPACY_TAGGED_COLUMNS)
-    filter_opts = PropertyValueMaskingOpts(is_punct=None)
-    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, **SPACY_TAGGED_COLUMNS, filter_opts=dict(is_punct=None))
+    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == [
         'mars',
         'be',
@@ -212,45 +210,59 @@ def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc: pd.DataFr
 
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc: pd.DataFrame):
     df_doc = df_doc.copy()
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, target_override="lemma_", **SPACY_TAGGED_COLUMNS)
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
-    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=False,
+        target_override="lemma_",
+        **SPACY_TAGGED_COLUMNS,
+        filter_opts=dict(is_punct=False),
+    )
+    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['Mars', 'be', 'once', 'home', 'to', 'sea', 'and', 'ocean', 'and', 'perhaps', 'even', 'life']
 
 
 def test_extract_tokens_target_text_succeeds(df_doc: pd.DataFrame):
     df_doc = df_doc.copy()
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, **SPACY_TAGGED_COLUMNS)
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
-    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
+    extract_opts = ExtractTaggedTokensOpts(lemmatize=False, **SPACY_TAGGED_COLUMNS, filter_opts=dict(is_punct=False))
+
+    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ["Mars", "was", "once", "home", "to", "seas", "and", "oceans", "and", "perhaps", "even", "life"]
 
 
 def test_extract_tokens_lemma_no_stops_succeeds(df_doc: pd.DataFrame):
     df_doc = df_doc.copy()
-    extract_opts = ExtractTaggedTokensOpts(lemmatize=True, **SPACY_TAGGED_COLUMNS)
-    filter_opts = PropertyValueMaskingOpts(is_stop=False, is_punct=False)
-    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
+    extract_opts = ExtractTaggedTokensOpts(
+        lemmatize=True, **SPACY_TAGGED_COLUMNS, filter_opts=dict(is_stop=False, is_punct=False)
+    )
+
+    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['mars', 'home', 'sea', 'ocean', 'life']
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc: pd.DataFrame):
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|PROPN|', pos_paddings=None, **SPACY_TAGGED_COLUMNS
+        lemmatize=True,
+        pos_includes='|PROPN|',
+        pos_paddings=None,
+        **SPACY_TAGGED_COLUMNS,
+        filter_opts=dict(is_punct=False),
     )
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
-    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
+
+    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['mars']
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc: pd.DataFrame):
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=False, pos_includes='|VERB|NOUN|', pos_paddings=None, **SPACY_TAGGED_COLUMNS
+        lemmatize=False,
+        pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
+        **SPACY_TAGGED_COLUMNS,
+        filter_opts=dict(is_punct=False),
     )
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
-    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts, filter_opts=filter_opts)
+
+    tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
     assert tokens == ['seas', 'oceans', 'life']
 
 
@@ -320,17 +332,21 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     )
     attributes = ['text', 'lemma_', 'pos_']
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|VERB|NOUN|', pos_paddings='|ADJ|', **SPACY_TAGGED_COLUMNS
+        lemmatize=True,
+        pos_includes='|VERB|NOUN|',
+        pos_paddings='|ADJ|',
+        **SPACY_TAGGED_COLUMNS,
+        filter_opts=dict(is_punct=False),
     )
     transform_opts = None
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
+
     pipeline = (
         CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts)
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
     )
 
     payloads = [x.content for x in pipeline.resolve()]
@@ -376,10 +392,14 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
 
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|VERB|NOUN|', pos_paddings=None, **SPACY_TAGGED_COLUMNS
+        lemmatize=True,
+        pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
+        **SPACY_TAGGED_COLUMNS,
+        filter_opts=dict(is_punct=False),
     )
     transform_opts = None
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
+
     vectorize_opts = VectorizeOpts(verbose=True)
 
     config = Mock(
@@ -393,7 +413,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
     )
@@ -411,10 +431,13 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
 
     attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|VERB|NOUN|', pos_paddings=None, **SPACY_TAGGED_COLUMNS
+        lemmatize=True,
+        pos_includes='|VERB|NOUN|',
+        pos_paddings=None,
+        **SPACY_TAGGED_COLUMNS,
+        filter_opts=dict(is_punct=False),
     )
     transform_opts = None
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
     vectorize_opts = VectorizeOpts(verbose=True)
 
     config = Mock(
@@ -428,7 +451,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
         .set_spacy_model(en_nlp)
         .text_to_spacy()
         .spacy_to_tagged_frame(attributes=attributes)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
     )

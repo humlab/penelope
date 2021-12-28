@@ -3,10 +3,8 @@ import sys
 
 import click
 import penelope.corpus as penelope
-import yaml
 from penelope import pipeline
 from penelope.scripts.utils import update_arguments_from_options_file
-from penelope.utility.pandas_utils import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -119,7 +117,6 @@ def _main(
         only_any_alphanumeric=only_any_alphanumeric,
     )
 
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
     extract_opts = penelope.ExtractTaggedTokensOpts(
         lemmatize=lemmatize,
         pos_includes=pos_includes,
@@ -137,7 +134,6 @@ def _main(
         corpus_folder=corpus_folder,
         extract_opts=extract_opts,
         transform_opts=transform_opts,
-        filter_opts=filter_opts,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,
     )
@@ -154,7 +150,6 @@ def main(
     corpus_folder: str = None,
     extract_opts: penelope.ExtractTaggedTokensOpts = None,
     transform_opts: penelope.TokensTransformOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ):
@@ -177,7 +172,6 @@ def main(
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,
             transform_opts=transform_opts,
-            filter_opts=filter_opts,
         )
         .predict_topics(
             model_folder=model_folder,

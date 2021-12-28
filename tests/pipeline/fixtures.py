@@ -8,7 +8,6 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
-from penelope.utility import PropertyValueMaskingOpts
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_7DOCS
 from tests.notebook.co_occurrence.load_co_occurrences_gui_test import DATA_FOLDER
@@ -72,13 +71,13 @@ def ComputeOptsSpacyCSV(
             global_tf_threshold=1,
             global_tf_threshold_mask=False,
             **SPACY_TAGGED_COLUMNS,
-        ),
-        filter_opts=PropertyValueMaskingOpts(
-            is_alpha=False,
-            is_punct=False,
-            is_digit=None,
-            is_stop=None,
-            is_space=False,
+            filter_opts=dict(
+                is_alpha=False,
+                is_punct=False,
+                is_digit=None,
+                is_stop=None,
+                is_space=False,
+            ),
         ),
         create_subfolder=False,
         persist=True,
@@ -132,13 +131,13 @@ def ComputeOptsSparvCSV(
             pos_paddings=None,
             lemmatize=False,
             **SPARV_TAGGED_COLUMNS,
-        ),
-        filter_opts=PropertyValueMaskingOpts(
-            is_alpha=False,
-            is_punct=False,
-            is_digit=None,
-            is_stop=None,
-            is_space=False,
+            filter_opts=dict(
+                is_alpha=False,
+                is_punct=False,
+                is_digit=None,
+                is_stop=None,
+                is_space=False,
+            ),
         ),
         create_subfolder=False,
         persist=True,
@@ -170,17 +169,16 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
     os.makedirs(target_folder, exist_ok=True)
     shutil.rmtree(target_folder, ignore_errors=True)
 
-    tagged_frames_filename: str = f"./tests/output/{str(uuid.uuid1())}_test_pos_csv.zip"
+    tagged_corpus_source: str = f"./tests/output/{str(uuid.uuid1())}_test_pos_csv.zip"
 
     bundle: Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
         corpus_source=None,
         transform_opts=args.transform_opts,
         extract_opts=args.extract_opts,
-        filter_opts=args.filter_opts,
         context_opts=args.context_opts,
         global_threshold_count=args.tf_threshold,
-        tagged_frames_filename=tagged_frames_filename,
+        tagged_corpus_source=tagged_corpus_source,
     ).value()
 
     assert bundle.corpus is not None

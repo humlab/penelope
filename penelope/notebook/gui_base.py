@@ -16,17 +16,15 @@ from ipywidgets import (
     ToggleButton,
     VBox,
 )
+from loguru import logger
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.utility import PropertyValueMaskingOpts, better_flatten
+from penelope.utility import better_flatten
 from penelope.utility import default_data_folder as home_data_folder
-from penelope.utility import get_logger
 
 from . import interface
 from . import utility as notebook_utility
-
-logger = get_logger('penelope')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes, too-many-public-methods
 
@@ -418,13 +416,12 @@ class BaseGUI:
             global_tf_threshold=self.tf_threshold,
             global_tf_threshold_mask=self.tf_threshold_mask,
             **self.corpus_config.pipeline_payload.tagged_columns_names,
+            filter_opts=self.filter_opts,
         )
 
     @property
-    def filter_opts(self) -> PropertyValueMaskingOpts:
-        return PropertyValueMaskingOpts(
-            is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None
-        )
+    def filter_opts(self) -> dict:
+        return dict(is_alpha=self._only_alphabetic.value, is_punct=False, is_digit=None, is_stop=None)
 
     @property
     def vectorize_opts(self) -> VectorizeOpts:
@@ -493,7 +490,6 @@ class BaseGUI:
             transform_opts=self.transform_opts,
             text_reader_opts=self.corpus_config.text_reader_opts,
             extract_opts=self.extract_opts,
-            filter_opts=self.filter_opts,
             tf_threshold=self.tf_threshold,
             tf_threshold_mask=self.tf_threshold_mask,
             create_subfolder=self.create_subfolder,

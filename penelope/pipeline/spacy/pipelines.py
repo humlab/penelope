@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from penelope.utility import PropertyValueMaskingOpts, path_add_suffix
+from penelope.utility import path_add_suffix
 
 from .. import interfaces, pipelines
 from ..co_occurrence.pipelines import wildcard_to_partition_by_document_co_occurrence_pipeline
@@ -30,7 +30,7 @@ def to_tagged_frame_pipeline(
     corpus_source: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
-    tagged_frames_filename: str = None,
+    tagged_corpus_source: str = None,
     text_transform_opts: TextTransformOpts = None,
     **_,
 ) -> CorpusPipeline:
@@ -41,7 +41,7 @@ def to_tagged_frame_pipeline(
         corpus_source (str, optional): [description]. Defaults to None.
         enable_checkpoint (bool, optional): [description]. Defaults to True.
         force_checkpoint (bool, optional): [description]. Defaults to False.
-        tagged_frames_filename (str, optional): [description]. Defaults to None.
+        tagged_corpus_source (str, optional): [description]. Defaults to None.
 
     Raises:
         ex: [description]
@@ -51,7 +51,7 @@ def to_tagged_frame_pipeline(
     """
     try:
 
-        tagged_frame_filename: str = tagged_frames_filename or path_add_suffix(
+        tagged_frame_filename: str = tagged_corpus_source or path_add_suffix(
             corpus_config.pipeline_payload.source, interfaces.DEFAULT_TAGGED_FRAMES_FILENAME_SUFFIX
         )
 
@@ -82,24 +82,22 @@ def to_tagged_frame_pipeline(
 def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
     corpus_config: CorpusConfig,
     extract_opts: ExtractTaggedTokensOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     corpus_source: str = None,
-    tagged_frames_filename: str = None,
+    tagged_corpus_source: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
     try:
         p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
             corpus_config=corpus_config,
-            tagged_frames_filename=tagged_frames_filename,
+            tagged_corpus_source=tagged_corpus_source,
             corpus_source=corpus_source,
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         ) + wildcard_to_DTM_pipeline(
             extract_opts=extract_opts,
-            filter_opts=filter_opts,
             transform_opts=transform_opts,
             vectorize_opts=vectorize_opts,
         )
@@ -115,24 +113,22 @@ def spaCy_co_occurrence_pipeline(
     corpus_source: str,
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
-    tagged_frames_filename: str = None,
+    tagged_corpus_source: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
     p: pipelines.CorpusPipeline = to_tagged_frame_pipeline(
         corpus_config=corpus_config,
         corpus_source=corpus_source,
-        tagged_frames_filename=tagged_frames_filename,
+        tagged_corpus_source=tagged_corpus_source,
         enable_checkpoint=enable_checkpoint,
         force_checkpoint=force_checkpoint,
     ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
         context_opts=context_opts,
         transform_opts=transform_opts,
         extract_opts=extract_opts,
-        filter_opts=filter_opts,
         global_tf_threshold=global_threshold_count,
     )
     return p

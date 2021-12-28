@@ -41,7 +41,6 @@ def run_workflow():
     #     global_tf_threshold_mask=False,
     #     **corpus_config.pipeline_payload.tagged_columns_names,
     # )
-    # filter_opts: utility.PropertyValueMaskingOpts=utility.PropertyValueMaskingOpts()
 
     (
         # CorpusPipeline(config=corpus_config).load_tagged_frame(
@@ -74,7 +73,6 @@ def run_workflow():
         .tqdm().exhaust()
         # .tagged_frame_to_tokens(
         #     extract_opts=extract_opts,  # .clear_tf_threshold(),
-        #     filter_opts=filter_opts,
         #     transform_opts=transform_opts,
         # ).exhaust()
     )

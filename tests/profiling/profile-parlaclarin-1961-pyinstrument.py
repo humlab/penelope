@@ -1,5 +1,5 @@
 from penelope import corpus as corpora
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.pipeline.pipelines import CorpusPipeline
 
 CONFIG_FILENAME = "./tests/profiling/riksprot-parlaclarin-1960.yml"
@@ -41,7 +41,6 @@ def run_workflow():
         global_tf_threshold_mask=False,
         **corpus_config.pipeline_payload.tagged_columns_names,
     )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts()
     engine_args = {
         'n_topics': 4,
         'passes': 1,
@@ -53,7 +52,6 @@ def run_workflow():
     }
     extract_opts = "lemma"
     transform_opts = None
-    filter_opts = None
     _ = (
         CorpusPipeline(config=corpus_config)
         .load_id_tagged_frame(
@@ -63,7 +61,6 @@ def run_workflow():
         )
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,
-            filter_opts=filter_opts,
             transform_opts=transform_opts,
         )
         .to_topic_model(

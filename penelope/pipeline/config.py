@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, 
 
 import yaml
 from penelope.corpus import TextReaderOpts, TextTransformOpts
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, create_instance, get_pos_schema, strip_extensions
+from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema, strip_extensions
 
 from . import checkpoint, interfaces
 
@@ -49,7 +49,6 @@ class CorpusConfig:
     checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
     text_transform_opts: TextTransformOpts = None
-    filter_opts: PropertyValueMaskingOpts = None
     pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = field(default="english")
@@ -136,16 +135,15 @@ class CorpusConfig:
     def dict_to_corpus_config(config_dict: dict) -> "CorpusConfig":
         """Maps a dict read from file to a CorpusConfig instance"""
 
+        """Remove deprecated key"""
+        if 'filter_opts' in config_dict:
+            del config_dict['filter_opts']
+
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
 
         if config_dict.get('text_transform_opts', None) is not None:
             config_dict['text_transform_opts'] = TextTransformOpts(**config_dict['text_transform_opts'])
-
-        if config_dict.get('filter_opts', None) is not None:
-            opts = config_dict['filter_opts']
-            if opts.get('data', None) is not None:
-                config_dict['filter_opts'] = PropertyValueMaskingOpts(**opts['data'])
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
@@ -192,7 +190,6 @@ class CorpusConfig:
             checkpoint_opts=None,
             text_reader_opts=None,
             text_transform_opts=None,
-            filter_opts=None,
             pipelines=None,
             pipeline_payload=interfaces.PipelinePayload(),
             language=language,

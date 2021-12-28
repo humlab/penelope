@@ -7,7 +7,6 @@ from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, Documen
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
 from penelope.topic_modelling.utility import find_models
-from penelope.utility import PropertyValueMaskingOpts
 from tests.fixtures import TranströmerCorpus
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
@@ -23,7 +22,6 @@ from . import utility
 
 def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
     transform_opts: TokensTransformOpts = TokensTransformOpts()
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='',
@@ -42,7 +40,7 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
             checkpoint_opts=config.checkpoint_opts,
             extra_reader_opts=config.text_reader_opts,
         )
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .to_topic_model(
             corpus_source=None,
             target_folder="./tests/output",
@@ -74,7 +72,6 @@ def test_predict_topics(method: str):
     model_name: str = payload.content.get("target_name")
 
     transform_opts = TokensTransformOpts()
-    filter_opts = PropertyValueMaskingOpts()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='',
@@ -88,7 +85,7 @@ def test_predict_topics(method: str):
             checkpoint_opts=config.checkpoint_opts,
             extra_reader_opts=config.text_reader_opts,
         )
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .predict_topics(
             model_folder=model_folder,
             model_name=model_name,

@@ -6,7 +6,7 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
-from penelope.utility import FilenameFieldSpecs
+from penelope.utility import FilenameFieldSpecs, PropertyValueMaskingOpts
 
 if TYPE_CHECKING:
     from ..document_index import DocumentIndex
@@ -97,6 +97,15 @@ class ExtractTaggedTokensOpts:
     """Global term frequency threshold"""
     global_tf_threshold_mask: bool = False
 
+    filter_opts: Union[PropertyValueMaskingOpts, dict] = field(default_factory=PropertyValueMaskingOpts)
+
+    def __post_init__(self):
+        self.filter_opts = (
+            PropertyValueMaskingOpts(**self.filter_opts)
+            if isinstance(self.filter_opts, dict)
+            else self.filter_opts or PropertyValueMaskingOpts()
+        )
+
     @property
     def target_column(self) -> str:
         if self.target_override:
@@ -146,6 +155,7 @@ class ExtractTaggedTokensOpts:
             text_column=self.text_column,
             lemma_column=self.lemma_column,
             pos_column=self.pos_column,
+            filter_opts=self.filter_opts.props,
         )
 
     def ingest(self, opts: dict) -> ExtractTaggedTokensOpts:

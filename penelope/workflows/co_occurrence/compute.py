@@ -15,7 +15,7 @@ dirname = os.path.dirname
 def compute(
     args: interface.ComputeOpts,
     corpus_config: pipeline.CorpusConfig,
-    tagged_frames_filename: Optional[str] = None,
+    tagged_corpus_source: Optional[str] = None,
 ) -> co_occurrence.Bundle:
     """Creates and stores a concept co-occurrence bundle using specified options."""
 
@@ -27,14 +27,14 @@ def compute(
 
         os.makedirs(args.target_folder, exist_ok=True)
 
-        tagged_frames_filename: Optional[str] = tagged_frames_filename or jj(
+        tagged_corpus_source: Optional[str] = tagged_corpus_source or jj(
             dirname(args.corpus_source), f"{args.corpus_tag}{POS_TAGGED_FRAME_FILENAME_POSTFIX}"
         )
 
         tagged_frame_pipeline: pipeline.CorpusPipeline = corpus_config.get_pipeline(
             "tagged_frame_pipeline",
             corpus_source=args.corpus_source,
-            tagged_frames_filename=tagged_frames_filename,
+            tagged_corpus_source=tagged_corpus_source,
             enable_checkpoint=args.enable_checkpoint,
             force_checkpoint=args.force_checkpoint,
         )
@@ -50,7 +50,6 @@ def compute(
             + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
                 transform_opts=args.transform_opts,
                 extract_opts=args.extract_opts,
-                filter_opts=args.filter_opts,
                 context_opts=args.context_opts,
                 global_tf_threshold=args.tf_threshold,
             )

@@ -6,7 +6,6 @@ import click
 import penelope.corpus as pc
 from penelope import pipeline
 from penelope.scripts.utils import load_config, remove_none, update_arguments_from_options_file
-from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -202,8 +201,6 @@ def _main(
         text_transform_opts: pc.TextTransformOpts = None
         transform_opts: pc.TokensTransformOpts = None
 
-    filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
-
     engine_args: dict = remove_none(
         {
             'n_topics': n_topics,
@@ -234,7 +231,6 @@ def _main(
         text_transform_opts=text_transform_opts,
         extract_opts=extract_opts,
         transform_opts=transform_opts,
-        filter_opts=filter_opts,
         engine=engine,
         engine_args=engine_args,
         store_corpus=store_corpus,
