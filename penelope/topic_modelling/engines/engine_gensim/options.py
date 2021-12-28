@@ -184,7 +184,7 @@ class LdaMulticoreEngineSpec(EngineSpec):
             'eta': 'auto',
             'per_word_topics': True,
             # https://stackoverflow.com/questions/65014553/how-to-tune-the-parameters-for-gensim-ldamulticore-in-python
-            'chunk_size': 4000,
+            'chunksize': 4000,
         }
 
 

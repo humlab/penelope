@@ -134,7 +134,6 @@ def main(
         source=corpus_source,
         transform_opts=transform_opts,
         reader_opts=reader_opts,
-        chunk_size=None,
     )
 
     corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)

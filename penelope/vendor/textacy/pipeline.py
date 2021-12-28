@@ -19,6 +19,7 @@ from penelope.utility import (
 )
 from spacy.language import Language as SpacyLanguage
 from spacy.tokens import Doc as SpacyDoc
+from textacy.spacier.utils import make_doc_from_text_chunks
 from tqdm.auto import tqdm
 
 from ..spacy import load_model_by_parts
@@ -112,7 +113,7 @@ class CreateTask(ITask):
             metadata = metadata_mapping[filename]
 
             if len(text) > n_chunk_threshold:
-                doc: SpacyDoc = textacy.spacier.utils.make_doc_from_text_chunks(
+                doc: SpacyDoc = make_doc_from_text_chunks(
                     text, lang=nlp, chunk_size=n_chunk_threshold
                 )
                 corpus.add_doc(doc)
