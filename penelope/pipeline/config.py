@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, 
 
 import yaml
 from penelope.corpus import TextReaderOpts, TextTransformOpts
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, create_instance, get_pos_schema, strip_extensions
+from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema, strip_extensions
 
 from . import checkpoint, interfaces
 

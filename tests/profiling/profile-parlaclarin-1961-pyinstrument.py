@@ -1,5 +1,5 @@
 from penelope import corpus as corpora
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.pipeline.pipelines import CorpusPipeline
 
 CONFIG_FILENAME = "./tests/profiling/riksprot-parlaclarin-1960.yml"

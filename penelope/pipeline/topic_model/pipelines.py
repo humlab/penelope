@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
 
-from ... import corpus, utility
+from ... import corpus
 from .. import pipelines
 from ..config import CorpusConfig
 

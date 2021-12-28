@@ -2,7 +2,7 @@ from os.path import join as jj
 
 import penelope.workflows.co_occurrence.compute as workflow
 from penelope import corpus as corpora
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.co_occurrence import ContextOpts
 from penelope.notebook.interface import ComputeOpts
 

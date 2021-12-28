@@ -3,7 +3,6 @@ import sys
 
 import click
 import penelope.corpus as penelope
-import yaml
 from penelope import pipeline
 from penelope.scripts.utils import update_arguments_from_options_file
 

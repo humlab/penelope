@@ -4,7 +4,7 @@ import uuid
 import penelope.workflows.vectorize.dtm as workflow
 import pytest
 from penelope import corpus as corpora
-from penelope import pipeline, utility
+from penelope import pipeline
 from penelope.notebook.interface import ComputeOpts
 
 CORPUS_FOLDER = './tests/test_data'
