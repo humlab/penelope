@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
 from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts, VectorizeOpts
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts, deprecated
+from penelope.utility import PoS_Tag_Scheme, deprecated
 
 from . import tagged_frame, tasks
 
@@ -167,13 +167,11 @@ class PipelineShortcutMixIn:
         extract_opts: ExtractTaggedTokensOpts,
         pos_schema: PoS_Tag_Scheme = None,
         transform_opts: TokensTransformOpts = None,
-        filter_opts: PropertyValueMaskingOpts = None,
         normalize_column_names: bool = False,
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.FilterTaggedFrame(
                 extract_opts=extract_opts,
-                filter_opts=filter_opts,
                 pos_schema=pos_schema,
                 transform_opts=transform_opts,
                 normalize_column_names=normalize_column_names,
@@ -185,12 +183,10 @@ class PipelineShortcutMixIn:
         *,
         extract_opts: Optional[ExtractTaggedTokensOpts],
         transform_opts: Optional[TokensTransformOpts],
-        filter_opts: Optional[PropertyValueMaskingOpts],
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.TaggedFrameToTokens(
                 extract_opts=extract_opts,
-                filter_opts=filter_opts,
                 transform_opts=transform_opts,
             )
         )

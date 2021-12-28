@@ -9,7 +9,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTrans
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
 from penelope.scripts.utils import update_arguments_from_options_file
-from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
+from penelope.utility import pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
 
@@ -192,7 +192,6 @@ def process(
             tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,
             persist=True,
-            filter_opts=PropertyValueMaskingOpts(),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         )

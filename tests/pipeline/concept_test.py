@@ -14,9 +14,7 @@ def test_phrased_tagged_frame():
 
     tagged_corpus_source: str = "./tests/test_data/tranströmer_corpus_export.sparv4.csv.zip"
     checkpoint_opts: checkpoint.CheckpointOpts = None
-    data = checkpoint.load_archive(
-        source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None
-    )
+    data = checkpoint.load_archive(source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None)
     payload = next(data.create_stream())
 
     tokens = tagged_frame_to_tokens(

@@ -68,7 +68,6 @@ def run_workflow():
             global_tf_threshold_mask=False,
             **corpus_config.pipeline_payload.tagged_columns_names,
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(),
         vectorize_opts=corpora.VectorizeOpts(
             already_tokenized=True,
             lowercase=False,

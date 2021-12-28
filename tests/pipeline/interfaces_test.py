@@ -5,21 +5,21 @@ from penelope.utility import PropertyValueMaskingOpts
 
 
 def test_tagged_tokens_filter_opts_set_of_new_field_succeeds():
-    filter_opts = PropertyValueMaskingOpts()
-    filter_opts.is_stop = 1
-    assert filter_opts.is_stop == 1
+    masking_opts = PropertyValueMaskingOpts()
+    masking_opts.is_stop = 1
+    assert masking_opts.is_stop == 1
 
 
 def test_tagged_tokens_filter_opts_get_of_unknown_field_succeeds():
-    filter_opts = PropertyValueMaskingOpts()
-    assert filter_opts.is_stop is None
+    masking_opts = PropertyValueMaskingOpts()
+    assert masking_opts.is_stop is None
 
 
 def test_tagged_tokens_filter_props_is_as_expected():
-    filter_opts = PropertyValueMaskingOpts()
-    filter_opts.is_stop = 1
-    filter_opts.pos_includes = ['NOUN', 'VERB']
-    assert filter_opts.props == dict(is_stop=1, pos_includes=['NOUN', 'VERB'])
+    masking_opts = PropertyValueMaskingOpts()
+    masking_opts.is_stop = 1
+    masking_opts.pos_includes = ['NOUN', 'VERB']
+    assert masking_opts.props == dict(is_stop=1, pos_includes=['NOUN', 'VERB'])
 
 
 def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
@@ -31,8 +31,8 @@ def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
         )
     )
 
-    filter_opts = PropertyValueMaskingOpts(is_stop=True)
-    mask = filter_opts.mask(doc)
+    masking_opts = PropertyValueMaskingOpts(is_stop=True)
+    mask = masking_opts.mask(doc)
     new_doc = doc[mask]
     assert len(new_doc) == 2
     assert new_doc['text'].to_list() == ['a', 'c']

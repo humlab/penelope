@@ -49,7 +49,6 @@ class CorpusConfig:
     checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
     text_reader_opts: TextReaderOpts = None
     text_transform_opts: TextTransformOpts = None
-    filter_opts: PropertyValueMaskingOpts = None
     pipelines: dict = None
     pipeline_payload: interfaces.PipelinePayload = None
     language: str = field(default="english")
@@ -142,11 +141,6 @@ class CorpusConfig:
         if config_dict.get('text_transform_opts', None) is not None:
             config_dict['text_transform_opts'] = TextTransformOpts(**config_dict['text_transform_opts'])
 
-        if config_dict.get('filter_opts', None) is not None:
-            opts = config_dict['filter_opts']
-            if opts.get('data', None) is not None:
-                config_dict['filter_opts'] = PropertyValueMaskingOpts(**opts['data'])
-
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
         config_dict['pipelines'] = config_dict.get(
@@ -192,7 +186,6 @@ class CorpusConfig:
             checkpoint_opts=None,
             text_reader_opts=None,
             text_transform_opts=None,
-            filter_opts=None,
             pipelines=None,
             pipeline_payload=interfaces.PipelinePayload(),
             language=language,

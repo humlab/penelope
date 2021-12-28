@@ -7,7 +7,7 @@ import pandas as pd
 from loguru import logger
 from penelope.corpus import Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts
-from penelope.utility import PoS_Tag_Scheme, PropertyValueMaskingOpts
+from penelope.utility import PoS_Tag_Scheme
 
 from .phrases import PHRASE_PAD, detect_phrases, merge_phrases
 
@@ -38,7 +38,6 @@ def filter_tagged_frame(
     extract_opts: ExtractTaggedTokensOpts,
     token2id: Token2Id = None,
     pos_schema: PoS_Tag_Scheme = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     normalize_column_names: bool = True,
     transform_opts: TokensTransformOpts = None,
 ) -> pd.DataFrame:
@@ -49,7 +48,6 @@ def filter_tagged_frame(
         extract_opts (ExtractTaggedTokensOpts): PoS and lemma extract/filter opts
         token2id (Token2Id, optional): Vocabulary. Defaults to None.
         pos_schema (PoS_Tag_Scheme, optional): PoS schema. Defaults to None.
-        filter_opts (PropertyValueMaskingOpts, optional): Additional key/value filters. Defaults to None.
         transform_opts (TokensTransformOpts, optional): Filters and transforms. Defaults to None.
         normalize_column_names (bool, optional): If text, rename columns to `token` and `pos`. Defaults to True.
 
@@ -119,8 +117,8 @@ def filter_tagged_frame(
                 passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
 
     mask = np.repeat(True, len(tagged_frame.index))
-    if filter_opts is not None:
-        mask &= filter_opts.mask(tagged_frame)
+    if extract_opts.filter_opts is not None:
+        mask &= extract_opts.filter_opts.mask(tagged_frame)
 
     pos_includes: Set[str] = extract_opts.get_pos_includes()
     pos_excludes: Set[str] = extract_opts.get_pos_excludes()
@@ -176,7 +174,7 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
     extract_opts: ExtractTaggedTokensOpts,
     passthroughs: Set[str] = None,
 ) -> Iterable[str]:
-    """Filter tagged frame `doc` based on `extract_opts` and `filter_opts`.
+    """Filter tagged frame `doc` based on `extract_opts`.
     Return tagged frame with columns `token` and `pos`.
     Columns `token` is lemmatized word or source word depending on `extract_opts.lemmatize`.
 
@@ -184,7 +182,6 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
         tagged_frame (pd.DataFrame): tagged frame to be filtered
         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
         token2id (Token2Id, optional): Vocabulary.
-        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
 
     Returns:
         Iterable[str]: Sequence of extracted tokens
@@ -234,7 +231,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     doc: pd.DataFrame,
     extract_opts: ExtractTaggedTokensOpts,
     token2id: Token2Id = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     pos_schema: PoS_Tag_Scheme = None,
 ) -> Iterable[str | int]:
@@ -242,7 +238,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
 
     Args:
         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
-        filter_opts (PropertyValueMaskingOpts, optional): Filter based on boolean flags in tagged frame. Defaults to None.
 
     Returns:
         Iterable[str]: Sequence of extracted tokens
@@ -273,7 +268,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         tagged_frame=doc,
         extract_opts=extract_opts,
         token2id=token2id,
-        filter_opts=filter_opts,
         transform_opts=transform_opts,
         pos_schema=pos_schema,
     )

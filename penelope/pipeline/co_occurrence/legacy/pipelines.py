@@ -1,6 +1,6 @@
 # from penelope.co_occurrence import ContextOpts
 # from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
-# from penelope.utility import PropertyValueMaskingOpts, deprecated
+# from penelope.utility import deprecated
 
 # from ... import pipelines
 
@@ -10,7 +10,6 @@
 #     *,
 #     transform_opts: TokensTransformOpts = None,
 #     extract_opts: ExtractTaggedTokensOpts = None,
-#     filter_opts: PropertyValueMaskingOpts = None,
 #     context_opts: ContextOpts = None,
 #     global_threshold_count: int = None,
 # ) -> pipelines.CorpusPipeline:
@@ -20,7 +19,6 @@
 #             pipelines.wildcard()
 #             .tagged_frame_to_tokens(
 #                 extract_opts=extract_opts,
-#                 filter_opts=filter_opts,
 #                 transform_opts=transform_opts,
 #             )
 #             .vocabulary(lemmatize=extract_opts.lemmatize, progress=True)

@@ -472,7 +472,6 @@ class FilterTaggedFrame(ITask):
     """Filters and transforms tagged frame (can be numeric or text). """
 
     extract_opts: ExtractTaggedTokensOpts = None
-    filter_opts: utility.PropertyValueMaskingOpts = None
     pos_schema: utility.PoS_Tag_Scheme = None
     transform_opts: TokensTransformOpts = None
     normalize_column_names: bool = False
@@ -492,7 +491,6 @@ class FilterTaggedFrame(ITask):
             extract_opts=self.extract_opts,
             token2id=self.pipeline.payload.token2id,
             pos_schema=self.pos_schema,
-            filter_opts=self.filter_opts,
             transform_opts=self.transform_opts,
             normalize_column_names=self.normalize_column_names,
         )
@@ -511,7 +509,6 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, VocabularyIngestMixIn, Transfo
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts | str = None
-    filter_opts: utility.PropertyValueMaskingOpts = None
     normalize_column_names: bool = True
 
     token_counts: dict = field(init=False, default_factory=dict)
@@ -523,7 +520,6 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, VocabularyIngestMixIn, Transfo
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("extract_opts", self.extract_opts)
-        self.pipeline.put("filter_opts", self.filter_opts)
         self.pipeline.put("transform_opts", self.transform_opts)
         return self
 
@@ -535,7 +531,6 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, VocabularyIngestMixIn, Transfo
         tokens: Iterable[str] = convert.tagged_frame_to_tokens(
             doc=payload.content,
             extract_opts=self.extract_opts,
-            filter_opts=self.filter_opts,
             transform_opts=self.transform_opts,
             token2id=self.pipeline.payload.token2id,
             pos_schema=self.pipeline.payload.pos_schema,

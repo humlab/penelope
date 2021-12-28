@@ -123,9 +123,12 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig)
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|NOUN|', pos_paddings=None, **config.pipeline_payload.tagged_columns_names
+        lemmatize=True,
+        pos_includes='|NOUN|',
+        pos_paddings=None,
+        **config.pipeline_payload.tagged_columns_names,
+        filter_opts=dict(is_punct=False),
     )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     tagged_payload = next(
         pipeline.CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False).resolve()
@@ -134,7 +137,7 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig)
     tokens_payload = next(
         pipeline.CorpusPipeline(config=config)
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=None)
         .resolve()
     )
 
@@ -183,9 +186,12 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: pipeline.CorpusConfig):
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|NOUN|', pos_paddings=None, **config.pipeline_payload.tagged_columns_names
+        lemmatize=True,
+        pos_includes='|NOUN|',
+        pos_paddings=None,
+        **config.pipeline_payload.tagged_columns_names,
+        filter_opts=dict(is_punct=False),
     )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     tagged_payload = next(
         pipeline.CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False).resolve()
@@ -194,7 +200,7 @@ def test_pipeline_tagged_frame_to_text_succeeds(config: pipeline.CorpusConfig):
     text_payload = next(
         pipeline.CorpusPipeline(config=config)
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=None)
         .tokens_to_text()
         .resolve()
     )
@@ -207,14 +213,13 @@ def test_pipeline_take_succeeds(config: pipeline.CorpusConfig):
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
-        lemmatize=True, **config.pipeline_payload.tagged_columns_names
+        lemmatize=True, **config.pipeline_payload.tagged_columns_names, filter_opts=dict(is_punct=False)
     )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     take_payloads = (
         pipeline.CorpusPipeline(config=config)
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=None)
         .tokens_to_text()
         .take(2)
     )
@@ -227,14 +232,17 @@ def test_pipeline_tagged_frame_to_tuple_succeeds(config: pipeline.CorpusConfig):
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|NOUN|', pos_paddings='|VERB|', **config.pipeline_payload.tagged_columns_names
+        lemmatize=True,
+        pos_includes='|NOUN|',
+        pos_paddings='|VERB|',
+        **config.pipeline_payload.tagged_columns_names,
+        filter_opts=dict(is_punct=False),
     )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     payloads = (
         pipeline.CorpusPipeline(config=config)
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
-        .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
+        .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=None)
         .tokens_to_text()
         .to_list()
     )
@@ -258,15 +266,18 @@ def test_pipeline_to_dtm_succeeds(config: pipeline.CorpusConfig):
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
-        lemmatize=True, pos_includes='|NOUN|', pos_paddings=None, **config.pipeline_payload.tagged_columns_names
+        lemmatize=True,
+        pos_includes='|NOUN|',
+        pos_paddings=None,
+        **config.pipeline_payload.tagged_columns_names,
+        filter_opts=dict(is_punct=False),
     )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(is_punct=False)
 
     corpus: corpora.VectorizedCorpus = (
         (
             pipeline.CorpusPipeline(config=config)
             .checkpoint(tagged_corpus_source, force_checkpoint=False)
-            .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=None)
+            .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=None)
             .tokens_transform(transform_opts=corpora.TokensTransformOpts())
             .tokens_to_text()
             .tqdm()
@@ -307,8 +318,8 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
             pos_includes='|NOUN|PROPN|VERB|',
             pos_excludes='|PUNCT|EOL|SPACE|',
             **config.pipeline_payload.tagged_columns_names,
+            filter_opts=dict(is_alpha=False, is_punct=False, is_space=False),
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(is_alpha=False, is_punct=False, is_space=False),
         create_subfolder=False,
         persist=True,
         tf_threshold=1,
@@ -357,8 +368,8 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
             pos_includes='|NOUN|PROPN|VERB|',
             pos_excludes='|PUNCT|EOL|SPACE|',
             **config.pipeline_payload.tagged_columns_names,
+            filter_opts=dict(is_alpha=False, is_punct=False, is_space=False),
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(is_alpha=False, is_punct=False, is_space=False),
         vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
         create_subfolder=False,
         persist=True,

@@ -46,9 +46,7 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
         pos_includes=utility.pos_tags_to_str(pos_scheme.Adjective + pos_scheme.Verb + pos_scheme.Noun),
         pos_paddings=utility.pos_tags_to_str(pos_scheme.Conjunction),
         **config.pipeline_payload.tagged_columns_names,
-    )
-    filter_opts: utility.PropertyValueMaskingOpts = utility.PropertyValueMaskingOpts(
-        is_punct=False,
+        filter_opts=dict(is_punct=False),
     )
     context_opts: co_occurrence.ContextOpts = co_occurrence.ContextOpts(
         context_width=4,
@@ -62,7 +60,6 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
         transform_opts=transform_opts,
         context_opts=context_opts,
         extract_opts=extract_opts,
-        filter_opts=filter_opts,
         global_threshold_count=global_threshold_count,
         tagged_corpus_source=tagged_corpus_source,
     ).value()
@@ -97,8 +94,8 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
             pos_includes='|NOUN|PROPN|VERB|',
             pos_excludes='|PUNCT|EOL|SPACE|',
             **config.pipeline_payload.tagged_columns_names,
+            filter_opts=dict(is_alpha=False, is_punct=False, is_space=False),
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(is_alpha=False, is_punct=False, is_space=False),
         context_opts=co_occurrence.ContextOpts(
             context_width=4, ignore_concept=True, partition_keys=['document_id'], processes=None
         ),
@@ -139,8 +136,8 @@ def test_spaCy_co_occurrence_pipeline3(config):
             pos_includes='|NOUN|PROPN|VERB|',
             pos_excludes='|PUNCT|EOL|SPACE|',
             **config.pipeline_payload.tagged_columns_names,
+            filter_opts=dict(is_alpha=False, is_punct=False, is_space=False),
         ),
-        filter_opts=utility.PropertyValueMaskingOpts(is_alpha=False, is_punct=False, is_space=False),
         create_subfolder=False,
         persist=True,
         vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),

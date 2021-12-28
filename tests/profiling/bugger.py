@@ -134,8 +134,6 @@ def debug_main(
         text_transform_opts: TextTransformOpts = None
         # transform_opts: penelope.TokensTransformOpts = None
 
-    # filter_opts: PropertyValueMaskingOpts = PropertyValueMaskingOpts()
-
     engine_args = {
         k: v
         for k, v in {

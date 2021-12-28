@@ -32,7 +32,6 @@ def compute(
             + wildcard_to_DTM_pipeline(
                 transform_opts=args.transform_opts,
                 extract_opts=args.extract_opts,
-                filter_opts=args.filter_opts,
                 vectorize_opts=args.vectorize_opts,
             )
         ).value()

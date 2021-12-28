@@ -3,7 +3,6 @@ from penelope import pipeline
 from penelope.corpus.readers import tng
 from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 from penelope.pipeline import tasks
-from penelope.utility import PropertyValueMaskingOpts
 
 # pylint: disable=redefined-outer-name
 
@@ -59,8 +58,7 @@ def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
 
     tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
     extract = tasks.TaggedFrameToTokens(
-        extract_opts=ExtractTaggedTokensOpts(lemmatize=True, **tagged_columns),
-        filter_opts=PropertyValueMaskingOpts(is_punct=False),
+        extract_opts=ExtractTaggedTokensOpts(lemmatize=True, **tagged_columns, filter_opts=dict(is_punct=False)),
     )
 
     p.add([load, extract])

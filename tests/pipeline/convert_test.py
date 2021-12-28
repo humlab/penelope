@@ -578,7 +578,6 @@ utskotten	NN	|utskott|
     phrases = {'herr_talman': 'Herr talman'.split()}
     phrased_tokens = tagged_frame_to_tokens(
         tagged_frame,
-        filter_opts=None,
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False, phrases=phrases, **SPARV_TAGGED_COLUMNS),
     )
     assert phrased_tokens[:9] == ['herr_talman', '!', 'Jag', 'ber', 'få', 'hemställa', ',', 'att', 'kammaren']
@@ -588,7 +587,6 @@ def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> L
 
     tokens = tagged_frame_to_tokens(
         tagged_frame,
-        filter_opts=None,
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False, **SPARV_TAGGED_COLUMNS),
         transform_opts=transform_opts,
     )

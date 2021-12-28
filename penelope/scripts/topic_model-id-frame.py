@@ -130,7 +130,6 @@ def typer_main(
         target_folder=target_folder,
         # extract_opts=extract_opts,
         # transform_opts=transform_opts,
-        # filter_opts=filter_opts,
         engine=engine,
         engine_args=engine_args,
         store_corpus=store_corpus,

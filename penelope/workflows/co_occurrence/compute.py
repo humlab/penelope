@@ -50,7 +50,6 @@ def compute(
             + pipeline.wildcard_to_partition_by_document_co_occurrence_pipeline(
                 transform_opts=args.transform_opts,
                 extract_opts=args.extract_opts,
-                filter_opts=args.filter_opts,
                 context_opts=args.context_opts,
                 global_tf_threshold=args.tf_threshold,
             )

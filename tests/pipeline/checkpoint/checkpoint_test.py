@@ -14,9 +14,7 @@ def test_load_tagged_frame_checkpoint():
     tagged_corpus_source: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
 
     checkpoint_opts: checkpoint.CheckpointOpts = None  # CheckpointOpts()
-    data = checkpoint.load_archive(
-        source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None
-    )
+    data = checkpoint.load_archive(source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None)
 
     assert data is not None
 

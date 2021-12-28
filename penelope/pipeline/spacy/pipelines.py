@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from penelope.utility import PropertyValueMaskingOpts, path_add_suffix
+from penelope.utility import path_add_suffix
 
 from .. import interfaces, pipelines
 from ..co_occurrence.pipelines import wildcard_to_partition_by_document_co_occurrence_pipeline
@@ -82,7 +82,6 @@ def to_tagged_frame_pipeline(
 def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
     corpus_config: CorpusConfig,
     extract_opts: ExtractTaggedTokensOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     transform_opts: TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     corpus_source: str = None,
@@ -99,7 +98,6 @@ def spaCy_DTM_pipeline(  # pylint: disable=too-many-arguments
             force_checkpoint=force_checkpoint,
         ) + wildcard_to_DTM_pipeline(
             extract_opts=extract_opts,
-            filter_opts=filter_opts,
             transform_opts=transform_opts,
             vectorize_opts=vectorize_opts,
         )
@@ -115,7 +113,6 @@ def spaCy_co_occurrence_pipeline(
     corpus_source: str,
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     context_opts: ContextOpts = None,
     global_threshold_count: int = None,
     tagged_corpus_source: str = None,
@@ -132,7 +129,6 @@ def spaCy_co_occurrence_pipeline(
         context_opts=context_opts,
         transform_opts=transform_opts,
         extract_opts=extract_opts,
-        filter_opts=filter_opts,
         global_tf_threshold=global_threshold_count,
     )
     return p

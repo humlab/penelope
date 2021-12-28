@@ -10,7 +10,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTrans
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
 from penelope.scripts.utils import update_arguments_from_options_file
-from penelope.utility import PropertyValueMaskingOpts, pos_tags_to_str
+from penelope.utility import pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument
 
@@ -70,13 +70,13 @@ def tokens_transform_options(func):
 @click.option('-n', '--deserialize-processes', default=4, type=click.IntRange(1, 99), help='Deserialize process count')
 def main(
     options_filename: Optional[str] = None,
-    corpus_config: str = None,
-    input_filename: str = None,
-    output_folder: str = None,
-    output_tag: str = None,
-    filename_pattern: str = None,
+    corpus_config: Optional[str] = None,
+    input_filename: Optional[str] = None,
+    output_folder: Optional[str] = None,
+    output_tag: Optional[str] = None,
+    filename_pattern: Optional[str] = None,
     phrase: Sequence[str] = None,
-    phrase_file: str = None,
+    phrase_file: Optional[str] = None,
     create_subfolder: bool = True,
     pos_includes: str = '',
     pos_paddings: str = '',
@@ -84,7 +84,7 @@ def main(
     append_pos: bool = False,
     to_lower: bool = True,
     lemmatize: bool = True,
-    remove_stopwords: str = None,
+    remove_stopwords: Optional[str] = None,
     min_word_length: int = 2,
     max_word_length: int = None,
     keep_symbols: bool = False,
@@ -103,21 +103,21 @@ def main(
 
 
 def process(
-    corpus_config: str = None,
-    input_filename: str = None,
-    output_folder: str = None,
-    output_tag: str = None,
-    filename_pattern: str = None,
+    corpus_config: Optional[str] = None,
+    input_filename: Optional[str] = None,
+    output_folder: Optional[str] = None,
+    output_tag: Optional[str] = None,
+    filename_pattern: Optional[str] = None,
     phrase: Sequence[str] = None,
-    phrase_file: str = None,
+    phrase_file: Optional[str] = None,
     create_subfolder: bool = True,
-    pos_includes: str = None,
-    pos_paddings: str = None,
-    pos_excludes: str = None,
+    pos_includes: Optional[str] = None,
+    pos_paddings: Optional[str] = None,
+    pos_excludes: Optional[str] = None,
     append_pos: bool = False,
     to_lower: bool = True,
     lemmatize: bool = True,
-    remove_stopwords: str = None,
+    remove_stopwords: Optional[str] = None,
     min_word_length: int = 2,
     max_word_length: int = None,
     keep_symbols: bool = False,
@@ -187,7 +187,6 @@ def process(
             tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,
             persist=True,
-            filter_opts=PropertyValueMaskingOpts(),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
         )

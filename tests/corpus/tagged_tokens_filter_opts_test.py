@@ -17,8 +17,8 @@ def test_mask_punct_space_when_no_space():
 """
     doc: pd.DataFrame = pd.read_csv(io.StringIO(data), sep='\t', index_col=0)
 
-    filter_opts = PropertyValueMaskingOpts(is_punct=False)
-    mask = filter_opts.mask(doc)
+    mask_opts = PropertyValueMaskingOpts(is_punct=False)
+    mask = mask_opts.mask(doc)
 
     assert mask is not None
 
