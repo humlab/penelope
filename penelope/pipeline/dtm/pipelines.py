@@ -1,13 +1,12 @@
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
-from penelope.utility import PropertyValueMaskingOpts
 
+from ..config import CorpusConfig
 from ..pipelines import CorpusPipeline, wildcard
 
 
 def wildcard_to_DTM_pipeline(
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
-    filter_opts: PropertyValueMaskingOpts = None,
     vectorize_opts: VectorizeOpts = None,
 ) -> CorpusPipeline:
     try:
@@ -20,9 +19,41 @@ def wildcard_to_DTM_pipeline(
                 tf_keeps=None,
                 close=True,
             )
-            .tagged_frame_to_tokens(extract_opts=extract_opts, filter_opts=filter_opts, transform_opts=transform_opts)
+            .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
             # .tokens_transform(transform_opts=transform_opts)
             .tqdm()
+            .to_dtm(vectorize_opts=vectorize_opts)
+        )
+        return p
+    except Exception as ex:
+        raise ex
+
+
+def id_tagged_frame_to_DTM_pipeline(
+    corpus_config: CorpusConfig,
+    corpus_source: str = None,
+    id_to_token: bool = False,
+    file_pattern: str = '**/prot-*.feather',
+    transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    vectorize_opts: VectorizeOpts = None,
+) -> CorpusPipeline:
+    try:
+        if corpus_source is None:
+            corpus_source = corpus_config.pipeline_payload.source
+        p: CorpusPipeline = (
+            CorpusPipeline(config=corpus_config)
+            .load_id_tagged_frame(
+                folder=corpus_source,
+                id_to_token=id_to_token,
+                file_pattern=file_pattern,
+            )
+            .filter_tagged_frame(
+                extract_opts=extract_opts,
+                pos_schema=corpus_config.pos_schema,
+                transform_opts=transform_opts,
+                normalize_column_names=False,
+            )
             .to_dtm(vectorize_opts=vectorize_opts)
         )
         return p
