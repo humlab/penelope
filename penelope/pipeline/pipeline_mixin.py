@@ -170,13 +170,9 @@ class PipelineShortcutMixIn:
         normalize_column_names: bool = False,
     ) -> pipelines.CorpusPipeline:
 
-        if extract_opts.of_no_effect:
-            extract_opts = None
-
-        if transform_opts.of_no_effect:
-            transform_opts = None
-
-        if extract_opts is None and transform_opts is None:
+        if (extract_opts is None or extract_opts.of_no_effect) and (
+            transform_opts is None or transform_opts.of_no_effect
+        ):
             return self
 
         return self.add(

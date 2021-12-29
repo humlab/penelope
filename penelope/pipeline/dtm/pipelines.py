@@ -45,12 +45,6 @@ def id_tagged_frame_to_DTM_pipeline(
 
         extract_opts.set_numeric_names()
 
-        if transform_opts.of_no_effect:
-            transform_opts = None
-
-        if extract_opts.of_no_effect:
-            extract_opts = None
-
         p: CorpusPipeline = (
             CorpusPipeline(config=corpus_config)
             .load_id_tagged_frame(

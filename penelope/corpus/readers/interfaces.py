@@ -177,16 +177,15 @@ class ExtractTaggedTokensOpts:
 
     @property
     def has_effect(self) -> bool:
-        return (
-            self.pos_includes
-            or self.pos_paddings
-            or self.pos_excludes
-            or
-            # self.lemmatize or
-            self.phrases
-            or self.append_pos
-            or self.global_tf_threshold > 1
-        )
+        if self.pos_includes or self.pos_paddings or self.pos_excludes:
+            return True
+        if self.phrases:
+            return True
+        if self.append_pos:
+            return True
+        if self.global_tf_threshold > 1:
+            return True
+        return False
 
     @property
     def of_no_effect(self) -> bool:
