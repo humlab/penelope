@@ -20,18 +20,18 @@ def compute(
 ):
     extract_opts.set_numeric_names()
 
-    tm_pipeline: pp.CorpusPipeline = from_id_tagged_frame_pipeline
+    #tm_pipeline: pp.CorpusPipeline = from_id_tagged_frame_pipeline
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
 
-    _: dict = tm_pipeline(
+    _: dict = from_id_tagged_frame_pipeline(
         corpus_config=corpus_config,
         target_folder=target_folder,
         target_name=target_name,
         corpus_source=corpus_source,
         tagged_column=extract_opts.target_column,
         train_corpus_folder=train_corpus_folder,
-        # extract_opts=extract_opts,
+        extract_opts=extract_opts,
         # transform_opts=transform_opts,
         engine=engine,
         engine_args=engine_args,
