@@ -169,6 +169,29 @@ class ExtractTaggedTokensOpts:
         self.global_tf_threshold_mask = opts.get('tf_threshold_mask', self.global_tf_threshold_mask)
         return self
 
+    def set_numeric_names(self) -> ExtractTaggedTokensOpts:
+        self.pos_column = "pos_id"
+        self.lemma_column = "lemma_id"
+        self.text_column = "token_id"
+        return self
+
+    @property
+    def has_effect(self) -> bool:
+        return (
+            self.pos_includes
+            or self.pos_paddings
+            or self.pos_excludes
+            or
+            # self.lemmatize or
+            self.phrases
+            or self.append_pos
+            or self.global_tf_threshold > 1
+        )
+
+    @property
+    def of_no_effect(self) -> bool:
+        return not self.has_effect
+
 
 class ICorpusReader(abc.ABC):
     @property
