@@ -241,6 +241,12 @@ bugger-pyinstrument: make-profile-reports
 bugger-cprofile: make-profile-reports
 	@PYTHONPATH=. python -m cProfile tests/profiling/bugger.py &> ./profile-reports/$(RUN_TIMESTAMP)_bugger-cprofiler.txt
 
+bogger-pyinstrument: make-profile-reports
+	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_bogger-pyinstrument.html ./tests/profiling/bogger.py
+
+bogger-cprofile: make-profile-reports
+	@PYTHONPATH=. python -m cProfile tests/profiling/bogger.py &> ./profile-reports/$(RUN_TIMESTAMP)_bogger-cprofiler.txt
+
 .PHONY: make-profile-reports
 make-profile-reports:
 	@mkdir -p ./profile-reports
