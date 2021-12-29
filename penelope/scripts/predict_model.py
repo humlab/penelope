@@ -4,7 +4,7 @@ import sys
 import click
 import penelope.corpus as penelope
 from penelope import pipeline
-from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
+from penelope.scripts.utils import option2, update_arguments_from_options_file
 
 # pylint: disable=unused-argument, too-many-arguments
 

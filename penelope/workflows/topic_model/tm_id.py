@@ -2,6 +2,8 @@ from penelope import corpus as pc
 from penelope import pipeline as pp
 from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipeline
 
+# pylint: disable=too-many-arguments
+
 
 def compute(
     corpus_config: pp.CorpusConfig,
