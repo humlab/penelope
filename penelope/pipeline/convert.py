@@ -151,7 +151,7 @@ def filter_tagged_frame(
     filtered_data: pd.DataFrame = tagged_frame.loc[mask][[target_column, pos_column]]
 
     if extract_opts.global_tf_threshold > 1:
-        if not token2id.tf:
+        if token2id is None or token2id.tf is None:
             logger.error("Cannot apply TF filter since token2id has no term frequencies")
             extract_opts.global_tf_threshold = 1
         else:
