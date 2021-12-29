@@ -332,7 +332,7 @@ class ITask(abc.ABC):
     def document_index(self) -> DocumentIndex:
         return self.pipeline.payload.document_index
 
-    def input_type_guard(self, content_type) -> None:
+    def input_type_guard(self, content_type: ContentType) -> None:
         if self.in_content_type is None or self.in_content_type == ContentType.NONE:
             return
         if isinstance(self.in_content_type, ContentType):
@@ -343,7 +343,7 @@ class ITask(abc.ABC):
         if isinstance(self.in_content_type, (list, tuple)):
             if content_type in self.in_content_type:
                 return
-        raise PipelineError("content type not valid for task")
+        raise PipelineError(f"Content type `{content_type.name}` not valid for task `{type(self).__name__}`")
 
     def update_document_properties(self, payload: DocumentPayload, **properties) -> None:
         """Stores document properties to document index"""
