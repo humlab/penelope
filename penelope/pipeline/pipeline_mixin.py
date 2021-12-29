@@ -169,6 +169,12 @@ class PipelineShortcutMixIn:
         transform_opts: TokensTransformOpts = None,
         normalize_column_names: bool = False,
     ) -> pipelines.CorpusPipeline:
+
+        if (extract_opts is None or extract_opts.of_no_effect) and (
+            transform_opts is None or transform_opts.of_no_effect
+        ):
+            return self
+
         return self.add(
             tasks.FilterTaggedFrame(
                 extract_opts=extract_opts,

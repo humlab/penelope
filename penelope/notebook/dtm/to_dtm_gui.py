@@ -2,12 +2,9 @@ from typing import Any, Callable, Union
 
 from penelope.corpus import VectorizedCorpus
 from penelope.pipeline import CorpusConfig
-from penelope.utility import get_logger
+from penelope.workflows import interface
 
-from .. import interface
 from ..gui_base import BaseGUI
-
-logger = get_logger('penelope')
 
 
 class ComputeGUI(BaseGUI):

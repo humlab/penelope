@@ -1,11 +1,12 @@
 import click
+from penelope.scripts.utils import option2
 
 from ..pipeline import CorpusConfig
 
 
 @click.command()
 @click.argument('config-filename', type=click.STRING)
-@click.option('-c', '--corpus-source', default=None, help='Corpus filename)', type=click.STRING)
+@option2('--corpus-source', default=None)
 def main(config_filename: str = None, corpus_source: str = None):
 
     config: CorpusConfig = CorpusConfig.load(path=config_filename)

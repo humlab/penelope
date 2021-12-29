@@ -478,8 +478,8 @@ class FilterTaggedFrame(ITask):
     token_counts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
-        self.in_content_type = ContentType.TAGGED_FRAME
-        self.out_content_type = ContentType.TAGGED_FRAME
+        self.in_content_type = [ContentType.TAGGED_ID_FRAME, ContentType.TAGGED_FRAME]
+        self.out_content_type = ContentType.PASSTHROUGH
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 

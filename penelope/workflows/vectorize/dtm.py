@@ -2,15 +2,15 @@ import os
 
 from penelope import pipeline
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline.config import CorpusConfig
 from penelope.pipeline.dtm import wildcard_to_DTM_pipeline
+from penelope.workflows import interface
 
 CheckpointPath = str
 
 
 def compute(
-    args: ComputeOpts,
+    args: interface.ComputeOpts,
     corpus_config: CorpusConfig,
     tagged_frame_pipeline: pipeline.CorpusPipeline = None,
 ) -> VectorizedCorpus:
@@ -48,7 +48,7 @@ def compute(
         raise ex
 
 
-def store_corpus_bundle(corpus: VectorizedCorpus, args: ComputeOpts):
+def store_corpus_bundle(corpus: VectorizedCorpus, args: interface.ComputeOpts):
 
     if VectorizedCorpus.dump_exists(tag=args.corpus_tag, folder=args.target_folder):
         VectorizedCorpus.remove(tag=args.corpus_tag, folder=args.target_folder)

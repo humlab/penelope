@@ -161,7 +161,7 @@ def create_encoded_tagged_frame(
 def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
 
     pos_schema: pos_tags.PoS_Tag_Scheme = pos_tags.PoS_Tag_Schemes.SUC
-
+    extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts().set_numeric_names()
     """TEXT (NON-LEMMATIZED)"""
     token2id: Token2Id = Token2Id().ingest(tagged_frame['token'])
     tagged_id_frame: pd.DataFrame = create_encoded_tagged_frame(
@@ -174,7 +174,7 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
     with pytest.raises(Token2IdMissingError):
         _ = filter_tagged_frame(
             tagged_id_frame,
-            extract_opts=ExtractTaggedTokensOpts(),
+            extract_opts=extract_opts,
             token2id=None,
             pos_schema=pos_schema,
         )
@@ -182,20 +182,20 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
     with pytest.raises(PoSTagSchemaMissingError):
         _ = filter_tagged_frame(
             tagged_id_frame,
-            extract_opts=ExtractTaggedTokensOpts(),
+            extract_opts=extract_opts,
             token2id=token2id,
             pos_schema=None,
         )
 
     filtered_frame = filter_tagged_frame(
         tagged_id_frame,
-        extract_opts=ExtractTaggedTokensOpts(),
+        extract_opts=extract_opts,
         token2id=token2id,
         pos_schema=pos_schema,
     )
     assert filtered_frame.token_id.tolist() == token2id.to_ids(tagged_frame.token.tolist())
 
-    extract_opts = ExtractTaggedTokensOpts(pos_includes='VB')
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='VB').set_numeric_names()
     filtered_frame: pd.DataFrame = filter_tagged_frame(
         tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
     )
@@ -211,13 +211,13 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
         target_column='baseform',
     )
 
-    extract_opts = ExtractTaggedTokensOpts(pos_includes='VB')
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='VB').set_numeric_names()
     filtered_frame: pd.DataFrame = filter_tagged_frame(
         tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
     )
     assert filtered_frame.token_id.tolist() == token2id.to_ids(['tränga', 'gapa', 'fladdra_omkring'])
 
-    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|')
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|').set_numeric_names()
     filtered_frame: pd.DataFrame = filter_tagged_frame(
         tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
     )
@@ -225,7 +225,7 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
         tagged_frame[tagged_frame.pos.isin(['VB'])].baseform.tolist()
     )
 
-    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|NN|')
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|NN|').set_numeric_names()
     filtered_frame: pd.DataFrame = filter_tagged_frame(
         tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
     )
@@ -233,7 +233,7 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
         tagged_frame[tagged_frame.pos.isin(['VB', 'NN'])].baseform.tolist()
     )
 
-    extract_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='MID|MAD|PAD')
+    extract_opts = ExtractTaggedTokensOpts(pos_includes=None, pos_excludes='MID|MAD|PAD').set_numeric_names()
     filtered_frame: pd.DataFrame = filter_tagged_frame(
         tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
     )
@@ -241,7 +241,7 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
         tagged_frame[~tagged_frame.pos.isin(['MID', 'MAD'])].baseform.tolist()
     )
 
-    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|')
+    extract_opts = ExtractTaggedTokensOpts(pos_includes='|VB|').set_numeric_names()
     filtered_frame: pd.DataFrame = filter_tagged_frame(
         tagged_id_frame, token2id=token2id, pos_schema=pos_schema, extract_opts=extract_opts
     )
@@ -352,16 +352,13 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
     }
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS)
-
     tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert set(expected_counts.keys()) == set(tokens)
 
+    """TF threshold resets to 1 if token2id not supplied (i.e. token2id.TF is needed)"""
     extract_opts.global_tf_threshold = 2
-    extract_opts.global_tf_threshold_mask = False
-
-    with pytest.raises(ValueError):
-        """Raises error since token2id not supplied (i.e. token2id.TF is needed)"""
-        tokens = tagged_frame_to_tokens(tagged_frame, token2id=None, extract_opts=extract_opts)
+    tokens = tagged_frame_to_tokens(tagged_frame, token2id=None, extract_opts=extract_opts)
+    assert extract_opts.global_tf_threshold == 1
 
     token2id: Token2Id = Token2Id().ingest(["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]).ingest(tagged_frame.baseform)
 

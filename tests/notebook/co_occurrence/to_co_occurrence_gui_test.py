@@ -5,8 +5,8 @@ import penelope.notebook.co_occurrence.to_co_occurrence_gui as to_co_occurrence_
 import penelope.notebook.utility as notebook_utility
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
-from penelope.notebook import interface
 from penelope.pipeline import CorpusConfig
+from penelope.workflows import interface
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 

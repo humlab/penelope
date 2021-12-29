@@ -1,6 +1,7 @@
 from os.path import join
 
 from penelope.scripts import topic_model
+from penelope.utility import update_dict_from_yaml_file
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -44,6 +45,8 @@ def debug_main():
         force_checkpoint=False,
         passthrough_column='lemma',
     )
+    arguments = update_dict_from_yaml_file('opts_tm[id].yml', {})
+
     topic_model._main(**arguments)  # pylint: disable=protected-access
 
 

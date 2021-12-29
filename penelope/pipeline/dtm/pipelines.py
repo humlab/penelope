@@ -39,8 +39,12 @@ def id_tagged_frame_to_DTM_pipeline(
     vectorize_opts: VectorizeOpts = None,
 ) -> CorpusPipeline:
     try:
+
         if corpus_source is None:
             corpus_source = corpus_config.pipeline_payload.source
+
+        extract_opts.set_numeric_names()
+
         p: CorpusPipeline = (
             CorpusPipeline(config=corpus_config)
             .load_id_tagged_frame(
@@ -52,9 +56,8 @@ def id_tagged_frame_to_DTM_pipeline(
                 extract_opts=extract_opts,
                 pos_schema=corpus_config.pos_schema,
                 transform_opts=transform_opts,
-                normalize_column_names=False,
             )
-            .to_dtm(vectorize_opts=vectorize_opts)
+            .to_dtm(vectorize_opts=vectorize_opts, tagged_column=extract_opts.target_column)
         )
         return p
     except Exception as ex:

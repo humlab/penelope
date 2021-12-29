@@ -19,7 +19,6 @@ class TokensTransformOpts:
 
     to_lower: bool = False
     to_upper: bool = False
-
     only_alphabetic: bool = False
     only_any_alphanumeric: bool = False
     min_len: int = 1
@@ -34,6 +33,30 @@ class TokensTransformOpts:
 
     def is_valid(self, attribute: str) -> bool:
         return hasattr(self, attribute)
+
+    @property
+    def has_effect(self) -> bool:
+        return (
+            self.to_lower
+            or self.to_upper
+            or self.only_alphabetic
+            or self.only_any_alphanumeric
+            or self.min_len > 1
+            or
+            # self.max_len or
+            # self.remove_accents or
+            self.remove_stopwords
+            or
+            # self.stopwords or
+            # self.extra_stopwords or
+            # self.language or
+            not self.keep_numerals
+            or not self.keep_symbols
+        )
+
+    @property
+    def of_no_effect(self):
+        return not self.has_effect
 
     @property
     def props(self):

@@ -1,14 +1,15 @@
 from os.path import dirname, isdir, isfile
-from typing import Optional
+from typing import Any, Callable, Optional
 
-from penelope import pipeline
-from penelope.utility import update_dict_from_yaml_file
+import click
+from penelope import pipeline, utility
+from penelope.workflows import compute_opts as copts
 
 
 def update_arguments_from_options_file(*, arguments: dict, filename_key: str) -> dict:
     options_filename: Optional[str] = arguments.get(filename_key)
     del arguments[filename_key]
-    arguments = update_dict_from_yaml_file(options_filename, arguments)
+    arguments = utility.update_dict_from_yaml_file(options_filename, arguments)
     return arguments
 
 
@@ -25,3 +26,9 @@ def load_config(config_filename: str, corpus_source: str) -> pipeline.CorpusConf
 
 def remove_none(d: dict) -> dict:
     return {k: v for k, v in d.items() if v is not None}
+
+
+def option2(*param_decls: str, **attrs: Any) -> Callable[..., Any]:
+    if 'help' not in attrs and any(p in copts.HELP_TEXT for p in param_decls):
+        attrs['help'] = copts.HELP_TEXT[next(p for p in param_decls if p in copts.HELP_TEXT)]
+    return click.option(*param_decls, **attrs)

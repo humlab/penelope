@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import Mapping, Optional
+from typing import List, Mapping, Optional
 
 from penelope.co_occurrence import ContextOpts
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
@@ -10,40 +10,76 @@ from penelope.pipeline import CorpusType
 
 
 HELP_TEXT = {
-    '--options-filename': 'Use values in YAML file as command line options.',
-    '--filename-pattern': 'Filename pattern',
-    '--pos-includes': 'POS tags to include e.g. "|NN|JJ|".',
-    '--pos-paddings': 'POS tags to replace with a padding marker.',
-    '--pos-excludes': 'POS tags to exclude.',
+    '--alpha': 'Prior belief of topic probability. symmetric/asymmertic/auto',
     '--append-pos': 'Append PoS to tokems',
-    '--phrase': 'Phrase',
-    '--phrase-file': 'Phrase filename',
-    '--lemmatize/--no-lemmatize': 'Use word baseforms',
-    '--to-lower/--no-to-lower': 'Lowercase words',
-    '--remove-stopwords': 'Remove stopwords using given language',
-    '--tf-threshold': 'Globoal TF threshold filter (words below filtered out)',
-    '--tf-threshold-mask': 'If true, then low TF words are kept, but masked as "__low_tf__"',
-    '--min-word-length': 'Min length of words to keep',
-    '--max-word-length': 'Max length of words to keep',
-    '--keep-symbols/--no-keep-symbols': 'Keep symbols',
+    '--compute-chunksize': 'Compute process chunksize',
+    '--compute-processes': 'Number of compute processes',
+    '--concept': 'Concept',
+    '--context-width': 'Width of context on either side of concept. Window size = 2 * context_width + 1 ',
+    '--corpus-source': 'Corpus filename/folder (overrides config)',
+    '--corpus-folder': 'Corpus folder (if vectorized corpus)',
+    '--deserialize-processes': 'Number of processes during deserialization',
+    '--doc-chunk-size': 'Split document in chunks of chunk-size words.',
+    '--enable-checkpoint/--no-enable-checkpoint': 'Enable checkpoints',
+    '--engine': 'LDA implementation',
+    '--filename-pattern': 'Filename pattern',
+    '--filename-field': 'Field(s) to extract from document name',
+    '--fix-accents/--no-fix-accents': 'Fix accents',
+    '--fix-hyphenation/--no-fix-hyphenation': 'Fix hyphens',
+    '--force-checkpoint/--no-force-checkpoint': 'Force new checkpoints (if enabled)',
+    '--ignore-concept': 'Filter out word pairs that include a concept token',
+    '--ignore-padding': 'Filter out word pairs that include a padding token',
     '--keep-numerals/--no-keep-numerals': 'Keep numerals',
+    '--keep-symbols/--no-keep-symbols': 'Keep symbols',
+    '--lemmatize/--no-lemmatize': 'Use word baseforms',
+    '--max-iter': 'Max number of iterations.',
+    '--max-word-length': 'Max length of words to keep',
+    '--min-word-length': 'Min length of words to keep',
+    '--n-topics': 'Number of topics.',
+    '--n-tokens': 'Number of tokens per topic.',
     '--only-alphabetic': 'Keep only tokens having only alphabetic characters',
     '--only-any-alphanumeric': 'Keep tokens with at least one alphanumeric char',
-    '--enable-checkpoint/--no-enable-checkpoint': 'Enable checkpoints',
-    '--force-checkpoint/--no-force-checkpoint': 'Force new checkpoints (if enabled)',
-    '--deserialize-processes': 'Number of processes during deserialization',
+    '--options-filename': 'Use values in YAML file as command line options.',
+    '--partition-key': 'Partition key(s)',
+    '--passes': 'Number of passes.',
+    '--passthrough-column': "Use tagged columns as-is (ignore filters)",
+    '--phrase-file': 'Phrase filename',
+    '--phrase': 'Phrase',
+    '--pos-excludes': 'POS tags to exclude.',
+    '--pos-includes': 'POS tags to include e.g. "|NN|JJ|".',
+    '--pos-paddings': 'POS tags to replace with a padding marker.',
+    '--random-seed': "Random seed value",
+    '--remove-stopwords': 'Remove stopwords using given language',
+    '--store-compressed/--no-store-compressed': '',
+    '--store-corpus/--no-store-corpus': '',
+    '--target-folder': 'Target folder, if none then corpus-folder/target-name.',
+    '--tf-threshold-mask': 'If true, then low TF words are kept, but masked as "__low_tf__"',
+    '--tf-threshold': 'Globoal TF threshold filter (words below filtered out)',
+    '--to-lower/--no-to-lower': 'Lowercase words',
+    '--train-corpus-folder': 'Use train corpus in folder if exists',
+    '--workers': 'Number of workers (if applicable).',
 }
+
+
+def ingest(obj: any, data: dict, properties: List[str] = None):
+    if isinstance(properties, str):
+        properties = [properties]
+    if properties is not None:
+        properties = [p for p in properties if p in data]
+    for key in properties or data:
+        if hasattr(obj, key):
+            setattr(obj, key, data[key])
 
 
 @dataclass
 class ComputeOptBase:
 
-    corpus_type: CorpusType
-    corpus_source: Optional[str]
-    target_folder: Optional[str]
-    corpus_tag: Optional[str]
-    create_subfolder: bool
-    persist: bool
+    corpus_type: CorpusType = CorpusType.Tokenized
+    corpus_source: Optional[str] = None
+    target_folder: Optional[str] = None
+    corpus_tag: Optional[str] = None
+    create_subfolder: bool = True
+    persist: bool = True
 
     tagged_corpus_source: str = field(init=True, default=None)
 
@@ -76,17 +112,18 @@ class ComputeOptBase:
         return options
 
     def cli_options(self) -> Mapping[str, str]:
-
         options = {}
-
         return options
+
+    def ingest(self, data: dict):
+        ingest(self, data)
 
 
 @dataclass
 class CheckpointOptsMixIn:
 
-    enable_checkpoint: bool  # = field(init=True, default=True)
-    force_checkpoint: bool  # = field(init=True, default=False)
+    enable_checkpoint: bool = field(init=True, default=True)
+    force_checkpoint: bool = field(init=True, default=False)
 
     @property
     def props(self):
@@ -111,11 +148,15 @@ class CheckpointOptsMixIn:
 
         return options
 
+    def ingest(self, data: dict):
+        super().ingest(data)
+        ingest(self, data)
+
 
 @dataclass
 class ReaderOptsMixIn:
 
-    text_reader_opts: TextReaderOpts
+    text_reader_opts: TextReaderOpts = None
 
     @property
     def props(self):
@@ -137,11 +178,15 @@ class ReaderOptsMixIn:
 
         return options
 
+    def ingest(self, data: dict):
+        super().ingest(data)
+        ingest(self.text_reader_opts, data)
+
 
 @dataclass
 class VectorizeOptsMixIn:
 
-    vectorize_opts: VectorizeOpts
+    vectorize_opts: VectorizeOpts = None
 
     @property
     def props(self) -> dict:
@@ -173,13 +218,15 @@ class VectorizeOptsMixIn:
 
         return options
 
+    def ingest(self, data: dict):
+        super().ingest(data)
+        ingest(self.vectorize_opts, data)
+
 
 @dataclass
 class TransformOptsMixIn:
 
-    transform_opts: TokensTransformOpts
-    tf_threshold: Optional[int]
-    tf_threshold_mask: Optional[bool]
+    transform_opts: TokensTransformOpts = None
 
     @property
     def props(self) -> dict:
@@ -216,6 +263,9 @@ class TransformOptsMixIn:
         options.update(super().cli_options())
 
         return options
+
+    def ingest(self, data: dict):
+        super().ingest(data)
 
 
 @dataclass
@@ -268,6 +318,11 @@ class ExtractTaggedTokensOptsMixIn:
 
         return options
 
+    def ingest(self, data: dict):
+        super().ingest(data)
+        ingest(self.extract_opts, data)
+        ingest(self, data, ['tf_threshold', 'tf_threshold_mask'])
+
 
 @dataclass
 class ContextOptsMixIn:
@@ -319,6 +374,10 @@ class ContextOptsMixIn:
         options.update(super().cli_options())
         return options
 
+    def ingest(self, data: dict):
+        super().ingest(data)
+        ingest(self.context_opts, data)
+
 
 @dataclass
 class ComputeOpts(
@@ -339,3 +398,6 @@ class ComputeOpts(
 
     def cli_options(self) -> Mapping[str, str]:
         return super().cli_options()
+
+    def ingest(self, data: dict):
+        super().ingest(data)

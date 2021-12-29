@@ -13,7 +13,9 @@ from .phrases import PHRASE_PAD, detect_phrases, merge_phrases
 
 
 def is_encoded_tagged_frame(tagged_frame: pd.DataFrame) -> bool:
-    is_numeric_frame: bool = 'pos_id' in tagged_frame.columns and 'token_id' in tagged_frame.columns
+    is_numeric_frame: bool = 'pos_id' in tagged_frame.columns and (
+        'token_id' in tagged_frame.columns or 'lemma_id' in tagged_frame.columns
+    )
     return is_numeric_frame
 
 
@@ -80,8 +82,8 @@ def filter_tagged_frame(
     if not is_numeric_frame and extract_opts.lemmatize is None and extract_opts.target_override is None:
         raise ValueError("a valid target not supplied (no lemmatize or target")
 
-    target_column: str = extract_opts.target_column if not is_numeric_frame else 'token_id'
-    pos_column: str = extract_opts.pos_column if not is_numeric_frame else 'pos_id'
+    target_column: str = extract_opts.target_column
+    pos_column: str = extract_opts.pos_column
 
     if target_column not in tagged_frame.columns:
         raise TaggedFrameColumnNameError(f"{target_column} is not valid target for given document (missing column)")
@@ -97,9 +99,8 @@ def filter_tagged_frame(
         blocks = token2id.to_id_set(blocks)
 
     if not is_numeric_frame and (extract_opts.lemmatize or to_lower):
-        tagged_frame[target_column] = tagged_frame[
-            target_column
-        ].str.lower()  # pd.Series([x.lower() for x in tagged_frame[target_column]])
+        tagged_frame[target_column] = tagged_frame[target_column].str.lower()
+        # pd.Series([x.lower() for x in tagged_frame[target_column]])
         passthroughs = {x.lower() for x in passthroughs}
 
     # if extract_opts.block_chars:
@@ -107,9 +108,10 @@ def filter_tagged_frame(
     #         doc[target] = doc[target].str.replace(char, '', regex=False)
 
     """ Phrase detection """
-    if not is_numeric_frame and extract_opts.phrases is not None:
+    if extract_opts.phrases:
         if is_numeric_frame:
             logger.warning("phrase detection not implemented for numeric tagged frames")
+            extract_opts.phrases = None
         else:
             found_phrases = detect_phrases(tagged_frame[target_column], extract_opts.phrases, ignore_case=to_lower)
             if found_phrases:
@@ -117,7 +119,7 @@ def filter_tagged_frame(
                 passthroughs = passthroughs.union({'_'.join(x[1]) for x in found_phrases})
 
     mask = np.repeat(True, len(tagged_frame.index))
-    if extract_opts.filter_opts is not None:
+    if extract_opts.filter_opts and extract_opts.filter_opts.data:
         mask &= extract_opts.filter_opts.mask(tagged_frame)
 
     pos_includes: Set[str] = extract_opts.get_pos_includes()
@@ -130,14 +132,14 @@ def filter_tagged_frame(
         pos_excludes = {pg(x) for x in pos_excludes}
         pos_paddings = {pg(x) for x in pos_paddings}
 
-    if len(pos_includes) > 0:
+    if pos_includes:
         """Don't filter if PoS-include is empty - and don't filter out PoS tokens that should be padded"""
         mask &= tagged_frame[pos_column].isin(pos_includes.union(pos_paddings))
 
-    if len(pos_excludes) > 0:
+    if pos_excludes:
         mask &= ~(tagged_frame[pos_column].isin(pos_excludes))
 
-    if transform_opts:
+    if transform_opts and transform_opts.has_effect:
         mask &= transform_opts.mask(tagged_frame[target_column], token2id=token2id)
 
     if len(passthroughs) > 0:
@@ -149,12 +151,13 @@ def filter_tagged_frame(
     filtered_data: pd.DataFrame = tagged_frame.loc[mask][[target_column, pos_column]]
 
     if extract_opts.global_tf_threshold > 1:
-        if is_numeric_frame:
-            logger.warning("TF filter not implemented for numeric tagged frames")
+        if token2id is None or token2id.tf is None:
+            logger.error("Cannot apply TF filter since token2id has no term frequencies")
+            extract_opts.global_tf_threshold = 1
         else:
             filtered_data = filter_tagged_frame_by_term_frequency(
                 tagged_frame=filtered_data,
-                target=target_column,
+                target_column=target_column,
                 token2id=token2id,
                 extract_opts=extract_opts,
                 passthroughs=passthroughs,
@@ -169,7 +172,7 @@ def filter_tagged_frame(
 
 def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments, too-many-statements
     tagged_frame: pd.DataFrame,
-    target: str,
+    target_column: str,
     token2id: Token2Id,
     extract_opts: ExtractTaggedTokensOpts,
     passthroughs: Set[str] = None,
@@ -187,14 +190,16 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
         Iterable[str]: Sequence of extracted tokens
     """
 
+    is_numeric_frame: bool = is_encoded_tagged_frame(tagged_frame)
+
     if extract_opts.global_tf_threshold <= 1:
         return tagged_frame
 
     if token2id is None or token2id.tf is None:
         raise ValueError("token2id or token2id.tf is not defined")
 
-    if target not in tagged_frame.columns:
-        raise ValueError(f"{target} is not valid target for given document (missing column)")
+    if target_column not in tagged_frame.columns:
+        raise ValueError(f"{target_column} is not valid target for given document (missing column)")
 
     """
     If global_tf_threshold_mask then filter out tokens below threshold
@@ -208,18 +213,20 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
     tg = token2id.get
     cg = token2id.tf.get
 
-    tagged_frame['token_id'] = tagged_frame[target].apply(tg)
-    tagged_frame['token_count'] = tagged_frame.token_id.apply(cg)
+    if not is_numeric_frame:
+        tagged_frame['token_count'] = tagged_frame[target_column].apply(tg).apply(cg)
+    else:
+        tagged_frame['token_count'] = tagged_frame[target_column].apply(cg)
 
     low_frequency_mask = tagged_frame.token_count.fillna(0) < extract_opts.global_tf_threshold
 
-    passthrough_ids: Set[int] = set() if not passthroughs else {tg(w) for w in passthroughs}
-    if passthrough_ids:
-        low_frequency_mask &= ~tagged_frame.token_id.isin(passthrough_ids)
+    if passthroughs:
+        low_frequency_mask &= ~tagged_frame[target_column].isin(passthroughs)
 
     if extract_opts.global_tf_threshold_mask:
         """Mask low frequency terms"""
-        tagged_frame[target] = tagged_frame[target].where(~low_frequency_mask, GLOBAL_TF_THRESHOLD_MASK_TOKEN)
+        mask_token = tg(GLOBAL_TF_THRESHOLD_MASK_TOKEN) if is_numeric_frame else GLOBAL_TF_THRESHOLD_MASK_TOKEN
+        tagged_frame[target_column] = tagged_frame[target_column].where(~low_frequency_mask, mask_token)
     else:
         """Filter out low frequency terms"""
         tagged_frame = tagged_frame[~low_frequency_mask]

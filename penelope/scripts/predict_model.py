@@ -4,7 +4,7 @@ import sys
 import click
 import penelope.corpus as penelope
 from penelope import pipeline
-from penelope.scripts.utils import update_arguments_from_options_file
+from penelope.scripts.utils import option2, update_arguments_from_options_file
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -15,31 +15,28 @@ from penelope.scripts.utils import update_arguments_from_options_file
 # @click.argument('model-name', required=True)
 @click.argument('target-folder', required=True)
 @click.argument('target-name', required=False)
-@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
-@click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
-@click.option('--corpus-source', default=None, help='Corpus folder/filename (overrides config)')
-@click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
-@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
-@click.option('-x', '--pos-excludes', default='', help='POS tags to exclude e.g. "|MAD|MID|PAD|".', type=click.STRING)
-@click.option('-l', '--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
-@click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
-@click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
-@click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
-@click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
-@click.option('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']), help='Remove stopwords')
-@click.option('--only-alphabetic', default=False, is_flag=False, help='Remove tokens with non-alphabetic character(s)')
-@click.option('--only-any-alphanumeric', default=False, is_flag=True, help='Remove tokes with no alphanumeric char')
-@click.option('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True, help='')
-@click.option('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='')
+@option2('--options-filename', default=None)
+@option2('--corpus-source', default=None)
+@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
+@option2('--pos-includes', default='', type=click.STRING)
+@option2('--pos-excludes', default='', type=click.STRING)
+@option2('--to-lower/--no-to-lower', default=True, is_flag=True)
+@option2('--min-word-length', default=1, type=click.IntRange(1, 99))
+@option2('--max-word-length', default=None, type=click.IntRange(10, 99))
+@option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
+@option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
+@option2('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']))
+@option2('--only-alphabetic', default=False, is_flag=False)
+@option2('--only-any-alphanumeric', default=False, is_flag=True)
+@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
+@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
 def click_main(
+    options_filename: str = None,
     config_filename: str = None,
+    corpus_source: str = None,
     model_folder: str = None,
-    # model_name: str = None,
     target_folder: str = None,
     target_name: str = None,
-    options_filename: str = None,
-    corpus_source: str = None,
-    corpus_folder: str = None,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
@@ -78,12 +75,11 @@ def click_main(
 
 
 def _main(
+    corpus_source: str = None,
+    config_filename: str = None,
     model_folder: str = None,
     model_name: str = None,
-    config_filename: str = None,
     target_name: str = None,
-    corpus_source: str = None,
-    corpus_folder: str = None,
     target_folder: str = None,
     lemmatize: bool = True,
     pos_includes: str = '',
@@ -131,7 +127,6 @@ def _main(
         target_name=target_name,
         target_folder=target_folder,
         corpus_source=corpus_source,
-        corpus_folder=corpus_folder,
         extract_opts=extract_opts,
         transform_opts=transform_opts,
         enable_checkpoint=enable_checkpoint,
@@ -147,7 +142,6 @@ def main(
     target_folder: str = None,
     target_name: str,
     corpus_source: str = None,
-    corpus_folder: str = None,
     extract_opts: penelope.ExtractTaggedTokensOpts = None,
     transform_opts: penelope.TokensTransformOpts = None,
     enable_checkpoint: bool = True,
@@ -155,12 +149,9 @@ def main(
 ):
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
-    if corpus_source is None and corpus_folder is None:
+    if corpus_source is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")
         sys.exit(1)
-
-    if corpus_folder is None:
-        corpus_folder, _ = os.path.split(os.path.abspath(corpus_source))
 
     _: dict = (
         config.get_pipeline(

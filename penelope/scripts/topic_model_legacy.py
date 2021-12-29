@@ -1,51 +1,49 @@
 import os
 import sys
 from os.path import join as jj
+from typing import Optional
 
 import click
-import penelope.topic_modelling as tm
-from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus, TokensTransformOpts
-from penelope.corpus.readers import TextTokenizer
+from penelope.corpus import TextReaderOpts, TextTransformOpts, TokensTransformOpts
+from penelope.scripts.utils import option2
+from penelope.workflows.topic_model import tm_legacy as workflow
 
 # pylint: disable=unused-argument, too-many-arguments
 
 
 @click.command()
 @click.argument('target-name')  # , help='Model name.')
-@click.option('--n-topics', default=50, help='Number of topics.', type=click.INT)
-@click.option('--corpus-folder', default=None, help='Corpus folder (if vectorized corpus exists on disk).')
-@click.option(
-    '--corpus-source',
-    help='Corpus filename (if text corpus file or folder, or Sparv XML). Corpus tag if vectorized corpus.',
-)
-@click.option('--engine', default="gensim_lda-multicore", help='LDA implementation')
-@click.option('--passes', default=None, help='Number of passes.', type=click.INT)
-@click.option('--alpha', default='asymmetric', help='Prior belief of topic probability. symmetric/asymmertic/auto')
-@click.option('--random-seed', default=None, help="Random seed value", type=click.INT)
-@click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
-@click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
+@option2('--corpus-source', default=None)
+@option2('--corpus-folder', default=None)
+@option2('--n-topics', default=50, type=click.INT)
+@option2('--engine', default="gensim_lda-multicore")
+@option2('--passes', default=None, type=click.INT)
+@option2('--alpha', default='asymmetric')
+@option2('--random-seed', default=None, type=click.INT)
+@option2('--workers', default=None, type=click.INT)
+@option2('--max-iter', default=None, type=click.INT)
+@option2('--store-corpus/--no-store-corpus', default=True, is_flag=True)
+@option2('--store-compressed/--no-store-compressed', default=True, is_flag=True)
+@option2('--n-tokens', default=200, type=click.INT)
+@option2('--filename-field', '-f', default=None, multiple=True)
 @click.option('--work-folder', default=None, help='Work folder (MALLET `prefix`).')
-@click.option('--filename-field', '-f', default=None, help='Field to extract from document name', multiple=True)
-@click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
-@click.option('--compressed/--no-compressed', default=True, is_flag=True, help='')
-@click.option('--n-tokens', default=200, help='Number tokens per topic.', type=click.INT)
 @click.option('--minimum-probability', default=0.001, help='minimum-probability.', type=click.FLOAT)
 def click_main(
     target_name,
-    n_topics,
     corpus_folder,
-    corpus_source,
-    engine,
-    passes,
-    random_seed,
-    alpha,
-    workers: int,
-    max_iter: int,
-    work_folder: str,
-    filename_field,
-    store_corpus: bool = True,
-    compressed: bool = True,
+    corpus_source: Optional[str] = None,
+    n_topics: int = 50,
     n_tokens: int = 200,
+    engine: str = "gensim_lda-multicore",
+    passes: int = None,
+    random_seed: int = None,
+    alpha: str = 'asymmetric',
+    workers: int = None,
+    max_iter: int = None,
+    work_folder: str = None,
+    filename_field=None,
+    store_corpus: bool = True,
+    store_compressed: bool = True,
     minimum_probability: float = 0.001,
 ):
 
@@ -71,7 +69,7 @@ def click_main(
         engine_args=topic_modeling_opts,
         filename_field=filename_field,
         store_corpus=store_corpus,
-        store_compressed=compressed,
+        store_compressed=store_compressed,
         n_tokens=n_tokens,
         minimum_probability=minimum_probability,
     )
@@ -107,7 +105,7 @@ def main(
 
     os.makedirs(target_folder, exist_ok=True)
 
-    transformer_opts: TokensTransformOpts = TokensTransformOpts(
+    transform_opts: TokensTransformOpts = TokensTransformOpts(
         only_alphabetic=False,
         only_any_alphanumeric=True,
         to_lower=True,
@@ -128,46 +126,22 @@ def main(
         filename_fields=filename_field,
     )
 
-    transform_opts: TextTransformOpts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
+    text_transform_opts: TextTransformOpts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
 
-    tokens_reader = TextTokenizer(
-        source=corpus_source,
-        transform_opts=transform_opts,
+    _ = workflow.compute(
+        target_name=target_name,
+        corpus_source=corpus_source,
+        target_folder=target_folder,
         reader_opts=reader_opts,
-    )
-
-    corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=transformer_opts)
-
-    train_corpus: tm.TrainingCorpus = tm.TrainingCorpus(
-        corpus=corpus,
-        document_index=corpus.document_index,
-        token2id=corpus.token2id,
-        corpus_options=dict(
-            reader_opts=reader_opts.props,
-            transform_opts=transformer_opts.props,
-        ),
-    )
-
-    inferred_model: tm.InferredModel = tm.train_model(
-        train_corpus=train_corpus,
-        method=engine,
+        text_transform_opts=text_transform_opts,
+        transform_opts=transform_opts,
+        engine=engine,
         engine_args=engine_args,
-    )
-
-    inferred_model.topic_model.save(jj(target_folder, 'gensim.model.gz'))
-
-    inferred_model.store(target_folder, store_corpus=store_corpus, store_compressed=store_compressed)
-
-    inferred_topics: tm.InferredTopicsData = tm.predict_topics(
-        inferred_model.topic_model,
-        corpus=train_corpus.effective_corpus,
-        id2token=train_corpus.id2token,
-        document_index=train_corpus.document_index,
+        store_corpus=store_corpus,
+        store_compressed=store_compressed,
         n_tokens=n_tokens,
         minimum_probability=minimum_probability,
     )
-
-    inferred_topics.store(target_folder)
 
 
 if __name__ == '__main__':

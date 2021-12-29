@@ -10,9 +10,9 @@ import penelope.workflows.vectorize.dtm as workflow
 import pytest
 from penelope import corpus as corpora
 from penelope import pipeline, utility
-from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline import tasks
 from penelope.pipeline.spacy import pipelines as spacy_pipeline
+from penelope.workflows.interface import ComputeOpts
 from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER, inline_code
 

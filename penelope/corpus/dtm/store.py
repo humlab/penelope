@@ -109,7 +109,12 @@ def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 
 
 class StoreMixIn:
     def dump(
-        self: IVectorizedCorpusProtocol, *, tag: str, folder: str, compressed: bool = True, mode: str = 'bundle'
+        self: IVectorizedCorpusProtocol,
+        *,
+        tag: str,
+        folder: str,
+        compressed: bool = True,
+        mode: Literal['bundle', 'files'] = 'bundle',
     ) -> IVectorizedCorpus:
         """Store corpus on disk.
 

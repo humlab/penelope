@@ -4,7 +4,7 @@ import penelope.workflows.co_occurrence.compute as workflow
 from penelope import corpus as corpora
 from penelope import pipeline
 from penelope.co_occurrence import ContextOpts
-from penelope.notebook.interface import ComputeOpts
+from penelope.workflows.interface import ComputeOpts
 
 # DATA_FOLDER = "./tests/test_data"
 # CONFIG_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.yml")

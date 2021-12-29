@@ -1,67 +1,30 @@
 import sys
-from typing import Any, Callable, Optional, Sequence
+from typing import Optional, Sequence
 
 import click
-import penelope.notebook.interface as interface
-import penelope.workflows.vectorize.id_tagged_frame_to_dtm as workflow
+import penelope.workflows.vectorize.dtm_id as workflow
 from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import update_arguments_from_options_file
+from penelope.scripts.utils import option2, update_arguments_from_options_file
 from penelope.utility import pos_tags_to_str
 
-# pylint: disable=too-many-arguments, unused-argument
-
-
-HELP_TEXT = {
-    '--options-filename': 'Use values in YAML file as command line options.',
-    '--filename-pattern': 'Filename pattern',
-    '--pos-includes': 'POS tags to include e.g. "|NN|JJ|".',
-    '--pos-paddings': 'POS tags to replace with a padding marker.',
-    '--pos-excludes': 'POS tags to exclude.',
-    '--append-pos': 'Append PoS to tokems',
-    '--phrase': 'Phrase',
-    '--phrase-file': 'Phrase filename',
-    '--lemmatize/--no-lemmatize': 'Use word baseforms',
-    '--to-lower/--no-to-lower': 'Lowercase words',
-    '--remove-stopwords': 'Remove stopwords using given language',
-    '--tf-threshold': 'Globoal TF threshold filter (words below filtered out)',
-    '--tf-threshold-mask': 'If true, then low TF words are kept, but masked as "__low_tf__"',
-    '--min-word-length': 'Min length of words to keep',
-    '--max-word-length': 'Max length of words to keep',
-    '--keep-symbols/--no-keep-symbols': 'Keep symbols',
-    '--keep-numerals/--no-keep-numerals': 'Keep numerals',
-    '--only-alphabetic': 'Keep only tokens having only alphabetic characters',
-    '--only-any-alphanumeric': 'Keep tokens with at least one alphanumeric char',
-    '--enable-checkpoint/--no-enable-checkpoint': 'Enable checkpoints',
-    '--force-checkpoint/--no-force-checkpoint': 'Force new checkpoints (if enabled)',
-    '--deserialize-processes': 'Number of processes during deserialization',
-    '--concept': 'Concept',
-    '--ignore-padding': 'Filter out word pairs that include a padding token',
-    '--ignore-concept': 'Filter out word pairs that include a concept token',
-    '--context-width': 'Width of context on either side of concept. Window size = 2 * context_width + 1 ',
-}
-
-
-def option2(*param_decls: str, **attrs: Any) -> Callable[..., Any]:
-    if 'help' not in attrs and any(p in HELP_TEXT for p in param_decls):
-        attrs['help'] = HELP_TEXT[next(p for p in param_decls if p in HELP_TEXT)]
-    return click.option(*param_decls, **attrs)
+# pylint: disable=too-many-arguments, unused-argument, useless-super-delegation
 
 
 @click.command()
-@click.argument('corpus_config', type=click.STRING)
-@click.argument('input_filename', type=click.STRING)
-@click.argument('output_folder', type=click.STRING)
-@click.argument('output_tag')
-@option2('--options-filename', default=None)
+@click.argument('config_filename', type=click.STRING, required=False)
+@click.argument('corpus_source', type=click.STRING, required=False)
+@click.argument('output_folder', type=click.STRING, required=False)
+@click.argument('output_tag', type=click.STRING, required=False)
+@option2('--options-filename', type=click.STRING, default=None)
 @option2('--filename-pattern', default=None, type=click.STRING)
 @option2('--pos-includes', default='', type=click.STRING)
 @option2('--pos-paddings', default='', type=click.STRING)
 @option2('--pos-excludes', default='', type=click.STRING)
 @option2('--append-pos', default=False, is_flag=True)
-@option2('--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
+@option2('--phrase', default=None, multiple=True, type=click.STRING)
 @option2('--phrase-file', default=None, multiple=False, type=click.STRING)
 @option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
 @option2('--to-lower/--no-to-lower', default=True, is_flag=True)
@@ -72,15 +35,11 @@ def option2(*param_decls: str, **attrs: Any) -> Callable[..., Any]:
 @option2('--max-word-length', default=None, type=click.IntRange(10, 99))
 @option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
 @option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
-@option2('--only-alphabetic', default=False, is_flag=True)
-@option2('--only-any-alphanumeric', default=False, is_flag=True)
-@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
-@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
 @option2('--deserialize-processes', default=4, type=click.IntRange(1, 99))
 def main(
     options_filename: Optional[str] = None,
-    corpus_config: Optional[str] = None,
-    input_filename: Optional[str] = None,
+    config_filename: Optional[str] = None,
+    corpus_source: Optional[str] = None,
     output_folder: Optional[str] = None,
     output_tag: Optional[str] = None,
     filename_pattern: Optional[str] = None,
@@ -98,21 +57,17 @@ def main(
     max_word_length: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
-    only_any_alphanumeric: bool = False,
-    only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
     deserialize_processes: int = 4,
-    enable_checkpoint: bool = True,
-    force_checkpoint: bool = False,
 ):
     arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
     process(**arguments)
 
 
 def process(
-    corpus_config: Optional[str] = None,
-    input_filename: Optional[str] = None,
+    config_filename: Optional[str] = None,
+    corpus_source: Optional[str] = None,
     output_folder: Optional[str] = None,
     output_tag: Optional[str] = None,
     filename_pattern: Optional[str] = None,
@@ -130,23 +85,19 @@ def process(
     max_word_length: int = None,
     keep_symbols: bool = False,
     keep_numerals: bool = False,
-    only_any_alphanumeric: bool = False,
-    only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
-    enable_checkpoint: bool = True,
-    force_checkpoint: bool = False,
     deserialize_processes: int = 4,
 ):
 
     try:
-        corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
+        corpus_config: CorpusConfig = CorpusConfig.load(config_filename).folders(corpus_source, method='replace')
         phrases: dict = parse_phrases(phrase_file, phrase)
 
         if pos_excludes is None:
             pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
 
-        if pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
+        if pos_paddings and pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
             pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
             logger.info(f"PoS paddings expanded to: {pos_paddings}")
 
@@ -158,11 +109,16 @@ def process(
         corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
 
         tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
-        args: interface.ComputeOpts = interface.ComputeOpts(
+        args: workflow.ComputeOpts = workflow.ComputeOpts(
             corpus_type=corpus_config.corpus_type,
-            corpus_source=input_filename,
+            corpus_source=corpus_source,
             target_folder=output_folder,
             corpus_tag=output_tag,
+            tf_threshold=tf_threshold,
+            tf_threshold_mask=tf_threshold_mask,
+            create_subfolder=create_subfolder,
+            persist=True,
+            filename_pattern=filename_pattern,
             transform_opts=TokensTransformOpts(
                 to_lower=to_lower,
                 to_upper=False,
@@ -175,10 +131,7 @@ def process(
                 language=remove_stopwords,
                 keep_numerals=keep_numerals,
                 keep_symbols=keep_symbols,
-                only_alphabetic=only_alphabetic,
-                only_any_alphanumeric=only_any_alphanumeric,
             ),
-            text_reader_opts=text_reader_opts,
             extract_opts=ExtractTaggedTokensOpts(
                 pos_includes=pos_includes,
                 pos_paddings=pos_paddings,
@@ -191,12 +144,6 @@ def process(
                 **tagged_columns,
             ),
             vectorize_opts=VectorizeOpts(already_tokenized=True),
-            tf_threshold=tf_threshold,
-            tf_threshold_mask=tf_threshold_mask,
-            create_subfolder=create_subfolder,
-            persist=True,
-            enable_checkpoint=enable_checkpoint,
-            force_checkpoint=force_checkpoint,
         )
 
         workflow.compute(args=args, corpus_config=corpus_config)

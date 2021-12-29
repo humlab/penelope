@@ -5,7 +5,7 @@ from typing import Optional
 import click
 import penelope.corpus as pc
 from penelope import pipeline
-from penelope.scripts.utils import load_config, remove_none, update_arguments_from_options_file
+from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -13,40 +13,40 @@ from penelope.scripts.utils import load_config, remove_none, update_arguments_fr
 @click.command()
 @click.argument('config-filename', required=True)
 @click.argument('target-name', required=False)
-@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
-@click.option('--corpus-source', default=None, help='Corpus filename/folder (overrides config)')
-@click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
-@click.option('--train-corpus-folder', default=None, type=click.STRING, help='Use train corpus in folder if exists')
-@click.option('--fix-hyphenation/--no-fix-hyphenation', default=True, is_flag=True, help='Fix hyphens')
-@click.option('--fix-accents/--no-fix-accents', default=True, is_flag=True, help='Fix accents')
-@click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
-@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
-@click.option('-x', '--pos-excludes', default='', help='POS tags to exclude e.g. "|MAD|MID|PAD|".', type=click.STRING)
-@click.option('-l', '--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
-@click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
-@click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
-@click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
-@click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
-@click.option('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']), help='Remove stopwords')
-@click.option('--only-alphabetic', default=False, is_flag=False, help='Remove tokens with non-alphabetic character(s)')
-@click.option('--only-any-alphanumeric', default=False, is_flag=True, help='Remove tokes with no alphanumeric char')
-@click.option('--n-topics', default=50, help='Number of topics.', type=click.INT)
-@click.option('--engine', default="gensim_lda-multicore", help='LDA implementation')
-@click.option('--passes', default=None, help='Number of passes.', type=click.INT)
-@click.option('--alpha', default='asymmetric', help='Prior belief of topic probability. symmetric/asymmertic/auto')
-@click.option('--random-seed', default=None, help="Random seed value", type=click.INT)
-@click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
-@click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
-@click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
-@click.option('--store-compressed/--no-store-compressed', default=True, is_flag=True, help='')
-@click.option('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True, help='')
-@click.option('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='')
-@click.option('--passthrough-column', default=None, type=click.STRING, help="Use tagged columns as-is (ignore filters)")
+@option2('--options-filename', default=None)
+@option2('--corpus-source', default=None)
+@option2('--target-folder', default=None)
+@option2('--train-corpus-folder', default=None, type=click.STRING)
+@option2('--fix-hyphenation/--no-fix-hyphenation', default=True, is_flag=True)
+@option2('--fix-accents/--no-fix-accents', default=True, is_flag=True)
+@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
+@option2('--pos-includes', default='', type=click.STRING)
+@option2('--pos-excludes', default='', type=click.STRING)
+@option2('--to-lower/--no-to-lower', default=True, is_flag=True)
+@option2('--min-word-length', default=1, type=click.IntRange(1, 99))
+@option2('--max-word-length', default=None, type=click.IntRange(10, 99))
+@option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
+@option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
+@option2('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']))
+@option2('--only-alphabetic', default=False, is_flag=False)
+@option2('--only-any-alphanumeric', default=False, is_flag=True)
+@option2('--n-topics', default=50, type=click.INT)
+@option2('--engine', default="gensim_lda-multicore")
+@option2('--passes', default=None, type=click.INT)
+@option2('--alpha', default='asymmetric')
+@option2('--random-seed', default=None, type=click.INT)
+@option2('--workers', default=None, type=click.INT)
+@option2('--max-iter', default=None, type=click.INT)
+@option2('--store-corpus/--no-store-corpus', default=True, is_flag=True)
+@option2('--store-compressed/--no-store-compressed', default=True, is_flag=True)
+@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
+@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
+@option2('--passthrough-column', default=None, type=click.STRING)
 def click_main(
-    config_filename: str = None,
-    target_name: str = None,
     options_filename: Optional[str] = None,
+    config_filename: str = None,
     corpus_source: Optional[str] = None,
+    target_name: str = None,
     train_corpus_folder: Optional[str] = None,
     target_folder: Optional[str] = None,
     fix_hyphenation: bool = True,
@@ -120,40 +120,7 @@ def _main(
     force_checkpoint: bool = False,
     passthrough_column: Optional[str] = None,
 ):
-    """Create a topic model.
-
-    Args:
-        config_filename (Optional[str], optional): [description]. Defaults to None.
-        target_name (Optional[str], optional): [description]. Defaults to None.
-        corpus_source (Optional[str], optional): [description]. Defaults to None.
-        train_corpus_folder (Optional[str], optional): [description]. Defaults to None.
-        target_folder (Optional[str], optional): [description]. Defaults to None.
-        fix_hyphenation (bool, optional): [description]. Defaults to True.
-        fix_accents (bool, optional): [description]. Defaults to True.
-        lemmatize (bool, optional): [description]. Defaults to True.
-        pos_includes (str, optional): [description]. Defaults to ''.
-        pos_excludes (str, optional): [description]. Defaults to ''.
-        to_lower (bool, optional): [description]. Defaults to True.
-        remove_stopwords (Optional[str], optional): [description]. Defaults to None.
-        min_word_length (int, optional): [description]. Defaults to 2.
-        max_word_length (int, optional): [description]. Defaults to None.
-        keep_symbols (bool, optional): [description]. Defaults to False.
-        keep_numerals (bool, optional): [description]. Defaults to False.
-        only_any_alphanumeric (bool, optional): [description]. Defaults to False.
-        only_alphabetic (bool, optional): [description]. Defaults to False.
-        n_topics (int, optional): [description]. Defaults to 50.
-        engine (str, optional): [description]. Defaults to "gensim_lda-multicore".
-        passes (int, optional): [description]. Defaults to None.
-        random_seed (int, optional): [description]. Defaults to None.
-        alpha (str, optional): [description]. Defaults to 'asymmetric'.
-        workers (int, optional): [description]. Defaults to None.
-        max_iter (int, optional): [description]. Defaults to None.
-        store_corpus (bool, optional): [description]. Defaults to True.
-        store_compressed (bool, optional): [description]. Defaults to True.
-        enable_checkpoint (bool, optional): [description]. Defaults to True.
-        force_checkpoint (bool, optional): [description]. Defaults to False.
-        passthrough_column (Optional[str], optional): [description]. Defaults to None.
-    """
+    """Train a new topic model."""
     config: pipeline.CorpusConfig = load_config(config_filename, corpus_source)
 
     if passthrough_column is None:
@@ -240,46 +207,6 @@ def _main(
     ).value()
 
 
-RUN_MODE = "production"
-
 if __name__ == '__main__':
 
-    if RUN_MODE == "production":
-
-        click_main()
-
-    # else:
-    #     logger.warning("RUNNING IN DEBUG MODE")
-
-    #     from click.testing import CliRunner
-
-    #     runner = CliRunner()
-    #     result = runner.invoke(
-    #         click_main,
-    #         [
-    #             '--n-topics',
-    #             '200',
-    #             # '--lemmatize',
-    #             # '--to-lower',
-    #             # '--min-word-length',
-    #             1,
-    #             '--only-any-alphanumeric',
-    #             '--engine',
-    #             'gensim_lda-multicore',
-    #             '--random-seed',
-    #             42,
-    #             '--alpha',
-    #             'asymmetric',
-    #             '--max-iter',
-    #             3000,
-    #             '--store-corpus',
-    #             '--workers',
-    #             6,
-    #             '--target-folder',
-    #             '/home/roger/source/penelope/data',
-    #             '/home/roger/source/penelope/riksprot-parlaclarin.yml',
-    #             'riksprot-parlaclarin-protokoll-200-lemma',
-    #             1,
-    #         ],
-    #     )
-    #     print(result.output)
+    click_main()

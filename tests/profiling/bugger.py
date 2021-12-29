@@ -1,9 +1,10 @@
 import os
-from os.path import dirname, isdir, isfile, join
+from os.path import join
 
+from penelope import corpus as pc
 from penelope import pipeline
-from penelope.corpus import TextTransformOpts, remove_hyphens
 from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipeline
+from penelope.scripts.utils import load_config, remove_none
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -23,7 +24,7 @@ ARGUMENTS: dict = dict(
     fix_accents=False,
     lemmatize=False,
     pos_includes='',
-    pos_excludes='MID|MAD|PAD',
+    pos_excludes='',
     to_lower=False,
     remove_stopwords=None,
     min_word_length=1,
@@ -41,8 +42,6 @@ ARGUMENTS: dict = dict(
     max_iter=4000,
     store_corpus=True,
     store_compressed=True,
-    enable_checkpoint=True,
-    force_checkpoint=False,
     # passthrough_column='lemma',
 )
 
@@ -75,23 +74,13 @@ def debug_main(
     max_iter: int = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
-    enable_checkpoint: bool = True,
-    force_checkpoint: bool = False,
     passthrough_column: str = None,
 ):
-    config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
-    if config.pipeline_payload.source is None:
-        config.pipeline_payload.source = corpus_source
-        if isdir(corpus_source):
-            config.folders(corpus_source, method='replace')
-        elif isfile(corpus_source):
-            config.folders(dirname(corpus_source), method='replace')
+    config: pipeline.CorpusConfig = load_config(config_filename, corpus_source)
 
     if passthrough_column is None:
 
-        text_transform_opts: TextTransformOpts = TextTransformOpts()
-
-        text_transform_opts = TextTransformOpts()
+        text_transform_opts: pc.TextTransformOpts = pc.TextTransformOpts()
 
         if fix_accents:
             text_transform_opts.fix_accents = True
@@ -104,39 +93,38 @@ def debug_main(
             #     else remove_hyphens
             # )
             text_transform_opts.fix_hyphenation = False
-            text_transform_opts.extra_transforms.append(remove_hyphens)
+            text_transform_opts.extra_transforms.append(pc.remove_hyphens)
 
-        # transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
-        #     to_lower=to_lower,
-        #     to_upper=False,
-        #     min_len=min_word_length,
-        #     max_len=max_word_length,
-        #     remove_accents=False,
-        #     remove_stopwords=(remove_stopwords is not None),
-        #     stopwords=None,
-        #     extra_stopwords=None,
-        #     language=remove_stopwords,
-        #     keep_numerals=keep_numerals,
-        #     keep_symbols=keep_symbols,
-        #     only_alphabetic=only_alphabetic,
-        #     only_any_alphanumeric=only_any_alphanumeric,
-        # )
+        transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts(
+            to_lower=to_lower,
+            to_upper=False,
+            min_len=min_word_length,
+            max_len=max_word_length,
+            remove_accents=False,
+            remove_stopwords=(remove_stopwords is not None),
+            stopwords=None,
+            extra_stopwords=None,
+            language=remove_stopwords,
+            keep_numerals=keep_numerals,
+            keep_symbols=keep_symbols,
+            only_alphabetic=only_alphabetic,
+            only_any_alphanumeric=only_any_alphanumeric,
+        )
 
-        # extract_opts = penelope.ExtractTaggedTokensOpts(
-        #     lemmatize=lemmatize,
-        #     pos_includes=pos_includes,
-        #     pos_excludes=pos_excludes,
-        #     **config.pipeline_payload.tagged_columns_names,
-        # )
+        extract_opts = pc.ExtractTaggedTokensOpts(
+            lemmatize=lemmatize,
+            pos_includes=pos_includes,
+            pos_excludes=pos_excludes,
+            **config.pipeline_payload.tagged_columns_names,
+        )
 
     else:
         # extract_opts: str = passthrough_column
-        text_transform_opts: TextTransformOpts = None
+        text_transform_opts: pc.TextTransformOpts = None
         # transform_opts: penelope.TokensTransformOpts = None
 
-    engine_args = {
-        k: v
-        for k, v in {
+    engine_args = remove_none(
+        {
             'n_topics': n_topics,
             'passes': passes,
             'random_seed': random_seed,
@@ -144,9 +132,8 @@ def debug_main(
             'workers': workers,
             'max_iter': max_iter,
             'work_folder': os.path.join(target_folder, target_name),
-        }.items()
-        if v is not None
-    }
+        }
+    )
 
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
@@ -154,7 +141,8 @@ def debug_main(
         corpus_config=config,
         corpus_source=corpus_source,
         file_pattern='**/prot-*.feather',
-        tagged_column='lemma_id',
+        extract_opts=extract_opts,
+        transform_opts=transform_opts,
         target_name=target_name,
         train_corpus_folder=train_corpus_folder,
         target_folder=target_folder,

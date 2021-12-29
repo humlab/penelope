@@ -17,13 +17,12 @@ from ipywidgets import (
     VBox,
 )
 from loguru import logger
-from penelope.corpus import TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.utility import better_flatten
 from penelope.utility import default_data_folder as home_data_folder
+from penelope.workflows import interface
 
-from . import interface
 from . import utility as notebook_utility
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes, too-many-public-methods

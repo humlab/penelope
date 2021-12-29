@@ -4,12 +4,9 @@ from typing import Callable, Set, Union
 import ipywidgets as widgets
 from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.pipeline import CorpusConfig
-from penelope.utility import get_logger
+from penelope.workflows import interface
 
-from .. import interface
 from ..gui_base import BaseGUI, button_layout, default_layout
-
-logger = get_logger('penelope')
 
 tooltips = {
     '_context_width': "Max distance to the midmost word, window size two times this value plus one",
