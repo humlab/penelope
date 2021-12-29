@@ -1,5 +1,6 @@
 from os.path import dirname, isdir, isfile
 from typing import Any, Callable, Optional
+
 import click
 from penelope import pipeline, utility
 from penelope.workflows import compute_opts as copts

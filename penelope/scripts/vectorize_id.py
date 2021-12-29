@@ -12,6 +12,7 @@ from penelope.utility import pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument, useless-super-delegation
 
+
 @click.command()
 @click.argument('config_filename', type=click.STRING, required=False)
 @click.argument('corpus_source', type=click.STRING, required=False)

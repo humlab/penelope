@@ -3,9 +3,9 @@ import sys
 from typing import Optional
 
 import click
-from penelope.pipeline import CorpusPipeline
-from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipeline
-from penelope.scripts.utils import load_config, remove_none, update_arguments_from_options_file
+import penelope.workflows.topic_model.tm_id as workflow
+from penelope import corpus as pc
+from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -13,29 +13,23 @@ from penelope.scripts.utils import load_config, remove_none, update_arguments_fr
 @click.command()
 @click.argument('config-filename', required=False)
 @click.argument('target-name', required=False)
-@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
-@click.option('--corpus-source', default=None, help='Corpus filename/folder (overrides config)')
-@click.option('--target-folder', default=None, help='Target folder, if none then corpus-folder/target-name.')
-@click.option('--train-corpus-folder', default=None, type=click.STRING, help='Use train corpus in folder if exists')
-@click.option('--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
-# @click.option('--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
-# @click.option('--pos-excludes', default='', help='POS tags to exclude e.g. "|MAD|MID|PAD|".', type=click.STRING)
-# @click.option('--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
-# @click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
-# @click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
-# @click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
-# @click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
-# @click.option('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']), help='Remove stopwords')
-@click.option('--n-topics', default=50, help='Number of topics.', type=click.INT)
-@click.option('--engine', default="gensim_lda-multicore", help='LDA implementation')
-@click.option('--passes', default=None, help='Number of passes.', type=click.INT)
-@click.option('--alpha', default='asymmetric', help='Prior belief of topic probability. symmetric/asymmertic/auto')
-@click.option('--random-seed', default=None, help="Random seed value", type=click.INT)
-@click.option('--workers', default=None, help='Number of workers (if applicable).', type=click.INT)
-@click.option('--max-iter', default=None, help='Max number of iterations.', type=click.INT)
-@click.option('--store-corpus/--no-store-corpus', default=True, is_flag=True, help='')
-@click.option('--store-compressed/--no-store-compressed', default=True, is_flag=True, help='')
-def typer_main(
+@option2('--options-filename', default=None)
+@option2('--corpus-source', default=None)
+@option2('--target-folder', default=None)
+@option2('--train-corpus-folder', default=None, type=click.STRING)
+@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
+@option2('--pos-includes', default='', type=click.STRING)
+@option2('--pos-excludes', default='', type=click.STRING)
+@option2('--n-topics', default=50, type=click.INT)
+@option2('--engine', default="gensim_lda-multicore")
+@option2('--passes', default=None, type=click.INT)
+@option2('--alpha', default='asymmetric')
+@option2('--random-seed', default=None, type=click.INT)
+@option2('--workers', default=None, type=click.INT)
+@option2('--max-iter', default=None, type=click.INT)
+@option2('--store-corpus/--no-store-corpus', default=True, is_flag=True)
+@option2('--store-compressed/--no-store-compressed', default=True, is_flag=True)
+def click_main(
     options_filename: Optional[str] = None,
     target_name: Optional[str] = None,
     corpus_source: Optional[str] = None,
@@ -43,13 +37,8 @@ def typer_main(
     train_corpus_folder: Optional[str] = None,
     target_folder: Optional[str] = None,
     lemmatize: bool = True,
-    # pos_includes: str = '',
-    # pos_excludes: str = '',
-    # remove_stopwords: Optional[str] = None,
-    # min_word_length: int = 2,
-    # max_word_length: int = None,
-    # keep_symbols: bool = False,
-    # keep_numerals: bool = False,
+    pos_includes: str = '',
+    pos_excludes: str = '',
     n_topics: int = 50,
     engine: str = "gensim_lda-multicore",
     passes: int = None,
@@ -72,13 +61,8 @@ def main(
     train_corpus_folder: Optional[str] = None,
     target_folder: Optional[str] = None,
     lemmatize: bool = True,
-    # pos_includes: str = '',
-    # pos_excludes: str = '',
-    # remove_stopwords: Optional[str] = None,
-    # min_word_length: int = 2,
-    # max_word_length: int = None,
-    # keep_symbols: bool = False,
-    # keep_numerals: bool = False,
+    pos_includes: str = '',
+    pos_excludes: str = '',
     n_topics: int = 50,
     engine: str = "gensim_lda-multicore",
     passes: int = None,
@@ -108,28 +92,16 @@ def main(
         click.echo("config error: `topic_modeling_pipeline` not specified")
         raise sys.exit(1)
 
-    # transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts(
-    #     to_lower=to_lower,
-    #     to_upper=False,
-    #     min_len=min_word_length,
-    #     max_len=max_word_length,
-    #     remove_accents=False,
-    #     remove_stopwords=(remove_stopwords is not None),
-    #     stopwords=None,
-    #     extra_stopwords=None,
-    #     language=remove_stopwords,
-    #     keep_numerals=keep_numerals,
-    #     keep_symbols=keep_symbols,
-    #     only_alphabetic=only_alphabetic,
-    #     only_any_alphanumeric=only_any_alphanumeric,
-    # )
+    # transform_opts: pc.TokensTransformOpts = None
 
-    # extract_opts = pc.ExtractTaggedTokensOpts(
-    #     lemmatize=lemmatize,
-    #     pos_includes=pos_includes,
-    #     pos_excludes=pos_excludes,
-    #     **config.pipeline_payload.tagged_columns_names,
-    # )
+    extract_opts: pc.ExtractTaggedTokensOpts = pc.ExtractTaggedTokensOpts(
+        lemmatize=lemmatize,
+        pos_includes=pos_includes,
+        pos_excludes=pos_excludes,
+        pos_column='pos_id',
+        lemma_column='lemma_id',
+        text_column='token_id',
+    )
 
     engine_args = remove_none(
         {
@@ -142,19 +114,16 @@ def main(
             'work_folder': os.path.join(target_folder, target_name),
         }
     )
-    tagged_column: str = 'lemma_id' if lemmatize else 'token_id'
-    tm_pipeline: CorpusPipeline = from_id_tagged_frame_pipeline
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
 
-    _: dict = tm_pipeline(
+    _: dict = workflow.compute(
         corpus_config=config,
-        target_name=target_name,
         corpus_source=corpus_source,
-        tagged_column=tagged_column,
-        train_corpus_folder=train_corpus_folder,
+        target_name=target_name,
         target_folder=target_folder,
-        # extract_opts=extract_opts,
+        train_corpus_folder=train_corpus_folder,
+        extract_opts=extract_opts,
         # transform_opts=transform_opts,
         engine=engine,
         engine_args=engine_args,
@@ -165,4 +134,4 @@ def main(
 
 if __name__ == '__main__':
 
-    typer_main()
+    click_main()

@@ -18,7 +18,7 @@ def compute(
 ):
 
     if engine not in SUPPORTED_ENGINES:
-        raise ValueError(f"Engine {engine} nopt supported or deprecated")
+        raise ValueError(f"Engine {engine} not supported or deprecated")
 
     if corpus_source is None and corpus_folder is None:
         raise ValueError("corpus filename")

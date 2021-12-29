@@ -7,7 +7,7 @@ from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import update_arguments_from_options_file
+from penelope.scripts.utils import option2, update_arguments_from_options_file
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 
@@ -16,86 +16,38 @@ from penelope.workflows import interface
 
 @click.command()
 @click.argument('corpus_config', type=click.STRING)
-@click.argument('input_filename', type=click.STRING)  # , help='Model name.')
-@click.argument('output_filename', type=click.STRING)  # , help='Model name.')
-@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
-@click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
-@click.option('-c', '--concept', default=None, help='Concept', multiple=True, type=click.STRING)
-@click.option(
-    '--ignore-padding', default=False, is_flag=True, help='Filter out word pairs that include a padding token'
-)
-@click.option(
-    '--ignore-concept', default=False, is_flag=True, help='Filter out word pairs that include a concept token'
-)
-@click.option(
-    '-w',
-    '--context-width',
-    default=None,
-    help='Width of context on either side of concept. Window size = 2 * context_width + 1 ',
-    type=click.INT,
-)
-@click.option('-cp', '--compute-processes', default=None, help='Number of compute processes', type=click.INT)
-@click.option('-cc', '--compute-chunksize', default=10, help='Compute process chunksize', type=click.INT)
-@click.option('-p', '--partition-key', default=None, help='Partition key(s)', multiple=True, type=click.STRING)
-@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
-@click.option('-m', '--pos-paddings', default='', help='POS tags to replace with a padding marker.', type=click.STRING)
-@click.option(
-    '-x',
-    '--pos-excludes',
-    default='',
-    help='List of POS tags to exclude e.g. "|MAD|MID|PAD|".',
-    type=click.STRING,
-)
-@click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
-@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
-@click.option('-z', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
-@click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
-@click.option('-l', '--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
-@click.option(
-    '-r',
-    '--remove-stopwords',
-    default=None,
-    type=click.Choice(['swedish', 'english']),
-    help='Remove stopwords using given language',
-)
-@click.option(
-    '--tf-threshold',
-    default=1,
-    type=click.IntRange(1, 99),
-    help='Globoal TF threshold filter (words below filtered out)',
-)
-@click.option(
-    '--tf-threshold-mask',
-    default=False,
-    is_flag=True,
-    help='If true, then low TF words are kept, but masked as "__low_tf__"',
-)
-@click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
-@click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
-@click.option('--doc-chunk-size', default=None, help='Split document in chunks of chunk-size words.', type=click.INT)
-@click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
-@click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
-@click.option(
-    '--only-alphabetic', default=False, is_flag=True, help='Keep only tokens having only alphabetic characters'
-)
-@click.option(
-    '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
-)
-@click.option('-e', '--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='Enable checkpoints')
-@click.option(
-    '-f',
-    '--force-checkpoint/--no-force-checkpoint',
-    default=False,
-    is_flag=True,
-    help='Force new checkpoints (if enabled)',
-)
-@click.option(
-    '-n',
-    '--deserialize-processes',
-    default=4,
-    type=click.IntRange(1, 99),
-    help='Number of processes during deserialization',
-)
+@click.argument('input_filename', type=click.STRING)
+@click.argument('output_filename', type=click.STRING)
+@option2('--options-filename', default=None)
+@option2('--filename-pattern', default=None, type=click.STRING)
+@option2('--concept', default=None, multiple=True, type=click.STRING)
+@option2('--ignore-padding', default=False, is_flag=True)
+@option2('--ignore-concept', default=False, is_flag=True)
+@option2('--context-width', default=None, type=click.INT)
+@option2('--compute-processes', default=None, type=click.INT)
+@option2('--compute-chunksize', default=10, type=click.INT)
+@option2('--partition-key', default=None, multiple=True, type=click.STRING)
+@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
+@option2('--pos-includes', default='', type=click.STRING)
+@option2('--pos-paddings', default='', type=click.STRING)
+@option2('--pos-excludes', default='', type=click.STRING)
+@option2('--append-pos', default=False, is_flag=True)
+@option2('--phrase', default=None, multiple=True, type=click.STRING)
+@option2('--phrase-file', default=None, multiple=False, type=click.STRING)
+@option2('--to-lower/--no-to-lower', default=True, is_flag=True)
+@option2('--min-word-length', default=1, type=click.IntRange(1, 99))
+@option2('--max-word-length', default=None, type=click.IntRange(10, 99))
+@option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
+@option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
+@option2('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']))
+@option2('--only-alphabetic', default=False, is_flag=False)
+@option2('--only-any-alphanumeric', default=False, is_flag=True)
+@option2('--tf-threshold', default=1, type=click.IntRange(1, 99))
+@option2('--tf-threshold-mask', default=False, is_flag=True)
+@option2('--doc-chunk-size', default=None, type=click.INT)
+@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
+@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
+@option2('--deserialize-processes', default=4, type=click.IntRange(1, 99))
 def main(
     options_filename: Optional[str] = None,
     corpus_config: str = None,

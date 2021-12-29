@@ -7,7 +7,7 @@ from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import update_arguments_from_options_file, option2
+from penelope.scripts.utils import option2, update_arguments_from_options_file
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 

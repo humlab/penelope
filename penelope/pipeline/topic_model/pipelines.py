@@ -81,7 +81,8 @@ def from_id_tagged_frame_pipeline(
     *,
     corpus_config: CorpusConfig,
     corpus_source: str = None,
-    tagged_column: str = 'lemma_id',
+    extract_opts: corpus.ExtractTaggedTokensOpts = None,
+    transform_opts: corpus.TokensTransformOpts = None,
     file_pattern: str = '**/prot-*.feather',
     target_name: str,
     train_corpus_folder: str = None,
@@ -90,11 +91,7 @@ def from_id_tagged_frame_pipeline(
     engine_args: dict = None,
     store_corpus: bool = False,
     store_compressed: bool = True,
-    # extract_opts: corpus.ExtractTaggedTokensOpts = None,
     **_,
-    # transform_opts: corpus.TokensTransformOpts = None,
-    # enable_checkpoint: bool = True,
-    # force_checkpoint: bool = False,
 ) -> pipelines.CorpusPipeline:
 
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
@@ -109,8 +106,16 @@ def from_id_tagged_frame_pipeline(
             id_to_token=False,
             file_pattern=file_pattern,
         )
-        # .filter_tagged_frame(extract_opts=extract_opts)
-        .to_dtm(vectorize_opts=vectorize_opts, tagged_column=tagged_column).to_topic_model(
+        .filter_tagged_frame(
+            extract_opts=extract_opts,
+            transform_opts=transform_opts,
+            pos_schema=corpus_config.pos_schema,
+        )
+        .to_dtm(
+            vectorize_opts=vectorize_opts,
+            tagged_column=extract_opts.target_column,
+        )
+        .to_topic_model(
             corpus_source=None,
             train_corpus_folder=train_corpus_folder,
             target_folder=target_folder,
