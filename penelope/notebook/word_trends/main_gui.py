@@ -4,10 +4,11 @@ import ipywidgets as widgets
 import penelope.pipeline as pipeline
 from IPython.core.display import display
 from penelope.corpus import VectorizedCorpus
+from penelope.workflows import interface
 from penelope.workflows.vectorize import dtm as workflow
 
 from .. import dtm as dtm_gui
-from .. import interface, utility
+from .. import utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .interface import TrendsData
 from .trends_gui import TrendsGUI

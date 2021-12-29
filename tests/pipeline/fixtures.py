@@ -5,9 +5,9 @@ import uuid
 from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
-from penelope.notebook.interface import ComputeOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
+from penelope.workflows.interface import ComputeOpts
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_7DOCS
 from tests.notebook.co_occurrence.load_co_occurrences_gui_test import DATA_FOLDER

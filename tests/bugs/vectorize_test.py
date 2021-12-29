@@ -5,7 +5,7 @@ import penelope.workflows.vectorize.dtm as workflow
 import pytest
 from penelope import corpus as corpora
 from penelope import pipeline
-from penelope.notebook.interface import ComputeOpts
+from penelope.workflows import interface
 
 CORPUS_FOLDER = './tests/test_data'
 
@@ -16,7 +16,7 @@ def test_workflow_to_dtm():
 
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksprot-kb-parlaclarin.yml')
 
-    args: ComputeOpts = ComputeOpts(
+    args: interface.ComputeOpts = interface.ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
         corpus_source='/data/riksdagen_corpus_data/riksprot_parlaclarin_basic_protocol_stanza.csv.zip',
         corpus_type=pipeline.CorpusType.SparvCSV,

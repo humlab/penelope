@@ -2,7 +2,6 @@ import sys
 from typing import Optional, Sequence
 
 import click
-import penelope.notebook.interface as interface
 import penelope.workflows.vectorize.dtm as workflow
 from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
@@ -10,6 +9,7 @@ from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
 from penelope.scripts.utils import update_arguments_from_options_file
 from penelope.utility import pos_tags_to_str
+from penelope.workflows import interface
 
 # pylint: disable=too-many-arguments, unused-argument
 
