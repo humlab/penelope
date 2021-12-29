@@ -113,9 +113,7 @@ class CreateTask(ITask):
             metadata = metadata_mapping[filename]
 
             if len(text) > n_chunk_threshold:
-                doc: SpacyDoc = make_doc_from_text_chunks(
-                    text, lang=nlp, chunk_size=n_chunk_threshold
-                )
+                doc: SpacyDoc = make_doc_from_text_chunks(text, lang=nlp, chunk_size=n_chunk_threshold)
                 corpus.add_doc(doc)
                 doc._.meta = metadata
             else:
