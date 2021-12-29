@@ -355,7 +355,6 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
     tokens = tagged_frame_to_tokens(tagged_frame, extract_opts=extract_opts)
     assert set(expected_counts.keys()) == set(tokens)
 
-
     """TF threshold resets to 1 if token2id not supplied (i.e. token2id.TF is needed)"""
     extract_opts.global_tf_threshold = 2
     tokens = tagged_frame_to_tokens(tagged_frame, token2id=None, extract_opts=extract_opts)

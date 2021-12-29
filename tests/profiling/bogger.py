@@ -1,13 +1,13 @@
 from os.path import join
 
-from penelope import pipeline
 from penelope import corpus as pc
+from penelope import pipeline
 from penelope.pipeline.dtm.pipelines import id_tagged_frame_to_DTM_pipeline
 from penelope.scripts.utils import load_config
 
 # pylint: disable=unused-argument, too-many-arguments
 
-#DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
+# DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
 DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/'
 
 ARGUMENTS: dict = dict(
@@ -82,5 +82,6 @@ def debug_main(
     corpus.dump(tag='bogger', folder='./tests/output', mode='files')
 
     print(f"Stored corpus of shape {corpus.data.shape}")
+
 
 debug_main(**ARGUMENTS)

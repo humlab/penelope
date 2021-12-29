@@ -20,7 +20,7 @@ def compute(
 ):
     extract_opts.set_numeric_names()
 
-    #tm_pipeline: pp.CorpusPipeline = from_id_tagged_frame_pipeline
+    # tm_pipeline: pp.CorpusPipeline = from_id_tagged_frame_pipeline
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
 

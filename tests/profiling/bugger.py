@@ -1,8 +1,8 @@
 import os
 from os.path import join
 
-from penelope import pipeline
 from penelope import corpus as pc
+from penelope import pipeline
 from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipeline
 from penelope.scripts.utils import load_config, remove_none
 
