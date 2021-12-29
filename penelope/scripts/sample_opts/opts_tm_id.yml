@@ -1,12 +1,12 @@
 
-config_filename: /home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965/corpus.yml
+config_filename: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/corpus.yml
 target_name: "profile-topics"
-corpus_source: /home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965
+corpus_source: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/
 train_corpus_folder: null
 target_folder: ./tests/output/
-# lemmatize: false
-# pos_includes: ""
-# pos_excludes: "MID|MAD|PAD"
+lemmatize: true
+pos_includes: ""
+pos_excludes: ""
 # to_lower: false
 # remove_stopwords: null
 # min_word_length: 1
