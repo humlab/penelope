@@ -7,7 +7,6 @@ from .. import pipelines
 from ..config import CorpusConfig
 
 
-# FIXME: Move out of topic modeling module (this is a more generic pipeline)
 def load_id_tagged_frame_pipeline(
     *,
     corpus_config: CorpusConfig,
