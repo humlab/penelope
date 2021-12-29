@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Callable, Optional, Sequence
+from typing import Optional, Sequence
 
 import click
 import penelope.workflows.vectorize.dtm_id as workflow
@@ -7,18 +7,10 @@ from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import update_arguments_from_options_file
+from penelope.scripts.utils import option2, update_arguments_from_options_file
 from penelope.utility import pos_tags_to_str
-from penelope.workflows import compute_opts as copts
 
 # pylint: disable=too-many-arguments, unused-argument, useless-super-delegation
-
-
-def option2(*param_decls: str, **attrs: Any) -> Callable[..., Any]:
-    if 'help' not in attrs and any(p in copts.HELP_TEXT for p in param_decls):
-        attrs['help'] = copts.HELP_TEXT[next(p for p in param_decls if p in copts.HELP_TEXT)]
-    return click.option(*param_decls, **attrs)
-
 
 @click.command()
 @click.argument('config_filename', type=click.STRING, required=False)

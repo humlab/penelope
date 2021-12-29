@@ -7,7 +7,7 @@ from loguru import logger
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import update_arguments_from_options_file
+from penelope.scripts.utils import update_arguments_from_options_file, option2
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 
@@ -19,60 +19,28 @@ from penelope.workflows import interface
 @click.argument('input_filename', type=click.STRING)
 @click.argument('output_folder', type=click.STRING)
 @click.argument('output_tag')
-@click.option('--options-filename', default=None, help='Use values in YAML file as command line options.')
-@click.option('-g', '--filename-pattern', default=None, help='Filename pattern', type=click.STRING)
-@click.option('-i', '--pos-includes', default='', help='POS tags to include e.g. "|NN|JJ|".', type=click.STRING)
-@click.option('-m', '--pos-paddings', default='', help='POS tags to replace with a padding marker.', type=click.STRING)
-@click.option('-x', '--pos-excludes', default='', help='POS tags to exclude.', type=click.STRING)
-@click.option('-a', '--append-pos', default=False, is_flag=True, help='Append PoS to tokems')
-@click.option('-m', '--phrase', default=None, help='Phrase', multiple=True, type=click.STRING)
-@click.option('-z', '--phrase-file', default=None, help='Phrase filename', multiple=False, type=click.STRING)
-@click.option('-b', '--lemmatize/--no-lemmatize', default=True, is_flag=True, help='Use word baseforms')
-@click.option('-l', '--to-lower/--no-to-lower', default=True, is_flag=True, help='Lowercase words')
-@click.option(
-    '-r',
-    '--remove-stopwords',
-    default=None,
-    type=click.Choice(['swedish', 'english']),
-    help='Remove stopwords using given language',
-)
-@click.option(
-    '--tf-threshold',
-    default=1,
-    type=click.IntRange(1, 99),
-    help='Globoal TF threshold filter (words below filtered out)',
-)
-@click.option(
-    '--tf-threshold-mask',
-    default=False,
-    is_flag=True,
-    help='If true, then low TF words are kept, but masked as "__low_tf__"',
-)
-@click.option('--min-word-length', default=1, type=click.IntRange(1, 99), help='Min length of words to keep')
-@click.option('--max-word-length', default=None, type=click.IntRange(10, 99), help='Max length of words to keep')
-@click.option('--keep-symbols/--no-keep-symbols', default=True, is_flag=True, help='Keep symbols')
-@click.option('--keep-numerals/--no-keep-numerals', default=True, is_flag=True, help='Keep numerals')
-@click.option(
-    '--only-alphabetic', default=False, is_flag=True, help='Keep only tokens having only alphabetic characters'
-)
-@click.option(
-    '--only-any-alphanumeric', default=False, is_flag=True, help='Keep tokens with at least one alphanumeric char'
-)
-@click.option('-e', '--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True, help='Enable checkpoints')
-@click.option(
-    '-f',
-    '--force-checkpoint/--no-force-checkpoint',
-    default=False,
-    is_flag=True,
-    help='Force new checkpoints (if enabled)',
-)
-@click.option(
-    '-n',
-    '--deserialize-processes',
-    default=4,
-    type=click.IntRange(1, 99),
-    help='Number of processes during deserialization',
-)
+@option2('--options-filename', default=None)
+@option2('--filename-pattern', default=None, type=click.STRING)
+@option2('--pos-includes', default='', type=click.STRING)
+@option2('--pos-paddings', default='', type=click.STRING)
+@option2('--pos-excludes', default='', type=click.STRING)
+@option2('--append-pos', default=False, is_flag=True)
+@option2('--phrase', default=None, multiple=True, type=click.STRING)
+@option2('--phrase-file', default=None, multiple=False, type=click.STRING)
+@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
+@option2('--to-lower/--no-to-lower', default=True, is_flag=True)
+@option2('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']))
+@option2('--tf-threshold', default=1, type=click.IntRange(1, 99))
+@option2('--tf-threshold-mask', default=False, is_flag=True)
+@option2('--min-word-length', default=1, type=click.IntRange(1, 99))
+@option2('--max-word-length', default=None, type=click.IntRange(10, 99))
+@option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
+@option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
+@option2('--only-alphabetic', default=False, is_flag=True)
+@option2('--only-any-alphanumeric', default=False, is_flag=True)
+@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
+@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
+@option2('--deserialize-processes', default=4, type=click.IntRange(1, 99))
 def main(
     options_filename: Optional[str] = None,
     corpus_config: Optional[str] = None,
