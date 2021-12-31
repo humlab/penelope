@@ -6,7 +6,7 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Set, Union
 
-from penelope.utility import FilenameFieldSpecs, PropertyValueMaskingOpts
+from penelope.utility import FilenameFieldSpecs, PropertyValueMaskingOpts, PropsMixIn
 
 if TYPE_CHECKING:
     from ..document_index import DocumentIndex
@@ -21,7 +21,7 @@ GLOBAL_TF_THRESHOLD_MASK_TOKEN: str = "__low-tf__"
 
 
 @dataclass
-class TextReaderOpts:
+class TextReaderOpts(PropsMixIn["TextReaderOpts"]):
     filename_pattern: str = field(default="*.txt")
     filename_filter: Optional[FilenameFilterSpec] = None
     filename_fields: Optional[FilenameFieldSpecs] = None
@@ -33,28 +33,8 @@ class TextReaderOpts:
     n_chunksize: int = 2
     dehyphen_expr: str = field(default=r"\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b")
 
-    @property
-    def props(self) -> dict:
-        return dict(
-            filename_pattern=self.filename_pattern,
-            filename_filter=self.filename_filter,
-            filename_fields=self.filename_fields,
-            index_field=self.index_field,
-            as_binary=self.as_binary,
-            sep=self.sep,
-            quoting=self.quoting,
-            n_processes=self.n_processes,
-            n_chunksize=self.n_chunksize,
-            # dehyphen_expr=self.dehyphen_expr,
-        )
-
     def copy(self, **kwargs) -> TextReaderOpts:
         return TextReaderOpts(**{**self.props, **kwargs})
-
-    def update(self, **kwargs):
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
 
 
 PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
