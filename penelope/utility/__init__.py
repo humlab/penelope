@@ -1,3 +1,5 @@
+import typing as t
+
 # type: ignore
 from . import zip_utils
 from ._color_utility import (
@@ -32,13 +34,15 @@ from .file_utility import (
     read_json,
     read_textfile,
     read_textfile2,
+    read_yaml,
     save_excel,
     symlink_files,
     touch,
     unpickle_compressed_from_file,
     unpickle_from_file,
-    update_dict_from_yaml_file,
+    update_dict_from_yaml,
     write_json,
+    write_yaml,
 )
 from .filename_fields import (
     FilenameFieldSpec,
@@ -164,8 +168,16 @@ from .utils import (
 )
 from .zip_utils import compress, list_filenames, read_file_content, store, unpack  # , read_dataframe, read_json
 
+T = t.TypeVar('T')
 
-class PropsMixIn:
+
+class PropsMixIn(t.Generic[T]):
     @property
     def props(self):
         return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
+
+    def update(self, **kwargs) -> T:
+        for key in kwargs:
+            if hasattr(self, key):
+                setattr(self, key, kwargs.get(key))
+        return self
