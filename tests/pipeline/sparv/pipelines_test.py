@@ -59,13 +59,13 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
         force_checkpoint=False,
     ).checkpoint(tagged_corpus_source)
 
-    for _ in p.resolve():
-        assert 'n_raw_tokens' in p.payload.document_index.columns
-
-    assert os.path.isfile(tagged_corpus_source)
+    p.exhaust()
 
     assert p.payload.document_index is not None
+    assert 'n_raw_tokens' in p.payload.document_index.columns
     assert 'year' in p.payload.document_index.columns
+
+    assert os.path.isfile(tagged_corpus_source)
 
     pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
@@ -86,8 +86,8 @@ def test_to_tagged_frame_pipeline_checkpoint_adds_token_counts():
         force_checkpoint=True,
     )
 
-    for _ in p.resolve():
-        assert 'n_raw_tokens' in p.payload.document_index.columns
+    p.exhaust()
 
     assert p.payload.document_index is not None
+    assert 'n_raw_tokens' in p.payload.document_index.columns
     assert 'year' in p.payload.document_index.columns
