@@ -424,7 +424,14 @@ class BaseGUI:
 
     @property
     def vectorize_opts(self) -> VectorizeOpts:
-        return VectorizeOpts(already_tokenized=True, lowercase=False, max_df=1.0, min_df=1, verbose=False)
+        # FIXME: Add UI elements fpr max_tokens
+        return VectorizeOpts(
+            already_tokenized=True,
+            lowercase=False,
+            max_df=1.0,
+            min_df=1,
+            min_tf=self.tf_threshold,
+        )
 
     @property
     def corpus_type(self) -> CorpusType:
