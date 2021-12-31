@@ -1,3 +1,4 @@
+import os
 from os.path import join
 
 from penelope import corpus as pc
@@ -7,8 +8,8 @@ from penelope.scripts.utils import load_config
 
 # pylint: disable=unused-argument, too-many-arguments
 
-# DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
-DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/'
+DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
+# DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/'
 
 ARGUMENTS: dict = dict(
     config_filename=join(DATA_PATH, 'corpus.yml'),
@@ -41,6 +42,7 @@ def debug_main(
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
+    min_tf: int = None,
 ):
     config: pipeline.CorpusConfig = load_config(config_filename, corpus_source)
 
@@ -66,7 +68,7 @@ def debug_main(
         pos_excludes=pos_excludes,
     ).set_numeric_names()
 
-    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=True)
+    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=True, min_tf=min_tf, max_tokens=100000)
 
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
@@ -78,8 +80,10 @@ def debug_main(
         transform_opts=transform_opts,
         vectorize_opts=vectorize_opts,
     ).value()
+    corpus = corpus.slice_by_tf(5)
 
-    corpus.dump(tag='bogger', folder='./tests/output', mode='files')
+    os.makedirs('./data/bogger', exist_ok=True)
+    corpus.dump(tag='bogger', folder='./data/bogger', mode='files')
 
     print(f"Stored corpus of shape {corpus.data.shape}")
 

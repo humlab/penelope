@@ -3,6 +3,7 @@ from os.path import join
 
 from penelope import corpus as pc
 from penelope import pipeline
+from penelope.corpus.dtm.vectorizer import VectorizeOpts
 from penelope.pipeline.topic_model.pipelines import from_id_tagged_frame_pipeline
 from penelope.scripts.utils import load_config, remove_none
 
@@ -22,7 +23,7 @@ ARGUMENTS: dict = dict(
     target_folder='./tests/output/',
     fix_hyphenation=False,
     fix_accents=False,
-    lemmatize=False,
+    lemmatize=True,
     pos_includes='',
     pos_excludes='',
     to_lower=False,
@@ -33,13 +34,15 @@ ARGUMENTS: dict = dict(
     keep_numerals=True,
     only_any_alphanumeric=False,
     only_alphabetic=False,
-    n_topics=200,
+    max_tokens=500000,
+    n_topics=50,
     engine="gensim_lda-multicore",
-    passes=2,
+    passes=1,
     random_seed=None,
     alpha='asymmetric',
-    workers=4,
+    workers=3,
     max_iter=4000,
+    chunksize=2000,
     store_corpus=True,
     store_compressed=True,
     # passthrough_column='lemma',
@@ -65,6 +68,7 @@ def debug_main(
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
+    max_tokens: int = None,
     n_topics: int = 50,
     engine: str = "gensim_lda-multicore",
     passes: int = None,
@@ -72,6 +76,7 @@ def debug_main(
     alpha: str = 'asymmetric',
     workers: int = None,
     max_iter: int = None,
+    chunksize: int = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
     passthrough_column: str = None,
@@ -115,8 +120,7 @@ def debug_main(
             lemmatize=lemmatize,
             pos_includes=pos_includes,
             pos_excludes=pos_excludes,
-            **config.pipeline_payload.tagged_columns_names,
-        )
+        ).set_numeric_names()
 
     else:
         # extract_opts: str = passthrough_column
@@ -132,9 +136,15 @@ def debug_main(
             'workers': workers,
             'max_iter': max_iter,
             'work_folder': os.path.join(target_folder, target_name),
+            'chunksize': chunksize,
+            'update_every': 2,
         }
     )
-
+    vectorize_opts: VectorizeOpts = VectorizeOpts(
+        already_tokenized=True,
+        max_tokens=max_tokens,
+        lowercase=False,
+    )
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
     _: dict = from_id_tagged_frame_pipeline(
@@ -143,6 +153,7 @@ def debug_main(
         file_pattern='**/prot-*.feather',
         extract_opts=extract_opts,
         transform_opts=transform_opts,
+        vectorize_opts=vectorize_opts,
         target_name=target_name,
         train_corpus_folder=train_corpus_folder,
         target_folder=target_folder,

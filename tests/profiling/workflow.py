@@ -74,7 +74,7 @@ def run_workflow():
             stop_words=None,
             max_df=1.0,
             min_df=1,
-            verbose=False,
+            min_tf=1,
         ),
         tf_threshold=1,
         tf_threshold_mask=False,
