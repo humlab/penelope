@@ -1,5 +1,6 @@
 import os
 from io import StringIO
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -9,7 +10,7 @@ from penelope.corpus import (
     document_index_upgrade,
     load_document_index,
     load_document_index_from_str,
-    update_document_index_key_values,
+    update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
 )
 from penelope.utility import assert_is_strictly_increasing, is_strictly_increasing
@@ -53,6 +54,19 @@ tran_2020_02_test.txt;2020;2;tran_2020_02_test;4;Epilogue;44
 def load_test_index(data_str: str) -> DocumentIndexHelper:
     index = DocumentIndexHelper(load_document_index(filename=StringIO(data_str), sep=';'))
     return index
+
+
+def simple_index() -> pd.DataFrame:
+    data = """
+;filename;year;document_name;document_id
+a;a.txt;2019;a;0
+b;b.txt;2019;b;1
+c;c.txt;2019;c;2
+d;d.txt;2020;d;3
+e;e.txt;2020;e;4
+"""
+    document_index = load_document_index(filename=StringIO(data), sep=';')
+    return document_index
 
 
 def test_store():
@@ -163,21 +177,28 @@ def test_update_counts():
     update_document_index_properties(index, document_name='tran_2020_01_test', property_bag=statistics)
 
 
+def test_update_document_index_by_dicts():
+
+    data: List[dict] = [{'document_name': 'a', 'x': 1, 'y': 2}]
+    document_index = simple_index()
+
+    di: pd.DataFrame = update_document_index_by_dicts_or_tuples(document_index, data=data, dtype=np.int32, default=0)
+
+    assert di.loc['a']['x'] == 1
+    assert di.loc['a']['y'] == 2
+
+
 def test_update_document_index_key_values():
 
-    test_document_index = """
-;filename;year;document_name;document_id
-a;a.txt;2019;a;0
-b;b.txt;2019;b;1
-c;c.txt;2019;c;2
-d;d.txt;2020;d;3
-e;e.txt;2020;e;4
-"""
-    document_index = load_document_index(filename=StringIO(test_document_index), sep=';')
-    key_value_bag = {'a': 5}
-    update_document_index_key_values(document_index, key_column_name='n_tokens', key_value_bag=key_value_bag)
+    document_index = simple_index()
+    data = [('a', 1, 2)]
+    columns = ['document_name', 'x', 'y']
+    di: pd.DataFrame = update_document_index_by_dicts_or_tuples(
+        document_index, data=data, columns=columns, dtype=np.int32, default=0
+    )
 
-    assert True
+    assert di.loc['a']['x'] == 1
+    assert di.loc['a']['y'] == 2
 
 
 def test_add_attributes():

@@ -13,7 +13,7 @@ from penelope.corpus import (
     Token2Id,
     consolidate_document_index,
     load_document_index,
-    update_document_index_key_values,
+    update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
 )
 from penelope.corpus.readers import TextSource
@@ -192,12 +192,10 @@ class PipelinePayload:
             property_bag=properties,
         )
 
-    def update_document_index_key_values(self, key_column_name: str, key_value_bag: dict) -> None:
-        update_document_index_key_values(
-            self.document_index,
-            key_column_name=key_column_name,
-            key_value_bag=key_value_bag,
-        )
+    def update_document_index_by_dicts_or_tuples(
+        self, *, data: List[Tuple[Any, ...]], columns: List[str], default: Any = 0
+    ) -> None:
+        update_document_index_by_dicts_or_tuples(self.document_index, data=data, columns=columns, default=default)
 
     @property
     def tagged_columns_names(self) -> dict:
@@ -266,6 +264,9 @@ class ITask(abc.ABC):
     prior: ITask = None
     next: ITask = None
 
+    enter_hooks: List[Callable[[ITask], None]] = field(default_factory=list)
+    exit_hooks: List[Callable[[ITask], None]] = field(default_factory=list)
+
     # @property
     # def prior(self) -> ITask:
     #     return self.pipeline.get_prior_to(self)
@@ -290,13 +291,21 @@ class ITask(abc.ABC):
         self.input_type_guard(payload.content_type)
         return self.process_payload(payload)
 
-    def enter(self):
+    def enter(self) -> None:
         """Called prior to stream generation."""
-        return
+        if self.enter_hooks:
+            for hook in self.enter_hooks:
+                hook(self)
 
-    def exit(self):
+    def exit(self) -> None:
         """Called after stream has been generated."""
-        return
+
+        if self.exit_hooks:
+            for hook in self.exit_hooks:
+                hook(self)
+
+        if hasattr(self, 'exit_hook'):
+            self.exit_hook()
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         """Creates stream of payloads. Overridable. """
@@ -350,8 +359,12 @@ class ITask(abc.ABC):
         payload.remember(**properties)
         self.pipeline.payload.update_document_properties(payload.document_name, **properties)
 
-    def update_document_index_key_values(self, key_column_name: str, key_value_bag: dict) -> None:
-        self.pipeline.payload.update_document_index_key_values(key_column_name, key_value_bag)
+    def update_document_index_by_dicts_or_tuples(
+        self, *, data: List[Tuple[Any, ...]], columns: List[str], dtype: Any, default: Any = 0
+    ) -> None:
+        update_document_index_by_dicts_or_tuples(
+            self.document_index, data=data, columns=columns, dtype=dtype, default=default
+        )
 
     def get_filenames(self) -> List[str]:
         """Override this function if task can return expected filenames in stream"""

@@ -12,7 +12,7 @@ from .document_index import (
     metadata_to_document_index,
     overload_by_document_index_properties,
     store_document_index,
-    update_document_index_key_values,
+    update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
     update_document_index_token_counts,
 )

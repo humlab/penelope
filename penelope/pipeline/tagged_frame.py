@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 from dataclasses import dataclass, field
 from enum import IntEnum
@@ -8,14 +10,13 @@ from typing import Iterable, List, Mapping
 import numpy as np
 import pandas as pd
 from penelope.corpus import DocumentIndexHelper, Token2Id
-from penelope.utility.filename_utils import strip_paths
+from penelope.utility import PoS_Tag_Scheme, strip_paths
 from tqdm import tqdm
 
-from ..utility import PoS_Tag_Scheme
 from .interfaces import ITask
 from .pipeline import ContentType, DocumentPayload
 from .tasks import Vocabulary
-from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn
+from .tasks_mixin import DefaultResolveMixIn, PoSCountMixIn
 
 
 class IngestVocabType(IntEnum):
@@ -86,7 +87,7 @@ class ToIdTaggedFrame(Vocabulary):
 
 
 @dataclass
-class LoadIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
+class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
     """Loads numerical tagged frames stored in CSV or FEATHER format.
     Each tagged frame can contain several document identified by a 'document_id' column
     """
@@ -94,12 +95,10 @@ class LoadIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
     corpus_source: str = ""
     file_pattern: str = "**/*.feather"
     id_to_token: bool = False
-    # document_tfs: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TAGGED_FRAME if self.id_to_token else ContentType.TAGGED_ID_FRAME
-
         if not self.file_pattern.endswith('.feather'):
             raise ValueError("Only feather files are currently supported")
 
@@ -111,13 +110,10 @@ class LoadIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
 
         self.pipeline.payload.effective_document_index = self.document_index
         self.pipeline.payload.token2id = self.token2id
-        # self.document_tfs = {}
 
     # def exit(self):
     #     super().exit()
-    # with contextlib.suppress(Exception):
-    #     with open(jj(self.corpus_source, 'document_tfs.json'), "w", encoding='utf-8') as fp:
-    #         json.dump(self.document_tfs, fp)
+    #     self.flush_pos_counts()
 
     @cached_property
     def vocabulary(self) -> pd.DataFrame:
@@ -165,19 +161,24 @@ class LoadIdTaggedFrame(CountTaggedTokensMixIn, DefaultResolveMixIn, ITask):
 
             if 'document_id' not in (loaded_frame_columns or (loaded_frame_columns := set(loaded_frame.columns))):
 
-                yield DocumentPayload(
+                payload: DocumentPayload = DocumentPayload(
                     content_type=self.out_content_type, content=loaded_frame, filename=strip_paths(filename)
                 )
+                self.register_pos_counts(payload)
+
+                yield payload
 
             else:
 
                 for document_id, tagged_frame in loaded_frame.groupby('document_id'):
 
                     tagged_frame.reset_index(drop=True, inplace=True)
-
-                    yield DocumentPayload(
+                    payload: DocumentPayload = DocumentPayload(
                         content_type=self.out_content_type, content=tagged_frame, filename=dg(document_id)
                     )
+                    self.register_pos_counts(payload)
+
+                    yield payload
 
     def load_tagged_frame(self, filename) -> pd.DataFrame:
         tagged_frame: pd.DataFrame = pd.read_feather(filename)

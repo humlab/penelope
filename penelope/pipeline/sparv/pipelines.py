@@ -14,7 +14,7 @@ def to_tagged_frame_pipeline(
     corpus_source: str = None,
     enable_checkpoint: bool = False,
     force_checkpoint: bool = False,
-    update_token_counts: bool = True,
+    enable_pos_counts: bool = True,
     stop_at_index: int = None,
     **_,
 ):
@@ -30,7 +30,7 @@ def to_tagged_frame_pipeline(
             checkpoint_opts=corpus_config.checkpoint_opts,
             extra_reader_opts=corpus_config.text_reader_opts,
             stop_at_index=stop_at_index,
-            update_token_counts=update_token_counts,
+            enable_pos_counts=enable_pos_counts,
         )
 
     elif corpus_config.corpus_type == config.CorpusType.SparvXML:
