@@ -400,7 +400,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     )
     transform_opts = None
 
-    vectorize_opts = VectorizeOpts(verbose=True)
+    vectorize_opts = VectorizeOpts()
 
     config = Mock(
         spec=CorpusConfig,
@@ -438,7 +438,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
         filter_opts=dict(is_punct=False),
     )
     transform_opts = None
-    vectorize_opts = VectorizeOpts(verbose=True)
+    vectorize_opts = VectorizeOpts()
 
     config = Mock(
         spec=CorpusConfig,
