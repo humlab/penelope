@@ -7,32 +7,7 @@ from penelope import utility
 from penelope.pipeline import checkpoint, interfaces, pipelines, sparv, tasks
 from penelope.pipeline.tagged_frame import IngestVocabType, ToIdTaggedFrame
 
-TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
-# text
-Inne	AB	|inne|
-i	RG	|
-den	PN	|den|
-väldiga	JJ	|väldig|
-romanska	JJ	|romansk|
-kyrkan	NN	|kyrka|
-trängdes	VB	|tränga|trängas|
-turisterna	NN	|turist|
-i	PL	|
-halvmörkret	NN	|halvmörker|
-.	MAD	|
-Valv	NN	|valv|
-gapade	VB	|gapa|
-bakom	PP	|bakom|
-valv	NN	|valv|
-och	UO	|
-ingen	PN	|ingen|
-överblick	NN	|överblick|
-.	MAD	|
-Några	DT	|någon|
-ljuslågor	NN	|ljuslåga|
-fladdrade	VB	|fladdra omkring:10|
-.	MAD	|
-"""
+from ..fixtures import TEST_CSV_POS_DOCUMENT
 
 
 @pytest.mark.parametrize(
