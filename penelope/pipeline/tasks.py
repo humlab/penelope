@@ -372,10 +372,6 @@ class LoadTaggedXML(PoSCountMixIn, ITask):
         self.in_content_type = ContentType.NONE
         self.out_content_type = ContentType.TAGGED_FRAME
 
-    # def exit(self):
-    #     super().exit()
-    #     self.flush_pos_counts()
-
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("reader_opts", self.reader_opts.props)
@@ -473,10 +469,6 @@ class ToTaggedFrame(PoSCountMixIn, ITask):
 
         return payload
 
-    # def exit(self):
-    #     super().exit()
-    #     self.flush_pos_counts()
-
 
 @dataclass
 class FilterTaggedFrame(TokenCountMixIn, ITask):
@@ -509,10 +501,6 @@ class FilterTaggedFrame(TokenCountMixIn, ITask):
 
         return payload.update(self.out_content_type, tagged_frame)
 
-    # def exit(self) -> ITask:
-    #     super().exit()
-    #     self.flush_token_counts(self.document_index)
-
 
 @dataclass
 class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
@@ -520,8 +508,6 @@ class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformToken
 
     extract_opts: ExtractTaggedTokensOpts | str = None
     normalize_column_names: bool = True
-
-    token_counts: dict = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -551,20 +537,7 @@ class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformToken
         if self.ingest_tokens:
             self.ingest(tokens)
 
-        self.token_counts.append(
-            (
-                payload.document_name,
-                len(tokens),
-            )
-        )
-
         return payload.update(self.out_content_type, tokens)
-
-    def exit(self) -> ITask:
-        super().exit()
-        self.update_document_index_by_dicts_or_tuples(
-            data=self.token_counts, columns=['n_tokens'], dtype=np.int32, default=0
-        )
 
 
 @dataclass
@@ -933,11 +906,10 @@ class WildcardTask(ITask):
 
 
 @dataclass
-class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
+class LoadTokenizedCorpus(TokenCountMixIn, DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     corpus: ITokenizedCorpus = None
-    token_counts: dict = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -959,19 +931,8 @@ class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        self.token_counts.append(
-            (
-                payload.document_name,
-                len(len(payload.content)),
-            )
-        )
+        self.register_token_count(payload.document_name, len(payload.content))
         return payload
-
-    def exit(self) -> ITask:
-        super().exit()
-        self.update_document_index_by_dicts_or_tuples(
-            data=self.token_counts, columns=['n_tokens'], dtype=np.int32, default=0
-        )
 
 
 class Split(ITask):
