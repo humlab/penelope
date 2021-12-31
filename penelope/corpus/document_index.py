@@ -680,7 +680,7 @@ def update_document_index_by_dicts_or_tuples(
     document_index.update(di_data)
     if dtype is not None:
         for k in new_cols:
-            document_index[k] = document_index[k].astype(dtype)
+            document_index[k] = document_index[k].astype(dtype, errors='ignore')
     return document_index
 
 
