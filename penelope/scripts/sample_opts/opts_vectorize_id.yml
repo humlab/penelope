@@ -19,4 +19,5 @@ keep_symbols: true
 keep_numerals: true
 tf_threshold: 3
 tf_threshold_mask: false
+max_tokens: 800000
 deserialize_processes: 2
