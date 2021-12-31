@@ -82,6 +82,7 @@ def from_id_tagged_frame_pipeline(
     corpus_source: str = None,
     extract_opts: corpus.ExtractTaggedTokensOpts = None,
     transform_opts: corpus.TokensTransformOpts = None,
+    vectorize_opts: VectorizeOpts = None,
     file_pattern: str = '**/prot-*.feather',
     target_name: str,
     train_corpus_folder: str = None,
@@ -94,10 +95,9 @@ def from_id_tagged_frame_pipeline(
 ) -> pipelines.CorpusPipeline:
 
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
-    vectorize_opts: VectorizeOpts = VectorizeOpts(
-        already_tokenized=True,
-        lowercase=False,
-    )
+    vectorize_opts: VectorizeOpts = vectorize_opts or VectorizeOpts()
+    vectorize_opts.update(already_tokenized=True, lowercase=False, min_tf=extract_opts.global_tf_threshold)
+    extract_opts.global_tf_threshold = 1
     p: pipelines.CorpusPipeline = (
         load_id_tagged_frame_pipeline(
             corpus_config=corpus_config,

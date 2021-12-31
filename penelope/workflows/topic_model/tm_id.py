@@ -10,6 +10,7 @@ def compute(
     corpus_source: str,
     # transform_opts: pc.TokensTransformOpts,
     extract_opts: pc.ExtractTaggedTokensOpts,
+    vectorize_opts: pc.VectorizeOpts,
     target_folder: str,
     target_name: str,
     engine: str = "gensim_lda-multicore",
@@ -19,7 +20,6 @@ def compute(
     train_corpus_folder: str = None,
 ):
     extract_opts.set_numeric_names()
-
     # tm_pipeline: pp.CorpusPipeline = from_id_tagged_frame_pipeline
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
@@ -33,6 +33,7 @@ def compute(
         train_corpus_folder=train_corpus_folder,
         extract_opts=extract_opts,
         # transform_opts=transform_opts,
+        vectorize_opts=vectorize_opts,
         engine=engine,
         engine_args=engine_args,
         store_corpus=store_corpus,

@@ -16,32 +16,34 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @option2('--options-filename', default=None)
 @option2('--corpus-source', default=None)
 @option2('--target-folder', default=None)
-@option2('--train-corpus-folder', default=None, type=click.STRING)
-@option2('--fix-hyphenation/--no-fix-hyphenation', default=True, is_flag=True)
-@option2('--fix-accents/--no-fix-accents', default=True, is_flag=True)
-@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
-@option2('--pos-includes', default='', type=click.STRING)
-@option2('--pos-excludes', default='', type=click.STRING)
-@option2('--to-lower/--no-to-lower', default=True, is_flag=True)
-@option2('--min-word-length', default=1, type=click.IntRange(1, 99))
-@option2('--max-word-length', default=None, type=click.IntRange(10, 99))
-@option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
-@option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
-@option2('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']))
-@option2('--only-alphabetic', default=False, is_flag=False)
-@option2('--only-any-alphanumeric', default=False, is_flag=True)
-@option2('--n-topics', default=50, type=click.INT)
+@option2('--train-corpus-folder')
+@option2('--fix-hyphenation/--no-fix-hyphenation')
+@option2('--fix-accents/--no-fix-accents')
+@option2('--lemmatize/--no-lemmatize')
+@option2('--pos-includes')
+@option2('--pos-excludes')
+@option2('--to-lower/--no-to-lower')
+@option2('--min-word-length')
+@option2('--max-word-length')
+@option2('--keep-symbols/--no-keep-symbols')
+@option2('--keep-numerals/--no-keep-numerals')
+@option2('--remove-stopwords')
+@option2('--only-alphabetic')
+@option2('--only-any-alphanumeric')
+@option2('--n-topics')
 @option2('--engine', default="gensim_lda-multicore")
-@option2('--passes', default=None, type=click.INT)
-@option2('--alpha', default='asymmetric')
-@option2('--random-seed', default=None, type=click.INT)
-@option2('--workers', default=None, type=click.INT)
-@option2('--max-iter', default=None, type=click.INT)
-@option2('--store-corpus/--no-store-corpus', default=True, is_flag=True)
-@option2('--store-compressed/--no-store-compressed', default=True, is_flag=True)
-@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
-@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
-@option2('--passthrough-column', default=None, type=click.STRING)
+@option2('--passes')
+@option2('--alpha')
+@option2('--random-seed')
+@option2('--workers')
+@option2('--max-iter')
+@option2('--chunksize')
+@option2('--update-every')
+@option2('--store-corpus/--no-store-corpus')
+@option2('--store-compressed/--no-store-compressed')
+@option2('--force-checkpoint/--no-force-checkpoint')
+@option2('--enable-checkpoint/--no-enable-checkpoint')
+@option2('--passthrough-column')
 def click_main(
     options_filename: Optional[str] = None,
     config_filename: str = None,
@@ -69,6 +71,8 @@ def click_main(
     alpha: str = 'asymmetric',
     workers: Optional[int] = None,
     max_iter: Optional[int] = None,
+    chunk_size: Optional[int] = None,
+    update_every: Optional[int] = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
@@ -114,6 +118,8 @@ def _main(
     alpha: str = 'asymmetric',
     workers: int = None,
     max_iter: int = None,
+    chunk_size: Optional[int] = None,
+    update_every: Optional[int] = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
@@ -169,15 +175,17 @@ def _main(
         transform_opts: pc.TokensTransformOpts = None
 
     engine_args: dict = remove_none(
-        {
-            'n_topics': n_topics,
-            'passes': passes,
-            'random_seed': random_seed,
-            'alpha': alpha,
-            'workers': workers,
-            'max_iter': max_iter,
-            'work_folder': os.path.join(target_folder, target_name),
-        }
+        dict(
+            n_topics=n_topics,
+            passes=passes,
+            random_seed=random_seed,
+            alpha=alpha,
+            workers=workers,
+            max_iter=max_iter,
+            work_folder=os.path.join(target_folder, target_name),
+            chunk_size=None,
+            update_every=None,
+        )
     )
 
     if corpus_source is None and config.pipeline_payload.source is None:

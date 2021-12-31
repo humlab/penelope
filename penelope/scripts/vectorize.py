@@ -19,28 +19,29 @@ from penelope.workflows import interface
 @click.argument('input_filename', type=click.STRING)
 @click.argument('output_folder', type=click.STRING)
 @click.argument('output_tag')
-@option2('--options-filename', default=None)
-@option2('--filename-pattern', default=None, type=click.STRING)
-@option2('--pos-includes', default='', type=click.STRING)
-@option2('--pos-paddings', default='', type=click.STRING)
-@option2('--pos-excludes', default='', type=click.STRING)
-@option2('--append-pos', default=False, is_flag=True)
-@option2('--phrase', default=None, multiple=True, type=click.STRING)
-@option2('--phrase-file', default=None, multiple=False, type=click.STRING)
-@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
-@option2('--to-lower/--no-to-lower', default=True, is_flag=True)
-@option2('--remove-stopwords', default=None, type=click.Choice(['swedish', 'english']))
-@option2('--tf-threshold', default=1, type=click.IntRange(1, 99))
-@option2('--tf-threshold-mask', default=False, is_flag=True)
-@option2('--min-word-length', default=1, type=click.IntRange(1, 99))
-@option2('--max-word-length', default=None, type=click.IntRange(10, 99))
-@option2('--keep-symbols/--no-keep-symbols', default=True, is_flag=True)
-@option2('--keep-numerals/--no-keep-numerals', default=True, is_flag=True)
-@option2('--only-alphabetic', default=False, is_flag=True)
-@option2('--only-any-alphanumeric', default=False, is_flag=True)
-@option2('--enable-checkpoint/--no-enable-checkpoint', default=True, is_flag=True)
-@option2('--force-checkpoint/--no-force-checkpoint', default=False, is_flag=True)
-@option2('--deserialize-processes', default=4, type=click.IntRange(1, 99))
+@option2('--options-filename')
+@option2('--filename-pattern')
+@option2('--pos-includes')
+@option2('--pos-paddings')
+@option2('--pos-excludes')
+@option2('--append-pos')
+@option2('--phrase')
+@option2('--phrase-file')
+@option2('--lemmatize/--no-lemmatize')
+@option2('--to-lower/--no-to-lower')
+@option2('--remove-stopwords')
+@option2('--tf-threshold')
+@option2('--tf-threshold-mask')
+@option2('--max-tokens')
+@option2('--min-word-length')
+@option2('--max-word-length')
+@option2('--keep-symbols/--no-keep-symbols')
+@option2('--keep-numerals/--no-keep-numerals')
+@option2('--only-alphabetic')
+@option2('--only-any-alphanumeric')
+@option2('--enable-checkpoint/--no-enable-checkpoint')
+@option2('--force-checkpoint/--no-force-checkpoint')
+@option2('--deserialize-processes')
 def main(
     options_filename: Optional[str] = None,
     corpus_config: Optional[str] = None,
@@ -66,6 +67,7 @@ def main(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
+    max_tokens: int = None,
     deserialize_processes: int = 4,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
@@ -99,6 +101,7 @@ def process(
     only_alphabetic: bool = False,
     tf_threshold: int = 1,
     tf_threshold_mask: bool = False,
+    max_tokens: int = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
     deserialize_processes: int = 4,
@@ -155,7 +158,11 @@ def process(
                 global_tf_threshold_mask=tf_threshold_mask,
                 **tagged_columns,
             ),
-            vectorize_opts=VectorizeOpts(already_tokenized=True),
+            vectorize_opts=VectorizeOpts(
+                already_tokenized=True,
+                min_tf=tf_threshold,
+                max_tokens=max_tokens,
+            ),
             tf_threshold=tf_threshold,
             tf_threshold_mask=tf_threshold_mask,
             create_subfolder=create_subfolder,

@@ -9,58 +9,6 @@ from penelope.pipeline import CorpusType
 # pylint: disable=useless-super-delegation, no-member
 
 
-HELP_TEXT = {
-    '--alpha': 'Prior belief of topic probability. symmetric/asymmertic/auto',
-    '--append-pos': 'Append PoS to tokems',
-    '--compute-chunksize': 'Compute process chunksize',
-    '--compute-processes': 'Number of compute processes',
-    '--concept': 'Concept',
-    '--context-width': 'Width of context on either side of concept. Window size = 2 * context_width + 1 ',
-    '--corpus-source': 'Corpus filename/folder (overrides config)',
-    '--corpus-folder': 'Corpus folder (if vectorized corpus)',
-    '--deserialize-processes': 'Number of processes during deserialization',
-    '--doc-chunk-size': 'Split document in chunks of chunk-size words.',
-    '--enable-checkpoint/--no-enable-checkpoint': 'Enable checkpoints',
-    '--engine': 'LDA implementation',
-    '--filename-pattern': 'Filename pattern',
-    '--filename-field': 'Field(s) to extract from document name',
-    '--fix-accents/--no-fix-accents': 'Fix accents',
-    '--fix-hyphenation/--no-fix-hyphenation': 'Fix hyphens',
-    '--force-checkpoint/--no-force-checkpoint': 'Force new checkpoints (if enabled)',
-    '--ignore-concept': 'Filter out word pairs that include a concept token',
-    '--ignore-padding': 'Filter out word pairs that include a padding token',
-    '--keep-numerals/--no-keep-numerals': 'Keep numerals',
-    '--keep-symbols/--no-keep-symbols': 'Keep symbols',
-    '--lemmatize/--no-lemmatize': 'Use word baseforms',
-    '--max-iter': 'Max number of iterations.',
-    '--max-word-length': 'Max length of words to keep',
-    '--min-word-length': 'Min length of words to keep',
-    '--n-topics': 'Number of topics.',
-    '--n-tokens': 'Number of tokens per topic.',
-    '--only-alphabetic': 'Keep only tokens having only alphabetic characters',
-    '--only-any-alphanumeric': 'Keep tokens with at least one alphanumeric char',
-    '--options-filename': 'Use values in YAML file as command line options.',
-    '--partition-key': 'Partition key(s)',
-    '--passes': 'Number of passes.',
-    '--passthrough-column': "Use tagged columns as-is (ignore filters)",
-    '--phrase-file': 'Phrase filename',
-    '--phrase': 'Phrase',
-    '--pos-excludes': 'POS tags to exclude.',
-    '--pos-includes': 'POS tags to include e.g. "|NN|JJ|".',
-    '--pos-paddings': 'POS tags to replace with a padding marker.',
-    '--random-seed': "Random seed value",
-    '--remove-stopwords': 'Remove stopwords using given language',
-    '--store-compressed/--no-store-compressed': '',
-    '--store-corpus/--no-store-corpus': '',
-    '--target-folder': 'Target folder, if none then corpus-folder/target-name.',
-    '--tf-threshold-mask': 'If true, then low TF words are kept, but masked as "__low_tf__"',
-    '--tf-threshold': 'Globoal TF threshold filter (words below filtered out)',
-    '--to-lower/--no-to-lower': 'Lowercase words',
-    '--train-corpus-folder': 'Use train corpus in folder if exists',
-    '--workers': 'Number of workers (if applicable).',
-}
-
-
 def ingest(obj: any, data: dict, properties: List[str] = None):
     if isinstance(properties, str):
         properties = [properties]

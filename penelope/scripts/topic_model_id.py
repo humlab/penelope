@@ -13,22 +13,27 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @click.command()
 @click.argument('config-filename', required=False)
 @click.argument('target-name', required=False)
-@option2('--options-filename', default=None)
+@option2('--options-filename')
 @option2('--corpus-source', default=None)
 @option2('--target-folder', default=None)
-@option2('--train-corpus-folder', default=None, type=click.STRING)
-@option2('--lemmatize/--no-lemmatize', default=True, is_flag=True)
-@option2('--pos-includes', default='', type=click.STRING)
-@option2('--pos-excludes', default='', type=click.STRING)
-@option2('--n-topics', default=50, type=click.INT)
+@option2('--train-corpus-folder')
+@option2('--lemmatize/--no-lemmatize')
+@option2('--to-lower/--no-to-lower', default=False)
+@option2('--pos-includes')
+@option2('--pos-excludes')
+@option2('--max-tokens')
+@option2('--tf-threshold')
+@option2('--n-topics')
 @option2('--engine', default="gensim_lda-multicore")
-@option2('--passes', default=None, type=click.INT)
+@option2('--passes')
 @option2('--alpha', default='asymmetric')
-@option2('--random-seed', default=None, type=click.INT)
-@option2('--workers', default=None, type=click.INT)
-@option2('--max-iter', default=None, type=click.INT)
-@option2('--store-corpus/--no-store-corpus', default=True, is_flag=True)
-@option2('--store-compressed/--no-store-compressed', default=True, is_flag=True)
+@option2('--random-seed')
+@option2('--workers')
+@option2('--max-iter')
+@option2('--chunksize')
+@option2('--update-every')
+@option2('--store-corpus/--no-store-corpus')
+@option2('--store-compressed/--no-store-compressed')
 def click_main(
     options_filename: Optional[str] = None,
     target_name: Optional[str] = None,
@@ -36,9 +41,12 @@ def click_main(
     config_filename: Optional[str] = None,
     train_corpus_folder: Optional[str] = None,
     target_folder: Optional[str] = None,
+    to_lower: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
+    max_tokens: int = None,
+    tf_threshold: int = None,
     n_topics: int = 50,
     engine: str = "gensim_lda-multicore",
     passes: int = None,
@@ -46,6 +54,8 @@ def click_main(
     alpha: str = 'asymmetric',
     workers: int = None,
     max_iter: int = None,
+    chunksize: int = 2000,
+    update_every: int = 1,
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
@@ -60,9 +70,12 @@ def main(
     config_filename: Optional[str] = None,
     train_corpus_folder: Optional[str] = None,
     target_folder: Optional[str] = None,
+    to_lower: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
+    max_tokens: int = None,
+    tf_threshold: int = None,
     n_topics: int = 50,
     engine: str = "gensim_lda-multicore",
     passes: int = None,
@@ -70,9 +83,12 @@ def main(
     alpha: str = 'asymmetric',
     workers: int = None,
     max_iter: int = None,
+    chunksize: int = 2000,
+    update_every: int = 1,
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
+    to_lower = False  # for now...
 
     if not config_filename or not os.path.isfile(config_filename):
         click.echo("error: config file not specified/found")
@@ -102,17 +118,24 @@ def main(
         lemma_column='lemma_id',
         text_column='token_id',
     )
-
+    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(
+        already_tokenized=True,
+        lowercase=to_lower,
+        max_tokens=max_tokens,
+        min_tf=tf_threshold,
+    )
     engine_args = remove_none(
-        {
-            'n_topics': n_topics,
-            'passes': passes,
-            'random_seed': random_seed,
-            'alpha': alpha,
-            'workers': workers,
-            'max_iter': max_iter,
-            'work_folder': os.path.join(target_folder, target_name),
-        }
+        dict(
+            n_topics=n_topics,
+            passes=passes,
+            random_seed=random_seed,
+            alpha=alpha,
+            workers=workers,
+            max_iter=max_iter,
+            work_folder=os.path.join(target_folder, target_name),
+            chunksize=chunksize,
+            update_every=update_every,
+        )
     )
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
@@ -125,6 +148,7 @@ def main(
         train_corpus_folder=train_corpus_folder,
         extract_opts=extract_opts,
         # transform_opts=transform_opts,
+        vectorize_opts=vectorize_opts,
         engine=engine,
         engine_args=engine_args,
         store_corpus=store_corpus,
