@@ -1,3 +1,4 @@
+import contextlib
 import os
 from typing import Literal, Mapping
 
@@ -12,6 +13,20 @@ DEFAULT_WORK_FOLDER = './tmp/'
 # pylint: disable=too-many-return-statements, inconsistent-return-statements
 
 
+def get_int(d: dict, key: str, default: None) -> int:
+    with contextlib.suppress(Exception):
+        if key in d:
+            return int(d[key]) if d[key] is not None else None
+    return default
+
+
+def get_float(d: dict, key: str, default: None) -> float:
+    with contextlib.suppress(Exception):
+        if key in d:
+            return float(d[key]) if d[key] is not None else None
+    return default
+
+
 class MalletEngineSpec(EngineSpec):
     def __init__(self):
         super().__init__("gensim_mallet-lda", MalletTopicModel)
@@ -19,25 +34,19 @@ class MalletEngineSpec(EngineSpec):
     def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         work_folder: str = f"{engine_args.get('work_folder', DEFAULT_WORK_FOLDER).rstrip('/')}/mallet/"
         os.makedirs(work_folder, exist_ok=True)
-        return {
-            'corpus': corpus,  # Collection of texts in BoW format.
-            'id2word': id2word,  # Dictionary
-            'default_mallet_home': '/usr/local/share/mallet-2.0.8/',  # MALLET_HOME
-            'num_topics': engine_args.get('n_topics', 100),  # Number of topics.
-            'iterations': engine_args.get('max_iter', 3000),  # Number of training iterations.
-            # 'alpha': int(kwargs.get('alpha', 20))                     # Alpha parameter of LDA.
-            'prefix': work_folder,
-            'workers': int(engine_args.get('workers', 1)),  # Number of threads that will be used for training.
-            'optimize_interval': engine_args.get(
-                'optimize_interval', 10
-            ),  # Optimize hyperparameters every optimize_interval iterations
-            'topic_threshold': engine_args.get(
-                'topic_threshold', 0.0
-            ),  # Threshold of the probability above which we consider a topic.
-            'random_seed': engine_args.get(
-                'random_seed', 0
-            ),  # Random seed to ensure consistent results, if 0 use system clock.
-        }
+        return dict(
+            corpus=corpus,
+            id2word=id2word,
+            default_mallet_home='/usr/local/share/mallet-2.0.8/',
+            prefix=work_folder,
+            num_topics=get_int(engine_args, 'n_topics', 100),
+            iterations=get_int(engine_args, 'max_iter', 3000),
+            workers=get_int(engine_args, 'workers', 1),
+            optimize_interval=get_int(engine_args, 'optimize_interval', 10),
+            topic_threshold=get_float(engine_args, 'topic_threshold', 0.0),
+            random_seed=get_int(engine_args, 'random_seed', 0),
+            # 'alpha': int(kwargs.get('alpha', 20))
+        )
 
 
 class LdaEngineSpec(EngineSpec):
@@ -45,28 +54,26 @@ class LdaEngineSpec(EngineSpec):
         super().__init__("gensim_lda", models.LdaModel)
 
     def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
-        return {
+        return dict(
             # distributed=False, chunksize=2000, passes=1, update_every=1, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, minimum_probability=0.01, random_state=None, ns_conf=None, minimum_phi_value=0.01, per_word_topics=False, callbacks=None, dtype=<class 'numpy.float32'>)¶
-            'corpus': corpus,
-            'num_topics': int(engine_args.get('n_topics', 20)),
-            'id2word': id2word,
-            'iterations': engine_args.get('max_iter', 3000),
-            'passes': int(engine_args.get('passes', 1)),
-            'eval_every': 2,
-            'update_every': 10,  # Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.
-            'alpha': 'auto',
-            'eta': 'auto',  # None
-            # 'decay': 0.1, # 0.5
-            # 'chunksize': int(kwargs.get('chunksize', 1)),
-            'per_word_topics': True,
-            # 'random_state': 100
-            # 'offset': 1.0,
-            # 'dtype': np.float64
-            # 'callbacks': [
+            corpus=corpus,
+            id2word=id2word,
+            num_topics=get_int(engine_args, 'n_topics', 100),
+            iterations=get_int(engine_args, 'max_iter', 3000),
+            passes=get_int(engine_args, 'passes', 1),
+            update_every=get_int(engine_args, 'update_every', 1),
+            chunksize=get_int(engine_args, 'chunksize', 2000),
+            alpha='auto',
+            per_word_topics=True,
+            # decay= 0.1, # 0.5
+            # random_state=100
+            # offset=1.0,
+            # dtype=np.float64
+            # callbacks=[
             #    models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
             #    models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
             # ]
-        }
+        )
 
 
 class LdaMulticoreEngineSpec(EngineSpec):
@@ -174,18 +181,21 @@ class LdaMulticoreEngineSpec(EngineSpec):
         super().__init__("gensim_lda-multicore", models.LdaMulticore)
 
     def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
-        return {
-            'corpus': corpus,
-            'num_topics': int(engine_args.get('n_topics', 20)),
-            'id2word': id2word,
-            'iterations': engine_args.get('max_iter', 3000) or 3000,
-            'passes': int(engine_args.get('passes', 1)),
-            'workers': engine_args.get('workers', 3),
-            'eta': 'auto',
-            'per_word_topics': True,
-            # https://stackoverflow.com/questions/65014553/how-to-tune-the-parameters-for-gensim-ldamulticore-in-python
-            'chunksize': 4000,
-        }
+        # https://stackoverflow.com/questions/65014553/how-to-tune-the-parameters-for-gensim-ldamulticore-in-python
+        opts: dict = dict(
+            corpus=corpus,
+            id2word=id2word,
+            num_topics=get_int(engine_args, 'n_topics', 100),
+            iterations=get_int(engine_args, 'max_iter', 3000),
+            passes=get_int(engine_args, 'passes', 1),
+            chunksize=get_int(engine_args, 'chunksize', 2000),
+            workers=get_int(engine_args, 'workers', None),
+            random_state=get_int(engine_args, 'random_state', None),
+            per_word_topics=True,
+        )
+        if 'dtype' in engine_args:
+            opts.update(dtype=engine_args['dtype'])
+        return opts
 
 
 class LsiEngineSpec(EngineSpec):
@@ -195,8 +205,8 @@ class LsiEngineSpec(EngineSpec):
     def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         return dict(
             corpus=corpus,
-            num_topics=engine_args.get('n_topics', 0),
             id2word=id2word,
+            num_topics=get_int(engine_args, 'n_topics', 100),
             power_iters=2,
             onepass=True,
         )
@@ -212,17 +222,17 @@ class STTMEngineSpec(EngineSpec):
 
     def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         work_folder: str = f"{engine_args.get('work_folder', DEFAULT_WORK_FOLDER).rstrip('/')}/sttm/"
-        return {
-            'sstm_jar_path': './lib/STTM.jar',
-            'model': self.sttm_type,
-            'corpus': corpus,
-            'id2word': id2word,
-            'num_topics': engine_args.get('n_topics', 20),
-            'iterations': engine_args.get('max_iter', 2000),
-            'prefix': work_folder,
-            'name': '{}_model'.format(self.sttm_type)
+        return dict(
+            sstm_jar_path='./lib/STTM.jar',
+            model=self.sttm_type,
+            corpus=corpus,
+            id2word=id2word,
+            num_topics=get_int(engine_args, 'n_topics', 100),
+            iterations=get_int(engine_args, 'max_iter', 3000),
+            prefix=work_folder,
+            name=f'{self.sttm_type}_model',
             # 'vectors', 'alpha'=0.1, 'beta'=0.01, 'twords'=20,sstep=0
-        }
+        )
 
 
 class HDPEngineSpec(EngineSpec):
