@@ -2,6 +2,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any, Container, Dict, List, Union
 
+import numpy as np
 import pandas as pd
 from loguru import logger
 from more_itertools import collapse
@@ -300,6 +301,12 @@ class PoS_Tag_Scheme:
         for PoS in PoS_sequence:
             tag_counts[PoS] += 1
 
+        """Convert to strings if PoS-sequence is integers"""
+        if np.issubdtype(PoS_sequence.dtype, np.integer):
+            ig = self.id_to_pos.get
+            tag_counts = {ig(k, 'XYZ'): v for k, v in tag_counts.items()}
+
+        """Sum up into PoS-groups"""
         group_counts = {k: 0 for k in self.groups.keys()}
         tg = self.tag_to_group.get
         n_tokens: int = 0

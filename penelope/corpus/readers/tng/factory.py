@@ -36,7 +36,6 @@ def create_sparv_xml_corpus_reader(
     def xml_to_tagged_frame(xml_doc: bytes) -> TaggedFrame:
         csv_doc = xml_to_csv_str(xml_doc)
         df = pd.read_csv(io.StringIO(csv_doc), sep='\t', quoting=csv.QUOTE_NONE)
-        # FIXME: Read names from Config.payload.memory_store
         df.columns = ['text', 'lemma', 'pos']
         return df
 

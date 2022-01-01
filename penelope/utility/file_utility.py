@@ -7,7 +7,7 @@ import pathlib
 import pickle
 from os.path import basename, exists, isdir, isfile, join
 from pathlib import Path
-from typing import Any, AnyStr, Dict, Mapping, Tuple
+from typing import Any, AnyStr, Dict, List, Mapping, Tuple
 
 import pandas as pd
 import yaml
@@ -200,12 +200,25 @@ def load_term_substitutions(
     return substitutions
 
 
-def update_dict_from_yaml_file(yaml_file: str, arguments: dict) -> dict:
+def read_yaml(file: Any) -> dict:
+    """Read yaml file. Return dict."""
+    if isinstance(file, str) and any(file.endswith(x) for x in ('.yml', '.yaml')):
+        with open(file, "r", encoding='utf-8') as fp:
+            return yaml.load(fp, Loader=yaml.FullLoader)
+    data: List[dict] = yaml.load(file, Loader=yaml.FullLoader)
+    return {} if len(data) == 0 else data[0]
+
+
+def write_yaml(data: dict, file: str) -> None:
+    """Write yaml to file.."""
+    with open(file, "w", encoding='utf-8') as fp:
+        return yaml.dump(data=data, stream=fp)
+
+
+def update_dict_from_yaml(yaml_file: str, data: dict) -> dict:
+    """Update dict `data` with values found in `yaml_file`."""
     if yaml_file is None:
-        return arguments
-    if not os.path.isfile(yaml_file):
-        raise FileNotFoundError(f"file not found {yaml_file}")
-    with open(yaml_file, "r") as fp:
-        options: dict = yaml.load(fp, Loader=yaml.FullLoader)
-    arguments.update(options)
-    return arguments
+        return data
+    options: dict = read_yaml(yaml_file)
+    data.update(options)
+    return data

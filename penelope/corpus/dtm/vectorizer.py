@@ -15,13 +15,14 @@ DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]
 
 
 @dataclass
-class VectorizeOpts(PropsMixIn):
+class VectorizeOpts(PropsMixIn["VectorizeOpts"]):
     already_tokenized: bool = True
     lowercase: bool = False
     stop_words: str = None
     max_df: float = 1.0
     min_df: int = 1
-    verbose: bool = True
+    min_tf: int = 1
+    max_tokens: int = None
 
 
 def _no_tokenize(tokens):
@@ -82,12 +83,13 @@ class CorpusVectorizer:
         *,
         already_tokenized: bool = True,
         vocabulary: Mapping[str, int] = None,
+        max_tokens: int = None,
         document_index: Union[Callable[[], DocumentIndex], DocumentIndex] = None,
         lowercase: bool = False,
         stop_words: Union[Literal['english'], List[str]] = None,
         max_df: float = 1.0,
         min_df: int = 1,
-        verbose: bool = True,  # pylint: disable=unused-argument
+        min_tf: int = 1,
         dtype: Any = np.int32,
         tokenizer: Callable[[str], Iterable[str]] = None,
         token_pattern=r"(?u)\b\w+\b",
@@ -107,6 +109,8 @@ class CorpusVectorizer:
             stop_words (str, optional): Let vectorizer remove stopwords. Defaults to None.
             max_df (float, optional): Max document frequency (see CountVecorizer). Defaults to 1.0.
             min_df (int, optional): Min document frequency (see CountVecorizer). Defaults to 1.
+            min_tf (int, optional): Min term frequency. Defaults to None.
+            max_tokens (int, optional): Restrict to top max tokens (see `max_features` in CountVectorizer). Defaults to None.
 
         Raises:
             ValueError: [description]
@@ -144,6 +148,7 @@ class CorpusVectorizer:
             max_df=max_df,
             min_df=min_df,
             vocabulary=vocabulary,
+            max_features=max_tokens,
             token_pattern=token_pattern,
             dtype=dtype,
         )
@@ -168,6 +173,9 @@ class CorpusVectorizer:
             token2id=token2id,
             document_index=document_index_,
         )
+
+        if min_tf and min_tf > 1:
+            dtm_corpus = dtm_corpus.slice_by_tf(min_tf)
 
         return dtm_corpus
 

@@ -39,7 +39,13 @@ from tqdm.auto import tqdm
 from . import checkpoint as cp
 from . import convert
 from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
-from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn, TransformTokensMixIn, VocabularyIngestMixIn
+from .tasks_mixin import (
+    DefaultResolveMixIn,
+    PoSCountMixIn,
+    TokenCountMixIn,
+    TransformTokensMixIn,
+    VocabularyIngestMixIn,
+)
 
 
 class EmptyCheckPointError(PipelineError):
@@ -221,7 +227,7 @@ class SaveTaggedCSV(Checkpoint):
 
 
 @dataclass
-class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
+class LoadTaggedCSV(PoSCountMixIn, ITask):
     """Load Pandas data frames from folder (CSV, feather), ZIP archive. """
 
     filename: str = None
@@ -229,7 +235,6 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
     extra_reader_opts: Optional[TextReaderOpts] = None
     checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
     stop_at_index: int = None
-    update_token_counts: bool = True
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -241,9 +246,9 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
             os.makedirs(self.checkpoint_opts.feather_folder, exist_ok=True)
 
     def exit(self):
-
+        super().exit()
+        # self.flush_pos_counts()
         if self.checkpoint_opts.feather_folder:
-            # Check validity of document index, fillna()?
             cp.feather.write_document_index(self.checkpoint_opts.feather_folder, self.document_index)
 
     def setup(self) -> ITask:
@@ -279,9 +284,7 @@ class LoadTaggedCSV(CountTaggedTokensMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        if not self.update_token_counts:
-            return payload
-        self.register_token_counts(payload)
+        self.register_pos_counts(payload)
         return payload
 
     def get_filenames(self) -> List[str]:
@@ -358,7 +361,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
 
 @dataclass
-class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
+class LoadTaggedXML(PoSCountMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     filename: str = None
@@ -392,7 +395,7 @@ class LoadTaggedXML(CountTaggedTokensMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        self.register_token_counts(payload)
+        self.register_pos_counts(payload)
         return payload
 
     def get_filenames(self) -> List[str]:
@@ -437,7 +440,7 @@ class TextToTokens(TransformTokensMixIn, ITask):
 
 
 @dataclass
-class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
+class ToTaggedFrame(PoSCountMixIn, ITask):
 
     attributes: List[str] = None
     attribute_value_filters: Dict[str, Any] = None
@@ -462,20 +465,19 @@ class ToTaggedFrame(CountTaggedTokensMixIn, ITask):
             ),
         )
 
-        self.register_token_counts(payload)
+        self.register_pos_counts(payload)
 
         return payload
 
 
 @dataclass
-class FilterTaggedFrame(ITask):
+class FilterTaggedFrame(TokenCountMixIn, ITask):
     """Filters and transforms tagged frame (can be numeric or text). """
 
     extract_opts: ExtractTaggedTokensOpts = None
     pos_schema: utility.PoS_Tag_Scheme = None
     transform_opts: TokensTransformOpts = None
     normalize_column_names: bool = False
-    token_counts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TAGGED_ID_FRAME, ContentType.TAGGED_FRAME]
@@ -495,23 +497,17 @@ class FilterTaggedFrame(ITask):
             normalize_column_names=self.normalize_column_names,
         )
 
-        self.token_counts[payload.document_name] = len(tagged_frame)
+        self.register_token_count(payload.document_name, len(tagged_frame))
 
         return payload.update(self.out_content_type, tagged_frame)
 
-    def exit(self) -> ITask:
-        super().exit()
-        self.update_document_index_key_values('n_tokens', self.token_counts)
-
 
 @dataclass
-class TaggedFrameToTokens(CountTaggedTokensMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
+class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
     """Extracts text from payload.content based on annotations etc. """
 
     extract_opts: ExtractTaggedTokensOpts | str = None
     normalize_column_names: bool = True
-
-    token_counts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -541,13 +537,7 @@ class TaggedFrameToTokens(CountTaggedTokensMixIn, VocabularyIngestMixIn, Transfo
         if self.ingest_tokens:
             self.ingest(tokens)
 
-        self.token_counts[payload.document_name] = len(tokens)
-
         return payload.update(self.out_content_type, tokens)
-
-    def exit(self) -> ITask:
-        super().exit()
-        self.update_document_index_key_values('n_tokens', self.token_counts)
 
 
 @dataclass
@@ -776,7 +766,7 @@ class ToDTM(ITask):
             stream = ((p.filename, tokenizer(p.content)) for p in payloads)
             vectorized_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform_(
                 stream,
-                document_index=lambda: self.pipeline.payload.document_index,
+                document_index=lambda: self.document_index,
                 vectorize_opts=self.vectorize_opts,
             )
 
@@ -785,6 +775,9 @@ class ToDTM(ITask):
 
         else:
             raise ValueError(f"not supported: {content_type}")
+
+        if self.vectorize_opts and (self.vectorize_opts.min_tf or 1) > 1:
+            vectorized_corpus = vectorized_corpus.slice_by_tf(self.vectorize_opts.min_tf)
 
         payload: DocumentPayload = DocumentPayload(
             content_type=ContentType.VECTORIZED_CORPUS, content=vectorized_corpus
@@ -913,7 +906,7 @@ class WildcardTask(ITask):
 
 
 @dataclass
-class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
+class LoadTokenizedCorpus(TokenCountMixIn, DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
 
     corpus: ITokenizedCorpus = None
@@ -938,7 +931,7 @@ class LoadTokenizedCorpus(DefaultResolveMixIn, ITask):
         )
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        self.update_document_properties(payload, n_tokens=len(payload.content))
+        self.register_token_count(payload.document_name, len(payload.content))
         return payload
 
 

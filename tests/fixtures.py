@@ -537,3 +537,30 @@ MARY_TEST_CORPUS = [
     ('mars_1999_07.txt', 'It is the youngest known volcanic eruption on Mars.'),
     ('mars_1999_08.txt', 'Some volcanos still erupts to the surface at rare intervals.'),
 ]
+
+TEST_CSV_POS_DOCUMENT: str = """token	pos	baseform
+# text
+Inne	AB	|inne|
+i	RG	|
+den	PN	|den|
+väldiga	JJ	|väldig|
+romanska	JJ	|romansk|
+kyrkan	NN	|kyrka|
+trängdes	VB	|tränga|trängas|
+turisterna	NN	|turist|
+i	PL	|
+halvmörkret	NN	|halvmörker|
+.	MAD	|
+Valv	NN	|valv|
+gapade	VB	|gapa|
+bakom	PP	|bakom|
+valv	NN	|valv|
+och	UO	|
+ingen	PN	|ingen|
+överblick	NN	|överblick|
+.	MAD	|
+Några	DT	|någon|
+ljuslågor	NN	|ljuslåga|
+fladdrade	VB	|fladdra omkring:10|
+.	MAD	|
+"""

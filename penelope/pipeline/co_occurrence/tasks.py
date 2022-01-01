@@ -265,7 +265,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
         bundle: Bundle = Bundle(
             corpus=corpus,
             token2id=token2id,
-            document_index=self.pipeline.payload.document_index,
+            document_index=self.document_index,
             concept_corpus=concept_corpus,
             compute_options=self.pipeline.payload.stored_opts(),
             vocabs_mapping=token_ids_2_pair_id,

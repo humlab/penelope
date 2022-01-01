@@ -94,7 +94,8 @@ def ComputeOptsSpacyCSV(
             lowercase=False,
             max_df=1.0,
             min_df=1,
-            verbose=False,
+            min_tf=1,
+            max_tokens=None,
         ),
     )
 
@@ -148,9 +149,7 @@ def ComputeOptsSparvCSV(
         ),
         tf_threshold=1,
         tf_threshold_mask=False,
-        vectorize_opts=VectorizeOpts(
-            already_tokenized=True,
-        ),
+        vectorize_opts=VectorizeOpts(already_tokenized=True, min_tf=1, max_tokens=None),
     )
 
 

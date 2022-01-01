@@ -68,7 +68,7 @@ def test_spacy_doc_to_tagged_frame(looking_back, test_payload):
     payload = DocumentPayload(content_type=ContentType.SPACYDOC, filename='hello.txt', content=looking_back)
     prior = Mock(spec=ITask, outstream=lambda: [payload])
     task = SpacyDocToTaggedFrame(prior=prior, attributes=POS_ATTRIBUTES)
-    task.register_token_counts = lambda p: p
+    task.register_pos_counts = lambda p: p
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(name_or_nlp="en_core_web_sm"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME
@@ -82,7 +82,7 @@ def test_to_spacy_doc_to_tagged_frame(test_payload):
     pipeline: CorpusPipeline = CorpusPipeline(config=config, tasks=[], payload=payload).setup()
     prior = MagicMock(spec=ITask, outstream=lambda: [payload])
     task = ToSpacyDocToTaggedFrame(pipeline=pipeline, prior=prior, attributes=POS_ATTRIBUTES)
-    task.register_token_counts = lambda p: p
+    task.register_pos_counts = lambda p: p
     _ = patch_spacy_pipeline(test_payload).add([SetSpacyModel(name_or_nlp="en_core_web_sm"), task]).setup()
     payload_next = task.process_payload(payload)
     assert payload_next.content_type == ContentType.TAGGED_FRAME

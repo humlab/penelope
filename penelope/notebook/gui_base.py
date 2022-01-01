@@ -128,7 +128,7 @@ class BaseGUI:
         )
         self._phrases = Text(
             value='',
-            placeholder='Enter phrases, use semicoloon (;) as phrase delimiter',
+            placeholder='Enter phrases, use semicolon (;) as phrase delimiter',
             description='',
             disabled=False,
             layout=Layout(width='480px'),
@@ -424,7 +424,14 @@ class BaseGUI:
 
     @property
     def vectorize_opts(self) -> VectorizeOpts:
-        return VectorizeOpts(already_tokenized=True, lowercase=False, max_df=1.0, min_df=1, verbose=False)
+        # FIXME: Add UI elements for max_tokens
+        return VectorizeOpts(
+            already_tokenized=True,
+            lowercase=False,
+            max_df=1.0,
+            min_df=1,
+            min_tf=self.tf_threshold,
+        )
 
     @property
     def corpus_type(self) -> CorpusType:

@@ -30,7 +30,12 @@ def test_workflow_to_dtm():
             pos_excludes='|MID|MAD|PAD|',
             **config.pipeline_payload.tagged_columns_names,
         ),
-        vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
+        vectorize_opts=corpora.VectorizeOpts(
+            already_tokenized=True,
+            lowercase=False,
+            min_tf=1,
+            max_tokens=None,
+        ),
         create_subfolder=True,
         persist=True,
         enable_checkpoint=True,

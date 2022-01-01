@@ -324,7 +324,12 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
         persist=True,
         tf_threshold=1,
         tf_threshold_mask=False,
-        vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
+        vectorize_opts=corpora.VectorizeOpts(
+            already_tokenized=True,
+            lowercase=False,
+            min_tf=1,
+            max_tokens=None,
+        ),
         enable_checkpoint=True,
         force_checkpoint=True,
     )
@@ -370,7 +375,12 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
             **config.pipeline_payload.tagged_columns_names,
             filter_opts=dict(is_alpha=False, is_punct=False, is_space=False),
         ),
-        vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
+        vectorize_opts=corpora.VectorizeOpts(
+            already_tokenized=True,
+            lowercase=False,
+            min_tf=1,
+            max_tokens=None,
+        ),
         create_subfolder=False,
         persist=True,
         enable_checkpoint=True,

@@ -140,7 +140,12 @@ def test_spaCy_co_occurrence_pipeline3(config):
         ),
         create_subfolder=False,
         persist=True,
-        vectorize_opts=corpora.VectorizeOpts(already_tokenized=True, lowercase=False, verbose=False),
+        vectorize_opts=corpora.VectorizeOpts(
+            already_tokenized=True,
+            lowercase=False,
+            min_tf=1,
+            max_tokens=None,
+        ),
         enable_checkpoint=True,
         force_checkpoint=True,
         tf_threshold=1,

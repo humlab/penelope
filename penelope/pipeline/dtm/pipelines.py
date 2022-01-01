@@ -44,7 +44,8 @@ def id_tagged_frame_to_DTM_pipeline(
             corpus_source = corpus_config.pipeline_payload.source
 
         extract_opts.set_numeric_names()
-
+        vectorize_opts.min_df = extract_opts.global_tf_threshold
+        extract_opts.global_tf_threshold = 1
         p: CorpusPipeline = (
             CorpusPipeline(config=corpus_config)
             .load_id_tagged_frame(

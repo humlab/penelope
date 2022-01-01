@@ -131,12 +131,9 @@ class DocumentIndexHelper:
         )
         return self
 
+    @deprecated
     def update_properties(self, *, document_name: str, property_bag: Mapping[str, int]) -> "DocumentIndexHelper":
         """Updates attributes for the specified document item"""
-        # property_bag: dict = {k: property_bag[k] for k in property_bag if k not in ['document_name']}
-        # for key in [k for k in property_bag if k not in self._document_index.columns]:
-        #     self._document_index.insert(len(self._document_index.columns), key, np.nan)
-        # self._document_index.update(DocumentIndex(data=property_bag, index=[document_name], dtype=np.int64))
         update_document_index_properties(self._document_index, document_name=document_name, property_bag=property_bag)
         return self
 
@@ -393,7 +390,6 @@ def get_document_id(document_index: DocumentIndex, document_name: str) -> int:
 
 
 def create_time_period_categorizer(time_period_specifier: TimePeriodSpecifier) -> Callable[[Any], Any]:
-    # FIXME: Move to pandas_utils or time_period_utils.py
 
     if callable(time_period_specifier):
         return time_period_specifier
@@ -640,6 +636,7 @@ def update_document_index_token_counts_by_corpus(
     return document_index
 
 
+@deprecated
 def update_document_index_properties(
     document_index: DocumentIndex,
     *,
@@ -666,22 +663,23 @@ def update_document_index_properties(
     # document_index.update(pd.DataFrame(data=property_bag, index=[document_name], dtype=np.int64))
 
 
-def update_document_index_key_values(
-    document_index: DocumentIndex,
-    key_column_name: str,
-    key_value_bag: dict,
-    default_value: Any = np.nan,  # Mapping[str, Any]
-) -> DocumentIndex:
-    """Updates column with values found in key_value_bag dictionary (keys are index, and value is column value). Creates column if missing."""
-    df_property_bag: pd.DataFrame = pd.DataFrame.from_dict(key_value_bag, orient='index').rename(
-        {0: key_column_name}, axis=1
-    )
-    if len(df_property_bag) == len(document_index):
-        document_index[key_column_name] = df_property_bag[key_column_name]
-    else:
-        if key_column_name not in document_index.columns:
-            document_index[key_column_name] = default_value
-        document_index.update(df_property_bag)
+def update_document_index_by_dicts_or_tuples(
+    document_index: pd.DataFrame,
+    *,
+    data: List[Tuple[Any, ...]],
+    columns: List[str] = None,
+    dtype=None,
+    default: Any = 0,
+) -> pd.DataFrame:
+    """Update di columns with values given as list of tuples. Inplace update. Create columns that don't exist. """
+    di_data: pd.DataFrame = pd.DataFrame.from_records(data, columns=columns).set_index('document_name')
+    new_cols: List[str] = [k for k in di_data.columns if k not in document_index.columns]
+    if len(new_cols) > 0:
+        document_index[new_cols] = default
+    document_index.update(di_data)
+    if dtype is not None:
+        for k in new_cols:
+            document_index[k] = document_index[k].astype(dtype, errors='ignore')
     return document_index
 
 

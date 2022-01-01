@@ -11,7 +11,7 @@ def compute(
     corpus_folder: str = None,
     corpus_source: str = None,
     engine: str = "gensim_lda-multicore",
-    topic_modeling_opts: dict = None,
+    engine_args: dict = None,
     filename_field: str = None,
     store_corpus: bool = False,
     compressed: bool = True,
@@ -61,7 +61,7 @@ def compute(
     inferred_model: tm.InferredModel = tm.train_model(
         train_corpus=train_corpus,
         method=engine,
-        engine_args=topic_modeling_opts,
+        engine_args=engine_args,
     )
 
     inferred_model.topic_model.save(os.path.join(target_folder, 'gensim.model.gz'))

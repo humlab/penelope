@@ -221,11 +221,11 @@ def test_text_to_tagged_frame_with_text_payload_succeeds():
         pipeline=Mock(spec=CorpusPipeline),
     ).setup()
     task.tagger = MagicMock(name='tagger')
-    task.register_token_counts = MagicMock(name='register_token_counts')
+    task.register_pos_counts = MagicMock(name='register_pos_counts')
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert task.tagger.call_count == 1
-    assert task.register_token_counts.call_count == 1
+    assert task.register_pos_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGED_FRAME
 
 
@@ -233,11 +233,11 @@ def test_text_to_tagged_frame_with_text_payload_succeeds():
 def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
     task = spacy_tasks.SpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     task.tagger = MagicMock(name='tagger')
-    task.register_token_counts = MagicMock(name='register_token_counts')
+    task.register_pos_counts = MagicMock(name='register_pos_counts')
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
     assert task.tagger.call_count == 1
-    assert task.register_token_counts.call_count == 1
+    assert task.register_pos_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGED_FRAME
 
 
@@ -304,7 +304,7 @@ def test_load_data_frame_succeeds():
         checkpoint_opts=CheckpointOpts(feather_folder=None),
     )
 
-    task.register_token_counts = lambda _: task
+    task.register_pos_counts = lambda _: task
     fake_data: CheckpointData = patch_load_archive()
     fake_data.create_stream = lambda: fake_data_frame_stream(2)
     task.load_archive = lambda: fake_data

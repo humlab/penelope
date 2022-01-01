@@ -33,4 +33,4 @@ from .interfaces import (
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
 from .pipelines import CorpusPipeline, wildcard
-from .tasks_mixin import CountTaggedTokensMixIn, DefaultResolveMixIn
+from .tasks_mixin import DefaultResolveMixIn, PoSCountMixIn, TokenCountMixIn
