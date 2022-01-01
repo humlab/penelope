@@ -64,12 +64,10 @@
 
 #         windows = generate_windows(tokens=tokens, context_opts=context_opts)
 
-#         # FIXME CO-OCCURRENCE VectorizeType
 #         data: Mapping[VectorizeType, VectorizedTTM] = vectorizer.fit_transform(
 #             document_id=document_id, windows=windows, context_opts=context_opts
 #         )
 
-#         # FIXME: How to deal with multiple result data????
 #         ttm: VectorizedTTM = data.get(vectorize_type)
 
 #         document_co_occurrences = term_term_matrix_to_co_occurrences(

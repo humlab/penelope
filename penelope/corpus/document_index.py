@@ -390,7 +390,6 @@ def get_document_id(document_index: DocumentIndex, document_name: str) -> int:
 
 
 def create_time_period_categorizer(time_period_specifier: TimePeriodSpecifier) -> Callable[[Any], Any]:
-    # FIXME: Move to pandas_utils or time_period_utils.py
 
     if callable(time_period_specifier):
         return time_period_specifier
@@ -672,7 +671,7 @@ def update_document_index_by_dicts_or_tuples(
     dtype=None,
     default: Any = 0,
 ) -> pd.DataFrame:
-    """Update di columns with values given as list of tuples. Inpace update. Create columns that don't exist. """
+    """Update di columns with values given as list of tuples. Inplace update. Create columns that don't exist. """
     di_data: pd.DataFrame = pd.DataFrame.from_records(data, columns=columns).set_index('document_name')
     new_cols: List[str] = [k for k in di_data.columns if k not in document_index.columns]
     if len(new_cols) > 0:
