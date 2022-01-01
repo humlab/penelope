@@ -9,6 +9,7 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
 
 # pylint: disable=redefined-outer-name
 
+
 @pytest.fixture
 def document_index() -> pd.DataFrame:
     di_str: str = """
