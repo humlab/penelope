@@ -1,21 +1,20 @@
-
 config_filename: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/corpus.yml
-target_name: "parlaclarin-topics-200"
+target_name: tm_1920-2020_500-topics
 corpus_source: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/
 train_corpus_folder: null
 target_folder: /data/westac/shared/
 lemmatize: true
-pos_includes: ""
-pos_excludes: ""
-# to_lower: false
-# remove_stopwords: null
-# min_word_length: 1
-# max_word_length: null
-# keep_symbols: true
-# keep_numerals: true
-tf_threshold: 5
+pos_includes: null
+pos_excludes: null
+to_lower: false
+remove_stopwords: null
+min_word_length: 1
+max_word_length: null
+keep_symbols: true
+keep_numerals: true
+tf_threshold: 10
 max_tokens: 250000
-n_topics: 200
+n_topics: 500
 engine: gensim_lda-multicore
 passes: 1
 random_seed: null
