@@ -102,7 +102,7 @@ def tokens_to_ttm_stream(
     concept_ids: Set[int],
     ignore_ids: Set[int],
     processes: int = 4,
-    chunksize: int = 25,
+    chunk_size: int = 25,
 ) -> Iterable[dict]:
 
     try:
@@ -132,10 +132,10 @@ def tokens_to_ttm_stream(
             # with open(token2id_filename, 'wb') as handle:
             #     pickle.dump(dict(token2id.data), handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-            logger.info(f"Spawning: {processes} processes (chunksize {chunksize}) ")
+            logger.info(f"Spawning: {processes} processes (chunk size {chunk_size}) ")
             with mp.get_context("spawn").Pool(processes=processes) as pool:
                 # , initializer=load_token2id, initargs=(token2id_filename,)) as pool:
-                data_futures: Iterable[dict] = pool.imap_unordered(tokens_to_ttm, args, chunksize=chunksize)
+                data_futures: Iterable[dict] = pool.imap_unordered(tokens_to_ttm, args, chunksize=chunk_size)
                 for item in data_futures:
                     yield item
 

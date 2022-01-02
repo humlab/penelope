@@ -13,12 +13,16 @@ target_folder: ./tests/output/
 # max_word_length: null
 # keep_symbols: true
 # keep_numerals: true
-n_topics: 200
-engine: gensim_lda-multicore
-passes: 2
-random_seed: null
 alpha: asymmetric
-workers: 4
+chunk_size: 2000
+engine: gensim_lda-multicore
 max_iter: 4000
+minimum_probability: 0.03
+n_topics: 200
+passes: 2
+per_word_topics: false
+random_seed: null
+update_every: 1
+workers: 4
 store_corpus: true
 store_compressed: true

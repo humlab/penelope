@@ -13,6 +13,8 @@ def compute(
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     filename_field: str = None,
+    minimum_probability: float = 0.001,
+    n_tokens: int=200,
     store_corpus: bool = False,
     compressed: bool = True,
 ):
@@ -45,7 +47,6 @@ def compute(
         source=corpus_source,
         transform_opts=transform_opts,
         reader_opts=reader_opts,
-        chunk_size=None,
     )
 
     corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=None)
@@ -73,6 +74,8 @@ def compute(
         corpus=train_corpus.corpus,
         id2token=train_corpus.id2token,
         document_index=train_corpus.document_index,
+        minimum_probability=minimum_probability,
+        n_tokens=n_tokens,
     )
 
     inferred_topics.store(target_folder)

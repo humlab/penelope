@@ -37,8 +37,10 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @option2('--random-seed')
 @option2('--workers')
 @option2('--max-iter')
-@option2('--chunksize')
+@option2('--chunk-size')
 @option2('--update-every')
+@option2('--minimum-probability')
+@option2('--per-word-topics')
 @option2('--store-corpus/--no-store-corpus')
 @option2('--store-compressed/--no-store-compressed')
 @option2('--force-checkpoint/--no-force-checkpoint')
@@ -64,15 +66,17 @@ def click_main(
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
-    n_topics: int = 50,
-    engine: str = "gensim_lda-multicore",
-    passes: Optional[int] = None,
-    random_seed: Optional[int] = None,
     alpha: str = 'asymmetric',
-    workers: Optional[int] = None,
-    max_iter: Optional[int] = None,
-    chunk_size: Optional[int] = None,
-    update_every: Optional[int] = None,
+    chunk_size: int = 2000,
+    engine: str = "gensim_lda-multicore",
+    max_iter: int = None,
+    minimum_probability: float = None,
+    n_topics: int = 50,
+    passes: int = None,
+    per_word_topics: bool = False,
+    random_seed: int = None,
+    update_every: int = 1,
+    workers: int = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
@@ -111,15 +115,17 @@ def _main(
     keep_numerals: bool = False,
     only_any_alphanumeric: bool = False,
     only_alphabetic: bool = False,
-    n_topics: int = 50,
-    engine: str = "gensim_lda-multicore",
-    passes: int = None,
-    random_seed: int = None,
     alpha: str = 'asymmetric',
-    workers: int = None,
+    chunk_size: int = 2000,
+    engine: str = "gensim_lda-multicore",
     max_iter: int = None,
-    chunk_size: Optional[int] = None,
-    update_every: Optional[int] = None,
+    minimum_probability: float = None,
+    n_topics: int = 50,
+    passes: int = None,
+    per_word_topics: bool = False,
+    random_seed: int = None,
+    update_every: int = 1,
+    workers: int = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
     enable_checkpoint: bool = True,
@@ -176,15 +182,17 @@ def _main(
 
     engine_args: dict = remove_none(
         dict(
+            alpha=alpha,
+            chunk_size=chunk_size,
+            max_iter=max_iter,
+            minimum_probability=minimum_probability,
             n_topics=n_topics,
             passes=passes,
+            per_word_topics=per_word_topics,
             random_seed=random_seed,
-            alpha=alpha,
-            workers=workers,
-            max_iter=max_iter,
+            update_every=update_every,
             work_folder=os.path.join(target_folder, target_name),
-            chunk_size=None,
-            update_every=None,
+            workers=workers,
         )
     )
 

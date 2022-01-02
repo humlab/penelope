@@ -144,7 +144,7 @@ class ToCoOccurrenceDTM(ITask):
             concept_ids=self.concept_ids,
             ignore_ids=self.ignore_ids,
             processes=self.context_opts.processes,
-            chunksize=self.context_opts.chunksize,
+            chunk_size=self.context_opts.chunksize,
         ):
             yield DocumentPayload(
                 content_type=self.out_content_type,

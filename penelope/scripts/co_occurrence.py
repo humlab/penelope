@@ -25,7 +25,7 @@ from penelope.workflows import interface
 @option2('--ignore-concept')
 @option2('--context-width')
 @option2('--compute-processes')
-@option2('--compute-chunksize')
+@option2('--compute-chunk-size')
 @option2('--partition-key')
 @option2('--lemmatize/--no-lemmatize')
 @option2('--pos-includes')
@@ -97,7 +97,7 @@ def process_co_ocurrence(
     ignore_padding: bool = False,
     context_width: int = None,
     compute_processes: int = None,
-    compute_chunksize: int = 10,
+    compute_chunk_size: int = 10,
     partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,
@@ -186,7 +186,7 @@ def process_co_ocurrence(
                 ignore_padding=ignore_padding,
                 partition_keys=partition_key,
                 processes=compute_processes,
-                chunksize=compute_chunksize,
+                chunksize=compute_chunk_size,
             ),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,

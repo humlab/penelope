@@ -180,6 +180,9 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_topics_data(method):
 
+    minimum_probability: float = 0.001
+    n_tokens: int = 5
+
     inferred_model: InferredModel = create_inferred_model(method)
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
@@ -187,7 +190,8 @@ def test_infer_topics_data(method):
         corpus=inferred_model.train_corpus.effective_corpus,
         id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
-        n_tokens=5,
+        minimum_probability=minimum_probability,
+        n_tokens=n_tokens,
     )
 
     assert inferred_topics_data is not None
@@ -207,6 +211,9 @@ def test_infer_topics_data(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_inferred_topics_data(method):
 
+    minimum_probability: float = 0.001
+    n_tokens: int = 5
+
     inferred_model: InferredModel = create_inferred_model(method)
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
@@ -214,7 +221,8 @@ def test_store_inferred_topics_data(method):
         corpus=inferred_model.train_corpus.corpus,
         id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
-        n_tokens=5,
+        minimum_probability=minimum_probability,
+        n_tokens=n_tokens,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
 
@@ -232,6 +240,9 @@ def test_store_inferred_topics_data(method):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_topics_data(method):
 
+    minimum_probability: float = 0.001
+    n_tokens: int = 5
+
     inferred_model: InferredModel = create_inferred_model(method)
 
     test_inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
@@ -239,7 +250,8 @@ def test_load_inferred_topics_data(method):
         corpus=inferred_model.train_corpus.effective_corpus,
         id2token=inferred_model.train_corpus.id2token,
         document_index=inferred_model.train_corpus.document_index,
-        n_tokens=5,
+        minimum_probability=minimum_probability,
+        n_tokens=n_tokens,
     )
     target_folder = jj(OUTPUT_FOLDER, f"{uuid.uuid1()}")
     test_inferred_topics_data.store(target_folder)

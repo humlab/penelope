@@ -83,6 +83,10 @@ class ComputeTopicModelUserInterface:
         self.opts = opts
         self.model_widgets, self.widget_boxes = self.prepare_widgets()
 
+        # FIXME: Add UI elements for these settings:
+        self.n_tokens: int = 200,
+        self.minimum_probability: float = 0.001,
+
     def prepare_widgets(self):
 
         gui = types.SimpleNamespace(
@@ -171,6 +175,7 @@ class ComputeTopicModelUserInterface:
 
                     name: str = str(uuid.uuid1())
 
+                    # FIXME: Move code block out of GUI (to workflows)
                     target_folder = os.path.join(self.data_folder, name)
 
                     vectorizer_args = dict(apply_idf=self.model_widgets.apply_idf.value)
@@ -194,16 +199,18 @@ class ComputeTopicModelUserInterface:
                         train_corpus=train_corpus, method=method, engine_args=topic_modeller_args
                     )
 
+                    trained_model.topic_model.save(os.path.join(target_folder, 'gensim.model'))
+                    trained_model.store(folder=target_folder, store_corpus=True, store_compressed=True)
+
                     inferred_topics: tm.InferredTopicsData = tm.predict_topics(
                         topic_model=trained_model.topic_model,
                         corpus=train_corpus.corpus,
                         id2token=train_corpus.id2token,
                         document_index=train_corpus.document_index,
+                        n_tokens = self.n_tokens,
+                        minimum_probability=self.minimum_probability,
                     )
 
-                    trained_model.topic_model.save(os.path.join(target_folder, 'gensim.model'))
-
-                    trained_model.store(folder=target_folder, store_corpus=True, store_compressed=True)
                     inferred_topics.store(target_folder=target_folder, pickled=False)
 
                     self.state.set_data(trained_model, inferred_topics)

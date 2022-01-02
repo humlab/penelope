@@ -24,8 +24,8 @@ class TopicModelMixin:
         corpus: Sparse2Corpus | VectorizedCorpus,
         document_index: pd.DataFrame,
         target_folder: str,
-        n_tokens: int = 200,
-        minimum_probability: float = 0.001,
+        n_tokens: int,
+        minimum_probability: float,
         **kwargs,
     ) -> tm.InferredTopicsData:
         """[summary]

@@ -46,6 +46,8 @@ class PipelineShortcutMixIn:
         model_name: str = None,
         target_folder: str = None,
         target_name: str = None,
+        n_tokens: int = 200,
+        minimum_probability: float = 0.001,
     ) -> pipelines.CorpusPipeline:
         """ TOKENS => TOPIC MODEL """
         return self.add(
@@ -54,5 +56,7 @@ class PipelineShortcutMixIn:
                 model_name=model_name,
                 target_folder=target_folder,
                 target_name=target_name,
+                n_tokens=n_tokens,
+                minimum_probability=minimum_probability,
             )
         )

@@ -21,6 +21,11 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @option2('--to-lower/--no-to-lower', default=False)
 @option2('--pos-includes')
 @option2('--pos-excludes')
+# @option2('--remove-stopwords')
+# @option2('--min-word-length')
+# @option2('--max-word-length')
+# @option2('--keep-symbols/--no-keep-symbols')
+# @option2('--keep-numerals/--no-keep-numerals')
 @option2('--max-tokens')
 @option2('--tf-threshold')
 @option2('--n-topics')
@@ -30,8 +35,10 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @option2('--random-seed')
 @option2('--workers')
 @option2('--max-iter')
-@option2('--chunksize')
+@option2('--chunk-size')
 @option2('--update-every')
+@option2('--minimum-probability')
+@option2('--per-word-topics')
 @option2('--store-corpus/--no-store-corpus')
 @option2('--store-compressed/--no-store-compressed')
 def click_main(
@@ -47,15 +54,17 @@ def click_main(
     pos_excludes: str = '',
     max_tokens: int = None,
     tf_threshold: int = None,
-    n_topics: int = 50,
-    engine: str = "gensim_lda-multicore",
-    passes: int = None,
-    random_seed: int = None,
     alpha: str = 'asymmetric',
-    workers: int = None,
+    chunk_size: int = 2000,
+    engine: str = "gensim_lda-multicore",
     max_iter: int = None,
-    chunksize: int = 2000,
+    minimum_probability: float = None,
+    n_topics: int = 50,
+    passes: int = None,
+    per_word_topics: bool = False,
+    random_seed: int = None,
     update_every: int = 1,
+    workers: int = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
@@ -76,15 +85,17 @@ def main(
     pos_excludes: str = '',
     max_tokens: int = None,
     tf_threshold: int = None,
-    n_topics: int = 50,
-    engine: str = "gensim_lda-multicore",
-    passes: int = None,
-    random_seed: int = None,
     alpha: str = 'asymmetric',
-    workers: int = None,
+    chunk_size: int = 2000,
+    engine: str = "gensim_lda-multicore",
     max_iter: int = None,
-    chunksize: int = 2000,
+    minimum_probability: float = None,
+    n_topics: int = 50,
+    passes: int = None,
+    per_word_topics: bool = False,
+    random_seed: int = None,
     update_every: int = 1,
+    workers: int = None,
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
@@ -126,15 +137,17 @@ def main(
     )
     engine_args = remove_none(
         dict(
+            alpha=alpha,
+            chunk_size=chunk_size,
+            max_iter=max_iter,
+            minimum_probability=minimum_probability,
             n_topics=n_topics,
             passes=passes,
+            per_word_topics=per_word_topics,
             random_seed=random_seed,
-            alpha=alpha,
-            workers=workers,
-            max_iter=max_iter,
-            work_folder=os.path.join(target_folder, target_name),
-            chunksize=chunksize,
             update_every=update_every,
+            work_folder=os.path.join(target_folder, target_name),
+            workers=workers,
         )
     )
     # _: dict = config.get_pipeline(

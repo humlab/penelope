@@ -58,15 +58,15 @@ class LdaEngineSpec(EngineSpec):
             # distributed=False, chunksize=2000, passes=1, update_every=1, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, minimum_probability=0.01, random_state=None, ns_conf=None, minimum_phi_value=0.01, per_word_topics=False, callbacks=None, dtype=<class 'numpy.float32'>)¶
             corpus=corpus,
             id2word=id2word,
-            num_topics=get_int(engine_args, 'n_topics', 100),
+            alpha=engine_args.get('alpha', 'symmetric'),
+            chunksize=get_int(engine_args, 'chunk_size', 2000),
             iterations=get_int(engine_args, 'max_iter', 3000),
+            num_topics=get_int(engine_args, 'n_topics', 100),
             passes=get_int(engine_args, 'passes', 1),
+            per_word_topics=engine_args.get('per_word_topics', False),
+            random_state=engine_args.get('random_state'),
             update_every=get_int(engine_args, 'update_every', 1),
-            chunksize=get_int(engine_args, 'chunksize', 2000),
-            alpha='auto',
-            per_word_topics=True,
             # decay= 0.1, # 0.5
-            # random_state=100
             # offset=1.0,
             # dtype=np.float64
             # callbacks=[
@@ -86,7 +86,7 @@ class LdaMulticoreEngineSpec(EngineSpec):
         chunksize           = 2000
         corpus              = None
         decay               = 0.5
-        dtype               = np.float3
+        dtype               = np.float32
         eta                 = None
         eval_every          = 10
         gamma_threshold     = 0.001
@@ -185,13 +185,15 @@ class LdaMulticoreEngineSpec(EngineSpec):
         opts: dict = dict(
             corpus=corpus,
             id2word=id2word,
-            num_topics=get_int(engine_args, 'n_topics', 100),
+            alpha=engine_args.get('alpha', 'symmetric'),
+            chunksize=get_int(engine_args, 'chunk_size', 2000),
             iterations=get_int(engine_args, 'max_iter', 3000),
+            minimum_probability=engine_args.get('minimum_probability', 0.01),
+            num_topics=get_int(engine_args, 'n_topics', 100),
             passes=get_int(engine_args, 'passes', 1),
-            chunksize=get_int(engine_args, 'chunksize', 2000),
+            per_word_topics=engine_args.get('per_word_topics', False),
+            random_state=get_int(engine_args, 'random_seed', None),
             workers=get_int(engine_args, 'workers', None),
-            random_state=get_int(engine_args, 'random_state', None),
-            per_word_topics=True,
         )
         if 'dtype' in engine_args:
             opts.update(dtype=engine_args['dtype'])

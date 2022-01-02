@@ -61,6 +61,9 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_predict_topics(method: str):
 
+    minimum_probability: float = 0.001
+    n_tokens: int = 100
+
     payload: DocumentPayload = tranströmer_topic_model_payload(method=method)
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
     corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
@@ -91,6 +94,8 @@ def test_predict_topics(method: str):
             model_name=model_name,
             target_folder=target_folder,
             target_name=target_name,
+            minimum_probability=minimum_probability,
+            n_tokens=n_tokens,
         )
     ).single()
 
