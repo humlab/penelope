@@ -58,7 +58,7 @@ def main(
     ignore_padding: bool = False,
     context_width: int = None,
     compute_processes: int = None,
-    compute_chunksize: int = 10,
+    compute_chunk_size: int = 10,
     partition_key: Sequence[str] = None,
     phrase: Sequence[str] = None,
     phrase_file: str = None,

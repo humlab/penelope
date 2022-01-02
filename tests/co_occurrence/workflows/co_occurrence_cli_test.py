@@ -22,7 +22,7 @@ def test_process_co_ocurrence():
         ignore_padding=False,
         context_width=6,
         compute_processes=None,
-        compute_chunksize=None,
+        compute_chunk_size=None,
         partition_key=["year"],
         phrase=None,
         phrase_file=None,
