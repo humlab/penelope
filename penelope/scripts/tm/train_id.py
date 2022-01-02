@@ -3,7 +3,7 @@ import sys
 from typing import Optional
 
 import click
-import penelope.workflows.topic_model.tm_id as workflow
+import penelope.workflows.tm.train_id as workflow
 from penelope import corpus as pc
 from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
 

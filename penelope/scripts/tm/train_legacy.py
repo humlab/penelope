@@ -6,7 +6,7 @@ from typing import Optional
 import click
 from penelope.corpus import TextReaderOpts, TextTransformOpts, TokensTransformOpts
 from penelope.scripts.utils import option2
-from penelope.workflows.topic_model import tm_legacy as workflow
+from penelope.workflows.tm import train_legacy as workflow
 
 # pylint: disable=unused-argument, too-many-arguments
 
