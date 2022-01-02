@@ -19,7 +19,7 @@ def train_model(
         train_corpus,
         method,
         engine_args,
-        tfidf_weiging=kwargs.get('tfidf_weiging', False),
+        tfidf_weighing=kwargs.get('tfidf_weighing', False),
     )
 
     train_corpus.update_word_counts()
