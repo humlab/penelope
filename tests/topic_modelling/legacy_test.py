@@ -7,7 +7,7 @@ import pandas as pd
 import penelope.topic_modelling as topic_modelling
 import pytest
 from penelope.corpus.dtm.corpus import VectorizedCorpus
-from penelope.scripts.topic_model_legacy import main as run_model
+from penelope.scripts.tm.train_legacy import main
 from penelope.topic_modelling import InferredModel, InferredTopicsData
 from penelope.topic_modelling.engines import get_engine_by_model_type
 from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES
@@ -305,7 +305,7 @@ def test_run_cli(method):
         'filename_field': ('year:_:1', 'sequence_id:_:2'),
     }
 
-    run_model(**kwargs)
+    main(**kwargs)
 
     target_folder = jj(kwargs['corpus_folder'], kwargs['target_name'])
 
