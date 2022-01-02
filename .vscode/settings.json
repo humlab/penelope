@@ -44,6 +44,7 @@
         "Sparv",
         "spmatrix",
         "tbar",
+        "tfidf",
         "tolist",
         "tqdm",
         "unobserve",
