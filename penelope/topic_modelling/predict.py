@@ -21,6 +21,10 @@ if TYPE_CHECKING:
 
 def to_dataframe(document_index: pd.DataFrame, data: DocumentTopicsWeightsIter) -> pd.DataFrame:
     """Convert document-topic-weight stream into a data frame."""
+    # REDUCE MEMORY CONSUMPTION
+    # MAKE WEIGHT float32 (or float 16)
+    # START WITH AN EMPTY FRAME!!!!
+
     document_topics = pd.DataFrame(data, columns=['document_id', 'topic_id', 'weight'])
     document_topics['document_id'] = document_topics.document_id.astype(np.uint32)
     document_topics['topic_id'] = document_topics.topic_id.astype(np.uint16)
@@ -58,7 +62,11 @@ def predict_topics(
 
     engine: ITopicModelEngine = get_engine_by_model_type(topic_model)
 
-    document_topic_weights: DocumentTopicsWeightsIter = engine.predict(vectorized_corpus, minimum_probability, **kwargs)
+    document_topic_weights: DocumentTopicsWeightsIter = engine.predict(
+        vectorized_corpus,
+        minimum_probability=minimum_probability,
+        **kwargs,
+    )
 
     topic_token_weights: pd.DataFrame = (
         kwargs.get('topic_token_weights')

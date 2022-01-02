@@ -94,6 +94,7 @@ CLI_OPTIONS = {
     '--workers': dict(help='Number of workers (if applicable).', default=None, type=click.INT),
 }
 
+
 def update_arguments_from_options_file(*, arguments: dict, filename_key: str, log_args: bool = True) -> dict:
     """Updates `arguments` based on values found in file specified by `filename_key`.
     Values specified at the command line overrides values from options file."""
