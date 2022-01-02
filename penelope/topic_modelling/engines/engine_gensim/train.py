@@ -26,7 +26,7 @@ def train(
         Generic topic modelling options that are translated to algorithm-specific options (see `options` module for translation)
     kwargs : Dict[str,Any], optional
         Additional vectorize options:
-            `tfidf_weiging` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
+            `tfidf_weighing` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
 
     Returns
     -------
@@ -36,13 +36,13 @@ def train(
         options:
             perplexity_score    Computed perplexity scores
             coherence_score     Computed coherence scores
-            engine_ptions       Passed engine options (not the interpreted algorithm specific options)
+            engine_options       Passed engine options (not the interpreted algorithm specific options)
             extra_options       Any other compute option passed as a kwarg
     """
 
     corpus, dictionary = convert.TranslateCorpus().translate(train_corpus.corpus, id2token=train_corpus.id2token)
 
-    if kwargs.get('tfidf_weiging', False):
+    if kwargs.get('tfidf_weighing', False):
         logger.warning("TF-IDF weighing of effective corpus has been disabled")
         # tfidf_model = TfidfModel(corpus)
         # corpus = [tfidf_model[d] for d in corpus]
