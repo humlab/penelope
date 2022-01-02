@@ -27,7 +27,7 @@ def train(
         Generic topic modelling options that are translated to algorithm-specific options (see `options` module for translation)
     kwargs : Dict[str,Any], optional
         Additional options:
-            `tfidf_weiging` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
+            `tfidf_weighing` if TF-IDF weighing should be applied, ony valid when terms/id2word are specified, by default False
 
     Returns
     -------
@@ -36,7 +36,7 @@ def train(
         model               The textaCy topic model
         perplexity_score    Computed perplexity scores
         coherence_score     Computed coherence scores
-        engine_ptions       Used engine options (algorithm specific)
+        engine_options       Used engine options (algorithm specific)
         extra_options       Any other compute option passed as a kwarg
     """
 
