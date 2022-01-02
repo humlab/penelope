@@ -12,6 +12,6 @@
         "prefix": ""
     },
     "extra_options": {
-        "tfidf_weiging": false
+        "tfidf_weighing": false
     }
 }
