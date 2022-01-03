@@ -92,9 +92,11 @@ class TopicModelMixin:
 
         inferred_model.store(
             folder=self.target_subfolder,
-            store_corpus=self.store_corpus,
             store_compressed=self.store_compressed,
         )
+
+        if self.store_corpus:
+            train_corpus.store(self.target_subfolder)
 
         return inferred_model
 

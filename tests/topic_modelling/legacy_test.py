@@ -22,14 +22,21 @@ jj = os.path.join
 # pylint: disable=protected-access,redefined-outer-name)
 
 
-@functools.lru_cache(maxsize=None)
-def create_inferred_model(method) -> topic_modelling.InferredModel:
-
+def create_train_corpus() -> topic_modelling.TrainingCorpus:
     corpus: TranströmerCorpus = TranströmerCorpus()
-    train_corpus: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
+    tc: topic_modelling.TrainingCorpus = topic_modelling.TrainingCorpus(
         corpus=corpus,
         document_index=corpus.document_index,
     )
+    return tc
+
+
+@pytest.fixture
+def train_corpus() -> topic_modelling.TrainingCorpus:
+    return create_train_corpus()
+
+
+def _create_inferred_model(method: str, train_corpus: topic_modelling.TrainingCorpus) -> topic_modelling.InferredModel:
 
     inferred_model: topic_modelling.InferredModel = topic_modelling.train_model(
         train_corpus=train_corpus,
@@ -38,7 +45,6 @@ def create_inferred_model(method) -> topic_modelling.InferredModel:
             'n_topics': 4,
             'passes': 1,
             'random_seed': 42,
-            'alpha': 'auto',
             'workers': 1,
             'max_iter': 100,
             'work_folder': f'./tests/output/{uuid.uuid4()}',
@@ -46,6 +52,12 @@ def create_inferred_model(method) -> topic_modelling.InferredModel:
     )
 
     return inferred_model
+
+
+@functools.lru_cache(maxsize=None)
+def create_inferred_model(method) -> topic_modelling.InferredModel:
+    train_corpus: topic_modelling.TrainingCorpus = create_train_corpus()
+    return _create_inferred_model(method, train_corpus)
 
 
 def test_tranströmers_corpus():
@@ -56,22 +68,25 @@ def test_tranströmers_corpus():
         assert len(tokens) > 0
 
 
+def test_create_train_corpus():
+    train_corpus: topic_modelling.TrainingCorpus = create_train_corpus()
+    assert isinstance(train_corpus.document_index, pd.DataFrame)
+    assert len(train_corpus.effective_corpus) == len(train_corpus.document_index)
+    assert len(train_corpus.document_index) == 5
+    assert len(train_corpus.document_index.columns) == 7
+    assert 'n_terms' in train_corpus.document_index.columns
+
+
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_model(method):
 
     inferred_model = create_inferred_model(method)
 
-    engine: ITopicModelEngine = get_engine_by_model_type(inferred_model.topic_model)
-
     assert inferred_model is not None
     assert inferred_model.method == method
+
+    engine: ITopicModelEngine = get_engine_by_model_type(inferred_model.topic_model)
     assert isinstance(inferred_model.topic_model, engine.supported_models())
-    assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
-    assert len(inferred_model.train_corpus.effective_corpus) == len(inferred_model.train_corpus.document_index)
-    assert len(inferred_model.train_corpus.document_index) == 5
-    assert len(inferred_model.train_corpus.document_index.columns) == 7
-    assert 'n_terms' in inferred_model.train_corpus.document_index.columns
-    assert inferred_model.train_corpus.corpus is not None
 
 
 def test_load_inferred_model_fixture():
@@ -87,7 +102,7 @@ def test_store_compressed_inferred_model(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    inferred_model.store(target_folder, store_corpus=True, store_compressed=False)
+    inferred_model.store(target_folder, store_compressed=False)
 
     assert VectorizedCorpus.dump_exists(folder=target_folder, tag="train")
     assert os.path.isfile(os.path.join(target_folder, "model_options.json"))
@@ -102,7 +117,7 @@ def test_store_uncompressed_inferred_model(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
 
-    inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
+    inferred_model.store(target_folder, store_compressed=True)
 
     # Assert
     assert VectorizedCorpus.dump_exists(folder=target_folder, tag="train")
@@ -117,19 +132,21 @@ def test_load_inferred_model_when_stored_corpus_is_true_has_same_loaded_trained_
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
     test_inferred_model: InferredModel = create_inferred_model(engine_key)
-    test_inferred_model.store(target_folder, store_corpus=True, store_compressed=True)
+    test_inferred_model.store(target_folder, store_compressed=True)
 
     inferred_model: InferredModel = InferredModel.load(target_folder)
 
     assert inferred_model is not None
     assert inferred_model.method == engine_key
     assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[engine_key].engine)
-    assert isinstance(inferred_model.train_corpus.document_index, pd.DataFrame)
-    assert len(test_inferred_model.train_corpus.effective_corpus) == len(inferred_model.train_corpus.document_index)
-    assert len(inferred_model.train_corpus.document_index) == 5
-    assert len(inferred_model.train_corpus.document_index.columns) == 8
-    assert 'n_terms' in inferred_model.train_corpus.document_index.columns
-    assert inferred_model.train_corpus.corpus is not None
+
+    train_corpus = topic_modelling.TrainingCorpus.load(target_folder)
+    assert isinstance(train_corpus.document_index, pd.DataFrame)
+    assert len(train_corpus.effective_corpus) == len(train_corpus.document_index)
+    assert len(train_corpus.document_index) == 5
+    assert len(train_corpus.document_index.columns) == 8
+    assert 'n_terms' in train_corpus.document_index.columns
+    assert train_corpus.corpus is not None
 
     shutil.rmtree(target_folder)
 
@@ -140,14 +157,13 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(e
     target_name: str = f"{uuid.uuid1()}"
     target_folder: str = os.path.join(OUTPUT_FOLDER, target_name)
     test_inferred_model: InferredModel = create_inferred_model(engine_key)
-    test_inferred_model.store(target_folder, store_corpus=False)
+    test_inferred_model.store(target_folder)
 
     inferred_model = InferredModel.load(target_folder)
 
     assert inferred_model is not None
     assert inferred_model.method == engine_key
     assert isinstance(inferred_model.topic_model, SUPPORTED_ENGINES[engine_key].engine)
-    assert inferred_model.train_corpus is None
 
     shutil.rmtree(target_folder)
 
@@ -159,7 +175,7 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     target_name = f"{uuid.uuid1()}"
     target_folder = jj(OUTPUT_FOLDER, target_name)
     test_inferred_model: InferredModel = create_inferred_model(method)
-    test_inferred_model.store(target_folder, store_corpus=False)
+    test_inferred_model.store(target_folder)
 
     inferred_model: InferredModel = InferredModel.load(target_folder, lazy=True)
 
@@ -168,17 +184,14 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
     _ = inferred_model.topic_model
 
     assert not callable(inferred_model._topic_model)
-    assert inferred_model._train_corpus is None or callable(inferred_model._train_corpus)
 
     _ = inferred_model.topic_model
-
-    assert inferred_model._train_corpus is None or not callable(inferred_model._topic_model)
 
     shutil.rmtree(target_folder)
 
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
-def test_infer_topics_data(method):
+def test_infer_topics_data(method, train_corpus):
 
     minimum_probability: float = 0.001
     n_tokens: int = 5
@@ -187,9 +200,9 @@ def test_infer_topics_data(method):
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
-        corpus=inferred_model.train_corpus.effective_corpus,
-        id2token=inferred_model.train_corpus.id2token,
-        document_index=inferred_model.train_corpus.document_index,
+        corpus=train_corpus.effective_corpus,
+        id2token=train_corpus.id2token,
+        document_index=train_corpus.document_index,
         minimum_probability=minimum_probability,
         n_tokens=n_tokens,
     )
@@ -209,7 +222,7 @@ def test_infer_topics_data(method):
 
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
-def test_store_inferred_topics_data(method):
+def test_store_inferred_topics_data(method, train_corpus):
 
     minimum_probability: float = 0.001
     n_tokens: int = 5
@@ -218,9 +231,9 @@ def test_store_inferred_topics_data(method):
 
     inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
-        corpus=inferred_model.train_corpus.corpus,
-        id2token=inferred_model.train_corpus.id2token,
-        document_index=inferred_model.train_corpus.document_index,
+        corpus=train_corpus.corpus,
+        id2token=train_corpus.id2token,
+        document_index=train_corpus.document_index,
         minimum_probability=minimum_probability,
         n_tokens=n_tokens,
     )
@@ -238,7 +251,7 @@ def test_store_inferred_topics_data(method):
 
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
-def test_load_inferred_topics_data(method):
+def test_load_inferred_topics_data(method, train_corpus):
 
     minimum_probability: float = 0.001
     n_tokens: int = 5
@@ -247,9 +260,9 @@ def test_load_inferred_topics_data(method):
 
     test_inferred_topics_data: InferredTopicsData = topic_modelling.predict_topics(
         topic_model=inferred_model.topic_model,
-        corpus=inferred_model.train_corpus.effective_corpus,
-        id2token=inferred_model.train_corpus.id2token,
-        document_index=inferred_model.train_corpus.document_index,
+        corpus=train_corpus.effective_corpus,
+        id2token=train_corpus.id2token,
+        document_index=train_corpus.document_index,
         minimum_probability=minimum_probability,
         n_tokens=n_tokens,
     )

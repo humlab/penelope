@@ -200,7 +200,8 @@ class ComputeTopicModelUserInterface:
                     )
 
                     trained_model.topic_model.save(os.path.join(target_folder, 'gensim.model'))
-                    trained_model.store(folder=target_folder, store_corpus=True, store_compressed=True)
+                    trained_model.store(folder=target_folder, store_compressed=True)
+                    train_corpus.store(folder=target_folder)
 
                     inferred_topics: tm.InferredTopicsData = tm.predict_topics(
                         topic_model=trained_model.topic_model,
@@ -213,7 +214,7 @@ class ComputeTopicModelUserInterface:
 
                     inferred_topics.store(target_folder=target_folder, pickled=False)
 
-                    self.state.set_data(trained_model, inferred_topics)
+                    self.state.set_data(trained_model, inferred_topics, train_corpus)
 
                     topics: pd.DataFrame = get_topics_unstacked(
                         self.state.topic_model,
@@ -226,7 +227,7 @@ class ComputeTopicModelUserInterface:
 
                 except Exception as ex:
                     logger.error(ex)
-                    self.state.set_data(None, None)
+                    self.state.set_data(None, None, None)
                     raise
                 finally:
                     buzy(False)

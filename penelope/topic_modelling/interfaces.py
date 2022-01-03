@@ -162,9 +162,8 @@ class TrainingCorpus:
 class InferredModel:
     """A container for the trained topic model """
 
-    def __init__(self, topic_model: Any, train_corpus: TrainingCorpus, **options: Dict[str, Any]):
+    def __init__(self, topic_model: Any, **options: Dict[str, Any]):
         self._topic_model = topic_model
-        self._train_corpus: TrainingCorpus = train_corpus
         self.method = options.get('method')
         self.options = options
 
@@ -175,14 +174,6 @@ class InferredModel:
             self._topic_model = self._topic_model()
             tbar.close()
         return self._topic_model
-
-    @property
-    def train_corpus(self) -> TrainingCorpus:
-        if callable(self._train_corpus):
-            tbar = tqdm(desc="Lazy loading corpus...", position=0, leave=True)
-            self._train_corpus = self._train_corpus()
-            tbar.close()
-        return self._train_corpus
 
     def store_topic_model(self, folder: str, store_compressed: bool = True):
         """Stores topic model in pickled format """
@@ -197,11 +188,9 @@ class InferredModel:
         with open(filename, 'w') as fp:
             json.dump(options, fp, indent=4, default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>")
 
-    def store(self, folder: str, store_corpus=True, store_compressed=True):
+    def store(self, folder: str, store_compressed=True):
         """Store model on disk in `folder`."""
         self.store_topic_model(folder, store_compressed=store_compressed)
-        if store_corpus:
-            self.train_corpus.store(folder)
         self.store_model_options(folder)
 
     @staticmethod
@@ -229,9 +218,8 @@ class InferredModel:
     def load(folder: str, lazy=True) -> InferredModel:
         """Load inferred model data from pickled files."""
         topic_model = lambda: InferredModel.load_topic_model(folder) if lazy else InferredModel.load_topic_model(folder)
-        train_corpus = lambda: TrainingCorpus.load(folder)  # if lazy else TrainingCorpus.load(folder)
         options = InferredModel.load_model_options(folder)
-        return InferredModel(topic_model=topic_model, train_corpus=train_corpus, **options)
+        return InferredModel(topic_model=topic_model, **options)
 
 
 class InferredTopicsData:

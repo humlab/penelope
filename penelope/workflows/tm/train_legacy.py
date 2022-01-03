@@ -50,7 +50,10 @@ def compute(
 
     inferred_model.topic_model.save(jj(target_folder, 'gensim.model.gz'))
 
-    inferred_model.store(target_folder, store_corpus=store_corpus, store_compressed=store_compressed)
+    inferred_model.store(target_folder, store_compressed=store_compressed)
+
+    if store_corpus:
+        train_corpus.store(target_folder)
 
     inferred_topics: tm.InferredTopicsData = tm.predict_topics(
         inferred_model.topic_model,

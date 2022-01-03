@@ -116,7 +116,8 @@
 
 #     trained_model.topic_model.save(os.path.join(target_folder, 'gensim.model'))
 
-#     trained_model.store(folder=target_folder, store_corpus=True, store_compressed=True)
+#     trained_model.store(folder=target_folder, store_compressed=True)
+#     train_corpus.store(target_folder=target_folder)
 #     inferred_topics.store(target_folder=target_folder, pickled=False)
 
 #     return trained_model, inferred_topics
