@@ -207,10 +207,16 @@ class InferredModel:
     @staticmethod
     def load_topic_model(folder: str) -> Any:
         """Load a topic model from pickled file."""
+        if not InferredModel.exists(folder):
+            raise FileNotFoundError(f"no model found in folder {folder}")
         for filename in ["topic_model.pickle.pbz2", "topic_model.pickle"]:
             if isfile(jj(folder, filename)):
                 return utility.unpickle_from_file(jj(folder, filename))
         return None
+
+    @staticmethod
+    def exists(folder: str) -> bool:
+        return isfile(jj(folder, "model_options.json"))
 
     @staticmethod
     def load_model_options(folder: str) -> Dict[str, Any]:
@@ -223,7 +229,7 @@ class InferredModel:
     def load(folder: str, lazy=True) -> InferredModel:
         """Load inferred model data from pickled files."""
         topic_model = lambda: InferredModel.load_topic_model(folder) if lazy else InferredModel.load_topic_model(folder)
-        train_corpus = lambda: TrainingCorpus.load(folder) if lazy else TrainingCorpus.load(folder)
+        train_corpus = lambda: TrainingCorpus.load(folder)  # if lazy else TrainingCorpus.load(folder)
         options = InferredModel.load_model_options(folder)
         return InferredModel(topic_model=topic_model, train_corpus=train_corpus, **options)
 
