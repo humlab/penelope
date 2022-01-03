@@ -248,7 +248,7 @@ class HDPEngineSpec(EngineSpec):
             'id2word': id2word,
             # 'iterations': kwargs.get('max_iter', 0),
             # 'passes': kwargs.get('passes', 20),
-            # 'alpha': 'auto'
+            # 'alpha': 'symmetric'
         }
 
 
@@ -266,7 +266,7 @@ class DTMEngineSpec(EngineSpec):
             # 'lda_model': model # if initialize='gensim'
             # 'lda_inference_max_iter': kwargs.get('max_iter', 0),
             # 'passes': kwargs.get('passes', 20),
-            # 'alpha': 'auto'
+            # 'alpha': 'symmetric'
         }
 
 
