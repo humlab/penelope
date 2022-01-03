@@ -30,10 +30,10 @@ class TopicModelContainer:
         _trained_model: Optional[topic_modelling.InferredModel],
         _inferred_topics: Optional[topic_modelling.InferredTopicsData],
     ):
-        """ Fix missing document attribute n_terms """
         if 'n_terms' not in _inferred_topics.document_index.columns:
-            assert _trained_model.train_corpus is not None
-            _inferred_topics.document_index['n_terms'] = _trained_model.train_corpus.n_terms
+            raise ValueError("expected n_terms in document_index (previous fix is removed)")
+            # assert _trained_model.train_corpus is not None
+            # _inferred_topics.document_index['n_terms'] = _trained_model.train_corpus.n_terms
 
         self._trained_model = _trained_model
         self._inferred_topics = _inferred_topics
