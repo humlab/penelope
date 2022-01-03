@@ -1,4 +1,5 @@
 import contextlib
+import glob
 import gzip
 import importlib
 import json
@@ -8,12 +9,13 @@ import time
 from collections import defaultdict
 from os.path import join as jj
 from pathlib import Path
-from typing import Dict, Literal, Mapping, Optional
+from typing import Dict, List, Literal, Mapping, Optional
 
 import numpy as np
 import pandas as pd
 import scipy
 from penelope.utility import read_json, write_json
+from penelope.utility.filename_utils import strip_paths
 
 from ..document_index import DocumentIndex
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
@@ -182,6 +184,20 @@ class StoreMixIn:
                 'document_index.csv.gz',
             ]
         )
+
+    @staticmethod
+    def find_tags(folder: str) -> List[str]:
+        """Return dump tags in specified folder."""
+        known_suffixes = [
+            '_vector_data.npz',
+            '_vector_data.npy',
+            '_vectorizer_data.pickle',
+            '_document_index.csv.gz',
+        ]
+        tags: List[str] = list(
+            {x.rstrip(suffix) for suffix in known_suffixes for x in strip_paths(glob.glob(jj(folder, f'*{suffix}')))}
+        )
+        return tags
 
     @staticmethod
     def remove(*, tag: str, folder: str):
