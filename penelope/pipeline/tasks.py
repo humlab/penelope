@@ -726,6 +726,16 @@ class ToDTM(ITask):
         self.pipeline.put("vectorize_opts", self.vectorize_opts)
         return self
 
+    def from_token_id_stream(self, stream) -> VectorizedCorpus:
+        corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
+            stream=stream,
+            token2id=self.pipeline.payload.token2id,
+            document_index=self.document_index,
+            min_tf=self.vectorize_opts.min_tf,
+            max_tokens=self.vectorize_opts.max_tokens,
+        )
+        return corpus
+
     def process_stream(self) -> VectorizedCorpus:
 
         content_type: ContentType = self.resolved_prior_out_content_type()
@@ -733,22 +743,18 @@ class ToDTM(ITask):
 
         self.vectorize_opts.already_tokenized = True
 
-        """Hack: trigger execution of stream's enter() methods so that token2id and index are read"""
+        """HACK: trigger execution of stream's enter() methods so that token2id and index are read"""
         _, payloads = more_itertools.spy(self.create_instream(), n=1)
 
         if content_type == ContentType.TOKENS:
             fg: dict = self.pipeline.payload.token2id.data.get
             tokens2series = lambda tokens: pd.Series([fg(t) for t in tokens], dtype=np.int32)
             stream = [(name2id(p.document_name), tokens2series(p.content)) for p in payloads]
-            vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
-                stream, self.pipeline.payload.token2id, self.document_index
-            )
+            vectorized_corpus: VectorizedCorpus = self.from_token_id_stream(stream)
 
         elif content_type == ContentType.TOKEN_IDS:
             stream = [(name2id(p.document_name), pd.Series(p.content, dtype=np.int32)) for p in payloads]
-            vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
-                stream, self.pipeline.payload.token2id, self.document_index
-            )
+            vectorized_corpus: VectorizedCorpus = self.from_token_id_stream(stream)
 
         elif content_type == ContentType.TAGGED_ID_FRAME:
 
@@ -757,9 +763,7 @@ class ToDTM(ITask):
 
             tagged_column: str = self.tagged_column
             stream = ((name2id(p.document_name), p.content[tagged_column]) for p in payloads)
-            vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
-                stream, token2id=self.pipeline.payload.token2id, document_index=self.document_index
-            )
+            vectorized_corpus: VectorizedCorpus = self.from_token_id_stream(stream)
 
         elif content_type == ContentType.TEXT:
             tokenizer = self.tokenizer or default_tokenizer
@@ -775,9 +779,6 @@ class ToDTM(ITask):
 
         else:
             raise ValueError(f"not supported: {content_type}")
-
-        if self.vectorize_opts and (self.vectorize_opts.min_tf or 1) > 1:
-            vectorized_corpus = vectorized_corpus.slice_by_tf(self.vectorize_opts.min_tf)
 
         payload: DocumentPayload = DocumentPayload(
             content_type=ContentType.VECTORIZED_CORPUS, content=vectorized_corpus
