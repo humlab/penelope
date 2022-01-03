@@ -218,6 +218,9 @@ class Token2Id(MutableMapping):
         )
         return df
 
+    def to_feather(self, filename: str) -> None:
+        self.to_dataframe().reset_index().to_feather(filename)
+
     def store(self, filename: str) -> "Token2Id":
         """Store dictionary as CSV"""
 
