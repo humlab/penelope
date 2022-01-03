@@ -84,8 +84,8 @@ class ComputeTopicModelUserInterface:
         self.model_widgets, self.widget_boxes = self.prepare_widgets()
 
         # FIXME: Add UI elements for these settings:
-        self.n_tokens: int = 200,
-        self.minimum_probability: float = 0.001,
+        self.n_tokens: int = 200
+        self.minimum_probability: float = 0.001
 
     def prepare_widgets(self):
 
@@ -207,7 +207,7 @@ class ComputeTopicModelUserInterface:
                         corpus=train_corpus.corpus,
                         id2token=train_corpus.id2token,
                         document_index=train_corpus.document_index,
-                        n_tokens = self.n_tokens,
+                        n_tokens=self.n_tokens,
                         minimum_probability=self.minimum_probability,
                     )
 
