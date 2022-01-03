@@ -126,6 +126,6 @@ def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
 
     VectorizedCorpus.remove(tag=tag, folder=folder)
     assert not VectorizedCorpus.dump_exists(tag=tag, folder=folder)
-    assert VectorizedCorpus.find_tags(folder) == []
+    assert not VectorizedCorpus.find_tags(folder)
 
     shutil.rmtree(folder)
