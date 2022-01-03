@@ -23,7 +23,9 @@ def gensim_lsi_predict(model: models.LsiModel, corpus: Any, scaled=False, chunk_
     return data_iter
 
 
-def gensim_lda_predict(model: models.LdaModel|models.LdaMulticore, corpus: Any, minimum_probability: float = 0.0) -> Iterable:
+def gensim_lda_predict(
+    model: models.LdaModel | models.LdaMulticore, corpus: Any, minimum_probability: float = 0.0
+) -> Iterable:
     """Predict using Gensim LdaModel. Corpus must be in BoW format i.e. List[List[(token_id, count)]
     BOW => Iterable
     """
