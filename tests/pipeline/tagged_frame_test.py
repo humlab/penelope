@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pytest
+from penelope import pipeline as pp
 from penelope import utility
 from penelope.pipeline import checkpoint, interfaces, pipelines, sparv, tasks
 from penelope.pipeline.tagged_frame import IngestVocabType, ToIdTaggedFrame
@@ -105,3 +106,37 @@ def test_id_tagged_frame_process_payload(
 
     pos: List[str] = tagged_id_frame.pos_id.map(utility.PoS_TAGS_SCHEMES.SUC.id_to_pos).tolist()
     assert pos[:4] + pos[-4:] == expected_pos
+
+
+@pytest.mark.long_running
+@pytest.mark.skip(reason="only used to create test data")
+def test_store_id_tagged_frame():
+    config: pp.CorpusConfig = pp.CorpusConfig.load('./tests/test_data/tranströmer.yml')
+    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    target_folder: str = './tests/test_data/tranströmer_id_tagged_frames'
+    _: pp.CorpusPipeline = (
+        pp.CorpusPipeline(config=config)
+        .load_tagged_frame(
+            filename=corpus_source,
+            checkpoint_opts=config.checkpoint_opts,
+            extra_reader_opts=config.text_reader_opts,
+        )
+        .to_id_tagged_frame(ingest_vocab_type=IngestVocabType.Incremental)
+        .store_id_tagged_frame(target_folder)
+    ).exhaust()
+
+
+def test_load_id_tagged_frame():
+    config: pp.CorpusConfig = pp.CorpusConfig.load('./tests/test_data/tranströmer.yml')
+    folder: str = './tests/test_data/tranströmer_id_tagged_frames'
+    p: pp.CorpusPipeline = pp.CorpusPipeline(config=config).load_id_tagged_frame(
+        folder=folder,
+        file_pattern='**/tran*.feather',
+        id_to_token=False,
+    )
+
+    payloads = p.to_list()
+
+    assert len(payloads) == 5
+    assert len(p.payload.document_index) == 5
+    assert len(p.payload.token2id) == 341

@@ -66,6 +66,20 @@ class PipelineShortcutMixIn:
             tagged_frame.LoadIdTaggedFrame(corpus_source=folder, file_pattern=file_pattern, id_to_token=id_to_token)
         )
 
+    def to_id_tagged_frame(
+        self: pipelines.CorpusPipeline,
+        ingest_vocab_type: str = tagged_frame.IngestVocabType.Incremental,
+    ) -> pipelines.CorpusPipeline:
+        """ _ => DATAFRAME """
+        return self.add(tagged_frame.ToIdTaggedFrame(ingest_vocab_type=ingest_vocab_type))
+
+    def store_id_tagged_frame(
+        self: pipelines.CorpusPipeline,
+        folder: str,
+    ) -> pipelines.CorpusPipeline:
+        """ _ => DATAFRAME """
+        return self.add(tagged_frame.StoreIdTaggedFrame(folder=folder))
+
     def load_tagged_xml(
         self: pipelines.CorpusPipeline, filename: str, options: TextReaderOpts
     ) -> pipelines.CorpusPipeline:
