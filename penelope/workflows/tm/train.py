@@ -5,6 +5,10 @@ from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import TextTokenizer
 from penelope.topic_modelling.engines.engine_gensim.options import SUPPORTED_ENGINES
 
+# pylint: disable=too-many-arguments
+
+# FIXME: Add target_mode/trained_model_folder? Or leave be as legacy...
+
 
 def compute(
     name: str = None,
@@ -14,7 +18,7 @@ def compute(
     engine_args: dict = None,
     filename_field: str = None,
     minimum_probability: float = 0.001,
-    n_tokens: int=200,
+    n_tokens: int = 200,
     store_corpus: bool = False,
     compressed: bool = True,
 ):
