@@ -52,22 +52,14 @@ AnyCorpus = Union[
 
 @dataclass
 class TrainingCorpus:
-    """A container for the corpus data used during learning/inference
-    The corpus can be wither represented as a sequence of list of tokens or a docuement-term-matrix.
-    The corpus actually used in training is stored in `corpus` by the modelling engine
+    """A container for the corpus data used during training/inference
 
-    Parameters
-    ----------
-    terms : Iterable[Iterable[str]], optional
-        Document tokens stream, by default None
-    document_index : DocumentIndex, optional
-        Documents metadata, by default None
-    doc_term_matrix : scipy.sparse.csr_sparse, optional
-        DTM BoW, by default None
-    id2token : Dict[int, str], optional
-        ID to word mapping, by default None
-    vectorizer_args: Dict[str, Any]
-        Options to use when vectorizing `terms`, ony used if DTM is None,
+    Properties:
+        corpus (AnyCorpus): Source corpus, can be almost anything. Defaults to None.
+        document_index (DocumentIndex): Document's metadata. Defaults to None.
+        token2id (Mapping[str, int]): Word to ID. Defaults to None.
+        corpus_options (Dict[str, Any]): Options to use when vectorizing `corpus`. Defaults to None.
+        effective_corpus: Engine-specific, translated, corpus, a sparse matrix. Same as corpus if accepted by engine. Defaults to None.
     """
 
     corpus: AnyCorpus = None
@@ -142,6 +134,7 @@ class TrainingCorpus:
             corpus: VectorizedCorpus = VectorizedCorpus.load(tag='train', folder=folder)
             return TrainingCorpus(
                 corpus=corpus,
+                effective_corpus=corpus,
                 document_index=corpus.document_index,
                 token2id=Token2Id(data=corpus.token2id),
                 corpus_options=utility.read_json(jj(folder, CORPUS_OPTIONS_FILENAME), default={}),
