@@ -15,7 +15,7 @@ class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
     def slice_by_tf(self, tf_threshold: int) -> IVectorizedCorpus:
         ...
 
-    def slice_by_n_top(self, n_top: int) -> IVectorizedCorpus:
+    def slice_by_n_top(self, n_top: int, inplace: bool = False) -> IVectorizedCorpus:
         ...
 
     def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> IVectorizedCorpus:
@@ -25,9 +25,6 @@ class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
         ...
 
     def slice_by_indices(self, indices: Sequence[int], inplace=False) -> IVectorizedCorpus:
-        ...
-
-    def slice_by_term_frequency(self, threshold: Union[int, float], inplace=False) -> IVectorizedCorpus:
         ...
 
     @staticmethod
@@ -40,32 +37,22 @@ class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
         ...
 
     def compress(
-        self, tf_threshold: int = 1, extra_keep_ids: List[int] = None, inplace=False
+        self, tf_threshold: int = 1, extra_keep_ids: List[int] = None, inplace: bool = False
     ) -> Tuple[IVectorizedCorpus, Mapping[int, int], Sequence[int]]:
         ...
 
 
 class SliceMixIn:
+    def slice_by_tf(
+        self: ISlicedCorpusProtocol, threshold: Union[int, float], inplace: bool = False
+    ) -> IVectorizedCorpus:
+        """Returns subset corpus where low frequent words are filtered out"""
+        indices: np.ndarray = np.argwhere(self.term_frequency >= threshold).ravel()
+        if len(indices) == self.shape[1]:
+            return self
+        return self.slice_by_indices(indices, inplace=inplace)
 
-    # @autojit
-    def slice_by_tf(self: ISlicedCorpusProtocol, tf_threshold: int) -> IVectorizedCorpus:
-        """Create a subset corpus where words having a count less than 'tf_threshold' are removed
-
-        Parameters
-        ----------
-        tf_threshold : int
-            Specifies min word count to keep.
-
-        Returns
-        -------
-        VectorizedCorpus
-            Subset of self where words having a count less than 'tf_threshold' are removed
-        """
-
-        indices: np.ndarray = np.argwhere(self.term_frequency >= tf_threshold).ravel()
-        return self.slice_by_indices(indices)
-
-    def slice_by_n_top(self: ISlicedCorpusProtocol, n_top: int) -> IVectorizedCorpus:
+    def slice_by_n_top(self: ISlicedCorpusProtocol, n_top: int, inplace: bool = False) -> IVectorizedCorpus:
         """Create a subset corpus that only contains most frequent `n_top` words
 
         Parameters
@@ -78,7 +65,7 @@ class SliceMixIn:
         VectorizedCorpus
             Subset of self where words having a count less than 'tf_threshold' are removed
         """
-        return self.slice_by_indices(self.nlargest(n_top=n_top))
+        return self.slice_by_indices(self.nlargest(n_top=n_top), inplace=inplace)
 
     def slice_by_document_frequency(
         self: ISlicedCorpusProtocol, max_df=1.0, min_df=1, max_n_terms=None
@@ -161,14 +148,6 @@ class SliceMixIn:
         self._overridden_term_frequency = overridden_term_frequency
 
         return self
-
-    def slice_by_term_frequency(
-        self: ISlicedCorpusProtocol, threshold: Union[int, float], inplace=False
-    ) -> IVectorizedCorpus:
-        """Returns subset of corpus where low frequenct words are filtered out"""
-        indices = self.term_frequencies_greater_than_or_equal_to_threshold(threshold)
-        corpus: IVectorizedCorpus = self.slice_by_indices(indices, inplace=inplace)
-        return corpus
 
     @staticmethod
     def where_is_above_threshold_with_keeps(

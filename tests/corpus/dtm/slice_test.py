@@ -105,7 +105,23 @@ def test_slice_by_indices2():
     assert sliced_corpus.term_frequency0.tolist() == [5, 5, 1]
 
 
-def test_slice_by_n_count_when_exists_tokens_below_count_returns_filtered_corpus(slice_corpus):
+def test_slice_by_tf(slice_corpus: VectorizedCorpus):
+
+    corpus = slice_corpus.slice_by_tf(1)
+    assert corpus.data.shape == slice_corpus.data.shape
+    assert corpus.data.sum() == slice_corpus.data.sum()
+
+    corpus = slice_corpus.slice_by_tf(4)
+    assert corpus.term_frequency.tolist() == [10, 10, 11]
+
+    corpus = slice_corpus.slice_by_tf(10)
+    assert corpus.term_frequency.tolist() == [10, 10, 11]
+
+    corpus = slice_corpus.slice_by_tf(12)
+    assert corpus.term_frequency.tolist() == []
+
+
+def test_slice_by_tf_when_exists_tokens_below_count_returns_filtered_corpus(slice_corpus: VectorizedCorpus):
 
     # Act
     t_corpus: VectorizedCorpus = slice_corpus.slice_by_tf(6)
@@ -118,7 +134,7 @@ def test_slice_by_n_count_when_exists_tokens_below_count_returns_filtered_corpus
     assert (expected_bag_term_matrix == t_corpus.bag_term_matrix).all()
 
 
-def test_slice_by_n_count_when_all_below_below_n_count_returns_empty_corpus(slice_corpus):
+def test_slice_by_tf_when_all_below_below_n_count_returns_empty_corpus(slice_corpus: VectorizedCorpus):
 
     t_corpus: VectorizedCorpus = slice_corpus.slice_by_tf(20)
 
@@ -127,7 +143,7 @@ def test_slice_by_n_count_when_all_below_below_n_count_returns_empty_corpus(slic
     assert (np.empty((5, 0)) == t_corpus.bag_term_matrix).all()
 
 
-def test_slice_by_n_count_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus):
+def test_slice_by_tf_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus: VectorizedCorpus):
 
     t_corpus = slice_corpus.slice_by_tf(1)
 
@@ -136,7 +152,7 @@ def test_slice_by_n_count_when_all_tokens_above_n_count_returns_same_corpus(slic
     assert np.allclose(slice_corpus.bag_term_matrix.todense().A, t_corpus.bag_term_matrix.todense().A)
 
 
-def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus):
+def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus: VectorizedCorpus):
 
     t_corpus = slice_corpus.slice_by_n_top(4)
 
@@ -145,7 +161,7 @@ def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_
     assert np.allclose(slice_corpus.bag_term_matrix.todense().A, t_corpus.bag_term_matrix.todense().A)
 
 
-def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_counts(slice_corpus):
+def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_counts(slice_corpus: VectorizedCorpus):
 
     t_corpus = slice_corpus.slice_by_n_top(2)
 
@@ -156,24 +172,8 @@ def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_
     assert (expected_bag_term_matrix == t_corpus.bag_term_matrix).all()
 
 
-def test_term_frequencies(slice_corpus):
+def test_term_frequencies(slice_corpus: VectorizedCorpus):
     assert slice_corpus.term_frequency.tolist() == [10, 10, 11, 3]
-
-
-def test_slice_by_term_frequency(slice_corpus):
-
-    corpus = slice_corpus.slice_by_term_frequency(1)
-    assert corpus.data.shape == slice_corpus.data.shape
-    assert corpus.data.sum() == slice_corpus.data.sum()
-
-    corpus = slice_corpus.slice_by_term_frequency(4)
-    assert corpus.term_frequency.tolist() == [10, 10, 11]
-
-    corpus = slice_corpus.slice_by_term_frequency(10)
-    assert corpus.term_frequency.tolist() == [10, 10, 11]
-
-    corpus = slice_corpus.slice_by_term_frequency(12)
-    assert corpus.term_frequency.tolist() == []
 
 
 def test_compress():
