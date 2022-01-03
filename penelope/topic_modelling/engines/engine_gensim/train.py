@@ -47,7 +47,6 @@ def train(
         # tfidf_model = TfidfModel(corpus)
         # corpus = [tfidf_model[d] for d in corpus]
 
-    # todo: translate to VectorizedCorpus?
     train_corpus.effective_corpus = corpus
     if train_corpus.token2id is None:
         train_corpus.token2id = dictionary.token2id
