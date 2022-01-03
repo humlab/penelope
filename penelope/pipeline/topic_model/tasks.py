@@ -3,25 +3,38 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from os.path import join as jj
-from typing import Iterable
+from typing import Iterable, List, Literal, Protocol
 
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
+from loguru import logger
+from penelope import corpus as pc
 from penelope import topic_modelling as tm
-from penelope.corpus import CorpusVectorizer, VectorizedCorpus, VectorizeOpts
 from penelope.utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn
 
+# pylint: disable=too-many-instance-attributes
+
+
+@dataclass
+class TopicModelMixinProtocol(Protocol):
+    target_folder: str = None
+    target_name: str = None
+    engine: str = None
+    engine_args: dict = None
+    store_corpus: bool = False
+    store_compressed: bool = True
+
 
 class TopicModelMixin:
     def predict(
-        self,
+        self: TopicModelMixinProtocol,
         *,
         inferred_model: tm.InferredModel,
         id2token: dict,
-        corpus: Sparse2Corpus | VectorizedCorpus,
+        corpus: Sparse2Corpus | pc.VectorizedCorpus,
         document_index: pd.DataFrame,
         target_folder: str,
         n_tokens: int,
@@ -46,10 +59,10 @@ class TopicModelMixin:
         Returns:
             tm.InferredTopicsData: [description]
         """
-        if not isinstance(corpus, (VectorizedCorpus, Sparse2Corpus)):
+        if not isinstance(corpus, (pc.VectorizedCorpus, Sparse2Corpus)):
             raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict")
 
-        if isinstance(corpus, VectorizedCorpus):
+        if isinstance(corpus, pc.VectorizedCorpus):
             """Make sure we use corpus' own data"""
             document_index = corpus.document_index
             id2token = corpus.id2token
@@ -67,7 +80,7 @@ class TopicModelMixin:
         topics_data.store(target_folder)
         return topics_data
 
-    def train(self, train_corpus: tm.TrainingCorpus) -> tm.InferredModel:
+    def train(self: TopicModelMixinProtocol, train_corpus: tm.TrainingCorpus) -> tm.InferredModel:
 
         inferred_model: tm.InferredModel = tm.train_model(
             train_corpus=train_corpus, method=self.engine, engine_args=self.engine_args
@@ -85,34 +98,44 @@ class TopicModelMixin:
 
         return inferred_model
 
-    def ensure_target_path(self):
+    def ensure_target_path(self: TopicModelMixinProtocol):
 
         if self.target_folder is None or self.target_name is None:
             raise ValueError("expected target folder and target name, found None")
 
-        os.makedirs(jj(self.target_folder, self.target_name), exist_ok=True)
+        os.makedirs(self.target_subfolder, exist_ok=True)
 
     @property
-    def target_subfolder(self) -> str:
+    def target_subfolder(self: TopicModelMixinProtocol) -> str:
         return jj(self.target_folder, self.target_name)
 
 
 @dataclass
 class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
-    """Computes topic model.
+    """Trains and/or predicts a topic model.
 
-    Iterable[DocumentPayload] => ComputeResult
+    Yields:
+        Payload[Tuple[str,str]]: folder and tag to created model
     """
 
-    corpus_source: str = None
+    """If not None, then existing training corpus will used"""
     train_corpus_folder: str = None
+
+    """Target"""
+    target_mode: Literal['train', 'predict', 'both'] = 'both'
     target_folder: str = None
     target_name: str = None
+
+    """Training/prediction options"""
+    trained_model_folder: str = None
     engine: str = "gensim_lda-multicore"
     engine_args: dict = None
+    n_tokens: int = 200
+    minimum_probability: float = 0.01
+
+    """If true, then training corpus will bes tored"""
     store_corpus: bool = False
     store_compressed: bool = True
-    use_existing_corpus: bool = True
 
     def __post_init__(self):
 
@@ -128,33 +151,54 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         content_type: ContentType = self.resolved_prior_out_content_type()
 
+        if self.train_corpus_folder:
+
+            if tm.TrainingCorpus.exists(self.train_corpus_folder):
+                logger.info(
+                    f"using existing corpus in folder {self.train_corpus_folder} for target mode {self.target_mode}"
+                )
+                corpus: tm.TrainingCorpus = tm.TrainingCorpus.load(self.train_corpus_folder)
+                return corpus
+
+            tags: List[str] = pc.VectorizedCorpus.find_tags(self.train_corpus_folder)
+
+            if len(tags) == 0:
+                raise ValueError(f"no train or predict input corpus found in {self.train_corpus_folder}")
+
+            if len(tags) > 1:
+                raise ValueError(f"multiple corpus found in folder {self.train_corpus_folder}")
+
+            logger.info(
+                f"using corpus tagged {tags[0]} in folder {self.train_corpus_folder} for target mode {self.target_mode}"
+            )
+            vectorized_corpus: pc.VectorizedCorpus = pc.VectorizedCorpus.load(
+                folder=self.train_corpus_folder, tag=tags[0]
+            )
+            corpus: tm.TrainingCorpus = tm.TrainingCorpus(effective_corpus=vectorized_corpus)
+            return corpus
+
         if content_type == ContentType.VECTORIZED_CORPUS:
             payload: DocumentPayload = next(self.prior.outstream())
-            vectorized_corpus: VectorizedCorpus = payload.content
-            vectorize_opts: VectorizeOpts = payload.recall('vectorize_opts')
-            corpus = tm.TrainingCorpus(
+            vectorized_corpus: pc.VectorizedCorpus = payload.content
+            vectorize_opts: pc.VectorizeOpts = payload.recall('vectorize_opts')
+            corpus: tm.TrainingCorpus = tm.TrainingCorpus(
                 corpus=vectorized_corpus,
                 corpus_options={},
                 vectorizer_args={} if vectorize_opts is None else vectorize_opts.props,
             )
+            return corpus
 
-        elif content_type == ContentType.TOKENS:
+        if content_type == ContentType.TOKENS:
             """Creates train corpus from instream OR load existing from disk."""
-            if tm.TrainingCorpus.exists(self.train_corpus_folder):
-                """Shortcut pipeline and load training corpus from disk"""
-                corpus = tm.TrainingCorpus.load(self.train_corpus_folder)
+            corpus: tm.TrainingCorpus = tm.TrainingCorpus(
+                corpus=self.prior.filename_content_stream(),
+                document_index=self.document_index,
+                token2id=self.pipeline.payload.token2id,
+                corpus_options={},
+            )
+            return corpus
 
-            else:
-
-                corpus = tm.TrainingCorpus(
-                    corpus=self.prior.filename_content_stream(),
-                    # corpus=self.prior.content_stream(),
-                    document_index=self.document_index,
-                    token2id=self.pipeline.payload.token2id,
-                    corpus_options={},
-                )
-
-        return corpus
+        raise ValueError("unable to resolve input corpus")
 
     def process_stream(self) -> Iterable[DocumentPayload]:
 
@@ -164,15 +208,23 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         train_corpus: tm.TrainingCorpus = self.instream_to_corpus()
 
-        inferred_model: tm.InferredModel = self.train(train_corpus)
-
-        _ = self.predict(
-            inferred_model=inferred_model,
-            corpus=train_corpus.effective_corpus,
-            id2token=train_corpus.id2token,
-            document_index=self.document_index,
-            target_folder=self.target_subfolder,
+        inferred_model: tm.InferredModel = (
+            tm.InferredModel.load(self.trained_model_folder, lazy=False)
+            if self.target_mode == 'predict'
+            else self.train(train_corpus)
         )
+
+        if self.target_mode in ['both', 'predict']:
+
+            _ = self.predict(
+                inferred_model=inferred_model,
+                corpus=train_corpus.effective_corpus,
+                id2token=train_corpus.id2token,
+                document_index=self.document_index,
+                target_folder=self.target_subfolder,
+                n_tokens=self.n_tokens,
+                minimum_probability=self.minimum_probability,
+            )
 
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,
@@ -203,17 +255,13 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
     def model_subfolder(self) -> str:
         return jj(self.model_folder, self.model_name)
 
-    @property
-    def target_subfolder(self) -> str:
-        return jj(self.target_folder, self.target_name)
-
     def __post_init__(self):
 
         self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
         self.out_content_type = ContentType.TOPIC_MODEL
 
-    def instream_to_vectorized_corpus(self, token2id: dict) -> VectorizedCorpus:
-        """Create a sparse corpus of instream terms. Return `VectorizedCorpus`.
+    def instream_to_vectorized_corpus(self, token2id: dict) -> pc.VectorizedCorpus:
+        """Create a sparse corpus of instream terms. Return `pc.VectorizedCorpus`.
         Note that terms not found in token2id are ignored. This will happen
         when a new corpus is predicted that have terms not found in the training corpus.
         """
@@ -221,7 +269,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
             payload: DocumentPayload = next(self.prior.outstream())
             return payload.content
 
-        corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(
+        corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(
             corpus=self.prior.filename_content_stream(),
             already_tokenized=True,
             document_index=self.document_index.set_index('document_id', drop=False),
@@ -236,7 +284,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
         trained_model: tm.InferredModel = tm.InferredModel.load(folder=self.model_subfolder, lazy=True)
         topics_data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=self.model_subfolder)
 
-        corpus: VectorizedCorpus = self.instream_to_vectorized_corpus(token2id=topics_data.term2id)
+        corpus: pc.VectorizedCorpus = self.instream_to_vectorized_corpus(token2id=topics_data.term2id)
 
         self.pipeline.payload.token2id = topics_data.token2id
 

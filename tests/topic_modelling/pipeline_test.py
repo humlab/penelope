@@ -43,6 +43,7 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .to_topic_model(
             corpus_source=None,
+            target_mode='both',
             target_folder="./tests/output",
             target_name=target_name,
             engine=method,
@@ -139,7 +140,6 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
     task: ToTopicModel = ToTopicModel(
         pipeline=pipeline,
         prior=prior,
-        corpus_source=None,
         target_folder="./tests/output",
         target_name=target_name,
         engine=method,

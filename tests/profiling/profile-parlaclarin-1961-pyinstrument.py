@@ -45,7 +45,7 @@ def run_workflow():
         'n_topics': 4,
         'passes': 1,
         'random_seed': 42,
-        'alpha': 'auto',
+        'alpha': 'symmetric',
         'workers': 1,
         'max_iter': 500,
         'work_folder': './tests/output/',
@@ -65,6 +65,7 @@ def run_workflow():
         )
         .to_topic_model(
             corpus_source=None,
+            target_mode="both",
             target_folder="./tests/output",
             target_name="APA",
             engine="gensim_lda-multicore",

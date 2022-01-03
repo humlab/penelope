@@ -71,7 +71,13 @@ CLI_OPTIONS = {
         help='Store training corpus compressed', default=True, is_flag=True
     ),
     '--store-corpus/--no-store-corpus': dict(help='Store training corpus', default=True, is_flag=True),
-    '--target-folder': dict(help='Target folder, if none then corpus-folder/target-name.', type=click.STRING),
+    '--target-folder': dict(help='Target folder, if none then `corpus-folder/target-name`.', type=click.STRING),
+    '--target-mode': dict(
+        help='What to do: train, predict or both', type=click.Choice(['train', 'predict', 'both']), default=None
+    ),
+    '--trained-model-folder': dict(
+        help='If `target-mode` is `predict`, then folder with existing TM model', type=click.STRING, default=None
+    ),
     '--tf-threshold-mask': dict(
         help='If true, then low TF words are kept, but masked as "__low_tf__"',
         default=False,
@@ -91,7 +97,6 @@ CLI_OPTIONS = {
     ),
     '--workers': dict(help='Number of workers (if applicable).', default=None, type=click.INT),
     '--per-word-topics': dict(help='Compute word topic probabilities', default=False, is_flag=True),
-    '--workers': dict(help='Number of workers (if applicable).', default=None, type=click.INT),
 }
 
 

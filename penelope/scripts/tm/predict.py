@@ -3,8 +3,10 @@ from os.path import isfile, join, split
 
 import click
 import penelope.corpus as penelope
+from loguru import logger
 from penelope import pipeline
 from penelope.scripts.utils import option2, update_arguments_from_options_file
+from penelope.workflows.tm.predict import compute as workflow
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -12,7 +14,7 @@ from penelope.scripts.utils import option2, update_arguments_from_options_file
 @click.command()
 @click.argument('config-filename', required=True)
 # FIXME Rename to trained-model-folder?
-@click.argument('model-folder', required=True)
+@click.argument('trained-model-folder', required=True)
 # @click.argument('model-name', required=True)
 @click.argument('target-folder', required=True)
 @click.argument('target-name', required=False)
@@ -37,7 +39,7 @@ def click_main(
     options_filename: str = None,
     config_filename: str = None,
     corpus_source: str = None,
-    model_folder: str = None,
+    trained_model_folder: str = None,
     target_folder: str = None,
     target_name: str = None,
     lemmatize: bool = True,
@@ -66,7 +68,7 @@ def click_main(
 
     arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
 
-    model_folder, model_name = split(model_folder)
+    model_folder, model_name = split(trained_model_folder)
 
     arguments['model_folder'] = model_folder
     arguments['model_name'] = model_name
@@ -127,7 +129,7 @@ def main(
         **config.pipeline_payload.tagged_columns_names,
     )
 
-    workflow(
+    tag, folder = workflow(
         config=config,
         model_name=model_name,
         model_folder=model_folder,
@@ -142,48 +144,7 @@ def main(
         force_checkpoint=force_checkpoint,
     )
 
-# FIXME Move to workflows!
-def workflow(
-    *,
-    config: pipeline.CorpusConfig,
-    model_folder: str = None,
-    model_name: str = None,
-    target_folder: str = None,
-    target_name: str,
-    corpus_source: str = None,
-    extract_opts: penelope.ExtractTaggedTokensOpts = None,
-    transform_opts: penelope.TokensTransformOpts = None,
-    minimum_probability: float = 0.001,
-    n_tokens: int = 200,
-    enable_checkpoint: bool = True,
-    force_checkpoint: bool = False,
-):
-    corpus_source: str = corpus_source or config.pipeline_payload.source
-
-    if corpus_source is None:
-        click.echo("usage: either corpus-folder or corpus filename must be specified")
-        sys.exit(1)
-
-    _: dict = (
-        config.get_pipeline(
-            "tagged_frame_pipeline",
-            corpus_source=corpus_source,
-            enable_checkpoint=enable_checkpoint,
-            force_checkpoint=force_checkpoint,
-        )
-        .tagged_frame_to_tokens(
-            extract_opts=extract_opts,
-            transform_opts=transform_opts,
-        )
-        .predict_topics(
-            model_folder=model_folder,
-            model_name=model_name,
-            target_folder=target_folder,
-            target_name=target_name,
-            minimum_probability=minimum_probability,
-            n_tokens=n_tokens,
-        )
-    ).value()
+    logger.info(f"Done! Model {tag} stored in {folder}")
 
 
 if __name__ == '__main__':

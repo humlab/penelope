@@ -1,11 +1,13 @@
 import os
 import sys
-from typing import Optional
+from typing import Literal, Optional
 
 import click
 import penelope.workflows.tm.train_id as workflow
 from penelope import corpus as pc
+from penelope import pipeline
 from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
+from penelope.topic_modelling.interfaces import InferredModel
 
 # pylint: disable=unused-argument, too-many-arguments
 
@@ -15,12 +17,14 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @click.argument('target-name', required=False)
 @option2('--options-filename')
 @option2('--corpus-source', default=None)
+@option2('--target-mode')
 @option2('--target-folder', default=None)
 @option2('--train-corpus-folder')
+@option2('--trained-model-folder')
 @option2('--lemmatize/--no-lemmatize')
-@option2('--to-lower/--no-to-lower', default=False)
 @option2('--pos-includes')
 @option2('--pos-excludes')
+@option2('--to-lower/--no-to-lower', default=False)
 # @option2('--remove-stopwords')
 # @option2('--min-word-length')
 # @option2('--max-word-length')
@@ -31,7 +35,7 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @option2('--n-topics')
 @option2('--engine', default="gensim_lda-multicore")
 @option2('--passes')
-@option2('--alpha', default='asymmetric')
+@option2('--alpha')
 @option2('--random-seed')
 @option2('--workers')
 @option2('--max-iter')
@@ -43,17 +47,24 @@ from penelope.scripts.utils import load_config, option2, remove_none, update_arg
 @option2('--store-compressed/--no-store-compressed')
 def click_main(
     options_filename: Optional[str] = None,
-    target_name: Optional[str] = None,
-    corpus_source: Optional[str] = None,
     config_filename: Optional[str] = None,
+    corpus_source: Optional[str] = None,
     train_corpus_folder: Optional[str] = None,
+    trained_model_folder: Optional[str] = None,
+    target_mode: Literal['train', 'predict', 'both'] = 'both',
     target_folder: Optional[str] = None,
+    target_name: Optional[str] = None,
     to_lower: bool = True,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
     max_tokens: int = None,
     tf_threshold: int = None,
+    # remove_stopwords: Optional[str] = None,
+    # min_word_length: int = 2,
+    # max_word_length: Optional[int] = None,
+    # keep_symbols: bool = False,
+    # keep_numerals: bool = False,
     alpha: str = 'asymmetric',
     chunk_size: int = 2000,
     engine: str = "gensim_lda-multicore",
@@ -68,23 +79,30 @@ def click_main(
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
-    """Create a topic model."""
     arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
+
     main(**arguments)
 
 
 def main(
-    target_name: Optional[str] = None,
-    corpus_source: Optional[str] = None,
     config_filename: Optional[str] = None,
+    corpus_source: Optional[str] = None,
     train_corpus_folder: Optional[str] = None,
+    trained_model_folder: Optional[str] = None,
+    target_mode: Literal['train', 'predict', 'both'] = 'both',
     target_folder: Optional[str] = None,
-    to_lower: bool = True,
+    target_name: Optional[str] = None,
     lemmatize: bool = True,
     pos_includes: str = '',
     pos_excludes: str = '',
+    to_lower: bool = True,
     max_tokens: int = None,
     tf_threshold: int = None,
+    # remove_stopwords: Optional[str] = None,
+    # min_word_length: int = 2,
+    # max_word_length: int = None,
+    # keep_symbols: bool = False,
+    # keep_numerals: bool = False,
     alpha: str = 'asymmetric',
     chunk_size: int = 2000,
     engine: str = "gensim_lda-multicore",
@@ -109,15 +127,19 @@ def main(
         click.echo("error: target_name not specified")
         raise sys.exit(1)
 
-    config = load_config(config_filename, corpus_source)
+    if target_mode == 'predict' and not InferredModel.exists(trained_model_folder):
+        click.echo("error: trained model folder not specified")
+        raise sys.exit(1)
+
+    config: pipeline.CorpusConfig = load_config(config_filename, corpus_source)
 
     if corpus_source is None and config.pipeline_payload.source is None:
         click.echo("usage: corpus source must be specified")
-        raise sys.exit(1)
+        sys.exit(1)
 
     if not config.pipeline_key_exists("topic_modeling_pipeline"):
         click.echo("config error: `topic_modeling_pipeline` not specified")
-        raise sys.exit(1)
+        sys.exit(1)
 
     # transform_opts: pc.TokensTransformOpts = None
 
@@ -129,6 +151,7 @@ def main(
         lemma_column='lemma_id',
         text_column='token_id',
     )
+
     vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(
         already_tokenized=True,
         lowercase=to_lower,
@@ -156,16 +179,18 @@ def main(
     _: dict = workflow.compute(
         corpus_config=config,
         corpus_source=corpus_source,
-        target_name=target_name,
-        target_folder=target_folder,
         train_corpus_folder=train_corpus_folder,
+        trained_model_folder=trained_model_folder,
+        target_mode=target_mode,
+        target_folder=target_folder,
+        target_name=target_name,
         extract_opts=extract_opts,
-        # transform_opts=transform_opts,
         vectorize_opts=vectorize_opts,
         engine=engine,
         engine_args=engine_args,
         store_corpus=store_corpus,
         store_compressed=store_compressed,
+        # transform_opts=transform_opts,
     ).value()
 
 

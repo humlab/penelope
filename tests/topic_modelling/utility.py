@@ -7,7 +7,6 @@ DEFAULT_ENGINE_ARGS = {
     'n_topics': 4,
     'passes': 1,
     'random_seed': 42,
-    'alpha': 'auto',
     'workers': 1,
     'max_iter': 100,
     'work_folder': './tests/output/',
@@ -42,6 +41,7 @@ def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .to_topic_model(
             corpus_source=None,
+            target_mode='both',
             target_folder="./tests/output",
             target_name=target_name,
             engine="gensim_lda-multicore",
