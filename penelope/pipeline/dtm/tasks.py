@@ -43,7 +43,7 @@ class ToDTM(interfaces.ITask):
             tokenizer=self.tokenizer,
         ).vectorize_stream(
             content_type=content_type,
-            data=self.create_instream(),
+            payloads=self.create_instream(),
         )
 
         payload: interfaces.DocumentPayload = interfaces.DocumentPayload(

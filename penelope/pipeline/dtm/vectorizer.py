@@ -1,6 +1,5 @@
 from typing import Callable, Iterable
 
-import more_itertools
 import numpy as np
 import pandas as pd
 from penelope import corpus as pc
@@ -33,10 +32,7 @@ class StreamVectorizer:
         )
         return corpus
 
-    def vectorize_stream(self, content_type: interfaces.ContentType, data: Iterable[interfaces.DocumentPayload]):
-
-        """HACK: trigger execution of stream's enter() methods so that token2id and index are read"""
-        _, payloads = more_itertools.spy(data, n=1)
+    def vectorize_stream(self, content_type: interfaces.ContentType, payloads: Iterable[interfaces.DocumentPayload]):
 
         name2id: dict = self.document_index['document_id'].to_dict().get
 
@@ -71,7 +67,7 @@ class StreamVectorizer:
             vectorized_corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform_(
                 stream,
                 document_index=self.document_index,
-                vectorize_opts=self.vectorize_opts.update(already_tokenized=False),
+                vectorize_opts=self.vectorize_opts.update(already_tokenized=True),
             )
 
         elif content_type == interfaces.ContentType.TAGGED_FRAME:
