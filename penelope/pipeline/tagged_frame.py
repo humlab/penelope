@@ -130,18 +130,13 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
         if not self.file_pattern.endswith('.feather'):
             raise ValueError("Only feather files are currently supported")
 
-    def enter(self) -> None:
-        super().enter()
-
+    def setup(self) -> ITask:
+        super().setup()
         if self.corpus_source is None:
             raise FileNotFoundError("LoadTaggedFrame: Corpus source is None")
-
         self.pipeline.payload.effective_document_index = self.document_index
         self.pipeline.payload.token2id = self.token2id
-
-    # def exit(self):
-    #     super().exit()
-    #     self.flush_pos_counts()
+        return self
 
     @cached_property
     def vocabulary(self) -> pd.DataFrame:
