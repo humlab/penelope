@@ -1,3 +1,4 @@
+import os
 import uuid
 from unittest.mock import MagicMock, Mock
 
@@ -42,7 +43,6 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .to_topic_model(
-            corpus_source=None,
             target_mode='both',
             target_folder="./tests/output",
             target_name=target_name,
@@ -72,8 +72,7 @@ def test_predict_topics(method: str):
     target_folder: str = './tests/output'
     target_name: str = f'{uuid.uuid1()}'
 
-    model_folder: str = payload.content.get("target_folder")
-    model_name: str = payload.content.get("target_name")
+    model_folder: str = os.path.join(payload.content.get("target_folder"), payload.content.get("target_name"))
 
     transform_opts = TokensTransformOpts()
     extract_opts = ExtractTaggedTokensOpts(
@@ -92,7 +91,6 @@ def test_predict_topics(method: str):
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .predict_topics(
             model_folder=model_folder,
-            model_name=model_name,
             target_folder=target_folder,
             target_name=target_name,
             minimum_probability=minimum_probability,
