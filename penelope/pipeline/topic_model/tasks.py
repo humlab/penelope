@@ -238,7 +238,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
                 inferred_model = tm.InferredModel.load(self.trained_model_folder, lazy=False)
 
             if predict_corpus is None:
-                predict_corpus = self.instream_to_corpus(id2token=inferred_model.id2token)
+                predict_corpus = self.instream_to_corpus(id2token=inferred_model.id2token).corpus
 
             _ = self.predict(
                 inferred_model=inferred_model,
