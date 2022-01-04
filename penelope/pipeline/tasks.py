@@ -13,13 +13,7 @@ from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Seq
 import pandas as pd
 from loguru import logger
 from penelope import utility
-from penelope.corpus import (
-    ITokenizedCorpus,
-    Token2Id,
-    TokensTransformer,
-    TokensTransformOpts,
-    default_tokenizer,
-)
+from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, TokensTransformOpts, default_tokenizer
 from penelope.corpus.readers import (
     ExtractTaggedTokensOpts,
     TextReader,
