@@ -10,6 +10,7 @@ from gensim.matutils import Sparse2Corpus
 from loguru import logger
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
+from penelope.corpus.token2id import id2token2token2id
 from penelope.utility import write_json
 
 from ..interfaces import ContentType, DocumentPayload, ITask
@@ -26,9 +27,36 @@ class TopicModelMixinProtocol(Protocol):
     engine_args: dict = None
     store_corpus: bool = False
     store_compressed: bool = True
+    prior: ITask = None
+    document_index: pd.DataFrame = None
+
+    def resolved_prior_out_content_type(self) -> ContentType:
+        ...
+
+    def instream_to_vectorized_corpus(self: TopicModelMixinProtocol, token2id: dict) -> pc.VectorizedCorpus:
+        ...
 
 
 class TopicModelMixin:
+
+    # FIXME: Consolidate this function with StremVectorizer()
+    def instream_to_vectorized_corpus(self: TopicModelMixinProtocol, token2id: dict) -> pc.VectorizedCorpus:
+        """Create a sparse corpus of instream terms. Return `pc.VectorizedCorpus`.
+        Note that terms not found in token2id are ignored. This will happen
+        when a new corpus is predicted that have terms not found in the training corpus.
+        """
+        if self.resolved_prior_out_content_type() == ContentType.VECTORIZED_CORPUS:
+            payload: DocumentPayload = next(self.prior.outstream())
+            return payload.content
+
+        corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(
+            corpus=self.prior.filename_content_stream(),
+            already_tokenized=True,
+            document_index=self.document_index.set_index('document_id', drop=False),
+            vocabulary=token2id,
+        )
+        return corpus
+
     def predict(
         self: TopicModelMixinProtocol,
         *,
@@ -60,7 +88,8 @@ class TopicModelMixin:
             tm.InferredTopicsData: [description]
         """
         if not isinstance(corpus, (pc.VectorizedCorpus, Sparse2Corpus)):
-            raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict (use sparse instead)")
+            # raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict (use sparse instead)")
+            corpus = self.instream_to_vectorized_corpus(token2id=id2token2token2id(id2token))
 
         if isinstance(corpus, pc.VectorizedCorpus):
             """Make sure we use corpus' own data"""
@@ -283,23 +312,6 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
         self.out_content_type = ContentType.TOPIC_MODEL
-
-    def instream_to_vectorized_corpus(self, token2id: dict) -> pc.VectorizedCorpus:
-        """Create a sparse corpus of instream terms. Return `pc.VectorizedCorpus`.
-        Note that terms not found in token2id are ignored. This will happen
-        when a new corpus is predicted that have terms not found in the training corpus.
-        """
-        if self.resolved_prior_out_content_type() == ContentType.VECTORIZED_CORPUS:
-            payload: DocumentPayload = next(self.prior.outstream())
-            return payload.content
-
-        corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(
-            corpus=self.prior.filename_content_stream(),
-            already_tokenized=True,
-            document_index=self.document_index.set_index('document_id', drop=False),
-            vocabulary=token2id,
-        )
-        return corpus
 
     def process_stream(self) -> Iterable[DocumentPayload]:
 
