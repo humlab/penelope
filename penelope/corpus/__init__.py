@@ -15,6 +15,7 @@ from .document_index import (
     update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
     update_document_index_token_counts,
+    update_document_index_token_counts_by_corpus,
 )
 from .dtm import (
     CorpusVectorizer,

@@ -56,7 +56,7 @@ class Bundle:
         if not self.concept_corpus:
             return self
 
-        """Compress concep corpus (remove zero-columns)"""
+        """Compress concept corpus (remove zero-columns)"""
         _, ids_translation, kept_pair_ids = self.concept_corpus.compress(tf_threshold=1, inplace=True)
 
         """Slice full corpus to match compressed concept corpus columns"""

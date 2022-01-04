@@ -11,7 +11,7 @@ CLI_LOG_PATH = './logs'
 CLI_OPTIONS = {
     '--alpha': dict(help='Prior belief of topic probability. symmetric/asymmetric/auto', default='asymmetric'),
     '--append-pos': dict(help='Append PoS to tokems', default=False, is_flag=True),
-    '--compute-chunksize': dict(help='Compute process chunksize', default=10, type=click.INT),
+    '--compute-chunk-size': dict(help='Compute process chunk size', default=10, type=click.INT),
     '--compute-processes': dict(help='Number of compute processes', default=None, type=click.INT),
     '--concept': dict(help='Concept', default=None, multiple=True, type=click.STRING),
     '--context-width': dict(
@@ -19,7 +19,7 @@ CLI_OPTIONS = {
         default=None,
         type=click.INT,
     ),
-    '--corpus-source': dict(help='Corpus filename/folder (overrides config)'),
+    '--corpus-source': dict(help='Corpus filename/folder (overrides config)', default=None),
     '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)'),
     '--deserialize-processes': dict(
         help='Number of processes during deserialization', default=4, type=click.IntRange(1, 99)
@@ -43,6 +43,9 @@ CLI_OPTIONS = {
     '--max-tokens': dict(help='Only consider the `max-tokens` most frequent tokens', default=None, type=click.INT),
     '--max-word-length': dict(help='Max length of words to keep', default=None, type=click.IntRange(10, 99)),
     '--min-word-length': dict(help='Min length of words to keep', default=1, type=click.IntRange(1, 99)),
+    '--minimum-probability': dict(
+        help='Document-topic weights lower than value are discarded.', default=None, type=click.FloatRange(0.001, 0.10)
+    ),
     '--n-topics': dict(help='Number of topics.', default=50, type=click.INT),
     '--n-tokens': dict(help='Number of tokens per topic.', default=None, type=click.INT),
     '--only-alphabetic': dict(help='Keep only tokens having only alphabetic characters', default=False, is_flag=True),
@@ -68,7 +71,13 @@ CLI_OPTIONS = {
         help='Store training corpus compressed', default=True, is_flag=True
     ),
     '--store-corpus/--no-store-corpus': dict(help='Store training corpus', default=True, is_flag=True),
-    '--target-folder': dict(help='Target folder, if none then corpus-folder/target-name.', type=click.STRING),
+    '--target-folder': dict(help='Target folder, if none then `corpus-folder/target-name`.', type=click.STRING),
+    '--target-mode': dict(
+        help='What to do: train, predict or both', type=click.Choice(['train', 'predict', 'both']), default=None
+    ),
+    '--trained-model-folder': dict(
+        help='If `target-mode` is `predict`, then folder with existing TM model', type=click.STRING, default=None
+    ),
     '--tf-threshold-mask': dict(
         help='If true, then low TF words are kept, but masked as "__low_tf__"',
         default=False,
@@ -83,10 +92,11 @@ CLI_OPTIONS = {
     '--update-every': dict(
         help='Gensim specific, update every n interval of chunks dispatch.', default=1, type=click.INT
     ),
-    '--chunksize': dict(
+    '--chunk-size': dict(
         help='Gensim specific. Number of docs in each chunk (if online).', default=2000, type=click.INT
     ),
     '--workers': dict(help='Number of workers (if applicable).', default=None, type=click.INT),
+    '--per-word-topics': dict(help='Compute word topic probabilities', default=False, is_flag=True),
 }
 
 

@@ -1,0 +1,52 @@
+corpus_name: tranströmer
+corpus_pattern: '*'
+corpus_type: 3
+language: swedish
+checkpoint_opts:
+    content_type_code: 1
+    sep: "\t"
+    quoting: 3
+    document_index_name: null
+    document_index_sep: null
+    text_column: token
+    lemma_column: baseform
+    pos_column: pos
+    custom_serializer_classname:
+    deserialize_processes: 1
+    deserialize_chunksize: 4
+    index_column: null
+pipelines:
+  topic_modeling_pipeline:
+    class_name: 'penelope.pipeline.topic_model.pipelines.from_id_tagged_frame_pipeline'
+    options:
+      id_to_token: false
+      file_pattern: '**/tran-*.feather'
+      tagged_column: lemma_id
+  tagged_frame_pipeline:
+    class_name: penelope.pipeline.topic_model.pipelines.load_id_tagged_frame_pipeline
+    options:
+      id_to_token: true
+      file_pattern: '**/tran-*.feather'
+pipeline_payload:
+  source: null
+  document_index_source: document_index.feather
+  document_index_sep: "\t"
+  filenames: null
+  memory_store:
+    lang: se
+    tagger: Sparv
+    sparv_version: 4
+    text_column: token
+    lemma_column: baseform
+    pos_column: pos
+  pos_schema_name: SUC
+text_reader_opts:
+  as_binary: false
+  filename_fields:
+   - "year:_:1"
+   - "number:_:2"
+  filename_filter: null
+  filename_pattern: '**/tran-*.feather'
+  index_field: null
+  sep: "\t"
+  quoting: 3

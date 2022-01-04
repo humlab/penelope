@@ -5,6 +5,10 @@ from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizedCorpus
 from penelope.corpus.readers import TextTokenizer
 from penelope.topic_modelling.engines.engine_gensim.options import SUPPORTED_ENGINES
 
+# pylint: disable=too-many-arguments
+
+# FIXME: Add target_mode/trained_model_folder? Or leave be as legacy...
+
 
 def compute(
     name: str = None,
@@ -13,6 +17,8 @@ def compute(
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     filename_field: str = None,
+    minimum_probability: float = 0.001,
+    n_tokens: int = 200,
     store_corpus: bool = False,
     compressed: bool = True,
 ):
@@ -45,7 +51,6 @@ def compute(
         source=corpus_source,
         transform_opts=transform_opts,
         reader_opts=reader_opts,
-        chunk_size=None,
     )
 
     corpus: TokenizedCorpus = TokenizedCorpus(reader=tokens_reader, transform_opts=None)
@@ -66,13 +71,18 @@ def compute(
 
     inferred_model.topic_model.save(os.path.join(target_folder, 'gensim.model.gz'))
 
-    inferred_model.store(target_folder, store_corpus=store_corpus, store_compressed=compressed)
+    inferred_model.store(target_folder, store_compressed=compressed)
+
+    if store_corpus:
+        train_corpus.store(target_folder)
 
     inferred_topics: tm.InferredTopicsData = tm.predict_topics(
         inferred_model.topic_model,
         corpus=train_corpus.corpus,
         id2token=train_corpus.id2token,
         document_index=train_corpus.document_index,
+        minimum_probability=minimum_probability,
+        n_tokens=n_tokens,
     )
 
     inferred_topics.store(target_folder)

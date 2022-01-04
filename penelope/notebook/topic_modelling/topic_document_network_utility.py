@@ -19,7 +19,7 @@ def display_document_topics_as_grid(df):
         {"headerName": "Filename", "field": "filename"},
         {"headerName": "N_Raw_Tokens", "field": "n_raw_tokens"},
         {"headerName": "N_Tokens", "field": "n_tokens"},
-        {"headerName": "N_Terms", "field": "n_terms"},
+        {"headerName": "N_Terms", "field": "n_tokens"},
         {"headerName": "Year", "field": "year", "cellRenderer": None},
         {"headerName": "Title", "field": "title"},
     ]

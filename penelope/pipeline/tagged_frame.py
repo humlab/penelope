@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import glob
+import os
 from dataclasses import dataclass, field
 from enum import IntEnum
 from functools import cached_property
@@ -9,8 +10,8 @@ from typing import Iterable, List, Mapping
 
 import numpy as np
 import pandas as pd
-from penelope.corpus import DocumentIndexHelper, Token2Id
-from penelope.utility import PoS_Tag_Scheme, strip_paths
+from penelope import corpus as pc
+from penelope.utility import PoS_Tag_Scheme, replace_extension, strip_paths
 from tqdm import tqdm
 
 from .interfaces import ITask
@@ -87,6 +88,33 @@ class ToIdTaggedFrame(Vocabulary):
 
 
 @dataclass
+class StoreIdTaggedFrame(ITask):
+    """Stores numerical tagged frames stored in FEATHER format.
+    Each tagged frame can contain several document identified by a 'document_id' column
+    """
+
+    folder: str = ""
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGED_ID_FRAME
+        self.out_content_type = ContentType.TAGGED_ID_FRAME
+
+    def enter(self) -> None:
+        super().enter()
+        os.makedirs(self.folder, exist_ok=True)
+
+    def exit(self) -> None:
+        super().exit()
+        self.pipeline.payload.document_index.reset_index().to_feather(jj(self.folder, 'document_index.feather'))
+        self.pipeline.payload.token2id.to_feather(jj(self.folder, 'token2id.feather'))
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        payload = super().process_payload(payload)
+        payload.content.to_feather(jj(self.folder, replace_extension(payload.filename, 'feather')))
+        return payload
+
+
+@dataclass
 class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
     """Loads numerical tagged frames stored in CSV or FEATHER format.
     Each tagged frame can contain several document identified by a 'document_id' column
@@ -102,18 +130,13 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
         if not self.file_pattern.endswith('.feather'):
             raise ValueError("Only feather files are currently supported")
 
-    def enter(self) -> None:
-        super().enter()
-
+    def setup(self) -> ITask:
+        super().setup()
         if self.corpus_source is None:
             raise FileNotFoundError("LoadTaggedFrame: Corpus source is None")
-
         self.pipeline.payload.effective_document_index = self.document_index
         self.pipeline.payload.token2id = self.token2id
-
-    # def exit(self):
-    #     super().exit()
-    #     self.flush_pos_counts()
+        return self
 
     @cached_property
     def vocabulary(self) -> pd.DataFrame:
@@ -122,12 +145,12 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
         return vocab
 
     @cached_property
-    def token2id(self) -> Token2Id:
-        return Token2Id(data={t: i for t, i in zip(self.vocabulary.token, self.vocabulary.token_id)})
+    def token2id(self) -> pc.Token2Id:
+        return pc.Token2Id(data={t: i for t, i in zip(self.vocabulary.token, self.vocabulary.token_id)})
 
     @cached_property
     def document_index(self) -> pd.DataFrame:
-        return DocumentIndexHelper.load(jj(self.corpus_source, 'document_index.feather')).document_index
+        return pc.DocumentIndexHelper.load(jj(self.corpus_source, 'document_index.feather')).document_index
 
     @cached_property
     def docid2name(self) -> Mapping[int, str]:

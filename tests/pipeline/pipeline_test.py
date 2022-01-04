@@ -259,7 +259,7 @@ def test_pipeline_find_task(config: pipeline.CorpusConfig):
     assert isinstance(p.find(tasks.Tqdm), tasks.Tqdm)
 
 
-def test_pipeline_to_dtm_succeeds(config: pipeline.CorpusConfig):
+def test_pipeline_text_to_dtm_succeeds(config: pipeline.CorpusConfig):
 
     target_tag: str = uuid.uuid1()
 

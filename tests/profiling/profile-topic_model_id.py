@@ -1,6 +1,6 @@
 from os.path import join
 
-from penelope.scripts import topic_model
+from penelope.scripts.tm import train_id
 from penelope.utility import update_dict_from_yaml
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -18,6 +18,7 @@ def debug_main():
         target_name='profile-topics',
         corpus_source=data_path,
         train_corpus_folder=None,
+        target_mode='both',
         target_folder='./tests/output/',
         fix_hyphenation=False,
         fix_accents=False,
@@ -47,7 +48,7 @@ def debug_main():
     )
     arguments = update_dict_from_yaml('opts_tm_id.yml', {})
 
-    topic_model._main(**arguments)  # pylint: disable=protected-access
+    train_id.main(**arguments)  # pylint: disable=protected-access
 
 
 debug_main()

@@ -78,7 +78,7 @@ class IVectorizedCorpus(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def n_terms(self) -> int:
+    def n_tokens(self) -> int:
         ...
 
     @property
@@ -141,7 +141,7 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def slice_by_tf(self, tf_threshold: int) -> "IVectorizedCorpus":
+    def slice_by_tf(self, threshold: int) -> "IVectorizedCorpus":
         ...
 
     @abc.abstractmethod

@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 import textacy
-from penelope.corpus import VectorizedCorpus
+from penelope import corpus as pc
 from penelope.corpus.dtm import convert
 from penelope.utility import deprecated
 
@@ -13,7 +13,7 @@ def train(
     train_corpus: TrainingCorpus,
     method: str,
     engine_args: Dict[str, Any],
-    **kwargs,  # pylint: disable=unused-argument
+    **kwargs,
 ) -> InferredModel:
     """Computes a topic model using Gensim as engine.
 
@@ -27,7 +27,7 @@ def train(
         Generic topic modelling options that are translated to algorithm-specific options (see `options` module for translation)
     kwargs : Dict[str,Any], optional
         Additional options:
-            `tfidf_weiging` if TF-IDF weiging should be applied, ony valid when terms/id2word are specified, by default False
+            `tfidf_weighing` if TF-IDF weighing should be applied, ony valid when terms/id2word are specified, by default False
 
     Returns
     -------
@@ -36,29 +36,31 @@ def train(
         model               The textaCy topic model
         perplexity_score    Computed perplexity scores
         coherence_score     Computed coherence scores
-        engine_ptions       Used engine options (algorithm specific)
+        engine_options       Used engine options (algorithm specific)
         extra_options       Any other compute option passed as a kwarg
     """
 
-    corpus: VectorizedCorpus = convert.TranslateCorpus.translate(
+    corpus: pc.VectorizedCorpus = convert.TranslateCorpus.translate(
         train_corpus.corpus,
-        id2token=train_corpus.token2id.data,
+        token2id=train_corpus.token2id.data,
         document_index=train_corpus.document_index,
-        **kwargs,
+        vectorize_opts=pc.VectorizeOpts().update(**kwargs),
     )
 
     model = textacy.tm.TopicModel(method.split('_')[1], **engine_args)
 
     model.fit(corpus.data)
 
-    train_corpus.effective_corpus = corpus
+    train_corpus.corpus = corpus
 
     return InferredModel(
-        train_corpus=train_corpus,
         topic_model=model,
-        method=method,
-        perplexity_score=None,
-        coherence_score=None,
-        engine_options=engine_args,
-        extra_options=kwargs,
+        id2token=train_corpus.id2token,
+        options=dict(
+            method=method,
+            perplexity_score=None,
+            coherence_score=None,
+            engine_options=engine_args,
+            extra_options=kwargs,
+        ),
     )

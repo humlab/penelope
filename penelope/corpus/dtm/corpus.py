@@ -158,7 +158,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return self._bag_term_matrix.shape[0]
 
     @property
-    def n_terms(self) -> int:
+    def n_tokens(self) -> int:
         """Returns number of types (unique words) """
         return self._bag_term_matrix.shape[1]
 
@@ -413,7 +413,11 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
     @staticmethod
     def from_token_id_stream(
-        stream: Iterable[Tuple[int, Iterable[int]]], token2id: Mapping[str, int], document_index: pd.DataFrame
+        stream: Iterable[Tuple[int, Iterable[int]]],
+        token2id: Mapping[str, int],
+        document_index: pd.DataFrame,
+        min_tf: int = 1,
+        max_tokens: int = None,
     ) -> VectorizedCorpus:
         """Convert a stream of (document_id, Iterable[token_id]) into a VectorizedCorpus"""
 
@@ -426,6 +430,12 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             M[document_id, token_ids] = counts
 
         corpus: VectorizedCorpus = VectorizedCorpus(M.tocsr(), token2id=token2id, document_index=document_index)
+
+        if min_tf:
+            corpus = corpus.slice_by_tf(min_tf, inplace=True)
+
+        if max_tokens:
+            corpus = corpus.slice_by_n_top(max_tokens, inplace=True)
 
         return corpus
 

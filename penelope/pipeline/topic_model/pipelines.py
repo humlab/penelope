@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
 
 from ... import corpus
@@ -32,9 +34,11 @@ def from_tagged_frame_pipeline(
     *,
     corpus_config: CorpusConfig,
     corpus_source: str = None,
-    target_name: str,
     train_corpus_folder: str = None,
+    trained_model_folder: str = None,
+    target_mode: Literal['train', 'predict', 'both'] = 'both',
     target_folder: str = None,
+    target_name: str,
     text_transform_opts: corpus.TextTransformOpts = None,
     extract_opts: corpus.ExtractTaggedTokensOpts = None,
     transform_opts: corpus.TokensTransformOpts = None,
@@ -62,8 +66,9 @@ def from_tagged_frame_pipeline(
             transform_opts=transform_opts,
         )
         .to_topic_model(
-            corpus_source=None,
             train_corpus_folder=train_corpus_folder,
+            trained_model_folder=trained_model_folder,
+            target_mode=target_mode,
             target_folder=target_folder,
             target_name=target_name,
             engine=engine,
@@ -80,13 +85,15 @@ def from_id_tagged_frame_pipeline(
     *,
     corpus_config: CorpusConfig,
     corpus_source: str = None,
+    train_corpus_folder: str = None,
+    trained_model_folder: str = None,
+    target_mode: Literal['train', 'predict', 'both'] = 'both',
+    target_folder: str = None,
+    target_name: str,
     extract_opts: corpus.ExtractTaggedTokensOpts = None,
     transform_opts: corpus.TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
     file_pattern: str = '**/prot-*.feather',
-    target_name: str,
-    train_corpus_folder: str = None,
-    target_folder: str = None,
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     store_corpus: bool = False,
@@ -115,8 +122,9 @@ def from_id_tagged_frame_pipeline(
             tagged_column=extract_opts.target_column,
         )
         .to_topic_model(
-            corpus_source=None,
             train_corpus_folder=train_corpus_folder,
+            trained_model_folder=trained_model_folder,
+            target_mode=target_mode,
             target_folder=target_folder,
             target_name=target_name,
             engine=engine,

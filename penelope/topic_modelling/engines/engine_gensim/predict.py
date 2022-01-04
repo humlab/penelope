@@ -14,19 +14,19 @@ from .wrappers.mallet_topic_model import MalletTopicModel
 
 
 @utility.deprecated
-def gensim_lsi_predict(model: models.LsiModel, corpus: Any, scaled=False, chunksize=512, **kwargs):
+def gensim_lsi_predict(model: models.LsiModel, corpus: Any, scaled=False, chunk_size=512, **kwargs):
     """Predict using Gensim LsiModel. Corpus must be in BoW format i.e. List[List[(token_id, count)]
-
     BOW => Iterable
     """
     # data_iter = enumerate(model[corpus, minimum_probability]) same as:
-    data_iter = enumerate(model[corpus, scaled, chunksize])
+    data_iter = enumerate(model[corpus, scaled, chunk_size])
     return data_iter
 
 
-def gensim_lda_predict(model: models.LdaModel, corpus: Any, minimum_probability: float = 0.0) -> Iterable:
+def gensim_lda_predict(
+    model: models.LdaModel | models.LdaMulticore, corpus: Any, minimum_probability: float = 0.0
+) -> Iterable:
     """Predict using Gensim LdaModel. Corpus must be in BoW format i.e. List[List[(token_id, count)]
-
     BOW => Iterable
     """
     # data_iter = enumerate(model[corpus, minimum_probability]) same as:

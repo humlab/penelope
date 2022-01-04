@@ -12,7 +12,7 @@ N_TOPICS=500
     # --only-any-alphanumeric \
     # --random-seed 42 \
 
-PYTHONPATH=. python penelope/scripts/topic_model.py \
+PYTHONPATH=. python penelope/tm/train.py \
     --passthrough-column lemma \
     --n-topics 500 \
     --engine "gensim_lda-multicore" \

@@ -1,8 +1,10 @@
+import os
 import uuid
 from unittest.mock import MagicMock, Mock
 
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.corpus.dtm.vectorizer import VectorizeOpts
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
@@ -41,8 +43,9 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
+        .to_dtm(VectorizeOpts(already_tokenized=True))
         .to_topic_model(
-            corpus_source=None,
+            target_mode='both',
             target_folder="./tests/output",
             target_name=target_name,
             engine=method,
@@ -61,6 +64,9 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_predict_topics(method: str):
 
+    minimum_probability: float = 0.001
+    n_tokens: int = 100
+
     payload: DocumentPayload = tranströmer_topic_model_payload(method=method)
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
     corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
@@ -68,8 +74,7 @@ def test_predict_topics(method: str):
     target_folder: str = './tests/output'
     target_name: str = f'{uuid.uuid1()}'
 
-    model_folder: str = payload.content.get("target_folder")
-    model_name: str = payload.content.get("target_name")
+    model_folder: str = os.path.join(payload.content.get("target_folder"), payload.content.get("target_name"))
 
     transform_opts = TokensTransformOpts()
     extract_opts = ExtractTaggedTokensOpts(
@@ -78,6 +83,7 @@ def test_predict_topics(method: str):
         pos_excludes='MAD|MID|PAD',
         **config.checkpoint_opts.tagged_columns,
     )
+    vectorize_opts: VectorizeOpts = VectorizeOpts(already_tokenized=True)
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
@@ -86,11 +92,13 @@ def test_predict_topics(method: str):
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
+        .to_dtm(vectorize_opts=vectorize_opts)
         .predict_topics(
             model_folder=model_folder,
-            model_name=model_name,
             target_folder=target_folder,
             target_name=target_name,
+            minimum_probability=minimum_probability,
+            n_tokens=n_tokens,
         )
     ).single()
 
@@ -134,7 +142,6 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
     task: ToTopicModel = ToTopicModel(
         pipeline=pipeline,
         prior=prior,
-        corpus_source=None,
         target_folder="./tests/output",
         target_name=target_name,
         engine=method,
