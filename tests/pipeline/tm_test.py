@@ -161,4 +161,5 @@ def test_load_id_tagged_frame_pipeline_convert_to_topic_model(method):
     assert isinstance(value3, dict) is not None
     assert value3.get('target_name') == target_name3
     assert value3.get('target_folder') == target_folder
-    assert tm.InferredModel.exists(jj(value3.get('target_folder'), value3.get('target_name')))
+    assert not tm.InferredModel.exists(jj(value3.get('target_folder'), value3.get('target_name')))
+    assert os.path.isfile(jj(value3.get('target_folder'), value3.get('target_name'), 'document_topic_weights.zip'))
