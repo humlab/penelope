@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.corpus.dtm.vectorizer import VectorizeOpts
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
@@ -42,6 +43,7 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
+        .to_dtm(VectorizeOpts(already_tokenized=True))
         .to_topic_model(
             target_mode='both',
             target_folder="./tests/output",
@@ -81,6 +83,7 @@ def test_predict_topics(method: str):
         pos_excludes='MAD|MID|PAD',
         **config.checkpoint_opts.tagged_columns,
     )
+    vectorize_opts: VectorizeOpts = VectorizeOpts(already_tokenized=True)
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
@@ -89,6 +92,7 @@ def test_predict_topics(method: str):
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
+        .to_dtm(vectorize_opts=vectorize_opts)
         .predict_topics(
             model_folder=model_folder,
             target_folder=target_folder,
