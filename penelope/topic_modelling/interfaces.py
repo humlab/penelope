@@ -160,6 +160,7 @@ class InferredModel:
 
     OPTIONS_FILENAME: str = "model_options.json"
     ID2TOKEN_FILENAME: str = "topic_model_id2token.json.gz"
+    MODEL_FILENAMES: List[str] = ["topic_model.pickle.pbz2", "topic_model.pickle"]
 
     def __init__(self, topic_model: Any, id2token: Mapping[int, str], options: Dict[str, Any]):
         self._topic_model: Any = topic_model
@@ -177,7 +178,9 @@ class InferredModel:
 
     @staticmethod
     def exists(folder: str) -> bool:
-        return isfile(jj(folder, InferredModel.OPTIONS_FILENAME))
+        return isfile(jj(folder, InferredModel.OPTIONS_FILENAME)) and any(
+            isfile(jj(folder, x)) for x in InferredModel.MODEL_FILENAMES
+        )
 
     @staticmethod
     def load(folder: str, lazy=True) -> InferredModel:
