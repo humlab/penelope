@@ -3,7 +3,7 @@ import os
 from penelope import pipeline
 from penelope.corpus import VectorizedCorpus
 from penelope.pipeline.config import CorpusConfig
-from penelope.pipeline.dtm import wildcard_to_DTM_pipeline
+from penelope.pipeline.dtm.pipelines import wildcard_to_DTM_pipeline
 from penelope.workflows import interface
 
 CheckpointPath = str
