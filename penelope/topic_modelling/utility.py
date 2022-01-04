@@ -112,10 +112,10 @@ def _compute_topic_proportions(document_topic_weights: pd.DataFrame, doc_length_
 
 def compute_topic_proportions(document_topic_weights: pd.DataFrame, document_index: pd.DataFrame) -> pd.DataFrame:
     """Compute topics' proportion in entire corpus."""
-    if 'n_terms' not in document_index.columns:
+    if 'n_tokens' not in document_index.columns:
         return None
 
-    return _compute_topic_proportions(document_topic_weights, document_index.n_terms.values)
+    return _compute_topic_proportions(document_topic_weights, document_index.n_tokens.values)
 
 
 # FIXME: Deprecate method. Use DocumentTopicWeights instead

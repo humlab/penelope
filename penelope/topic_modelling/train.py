@@ -12,16 +12,14 @@ def train_model(
     **kwargs,
 ) -> InferredModel:
 
+    tfidf_weighing: bool = kwargs.get('tfidf_weighing', False)
     if engine_args.get('work_folder', False):
         os.makedirs(engine_args.get('work_folder'), exist_ok=True)
 
     trained_model = get_engine_cls_by_method_name(method).train(
-        train_corpus,
-        method,
-        engine_args,
-        tfidf_weighing=kwargs.get('tfidf_weighing', False),
+        train_corpus, method, engine_args, tfidf_weighing=tfidf_weighing
     )
 
-    train_corpus.update_word_counts()
+    train_corpus.update_token_counts()
 
     return trained_model

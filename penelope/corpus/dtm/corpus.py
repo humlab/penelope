@@ -158,7 +158,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return self._bag_term_matrix.shape[0]
 
     @property
-    def n_terms(self) -> int:
+    def n_tokens(self) -> int:
         """Returns number of types (unique words) """
         return self._bag_term_matrix.shape[1]
 

@@ -56,7 +56,7 @@ def test_document_token_counts(corpus: VectorizedCorpus):
 
 
 def test_n_terms(corpus: VectorizedCorpus):
-    assert corpus.n_terms == 4
+    assert corpus.n_tokens == 4
 
 
 def test_n_docs(corpus: VectorizedCorpus):

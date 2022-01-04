@@ -1,4 +1,4 @@
-filename	filename	year	year_serial_id	document_name	document_id	title	n_terms
+filename	filename	year	year_serial_id	document_name	document_id	title	n_tokens
 tran_2019_01_test.txt	tran_2019_01_test.txt	2019	1	tran_2019_01_test.txt	0	Romanska bågar	68
 tran_2019_02_test.txt	tran_2019_02_test.txt	2019	2	tran_2019_02_test.txt	1	Nocturne	59
 tran_2019_03_test.txt	tran_2019_03_test.txt	2019	3	tran_2019_03_test.txt	2	Gläntan	173

@@ -78,7 +78,7 @@ class IVectorizedCorpus(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def n_terms(self) -> int:
+    def n_tokens(self) -> int:
         ...
 
     @property

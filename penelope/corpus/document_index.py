@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from io import StringIO
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -118,10 +118,8 @@ class DocumentIndexHelper:
         )
         return self
 
-    def update_counts_by_corpus(self, corpus: Any, column_name: str = 'n_terms') -> "DocumentIndexHelper":
-        self._document_index = update_document_index_token_counts_by_corpus(
-            self._document_index, corpus=corpus, column_name=column_name
-        )
+    def update_counts_by_corpus(self, corpus: Any) -> "DocumentIndexHelper":
+        self._document_index = update_document_index_token_counts_by_corpus(self._document_index, corpus=corpus)
         return self
 
     def add_attributes(self, other: DocumentIndex) -> "DocumentIndexHelper":
@@ -600,36 +598,38 @@ def update_document_index_token_counts(
     return document_index
 
 
-def update_document_index_token_counts_by_corpus(
-    document_index: pd.DataFrame, corpus: Any, column_name: str = 'n_terms'
-) -> pd.DataFrame:
-    """Variant used in topic modeling"""
-    if column_name in document_index.columns:
+def update_document_index_token_counts_by_corpus(document_index: pd.DataFrame, corpus: Any) -> pd.DataFrame:
+    """Make that we have doc token count logged in the index"""
+    if 'n_tokens' in document_index.columns:
+        if 'n_raw_tokens' not in document_index.columns:
+            document_index['n_raw_tokens'] = document_index['n_tokens']
         return document_index
 
-    n_terms: List[int] = None
-
-    logger.info("updating document index word counts...")
+    n_tokens: Sequence[int] = None
 
     try:
 
         if hasattr(corpus, 'sparse'):
             # Gensim Sparse2Corpus
-            n_terms = corpus.sparse.sum(axis=0).A1
+            n_tokens = corpus.sparse.sum(axis=0).A1
         elif hasattr(corpus, 'data'):
             # Vectorized corpus
-            n_terms = corpus.document_token_counts
+            n_tokens = corpus.document_token_counts
         elif isinstance(corpus, list):
             # BoW, men hur vara säker?
-            n_terms = [sum((w[1] for w in d)) for d in corpus]
+            n_tokens = [sum((w[1] for w in d)) for d in corpus]
         else:
-            n_terms = [len(d) for d in corpus]
+            n_tokens = [len(d) for d in corpus]
 
     except Exception as ex:
         logger.exception(ex)
 
-    if n_terms is not None:
-        document_index[column_name] = n_terms
+    if n_tokens is not None:
+
+        document_index['n_tokens'] = n_tokens
+
+        if 'n_raw_tokens' not in document_index.columns:
+            document_index['n_raw_tokens'] = document_index['n_tokens']
 
     logger.info("...done!")
 

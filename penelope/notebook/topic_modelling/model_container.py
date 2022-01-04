@@ -34,10 +34,10 @@ class TopicModelContainer:
         _inferred_topics: Optional[topic_modelling.InferredTopicsData],
         _train_corpus_folder: Union[str, topic_modelling.TrainingCorpus] = None,
     ):
-        if 'n_terms' not in _inferred_topics.document_index.columns:
-            raise ValueError("expected n_terms in document_index (previous fix is removed)")
+        if 'n_tokens' not in _inferred_topics.document_index.columns:
+            raise ValueError("expected n_tokens in document_index (previous fix is removed)")
             # assert _trained_model.train_corpus is not None
-            # _inferred_topics.document_index['n_terms'] = _trained_model.train_corpus.n_terms
+            # _inferred_topics.document_index['n_tokens'] = _trained_model.train_corpus.n_tokens
 
         self._trained_model = _trained_model
         self._inferred_topics = _inferred_topics

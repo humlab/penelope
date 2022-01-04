@@ -42,10 +42,10 @@ def test_weights_reducer(state: TopicModelContainer):
     assert len(data) == 4
     assert data.document_id.unique().tolist() == [1]
 
-    data: pd.DataFrame = reducer.reset().filter_by_document_keys(key_values={'n_terms': (operator.ge, 100)}).value
+    data: pd.DataFrame = reducer.reset().filter_by_document_keys(key_values={'n_tokens': (operator.ge, 100)}).value
     assert data.document_id.unique().tolist() == [2]
 
-    data: pd.DataFrame = reducer.reset().filter_by_document_keys(key_values={'n_terms': (operator.lt, 60)}).value
+    data: pd.DataFrame = reducer.reset().filter_by_document_keys(key_values={'n_tokens': (operator.lt, 60)}).value
     assert data.document_id.unique().tolist() == [1, 3, 4]
 
     data: pd.DataFrame = reducer.reset().filter_by_topics(topic_ids=[0, 2]).value
@@ -60,7 +60,7 @@ def test_weights_reducer(state: TopicModelContainer):
 
     data: pd.DataFrame = (
         reducer.reset()
-        .filter_by(threshold=0.1, key_values=dict(year=[2019, 2020]), document_key_values=dict(n_terms=('ge', 60)))
+        .filter_by(threshold=0.1, key_values=dict(year=[2019, 2020]), document_key_values=dict(n_tokens=('ge', 60)))
         .value
     )
     data = data.assign(weight=data.weight.round(3))
