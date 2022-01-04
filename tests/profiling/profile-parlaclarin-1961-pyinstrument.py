@@ -64,7 +64,6 @@ def run_workflow():
             transform_opts=transform_opts,
         )
         .to_topic_model(
-            corpus_source=None,
             target_mode="both",
             target_folder="./tests/output",
             target_name="APA",

@@ -66,7 +66,6 @@ def from_tagged_frame_pipeline(
             transform_opts=transform_opts,
         )
         .to_topic_model(
-            corpus_source=None,
             train_corpus_folder=train_corpus_folder,
             trained_model_folder=trained_model_folder,
             target_mode=target_mode,
@@ -123,7 +122,6 @@ def from_id_tagged_frame_pipeline(
             tagged_column=extract_opts.target_column,
         )
         .to_topic_model(
-            corpus_source=None,
             train_corpus_folder=train_corpus_folder,
             trained_model_folder=trained_model_folder,
             target_mode=target_mode,
