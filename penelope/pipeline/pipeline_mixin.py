@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
-from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts, VectorizeOpts
+from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts
 from penelope.utility import PoS_Tag_Scheme, deprecated
 
-from . import dtm, tagged_frame, tasks
+from . import tagged_frame, tasks
 
 if TYPE_CHECKING:
     from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
@@ -132,14 +132,6 @@ class PipelineShortcutMixIn:
         if transform_opts or transformer:
             return self.add(tasks.TokensTransform(transform_opts=transform_opts, transformer=transformer))
         return self
-
-    def to_dtm(
-        self: pipelines.CorpusPipeline,
-        vectorize_opts: VectorizeOpts = None,
-        tagged_column: str = None,
-    ) -> pipelines.CorpusPipeline:
-        """ (filename, TEXT => DTM) """
-        return self.add(dtm.ToDTM(vectorize_opts=vectorize_opts or VectorizeOpts(), tagged_column=tagged_column))
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())
