@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts, VectorizeOpts
 from penelope.utility import PoS_Tag_Scheme, deprecated
 
-from . import tagged_frame, tasks
+from . import dtm, tagged_frame, tasks
 
 if TYPE_CHECKING:
     from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
@@ -139,7 +139,7 @@ class PipelineShortcutMixIn:
         tagged_column: str = None,
     ) -> pipelines.CorpusPipeline:
         """ (filename, TEXT => DTM) """
-        return self.add(tasks.ToDTM(vectorize_opts=vectorize_opts or VectorizeOpts(), tagged_column=tagged_column))
+        return self.add(dtm.ToDTM(vectorize_opts=vectorize_opts or VectorizeOpts(), tagged_column=tagged_column))
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.ToContent())

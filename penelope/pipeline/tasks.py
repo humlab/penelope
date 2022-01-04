@@ -10,19 +10,14 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Sequence, Union
 
-import more_itertools
-import numpy as np
 import pandas as pd
 from loguru import logger
 from penelope import utility
 from penelope.corpus import (
-    CorpusVectorizer,
     ITokenizedCorpus,
     Token2Id,
     TokensTransformer,
     TokensTransformOpts,
-    VectorizedCorpus,
-    VectorizeOpts,
     default_tokenizer,
 )
 from penelope.corpus.readers import (
@@ -702,94 +697,6 @@ class TokensToText(ITask):
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return payload.update(self.out_content_type, utility.to_text(payload.content))
-
-
-@dataclass
-class ToDTM(ITask):
-
-    vectorize_opts: VectorizeOpts = None
-    tagged_column: Optional[str] = field(default=None)
-    tokenizer: Callable[[str], Iterable[str]] = field(default=None)
-
-    def __post_init__(self):
-        self.in_content_type = [
-            ContentType.TEXT,
-            ContentType.TOKENS,
-            ContentType.TOKEN_IDS,
-            ContentType.TAGGED_FRAME,
-            ContentType.TAGGED_ID_FRAME,
-        ]
-        self.out_content_type = ContentType.VECTORIZED_CORPUS
-
-    def setup(self) -> ITask:
-        super().setup()
-        self.pipeline.put("vectorize_opts", self.vectorize_opts)
-        return self
-
-    def from_token_id_stream(self, stream) -> VectorizedCorpus:
-        corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(
-            stream=stream,
-            token2id=self.pipeline.payload.token2id,
-            document_index=self.document_index,
-            min_tf=self.vectorize_opts.min_tf,
-            max_tokens=self.vectorize_opts.max_tokens,
-        )
-        return corpus
-
-    def process_stream(self) -> VectorizedCorpus:
-
-        content_type: ContentType = self.resolved_prior_out_content_type()
-        name2id: dict = self.document_index['document_id'].to_dict().get
-
-        self.vectorize_opts.already_tokenized = True
-
-        """HACK: trigger execution of stream's enter() methods so that token2id and index are read"""
-        _, payloads = more_itertools.spy(self.create_instream(), n=1)
-
-        if content_type == ContentType.TOKENS:
-            fg: dict = self.pipeline.payload.token2id.data.get
-            tokens2series = lambda tokens: pd.Series([fg(t) for t in tokens], dtype=np.int32)
-            stream = [(name2id(p.document_name), tokens2series(p.content)) for p in payloads]
-            vectorized_corpus: VectorizedCorpus = self.from_token_id_stream(stream)
-
-        elif content_type == ContentType.TOKEN_IDS:
-            stream = [(name2id(p.document_name), pd.Series(p.content, dtype=np.int32)) for p in payloads]
-            vectorized_corpus: VectorizedCorpus = self.from_token_id_stream(stream)
-
-        elif content_type == ContentType.TAGGED_ID_FRAME:
-
-            if self.tagged_column is None:
-                raise ValueError("tagged column name in source must be specified!")
-
-            tagged_column: str = self.tagged_column
-            stream = ((name2id(p.document_name), p.content[tagged_column]) for p in payloads)
-            vectorized_corpus: VectorizedCorpus = self.from_token_id_stream(stream)
-
-        elif content_type == ContentType.TEXT:
-            tokenizer = self.tokenizer or default_tokenizer
-            stream = ((p.filename, tokenizer(p.content)) for p in payloads)
-            vectorized_corpus: VectorizedCorpus = CorpusVectorizer().fit_transform_(
-                stream,
-                document_index=lambda: self.document_index,
-                vectorize_opts=self.vectorize_opts,
-            )
-
-        elif content_type == ContentType.TAGGED_FRAME:
-            raise NotImplementedError("Obselete: use TaggedFrameToTokens")
-
-        else:
-            raise ValueError(f"not supported: {content_type}")
-
-        payload: DocumentPayload = DocumentPayload(
-            content_type=ContentType.VECTORIZED_CORPUS, content=vectorized_corpus
-        )
-
-        payload.remember(vectorize_opts=self.vectorize_opts)
-
-        yield payload
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return None
 
 
 @dataclass
