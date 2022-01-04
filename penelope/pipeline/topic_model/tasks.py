@@ -60,7 +60,7 @@ class TopicModelMixin:
             tm.InferredTopicsData: [description]
         """
         if not isinstance(corpus, (pc.VectorizedCorpus, Sparse2Corpus)):
-            raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict")
+            raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict (use sparse instead)")
 
         if isinstance(corpus, pc.VectorizedCorpus):
             """Make sure we use corpus' own data"""
