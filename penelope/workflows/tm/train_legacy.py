@@ -57,7 +57,7 @@ def compute(
 
     inferred_topics: tm.InferredTopicsData = tm.predict_topics(
         inferred_model.topic_model,
-        corpus=train_corpus.effective_corpus,
+        corpus=train_corpus.corpus,
         id2token=train_corpus.id2token,
         document_index=train_corpus.document_index,
         n_tokens=n_tokens,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from os.path import join as jj
-from typing import Iterable, List, Literal, Protocol
+from typing import Any, Iterable, List, Literal, Mapping, Protocol
 
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
@@ -76,7 +76,7 @@ class TopicModelMixin:
             minimum_probability=minimum_probability,
             **kwargs,
         )
-
+        inferred_model.store_options(target_folder)
         topics_data.store(target_folder)
         return topics_data
 
@@ -149,7 +149,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         self.pipeline.put("topic_modeling_opts", self.engine_args)
         return self
 
-    def instream_to_corpus(self) -> tm.TrainingCorpus:
+    def instream_to_corpus(self, id2token: Mapping[int, str]) -> tm.TrainingCorpus:
 
         content_type: ContentType = self.resolved_prior_out_content_type()
 
@@ -176,7 +176,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             vectorized_corpus: pc.VectorizedCorpus = pc.VectorizedCorpus.load(
                 folder=self.train_corpus_folder, tag=tags[0]
             )
-            corpus: tm.TrainingCorpus = tm.TrainingCorpus(effective_corpus=vectorized_corpus)
+            corpus: tm.TrainingCorpus = tm.TrainingCorpus(corpus=vectorized_corpus)
             return corpus
 
         if content_type == ContentType.VECTORIZED_CORPUS:
@@ -191,11 +191,13 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             return corpus
 
         if content_type == ContentType.TOKENS:
-            """Creates train corpus from instream OR load existing from disk."""
+            token2id: pc.Token2Id = (
+                pc.Token2Id(pc.id2token2token2id(id2token)) if id2token is not None else self.pipeline.payload.token2id
+            )
             corpus: tm.TrainingCorpus = tm.TrainingCorpus(
                 corpus=self.prior.filename_content_stream(),
                 document_index=self.document_index,
-                token2id=self.pipeline.payload.token2id,
+                token2id=token2id,
                 corpus_options={},
             )
             return corpus
@@ -208,20 +210,40 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         self.ensure_target_path()
 
-        train_corpus: tm.TrainingCorpus = self.instream_to_corpus()
+        """
+        If `predict` we only allow content_type == ContentType.TOKENS, and we must use
+        the same vocabulary as was used in the training (at least for LdaMulticore)
+        when translating the stream to a sparse corpus.
+        """
 
-        inferred_model: tm.InferredModel = (
-            tm.InferredModel.load(self.trained_model_folder, lazy=False)
-            if self.target_mode == 'predict'
-            else self.train(train_corpus)
-        )
+        # inferred_model: tm.InferredModel = (
+        #     tm.InferredModel.load(self.trained_model_folder, lazy=False)
+        #     if self.target_mode == 'predict'
+        #     else self.train(train_corpus)
+        # )
+
+        inferred_model: tm.InferredModel = None
+        predict_corpus: Any = None
+
+        if self.target_mode in ['both', 'train']:
+
+            train_corpus: tm.TrainingCorpus = self.instream_to_corpus(id2token=None)
+            predict_corpus = train_corpus.corpus
+
+            inferred_model: tm.InferredModel = self.train(train_corpus)
 
         if self.target_mode in ['both', 'predict']:
 
+            if inferred_model is None:
+                inferred_model = tm.InferredModel.load(self.trained_model_folder, lazy=False)
+
+            if predict_corpus is None:
+                predict_corpus = self.instream_to_corpus(id2token=inferred_model.id2token)
+
             _ = self.predict(
                 inferred_model=inferred_model,
-                corpus=train_corpus.effective_corpus,
-                id2token=train_corpus.id2token,
+                corpus=predict_corpus,
+                id2token=inferred_model.id2token,
                 document_index=self.document_index,
                 target_folder=self.target_subfolder,
                 n_tokens=self.n_tokens,

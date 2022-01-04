@@ -90,9 +90,9 @@ def test_from_spmatrix(document_index, sparse, token2id):
 @pytest.mark.skip(reason="Not implemented")
 def test_from_tokenized_corpus(document_index):
     source: pc.TokenizedCorpus = None
-    vectorize_opts: dict = {}
+    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=True)
     corpus: pc.VectorizedCorpus = convert.from_tokenized_corpus(
-        source=source, document_index=document_index, **vectorize_opts
+        source=source, document_index=document_index, vectorize_opts=vectorize_opts
     )
     assert corpus is not None
     assert corpus.shape == (5, 3)
@@ -101,9 +101,9 @@ def test_from_tokenized_corpus(document_index):
 
 def test_from_stream_of_tokens(document_index, token2id):
     source: Iterable[Iterable[str]] = [x[1] for x in SIMPLE_CORPUS_ABC_5DOCS]
-    vectorize_opts: dict = {}
+    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=True)
     corpus: pc.VectorizedCorpus = convert.from_stream_of_tokens(
-        source=source, token2id=token2id, document_index=document_index, **vectorize_opts
+        source=source, token2id=token2id, document_index=document_index, vectorize_opts=vectorize_opts
     )
     assert corpus is not None
     assert corpus.shape == (5, 3)
@@ -112,9 +112,9 @@ def test_from_stream_of_tokens(document_index, token2id):
 
 def test_from_stream_of_filename_tokens(document_index, token2id):
     source: Iterable[Tuple[str, Iterable[str]]] = SIMPLE_CORPUS_ABC_5DOCS
-    vectorize_opts: dict = {}
+    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=True)
     corpus: pc.VectorizedCorpus = convert.from_stream_of_filename_tokens(
-        source=source, token2id=token2id, document_index=document_index, **vectorize_opts
+        source=source, token2id=token2id, document_index=document_index, vectorize_opts=vectorize_opts
     )
     assert corpus is not None
     assert corpus.shape == (5, 3)
@@ -124,9 +124,9 @@ def test_from_stream_of_filename_tokens(document_index, token2id):
 def test_from_stream_of_text(document_index, token2id):
 
     source: Iterable[Tuple[str, Iterable[str]]] = [(x[0], ' '.join(x[1])) for x in SIMPLE_CORPUS_ABC_5DOCS]
-    vectorize_opts: dict = {}
+    vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=False)
     corpus: pc.VectorizedCorpus = convert.from_stream_of_text(
-        source=source, token2id=token2id, document_index=document_index, **vectorize_opts
+        source=source, token2id=token2id, document_index=document_index, vectorize_opts=vectorize_opts
     )
     assert corpus is not None
     assert corpus.shape == (5, 3)

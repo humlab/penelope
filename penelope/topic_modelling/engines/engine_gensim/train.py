@@ -47,34 +47,37 @@ def train(
         # tfidf_model = TfidfModel(corpus)
         # corpus = [tfidf_model[d] for d in corpus]
 
-    train_corpus.effective_corpus = corpus
+    train_corpus.corpus = corpus
     if train_corpus.token2id is None:
         train_corpus.token2id = dictionary.token2id
 
     engine_spec: options.EngineSpec = options.get_engine_specification(engine_key=method)
-    model = engine_spec.engine(
+    model: Any = engine_spec.engine(
         **engine_spec.get_options(
-            corpus=train_corpus.effective_corpus,
+            corpus=train_corpus.corpus,
             id2word=train_corpus.id2token,
             engine_args=engine_args,
         )
     )
 
     # FIXME: These metrics must be computed on a held-out corpus - not the training corpus
-    perplexity_score = (
-        None
-        if not hasattr(model, 'log_perplexity')
-        else 2 ** model.log_perplexity(train_corpus.effective_corpus, len(train_corpus.effective_corpus))
-    )
+    # perplexity_score = (
+    #     None
+    #     if not hasattr(model, 'log_perplexity')
+    #     else 2 ** model.log_perplexity(train_corpus.corpus, len(train_corpus.corpus))
+    # )
+    perplexity_score = 0
 
-    coherence_score = coherence.compute_score(train_corpus.id2token, model, train_corpus.effective_corpus)
+    coherence_score = coherence.compute_score(train_corpus.id2token, model, train_corpus.corpus)
 
     return InferredModel(
-        train_corpus=train_corpus,
         topic_model=model,
-        method=method,
-        perplexity_score=perplexity_score,
-        coherence_score=coherence_score,
-        engine_options=engine_args,
-        extra_options=kwargs,
+        id2token=train_corpus.id2token,
+        options=dict(
+            method=method,
+            perplexity_score=perplexity_score,
+            coherence_score=coherence_score,
+            engine_options=engine_args,
+            extra_options=kwargs,
+        ),
     )
