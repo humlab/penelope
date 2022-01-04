@@ -3,12 +3,12 @@ import importlib
 from os.path import basename, dirname, join
 
 from .co_occurrence import pipeline_mixin as coo_mixin
+from .dtm import pipeline_mixin as dtm_mixin
 from .pipeline import CorpusPipelineBase
 from .pipeline_mixin import PipelineShortcutMixIn
 from .spacy import pipeline_mixin as spacy_mixin
 from .tasks import WildcardTask
 from .topic_model import pipeline_mixin as tm_mixin
-from .dtm import pipeline_mixin as dtm_mixin
 
 
 def register_pipeline_mixins():
@@ -21,7 +21,6 @@ def register_pipeline_mixins():
 
 
 class CorpusPipeline(
-    # *register_pipeline_mixins(),
     PipelineShortcutMixIn,
     spacy_mixin.PipelineShortcutMixIn,
     coo_mixin.PipelineShortcutMixIn,
