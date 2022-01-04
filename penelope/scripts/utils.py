@@ -21,6 +21,7 @@ CLI_OPTIONS = {
     ),
     '--corpus-source': dict(help='Corpus filename/folder (overrides config)', default=None),
     '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)'),
+    '--create-subfolder': dict(help='Create subfolder in target folder named `target_name`', default=True, is_flag=True),
     '--deserialize-processes': dict(
         help='Number of processes during deserialization', default=4, type=click.IntRange(1, 99)
     ),
