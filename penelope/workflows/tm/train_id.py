@@ -33,7 +33,7 @@ def compute(
 
     filename_pattern = filename_pattern or config_opts.get('file_patter', '**/*.feather')
 
-    _: dict = from_id_tagged_frame_pipeline(
+    value: dict = from_id_tagged_frame_pipeline(
         corpus_config=corpus_config,
         target_mode=target_mode,
         target_folder=target_folder,
@@ -51,3 +51,5 @@ def compute(
         store_corpus=store_corpus,
         store_compressed=store_compressed,
     ).value()
+
+    return value
