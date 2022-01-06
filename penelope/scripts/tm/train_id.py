@@ -208,9 +208,9 @@ if __name__ == '__main__':
     #     click_main,
     #     [
     #         '--options-filename',
-    #             'penelope/scripts/sample_opts/opts_tm_predict.yml',
+    #         'penelope/scripts/sample_opts/opts_tm_predict.yml',
     #         '--filename-pattern',
-    #         '**/2020*/*.feather'
+    #         '**/192[0123]/*.feather',
     #     ],
     # )
     # print(result.output)
