@@ -221,7 +221,8 @@ class InferredModel:
             return InferredTopicsData.load_token2id(folder).id2token
         with gzip.open(filename, 'rb') as f:
             json_str = f.read().decode(encoding='utf-8')
-            return json.loads(json_str)
+            return { int(k): v for k, v in json.loads(json_str).items() }
+
 
     def store_id2token(self, folder: str) -> Mapping[int, str]:
         """Stores vocabulary in json format"""
