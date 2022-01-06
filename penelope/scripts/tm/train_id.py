@@ -4,6 +4,7 @@ from typing import Literal, Optional
 
 import click
 import penelope.workflows.tm.train_id as workflow
+from loguru import logger
 from penelope import corpus as pc
 from penelope import pipeline
 from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
@@ -179,7 +180,7 @@ def main(
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
 
-    _: dict = workflow.compute(
+    value: dict = workflow.compute(
         corpus_config=config,
         corpus_source=corpus_source,
         filename_pattern=filename_pattern,
@@ -196,6 +197,8 @@ def main(
         store_compressed=store_compressed,
         # transform_opts=transform_opts,
     ).value()
+
+    logger.info(f"workflow completed: model {value.get('target_name')} stored in {value.get('target_folder')}")
 
 
 if __name__ == '__main__':
