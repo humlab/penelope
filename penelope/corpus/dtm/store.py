@@ -287,7 +287,7 @@ def load_corpus(
     keep_magnitude: bool = True,
     group_by_year: bool = True,
 ) -> IVectorizedCorpus:
-    """Loads a previously saved vectorized corpus from disk. Easaly the best loader ever.
+    """Loads a previously saved vectorized corpus from disk. Easily the best loader ever.
 
     Parameters
     ----------
