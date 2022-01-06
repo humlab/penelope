@@ -182,7 +182,7 @@ def main(
     _: dict = workflow.compute(
         corpus_config=config,
         corpus_source=corpus_source,
-        filename_pattern = filename_pattern,
+        filename_pattern=filename_pattern,
         train_corpus_folder=train_corpus_folder,
         trained_model_folder=trained_model_folder,
         target_mode=target_mode,
