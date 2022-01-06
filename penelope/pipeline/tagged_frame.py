@@ -10,6 +10,7 @@ from typing import Iterable, List, Mapping
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 from penelope import corpus as pc
 from penelope.utility import PoS_Tag_Scheme, replace_extension, strip_paths
 from tqdm import tqdm
@@ -209,4 +210,17 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
 
     @cached_property
     def corpus_filenames(self) -> List[str]:
-        return sorted(glob.glob(jj(self.corpus_source, self.file_pattern), recursive=True))
+        magic_names: List[str] = ['token2id.feather', 'document_index.feather']
+        match_iter: Iterable[str] = (
+            filename
+            for filename in glob.iglob(jj(self.corpus_source, self.file_pattern), recursive=True)
+            if not any(filename.endswith(m) for m in magic_names)
+        )
+        filenames: List[str] = sorted(match_iter)
+
+        logger.info(f"found {len(filenames)} matching `{self.file_pattern}` in {self.corpus_source}")
+
+        if len(filenames) == 0:
+            raise FileNotFoundError("no files found in source")
+
+        return filenames
