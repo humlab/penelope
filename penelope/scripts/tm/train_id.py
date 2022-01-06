@@ -200,16 +200,17 @@ def main(
 
 if __name__ == '__main__':
 
-    # click_main()
+    click_main()
 
-    from click.testing import CliRunner
-
-    runner = CliRunner()
-    result = runner.invoke(
-        click_main,
-        [
-            '--options-filename',
-                'penelope/scripts/sample_opts/opts_tm_predict.yml'
-        ],
-    )
-    print(result.output)
+    # from click.testing import CliRunner
+    # runner = CliRunner()
+    # result = runner.invoke(
+    #     click_main,
+    #     [
+    #         '--options-filename',
+    #             'penelope/scripts/sample_opts/opts_tm_predict.yml',
+    #         '--filename-pattern',
+    #         '**/2020*/*.feather'
+    #     ],
+    # )
+    # print(result.output)
