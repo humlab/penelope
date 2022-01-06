@@ -57,7 +57,7 @@ class CorpusConfig:
         return pipeline_key in self.pipelines
 
     def get_pipeline_opts(self, pipeline_key: str) -> dict:
-        if not pipeline_key in self.pipelines:
+        if pipeline_key not in self.pipelines:
             return {}
         cfg: str | dict = self.pipelines[pipeline_key]
         if isinstance(cfg, dict):
