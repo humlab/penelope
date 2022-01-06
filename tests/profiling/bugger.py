@@ -154,7 +154,7 @@ def debug_main(
     _: dict = from_id_tagged_frame_pipeline(
         corpus_config=config,
         corpus_source=corpus_source,
-        file_pattern='**/prot-*.feather',
+        file_pattern='**/*.feather',
         extract_opts=extract_opts,
         transform_opts=transform_opts,
         vectorize_opts=vectorize_opts,

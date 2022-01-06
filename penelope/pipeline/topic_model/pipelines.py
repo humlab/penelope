@@ -14,7 +14,7 @@ def load_id_tagged_frame_pipeline(
     corpus_config: CorpusConfig,
     corpus_source: str = None,
     id_to_token: bool = False,
-    file_pattern: str = '**/prot-*.feather',
+    file_pattern: str = None,
     **_,
 ):
     """Loads a tagged data frame"""
@@ -93,7 +93,7 @@ def from_id_tagged_frame_pipeline(
     extract_opts: corpus.ExtractTaggedTokensOpts = None,
     transform_opts: corpus.TokensTransformOpts = None,
     vectorize_opts: VectorizeOpts = None,
-    file_pattern: str = '**/prot-*.feather',
+    file_pattern: str = '**/*.feather',
     engine: str = "gensim_lda-multicore",
     engine_args: dict = None,
     store_corpus: bool = False,
