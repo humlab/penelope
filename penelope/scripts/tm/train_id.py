@@ -17,6 +17,7 @@ from penelope.topic_modelling.interfaces import InferredModel
 @click.argument('target-name', required=False)
 @option2('--options-filename')
 @option2('--corpus-source', default=None)
+@option2('--filename-pattern')
 @option2('--target-mode')
 @option2('--target-folder', default=None)
 @option2('--train-corpus-folder')
@@ -49,6 +50,7 @@ def click_main(
     options_filename: Optional[str] = None,
     config_filename: Optional[str] = None,
     corpus_source: Optional[str] = None,
+    filename_pattern: str = None,
     train_corpus_folder: Optional[str] = None,
     trained_model_folder: Optional[str] = None,
     target_mode: Literal['train', 'predict', 'both'] = 'both',
@@ -87,6 +89,7 @@ def click_main(
 def main(
     config_filename: Optional[str] = None,
     corpus_source: Optional[str] = None,
+    filename_pattern: str = None,
     train_corpus_folder: Optional[str] = None,
     trained_model_folder: Optional[str] = None,
     target_mode: Literal['train', 'predict', 'both'] = 'both',
@@ -179,6 +182,7 @@ def main(
     _: dict = workflow.compute(
         corpus_config=config,
         corpus_source=corpus_source,
+        filename_pattern = filename_pattern,
         train_corpus_folder=train_corpus_folder,
         trained_model_folder=trained_model_folder,
         target_mode=target_mode,
@@ -196,4 +200,16 @@ def main(
 
 if __name__ == '__main__':
 
-    click_main()
+    # click_main()
+
+    from click.testing import CliRunner
+
+    runner = CliRunner()
+    result = runner.invoke(
+        click_main,
+        [
+            '--options-filename',
+                'penelope/scripts/sample_opts/opts_tm_predict.yml'
+        ],
+    )
+    print(result.output)

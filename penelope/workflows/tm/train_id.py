@@ -15,6 +15,7 @@ def compute(
     target_name: str,
     extract_opts: pc.ExtractTaggedTokensOpts,
     vectorize_opts: pc.VectorizeOpts,
+    filename_pattern: str = None,
     train_corpus_folder: str = None,
     trained_model_folder: str = None,
     engine: str = "gensim_lda-multicore",
@@ -28,12 +29,17 @@ def compute(
     # _: dict = config.get_pipeline(
     #     pipeline_key="topic_modeling_pipeline",
 
+    config_opts: dict = corpus_config.get_pipeline_opts('topic_modeling_pipeline')
+
+    filename_pattern = filename_pattern or config_opts.get('file_patter', '**/*.feather')
+
     _: dict = from_id_tagged_frame_pipeline(
         corpus_config=corpus_config,
         target_mode=target_mode,
         target_folder=target_folder,
         target_name=target_name,
         corpus_source=corpus_source,
+        file_pattern=filename_pattern,
         tagged_column=extract_opts.target_column,
         train_corpus_folder=train_corpus_folder,
         trained_model_folder=trained_model_folder,
