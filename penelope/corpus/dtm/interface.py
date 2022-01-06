@@ -157,6 +157,12 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
+    def translate_to_vocab(
+        self, id2token: Mapping[int, str], inplace=False
+    ) -> "IVectorizedCorpus":
+        ...
+
+    @abc.abstractmethod
     def stats(self):
         ...
 

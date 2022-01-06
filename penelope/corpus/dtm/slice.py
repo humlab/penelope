@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from typing import List, Mapping, Sequence, Tuple, Union
+from typing import List, Mapping, Sequence, Set, Tuple, Union
 
 import numpy as np
+import scipy.sparse as sp
 import textacy
 import textacy.representations
+from loguru import logger
 
+from ..token2id import id2token2token2id
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
 # pylint: disable=no-member, attribute-defined-outside-init, access-member-before-definition
@@ -146,6 +149,44 @@ class SliceMixIn:
         self._token2id = token2id
         self._id2token = None
         self._overridden_term_frequency = overridden_term_frequency
+
+        return self
+
+    def translate_to_vocab(
+        self: ISlicedCorpusProtocol, id2token: Mapping[int, str], inplace=False
+    ) -> IVectorizedCorpus:
+        """Translates corpus to new vocabulary. Tokens not foundin new vocabulary are removed."""
+
+        # FIXME: Write test case. Check performance. Faster if both are CSC?
+
+        common_tokens: Set[str] = set(id2token.values()).intersection(self.token2id.keys())
+        token2id: Mapping[str, int] = id2token2token2id(id2token)
+        og = self.token2id.get
+        ng = token2id.get
+
+        """Create an empty sparse matrix"""
+        D, T = self.data.shape[0], max(id2token) + 1
+        new_dtm: sp.csc_matrix = sp.csc_matrix((D, T), dtype=self.data.dtype)
+
+        """Copy data"""
+        old_indicies = [og(token) for token in common_tokens]
+        new_indicies = [ng(token) for token in common_tokens]
+        new_dtm[:, new_indicies] = self.data[:, old_indicies]  # self.data.tocsc[:, old_indicies]
+
+        logger.warning(
+            f"corpus translated to new vocabulary: {len(common_tokens)} tokens kept, {len(self.token2id) - len(common_tokens)} ({(len(self.token2id) - len(common_tokens))/len(self.token2id):.1%}) removed. "
+        )
+
+        if not inplace:
+            corpus: IVectorizedCorpus = self.create(
+                bag_term_matrix=new_dtm, document_index=self.document_index, token2id=token2id
+            )
+            return corpus
+
+        self._bag_term_matrix = new_dtm
+        self._token2id = token2id
+        self._id2token = None
+        # self._overridden_term_frequency = overridden_term_frequency
 
         return self
 
