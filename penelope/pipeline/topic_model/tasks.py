@@ -227,6 +227,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
                 corpus_options={},
                 vectorizer_args={} if vectorize_opts is None else vectorize_opts.props,
             )
+            logger.info("training corpus created!")
 
             return corpus
 
@@ -276,9 +277,13 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
             if self.target_mode == 'predict':
 
+                logger.info("loading topic model...")
                 inferred_model = tm.InferredModel.load(self.trained_model_folder, lazy=False)
+
+                logger.info("preparing corpus for prediction...")
                 predict_corpus = self.instream_to_corpus(id2token=inferred_model.id2token).corpus
 
+            logger.info("prediction started")
             _ = self.predict(
                 inferred_model=inferred_model,
                 corpus=predict_corpus,
@@ -288,6 +293,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
                 n_tokens=self.n_tokens,
                 minimum_probability=self.minimum_probability,
             )
+            logger.info("prediction done")
 
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,
