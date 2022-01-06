@@ -34,7 +34,6 @@ class ToDTM(interfaces.ITask):
         content_type: interfaces.ContentType = self.resolved_prior_out_content_type()
 
         self.vectorize_opts.already_tokenized = True
-
         vectorized_corpus: pc.VectorizedCorpus = vectorizer.StreamVectorizer(
             token2id=self.pipeline.payload.token2id,
             document_index=self.document_index,
