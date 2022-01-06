@@ -44,6 +44,10 @@ class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
     ) -> Tuple[IVectorizedCorpus, Mapping[int, int], Sequence[int]]:
         ...
 
+    @property
+    def overridden_term_frequency(self) -> np.ndarray:
+        ...
+
 
 class SliceMixIn:
     def slice_by_tf(
@@ -157,36 +161,45 @@ class SliceMixIn:
     ) -> IVectorizedCorpus:
         """Translates corpus to new vocabulary. Tokens not foundin new vocabulary are removed."""
 
-        # FIXME: Write test case. Check performance. Faster if both are CSC?
-
-        common_tokens: Set[str] = set(id2token.values()).intersection(self.token2id.keys())
+        common_tokens: List[str] = sorted(list(set(id2token.values()).intersection(self.token2id.keys())))
         token2id: Mapping[str, int] = id2token2token2id(id2token)
         og = self.token2id.get
         ng = token2id.get
 
-        """Create an empty sparse matrix"""
         D, T = self.data.shape[0], max(id2token) + 1
-        new_dtm: sp.csc_matrix = sp.csc_matrix((D, T), dtype=self.data.dtype)
 
-        """Copy data"""
         old_indicies = [og(token) for token in common_tokens]
         new_indicies = [ng(token) for token in common_tokens]
-        new_dtm[:, new_indicies] = self.data[:, old_indicies]  # self.data.tocsc[:, old_indicies]
+
+        # {self.id2token[x]: f"{x} => {new_indicies[i]}" for i, x in enumerate(old_indicies)}
+
+        slice_to_keep = self.data.tocsc()[:, old_indicies].tocoo()
+
+        new_dtm = sp.coo_matrix(
+            (slice_to_keep.data, (slice_to_keep.row, [new_indicies[i] for i in slice_to_keep.col])), shape=(D, T)
+        )
 
         logger.warning(
             f"corpus translated to new vocabulary: {len(common_tokens)} tokens kept, {len(self.token2id) - len(common_tokens)} ({(len(self.token2id) - len(common_tokens))/len(self.token2id):.1%}) removed. "
         )
 
+        o_tf: dict = (
+            self.overridden_term_frequency[old_indicies] if self.overridden_term_frequency is not None else None
+        )
+
         if not inplace:
             corpus: IVectorizedCorpus = self.create(
-                bag_term_matrix=new_dtm, document_index=self.document_index, token2id=token2id
+                bag_term_matrix=new_dtm,
+                document_index=self.document_index,
+                token2id=token2id,
+                overridden_term_frequency=o_tf,
             )
             return corpus
 
         self._bag_term_matrix = new_dtm
         self._token2id = token2id
         self._id2token = None
-        # self._overridden_term_frequency = overridden_term_frequency
+        self._overridden_term_frequency = o_tf
 
         return self
 

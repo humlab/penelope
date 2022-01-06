@@ -209,12 +209,17 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             return corpus
 
         if content_type == ContentType.VECTORIZED_CORPUS:
+
+            logger.info("creating sparse corpus out of input stream...")
+
             payload: DocumentPayload = next(self.prior.outstream())
             vectorized_corpus: pc.VectorizedCorpus = payload.content
             vectorize_opts: pc.VectorizeOpts = payload.recall('vectorize_opts')
 
             if id2token is not None:
                 """We must consolidate the vocabularies"""
+                logger.info("translating vocabulary to training model's vocabulary...")
+
                 vectorized_corpus.translate_to_vocab(id2token, inplace=True)
 
             corpus: tm.TrainingCorpus = tm.TrainingCorpus(

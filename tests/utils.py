@@ -52,10 +52,12 @@ class inline_code:
         ...
 
 
-def create_abc_corpus(dtm: List[List[int]], document_years: List[int] = None) -> VectorizedCorpus:
+def create_abc_corpus(
+    dtm: List[List[int]], document_years: List[int] = None, token2id: dict = None
+) -> VectorizedCorpus:
 
     bag_term_matrix = np.array(dtm)
-    token2id = {chr(ord('a') + i): i for i in range(0, bag_term_matrix.shape[1])}
+    token2id = token2id or {chr(ord('a') + i): i for i in range(0, bag_term_matrix.shape[1])}
 
     years: List[int] = (
         document_years if document_years is not None else [2000 + i for i in range(0, bag_term_matrix.shape[0])]

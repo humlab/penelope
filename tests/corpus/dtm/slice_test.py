@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 import scipy
 from penelope.corpus import VectorizedCorpus
+from penelope.corpus.token2id import id2token2token2id
 
 from ...utils import create_abc_corpus, create_vectorized_corpus
 
@@ -275,3 +276,57 @@ def test_where_is_above_threshold_with_keeps():
 
     indices = VectorizedCorpus.where_is_above_threshold_with_keeps(values, threshold=4, keep_indices=[0, 1])
     assert indices.tolist() == [0, 1, 3, 5, 6]
+
+
+def test_translate_to_vocab():
+
+    A: VectorizedCorpus = create_abc_corpus(
+        [
+            # 0 1  2  3  4  5  6  7
+            # x a  b  c  y  d  e  z
+            [0, 0, 0, 3, 0, 0, 0, 0],
+            [0, 0, 0, 5, 2, 0, 7, 4],
+            [1, 0, 0, 0, 0, 0, 0, 0],
+            [2, 0, 2, 6, 0, 0, 3, 0],
+        ],
+        token2id=id2token2token2id({0: 'x', 1: 'a', 2: 'b', 3: 'c', 4: 'y', 5: 'd', 6: 'e', 7: 'z'}),
+    )
+
+    B: VectorizedCorpus = create_abc_corpus(
+        [
+            # 0 1  2  3  4  5  6  7  8
+            # i c  g  f  a  d  b  h  e
+            [0, 0, 0, 0, 3, 0, 0, 0, 4],
+            [0, 3, 0, 4, 0, 0, 0, 7, 0],
+            [0, 0, 4, 0, 9, 1, 0, 0, 0],
+            [0, 2, 0, 0, 6, 0, 0, 3, 0],
+        ],
+        token2id=id2token2token2id({0: 'i', 1: 'c', 2: 'g', 3: 'f', 4: 'a', 5: 'd', 6: 'b', 7: 'h', 8: 'e'}),
+    )
+    """
+    Translate B to A:
+        expected common words: a b c d e
+        expected target shape: A.shape
+        expected old  indices: A.shape
+        expected index translation:
+            a: 4 => 1
+            b: 6 => 2
+            c: 1 => 3
+            d: 5 => 5
+            e: 8 => 6
+    """
+    expected_corpus = create_abc_corpus(
+        [
+            # x a  b  c  y  d  e  z
+            [0, 3, 0, 0, 0, 0, 4, 0],
+            [0, 0, 0, 3, 0, 0, 0, 0],
+            [0, 9, 0, 0, 0, 1, 0, 0],
+            [0, 6, 0, 2, 0, 0, 0, 0],
+        ],
+        token2id=A.token2id,
+    )
+
+    result_corpus = B.translate_to_vocab(A.id2token, inplace=False)
+
+    assert result_corpus.shape == A.shape
+    assert (result_corpus.data.todense() == expected_corpus.data.todense()).all().all()
