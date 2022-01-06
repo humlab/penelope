@@ -178,7 +178,7 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         self.pipeline.put("topic_modeling_opts", self.engine_args)
         return self
 
-    def instream_to_corpus(self, id2token: Mapping[int, str]) -> tm.TrainingCorpus:
+    def instream_to_corpus(self, id2token: Mapping[int, str] | None) -> tm.TrainingCorpus:
 
         content_type: ContentType = self.resolved_prior_out_content_type()
 
@@ -212,11 +212,17 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             payload: DocumentPayload = next(self.prior.outstream())
             vectorized_corpus: pc.VectorizedCorpus = payload.content
             vectorize_opts: pc.VectorizeOpts = payload.recall('vectorize_opts')
+
+            if id2token is not None:
+                """We must consolidate the vocabularies"""
+                vectorized_corpus.translate_to_vocab(id2token, inplace=True)
+
             corpus: tm.TrainingCorpus = tm.TrainingCorpus(
                 corpus=vectorized_corpus,
                 corpus_options={},
                 vectorizer_args={} if vectorize_opts is None else vectorize_opts.props,
             )
+
             return corpus
 
         if content_type == ContentType.TOKENS:
@@ -263,10 +269,9 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
 
         if self.target_mode in ['both', 'predict']:
 
-            if inferred_model is None:
-                inferred_model = tm.InferredModel.load(self.trained_model_folder, lazy=False)
+            if self.target_mode == 'predict':
 
-            if predict_corpus is None:
+                inferred_model = tm.InferredModel.load(self.trained_model_folder, lazy=False)
                 predict_corpus = self.instream_to_corpus(id2token=inferred_model.id2token).corpus
 
             _ = self.predict(
