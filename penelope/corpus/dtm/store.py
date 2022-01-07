@@ -118,16 +118,13 @@ class StoreMixIn:
         compressed: bool = True,
         mode: Literal['bundle', 'files'] = 'bundle',
     ) -> IVectorizedCorpus:
-        """Store corpus on disk.
+        """Store corpus to disk.
 
-        The file is stored as two files: one that contains the BoW matrix (.npy or .npz)
-        and a pickled/gzipped file that contains dictionary, word counts and the document index
-
-        The files are stored in files with names prefixed with the specified `tag`:
+        The DTM is stored in `folder` with files prefixed with tag `tag`:
 
             {tag}_vectorizer_data.pickle         Bundle with `token2id`, `document_index` and `overridden_term_frequency`
             {tag}_document_index.csv.gz          Document index as compressed CSV (if mode is `files`)
-            {tag}_token2id.json.gz               Vocabluary as compressed JSON (if mode is `files`)
+            {tag}_token2id.json.gz               Vocabulary as compressed JSON (if mode is `files`)
             {tag}_term_frequency.npy             Term frequency to use, overrides TF sums in DTM (if mode is `files`)
             {tag}_vector_data.[npz|npy]          The document-term matrix (numpy or sparse format)
 
