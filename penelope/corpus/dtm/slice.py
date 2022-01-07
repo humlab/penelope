@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Mapping, Sequence, Set, Tuple, Union
+from typing import List, Mapping, Sequence, Tuple, Union
 
 import numpy as np
 import scipy.sparse as sp
