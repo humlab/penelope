@@ -159,7 +159,7 @@ class SliceMixIn:
     def translate_to_vocab(
         self: ISlicedCorpusProtocol, id2token: Mapping[int, str], inplace=False
     ) -> IVectorizedCorpus:
-        """Translates corpus to new vocabulary. Tokens not foundin new vocabulary are removed."""
+        """Translates corpus to new vocabulary. Tokens not found in target vocabulary are removed."""
 
         common_tokens: List[str] = sorted(list(set(id2token.values()).intersection(self.token2id.keys())))
         token2id: Mapping[str, int] = id2token2token2id(id2token)
