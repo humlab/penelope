@@ -456,7 +456,7 @@ def load_document_index(
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
-    probe_extensions: str = 'zip,csv,gz,feather',
+    probe_extensions: str = 'zip,csv,gz,feather,csv.gz,csv.zip',
     **read_csv_kwargs,
 ) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
