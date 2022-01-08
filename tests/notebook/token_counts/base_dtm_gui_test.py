@@ -41,9 +41,10 @@ def test_create_gui():
 
     assert gui.PoS_tag_groups is not None
     assert len(gui.selected_pos_groups) == 0
-    assert gui.document_index is None
 
-    assert gui.opts.document_index is None
+    # assert gui.document_index is None
+    # assert gui.opts.document_index is None
+
     assert gui.opts.grouping_keys == gui.grouping_keys
     assert gui.opts.normalize == gui.normalize
 
