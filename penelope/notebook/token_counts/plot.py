@@ -1,6 +1,6 @@
 import itertools
 import math
-from typing import Callable, Sequence
+from typing import Callable, List, Sequence
 
 import bokeh
 import bokeh.models
@@ -8,16 +8,14 @@ import bokeh.plotting
 import numpy as np
 import pandas as pd
 import scipy
+from bokeh.plotting import Figure
 from penelope.notebook.word_trends.displayers.utils import get_year_category_ticks
 from penelope.utility import take
 
-# pd.set_option('plotting.backend', 'pandas_bokeh')
-# pd.plotting.output_notebook()
 
-
-def pchip_interpolate_frame(df: pd.DataFrame):
-    x_new = np.arange(df.index.min(), df.index.max() + 0.1, 0.1)
-    data = {'category': x_new}
+def pchip_interpolate_frame(df: pd.DataFrame) -> pd.DataFrame:
+    x_new: np.ndarray = np.arange(df.index.min(), df.index.max() + 0.1, 0.1)
+    data: dict = {'category': x_new}
     for column in df.columns:
         serie = df[column]
         spliner = scipy.interpolate.PchipInterpolator(df.index, serie)
@@ -26,15 +24,22 @@ def pchip_interpolate_frame(df: pd.DataFrame):
     return pd.DataFrame(data)
 
 
-def plot_by_bokeh(*, data_source: pd.DataFrame, smooth: bool):
-    xticks = get_year_category_ticks(data_source.index.tolist())
-    data_source = pchip_interpolate_frame(data_source).set_index('category') if smooth else data_source
-    return plot_dataframe(data_frame=data_source, x_ticks=xticks, figopts=dict(plot_width=1000, plot_height=600))
+def plot_by_bokeh(*, data_source: pd.DataFrame, smooth: bool) -> Figure:
+
+    x_ticks: List[int] = get_year_category_ticks(data_source.index.tolist())
+
+    data_source: pd.DataFrame = pchip_interpolate_frame(data_source).set_index('category') if smooth else data_source
+
+    return plot_dataframe(data_frame=data_source, x_ticks=x_ticks, figopts=dict(plot_width=1000, plot_height=600))
 
 
 def plot_dataframe(
-    *, data_frame: pd.DataFrame, x_ticks: Sequence[int] = None, smoother: Callable = None, figopts: dict = None
-):
+    *,
+    data_frame: pd.DataFrame,
+    x_ticks: Sequence[int] = None,
+    smoother: Callable = None,
+    figopts: dict = None,
+) -> Figure:
     def data_frame_to_data_source(data: pd.DataFrame, smoother: Callable = None) -> dict:
         """Compile multiline plot data for token ids `indices`, optionally applying `smoothers` functions"""
 
@@ -58,6 +63,7 @@ def plot_dataframe(
         return data_source
 
     data_source = data_frame_to_data_source(data=data_frame, smoother=smoother)
+
     p = bokeh.plotting.figure(**(figopts or {}))
 
     # p.sizing_mode = 'scale_width'
