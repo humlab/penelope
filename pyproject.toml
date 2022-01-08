@@ -51,6 +51,7 @@ tqdm = "^4.62.3"
 wordcloud = "*"
 itertoolz = "^0.5"
 ipysheet = "*"
+ipydatagrid = "^1.1.8"
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
