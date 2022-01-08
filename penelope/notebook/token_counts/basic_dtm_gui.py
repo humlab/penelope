@@ -292,11 +292,11 @@ class BasicDTMGUI:
 
             data: pd.DataFrame = self.compute(self.document_index, self.opts)
 
-            plot_frame = lambda: plot_dataframe(data_source=data.set_index(self.temporal_key), smooth=self.smooth)
-            plot_tabular = self.plot_tabular(data, self.opts)
+            plot_table = self.plot_tabular(data, self.opts)
+            plot_graph = lambda: plot_dataframe(data_source=data.set_index(self.temporal_key), smooth=self.smooth)
 
-            self.tab.display_content(0, what=plot_tabular, clear=True)
-            self.tab.display_content(1, what=plot_frame, clear=True)
+            self.tab.display_content(0, what=plot_table, clear=True)
+            self.tab.display_content(1, what=plot_graph, clear=True)
 
             self.alert("✔")
 

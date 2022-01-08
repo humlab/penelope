@@ -469,7 +469,7 @@ def load_document_index(
         folder: str = filename
         tag: str = os.path.basename(filename)
         try:
-            from .dtm.store import load_metadata
+            from .dtm.store import load_metadata  # pylint: disable=import-outside-toplevel
 
             dtm_data: dict = load_metadata(folder=folder, tag=tag)
             document_index = dtm_data['document_index']

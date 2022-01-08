@@ -280,7 +280,6 @@ class StoreMixIn:
 
     @staticmethod
     def load_document_index(folder: str) -> pd.DataFrame:
-        ""
         if not os.path.isdir(folder):
             raise FileNotFoundError("no DTM in selected folder")
 

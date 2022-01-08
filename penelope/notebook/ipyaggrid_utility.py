@@ -78,3 +78,4 @@ def display_grid(
         return g
     except Exception as ex:
         logger.error(ex)
+        return None
