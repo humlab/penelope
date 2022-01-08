@@ -1,7 +1,6 @@
 import contextlib
 from dataclasses import dataclass
-from os.path import isdir
-from typing import Callable, List
+from typing import List, Union
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
@@ -9,7 +8,6 @@ from ipywidgets import HTML, Dropdown, HBox, Label, Layout, Output, SelectMultip
 from loguru import logger
 from penelope import corpus as pc
 from penelope import utility as pu
-from penelope.utility.pos_tags import PoS_Tag_Scheme
 
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
 from .plot import plot_by_bokeh as plot_dataframe
@@ -25,7 +23,6 @@ DEBUG_VIEW = Output()
 class ComputeOpts:
     source_folder: str
     document_index: pd.DataFrame
-    pos_scheme: pu.PoS_Tag_Scheme
     normalize: bool
     smooth: bool
     pos_groups: List[str]
@@ -73,33 +70,24 @@ def compute(document_index: pd.DataFrame, args: ComputeOpts) -> pd.DataFrame:
 
 
 @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
-def load_document_index(source_folder: str, pos_scheme: PoS_Tag_Scheme) -> pd.DataFrame:
+def prepare_document_index(document_index: str, columns: List[str]) -> pd.DataFrame:
+    """Prepares document index by adding/renaming columns
 
-    if not isdir(source_folder):
-        raise FileNotFoundError("Please select a corpus folder!")
-
-    tags: str = pc.VectorizedCorpus.find_tags(source_folder)
-
-    if len(tags) != 1:
-        raise FileNotFoundError("Please select a corpus folder with a valid DRM!")
-
-    metadata: dict = pc.VectorizedCorpus.load_metadata(tag=tags[0], folder=source_folder)
-    document_index: pd.DataFrame = metadata['document_index']
+    Args:
+        source (str): document index source
+        columns (List[str]): PoS-groups column names
+    """
 
     if 'n_raw_tokens' not in document_index.columns:
         raise ValueError("expected required column `n_raw_tokens` not found")
 
     document_index['lustrum'] = document_index.year - document_index.year % 5
     document_index['decade'] = document_index.year - document_index.year % 10
-
     document_index = document_index.rename(columns={"n_raw_tokens": "Total"}).fillna(0)
 
-    # strip away irrelevant columns
-
-    groups = TEMPORAL_GROUP_BY + ['Total'] + pos_scheme.PD_PoS_groups.keys().tolist()
-
+    """strip away irrelevant columns"""
+    groups = TEMPORAL_GROUP_BY + ['Total'] + sorted(columns)
     columns = [x for x in groups if x in document_index.columns]
-
     document_index = document_index[columns]
 
     return document_index
@@ -114,19 +102,13 @@ class BasicDTMGUI:
     def compute(self, df: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
         return compute(df, opts)
 
-    def load_document_index(self, folder: pd.DataFrame, pos_schema: PoS_Tag_Scheme) -> pd.DataFrame:
-        return load_document_index(folder, pos_schema)
+    def __init__(self, default_folder: str, avaliable_grouping_keys: List[str] = None):
+        """GUI base for PoS token count statistics."""
 
-    def __init__(self, default_folder: str):
-        """GUI base for PoS token count statistics.
-
-        Args:
-            corpus_options (List[dict]): List of known corpora, dict(name, path, config_name, ...)
-            compute_callback (Callable[document_index,pd.DataFrame]): Callback that computes data to display
-        """
-        self.avaliable_grouping_keys: List[str] = []
+        self.avaliable_grouping_keys: List[str] = avaliable_grouping_keys or []
         self.document_index: pd.DataFrame = None
         self.default_folder: str = default_folder
+        self.PoS_tag_groups: pd.DataFrame = pu.PD_PoS_tag_groups
         self._source_folder: FileChooserExt2 = None
 
         self._normalize: ToggleButton = ToggleButton(
@@ -134,14 +116,6 @@ class BasicDTMGUI:
         )
         self._smooth: ToggleButton = ToggleButton(
             description="Smooth", icon='check', value=False, layout=Layout(width='140px')
-        )
-        # FIXME: PoS scheme should be derived from DTM
-        self._pos_scheme: Dropdown = Dropdown(
-            options=(('SUC', pu.PoS_Tag_Schemes.SUC)),
-            value=None,
-            description='',
-            disabled=False,
-            layout=Layout(width='90px'),
         )
         self._temporal_key: Dropdown = Dropdown(
             options=TEMPORAL_GROUP_BY,
@@ -152,11 +126,12 @@ class BasicDTMGUI:
         )
         self._status: Label = Label(layout=Layout(width='50%', border="0px transparent white"))
         self._pos_groups: SelectMultiple = SelectMultiple(
-            options=[],
+            options=['Total'] + self.PoS_tag_groups.index.tolist(),
             value=[],
             rows=12,
             layout=Layout(width='120px'),
         )
+
         self._grouping_keys: SelectMultiple = SelectMultiple(
             options=self.avaliable_grouping_keys,
             value=[],
@@ -165,18 +140,6 @@ class BasicDTMGUI:
         )
         self.tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
         self._widgets_placeholder: HBox = HBox()
-
-    @property
-    def pos_scheme(self) -> pu.PoS_Tag_Scheme:
-        return self._pos_scheme.value
-
-    @pos_scheme.setter
-    def pos_scheme(self, value: pu.PoS_Tag_Scheme) -> "BasicDTMGUI":
-        self._pos_scheme.value = value
-        self._pos_groups.values = []
-        self._pos_groups.options = ['Total'] + value.PD_PoS_groups.index.tolist()
-        self._pos_groups.values = ['Total']
-        return self
 
     @property
     def normalize(self) -> bool:
@@ -195,7 +158,7 @@ class BasicDTMGUI:
         return self._grouping_keys.value
 
     @property
-    def pos_groups(self) -> List[str]:
+    def selected_pos_groups(self) -> List[str]:
         return self._pos_groups.value
 
     @property
@@ -207,10 +170,9 @@ class BasicDTMGUI:
         return ComputeOpts(
             source_folder=self.source_folder,
             document_index=self.document_index,
-            pos_scheme=self.pos_scheme,
             normalize=self.normalize,
             smooth=self.smooth,
-            pos_groups=self.pos_groups,
+            pos_groups=self.selected_pos_groups,
             temporal_key=self.temporal_key,
             grouping_keys=self.grouping_keys,
         )
@@ -226,12 +188,14 @@ class BasicDTMGUI:
                                 HTML("<b>PoS groups</b>"),
                                 self._pos_groups,
                             ]
-                            + []
-                            if len(self.avaliable_grouping_keys) == 0
-                            else [
-                                HTML("<b>Pivot by</b>"),
-                                self._grouping_keys,
-                            ],
+                            + (
+                                []
+                                if len(self.avaliable_grouping_keys) == 0
+                                else [
+                                    HTML("<b>Pivot by</b>"),
+                                    self._grouping_keys,
+                                ]
+                            ),
                             layout={'width': '140px'},
                         ),
                         VBox(
@@ -272,9 +236,8 @@ class BasicDTMGUI:
         )
         self._source_folder.refresh()
         self._source_folder.register_callback(self._load)
-
-        self.pos_scheme = pu.PoS_Tag_Schemes.SUC
         self.observe(True)
+        self._load()
 
         return self
 
@@ -299,19 +262,27 @@ class BasicDTMGUI:
             self.alert(f"failed: {ex}")
         return self
 
-    def _load(self, *_) -> None:
-        self.load()
-        self.display()
+    @DEBUG_VIEW.capture(clear_output=False)
+    def load(self, source: Union[str, pd.DataFrame]) -> None:
+        self.document_index = (
+            source if isinstance(source, pd.DataFrame) else pc.VectorizedCorpus.load_document_index(source)
+        )
 
-    def load(self) -> "BasicDTMGUI":
+    @DEBUG_VIEW.capture(clear_output=False)
+    def prepare(self) -> None:
+        self.document_index = prepare_document_index(self.document_index, columns=self.PoS_tag_groups.index.tolist())
+
+    def _load(self, *_) -> None:
         try:
-            self.document_index = self.load_document_index(self.opts.source_folder, self.opts.pos_scheme)
+            self.load(source=self.opts.source_folder)
+            self.prepare()
+            self.display()
         except FileNotFoundError as ex:
             self.alert(ex)
         except ValueError as ex:
             self.alert(ex)
-        return self
 
+    @DEBUG_VIEW.capture(clear_output=False)
     def plot(self) -> None:
 
         try:
@@ -320,8 +291,6 @@ class BasicDTMGUI:
                 return
 
             data: pd.DataFrame = self.compute(self.document_index, self.opts)
-
-            # plot_tabular = lambda x: display(x)
 
             plot_frame = lambda: plot_dataframe(data_source=data.set_index(self.temporal_key), smooth=self.smooth)
             plot_tabular = self.plot_tabular(data, self.opts)
