@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from .readers.interfaces import TextReaderOpts
 
 
-
 class DocumentIndexError(ValueError):
     ...
 
@@ -465,12 +464,13 @@ def load_document_index(
     if filename is None:
         return None
 
-    if isinstance(filename,str) and (filename.endswith("pickle") or os.path.isdir(filename)):
+    if isinstance(filename, str) and (filename.endswith("pickle") or os.path.isdir(filename)):
         """Try to import DTM document index (which might be pickled)"""
         folder: str = filename
         tag: str = os.path.basename(filename)
         try:
             from .dtm.store import load_metadata
+
             dtm_data: dict = load_metadata(folder=folder, tag=tag)
             document_index = dtm_data['document_index']
         except ValueError as ex:
