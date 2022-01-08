@@ -14,17 +14,15 @@ from typing import Dict, List, Literal, Mapping, Optional
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.utility import read_json, write_json
-from penelope.utility.filename_utils import strip_paths
+from penelope.utility import read_json, strip_paths, write_json
 
-from ..document_index import DocumentIndex
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
 
 def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
     token2id: Dict[str, int],
-    document_index: DocumentIndex,
+    document_index: pd.DataFrame,
     overridden_term_frequency: Dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
@@ -116,7 +114,7 @@ class StoreMixIn:
         tag: str,
         folder: str,
         compressed: bool = True,
-        mode: Literal['bundle', 'files'] = 'bundle',
+        mode: Literal['bundle', 'files'] = 'files',
     ) -> IVectorizedCorpus:
         """Store corpus to disk.
 
