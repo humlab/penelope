@@ -4,14 +4,13 @@ from os.path import isdir
 from typing import Callable, List
 
 import pandas as pd
+from ipydatagrid import DataGrid, TextRenderer
 from ipywidgets import HTML, Dropdown, HBox, Label, Layout, Output, SelectMultiple, ToggleButton, VBox
 from loguru import logger
 from penelope import corpus as pc
 from penelope import utility as pu
-
-from ipydatagrid import DataGrid, TextRenderer
-
 from penelope.utility.pos_tags import PoS_Tag_Scheme
+
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
 from .plot import plot_by_bokeh as plot_dataframe
 
@@ -115,11 +114,10 @@ class BasicDTMGUI:
     def compute(self, df: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
         return compute(df, opts)
 
-
     def load_document_index(self, folder: pd.DataFrame, pos_schema: PoS_Tag_Scheme) -> pd.DataFrame:
         return load_document_index(folder, pos_schema)
 
-    def __init__( self, default_folder: str ):
+    def __init__(self, default_folder: str):
         """GUI base for PoS token count statistics.
 
         Args:

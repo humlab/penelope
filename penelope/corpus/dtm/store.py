@@ -280,6 +280,7 @@ class StoreMixIn:
     def store_metadata(self, *, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files') -> None:
         return store_metadata(tag=tag, folder=folder, mode=mode, **self.metadata)
 
+
 def load_corpus(
     *,
     tag: str,
