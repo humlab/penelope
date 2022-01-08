@@ -278,6 +278,21 @@ class StoreMixIn:
     def store_metadata(self, *, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files') -> None:
         return store_metadata(tag=tag, folder=folder, mode=mode, **self.metadata)
 
+    @staticmethod
+    def load_document_index(folder: str) -> pd.DataFrame:
+        ""
+        if not os.path.isdir(folder):
+            raise FileNotFoundError("no DTM in selected folder")
+
+        tags: str = StoreMixIn.find_tags(folder)
+
+        if len(tags) != 1:
+            raise FileNotFoundError("no (unique) DTM in selected folder")
+
+        md: dict = StoreMixIn.load_metadata(tag=tags[0], folder=folder)
+        di: pd.DataFrame = md.get('document_index')
+        return di
+
 
 def load_corpus(
     *,
