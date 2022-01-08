@@ -3,6 +3,7 @@ from typing import Dict, List, Union
 import ipyaggrid
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 # FIXME #89 Replace ipyaggrid with `perspective` or `panel.Tabulator`
 
@@ -50,27 +51,30 @@ def display_grid(
     grid_style: dict = None,
 ) -> ipyaggrid.Grid:
 
-    if isinstance(data, dict):
-        df = pd.DataFrame(data=data)
-    elif isinstance(data, pd.DataFrame):
-        df = data
-    else:
-        raise ValueError(f"Data must be dict or pandas.DataFrame not {type(data)}")
+    try:
+        if isinstance(data, dict):
+            df = pd.DataFrame(data=data)
+        elif isinstance(data, pd.DataFrame):
+            df = data
+        else:
+            raise ValueError(f"Data must be dict or pandas.DataFrame not {type(data)}")
 
-    # if os.environ.get('VSCODE_LOG_STACK', None) is not None:
-    #     logging.warning("bug-check: vscode detected, aborting plot...")
-    #     return df
+        # if os.environ.get('VSCODE_LOG_STACK', None) is not None:
+        #     logging.warning("bug-check: vscode detected, aborting plot...")
+        #     return df
 
-    column_defs = default_column_defs(df) if column_defs is None else column_defs
+        column_defs = default_column_defs(df) if column_defs is None else column_defs
 
-    grid_options = {
-        'columnDefs': column_defs,
-        **DEFAULT_GRID_OPTIONS,
-        **(grid_options or {}),
-    }
+        grid_options = {
+            'columnDefs': column_defs,
+            **DEFAULT_GRID_OPTIONS,
+            **(grid_options or {}),
+        }
 
-    grid_style = {**DEFAULT_GRID_STYLE, **(grid_style or {})}
+        grid_style = {**DEFAULT_GRID_STYLE, **(grid_style or {})}
 
-    g = ipyaggrid.Grid(grid_data=df, grid_options=grid_options, **grid_style)
+        g = ipyaggrid.Grid(grid_data=df, grid_options=grid_options, **grid_style)
 
-    return g
+        return g
+    except Exception as ex:
+        logger.error(ex)
