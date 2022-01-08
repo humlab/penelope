@@ -75,7 +75,7 @@ def load_metadata(*, tag: str, folder: str) -> dict:
     raise ValueError("No metadata in folder")
 
 
-def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'bundle', **data) -> None:
+def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files', **data) -> None:
 
     if isinstance(data.get('token2id'), defaultdict):
         data['token2id'] = dict(
@@ -273,6 +273,12 @@ class StoreMixIn:
             return read_json(json_filename)
         return dict()
 
+    @staticmethod
+    def load_metadata(*, tag: str, folder: str) -> dict:
+        return load_metadata(tag=tag, folder=folder)
+
+    def store_metadata(self, *, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files') -> None:
+        return store_metadata(tag=tag, folder=folder, mode=mode, **self.metadata)
 
 def load_corpus(
     *,
