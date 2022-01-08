@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from .readers.interfaces import TextReaderOpts
 
 
+
 class DocumentIndexError(ValueError):
     ...
 
@@ -464,18 +465,29 @@ def load_document_index(
     if filename is None:
         return None
 
-    if isinstance(filename, str):
-        if (probe_filename := probe_extension(filename, extensions=probe_extensions)) is None:
-            raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
-        filename = probe_filename
+    if isinstance(filename,str) and (filename.endswith("pickle") or os.path.isdir(filename)):
+        """Try to import DTM document index (which might be pickled)"""
+        folder: str = filename
+        tag: str = os.path.basename(filename)
+        try:
+            from .dtm.store import load_metadata
+            dtm_data: dict = load_metadata(folder=folder, tag=tag)
+            document_index = dtm_data['document_index']
+        except ValueError as ex:
+            raise FileNotFoundError(filename) from ex
+    else:
+        if isinstance(filename, str):
+            if (probe_filename := probe_extension(filename, extensions=probe_extensions)) is None:
+                raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
+            filename = probe_filename
 
-    document_index: DocumentIndex = (
-        filename
-        if isinstance(filename, DocumentIndex)
-        else pd.read_feather(filename)
-        if isinstance(filename, str) and filename.endswith('feather')
-        else pd.read_csv(filename, sep=sep, **read_csv_kwargs)
-    )
+        document_index: DocumentIndex = (
+            filename
+            if isinstance(filename, DocumentIndex)
+            else pd.read_feather(filename)
+            if isinstance(filename, str) and filename.endswith('feather')
+            else pd.read_csv(filename, sep=sep, **read_csv_kwargs)
+        )
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:
         if old_or_unnamed_index_column in document_index.columns:
