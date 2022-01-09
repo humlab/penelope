@@ -4,12 +4,13 @@ from typing import List, Union
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
-from ipywidgets import HTML, Dropdown, HBox, Label, Layout, Output, SelectMultiple, ToggleButton, VBox
+from IPython.display import display as ipydisplay
+from ipywidgets import HTML, Button, Dropdown, HBox, Label, Layout, Output, SelectMultiple, ToggleButton, VBox
 from loguru import logger
 from penelope import corpus as pc
 from penelope import utility as pu
 
-from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
+from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt, create_js_download
 from .plot import plot_by_bokeh as plot_dataframe
 
 TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
@@ -96,18 +97,14 @@ def prepare_document_index(document_index: str, columns: List[str]) -> pd.DataFr
 class BasicDTMGUI:
     """GUI component that displays token counts"""
 
-    def plot_tabular(self, df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
-        return plot_tabular(df, opts)
-
-    def compute(self, df: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
-        return compute(df, opts)
-
     def __init__(self, default_folder: str, avaliable_grouping_keys: List[str] = None):
         """GUI base for PoS token count statistics."""
 
+        self.default_folder: str = default_folder
         self.avaliable_grouping_keys: List[str] = avaliable_grouping_keys or []
         self.document_index: pd.DataFrame = None
-        self.default_folder: str = default_folder
+        self.data: pd.DataFrame = None
+
         self.PoS_tag_groups: pd.DataFrame = pu.PD_PoS_tag_groups
         self._source_folder: FileChooserExt2 = None
 
@@ -140,6 +137,22 @@ class BasicDTMGUI:
         )
         self.tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
         self._widgets_placeholder: HBox = HBox()
+        self._download = Button(description='Download data', layout=Layout(width='auto'))
+        self._download_output: Output = Output()
+
+    def download(self, *_):
+        with contextlib.suppress(Exception):
+            with self._download_output:
+                js_download = create_js_download(self.data, index=True)
+                if js_download is not None:
+                    ipydisplay(js_download)
+
+    def plot_tabular(self, df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
+        return plot_tabular(df, opts)
+
+    def compute(self, df: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
+        self.data = compute(df, opts)
+        return self.data
 
     @property
     def normalize(self) -> bool:
@@ -206,7 +219,9 @@ class BasicDTMGUI:
                                         self._smooth,
                                         self._temporal_key,
                                         self._widgets_placeholder,
+                                        self._download,
                                         self._status,
+                                        self._download_output,
                                     ]
                                 ),
                                 HBox(
