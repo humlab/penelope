@@ -6,7 +6,7 @@ from bokeh.plotting import show
 from ipywidgets import HTML, Button, HBox, IntSlider, Layout, Output, SelectMultiple, Text, ToggleButton, VBox
 from penelope.corpus import VectorizedCorpus
 
-from .displayers import deprecated_plot as plotter
+from .displayers import plotter
 from .interface import TrendsData
 
 
