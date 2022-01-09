@@ -1,5 +1,5 @@
 # type: ignore
 
-from .basic_dtm_gui import BasicDTMGUI, ComputeOpts
+from .dtm_gui import BasicDTMGUI, ComputeOpts
 from .plot import plot_by_bokeh, plot_dataframe
-from .tokens_count_gui import create_token_count_gui
+from .pipeline_gui import create_token_count_gui
