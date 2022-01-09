@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from penelope.notebook.token_counts import tokens_count_gui
+from penelope.notebook.token_counts import pipeline_gui
 from penelope.pipeline import config as corpus_config
 
 # pylint: disable=redefined-outer-name
@@ -27,14 +27,14 @@ def monkey_patch(*_, **__):
     pass
 
 
-@patch('penelope.notebook.token_counts.tokens_count_gui.compute_token_count_data', monkey_patch)
-@patch('penelope.notebook.token_counts.tokens_count_gui.load_document_index', monkey_patch)
+@patch('penelope.notebook.token_counts.pipeline_gui.compute_token_count_data', monkey_patch)
+@patch('penelope.notebook.token_counts.pipeline_gui.load_document_index', monkey_patch)
 def test_create_token_count_gui_succeeds():
 
     corpus_folder: str = './tests/test_data'
     resources_folder: str = './tests/test_data'
 
-    gui: tokens_count_gui.TokenCountsGUI = tokens_count_gui.create_token_count_gui(corpus_folder, resources_folder)
+    gui: pipeline_gui.TokenCountsGUI = pipeline_gui.create_token_count_gui(corpus_folder, resources_folder)
 
     assert gui is not None
 
@@ -52,8 +52,8 @@ def test_create_token_count_gui_create_succeeds():
         return MagicMock(spec=pd.DataFrame)
 
     resources_folder: str = './tests/test_data'
-    gui: tokens_count_gui.TokenCountsGUI = (
-        tokens_count_gui.TokenCountsGUI(
+    gui: pipeline_gui.TokenCountsGUI = (
+        pipeline_gui.TokenCountsGUI(
             compute_callback=monkey_patch,
             load_document_index_callback=load_document_index_callback,
             load_corpus_config_callback=load_corpus_config_callback,
@@ -73,6 +73,6 @@ def test_load_document_index(config: corpus_config.CorpusConfig):
     config.pipeline_payload.folders('./tests/test_data')
     config.checkpoint_opts.feather_folder = None
 
-    document_index: pd.DataFrame = tokens_count_gui.load_document_index(config)
+    document_index: pd.DataFrame = pipeline_gui.load_document_index(config)
 
     assert document_index is not None

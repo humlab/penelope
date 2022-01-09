@@ -3,7 +3,7 @@ import os
 import ipywidgets as widgets
 import pandas as pd
 import pytest
-from penelope.notebook.token_counts import basic_dtm_gui as tc
+from penelope.notebook.token_counts import dtm_gui as tc
 
 # pylint: disable=protected-access
 
