@@ -17,7 +17,7 @@ TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
 
 DEBUG_VIEW = Output()
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
 
 
 @dataclass
