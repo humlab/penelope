@@ -47,7 +47,7 @@ def test_create_gui():
     # assert gui.document_index is None
     # assert gui.opts.document_index is None
 
-    assert gui.opts.pivot_keys == gui.selected_pivot_keys
+    assert gui.opts.pivot_keys == gui.selected_pivot_keys_idnames
     assert gui.opts.normalize == gui.normalize
 
     gui.load(gui.source_folder)
