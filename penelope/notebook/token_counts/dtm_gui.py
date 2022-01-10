@@ -111,7 +111,8 @@ class BasicDTMGUI:
             pivot_keys = {x: x for x in pivot_keys}
 
         self.default_folder: str = default_folder
-        self.pivot_keys_map: Mapping[str, str] = pivot_keys or {}
+        self.pivot_key_name2idname: Mapping[str, str] = pivot_keys or {}
+        self.pivot_key_idname2name: Mapping[str, str] = {v: k for k, v in self.pivot_key_name2idname.items()}
         self.document_index: pd.DataFrame = None
         self.data: pd.DataFrame = None
         self.defaults: dict = defaults
@@ -140,7 +141,7 @@ class BasicDTMGUI:
         )
 
         self._pivot_keys: SelectMultiple = SelectMultiple(
-            options=['None'] + list(self.pivot_keys_map.keys()),
+            options=['None'] + list(self.pivot_key_name2idname.keys()),
             value=['None'],
             rows=12,
             layout=Layout(width='120px'),
@@ -188,8 +189,12 @@ class BasicDTMGUI:
         return self._temporal_key.value
 
     @property
-    def selected_pivot_keys(self) -> List[str]:
-        return [self.pivot_keys_map[x] for x in self._pivot_keys.value if x != 'None']
+    def selected_pivot_keys_idnames(self) -> List[str]:
+        return [self.pivot_key_name2idname.get(x) for x in self.selected_pivot_key_names]
+
+    @property
+    def selected_pivot_key_names(self) -> List[str]:
+        return [x for x in self._pivot_keys.value if x != 'None']
 
     @property
     def selected_pos_groups(self) -> List[str]:
@@ -208,7 +213,7 @@ class BasicDTMGUI:
             smooth=self.smooth,
             pos_groups=self.selected_pos_groups,
             temporal_key=self.temporal_key,
-            pivot_keys=self.selected_pivot_keys,
+            pivot_keys=self.selected_pivot_keys_idnames,
         )
 
     def layout(self) -> HBox:
@@ -224,7 +229,7 @@ class BasicDTMGUI:
                             ]
                             + (
                                 []
-                                if len(self.pivot_keys_map) == 0
+                                if len(self.pivot_key_name2idname) == 0
                                 else [
                                     HTML("<b>Pivot by</b>"),
                                     self._pivot_keys,
@@ -341,7 +346,10 @@ class BasicDTMGUI:
             data: pd.DataFrame = self.compute(self.document_index, self.opts)
 
             plot_table = self.plot_tabular(data, self.opts)
-            plot_graph = lambda: plot_dataframe(data_source=data.set_index(self.temporal_key), smooth=self.smooth)
+
+            data = data.set_index([self.temporal_key] + self.selected_pivot_key_names)
+
+            plot_graph = lambda: plot_dataframe(data_source=data, smooth=self.smooth)
 
             self.tab.display_content(0, what=plot_table, clear=True)
             self.tab.display_content(1, what=plot_graph, clear=True)
