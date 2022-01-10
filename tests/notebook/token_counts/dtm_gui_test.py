@@ -10,10 +10,12 @@ from penelope.notebook.token_counts import dtm_gui as tc
 
 @pytest.mark.long_running
 def test_create_gui():
-    gui = tc.BasicDTMGUI(default_folder='/data/riksdagen_corpus_data/dtm_1920-2020_v0.3.0.tf20')
+    gui = tc.BasicDTMGUI(
+        default_folder='/data/riksdagen_corpus_data/dtm_1920-2020_v0.3.0.tf20',
+    )
     assert gui is not None
 
-    gui = gui.setup()
+    gui = gui.setup(load_data=False)
 
     assert gui is not None
     assert os.path.isdir(gui.source_folder)
@@ -45,7 +47,7 @@ def test_create_gui():
     # assert gui.document_index is None
     # assert gui.opts.document_index is None
 
-    assert gui.opts.grouping_keys == gui.grouping_keys
+    assert gui.opts.pivot_keys == gui.selected_pivot_keys
     assert gui.opts.normalize == gui.normalize
 
     gui.load(gui.source_folder)
