@@ -24,7 +24,18 @@ def pchip_interpolate_frame(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
+def unstack_pivots(df: pd.DataFrame) -> pd.DataFrame:
+    if len(df.index.levels) <= 1:
+        return df
+    df: pd.DataFrame = df.unstack()
+    df.columns = [','.join(x) for x in df.columns]
+    return df
+
+
 def plot_by_bokeh(*, data_source: pd.DataFrame, smooth: bool) -> Figure:
+
+    if len(data_source.index.levels) > 1:
+        data_source = unstack_pivots(data_source)
 
     x_ticks: List[int] = get_year_category_ticks(data_source.index.tolist())
 
