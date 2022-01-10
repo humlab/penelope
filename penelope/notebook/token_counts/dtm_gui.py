@@ -1,11 +1,11 @@
 import contextlib
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Mapping, Union
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
 from IPython.display import display as ipydisplay
-from ipywidgets import HTML, Button, Dropdown, HBox, Label, Layout, Output, SelectMultiple, ToggleButton, VBox
+from ipywidgets import HTML, Button, Dropdown, HBox, Layout, Output, SelectMultiple, ToggleButton, VBox
 from loguru import logger
 from penelope import corpus as pc
 from penelope import utility as pu
@@ -28,7 +28,7 @@ class ComputeOpts:
     smooth: bool
     pos_groups: List[str]
     temporal_key: str
-    grouping_keys: List[str]
+    pivot_keys: List[str]
 
 
 def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
@@ -49,29 +49,30 @@ def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
 
 
 @DEBUG_VIEW.capture(clear_output=False)
-def compute(document_index: pd.DataFrame, args: ComputeOpts) -> pd.DataFrame:
+def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
 
-    grouping_columns: List[str] = [args.temporal_key] + list(args.grouping_keys)
+    pivot_keys: List[str] = [opts.temporal_key] + list(opts.pivot_keys)
     count_columns: List[str] = (
-        list(args.pos_groups)
-        if len(args.pos_groups or []) > 0
-        else [x for x in document_index.columns if x not in TEMPORAL_GROUP_BY + ['Total']]
+        list(opts.pos_groups)
+        if len(opts.pos_groups or []) > 0
+        else [x for x in document_index.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys]
     )
 
-    data: pd.DataFrame = document_index.groupby(grouping_columns).sum()[count_columns]
+    data: pd.DataFrame = document_index.groupby(pivot_keys).sum()[count_columns]
 
-    if args.normalize:
-        total: pd.Series = document_index.groupby(grouping_columns)['Total'].sum()
+    if opts.normalize:
+        total: pd.Series = document_index.groupby(pivot_keys)['Total'].sum()
         data = data.div(total, axis=0)
 
-    if args.smooth:
+    if opts.smooth:
         data = data.interpolate(method='index')
 
-    return data.reset_index()
+    data = data.reset_index()[pivot_keys + count_columns]
+    return data
 
 
 @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
-def prepare_document_index(document_index: str, columns: List[str]) -> pd.DataFrame:
+def prepare_document_index(document_index: str, keep_columns: List[str]) -> pd.DataFrame:
     """Prepares document index by adding/renaming columns
 
     Args:
@@ -87,9 +88,9 @@ def prepare_document_index(document_index: str, columns: List[str]) -> pd.DataFr
     document_index = document_index.rename(columns={"n_raw_tokens": "Total"}).fillna(0)
 
     """strip away irrelevant columns"""
-    groups = TEMPORAL_GROUP_BY + ['Total'] + sorted(columns)
-    columns = [x for x in groups if x in document_index.columns]
-    document_index = document_index[columns]
+    groups = TEMPORAL_GROUP_BY + ['Total'] + sorted(keep_columns)
+    keep_columns = [x for x in groups if x in document_index.columns]
+    document_index = document_index[keep_columns]
 
     return document_index
 
@@ -97,48 +98,68 @@ def prepare_document_index(document_index: str, columns: List[str]) -> pd.DataFr
 class BasicDTMGUI:
     """GUI component that displays token counts"""
 
-    def __init__(self, default_folder: str, avaliable_grouping_keys: List[str] = None):
+    def __init__(
+        self,
+        *,
+        default_folder: str,
+        pivot_keys: Union[List[str], Mapping[str, str]] = None,
+        **defaults: dict,
+    ):
         """GUI base for PoS token count statistics."""
 
+        if isinstance(pivot_keys, list):
+            pivot_keys = {x: x for x in pivot_keys}
+
         self.default_folder: str = default_folder
-        self.avaliable_grouping_keys: List[str] = avaliable_grouping_keys or []
+        self.pivot_keys_map: Mapping[str, str] = pivot_keys or {}
         self.document_index: pd.DataFrame = None
         self.data: pd.DataFrame = None
-
+        self.defaults: dict = defaults
         self.PoS_tag_groups: pd.DataFrame = pu.PD_PoS_tag_groups
         self._source_folder: FileChooserExt2 = None
 
         self._normalize: ToggleButton = ToggleButton(
-            description="Normalize", icon='check', value=False, layout=Layout(width='140px')
+            description="Normalize", icon='check', value=defaults.get('normalize', False), layout=Layout(width='140px')
         )
         self._smooth: ToggleButton = ToggleButton(
-            description="Smooth", icon='check', value=False, layout=Layout(width='140px')
+            description="Smooth", icon='check', value=defaults.get('smooth', False), layout=Layout(width='140px')
         )
         self._temporal_key: Dropdown = Dropdown(
             options=TEMPORAL_GROUP_BY,
-            value='year',
+            value=defaults.get('temporal_key', 'decade'),
             description='',
             disabled=False,
             layout=Layout(width='90px'),
         )
-        self._status: Label = Label(layout=Layout(width='50%', border="0px transparent white"))
+        self._status: HTML = HTML(layout=Layout(width='50%', border="0px transparent white"))
         self._pos_groups: SelectMultiple = SelectMultiple(
             options=['Total'] + self.PoS_tag_groups.index.tolist(),
-            value=[],
+            value=['Total'],
             rows=12,
             layout=Layout(width='120px'),
         )
 
-        self._grouping_keys: SelectMultiple = SelectMultiple(
-            options=self.avaliable_grouping_keys,
-            value=[],
+        self._pivot_keys: SelectMultiple = SelectMultiple(
+            options=['None'] + list(self.pivot_keys_map.keys()),
+            value=['None'],
             rows=12,
             layout=Layout(width='120px'),
         )
         self.tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
         self._widgets_placeholder: HBox = HBox()
-        self._download = Button(description='Download data', layout=Layout(width='auto'))
+        self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
+
+    def reset(self) -> "BasicDTMGUI":
+        self.observe(False)
+        self.document_index = None
+        self.data = None
+        self._normalize.value = self.defaults.get('normalize', False)
+        self._smooth.value = self.defaults.get('smooth', False)
+        self._temporal_key.value = self.defaults.get('temporal_key', 'decade')
+        self._pos_groups.value = ['Total']
+        self._pivot_keys.value = ['None']
+        self.observe(True)
 
     def download(self, *_):
         with contextlib.suppress(Exception):
@@ -167,8 +188,8 @@ class BasicDTMGUI:
         return self._temporal_key.value
 
     @property
-    def grouping_keys(self) -> List[str]:
-        return self._grouping_keys.value
+    def selected_pivot_keys(self) -> List[str]:
+        return [self.pivot_keys_map[x] for x in self._pivot_keys.value if x != 'None']
 
     @property
     def selected_pos_groups(self) -> List[str]:
@@ -187,7 +208,7 @@ class BasicDTMGUI:
             smooth=self.smooth,
             pos_groups=self.selected_pos_groups,
             temporal_key=self.temporal_key,
-            grouping_keys=self.grouping_keys,
+            pivot_keys=self.selected_pivot_keys,
         )
 
     def layout(self) -> HBox:
@@ -203,10 +224,10 @@ class BasicDTMGUI:
                             ]
                             + (
                                 []
-                                if len(self.avaliable_grouping_keys) == 0
+                                if len(self.pivot_keys_map) == 0
                                 else [
                                     HTML("<b>Pivot by</b>"),
-                                    self._grouping_keys,
+                                    self._pivot_keys,
                                 ]
                             ),
                             layout={'width': '140px'},
@@ -240,7 +261,8 @@ class BasicDTMGUI:
             ]
         )
 
-    def setup(self) -> "BasicDTMGUI":
+    def setup(self, load_data: bool = False) -> "BasicDTMGUI":
+        self.observe(False)
         self._source_folder: FileChooserExt2 = FileChooserExt2(
             path=self.default_folder,
             title='<b>Corpus folder</b>',
@@ -251,14 +273,20 @@ class BasicDTMGUI:
         )
         self._source_folder.refresh()
         self._source_folder.register_callback(self._load)
+        self._download.on_click(self.download)
+        self._pivot_keys.observe(self.pivot_key_handler, 'value')
         self.observe(True)
-        self._load()
-
+        if load_data:
+            self._load()
         return self
+
+    def pivot_key_handler(self, *_):
+        if 'None' in self._pivot_keys.value:
+            self._pivot_keys.value = ['None']
 
     def observe(self, value: bool) -> None:
         method: str = 'observe' if value else 'unobserve'
-        for ctrl in [self._pos_groups, self._normalize, self._smooth, self._temporal_key]:
+        for ctrl in [self._pos_groups, self._normalize, self._smooth, self._temporal_key, self._pivot_keys]:
             with contextlib.suppress(Exception):
                 getattr(ctrl, method)(self._display, names='value')
 
@@ -278,14 +306,19 @@ class BasicDTMGUI:
         return self
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def load(self, source: Union[str, pd.DataFrame]) -> None:
+    def load(self, source: Union[str, pd.DataFrame]) -> "BasicDTMGUI":
         self.document_index = (
             source if isinstance(source, pd.DataFrame) else pc.VectorizedCorpus.load_document_index(source)
         )
+        return self
+
+    def keep_columns(self) -> List[str]:
+        return self.PoS_tag_groups.index.tolist()
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def prepare(self) -> None:
-        self.document_index = prepare_document_index(self.document_index, columns=self.PoS_tag_groups.index.tolist())
+    def prepare(self) -> "BasicDTMGUI":
+        self.document_index = prepare_document_index(self.document_index, keep_columns=self.keep_columns())
+        return self
 
     def _load(self, *_) -> None:
         try:
