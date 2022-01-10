@@ -11,7 +11,7 @@ from penelope import corpus as pc
 from penelope import utility as pu
 
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt, create_js_download
-from .plot import plot_by_bokeh as plot_dataframe
+from .plot import plot_by_bokeh
 
 TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
 
@@ -29,6 +29,7 @@ class ComputeOpts:
     pos_groups: List[str]
     temporal_key: str
     pivot_keys: List[str]
+    unstack_tabular: bool
 
 
 def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
@@ -52,6 +53,7 @@ def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
 def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
 
     pivot_keys: List[str] = [opts.temporal_key] + list(opts.pivot_keys)
+
     count_columns: List[str] = (
         list(opts.pos_groups)
         if len(opts.pos_groups or []) > 0
@@ -125,6 +127,9 @@ class BasicDTMGUI:
         self._smooth: ToggleButton = ToggleButton(
             description="Smooth", icon='check', value=defaults.get('smooth', False), layout=Layout(width='140px')
         )
+        self._unstack_tabular: ToggleButton = ToggleButton(
+            description="Unstack", icon='check', value=defaults.get('unstack', False), layout=Layout(width='140px')
+        )
         self._temporal_key: Dropdown = Dropdown(
             options=TEMPORAL_GROUP_BY,
             value=defaults.get('temporal_key', 'decade'),
@@ -160,6 +165,7 @@ class BasicDTMGUI:
         self._temporal_key.value = self.defaults.get('temporal_key', 'decade')
         self._pos_groups.value = ['Total']
         self._pivot_keys.value = ['None']
+        self._unstack_tabular.value = False
         self.observe(True)
 
     def download(self, *_):
@@ -172,8 +178,8 @@ class BasicDTMGUI:
     def plot_tabular(self, df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
         return plot_tabular(df, opts)
 
-    def compute(self, df: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
-        self.data = compute(df, opts)
+    def compute(self) -> pd.DataFrame:
+        self.data = compute(self.document_index, self.opts)
         return self.data
 
     @property
@@ -205,6 +211,12 @@ class BasicDTMGUI:
         return self._source_folder.selected_path
 
     @property
+    def unstack_tabular(self) -> bool:
+        if len(self.selected_pivot_key_names) > 0:
+            return self._unstack_tabular.value
+        return False
+
+    @property
     def opts(self) -> ComputeOpts:
         return ComputeOpts(
             source_folder=self.source_folder,
@@ -214,6 +226,7 @@ class BasicDTMGUI:
             pos_groups=self.selected_pos_groups,
             temporal_key=self.temporal_key,
             pivot_keys=self.selected_pivot_keys_idnames,
+            unstack_tabular=self.unstack_tabular,
         )
 
     def layout(self) -> HBox:
@@ -243,6 +256,9 @@ class BasicDTMGUI:
                                     [
                                         self._normalize,
                                         self._smooth,
+                                    ]
+                                    + ([self._unstack_tabular] if len(self.pivot_key_name2idname) > 0 else [])
+                                    + [
                                         self._temporal_key,
                                         self._widgets_placeholder,
                                         self._download,
@@ -280,6 +296,10 @@ class BasicDTMGUI:
         self._source_folder.register_callback(self._load)
         self._download.on_click(self.download)
         self._pivot_keys.observe(self.pivot_key_handler, 'value')
+
+        if len(self.pivot_key_name2idname) > 0:
+            self._unstack_tabular.observe(self._display, 'value')
+
         self.observe(True)
         if load_data:
             self._load()
@@ -294,6 +314,8 @@ class BasicDTMGUI:
         for ctrl in [self._pos_groups, self._normalize, self._smooth, self._temporal_key, self._pivot_keys]:
             with contextlib.suppress(Exception):
                 getattr(ctrl, method)(self._display, names='value')
+        if len(self.pivot_key_name2idname) > 0:
+            getattr(self._unstack_tabular, method)(self._display, names='value')
 
     def _display(self, _):
         self.observe(False)
@@ -305,7 +327,11 @@ class BasicDTMGUI:
     @DEBUG_VIEW.capture(clear_output=False)
     def display(self) -> "BasicDTMGUI":
         try:
-            self.plot()
+            data: pd.DataFrame = self.compute()
+            if self.document_index is None:
+                self.alert("Please select a corpus folder!")
+            else:
+                self.plot(data)
         except Exception as ex:
             self.alert(f"failed: {ex}")
         return self
@@ -335,30 +361,39 @@ class BasicDTMGUI:
         except ValueError as ex:
             self.alert(ex)
 
+    def unstack_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        if len(self.selected_pivot_key_names) > 0:
+            data: pd.DataFrame = self.data.set_index([self.temporal_key] + self.selected_pivot_key_names)
+            while isinstance(data.index, pd.MultiIndex):
+                data = data.unstack(level=1, fill_value=0)
+                if isinstance(data.columns, pd.MultiIndex):
+                    data.columns = [','.join(x) for x in data.columns]
+        return data
+
     @DEBUG_VIEW.capture(clear_output=False)
-    def plot(self) -> None:
+    def plot(self, data: pd.DataFrame) -> None:
 
         try:
-            if self.document_index is None:  # pragma: no cover
-                self.alert("Please select a corpus folder!")
-                return
 
-            data: pd.DataFrame = self.compute(self.document_index, self.opts)
+            data: pd.DataFrame = self.compute()
 
-            plot_table = self.plot_tabular(data, self.opts)
+            if len(self.selected_pivot_key_names) > 0:
+                unstacked_data: pd.DataFrame = self.unstack_data(data)
 
-            data = data.set_index([self.temporal_key] + self.selected_pivot_key_names)
+            table: pd.DataFrame = self.plot_tabular(unstacked_data if self.unstack_tabular else data, self.opts)
 
-            plot_graph = lambda: plot_dataframe(data_source=data, smooth=self.smooth)
+            # FIXME: Add option to plot several graphs?
+            plot_graph = lambda: plot_by_bokeh(
+                data_source=unstacked_data.set_index(self.temporal_key), smooth=self.smooth
+            )
 
-            self.tab.display_content(0, what=plot_table, clear=True)
+            self.tab.display_content(0, what=table, clear=True)
             self.tab.display_content(1, what=plot_graph, clear=True)
 
             self.alert("✔")
-
-        except ValueError as ex:  # pragma: no cover
+        except ValueError as ex:
             self.alert(str(ex))
-        except Exception as ex:  # pragma: no cover
+        except Exception as ex:
             logger.exception(ex)
             self.warn(str(ex))
 

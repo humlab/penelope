@@ -59,11 +59,11 @@ def test_create_gui():
     assert 'Total' in gui.document_index.columns
 
     gui._temporal_key.value = 'year'
-    data: pd.DataFrame = gui.compute(gui.document_index, gui.opts)
+    data: pd.DataFrame = gui.compute()
     assert len(data) == 101
 
     gui._temporal_key.value = 'decade'
-    data: pd.DataFrame = gui.compute(gui.document_index, gui.opts)
+    data: pd.DataFrame = gui.compute()
     assert len(data) == 11
 
     layout = gui.layout()
