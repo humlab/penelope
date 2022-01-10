@@ -42,7 +42,7 @@ def test_create_gui():
     assert not gui.opts.normalize
 
     assert gui.PoS_tag_groups is not None
-    assert len(gui.selected_pos_groups) == 0
+    assert len(gui.selected_pos_groups) == 1
 
     # assert gui.document_index is None
     # assert gui.opts.document_index is None
@@ -68,6 +68,8 @@ def test_create_gui():
 
     layout = gui.layout()
     assert isinstance(layout, widgets.VBox)
+
+    gui.tab.display_content = lambda *_, **__: None
 
     gui = gui.display()
     assert gui._status.value == '✔'
