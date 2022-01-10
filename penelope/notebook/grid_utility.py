@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Union
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
