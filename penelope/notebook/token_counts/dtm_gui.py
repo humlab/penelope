@@ -384,7 +384,7 @@ class BasicDTMGUI:
 
             # FIXME: Add option to plot several graphs?
             plot_graph = lambda: plot_by_bokeh(
-                data_source=unstacked_data.set_index(self.temporal_key), smooth=self.smooth
+                data_source=unstacked_data, smooth=self.smooth
             )
 
             self.tab.display_content(0, what=table, clear=True)
