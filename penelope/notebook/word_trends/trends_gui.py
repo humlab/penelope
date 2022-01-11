@@ -1,5 +1,5 @@
 import abc
-from typing import Sequence
+from typing import Callable, Sequence
 
 from ipywidgets import (
     HTML,
@@ -30,6 +30,12 @@ BUTTON_LAYOUT = Layout(width='120px')
 OUTPUT_LAYOUT = Layout(width='600px')
 
 
+def observe_widget(ctrl, fx: Callable, value: bool, names: str = 'value'):
+    method: str = 'observe' if value else 'unobserve'
+    if hasattr(ctrl, method):
+        getattr(ctrl, method)(fx, names=names)
+
+
 class TrendsBaseGUI(abc.ABC):
     """GUI component that displays word trends"""
 
@@ -53,6 +59,8 @@ class TrendsBaseGUI(abc.ABC):
         )
         self._keyness: ToggleButton = self.keyness_widget()
         self._placeholder: VBox = VBox()
+        self._header_placeholder: HBox = HBox()
+        self._sidebar_placeholder: VBox = VBox()
         self._smooth: ToggleButton = ToggleButton(description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT)
         self._time_period: Dropdown = Dropdown(
             options=['year', 'lustrum', 'decade'],
@@ -93,8 +101,10 @@ class TrendsBaseGUI(abc.ABC):
         self._invalidate(True)
 
     def layout(self) -> GridBox:
+        self._sidebar_placeholder.children = [self._picker]
         layout: GridBox = GridBox(
             [
+                self._header_placeholder,
                 HBox(
                     [
                         VBox([HTML("<b>Keyness</b>"), self._keyness]),
@@ -108,7 +118,7 @@ class TrendsBaseGUI(abc.ABC):
                     layout={'width': '98%'},
                 ),
                 self._words,
-                HBox([self._picker, self._tab], layout={'width': '98%'}),
+                HBox([self._sidebar_placeholder, self._tab], layout={'width': '98%'}),
             ],
             layout=Layout(width='auto'),
         )
@@ -129,7 +139,7 @@ class TrendsBaseGUI(abc.ABC):
 
             self.alert("⌛ Computing...")
 
-            self.trends_data.transform(self.options)
+            self.compute_keyness()
 
             self.alert("✔")
             self._invalidate(False)
@@ -143,6 +153,9 @@ class TrendsBaseGUI(abc.ABC):
             raise
         self.buzy(False)
 
+    def compute_keyness(self):
+        self.trends_data.transform(self.options)
+
     def _plot_trends(self, *_):
 
         try:
@@ -153,12 +166,7 @@ class TrendsBaseGUI(abc.ABC):
                 return
 
             self.alert("⌛ Preparing display...")
-            self.current_displayer.display(
-                corpus=self.trends_data.transformed_corpus,
-                indices=self.trends_data.transformed_corpus.token_indices(self._picker.value),
-                smooth=self.smooth,
-                category_name=self.trends_data.category_column,
-            )
+            self.plot()
 
             self.alert("🙂")
 
@@ -168,6 +176,15 @@ class TrendsBaseGUI(abc.ABC):
             logger.exception(ex)
             self.warn(str(ex))
             raise
+
+    def plot(self):
+
+        self.current_displayer.display(
+            corpus=self.trends_data.transformed_corpus,
+            indices=self.trends_data.transformed_corpus.token_indices(self._picker.value),
+            smooth=self.smooth,
+            category_name=self.trends_data.category_column,
+        )
 
     def _update_picker(self, *_):
 
@@ -198,19 +215,19 @@ class TrendsBaseGUI(abc.ABC):
         for i, d in enumerate(self._displayers):
             self._tab.set_title(i, d.name)
 
-        self._words.observe(self._update_picker, names='value')
-        self._tab.observe(self._plot_trends, 'selected_index')
-        self._picker.observe(self._plot_trends, names='value')
-
         self._compute.on_click(self._compute_keyness)
 
-        self._smooth.observe(self._invalidate_handler, names='value')
-        self._normalize.observe(self._invalidate_handler, names='value')
-        self._keyness.observe(self._invalidate_handler, names='value')
-        self._top_count.observe(self._invalidate_handler, names='value')
-        self._time_period.observe(self._invalidate_handler, names='value')
+        self.observe()
 
         return self
+
+    def observe(self, value: bool = True):
+        """Register or unregisters widget event handlers"""
+        observe_widget(self._words, self._update_picker, value=value, names='value')
+        observe_widget(self._tab, self._plot_trends, value=value, names='selected_index')
+        observe_widget(self._picker, self._plot_trends, value=value, names='value')
+        for ctrl in [self._smooth, self._normalize, self._keyness, self._top_count, self._time_period]:
+            observe_widget(ctrl, self._invalidate_handler, value=value)
 
     def buzy(self, value: bool) -> None:
 
@@ -221,16 +238,7 @@ class TrendsBaseGUI(abc.ABC):
         self._keyness.disable = value
         self._top_count.disable = value
         self._time_period.disable = value
-
-        # if value:
-        #     with contextlib.suppress(Exception):
-        #         self._words.unobserve(self._update_picker, names='value')
-        #         self._tab.unobserve(self._plot_trends, 'selected_index')
-        #         self._picker.unobserve(self._plot_trends, names='value')
-        # else:
-        #     self._words.observe(self._update_picker, names='value')
-        #     self._tab.observe(self._plot_trends, 'selected_index')
-        #     self._picker.observe(self._plot_trends, names='value')
+        self._words.disabled = value
 
     def display(self, *, trends_data: TrendsData):
         if trends_data is None:
