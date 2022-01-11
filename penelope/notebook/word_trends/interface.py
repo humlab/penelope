@@ -43,10 +43,8 @@ class TrendsComputeOpts:
 
 
 class ITrendsData(abc.ABC):
-    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_top: int = 100000):
+    def __init__(self, corpus: VectorizedCorpus, n_top: int = 100000, category_column: str = "time_period"):
         self.corpus: VectorizedCorpus = corpus
-        self.corpus_folder: str = corpus_folder
-        self.corpus_tag: str = corpus_tag
         self.n_top: int = n_top
 
         self._compute_options: Dict = None
@@ -56,7 +54,7 @@ class ITrendsData(abc.ABC):
         self._trends_opts: TrendsComputeOpts = TrendsComputeOpts(
             normalize=False, keyness=KeynessMetric.TF, time_period='year'
         )
-        self.category_column: str = "time_period"
+        self.category_column: str = category_column
 
     @abc.abstractmethod
     def _transform_corpus(self, opts: TrendsComputeOpts) -> VectorizedCorpus:
@@ -108,8 +106,8 @@ class ITrendsData(abc.ABC):
 
 
 class TrendsData(ITrendsData):
-    def __init__(self, corpus: VectorizedCorpus, corpus_folder: str, corpus_tag: str, n_top: int = 100000):
-        super().__init__(corpus=corpus, corpus_folder=corpus_folder, corpus_tag=corpus_tag, n_top=n_top)
+    def __init__(self, corpus: VectorizedCorpus, n_top: int = 100000):
+        super().__init__(corpus=corpus, n_top=n_top)
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> VectorizedCorpus:
 
@@ -135,7 +133,7 @@ class TrendsData(ITrendsData):
 
 class BundleTrendsData(ITrendsData):
     def __init__(self, bundle: Bundle = None, n_top: int = 100000):
-        super().__init__(corpus=bundle.corpus, corpus_folder=bundle.folder, corpus_tag=bundle.tag, n_top=n_top)
+        super().__init__(corpus=bundle.corpus, n_top=n_top)
         self.bundle = bundle
         self.keyness_source: KeynessMetricSource = KeynessMetricSource.Full
         self.tf_threshold: int = 1

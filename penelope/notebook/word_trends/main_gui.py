@@ -28,12 +28,7 @@ def loaded_callback(
 ):
     global LAST_CORPUS
     LAST_CORPUS = corpus
-    trends_data: TrendsData = TrendsData(
-        corpus=corpus,
-        corpus_folder=corpus_folder,
-        corpus_tag=corpus_tag,
-        n_top=25000,
-    )
+    trends_data: TrendsData = TrendsData(corpus=corpus, n_top=25000)
 
     # gui: GofTrendsGUI = GofTrendsGUI(
     #     gofs_gui=GoFsGUI().setup(),

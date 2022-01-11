@@ -22,13 +22,13 @@ class LoadGUI:
         default_corpus_folder: str,
         filename_pattern: str,
         load_callback: Callable[[str, str], VectorizedCorpus] = None,
-        done_callback: Callable[[VectorizedCorpus, str, str], None] = None,
+        done_callback: Callable[[VectorizedCorpus], None] = None,
     ):
 
         self.default_corpus_folder = default_corpus_folder
         self.filename_pattern = filename_pattern
         self.load_callback: Callable[[str, str], VectorizedCorpus] = load_callback
-        self.done_callback: Callable[[VectorizedCorpus, str, str], None] = done_callback
+        self.done_callback: Callable[[VectorizedCorpus], None] = done_callback
         self._corpus_filename: ipyfilechooser.FileChooser = None
         self._alert: HTML = HTML('.')
         self._load_button = Button(
@@ -57,7 +57,7 @@ class LoadGUI:
             self.info("⌛ Loading data...")
             corpus = self.load_callback(folder=folder, tag=tag)
             self.info("⌛ Preparing display...")
-            self.done_callback(corpus, corpus_folder=folder, corpus_tag=tag)
+            self.done_callback(corpus)
             self.info("✔")
 
         except (ValueError, FileNotFoundError, Exception) as ex:
