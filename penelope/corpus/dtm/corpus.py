@@ -167,6 +167,10 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """Returns number document index (part of interface) """
         return self._document_index
 
+    def replace_document_index(self, value: DocumentIndex) -> None:
+        """Special case: replace existing document index, use with care"""
+        self._document_index = value
+
     @property
     def payload(self) -> Mapping[Any, Any]:
         return self._payload
