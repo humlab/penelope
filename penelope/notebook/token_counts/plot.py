@@ -64,8 +64,8 @@ def plot_dataframe(
 
     data_source = data_frame_to_data_source(data=data_frame, smoother=smoother)
 
-    p = bokeh.plotting.figure(**(figopts or {}))
-
+    p: Figure = bokeh.plotting.figure(**(figopts or {}))
+    p.left[0].formatter.use_scientific = False
     # p.sizing_mode = 'scale_width'
     p.y_range.start = 0
     p.yaxis.axis_label = 'Frequency'
