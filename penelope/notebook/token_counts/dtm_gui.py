@@ -362,12 +362,12 @@ class BasicDTMGUI:
             self.alert(ex)
 
     def unstack_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        if len(self.selected_pivot_key_names) > 0:
+        if len(self.selected_pivot_key_names) > 0 and self.data is not None:
             data: pd.DataFrame = self.data.set_index([self.temporal_key] + self.selected_pivot_key_names)
             while isinstance(data.index, pd.MultiIndex):
                 data = data.unstack(level=1, fill_value=0)
                 if isinstance(data.columns, pd.MultiIndex):
-                    data.columns = [','.join(x) for x in data.columns]
+                    data.columns = [' '.join(x) for x in data.columns]
         return data
 
     @DEBUG_VIEW.capture(clear_output=False)
@@ -379,13 +379,20 @@ class BasicDTMGUI:
 
             if len(self.selected_pivot_key_names) > 0:
                 unstacked_data: pd.DataFrame = self.unstack_data(data)
+            else:
+                unstacked_data = data
 
             table: pd.DataFrame = self.plot_tabular(unstacked_data if self.unstack_tabular else data, self.opts)
 
+            if self.temporal_key not in unstacked_data.columns:
+                unstacked_data = unstacked_data.reset_index()  # set_index(self.temporal_key)
+
+            plot_data: pd.DataFrame = unstacked_data.set_index(self.temporal_key)  # , drop=False).rename_axis('')
+
+            # FIXME: Fix Smooth!!
+            plot_graph = lambda: plot_by_bokeh(data_source=plot_data, smooth=False)
+
             # FIXME: Add option to plot several graphs?
-            plot_graph = lambda: plot_by_bokeh(
-                data_source=unstacked_data, smooth=self.smooth
-            )
 
             self.tab.display_content(0, what=table, clear=True)
             self.tab.display_content(1, what=plot_graph, clear=True)
