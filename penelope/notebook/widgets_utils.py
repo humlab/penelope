@@ -1,4 +1,4 @@
-from typing import Any, List, Sequence
+from typing import Any, Callable, List, Sequence
 
 import ipywidgets as widgets
 import numpy as np
@@ -74,7 +74,7 @@ def glyph_hover_callback(
 BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
 
 
-def button_with_callback(description, style=None, callback=None):
+def button_with_callback(description: str, style: widgets.Layout = None, callback: Callable = None):
     style = style or BUTTON_STYLE
     btn = widgets.Button(description=description, style=style)
     if callback is not None:
@@ -82,12 +82,13 @@ def button_with_callback(description, style=None, callback=None):
     return btn
 
 
-def text_widget(element_id=None, default_value='') -> widgets.HTML:
+def text_widget(element_id: str = None, default_value: str = '') -> widgets.HTML:
+    """Adds an HTML span with element id `element_id` (can be referenced from JS)."""
     value = "<span class='{}'>{}</span>".format(element_id, default_value) if element_id is not None else ''
     return widgets.HTML(value=value, placeholder='', description='')
 
 
-def button_with_next_callback(that_with_property: Any, property_name: str, count: int):
+def button_with_next_callback(that_with_property: Any, property_name: str, count: int) -> None:
     def f(_):
         control = getattr(that_with_property, property_name, None)
         if control is not None:
@@ -96,10 +97,16 @@ def button_with_next_callback(that_with_property: Any, property_name: str, count
     return button_with_callback(description=">>", callback=f)
 
 
-def button_with_previous_callback(that_with_property, property_name, count):
+def button_with_previous_callback(that_with_property: Any, property_name: str, count: int) -> None:
     def f(_):
         control = getattr(that_with_property, property_name, None)
         if control is not None:
             control.value = (control.value - 1) % count
 
     return button_with_callback(description="<<", callback=f)
+
+
+def register_observer(ctrl: widgets.Widget, fx: Callable, value: bool, names: str = 'value') -> None:
+    method: str = 'observe' if value else 'unobserve'
+    if hasattr(ctrl, method):
+        getattr(ctrl, method)(fx, names=names)
