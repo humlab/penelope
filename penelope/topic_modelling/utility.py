@@ -13,7 +13,7 @@ from penelope.utility import deprecated
 
 def find_models(path: str) -> dict:
     """Return subfolders containing a computed topic model in specified path"""
-    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "*", "model_options.json"))]
+    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "**", "model_options.json"), recursive=True)]
     models = [
         {'folder': x, 'name': os.path.split(x)[1], 'options': utility.read_json(os.path.join(x, "model_options.json"))}
         for x in folders
