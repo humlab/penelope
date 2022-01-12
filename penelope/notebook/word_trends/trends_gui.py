@@ -91,7 +91,7 @@ class TrendsBaseGUI(abc.ABC):
 
     def _invalidate(self, value: bool = True):
         self._compute.disabled = not value
-        self._words.disabled = value
+        # self._words.disabled = value
         if value:
             for displayer in self._displayers:
                 displayer.clear()
@@ -183,7 +183,8 @@ class TrendsBaseGUI(abc.ABC):
             corpus=self.trends_data.transformed_corpus,
             indices=self.trends_data.transformed_corpus.token_indices(self._picker.value),
             smooth=self.smooth,
-            category_name=self.trends_data.category_column,
+            # category_name=self.trends_data.category_column,
+            category_name=self.time_period,
         )
 
     def _update_picker(self, *_):
