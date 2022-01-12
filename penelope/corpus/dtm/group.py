@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Mapping, Sequence, TypeVar, Union
+from typing import Callable, List, Mapping, Sequence, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
 import scipy
 from penelope.type_alias import DocumentIndex
+from scipy import sparse as sp
 
 from ..document_index import (
     KNOWN_TIME_PERIODS,
@@ -190,6 +191,65 @@ class GroupByMixIn:
         )
         return grouped_corpus
 
+    def group_by_indices_mapping(
+        self: IVectorizedCorpusProtocol,
+        document_index: pd.DataFrame,
+        category_indices: Mapping[int, List[int]],
+        aggregate: str = 'sum',
+        dtype: np.dtype = None,
+    ) -> IVectorizedCorpus:
+
+        matrix: scipy.sparse.spmatrix = group_DTM_by_indices_mapping(
+            dtm=self.bag_term_matrix,
+            n_docs=len(document_index),
+            category_indices=category_indices,
+            aggregate=aggregate,
+            dtype=dtype,
+        )
+        grouped_corpus: IVectorizedCorpus = self.create(
+            matrix.tocsr(),
+            token2id=self.token2id,
+            document_index=document_index,
+            overridden_term_frequency=self.overridden_term_frequency,
+            **self.payload,
+        )
+        return grouped_corpus
+
+    def group_by_pivot_keys(
+        self: IVectorizedCorpusProtocol,
+        temporal_key: str,
+        pivot_keys: List[str],
+        target_column: str,
+        document_namer: Callable[[pd.DataFrame], pd.Series],
+        aggregate: str = 'sum',
+        dtype: np.dtype = None,
+    ):
+        def default_document_namer(df: pd.DataFrame) -> pd.Series:
+            return df[[temporal_key] + pivot_keys].apply(lambda x: '_'.join([str(t) for t in x]), axis=1)
+
+        if document_namer is None:
+            document_namer = default_document_namer
+
+        new_di: pd.DataFrame = (
+            self.document_index.groupby([temporal_key] + pivot_keys)
+            .agg({'document_id': lambda x: list(x), target_column: sum})
+            .reset_index()
+        )
+
+        new_di['document_ids'] = new_di.document_id
+        new_di['document_id'] = new_di.index
+        new_di['document_name'] = document_namer(new_di)
+        new_di['filename'] = new_di.document_name
+
+        category_indices: Mapping[int, List[int]] = new_di.document_ids.to_dict()
+
+        return self.group_by_indices_mapping(
+            document_index=new_di,
+            category_indices=category_indices,
+            aggregate=aggregate,
+            dtype=dtype,
+        )
+
 
 def group_DTM_by_category_indices_mapping(
     *,
@@ -252,5 +312,33 @@ def group_DTM_by_category_series(
             matrix[i, :] = bag_term_matrix[indices, :].mean(axis=0)
         else:
             matrix[i, :] = bag_term_matrix[indices, :].sum(axis=0)
+
+    return matrix
+
+
+def group_DTM_by_indices_mapping(
+    dtm: sp.spmatrix,
+    n_docs: int,
+    category_indices: Mapping[int, List[int]],
+    aggregate: str = 'sum',
+    dtype: np.dtype = None,
+):
+
+    shape: Tuple[int, int] = (n_docs, dtm.shape[1])
+
+    dtype: np.dtype = dtype or (np.int32 if np.issubdtype(dtm.dtype, np.integer) and aggregate == 'sum' else np.float64)
+
+    matrix: sp.lil_matrix = sp.lil_matrix(shape, dtype=dtype)
+
+    if aggregate == 'mean':
+
+        for document_id, indices in category_indices.items():
+            if len(indices) > 0:
+                matrix[document_id, :] = dtm[indices, :].mean(axis=0)
+    else:
+
+        for document_id, indices in category_indices.items():
+            if len(indices) > 0:
+                matrix[document_id, :] = dtm[indices, :].sum(axis=0)
 
     return matrix
