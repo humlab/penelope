@@ -20,24 +20,9 @@ class FindTopicDocumentsGUI:
             (
                 HBox(
                     (
-                        VBox(
-                            (
-                                HTML("Topic weight in document threshold"),
-                                self.threshold_slider,
-                            )
-                        ),
-                        VBox(
-                            (
-                                HTML("<b>Find topics containing token</b>"),
-                                self.find_text,
-                            )
-                        ),
-                        VBox(
-                            (
-                                self.toplist_label,
-                                self.top_token_slider,
-                            )
-                        ),
+                        VBox((HTML("Topic weight in document threshold"), self.threshold_slider)),
+                        VBox((HTML("<b>Find topics containing token</b>"), self.find_text)),
+                        VBox((self.toplist_label, self.top_token_slider)),
                     )
                 ),
                 self.output,
