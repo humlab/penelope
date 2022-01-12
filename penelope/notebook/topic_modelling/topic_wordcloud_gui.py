@@ -1,10 +1,9 @@
 import pandas as pd
 import penelope.plot as plot_utility
-import penelope.topic_modelling as topic_modelling
 import penelope.utility as utility
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, HBox, IntProgress, IntSlider, Output, VBox  # type: ignore
-from penelope.topic_modelling.interfaces import InferredTopicsData
+from penelope import topic_modelling as tm
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -12,14 +11,17 @@ from .model_container import TopicModelContainer
 pd.set_option("display.max_rows", None)
 pd.set_option('max_colwidth', 200)
 
-opts = {'max_font_size': 100, 'background_color': 'white', 'width': 900, 'height': 600}
+PLOT_OPTS = {'max_font_size': 100, 'background_color': 'white', 'width': 1200, 'height': 600}
 
 TEXT_ID: str = 'tx02'
 OUTPUT_OPTIONS = ['Wordcloud', 'Table', 'CSV', 'XLSX', 'Clipboard']
+CLEAR_OUTPUT: bool = True
+view = Output()
 
 
+@view.capture(clear_output=CLEAR_OUTPUT)
 def display_wordcloud(
-    inferred_topics: InferredTopicsData,
+    inferred_topics: tm.InferredTopicsData,
     topic_id: int = 0,
     n_words: int = 100,
     output_format: str = 'Wordcloud',
@@ -29,7 +31,7 @@ def display_wordcloud(
     gui.tick(1)
 
     try:
-        tokens = topic_modelling.get_topic_title(inferred_topics.topic_token_weights, topic_id, n_tokens=n_words)
+        tokens = tm.get_topic_title(inferred_topics.topic_token_weights, topic_id, n_tokens=n_words)
 
         if len(tokens) == 0:
             print("No data! Please change selection.")
@@ -45,10 +47,10 @@ def display_wordcloud(
                 token='token',
                 weight='weight',
                 max_words=n_words,
-                **opts,
+                **PLOT_OPTS,
             )
         else:
-            topic_top_tokens: pd.DataFrame = topic_modelling.get_topic_top_tokens(
+            topic_top_tokens: pd.DataFrame = tm.get_topic_top_tokens(
                 inferred_topics.topic_token_weights, topic_id=topic_id, n_tokens=n_words
             )
             if output_format == 'Table':
@@ -72,13 +74,13 @@ class WordcloudGUI:
             description='Topic ID', min=0, max=state.num_topics - 1, step=1, value=0, continuous_update=False
         )
         self.word_count: IntSlider = IntSlider(
-            description='#Words', min=5, max=250, step=1, value=25, continuous_update=False
+            description='#Words', min=5, max=250, step=1, value=75, continuous_update=False
         )
         self.output_format: Dropdown = Dropdown(
             description='Format', options=OUTPUT_OPTIONS, value=OUTPUT_OPTIONS[0], layout=dict(width="200px")
         )
         self.progress: IntProgress = IntProgress(min=0, max=4, step=1, value=0, layout=dict(width="95%"))
-        self.output: Output = Output()
+        # self.output: Output = Output()
         self.prev_topic_id: Button = None
         self.next_topic_id: Button = None
 
@@ -119,7 +121,7 @@ class WordcloudGUI:
                 self.text,
                 HBox([self.prev_topic_id, self.next_topic_id, self.topic_id, self.word_count, self.output_format]),
                 self.progress,
-                self.output,
+                view,
             ]
         )
 
