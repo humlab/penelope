@@ -77,6 +77,7 @@ from .filename_utils import (
 )
 from .pandas_utils import (
     DataFrameFilenameTuple,
+    PivotKeys,
     PropertyValueMaskingOpts,
     create_mask,
     create_mask2,

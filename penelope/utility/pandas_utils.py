@@ -1,16 +1,20 @@
+from __future__ import annotations
+
 import fnmatch
 import operator
 import zipfile
+from dataclasses import dataclass
+from functools import cached_property, lru_cache
 from io import StringIO
 from numbers import Number
-from typing import Any, Callable, Dict, List, Literal, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Mapping, Sequence, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
 from .filename_utils import replace_extension
-from .utils import now_timestamp
+from .utils import now_timestamp, revdict
 
 DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
 
@@ -187,6 +191,82 @@ class PropertyValueMaskingOpts:
             for attr_name, attr_value in self.data.items()
             if attr_name in doc.columns and attr_value is not None
         ]
+
+
+@dataclass
+class PivotKeys:
+    """Simple helper for pre-defined pivot keys where each keys has a given value-name/id-name mapping.
+
+    Args:
+
+        pivot_key_specs (Mapping[dict]): Specifies avaliable pivot keys, mapping names-to-ids and value ranges
+
+        Sample in-data format:
+        {
+            'grönsak': {
+                'text_name': 'grönsak',     # Pivot key text (column) name, or presentable name
+                'id_name': 'grönsak_id',    # # Pivot key ID column name
+                'values': {'unknown': 0, 'gurka': 1, 'tomat': 2}
+            },
+            ...
+        }
+
+    """
+
+    pivot_keys: List[Mapping[str, str | Mapping[str, int]]]
+
+    def __post_init__(self):
+        """Changes mapping to a dict of dicts instead of a list of dicts"""
+        self.pivot_keys = self.pivot_keys or []
+        if isinstance(self.pivot_keys, list):
+            self.pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else []
+        self.is_satisfied()
+
+    def pivot_key(self, text_name: str) -> dict:
+        return next((x for x in self.pivot_keys if x['text_name'] == text_name), {})
+
+    def __getitem__(self, text_name: str) -> dict:
+        return self.pivot_key(text_name)
+
+    @cached_property
+    def text_name2id_name(self) -> dict:
+        return {x['text_name']: x['id_name'] for x in self.pivot_keys}
+
+    @cached_property
+    def id_name2text_name(self) -> dict:
+        return revdict(self.text_name2id_name)
+
+    @cached_property
+    def text_names(self) -> List[str]:
+        return [x.get('text_name') for x in self.pivot_keys]
+
+    @cached_property
+    def id_names(self) -> List[str]:
+        return [x.get('id_name') for x in self.pivot_keys]
+
+    @lru_cache
+    def key_values(self, text_name: str) -> Mapping[str, int]:
+        """Returns name/id mapping for given key's value range"""
+        return self.pivot_keys[text_name]['values']
+
+    @staticmethod
+    def is_satisfied(self) -> bool:
+
+        if self.pivot_keys is None:
+            return True
+
+        if not isinstance(self.pivot_keys, list):
+            raise TypeError(f"expected list of pivot key specs, got {type(self.pivot_keys)}")
+
+        if not all(isinstance(x, dict) for x in self.pivot_keys):
+            raise TypeError("expected list of dicts")
+
+        expected_keys: Set[str] = {'text_name', 'id_name', 'values'}
+        if len(self.pivot_keys) > 0:
+            if not all(set(x.keys()) == expected_keys for x in self.pivot_keys):
+                raise TypeError("expected list of dicts(id_name,text_name,values)")
+
+        return True
 
 
 def try_split_column(
