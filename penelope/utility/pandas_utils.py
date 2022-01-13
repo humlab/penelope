@@ -3,10 +3,12 @@ from __future__ import annotations
 import fnmatch
 import operator
 import zipfile
+from collections import defaultdict
 from dataclasses import dataclass
-from functools import cached_property, lru_cache
+from functools import cached_property
 from io import StringIO
 from numbers import Number
+from operator import methodcaller
 from typing import Any, Callable, Dict, List, Literal, Mapping, Sequence, Set, Tuple, Union
 
 import numpy as np
@@ -159,6 +161,9 @@ class PropertyValueMaskingOpts:
     def __getitem__(self, key: int):
         return self.data[key]
 
+    def __setitem__(self, k, v):
+        self.data[k] = v
+
     def __len__(self):
         return len(self.data)
 
@@ -193,6 +198,9 @@ class PropertyValueMaskingOpts:
         ]
 
 
+PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]
+
+
 @dataclass
 class PivotKeys:
     """Simple helper for pre-defined pivot keys where each keys has a given value-name/id-name mapping.
@@ -213,24 +221,27 @@ class PivotKeys:
 
     """
 
-    pivot_keys: List[Mapping[str, str | Mapping[str, int]]]
+    pivot_keys: Mapping[str, PivotKeySpec]
 
     def __post_init__(self):
         """Changes mapping to a dict of dicts instead of a list of dicts"""
         self.pivot_keys = self.pivot_keys or []
         if isinstance(self.pivot_keys, list):
-            self.pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else []
+            self.pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else {}
         self.is_satisfied()
 
     def pivot_key(self, text_name: str) -> dict:
-        return next((x for x in self.pivot_keys if x['text_name'] == text_name), {})
+        return self.pivot_keys.get(text_name, {})
 
     def __getitem__(self, text_name: str) -> dict:
         return self.pivot_key(text_name)
 
+    def __len__(self):
+        return len(self.pivot_keys)
+
     @cached_property
     def text_name2id_name(self) -> dict:
-        return {x['text_name']: x['id_name'] for x in self.pivot_keys}
+        return {x['text_name']: x['id_name'] for x in self.pivot_keys.values()}
 
     @cached_property
     def id_name2text_name(self) -> dict:
@@ -238,35 +249,93 @@ class PivotKeys:
 
     @cached_property
     def text_names(self) -> List[str]:
-        return [x.get('text_name') for x in self.pivot_keys]
+        return [x for x in self.pivot_keys]
 
     @cached_property
     def id_names(self) -> List[str]:
-        return [x.get('id_name') for x in self.pivot_keys]
+        return [x.get('id_name') for x in self.pivot_keys.values()]
 
-    @lru_cache
     def key_values(self, text_name: str) -> Mapping[str, int]:
         """Returns name/id mapping for given key's value range"""
-        return self.pivot_keys[text_name]['values']
+        return self.pivot_key(text_name)['values']
 
-    @staticmethod
     def is_satisfied(self) -> bool:
 
         if self.pivot_keys is None:
             return True
 
-        if not isinstance(self.pivot_keys, list):
-            raise TypeError(f"expected list of pivot key specs, got {type(self.pivot_keys)}")
+        if not isinstance(self.pivot_keys, (list, dict)):
+            raise TypeError(f"expected list/dict of pivot key specs, got {type(self.pivot_keys)}")
 
-        if not all(isinstance(x, dict) for x in self.pivot_keys):
+        items: dict = self.pivot_keys if isinstance(self.pivot_keys, list) else self.pivot_keys.values()
+
+        if not all(isinstance(x, dict) for x in items):
             raise TypeError("expected list of dicts")
 
         expected_keys: Set[str] = {'text_name', 'id_name', 'values'}
-        if len(self.pivot_keys) > 0:
-            if not all(set(x.keys()) == expected_keys for x in self.pivot_keys):
+        if len(items) > 0:
+            if not all(set(x.keys()) == expected_keys for x in items):
                 raise TypeError("expected list of dicts(id_name,text_name,values)")
 
         return True
+
+    def is_id_name(self, name: str) -> bool:
+        return any(v['id_name'] == name for _, v in self.pivot_keys.items())
+
+    def is_text_name(self, name: str) -> bool:
+        return any(k == name for k in self.pivot_keys)
+
+    def create_filter(
+        self,
+        key_values: List[Tuple[str, List[str | int]]],
+        decode: bool = True,
+    ) -> PropertyValueMaskingOpts:
+        """PropertyValueMaskingOpts filter for given (key-name, values) sequence)."""
+        opts = PropertyValueMaskingOpts()
+        if not decode:
+            """Values are e.g. ('xxx_id', [1,2,3,...}"""
+            for k, v in key_values.items():
+                opts[k] = list(map(int, v or [])) if self.is_id_name(k) else list(v)
+
+        else:
+            """Values are e.g. ('xxx', ['label-1','label2','label-3',...}"""
+            for k, v in key_values.items():
+                fg: Callable[[str], int] = self.key_values(k).get
+                opts[self.text_name2id_name[k]] = [int(fg(x)) for x in v]
+        return opts
+
+    def create_filter_by_str_sequence(
+        self,
+        key_value_pairs: List[str],
+        decode: bool = True,
+        sep: str = '=',
+        vsep: str = None,
+    ) -> PropertyValueMaskingOpts:
+        """Returns user's filter selections as a name-to-values mapping.
+
+        key_value_pairs ::= { key_value_pair }
+        key_value_pair  ::= key "sep" value
+        key             ::= "str"
+        value           ::= "int" [ "vsep" value ]
+                          | "str" [ "vsep" value ]
+        Args:
+            key_value_pairs ([List[str]], optional):  Sequence of key-values.
+            decode (bool, optional): decode text name/value to id name/values. Defaults to True.
+            sep (str, optional): Key-value delimiter. Defaults to '='.
+            vsep (str, optional): Value list delimiter. Defaults to None.
+
+        Returns:
+            PropertyValueMaskingOpts: [description]
+        """
+        key_values_dict = defaultdict(list)
+        for k, v in map(methodcaller("split", sep), key_value_pairs):
+            if vsep is not None and vsep in v:
+                v = v.split(vsep)
+                key_values_dict[k].extend(v)
+            else:
+                key_values_dict[k].append(v)
+        filter_opts = self.create_filter(key_values_dict, decode=decode)
+        return filter_opts
 
 
 def try_split_column(
