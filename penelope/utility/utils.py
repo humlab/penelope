@@ -261,6 +261,9 @@ def dict_to_list_of_tuples(d: Mapping) -> List[Tuple[Any, Any]]:
         return []
     return [(k, v) for (k, v) in d.items()]
 
+def revdict(d: dict) -> dict:
+    return {v: k for k, v in d.items()}
+
 
 def dotget(d: dict, path: str, default: Any = None) -> Any:
 

@@ -154,6 +154,7 @@ from .utils import (
     project_to_range,
     project_values_to_range,
     remove_snake_case,
+    revdict,
     right_chop,
     slim_title,
     sort_chained,
