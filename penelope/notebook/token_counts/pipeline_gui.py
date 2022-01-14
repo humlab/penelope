@@ -14,7 +14,7 @@ from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_ext
 
 from ..ipyaggrid_utility import display_grid
 from ..utility import CLEAR_OUTPUT, OutputsTabExt
-from .plot import plot_by_bokeh as plot_dataframe
+from .plot import plot_multiline, plot_stacked_bar
 
 TOKEN_COUNT_GROUPINGS = ['decade', 'lustrum', 'year']
 
@@ -64,35 +64,18 @@ class TokenCountsGUI:
             layout=widgets.Layout(width='120px'),
         )
 
-        self._tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
+        self._tab: OutputsTabExt = OutputsTabExt(["Table", "Line", "Bar"], layout={'width': '98%'})
 
     def layout(self) -> widgets.HBox:
         return widgets.HBox(
             [
-                widgets.VBox(
-                    [
-                        widgets.HTML("<b>PoS groups</b>"),
-                        self._categories,
-                    ],
-                    layout={'width': '140px'},
-                ),
+                widgets.VBox([widgets.HTML("<b>PoS groups</b>"), self._categories], layout={'width': '140px'}),
                 widgets.VBox(
                     [
                         widgets.HBox(
-                            [
-                                self._normalize,
-                                self._smooth,
-                                self._grouping,
-                                self._corpus_configs,
-                                self._status,
-                            ]
+                            [self._normalize, self._smooth, self._grouping, self._corpus_configs, self._status]
                         ),
-                        widgets.HBox(
-                            [
-                                self._tab,
-                            ],
-                            layout={'width': '98%'},
-                        ),
+                        widgets.HBox([self._tab], layout={'width': '98%'}),
                         DEBUG_VIEW,
                     ],
                     layout={'width': '98%'},
@@ -109,18 +92,12 @@ class TokenCountsGUI:
                 return
 
             data = self.compute_callback(self, self.document_index)
+            plot_lines = lambda: plot_multiline(df=data.set_index(self.grouping), smooth=self.smooth)
+            plot_bars = lambda: plot_stacked_bar(df=data.set_index(self.grouping))
 
-            self._tab.display_content(
-                0,
-                what=display_grid(data),
-                clear=True,
-            )
-
-            self._tab.display_content(
-                1,
-                what=lambda: plot_dataframe(data_source=data.set_index(self.grouping), smooth=self.smooth),
-                clear=True,
-            )
+            self._tab.display_content(0, what=display_grid(data), clear=True)
+            self._tab.display_content(1, what=plot_lines, clear=True)
+            self._tab.display_content(2, what=plot_bars, clear=True)
 
             self.alert("✔")
 

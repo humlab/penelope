@@ -1,6 +1,6 @@
 import itertools
 import math
-from typing import Callable, List, Sequence
+from typing import Callable, Iterable, List, Sequence
 
 import bokeh
 import bokeh.models
@@ -8,65 +8,93 @@ import bokeh.plotting
 import numpy as np
 import pandas as pd
 import scipy
-from bokeh.plotting import Figure
+from bokeh.plotting import figure, Figure
 from penelope.notebook.word_trends.displayers.utils import get_year_category_ticks
 from penelope.utility import take
 
+DEFAULT_FIGOPTS: dict = dict(plot_width=1000, plot_height=600)
+DEFAULT_PALETTE = bokeh.palettes.Category10[10]
 
-def pchip_interpolate_frame(df: pd.DataFrame) -> pd.DataFrame:
-    x_new: np.ndarray = np.arange(df.index.min(), df.index.max() + 0.1, 0.1)
-    data: dict = {'category': x_new}
-    for column in df.columns:
+
+def generate_colors(n: int, palette: Sequence[str]) -> Iterable[str]:
+    return take(n, itertools.cycle(palette))
+
+
+def pchip_interpolate_frame(df: pd.DataFrame, step: float = 0.1, columns: List[str] = None) -> pd.DataFrame:
+
+    xs: np.ndarray = np.arange(df.index.min(), df.index.max() + step, step)
+    data: dict = {'category': xs}
+    columns = columns if columns is not None else df.columns
+    for column in columns:
         serie = df[column]
         spliner = scipy.interpolate.PchipInterpolator(df.index, serie)
-        data[column] = spliner(x_new)
+        data[column] = spliner(xs)
 
     return pd.DataFrame(data)
 
 
-def plot_by_bokeh(*, data_source: pd.DataFrame, smooth: bool) -> Figure:
-
-    x_ticks: List[int] = get_year_category_ticks(data_source.index.tolist())
-
-    data_source: pd.DataFrame = pchip_interpolate_frame(data_source).set_index('category') if smooth else data_source
-
-    return plot_dataframe(data_frame=data_source, x_ticks=x_ticks, figopts=dict(plot_width=1000, plot_height=600))
+# df = gui.unstack_data(gui.DATA)
 
 
-def plot_dataframe(
-    *,
-    data_frame: pd.DataFrame,
-    x_ticks: Sequence[int] = None,
-    smoother: Callable = None,
-    figopts: dict = None,
-) -> Figure:
-    def data_frame_to_data_source(data: pd.DataFrame, smoother: Callable = None) -> dict:
-        """Compile multiline plot data for token ids `indices`, optionally applying `smoothers` functions"""
+def plot_stacked_bar(df: pd.DataFrame, **figopts):
 
-        columns = data.columns.tolist()
+    figopts = {**DEFAULT_FIGOPTS, **(figopts or {})}
 
-        xs_j = data.index
-        ys_js = [data[x] for x in columns]
+    columns: List[str] = df.columns.tolist()
 
-        if smoother is not None:
-            xs_js, ys_js = list(zip(*[smoother(xs_j, ys_j) for ys_j in ys_js]))
-        else:
-            xs_js = [xs_j] * len(ys_js)
+    data_source: dict = dict(category=[str(x) for x in df.index], **{column: df[column] for column in columns})
+    colors: Iterable[str] = generate_colors(len(columns), DEFAULT_PALETTE)
 
-        data_source = {
-            'xs': xs_js,
-            'ys': ys_js,
-            'label': columns,
-            'color': take(len(columns), itertools.cycle(bokeh.palettes.Category10[10])),
-        }
+    p: Figure = figure(x_range=data_source['category'], **figopts)
 
-        return data_source
-
-    data_source = data_frame_to_data_source(data=data_frame, smoother=smoother)
-
-    p: Figure = bokeh.plotting.figure(**(figopts or {}))
     p.left[0].formatter.use_scientific = False
-    # p.sizing_mode = 'scale_width'
+
+    p.vbar_stack(columns, x='category', color=colors, width=0.9, source=data_source, legend_label=columns)
+
+    p.y_range.start = 0
+    p.x_range.range_padding = 0.1
+    p.xgrid.grid_line_color = None
+    p.axis.minor_tick_line_color = None
+    p.outline_line_color = None
+    p.legend.location = "top_left"
+    p.legend.orientation = "horizontal"
+
+    return p
+
+
+def to_multiline_data_source(data: pd.DataFrame, smoother: Callable = None) -> dict:
+    """Compile multiline plot data for token ids `indices`, optionally applying `smoothers` functions"""
+
+    columns: List[str] = data.columns.tolist()
+    colors: Iterable[str] = generate_colors(len(columns), DEFAULT_PALETTE)
+
+    xs_j, ys_js = data.index, [data[column] for column in columns]
+
+    if smoother is not None:
+        xs_js, ys_js = list(zip(*[smoother(xs_j, ys_j) for ys_j in ys_js]))
+    else:
+        xs_js = [xs_j] * len(ys_js)
+
+    data_source = {'xs': xs_js, 'ys': ys_js, 'label': columns, 'color': colors}
+
+    return data_source
+
+
+def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> Figure:
+
+    x_ticks: Sequence[int] = None
+
+    figopts = {**DEFAULT_FIGOPTS, **(figopts or {})}
+
+    if smooth:
+        df = pchip_interpolate_frame(df).set_index('category') if smooth else df
+        x_ticks = get_year_category_ticks(df.index.tolist())
+
+    data_source: dict = to_multiline_data_source(data=df, smoother=None)
+
+    p: Figure = figure(**(figopts or {}))
+
+    p.left[0].formatter.use_scientific = False
     p.y_range.start = 0
     p.yaxis.axis_label = 'Frequency'
     p.toolbar.autohide = True
@@ -86,7 +114,5 @@ def plot_dataframe(
     p.legend.location = "top_left"
     p.legend.click_policy = "hide"
     p.legend.background_fill_alpha = 0.0
-
-    # bokeh.plotting.show(p)
 
     return p

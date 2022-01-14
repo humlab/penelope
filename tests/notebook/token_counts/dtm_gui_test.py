@@ -47,7 +47,7 @@ def test_create_gui():
     # assert gui.document_index is None
     # assert gui.opts.document_index is None
 
-    assert gui.opts.pivot_keys == gui.selected_pivot_keys_idnames
+    assert gui.opts.pivot_keys == gui.pivot_keys_id_names
     assert gui.opts.normalize == gui.normalize
 
     gui.load(gui.source_folder)
@@ -69,7 +69,7 @@ def test_create_gui():
     layout = gui.layout()
     assert isinstance(layout, widgets.VBox)
 
-    gui.tab.display_content = lambda *_, **__: None
+    gui._tab.display_content = lambda *_, **__: None
 
     gui = gui.display()
     assert gui._status.value == '✔'
