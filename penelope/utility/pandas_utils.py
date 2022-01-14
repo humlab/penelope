@@ -259,6 +259,9 @@ class PivotKeys:
         """Returns name/id mapping for given key's value range"""
         return self.pivot_key(text_name)['values']
 
+    def key_values_str(self, names: Set[str], sep=': ') -> List[str]:
+        return [f'{k}{sep}{v}' for k in names for v in self.key_values(k).keys()]
+
     def is_satisfied(self) -> bool:
 
         if self.pivot_keys is None:
@@ -285,12 +288,31 @@ class PivotKeys:
     def is_text_name(self, name: str) -> bool:
         return any(k == name for k in self.pivot_keys)
 
-    def create_filter(
-        self,
-        key_values: List[Tuple[str, List[str | int]]],
-        decode: bool = True,
+    def create_filter_by_value_pairs(
+        self, value_pairs: List[str], sep: str = ': ', vsep: str = ','
     ) -> PropertyValueMaskingOpts:
-        """PropertyValueMaskingOpts filter for given (key-name, values) sequence)."""
+        """Create a filter from list of [ 'key1=v1', 'key1=v2' 'k3=v5', ....]   (sep '=' is an argument)"""
+
+        """Convert list of pairs to dict of list: {'key1: [v1, v2], 'k3': [v5]...}"""
+        key_values = defaultdict(list)
+        value_tuples: Tuple[str, str] = [x.split(sep) for x in value_pairs]
+        for k, v in value_tuples:
+            is_sequence_of_values: bool = vsep is not None and vsep in v
+            values: List[str|int] = v.split(vsep) if is_sequence_of_values else [v]
+            try:
+                values = [int(x) for x in values ]
+            except TypeError:
+                ...
+            key_values[k].extend(values)
+
+        opts = self.create_filter_key_values_dict(key_values, decode=True)
+
+        return opts
+
+    def create_filter_key_values_dict(
+        self, key_values: Mapping[str, List[str | int]], decode: bool = True
+    ) -> PropertyValueMaskingOpts:
+        """Create a filter from dict of list: {'key1: [v1, v2], 'k3': [v5]...}"""
         opts = PropertyValueMaskingOpts()
         if not decode:
             """Values are e.g. ('xxx_id', [1,2,3,...}"""
@@ -308,7 +330,7 @@ class PivotKeys:
         self,
         key_value_pairs: List[str],
         decode: bool = True,
-        sep: str = '=',
+        sep: str = ': ',
         vsep: str = None,
     ) -> PropertyValueMaskingOpts:
         """Returns user's filter selections as a name-to-values mapping.
@@ -334,7 +356,7 @@ class PivotKeys:
                 key_values_dict[k].extend(v)
             else:
                 key_values_dict[k].append(v)
-        filter_opts = self.create_filter(key_values_dict, decode=decode)
+        filter_opts = self.create_filter_key_values_dict(key_values_dict, decode=decode)
         return filter_opts
 
 
