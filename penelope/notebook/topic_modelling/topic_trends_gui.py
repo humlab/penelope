@@ -136,3 +136,5 @@ def display_gui(state: TopicModelContainer):
     display(gui.layout())
 
     gui.update_handler()
+
+    return gui
