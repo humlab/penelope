@@ -23,5 +23,5 @@
     ],
     // "typeCheckingMode": "basic",
     // "reportGeneralTypeIssues": false,
-    "reportMissingTypeStubs": true,
+    // "reportMissingTypeStubs": true,
 }
