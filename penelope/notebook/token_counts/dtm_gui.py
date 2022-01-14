@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import contextlib
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Mapping, Union
+from typing import Any, List, Mapping, Set, Tuple, Union
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
@@ -11,13 +14,18 @@ from penelope import corpus as pc
 from penelope import utility as pu
 
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt, create_js_download
-from .plot import plot_by_bokeh
+from . import plot as pp
 
 TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
 
 DEBUG_VIEW = Output()
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
+
+
+def observe(ctrl, handler, names: str = 'value', value: bool = True):
+    with contextlib.suppress(Exception):
+        getattr(ctrl, "observe" if value else "unobserve")(handler, names=names)
 
 
 @dataclass
@@ -28,7 +36,8 @@ class ComputeOpts:
     smooth: bool
     pos_groups: List[str]
     temporal_key: str
-    pivot_keys: List[str]
+    pivot_keys_id_names: List[str]
+    pivot_keys_filter: pu.PropertyValueMaskingOpts
     unstack_tabular: bool
 
 
@@ -52,24 +61,28 @@ def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
 @DEBUG_VIEW.capture(clear_output=False)
 def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
 
-    pivot_keys: List[str] = [opts.temporal_key] + list(opts.pivot_keys)
+    di: pd.DataFrame = document_index
+
+    if opts.pivot_keys_filter is not None:
+        di = opts.pivot_keys_filter.apply(di)
+
+    pivot_keys_id_names: List[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
 
     count_columns: List[str] = (
         list(opts.pos_groups)
         if len(opts.pos_groups or []) > 0
-        else [x for x in document_index.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys]
+        else [x for x in di.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys_id_names]
     )
-
-    data: pd.DataFrame = document_index.groupby(pivot_keys).sum()[count_columns]
+    data: pd.DataFrame = di.groupby(pivot_keys_id_names).sum()[count_columns]
 
     if opts.normalize:
-        total: pd.Series = document_index.groupby(pivot_keys)['Total'].sum()
+        total: pd.Series = di.groupby(pivot_keys_id_names)['Total'].sum()
         data = data.div(total, axis=0)
 
     if opts.smooth:
         data = data.interpolate(method='index')
 
-    data = data.reset_index()[pivot_keys + count_columns]
+    data = data.reset_index()[pivot_keys_id_names + count_columns]
     return data
 
 
@@ -97,6 +110,9 @@ def prepare_document_index(document_index: str, keep_columns: List[str]) -> pd.D
     return document_index
 
 
+PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]
+
+
 class BasicDTMGUI:
     """GUI component that displays token counts"""
 
@@ -104,17 +120,13 @@ class BasicDTMGUI:
         self,
         *,
         default_folder: str,
-        pivot_keys: Union[List[str], Mapping[str, str]] = None,
+        pivot_key_specs: List[PivotKeySpec] | Mapping[str, List[PivotKeySpec]] = None,
         **defaults: dict,
     ):
         """GUI base for PoS token count statistics."""
 
-        if isinstance(pivot_keys, list):
-            pivot_keys = {x: x for x in pivot_keys}
-
+        self.pivot_keys: pu.PivotKeys = pu.PivotKeys(pivot_key_specs)
         self.default_folder: str = default_folder
-        self.pivot_key_name2idname: Mapping[str, str] = pivot_keys or {}
-        self.pivot_key_idname2name: Mapping[str, str] = {v: k for k, v in self.pivot_key_name2idname.items()}
         self.document_index: pd.DataFrame = None
         self.data: pd.DataFrame = None
         self.defaults: dict = defaults
@@ -139,22 +151,46 @@ class BasicDTMGUI:
         )
         self._status: HTML = HTML(layout=Layout(width='50%', border="0px transparent white"))
         self._pos_groups: SelectMultiple = SelectMultiple(
-            options=['Total'] + self.PoS_tag_groups.index.tolist(),
+            options=['Total'] + [x for x in self.PoS_tag_groups.index.tolist() if x != "Delimiter"],
             value=['Total'],
-            rows=12,
+            rows=10,
             layout=Layout(width='120px'),
         )
 
-        self._pivot_keys: SelectMultiple = SelectMultiple(
-            options=['None'] + list(self.pivot_key_name2idname.keys()),
+        self._pivot_keys_text_names: SelectMultiple = SelectMultiple(
+            options=['None'] + list(self.pivot_keys.text_names),
             value=['None'],
-            rows=12,
+            rows=5,
             layout=Layout(width='120px'),
         )
-        self.tab: OutputsTabExt = OutputsTabExt(["Table", "Plot"], layout={'width': '98%'})
+        self._filter_keys: SelectMultiple = SelectMultiple(options=[], value=[], rows=12, layout=Layout(width='120px'))
+
+        self._tab: OutputsTabExt = OutputsTabExt(["Table", "Line", "Bar"], layout={'width': '98%'})
         self._widgets_placeholder: HBox = HBox()
         self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
+
+    def setup(self, load_data: bool = False) -> "BasicDTMGUI":
+        self.observe(False)
+        self._source_folder: FileChooserExt2 = FileChooserExt2(
+            path=self.default_folder,
+            title='<b>Corpus folder</b>',
+            show_hidden=False,
+            select_default=True,
+            use_dir_icons=True,
+            show_only_dirs=True,
+        )
+        self._source_folder.refresh()
+        self._source_folder.register_callback(self._load)
+        self._download.on_click(self.download)
+
+        if len(self.pivot_keys.text_names) > 0:
+            self._unstack_tabular.observe(self._display, 'value')
+
+        self.observe(True)
+        if load_data:
+            self._load()
+        return self
 
     def reset(self) -> "BasicDTMGUI":
         self.observe(False)
@@ -164,7 +200,8 @@ class BasicDTMGUI:
         self._smooth.value = self.defaults.get('smooth', False)
         self._temporal_key.value = self.defaults.get('temporal_key', 'decade')
         self._pos_groups.value = ['Total']
-        self._pivot_keys.value = ['None']
+        self._pivot_keys_text_names.value = ['None']
+        self._filter_keys.value = []
         self._unstack_tabular.value = False
         self.observe(True)
 
@@ -195,12 +232,24 @@ class BasicDTMGUI:
         return self._temporal_key.value
 
     @property
-    def selected_pivot_keys_idnames(self) -> List[str]:
-        return [self.pivot_key_name2idname.get(x) for x in self.selected_pivot_key_names]
+    def pivot_keys_text_names(self) -> List[str]:
+        """Return column names for user-selected pivot keys"""
+        return [x for x in self._pivot_keys_text_names.value if x != 'None']
 
     @property
-    def selected_pivot_key_names(self) -> List[str]:
-        return [x for x in self._pivot_keys.value if x != 'None']
+    def pivot_keys_id_names(self) -> List[str]:
+        """Return ID column names for user selected pivot key"""
+        return [self.pivot_keys.text_name2id_name.get(x) for x in self.pivot_keys_text_names]
+
+    @property
+    def pivot_keys_filter_values(self) -> pu.PropertyValueMaskingOpts:
+        """Returns user's filter selections as a name-to-values mapping."""
+        key_values = defaultdict(list)
+        value_tuples: Tuple[str, str] = [x.split(': ') for x in self._filter_keys.value]
+        for k, v in value_tuples:
+            key_values[k].append(v)
+        filter_opts = self.pivot_keys.create_filter_key_values_dict(key_values, decode=True)
+        return filter_opts
 
     @property
     def selected_pos_groups(self) -> List[str]:
@@ -212,7 +261,7 @@ class BasicDTMGUI:
 
     @property
     def unstack_tabular(self) -> bool:
-        if len(self.selected_pivot_key_names) > 0:
+        if len(self.pivot_keys_text_names) > 0:
             return self._unstack_tabular.value
         return False
 
@@ -225,7 +274,8 @@ class BasicDTMGUI:
             smooth=self.smooth,
             pos_groups=self.selected_pos_groups,
             temporal_key=self.temporal_key,
-            pivot_keys=self.selected_pivot_keys_idnames,
+            pivot_keys_id_names=self.pivot_keys_id_names,
+            pivot_keys_filter=self.pivot_keys_filter_values,
             unstack_tabular=self.unstack_tabular,
         )
 
@@ -242,10 +292,18 @@ class BasicDTMGUI:
                             ]
                             + (
                                 []
-                                if len(self.pivot_key_name2idname) == 0
+                                if len(self.pivot_keys.text_names) == 0
                                 else [
                                     HTML("<b>Pivot by</b>"),
-                                    self._pivot_keys,
+                                    self._pivot_keys_text_names,
+                                ]
+                            )
+                            + (
+                                []
+                                if len(self.pivot_keys.text_names) == 0
+                                else [
+                                    HTML("<b>Filter by</b>"),
+                                    self._filter_keys,
                                 ]
                             ),
                             layout={'width': '140px'},
@@ -257,7 +315,7 @@ class BasicDTMGUI:
                                         self._normalize,
                                         self._smooth,
                                     ]
-                                    + ([self._unstack_tabular] if len(self.pivot_key_name2idname) > 0 else [])
+                                    + ([self._unstack_tabular] if len(self.pivot_keys.text_names) > 0 else [])
                                     + [
                                         self._temporal_key,
                                         self._widgets_placeholder,
@@ -268,7 +326,7 @@ class BasicDTMGUI:
                                 ),
                                 HBox(
                                     [
-                                        self.tab,
+                                        self._tab,
                                     ],
                                     layout={'width': '98%'},
                                 ),
@@ -282,40 +340,36 @@ class BasicDTMGUI:
             ]
         )
 
-    def setup(self, load_data: bool = False) -> "BasicDTMGUI":
-        self.observe(False)
-        self._source_folder: FileChooserExt2 = FileChooserExt2(
-            path=self.default_folder,
-            title='<b>Corpus folder</b>',
-            show_hidden=False,
-            select_default=True,
-            use_dir_icons=True,
-            show_only_dirs=True,
-        )
-        self._source_folder.refresh()
-        self._source_folder.register_callback(self._load)
-        self._download.on_click(self.download)
-        self._pivot_keys.observe(self.pivot_key_handler, 'value')
+    def pivot_key_handler(self, change: dict, *_):
 
-        if len(self.pivot_key_name2idname) > 0:
-            self._unstack_tabular.observe(self._display, 'value')
+        old_keys: Set[str] = set(change['old']) - set(('None',))
+        new_keys: Set[str] = set(change['new']) - set(('None',))
 
-        self.observe(True)
-        if load_data:
-            self._load()
-        return self
+        # if 'None' in self._pivot_keys_text_names.value:
+        #     self._pivot_keys_text_names.value = ['None']
+        #     self._filter_keys.value = []
+        #     self._filter_keys.options = []
+        #     return
 
-    def pivot_key_handler(self, *_):
-        if 'None' in self._pivot_keys.value:
-            self._pivot_keys.value = ['None']
+        new_options: List[str] = set(self.pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
+        remove_options: List[str] = set(self.pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
+
+        self._filter_keys.values = []
+        self._filter_keys.options = sorted(list((set(self._filter_keys.options) - remove_options) | new_options))
+        self._filter_keys.values = sorted(list((set(self._filter_keys.value) - remove_options) | new_options))
 
     def observe(self, value: bool) -> None:
-        method: str = 'observe' if value else 'unobserve'
-        for ctrl in [self._pos_groups, self._normalize, self._smooth, self._temporal_key, self._pivot_keys]:
-            with contextlib.suppress(Exception):
-                getattr(ctrl, method)(self._display, names='value')
-        if len(self.pivot_key_name2idname) > 0:
-            getattr(self._unstack_tabular, method)(self._display, names='value')
+
+        observe(self._pivot_keys_text_names, handler=self.pivot_key_handler, value=value)
+
+        display_trigger_ctrls: List[Any] = [self._pos_groups, self._normalize, self._smooth, self._temporal_key] + (
+            [self._unstack_tabular, self._filter_keys]
+            if len(self.pivot_keys.text_names) > 0
+            else [self._pivot_keys_text_names]
+        )
+
+        for ctrl in display_trigger_ctrls:
+            observe(ctrl, handler=self._display, value=value)
 
     def _display(self, _):
         self.observe(False)
@@ -362,8 +416,8 @@ class BasicDTMGUI:
             self.alert(ex)
 
     def unstack_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        if len(self.selected_pivot_key_names) > 0 and self.data is not None:
-            data: pd.DataFrame = self.data.set_index([self.temporal_key] + self.selected_pivot_key_names)
+        if len(self.pivot_keys_text_names) > 0 and self.data is not None:
+            data: pd.DataFrame = self.data.set_index([self.temporal_key] + self.pivot_keys_text_names)
             while isinstance(data.index, pd.MultiIndex):
                 data = data.unstack(level=1, fill_value=0)
                 if isinstance(data.columns, pd.MultiIndex):
@@ -377,7 +431,7 @@ class BasicDTMGUI:
 
             data: pd.DataFrame = self.compute()
 
-            if len(self.selected_pivot_key_names) > 0:
+            if len(self.pivot_keys_text_names) > 0:
                 unstacked_data: pd.DataFrame = self.unstack_data(data)
             else:
                 unstacked_data = data
@@ -390,12 +444,14 @@ class BasicDTMGUI:
             plot_data: pd.DataFrame = unstacked_data.set_index(self.temporal_key)  # , drop=False).rename_axis('')
 
             # FIXME: Fix Smooth!!
-            plot_graph = lambda: plot_by_bokeh(data_source=plot_data, smooth=False)
+            plot_lines = lambda: pp.plot_multiline(df=plot_data, smooth=False)
+            plot_bar = lambda: pp.plot_stacked_bar(df=plot_data)
 
             # FIXME: Add option to plot several graphs?
 
-            self.tab.display_content(0, what=table, clear=True)
-            self.tab.display_content(1, what=plot_graph, clear=True)
+            self._tab.display_content(0, what=table, clear=True)
+            self._tab.display_content(1, what=plot_lines, clear=True)
+            self._tab.display_content(2, what=plot_bar, clear=True)
 
             self.alert("✔")
         except ValueError as ex:
