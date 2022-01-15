@@ -1,3 +1,4 @@
+import contextlib
 from typing import Any, Callable, List, Sequence
 
 import ipywidgets as widgets
@@ -106,10 +107,12 @@ def button_with_previous_callback(that_with_property: Any, property_name: str, c
     return button_with_callback(description="<<", callback=f)
 
 
-def register_observer(ctrl: widgets.Widget, fx: Callable, value: bool, names: str = 'value') -> None:
+def register_observer(ctrl: widgets.Widget, *, handler: Callable, value: bool, names: str = 'value') -> None:
     method: str = 'observe' if value else 'unobserve'
     if hasattr(ctrl, method):
-        getattr(ctrl, method)(fx, names=names)
+        with contextlib.suppress(ValueError):
+            getattr(ctrl, method)(handler, names=names)
+
 
 # import asyncio
 # from time import time
