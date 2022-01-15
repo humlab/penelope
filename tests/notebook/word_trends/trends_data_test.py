@@ -5,7 +5,6 @@ import pandas as pd
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import TrendsComputeOpts, TrendsData
-from tests.utils import OUTPUT_FOLDER
 
 
 def simple_corpus():
@@ -38,12 +37,7 @@ def test_TrendsData_create():
 
 def test_TrendsData_update():
 
-    data = TrendsData(
-        corpus=simple_corpus(),
-        corpus_folder=OUTPUT_FOLDER,
-        corpus_tag="dummy",
-        n_top=10,
-    )
+    data = TrendsData(corpus=simple_corpus(), n_top=10)
 
     assert isinstance(data.gof_data.goodness_of_fit, pd.DataFrame)
     assert isinstance(data.gof_data.most_deviating_overview, pd.DataFrame)
@@ -56,9 +50,7 @@ def test_TrendsData_remember():
 
 def test_TrendsData_get_corpus():
     expected_category_column: str = 'time_period'
-    trends_data: TrendsData = TrendsData(
-        corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
-    )
+    trends_data: TrendsData = TrendsData(corpus=simple_corpus(), n_top=100)
 
     corpus: VectorizedCorpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, time_period='year', fill_gaps=True)
@@ -132,9 +124,7 @@ def test_TrendsData_get_corpus():
 
 def test_trends_data_top_terms():
     expected_category_column: str = 'time_period'
-    trends_data: TrendsData = TrendsData(
-        corpus=simple_corpus(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
-    )
+    trends_data: TrendsData = TrendsData(corpus=simple_corpus(), n_top=100)
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, time_period='year')
     ).transformed_corpus
@@ -211,24 +201,17 @@ def test_trends_data_top_terms():
 @patch('penelope.common.goodness_of_fit.compile_most_deviating_words', lambda *_, **__: Mock(spec=pd.DataFrame))
 @patch('penelope.common.goodness_of_fit.get_most_deviating_words', lambda *_, **__: Mock(spec=pd.DataFrame))
 def test_group_by_year():
-    corpus_folder = './tests/test_data/VENUS'
-    corpus_tag = 'VENUS'
 
     corpus: VectorizedCorpus = Mock(spec=VectorizedCorpus)
     corpus = corpus.group_by_year()
 
-    trends_data: TrendsData = TrendsData(
-        corpus=corpus,
-        corpus_folder=corpus_folder,
-        corpus_tag=corpus_tag,
-        n_top=100,
-    )
+    trends_data: TrendsData = TrendsData(corpus=corpus, n_top=100)
 
     assert trends_data is not None
 
 
 def test_find_word_indices():
-    trends_data = TrendsData(corpus=simple_corpus(), corpus_folder='.', corpus_tag='dummy')
+    trends_data = TrendsData(corpus=simple_corpus())
     indices = trends_data.find_word_indices(
         TrendsComputeOpts(
             time_period='year', normalize=False, smooth=False, keyness=KeynessMetric.TF, words=["c"], top_count=2
