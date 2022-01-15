@@ -14,9 +14,9 @@ def column_exists_guard(document_index: pd.DataFrame, column_name: str) -> None:
         raise PenelopeBugCheck(f"expected '{column_name}' to be in {', '.join(document_index.columns)}")
 
 
-def get_year_category_ticks(categories: List[int], n_tick: int = 5) -> List[int]:
+def generate_temporal_ticks(categories: List[int], n_tick: int = 5) -> List[int]:
     """Gets ticks every n_tick years if category is year
-    Returns all cateories if all values are either, lustrum and decade"""
+    Returns all categories if all values are either, lustrum and decade"""
 
     if all(x % 5 in (0, 5) for x in categories):
         return categories

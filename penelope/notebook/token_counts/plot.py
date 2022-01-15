@@ -8,8 +8,8 @@ import bokeh.plotting
 import numpy as np
 import pandas as pd
 import scipy
-from bokeh.plotting import figure, Figure
-from penelope.notebook.word_trends.displayers.utils import get_year_category_ticks
+from bokeh.plotting import Figure, figure
+from penelope.notebook.word_trends.displayers.utils import generate_temporal_ticks
 from penelope.utility import take
 
 DEFAULT_FIGOPTS: dict = dict(plot_width=1000, plot_height=600)
@@ -33,9 +33,6 @@ def pchip_interpolate_frame(df: pd.DataFrame, step: float = 0.1, columns: List[s
     return pd.DataFrame(data)
 
 
-# df = gui.unstack_data(gui.DATA)
-
-
 def plot_stacked_bar(df: pd.DataFrame, **figopts):
 
     figopts = {**DEFAULT_FIGOPTS, **(figopts or {})}
@@ -47,7 +44,7 @@ def plot_stacked_bar(df: pd.DataFrame, **figopts):
 
     p: Figure = figure(x_range=data_source['category'], **figopts)
 
-    p.left[0].formatter.use_scientific = False
+    p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
 
     p.vbar_stack(columns, x='category', color=colors, width=0.9, source=data_source, legend_label=columns)
 
@@ -88,13 +85,13 @@ def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> Figu
 
     if smooth:
         df = pchip_interpolate_frame(df).set_index('category') if smooth else df
-        x_ticks = get_year_category_ticks(df.index.tolist())
+        x_ticks = generate_temporal_ticks(df.index.tolist())
 
     data_source: dict = to_multiline_data_source(data=df, smoother=None)
 
     p: Figure = figure(**(figopts or {}))
 
-    p.left[0].formatter.use_scientific = False
+    p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
     p.y_range.start = 0
     p.yaxis.axis_label = 'Frequency'
     p.toolbar.autohide = True
