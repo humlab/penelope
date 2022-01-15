@@ -23,5 +23,5 @@ def test_TrendsGUI_display():
     trends_data = MagicMock(spec=TrendsData, corpus=corpus, category_column="apa")
     displayer = Mock(ITrendDisplayer)
     gui = TrendsGUI().setup(displayers=[displayer])
+    gui.trends_data = trends_data
     gui.display(trends_data=trends_data)
-    assert gui.current_displayer.display.call_count == 1
