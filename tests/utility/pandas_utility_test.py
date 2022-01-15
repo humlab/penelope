@@ -17,6 +17,7 @@ from tests.utils import OUTPUT_FOLDER
 
 # pylint: disable=redefined-outer-name
 
+
 def test_try_split_column():
 
     df = pd.DataFrame({'A': ['a', 'b', 'c']})
@@ -229,30 +230,33 @@ def test_hot_attributes():
     assert len(PropertyValueMaskingOpts().hot_attributes(doc)) == 0
     assert len(PropertyValueMaskingOpts(kalle=1, kula=2, kurt=2).hot_attributes(doc)) == 0
 
-PIVOT_KEYS: dict =  {
-        'fågel': {
-            'text_name': 'fågel',
-            'id_name': 'fågel_id',
-            'values': {
-                'okänd': 0,
-                'kråka': 1,
-                'skata': 2,
-            },
+
+PIVOT_KEYS: dict = {
+    'fågel': {
+        'text_name': 'fågel',
+        'id_name': 'fågel_id',
+        'values': {
+            'okänd': 0,
+            'kråka': 1,
+            'skata': 2,
         },
-        'husdjur': {
-            'text_name': 'husdjur',
-            'id_name': 'husdjur_id',
-            'values': {
-                'okänd': 0,
-                'katt': 1,
-                'hund': 2,
-            },
+    },
+    'husdjur': {
+        'text_name': 'husdjur',
+        'id_name': 'husdjur_id',
+        'values': {
+            'okänd': 0,
+            'katt': 1,
+            'hund': 2,
         },
-    }
+    },
+}
+
 
 @pytest.fixture
 def pivot_keys() -> PivotKeys:
     return PivotKeys(PIVOT_KEYS)
+
 
 def test_pivot_keys_create(pivot_keys):
 
@@ -280,6 +284,7 @@ def test_pivot_keys_create(pivot_keys):
         'skata': 2,
     }
 
+
 def test_pivot_keys_filter(pivot_keys: PivotKeys):
 
     opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(["fågel=kråka"], sep='=', decode=True)
@@ -287,21 +292,27 @@ def test_pivot_keys_filter(pivot_keys: PivotKeys):
     assert opts is not None
     assert opts.fågel_id == [1]
 
-    opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(["fågel=kråka", "husdjur=katt", "husdjur=hund"], sep='=', decode=False)
+    opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(
+        ["fågel=kråka", "husdjur=katt", "husdjur=hund"], sep='=', decode=False
+    )
 
     assert opts is not None
     assert opts.fågel == ['kråka']
     assert set(opts.husdjur) == {'katt', 'hund'}
 
+
 def test_pivot_keys_filter_with_sequence(pivot_keys: PivotKeys):
 
-    opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(["husdjur=katt,hund"], sep='=', decode=False, vsep=None)
+    opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(
+        ["husdjur=katt,hund"], sep='=', decode=False, vsep=None
+    )
 
     assert opts is not None
     assert set(opts.husdjur) == {'katt,hund'}
 
-    opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(["husdjur=katt,hund"], sep='=', decode=False, vsep=",")
+    opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(
+        ["husdjur=katt,hund"], sep='=', decode=False, vsep=","
+    )
 
     assert opts is not None
     assert set(opts.husdjur) == {"katt", "hund"}
-
