@@ -230,21 +230,21 @@ class GroupByMixIn:
         if document_namer is None:
             document_namer = default_document_namer
 
-        new_di: pd.DataFrame = (
+        gdi: pd.DataFrame = (
             self.document_index.groupby([temporal_key] + pivot_keys)
             .agg({'document_id': list, target_column: sum})
             .reset_index()
         )
 
-        new_di['document_ids'] = new_di.document_id
-        new_di['document_id'] = new_di.index
-        new_di['document_name'] = document_namer(new_di)
-        new_di['filename'] = new_di.document_name
+        gdi['document_ids'] = gdi.document_id
+        gdi['document_id'] = gdi.index
+        gdi['document_name'] = document_namer(gdi)
+        gdi['filename'] = gdi.document_name
 
-        category_indices: Mapping[int, List[int]] = new_di.document_ids.to_dict()
+        category_indices: Mapping[int, List[int]] = gdi.document_ids.to_dict()
 
         return self.group_by_indices_mapping(
-            document_index=new_di,
+            document_index=gdi,
             category_indices=category_indices,
             aggregate=aggregate,
             dtype=dtype,
