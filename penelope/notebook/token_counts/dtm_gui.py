@@ -62,24 +62,24 @@ def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
     if opts.pivot_keys_filter is not None:
         di = opts.pivot_keys_filter.apply(di)
 
-    pivot_keys_id_names: List[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
+    pivot_keys: List[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
 
     count_columns: List[str] = (
         list(opts.pos_groups)
         if len(opts.pos_groups or []) > 0
-        else [x for x in di.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys_id_names]
+        else [x for x in di.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys]
     )
-    data: pd.DataFrame = di.groupby(pivot_keys_id_names).sum()[count_columns]
+    data: pd.DataFrame = di.groupby(pivot_keys).sum()[count_columns]
 
     if opts.normalize:
-        total: pd.Series = di.groupby(pivot_keys_id_names)['Total'].sum()
+        total: pd.Series = di.groupby(pivot_keys)['Total'].sum()
         data = data.div(total, axis=0)
 
     # if opts.smooth:
     #     method: str = 'linear' if isinstance(data, pd.MultiIndex) else 'index'
     #     data = data.interpolate(method=method)
 
-    data = data.reset_index()[pivot_keys_id_names + count_columns]
+    data = data.reset_index()[pivot_keys + count_columns]
     return data
 
 
