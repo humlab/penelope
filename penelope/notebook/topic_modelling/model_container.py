@@ -2,7 +2,6 @@ from functools import cached_property
 from typing import Optional, Union
 
 import penelope.topic_modelling as tm
-from loguru import logger
 
 
 class TopicModelException(Exception):

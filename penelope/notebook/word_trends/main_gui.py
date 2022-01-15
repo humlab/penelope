@@ -19,6 +19,8 @@ LAST_ARGS = None
 LAST_CORPUS_CONFIG = None
 LAST_CORPUS = None
 
+# pylint: disable=unused-argument
+
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
 def loaded_callback(
