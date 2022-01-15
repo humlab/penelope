@@ -1,7 +1,7 @@
 # import IPython.display
 
 # from ....ipyaggrid_utility import display_grid
-# from .._compile_mixins import TopTokens2MixIn
+# from ..compile_mixins import TopTokens2MixIn
 # from ..interface import ITrendDisplayer
 # from penelope.utility import deprecated
 

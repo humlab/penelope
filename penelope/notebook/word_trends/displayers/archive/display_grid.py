@@ -3,12 +3,12 @@
 # from IPython.display import display
 # from penelope.utility import deprecated
 
-# from .._compile_mixins import CategoryDataMixin
+# from ..compile_mixins import UnstackedDataMixin
 # from ...interface import ITrendDisplayer
 
 
 # @deprecated
-# class GridDisplayer(CategoryDataMixin, ITrendDisplayer):
+# class GridDisplayer(UnstackedDataMixin, ITrendDisplayer):
 #     def __init__(self, name: str = "Grid"):
 #         super().__init__(name=name)
 
