@@ -232,7 +232,7 @@ class GroupByMixIn:
 
         new_di: pd.DataFrame = (
             self.document_index.groupby([temporal_key] + pivot_keys)
-            .agg({'document_id': lambda x: list(x), target_column: sum})
+            .agg({'document_id': list, target_column: sum})
             .reset_index()
         )
 
