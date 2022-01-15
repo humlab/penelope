@@ -188,6 +188,11 @@ class PropertyValueMaskingOpts:
         except KeyError:
             return None
 
+    def __eq__(self, other: PropertyValueMaskingOpts) -> bool:
+        if not isinstance(other, PropertyValueMaskingOpts):
+            return False
+        return self.data == other.props
+
     @property
     def props(self) -> Dict:
         return self.data
