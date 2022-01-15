@@ -21,6 +21,18 @@ from .utils import now_timestamp, revdict
 DataFrameFilenameTuple = Tuple[pd.DataFrame, str]
 
 
+def unstack_data(data: pd.DataFrame, pivot_keys: List[str]) -> pd.DataFrame:
+    """Unstacks a dataframe that has been grouped by temporal_key and pivot_keys"""
+    if len(pivot_keys) <= 1 or data is None:
+        return data
+    data: pd.DataFrame = data.set_index(pivot_keys)
+    while isinstance(data.index, pd.MultiIndex):
+        data = data.unstack(level=1, fill_value=0)
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = [' '.join(x) for x in data.columns]
+    return data
+
+
 def faster_to_dict_records(df: pd.DataFrame) -> List[dict]:
     data: List[Any] = df.values.tolist()
     columns: List[str] = df.columns.tolist()
@@ -247,7 +259,7 @@ class PivotKeys:
     def id_name2text_name(self) -> dict:
         return revdict(self.text_name2id_name)
 
-    @cached_property
+    @property
     def text_names(self) -> List[str]:
         return [x for x in self.pivot_keys]
 
@@ -255,11 +267,16 @@ class PivotKeys:
     def id_names(self) -> List[str]:
         return [x.get('id_name') for x in self.pivot_keys.values()]
 
+    @property
+    def has_pivot_keys(self) -> List[str]:
+        return len(self.text_names) > 0
+
     def key_values(self, text_name: str) -> Mapping[str, int]:
         """Returns name/id mapping for given key's value range"""
         return self.pivot_key(text_name)['values']
 
     def key_values_str(self, names: Set[str], sep=': ') -> List[str]:
+        print(names)
         return [f'{k}{sep}{v}' for k in names for v in self.key_values(k).keys()]
 
     def is_satisfied(self) -> bool:
@@ -298,9 +315,9 @@ class PivotKeys:
         value_tuples: Tuple[str, str] = [x.split(sep) for x in value_pairs]
         for k, v in value_tuples:
             is_sequence_of_values: bool = vsep is not None and vsep in v
-            values: List[str|int] = v.split(vsep) if is_sequence_of_values else [v]
+            values: List[str | int] = v.split(vsep) if is_sequence_of_values else [v]
             try:
-                values = [int(x) for x in values ]
+                values = [int(x) for x in values]
             except TypeError:
                 ...
             key_values[k].extend(values)

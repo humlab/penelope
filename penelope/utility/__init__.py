@@ -88,6 +88,7 @@ from .pandas_utils import (
     setup_pandas,
     try_split_column,
     ts_store,
+    unstack_data,
 )
 from .pos_tags import (
     Known_PoS_Tag_Schemes,
