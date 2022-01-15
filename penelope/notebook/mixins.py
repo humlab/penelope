@@ -67,6 +67,7 @@ class IPivotKeysMixIn(Protocol):
     def observe(self, value: bool) -> None:
         ...
 
+
 class PivotKeysMixIn:
     """Defines controls and event logics for pivot keys and filters for pivot key values.
     super() must implement: __init__() setup() reset()  observe()
@@ -165,7 +166,9 @@ class PivotKeysMixIn:
 
             ctrl_options: Set[str] = (set(self._filter_keys.options) - del_options) | add_options
             current_values: Set[str] = set(self._filter_keys.value)
-            ctrl_values: Set[str] = (current_values - del_options) | (add_options if self.autoselect_key_values else set())
+            ctrl_values: Set[str] = (current_values - del_options) | (
+                add_options if self.autoselect_key_values else set()
+            )
 
             values_changed: bool = ctrl_values != current_values
 
@@ -180,8 +183,6 @@ class PivotKeysMixIn:
         finally:
             self.prevent_event = False
 
-
-
     # def unstack_pivot_keys(self: IPivotKeysMixIn, data: pd.DataFrame) -> pd.DataFrame:
     #     """Unstacks a dataframe that has been grouped by PivotKeys"""
     #     if len(self.pivot_keys_text_names) > 0 and data is not None:
@@ -195,7 +196,9 @@ class PivotKeysMixIn:
     def observe(self: IPivotKeysMixIn, value: bool) -> None:
         register_observer(self._pivot_keys_text_names, handler=self.pivot_key_handler, value=value)
         display_trigger_ctrls: List[Any] = (
-            [self._unstack_tabular, self._filter_keys] if self.pivot_keys.has_pivot_keys else [self._pivot_keys_text_names]
+            [self._unstack_tabular, self._filter_keys]
+            if self.pivot_keys.has_pivot_keys
+            else [self._pivot_keys_text_names]
         )
 
         for ctrl in display_trigger_ctrls:
