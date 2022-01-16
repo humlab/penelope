@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 import os
 import types
-from typing import Any
+from itertools import cycle, islice
+from typing import Any, Iterable
 
 import bokeh.plotting
 import ipyfilechooser
 import ipywidgets as widgets
 import pandas as pd
 import yaml
+from bokeh.palettes import all_palettes
 from IPython.display import Javascript
 from IPython.display import display as ipython_display
 from loguru import logger
@@ -163,6 +167,18 @@ def shorten_filechooser_label(fc: ipyfilechooser.FileChooser, max_length: int):
             getattr(fc, '_label').value = fake.format(None, fc.selected, 'green')
     except:  # pylint: disable=bare-except
         pass
+
+
+def generate_colors(n: int, palette: Iterable[str] | str = 'Category20', palette_id: int = None) -> Iterable[str]:
+
+    if not isinstance(palette, str):
+        return islice(cycle(palette), n)
+
+    if palette in all_palettes:
+        palette_id: int = palette_id if palette_id is not None else max(all_palettes[palette].keys())
+        return islice(cycle(all_palettes[palette][palette_id]), n)
+
+    raise ValueError(f"unknown palette {palette}")
 
 
 class FileChooserExt(ipyfilechooser.FileChooser):
