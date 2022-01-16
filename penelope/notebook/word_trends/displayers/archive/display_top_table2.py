@@ -7,8 +7,8 @@
 
 # @deprecated
 # class TopTokensSimpleDisplayer(TopTokens2MixIn, ITrendDisplayer):
-#     def __init__(self, name: str = "TopTokens"):
-#         super().__init__(name=name)
+#     def __init__(self, name: str = "TopTokens", **opts):
+#         super().__init__(name=name, **opts)
 
 #     def setup(self, *_, **__):
 #         return
