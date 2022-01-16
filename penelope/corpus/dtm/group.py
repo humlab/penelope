@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import Callable, List, Mapping, Sequence, Tuple, TypeVar, Union
+from typing import Callable, List, Literal, Mapping, Sequence, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
 import scipy
 from penelope.type_alias import DocumentIndex
 from scipy import sparse as sp
+
+from penelope.utility import PropertyValueMaskingOpts
 
 from ..document_index import (
     KNOWN_TIME_PERIODS,
@@ -198,7 +200,17 @@ class GroupByMixIn:
         aggregate: str = 'sum',
         dtype: np.dtype = None,
     ) -> IVectorizedCorpus:
+        """Groups corpus by index mapping
 
+        Args:
+            document_index (pd.DataFrame): Grouped document index
+            category_indices (Mapping[int, List[int]]): [description]
+            aggregate (str, optional): [description]. Defaults to 'sum'.
+            dtype (np.dtype, optional): [description]. Defaults to None.
+
+        Returns:
+            IVectorizedCorpus: [description]
+        """
         matrix: scipy.sparse.spmatrix = group_DTM_by_indices_mapping(
             dtm=self.bag_term_matrix,
             n_docs=len(document_index),
@@ -217,23 +229,40 @@ class GroupByMixIn:
 
     def group_by_pivot_keys(
         self: IVectorizedCorpusProtocol,
-        temporal_key: str,
+        temporal_key: Literal['year', 'decade', 'lustrum'],
         pivot_keys: List[str],
-        target_column: str,
+        pivot_keys_filter: PropertyValueMaskingOpts,
         document_namer: Callable[[pd.DataFrame], pd.Series],
+        count_column: str = 'n_tokens',
         aggregate: str = 'sum',
         dtype: np.dtype = None,
     ):
+        """Groups corpus by a temporal key and zero to many pivot keys
+
+        Args:
+            self (IVectorizedCorpusProtocol): [description]
+            temporal_key (Literal['year', 'decade', 'lustrum']): Temporal grouping key value (year, lustrum, decade)
+            pivot_keys (List[str]): Grouping key value, must be discrete categorical values.
+            pivot_keys_filter (PropertyValueMaskingOpts): Filters that should be applied to documets index.
+            document_namer (Callable[[pd.DataFrame], pd.Series]): Funciton that computes a document name for each result groups.
+            count_column (str, optional): Token count column in document index that should be aggregated. Defaults to 'n_tokens'.
+            aggregate (str, optional): Aggregate function for DTM and document index (n_tokens). Defaults to 'sum'.
+            dtype (np.dtype, optional): Value type of target DTM matrix. Defaults to None.
+        """
+
         def default_document_namer(df: pd.DataFrame) -> pd.Series:
             return df[[temporal_key] + pivot_keys].apply(lambda x: '_'.join([str(t) for t in x]), axis=1)
 
         if document_namer is None:
             document_namer = default_document_namer
 
+        fdi: pd.DataFrame = (
+            self.document_index
+            if not pivot_keys or pivot_keys_filter is None or len(pivot_keys_filter) == 0
+            else self.document_index[pivot_keys_filter.mask[self.document_index]]
+        )
         gdi: pd.DataFrame = (
-            self.document_index.groupby([temporal_key] + pivot_keys)
-            .agg({'document_id': list, target_column: sum})
-            .reset_index()
+            fdi.groupby([temporal_key] + pivot_keys).agg({'document_id': list, count_column: aggregate}).reset_index()
         )
 
         gdi['document_ids'] = gdi.document_id
