@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import contextlib
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Tuple, Union
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
-from IPython.display import display as ipydisplay
-from ipywidgets import HTML, Button, Dropdown, HBox, Layout, Output, SelectMultiple, ToggleButton, VBox
+from ipywidgets import HTML, Dropdown, HBox, Layout, Output, SelectMultiple, ToggleButton, VBox
 from loguru import logger
 from penelope import corpus as pc
 from penelope import utility as pu
 
 from ..mixins import DownloadMixIn, PivotKeysMixIn, PivotKeySpec
-from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt, create_js_download
+from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
 from ..widgets_utils import register_observer
 from . import plot as pp
 

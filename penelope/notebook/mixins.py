@@ -21,11 +21,13 @@ class DownloadMixIn:
         self._download = Button(description='Download', layout=Layout(width='auto'))
         self._download_output: Output = Output()
         self._download.on_click(self.download)
+        self._download_data_name: str = 'data'
 
     def download(self, *_):
         with contextlib.suppress(Exception):
             with self._download_output:
-                js_download = nu.create_js_download(self.data, index=True)
+                data = getattr(self, self._download_data_name)
+                js_download = nu.create_js_download(data, index=True)
                 if js_download is not None:
                     ipydisplay(js_download)
 
