@@ -7,9 +7,9 @@ from typing import Any, List, Mapping, Protocol, Set, Tuple, Union
 from IPython.display import display as ipydisplay
 from ipywidgets import Button, HBox, Layout, Output, SelectMultiple, ToggleButton
 from penelope import utility as pu
-from .widgets_utils import register_observer
 
 from . import utility as nu
+from .widgets_utils import register_observer
 
 PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]
 PivotKeySpecArg = Union[List[PivotKeySpec], Mapping[str, List[PivotKeySpec]]]

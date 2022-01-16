@@ -6,9 +6,8 @@ import numpy as np
 import pandas as pd
 import scipy
 from penelope.type_alias import DocumentIndex
-from scipy import sparse as sp
-
 from penelope.utility import PropertyValueMaskingOpts
+from scipy import sparse as sp
 
 from ..document_index import (
     KNOWN_TIME_PERIODS,
