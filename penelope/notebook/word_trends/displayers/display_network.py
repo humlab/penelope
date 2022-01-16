@@ -190,17 +190,17 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
         self._animate.observe(self._toggle_state_changed, 'value')
         self._relayout.on_click(self._relayout_handler)
 
-    def plot(self, *, plot_data: Union[pd.DataFrame, dict], category_name: str, **_):
+    def plot(self, *, plot_data: dict, temporal_key: str, **_):
 
-        network_data: pd.DataFrame = self.create_data_frame(plot_data, category_name)
+        network_data: pd.DataFrame = self.create_data_frame(plot_data, temporal_key)
 
         if network_data is None:
             self.alert("No data!")
             return self
 
-        self.network = create_network(network_data, category_name)
+        self.network = create_network(network_data, temporal_key)
         self.set_layout()
-        self.network.set_style(css_styles(network_data[category_name].unique(), self.custom_styles))
+        self.network.set_style(css_styles(network_data[temporal_key].unique(), self.custom_styles))
 
         with self.output:
             IPython_display(self.layout())
