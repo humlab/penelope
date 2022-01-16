@@ -9,8 +9,8 @@
 
 # @deprecated
 # class GridDisplayer(UnstackedDataMixin, ITrendDisplayer):
-#     def __init__(self, name: str = "Grid"):
-#         super().__init__(name=name)
+#     def __init__(self, name: str = "Grid", **opts):
+#         super().__init__(name=name, **opts)
 
 #     def setup(self):
 #         return
