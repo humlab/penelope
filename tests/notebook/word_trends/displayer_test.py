@@ -10,16 +10,16 @@ from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import BundleTrendsData
 from penelope.notebook.word_trends.displayers import (
     BarDisplayer,
-    UnstackedDataMixin,
     ITrendDisplayer,
     LineDisplayer,
-    StackedDataMixin,
     NetworkDisplayer,
     PenelopeBugCheck,
+    StackedDataMixin,
     TableDisplayer,
     TopTokensDisplayer,
     UnnestedExplodeTableDisplayer,
     UnnestedTableDisplayer,
+    UnstackedDataMixin,
     create_network,
 )
 from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
