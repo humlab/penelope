@@ -1,11 +1,9 @@
 import penelope.common.goodness_of_fit as gof
-from penelope.utility import getLogger
+from penelope.common import goodness_of_fit as gu
 
 from .. import utility as notebook_utility
 from ..ipyaggrid_utility import display_grid
-from .interface import GofData, TrendsData
-
-logger = getLogger("penelope")
+from .interface import TrendsData
 
 
 class GoFsGUI:
@@ -27,7 +25,7 @@ class GoFsGUI:
     def display(self, trends_data: TrendsData) -> "GoFsGUI":
         if self.is_displayed:
             return self
-        gof_data: GofData = trends_data.gof_data
+        gof_data: gu.GofData = trends_data.gof_data
         self.tab_gof = (
             self.tab_gof.display_fx_result(0, display_grid, gof_data.goodness_of_fit)
             .display_fx_result(
