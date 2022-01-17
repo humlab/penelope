@@ -11,9 +11,12 @@ DEFAULT_SMOOTHERS = [pchip_spline]  # , rolling_average_smoother('nearest', 3)]
 
 
 class ITrendDisplayer(abc.ABC):
-    def __init__(self, name: str = "noname"):
+    def __init__(self, name: str = "noname", **opts):
         self.output: Output = Output()
         self.name: str = name
+        self.opts: dict = opts
+        self.width: int = opts.get('width', 1000)
+        self.height: int = opts.get('height', 800)
 
     @abc.abstractmethod
     def setup(self):
@@ -24,23 +27,23 @@ class ITrendDisplayer(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def plot(self, *, plot_data: dict, category_name: str, **_):  # pylint: disable=unused-argument
+    def plot(self, *, plot_data: dict, temporal_key: str, **_):  # pylint: disable=unused-argument
         return
 
     def clear(self):
         self.output.clear_output()
 
-    def display(self, *, corpus: VectorizedCorpus, indices: Sequence[int], smooth: bool, category_name: str):
+    # def display(self, *, corpus: VectorizedCorpus, indices: Sequence[int], smooth: bool, category_name: str):
 
-        if len(indices) == 0:
-            raise ValueError("Please specify tokens to plot")
+    #     if len(indices) == 0:
+    #         raise ValueError("Please specify tokens to plot")
 
-        self.clear()
-        with self.output:
-            plot_data = self.compile(
-                corpus=corpus,
-                indices=indices,
-                category_name=category_name,
-                smoothers=DEFAULT_SMOOTHERS if smooth else [],
-            )
-            self.plot(plot_data=plot_data, category_name=category_name)
+    #     self.clear()
+    #     with self.output:
+    #         plot_data = self.compile(
+    #             corpus=corpus,
+    #             indices=indices,
+    #             category_name=category_name,
+    #             smoothers=DEFAULT_SMOOTHERS if smooth else [],
+    #         )
+    #         self.plot(plot_data=plot_data, category_name=category_name)
