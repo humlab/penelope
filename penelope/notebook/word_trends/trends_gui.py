@@ -68,7 +68,7 @@ class TrendsBaseGUI(abc.ABC):
             disabled=False,
             layout=w.Layout(width='75px'),
         )
-        self._alert: w.Label = w.Label(layout=w.Layout(width='auto', border="0px transparent white"))
+        self._alert: w.HTML = w.HTML()
         self._words: w.Textarea = w.Textarea(
             description="",
             rows=1,
@@ -202,18 +202,27 @@ class TrendsBaseGUI(abc.ABC):
 
             self.alert("⌛ Preparing display...")
             plot_data: Any = self.compile(temporal_key=self.temporal_key, indices=self.picked_indices)
-
+            plot_data: Any = self.current_displayer.compile(
+                corpus=self.trends_data.transformed_corpus,
+                indices=self.picked_indices,
+                category_name=self.temporal_key,
+                smoothers=[pchip_spline] if self.smooth else [],
+            )
             self.alert("⌛ Plotting...")
             self.current_displayer.clear()
             with self.current_displayer.output:
 
-                display(create_data_frame(plot_data=plot_data, category_name=self.temporal_key))
+                display(self.trends_data.transformed_corpus.document_index.head())
+                display(plot_data)
+                display(self.trends_data._trends_opts.__dict__)
+                # display(create_data_frame(plot_data=plot_data, category_name=self.temporal_key))
                 # self.current_displayer.plot(plot_data, category_name=self.temporal_key)
 
             self.alert("🙂")
 
         except ValueError as ex:
             self.alert(f"😡 {str(ex)}")
+            raise
         except Exception as ex:
             logger.exception(ex)
             self.warn(f"😡 {str(ex)}")
