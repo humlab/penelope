@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import datetime
 import functools
 import glob
@@ -579,6 +580,25 @@ def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) ->
     else:
         fx = lambda mo: replace_map[mo.string[mo.start() : mo.end()]]
     return regex.sub(fx, text)
+
+
+def clear_attrib(obj, attrib):
+    if value := getattr(obj, attrib, None):
+        setattr(obj, attrib, None)
+    return value
+
+
+Q = TypeVar("Q")
+
+
+def deep_clone(obj: Q, ignores: List[str] = None, assign_ignores: bool = True) -> Q:
+    """Takes deep clone but avoids deep-copying ìgnores attributes."""
+    ignores_store: dict = {attrib: clear_attrib(obj, attrib) for attrib in ignores if hasattr(obj, attrib)}
+    other: Q = copy.deepcopy(obj)
+    if assign_ignores:
+        for attrib, value in ignores_store.items:
+            setattr(other, attrib, value)
+    return other
 
 
 SMILEYS = "😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚☺🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫🥱😴😌😛"

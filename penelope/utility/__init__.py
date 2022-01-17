@@ -79,6 +79,7 @@ from .pandas_utils import (
     DataFrameFilenameTuple,
     PivotKeys,
     PropertyValueMaskingOpts,
+    as_slim_types,
     create_mask,
     create_mask2,
     faster_to_dict_records,
