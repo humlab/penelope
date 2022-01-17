@@ -2,12 +2,12 @@
 from .displayers import (
     DEFAULT_WORD_TREND_DISPLAYERS,
     BarDisplayer,
-    UnstackedDataMixin,
     ITrendDisplayer,
     LineDisplayer,
-    StackedDataMixin,
+    MultiLineCompileMixIn,
     PenelopeBugCheck,
     TableDisplayer,
+    UnstackedTabularCompileMixIn,
 )
 from .gof_and_trends_gui import GofTrendsGUI
 from .gofs_gui import GoFsGUI
