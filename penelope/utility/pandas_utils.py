@@ -194,7 +194,7 @@ class PropertyValueMaskingOpts:
         return self.data == other.props
 
     @property
-    def props(self) -> Dict:
+    def props(self) -> dict:
         return self.data
 
     def mask(self, doc: pd.DataFrame) -> np.ndarray:
@@ -213,6 +213,9 @@ class PropertyValueMaskingOpts:
             for attr_name, attr_value in self.data.items()
             if attr_name in doc.columns and attr_value is not None
         ]
+
+    def clone(self) -> PropertyValueMaskingOpts:
+        return PropertyValueMaskingOpts(**self.props)
 
 
 PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]
