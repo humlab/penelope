@@ -55,7 +55,6 @@ class ITrendsData(abc.ABC):
         self.corpus: pc.VectorizedCorpus = corpus
         self.n_top: int = n_top
 
-        self._compute_options: Dict = None
         self._gof_data: gof.GofData = None
 
         self._transformed_corpus: pc.VectorizedCorpus = None
