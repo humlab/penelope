@@ -5,8 +5,7 @@ from typing import Callable, List, Literal, Mapping, Sequence, Tuple, TypeVar, U
 import numpy as np
 import pandas as pd
 import scipy
-from penelope.type_alias import DocumentIndex
-from penelope.utility import PropertyValueMaskingOpts
+from penelope import utility as pu
 from scipy import sparse as sp
 
 from ..document_index import (
@@ -72,7 +71,7 @@ class GroupByMixIn:
             .document_index
         )
 
-        if pivot_column_name == 'year':
+        if pivot_column_name == 'year' and pivot_column_name != target_column_name:
             """Don't loose year if we group by year and rename target"""
             document_index['year'] = document_index[target_column_name]
 
@@ -227,13 +226,14 @@ class GroupByMixIn:
         return grouped_corpus
 
     def group_by_pivot_keys(
-        self: IVectorizedCorpusProtocol,
+        self: IVectorizedCorpusProtocol | GroupByMixIn,
         temporal_key: Literal['year', 'decade', 'lustrum'],
         pivot_keys: List[str],
-        pivot_keys_filter: PropertyValueMaskingOpts,
+        pivot_keys_filter: pu.PropertyValueMaskingOpts,
         document_namer: Callable[[pd.DataFrame], pd.Series],
-        count_column: str = 'n_tokens',
         aggregate: str = 'sum',
+        fill_gaps: bool = False,
+        drop_group_ids: bool = True,
         dtype: np.dtype = None,
     ):
         """Groups corpus by a temporal key and zero to many pivot keys
@@ -244,32 +244,69 @@ class GroupByMixIn:
             pivot_keys (List[str]): Grouping key value, must be discrete categorical values.
             pivot_keys_filter (PropertyValueMaskingOpts): Filters that should be applied to documets index.
             document_namer (Callable[[pd.DataFrame], pd.Series]): Funciton that computes a document name for each result groups.
-            count_column (str, optional): Token count column in document index that should be aggregated. Defaults to 'n_tokens'.
             aggregate (str, optional): Aggregate function for DTM and document index (n_tokens). Defaults to 'sum'.
             dtype (np.dtype, optional): Value type of target DTM matrix. Defaults to None.
         """
 
         def default_document_namer(df: pd.DataFrame) -> pd.Series:
+            """Default name that just joins the grouping key values to a single string"""
             return df[[temporal_key] + pivot_keys].apply(lambda x: '_'.join([str(t) for t in x]), axis=1)
+
+        def _document_index_aggregates(df: pd.DataFrame, grouping_keys: List[str]) -> dict:
+            """Creates an aggregate dict to be used in groupby."""
+
+            """Add for group's document ids"""
+            aggs: dict = dict(document_ids=('document_id', list))
+
+            """Sum up all available count columns"""
+            for count_column in {'n_tokens', 'n_raw_tokens', 'tokens'}.intersection(set(df.columns)):
+                aggs.update({count_column: (count_column, 'sum')})
+
+            """Set year to min year for each group"""
+            if 'year' in df.columns and 'year' not in grouping_keys:
+                aggs.update(year=('year', min))  # , year_from=('year', min), year_to=('year', max))
+
+            """Add counter for number of documents in each group"""
+            if 'n_documents' not in df.columns:
+                aggs.update(n_documents=('document_id', 'nunique'))
+            else:
+                aggs.update(n_documents=('n_documents', 'sum'))
+
+            return aggs
 
         if document_namer is None:
             document_namer = default_document_namer
 
+        di: pd.DataFrame = self.document_index
         fdi: pd.DataFrame = (
-            self.document_index
-            if not pivot_keys or pivot_keys_filter is None or len(pivot_keys_filter) == 0
-            else self.document_index[pivot_keys_filter.mask[self.document_index]]
-        )
-        gdi: pd.DataFrame = (
-            fdi.groupby([temporal_key] + pivot_keys).agg({'document_id': list, count_column: aggregate}).reset_index()
+            di if not pivot_keys or len(pivot_keys_filter or []) == 0 else di[pivot_keys_filter.mask[di]]
         )
 
-        gdi['document_ids'] = gdi.document_id
-        gdi['document_id'] = gdi.index
+        if temporal_key not in fdi.columns:
+            fdi[temporal_key] = fdi['year'].apply(create_time_period_categorizer(temporal_key))
+
+        aggs: dict = _document_index_aggregates(fdi, [temporal_key] + pivot_keys)
+
+        gdi: pd.DataFrame = fdi.groupby([temporal_key] + pivot_keys, as_index=False).agg(**aggs)
         gdi['document_name'] = document_namer(gdi)
         gdi['filename'] = gdi.document_name
 
-        category_indices: Mapping[int, List[int]] = gdi.document_ids.to_dict()
+        if fill_gaps:
+            """Add a dummy document for each missing temporal key value"""
+            gdi = fill_temporal_gaps_in_group_document_index(gdi, temporal_key, pivot_keys, aggs)
+
+        gdi['document_id'] = gdi.index.astype(np.int32)
+
+        gdi = pu.as_slim_types(gdi, {'n_documents', 'n_tokens', 'n_raw_tokens', 'tokens'}, np.int32)
+        gdi = pu.as_slim_types(gdi, {'year', temporal_key}, np.int16)
+
+        """Set a fixed name for temporal key as well"""
+        gdi['time_period'] = gdi[temporal_key]
+
+        category_indices: Mapping[int, List[int]] = gdi['document_ids'].to_dict()
+
+        if drop_group_ids:
+            gdi.drop(columns='document_ids', inplace=True, errors='ignore')
 
         return self.group_by_indices_mapping(
             document_index=gdi,
@@ -284,7 +321,7 @@ def group_DTM_by_category_indices_mapping(
     bag_term_matrix: scipy.sparse.spmatrix,
     category_indices: Mapping[int, List[int]],
     aggregate: str,
-    document_index: DocumentIndex,
+    document_index: pd.DataFrame,
     pivot_column_name: str,
 ):
     shape = (len(document_index), bag_term_matrix.shape[1])
@@ -307,6 +344,43 @@ def create_category_series(category_series: pd.Series, fill_gaps: bool = True, f
     if fill_gaps:
         return list(range(category_series.min(), category_series.max() + 1, fill_steps))
     return list(sorted(category_series.unique().tolist()))
+
+
+def temporal_key_values_with_no_gaps(series: pd.Series, temporal_key: str):
+    """Returns sorted distinct category values with gaps filled"""
+    return create_category_series(series, fill_gaps=True, fill_steps=dict(lustrum=5, decade=10).get(temporal_key, 1))
+
+
+def fill_temporal_gaps_in_group_document_index(
+    df: pd.DataFrame, temporal_key: str, pivot_keys: list[str], aggs: dict
+) -> pd.DataFrame:
+    sep: str = "_" if pivot_keys else ""
+
+    def to_row(pivot_keys: List[str], aggs: dict, temporal_value: int | float) -> dict:
+        row: dict = {temporal_key: temporal_value}
+        row.update({k: 0 for k in aggs.keys() if k != 'document_ids'})
+        row.update({'document_ids': []})
+        row.update(document_name=f'{temporal_value}{sep}{sep.join(["0"]*len(pivot_keys))}')
+        return row
+
+    temporal_key_values: Sequence[T] = set(
+        temporal_key_values_with_no_gaps(df[temporal_key], temporal_key=temporal_key)
+    )
+
+    missing_values = temporal_key_values - set(df[temporal_key])
+    missing_documents = [to_row(pivot_keys, aggs, temporal_value) for temporal_value in missing_values]
+    df2: pd.DataFrame = (
+        pd.DataFrame(data=None, columns=df.columns, index=[], dtype=np.int32)
+        .append(other=missing_documents, ignore_index=True)
+        .fillna(0)
+    )
+    df = df.append(other=df2)
+    df.sort_values(by=[temporal_key] + pivot_keys, inplace=True, ascending=True)
+    df.reset_index(inplace=True, drop=True)
+    df['document_id'] = df.index
+    df['filename'] = df.document_name
+
+    return df
 
 
 def group_DTM_by_category_series(
