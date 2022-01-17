@@ -20,8 +20,8 @@ DATA = None
 
 
 class TopTokensDisplayer(ITrendDisplayer):
-    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens"):
-        super().__init__(name=name)
+    def __init__(self, corpus: VectorizedCorpus = None, name: str = "TopTokens", **opts):
+        super().__init__(name=name, **opts)
 
         self.simple_display: bool = False
 
@@ -46,7 +46,7 @@ class TopTokensDisplayer(ITrendDisplayer):
             disabled=False,
             layout=Layout(width='100px'),
         )
-        self._time_period: Dropdown = Dropdown(
+        self._temporal_key: Dropdown = Dropdown(
             options=['year', 'lustrum', 'decade'],
             value='decade',
             description='',
@@ -95,7 +95,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         self.set_buzy(True, "⌛ Preparing data...")
         try:
             corpus = self.corpus.group_by_time_period(
-                time_period_specifier=self.time_period, target_column_name=self.category_name
+                time_period_specifier=self.temporal_key, target_column_name=self.category_name
             )
             self.set_buzy(False, "✔")
         except Exception as ex:
@@ -178,7 +178,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         self._save.disabled = is_buzy
         self._download.disabled = is_buzy
         self._kind.disabled = is_buzy
-        self._time_period.disabled = is_buzy
+        self._temporal_key.disabled = is_buzy
 
     def layout(self) -> GridBox:
         layout: GridBox = GridBox(
@@ -188,7 +188,7 @@ class TopTokensDisplayer(ITrendDisplayer):
                         self._placeholder,
                         VBox([HTML("<b>Keyness</b>"), self._keyness]),
                         VBox([HTML("<b>Top count</b>"), self._top_count]),
-                        VBox([HTML("<b>Grouping</b>"), self._time_period]),
+                        VBox([HTML("<b>Grouping</b>"), self._temporal_key]),
                         VBox([HTML("<b>Kind</b>"), self._kind]),
                         VBox(
                             [
@@ -220,8 +220,8 @@ class TopTokensDisplayer(ITrendDisplayer):
         return self._top_count.value
 
     @property
-    def time_period(self) -> str:
-        return self._time_period.value
+    def temporal_key(self) -> str:
+        return self._temporal_key.value
 
     @property
     def kind(self) -> str:
@@ -280,7 +280,7 @@ class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
         try:
             corpus: VectorizedCorpus = self.bundle.keyness_transform(
                 opts=ComputeKeynessOpts(
-                    period_pivot=self.time_period,
+                    period_pivot=self.temporal_key,
                     keyness=self.keyness,
                     keyness_source=self.keyness_source,
                     fill_gaps=False,
