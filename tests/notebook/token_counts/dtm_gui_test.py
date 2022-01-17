@@ -7,12 +7,13 @@ from penelope.notebook.token_counts import dtm_gui as tc
 
 # pylint: disable=protected-access
 
+CORPUS_FOLDER = '/data/riksdagen_corpus_data/dtm_1920-2020_v0.3.0.tf20'
+
 
 @pytest.mark.long_running
+@pytest.mark.skipif(condition=not os.path.isdir(CORPUS_FOLDER), reason="Corpus not avaliable")
 def test_create_gui():
-    gui = tc.BasicDTMGUI(
-        default_folder='/data/riksdagen_corpus_data/dtm_1920-2020_v0.3.0.tf20',
-    )
+    gui = tc.BasicDTMGUI(default_folder=CORPUS_FOLDER)
     assert gui is not None
 
     gui = gui.setup(load_data=False)
