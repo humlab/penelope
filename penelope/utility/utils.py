@@ -583,7 +583,7 @@ def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) ->
 
 
 def clear_attrib(obj, attrib):
-    if value := getattr(obj, attrib, None):
+    if (value := getattr(obj, attrib, None)) is not None:
         setattr(obj, attrib, None)
     return value
 
@@ -595,8 +595,9 @@ def deep_clone(obj: Q, ignores: List[str] = None, assign_ignores: bool = True) -
     """Takes deep clone but avoids deep-copying ìgnores attributes."""
     ignores_store: dict = {attrib: clear_attrib(obj, attrib) for attrib in ignores if hasattr(obj, attrib)}
     other: Q = copy.deepcopy(obj)
-    if assign_ignores:
-        for attrib, value in ignores_store.items:
+    for attrib, value in ignores_store.items():
+        setattr(obj, attrib, value)
+        if assign_ignores:
             setattr(other, attrib, value)
     return other
 
