@@ -12,14 +12,14 @@ from penelope.notebook.word_trends.displayers import (
     BarDisplayer,
     ITrendDisplayer,
     LineDisplayer,
+    MultiLineCompileMixIn,
     NetworkDisplayer,
     PenelopeBugCheck,
-    StackedDataMixin,
     TableDisplayer,
     TopTokensDisplayer,
     UnnestedExplodeTableDisplayer,
     UnnestedTableDisplayer,
-    UnstackedDataMixin,
+    UnstackedTabularCompileMixIn,
     create_network,
 )
 from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
@@ -48,40 +48,47 @@ def xtest_loaded_callback():
 
 
 def test_compile_multiline_data_with_no_smoothers():
-    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name="category")
+    target_column: str = "category"
+    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name=target_column)
     indices = [0, 1]
-    multiline_data = StackedDataMixin().compile(corpus, indices, smoothers=None)
+    multiline_data = MultiLineCompileMixIn().compile(
+        corpus=corpus, indices=indices, category_name=target_column, smoothers=None
+    )
 
     assert isinstance(multiline_data, dict)
-    assert ["A", "B"] == multiline_data['label']
+    assert ["A", "B"] == multiline_data['labels']
     assert all((x == y).all() for x, y in zip([[2013, 2014], [2013, 2014]], multiline_data['xs']))
-    assert len(multiline_data['color']) == 2
+    assert len(multiline_data['colors']) == 2
     assert len(multiline_data['ys']) == 2
     assert all(np.allclose(x, y) for x, y in zip([[4.0, 6.0], [3.0, 7.0]], multiline_data['ys']))
 
 
 def test_compile_multiline_data_with_smoothers():
-    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name="category")
+    target_column: str = "category"
+    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name=target_column)
     indices = [0, 1, 2, 3]
     smoothers = [pchip_spline, rolling_average_smoother('nearest', 3)]
-    multiline_data = StackedDataMixin().compile(corpus, indices, smoothers=smoothers)
+    multiline_data = MultiLineCompileMixIn().compile(
+        corpus=corpus, indices=indices, category_name=target_column, smoothers=smoothers
+    )
 
     assert isinstance(multiline_data, dict)
-    assert ["A", "B", "C", "D"] == multiline_data['label']
+    assert ["A", "B", "C", "D"] == multiline_data['labels']
     assert len(multiline_data['xs']) == 4
     assert len(multiline_data['ys']) == 4
-    assert len(multiline_data['color']) == 4
+    assert len(multiline_data['colors']) == 4
     assert len(multiline_data['ys']) == 4
     assert len(multiline_data['xs'][0]) > 2  # interpolated coordinates added
     assert len(multiline_data['ys'][0]) == len(multiline_data['xs'][0])  # interpolated coordinates added
 
 
 def test_compile_year_token_vector_data_when_corpus_is_grouped_by_year_succeeds():
-    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name="category")
+    target_column: str = "category"
+    corpus = create_smaller_vectorized_corpus().group_by_year(target_column_name=target_column)
     indices = [0, 1, 2, 3]
-    data = UnstackedDataMixin().compile(corpus, indices)
-    assert isinstance(data, dict)
-    assert all(token in data.keys() for token in ["a", "b", "c", "d"])
+    data = UnstackedTabularCompileMixIn().compile(corpus, indices)
+    assert isinstance(data, pd.DataFrame)
+    assert set(data.columns).intersection({"a", "b", "c", "d"}) == {"a", "b", "c", "d"}
     assert len(data["b"]) == 2
 
 
@@ -89,7 +96,7 @@ def test_compile_year_token_vector_data_when_corpus_is_not_grouped_by_year_fails
     corpus = create_smaller_vectorized_corpus()
     indices = [0, 1, 2, 3]
     with pytest.raises(PenelopeBugCheck):
-        _ = UnstackedDataMixin().compile(corpus, indices)
+        _ = UnstackedTabularCompileMixIn().compile(corpus, indices)
 
 
 @pytest.fixture(scope="module")
@@ -124,7 +131,7 @@ def test_displayer_compile_and_display(displayer_cls, bundle: co_occurrence.Bund
     displayer: ITrendDisplayer = displayer_cls()
     displayer.setup()
 
-    plot_data: dict = displayer.compile(corpus=corpus, indices=[0, 1, 2])
+    plot_data: dict = displayer.compile(corpus=corpus, indices=[0, 1, 2], category_name='category')
 
     assert plot_data is not None
 
