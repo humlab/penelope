@@ -1,50 +1,48 @@
-import itertools
 import math
+from typing import Iterable, List
 
-import bokeh
+import bokeh.models as bm
+import bokeh.plotting as bp
+from bokeh.io import show
 
-from ._compile_mixins import CategoryDataMixin
+from ...utility import generate_colors
+from .compile_mixins import UnstackedTabularCompileMixIn
 from .interface import ITrendDisplayer
-from .utils import get_year_category_ticks
+from .utils import generate_temporal_ticks
 
 
-class BarDisplayer(CategoryDataMixin, ITrendDisplayer):
-    def __init__(self, name: str = "Bar"):
-        super().__init__(name=name)
+class BarDisplayer(UnstackedTabularCompileMixIn, ITrendDisplayer):
+    def __init__(self, name: str = "Bar", **opts):
+        super().__init__(name=name, **opts)
         self.year_tick: int = 5
 
     def setup(self):
         return
 
-    def plot(self, *, plot_data: dict, category_name: str, **_):
+    def plot(self, *, plot_data: dict, temporal_key: str, **_):
 
-        tokens = [w for w in plot_data.keys() if w not in (category_name, 'year')]
+        value_fields: List[str] = [w for w in plot_data.keys() if w not in (temporal_key, 'year')]
+        colors: Iterable[str] = generate_colors(len(value_fields))
+        source = bm.ColumnDataSource(data=plot_data)
 
-        source = bokeh.models.ColumnDataSource(data=plot_data)
+        p: bp.Figure = bp.figure(plot_height=self.height, plot_width=self.width, title="TF")
 
-        p = bokeh.plotting.figure(plot_height=400, plot_width=1000, title="Word frequecy")
-
-        colors = itertools.islice(itertools.cycle(bokeh.palettes.d3['Category20'][20]), len(tokens))
-
-        offset = -0.25
-        v = []
-        for token in tokens:
-            w = p.vbar(x=category_name, top=token, width=0.2, source=source, color=next(colors))
-            offset += 0.25
+        # offset: float = -0.25
+        v: List[bm.GlyphRenderer] = []
+        for value_field in value_fields:
+            w: bm.GlyphRenderer = p.vbar(x=temporal_key, top=value_field, width=0.2, source=source, color=next(colors))
+            # offset += 0.25
             v.append(w)
 
         p.x_range.range_padding = 0.04
         p.xaxis.major_label_orientation = math.pi / 4
-        p.xaxis.ticker = get_year_category_ticks(plot_data[category_name])
-
         p.xgrid.grid_line_color = None
         p.ygrid.grid_line_color = None
+        p.xaxis.ticker = generate_temporal_ticks(plot_data[temporal_key])
 
-        legend = bokeh.models.Legend(items=[(x, [v[i]]) for i, x in enumerate(tokens)])
-
+        legend: bm.Legend = bm.Legend(items=[(x, [v[i]]) for i, x in enumerate(value_fields)])
         p.add_layout(legend, 'center')
-
         p.legend.location = "top_left"
 
         with self.output:
-            bokeh.io.show(p)
+            show(p)

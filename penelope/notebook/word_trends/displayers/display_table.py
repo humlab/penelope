@@ -4,17 +4,17 @@ from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.utility import try_split_column
 
 from ...ipyaggrid_utility import display_grid
-from ._compile_mixins import CategoryDataMixin
+from .compile_mixins import UnstackedTabularCompileMixIn
 from .interface import ITrendDisplayer
 
 # from .utils import tabulator_widget
 
 
-class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
+class TableDisplayer(UnstackedTabularCompileMixIn, ITrendDisplayer):
     """Displays data as a pivot table with category as rows and tokens as columns"""
 
-    def __init__(self, name: str = "Pivot"):
-        super().__init__(name=name)
+    def __init__(self, name: str = "Pivot", **opts):
+        super().__init__(name=name, **opts)
 
     def setup(self, *_, **__):
         return
@@ -24,10 +24,10 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
         df = df[[category_name] + [x for x in df.columns if x != category_name]]
         return df
 
-    def plot(self, *, plot_data: dict, category_name: str, **_):
+    def plot(self, *, plot_data: dict, temporal_key: str, **_):
 
         with self.output:
-            df = self.create_data_frame(plot_data, category_name)
+            df = self.create_data_frame(plot_data, temporal_key)
             g = display_grid(df)
             # g = tabulator_widget(df)
             IPython.display.display(g)
@@ -36,8 +36,8 @@ class TableDisplayer(CategoryDataMixin, ITrendDisplayer):
 class UnnestedTableDisplayer(TableDisplayer):
     """Unnests (unpivots) the pivot table so that tokens columns are turned rows with token category & token count columns"""
 
-    def __init__(self, name: str = "Table"):
-        super().__init__(name=name)
+    def __init__(self, name: str = "Table", **opts):
+        super().__init__(name=name, **opts)
 
     def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
         df = super().create_data_frame(plot_data, category_name)
@@ -48,8 +48,8 @@ class UnnestedTableDisplayer(TableDisplayer):
 class UnnestedExplodeTableDisplayer(UnnestedTableDisplayer):
     """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
 
-    def __init__(self, name: str = "Tabular"):
-        super().__init__(name=name)
+    def __init__(self, name: str = "Tabular", **opts):
+        super().__init__(name=name, **opts)
 
     def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
         df: pd.DataFrame = super().create_data_frame(plot_data, category_name)
