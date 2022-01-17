@@ -72,6 +72,7 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
 
 
 @pytest.mark.long_running
+@pytest.mark.skip(reason="Create fixture test case. Run manually!")
 def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
     """Note: Use the output from this test case to update the tests/test_data/VENUS test data VENUS-TESTDATA"""
 
