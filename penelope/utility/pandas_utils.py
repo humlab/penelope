@@ -214,6 +214,7 @@ class PropertyValueMaskingOpts:
             if attr_name in doc.columns and attr_value is not None
         ]
 
+    @property
     def clone(self) -> PropertyValueMaskingOpts:
         return PropertyValueMaskingOpts(**self.props)
 
