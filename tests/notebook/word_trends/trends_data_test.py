@@ -59,13 +59,13 @@ def test_TrendsData_remember():
 @pytest.mark.parametrize(
     'temporal_key,normalize,fill_gaps,expected_tf_sums,expected_shape',
     [
-        ('year', False, True, [8.0, 0.0, 0.0, 0.0, 7.0, 7.0, 0.0, 0.0, 12.0], (9, 4)),
-        ('year', False, False, [8.0, 7.0, 7.0, 12.0], (5, 4)),
+        ('year', False, True, [8, 0, 0, 0, 7, 7, 0, 0, 12], (9, 4)),
+        ('year', False, False, [8, 7, 7, 12], (4, 4)),
         ('year', True, True, [1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0], (9, 4)),
-        ('year', True, False, [1.0, 1.0, 1.0, 1.0], (5, 4)),
+        ('year', True, False, [1.0, 1.0, 1.0, 1.0], (4, 4)),
         ('decade', True, False, [1.0, 1.0], (2, 4)),
-        ('decade', False, False, [8.0, 26.0], (2, 4)),
-        ('lustrum', False, False, [8.0, 14.0, 12.0], (3, 4)),
+        ('decade', False, False, [8, 26], (2, 4)),
+        ('lustrum', False, False, [8, 14, 12], (3, 4)),
         ('lustrum', True, False, [1.0, 1.0, 1.0], (3, 4)),
     ],
 )
@@ -90,25 +90,27 @@ def test_trends_data_transform_normalize_fill_gaps_without_pivot_keys(
     assert np.allclose(corpus.data.sum(axis=1).A1, np.array(expected_tf_sums))
     assert temporal_key in corpus.document_index.columns
 
+
 Opts = pu.PropertyValueMaskingOpts
+
 
 @pytest.mark.parametrize(
     'temporal_key,pivot_keys,pivot_keys_filter,normalize,fill_gaps,expected_tf_sums,expected_shape',
     [
         ('year', ['color_id'], Opts(), False, True, [8, 0, 0, 0, 7, 7, 0, 0, 8, 4], (10, 4)),
         ('year', ['color_id'], Opts(), False, False, [8, 7, 7, 8, 4], (5, 4)),
-        # ('year', True, True, [1, 0, 0, 0, 1, 1, 0, 0, 1], (9, 4)),
-        # ('year', True, False, [1, 1, 1, 1], (5, 4)),
-        # ('decade', True, False, [1, 1], (2, 4)),
-        # ('decade', False, False, [8, 26], (2, 4)),
-        # ('lustrum', False, False, [8, 14, 12], (3, 4)),
-        # ('lustrum', True, False, [1, 1, 1], (3, 4)),
+        ('year', ['color_id'], Opts(color_id=0), False, False, [8, 7], (2, 4)),
+        ('year', ['color_id'], Opts(color_id=3), False, False, [4], (1, 4)),
+        ('year', ['color_id', 'cov_id'], Opts(), False, False, [8, 7, 7, 8, 4], (5, 4)),
+        ('year', ['color_id', 'cov_id'], Opts(cov_id=2), False, False, [7, 8], (2, 4)),
+        ('decade', ['color_id'], Opts(), False, True, [8, 7, 7, 8, 4], (5, 4)),
+        ('decade', ['color_id'], Opts(), False, False, [8, 7, 7, 8, 4], (5, 4)),
     ],
 )
 def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
     temporal_key: str,
     pivot_keys: List[str],
-    pivot_keys_filter:pu.PropertyValueMaskingOpts,
+    pivot_keys_filter: pu.PropertyValueMaskingOpts,
     normalize: bool,
     fill_gaps: bool,
     expected_tf_sums: List[int | float],
