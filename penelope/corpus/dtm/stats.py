@@ -103,10 +103,7 @@ class StatsMixIn:
         """
 
         partitioned_top_n_words = self.get_partitioned_top_n_words(
-            category_column=category_column,
-            n_top=n_top,
-            pad='*',
-            keep_empty=False,
+            category_column=category_column, n_top=n_top, pad='*', keep_empty=False
         )
 
         categories = sorted(partitioned_top_n_words.keys())
