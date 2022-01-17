@@ -456,3 +456,14 @@ def ts_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx', 'clipboard
 def rename_columns(df: pd.DataFrame, columns: List[str] = None) -> pd.DataFrame:
     df.columns = columns
     return df
+
+
+def as_slim_types(df: pd.DataFrame, columns: List[str], dtype: np.dtype) -> pd.DataFrame:
+    if df is None:
+        return None
+    if isinstance(columns, str):
+        columns = [columns]
+    for column in columns:
+        if column in df.columns:
+            df[column] = df[column].fillna(0).astype(dtype)
+    return df
