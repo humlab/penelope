@@ -172,11 +172,11 @@ def shorten_filechooser_label(fc: ipyfilechooser.FileChooser, max_length: int):
 def generate_colors(n: int, palette: Iterable[str] | str = 'Category20', palette_id: int = None) -> Iterable[str]:
 
     if not isinstance(palette, str):
-        return islice(cycle(palette), n)
+        return list(islice(cycle(palette), n))
 
     if palette in all_palettes:
         palette_id: int = palette_id if palette_id is not None else max(all_palettes[palette].keys())
-        return islice(cycle(all_palettes[palette][palette_id]), n)
+        return list(islice(cycle(all_palettes[palette][palette_id]), n))
 
     raise ValueError(f"unknown palette {palette}")
 
