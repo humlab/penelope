@@ -58,7 +58,7 @@ class ITrendsData(abc.ABC):
         self._gof_data: gof.GofData = None
 
         self._transformed_corpus: pc.VectorizedCorpus = None
-        self._trends_opts: TrendsComputeOpts = TrendsComputeOpts(
+        self.transform_opts: TrendsComputeOpts = TrendsComputeOpts(
             normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year'
         )
         self.category_column: str = category_column
@@ -96,18 +96,18 @@ class ITrendsData(abc.ABC):
     def transform(self, opts: TrendsComputeOpts) -> "ITrendsData":
 
         if self._transformed_corpus is not None:
-            if not self._trends_opts.invalidates_corpus(opts):
+            if not self.transform_opts.invalidates_corpus(opts):
                 return self
 
         self._transformed_corpus = self._transform_corpus(opts)
-        self._trends_opts = opts.clone
+        self.transform_opts = opts.clone
         self._gof_data = None
 
         return self
 
     def reset(self) -> "ITrendsData":
         self._transformed_corpus = None
-        self._trends_opts = TrendsComputeOpts(normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year')
+        self.transform_opts = TrendsComputeOpts(normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year')
         self._gof_data = None
         return self
 

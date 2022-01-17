@@ -214,7 +214,7 @@ class TrendsBaseGUI(abc.ABC):
 
                 display(self.trends_data.transformed_corpus.document_index.head())
                 display(plot_data)
-                display(self.trends_data._trends_opts.__dict__)
+                display(self.trends_data.transform_opts.__dict__)
                 # display(create_data_frame(plot_data=plot_data, category_name=self.temporal_key))
                 # self.current_displayer.plot(plot_data, category_name=self.temporal_key)
 
