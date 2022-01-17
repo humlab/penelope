@@ -143,7 +143,7 @@ class BaseDTMGUI(DownloadMixIn):
         self._widgets_placeholder: HBox = HBox(children=[])
         self._sidebar_placeholder: HBox = HBox(children=[])
 
-    def setup(self, load_data: bool = False) -> "BaseDTMGUI":
+    def setup(self, **kwargs) -> "BaseDTMGUI":
         self.observe(False)
         self._source_folder: FileChooserExt2 = FileChooserExt2(
             path=self.default_folder,
@@ -156,7 +156,7 @@ class BaseDTMGUI(DownloadMixIn):
         self._source_folder.refresh()
         self._source_folder.register_callback(self._load)
         self.observe(True)
-        if load_data:
+        if kwargs.get('load_data', False):
             self._load()
         return self
 
