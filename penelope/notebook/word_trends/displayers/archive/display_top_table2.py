@@ -1,12 +1,12 @@
 # import IPython.display
 
 # from ....ipyaggrid_utility import display_grid
-# from ..compile_mixins import TopTokens2MixIn
+# from ..compile_mixins import TopTokensCompileMixIn
 # from ..interface import ITrendDisplayer
 # from penelope.utility import deprecated
 
 # @deprecated
-# class TopTokensSimpleDisplayer(TopTokens2MixIn, ITrendDisplayer):
+# class TopTokensSimpleDisplayer(TopTokensCompileMixIn, ITrendDisplayer):
 #     def __init__(self, name: str = "TopTokens", **opts):
 #         super().__init__(name=name, **opts)
 
