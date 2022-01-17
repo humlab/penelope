@@ -225,7 +225,7 @@ class GroupByMixIn:
         )
         return grouped_corpus
 
-    def group_by_pivot_keys(
+    def group_by_pivot_keys(  # pylint: disable=too-many-arguments)
         self: IVectorizedCorpusProtocol | GroupByMixIn,
         temporal_key: Literal['year', 'decade', 'lustrum'],
         pivot_keys: List[str],
@@ -279,7 +279,7 @@ class GroupByMixIn:
 
         di: pd.DataFrame = self.document_index
         fdi: pd.DataFrame = (
-            di if not pivot_keys or len(pivot_keys_filter or []) == 0 else di[pivot_keys_filter.mask[di]]
+            di if not pivot_keys or len(pivot_keys_filter or []) == 0 else di[pivot_keys_filter.mask(di)]
         )
 
         if temporal_key not in fdi.columns:
