@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import List, Tuple
 from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
+import pytest
+from penelope import utility as pu
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import TrendsComputeOpts, TrendsData
@@ -22,10 +27,13 @@ def simple_corpus():
         document_index=pd.DataFrame(
             {
                 'year': [2009, 2013, 2014, 2017, 2017],
+                'color_id': [0, 0, 1, 2, 3],
+                'cov_id': [1, 1, 2, 2, 3],
                 'document_id': [0, 1, 2, 3, 4],
                 'document_name': [f'doc_{y}_{i}' for i, y in enumerate(range(0, 5))],
                 'filename': [f'doc_{y}_{i}.txt' for i, y in enumerate(range(0, 5))],
-            }
+            },
+            dtype=np.int16,
         ),
     )
     return corpus
@@ -48,69 +56,81 @@ def test_TrendsData_remember():
     pass
 
 
-def test_TrendsData_get_corpus():
-    expected_category_column: str = 'time_period'
+@pytest.mark.parametrize(
+    'temporal_key,normalize,fill_gaps,expected_tf_sums,expected_shape',
+    [
+        ('year', False, True, [8.0, 0.0, 0.0, 0.0, 7.0, 7.0, 0.0, 0.0, 12.0], (9, 4)),
+        ('year', False, False, [8.0, 7.0, 7.0, 12.0], (5, 4)),
+        ('year', True, True, [1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0], (9, 4)),
+        ('year', True, False, [1.0, 1.0, 1.0, 1.0], (5, 4)),
+        ('decade', True, False, [1.0, 1.0], (2, 4)),
+        ('decade', False, False, [8.0, 26.0], (2, 4)),
+        ('lustrum', False, False, [8.0, 14.0, 12.0], (3, 4)),
+        ('lustrum', True, False, [1.0, 1.0, 1.0], (3, 4)),
+    ],
+)
+def test_trends_data_transform_normalize_fill_gaps_without_pivot_keys(
+    temporal_key: str,
+    normalize: bool,
+    fill_gaps: bool,
+    expected_tf_sums: List[int | float],
+    expected_shape: Tuple[int, int],
+):
+
     trends_data: TrendsData = TrendsData(corpus=simple_corpus(), n_top=100)
 
     corpus: VectorizedCorpus = trends_data.transform(
-        TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='year', fill_gaps=True)
+        TrendsComputeOpts(normalize=normalize, keyness=KeynessMetric.TF, temporal_key=temporal_key, fill_gaps=fill_gaps)
     ).transformed_corpus
 
-    assert corpus.data.shape == (9, 4)  # Shape of 'year' should include years without documents (gaps are filled)
-    assert corpus.data.shape == trends_data.transformed_corpus.data.shape
-    assert corpus.data.sum() == trends_data.corpus.data.sum()
-    assert np.allclose(corpus.data.sum(axis=1).A1, np.array([8.0, 0.0, 0.0, 0.0, 7.0, 7.0, 0.0, 0.0, 12.0]))
-    assert 'year' in corpus.document_index.columns
-    assert expected_category_column in corpus.document_index.columns
+    expected_columns = {temporal_key, 'filename', 'document_name', 'n_raw_tokens', 'year', 'n_documents', 'document_id'}
+    assert set(corpus.document_index.columns).intersection(expected_columns) == expected_columns
+
+    assert corpus.data.shape == expected_shape
+    assert np.allclose(corpus.data.sum(axis=1).A1, np.array(expected_tf_sums))
+    assert temporal_key in corpus.document_index.columns
+
+Opts = pu.PropertyValueMaskingOpts
+
+@pytest.mark.parametrize(
+    'temporal_key,pivot_keys,pivot_keys_filter,normalize,fill_gaps,expected_tf_sums,expected_shape',
+    [
+        ('year', ['color_id'], Opts(), False, True, [8, 0, 0, 0, 7, 7, 0, 0, 8, 4], (10, 4)),
+        ('year', ['color_id'], Opts(), False, False, [8, 7, 7, 8, 4], (5, 4)),
+        # ('year', True, True, [1, 0, 0, 0, 1, 1, 0, 0, 1], (9, 4)),
+        # ('year', True, False, [1, 1, 1, 1], (5, 4)),
+        # ('decade', True, False, [1, 1], (2, 4)),
+        # ('decade', False, False, [8, 26], (2, 4)),
+        # ('lustrum', False, False, [8, 14, 12], (3, 4)),
+        # ('lustrum', True, False, [1, 1, 1], (3, 4)),
+    ],
+)
+def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
+    temporal_key: str,
+    pivot_keys: List[str],
+    pivot_keys_filter:pu.PropertyValueMaskingOpts,
+    normalize: bool,
+    fill_gaps: bool,
+    expected_tf_sums: List[int | float],
+    expected_shape: Tuple[int, int],
+):
+    trends_data: TrendsData = TrendsData(corpus=simple_corpus(), n_top=100)
 
     corpus: VectorizedCorpus = trends_data.transform(
-        TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF, temporal_key='year', fill_gaps=True)
+        TrendsComputeOpts(
+            normalize=normalize,
+            keyness=KeynessMetric.TF,
+            temporal_key=temporal_key,
+            pivot_keys_id_names=pivot_keys,
+            pivot_keys_filter=pivot_keys_filter,
+            fill_gaps=fill_gaps,
+        )
     ).transformed_corpus
-    assert corpus.data.shape == (9, 4)
-    assert np.allclose(corpus.data.sum(axis=1).A1, np.array([1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0]))
-    assert 'year' in corpus.document_index.columns
-    assert expected_category_column in corpus.document_index.columns
 
-    expected_columns = [
-        'time_period',
-        'filename',
-        'document_name',
-        'n_raw_tokens',
-        'year_min',
-        'year_max',
-        'n_years',
-        'n_documents',
-        'year',
-        'document_id',
-    ]
-
-    corpus: VectorizedCorpus = trends_data.transform(
-        TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='lustrum')
-    ).transformed_corpus
-    assert corpus.data.shape == (3, 4)
-    assert np.allclose(corpus.data.sum(axis=1).A1, np.array([8.0, 14.0, 12.0]))
-    assert (corpus.document_index.columns == expected_columns).all()
-
-    corpus: VectorizedCorpus = trends_data.transform(
-        TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF, temporal_key='lustrum')
-    ).transformed_corpus
-    assert corpus.data.shape == (3, 4)
-    assert np.allclose(corpus.data.sum(axis=1).A1, np.array([1.0, 1.0, 1.0]))
-    assert (corpus.document_index.columns == expected_columns).all()
-
-    corpus: VectorizedCorpus = trends_data.transform(
-        TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='decade')
-    ).transformed_corpus
-    assert corpus.data.shape == (2, 4)
-    assert np.allclose(corpus.data.sum(axis=1).A1, np.array([8.0, 26.0]))
-    assert (corpus.document_index.columns == expected_columns).all()
-
-    corpus: VectorizedCorpus = trends_data.transform(
-        TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF, temporal_key='decade')
-    ).transformed_corpus
-    assert corpus.data.shape == (2, 4)
-    assert np.allclose(corpus.data.sum(axis=1).A1, np.array([1.0, 1.0]))
-    assert (corpus.document_index.columns == expected_columns).all()
+    assert corpus.data.shape == expected_shape
+    assert np.allclose(corpus.data.sum(axis=1).A1, np.array(expected_tf_sums))
+    assert temporal_key in corpus.document_index.columns
+    assert set(corpus.document_index.columns).intersection(set(pivot_keys)) == set(pivot_keys)
 
 
 # def test_trends_data_tf_idf():
@@ -123,12 +143,13 @@ def test_TrendsData_get_corpus():
 
 
 def test_trends_data_top_terms():
-    expected_category_column: str = 'time_period'
+    temporal_key: str = 'year'
     trends_data: TrendsData = TrendsData(corpus=simple_corpus(), n_top=100)
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')
     ).transformed_corpus
-    assert expected_category_column in corpus.document_index
+    assert temporal_key in corpus.document_index
+    assert 'time_period' in corpus.document_index
 
     n_top = 4
     df = corpus.get_top_terms(category_column=trends_data.category_column, n_top=n_top, kind='token')
