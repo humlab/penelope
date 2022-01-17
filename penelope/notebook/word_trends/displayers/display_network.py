@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import ipycytoscape
 import pandas as pd
@@ -142,8 +142,8 @@ def create_network(co_occurrences: pd.DataFrame, category_column_name: str) -> i
 class NetworkDisplayer(UnnestedExplodeTableDisplayer):
     """Probes the token column and explodes it to multiple columns if it contains token-pairs and/or PoS-tags"""
 
-    def __init__(self, name: str = "Network"):
-        super().__init__(name=name)
+    def __init__(self, name: str = "Network", **opts):
+        super().__init__(name=name, **opts)
         self.network: ipycytoscape.CytoscapeWidget = None
 
         self._view: Output = Output()
