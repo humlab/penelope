@@ -246,9 +246,9 @@ class BaseDTMGUI(DownloadMixIn):
     def observe(self, value: bool) -> None:
         display_trigger_ctrls: List[Any] = [self._pos_groups, self._normalize, self._smooth, self._temporal_key]
         for ctrl in display_trigger_ctrls:
-            register_observer(ctrl, handler=self._display, value=value)
+            register_observer(ctrl, handler=self._display_handler, value=value)
 
-    def _display(self, _):
+    def _display_handler(self, _):
         self.observe(False)
         try:
             self.display()
