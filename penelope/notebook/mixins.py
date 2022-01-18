@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import contextlib
 from collections import defaultdict
-from typing import Any, List, Mapping, Protocol, Set, Tuple, Union
+from typing import Any, Callable, List, Mapping, Protocol, Set, Tuple, Union
 
+import pandas as pd
 from IPython.display import display as ipydisplay
 from ipywidgets import Button, HBox, Layout, Output, SelectMultiple, ToggleButton
 from penelope import utility as pu
@@ -69,11 +70,14 @@ class IPivotKeysMixIn(Protocol):
     def observe(self, value: bool) -> None:
         ...
 
+    def _display_handler(self, *_) -> None:
+        ...
+
 
 class PivotKeysMixIn:
     """Defines controls and event logics for pivot keys and filters for pivot key values.
     super() must implement: __init__() setup() reset()  observe()
-    Sibling class must implement: _display(), temporal_key: str
+    Sibling class must implement: _display_handler(), temporal_key: str
     """
 
     def __init__(self: IPivotKeysMixIn, pivot_key_specs: PivotKeySpecArg = None, **kwargs):
@@ -99,11 +103,11 @@ class PivotKeysMixIn:
 
     def setup(self: IPivotKeysMixIn, **kwargs) -> "IPivotKeysMixIn":
         if self.pivot_keys.has_pivot_keys:
-            self._unstack_tabular.observe(self._display, 'value')
+            self._unstack_tabular.observe(self._display_handler, 'value')
         super().setup(**kwargs)
         return self
 
-    def reset(self: IPivotKeysMixIn) -> "IPivotKeysMixIn":
+    def reset(self: IPivotKeysMixIn | PivotKeysMixIn) -> "IPivotKeysMixIn":
         self.observe(False)
         self._pivot_keys_text_names.value = ['None']
         self._filter_keys.value = []
@@ -120,7 +124,7 @@ class PivotKeysMixIn:
     @property
     def pivot_keys_id_names(self: IPivotKeysMixIn) -> List[str]:
         """Return ID column names for selected pivot key"""
-        return [self.pivot_keys.text_name2id_name.get(x) for x in self.pivot_keys_text_names]
+        return [self.pivot_keys.key_name2key_id.get(x) for x in self.pivot_keys_text_names]
 
     @property
     def pivot_keys_filter_values(self: IPivotKeysMixIn) -> pu.PropertyValueMaskingOpts:
@@ -138,6 +142,9 @@ class PivotKeysMixIn:
             return self._unstack_tabular.value
         return False
 
+    def decode_pivot_keys(self, df: pd.DataFrame, drop: bool = True) -> pd.DataFrame:
+        return self.pivot_keys.decode_pivot_keys(df, drop)
+
     def pivot_key_handler(self: IPivotKeysMixIn, change: dict, *_):
 
         try:
@@ -147,21 +154,8 @@ class PivotKeysMixIn:
 
             self.prevent_event = True
 
-            # if 'None' in self._pivot_keys_text_names.value:
-            #     self._pivot_keys_text_names.value = ['None']
-            #     self._filter_keys.value = []
-            #     self._filter_keys.options = []
-            #     return
-
             old_keys: Set[str] = set(change['old']) - set(('None',))
             new_keys: Set[str] = set(change['new']) - set(('None',))
-
-            # new_options: List[str] = set(self.pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
-            # remove_options: List[str] = set(self.pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
-
-            # self._filter_keys.value = []
-            # self._filter_keys.options = sorted(list((set(self._filter_keys.options) - remove_options) | new_options))
-            # self._filter_keys.value = sorted(list((set(self._filter_keys.value) - remove_options) | new_options))
 
             add_options: Set[str] = set(self.pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
             del_options: Set[str] = set(self.pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
@@ -185,16 +179,6 @@ class PivotKeysMixIn:
         finally:
             self.prevent_event = False
 
-    # def unstack_pivot_keys(self: IPivotKeysMixIn, data: pd.DataFrame) -> pd.DataFrame:
-    #     """Unstacks a dataframe that has been grouped by PivotKeys"""
-    #     if len(self.pivot_keys_text_names) > 0 and data is not None:
-    #         data: pd.DataFrame = self.data.set_index([self.temporal_key] + self.pivot_keys_text_names)
-    #         while isinstance(data.index, pd.MultiIndex):
-    #             data = data.unstack(level=1, fill_value=0)
-    #             if isinstance(data.columns, pd.MultiIndex):
-    #                 data.columns = [' '.join(x) for x in data.columns]
-    #     return data
-
     def observe(self: IPivotKeysMixIn, value: bool) -> None:
         register_observer(self._pivot_keys_text_names, handler=self.pivot_key_handler, value=value)
         display_trigger_ctrls: List[Any] = (
@@ -204,5 +188,5 @@ class PivotKeysMixIn:
         )
 
         for ctrl in display_trigger_ctrls:
-            register_observer(ctrl, handler=self._display, value=value)
+            register_observer(ctrl, handler=self._display_handler, value=value)
         super().observe(value=value)
