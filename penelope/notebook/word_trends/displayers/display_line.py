@@ -72,8 +72,8 @@ class LineDisplayer(ITrendDisplayer):
 
         push_notebook(handle=self.handle)
 
-        ipydisplay(unstacked_data)
-        ipydisplay(data)
+        #ipydisplay(unstacked_data)
+        #ipydisplay(data)
 
     def clear(self):
         return
