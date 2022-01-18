@@ -34,7 +34,7 @@ class StackedBarDisplayer(ITrendDisplayer):
 
         source = bm.ColumnDataSource(data=plot_data)
 
-        temporal_values: List[str] = [ str(x) for x in plot_data[temporal_key] ]
+        temporal_values: List[str] = [str(x) for x in plot_data[temporal_key]]
         tokens: List[str] = [t for t in plot_data.keys() if t != temporal_key]
         colors: List[str] = generate_colors(len(tokens))
 

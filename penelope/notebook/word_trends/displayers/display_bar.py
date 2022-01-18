@@ -58,9 +58,7 @@ class BarDisplayer(ITrendDisplayer):
         offset: float = -0.25
         v: List[bm.GlyphRenderer] = []
         for value_field in value_fields:
-            w: bm.GlyphRenderer = p.vbar(
-                x=temporal_key, top=value_field, width=1.0, source=source, color=next(colors)
-            )
+            w: bm.GlyphRenderer = p.vbar(x=temporal_key, top=value_field, width=1.0, source=source, color=next(colors))
             offset += 0.25
             v.append(w)
 
