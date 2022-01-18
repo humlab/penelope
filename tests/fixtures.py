@@ -564,3 +564,30 @@ ljuslågor	NN	|ljuslåga|
 fladdrade	VB	|fladdra omkring:10|
 .	MAD	|
 """
+
+
+def simple_corpus_with_pivot_keys():
+    corpus = VectorizedCorpus(
+        bag_term_matrix=np.array(
+            [
+                [2, 1, 4, 1],
+                [2, 2, 3, 0],
+                [2, 3, 2, 0],
+                [2, 4, 1, 1],
+                [2, 0, 1, 1],
+            ]
+        ),
+        token2id={'a': 0, 'b': 1, 'c': 2, 'd': 3},
+        document_index=pd.DataFrame(
+            {
+                'year': [2009, 2013, 2014, 2017, 2017],
+                'color_id': [0, 0, 1, 2, 3],
+                'cov_id': [1, 1, 2, 2, 3],
+                'document_id': [0, 1, 2, 3, 4],
+                'document_name': [f'doc_{y}_{i}' for i, y in enumerate(range(0, 5))],
+                'filename': [f'doc_{y}_{i}.txt' for i, y in enumerate(range(0, 5))],
+            },
+            dtype=np.int16,
+        ),
+    )
+    return corpus
