@@ -119,11 +119,11 @@ class TokenCountsGUI:
         self._normalize.observe(self._plot_counts, names='value')
         self._smooth.observe(self._plot_counts, names='value')
         self._grouping.observe(self._plot_counts, names='value')
-        self._corpus_configs.observe(self._display, names='value')
+        self._corpus_configs.observe(self._display_handler, names='value')
 
         return self
 
-    def _display(self, _):
+    def _display_handler(self, _):
         self.display()
 
     @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
