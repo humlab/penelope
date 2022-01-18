@@ -258,12 +258,12 @@ def pivot_keys() -> PivotKeys:
     return PivotKeys(PIVOT_KEYS)
 
 
-def test_pivot_keys_create(pivot_keys):
+def test_pivot_keys_create(pivot_keys: PivotKeys):
 
     assert len(pivot_keys) == 2
 
-    assert pivot_keys.text_name2id_name == {'fågel': 'fågel_id', 'husdjur': 'husdjur_id'}
-    assert pivot_keys.id_name2text_name == {'fågel_id': 'fågel', 'husdjur_id': 'husdjur'}
+    assert pivot_keys.key_name2key_id == {'fågel': 'fågel_id', 'husdjur': 'husdjur_id'}
+    assert pivot_keys.key_id2key_name == {'fågel_id': 'fågel', 'husdjur_id': 'husdjur'}
 
     assert set(pivot_keys.text_names) == set({'fågel', 'husdjur'})
     assert set(pivot_keys.id_names) == set({'fågel_id', 'husdjur_id'})
@@ -278,7 +278,7 @@ def test_pivot_keys_create(pivot_keys):
             'skata': 2,
         },
     }
-    assert pivot_keys.key_values('fågel') == {
+    assert pivot_keys.key_value_name2id('fågel') == {
         'okänd': 0,
         'kråka': 1,
         'skata': 2,

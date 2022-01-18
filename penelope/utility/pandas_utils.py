@@ -261,12 +261,12 @@ class PivotKeys:
         return len(self.pivot_keys)
 
     @cached_property
-    def text_name2id_name(self) -> dict:
+    def key_name2key_id(self) -> dict:
         return {x['text_name']: x['id_name'] for x in self.pivot_keys.values()}
 
     @cached_property
-    def id_name2text_name(self) -> dict:
-        return revdict(self.text_name2id_name)
+    def key_id2key_name(self) -> dict:
+        return revdict(self.key_name2key_id)
 
     @property
     def text_names(self) -> List[str]:
@@ -280,13 +280,16 @@ class PivotKeys:
     def has_pivot_keys(self) -> List[str]:
         return len(self.text_names) > 0
 
-    def key_values(self, text_name: str) -> Mapping[str, int]:
+    def key_value_name2id(self, text_name: str) -> Mapping[str, int]:
         """Returns name/id mapping for given key's value range"""
         return self.pivot_key(text_name)['values']
 
+    def key_value_id2name(self, text_name: str) -> Mapping[int, str]:
+        """Returns id/name mapping for given key's value range"""
+        return revdict(self.key_value_name2id(text_name))
+
     def key_values_str(self, names: Set[str], sep=': ') -> List[str]:
-        print(names)
-        return [f'{k}{sep}{v}' for k in names for v in self.key_values(k).keys()]
+        return [f'{k}{sep}{v}' for k in names for v in self.key_value_name2id(k).keys()]
 
     def is_satisfied(self) -> bool:
 
@@ -348,8 +351,8 @@ class PivotKeys:
         else:
             """Values are e.g. ('xxx', ['label-1','label2','label-3',...}"""
             for k, v in key_values.items():
-                fg: Callable[[str], int] = self.key_values(k).get
-                opts[self.text_name2id_name[k]] = [int(fg(x)) for x in v]
+                fg: Callable[[str], int] = self.key_value_name2id(k).get
+                opts[self.key_name2key_id[k]] = [int(fg(x)) for x in v]
         return opts
 
     def create_filter_by_str_sequence(
@@ -384,6 +387,20 @@ class PivotKeys:
                 key_values_dict[k].append(v)
         filter_opts = self.create_filter_key_values_dict(key_values_dict, decode=decode)
         return filter_opts
+
+    def decode_pivot_keys(self, df: pd.DataFrame, drop: bool = True) -> pd.DataFrame:
+        """Decode pivot key id-columns in `df` and add a new text-column.
+        All columns in `df` with a name found in `id_names` are decoded.
+        Found id-columns are dropped if `drop` is true.
+        """
+        for key_id in self.id_names:
+            if key_id in df.columns:
+                key_name: str = self.key_id2key_name.get(key_id)
+                id2name: Callable[[int], str] = self.key_value_id2name(text_name=key_name).get
+                df[key_name] = df[key_id].apply(id2name)
+                if drop:
+                    df.drop(columns=key_id, inplace=True, errors='ignore')
+        return df
 
 
 def try_split_column(
