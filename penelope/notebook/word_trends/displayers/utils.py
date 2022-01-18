@@ -18,7 +18,7 @@ def generate_temporal_ticks(categories: List[int], n_tick: int = 5) -> List[int]
     """Gets ticks every n_tick years if category is year
     Returns all categories if all values are either, lustrum and decade"""
 
-    if all(x % 5 in (0, 5) for x in categories):
+    if all(int(x) % 5 in (0, 5) for x in categories):
         return categories
 
     return list(range(low_bound(categories, n_tick), high_bound(categories, n_tick) + 1, n_tick))
