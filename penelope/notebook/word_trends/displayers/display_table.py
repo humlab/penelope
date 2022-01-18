@@ -1,19 +1,19 @@
+from typing import Sequence
+
+import ipydatagrid
 import IPython.display
 import pandas as pd
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.utility import try_split_column
 
-from ...ipyaggrid_utility import display_grid
-from .compile_mixins import UnstackedTabularCompileMixIn
+# from ...ipyaggrid_utility import display_grid
 from .interface import ITrendDisplayer
 
-# from .utils import tabulator_widget
 
-
-class TableDisplayer(UnstackedTabularCompileMixIn, ITrendDisplayer):
+class TableDisplayer(ITrendDisplayer):
     """Displays data as a pivot table with category as rows and tokens as columns"""
 
-    def __init__(self, name: str = "Pivot", **opts):
+    def __init__(self, name: str = "Table", **opts):
         super().__init__(name=name, **opts)
 
     def setup(self, *_, **__):
@@ -24,13 +24,16 @@ class TableDisplayer(UnstackedTabularCompileMixIn, ITrendDisplayer):
         df = df[[category_name] + [x for x in df.columns if x != category_name]]
         return df
 
-    def plot(self, *, plot_data: dict, temporal_key: str, **_):
+    def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:  # pylint: disable=unused-argument
 
         with self.output:
-            df = self.create_data_frame(plot_data, temporal_key)
-            g = display_grid(df)
-            # g = tabulator_widget(df)
-            IPython.display.display(g)
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+                # g = display_grid(data[-1])
+                # IPython.display.display(g)
+                IPython.display.display(data[-1])
+                print("Note: data is plotted using a simplified table view (development)")
+                # datagrid = ipydatagrid.DataGrid(data[-1], selection_mode="cell")
+                # IPython.display.display(datagrid)
 
 
 class UnnestedTableDisplayer(TableDisplayer):

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 import ipycytoscape
 import pandas as pd
@@ -190,9 +190,14 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
         self._animate.observe(self._toggle_state_changed, 'value')
         self._relayout.on_click(self._relayout_handler)
 
-    def plot(self, *, plot_data: dict, temporal_key: str, **_):
+    def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:
+        """Data is unstacked i.e. columns are token@pivot_keys"""
+        unstacked_data: pd.DataFrame = data if isinstance(data, pd.DataFrame) else data[-1]
 
-        network_data: pd.DataFrame = self.create_data_frame(plot_data, temporal_key)
+        if temporal_key not in unstacked_data.columns:
+            unstacked_data[temporal_key] = unstacked_data.index
+
+        network_data: pd.DataFrame = self.create_data_frame(unstacked_data, temporal_key)
 
         if network_data is None:
             self.alert("No data!")

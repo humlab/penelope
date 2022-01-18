@@ -1,14 +1,5 @@
 # type: ignore
-from .displayers import (
-    DEFAULT_WORD_TREND_DISPLAYERS,
-    BarDisplayer,
-    ITrendDisplayer,
-    LineDisplayer,
-    MultiLineCompileMixIn,
-    PenelopeBugCheck,
-    TableDisplayer,
-    UnstackedTabularCompileMixIn,
-)
+from .displayers import DEFAULT_WORD_TREND_DISPLAYERS, BarDisplayer, ITrendDisplayer, LineDisplayer, TableDisplayer
 from .gof_and_trends_gui import GofTrendsGUI
 from .gofs_gui import GoFsGUI
 from .interface import BundleTrendsData, TrendsComputeOpts, TrendsData

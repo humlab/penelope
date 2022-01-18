@@ -1,13 +1,14 @@
 import abc
-from typing import Any, List, Sequence
+from typing import List, Sequence
 
 import ipywidgets as w
 import pandas as pd
 from IPython.core.display import display
 from loguru import logger
+from penelope import utility as pu
 from penelope.co_occurrence.bundle import Bundle
-from penelope.common.curve_fit import pchip_spline
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
+from penelope.notebook import mixins as mx
 from penelope.notebook import widgets_utils as wu
 
 from .displayers import ITrendDisplayer
@@ -91,25 +92,101 @@ class TrendsBaseGUI(abc.ABC):
         )
         self._displayers: Sequence[ITrendDisplayer] = []
 
-    def _invalidate(self, value: bool = True):
-        self._compute.disabled = not value
-        # self._words.disabled = value
-        if value:
-            for displayer in self._displayers:
-                displayer.clear()
-            if self.auto_compute:
-                self._compute_keyness()
-            else:
-                self.alert(" 🗑 Data invalidated (press compute to update).")
+    def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "TrendsGUI":
+        for i, cls in enumerate(displayers):
+            displayer: ITrendDisplayer = cls(**self.display_opts)
+            self._displayers.append(displayer)
+            displayer.output = w.Output()
+            with displayer.output:
+                displayer.setup()
 
-    def _auto_compute_handler(self, *_):
-        self._compute.disabled = self.auto_compute
-        self._auto_compute.icon = 'check' if self.auto_compute else ''
-        if self.auto_compute:
-            self._compute_keyness()
+        self._tab.children = [d.output for d in self._displayers]
+        for i, d in enumerate(self._displayers):
+            self._tab.set_title(i, d.name)
 
-    def _invalidate_handler(self, *_):
-        self._invalidate(True)
+        self._compute.on_click(self._transform_handler)
+
+        self.observe(True)
+
+        return self
+
+    def transform(self):
+        try:
+
+            if self.trends_data is None:
+                self.alert("😮 Please load a corpus (no trends data) !")
+                return
+
+            if self.trends_data is None or self.trends_data.corpus is None:
+                self.alert("😥 Please load a corpus (no corpus in trends data) !")
+                return
+
+            self.buzy(True)
+
+            self.alert("⌛ Computing...")
+            self.trends_data.transform(self.options)
+            self.alert("✔")
+
+            self.invalidate(False)
+
+            self.plot()
+            self.alert("✔️")
+
+        except ValueError as ex:
+            self.alert(str(ex))
+        except Exception as ex:
+            logger.exception(ex)
+            self.warn(str(ex))
+            raise
+        finally:
+            self.buzy(False)
+
+    def display(self, *, trends_data: TrendsData):
+        # OMG WTF!???
+        # if self._picker is not None:
+        #     self._picker.values = []
+        #     self._picker.options = []
+        self.plot(trends_data=trends_data)
+
+    def extract(self) -> Sequence[pd.DataFrame]:  # pylint: disable=unused-argument
+        self.alert("⌛ Extracting data...")
+        data: pd.DataFrame = self.trends_data.extract(indices=self.picked_indices)
+        self.alert("")
+        return [data]
+
+    def plot(self, trends_data: TrendsData = None):
+        try:
+
+            if trends_data is not None:
+                self.trends_data = trends_data
+
+            if self.trends_data is None or self.trends_data.transformed_corpus is None:
+                self.alert("🥱 (not computed)")
+                return
+
+            if len(self.picked_words) == 0:
+                self.alert("🙃 Please specify tokens to plot")
+                return
+
+            data: List[pd.DataFrame] = self.extract()
+
+            self.alert("⌛ Plotting...")
+            self.plot_current_displayer(data)
+
+            self.alert("🙂")
+
+        except ValueError as ex:
+            self.alert(f"😡 {str(ex)}")
+            raise
+        except Exception as ex:
+            logger.exception(ex)
+            self.warn(f"😡 {str(ex)}")
+            raise
+
+    def plot_current_displayer(self, data: List[pd.DataFrame] = None):
+        self.current_displayer.clear()
+        with self.current_displayer.output:
+            self.current_displayer.plot(data=data, temporal_key=self.temporal_key)
 
     def layout(self) -> w.VBox:
         self._sidebar_placeholder.children = self._sidebar_ctrls
@@ -131,7 +208,7 @@ class TrendsBaseGUI(abc.ABC):
                 ),
                 w.HBox(
                     [
-                        w.VBox([w.HTML("<b>Words to find</b>"), self._words]),
+                        w.VBox([w.HTML("<b>Words to find</b> (press <b>tab</b> to start search)"), self._words]),
                     ],
                     layout={'width': '99%'},
                 ),
@@ -142,93 +219,43 @@ class TrendsBaseGUI(abc.ABC):
 
         return layout
 
-    def _compute_keyness(self, *_):
-        try:
+    def invalidate(self, value: bool = True):
+        self._compute.disabled = not value
+        # self._words.disabled = value
+        if value:
+            for displayer in self._displayers:
+                displayer.clear()
+            if self.auto_compute:
+                self._transform_handler()
+            else:
+                self.alert(" 🗑 Data invalidated (press compute to update).")
 
-            if self.trends_data is None:
-                self.alert("😮 Please load a corpus (no trends data) !")
-                return
+    def buzy(self, value: bool) -> None:
+        self._compute.disabled = value
+        self._smooth.disabled = value
+        self._normalize.disabled = value
+        self._words.disabled = value
+        self._keyness.disabled = value
 
-            if self.trends_data is None or self.trends_data.corpus is None:
-                self.alert("😥 Please load a corpus (no corpus in trends data) !")
-                return
+    def observe(self, value: bool = True):
+        """Register or unregisters widget event handlers"""
+        wu.register_observer(self._words, handler=self._update_picker_handler, value=value, names='value')
+        wu.register_observer(self._tab, handler=self._plot_handler, value=value, names='selected_index')
+        wu.register_observer(self._picker, handler=self._plot_handler, value=value, names='value')
+        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=value, names='value')
+        for ctrl in [self._smooth, self._normalize, self._keyness, self._top_count, self._temporal_key]:
+            wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
 
-            self.alert("⌛ Computing...")
-            self.buzy(True)
+    def _transform_handler(self, *_):
+        self.transform()
 
-            self.compute_keyness()
-
-            self.alert("✔")
-            self._invalidate(False)
-
-            self.plot()
-            self.alert("✔️")
-
-        except ValueError as ex:
-            self.alert(str(ex))
-        except Exception as ex:
-            logger.exception(ex)
-            self.warn(str(ex))
-            raise
-        finally:
-            self.buzy(False)
-
-    def compute_keyness(self):
-        self.trends_data.transform(self.options)
-
-    def _plot(self, *_):
+    def _plot_handler(self, *_):
         self.plot()
 
-    def compile(self, temporal_key: str, indices: Sequence[int]) -> Any:
+    def _display_handler(self, *_):
+        self.plot()
 
-        plot_data: Any = self.current_displayer.compile(
-            corpus=self.trends_data.transformed_corpus,
-            indices=indices,
-            category_name=temporal_key,
-            smoothers=[pchip_spline] if self.smooth else [],
-        )
-        return plot_data
-
-    def plot(self):
-        try:
-
-            if self.trends_data is None or self.trends_data.transformed_corpus is None:
-                self.alert("🥱 (not computed)")
-                return
-
-            if len(self.picked_words) == 0:
-                self.alert("🙃 Please specify tokens to plot")
-                return
-
-            self.alert("⌛ Preparing display...")
-            plot_data: Any = self.compile(temporal_key=self.temporal_key, indices=self.picked_indices)
-            plot_data: Any = self.current_displayer.compile(
-                corpus=self.trends_data.transformed_corpus,
-                indices=self.picked_indices,
-                category_name=self.temporal_key,
-                smoothers=[pchip_spline] if self.smooth else [],
-            )
-            self.alert("⌛ Plotting...")
-            self.current_displayer.clear()
-            with self.current_displayer.output:
-
-                display(self.trends_data.transformed_corpus.document_index.head())
-                display(plot_data)
-                display(self.trends_data.transform_opts.__dict__)
-                # display(create_data_frame(plot_data=plot_data, category_name=self.temporal_key))
-                # self.current_displayer.plot(plot_data, category_name=self.temporal_key)
-
-            self.alert("🙂")
-
-        except ValueError as ex:
-            self.alert(f"😡 {str(ex)}")
-            raise
-        except Exception as ex:
-            logger.exception(ex)
-            self.warn(f"😡 {str(ex)}")
-            raise
-
-    def _update_picker(self, *_):
+    def _update_picker_handler(self, *_):
 
         self.observe(False)
         _words = self.trends_data.find_words(self.options)
@@ -246,50 +273,14 @@ class TrendsBaseGUI(abc.ABC):
             )
         self.observe(True)
 
-    def setup(self, *, displayers: Sequence[ITrendDisplayer]) -> "TrendsGUI":
-        for i, cls in enumerate(displayers):
-            displayer: ITrendDisplayer = cls(**self.display_opts)
-            self._displayers.append(displayer)
-            displayer.output = w.Output()
-            with displayer.output:
-                displayer.setup()
+    def _auto_compute_handler(self, *_):
+        self._compute.disabled = self.auto_compute
+        self._auto_compute.icon = 'check' if self.auto_compute else ''
+        if self.auto_compute:
+            self._transform_handler()
 
-        self._tab.children = [d.output for d in self._displayers]
-        for i, d in enumerate(self._displayers):
-            self._tab.set_title(i, d.name)
-
-        self._compute.on_click(self._compute_keyness)
-
-        self.observe(True)
-
-        return self
-
-    def observe(self, value: bool = True):
-        """Register or unregisters widget event handlers"""
-        wu.register_observer(self._words, handler=self._update_picker, value=value, names='value')
-        wu.register_observer(self._tab, handler=self._plot, value=value, names='selected_index')
-        wu.register_observer(self._picker, handler=self._plot, value=value, names='value')
-        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=value, names='value')
-        for ctrl in [self._smooth, self._normalize, self._keyness, self._top_count, self._temporal_key]:
-            wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
-
-    def buzy(self, value: bool) -> None:
-        self._compute.disabled = value
-        self._smooth.disabled = value
-        self._normalize.disabled = value
-        self._words.disabled = value
-        self._keyness.disabled = value
-        self._top_count.disabled = value
-        self._temporal_key.disabled = value
-        self._words.disabled = value
-
-    def display(self, *, trends_data: TrendsData):
-        # OMG WTF!???
-        # if self._picker is not None:
-        #     self._picker.values = []
-        #     self._picker.options = []
-        self.trends_data = trends_data
-        self.plot()
+    def _invalidate_handler(self, *_):
+        self.invalidate(True)
 
     @property
     def current_displayer(self) -> ITrendDisplayer:
@@ -357,9 +348,29 @@ class TrendsBaseGUI(abc.ABC):
         )
 
 
-class TrendsGUI(TrendsBaseGUI):
-    def __init__(self, n_top_count: int = 1000):  # pylint: disable=useless-super-delegation
-        super().__init__(n_top_count)
+class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
+    def __init__(
+        self, pivot_key_specs: mx.PivotKeySpecArg = None, n_top_count: int = 1000
+    ):  # pylint: disable=useless-super-delegation
+        super().__init__(pivot_key_specs=pivot_key_specs, n_top_count=n_top_count)
+
+    def extract(self) -> Sequence[pd.DataFrame]:
+        self.alert("⌛ Extracting data...")
+        """Fetch trends data grouped by pivot keys (ie. stacked)"""
+        stacked_data: pd.DataFrame = self.trends_data.extract(
+            indices=self.picked_indices, filter_opts=self.pivot_keys_filter_values
+        )
+        """Decode integer/coded pivot keys"""
+        stacked_data = self.pivot_keys.decode_pivot_keys(stacked_data, True)
+
+        pivot_keys: List[str] = [self.temporal_key] + [
+            x for x in stacked_data.columns if x in self.pivot_keys.text_names
+        ]
+        if len(pivot_keys) > 1:
+            """Unstack pivot keys (make columnar"""
+            unstacked_data: pd.DataFrame = pu.unstack_data(stacked_data, pivot_keys=pivot_keys)
+            return [stacked_data, unstacked_data]
+        return [stacked_data]
 
     def keyness_widget(self) -> w.Dropdown:
         return w.Dropdown(
@@ -376,6 +387,27 @@ class TrendsGUI(TrendsBaseGUI):
                 "Show TF-IDF weighed TF counts",
             ],
         )
+
+    @property
+    def options(self) -> TrendsComputeOpts:
+        opts: TrendsComputeOpts = super().options
+        opts.update(
+            pivot_keys_id_names=self.pivot_keys_id_names,
+            pivot_keys_filter=self.pivot_keys_filter_values,
+            unstack_tabular=self.unstack_tabular,
+        )
+        return opts
+
+    def buzy(self, value: bool) -> None:
+        super().buzy(value)
+        self._unstack_tabular.disabled = value
+        self._pivot_keys_text_names.disabled = value
+        self._filter_keys.disabled = value
+
+    def observe(self, value: bool) -> None:
+        super().observe(value)
+        for ctrl in [self._pivot_keys_text_names, self._filter_keys]:
+            wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
 
 
 class CoOccurrenceTrendsGUI(TrendsBaseGUI):

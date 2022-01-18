@@ -1,5 +1,5 @@
 import contextlib
-from typing import Any
+from typing import Any, Sequence
 
 import IPython.display
 import pandas as pd
@@ -103,17 +103,17 @@ class TopTokensDisplayer(ITrendDisplayer):
 
         return corpus
 
-    def compile(self, **_) -> Any:  # pylint: disable=arguments-differ
+    def _compile(self, **_) -> Any:  # pylint: disable=arguments-differ
         top_terms: pd.DataFrame = self.transform().get_top_terms(
             category_column=self.category_name, n_top=self.top_count, kind=self.kind
         )
         return top_terms
 
-    def plot(self, **_) -> "TopTokensDisplayer":  # pylint: disable=arguments-differ
+    def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:  # pylint: disable=unused-argument
         self.set_buzy(True, "⌛ Preparing data...")
         try:
             self.clear()
-            self.data = self.compile()
+            self.data = self._compile()
             self.load()
             self.set_buzy(False, "✔")
         except Exception as ex:
@@ -213,7 +213,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
     @property
     def data(self) -> pd.DataFrame:
-        return self.compile(corpus=self.corpus)
+        return self._compile(corpus=self.corpus)
 
     @property
     def top_count(self) -> int:

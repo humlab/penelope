@@ -1,9 +1,9 @@
 import abc
-from typing import Any, Sequence, TypeVar
+from typing import Sequence, TypeVar
 
+import pandas as pd
 from ipywidgets import Output
 from penelope.common.curve_fit import pchip_spline
-from penelope.corpus import VectorizedCorpus
 
 T = TypeVar('T', bound='ITrendDisplayer')
 
@@ -23,27 +23,8 @@ class ITrendDisplayer(abc.ABC):
         return
 
     @abc.abstractmethod
-    def compile(self, *, corpus: VectorizedCorpus, indices: Sequence[int], category_name: str, **_) -> Any:
-        return None
-
-    @abc.abstractmethod
-    def plot(self, *, plot_data: dict, temporal_key: str, **_):  # pylint: disable=unused-argument
+    def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:  # pylint: disable=unused-argument
         return
 
     def clear(self):
         self.output.clear_output()
-
-    # def display(self, *, corpus: VectorizedCorpus, indices: Sequence[int], smooth: bool, category_name: str):
-
-    #     if len(indices) == 0:
-    #         raise ValueError("Please specify tokens to plot")
-
-    #     self.clear()
-    #     with self.output:
-    #         plot_data = self.compile(
-    #             corpus=corpus,
-    #             indices=indices,
-    #             category_name=category_name,
-    #             smoothers=DEFAULT_SMOOTHERS if smooth else [],
-    #         )
-    #         self.plot(plot_data=plot_data, category_name=category_name)

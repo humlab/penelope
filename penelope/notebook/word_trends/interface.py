@@ -1,6 +1,6 @@
 import abc
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import List, Sequence
 
 import pandas as pd
 from penelope import corpus as pc
@@ -19,6 +19,7 @@ class TrendsComputeOpts:
 
     temporal_key: str
     pivot_keys_id_names: List[str] = field(default_factory=list)
+    # FIXME: Decide if it is best to apply filter in `transform` (reduce corpus) or extract (slice corpus)
     pivot_keys_filter: pu.PropertyValueMaskingOpts = None
     unstack_tabular: bool = False
 
@@ -49,19 +50,37 @@ class TrendsComputeOpts:
             return True
         return False
 
+    def update(self, **newdata):
+        for key, value in newdata.items():
+            setattr(self, key, value)
 
-class ITrendsData(abc.ABC):
-    def __init__(self, corpus: pc.VectorizedCorpus, n_top: int = 100000, category_column: str = "time_period"):
+
+class TabularCompiler:
+    def compile(
+        self, *, corpus: pc.VectorizedCorpus, temporal_key: str, pivot_keys_id_names: List[str], indices: Sequence[int]
+    ) -> pd.DataFrame:
+        """Extracts trend vectors for tokens ´indices` and returns a pd.DataFrame."""
+
+        data: dict = {
+            **{temporal_key: corpus.document_index[temporal_key]},
+            **{key: corpus.document_index[key] for key in pivot_keys_id_names},
+            **{corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).A.ravel() for token_id in indices},
+        }
+
+        return pd.DataFrame(data=data)
+
+
+class TrendsDataBase(abc.ABC):
+    def __init__(self, corpus: pc.VectorizedCorpus, n_top: int = 100000):
         self.corpus: pc.VectorizedCorpus = corpus
         self.n_top: int = n_top
-
         self._gof_data: gof.GofData = None
 
         self._transformed_corpus: pc.VectorizedCorpus = None
-        self.transform_opts: TrendsComputeOpts = TrendsComputeOpts(
+        self._compute_opts: TrendsComputeOpts = TrendsComputeOpts(
             normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year'
         )
-        self.category_column: str = category_column
+        self.tabular_compiler: TabularCompiler = TabularCompiler()
 
     @abc.abstractmethod
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
@@ -70,6 +89,10 @@ class ITrendsData(abc.ABC):
     @property
     def transformed_corpus(self) -> pc.VectorizedCorpus:
         return self._transformed_corpus
+
+    @property
+    def compute_opts(self) -> TrendsComputeOpts:
+        return self._compute_opts
 
     @property
     def gof_data(self) -> gof.GofData:
@@ -89,30 +112,43 @@ class ITrendsData(abc.ABC):
         )
         return words
 
-    def get_top_terms(self, n_top: int = 100, kind='token+count') -> pd.DataFrame:
-        top_terms = self._transformed_corpus.get_top_terms(category_column=self.category_column, n_top=n_top, kind=kind)
+    def get_top_terms(
+        self, n_top: int = 100, kind: str = 'token+count', category_column: str = "category"
+    ) -> pd.DataFrame:
+        top_terms = self._transformed_corpus.get_top_terms(category_column=category_column, n_top=n_top, kind=kind)
         return top_terms
 
-    def transform(self, opts: TrendsComputeOpts) -> "ITrendsData":
+    def transform(self, opts: TrendsComputeOpts) -> "TrendsDataBase":
 
         if self._transformed_corpus is not None:
-            if not self.transform_opts.invalidates_corpus(opts):
+            if not self._compute_opts.invalidates_corpus(opts):
                 return self
 
         self._transformed_corpus = self._transform_corpus(opts)
-        self.transform_opts = opts.clone
+        self._compute_opts = opts.clone
         self._gof_data = None
 
         return self
 
-    def reset(self) -> "ITrendsData":
+    def extract(self, indices: Sequence[int], filter_opts: pu.PropertyValueMaskingOpts = None) -> pd.DataFrame:
+        data: pd.DataFrame = self.tabular_compiler.compile(
+            corpus=self.transformed_corpus,
+            temporal_key=self.compute_opts.temporal_key,
+            pivot_keys_id_names=self.compute_opts.pivot_keys_id_names,
+            indices=indices,
+        )
+        if filter_opts and len(filter_opts) > 0:
+            data = data[filter_opts.mask(data)]
+        return data
+
+    def reset(self) -> "TrendsDataBase":
         self._transformed_corpus = None
-        self.transform_opts = TrendsComputeOpts(normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year')
+        self._compute_opts = TrendsComputeOpts(normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year')
         self._gof_data = None
         return self
 
 
-class TrendsData(ITrendsData):
+class TrendsData(TrendsDataBase):
     def __init__(self, corpus: pc.VectorizedCorpus, n_top: int = 100000):
         super().__init__(corpus=corpus, n_top=n_top)
 
@@ -141,12 +177,13 @@ class TrendsData(ITrendsData):
         return corpus
 
 
-class BundleTrendsData(ITrendsData):
-    def __init__(self, bundle: Bundle = None, n_top: int = 100000):
+class BundleTrendsData(TrendsDataBase):
+    def __init__(self, bundle: Bundle = None, n_top: int = 100000, category_column: str = 'category'):
         super().__init__(corpus=bundle.corpus, n_top=n_top)
         self.bundle = bundle
         self.keyness_source: pk.KeynessMetricSource = pk.KeynessMetricSource.Full
         self.tf_threshold: int = 1
+        self.category_column: str = category_column
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
 

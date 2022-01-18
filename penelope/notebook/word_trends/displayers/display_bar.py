@@ -1,17 +1,18 @@
 import math
-from typing import Iterable, List
+from typing import Iterable, List, Sequence
 
 import bokeh.models as bm
 import bokeh.plotting as bp
+import pandas as pd
 from bokeh.io import show
+from IPython.display import display as ipydisplay
 
 from ...utility import generate_colors
-from .compile_mixins import UnstackedTabularCompileMixIn
 from .interface import ITrendDisplayer
 from .utils import generate_temporal_ticks
 
 
-class BarDisplayer(UnstackedTabularCompileMixIn, ITrendDisplayer):
+class BarDisplayer(ITrendDisplayer):
     def __init__(self, name: str = "Bar", **opts):
         super().__init__(name=name, **opts)
         self.year_tick: int = 5
@@ -19,22 +20,51 @@ class BarDisplayer(UnstackedTabularCompileMixIn, ITrendDisplayer):
     def setup(self):
         return
 
-    def plot(self, *, plot_data: dict, temporal_key: str, **_):
+    # def compile(
+    #     self,
+    #     unstacked_data: pd.DataFrame,
+    #     temporal_key: str,
+    #     **_,
+    # ) -> pd.DataFrame:
+    #     """Extracts trend vectors for tokens ´indices` and returns a pd.DataFrame."""
+
+    #     data = {
+    #         **{temporal_key: unstacked_data.index},
+    #         **{unstacked_data[col] for col in unstacked_data.columns if col},
+    #     }
+
+    #     return pd.DataFrame(data=data)
+
+    def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:
+
+        unstacked_data: pd.DataFrame = data[-1]
+
+        # ipydisplay(unstacked_data)
+
+        if temporal_key in unstacked_data.columns:
+            unstacked_data.set_index(temporal_key, drop=True)
+
+        plot_data: dict = {
+            **{column: unstacked_data[column] for column in unstacked_data.columns},
+            **{temporal_key: [str(x) for x in unstacked_data.index]},
+        }
 
         value_fields: List[str] = [w for w in plot_data.keys() if w not in (temporal_key, 'year')]
-        colors: Iterable[str] = generate_colors(len(value_fields))
+        colors: Iterable[str] = iter(generate_colors(len(value_fields)))
         source = bm.ColumnDataSource(data=plot_data)
 
         p: bp.Figure = bp.figure(plot_height=self.height, plot_width=self.width, title="TF")
 
-        # offset: float = -0.25
+        offset: float = -0.25
         v: List[bm.GlyphRenderer] = []
         for value_field in value_fields:
-            w: bm.GlyphRenderer = p.vbar(x=temporal_key, top=value_field, width=0.2, source=source, color=next(colors))
-            # offset += 0.25
+            w: bm.GlyphRenderer = p.vbar(
+                x=temporal_key, top=value_field, width=1.0, source=source, color=next(colors)
+            )
+            offset += 0.25
             v.append(w)
 
-        p.x_range.range_padding = 0.04
+        p.x_range.range_padding = 0.00
         p.xaxis.major_label_orientation = math.pi / 4
         p.xgrid.grid_line_color = None
         p.ygrid.grid_line_color = None
