@@ -392,6 +392,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         self, word_or_regexp: List[str], n_max_count: int, descending: bool = False
     ) -> List[int]:
         """Returns `tokens´ indices` in corpus that matches candidate tokens """
+
+        # FIXME: Use https://github.com/WojciechMula/pyahocorasick to search for words
+
         indices: List[int] = [
             self.token2id[token]
             for token in self.find_matching_words(word_or_regexp, n_max_count, descending=descending)
