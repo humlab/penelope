@@ -1,6 +1,5 @@
 from typing import Sequence
 
-import ipydatagrid
 import IPython.display
 import pandas as pd
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER

@@ -5,7 +5,6 @@ import bokeh.models as bm
 import bokeh.plotting as bp
 import pandas as pd
 from bokeh.io import show
-from IPython.display import display as ipydisplay
 
 from ...utility import generate_colors
 from .interface import ITrendDisplayer

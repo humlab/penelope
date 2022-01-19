@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 from collections import defaultdict
-from typing import Any, Callable, List, Mapping, Protocol, Set, Tuple, Union
+from typing import Any, List, Mapping, Protocol, Set, Tuple, Union
 
 import pandas as pd
 from IPython.display import display as ipydisplay

@@ -5,11 +5,9 @@ import bokeh.models as bm
 import bokeh.plotting as bp
 import pandas as pd
 from bokeh.io import show
-from bokeh.models import tickers as bmt
 
 from ...utility import generate_colors
 from .interface import ITrendDisplayer
-from .utils import generate_temporal_ticks
 
 
 class StackedBarDisplayer(ITrendDisplayer):

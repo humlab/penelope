@@ -3,7 +3,6 @@ from typing import List, Sequence
 
 import ipywidgets as w
 import pandas as pd
-from IPython.core.display import display
 from loguru import logger
 from penelope import utility as pu
 from penelope.co_occurrence.bundle import Bundle

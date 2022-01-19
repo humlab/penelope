@@ -1,5 +1,4 @@
 import io
-import uuid
 from unittest import mock
 
 import ipycytoscape
@@ -7,7 +6,6 @@ import pandas as pd
 import pytest
 from penelope import co_occurrence
 from penelope.common.keyness.metrics import KeynessMetric
-from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import BundleTrendsData
 from penelope.notebook.word_trends.displayers import (
     BarDisplayer,
@@ -28,7 +26,7 @@ from tests.fixtures import simple_corpus_with_pivot_keys
 BIGGER_CORPUS_FILENAME = './tests/test_data/riksdagens-protokoll.1950-1959.ak.sparv4.csv.zip'
 OUTPUT_FOLDER = './tests/output'
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name,protected-access
 
 
 def test_BarDisplayer_create():
