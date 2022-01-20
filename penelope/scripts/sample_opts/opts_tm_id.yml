@@ -1,6 +1,6 @@
-config_filename: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/corpus.yml
+config_filename: /data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/corpus.yml
 target_name: tm_1920-2020_500-topics
-corpus_source: /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/
+corpus_source: /data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/
 train_corpus_folder: null
 target_folder: /data/westac/shared/
 lemmatize: true

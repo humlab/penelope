@@ -18,7 +18,7 @@ def test_workflow_to_dtm():
 
     args: interface.ComputeOpts = interface.ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
-        corpus_source='/data/riksdagen_corpus_data/riksprot_parlaclarin_basic_protocol_stanza.csv.zip',
+        corpus_source='/data/westac/riksdagen_corpus_data/riksprot_parlaclarin_basic_protocol_stanza.csv.zip',
         corpus_type=pipeline.CorpusType.SparvCSV,
         target_folder='./data',
         transform_opts=corpora.TokensTransformOpts(to_lower=True, only_alphabetic=True),

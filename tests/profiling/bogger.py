@@ -9,7 +9,7 @@ from penelope.scripts.utils import load_config
 # pylint: disable=unused-argument, too-many-arguments
 
 DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
-# DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/'
+# DATA_PATH: str = '/data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/'
 
 ARGUMENTS: dict = dict(
     config_filename=join(DATA_PATH, 'corpus.yml'),

@@ -29,8 +29,8 @@ pipelines:
       id_to_token: true
       file_pattern: '**/prot-*.feather'
 pipeline_payload:
-  source:  /data/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather
-  document_index_source:  /data/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather/document_index.feather
+  source:  /data/westac/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather
+  document_index_source:  /data/westac/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather/document_index.feather
   document_index_sep: "\t"
   filenames: null
   memory_store:

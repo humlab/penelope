@@ -11,7 +11,7 @@ from penelope.scripts.utils import load_config, remove_none
 
 # DATA_PATH: str = join(abspath(join(dirname(__file__), '..')), 'test_data', 'tagged_id_frame_feather')
 
-# DATA_PATH: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'
+# DATA_PATH: str = '/data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'
 DATA_PATH: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
 # DATA_PATH: str = '/home/roger/source/penelope/tests/test_data/tagged_id_frame_feather'
 

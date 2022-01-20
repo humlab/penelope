@@ -10,7 +10,7 @@ def debug_main():
 
     # data_path: str = join(abspath(join(dirname(__file__), '..')), 'test_data', 'tagged_id_frame_feather')
 
-    # data_path: str = '/data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'
+    # data_path: str = '/data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'
     data_path: str = '/home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965'
 
     arguments: dict = dict(

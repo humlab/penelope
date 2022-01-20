@@ -4,10 +4,10 @@ from penelope.pipeline.pipelines import CorpusPipeline
 
 CONFIG_FILENAME = "./tests/profiling/riksprot-parlaclarin-1960.yml"
 OUTPUT_FOLDER = './tests/output'
-CORPUS_FOLDER = '/data/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather'
+CORPUS_FOLDER = '/data/westac/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather'
 
 # PYTHONPATH=. topic-model --target-folder ./data --lemmatize --to-lower --min-word-length 1 --only-any-alphanumeric --engine gensim_mallet-lda
-# --random-seed 42 --alpha asymmetric --max-iter 3000 --store-corpus /data/riksdagen_corpus_data/riksprot-parlaclarin.yml
+# --random-seed 42 --alpha asymmetric --max-iter 3000 --store-corpus /data/westac/riksdagen_corpus_data/riksprot-parlaclarin.yml
 # riksprot-parlaclarin-protokoll-50-lemma
 
 

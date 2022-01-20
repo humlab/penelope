@@ -1,6 +1,6 @@
 append_pos: false
-config_filename: /data/riksdagen_corpus_data/tagged_frames_v0.3.0_20201218.id.year.who.feather/corpus.yml
-corpus_source: /data/riksdagen_corpus_data/tagged_frames_v0.3.0_20201218.id.year.who.feather/
+config_filename: /data/westac/riksdagen_corpus_data/tagged_frames_v0.3.0_20201218.id.year.who.feather/corpus.yml
+corpus_source: /data/westac/riksdagen_corpus_data/tagged_frames_v0.3.0_20201218.id.year.who.feather/
 create_subfolder: true
 deserialize_processes: 2
 filename_pattern: "*/*.feather"

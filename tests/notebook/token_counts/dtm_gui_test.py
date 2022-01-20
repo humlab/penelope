@@ -7,7 +7,7 @@ from penelope.notebook.token_counts import dtm_gui as tc
 
 # pylint: disable=protected-access
 
-CORPUS_FOLDER = '/data/riksdagen_corpus_data/dtm_1920-2020_v0.3.0.tf20'
+CORPUS_FOLDER = '/data/westac/riksdagen_corpus_data/dtm_1920-2020_v0.3.0.tf20'
 
 
 @pytest.mark.long_running

@@ -21,5 +21,5 @@ PYTHONPATH=. python penelope/tm/train.py \
     --store-corpus \
     --workers 4 \
     --target-folder ./data \
-    /data/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1960/corpus.yml \
+    /data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1960/corpus.yml \
     riksprot-parlaclarin-1960-protokoll-500-lemma

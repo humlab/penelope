@@ -2,8 +2,10 @@ from os.path import join as jj
 
 from penelope import pipeline
 
-DATA_FOLDER = "/data/riksdagen_corpus_data/"
-CONFIG_FILENAME = "/data/riksdagen_corpus_data/riksprot-parlaclarin.yml"
+from penelope.utility import find_data_folder
+
+DATA_FOLDER = "/data/westac/riksdagen_corpus_data/"
+CONFIG_FILENAME = "/data/westac/riksdagen_corpus_data/riksprot-parlaclarin.yml"
 OUTPUT_FOLDER = './tests/output'
 CORPUS_FILENAME = jj(DATA_FOLDER, "riksprot_parlaclarin_speech_sequence.stanza.csv.zip")
 # CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1970.sparv4.csv.zip")
@@ -12,7 +14,10 @@ CORPUS_FILENAME = jj(DATA_FOLDER, "riksprot_parlaclarin_speech_sequence.stanza.c
 
 
 def run_workflow():
-    corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
+    data_folder: str = find_data_folder(project_name="welfare_state_analytics", project_short_name="westac")
+    corpus_folder: str = jj(data_folder, "riksdagen_corpus_data")
+    config_filename: str = jj(corpus_folder, "riksprot-parlaclarin.yml")
+    corpus_config = pipeline.CorpusConfig.load(config_filename).folders(corpus_folder)
     corpus_config.pipeline_payload.files(source=CORPUS_FILENAME, document_index_source=None)
     corpus_config.checkpoint_opts.deserialize_processes = 3
     corpus_config.checkpoint_opts.feather_folder = None

@@ -1,5 +1,5 @@
-config_filename: /data/riksdagen_corpus_data/single-id-tagged-frame_tagged_frames_v0.3.0_20201218/corpus.yml
-corpus_source: /data/riksdagen_corpus_data/single-id-tagged-frame_tagged_frames_v0.3.0_20201218/
+config_filename: /data/westac/riksdagen_corpus_data/single-id-tagged-frame_tagged_frames_v0.3.0_20201218/corpus.yml
+corpus_source: /data/westac/riksdagen_corpus_data/single-id-tagged-frame_tagged_frames_v0.3.0_20201218/
 output_folder: ./data
 output_tag: dtm_1920-2020_single-id-tagged-frame_tagged_frames_v0.3.0_20201218
 filename_pattern: "**/corpus.feather"
