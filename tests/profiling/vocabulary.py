@@ -1,7 +1,6 @@
 from os.path import join as jj
 
 from penelope import pipeline
-
 from penelope.utility import find_data_folder
 
 DATA_FOLDER = "/data/westac/riksdagen_corpus_data/"

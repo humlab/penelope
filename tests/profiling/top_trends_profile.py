@@ -6,7 +6,7 @@ from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends.displayers import TopTokensDisplayer
 from penelope.notebook.word_trends.interface import TrendsComputeOpts
 
- # pylint: disable=protected-access
+# pylint: disable=protected-access
 
 DEFAULT_SMOOTHERS = [pchip_spline]
 

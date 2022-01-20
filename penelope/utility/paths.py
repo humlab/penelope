@@ -1,6 +1,7 @@
 import os
 import sys
-from os.path import join, isdir, abspath
+from os.path import abspath, isdir, join
+
 from loguru import logger
 
 # project_name: str = 'welfare_state_analytics'
