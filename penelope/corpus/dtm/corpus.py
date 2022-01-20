@@ -213,6 +213,27 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """
         return self._bag_term_matrix[:, self.token2id[word]].todense().A1  # x.A1 == np.asarray(x).ravel()
 
+    # def __iter__(self) -> Iterable[Tuple[int,int|float]]:
+    #     """Return rows as a list of (token_id, count)
+    #     Kudos: https://stackoverflow.com/a/52299730/12383895
+    #     """
+    #     indptr, indices, data = self._bag_term_matrix.indptr, self._bag_term_matrix.indices, self._bag_term_matrix.data
+    #     for k, l in zip(indptr, indptr[1:]):
+    #         yield list(zip(indices[k:l], data[k:l]))
+
+    # def __len__(self) -> int:
+    #     """n_docs"""
+    #     return self._bag_term_matrix.shape[0]
+
+    # def __getitem__(self, i: int) -> Sequence[Tuple[int,int|float]]:
+    #     """Return i:th row as a list of (token_id, count)
+    #     Kudos: https://stackoverflow.com/a/52299730/12383895
+    #     """
+    #     indptr, indices, data = self._bag_term_matrix.indptr, self._bag_term_matrix.indices, self._bag_term_matrix.data
+    #     """[j,k) is index for row i's slice in indices (columns) and data (values)"""
+    #     k, l = indptr[i], indptr[i + 1]
+    #     return list(zip(indices[k:l], data[k:l]))
+
     def filter(self, px) -> VectorizedCorpus:
         """Returns a new corpus that only contains docs for which `px` is true.
 
