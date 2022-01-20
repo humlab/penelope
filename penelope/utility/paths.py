@@ -38,6 +38,6 @@ def find_data_folder(*, project_name: str, project_short_name: str) -> str:
 
 
 def find_resources_folder(*, project_name: str, project_short_name: str) -> str:  # pylint: disable=unused-argument
-    root_folder: str = find_root_folder(project_name)
+    root_folder: str = find_root_folder(project_name=project_name)
     folder: str = join(root_folder, "resources")
     return folder
