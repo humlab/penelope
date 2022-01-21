@@ -233,7 +233,7 @@
 #             try:
 #                 trained_model, inferred_topics = train_and_store(self.data_folder, terms, document_index, opts: "ModelWidgetsGUI") -> pd.DataFrame:
 
-#                 self.state.set_data(trained_model, inferred_topics)
+#                 self.state.update(inferred_topics=inferred_topics, trained_model=trained_model)
 
 #                 topics: pd.DataFrame = get_topics_unstacked(
 #                     trained_model.topic_model,
@@ -246,7 +246,7 @@
 
 #             except Exception as ex:
 #                 logger.error(ex)
-#                 self.state.set_data(None, None)
+#                 self.state.update(inferred_topics=None)
 #                 raise
 #             finally:
 #                 self.buzy(False)
