@@ -5,12 +5,13 @@ from typing import Dict, Iterable, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
-import penelope.common.goodness_of_fit as gof
 import scipy
 import sklearn
 import sklearn.cluster
-from penelope.corpus import VectorizedCorpus
 from scipy.cluster.hierarchy import linkage
+
+import penelope.common.goodness_of_fit as gof
+from penelope.corpus import VectorizedCorpus
 
 
 @dataclass

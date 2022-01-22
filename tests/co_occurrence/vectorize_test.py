@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import numpy as np
+
 from penelope.co_occurrence.vectorize import VectorizedTTM, VectorizeType
 from penelope.corpus import CorpusVectorizer, Token2Id, VectorizedCorpus
 from penelope.pipeline.co_occurrence.tasks import CoOccurrenceCorpusBuilder, CoOccurrencePayload

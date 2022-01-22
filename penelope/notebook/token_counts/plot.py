@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from bokeh.plotting import Figure, figure
+
 from penelope.notebook.word_trends.displayers.utils import generate_temporal_ticks
 from penelope.utility import take
 

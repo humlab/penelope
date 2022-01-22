@@ -2,6 +2,7 @@ import json
 from typing import Iterable
 
 import pandas as pd
+
 from penelope.co_occurrence import ContextOpts, WindowsCorpus
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus import CorpusVectorizer, generate_token2id

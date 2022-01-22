@@ -5,9 +5,14 @@ import os
 import zipfile
 from typing import Any, Callable, Dict, List, Sequence, Union
 
-import penelope.vendor.textacy as textacy_utility
 import textacy
 from loguru import logger
+from spacy.language import Language as SpacyLanguage
+from spacy.tokens import Doc as SpacyDoc
+from textacy.spacier.utils import make_doc_from_text_chunks
+from tqdm.auto import tqdm
+
+import penelope.vendor.textacy as textacy_utility
 from penelope.corpus import DocumentIndex
 from penelope.corpus.readers import ICorpusReader, TextReaderOpts, TextTransformer, ZipTextIterator
 from penelope.utility import (
@@ -17,10 +22,6 @@ from penelope.utility import (
     path_add_suffix,
     streamify_any_source,
 )
-from spacy.language import Language as SpacyLanguage
-from spacy.tokens import Doc as SpacyDoc
-from textacy.spacier.utils import make_doc_from_text_chunks
-from tqdm.auto import tqdm
 
 from ..spacy import load_model_by_parts
 

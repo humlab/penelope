@@ -1,6 +1,7 @@
 from typing import Type
 
 import pandas as pd
+
 from penelope import utility
 from penelope.pipeline import CheckpointOpts, CsvContentSerializer, checkpoint, sparv
 from penelope.pipeline.sparv import deserialize_lemma_form

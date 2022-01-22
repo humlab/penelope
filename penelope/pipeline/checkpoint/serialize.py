@@ -2,6 +2,7 @@ from io import StringIO
 from typing import Sequence
 
 import pandas as pd
+
 from penelope.corpus import term_frequency
 
 from ..interfaces import ContentType

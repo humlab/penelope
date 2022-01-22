@@ -2,6 +2,7 @@ from typing import List, Mapping, Optional, Set, Tuple
 
 import pandas as pd
 from loguru import logger
+
 from penelope.corpus.dtm.ttm import CoOccurrenceVocabularyHelper
 from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import flatten

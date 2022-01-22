@@ -1,9 +1,10 @@
 import os
 from typing import Optional
 
+from loguru import logger
+
 import penelope.co_occurrence as co_occurrence
 import penelope.pipeline as pipeline
-from loguru import logger
 from penelope.workflows import interface
 
 POS_TAGGED_FRAME_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'

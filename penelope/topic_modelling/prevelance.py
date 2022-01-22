@@ -4,6 +4,7 @@ from typing import List, NamedTuple, Tuple
 
 import numpy as np
 import pandas as pd
+
 from penelope.topic_modelling.helper import FilterDocumentTopicWeights
 from penelope.utility import rename_columns
 

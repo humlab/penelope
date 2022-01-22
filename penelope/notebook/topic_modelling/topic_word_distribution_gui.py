@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, HBox, IntSlider, Output, VBox  # type: ignore
+
 from penelope import topic_modelling, utility
 
 from .. import widgets_utils

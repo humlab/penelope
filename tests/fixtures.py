@@ -4,6 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import scipy
+
 from penelope.co_occurrence import term_term_matrix_to_co_occurrences
 from penelope.corpus import (
     ITokenizedCorpus,

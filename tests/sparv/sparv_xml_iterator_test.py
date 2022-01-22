@@ -1,5 +1,6 @@
-import penelope.corpus.readers as readers
 import pytest
+
+import penelope.corpus.readers as readers
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'

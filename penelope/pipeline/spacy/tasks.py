@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 
+from spacy.language import Language
+
 from penelope.type_alias import TaggedFrame
 from penelope.vendor.spacy import load_model
-from spacy.language import Language
 
 from .. import interfaces
 from ..tasks import DefaultResolveMixIn, ToTaggedFrame

@@ -1,6 +1,7 @@
 import unittest
 
 import pandas as pd
+
 import penelope.corpus.readers as readers
 
 TEST_DATA_01 = [

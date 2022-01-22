@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
 from tests.fixtures import MockedProcessedCorpus

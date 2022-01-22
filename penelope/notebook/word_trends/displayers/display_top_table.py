@@ -5,12 +5,13 @@ import IPython.display
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, VBox
+from perspective import PerspectiveWidget
+
 from penelope.co_occurrence.bundle import Bundle
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import create_js_download
-from perspective import PerspectiveWidget
 
 from .interface import ITrendDisplayer
 

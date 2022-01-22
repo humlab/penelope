@@ -3,6 +3,7 @@ import sys
 from typing import Literal, Optional
 
 import click
+
 from penelope import corpus as pc
 from penelope import pipeline
 from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file

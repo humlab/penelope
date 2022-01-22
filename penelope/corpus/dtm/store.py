@@ -14,6 +14,7 @@ from typing import Dict, List, Literal, Mapping, Optional
 import numpy as np
 import pandas as pd
 import scipy
+
 from penelope.utility import read_json, strip_paths, write_json
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol

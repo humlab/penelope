@@ -4,6 +4,7 @@ from os.path import join as jj
 from typing import Any, Callable, Dict, List, Optional
 
 from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox  # type: ignore
+
 from penelope import pipeline
 from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
 
@@ -31,7 +32,9 @@ def load_model(
         filename_fields=filename_fields,
     )
 
-    state.set_data(inferred_model, inferred_topics, _train_corpus_folder=model_info["folder"])
+    state.update(
+        inferred_model=inferred_model, inferred_topics=inferred_topics, _train_corpus_folder=model_info["folder"]
+    )
 
     topics = inferred_topics.topic_token_overview
 

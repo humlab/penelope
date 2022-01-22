@@ -1,8 +1,9 @@
 from typing import Union
 
 import ipywidgets as widgets
-import penelope.pipeline as pipeline
 from IPython.core.display import display
+
+import penelope.pipeline as pipeline
 from penelope.corpus import VectorizedCorpus
 from penelope.workflows import interface
 from penelope.workflows.vectorize import dtm as workflow

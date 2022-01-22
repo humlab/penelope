@@ -8,11 +8,12 @@ import IPython.display as display
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.cluster.hierarchy import dendrogram, linkage
+
 import penelope.common.curve_fit as cf
 from penelope.common import distance_metrics
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import nth
-from scipy.cluster.hierarchy import dendrogram, linkage
 
 try:
 

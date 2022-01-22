@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Type, Union
 
 import yaml
+
 from penelope.corpus import TextReaderOpts, TextTransformOpts
 from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema, strip_extensions
 

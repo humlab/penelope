@@ -4,6 +4,7 @@ from os.path import join as jj
 from typing import Optional
 
 import click
+
 from penelope.corpus import TextReaderOpts, TextTransformOpts, TokensTransformOpts
 from penelope.scripts.utils import option2
 from penelope.workflows.tm import train_legacy as workflow

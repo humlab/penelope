@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import pytest
+
 from penelope.corpus import (
     DocumentIndexHelper,
     document_index_upgrade,

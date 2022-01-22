@@ -5,6 +5,7 @@ from typing import Callable, List
 import IPython.display as display
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, FloatSlider, HBox, IntSlider, Layout, Output, VBox
+
 from penelope.common.cluster_analysis import CorpusClusters, compute_clusters
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import clamp, get_logger

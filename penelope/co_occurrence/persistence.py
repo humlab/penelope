@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
+
 from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import create_instance, read_json, replace_extension, right_chop, strip_path_and_extension
 

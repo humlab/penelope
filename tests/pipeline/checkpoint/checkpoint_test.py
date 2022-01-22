@@ -1,7 +1,8 @@
 import os
 
-import penelope.pipeline.checkpoint as checkpoint
 import pytest
+
+import penelope.pipeline.checkpoint as checkpoint
 from penelope.corpus.readers.interfaces import TextReaderOpts
 
 

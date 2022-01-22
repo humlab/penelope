@@ -1,5 +1,6 @@
 import gensim.models as models
 import numpy as np
+
 from penelope.vendor.gensim import wrappers
 
 

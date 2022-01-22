@@ -1,8 +1,9 @@
 import os
 
-import penelope.co_occurrence as co_occurrence
 import pytest
 import scipy
+
+import penelope.co_occurrence as co_occurrence
 from penelope.co_occurrence import term_term_matrix_to_co_occurrences, truncate_by_global_threshold
 from penelope.co_occurrence.persistence import co_occurrence_filename, document_index_filename, vocabulary_filename
 from penelope.corpus import DocumentIndexHelper, Token2Id, dtm

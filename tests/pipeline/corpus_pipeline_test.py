@@ -5,11 +5,12 @@ from typing import Iterable, Tuple
 from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
-import penelope.pipeline.spacy.tasks as spacy_tasks
-import penelope.pipeline.tasks as tasks
 import pytest
 import spacy.language
 import spacy.tokens
+
+import penelope.pipeline.spacy.tasks as spacy_tasks
+import penelope.pipeline.tasks as tasks
 from penelope.corpus import load_document_index
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import (

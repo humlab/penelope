@@ -2,6 +2,7 @@ from typing import Callable, Iterable
 
 import numpy as np
 import pandas as pd
+
 from penelope import corpus as pc
 
 from .. import interfaces

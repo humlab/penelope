@@ -1,5 +1,6 @@
 import ipywidgets
 import pytest
+
 from penelope.corpus import VectorizeOpts
 from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 from penelope.corpus.tokens_transformer import TokensTransformOpts

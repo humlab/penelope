@@ -1,9 +1,10 @@
 import os
 import uuid
 
+import pytest
+
 import penelope.corpus.sparv_corpus as sparv_corpus
 import penelope.utility.zip_utils as zip_utils
-import pytest
 from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from tests.utils import OUTPUT_FOLDER

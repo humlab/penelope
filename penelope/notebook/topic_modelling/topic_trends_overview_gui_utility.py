@@ -5,7 +5,6 @@ import bokeh
 import bokeh.plotting
 import bokeh.transform
 import pandas as pd
-import penelope.utility as utility
 from bokeh.models import (
     BasicTicker,
     ColorBar,
@@ -16,6 +15,8 @@ from bokeh.models import (
     PrintfTickFormatter,
 )
 from IPython.display import display
+
+import penelope.utility as utility
 
 from .. import ipyaggrid_utility, widgets_utils
 

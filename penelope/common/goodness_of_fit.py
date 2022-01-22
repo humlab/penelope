@@ -9,9 +9,10 @@ from bokeh import layouts as bl
 from bokeh import models as bm
 from bokeh import plotting as bp
 from pandas.core.frame import DataFrame
+from tqdm.auto import tqdm
+
 from penelope.corpus import VectorizedCorpus
 from penelope.utility import chunks
-from tqdm.auto import tqdm
 
 from .distance_metrics import (
     earth_mover_distance,

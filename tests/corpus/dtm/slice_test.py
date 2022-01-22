@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import scipy
+
 from penelope.corpus import VectorizedCorpus
 from penelope.corpus.token2id import id2token2token2id
 

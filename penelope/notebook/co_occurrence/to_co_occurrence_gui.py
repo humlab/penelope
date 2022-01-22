@@ -2,6 +2,7 @@ import contextlib
 from typing import Callable, Set, Union
 
 import ipywidgets as widgets
+
 from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.pipeline import CorpusConfig
 from penelope.workflows import interface

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import scipy
 import scipy.sparse as sp
+
 from penelope import corpus as pc
 from penelope import utility
 

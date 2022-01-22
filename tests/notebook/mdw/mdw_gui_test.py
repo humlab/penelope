@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import ipywidgets as widgets
+
 import penelope.notebook.mdw.mdw_gui as mdw_gui
 from penelope.corpus import dtm
 

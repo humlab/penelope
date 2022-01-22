@@ -3,6 +3,7 @@ import shutil
 import uuid
 
 import pandas as pd
+
 import penelope.co_occurrence as co_occurrence
 from penelope.corpus import VectorizedCorpus
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_3DOCS, very_simple_corpus

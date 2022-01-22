@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
+
 from penelope.notebook.token_counts import pipeline_gui
 from penelope.pipeline import config as corpus_config
 

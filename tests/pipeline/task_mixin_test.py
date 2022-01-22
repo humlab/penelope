@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from penelope import corpus as pc
 from penelope import utility
 from penelope.pipeline import checkpoint, sparv

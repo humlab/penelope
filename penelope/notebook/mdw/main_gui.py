@@ -1,5 +1,6 @@
 import IPython.display as ipy_display
 from ipywidgets import Output, VBox
+
 from penelope.corpus import dtm
 from penelope.notebook import ipyaggrid_utility
 from penelope.notebook.dtm import load_dtm_gui

@@ -5,6 +5,7 @@ from pprint import pformat as pf
 from typing import Any, Iterable, Mapping, Tuple
 
 from loguru import logger
+
 from penelope.co_occurrence import (
     Bundle,
     ContextOpts,

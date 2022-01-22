@@ -11,11 +11,12 @@ import pandas as pd
 import scipy
 import sklearn.preprocessing
 from loguru import logger
-from penelope import utility
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
 from scipy.sparse import SparseEfficiencyWarning, lil_matrix
 from sklearn.feature_extraction.text import TfidfTransformer
+
+from penelope import utility
 
 from ..document_index import DocumentIndex
 from .group import GroupByMixIn

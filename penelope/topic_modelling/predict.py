@@ -6,6 +6,7 @@ import gensim.corpora as corpora
 import numpy as np
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
+
 from penelope import corpus as pc
 from penelope.corpus import dtm
 

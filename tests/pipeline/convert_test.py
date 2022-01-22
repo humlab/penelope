@@ -4,8 +4,9 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-import penelope.utility.pos_tags as pos_tags
 import pytest
+
+import penelope.utility.pos_tags as pos_tags
 from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.pipeline import CheckpointOpts

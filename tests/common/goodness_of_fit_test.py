@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
+import pytest
+import scipy
+
 import penelope.common.distance_metrics as distance_metrics
 import penelope.common.goodness_of_fit as gof
 import penelope.utility as utility
-import pytest
-import scipy
 from penelope.corpus import VectorizedCorpus
 
 logger = utility.get_logger()

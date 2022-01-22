@@ -1,4 +1,5 @@
 import pytest
+
 from penelope.co_occurrence import Bundle, to_filename
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus

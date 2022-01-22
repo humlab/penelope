@@ -4,6 +4,7 @@ from typing import Iterable
 
 import scipy.sparse as sp
 import textacy.tm as tm  # type: ignore
+
 from penelope.corpus.dtm.corpus import VectorizedCorpus
 from penelope.utility import deprecated
 

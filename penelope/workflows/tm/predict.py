@@ -1,6 +1,7 @@
 import sys
 
 import click
+
 import penelope.corpus as penelope
 from penelope import pipeline
 

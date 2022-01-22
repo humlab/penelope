@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.pipeline import checkpoint
 from penelope.pipeline.convert import tagged_frame_to_tokens

@@ -1,4 +1,5 @@
 import pytest
+
 from penelope import pipeline
 from penelope.corpus.readers import tng
 from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts

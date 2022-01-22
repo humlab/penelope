@@ -3,6 +3,7 @@ from unittest import mock
 import ipywidgets as widgets  # type: ignore
 import pandas as pd
 import pytest
+
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.notebook.topic_modelling import topic_document_network_gui as tdn_gui
 

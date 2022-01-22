@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.topic_modelling import (
     EngineKey,

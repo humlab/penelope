@@ -2,7 +2,6 @@ import contextlib
 import os
 from typing import Any, Callable, Dict, List
 
-import penelope.utility as utility
 from ipywidgets import (
     HTML,
     Button,
@@ -17,6 +16,8 @@ from ipywidgets import (
     VBox,
 )
 from loguru import logger
+
+import penelope.utility as utility
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.utility import better_flatten

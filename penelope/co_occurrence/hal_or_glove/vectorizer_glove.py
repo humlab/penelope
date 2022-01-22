@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from loguru import logger
+
 from penelope.corpus import generate_token2id
 
 try:

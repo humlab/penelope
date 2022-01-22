@@ -5,6 +5,7 @@ from typing import Iterable, Set
 import numpy as np
 import pandas as pd
 from loguru import logger
+
 from penelope.corpus import Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN, ExtractTaggedTokensOpts
 from penelope.utility import PoS_Tag_Scheme

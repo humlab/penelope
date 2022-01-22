@@ -1,7 +1,8 @@
 import numpy as np
-import penelope.vendor.textacy as textacy_utility
 import pytest
 import textacy
+
+import penelope.vendor.textacy as textacy_utility
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 
 

@@ -1,7 +1,8 @@
-import penelope.vendor.textacy as textacy_utility
 import pytest
 import textacy
 from textacy import Corpus
+
+import penelope.vendor.textacy as textacy_utility
 
 
 # pylint: disable=redefined-outer-name

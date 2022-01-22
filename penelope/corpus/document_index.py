@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, 
 import numpy as np
 import pandas as pd
 from loguru import logger
+
 from penelope.utility import (
     FilenameFieldSpecs,
     PD_PoS_tag_groups,

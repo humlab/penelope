@@ -3,8 +3,9 @@ from typing import Iterable, Mapping
 
 import numpy as np
 import pandas as pd
-import penelope.utility as utility
 import scipy.sparse as sp
+
+import penelope.utility as utility
 from penelope.corpus import generate_token2id
 
 logger = utility.getLogger('corpus_text_analysis')

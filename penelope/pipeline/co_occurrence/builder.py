@@ -6,6 +6,7 @@ from typing import Mapping, Tuple
 import scipy
 import scipy.sparse as sp
 from loguru import logger
+
 from penelope.co_occurrence import TokenWindowCountMatrix, VectorizedTTM, VectorizeType
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER

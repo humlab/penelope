@@ -2,10 +2,11 @@ import os
 import re
 from typing import Iterable, Tuple
 
-import penelope.vendor.gensim.wrappers as wrappers
 from gensim.corpora.dictionary import Dictionary
 from gensim.utils import check_output
 from loguru import logger
+
+import penelope.vendor.gensim.wrappers as wrappers
 from penelope.utility import inspect_filter_args
 
 

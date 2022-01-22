@@ -1,4 +1,5 @@
 from gensim.utils import deprecated
+
 from penelope.utility import getLogger
 
 from .. import utility as notebook_utility

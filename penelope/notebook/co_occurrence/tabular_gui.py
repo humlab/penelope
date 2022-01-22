@@ -8,13 +8,14 @@ import numpy as np
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from loguru import logger
+from perspective import PerspectiveWidget
+
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
-from perspective import PerspectiveWidget
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']

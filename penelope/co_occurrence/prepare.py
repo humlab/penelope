@@ -2,6 +2,7 @@ from typing import List, Mapping, Union
 
 import numpy as np
 import pandas as pd
+
 from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.utility import do_not_use

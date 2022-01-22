@@ -9,6 +9,7 @@ from typing import Callable, Iterable, Mapping, Sequence
 import numpy as np
 import pytest
 import scipy
+
 from penelope.co_occurrence import Bundle, ContextOpts, VectorizedTTM, VectorizeType, generate_windows, windows_to_ttm
 from penelope.co_occurrence.keyness import ComputeKeynessOpts, compute_corpus_keyness, significance_ratio
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, metrics

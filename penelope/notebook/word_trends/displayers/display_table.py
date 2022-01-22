@@ -2,6 +2,7 @@ from typing import Sequence
 
 import IPython.display
 import pandas as pd
+
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.utility import try_split_column
 

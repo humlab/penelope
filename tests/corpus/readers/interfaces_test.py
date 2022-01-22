@@ -2,6 +2,7 @@ import os
 import pathlib
 
 import pytest
+
 from penelope.corpus import Token2Id
 
 

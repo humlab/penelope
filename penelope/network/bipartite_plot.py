@@ -4,6 +4,7 @@ import bokeh.models as bm
 import bokeh.plotting as bp
 import networkx as nx
 import pandas as pd
+
 from penelope.network import layout_source, metrics
 from penelope.network.networkx import utility as network_utility
 from penelope.notebook import widgets_utils

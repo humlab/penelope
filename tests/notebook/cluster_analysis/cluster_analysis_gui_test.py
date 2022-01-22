@@ -3,6 +3,7 @@ from unittest import mock
 
 import numpy as np
 import pandas as pd
+
 import penelope.common.goodness_of_fit as gof
 import penelope.notebook.cluster_analysis.cluster_analysis_gui as cluster_analysis_gui
 from penelope.corpus import dtm

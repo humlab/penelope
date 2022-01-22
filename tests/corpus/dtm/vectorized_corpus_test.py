@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+
 from penelope.corpus import (
     CorpusVectorizer,
     TokenizedCorpus,

@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, Mock
 
 import ipywidgets
+
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import ITrendDisplayer, TrendsData, TrendsGUI
 

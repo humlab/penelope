@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Tuple
 import scipy.sparse as sp
 from gensim.corpora.dictionary import Dictionary
 from gensim.matutils import Sparse2Corpus, corpus2csc
+
 from penelope.corpus.token2id import id2token2token2id
 
 

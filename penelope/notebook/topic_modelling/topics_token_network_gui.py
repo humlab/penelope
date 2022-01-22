@@ -6,6 +6,7 @@ import ipywidgets as widgets  # type: ignore
 import networkx as nx
 import pandas as pd
 from IPython.display import display
+
 from penelope import topic_modelling, utility
 from penelope.plot import get_color_palette
 from penelope.utility.filename_fields import FilenameFieldSpecs

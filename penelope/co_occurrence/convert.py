@@ -3,6 +3,7 @@ from typing import Mapping, Set, Union
 import numpy as np
 import pandas as pd
 import scipy
+
 from penelope.corpus import CorpusVectorizer, ITokenizedCorpus, Token2Id, TokenizedCorpus, VectorizedCorpus
 from penelope.corpus.readers import ICorpusReader
 from penelope.type_alias import CoOccurrenceDataFrame

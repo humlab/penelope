@@ -4,6 +4,7 @@ from os.path import join as jj
 from typing import List, Optional
 
 import pandas as pd
+
 from penelope.utility import replace_extension, strip_paths
 
 from ..interfaces import ContentType, DocumentPayload, PipelineError

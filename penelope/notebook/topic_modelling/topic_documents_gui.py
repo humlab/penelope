@@ -1,8 +1,9 @@
 import warnings
 
-import penelope.topic_modelling as tm
 from IPython.display import display
 from ipywidgets import HTML, Button, FloatSlider, HBox, IntSlider, Label, Layout, Output, VBox  # type: ignore
+
+import penelope.topic_modelling as tm
 
 from .model_container import TopicModelContainer
 

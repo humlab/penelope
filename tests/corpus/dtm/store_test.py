@@ -6,6 +6,7 @@ from os.path import join as jj
 
 import numpy as np
 import pytest
+
 from penelope.corpus import (
     CorpusVectorizer,
     TokenizedCorpus,

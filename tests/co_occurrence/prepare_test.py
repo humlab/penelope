@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import pytest
+
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, to_filename
 from penelope.co_occurrence.prepare import decode_tokens
 from penelope.corpus import VectorizedCorpus

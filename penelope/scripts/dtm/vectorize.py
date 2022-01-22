@@ -2,8 +2,9 @@ import sys
 from typing import Optional, Sequence
 
 import click
-import penelope.workflows.vectorize.dtm as workflow
 from loguru import logger
+
+import penelope.workflows.vectorize.dtm as workflow
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases

@@ -4,10 +4,11 @@ from fnmatch import fnmatch
 from typing import Any, List, Optional
 
 import pandas as pd
+import pytest
+
 import penelope.corpus.readers.tng.reader as cr
 import penelope.corpus.readers.tng.sources as cs
 import penelope.corpus.readers.tng.transformer as tt
-import pytest
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import streamify_zip_source, strip_path_and_extension, strip_paths, zip_utils
 from tests.utils import OUTPUT_FOLDER, TEST_CORPUS_FILENAME

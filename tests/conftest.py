@@ -4,11 +4,12 @@ import os
 import shutil
 
 import pytest
+from spacy.language import Language
+
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.pipeline.spacy import convert
 from penelope.topic_modelling import InferredTopicsData
 from penelope.vendor.spacy.utility import load_model
-from spacy.language import Language
 from tests.utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
 
 from .fixtures import MARY_TEST_CORPUS
@@ -71,8 +72,8 @@ def inferred_topics_data() -> InferredTopicsData:
 
 @pytest.fixture
 def state(inferred_topics_data: InferredTopicsData) -> TopicModelContainer:
-    return TopicModelContainer(
-        _trained_model=None,
-        _inferred_topics=inferred_topics_data,
-        _train_corpus_folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER,
+    container: TopicModelContainer = TopicModelContainer().update(
+        inferred_topics=inferred_topics_data,
+        train_corpus_folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER,
     )
+    return container

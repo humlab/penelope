@@ -4,10 +4,11 @@ import pandas as pd
 import pytest
 import scipy.sparse as sp
 from gensim.matutils import Sparse2Corpus, corpus2csc
+from pytest import fixture
+
 from penelope import corpus as pc
 from penelope.corpus.dtm import convert
 from penelope.corpus.readers import tng
-from pytest import fixture
 
 # pylint: disable=redefined-outer-name
 

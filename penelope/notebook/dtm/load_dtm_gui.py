@@ -3,6 +3,7 @@ from typing import Callable
 
 import ipyfilechooser
 from ipywidgets import HTML, Button, HBox, Layout, Output, VBox
+
 from penelope.corpus import VectorizedCorpus, load_corpus
 from penelope.utility import default_data_folder, getLogger, right_chop
 

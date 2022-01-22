@@ -2,6 +2,7 @@ import io
 
 import pandas as pd
 import pytest
+
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.topic_modelling import prevelance
 from penelope.topic_modelling.interfaces import InferredTopicsData

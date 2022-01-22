@@ -3,6 +3,7 @@ from collections import Counter
 from typing import Mapping
 
 import pytest
+
 from penelope.corpus import Token2Id
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.corpus.token2id import ClosedVocabularyError

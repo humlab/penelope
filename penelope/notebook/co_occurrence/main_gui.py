@@ -2,6 +2,7 @@ from typing import Callable, Optional, Union
 
 import ipywidgets as widgets
 from IPython.core.display import display
+
 from penelope import co_occurrence, pipeline
 from penelope.workflows import ComputeOpts
 from penelope.workflows import co_occurrence as workflow

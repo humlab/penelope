@@ -2,6 +2,7 @@ import operator
 from typing import List
 
 import pandas as pd
+
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.topic_modelling import helper
 

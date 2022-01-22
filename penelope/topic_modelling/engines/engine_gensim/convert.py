@@ -6,6 +6,7 @@ import scipy.sparse as sp
 from gensim.corpora.dictionary import Dictionary
 from gensim.matutils import Sparse2Corpus
 from loguru import logger
+
 from penelope import corpus as pc
 from penelope.vendor import gensim as gs
 

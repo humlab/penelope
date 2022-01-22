@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from penelope.scripts.co_occurrence import process_co_ocurrence
 
 

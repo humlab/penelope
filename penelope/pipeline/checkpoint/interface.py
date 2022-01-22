@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Callable, List, Optional, Union
 
 import pandas as pd
+
 from penelope.type_alias import SerializableContent
 from penelope.utility import create_instance, dictify, strip_path_and_extension
 

@@ -3,6 +3,7 @@ from typing import Any, AnyStr, Callable, Iterable, List, Tuple
 
 import pandas as pd
 from gensim.corpora.textcorpus import TextCorpus
+
 from penelope.corpus import DocumentIndex
 from penelope.utility import streamify_any_source
 

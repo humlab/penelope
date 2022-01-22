@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Sequence, Tuple, Ty
 
 import numpy as np
 import pandas as pd
+
 from penelope.corpus import Token2Id
 
 if TYPE_CHECKING:

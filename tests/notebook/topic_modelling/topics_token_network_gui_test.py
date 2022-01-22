@@ -4,6 +4,7 @@ from unittest.mock import patch
 import ipycytoscape
 import pandas as pd
 import pytest
+
 from penelope import topic_modelling as tm
 from penelope.notebook.topic_modelling import topics_token_network_gui as ttn_gui
 

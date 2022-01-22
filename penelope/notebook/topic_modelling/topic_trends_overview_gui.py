@@ -1,6 +1,7 @@
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Dropdown, HBox, Output, ToggleButton, VBox  # type: ignore
+
 from penelope import topic_modelling as tm
 
 from .. import widgets_utils

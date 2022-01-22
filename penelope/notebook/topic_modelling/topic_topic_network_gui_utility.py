@@ -4,9 +4,10 @@ from typing import Any, Dict, List, Tuple, Union
 import bokeh
 import bokeh.plotting
 import pandas as pd
-import penelope.network.networkx.utility as network_utility
 from IPython.display import display
 from loguru import logger
+
+import penelope.network.networkx.utility as network_utility
 from penelope import topic_modelling, utility
 from penelope.network import plot_utility
 

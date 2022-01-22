@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
+
 from penelope.common.goodness_of_fit import GofData
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import OutputsTabExt

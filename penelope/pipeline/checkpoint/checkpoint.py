@@ -7,6 +7,7 @@ from os.path import dirname
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 from loguru import logger
+
 from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index
 from penelope.utility import filenames_satisfied_by, zip_utils
 

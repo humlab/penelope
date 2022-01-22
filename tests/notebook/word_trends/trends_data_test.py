@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pandas as pd
 import pytest
+
 from penelope import utility as pu
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus

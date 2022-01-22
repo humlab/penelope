@@ -4,9 +4,10 @@ from typing import Any, List, Mapping
 
 import numpy as np
 import pandas as pd
-import penelope.utility as utility
 import scipy.sparse as sp
 from loguru import logger
+
+import penelope.utility as utility
 from penelope.type_alias import DocumentIndex
 from penelope.utility import deprecated
 

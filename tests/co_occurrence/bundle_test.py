@@ -9,6 +9,7 @@ from typing import Iterable, List, Set
 import numpy as np
 import pandas as pd
 import pytest
+
 from penelope.co_occurrence import Bundle, ContextOpts, TokenWindowCountMatrix
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus.dtm.corpus import VectorizedCorpus

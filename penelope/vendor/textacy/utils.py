@@ -2,8 +2,9 @@ import collections
 from typing import Mapping, Sequence, Union
 
 import textacy
-from penelope.vendor.spacy import prepend_spacy_path
 from spacy.language import Language
+
+from penelope.vendor.spacy import prepend_spacy_path
 
 from ..spacy import token_count_by
 

@@ -1,8 +1,9 @@
 import pandas as pd
-import penelope.plot as plot_utility
-import penelope.utility as utility
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, HBox, IntProgress, IntSlider, Output, VBox  # type: ignore
+
+import penelope.plot as plot_utility
+import penelope.utility as utility
 from penelope import topic_modelling as tm
 
 from .. import widgets_utils

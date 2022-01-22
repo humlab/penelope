@@ -4,8 +4,9 @@ from typing import Any, Callable, Iterable, List, Literal, Mapping, Tuple, Union
 import more_itertools
 import numpy as np
 import pandas as pd
-from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 from sklearn.feature_extraction.text import CountVectorizer
+
+from penelope.utility import PropsMixIn, list_to_unique_list_with_preserved_order, strip_path_and_extension
 
 from ..document_index import DocumentIndex
 from ..tokenized_corpus import TokenizedCorpus

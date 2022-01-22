@@ -4,8 +4,9 @@ from typing import Any, Callable, List, Sequence, Tuple, Union
 
 import bokeh
 import numpy as np
-import penelope.common.curve_fit as cf
 from bokeh.plotting import Figure
+
+import penelope.common.curve_fit as cf
 from penelope.corpus import VectorizedCorpus
 from penelope.corpus.document_index import DocumentIndexHelper
 from penelope.utility import get_logger

@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pytest
+
 from penelope import pipeline as pp
 from penelope import utility
 from penelope.pipeline import checkpoint, interfaces, pipelines, sparv, tasks

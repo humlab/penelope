@@ -3,6 +3,7 @@ import os
 import pathlib
 
 import pytest
+
 from penelope import pipeline
 from penelope.pipeline.sparv import pipelines
 

@@ -3,6 +3,7 @@ from typing import Sequence, TypeVar
 
 import pandas as pd
 from ipywidgets import Output
+
 from penelope.common.curve_fit import pchip_spline
 
 T = TypeVar('T', bound='ITrendDisplayer')

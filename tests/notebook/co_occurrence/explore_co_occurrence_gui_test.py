@@ -1,4 +1,5 @@
 import pytest
+
 from penelope import co_occurrence
 from penelope.notebook import utility as notebook_utility
 from penelope.notebook.co_occurrence import ExploreGUI

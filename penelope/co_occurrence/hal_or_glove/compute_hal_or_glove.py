@@ -3,10 +3,11 @@ from typing import Iterable, Mapping, Tuple
 import more_itertools
 import numpy as np
 import pandas as pd
+from tqdm.auto import tqdm
+
 import penelope.utility as utility
 from penelope.corpus import DocumentIndex
 from penelope.type_alias import FilenameTokensTuple
-from tqdm.auto import tqdm
 
 from .vectorizer_glove import GloveVectorizer
 from .vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer

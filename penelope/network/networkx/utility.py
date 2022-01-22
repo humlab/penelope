@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx
 import pandas as pd
+
 from penelope.utility import clamp_values, extend, list_of_dicts_to_dict_of_lists
 
 Attributes = Dict[str, Any]

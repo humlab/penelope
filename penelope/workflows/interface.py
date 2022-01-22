@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Mapping, Optional
 
 from loguru import logger
+
 from penelope.co_occurrence import ContextOpts, to_filename
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusType

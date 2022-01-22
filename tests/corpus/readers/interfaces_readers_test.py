@@ -1,4 +1,5 @@
 import pandas as pd
+
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ICorpusReader, TextReaderOpts
 from tests.sparv.sparv_csv_iterator_test import SPARV_CSV_EXPORT_FILENAME_SMALL

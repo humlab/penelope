@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Any, Iterable, Union
 
 import gensim.models as models
+from gensim.matutils import Sparse2Corpus
+
 import penelope.utility as utility
 import penelope.vendor.gensim.wrappers as wrappers
-from gensim.matutils import Sparse2Corpus
 from penelope.corpus.dtm.corpus import VectorizedCorpus
 
 from .wrappers.mallet_topic_model import MalletTopicModel

@@ -1,9 +1,10 @@
 import os
 from typing import Callable
 
-import penelope.co_occurrence as co_occurrence
 from ipywidgets import HTML, Button, HBox, Layout, Output, VBox
 from loguru import logger
+
+import penelope.co_occurrence as co_occurrence
 from penelope.utility import default_data_folder
 
 from ..utility import CLEAR_OUTPUT, FileChooserExt2

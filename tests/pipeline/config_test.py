@@ -3,6 +3,7 @@ import os
 
 import pytest
 import yaml
+
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.interfaces import PipelinePayload
 

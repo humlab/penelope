@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-import penelope.common.goodness_of_fit as gof
 import pytest
+
+import penelope.common.goodness_of_fit as gof
 from penelope.common.cluster_analysis import CorpusClusters, compute_clusters
 from penelope.corpus import VectorizedCorpus
 

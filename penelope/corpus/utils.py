@@ -3,8 +3,9 @@ from typing import Dict, Iterable, Iterator, List, Mapping, Sequence, Tuple
 
 import scipy.sparse as sp
 from loguru import logger
-from penelope.utility import flatten
 from tqdm.auto import tqdm
+
+from penelope.utility import flatten
 
 
 def generate_token2id(terms: Iterator[Iterator[str]], n_docs: int = None) -> dict:

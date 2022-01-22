@@ -6,6 +6,7 @@ import bokeh.plotting as bp
 import ipywidgets
 import pandas as pd
 from bokeh.io import push_notebook
+
 from penelope.notebook.utility import generate_colors
 
 from .interface import ITrendDisplayer

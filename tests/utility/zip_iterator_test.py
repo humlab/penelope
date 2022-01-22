@@ -1,5 +1,6 @@
-import penelope.corpus.readers as readers
 import pytest
+
+import penelope.corpus.readers as readers
 from tests.utils import TEST_CORPUS_FILENAME
 
 # pylint: disable=too-many-arguments

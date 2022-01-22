@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import pandas as pd
 from loguru import logger
+
 from penelope.corpus.readers import PhraseSubstitutions
 
 PHRASE_PAD: str = "(*)"

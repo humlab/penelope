@@ -3,6 +3,7 @@ from typing import Iterable, Mapping, Set, Tuple
 
 from loguru import logger
 from more_itertools import peekable
+
 from penelope.co_occurrence import ContextOpts, VectorizedTTM, VectorizeType, generate_windows, windows_to_ttm
 from penelope.corpus import Token2Id
 from penelope.type_alias import DocumentIndex

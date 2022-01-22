@@ -1,8 +1,9 @@
 from typing import List, Optional, Sequence
 
 import click
-import penelope.workflows.co_occurrence as workflow
 from loguru import logger
+
+import penelope.workflows.co_occurrence as workflow
 from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig

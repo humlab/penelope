@@ -4,6 +4,7 @@ from typing import Any, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
+
 from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
 from penelope.corpus.document_index import update_document_index_by_dicts_or_tuples
 from penelope.utility import PoS_Tag_Scheme

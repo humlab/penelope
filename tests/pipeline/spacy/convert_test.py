@@ -2,13 +2,14 @@ from typing import List
 
 import pandas as pd
 import pytest
+from spacy.tokens import Doc, Token
+
 from penelope.pipeline.spacy.convert import (
     filter_tokens_by_attribute_values,
     spacy_doc_to_tagged_frame,
     text_to_tagged_frame,
     texts_to_tagged_frames,
 )
-from spacy.tokens import Doc, Token
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
 

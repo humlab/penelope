@@ -4,6 +4,7 @@ from unittest import mock
 import ipycytoscape
 import pandas as pd
 import pytest
+
 from penelope import co_occurrence
 from penelope.common.keyness.metrics import KeynessMetric
 from penelope.notebook.word_trends import BundleTrendsData

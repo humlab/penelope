@@ -2,10 +2,11 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import spacy
+from spacy.tokens import Doc
+
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
 from penelope.pipeline.spacy.tasks import SetSpacyModel, SpacyDocToTaggedFrame, ToSpacyDoc, ToSpacyDocToTaggedFrame
 from penelope.utility.pos_tags import PoS_Tag_Schemes
-from spacy.tokens import Doc
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
 

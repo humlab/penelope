@@ -3,6 +3,7 @@ from typing import Callable
 
 import pandas as pd
 from ipywidgets import Button, HBox, IntRangeSlider, IntSlider, Layout, VBox
+
 from penelope.corpus import dtm
 from penelope.vendor.textacy import mdw_modified
 

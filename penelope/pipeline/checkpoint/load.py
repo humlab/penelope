@@ -5,9 +5,10 @@ from typing import Callable, Iterable, List, Tuple, Union
 
 import pandas as pd
 from loguru import logger
+from tqdm import tqdm
+
 from penelope.type_alias import TaggedFrame
 from penelope.utility.zip_utils import zipfile_or_filename
-from tqdm import tqdm
 
 from ..interfaces import ContentType, DocumentPayload
 from .interface import CheckpointOpts, IContentSerializer, Serializer, TaggedFrameStore

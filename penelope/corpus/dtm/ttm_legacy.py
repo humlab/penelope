@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Tuple
 import numpy as np
 import pandas as pd
 import scipy
+
 from penelope.common.keyness import KeynessMetric, partitioned_significances
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
 from penelope.utility import create_class, deprecated

@@ -6,6 +6,7 @@ from typing import Any, Callable, List
 
 import numpy as np
 import pandas as pd
+
 from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus import TextTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer

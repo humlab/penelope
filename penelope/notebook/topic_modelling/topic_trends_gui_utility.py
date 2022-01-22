@@ -5,9 +5,10 @@ import bokeh
 import bokeh.plotting
 import numpy as np
 import pandas as pd
+from IPython.display import display as IPython_display
+
 import penelope.notebook.ipyaggrid_utility as ipyaggrid_utility
 import penelope.utility as utility
-from IPython.display import display as IPython_display
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)

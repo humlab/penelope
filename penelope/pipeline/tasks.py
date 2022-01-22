@@ -12,6 +12,8 @@ from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Seq
 
 import pandas as pd
 from loguru import logger
+from tqdm.auto import tqdm
+
 from penelope import utility
 from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, TokensTransformOpts, default_tokenizer
 from penelope.corpus.readers import (
@@ -23,7 +25,6 @@ from penelope.corpus.readers import (
     TextTransformOpts,
 )
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
-from tqdm.auto import tqdm
 
 from . import checkpoint as cp
 from . import convert

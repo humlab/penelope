@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, Iterable, Mapping, Optional, Tuple
 import numpy as np
 import pandas as pd
 import scipy
+
 from penelope.common.keyness import compute_hal_cwr_score, metrics
 from penelope.type_alias import VocabularyMapping
 from penelope.utility import create_class, deprecated

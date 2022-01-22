@@ -2,6 +2,7 @@ import re
 from io import StringIO
 
 import pandas as pd
+
 from penelope.type_alias import TaggedFrame
 from penelope.utility import deprecated
 

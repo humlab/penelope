@@ -2,9 +2,10 @@ import os
 import shutil
 import uuid
 
+import pytest
+
 import penelope.co_occurrence as co_occurrence
 import penelope.workflows.co_occurrence as workflow
-import pytest
 from penelope import corpus as corpora
 from penelope import pipeline, utility
 from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline

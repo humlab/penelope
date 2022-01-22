@@ -5,11 +5,12 @@ from dataclasses import asdict, dataclass
 from typing import Any, Callable, Collection, Iterable, List, Literal, Mapping, Optional, Sequence, Union
 
 import itertoolz
-import penelope.utility as utility
 from loguru import logger
-from penelope.corpus import TokensTransformOpts
 from spacy.tokens import Doc, Token
 from textacy.extract.basics import words
+
+import penelope.utility as utility
+from penelope.corpus import TokensTransformOpts
 
 from .utils import frequent_document_words, infrequent_words
 

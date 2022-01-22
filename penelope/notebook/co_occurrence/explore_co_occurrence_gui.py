@@ -1,4 +1,5 @@
 from loguru import logger
+
 from penelope import co_occurrence
 from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
 

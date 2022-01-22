@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Protocol, Set, Tuple, Union
 import pandas as pd
 from IPython.display import display as ipydisplay
 from ipywidgets import Button, HBox, Layout, Output, SelectMultiple, ToggleButton
+
 from penelope import utility as pu
 
 from . import utility as nu

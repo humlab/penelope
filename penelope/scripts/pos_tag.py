@@ -1,4 +1,5 @@
 import click
+
 from penelope.scripts.utils import option2
 
 from ..pipeline import CorpusConfig

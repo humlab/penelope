@@ -1,9 +1,10 @@
 from typing import Optional
 
 import pandas as pd
-import penelope.topic_modelling as tm
 from IPython.display import display
 from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, ToggleButton, VBox  # type: ignore
+
+import penelope.topic_modelling as tm
 
 from .. import widgets_utils
 from . import topic_trends_gui_utility as gui_utils

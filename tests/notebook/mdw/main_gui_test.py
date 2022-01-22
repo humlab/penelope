@@ -1,8 +1,9 @@
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-import penelope.notebook.mdw.main_gui as main_gui
 from ipywidgets import VBox
+
+import penelope.notebook.mdw.main_gui as main_gui
 from penelope.corpus import dtm
 from tests.utils import TEST_DATA_FOLDER
 

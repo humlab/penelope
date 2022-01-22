@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 import scipy
+
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource, significance_ratio
 
 from ..corpus import Token2Id, VectorizedCorpus

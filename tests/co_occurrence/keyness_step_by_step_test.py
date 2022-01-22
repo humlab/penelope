@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import scipy
+
 from penelope.co_occurrence import Bundle, keyness
 from penelope.co_occurrence.keyness import ComputeKeynessOpts, KeynessMetric
 from penelope.common.keyness import metrics

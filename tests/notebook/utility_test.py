@@ -1,5 +1,6 @@
 import pandas as pd
 from IPython.display import Javascript
+
 from penelope.notebook.utility import OutputsTabExt, create_js_download, shorten_path_with_ellipsis
 from penelope.utility import getLogger
 

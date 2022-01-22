@@ -1,6 +1,8 @@
 import uuid
 
 import pytest  # pylint: disable=unused-import
+from pyright import os
+
 from penelope.utility import (
     extract_filename_metadata,
     filename_satisfied_by,
@@ -12,7 +14,6 @@ from penelope.utility import (
     touch,
 )
 from penelope.utility.filename_utils import replace_extension
-from pyright import os
 
 OUTPUT_FOLDER = './tests/output'
 

@@ -4,6 +4,7 @@ import ipycytoscape
 import pandas as pd
 from IPython.display import display as IPython_display
 from ipywidgets import HTML, Button, Checkbox, Dropdown, HBox, IntSlider, Layout, Output, ToggleButton, VBox
+
 from penelope.plot import get_color_palette
 
 from .display_table import UnnestedExplodeTableDisplayer

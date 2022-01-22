@@ -5,8 +5,9 @@ from typing import Callable, List, Literal, Mapping, Sequence, Tuple, TypeVar, U
 import numpy as np
 import pandas as pd
 import scipy
-from penelope import utility as pu
 from scipy import sparse as sp
+
+from penelope import utility as pu
 
 from ..document_index import (
     KNOWN_TIME_PERIODS,

@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import textacy
+
 from penelope import corpus as pc
 from penelope.corpus.dtm import convert
 from penelope.utility import deprecated

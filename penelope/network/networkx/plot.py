@@ -3,6 +3,7 @@ import types
 import networkx as nx
 from IPython.display import Image
 from loguru import logger
+
 from penelope.utility import deprecated
 
 try:

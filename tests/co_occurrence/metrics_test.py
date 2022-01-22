@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import scipy
+
 from penelope.co_occurrence import Bundle, ContextOpts, CoOccurrenceHelper, to_filename
 from penelope.co_occurrence.hal_or_glove.vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
 from penelope.common.keyness import (

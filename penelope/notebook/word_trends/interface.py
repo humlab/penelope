@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Sequence
 
 import pandas as pd
+
 from penelope import corpus as pc
 from penelope import utility as pu
 from penelope.co_occurrence import Bundle

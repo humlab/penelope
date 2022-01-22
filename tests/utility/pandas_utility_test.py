@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+
 from penelope.utility import (
     PropertyValueMaskingOpts,
     create_mask,

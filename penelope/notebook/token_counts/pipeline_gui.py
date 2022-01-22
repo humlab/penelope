@@ -6,6 +6,7 @@ import ipywidgets as widgets
 import pandas as pd
 from bokeh.io import output_notebook
 from loguru import logger
+
 from penelope import pipeline
 from penelope.corpus import DocumentIndex
 from penelope.pipeline import checkpoint as cp

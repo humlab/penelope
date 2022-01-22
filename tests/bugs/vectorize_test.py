@@ -1,8 +1,9 @@
 import contextlib
 import uuid
 
-import penelope.workflows.vectorize.dtm as workflow
 import pytest
+
+import penelope.workflows.vectorize.dtm as workflow
 from penelope import corpus as corpora
 from penelope import pipeline
 from penelope.workflows import interface

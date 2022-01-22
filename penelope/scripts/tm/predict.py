@@ -2,8 +2,9 @@ import sys
 from os.path import isfile, join, split
 
 import click
-import penelope.corpus as penelope
 from loguru import logger
+
+import penelope.corpus as penelope
 from penelope import pipeline
 from penelope.scripts.utils import option2, update_arguments_from_options_file
 from penelope.workflows.tm.predict import compute as workflow

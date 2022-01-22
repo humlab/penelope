@@ -1,8 +1,9 @@
 from typing import Any, Dict
 
-import penelope.vendor.gensim as gensim_utility
 from gensim.models.coherencemodel import CoherenceModel
 from loguru import logger
+
+import penelope.vendor.gensim as gensim_utility
 
 from . import options
 

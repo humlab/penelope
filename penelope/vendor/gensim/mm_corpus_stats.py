@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+
 import penelope.vendor.nltk as nltk_utility
 
 logger = logging.getLogger(__name__)

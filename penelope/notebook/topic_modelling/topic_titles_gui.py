@@ -5,6 +5,7 @@ from ipysheet import from_dataframe
 from IPython.core.display import Javascript
 from IPython.display import display as IPython_display
 from ipywidgets import Button, HBox, IntSlider, Output, Text, VBox  # type: ignore
+
 from penelope.notebook.utility import create_js_download
 from penelope.topic_modelling import filter_topic_tokens_overview
 

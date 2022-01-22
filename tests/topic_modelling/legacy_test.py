@@ -6,6 +6,7 @@ from typing import Tuple
 
 import pandas as pd
 import pytest
+
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
 from penelope.scripts.tm.train_legacy import main

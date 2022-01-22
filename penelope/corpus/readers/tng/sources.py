@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 from zipfile import ZipFile
 
 import pandas as pd
+
 from penelope.utility import extract_filenames_metadata, filter_names_by_pattern, getLogger, read_textfile, strip_paths
 
 from ..interfaces import TextReaderOpts

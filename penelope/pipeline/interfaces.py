@@ -7,6 +7,8 @@ from enum import IntEnum, unique
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Union
 
+from tqdm.auto import tqdm
+
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
@@ -19,7 +21,6 @@ from penelope.corpus import (
 from penelope.corpus.readers import TextSource
 from penelope.type_alias import TaggedFrame
 from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
-from tqdm.auto import tqdm
 
 if TYPE_CHECKING:
     from . import pipelines

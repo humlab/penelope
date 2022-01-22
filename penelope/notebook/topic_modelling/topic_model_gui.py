@@ -7,11 +7,12 @@ from typing import Dict, List, Optional
 
 import ipywidgets as widgets  # type: ignore
 import pandas as pd
+from IPython.display import display
+from loguru import logger
+
 import penelope.topic_modelling as tm
 import penelope.vendor.gensim as gensim_utility
 import penelope.vendor.textacy as textacy_utility
-from IPython.display import display
-from loguru import logger
 
 from .model_container import TopicModelContainer
 
@@ -214,12 +215,14 @@ class ComputeTopicModelUserInterface:
 
                     inferred_topics.store(target_folder=target_folder, pickled=False)
 
-                    self.state.set_data(trained_model, inferred_topics, train_corpus)
+                    self.state.update(
+                        trained_model=trained_model, inferred_topics=inferred_topics, train_corpus=train_corpus
+                    )
 
                     topics: pd.DataFrame = get_topics_unstacked(
                         self.state.topic_model,
                         n_tokens=100,
-                        id2term=self.state.id2term,
+                        id2term=self.state.inferred_topics.id2term,
                         topic_ids=self.state.inferred_topics.topic_ids,
                     )
 
@@ -227,7 +230,7 @@ class ComputeTopicModelUserInterface:
 
                 except Exception as ex:
                     logger.error(ex)
-                    self.state.set_data(None, None, None)
+                    self.state.update(inferred_topics=None)
                     raise
                 finally:
                     buzy(False)

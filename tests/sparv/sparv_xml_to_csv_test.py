@@ -1,8 +1,9 @@
 import io
 
 import pandas as pd
-import penelope.corpus.sparv.sparv_xml_to_csv as sparv
 import pytest
+
+import penelope.corpus.sparv.sparv_xml_to_csv as sparv
 from penelope.corpus import TextReaderOpts
 from penelope.corpus.readers import tng
 

@@ -21,9 +21,10 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from memoization import cached
+from textacy import representations
+
 from penelope.corpus import IVectorizedCorpus
 from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
-from textacy import representations
 
 logger = logging.getLogger("")
 logger.setLevel(logging.INFO)

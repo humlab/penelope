@@ -3,6 +3,7 @@ from typing import Iterable
 from unittest.mock import MagicMock, Mock
 
 import pandas as pd
+
 from penelope.corpus.document_index import load_document_index_from_str
 from penelope.pipeline import checkpoint, sparv
 from penelope.pipeline.checkpoint import feather

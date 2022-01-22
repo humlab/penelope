@@ -7,9 +7,10 @@ import bokeh
 import ipywidgets as widgets  # type: ignore
 import networkx as nx
 import pandas as pd
-import penelope.network.plot_utility as network_plot
 from IPython.display import display
 from loguru import logger  # type: ignore
+
+import penelope.network.plot_utility as network_plot
 from penelope import topic_modelling, utility
 from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility

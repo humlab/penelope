@@ -4,6 +4,7 @@ from typing import Any, Callable, List, Sequence
 import pandas as pd
 from bokeh.plotting import show
 from ipywidgets import HTML, Button, HBox, IntSlider, Layout, Output, SelectMultiple, Text, ToggleButton, VBox
+
 from penelope.corpus import VectorizedCorpus
 
 from .displayers import plotter

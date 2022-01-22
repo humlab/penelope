@@ -6,14 +6,15 @@ import uuid
 from typing import List
 
 import pandas as pd
-import penelope.workflows.vectorize.dtm as workflow
 import pytest
+from sklearn.feature_extraction.text import CountVectorizer
+
+import penelope.workflows.vectorize.dtm as workflow
 from penelope import corpus as corpora
 from penelope import pipeline, utility
 from penelope.pipeline import tasks
 from penelope.pipeline.spacy import pipelines as spacy_pipeline
 from penelope.workflows.interface import ComputeOpts
-from sklearn.feature_extraction.text import CountVectorizer
 from tests.utils import OUTPUT_FOLDER, inline_code
 
 CORPUS_FOLDER = './tests/test_data'

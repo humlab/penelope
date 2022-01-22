@@ -4,6 +4,7 @@ from typing import Iterable
 
 import pytest
 import scipy.sparse as sp
+
 from penelope.co_occurrence import Bundle, ContextOpts, VectorizeType
 from penelope.corpus import ClosedVocabularyError, TokenizedCorpus, VectorizedCorpus
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload, PipelinePayload

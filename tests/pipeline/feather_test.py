@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import pytest
+
 from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.utility import replace_extension
 

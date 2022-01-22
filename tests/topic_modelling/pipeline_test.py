@@ -3,6 +3,7 @@ import uuid
 from unittest.mock import MagicMock, Mock
 
 import pytest
+
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask

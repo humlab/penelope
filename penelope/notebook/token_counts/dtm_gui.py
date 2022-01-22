@@ -7,6 +7,7 @@ import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
 from ipywidgets import HTML, Dropdown, HBox, Layout, Output, SelectMultiple, ToggleButton, VBox
 from loguru import logger
+
 from penelope import corpus as pc
 from penelope import utility as pu
 

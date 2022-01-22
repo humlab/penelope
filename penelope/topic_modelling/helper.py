@@ -2,6 +2,7 @@ from typing import Any, List, Mapping, Sequence, Set
 
 import numpy as np
 import pandas as pd
+
 from penelope import utility
 
 from .interfaces import InferredTopicsData

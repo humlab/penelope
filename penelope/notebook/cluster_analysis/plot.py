@@ -1,6 +1,7 @@
 import itertools
 
 import bokeh
+
 import penelope.common.curve_fit as cf
 from penelope.common.cluster_analysis import smooth_matrix
 from penelope.corpus import DocumentIndexHelper

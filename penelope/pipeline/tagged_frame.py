@@ -11,9 +11,10 @@ from typing import Iterable, List, Mapping
 import numpy as np
 import pandas as pd
 from loguru import logger
+from tqdm import tqdm
+
 from penelope import corpus as pc
 from penelope.utility import PoS_Tag_Scheme, replace_extension, strip_paths
-from tqdm import tqdm
 
 from .interfaces import ITask
 from .pipeline import ContentType, DocumentPayload

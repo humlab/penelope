@@ -2,6 +2,7 @@ import os
 from os.path import join as jj
 
 import pytest
+
 from penelope import corpus as pc
 from penelope import pipeline as pp
 from penelope import topic_modelling as tm
