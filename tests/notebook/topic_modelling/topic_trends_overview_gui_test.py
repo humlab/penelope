@@ -1,6 +1,6 @@
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.notebook.topic_modelling.topic_trends_overview_gui import TopicOverviewGUI
-from penelope.topic_modelling.prevelance import AverageTopicPrevalenceOverTimeCalculator
+from penelope.topic_modelling.topics_data.prevelance import AverageTopicPrevalenceOverTimeCalculator
 
 
 def test_create_gui(state: TopicModelContainer):

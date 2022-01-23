@@ -11,9 +11,11 @@ from penelope import corpus as pc
 from penelope.corpus import dtm
 
 from .engines import get_engine_by_model_type
-from .interfaces import DocumentTopicsWeightsIter, InferredTopicsData
+from .topics_data import InferredTopicsData
 
 if TYPE_CHECKING:
+    from penelope.type_alias import DocumentTopicsWeightsIter
+
     from .engines.interface import ITopicModelEngine
 
 

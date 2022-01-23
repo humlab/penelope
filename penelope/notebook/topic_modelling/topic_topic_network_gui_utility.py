@@ -10,6 +10,7 @@ from loguru import logger
 import penelope.network.networkx.utility as network_utility
 from penelope import topic_modelling, utility
 from penelope.network import plot_utility
+from penelope.topic_modelling.topics_data.document import DocumentTopicsCalculator
 
 
 def get_topic_titles(topic_token_weights, topic_id=None, n_words=100):
@@ -33,9 +34,9 @@ def get_filtered_network_data(
     n_docs: int,
 ) -> pd.DataFrame:
 
-    df: pd.DataFrame = topic_modelling.filter_document_topic_weights(
-        inferred_topics.document_topic_weights, filters=filters, threshold=threshold
-    )
+    calculator: DocumentTopicsCalculator = DocumentTopicsCalculator(inferred_topics)
+
+    df: pd.DataFrame = calculator.filter_by_keys(**filters).threshold(threshold=threshold).value
 
     if ignores is not None:
         df = df[~df.topic_id.isin(ignores)]

@@ -39,7 +39,7 @@ def load_model(
     topics = inferred_topics.topic_token_overview
 
     with suppress(BaseException):
-        topic_proportions = inferred_topics.compute_topic_proportions()
+        topic_proportions = inferred_topics.calculator.topic_proportions()
         if topic_proportions is not None:
             topics['score'] = topic_proportions
 

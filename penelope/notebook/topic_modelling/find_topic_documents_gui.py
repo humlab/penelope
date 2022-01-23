@@ -2,7 +2,7 @@ import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, FloatSlider, HBox, IntSlider, Output, Text, VBox  # type: ignore
 
-from penelope.topic_modelling import FilterDocumentTopicWeights, InferredTopicsData
+from penelope.topic_modelling import InferredTopicsData
 
 from .model_container import TopicModelContainer
 
@@ -62,11 +62,8 @@ class FindTopicDocumentsGUI:
         with self.output:
 
             document_topics: pd.DataFrame = (
-                FilterDocumentTopicWeights(inferred_topics)
-                .filter_by_text(
-                    search_text=self.text,
-                    n_top=self.n_top,
-                )
+                inferred_topics.calculator.reset()
+                .filter_by_text(search_text=self.text, n_top=self.n_top)
                 .threshold(self.threshold)
                 .value
             )

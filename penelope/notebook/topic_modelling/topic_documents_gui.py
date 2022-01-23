@@ -1,60 +1,58 @@
+import uuid
 import warnings
 
 from IPython.display import display
-from ipywidgets import HTML, Button, FloatSlider, HBox, IntSlider, Label, Layout, Output, VBox  # type: ignore
-
-import penelope.topic_modelling as tm
+from ipywidgets import HTML, Button, FloatSlider, HBox, IntSlider, Label, Output, VBox  # type: ignore
 
 from .model_container import TopicModelContainer
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-TEXT_ID = "id_345"
-BUTTON_STYLE = dict(description_width='initial', button_color='lightgreen')
-
 
 class TopicDocumentsGUI:
     def __init__(self):
 
         self.n_topics: int = 0
-        self.text_id: str = TEXT_ID
-        self.text: HTML = HTML(value=f"<span class='{TEXT_ID}'></span>")
-        self.topic_id: IntSlider = IntSlider(
+        self.text_id: str = str(uuid.uuid4())[:6]
+        self.state: TopicModelContainer = None
+
+        self._text: HTML = HTML(value=f"<span class='{self.text_id}'></span>")
+        self._topic_id: IntSlider = IntSlider(
             description='Topic ID', min=0, max=199, step=1, value=0, continuous_update=False
         )
-        self.n_top: IntSlider = IntSlider(description='', min=5, max=500, step=1, value=75)
-        self.threshold = FloatSlider(
+        self._n_top: IntSlider = IntSlider(description='', min=5, max=500, step=1, value=75)
+        self._threshold = FloatSlider(
             description='Threshold', min=0.0, max=1.0, step=0.01, value=0.20, continues_update=False
         )
-        self.output: Output = Output()
+        self._output: Output = Output()
 
-        self.prev_topic_id: Button = Button(description="<<", layout=Layout(**BUTTON_STYLE))
-        self.next_topic_id: Button = Button(description=">>", layout=Layout(**BUTTON_STYLE))
+        button_style: dict = dict(description_width='initial', button_color='lightgreen')
 
-        self.state: TopicModelContainer = None
+        self._prev_topic_id: Button = Button(description="<<", layout=button_style)
+        self._next_topic_id: Button = Button(description=">>", layout=button_style)
 
     def setup(self, *, state: TopicModelContainer) -> "TopicDocumentsGUI":
 
         self.state: TopicModelContainer = state
         self.n_topics = state.num_topics
-        self.topic_id.value = 0
-        self.topic_id.max = self.n_topics - 1
+        self._topic_id.value = 0
+        self._topic_id.max = self.n_topics - 1
 
-        self.prev_topic_id.on_click(self.goto_previous)
-        self.next_topic_id.on_click(self.goto_next)
+        self._prev_topic_id.on_click(self.goto_previous)
+        self._next_topic_id.on_click(self.goto_next)
 
-        self.topic_id.observe(self.update_handler, names='value')
-        self.threshold.observe(self.update_handler, names='value')
-        self.n_top.observe(self.update_handler, names='value')
+        self._topic_id.observe(self.update_handler, names='value')
+        self._threshold.observe(self.update_handler, names='value')
+        self._n_top.observe(self.update_handler, names='value')
 
         return self
 
     def goto_previous(self, *_):
-        self.topic_id.value = (self.topic_id.value - 1) % self.topic_id.max
+        self._topic_id.value = (self._topic_id.value - 1) % self._topic_id.max
 
     def goto_next(self, *_):
-        self.topic_id.value = (self.topic_id.value + 1) % self.topic_id.max
+        self._topic_id.value = (self._topic_id.value + 1) % self._topic_id.max
 
     def layout(self):
         return VBox(
@@ -63,44 +61,51 @@ class TopicDocumentsGUI:
                     [
                         VBox(
                             [
-                                HBox([self.prev_topic_id, self.next_topic_id]),
+                                HBox([self._prev_topic_id, self._next_topic_id]),
                                 Label("Max number of documents to show"),
-                                self.n_top,
+                                self._n_top,
                             ]
                         ),
-                        VBox([self.topic_id, self.threshold]),
+                        VBox([self._topic_id, self._threshold]),
                     ]
                 ),
-                self.text,
-                self.output,
+                self._text,
+                self._output,
             ]
         )
 
     def update_handler(self, *_):
 
-        topic_token_weights = self.state.inferred_topics.topic_token_weights
-        document_topic_weights = self.state.inferred_topics.document_topic_weights
-        document_index = self.state.inferred_topics.document_index
-
-        self.output.clear_output()
+        self._output.clear_output()
 
         # if self.n_topics != state.num_topics:
         #    self.setup(n_topics)
 
-        with self.output:
+        with self._output:
 
-            self.text.value = tm.get_topic_title2(topic_token_weights, self.topic_id.value)
+            self._text.value = self.state.inferred_topics.get_topic_title2(self.topic_id)
 
-            topic_documents = tm.get_relevant_topic_documents(
-                document_topic_weights=document_topic_weights,
-                document_index=document_index,
-                threshold=self.threshold.value,
-                n_top=self.n_top.value,
-                topic_id=self.topic_id.value,
+            topic_documents = (
+                self.state.inferred_topics.calculator.reset()
+                .filter_by_data_keys(topic_id=self.topic_id)
+                .threshold(threshold=self.threshold)
+                .filter_by_n_top(n_top=self.n_top)
             )
 
             if topic_documents is not None:
                 display(topic_documents)
+
+    @property
+    def threshold(self) -> float:
+        return self._threshold.value
+
+    @property
+    def n_top(self) -> int:
+        return self._n_top.value
+
+    @property
+    def topic_id(self) -> int:
+        return self._topic_id.value
 
 
 def display_gui(state: TopicModelContainer):

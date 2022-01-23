@@ -21,3 +21,5 @@ VocabularyMapping = Optional[Mapping[Tuple[int, int], int]]
 SparseMatrix = sp.spmatrix
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
+
+DocumentTopicsWeightsIter = Iterable[Tuple[int, Iterable[Tuple[int, float]]]]

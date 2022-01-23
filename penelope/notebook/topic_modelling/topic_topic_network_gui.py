@@ -69,7 +69,7 @@ class TopicTopicGUI:
         )
         self.output: Output = Output()
 
-        self.topic_proportions = self.state.inferred_topics.compute_topic_proportions()
+        self.topic_proportions = self.state.inferred_topics.calculator.topic_proportions()
         self.titles = self.state.inferred_topics.get_topic_titles()
 
     def layout(self) -> VBox:

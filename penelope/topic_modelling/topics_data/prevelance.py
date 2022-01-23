@@ -5,10 +5,10 @@ from typing import List, NamedTuple, Tuple
 import numpy as np
 import pandas as pd
 
-from penelope.topic_modelling.helper import FilterDocumentTopicWeights
 from penelope.utility import rename_columns
 
-from .interfaces import InferredTopicsData
+from .document import DocumentTopicsCalculator
+from .topics_data import InferredTopicsData
 
 
 def default_calculator():
@@ -40,7 +40,7 @@ class AverageTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator
         n_top_relevance: int = None,
     ) -> pd.DataFrame:
         document_topic_weights: pd.DataFrame = (
-            FilterDocumentTopicWeights(inferred_topics).threshold(threshold or 0).filter_by_keys(filters or {}).value
+            DocumentTopicsCalculator(inferred_topics).threshold(threshold or 0).filter_by_keys(**(filters or {})).value
         )
         return self.compute_yearly_topic_weights(
             document_topic_weights,
@@ -62,12 +62,12 @@ class AverageTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator
         )
 
 
-class RollingAverageTopicPrevalenceOverTimeCalculator(AverageTopicPrevalenceOverTimeCalculator):
-    """Not implemented"""
+# class RollingAverageTopicPrevalenceOverTimeCalculator(AverageTopicPrevalenceOverTimeCalculator):
+#     """Not implemented"""
 
 
-class TopTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator):
-    """Not implemented"""
+# class TopTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator):
+#     """Not implemented"""
 
 
 class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator):
