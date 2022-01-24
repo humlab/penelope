@@ -75,7 +75,7 @@ def predict_topics(
     topic_token_weights: pd.DataFrame = (
         kwargs.get('topic_token_weights')
         if kwargs.get('topic_token_weights') is not None
-        else engine.get_topic_token_weights(vocabulary=id2token, n_tokens=n_tokens)
+        else engine.get_topic_token_weights(vocabulary=vectorized_corpus.id2token, n_tokens=n_tokens)
     )
 
     topic_token_overview: pd.DataFrame = (
@@ -87,7 +87,7 @@ def predict_topics(
     document_index: pd.DataFrame = pc.update_document_index_token_counts_by_corpus(document_index, vectorized_corpus)
 
     topics_data: InferredTopicsData = InferredTopicsData(
-        dictionary=pc.Token2Id.id2token_to_dataframe(id2token),
+        dictionary=pc.Token2Id.id2token_to_dataframe(vectorized_corpus.id2token),
         topic_token_weights=topic_token_weights,
         topic_token_overview=topic_token_overview,
         document_index=document_index,
