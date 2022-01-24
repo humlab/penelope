@@ -144,6 +144,8 @@ line_length = 120
 py_version = "auto"
 float_to_top = true
 src_paths = ["penelope", "tests"]
+extra_standard_library = ["__paths__"]
+
 
 # [tool.taskipy.tasks]
 # pytest = "pytest --junitxml=test-results/junit.xml"
