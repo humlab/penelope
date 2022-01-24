@@ -3,7 +3,8 @@ alpha: asymmetric
 chunk_size: 10000
 config_filename: /data/westac/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/corpus.yml
 corpus_source: /data/westac/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/
-engine: gensim_lda-multicore
+engine: gensim_mallet-lda
+# engine: gensim_lda-multicore
 lemmatize: true
 max_iter: 4000
 max_tokens: 200000
@@ -18,10 +19,11 @@ store_compressed: true
 store_corpus: true
 target_folder: ./data
 target_mode: both
-target_name: tm_1920-2020_500-topics
+# target_name: tm_1920-2020_500-topics
+target_name: tm_1920-2020_500-topics-mallet
 tf_threshold: 25
 to_lower: false
 train_corpus_folder: null
 trained_model_folder: null
 update_every: 1
-workers: 2
+workers: 1
