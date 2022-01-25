@@ -226,11 +226,11 @@ def test_infer_topics_data(method):
     assert isinstance(inferred_topics_data.topic_token_overview, pd.DataFrame)
     assert isinstance(inferred_topics_data.document_topic_weights, pd.DataFrame)
     assert inferred_topics_data.year_period == (2019, 2020)
-    assert inferred_topics_data.topic_ids == [0, 1, 2, 3]
+    assert set(inferred_topics_data.topic_ids) == {0, 1, 2, 3}
     assert len(inferred_topics_data.document_index) == 5
     assert list(inferred_topics_data.topic_token_weights.topic_id.unique()) == [0, 1, 2, 3]
     assert list(inferred_topics_data.topic_token_overview.index) == [0, 1, 2, 3]
-    assert list(inferred_topics_data.document_topic_weights.topic_id.unique()) == [0, 1, 2, 3]
+    assert set(inferred_topics_data.document_topic_weights.topic_id.unique()) == {0, 1, 2, 3}
 
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
