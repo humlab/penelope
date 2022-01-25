@@ -8,7 +8,7 @@ from loguru import logger
 import penelope.workflows.tm.train_id as workflow
 from penelope import corpus as pc
 from penelope import pipeline
-from penelope.scripts.utils import load_config, option2, remove_none, update_arguments_from_options_file
+from penelope.scripts.utils import load_config, option2, remove_none, consolidate_cli_arguments
 from penelope.topic_modelling.interfaces import InferredModel
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -83,7 +83,7 @@ def click_main(
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
-    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
 
     main(**arguments)
 

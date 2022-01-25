@@ -48,7 +48,7 @@ CLI_OPTIONS = {
     '--max-word-length': dict(help='Max length of words to keep', default=None, type=click.IntRange(10, 99)),
     '--min-word-length': dict(help='Min length of words to keep', default=1, type=click.IntRange(1, 99)),
     '--minimum-probability': dict(
-        help='Document-topic weights lower than value are discarded.', default=None, type=click.FloatRange(0.001, 0.10)
+        help='Document-topic weights lower than value are discarded.', default=0.005, type=click.FloatRange(0.001, 0.10)
     ),
     '--n-topics': dict(help='Number of topics.', default=50, type=click.INT),
     '--n-tokens': dict(help='Number of tokens per topic.', default=None, type=click.INT),
@@ -104,7 +104,7 @@ CLI_OPTIONS = {
 }
 
 
-def update_arguments_from_options_file(*, arguments: dict, filename_key: str, log_args: bool = True) -> dict:
+def consolidate_cli_arguments(*, arguments: dict, filename_key: str, log_args: bool = True) -> dict:
     """Updates `arguments` based on values found in file specified by `filename_key`.
     Values specified at the command line overrides values from options file."""
     options_filename: Optional[str] = arguments.get(filename_key)

@@ -6,7 +6,7 @@ from loguru import logger
 
 import penelope.corpus as penelope
 from penelope import pipeline
-from penelope.scripts.utils import option2, update_arguments_from_options_file
+from penelope.scripts.utils import option2, consolidate_cli_arguments
 from penelope.workflows.tm.predict import compute as workflow
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -67,7 +67,7 @@ def click_main(
         click.echo("error: TARGET_NAME not specified")
         sys.exit(1)
 
-    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
 
     model_folder, model_name = split(trained_model_folder)
 

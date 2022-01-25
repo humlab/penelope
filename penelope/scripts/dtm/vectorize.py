@@ -8,7 +8,7 @@ import penelope.workflows.vectorize.dtm as workflow
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import option2, update_arguments_from_options_file
+from penelope.scripts.utils import option2, consolidate_cli_arguments
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 
@@ -73,7 +73,7 @@ def main(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ):
-    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
 
     process(**arguments)
 

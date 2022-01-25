@@ -8,7 +8,7 @@ import penelope.workflows.vectorize.dtm_id as workflow
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import option2, update_arguments_from_options_file
+from penelope.scripts.utils import option2, consolidate_cli_arguments
 from penelope.utility import pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument, useless-super-delegation
@@ -65,7 +65,7 @@ def main(
     tf_threshold_mask: bool = False,
     deserialize_processes: int = 4,
 ):
-    arguments: dict = update_arguments_from_options_file(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
     process(**arguments)
 
 
