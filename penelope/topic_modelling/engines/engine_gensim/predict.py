@@ -9,7 +9,7 @@ import penelope.utility as utility
 import penelope.vendor.gensim.wrappers as wrappers
 from penelope.corpus.dtm.corpus import VectorizedCorpus
 
-from .wrappers.mallet_topic_model import MalletTopicModel
+from .wrappers.mallet_tm import MalletTopicModel
 
 # pylint: disable=unused-argument
 
@@ -35,8 +35,9 @@ def gensim_lda_predict(
     return data_iter
 
 
-def mallet_lda_predict(model: wrappers.LdaMallet, corpus: Any) -> Iterable:
+def mallet_lda_predict(model: wrappers.LdaMallet, corpus: Any, minimum_probability: float = 0.005) -> Iterable:
     # data_iter = enumerate(model.load_document_topics())
+    model.topic_threshold = minimum_probability
     data_iter = enumerate(model[corpus])
     return data_iter
 
@@ -44,9 +45,7 @@ def mallet_lda_predict(model: wrappers.LdaMallet, corpus: Any) -> Iterable:
 SupportedModels = Union[models.LdaModel, models.LdaMulticore, MalletTopicModel, models.LsiModel]
 
 
-def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.0, **kwargs) -> Iterable:
-
-    minimum_probability: float = kwargs.get('minimum_probability', 0.0)
+def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.005, **kwargs) -> Iterable:
 
     if not isinstance(
         model,
@@ -66,7 +65,7 @@ def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.
     if isinstance(model, (models.LdaMulticore, models.LdaModel)):
         data_iter = gensim_lda_predict(model, corpus, minimum_probability=minimum_probability)
     elif isinstance(model, (MalletTopicModel, wrappers.LdaMallet)) or hasattr(model, 'load_document_topics'):
-        data_iter = mallet_lda_predict(model, corpus)
+        data_iter = mallet_lda_predict(model, corpus, minimum_probability=minimum_probability)
     elif hasattr(model, '__getitem__'):
         data_iter = ((document_id, model[corpus[document_id]]) for document_id in range(0, len(corpus)))
     else:

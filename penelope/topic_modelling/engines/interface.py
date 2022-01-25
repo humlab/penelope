@@ -67,7 +67,7 @@ class ITopicModelEngine(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def predict(self, corpus: Any, minimum_probability: float = 0.0, **kwargs) -> Iterable:
+    def predict(self, corpus: Any, minimum_probability: float = 0.005, **kwargs) -> Iterable:
         ...
 
     def get_topic_token_weights(

@@ -319,7 +319,7 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
     target_folder: str = None
     target_name: str = None
     n_tokens: int = 200
-    minimum_probability: float = 0.001
+    minimum_probability: float = 0.01
 
     @property
     def model_subfolder(self) -> str:

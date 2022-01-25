@@ -86,7 +86,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         prefix=None,
         optimize_interval=0,
         iterations=1000,
-        topic_threshold=0.0,
+        topic_threshold=0.005,
         random_seed=0,
     ):
         """
