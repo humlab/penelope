@@ -43,9 +43,9 @@ class MalletEngineSpec(EngineSpec):
             iterations=get_int(engine_args, 'max_iter', 3000),
             workers=get_int(engine_args, 'workers', 1),
             optimize_interval=get_int(engine_args, 'optimize_interval', 10),
-            topic_threshold=get_float(engine_args, 'topic_threshold', 0.0),
+            topic_threshold=get_float(engine_args, 'minimum_probability', 0.005),
             random_seed=get_int(engine_args, 'random_seed', 0),
-            # 'alpha': int(kwargs.get('alpha', 20))
+          # 'alpha': int(kwargs.get('alpha', 20))
         )
 
 
@@ -66,6 +66,7 @@ class LdaEngineSpec(EngineSpec):
             per_word_topics=engine_args.get('per_word_topics', False),
             random_state=engine_args.get('random_state'),
             update_every=get_int(engine_args, 'update_every', 1),
+            minimum_probability=engine_args.get('minimum_probability', 0.005),
             # decay= 0.1, # 0.5
             # offset=1.0,
             # dtype=np.float64
@@ -188,7 +189,7 @@ class LdaMulticoreEngineSpec(EngineSpec):
             alpha=engine_args.get('alpha', 'symmetric'),
             chunksize=get_int(engine_args, 'chunk_size', 2000),
             iterations=get_int(engine_args, 'max_iter', 3000),
-            minimum_probability=engine_args.get('minimum_probability', 0.01),
+            minimum_probability=engine_args.get('minimum_probability', 0.005),
             num_topics=get_int(engine_args, 'n_topics', 100),
             passes=get_int(engine_args, 'passes', 1),
             per_word_topics=engine_args.get('per_word_topics', False),
