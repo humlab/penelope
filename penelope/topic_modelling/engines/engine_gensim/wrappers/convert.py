@@ -4,7 +4,7 @@ from os.path import join as jj
 
 import numpy as np
 import pandas as pd
-from smart_open import open
+from smart_open import open as smart_open
 from tqdm import tqdm
 
 
@@ -24,7 +24,7 @@ def convert_topic_tokens(folder: str, filename: str = "topicwordweights.txt.gz")
         sep='\t',
     )
 
-    df = df[df.weight > df.weight.min()]
+    df = df[df.weight > df.weight.min()]  # pylint: disable=no-member
 
     df['token_id'] = df.token.apply(token2id.get)
 
@@ -48,7 +48,7 @@ def convert_document_topics(
     feather_filename: str = jj(folder, "doctopics.feather")
 
     ds, ts, ws = [], [], []
-    with open(filename, mode='rt') as fp:
+    with smart_open(filename, mode='rt') as fp:
         for row in tqdm(fp, mininterval=1.0):
             if row[0] == '#':
                 continue
