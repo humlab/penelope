@@ -45,7 +45,7 @@ class MalletEngineSpec(EngineSpec):
             optimize_interval=get_int(engine_args, 'optimize_interval', 10),
             topic_threshold=get_float(engine_args, 'minimum_probability', 0.005),
             random_seed=get_int(engine_args, 'random_seed', 0),
-          # 'alpha': int(kwargs.get('alpha', 20))
+            # 'alpha': int(kwargs.get('alpha', 20))
         )
 
 

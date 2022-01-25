@@ -1,11 +1,12 @@
+import numpy as np
+import pandas as pd
+from gensim.models import LdaMulticore
+from tqdm import tqdm
+
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
-from gensim.models import LdaMulticore
 from penelope.corpus import dtm
 from penelope.topic_modelling.predict import to_dataframe
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
 
 # model: LdaMulticore = LdaMulticore.load(fname='data/tm_1920-2020_500-topics/gensim.model.gz')
 

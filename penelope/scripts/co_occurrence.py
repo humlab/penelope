@@ -8,7 +8,7 @@ from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import option2, consolidate_cli_arguments
+from penelope.scripts.utils import consolidate_cli_arguments, option2
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 

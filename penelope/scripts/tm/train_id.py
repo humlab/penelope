@@ -8,7 +8,7 @@ from loguru import logger
 import penelope.workflows.tm.train_id as workflow
 from penelope import corpus as pc
 from penelope import pipeline
-from penelope.scripts.utils import load_config, option2, remove_none, consolidate_cli_arguments
+from penelope.scripts.utils import consolidate_cli_arguments, load_config, option2, remove_none
 from penelope.topic_modelling.interfaces import InferredModel
 
 # pylint: disable=unused-argument, too-many-arguments

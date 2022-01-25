@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from penelope.topic_modelling.engines.engine_gensim.wrappers.convert import (
-    convert_topic_tokens,
     convert_document_topics,
+    convert_topic_tokens,
 )
-
 
 if __name__ == '__main__':
 

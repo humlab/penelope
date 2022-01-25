@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from os.path import join as jj
-from smart_open import open
 
 import numpy as np
 import pandas as pd
+from smart_open import open
 from tqdm import tqdm
 
 

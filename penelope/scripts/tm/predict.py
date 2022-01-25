@@ -6,7 +6,7 @@ from loguru import logger
 
 import penelope.corpus as penelope
 from penelope import pipeline
-from penelope.scripts.utils import option2, consolidate_cli_arguments
+from penelope.scripts.utils import consolidate_cli_arguments, option2
 from penelope.workflows.tm.predict import compute as workflow
 
 # pylint: disable=unused-argument, too-many-arguments
