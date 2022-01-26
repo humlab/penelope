@@ -1,6 +1,6 @@
 [MASTER]
 #ignore-patterns=**/deprecated/**/*.py
-ignore-patterns=deprecated, data, docs, .pytest_cache, test_data, output, profile_reports, tmp, .git
+ignore-patterns=deprecated, data, dist, logs, docs, .pytest_cache, test_data, output, profile_reports, tmp, .git
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
