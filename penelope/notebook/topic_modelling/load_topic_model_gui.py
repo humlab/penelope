@@ -3,7 +3,7 @@ from contextlib import suppress
 from os.path import join as jj
 from typing import Any, Callable, Dict, List, Optional
 
-from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox  # type: ignore
+from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
 
 from penelope import pipeline
 from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
@@ -26,14 +26,14 @@ def load_model(
     model_infos = model_infos or find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
     filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
-    inferred_model: InferredModel = InferredModel.load(model_info["folder"], lazy=True)
+    trained_model: InferredModel = InferredModel.load(model_info["folder"], lazy=True)
     inferred_topics: InferredTopicsData = InferredTopicsData.load(
         folder=jj(corpus_folder, model_info["name"]),
         filename_fields=filename_fields,
     )
 
     state.update(
-        inferred_model=inferred_model, inferred_topics=inferred_topics, _train_corpus_folder=model_info["folder"]
+        trained_model=trained_model, inferred_topics=inferred_topics, _train_corpus_folder=model_info["folder"]
     )
 
     topics = inferred_topics.topic_token_overview
