@@ -16,7 +16,7 @@ def train_model(
     if engine_args.get('work_folder', False):
         os.makedirs(engine_args.get('work_folder'), exist_ok=True)
 
-    trained_model = get_engine_cls_by_method_name(method).train(
+    trained_model: InferredModel = get_engine_cls_by_method_name(method).train(
         train_corpus, method, engine_args, tfidf_weighing=tfidf_weighing
     )
 
