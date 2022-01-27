@@ -21,7 +21,7 @@ class TrendsComputeOpts:
     temporal_key: str
     pivot_keys_id_names: List[str] = field(default_factory=list)
     # FIXME: Decide if it is best to apply filter in `transform` (reduce corpus) or extract (slice corpus)
-    pivot_keys_filter: pu.PropertyValueMaskingOpts = None
+    filter_opts: pu.PropertyValueMaskingOpts = None
     unstack_tabular: bool = False
 
     fill_gaps: bool = False
@@ -33,9 +33,9 @@ class TrendsComputeOpts:
 
     @property
     def clone(self) -> "TrendsComputeOpts":
-        other: TrendsComputeOpts = pu.deep_clone(self, ignores=["pivot_keys_filter"], assign_ignores=False)
-        if self.pivot_keys_filter is not None:
-            other.pivot_keys_filter = pu.PropertyValueMaskingOpts(**self.pivot_keys_filter.props)
+        other: TrendsComputeOpts = pu.deep_clone(self, ignores=["filter_opts"], assign_ignores=False)
+        if self.filter_opts is not None:
+            other.filter_opts = pu.PropertyValueMaskingOpts(**self.filter_opts.props)
         return other
 
     def invalidates_corpus(self, other: "TrendsComputeOpts") -> bool:
@@ -44,7 +44,7 @@ class TrendsComputeOpts:
             or self.keyness != other.keyness
             or self.temporal_key != other.temporal_key
             or self.pivot_keys_id_names != other.pivot_keys_id_names
-            or self.pivot_keys_filter != other.pivot_keys_filter
+            or self.filter_opts != other.filter_opts
             or self.fill_gaps != other.fill_gaps
             or self.keyness_source != other.keyness_source
         ):
@@ -166,7 +166,7 @@ class TrendsData(TrendsDataBase):
         corpus = corpus.group_by_pivot_keys(
             temporal_key=opts.temporal_key,
             pivot_keys=list(opts.pivot_keys_id_names),
-            pivot_keys_filter=opts.pivot_keys_filter,
+            filter_opts=opts.filter_opts,
             document_namer=None,  # FIXME
             fill_gaps=opts.fill_gaps,
             aggregate='sum',

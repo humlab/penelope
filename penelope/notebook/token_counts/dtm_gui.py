@@ -32,7 +32,7 @@ class ComputeOpts:
     pos_groups: List[str]
     temporal_key: str
     pivot_keys_id_names: List[str] = None
-    pivot_keys_filter: pu.PropertyValueMaskingOpts = None
+    filter_opts: pu.PropertyValueMaskingOpts = None
     unstack_tabular: bool = None
 
 
@@ -58,8 +58,8 @@ def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
 
     di: pd.DataFrame = document_index
 
-    if opts.pivot_keys_filter is not None:
-        di = opts.pivot_keys_filter.apply(di)
+    if opts.filter_opts is not None:
+        di = opts.filter_opts.apply(di)
 
     pivot_keys: List[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
 
@@ -354,7 +354,7 @@ class BasicDTMGUI(PivotKeysMixIn, BaseDTMGUI):
     def opts(self) -> ComputeOpts:
         opts: ComputeOpts = super().opts
         opts.pivot_keys_id_names = self.pivot_keys_id_names
-        opts.pivot_keys_filter = self.pivot_keys_filter_values
+        opts.filter_opts = self.filter_opts
         opts.unstack_tabular = self.unstack_tabular
         return opts
 
@@ -369,3 +369,6 @@ class BasicDTMGUI(PivotKeysMixIn, BaseDTMGUI):
         )
 
         return super().layout()
+
+    def observe(self, value: bool) -> None:  # pylint: disable=arguments-differ
+        super().observe(handler=self._display_handler, value=value)

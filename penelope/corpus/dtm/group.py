@@ -230,7 +230,7 @@ class GroupByMixIn:
         self: IVectorizedCorpusProtocol | GroupByMixIn,
         temporal_key: Literal['year', 'decade', 'lustrum'],
         pivot_keys: List[str],
-        pivot_keys_filter: pu.PropertyValueMaskingOpts,
+        filter_opts: pu.PropertyValueMaskingOpts,
         document_namer: Callable[[pd.DataFrame], pd.Series],
         aggregate: str = 'sum',
         fill_gaps: bool = False,
@@ -243,7 +243,7 @@ class GroupByMixIn:
             self (IVectorizedCorpusProtocol): [description]
             temporal_key (Literal['year', 'decade', 'lustrum']): Temporal grouping key value (year, lustrum, decade)
             pivot_keys (List[str]): Grouping key value, must be discrete categorical values.
-            pivot_keys_filter (PropertyValueMaskingOpts): Filters that should be applied to documets index.
+            filter_opts (PropertyValueMaskingOpts): Filters that should be applied to documets index.
             document_namer (Callable[[pd.DataFrame], pd.Series]): Funciton that computes a document name for each result groups.
             aggregate (str, optional): Aggregate function for DTM and document index (n_tokens). Defaults to 'sum'.
             dtype (np.dtype, optional): Value type of target DTM matrix. Defaults to None.
@@ -279,9 +279,7 @@ class GroupByMixIn:
             document_namer = default_document_namer
 
         di: pd.DataFrame = self.document_index
-        fdi: pd.DataFrame = (
-            di if not pivot_keys or len(pivot_keys_filter or []) == 0 else di[pivot_keys_filter.mask(di)]
-        )
+        fdi: pd.DataFrame = di if not pivot_keys or len(filter_opts or []) == 0 else di[filter_opts.mask(di)]
 
         if temporal_key not in fdi.columns:
             fdi[temporal_key] = fdi['year'].apply(create_time_period_categorizer(temporal_key))

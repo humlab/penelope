@@ -1,5 +1,5 @@
 import abc
-from typing import List, Sequence
+from typing import Any, Callable, List, Sequence
 
 import ipywidgets as w
 import pandas as pd
@@ -357,9 +357,7 @@ class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
     def extract(self) -> Sequence[pd.DataFrame]:
         self.alert("⌛ Extracting data...")
         """Fetch trends data grouped by pivot keys (ie. stacked)"""
-        stacked_data: pd.DataFrame = self.trends_data.extract(
-            indices=self.picked_indices, filter_opts=self.pivot_keys_filter_values
-        )
+        stacked_data: pd.DataFrame = self.trends_data.extract(indices=self.picked_indices, filter_opts=self.filter_opts)
         """Decode integer/coded pivot keys"""
         stacked_data = self.pivot_keys.decode_pivot_keys(stacked_data, True)
 
@@ -393,7 +391,7 @@ class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
         opts: TrendsComputeOpts = super().options
         opts.update(
             pivot_keys_id_names=self.pivot_keys_id_names,
-            pivot_keys_filter=self.pivot_keys_filter_values,
+            filter_opts=self.filter_opts,
             unstack_tabular=self.unstack_tabular,
         )
         return opts
@@ -404,8 +402,8 @@ class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
         self._pivot_keys_text_names.disabled = value
         self._filter_keys.disabled = value
 
-    def observe(self, value: bool) -> None:
-        super().observe(value)
+    def observe(self, value: bool) -> None:  # pylint: disable=arguments-differ
+        super().observe(handler=self._display_handler, value=value)
         for ctrl in [self._pivot_keys_text_names, self._filter_keys]:
             wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
 

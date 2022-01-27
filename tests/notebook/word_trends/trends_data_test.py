@@ -70,7 +70,7 @@ Opts = pu.PropertyValueMaskingOpts
 
 
 @pytest.mark.parametrize(
-    'temporal_key,pivot_keys,pivot_keys_filter,normalize,fill_gaps,expected_tf_sums,expected_shape',
+    'temporal_key,pivot_keys,filter_opts,normalize,fill_gaps,expected_tf_sums,expected_shape',
     [
         ('year', ['color_id'], Opts(), False, True, [8, 0, 0, 0, 7, 7, 0, 0, 8, 4], (10, 4)),
         ('year', ['color_id'], Opts(), False, False, [8, 7, 7, 8, 4], (5, 4)),
@@ -85,7 +85,7 @@ Opts = pu.PropertyValueMaskingOpts
 def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
     temporal_key: str,
     pivot_keys: List[str],
-    pivot_keys_filter: pu.PropertyValueMaskingOpts,
+    filter_opts: pu.PropertyValueMaskingOpts,
     normalize: bool,
     fill_gaps: bool,
     expected_tf_sums: List[int | float],
@@ -99,7 +99,7 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
             keyness=KeynessMetric.TF,
             temporal_key=temporal_key,
             pivot_keys_id_names=pivot_keys,
-            pivot_keys_filter=pivot_keys_filter,
+            filter_opts=filter_opts,
             fill_gaps=fill_gaps,
         )
     ).transformed_corpus
