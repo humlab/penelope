@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from os.path import isfile
 from os.path import join as jj
-from os.path import split
 
 import numpy as np
 import pandas as pd

@@ -3,12 +3,11 @@ from __future__ import annotations
 import pandas as pd
 
 from penelope.topic_modelling.engines.engine_gensim.wrappers.convert import (
-    convert_document_topics,
-    convert_topic_tokens,
     convert_dictionary,
     convert_document_index,
+    convert_document_topics,
+    convert_topic_tokens,
 )
-
 
 if __name__ == '__main__':
 
