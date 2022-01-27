@@ -32,9 +32,7 @@ def load_model(
         filename_fields=filename_fields,
     )
 
-    state.update(
-        trained_model=trained_model, inferred_topics=inferred_topics, _train_corpus_folder=model_info["folder"]
-    )
+    state.update(trained_model=trained_model, inferred_topics=inferred_topics, train_corpus_folder=model_info["folder"])
 
     topics = inferred_topics.topic_token_overview
 
