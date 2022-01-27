@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import penelope.topic_modelling as tm
 
@@ -16,6 +16,21 @@ class TopicModelContainer:
         self._trained_model: tm.InferredModel = None
         self._inferred_topics: tm.InferredTopicsData = None
         self._train_corpus_folder: str = None
+
+    def __getitem__(
+        self, key: Literal['topic_model', 'trained_model', 'topics_data', 'inferred_topics']
+    ) -> Union[tm.InferredModel, tm.InferredModel]:
+        """make it dict-like to simplify testing"""
+        if key == 'trained_model':
+            return self.trained_model
+        if key == 'topic_model':
+            return self.trained_model.topic_model
+        if key in ['inferred_topics', 'topics_data']:
+            return self.inferred_topics
+        return self.__dict__[key]
+
+    def __setitem__(self, key, item):
+        self.__dict__[key] = item
 
     @staticmethod
     def singleton() -> "TopicModelContainer":
