@@ -5,8 +5,10 @@ import pickle
 import sys
 import types
 from functools import cached_property
+from os import path as pp
 from os.path import join as jj
 from typing import List, Tuple
+from loguru import logger
 
 import pandas as pd
 
@@ -15,6 +17,12 @@ from penelope import utility as pu
 
 from . import token as tt
 from .document import DocumentTopicsCalculator
+
+
+def smart_read(filename: str, **kwargs) -> pd.DataFrame:
+    if pp.isfile(pu.replace_extension(filename, "feather")):
+        return pd.read_feather(filename)
+    return pd.read_csv(filename, **kwargs)
 
 
 class InferredTopicsData(tt.TopicTokensMixIn):
@@ -43,9 +51,16 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         self.topic_token_overview: pd.DataFrame = topic_token_overview
         self.calculator = DocumentTopicsCalculator(self)
 
+        if 'token' not in self.topic_token_weights.columns:
+            self.topic_token_weights['token'] = self.topic_token_weights['token_id'].apply(self.id2term.get)
+
     @property
     def num_topics(self) -> int:
         return int(self.topic_token_overview.index.max()) + 1
+
+    @property
+    def timespan(self) -> Tuple[int, int]:
+        return self.year_period
 
     @property
     def year_period(self) -> Tuple[int, int]:
@@ -79,7 +94,7 @@ class InferredTopicsData(tt.TopicTokensMixIn):
     def token2id(self) -> pc.Token2Id:
         return pc.Token2Id(data=self.term2id)
 
-    def store(self, target_folder: str, pickled: bool = False):
+    def store(self, target_folder: str, pickled: bool = False, feather: bool = True):
         """Stores topics data in `target_folder` either as pickled file or individual zipped files """
 
         os.makedirs(target_folder, exist_ok=True)
@@ -99,59 +114,82 @@ class InferredTopicsData(tt.TopicTokensMixIn):
                 pickle.dump(c_data, f, pickle.HIGHEST_PROTOCOL)
 
         else:
-            data = [
-                (self.document_index.rename_axis(''), 'documents.csv'),
-                (self.dictionary, 'dictionary.csv'),
-                (self.topic_token_weights, 'topic_token_weights.csv'),
-                (self.topic_token_overview, 'topic_token_overview.csv'),
-                (self.document_topic_weights, 'document_topic_weights.csv'),
-            ]
 
-            for (df, name) in data:
-                archive_name = jj(target_folder, pu.replace_extension(name, ".zip"))
-                pu.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
+            self._store_csv(target_folder)
+
+            if feather:
+                self._store_feather(target_folder)
+
+    def _store_csv(self, target_folder: str) -> None:
+
+        data: list[tuple[pd.DataFrame, str]] = [
+            (self.document_index.rename_axis(''), 'documents.csv'),
+            (self.dictionary, 'dictionary.csv'),
+            (self.topic_token_weights, 'topic_token_weights.csv'),
+            (self.topic_token_overview, 'topic_token_overview.csv'),
+            (self.document_topic_weights, 'document_topic_weights.csv'),
+        ]
+
+        for (df, name) in data:
+            archive_name = jj(target_folder, pu.replace_extension(name, ".zip"))
+            pu.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
+
+    def _store_feather(self, target_folder: str) -> None:
+
+        self.dictionary.reset_index().to_feather(jj(target_folder, "dictionary.feather"))
+        self.document_index.reset_index(drop=True).to_feather(jj(target_folder, "documents.feather"))
+        self.topic_token_weights.reset_index(drop=True).to_feather(jj(target_folder, "topic_token_weights.feather"))
+        self.document_topic_weights.reset_index(drop=True).to_feather(
+            jj(target_folder, "document_topic_weights.feather")
+        )
+        self.topic_token_overview.reset_index().to_feather(jj(target_folder, "topic_token_overview.feather"))
 
     @staticmethod
-    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, pickled: bool = False):
+    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None):
         """Loads previously stored aggregate"""
         data = None
 
-        if pickled:
+        if pp.isfile(jj(folder, 'documents.feather')):
+            data: InferredTopicsData = InferredTopicsData(
+                dictionary=pd.read_feather(jj(folder, "dictionary.feather")).set_index('token_id', drop=True),
+                document_index=pd.read_feather(jj(folder, "documents.feather"))
+                .set_index('document_name', drop=False)
+                .rename_axis(''),
+                topic_token_weights=pd.read_feather(jj(folder, "topic_token_weights.feather")),
+                document_topic_weights=pd.read_feather(jj(folder, "document_topic_weights.feather")),
+                topic_token_overview=pd.read_feather(jj(folder, "topic_token_overview.feather")).set_index(
+                    'topic_id', drop=True
+                ),
+            )
+        elif pp.isfile(jj(folder, 'documents.zip')):
+            csv_opts: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
+            data: InferredTopicsData = InferredTopicsData(
+                dictionary=pd.read_csv(jj(folder, 'dictionary.zip'), **csv_opts),
+                document_index=pc.load_document_index(
+                    jj(folder, 'documents.zip'), filename_fields=filename_fields, **csv_opts
+                ),
+                topic_token_weights=pd.read_csv(jj(folder, 'topic_token_weights.zip'), **csv_opts),
+                topic_token_overview=pd.read_csv(jj(folder, 'topic_token_overview.zip'), **csv_opts),
+                document_topic_weights=pd.read_csv(jj(folder, 'document_topic_weights.zip'), **csv_opts),
+            )
 
-            filename: str = jj(folder, "inferred_topics.pickle")
+        elif pp.isfile(jj(folder, "inferred_topics.pickle")):
 
-            with open(filename, 'rb') as f:
-                data = pickle.load(f)
+            with open(jj(folder, "inferred_topics.pickle"), 'rb') as f:
+                pickled_data: types.SimpleNamespace = pickle.load(f)
 
             data: InferredTopicsData = InferredTopicsData(
-                document_index=data.document_index if hasattr(data, 'document_index') else data.document,
-                dictionary=data.dictionary,
-                topic_token_weights=data.topic_token_weights,
-                topic_token_overview=data.topic_token_overview,
-                document_topic_weights=data.document_topic_weights,
+                document_index=pickled_data.document_index
+                if hasattr(pickled_data, 'document_index')
+                else pickled_data.document,
+                dictionary=pickled_data.dictionary,
+                topic_token_weights=pickled_data.topic_token_weights,
+                topic_token_overview=pickled_data.topic_token_overview,
+                document_topic_weights=pickled_data.document_topic_weights,
             )
 
         else:
-            data: InferredTopicsData = InferredTopicsData(
-                document_index=pc.load_document_index(
-                    jj(folder, 'documents.zip'),
-                    filename_fields=filename_fields,
-                    sep='\t',
-                    header=0,
-                    index_col=0,
-                    na_filter=False,
-                ),
-                dictionary=pd.read_csv(jj(folder, 'dictionary.zip'), sep='\t', header=0, index_col=0, na_filter=False),
-                topic_token_weights=pd.read_csv(
-                    jj(folder, 'topic_token_weights.zip'), sep='\t', header=0, index_col=0, na_filter=False
-                ),
-                topic_token_overview=pd.read_csv(
-                    jj(folder, 'topic_token_overview.zip'), sep='\t', header=0, index_col=0, na_filter=False
-                ),
-                document_topic_weights=pd.read_csv(
-                    jj(folder, 'document_topic_weights.zip'), sep='\t', header=0, index_col=0, na_filter=False
-                ),
-            )
+            raise FileNotFoundError(f"no model data found in {folder}")
 
         assert "year" in data.document_index.columns
 
@@ -159,6 +197,9 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         if 'n_terms' in data.document_index.columns:
             if 'n_tokens' not in data.document_index.columns:
                 data.document_index['n_tokens'] = data.document_index['n_terms']
+
+        data.log_usage(total=False)
+        # data.make_slim()
 
         return data
 
@@ -170,3 +211,87 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         data: dict = {t: i for (t, i) in zip(dictionary.token, dictionary.index)}  # pylint: disable=no-member
         token2id: pc.Token2Id = pc.Token2Id(data=data)
         return token2id
+
+#     def memory_usage(self, total: bool = True) -> dict:
+#         return {
+#             "document_index": pu.size_of(self.document_index, unit='MB', total=total),
+#             "dictionary": pu.size_of(self.dictionary, unit='MB', total=total),
+#             "topic_token_weights": pu.size_of(self.topic_token_weights, unit='MB', total=total),
+#             "topic_token_overview": pu.size_of(self.topic_token_overview, unit='MB', total=total),
+#             "document_topic_weights": pu.size_of(self.document_topic_weights, unit='MB', total=total),
+#         }
+
+#     def log_usage(self, total: bool = False) -> None:
+#         usage: dict = self.memory_usage(total=total)
+#         for k, v in usage.items():
+#             if isinstance(v, dict):
+#                 sw: str = ', '.join([f"{c}: {w}" for c, w in v.items()])
+#                 logger.info(f"{k}: {sw}")
+#             else:
+#                 logger.info(f"{k}: {v}")
+
+#     def make_slim(self):
+
+#         self.document_index = self.document_index.set_index('document_id', drop=True)
+#         self.document_index.drop(
+#             columns=[
+#                 'Adjective'
+#                 'Adverb'
+#                 'Conjunction'
+#                 'Delimiter'
+#                 'Index'
+#                 'Noun'
+#                 'Numeral'
+#                 'Other'
+#                 'Preposition'
+#                 'Pronoun'
+#                 'Verb'
+#                 'filename'
+#                 'number'
+#                 'year2'
+#             ],
+#             inplace=True,
+#             errors='ignore',
+#         )
+
+
+# a = {
+#     'dictionary': {'Index': '1.5 MB', 'dfs': '1.5 MB', 'token': '15.0 MB'},
+#     'document_index': {
+#         'Adjective': '5.3 MB',
+#         'Adverb': '5.3 MB',
+#         'Conjunction': '5.3 MB',
+#         'Delimiter': '5.3 MB',
+#         'Index': '51.9 MB',
+#         'Noun': '5.3 MB',
+#         'Numeral': '5.3 MB',
+#         'Other': '5.3 MB',
+#         'Preposition': '5.3 MB',
+#         'Pronoun': '5.3 MB',
+#         'Verb': '5.3 MB',
+#         'document_id': '2.7 MB',
+#         'document_name': '51.9 MB',
+#         'filename': '54.6 MB',
+#         'n_raw_tokens': '5.3 MB',
+#         'n_tokens': '5.3 MB',
+#         'number': '16.0 MB',
+#         'who': '52.4 MB',
+#         'year': '1.3 MB',
+#         'year2': '16.0 MB',
+#     },
+#     'document_topic_weights': {
+#         'Index': '0.0 MB',
+#         'document_id': '141.2 MB',
+#         'topic_id': '141.2 MB',
+#         'weight': '141.2 MB',
+#         'year': '141.2 MB',
+#     },
+#     'topic_token_overview': {'Index': '0.0 MB', 'alpha': '0.0 MB', 'score': '0.0 MB', 'tokens': '0.1 MB'},
+#     'topic_token_weights': {
+#         'Index': '0.0 MB',
+#         'token': '80.7 MB',
+#         'token_id': '8.4 MB',
+#         'topic_id': '8.4 MB',
+#         'weight': '8.4 MB',
+#     },
+# }
