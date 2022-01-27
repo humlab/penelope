@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Mapping, Protocol
 
 import pandas as pd
@@ -5,33 +7,51 @@ import pandas as pd
 # pylint: disable=no-member, useless-super-delegation
 
 
-def get_topic_titles(topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100) -> pd.Series:
+def get_topic_titles(
+    topic_token_weights: pd.DataFrame, topic_id: int = None, n_tokens: int = 100, id2token: dict[int, str] = None
+) -> pd.Series:
     """Create string of `n_tokens` most probable words per topic."""
 
     weights: pd.DataFrame = (
         topic_token_weights if topic_id is None else topic_token_weights[(topic_token_weights.topic_id == topic_id)]
     )
 
-    topic_titles: pd.DataFrame = (
-        weights.sort_values('weight', ascending=False)
-        .groupby('topic_id')
-        .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
-    )
+    if 'token' not in topic_token_weights.columns:
+
+        if id2token is None:
+            raise TypeError("get_topic_titles: either ttw must contain `token` or `id2token` must be supplied")
+
+        fg = id2token.get
+        topic_titles: pd.DataFrame = (
+            weights.sort_values('weight', ascending=False)
+            .groupby('topic_id')
+            .agg(token_ids=('token_id', lambda x: ' '.join(map(fg, list(x)[:n_tokens]))))
+        )
+    else:
+        topic_titles: pd.DataFrame = (
+            weights.sort_values('weight', ascending=False)
+            .groupby('topic_id')
+            .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
+        )
 
     return topic_titles
 
 
-def get_topic_title(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 100) -> str:
+def get_topic_title(
+    topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 100, id2token: dict[int, str] = None
+) -> str:
     """Returns a string of `n_tokens` most probable words for topic `topic_id`"""
-    return get_topic_titles(topic_token_weights, topic_id, n_tokens=n_tokens).iloc[0]
+    return get_topic_titles(topic_token_weights, topic_id, n_tokens=n_tokens, id2token=id2token).iloc[0]
 
 
-def get_topic_title2(topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 200) -> str:
+def get_topic_title2(
+    topic_token_weights: pd.DataFrame, topic_id: int, n_tokens: int = 200, id2token: dict[int, str] = None
+) -> str:
     """Returns a string of `n_tokens` most probable words for topic `topic_id` or message if not tokens."""
     tokens: str = (
         "Topics has no significant presence in any documents in the entire corpus"
         if len(topic_token_weights[topic_token_weights.topic_id == topic_id]) == 0
-        else get_topic_title(topic_token_weights, topic_id, n_tokens=n_tokens)
+        else get_topic_title(topic_token_weights, topic_id, n_tokens=n_tokens, id2token=id2token)
     )
 
     return f'ID {topic_id}: {tokens}'
