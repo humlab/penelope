@@ -16,6 +16,12 @@ if TYPE_CHECKING:
 """dtw = document_topic_weights"""
 
 
+def to_document_id_index(document_index: pd.DataFrame) -> pd.DataFrame:
+    if 'document_id' in document_index.columns:
+        return document_index.set_index('document_id')
+    return document_index
+
+
 def overload(
     dtw: pd.DataFrame,
     document_index: pd.DataFrame,
@@ -24,13 +30,14 @@ def overload(
 ) -> pd.DataFrame:
     """Add column(s) from document index to document-topics weights `dtw`."""
 
-    di: pd.DataFrame = document_index
+    di: pd.DataFrame = to_document_id_index(document_index)
+
     exclude_columns: Set[str] = set(dtw.columns.tolist()) | set((ignores or '').split(','))
     include_columns: Set[str] = set(includes.split(',') if includes else di.columns)
     overload_columns: List[str] = (include_columns - exclude_columns).intersection(set(di.columns))
 
     odtw: pd.DataFrame = dtw.merge(
-        di.set_index('document_id')[overload_columns],
+        di[overload_columns],
         left_on='document_id' if 'document_id' in dtw.columns else None,
         left_index='document_id' not in dtw.columns,
         right_index=True,
@@ -57,15 +64,14 @@ def filter_by_data_keys(dtw: pd.DataFrame, **kwargs) -> pd.DataFrame:
 
 def filter_by_document_index_keys(dtw: pd.DataFrame, *, document_index: pd.DataFrame, **kwargs) -> pd.DataFrame:
     """Filter document-topic weights `dtw` by attribute values in document index."""
-    if not kwargs:
+    if len(kwargs) == 0:
         return dtw
     # document_ids: Set[int] = set(document_index[pu.create_mask(document_index, kwargs)].document_id)
     # dtw: pd.DataFrame = dtw[dtw['document_id'].isin(document_ids)]
 
-    # FIXME: not tested
-    document_ids: pd.DataFrame = pd.DataFrame(
-        data=None, index=document_index[pu.create_mask(document_index, kwargs)].document_id
-    )
+    di: pd.DataFrame = to_document_id_index(document_index)
+
+    document_ids: pd.DataFrame = pd.DataFrame(data=None, index=di[pu.create_mask(di, kwargs)].index)
     dtw = dtw.merge(document_ids, left_on='document_id', right_index=True, how='inner')
 
     return dtw
@@ -129,14 +135,15 @@ class DocumentTopicsCalculator:
     def __init__(self, inferred_data: InferredTopicsData):
         self.inferred_data: InferredTopicsData = inferred_data
         self.data: pd.DataFrame = inferred_data.document_topic_weights
+        self.document_index = self.inferred_data.document_index.set_index("document_id", drop=True)
 
     @property
     def value(self) -> pd.DataFrame:
         return self.data
 
-    @property
-    def document_index(self) -> pd.DataFrame:
-        return self.inferred_data.document_index
+    # @property
+    # def document_index(self) -> pd.DataFrame:
+    #     return self.inferred_data.document_index
 
     def copy(self) -> "DocumentTopicsCalculator":
         self.data = self.data.copy()
@@ -151,7 +158,7 @@ class DocumentTopicsCalculator:
         self.data = overload(self.data, self.document_index, includes=includes, ignores=ignores)
         return self
 
-    def threshold(self, threshold: float = 0.0) -> "DocumentTopicsCalculator":
+    def threshold(self, threshold: float = 0.01) -> "DocumentTopicsCalculator":
         self.data = filter_by_threshold(self.data, threshold=threshold)
         return self
 
