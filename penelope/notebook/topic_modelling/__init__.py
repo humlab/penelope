@@ -1,5 +1,6 @@
 # type: ignore
 
+from .find_topic_documents_gui import FindTopicDocumentsGUI
 from .find_topic_documents_gui import create_gui as find_topic_documents_gui
 from .load_topic_model_gui import create_load_topic_model_gui
 from .model_container import TopicModelContainer
