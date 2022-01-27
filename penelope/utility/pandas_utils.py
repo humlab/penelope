@@ -94,20 +94,33 @@ class CreateMaskError(Exception):
         )
 
 
+def size_of(df: pd.DataFrame, unit: Literal['bytes', 'kB', 'MB', 'GB'], total: bool = False) -> int | dict:
+    d: dict = {x: 1024 ** i for i, x in enumerate(['bytes', 'kB', 'MB', 'GB'])}
+    sizes: pd.Series = df.memory_usage(index=True, deep=True)
+    return (
+        f"{sizes.sum()/d[unit]:.1f} {unit}"
+        if total
+        else {k: f"{v/d[unit]:.1f} {unit}" for k, v in sizes.to_dict().items()}
+    )
+
+
 def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     """Creates a mask based on key-values in `criterias`
 
-    Each key-value in `criterias` specifies a filter. The filters are combined using boolean `and`.
+    Each key-value in `criterias` specifies a filter that are combined using boolean `and`.
 
     Args:
         doc (pd.DataFrame): Data frame to mask
         criterias (dict): Dict with masking criterias
 
-    Raises:
-        ValueError: [description]
+        Filter applied on `df` for key-value (k, v):
 
-    Returns:
-        np.ndarray: [description]
+            when value is (bool, fx, v)                 [bool] fx(df.k, attr_value)   fx, callable or string (i.e operator.fx)
+                                (fx, v)                 fx(df.k, attr_value)
+                                     v: list            df.k.isin(lst)
+                                     v: set             df.k.isin(set)
+                                     v                  df.k == v
+
     """
     mask = np.repeat(True, len(doc.index))
 
@@ -117,7 +130,7 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
     for attr_name, attr_value in args.items():
 
         attr_sign = True
-        attr_binary_operator: Union[str, Callable] = None
+        attr_operator: Union[str, Callable] = None
 
         if attr_value is None:
             continue
@@ -131,26 +144,28 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
                 raise CreateMaskError()
 
             if len(attr_value) == 3:
-                attr_sign, attr_binary_operator, attr_value = attr_value
+                attr_sign, attr_operator, attr_value = attr_value
             else:
-
                 if isinstance(attr_value[0], bool):
                     attr_sign, attr_value = attr_value
                 elif callable(attr_value[0]) or isinstance(attr_value[0], str):
-                    attr_binary_operator, attr_value = attr_value
-                else:
-                    raise ValueError(f"expected bool, callable or operator name, found {attr_value[0]}")
+                    attr_operator, attr_value = attr_value
+                # else assume numric range (between)
 
-            if isinstance(attr_binary_operator, str):
-                if not hasattr(operator, attr_binary_operator):
-                    raise ValueError(f"operator.{attr_binary_operator} not found")
-                attr_binary_operator = getattr(operator, attr_binary_operator)
+            if isinstance(attr_operator, str):
+
+                if not hasattr(operator, attr_operator):
+                    raise ValueError(f"operator.{attr_operator} not found")
+
+                attr_operator = getattr(operator, attr_operator)
 
         value_serie: pd.Series = doc[attr_name]
 
         attr_mask = (
-            attr_binary_operator(value_serie, attr_value)
-            if attr_binary_operator is not None
+            value_serie.between(*attr_value)
+            if isinstance(attr_value, tuple)
+            else attr_operator(value_serie, attr_value)
+            if attr_operator is not None
             else value_serie.isin(attr_value)
             if isinstance(attr_value, (list, set))
             else value_serie == attr_value
@@ -217,6 +232,14 @@ class PropertyValueMaskingOpts:
     @property
     def clone(self) -> PropertyValueMaskingOpts:
         return PropertyValueMaskingOpts(**self.props)
+
+    def update(self, other: PropertyValueMaskingOpts | dict = None, **kwargs) -> PropertyValueMaskingOpts:
+        if isinstance(other, dict):
+            self.data.update(other)
+        if kwargs:
+            self.data.update(kwargs)
+        if isinstance(other, PropertyValueMaskingOpts):
+            self.data.update(other.data)
 
 
 PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]

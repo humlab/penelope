@@ -87,6 +87,7 @@ from .pandas_utils import (
     pandas_to_csv_zip,
     rename_columns,
     setup_pandas,
+    size_of,
     try_split_column,
     ts_store,
     unstack_data,
