@@ -58,7 +58,7 @@ def touch(filename: str) -> str:
     return filename
 
 
-def probe_extension(filename: str, extensions: str = 'csv,zip,feather') -> str:
+def probe_extension(filename: str, extensions: str = 'feather,csv,zip') -> str:
     """Checks if `filename` exists, or with any of given extensions"""
     if os.path.isfile(filename):
         return filename
