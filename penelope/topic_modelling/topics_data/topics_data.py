@@ -8,10 +8,10 @@ from functools import cached_property
 from os import path as pp
 from os.path import join as jj
 from typing import List, Tuple
-from loguru import logger
-import numpy as np
 
+import numpy as np
 import pandas as pd
+from loguru import logger
 
 from penelope import corpus as pc
 from penelope import utility as pu
