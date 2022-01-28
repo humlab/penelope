@@ -39,22 +39,12 @@ def faster_to_dict_records(df: pd.DataFrame) -> List[dict]:
     return [dict(zip(columns, datum)) for datum in data]
 
 
-def setup_pandas():
-
-    pd.set_option("max_rows", None)
-    pd.set_option("max_columns", None)
-    pd.set_option('colheader_justify', 'left')
-    pd.set_option('max_colwidth', 300)
-
-
 def set_default_options():
-
-    set_options(max_rows=None, max_columns=None, colheader_justify='left', max_colwidth=300)
-
-
-def set_options(**kwargs):
-    for k, v in kwargs.items():
-        pd.set_option(k, v)
+    pd.options.display.colheader_justify = 'left'
+    pd.options.display.width = 1000
+    pd.options.display.max_colwidth = 300
+    pd.options.display.max_rows = None
+    pd.options.display.max_columns = None
 
 
 def _create_mask(df: pd.DataFrame, name: str, value: Any, sign: bool = True) -> np.ndarray:
