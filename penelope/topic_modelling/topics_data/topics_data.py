@@ -9,6 +9,7 @@ from os import path as pp
 from os.path import join as jj
 from typing import List, Tuple
 from loguru import logger
+import numpy as np
 
 import pandas as pd
 
@@ -17,6 +18,8 @@ from penelope import utility as pu
 
 from . import token as tt
 from .document import DocumentTopicsCalculator
+
+CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
 
 def smart_read(filename: str, **kwargs) -> pd.DataFrame:
@@ -90,6 +93,10 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         # return {v: k for k, v in self.id2term.items()}
         return {t: i for i, t in zip(self.dictionary.index, self.dictionary.token)}
 
+    @property
+    def id2token(self) -> dict:
+        return self.id2term
+
     @cached_property
     def token2id(self) -> pc.Token2Id:
         return pc.Token2Id(data=self.term2id)
@@ -145,9 +152,9 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         self.topic_token_overview.reset_index().to_feather(jj(target_folder, "topic_token_overview.feather"))
 
     @staticmethod
-    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None):
+    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False):
         """Loads previously stored aggregate"""
-        data = None
+        data: InferredTopicsData = None
 
         if pp.isfile(jj(folder, 'documents.feather')):
             data: InferredTopicsData = InferredTopicsData(
@@ -198,8 +205,14 @@ class InferredTopicsData(tt.TopicTokensMixIn):
             if 'n_tokens' not in data.document_index.columns:
                 data.document_index['n_tokens'] = data.document_index['n_terms']
 
-        data.log_usage(total=False)
-        # data.make_slim()
+        # data.log_usage(total=True)
+        data.slim_types()
+        # data.log_usage(total=True)
+
+        if slim:
+            data.slimmer()
+
+        data.log_usage(total=True)
 
         return data
 
@@ -212,47 +225,75 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         token2id: pc.Token2Id = pc.Token2Id(data=data)
         return token2id
 
-#     def memory_usage(self, total: bool = True) -> dict:
-#         return {
-#             "document_index": pu.size_of(self.document_index, unit='MB', total=total),
-#             "dictionary": pu.size_of(self.dictionary, unit='MB', total=total),
-#             "topic_token_weights": pu.size_of(self.topic_token_weights, unit='MB', total=total),
-#             "topic_token_overview": pu.size_of(self.topic_token_overview, unit='MB', total=total),
-#             "document_topic_weights": pu.size_of(self.document_topic_weights, unit='MB', total=total),
-#         }
+    def slim_types(self) -> InferredTopicsData:
 
-#     def log_usage(self, total: bool = False) -> None:
-#         usage: dict = self.memory_usage(total=total)
-#         for k, v in usage.items():
-#             if isinstance(v, dict):
-#                 sw: str = ', '.join([f"{c}: {w}" for c, w in v.items()])
-#                 logger.info(f"{k}: {sw}")
-#             else:
-#                 logger.info(f"{k}: {v}")
+        """document_index"""
+        self.document_index['year'] = self.document_index['year'].astype(np.int16)
+        self.document_index['n_tokens'] = self.document_index['n_tokens'].astype(np.int32)
+        self.document_index['n_raw_tokens'] = self.document_index['n_raw_tokens'].astype(np.int32)
+        self.document_index['document_id'] = self.document_index['document_id'].astype(np.int32)
+        for column in set(pu.PD_PoS_tag_groups.index.to_list()).intersection(self.document_index.columns):
+            self.document_index[column] = self.document_index[column].astype(np.int32)
 
-#     def make_slim(self):
+        """dictionary"""
 
-#         self.document_index = self.document_index.set_index('document_id', drop=True)
-#         self.document_index.drop(
-#             columns=[
-#                 'Adjective'
-#                 'Adverb'
-#                 'Conjunction'
-#                 'Delimiter'
-#                 'Index'
-#                 'Noun'
-#                 'Numeral'
-#                 'Other'
-#                 'Preposition'
-#                 'Pronoun'
-#                 'Verb'
-#                 'filename'
-#                 'number'
-#                 'year2'
-#             ],
-#             inplace=True,
-#             errors='ignore',
-#         )
+        """topic_token_weights"""
+        self.topic_token_weights['topic_id'] = self.topic_token_weights['topic_id'].astype(np.int16)
+        self.topic_token_weights['token_id'] = self.topic_token_weights['token_id'].astype(np.int32)
+        self.topic_token_weights['weight'] = self.topic_token_weights['weight'].astype(np.float32)
+
+        """document_topic_weights"""
+        self.document_topic_weights['document_id'] = self.document_topic_weights['document_id'].astype(np.int32)
+        self.document_topic_weights['topic_id'] = self.document_topic_weights['topic_id'].astype(np.int16)
+        self.document_topic_weights['weight'] = self.document_topic_weights['weight'].astype(np.float32)
+        self.document_topic_weights['year'] = self.document_topic_weights['year'].astype(np.int16)
+
+        return self
+
+    def slimmer(self) -> InferredTopicsData:
+
+        """document_index"""
+        remove_columns = set(pu.PD_PoS_tag_groups.index.to_list()) | {'filename', 'year2', 'number'}
+        self.document_index.drop(columns=list(remove_columns.intersection(self.document_index.columns)), inplace=True)
+        self.document_index.set_index('document_id', drop=True, inplace=True)
+
+        """dictionary"""
+        self.dictionary.drop(columns='dfs', inplace=True)
+
+        """topic_token_weights"""
+        if 'token_id' not in self.topic_token_weights.columns:
+            self.topic_token_weights = self.topic_token_weights.head().reset_index().set_index('topic_id')
+
+        if 'token' in self.topic_token_weights:
+            self.topic_token_weights.drop(columns='token', inplace=True)
+
+        # FIXME #149 Varför är weights `topic_token_weights` så stora tal???
+
+        """document_topic_weights"""
+
+        return self
+
+    def memory_usage(self, total: bool = True) -> dict:
+        return {
+            "document_index": pu.size_of(self.document_index, unit='MB', total=total),
+            "dictionary": pu.size_of(self.dictionary, unit='MB', total=total),
+            "topic_token_weights": pu.size_of(self.topic_token_weights, unit='MB', total=total),
+            "topic_token_overview": pu.size_of(self.topic_token_overview, unit='MB', total=total),
+            "document_topic_weights": pu.size_of(self.document_topic_weights, unit='MB', total=total),
+        }
+
+    def log_usage(self, total: bool = False, verbose: bool = True) -> None:
+        usage: dict = self.memory_usage(total=total)
+        if not verbose and total:
+            sw: str = ', '.join([f"{k}: {v}" for k, v in usage.items()])
+            logger.info(f"{sw}")
+        else:
+            for k, v in usage.items():
+                if isinstance(v, dict):
+                    sw: str = ', '.join([f"{c}: {w}" for c, w in v.items()])
+                    logger.info(f"{k}: {sw}")
+                else:
+                    logger.info(f"{k}: {v}")
 
 
 # a = {
