@@ -24,7 +24,6 @@ from .token import (
     get_topic_title,
     get_topic_title2,
     get_topic_titles,
-    get_topic_top_tokens,
     top_topic_token_weights,
 )
 from .topics_data import InferredTopicsData

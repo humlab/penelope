@@ -22,7 +22,6 @@ from .topics_data import (
     get_topic_title,
     get_topic_title2,
     get_topic_titles,
-    get_topic_top_tokens,
     prevelance,
     top_topic_token_weights,
 )
