@@ -21,6 +21,7 @@ def load_model(
     state: TopicModelContainer,
     model_name: str,
     model_infos: List[Dict[str, Any]] = None,
+    slim: bool = False,
 ):
 
     model_infos = model_infos or find_models(corpus_folder)
@@ -28,8 +29,7 @@ def load_model(
     filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
     trained_model: InferredModel = InferredModel.load(model_info["folder"], lazy=True)
     inferred_topics: InferredTopicsData = InferredTopicsData.load(
-        folder=jj(corpus_folder, model_info["name"]),
-        filename_fields=filename_fields,
+        folder=jj(corpus_folder, model_info["name"]), filename_fields=filename_fields, slim=slim
     )
 
     state.update(trained_model=trained_model, inferred_topics=inferred_topics, train_corpus_folder=model_info["folder"])
@@ -84,14 +84,14 @@ class LoadGUI:
 
 
 def create_load_topic_model_gui(
-    corpus_config: Optional[pipeline.CorpusConfig], corpus_folder: str, state: TopicModelContainer
+    corpus_config: Optional[pipeline.CorpusConfig], corpus_folder: str, state: TopicModelContainer, slim: bool = False
 ) -> LoadGUI:
 
     model_infos: List[dict] = find_models(corpus_folder)
     model_names: List[str] = list(x["name"] for x in model_infos)
 
     def load_callback(model_name: str):
-        load_model(corpus_config, corpus_folder, state, model_name, model_infos)
+        load_model(corpus_config, corpus_folder, state, model_name, model_infos, slim=slim)
 
     gui = LoadGUI().setup(model_names, load_callback=load_callback)
 
