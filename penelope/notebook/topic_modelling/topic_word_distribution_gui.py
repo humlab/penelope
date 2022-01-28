@@ -60,7 +60,7 @@ def display_topic_tokens(top_tokens: pd.DataFrame, n_words: int = 100, output_fo
         print("No data! Please change selection.")
         return
 
-    tokens: pd.DataFrame = (
+    top_tokens: pd.DataFrame = (
         top_tokens.copy()
         .drop('topic_id', axis=1)
         .assign(weight=lambda x: 100.0 * x.weight)
@@ -127,7 +127,6 @@ class TopicWordDistributionGUI(TopicsStateGui):
             )
             display_topic_tokens(
                 top_tokens=top_tokens,
-                topic_id=self.topic_id.value,
                 n_words=self.n_words.value,
                 output_format=self.output_format.value,
             )

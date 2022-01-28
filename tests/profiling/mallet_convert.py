@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pandas as pd
-
 from penelope.topic_modelling.engines.engine_gensim.wrappers.convert import (
     convert_dictionary,
     convert_document_index,

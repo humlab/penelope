@@ -10,10 +10,10 @@ def monkey_patch(*_, **__):
 
 def test_create_gui(state: TopicModelContainer):
     calculator: mock.MagicMock = mock.MagicMock(spec=tm.prevelance.TopicPrevalenceOverTimeCalculator)
-    gui: topic_trends_gui.TopicTrendsGUI = topic_trends_gui.TopicTrendsGUI(calculator=calculator)
+    gui: topic_trends_gui.TopicTrendsGUI = topic_trends_gui.TopicTrendsGUI(state=state, calculator=calculator)
     assert gui is not None
 
-    gui = gui.setup(state)
+    gui = gui.setup()
     assert gui is not None
 
     layout = gui.layout()

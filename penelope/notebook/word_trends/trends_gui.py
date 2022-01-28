@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Callable, List, Sequence
+from typing import List, Sequence
 
 import ipywidgets as w
 import pandas as pd

@@ -4,10 +4,10 @@ from penelope.topic_modelling.topics_data.prevelance import AverageTopicPrevalen
 
 
 def test_create_gui(state: TopicModelContainer):
-    gui: TopicOverviewGUI = TopicOverviewGUI(calculator=AverageTopicPrevalenceOverTimeCalculator())
+    gui: TopicOverviewGUI = TopicOverviewGUI(state=state, calculator=AverageTopicPrevalenceOverTimeCalculator())
     assert gui is not None
 
-    gui = gui.setup(state)
+    gui = gui.setup()
     assert gui is not None
 
     layout = gui.layout()

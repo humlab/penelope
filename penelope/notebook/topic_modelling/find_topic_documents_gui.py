@@ -14,7 +14,7 @@ from .model_container import TopicModelContainer
 
 class FindTopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer | dict):
-        super().__init__(state)
+        super().__init__(state=state)
 
         timespan: tuple[int, int] = self.inferred_topics.year_period
 

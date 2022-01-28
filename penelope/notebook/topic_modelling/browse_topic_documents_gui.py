@@ -5,7 +5,6 @@ import uuid
 import ipywidgets as w
 from IPython.display import display
 
-from penelope import topic_modelling as tm
 from penelope import utility as pu
 
 from . import mixins as mx
@@ -93,10 +92,10 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsSta
 
     @property
     def n_top(self) -> int:
-        return self._n_top.value
+        return self._max_n_top.value
 
 
 def display_gui(state: TopicModelContainer):
-    gui: BrowseTopicDocumentsGUI = BrowseTopicDocumentsGUI().setup(state=state)
+    gui: BrowseTopicDocumentsGUI = BrowseTopicDocumentsGUI(state=state).setup()
     display(gui.layout())
     gui.update_handler()

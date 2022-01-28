@@ -1,7 +1,7 @@
 from typing import Union
 
 import ipywidgets as widgets
-from IPython.core.display import display
+from IPython.display import display
 
 import penelope.pipeline as pipeline
 from penelope.corpus import VectorizedCorpus
