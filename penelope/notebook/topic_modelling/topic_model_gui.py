@@ -9,6 +9,7 @@ import ipywidgets as widgets  # type: ignore
 import pandas as pd
 from IPython.display import display
 from loguru import logger
+from penelope.notebook.topic_modelling.mixins import TopicsStateGui
 
 import penelope.topic_modelling as tm
 import penelope.vendor.gensim as gensim_utility
@@ -75,11 +76,11 @@ def get_topics_unstacked(
     )
 
 
-class ComputeTopicModelUserInterface:
+class ComputeTopicModelUserInterface(TopicsStateGui):
     def __init__(self, data_folder: str, state: TopicModelContainer, document_index: Optional[pd.DataFrame], **opts):
+        super().__init__(state=state)
         self.terms = []
         self.data_folder = data_folder
-        self.state = state
         self.document_index = document_index
         self.opts = opts
         self.model_widgets, self.widget_boxes = self.prepare_widgets()
@@ -222,8 +223,8 @@ class ComputeTopicModelUserInterface:
                     topics: pd.DataFrame = get_topics_unstacked(
                         self.state.topic_model,
                         n_tokens=100,
-                        id2term=self.state.inferred_topics.id2term,
-                        topic_ids=self.state.inferred_topics.topic_ids,
+                        id2term=self.inferred_topics.id2term,
+                        topic_ids=self.inferred_topics.topic_ids,
                     )
 
                     display(topics)

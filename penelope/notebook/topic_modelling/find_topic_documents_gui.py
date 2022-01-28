@@ -8,29 +8,33 @@ from penelope import topic_modelling as tm
 from penelope import utility as pu
 from penelope.notebook.widgets_utils import register_observer
 
+from . import mixins as mx
 from .model_container import TopicModelContainer
 
 
-class FindTopicDocumentsGUI:
+class FindTopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer | dict):
+        super().__init__(state)
 
-        timespan: tuple[int, int] = state['inferred_topics'].year_period
-
-        self.state: TopicModelContainer | dict = state
+        timespan: tuple[int, int] = self.inferred_topics.year_period
 
         self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
         self._top_token_slider: w.IntSlider = w.IntSlider(min=3, max=200, value=3, disabled=False)
-        self._max_count_slider: w.IntSlider = w.IntSlider(min=1, max=50000, value=500, disabled=False)
+        self._max_n_top: w.IntSlider = w.IntSlider(min=1, max=50000, value=500, disabled=False)
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(min=timespan[0], max=timespan[1], value=timespan)
         self._find_text: w.Text = w.Text(description="", layout={'width': '160px'})
         self._output: w.Output = w.Output()
         self._toplist_label: w.HTML = w.HTML("Tokens toplist threshold for token")
         self._extra_placeholder: w.Box = None
         self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
-        self._alert: w.HTML = w.HTML()
         self._auto_compute: w.ToggleButton = w.ToggleButton(
             description="auto", icon='check', value=True, layout={'width': '140px'}
         )
+
+    def setup(self) -> "FindTopicDocumentsGUI":
+        self._compute.on_click(self.update_handler)
+        register_observer(self.auto_compute, handler=self._auto_compute_handler, value=True)
+        return self
 
     def layout(self) -> w.VBox:
         return w.VBox(
@@ -44,7 +48,7 @@ class FindTopicDocumentsGUI:
                                 self._toplist_label,
                                 self._top_token_slider,
                                 w.HTML("<b>Max result count</b>"),
-                                self._max_count_slider,
+                                self._max_n_top,
                             ]
                         ),
                         w.VBox(
@@ -74,11 +78,6 @@ class FindTopicDocumentsGUI:
 
     def _find_text_handler(self, *_):
         self._top_token_slider.disabled = len(self._find_text.value) < 2
-
-    def setup(self) -> "FindTopicDocumentsGUI":
-        self._compute.on_click(self.update_handler)
-        register_observer(self.auto_compute, handler=self._auto_compute_handler, value=True)
-        return self
 
     def observe(self, value: bool) -> "FindTopicDocumentsGUI":
         value = value and self.auto_compute  # Never override autocompute
@@ -113,27 +112,20 @@ class FindTopicDocumentsGUI:
         return self._top_token_slider.value
 
     @property
-    def n_max_count(self) -> int:
-        return self._max_count_slider.value
+    def max_n_top(self) -> int:
+        return self._max_n_top.value
 
     @property
-    def filter_opts(self) -> dict:
+    def filter_opts(self) -> pu.PropertyValueMaskingOpts:
         return pu.PropertyValueMaskingOpts(year=self.years)
 
     @property
     def auto_compute(self) -> bool:
         return self._auto_compute.value
 
-    def alert(self, msg: str):
-        self._alert.value = msg
-
-    def warn(self, msg: str):
-        self.alert(f"<span style='color=red'>{msg}</span>")
-
     @property
     def dtw_calculator(self) -> tm.DocumentTopicsCalculator:
-        inferred_topics: tm.InferredTopicsData = self.state["inferred_topics"]
-        return inferred_topics.calculator
+        return self.inferred_topics.calculator
 
     def update(self) -> pd.DataFrame:
         if len(self.text) < 3:
@@ -143,7 +135,7 @@ class FindTopicDocumentsGUI:
             .filter_by_text(search_text=self.text, n_top=self.n_top_token)
             .filter_by_document_keys(**self.filter_opts.data)
             .threshold(self.threshold)
-            .filter_by_n_top(self.n_max_count)
+            .filter_by_n_top(self.max_n_top)
             .value
         )
 

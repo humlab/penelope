@@ -15,6 +15,7 @@ from ipywidgets import (  # type: ignore
 from .. import widgets_utils
 from .model_container import TopicModelContainer
 from .topic_topic_network_gui_utility import display_topic_topic_network
+from . import mixins as mx
 
 # bokeh.plotting.output_notebook()
 TEXT_ID = 'nx_topic_topic'
@@ -24,15 +25,15 @@ OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV'
 # pylint: disable=too-many-instance-attributes
 
 
-class TopicTopicGUI:
+class TopicTopicGUI(mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer):
 
-        self.state: TopicModelContainer = state
+        super().__init__(state=state)
 
-        n_topics: int = self.state.num_topics
+        n_topics: int = self.inferred_n_topics
 
         ignore_options = [('', None)] + [('Topic #' + str(i), i) for i in range(0, n_topics)]
-        year_min, year_max = state.inferred_topics.year_period
+        year_min, year_max = self.inferred_topics.year_period
 
         self.n_topics = n_topics
         self.text = widgets_utils.text_widget(TEXT_ID)
@@ -69,8 +70,8 @@ class TopicTopicGUI:
         )
         self.output: Output = Output()
 
-        self.topic_proportions = self.state.inferred_topics.calculator.topic_proportions()
-        self.titles = self.state.inferred_topics.get_topic_titles()
+        self.topic_proportions = self.inferred_topics.calculator.topic_proportions()
+        self.titles = self.inferred_topics.get_topic_titles()
 
     def layout(self) -> VBox:
         extra_widgets: VBox = self.extra_widgets()
@@ -148,7 +149,7 @@ class TopicTopicGUI:
         with self.output:
 
             display_topic_topic_network(
-                inferred_topics=self.state.inferred_topics,
+                inferred_topics=self.inferred_topics,
                 filters=self.get_data_filter(),
                 period=self.period.value,
                 ignores=self.ignores.value,

@@ -8,7 +8,8 @@ import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, HBox, IntSlider, Output, VBox  # type: ignore
 
-from penelope import topic_modelling, utility
+from penelope import utility
+from penelope.notebook.topic_modelling.mixins import TopicsStateGui
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -83,14 +84,16 @@ TEXT_ID: str = 'wc01'
 OUTPUT_OPTIONS = ['Chart', 'XLSX', 'CSV', 'Clipboard', 'Table']
 
 
-class TopicWordDistributionGUI:
+class TopicWordDistributionGUI(TopicsStateGui):
     def __init__(self, state: TopicModelContainer):
 
-        self.state: TopicModelContainer = state
-        self.n_topics: int = state.num_topics
+        super().__init__(state=state)
+
+        self.n_topics: int = self.inferred_n_topics
+
         self.text_id: str = TEXT_ID
         self.text: HTML = widgets_utils.text_widget(TEXT_ID)
-        self.topic_id: IntSlider = IntSlider(description='Topic ID', min=0, max=state.num_topics - 1, step=1, value=0)
+        self.topic_id: IntSlider = IntSlider(description='Topic ID', min=0, max=self.n_topics - 1, step=1, value=0)
         self.n_words: IntSlider = IntSlider(description='#Words', min=5, max=500, step=1, value=75)
         self.output_format: Dropdown = Dropdown(
             description='Format', options=OUTPUT_OPTIONS, value=OUTPUT_OPTIONS[0], layout=dict(width="200px")
@@ -101,8 +104,8 @@ class TopicWordDistributionGUI:
 
     def setup(self) -> "TopicWordDistributionGUI":
 
-        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.state.num_topics)
-        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.state.num_topics)
+        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.n_topics)
+        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.n_topics)
 
         self.topic_id.observe(self.update_handler, 'value')
         self.n_words.observe(self.update_handler, 'value')
@@ -112,14 +115,14 @@ class TopicWordDistributionGUI:
 
     def update_handler(self, *_):
 
-        if self.n_topics != self.state.num_topics:
-            self.n_topics = self.state.num_topics
+        if self.n_topics != self.inferred_n_topics:
+            self.n_topics = self.inferred_n_topics
             self.topic_id.value = 0
-            self.topic_id.max = self.state.num_topics - 1
+            self.topic_id.max = self.inferred_n_topics - 1
 
         self.buzy(True)
         with contextlib.suppress(Exception):
-            top_tokens: pd.DataFrame = self.state.inferred_topics.get_topic_top_tokens(
+            top_tokens: pd.DataFrame = self.inferred_topics.get_topic_top_tokens(
                 topic_id=self.topic_id.value, n_tokens=self.n_words.value
             )
             display_topic_tokens(

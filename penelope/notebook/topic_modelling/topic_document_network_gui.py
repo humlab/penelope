@@ -1,4 +1,5 @@
-# Visualize year-to-topic network by means of topic-document-weights
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import Sequence, Tuple
@@ -14,7 +15,8 @@ import penelope.network.plot_utility as network_plot
 from penelope import utility as pu
 from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility
-from penelope.topic_modelling import InferredTopicsData
+from penelope.notebook import topic_modelling as ntm
+from penelope import topic_modelling as tm
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -28,7 +30,7 @@ class PlotMode(IntEnum):
     FocusTopics = 2
 
 
-def display_document_topic_network(opts: "GUI.GUI_opts"):
+def display_document_topic_network(opts: "TopicDocumentNetworkGui.GUI_opts"):
 
     df_network: pd.DataFrame = compile_network_data(opts)
 
@@ -65,7 +67,7 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
         display(g)
 
 
-def compile_network_data(opts: "GUI.GUI_opts") -> pd.DataFrame:
+def compile_network_data(opts: "TopicDocumentNetworkGui.GUI_opts") -> pd.DataFrame:
 
     document_topic_weights = opts.inferred_topics.document_topic_weights
 
@@ -96,36 +98,19 @@ def compile_network_data(opts: "GUI.GUI_opts") -> pd.DataFrame:
     return df
 
 
-class GUI:
-    def __init__(self, plot_mode: PlotMode, inferred_topics: InferredTopicsData = None):
+class TopicDocumentNetworkGui(ntm.TopicsStateGui):
+    def __init__(self, state: ntm.TopicModelContainer, plot_mode: PlotMode):
+        super().__init__(state=state)
 
         self.plot_mode: PlotMode = plot_mode
-        self.inferred_topics: InferredTopicsData = inferred_topics
 
         self.text: widgets.HTML = None
         self.period = widgets.IntRangeSlider(
-            description="",
-            min=1900,
-            max=2030,
-            step=1,
-            value=(1900, 1900 + 5),
-            continues_update=False,
+            description="", min=1900, max=2030, step=1, value=(1900, 1900 + 5), continues_update=False
         )
-        self.scale = widgets.FloatSlider(
-            description="",
-            min=0.0,
-            max=1.0,
-            step=0.01,
-            value=0.1,
-            continues_update=False,
-        )
+        self.scale = widgets.FloatSlider(description="", min=0.0, max=1.0, step=0.01, value=0.1, continues_update=False)
         self.threshold = widgets.FloatSlider(
-            description="",
-            min=0.0,
-            max=1.0,
-            step=0.01,
-            value=0.10,
-            continues_update=False,
+            description="", min=0.0, max=1.0, step=0.01, value=0.10, continues_update=False
         )
         self.output_format = widgets.Dropdown(
             description="",
@@ -140,19 +125,18 @@ class GUI:
         )
         self.output = widgets.Output()
 
-    def setup(self, inferred_topics: InferredTopicsData, default_threshold: float = None) -> "GUI":
+    def setup(self, default_threshold: float = None) -> "TopicDocumentNetworkGui":
 
-        self.inferred_topics = inferred_topics
         self.threshold.value = default_threshold or (0.5 if self.plot_mode == PlotMode.Default else 0.1)
         self.topic_ids.options = ([("", None)] if self.plot_mode == PlotMode.Default else []) + [
-            ("Topic #" + str(i), i) for i in range(0, inferred_topics.num_topics)
+            ("Topic #" + str(i), i) for i in range(0, self.inferred_topics.num_topics)
         ]
         self.topic_ids.value = []
 
         self.layout_algorithm.options = NETWORK_LAYOUT_ALGORITHMS
         self.layout_algorithm.value = self.layout_algorithm.options[-1]
 
-        self.period.min, self.period.max = inferred_topics.year_period
+        self.period.min, self.period.max =self.inferred_topics.year_period
         self.period.value = (self.period.min, self.period.min + 5)
 
         self.text = widgets_utils.text_widget(f"ID_{self.plot_mode.name}")
@@ -207,7 +191,7 @@ class GUI:
     @dataclass
     class GUI_opts:
         plot_mode: PlotMode
-        inferred_topics: InferredTopicsData
+        inferred_topics: tm.InferredTopicsData
         layout_algorithm: str
         threshold: float
         period: Tuple[int, int]
@@ -217,7 +201,7 @@ class GUI:
 
     @property
     def opts(self) -> GUI_opts:
-        return GUI.GUI_opts(
+        return TopicDocumentNetworkGui.GUI_opts(
             plot_mode=self.plot_mode,
             inferred_topics=self.inferred_topics,
             layout_algorithm=self.layout_algorithm.value,
@@ -229,8 +213,8 @@ class GUI:
         )
 
 
-def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer):
+def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer|dict):
 
-    gui: GUI = GUI(plot_mode=plot_mode).setup(inferred_topics=state.inferred_topics)
+    gui: TopicDocumentNetworkGui = TopicDocumentNetworkGui(state=state, plot_mode=plot_mode).setup()
     display(gui.layout())
     # gui.update_handler()

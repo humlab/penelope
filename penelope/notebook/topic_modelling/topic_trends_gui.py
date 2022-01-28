@@ -9,15 +9,14 @@ import penelope.topic_modelling as tm
 from .. import widgets_utils
 from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
+from . import mixins as mx
 
 TEXT_ID = 'topic_share_plot'
 
 
-class TopicTrendsGUI:
-    def __init__(self, calculator: tm.TopicPrevalenceOverTimeCalculator = None):
-        super().__init__()
-
-        self.state: TopicModelContainer = None
+class TopicTrendsGUI(mx.TopicsStateGui):
+    def __init__(self, state: TopicModelContainer, calculator: tm.TopicPrevalenceOverTimeCalculator = None):
+        super().__init__(state=state)
 
         self.text = widgets_utils.text_widget(TEXT_ID)
         self.n_topics: Optional[int] = None
@@ -69,12 +68,11 @@ class TopicTrendsGUI:
             ]
         )
 
-    def setup(self, state: TopicModelContainer) -> "TopicTrendsGUI":
+    def setup(self) -> "TopicTrendsGUI":
 
-        self.state = state
-        self.topic_id.max = state.num_topics - 1
-        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', state.num_topics)
-        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', state.num_topics)
+        self.topic_id.max = self.n_topics - 1
+        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.n_topics)
+        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.n_topics)
         self.topic_id.observe(self.update_handler, names='value')
         self.normalize.observe(self.update_handler, names='value')
         self.aggregate.observe(self.update_handler, names='value')
@@ -84,18 +82,18 @@ class TopicTrendsGUI:
 
     def on_topic_change_update_gui(self, topic_id: int):
 
-        if self.n_topics != self.state.num_topics:
-            self.n_topics = self.state.num_topics
+        if self.n_topics != self.inferred_n_topics:
+            self.n_topics = self.inferred_n_topics
             self.topic_id.value = 0
-            self.topic_id.max = self.state.num_topics - 1
+            self.topic_id.max = self.inferred_n_topics - 1
 
-        tokens = self.state.inferred_topics.get_topic_title(topic_id, n_tokens=200)
+        tokens = self.inferred_topics.get_topic_title(topic_id, n_tokens=200)
 
         self.text.value = 'ID {}: {}'.format(topic_id, tokens)
 
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(
-            inferred_topics=self.state.inferred_topics,
+            inferred_topics=self.inferred_topics,
             filters=self.get_filters(),
             threshold=self.get_threshold(),
             result_threshold=self.get_result_threshold(),
@@ -123,7 +121,7 @@ class TopicTrendsGUI:
             gui_utils.display_topic_trends(
                 weight_over_time=weights,
                 topic_id=self.topic_id.value,
-                year_range=self.state.inferred_topics.year_period,
+                year_range=self.inferred_topics.year_period,
                 aggregate=self.aggregate.value,
                 normalize=self.normalize.value,
                 output_format=self.output_format.value,
@@ -132,7 +130,7 @@ class TopicTrendsGUI:
 
 def display_gui(state: TopicModelContainer):
 
-    gui = TopicTrendsGUI(calculator=None).setup(state)
+    gui = TopicTrendsGUI(state=state, calculator=None).setup()
 
     display(gui.layout())
 

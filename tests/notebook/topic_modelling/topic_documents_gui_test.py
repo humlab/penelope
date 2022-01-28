@@ -1,10 +1,9 @@
-from penelope.notebook.topic_modelling import TopicModelContainer
-from penelope.notebook.topic_modelling.topic_documents_gui import TopicDocumentsGUI
+from penelope.notebook import topic_modelling as tm
 
 
-def test_create_gui(state: TopicModelContainer):
+def test_create_gui(state: tm.TopicModelContainer):
 
-    gui: TopicDocumentsGUI = TopicDocumentsGUI().setup(state=state)
+    gui: tm.BrowseTopicDocumentsGUI = tm.BrowseTopicDocumentsGUI(state=state).setup()
 
     layout = gui.layout()
     assert layout is not None

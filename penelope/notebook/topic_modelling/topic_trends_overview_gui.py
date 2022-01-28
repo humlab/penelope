@@ -5,18 +5,20 @@ from ipywidgets import HTML, Dropdown, HBox, Output, ToggleButton, VBox  # type:
 from penelope import topic_modelling as tm
 
 from .. import widgets_utils
+from . import mixins as mx
 from .model_container import TopicModelContainer
 from .topic_trends_overview_gui_utility import display_heatmap
 
 TEXT_ID = 'topic_relevance'
 
 
-class TopicOverviewGUI:
-    def __init__(self, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
+class TopicOverviewGUI(mx.TopicsStateGui):
+    def __init__(self,state: TopicModelContainer, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
+        super().__init__(state=state)
+
         self.calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = calculator
         weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
 
-        self.state: TopicModelContainer = None
         self.text_id: str = TEXT_ID
         self.text: HTML = widgets_utils.text_widget(TEXT_ID)
         self.flip_axis: ToggleButton = ToggleButton(value=False, description='Flip', icon='', layout=dict(width="80px"))
@@ -29,12 +31,11 @@ class TopicOverviewGUI:
         self.output: Output = Output()
         self.titles: pd.DataFrame = None
 
-    def setup(self, state: TopicModelContainer) -> "TopicOverviewGUI":
-        self.state = state
+    def setup(self, ) -> "TopicOverviewGUI":
         self.aggregate.observe(self.update_handler, names='value')
         self.output_format.observe(self.update_handler, names='value')
         self.flip_axis.observe(self.update_handler, names='value')
-        self.titles: pd.DataFrame = tm.get_topic_titles(self.state.inferred_topics.topic_token_weights, n_tokens=100)
+        self.titles: pd.DataFrame = tm.get_topic_titles(self.inferred_topics.topic_token_weights, n_tokens=100)
         return self
 
     def update_handler(self, *_):
@@ -63,7 +64,7 @@ class TopicOverviewGUI:
 
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(
-            inferred_topics=self.state.inferred_topics,
+            inferred_topics=self.inferred_topics,
             filters=self.get_filters(),
             threshold=self.get_threshold(),
             result_threshold=self.get_result_threshold(),
@@ -83,6 +84,6 @@ def display_gui(state: TopicModelContainer):
     calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = tm.MemoizedTopicPrevalenceOverTimeCalculator(
         calculator=tm.AverageTopicPrevalenceOverTimeCalculator()
     )
-    gui: TopicOverviewGUI = TopicOverviewGUI(calculator=calculator).setup(state)
+    gui: TopicOverviewGUI = TopicOverviewGUI(state=state, calculator=calculator).setup()
     display(gui.layout())
     gui.update_handler()

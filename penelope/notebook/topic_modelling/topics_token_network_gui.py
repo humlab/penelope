@@ -265,7 +265,7 @@ class ViewModel:
 
         self.filename_fields: FilenameFieldSpecs = filename_fields
 
-        self._topics_data: topic_modelling.InferredTopicsData = None
+        self.inferred_topics: topic_modelling.InferredTopicsData = None
         self._top_topic_tokens: pd.DataFrame = None
 
     @property
@@ -275,12 +275,12 @@ class ViewModel:
     def update(self, data: topic_modelling.InferredTopicsData = None) -> "ViewModel":
 
         if data is not None:
-            self._topics_data = data
+            self.inferred_topics = data
 
-        if self._topics_data is None:
+        if self.inferred_topics is None:
             return self
 
-        self._top_topic_tokens = self._topics_data.top_topic_token_weights(MAX_TOPIC_TOKEN_COUNT)
+        self._top_topic_tokens = self.inferred_topics.top_topic_token_weights(MAX_TOPIC_TOKEN_COUNT)
 
         return self
 
@@ -295,9 +295,9 @@ class ViewModel:
 
     @property
     def num_topics(self):
-        if not self._topics_data:
+        if not self.inferred_topics:
             return 0
-        return self._topics_data.num_topics
+        return self.inferred_topics.num_topics
 
 
 @view.capture(clear_output=False)

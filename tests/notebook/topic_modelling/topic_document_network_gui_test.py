@@ -17,21 +17,21 @@ def test_create_gui(state: TopicModelContainer):
 
     plot_mode = tdn_gui.PlotMode.Default
 
-    gui: tdn_gui.GUI = tdn_gui.GUI(plot_mode=plot_mode).setup(inferred_topics=state.inferred_topics)
-    assert isinstance(gui, tdn_gui.GUI)
+    gui: tdn_gui.TopicDocumentNetworkGui = tdn_gui.TopicDocumentNetworkGui(state=state, plot_mode=plot_mode).setup()
+    assert isinstance(gui, tdn_gui.TopicDocumentNetworkGui)
 
     layout = gui.layout()
     assert isinstance(layout, widgets.VBox)
 
     opts = gui.opts
-    assert isinstance(opts, tdn_gui.GUI.GUI_opts)
+    assert isinstance(opts, tdn_gui.TopicDocumentNetworkGui.GUI_opts)
 
 
 def test_compile_data(state: TopicModelContainer):
 
-    opts: tdn_gui.GUI.GUI_opts = tdn_gui.GUI.GUI_opts(
+    opts: tdn_gui.TopicDocumentNetworkGui.GUI_opts = tdn_gui.TopicDocumentNetworkGui.GUI_opts(
         plot_mode=tdn_gui.PlotMode.Default,
-        inferred_topics=state.inferred_topics,
+        inferred_topics=state["inferred_topics"],
         threshold=0.5,
         period=(1900, 2100),
         topic_ids=None,
@@ -53,7 +53,7 @@ def test_display_document_topic_network(
 
     plot_mode = tdn_gui.PlotMode.Default
 
-    gui: tdn_gui.GUI = tdn_gui.GUI(plot_mode=plot_mode).setup(inferred_topics=state.inferred_topics)
+    gui: tdn_gui.TopicDocumentNetworkGui = tdn_gui.TopicDocumentNetworkGui(state=state, plot_mode=plot_mode).setup()
 
     _ = gui.layout()
 

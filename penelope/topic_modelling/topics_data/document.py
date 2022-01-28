@@ -167,17 +167,17 @@ class DocumentTopicsCalculator:
         return self
 
     def filter_by_keys(self, **kwargs) -> "DocumentTopicsCalculator":
-        """Filter data by key values. Return self."""
+        """Filter data by key values."""
         self.data = filter_by_keys(self.data, document_index=self.document_index, **kwargs)
         return self
 
     def filter_by_data_keys(self, **kwargs) -> "DocumentTopicsCalculator":
-        """Filter data by key values. Return self."""
+        """Filter data by key values."""
         self.data = filter_by_data_keys(self.data, **kwargs)
         return self
 
     def filter_by_document_keys(self, **kwargs) -> "DocumentTopicsCalculator":
-        """Filter data by key values. Returnm self."""
+        """Filter data by key values."""
         self.data = filter_by_document_index_keys(self.data, document_index=self.document_index, **kwargs)
         return self
 

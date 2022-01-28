@@ -62,6 +62,10 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         return int(self.topic_token_overview.index.max()) + 1
 
     @property
+    def n_topics(self) -> int:
+        return self.num_topics
+
+    @property
     def timespan(self) -> Tuple[int, int]:
         return self.year_period
 

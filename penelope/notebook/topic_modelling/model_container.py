@@ -70,8 +70,8 @@ class TopicModelContainer:
         return self.trained_model.topic_model
 
     @property
-    def num_topics(self) -> int:
-        return self.inferred_topics.num_topics
+    def train_corpus_folder(self) -> str:
+        return self._train_corpus_folder
 
     # @pu.deprecated
     # @cached_property

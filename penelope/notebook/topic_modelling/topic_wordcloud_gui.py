@@ -1,6 +1,7 @@
 import pandas as pd
 from IPython.display import display
-from ipywidgets import HTML, Button, Dropdown, HBox, IntProgress, IntSlider, Output, VBox  # type: ignore
+from ipywidgets import HTML, Button, Dropdown, HBox, IntProgress, IntSlider, Output, VBox
+from penelope.notebook.topic_modelling.mixins import TopicsStateGui  # type: ignore
 
 import penelope.plot as plot_utility
 import penelope.utility as utility
@@ -57,15 +58,17 @@ def display_wordcloud(
     gui.tick(0)
 
 
-class WordcloudGUI:
+class WordcloudGUI(TopicsStateGui):
     def __init__(self, state: TopicModelContainer):
 
-        self.state: TopicModelContainer = state
-        self.n_topics: int = state.num_topics
+        super().__init__(state=state)
+
+        self.n_topics: int = self.inferred_n_topics
+
         self.text_id: str = TEXT_ID
         self.text: HTML = HTML(value=f"<span class='{TEXT_ID}'></span>", placeholder='', description='')
         self.topic_id: IntSlider = IntSlider(
-            description='Topic ID', min=0, max=state.num_topics - 1, step=1, value=0, continuous_update=False
+            description='Topic ID', min=0, max=self.n_topics - 1, step=1, value=0, continuous_update=False
         )
         self.word_count: IntSlider = IntSlider(
             description='#Words', min=5, max=250, step=1, value=75, continuous_update=False
@@ -80,8 +83,8 @@ class WordcloudGUI:
 
     def setup(self) -> "WordcloudGUI":
 
-        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.state.num_topics)
-        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.state.num_topics)
+        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.n_topics)
+        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.n_topics)
 
         self.topic_id.observe(self.update_handler, 'value')
         self.word_count.observe(self.update_handler, 'value')
@@ -94,13 +97,13 @@ class WordcloudGUI:
 
     def update_handler(self, *_):
 
-        if self.n_topics != self.state.num_topics:
-            self.n_topics = self.state.num_topics
+        if self.n_topics != self.inferred_n_topics:
+            self.n_topics = self.inferred_n_topics
             self.topic_id.value = 0
-            self.topic_id.max = self.state.num_topics - 1
+            self.topic_id.max = self.inferred_n_topics - 1
 
         display_wordcloud(
-            inferred_topics=self.state.inferred_topics,
+            inferred_topics=self.inferred_topics,
             topic_id=self.topic_id.value,
             n_words=self.word_count.value,
             output_format=self.output_format.value,
@@ -118,7 +121,6 @@ class WordcloudGUI:
                 view,
             ]
         )
-
 
 def display_gui(state: TopicModelContainer):
 

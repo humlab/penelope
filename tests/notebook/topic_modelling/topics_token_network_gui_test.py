@@ -51,7 +51,7 @@ def test_view_model(inferred_topics_data: tm.InferredTopicsData):
 
     model.update(inferred_topics_data)
 
-    assert model._topics_data is inferred_topics_data
+    assert model.inferred_topics is inferred_topics_data
     assert model.top_topic_tokens is not None
     assert len(model.get_topics_tokens([0, 1, 2, 3], 1)) == 4
     assert len(model.get_topics_tokens([0, 1, 2, 3], 3)) == 12
