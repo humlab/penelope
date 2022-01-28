@@ -90,6 +90,7 @@ class TopicDocumentsGUI:
                 .filter_by_data_keys(topic_id=self.topic_id)
                 .threshold(threshold=self.threshold)
                 .filter_by_n_top(n_top=self.n_top)
+                .value
             )
 
             if topic_documents is not None:
