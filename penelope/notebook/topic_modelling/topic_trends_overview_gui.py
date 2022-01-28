@@ -13,7 +13,7 @@ TEXT_ID = 'topic_relevance'
 
 
 class TopicOverviewGUI(mx.TopicsStateGui):
-    def __init__(self,state: TopicModelContainer, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
+    def __init__(self, state: TopicModelContainer, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
         super().__init__(state=state)
 
         self.calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = calculator
@@ -31,7 +31,9 @@ class TopicOverviewGUI(mx.TopicsStateGui):
         self.output: Output = Output()
         self.titles: pd.DataFrame = None
 
-    def setup(self, ) -> "TopicOverviewGUI":
+    def setup(
+        self,
+    ) -> "TopicOverviewGUI":
         self.aggregate.observe(self.update_handler, names='value')
         self.output_format.observe(self.update_handler, names='value')
         self.flip_axis.observe(self.update_handler, names='value')

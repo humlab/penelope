@@ -5,8 +5,8 @@ import uuid
 import ipywidgets as w
 from IPython.display import display
 
-from penelope import utility as pu
 from penelope import topic_modelling as tm
+from penelope import utility as pu
 
 from . import mixins as mx
 from .model_container import TopicModelContainer

@@ -13,9 +13,9 @@ from ipywidgets import (  # type: ignore
 )
 
 from .. import widgets_utils
+from . import mixins as mx
 from .model_container import TopicModelContainer
 from .topic_topic_network_gui_utility import display_topic_topic_network
-from . import mixins as mx
 
 # bokeh.plotting.output_notebook()
 TEXT_ID = 'nx_topic_topic'

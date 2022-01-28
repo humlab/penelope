@@ -12,11 +12,11 @@ from IPython.display import display
 from loguru import logger  # type: ignore
 
 import penelope.network.plot_utility as network_plot
+from penelope import topic_modelling as tm
 from penelope import utility as pu
 from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility
 from penelope.notebook import topic_modelling as ntm
-from penelope import topic_modelling as tm
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -136,7 +136,7 @@ class TopicDocumentNetworkGui(ntm.TopicsStateGui):
         self.layout_algorithm.options = NETWORK_LAYOUT_ALGORITHMS
         self.layout_algorithm.value = self.layout_algorithm.options[-1]
 
-        self.period.min, self.period.max =self.inferred_topics.year_period
+        self.period.min, self.period.max = self.inferred_topics.year_period
         self.period.value = (self.period.min, self.period.min + 5)
 
         self.text = widgets_utils.text_widget(f"ID_{self.plot_mode.name}")
@@ -213,7 +213,7 @@ class TopicDocumentNetworkGui(ntm.TopicsStateGui):
         )
 
 
-def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer|dict):
+def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer | dict):
 
     gui: TopicDocumentNetworkGui = TopicDocumentNetworkGui(state=state, plot_mode=plot_mode).setup()
     display(gui.layout())

@@ -7,9 +7,9 @@ from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, T
 import penelope.topic_modelling as tm
 
 from .. import widgets_utils
+from . import mixins as mx
 from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
-from . import mixins as mx
 
 TEXT_ID = 'topic_share_plot'
 

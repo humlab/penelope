@@ -1,11 +1,11 @@
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, HBox, IntProgress, IntSlider, Output, VBox
-from penelope.notebook.topic_modelling.mixins import TopicsStateGui  # type: ignore
 
 import penelope.plot as plot_utility
 import penelope.utility as utility
 from penelope import topic_modelling as tm
+from penelope.notebook.topic_modelling.mixins import TopicsStateGui  # type: ignore
 
 from .. import widgets_utils
 from .model_container import TopicModelContainer
@@ -121,6 +121,7 @@ class WordcloudGUI(TopicsStateGui):
                 view,
             ]
         )
+
 
 def display_gui(state: TopicModelContainer):
 

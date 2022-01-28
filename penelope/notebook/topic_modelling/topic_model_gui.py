@@ -9,11 +9,11 @@ import ipywidgets as widgets  # type: ignore
 import pandas as pd
 from IPython.display import display
 from loguru import logger
-from penelope.notebook.topic_modelling.mixins import TopicsStateGui
 
 import penelope.topic_modelling as tm
 import penelope.vendor.gensim as gensim_utility
 import penelope.vendor.textacy as textacy_utility
+from penelope.notebook.topic_modelling.mixins import TopicsStateGui
 
 from .model_container import TopicModelContainer
 

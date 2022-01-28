@@ -1,7 +1,8 @@
 import ipywidgets as w
 
-from . import model_container as mc
 from penelope import topic_modelling as tm
+
+from . import model_container as mc
 
 
 class TopicsStateGui:
@@ -16,6 +17,7 @@ class TopicsStateGui:
     @property
     def inferred_n_topics(self) -> int:
         return self.inferred_topics.num_topics
+
 
 class NextPrevTopicMixIn:
     def __init__(self, **kwargs) -> None:
