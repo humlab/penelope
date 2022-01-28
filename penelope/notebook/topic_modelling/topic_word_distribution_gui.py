@@ -53,34 +53,30 @@ def plot_topic_word_distribution(tokens: pd.DataFrame, **args):
     return p
 
 
-def display_topic_tokens(
-    topic_token_weights: pd.DataFrame, topic_id: int = 0, n_words: int = 100, output_format: str = 'Chart'
-):
+def display_topic_tokens(top_tokens: pd.DataFrame, n_words: int = 100, output_format: str = 'Chart'):
+
+    if len(top_tokens) == 0:
+        print("No data! Please change selection.")
+        return
 
     tokens: pd.DataFrame = (
-        topic_modelling.get_topic_top_tokens(topic_token_weights, topic_id=topic_id, n_tokens=n_words)
-        .copy()
+        top_tokens.copy()
         .drop('topic_id', axis=1)
         .assign(weight=lambda x: 100.0 * x.weight)
         .sort_values('weight', axis=0, ascending=False)
         .reset_index()
         .head(n_words)
     )
-
-    if len(tokens) == 0:
-        print("No data! Please change selection.")
-        return
-
     if output_format.lower() == 'chart':
-        tokens = tokens.assign(xs=tokens.index, ys=tokens.weight)
+        top_tokens = top_tokens.assign(xs=top_tokens.index, ys=top_tokens.weight)
         p = plot_topic_word_distribution(
-            tokens, plot_width=1200, plot_height=500, title='', tools='box_zoom,wheel_zoom,pan,reset'
+            top_tokens, plot_width=1200, plot_height=500, title='', tools='box_zoom,wheel_zoom,pan,reset'
         )
         bokeh.plotting.show(p)
     elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-        utility.ts_store(data=tokens, extension=output_format.lower(), basename='topic_word_distribution')
+        utility.ts_store(data=top_tokens, extension=output_format.lower(), basename='topic_word_distribution')
     else:
-        display(tokens)
+        display(top_tokens)
 
 
 TEXT_ID: str = 'wc01'
@@ -123,8 +119,11 @@ class TopicWordDistributionGUI:
 
         self.buzy(True)
         with contextlib.suppress(Exception):
+            top_tokens: pd.DataFrame = self.state.inferred_topics.get_topic_top_tokens(
+                topic_id=self.topic_id.value, n_tokens=self.n_words.value
+            )
             display_topic_tokens(
-                topic_token_weights=self.state.inferred_topics.topic_token_weights,
+                top_tokens=top_tokens,
                 topic_id=self.topic_id.value,
                 n_words=self.n_words.value,
                 output_format=self.output_format.value,

@@ -32,7 +32,7 @@ def display_wordcloud(
     gui.tick(1)
 
     try:
-        tokens = tm.get_topic_title(inferred_topics.topic_token_weights, topic_id, n_tokens=n_words)
+        tokens = inferred_topics.get_topic_title(topic_id, n_tokens=n_words)
 
         if len(tokens) == 0:
             print("No data! Please change selection.")
@@ -43,21 +43,14 @@ def display_wordcloud(
         gui.tick()
 
         if output_format == 'Wordcloud':
-            plot_utility.plot_wordcloud(
-                inferred_topics.topic_token_weights.loc[inferred_topics.topic_token_weights.topic_id == topic_id],
-                token='token',
-                weight='weight',
-                max_words=n_words,
-                **PLOT_OPTS,
-            )
+            topic_ttw: pd.DataFrame = inferred_topics.get_topic_tokens(topic_id)
+            plot_utility.plot_wordcloud(topic_ttw, token='token', weight='weight', max_words=n_words, **PLOT_OPTS)
         else:
-            topic_top_tokens: pd.DataFrame = tm.get_topic_top_tokens(
-                inferred_topics.topic_token_weights, topic_id=topic_id, n_tokens=n_words
-            )
+            top_tokens: pd.DataFrame = inferred_topics.get_topic_top_tokens(topic_id=topic_id, n_tokens=n_words)
             if output_format == 'Table':
-                display(topic_top_tokens)
+                display(top_tokens)
             elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-                utility.ts_store(data=topic_top_tokens, extension=output_format.lower(), basename='topic_top_tokens')
+                utility.ts_store(data=top_tokens, extension=output_format.lower(), basename='topic_top_tokens')
 
     except IndexError:
         print('No data for topic')

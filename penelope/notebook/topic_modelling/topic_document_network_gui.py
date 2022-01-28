@@ -11,7 +11,7 @@ from IPython.display import display
 from loguru import logger  # type: ignore
 
 import penelope.network.plot_utility as network_plot
-from penelope import topic_modelling, utility
+from penelope import utility as pu
 from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility
 from penelope.topic_modelling import InferredTopicsData
@@ -46,7 +46,7 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
 
         layout_data = (network_plot.layout_algorithms[opts.layout_algorithm])(network, **args)
 
-        titles: pd.DataFrame = topic_modelling.get_topic_titles(opts.inferred_topics.topic_token_weights)
+        titles: pd.DataFrame = opts.inferred_topics.get_topic_titles()
 
         p = plot_bipartite_network(
             network,
@@ -59,7 +59,7 @@ def display_document_topic_network(opts: "GUI.GUI_opts"):
 
         bokeh.plotting.show(p)
     elif opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-        utility.ts_store(data=df_network, extension=opts.output_format.lower(), basename='topic_topic_network')
+        pu.ts_store(data=df_network, extension=opts.output_format.lower(), basename='topic_topic_network')
     else:
         g = display_document_topics_as_grid(df_network)
         display(g)
@@ -84,7 +84,7 @@ def compile_network_data(opts: "GUI.GUI_opts") -> pd.DataFrame:
             df_threshold[~df_threshold.topic_id.isin(opts.topic_ids)] if len(opts.topic_ids or []) > 0 else df_threshold
         )
 
-    df["weight"] = utility.clamp_values(list(df.weight), (0.1, 2.0))
+    df["weight"] = pu.clamp_values(list(df.weight), (0.1, 2.0))
 
     if "filename" not in df:
         df = df.merge(
