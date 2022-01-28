@@ -18,7 +18,7 @@ class FindTopicDocumentsGUI:
 
         self.state: TopicModelContainer | dict = state
 
-        self._threshold_slider: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
+        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
         self._top_token_slider: w.IntSlider = w.IntSlider(min=3, max=200, value=3, disabled=False)
         self._max_count_slider: w.IntSlider = w.IntSlider(min=1, max=50000, value=500, disabled=False)
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(min=timespan[0], max=timespan[1], value=timespan)
@@ -40,7 +40,7 @@ class FindTopicDocumentsGUI:
                         w.VBox(
                             [
                                 w.HTML("<b>Threshold</b> (topic's weight in doc)"),
-                                self._threshold_slider,
+                                self._threshold,
                                 self._toplist_label,
                                 self._top_token_slider,
                                 w.HTML("<b>Max result count</b>"),
@@ -82,7 +82,7 @@ class FindTopicDocumentsGUI:
 
     def observe(self, value: bool) -> "FindTopicDocumentsGUI":
         value = value and self.auto_compute  # Never override autocompute
-        register_observer(self._threshold_slider.observe, handler=self.update_handler, value=value)
+        register_observer(self._threshold.observe, handler=self.update_handler, value=value)
         register_observer(self._year_range.observe, handler=self.update_handler, value=value)
         register_observer(self._top_token_slider.observe, handler=self.update_handler, value=value)
         register_observer(self._find_text.observe, handler=self.update_handler, value=value)
@@ -98,7 +98,7 @@ class FindTopicDocumentsGUI:
 
     @property
     def threshold(self) -> float:
-        return self._threshold_slider.value
+        return self._threshold.value
 
     @property
     def years(self) -> tuple[int, int]:

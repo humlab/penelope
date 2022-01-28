@@ -4,18 +4,19 @@ from typing import List
 import pandas as pd
 
 from penelope.notebook.topic_modelling import TopicModelContainer
+from penelope.topic_modelling.topics_data import InferredTopicsData
 from penelope.topic_modelling.topics_data import document as helper
 
 
 def test_weights_reducer(state: TopicModelContainer):
+    inferred_topics: InferredTopicsData = state["inferred_topics"]
+    calculator: helper.DocumentTopicsCalculator = helper.DocumentTopicsCalculator(inferred_topics)
+    default_columns: List[str] = inferred_topics.document_topic_weights.columns.tolist()
 
-    calculator: helper.DocumentTopicsCalculator = helper.DocumentTopicsCalculator(state.inferred_topics)
-    default_columns: List[str] = state.inferred_topics.document_topic_weights.columns.tolist()
-
-    assert calculator.data is state.inferred_topics.document_topic_weights
-    assert calculator.value is state.inferred_topics.document_topic_weights
-    assert calculator.copy().value is not state.inferred_topics.document_topic_weights
-    assert calculator.reset().value is state.inferred_topics.document_topic_weights
+    assert calculator.data is inferred_topics.document_topic_weights
+    assert calculator.value is inferred_topics.document_topic_weights
+    assert calculator.copy().value is not inferred_topics.document_topic_weights
+    assert calculator.reset().value is inferred_topics.document_topic_weights
 
     assert calculator.reset().filter_by_keys(year=2019).value.year.unique().tolist() == [2019]
     assert calculator.reset().filter_by_keys(year=[2019]).value.year.unique().tolist() == [2019]
@@ -32,10 +33,10 @@ def test_weights_reducer(state: TopicModelContainer):
 
     overloaded: pd.DataFrame = calculator.reset().overload(includes='document_name').value
     assert set(overloaded.columns) == {'year', 'topic_id', 'document_name', 'weight', 'document_id'}
-    assert (overloaded[default_columns] == state.inferred_topics.document_topic_weights[default_columns]).all().all()
+    assert (overloaded[default_columns] == inferred_topics.document_topic_weights[default_columns]).all().all()
 
     overloaded: pd.DataFrame = calculator.reset().overload().value
-    assert set(overloaded.columns) - set(default_columns) == set(state.inferred_topics.document_index.columns) - set(
+    assert set(overloaded.columns) - set(default_columns) == set(inferred_topics.document_index.columns) - set(
         default_columns
     )
 
@@ -68,7 +69,7 @@ def test_weights_reducer(state: TopicModelContainer):
 
 def test_filter_by_keys(state: TopicModelContainer):
 
-    calculator: helper.DocumentTopicsCalculator = helper.DocumentTopicsCalculator(state.inferred_topics)
+    calculator: helper.DocumentTopicsCalculator = helper.DocumentTopicsCalculator(state["inferred_topics"])
     years = (2020, 2020)
     threshold: float = 0.01
     document_topics: pd.DataFrame = (
