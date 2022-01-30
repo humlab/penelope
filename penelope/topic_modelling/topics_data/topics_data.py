@@ -205,9 +205,7 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         assert "year" in data.document_index.columns
 
         # HACK: Handle renamed column:
-        if 'n_terms' in data.document_index.columns:
-            if 'n_tokens' not in data.document_index.columns:
-                data.document_index['n_tokens'] = data.document_index['n_terms']
+        data.document_index = fix_renamed_columns(data.document_index)
 
         # data.log_usage(total=True)
         data.slim_types()
@@ -299,6 +297,17 @@ class InferredTopicsData(tt.TopicTokensMixIn):
                     logger.info(f"{k}: {sw}")
                 else:
                     logger.info(f"{k}: {v}")
+
+
+def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
+    """Add count columns `n_tokens` and `n_rws_tokens" if missing and other/renamed column exists."""
+    for missing in {"n_tokens", "n_raw_tokens"} - set(di.columns):
+        for existing in {"n_terms", "n_tokens", "n_raw_tokens"}.intersection(di.columns):
+            di[missing] = di[existing]
+            break
+    if 'n_terms' in di.columns:
+        di = di.drop(columns='n_terms')
+    return di
 
 
 # a = {
