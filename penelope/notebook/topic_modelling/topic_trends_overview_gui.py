@@ -16,53 +16,54 @@ class TopicOverviewGUI(mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
         super().__init__(state=state)
 
+        self.titles: pd.DataFrame = None
         self.calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = calculator
+
         weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
 
-        self.text_id: str = TEXT_ID
-        self.text: HTML = widgets_utils.text_widget(TEXT_ID)
-        self.flip_axis: ToggleButton = ToggleButton(value=False, description='Flip', icon='', layout=dict(width="80px"))
-        self.aggregate: Dropdown = Dropdown(
+        self._text_id: str = TEXT_ID
+        self._text: HTML = widgets_utils.text_widget(TEXT_ID)
+        self._flip_axis: ToggleButton = ToggleButton(
+            value=False, description='Flip', icon='', layout=dict(width="80px")
+        )
+        self._aggregate: Dropdown = Dropdown(
             description='Aggregate', options=weighings, value='max_weight', layout=dict(width="250px")
         )
-        self.output_format: Dropdown = Dropdown(
+        self._output_format: Dropdown = Dropdown(
             description='Output', options=['Heatmap', 'Table'], value='Heatmap', layout=dict(width="180px")
         )
-        self.output: Output = Output()
-        self.titles: pd.DataFrame = None
+        self._output: Output = Output()
 
-    def setup(
-        self,
-    ) -> "TopicOverviewGUI":
-        self.aggregate.observe(self.update_handler, names='value')
-        self.output_format.observe(self.update_handler, names='value')
-        self.flip_axis.observe(self.update_handler, names='value')
-        self.titles: pd.DataFrame = tm.get_topic_titles(self.inferred_topics.topic_token_weights, n_tokens=100)
+    def setup(self) -> "TopicOverviewGUI":
+        self._aggregate.observe(self.update_handler, names='value')
+        self._output_format.observe(self.update_handler, names='value')
+        self._flip_axis.observe(self.update_handler, names='value')
+        self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles(n_tokens=100)
         return self
 
     def update_handler(self, *_):
 
-        self.output.clear_output()
-        self.flip_axis.disabled = True
-        self.flip_axis.description = 'Wait!'
+        self._output.clear_output()
+        self._flip_axis.disabled = True
+        self._flip_axis.description = 'Wait!'
 
-        with self.output:
+        with self._output:
 
             weights: pd.DataFrame = self.compute_weights()
 
             display_heatmap(
                 weights,
                 self.titles,
-                flip_axis=self.flip_axis.value,
-                aggregate=self.aggregate.value,
-                output_format=self.output_format.value,
+                flip_axis=self._flip_axis.value,
+                aggregate=self._aggregate.value,
+                output_format=self._output_format.value,
             )
 
-        self.flip_axis.disabled = False
-        self.flip_axis.description = 'Flip'
+        self._flip_axis.disabled = False
+        self._flip_axis.description = 'Flip'
 
     def layout(self) -> VBox:
-        return VBox([HBox([self.aggregate, self.output_format, self.flip_axis]), HBox([self.output]), self.text])
+        return VBox([HBox([self._aggregate, self._output_format, self._flip_axis]), HBox([self._output]), self._text])
 
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(

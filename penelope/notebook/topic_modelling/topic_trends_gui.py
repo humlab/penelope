@@ -1,95 +1,81 @@
-from typing import Optional
-
+import ipywidgets as w  # type: ignore
 import pandas as pd
 from IPython.display import display
-from ipywidgets import Button, Dropdown, HBox, IntProgress, IntSlider, Output, ToggleButton, VBox  # type: ignore
 
 import penelope.topic_modelling as tm
 
-from .. import widgets_utils
 from . import mixins as mx
 from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
 
-TEXT_ID = 'topic_share_plot'
 
-
-class TopicTrendsGUI(mx.TopicsStateGui):
+class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer, calculator: tm.TopicPrevalenceOverTimeCalculator = None):
         super().__init__(state=state)
 
-        self.text = widgets_utils.text_widget(TEXT_ID)
-        self.n_topics: Optional[int] = None
-        self.text_id = TEXT_ID
+        timespan: tuple = self.inferred_topics.timespan
 
-        self.aggregate = Dropdown(
+        self._text = w.HTML(value="", placeholder='', description='')
+
+        self._aggregate: w.Dropdown = w.Dropdown(
             description='Aggregate',
             options=[(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS],
             value='true_average_weight',
             layout=dict(width="200px"),
         )
 
-        self.normalize = ToggleButton(description='Normalize', value=True, layout=dict(width="120px"))
-        self.topic_id = IntSlider(description='Topic ID', min=0, max=999, step=1, value=0, continuous_update=False)
-
-        self.output_format = Dropdown(
+        self._normalize: w.ToggleButton = w.ToggleButton(
+            description='Normalize', value=True, layout=dict(width="120px")
+        )
+        self._year_range: w.IntRangeSlider = w.IntRangeSlider(min=timespan[0], max=timespan[1], value=timespan)
+        self._output_format: w.Dropdown = w.Dropdown(
             description='Format', options=['Chart', 'Table'], value='Chart', layout=dict(width="200px")
         )
 
-        self.progress = IntProgress(min=0, max=4, step=1, value=0)
-        self.output = Output()
-
-        self.prev_topic_id: Optional[Button] = None
-        self.next_topic_id: Optional[Button] = None
-
-        self.extra_placeholder: VBox = HBox()
+        self._output: w.Output = w.Output()
+        self._extra_placeholder: w.VBox = w.HBox()
 
         self.calculator: tm.TopicPrevalenceOverTimeCalculator = calculator or tm.prevelance.default_calculator()
 
     def layout(self):
-        return VBox(
+        return w.VBox(
             [
-                HBox(
+                w.HBox(
                     [
-                        VBox(
+                        w.VBox(
                             [
-                                HBox([self.prev_topic_id, self.next_topic_id]),
-                                self.progress,
+                                w.HBox([self._prev_topic_id, self._next_topic_id]),
+                                self._year_range,
                             ]
                         ),
-                        VBox([self.topic_id]),
-                        self.extra_placeholder,
-                        VBox([self.aggregate, self.output_format]),
-                        VBox([self.normalize]),
+                        w.VBox([self.topic_id]),
+                        self._extra_placeholder,
+                        w.VBox([self._aggregate, self._output_format]),
+                        w.VBox([self._normalize]),
                     ]
                 ),
-                self.text,
-                self.output,
+                self._text,
+                self._output,
             ]
         )
 
-    def setup(self) -> "TopicTrendsGUI":
+    def setup(self, **kwargs) -> "TopicTrendsGUI":
+        super().setup(**kwargs)
 
-        self.topic_id.max = self.n_topics - 1
-        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.n_topics)
-        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.n_topics)
-        self.topic_id.observe(self.update_handler, names='value')
-        self.normalize.observe(self.update_handler, names='value')
-        self.aggregate.observe(self.update_handler, names='value')
-        self.output_format.observe(self.update_handler, names='value')
+        self.topic_id = (0, self.inferred_n_topics - 1)
+
+        self._topic_id.observe(self.update_handler, names='value')
+        self._normalize.observe(self.update_handler, names='value')
+        self._aggregate.observe(self.update_handler, names='value')
+        self._output_format.observe(self.update_handler, names='value')
 
         return self
 
-    def on_topic_change_update_gui(self, topic_id: int):
-
-        if self.n_topics != self.inferred_n_topics:
-            self.n_topics = self.inferred_n_topics
-            self.topic_id.value = 0
-            self.topic_id.max = self.inferred_n_topics - 1
+    def topic_changed(self, topic_id: int):
 
         tokens = self.inferred_topics.get_topic_title(topic_id, n_tokens=200)
 
-        self.text.value = 'ID {}: {}'.format(topic_id, tokens)
+        self._text.value = 'ID {}: {}'.format(topic_id, tokens)
 
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(
@@ -100,7 +86,7 @@ class TopicTrendsGUI(mx.TopicsStateGui):
         )
 
     def get_filters(self) -> dict:
-        return {}
+        return {'year': self.year_range}
 
     def get_threshold(self) -> float:
         return 0.0
@@ -108,23 +94,39 @@ class TopicTrendsGUI(mx.TopicsStateGui):
     def get_result_threshold(self) -> float:
         return 0.0
 
+    @property
+    def year_range(self) -> tuple:
+        return self._year_range.value
+
+    @property
+    def aggregate(self) -> tuple:
+        return self._aggregate.value
+
+    @property
+    def normalize(self) -> tuple:
+        return self._normalize.value
+
+    @property
+    def output_format(self) -> tuple:
+        return self._output_format.value
+
     def update_handler(self, *_):
 
-        self.output.clear_output()
+        self._output.clear_output()
 
-        with self.output:
+        with self._output:
 
-            self.on_topic_change_update_gui(self.topic_id.value)
+            self.topic_changed(self.topic_id)
 
             weights = self.compute_weights()
 
             gui_utils.display_topic_trends(
                 weight_over_time=weights,
-                topic_id=self.topic_id.value,
-                year_range=self.inferred_topics.year_period,
-                aggregate=self.aggregate.value,
-                normalize=self.normalize.value,
-                output_format=self.output_format.value,
+                topic_id=self.topic_id,
+                year_range=self.year_range,
+                aggregate=self.aggregate,
+                normalize=self.normalize,
+                output_format=self.output_format,
             )
 
 

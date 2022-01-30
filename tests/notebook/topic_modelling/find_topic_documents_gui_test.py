@@ -1,20 +1,11 @@
-from penelope.notebook.topic_modelling.find_topic_documents_gui import FindTopicDocumentsGUI, create_gui
+from penelope.notebook.topic_modelling.topic_documents_gui import FindTopicDocumentsGUI
 
 
 def test_load_gui(state):
-    gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state).setup()
+    gui: FindTopicDocumentsGUI = FindTopicDocumentsGUI(state=state).setup()
 
     layout = gui.layout()
     assert layout is not None
 
     gui.update_handler()
 
-
-def test_create_gui(state):
-
-    gui: FindTopicDocumentsGUI = create_gui(state)
-
-    layout = gui.layout()
-    assert layout is not None
-
-    gui.update_handler()

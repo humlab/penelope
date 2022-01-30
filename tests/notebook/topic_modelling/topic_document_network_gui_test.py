@@ -24,12 +24,12 @@ def test_create_gui(state: TopicModelContainer):
     assert isinstance(layout, widgets.VBox)
 
     opts = gui.opts
-    assert isinstance(opts, tdn_gui.TopicDocumentNetworkGui.GUI_opts)
+    assert isinstance(opts, tdn_gui.ComputeOpts)
 
 
 def test_compile_data(state: TopicModelContainer):
 
-    opts: tdn_gui.TopicDocumentNetworkGui.GUI_opts = tdn_gui.TopicDocumentNetworkGui.GUI_opts(
+    opts: tdn_gui.ComputeOpts = tdn_gui.ComputeOpts(
         plot_mode=tdn_gui.PlotMode.Default,
         inferred_topics=state["inferred_topics"],
         threshold=0.5,

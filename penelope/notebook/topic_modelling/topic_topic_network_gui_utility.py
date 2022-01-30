@@ -10,7 +10,6 @@ from loguru import logger
 import penelope.network.networkx.utility as network_utility
 from penelope import topic_modelling, utility
 from penelope.network import plot_utility
-from penelope.topic_modelling.topics_data.document import DocumentTopicsCalculator
 
 
 def get_topic_titles(topic_token_weights, topic_id=None, n_words=100):
@@ -34,30 +33,32 @@ def get_filtered_network_data(
     n_docs: int,
 ) -> pd.DataFrame:
 
-    calculator: DocumentTopicsCalculator = DocumentTopicsCalculator(inferred_topics)
-
-    df: pd.DataFrame = calculator.filter_by_keys(**filters).threshold(threshold=threshold).value
+    dtw: pd.DataFrame = (
+        inferred_topics.calculator.reset().filter_by_keys(**filters).threshold(threshold=threshold).value
+    )
 
     if ignores is not None:
-        df = df[~df.topic_id.isin(ignores)]
+        dtw = dtw[~dtw.topic_id.isin(ignores)]
 
     if len(period or []) == 2:
-        df = df[(df.year >= period[0]) & (df.year <= period[1])]
+        dtw = dtw[(dtw.year >= period[0]) & (dtw.year <= period[1])]
 
     if isinstance(period, int):
-        df = df[df.year == period]
+        dtw = dtw[dtw.year == period]
 
-    df = df.merge(df, how='inner', left_on='document_id', right_on='document_id')
-    df = df[(df.topic_id_x < df.topic_id_y)]
+    topic_topic: pd.DataFrame = dtw.merge(dtw, how='inner', left_index='document_id', right_on='document_id')
 
-    df = df.groupby([df.topic_id_x, df.topic_id_y]).size().reset_index()
+    topic_topic = topic_topic[(topic_topic.topic_id_x < topic_topic.topic_id_y)]
 
-    df.columns = ['source', 'target', 'n_docs']
+    topic_topic = topic_topic.groupby([topic_topic.topic_id_x, topic_topic.topic_id_y]).size().reset_index()
 
+    topic_topic.columns = ['source', 'target', 'n_docs']
+
+    # FIXME: Måste normalisera efter antal dokument!!!
     if n_docs > 1:
-        df = df[df.n_docs >= n_docs]
+        topic_topic = topic_topic[topic_topic.n_docs >= n_docs]
 
-    return df
+    return topic_topic
 
 
 # pylint: disable=too-many-arguments, too-many-locals
@@ -78,11 +79,6 @@ def display_topic_topic_network(
     edge_range: Tuple[int, int] = (1, 10),
 ):
     try:
-
-        document_index = inferred_topics.document_index
-
-        if 'document_id' not in document_index.columns:
-            raise ValueError("Supplied document index has no document_id")
 
         df = get_filtered_network_data(inferred_topics, filters, threshold, ignores, period, n_docs)
 

@@ -1,4 +1,3 @@
-import contextlib
 import warnings
 
 import bokeh
@@ -6,12 +5,11 @@ import bokeh.plotting
 import numpy as np
 import pandas as pd
 from IPython.display import display
-from ipywidgets import HTML, Button, Dropdown, HBox, IntSlider, Output, VBox  # type: ignore
+from ipywidgets import Dropdown, HBox, IntSlider, Output, VBox  # type: ignore
 
 from penelope import utility
-from penelope.notebook.topic_modelling.mixins import TopicsStateGui
+from penelope.notebook.topic_modelling import mixins as mx
 
-from .. import widgets_utils
 from .model_container import TopicModelContainer
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -80,71 +78,65 @@ def display_topic_tokens(top_tokens: pd.DataFrame, n_words: int = 100, output_fo
         display(top_tokens)
 
 
-TEXT_ID: str = 'wc01'
 OUTPUT_OPTIONS = ['Chart', 'XLSX', 'CSV', 'Clipboard', 'Table']
 
 
-class TopicWordDistributionGUI(TopicsStateGui):
+class TopicWordDistributionGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer):
 
         super().__init__(state=state)
 
         self.n_topics: int = self.inferred_n_topics
-
-        self.text_id: str = TEXT_ID
-        self.text: HTML = widgets_utils.text_widget(TEXT_ID)
-        self.topic_id: IntSlider = IntSlider(description='Topic ID', min=0, max=self.n_topics - 1, step=1, value=0)
-        self.n_words: IntSlider = IntSlider(description='#Words', min=5, max=500, step=1, value=75)
-        self.output_format: Dropdown = Dropdown(
+        self._n_words: IntSlider = IntSlider(description='#Words', min=5, max=500, step=1, value=75)
+        self._output_format: Dropdown = Dropdown(
             description='Format', options=OUTPUT_OPTIONS, value=OUTPUT_OPTIONS[0], layout=dict(width="200px")
         )
-        self.prev_topic_id: Button = None
-        self.next_topic_id: Button = None
-        self.output: Output = Output()
+        self._output: Output = Output()
 
-    def setup(self) -> "TopicWordDistributionGUI":
-
-        self.prev_topic_id = widgets_utils.button_with_previous_callback(self, 'topic_id', self.n_topics)
-        self.next_topic_id = widgets_utils.button_with_next_callback(self, 'topic_id', self.n_topics)
-
-        self.topic_id.observe(self.update_handler, 'value')
-        self.n_words.observe(self.update_handler, 'value')
-        self.output_format.observe(self.update_handler, 'value')
-
+    def setup(self, **kwargs) -> "TopicWordDistributionGUI":
+        super().setup(**kwargs)
+        self._n_words.observe(self.update_handler, 'value')
+        self._output_format.observe(self.update_handler, 'value')
+        self.topic_id = (0, self.inferred_n_topics - 1)
         return self
 
     def update_handler(self, *_):
 
         if self.n_topics != self.inferred_n_topics:
             self.n_topics = self.inferred_n_topics
-            self.topic_id.value = 0
-            self.topic_id.max = self.inferred_n_topics - 1
+            self.topic_id = (0, self.inferred_n_topics - 1)
 
         self.buzy(True)
-        with contextlib.suppress(Exception):
-            top_tokens: pd.DataFrame = self.inferred_topics.get_topic_top_tokens(
-                topic_id=self.topic_id.value, n_tokens=self.n_words.value
-            )
-            display_topic_tokens(
-                top_tokens=top_tokens,
-                n_words=self.n_words.value,
-                output_format=self.output_format.value,
-            )
+        top_tokens: pd.DataFrame = self.inferred_topics.get_topic_top_tokens(
+            topic_id=self.topic_id, n_tokens=self.n_words
+        )
+        display_topic_tokens(
+            top_tokens=top_tokens,
+            n_words=self.n_words,
+            output_format=self.output_format,
+        )
         self.buzy(False)
 
     def buzy(self, value: bool = False) -> None:
-        self.topic_id.disabled = value
-        self.n_words.disabled = value
-        self.output_format.disabled = value
+        self._topic_id.disabled = value
+        self._n_words.disabled = value
+        self._output_format.disabled = value
 
     def layout(self) -> VBox:
         return VBox(
             [
-                self.text,
-                HBox([self.prev_topic_id, self.next_topic_id, self.topic_id, self.n_words, self.output_format]),
-                self.output,
+                HBox([self._prev_topic_id, self._next_topic_id, self._topic_id, self._n_words, self._output_format]),
+                self._output,
             ]
         )
+
+    @property
+    def n_words(self) -> int:
+        return self._n_words.value
+
+    @property
+    def output_format(self) -> int:
+        return self._output_format.value
 
 
 def display_gui(state: TopicModelContainer) -> None:
