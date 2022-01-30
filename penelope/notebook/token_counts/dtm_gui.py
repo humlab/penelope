@@ -244,7 +244,7 @@ class BaseDTMGUI(DownloadMixIn):
             ]
         )
 
-    def observe(self, value: bool) -> None:
+    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=unused-argument
         display_trigger_ctrls: List[Any] = [self._pos_groups, self._normalize, self._smooth, self._temporal_key]
         for ctrl in display_trigger_ctrls:
             register_observer(ctrl, handler=self._display_handler, value=value)
@@ -370,5 +370,5 @@ class BasicDTMGUI(PivotKeysMixIn, BaseDTMGUI):
 
         return super().layout()
 
-    def observe(self, value: bool) -> None:  # pylint: disable=arguments-differ
-        super().observe(handler=self._display_handler, value=value)
+    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=arguments-differ
+        super().observe(value=value, handler=self._display_handler, **kwargs)

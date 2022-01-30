@@ -237,8 +237,10 @@ class TrendsBaseGUI(abc.ABC):
         self._words.disabled = value
         self._keyness.disabled = value
 
-    def observe(self, value: bool = True):
+    def observe(self, value: bool, **kwargs):  # pylint: disable=unused-argument
         """Register or unregisters widget event handlers"""
+        if hasattr(super(), "observe"):
+            getattr(super(), "observe")(value=value, **kwargs)
         wu.register_observer(self._words, handler=self._update_picker_handler, value=value, names='value')
         wu.register_observer(self._tab, handler=self._plot_handler, value=value, names='selected_index')
         wu.register_observer(self._picker, handler=self._plot_handler, value=value, names='value')
@@ -402,8 +404,8 @@ class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
         self._pivot_keys_text_names.disabled = value
         self._filter_keys.disabled = value
 
-    def observe(self, value: bool) -> None:  # pylint: disable=arguments-differ
-        super().observe(handler=self._display_handler, value=value)
+    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=arguments-differ
+        super().observe(value=value, handler=self._display_handler, **kwargs)
         for ctrl in [self._pivot_keys_text_names, self._filter_keys]:
             wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
 
