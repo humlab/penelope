@@ -15,7 +15,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
 
         timespan: tuple = self.inferred_topics.timespan
 
-        self._text = w.HTML(value="", placeholder='', description='')
+        self._text: w.HTML = w.HTML()
 
         self._aggregate: w.Dropdown = w.Dropdown(
             description='Aggregate',
