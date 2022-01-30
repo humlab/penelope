@@ -44,11 +44,10 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
                     [
                         w.VBox(
                             [
-                                w.HBox([self._prev_topic_id, self._next_topic_id]),
+                                w.HBox([self._next_prev_layout]),
                                 self._year_range,
                             ]
                         ),
-                        w.VBox([self.topic_id]),
                         self._extra_placeholder,
                         w.VBox([self._aggregate, self._output_format]),
                         w.VBox([self._normalize]),
