@@ -191,7 +191,11 @@ class StoreMixIn:
             '_document_index.csv.gz',
         ]
         tags: List[str] = list(
-            {x.rstrip(suffix) for suffix in known_suffixes for x in strip_paths(glob.glob(jj(folder, f'*{suffix}')))}
+            {
+                x[0 : len(x) - len(suffix)]
+                for suffix in known_suffixes
+                for x in strip_paths(glob.glob(jj(folder, f'*{suffix}')))
+            }
         )
         return tags
 

@@ -103,7 +103,7 @@ def test_load_stored_metadata(mode: str, vectorized_corpus: VectorizedCorpus):
 @pytest.mark.parametrize('mode', ['bundle', 'files'])
 def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
 
-    tag: str = f'{uuid.uuid1()}'
+    tag: str = f'{str(uuid.uuid1())[:6]}'
     folder: str = jj(OUTPUT_FOLDER, tag)
 
     os.makedirs(folder, exist_ok=True)
