@@ -16,13 +16,14 @@ if TYPE_CHECKING:
 """dtw = document_topic_weights"""
 
 
-def to_document_id_index(document_index: pd.DataFrame) -> pd.DataFrame:
+def set_id_index(document_index: pd.DataFrame) -> pd.DataFrame:
     if 'document_id' in document_index.columns:
         return document_index.set_index('document_id')
     return document_index
 
 
 def overload(
+    *,
     dtw: pd.DataFrame,
     document_index: pd.DataFrame,
     includes: str = None,
@@ -30,7 +31,7 @@ def overload(
 ) -> pd.DataFrame:
     """Add column(s) from document index to document-topics weights `dtw`."""
 
-    di: pd.DataFrame = to_document_id_index(document_index)
+    di: pd.DataFrame = set_id_index(document_index)
 
     exclude_columns: Set[str] = set(dtw.columns.tolist()) | set((ignores or '').split(','))
     include_columns: Set[str] = set(includes.split(',') if includes else di.columns)
@@ -69,7 +70,7 @@ def filter_by_document_index_keys(dtw: pd.DataFrame, *, document_index: pd.DataF
     # document_ids: Set[int] = set(document_index[pu.create_mask(document_index, kwargs)].document_id)
     # dtw: pd.DataFrame = dtw[dtw['document_id'].isin(document_ids)]
 
-    di: pd.DataFrame = to_document_id_index(document_index)
+    di: pd.DataFrame = set_id_index(document_index)
 
     document_ids: pd.DataFrame = pd.DataFrame(data=None, index=di[pu.create_mask(di, kwargs)].index)
     dtw = dtw.merge(document_ids, left_on='document_id', right_index=True, how='inner')
@@ -106,7 +107,6 @@ def filter_by_text(dtw: pd.DataFrame, topic_token_overview: pd.DataFrame, search
 def filter_by_inner_join(
     dtw: pd.DataFrame, other: pd.DataFrame | pd.Series | Sequence[int], left_index: bool = True, left_on: str = None
 ):
-    """FIXME: This is faster than `isin` for large data sets"""
     other: pd.DataFrame = pd.DataFrame(data=None, index=other.index if hasattr(other, 'index') else other)
     dtw = dtw.merge(other, left_index=left_index, left_on=left_on, right_index=True, how='inner')
     return dtw
@@ -132,30 +132,30 @@ def compute_topic_proportions(dtw: pd.DataFrame, document_index: pd.DataFrame) -
 
 
 class DocumentTopicsCalculator:
-    def __init__(self, inferred_data: InferredTopicsData):
-        self.inferred_data: InferredTopicsData = inferred_data
-        self.data: pd.DataFrame = inferred_data.document_topic_weights
-        self.document_index = self.inferred_data.document_index.set_index("document_id", drop=True)
+    def __init__(self, inferred_topics: InferredTopicsData):
+
+        self.inferred_topics: InferredTopicsData = inferred_topics
+        self.data: pd.DataFrame = inferred_topics.document_topic_weights
 
     @property
     def value(self) -> pd.DataFrame:
         return self.data
 
-    # @property
-    # def document_index(self) -> pd.DataFrame:
-    #     return self.inferred_data.document_index
+    @property
+    def document_index(self) -> pd.DataFrame:
+        return self.inferred_topics.document_index
 
     def copy(self) -> "DocumentTopicsCalculator":
         self.data = self.data.copy()
         return self
 
     def reset(self) -> "DocumentTopicsCalculator":
-        self.data: pd.DataFrame = self.inferred_data.document_topic_weights
+        self.data: pd.DataFrame = self.inferred_topics.document_topic_weights
         return self
 
     def overload(self, includes: str = None, ignores: str = None) -> "DocumentTopicsCalculator":
         """Add column(s) from document index to data."""
-        self.data = overload(self.data, self.document_index, includes=includes, ignores=ignores)
+        self.data = overload(dtw=self.data, document_index=self.document_index, includes=includes, ignores=ignores)
         return self
 
     def threshold(self, threshold: float = 0.01) -> "DocumentTopicsCalculator":
@@ -176,7 +176,7 @@ class DocumentTopicsCalculator:
         self.data = filter_by_data_keys(self.data, **kwargs)
         return self
 
-    def filter_by_document_keys(self, **kwargs) -> "DocumentTopicsCalculator":
+    def filter_by_document_keys(self, **kwargs) -> DocumentTopicsCalculator:
         """Filter data by key values."""
         self.data = filter_by_document_index_keys(self.data, document_index=self.document_index, **kwargs)
         return self
@@ -188,7 +188,7 @@ class DocumentTopicsCalculator:
     def filter_by_text(self, search_text: str, n_top: int) -> "DocumentTopicsCalculator":
         self.data = filter_by_text(
             self.data,
-            topic_token_overview=self.inferred_data.topic_token_overview,
+            topic_token_overview=self.inferred_topics.topic_token_overview,
             search_text=search_text,
             n_top=n_top,
         )
@@ -196,5 +196,5 @@ class DocumentTopicsCalculator:
 
     def topic_proportions(self) -> pd.DataFrame:
         """Compute topics' proportion in entire corpus."""
-        data: pd.DataFrame = compute_topic_proportions(self.data, self.inferred_data.document_index)
+        data: pd.DataFrame = compute_topic_proportions(self.data, self.document_index)
         return data
