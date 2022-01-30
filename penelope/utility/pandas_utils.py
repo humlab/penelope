@@ -202,6 +202,10 @@ class PropertyValueMaskingOpts:
     def props(self) -> dict:
         return self.data
 
+    @property
+    def opts(self) -> dict:
+        return self.data
+
     def mask(self, doc: pd.DataFrame) -> np.ndarray:
 
         return create_mask(doc, self.data)
