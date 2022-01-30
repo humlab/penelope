@@ -8,4 +8,3 @@ def test_load_gui(state):
     assert layout is not None
 
     gui.update_handler()
-
