@@ -95,6 +95,9 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
             except Exception as ex:
                 self.warn(str(ex))
 
+    def update(self) -> pd.DataFrame:
+        raise NotImplementedError("base class")
+
 
 class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
     def __init__(self, state: TopicModelContainer | dict):
