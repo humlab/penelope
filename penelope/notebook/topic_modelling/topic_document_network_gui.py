@@ -30,7 +30,19 @@ class PlotMode(IntEnum):
     FocusTopics = 2
 
 
-def display_document_topic_network(opts: "TopicDocumentNetworkGui.GUI_opts"):
+@dataclass
+class ComputeOpts:
+    plot_mode: PlotMode
+    inferred_topics: tm.InferredTopicsData
+    layout_algorithm: str
+    threshold: float
+    period: Tuple[int, int]
+    topic_ids: Sequence[int]
+    scale: float
+    output_format: str
+
+
+def display_document_topic_network(opts: ComputeOpts):
 
     df_network: pd.DataFrame = compile_network_data(opts)
 
@@ -38,7 +50,7 @@ def display_document_topic_network(opts: "TopicDocumentNetworkGui.GUI_opts"):
         logger.info("No data")
         return
 
-    df_network["title"] = df_network.filename
+    df_network["title"] = df_network.document_name
 
     if opts.output_format == "network":
 
@@ -67,35 +79,32 @@ def display_document_topic_network(opts: "TopicDocumentNetworkGui.GUI_opts"):
         display(g)
 
 
-def compile_network_data(opts: "TopicDocumentNetworkGui.GUI_opts") -> pd.DataFrame:
+def compile_network_data(opts: ComputeOpts) -> pd.DataFrame:
 
-    document_topic_weights = opts.inferred_topics.document_topic_weights
+    inferred_topics: tm.InferredTopicsData = opts.inferred_topics
 
-    df_threshold: pd.DataFrame = document_topic_weights[document_topic_weights.weight > opts.threshold].reset_index()
+    calculator: tm.DocumentTopicsCalculator = inferred_topics.calculator.reset()
+
+    calculator.threshold(opts.threshold)
 
     if len(opts.period or []) == 2:
-        df_threshold = df_threshold[(df_threshold.year >= opts.period[0]) & (df_threshold.year <= opts.period[1])]
+        calculator.filter_by_data_keys(year=tuple(opts.period))
+
+    dtw: pd.DataFrame = calculator.value
 
     if opts.plot_mode == PlotMode.FocusTopics:
-        df_focus = df_threshold[df_threshold.topic_id.isin(opts.topic_ids)].set_index("document_id")
-        df_others = df_threshold[~df_threshold.topic_id.isin(opts.topic_ids)].set_index("document_id")
+        df_focus: pd.DataFrame = dtw[dtw.topic_id.isin(opts.topic_ids)].set_index("document_id")
+        df_others: pd.DataFrame = dtw[~dtw.topic_id.isin(opts.topic_ids)].set_index("document_id")
         df_others = df_others[df_others.index.isin(df_focus.index)]
-        df = df_focus.append(df_others).reset_index()
+        data: pd.DataFrame = df_focus.append(df_others).reset_index()
     else:
-        df = (
-            df_threshold[~df_threshold.topic_id.isin(opts.topic_ids)] if len(opts.topic_ids or []) > 0 else df_threshold
-        )
+        data: pd.DataFrame = dtw[~dtw.topic_id.isin(opts.topic_ids)] if len(opts.topic_ids or []) > 0 else dtw
 
-    df["weight"] = pu.clamp_values(list(df.weight), (0.1, 2.0))
+    data["weight"] = pu.clamp_values(list(data.weight), (0.1, 2.0))
 
-    if "filename" not in df:
-        df = df.merge(
-            opts.inferred_topics.document_index[['document_id', "filename"]].set_index('document_id'),
-            left_on="document_id",
-            right_index=True,
-        )
+    data = data.merge(opts.inferred_topics.document_index[["document_name"]], left_index=True, right_index=True)
 
-    return df
+    return data
 
 
 class TopicDocumentNetworkGui(ntm.TopicsStateGui):
@@ -188,20 +197,9 @@ class TopicDocumentNetworkGui(ntm.TopicsStateGui):
         )
         return _layout
 
-    @dataclass
-    class GUI_opts:
-        plot_mode: PlotMode
-        inferred_topics: tm.InferredTopicsData
-        layout_algorithm: str
-        threshold: float
-        period: Tuple[int, int]
-        topic_ids: Sequence[int]
-        scale: float
-        output_format: str
-
     @property
-    def opts(self) -> GUI_opts:
-        return TopicDocumentNetworkGui.GUI_opts(
+    def opts(self) -> ComputeOpts:
+        return ComputeOpts(
             plot_mode=self.plot_mode,
             inferred_topics=self.inferred_topics,
             layout_algorithm=self.layout_algorithm.value,
@@ -217,4 +215,3 @@ def display_gui(plot_mode: PlotMode.FocusTopics, state: TopicModelContainer | di
 
     gui: TopicDocumentNetworkGui = TopicDocumentNetworkGui(state=state, plot_mode=plot_mode).setup()
     display(gui.layout())
-    # gui.update_handler()

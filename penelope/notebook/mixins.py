@@ -79,11 +79,11 @@ class PivotKeysMixIn:
 
     def reset(self) -> "PivotKeysMixIn":
 
-        self.observe(handler=self._display_event_handler, value=False)
+        self.observe(value=False, handler=self._display_event_handler)
         self._pivot_keys_text_names.value = ['None']
         self._filter_keys.value = []
         self._unstack_tabular.value = False
-        self.observe(handler=self._display_event_handler, value=False)
+        self.observe(value=False, handler=self._display_event_handler)
 
         if hasattr(super(), 'reset'):
             super().reset()
@@ -155,7 +155,7 @@ class PivotKeysMixIn:
         finally:
             self.prevent_event = False
 
-    def observe(self, *, handler: Callable[[Any], None], value: bool) -> None:
+    def observe(self, value: bool, *, handler: Callable[[Any], None], **kwargs) -> None:
 
         if handler is None:
             return
@@ -172,4 +172,4 @@ class PivotKeysMixIn:
             register_observer(ctrl, handler=handler, value=value)
 
         if hasattr(super(), "observe"):
-            super().observe(value=value)
+            getattr(super(), "observe")(value=value, handler=handler, **kwargs)
