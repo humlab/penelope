@@ -3,6 +3,7 @@ from IPython.display import display
 from ipywidgets import HTML, Dropdown, HBox, Output, ToggleButton, VBox  # type: ignore
 
 from penelope import topic_modelling as tm
+from penelope import utility as pu
 
 from .. import widgets_utils
 from . import mixins as mx
@@ -12,7 +13,7 @@ from .topic_trends_overview_gui_utility import display_heatmap
 TEXT_ID = 'topic_relevance'
 
 
-class TopicOverviewGUI(mx.TopicsStateGui):
+class TopicOverviewGUI(mx.AlertMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator):
         super().__init__(state=state)
 
@@ -20,6 +21,7 @@ class TopicOverviewGUI(mx.TopicsStateGui):
         self.calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator = calculator
 
         weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
+
 
         self._text_id: str = TEXT_ID
         self._text: HTML = widgets_utils.text_widget(TEXT_ID)
@@ -51,13 +53,14 @@ class TopicOverviewGUI(mx.TopicsStateGui):
 
             weights: pd.DataFrame = self.compute_weights()
 
-            display_heatmap(
-                weights,
-                self.titles,
-                flip_axis=self._flip_axis.value,
-                aggregate=self._aggregate.value,
-                output_format=self._output_format.value,
-            )
+            print(weights.head(100))
+            # display_heatmap(
+            #     weights,
+            #     self.titles,
+            #     flip_axis=self._flip_axis.value,
+            #     aggregate=self._aggregate.value,
+            #     output_format=self._output_format.value,
+            # )
 
         self._flip_axis.disabled = False
         self._flip_axis.description = 'Flip'
@@ -68,13 +71,15 @@ class TopicOverviewGUI(mx.TopicsStateGui):
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(
             inferred_topics=self.inferred_topics,
-            filters=self.get_filters(),
+            filters=self.filter_opts.opts,
             threshold=self.get_threshold(),
             result_threshold=self.get_result_threshold(),
         )
 
-    def get_filters(self) -> dict:
-        return {}
+    @property
+    def filter_opts(self) -> pu.PropertyValueMaskingOpts:
+        return pu.PropertyValueMaskingOpts(year=self.years)
+
 
     def get_threshold(self) -> float:
         return 0.0
