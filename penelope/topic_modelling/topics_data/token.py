@@ -22,13 +22,14 @@ def get_topic_titles(
             raise TypeError("get_topic_titles: either TTW must contain `token` or `id2token` must be supplied")
 
         fg = id2token.get
-        topic_titles: pd.DataFrame = (
+        topic_titles: pd.Series = (
             weights.sort_values('weight', ascending=False)
             .groupby('topic_id')
-            .agg(token_ids=('token_id', lambda x: ' '.join(map(fg, list(x)[:n_tokens]))))
-        )
+            .agg(token=('token_id', lambda x: ' '.join(map(fg, list(x)[:n_tokens]))))
+        ).token
+
     else:
-        topic_titles: pd.DataFrame = (
+        topic_titles: pd.Series = (
             weights.sort_values('weight', ascending=False)
             .groupby('topic_id')
             .apply(lambda x: ' '.join(x.token[:n_tokens].str.title()))
