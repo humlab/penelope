@@ -1,6 +1,6 @@
 import pandas as pd
 from IPython.display import display
-from ipywidgets import HTML, Dropdown, HBox, Output, ToggleButton, VBox  # type: ignore
+import ipywidgets as w
 
 from penelope import topic_modelling as tm
 from penelope import utility as pu
@@ -22,19 +22,18 @@ class TopicOverviewGUI(mx.AlertMixIn, mx.TopicsStateGui):
 
         weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
 
-
         self._text_id: str = TEXT_ID
-        self._text: HTML = widgets_utils.text_widget(TEXT_ID)
-        self._flip_axis: ToggleButton = ToggleButton(
+        self._text: w.HTML = widgets_utils.text_widget(TEXT_ID)
+        self._flip_axis: w.ToggleButton = w.ToggleButton(
             value=False, description='Flip', icon='', layout=dict(width="80px")
         )
-        self._aggregate: Dropdown = Dropdown(
+        self._aggregate: w.Dropdown = w.Dropdown(
             description='Aggregate', options=weighings, value='max_weight', layout=dict(width="250px")
         )
-        self._output_format: Dropdown = Dropdown(
+        self._output_format: w.Dropdown = w.Dropdown(
             description='Output', options=['Heatmap', 'Table'], value='Heatmap', layout=dict(width="180px")
         )
-        self._output: Output = Output()
+        self._output: w.Output = w.Output()
 
     def setup(self) -> "TopicOverviewGUI":
         self._aggregate.observe(self.update_handler, names='value')
@@ -65,8 +64,10 @@ class TopicOverviewGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._flip_axis.disabled = False
         self._flip_axis.description = 'Flip'
 
-    def layout(self) -> VBox:
-        return VBox([HBox([self._aggregate, self._output_format, self._flip_axis]), HBox([self._output]), self._text])
+    def layout(self) -> w.VBox:
+        return w.VBox(
+            [w.HBox([self._aggregate, self._output_format, self._flip_axis]), w.HBox([self._output]), self._text]
+        )
 
     def compute_weights(self) -> pd.DataFrame:
         return self.calculator.compute(
@@ -79,7 +80,6 @@ class TopicOverviewGUI(mx.AlertMixIn, mx.TopicsStateGui):
     @property
     def filter_opts(self) -> pu.PropertyValueMaskingOpts:
         return pu.PropertyValueMaskingOpts(year=self.years)
-
 
     def get_threshold(self) -> float:
         return 0.0
