@@ -156,7 +156,7 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         self.topic_token_overview.reset_index().to_feather(jj(target_folder, "topic_token_overview.feather"))
 
     @staticmethod
-    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False):
+    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
         data: InferredTopicsData = None
 
@@ -216,7 +216,8 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         if slim:
             data.slimmer()
 
-        data.log_usage(total=True)
+        if verbose:
+            data.log_usage(total=True)
 
         return data
 
@@ -266,7 +267,7 @@ class InferredTopicsData(tt.TopicTokensMixIn):
 
         """topic_token_weights"""
         if 'token_id' not in self.topic_token_weights.columns:
-            self.topic_token_weights = self.topic_token_weights.head().reset_index().set_index('topic_id')
+            self.topic_token_weights = self.topic_token_weights.reset_index().set_index('topic_id')
 
         if 'token' in self.topic_token_weights:
             self.topic_token_weights.drop(columns='token', inplace=True)
