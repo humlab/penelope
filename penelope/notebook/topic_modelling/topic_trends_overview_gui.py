@@ -9,7 +9,6 @@ from IPython.display import display
 from penelope import topic_modelling as tm
 from penelope import utility as pu
 from penelope.notebook import widgets_utils as wu
-from penelope.topic_modelling.topics_data.prevelance import EmptyDataError
 
 from .. import widgets_utils
 from . import mixins as mx
@@ -41,22 +40,28 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             description='Aggregate', options=weighings, value='max_weight', layout=dict(width="250px")
         )
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            min=timespan[0], max=timespan[1], continues_update=False, value=timespan
+            description='',
+            min=timespan[0],
+            max=timespan[1],
+            step=1,
+            value=(timespan[0], timespan[1] + 5),
+            continues_update=False,
         )
-        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
+        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, continues_update=False)
 
         self._output_format: w.Dropdown = w.Dropdown(
-            description='Output', options=['Heatmap', 'Table'], value='Heatmap', layout=dict(width="180px")
+            description='Output',
+            options=['Heatmap', 'Table'],
+            value='Heatmap',
+            layout=dict(width="180px"),
         )
         self._output: w.Output = w.Output()
-        self._compute_handler: Callable[[Any], None] = self.update_handler
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.Box = None
 
     def setup(self, **kwargs) -> "TopicTrendsOverviewGUI":
-        # super().setup(**kwargs)
-        if hasattr(super(), "setup"):
-            getattr(super(), "setup")(**kwargs)
+        super().setup(**kwargs)
+        self._compute_handler: Callable[[Any], None] = self.update_handler
         self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles(n_tokens=100)
         self.observe(value=True, handler=self.update_handler)
         return self
@@ -123,7 +128,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
                 try:
                     weights: pd.DataFrame = self.update()
-                except EmptyDataError:
+                except pu.EmptyDataError:
                     weights = None
 
                 if weights is None:

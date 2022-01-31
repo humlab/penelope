@@ -51,7 +51,7 @@ class PivotKeysMixIn:
             options=['None'] + list(self.pivot_keys.text_names),
             value=['None'],
             rows=5,
-            layout=dict(width='120px'),
+            layout=dict(width='80px'),
         )
         self._filter_keys: w.SelectMultiple = w.SelectMultiple(
             options=[], value=[], rows=12, layout=dict(width='120px')
@@ -179,7 +179,7 @@ class PivotKeysMixIn:
     def default_pivot_keys_layout(self, **kwargs) -> w.Widget:
         self._filter_keys.rows = kwargs.get('rows', 12)
         self._filter_keys.layout = kwargs.get('layout', dict(width='120px'))
-        self._pivot_keys_text_names.layout = kwargs.get('layout', dict(width='120px'))
+        self._pivot_keys_text_names.layout = kwargs.get('layout', dict(width='70px'))
         return w.HBox(
             [
                 w.VBox([w.HTML("<b>Filter by</b>"), self._pivot_keys_text_names]),

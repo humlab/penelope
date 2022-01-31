@@ -9,8 +9,7 @@ from IPython.display import display
 import penelope.topic_modelling as tm
 import penelope.utility as pu
 from penelope.notebook import widgets_utils as wu
-from penelope.notebook.topic_modelling.utility import table_widget
-from penelope.topic_modelling.topics_data.prevelance import EmptyDataError
+from .utility import table_widget
 
 from . import mixins as mx
 from . import topic_trends_gui_utility as gui_utils
@@ -121,7 +120,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         try:
             self.yearly_topic_weights = self.update()
             self.alert("✅")
-        except EmptyDataError:
+        except pu.EmptyDataError:
             self.yearly_topic_weights = None
         except Exception as ex:
             self.warn(f"😡 {ex}")
