@@ -49,7 +49,7 @@ class AverageTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator
             inferred_topics.calculator.reset().threshold(threshold or 0).filter_by_keys(**(filters or {})).value
         )
         if len(dtw) == 0:
-            raise None
+            return None
         return self.compute_yearly_topic_weights(
             dtw,
             document_index=inferred_topics.document_index,
