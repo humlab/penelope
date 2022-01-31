@@ -4,9 +4,9 @@ import contextlib
 from collections import defaultdict
 from typing import Any, Callable, List, Mapping, Set, Tuple, Union
 
+import ipywidgets as w
 import pandas as pd
 from IPython.display import display as ipydisplay
-from ipywidgets import Button, Layout, Output, SelectMultiple, ToggleButton
 
 from penelope import utility as pu
 
@@ -20,8 +20,8 @@ PivotKeySpecArg = Union[List[PivotKeySpec], Mapping[str, List[PivotKeySpec]]]
 class DownloadMixIn:
     def __init__(self) -> None:
         super().__init__()
-        self._download = Button(description='Download', layout=Layout(width='auto'))
-        self._download_output: Output = Output()
+        self._download: w.Button = w.Button(description='Download', layout=dict(width='auto'))
+        self._download_output: w.Output = w.Output()
         self._download.on_click(self.download)
         self._download_data_name: str = 'data'
 
@@ -47,16 +47,18 @@ class PivotKeysMixIn:
             pivot_key_specs if isinstance(pivot_key_specs, pu.PivotKeys) else pu.PivotKeys(pivot_key_specs)
         )
 
-        self._pivot_keys_text_names: SelectMultiple = SelectMultiple(
+        self._pivot_keys_text_names: w.SelectMultiple = w.SelectMultiple(
             options=['None'] + list(self.pivot_keys.text_names),
             value=['None'],
             rows=5,
-            layout=Layout(width='120px'),
+            layout=dict(width='120px'),
         )
-        self._filter_keys: SelectMultiple = SelectMultiple(options=[], value=[], rows=12, layout=Layout(width='120px'))
+        self._filter_keys: w.SelectMultiple = w.SelectMultiple(
+            options=[], value=[], rows=12, layout=dict(width='120px')
+        )
 
-        self._unstack_tabular: ToggleButton = ToggleButton(
-            description="Unstack", icon='check', value=False, layout=Layout(width='140px')
+        self._unstack_tabular: w.ToggleButton = w.ToggleButton(
+            description="Unstack", icon='check', value=False, layout=dict(width='140px')
         )
         self.autoselect_key_values: bool = False
         self.prevent_event: bool = False
@@ -173,3 +175,14 @@ class PivotKeysMixIn:
 
         if hasattr(super(), "observe"):
             getattr(super(), "observe")(value=value, handler=handler, **kwargs)
+
+    def default_pivot_keys_layout(self, **kwargs) -> w.Widget:
+        self._filter_keys.rows = kwargs.get('rows', 12)
+        self._filter_keys.layout = kwargs.get('layout', dict(width='120px'))
+        self._pivot_keys_text_names.layout = kwargs.get('layout', dict(width='120px'))
+        return w.HBox(
+            [
+                w.VBox([w.HTML("<b>Filter by</b>"), self._pivot_keys_text_names]),
+                w.VBox([w.HTML("<b>Value</b>"), self._filter_keys]),
+            ]
+        )

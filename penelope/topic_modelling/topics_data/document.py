@@ -8,6 +8,7 @@ from scipy import sparse as sp
 
 from penelope import utility as pu
 
+from . import prevelance
 from .token import filter_topic_tokens_overview
 
 if TYPE_CHECKING:
@@ -198,3 +199,12 @@ class DocumentTopicsCalculator:
         """Compute topics' proportion in entire corpus."""
         data: pd.DataFrame = compute_topic_proportions(self.data, self.document_index)
         return data
+
+    def yearly_topic_weights(self, result_threshold: float, n_top_relevance: int) -> "DocumentTopicsCalculator":
+        self.data = prevelance.compute_yearly_topic_weights(
+            self.data,
+            document_index=self.document_index,
+            threshold=result_threshold or 0,
+            n_top_relevance=n_top_relevance,
+        )
+        return self

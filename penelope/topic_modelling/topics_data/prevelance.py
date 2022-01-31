@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 import abc
 import itertools
-from typing import List, NamedTuple, Tuple
+from typing import TYPE_CHECKING, List, NamedTuple, Tuple
 
 import numpy as np
 import pandas as pd
 
 from penelope.utility import rename_columns
 
-from .document import DocumentTopicsCalculator
-from .topics_data import InferredTopicsData
+if TYPE_CHECKING:
+    from .topics_data import InferredTopicsData
+
+
+class EmptyDataError(ValueError):
+    ...
 
 
 def default_calculator():
@@ -39,11 +45,13 @@ class AverageTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator
         result_threshold: float = 0.0,
         n_top_relevance: int = None,
     ) -> pd.DataFrame:
-        document_topic_weights: pd.DataFrame = (
-            DocumentTopicsCalculator(inferred_topics).threshold(threshold or 0).filter_by_keys(**(filters or {})).value
+        dtw: pd.DataFrame = (
+            inferred_topics.calculator.reset().threshold(threshold or 0).filter_by_keys(**(filters or {})).value
         )
+        if len(dtw) == 0:
+            return None
         return self.compute_yearly_topic_weights(
-            document_topic_weights,
+            dtw,
             document_index=inferred_topics.document_index,
             threshold=result_threshold or 0,
             n_top_relevance=n_top_relevance,
@@ -143,16 +151,20 @@ def _compute_average_yearly_topic_weights_above_threshold(
     return yearly_weights
 
 
-def _compute_yearly_topic_weights(document_topic_weights: pd.DataFrame) -> pd.DataFrame:
+def _compute_yearly_topic_weights(dtw: pd.DataFrame) -> pd.DataFrame:
     """Setup all topic-year combinations, aggregate max, sum, average & count."""
-    year_range = document_topic_weights.year.min(), document_topic_weights.year.max() + 1
-    topic_range = 0, document_topic_weights.topic_id.max() + 1
+
+    if len(dtw) is None:
+        raise EmptyDataError()
+
+    year_range = dtw.year.min(), dtw.year.max() + 1
+    topic_range = 0, dtw.topic_id.max() + 1
     year_topics: List[Tuple[int, int]] = list(itertools.product(range(*year_range), range(*topic_range)))
     return (
         pd.DataFrame(year_topics, columns=['year', 'topic_id'])
         .set_index(['year', 'topic_id'])
         .join(
-            document_topic_weights.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]),
+            dtw.groupby(['year', 'topic_id'])['weight'].agg([np.max, np.sum, np.mean, len]),
             how='left',
         )
         .fillna(0)
@@ -162,15 +174,13 @@ def _compute_yearly_topic_weights(document_topic_weights: pd.DataFrame) -> pd.Da
 
 def _add_average_yearly_topic_weight_above_threshold(
     yearly_weights: pd.DataFrame,
-    document_topic_weights: pd.DataFrame,
+    dtw: pd.DataFrame,
     threshold: float = None,
     target_name: str = 'average_weight',
 ) -> pd.DataFrame:
     """Compute average of all values equal to or above threshold (if specified)."""
     if (threshold or 0) > 0:
-        data: pd.DataFrame = _compute_average_yearly_topic_weights_above_threshold(
-            document_topic_weights, threshold, target_name
-        )
+        data: pd.DataFrame = _compute_average_yearly_topic_weights_above_threshold(dtw, threshold, target_name)
         yearly_weights = yearly_weights.drop(columns=target_name).join(data, how='left').fillna(0)
     return yearly_weights
 
@@ -190,13 +200,13 @@ def _add_average_yearly_topic_weight_by_all_documents(yearly_weights: pd.DataFra
 
 
 def _add_top_n_topic_prevelance_weight(
-    yearly_weights: pd.DataFrame, document_topic_weights: pd.DataFrame, n_top_relevance: int = None
+    yearly_weights: pd.DataFrame, dtw: pd.DataFrame, n_top_relevance: int = None
 ) -> pd.DataFrame:
 
     if not n_top_relevance:
         return yearly_weights
 
-    top_n_topics: pd.DataFrame = document_topic_weights.groupby(['year', 'document_id']).apply(
+    top_n_topics: pd.DataFrame = dtw.groupby(['year', 'document_id']).apply(
         lambda grp: grp.nlargest(n_top_relevance, 'weight')
     )['topic_id']
     top_n_counts: pd.DataFrame = (
@@ -209,11 +219,7 @@ def _add_top_n_topic_prevelance_weight(
 
 
 def compute_yearly_topic_weights(
-    document_topic_weights: pd.DataFrame,
-    *,
-    document_index: pd.DataFrame,
-    threshold: float = None,
-    n_top_relevance: int = None,
+    dtw: pd.DataFrame, *, document_index: pd.DataFrame, threshold: float = None, n_top_relevance: int = None
 ) -> pd.DataFrame:
     """Compute yearly document topic weights
          average_weight: average weight of all documents that has a weight in (i.e. assigned by engine) or a weight above a given threshold
@@ -224,11 +230,11 @@ def compute_yearly_topic_weights(
     """
 
     yearly_weights: pd.DataFrame = (
-        _compute_yearly_topic_weights(document_topic_weights)
+        _compute_yearly_topic_weights(dtw)
         .pipe(_add_yearly_corpus_document_count, document_index)
         .pipe(_add_average_yearly_topic_weight_by_all_documents)
-        .pipe(_add_average_yearly_topic_weight_above_threshold, document_topic_weights, threshold, 'average_weight')
-        .pipe(_add_top_n_topic_prevelance_weight, document_topic_weights, n_top_relevance)
+        .pipe(_add_average_yearly_topic_weight_above_threshold, dtw, threshold, 'average_weight')
+        .pipe(_add_top_n_topic_prevelance_weight, dtw, n_top_relevance)
         .reset_index()
     )
 

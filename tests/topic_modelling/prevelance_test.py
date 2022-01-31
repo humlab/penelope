@@ -114,7 +114,7 @@ def test_compute_prevelance_parts(simple_test_data):
     assert yearly_weights.true_average_weight.round(2).tolist() == [0.32, 0.12, 0.13, 0.43, 0.26, 0.74, 0.0, 0.0]
 
     yearly_weights: pd.DataFrame = prevelance._add_average_yearly_topic_weight_above_threshold(
-        yearly_weights, document_topic_weights=dtw, threshold=0.0
+        yearly_weights, dtw=dtw, threshold=0.0
     )
     assert yearly_weights.sort_index().average_weight.round(2).tolist() == [
         0.32,
@@ -128,7 +128,7 @@ def test_compute_prevelance_parts(simple_test_data):
     ]
 
     yearly_weights: pd.DataFrame = prevelance._add_average_yearly_topic_weight_above_threshold(
-        yearly_weights, document_topic_weights=dtw, threshold=0.20
+        yearly_weights, dtw=dtw, threshold=0.20
     )
     assert yearly_weights.sort_index().average_weight.round(2).tolist() == [0.48, 0.33, 0.38, 0.43, 0.5, 0.74, 0.0, 0.0]
     assert len(yearly_weights) == 8
