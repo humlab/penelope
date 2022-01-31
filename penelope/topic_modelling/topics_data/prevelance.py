@@ -7,14 +7,11 @@ from typing import TYPE_CHECKING, List, NamedTuple, Tuple
 import numpy as np
 import pandas as pd
 
-from penelope.utility import rename_columns
+from penelope import utility as pu
 
 if TYPE_CHECKING:
     from .topics_data import InferredTopicsData
 
-
-class EmptyDataError(ValueError):
-    ...
 
 
 def default_calculator():
@@ -155,7 +152,7 @@ def _compute_yearly_topic_weights(dtw: pd.DataFrame) -> pd.DataFrame:
     """Setup all topic-year combinations, aggregate max, sum, average & count."""
 
     if len(dtw) is None:
-        raise EmptyDataError()
+        raise pu.EmptyDataError()
 
     year_range = dtw.year.min(), dtw.year.max() + 1
     topic_range = 0, dtw.topic_id.max() + 1
@@ -168,7 +165,7 @@ def _compute_yearly_topic_weights(dtw: pd.DataFrame) -> pd.DataFrame:
             how='left',
         )
         .fillna(0)
-        .pipe(rename_columns, columns=['max_weight', 'sum_weight', 'average_weight', 'n_topic_documents'])
+        .pipe(pu.rename_columns, columns=['max_weight', 'sum_weight', 'average_weight', 'n_topic_documents'])
     )
 
 

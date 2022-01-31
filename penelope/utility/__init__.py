@@ -188,3 +188,6 @@ class PropsMixIn(t.Generic[T]):
             if hasattr(self, key):
                 setattr(self, key, kwargs.get(key))
         return self
+
+class EmptyDataError(ValueError):
+    ...

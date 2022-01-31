@@ -69,6 +69,12 @@ class InferredTopicsData(tt.TopicTokensMixIn):
     def timespan(self) -> Tuple[int, int]:
         return self.year_period
 
+    def startspan(self, n: int) -> Tuple[int, int]:
+        return (self.year_period[0], min(self.year_period[1], self.year_period[0] + n))
+
+    def stopspan(self, n: int) -> Tuple[int, int]:
+        return (max(self.year_period[0], self.year_period[1] - n), self.year_period[1])
+
     @property
     def year_period(self) -> Tuple[int, int]:
         """Returns documents `year` interval (if exists)"""

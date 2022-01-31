@@ -108,11 +108,11 @@ class ComputeMixIn:
         ...
 
     def setup(self, **kwargs) -> ComputeMixIn:
+        self._compute.on_click(self._mx_compute_handler_proxy)
         if hasattr(super(), "setup"):
             getattr(super(), "setup")(**kwargs)
         if not self._compute_handler:
             return self
-        self._compute.on_click(self._compute_handler)
         wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=False)
         return self
 
@@ -122,10 +122,14 @@ class ComputeMixIn:
             self._compute.disabled = self.auto_compute
             self.observe(value=self.auto_compute, handler=self._compute_handler)
             if self.auto_compute:
-                self._compute_handler()  # pylint: disable=not-callable
+                self._mx_compute_handler_proxy()  # pylint: disable=not-callable
         else:
             self._compute.disabled = True
             self._auto_compute.disabled = True
+
+    def _mx_compute_handler_proxy(self, *args) -> None:
+        if self._compute_handler:
+            self._compute_handler(args)
 
     @property
     def auto_compute(self) -> bool:
