@@ -239,3 +239,26 @@ class DocumentTopicsCalculator:
         self.data = topic_topic
 
         return self
+
+    def to_pivot_topic_network(self, pivot_key, aggregate: str, threshold: float, pivot_key_map: dict[int, str], pivot_key_name: str = "category") -> DocumentTopicsCalculator:
+
+        data: pd.DataFrame = self.data #.set_index('document_id')
+
+        network_data = (
+            data.groupby([pivot_key, 'topic_id']).agg([np.mean, np.max])['weight'].reset_index()
+        )
+        network_data.columns = [pivot_key, 'topic_id', 'mean', 'max']
+        network_data = network_data[(network_data[aggregate] > threshold)].reset_index()
+
+        if len(network_data) == 0:
+            return network_data
+
+        network_data[aggregate] = pu.clamp_values(list(network_data[aggregate]), (0.1, 1.0))  # type: ignore
+
+        network_data[pivot_key_name] = network_data[pivot_key].apply(pivot_key_map.get)
+
+        network_data['weight'] = network_data[aggregate]
+
+        self.data = network_data
+
+        return self
