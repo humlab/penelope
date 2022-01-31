@@ -7,13 +7,14 @@ import pandas as pd
 from IPython.display import display
 
 from penelope import utility as pu
-from penelope.notebook.widgets_utils import register_observer
+from penelope.notebook import widgets_utils as wu
 
 from . import mixins as mx
 from .model_container import TopicModelContainer
 from .utility import table_widget
 
 
+# FIXME use ComputeMixIn
 class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer | dict):
         super().__init__(state=state)
@@ -28,11 +29,11 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._content_placeholder: w.Box = None
         self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
         self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
-        self.click_handler: Callable[[Any], None] = None
+        self.click_handler: Callable[[pd.Series, Any], None] = None
 
     def setup(self, **kwargs) -> "TopicDocumentsGUI":  # pylint: disable=arguments-differ,unused-argument
         self._compute.on_click(self.update_handler)
-        register_observer(self._auto_compute, handler=self._auto_compute_handler, value=True)
+        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=True)
         return self
 
     def layout(self) -> w.Widget:
@@ -70,8 +71,8 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
             getattr(super(), "observe")(value=value, handler=self.update_handler, **kwargs)
 
         value = value and self.auto_compute  # Never override autocompute
-        register_observer(self._threshold, handler=self.update_handler, value=value)
-        register_observer(self._year_range, handler=self.update_handler, value=value)
+        wu.register_observer(self._threshold, handler=self.update_handler, value=value)
+        wu.register_observer(self._year_range, handler=self.update_handler, value=value)
         return self
 
     def update_handler(self, *_):
@@ -85,13 +86,10 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.update()
 
                 if data is not None:
-                    g = table_widget(data)
-                    if self.click_handler:
-                        if hasattr(g, "on_cell_click"):
-                            g.on_cell_click(self.click_handler)
+                    g = table_widget(data, handler=self.click_handler)
                     display(g)
 
-                self.alert("✔️")
+                self.alert("✅")
             except Exception as ex:
                 self.warn(str(ex))
 
@@ -205,9 +203,9 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
     def observe(self, value: bool, **kwargs) -> "FindTopicDocumentsGUI":
         super().observe(value=value, **kwargs)
         value = value and self.auto_compute  # Never override autocompute
-        register_observer(self._n_top_token, handler=self.update_handler, value=value)
-        register_observer(self._find_text, handler=self.update_handler, value=value)
-        register_observer(self._find_text, handler=self._find_text_handler, value=value)
+        wu.register_observer(self._n_top_token, handler=self.update_handler, value=value)
+        wu.register_observer(self._find_text, handler=self.update_handler, value=value)
+        wu.register_observer(self._find_text, handler=self._find_text_handler, value=value)
         return self
 
     @property
