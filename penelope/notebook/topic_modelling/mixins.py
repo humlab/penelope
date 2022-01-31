@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from typing import Any, Callable
+
 import ipywidgets as w
 
 from penelope import topic_modelling as tm
 
+from .. import widgets_utils as wu
 from . import model_container as mc
 
 
@@ -80,10 +83,50 @@ class NextPrevTopicMixIn:
 class AlertMixIn:
     def __init__(self, **kwargs) -> None:
         self._alert: w.HTML = w.HTML()
+        self._alert.value = "&nbsp;"
+
         super().__init__(**kwargs)
 
     def alert(self, msg: str):
-        self._alert.value = msg
+        self._alert.value = msg or "&nbsp;"
 
     def warn(self, msg: str):
         self.alert(f"<span style='color=red'>{msg}</span>")
+
+
+class ComputeMixIn:
+    def __init__(self, **kwargs) -> None:
+        self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
+        self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
+        self._compute_handler: Callable[[Any], None] = None
+        super().__init__(**kwargs)
+
+    def update_handler(self, *_) -> None:  # pylint: disable=arguments-differ,unused-argument
+        ...
+
+    def observe(self, value: bool, handler: Any, **_) -> None:  # pylint: disable=arguments-differ,unused-argument
+        ...
+
+    def setup(self, **kwargs) -> ComputeMixIn:
+        if hasattr(super(), "setup"):
+            getattr(super(), "setup")(**kwargs)
+        if not self._compute_handler:
+            return self
+        self._compute.on_click(self._compute_handler)
+        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=False)
+        return self
+
+    def _auto_compute_handler(self, *_):
+        if self._compute_handler is not None:
+            self._auto_compute.icon = 'check' if self.auto_compute else ''
+            self._compute.disabled = self.auto_compute
+            self.observe(value=self.auto_compute, handler=self._compute_handler)
+            if self.auto_compute:
+                self._compute_handler()  # pylint: disable=not-callable
+        else:
+            self._compute.disabled = True
+            self._auto_compute.disabled = True
+
+    @property
+    def auto_compute(self) -> bool:
+        return self._compute_handler is not None and self._auto_compute.value
