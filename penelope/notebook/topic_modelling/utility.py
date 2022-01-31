@@ -1,20 +1,35 @@
 from __future__ import annotations
 
-import bqplot as bq
+from typing import Callable
+
 import ipydatagrid as dg
 import pandas as pd
 
 
-def table_widget(data: pd.DataFrame, **kwargs) -> None:  # pylint: disable=unused-argument
-    weight_renderer: dg.TextRenderer = dg.TextRenderer(
-        text_color="blue", background_color=bq.ColorScale(min=-3.0, max=1.0)
-    )
-    renderers = {
-        "weight": weight_renderer,
-    }
-    grid: dg.DataGrid = dg.DataGrid(data, renderers=renderers, selection_mode="cell")
+def table_widget(data: pd.DataFrame, **kwargs) -> None:
 
-    grid.auto_fit_params = {"area": "body"}
-    grid.auto_fit_columns = True
-    grid.editable = False
-    return grid
+    """If handler is passed, then create wrapper handler that passes row as argument"""
+    handler: Callable[[pd.Series], None] = kwargs.pop('handler', None)
+
+    sane_defaults: dict = dict(
+        selection_mode="row",
+        auto_fit_columns=True,
+        auto_fit_params={"area": "body"},
+        grid_style={'background_color': '#FFFFCC', 'grid_line_color': '#FFFFCC'},
+        header_visibility='column',
+        editable=False,
+    )
+
+    g = dg.DataGrid(dataframe=data, **{**sane_defaults, **kwargs})
+
+    if handler is not None:
+
+        def row_clicked(args) -> None:
+            data_id: int = args.get('primary_key_row', None)
+            if data_id is not None:
+                item: pd.Series = g.data.loc[data_id]
+                handler(item, g)
+
+        g.on_cell_click(row_clicked)
+
+    return g
