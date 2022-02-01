@@ -236,6 +236,7 @@ class PropertyValueMaskingOpts:
             self.data.update(other.data)
         return self
 
+
 PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]
 
 

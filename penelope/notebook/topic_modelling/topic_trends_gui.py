@@ -9,11 +9,11 @@ from IPython.display import display
 import penelope.topic_modelling as tm
 import penelope.utility as pu
 from penelope.notebook import widgets_utils as wu
-from .utility import table_widget
 
 from . import mixins as mx
 from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
+from .utility import table_widget
 
 
 class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):

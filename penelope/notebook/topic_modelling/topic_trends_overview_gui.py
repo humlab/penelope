@@ -47,7 +47,9 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             value=(timespan[0], timespan[1] + 5),
             continuous_update=False,
         )
-        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, continuous_update=False)
+        self._threshold: w.FloatSlider = w.FloatSlider(
+            min=0.01, max=1.0, value=0.05, step=0.01, continuous_update=False
+        )
 
         self._output_format: w.Dropdown = w.Dropdown(
             description='Output',

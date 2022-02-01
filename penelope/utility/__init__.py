@@ -189,5 +189,6 @@ class PropsMixIn(t.Generic[T]):
                 setattr(self, key, kwargs.get(key))
         return self
 
+
 class EmptyDataError(ValueError):
     ...
