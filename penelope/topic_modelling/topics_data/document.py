@@ -223,7 +223,9 @@ class DocumentTopicsCalculator:
         topic_product: pd.DataFrame = data.merge(data, left_index=True, right_index=True)
         topic_product = topic_product[(topic_product.topic_id_x < topic_product.topic_id_y)]
 
-        topic_topic: pd.DataFrame = topic_product.groupby(pivot_keys + [topic_product.topic_id_x, topic_product.topic_id_y]).agg(
+        topic_topic: pd.DataFrame = topic_product.groupby(
+            pivot_keys + [topic_product.topic_id_x, topic_product.topic_id_y]
+        ).agg(
             n_docs=('year_x', 'size')  # , weight_x=('weight_x', 'sum'), weight_y=('weight_y', 'sum')
         )
 
@@ -240,25 +242,31 @@ class DocumentTopicsCalculator:
 
         return self
 
-    def to_pivot_topic_network(self, *, pivot_key: str, aggregate: str, threshold: float, pivot_key_map: dict[int, str], pivot_key_name: str = "category") -> DocumentTopicsCalculator:
+    def to_pivot_topic_network(
+        self,
+        *,
+        pivot_key_id: str,
+        pivot_key_name: str = "category",
+        pivot_key_map: dict[int, str],
+        aggregate: str,
+        threshold: float,
+    ) -> DocumentTopicsCalculator:
 
-        data: pd.DataFrame = self.data #.set_index('document_id')
+        data: pd.DataFrame = self.data  # .set_index('document_id')
 
-        network_data = (
-            data.groupby([pivot_key, 'topic_id']).agg([np.mean, np.max])['weight'].reset_index()
+        network_data: pd.DataFrame = (
+            data.groupby([pivot_key_id, 'topic_id']).agg([np.mean, np.max])['weight'].reset_index()
         )
-        network_data.columns = [pivot_key, 'topic_id', 'mean', 'max']
+        network_data.columns = [pivot_key_id, 'topic_id', 'mean', 'max']
         network_data = network_data[(network_data[aggregate] > threshold)].reset_index()
 
         if len(network_data) == 0:
             return network_data
 
         network_data[aggregate] = pu.clamp_values(list(network_data[aggregate]), (0.1, 1.0))  # type: ignore
-
-        network_data[pivot_key_name] = network_data[pivot_key].apply(pivot_key_map.get)
-
+        network_data[pivot_key_name] = network_data[pivot_key_id].apply(pivot_key_map.get)
         network_data['weight'] = network_data[aggregate]
-
+        network_data.drop(columns=['mean', 'max'], inplace=True)
         self.data = network_data
 
         return self

@@ -3,6 +3,7 @@
 from .load_topic_model_gui import create_load_topic_model_gui
 from .mixins import AlertMixIn, NextPrevTopicMixIn, TopicsStateGui
 from .model_container import TopicModelContainer
+from .pivot_network_gui import PivotTopicNetworkGUI
 from .topic_document_network_gui import PlotMode
 from .topic_document_network_gui import display_gui as display_topic_document_network_gui
 from .topic_document_network_utility import display_document_topics_as_grid
