@@ -27,7 +27,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
         super().__init__(state=state)
 
-        slider_opts = {'continues_update': False, 'layout': dict(width='200px')}
+        slider_opts = {'continuous_update': False, 'layout': dict(width='200px')}
 
         self.network_data: pd.DataFrame = None
         self.topic_proportions: pd.DataFrame = None
