@@ -32,7 +32,8 @@ class NextPrevTopicMixIn:
         self._topic_id: w.Dropdown = w.Dropdown(options=[(str(i), i) for i in range(0, 200)], layout=dict(width="80px"))
         self._next_topic_id: w.Button = w.Button(description=">>", layout=dict(button_style='Success', width="40px"))
         self._next_prev_layout: w.HBox = w.HBox([self._prev_topic_id, self._topic_id, self._next_topic_id])
-
+        self._prev_topic_id.style.button_color = 'lightgreen'
+        self._next_topic_id.style.button_color = 'lightgreen'
         super().__init__(**kwargs)
 
     @property
