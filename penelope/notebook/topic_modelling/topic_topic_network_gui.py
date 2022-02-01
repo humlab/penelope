@@ -27,7 +27,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
         super().__init__(state=state)
 
-        slider_opts = {'continues_update': False, 'layout': dict(width='200px')}
+        slider_opts = {'continuous_update': False, 'layout': dict(width='200px')}
 
         self.network_data: pd.DataFrame = None
         self.topic_proportions: pd.DataFrame = None
@@ -66,7 +66,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self.observe(value=True, handler=self.update_handler)
         return self
 
-    def observe(self, value: bool, **kwargs) -> TopicTopicGUI:  # pylint: disable=unused-argument
+    def observe(self, value: bool, **kwargs) -> TopicTopicGUI:  # pylint: disable=unused-argument,arguments-differ
         wu.register_observer(self._threshold, handler=self.update_handler, value=value)
         wu.register_observer(self._n_docs, handler=self.update_handler, value=value)
         wu.register_observer(self._year_range, handler=self.update_handler, value=value)

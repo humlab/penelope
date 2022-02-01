@@ -115,11 +115,13 @@ class TopicDocumentNetworkGui(ntm.TopicsStateGui):
 
         self.text: widgets.HTML = None
         self.period = widgets.IntRangeSlider(
-            description="", min=1900, max=2030, step=1, value=(1900, 1900 + 5), continues_update=False
+            description="", min=1900, max=2030, step=1, value=(1900, 1900 + 5), continuous_update=False
         )
-        self.scale = widgets.FloatSlider(description="", min=0.0, max=1.0, step=0.01, value=0.1, continues_update=False)
+        self.scale = widgets.FloatSlider(
+            description="", min=0.0, max=1.0, step=0.01, value=0.1, continuous_update=False
+        )
         self.threshold = widgets.FloatSlider(
-            description="", min=0.0, max=1.0, step=0.01, value=0.10, continues_update=False
+            description="", min=0.0, max=1.0, step=0.01, value=0.10, continuous_update=False
         )
         self.output_format = widgets.Dropdown(
             description="",

@@ -3,7 +3,6 @@ from typing import Tuple
 import bokeh
 import bokeh.plotting
 import pandas as pd
-from IPython.display import display
 from loguru import logger
 
 import penelope.network.networkx.utility as network_utility

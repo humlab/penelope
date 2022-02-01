@@ -45,9 +45,11 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             max=timespan[1],
             step=1,
             value=(timespan[0], timespan[1] + 5),
-            continues_update=False,
+            continuous_update=False,
         )
-        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, continues_update=False)
+        self._threshold: w.FloatSlider = w.FloatSlider(
+            min=0.01, max=1.0, value=0.05, step=0.01, continuous_update=False
+        )
 
         self._output_format: w.Dropdown = w.Dropdown(
             description='Output',
@@ -67,7 +69,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return self
 
     def observe(self, value: bool, **kwargs) -> TopicTrendsOverviewGUI:  # pylint: disable=unused-argument
-        # super().observe(value=value, **kwargs)
+        super().observe(value=value, handler=self.update_handler, **kwargs)
         # value = value and self.auto_compute  # Never override autocompute
         wu.register_observer(self._aggregate, handler=self.update_handler, value=value)
         wu.register_observer(self._output_format, handler=self.update_handler, value=value)

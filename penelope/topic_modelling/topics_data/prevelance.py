@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from .topics_data import InferredTopicsData
 
 
-
 def default_calculator():
     return MemoizedTopicPrevalenceOverTimeCalculator(calculator=AverageTopicPrevalenceOverTimeCalculator())
 

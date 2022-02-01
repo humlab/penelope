@@ -93,6 +93,25 @@ class AlertMixIn:
     def warn(self, msg: str):
         self.alert(f"<span style='color=red'>{msg}</span>")
 
+    def observe_slider_update_label(
+        self, slider: w.IntSlider, label: w.HTML, text: str, decimals: int = 2
+    ) -> Callable[[Any], None]:
+        is_range: bool = isinstance(slider, (w.IntRangeSlider, w.FloatRangeSlider))
+        is_float: bool = isinstance(slider, (w.FloatSlider, w.FloatRangeSlider))
+        number_fmt: str = f"{{:.{decimals}f}}" if is_float else "{}"
+        value_fmt: str = f"{number_fmt}-{number_fmt}" if is_range else number_fmt
+
+        def get_label(value) -> str:
+            tag: str = "" if slider.value is None else value_fmt.format(*value) if is_range else value_fmt.format(value)
+            return f"<b>{text}</b> {tag}"
+
+        def handler(*_):
+            label.value = get_label(slider.value)
+
+        label.value = get_label(slider.value)
+        slider.observe(handler, names='value')
+        # handler()
+
 
 class ComputeMixIn:
     def __init__(self, **kwargs) -> None:
@@ -129,7 +148,7 @@ class ComputeMixIn:
 
     def _mx_compute_handler_proxy(self, *args) -> None:
         if self._compute_handler:
-            self._compute_handler(args)
+            self._compute_handler(args)  # pylint: disable=not-callable
 
     @property
     def auto_compute(self) -> bool:

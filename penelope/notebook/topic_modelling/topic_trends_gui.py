@@ -9,11 +9,11 @@ from IPython.display import display
 import penelope.topic_modelling as tm
 import penelope.utility as pu
 from penelope.notebook import widgets_utils as wu
-from .utility import table_widget
 
 from . import mixins as mx
 from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
+from .utility import table_widget
 
 
 class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
@@ -33,7 +33,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         )
 
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            min=timespan[0], max=timespan[1], continues_update=False, value=timespan
+            min=timespan[0], max=timespan[1], continuous_update=False, value=timespan
         )
         self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
 
