@@ -71,13 +71,14 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
     def setup(self, **kwargs) -> "PivotTopicNetworkGUI":
         super().setup(**kwargs)
         self._compute_handler: Callable[[Any], None] = self.update_handler
-        self.topic_proportions: pd.DataFrame = self.inferred_topics.calculator.topic_proportions()
+        self.topic_proportions: pd.DataFrame = self.inferred_topics.calculator.reset().topic_proportions()
         self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles()
         self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
         self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe_slider_update_label(self._grouped_threshold, self._grouped_threshold_label, "Threshold (g)")
         self.observe_slider_update_label(self._scale, self._scale_label, "Scale")
         self.observe(value=True, handler=self.update_handler)
+        self.inferred_topics.calculator.reset()
         return self
 
     def observe(self, value: bool, **kwargs) -> "PivotTopicNetworkGUI":  # pylint: disable=unused-argument
