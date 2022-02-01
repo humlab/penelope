@@ -240,7 +240,7 @@ class DocumentTopicsCalculator:
 
         return self
 
-    def to_pivot_topic_network(self, pivot_key, aggregate: str, threshold: float, pivot_key_map: dict[int, str], pivot_key_name: str = "category") -> DocumentTopicsCalculator:
+    def to_pivot_topic_network(self, *, pivot_key: str, aggregate: str, threshold: float, pivot_key_map: dict[int, str], pivot_key_name: str = "category") -> DocumentTopicsCalculator:
 
         data: pd.DataFrame = self.data #.set_index('document_id')
 
