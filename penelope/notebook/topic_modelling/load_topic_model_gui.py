@@ -1,34 +1,34 @@
-import warnings
+from __future__ import annotations
+
 from contextlib import suppress
 from os.path import join as jj
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, List, Optional
 
-from ipywidgets import Button, Dropdown, HBox, Layout, Output, VBox
+import ipywidgets as w
 
 from penelope import pipeline
-from penelope.topic_modelling import InferredModel, InferredTopicsData, find_models
+from penelope import topic_modelling as tm
 
+from . import mixins as mx
 from . import topic_titles_gui
 from .model_container import TopicModelContainer
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-
 
 def load_model(
-    corpus_config: pipeline.CorpusConfig,
+    *,
     corpus_folder: str,
     state: TopicModelContainer,
     model_name: str,
-    model_infos: List[Dict[str, Any]] = None,
+    corpus_config: pipeline.CorpusConfig = None,
+    model_infos: list[dict[str, Any]] = None,
     slim: bool = False,
 ):
 
-    model_infos = model_infos or find_models(corpus_folder)
+    model_infos = model_infos or tm.find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
     filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
-    trained_model: InferredModel = InferredModel.load(model_info["folder"], lazy=True)
-    inferred_topics: InferredTopicsData = InferredTopicsData.load(
+    trained_model: tm.InferredModel = tm.InferredModel.load(model_info["folder"], lazy=True)
+    inferred_topics: tm.InferredTopicsData = tm.InferredTopicsData.load(
         folder=jj(corpus_folder, model_info["name"]), filename_fields=filename_fields, slim=slim
     )
 
@@ -41,58 +41,80 @@ def load_model(
         if topic_proportions is not None:
             topics['score'] = topic_proportions
 
-    # topics.style.set_properties(**{'text-align': 'left'}).set_table_styles(
-    #     [dict(selector='td', props=[('text-align', 'left')])]
-    # )
-
     if topics is None:
         raise ValueError("bug-check: No topic_token_overview in loaded model!")
 
     topic_titles_gui.display_gui(topics, topic_titles_gui.PandasTopicTitlesGUI)
 
 
-class LoadGUI:
-    def __init__(self):
-        self.model_name: Dropdown = Dropdown(description="Model", options=[], layout=Layout(width="40%"))
-        self.load: Button = Button(description="Load", button_style="Success", layout=Layout(width="80px"))
-        self.output: Output = Output()
-        self.load_callback: Callable = None
+class LoadGUI(mx.AlertMixIn):
+    def __init__(
+        self,
+        corpus_folder: str,
+        state: TopicModelContainer,
+        corpus_config: pipeline.CorpusConfig | None = None,
+        slim: bool = False,
+    ):
+        super().__init__()
+        self.corpus_folder: str = corpus_folder
+        self.state: TopicModelContainer = state
+        self.corpus_config: Optional[pipeline.CorpusConfig] = corpus_config
+        self.slim: bool = slim
+        self._model_name: w.Dropdown = w.Dropdown(description="Model", options=[], layout=dict(width="40%"))
 
-    def setup(self, model_names: List[str], load_callback: Callable = None) -> "LoadGUI":
-        self.model_name.options = model_names
-        self.load_callback = load_callback
-        self.load.on_click(self.load_handler)
+        self._load: w.Button = w.Button(description="Load", button_style="Success", layout=dict(width="80px"))
+        self._output: w.Output = w.Output()
+
+        self.model_infos: List[dict] = tm.find_models(self.corpus_folder)
+        self.model_names: List[str] = list(x["name"] for x in self.model_infos)
+
+    def setup(self) -> "LoadGUI":
+        self._model_name.options = self.model_names
+        self._load.on_click(self.load_handler)
         return self
 
-    def layout(self) -> VBox:
-        _layout = VBox([HBox([self.model_name, self.load]), VBox([self.output])])
+    def layout(self) -> w.VBox:
+        _layout = w.VBox([w.HBox([self._model_name, self._load, self._alert]), w.VBox([self._output])])
         return _layout
 
     def load_handler(self, *_):
-
-        if self.model_name.value is None:
-            print("Please specify which model to load.")
-            return
-
-        self.output.clear_output()
         try:
-            self.load.disabled = True
-            with self.output:
-                self.load_callback(self.model_name.value)
-        finally:
-            self.load.disabled = False
+            if self._model_name.value is None:
+                self.alert("🙃 Please specify which model to load.")
+                return
+            self._output.clear_output()
+            try:
+                self._load.disabled = True
+                with self._output:
+                    self.load()
+            finally:
+                self._load.disabled = False
+        except Exception as ex:
+            self.warn(f"😡 {ex}")
+
+    def load(self) -> None:
+        load_model(
+            corpus_folder=self.corpus_folder,
+            state=self.state,
+            model_name=self._model_name.value,
+            corpus_config=self.corpus_config,
+            model_infos=self.model_infos,
+            slim=self.slim,
+        )
 
 
 def create_load_topic_model_gui(
-    corpus_config: Optional[pipeline.CorpusConfig], corpus_folder: str, state: TopicModelContainer, slim: bool = False
+    corpus_folder: str,
+    state: TopicModelContainer,
+    corpus_config: Optional[pipeline.CorpusConfig] = None,
+    slim: bool = False,
 ) -> LoadGUI:
 
-    model_infos: List[dict] = find_models(corpus_folder)
-    model_names: List[str] = list(x["name"] for x in model_infos)
-
-    def load_callback(model_name: str):
-        load_model(corpus_config, corpus_folder, state, model_name, model_infos, slim=slim)
-
-    gui = LoadGUI().setup(model_names, load_callback=load_callback)
+    gui: LoadGUI = LoadGUI(
+        corpus_folder=corpus_folder,
+        state=state,
+        corpus_config=corpus_config,
+        slim=slim,
+    ).setup()
 
     return gui
