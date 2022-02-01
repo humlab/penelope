@@ -33,7 +33,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         )
 
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            min=timespan[0], max=timespan[1], continues_update=False, value=timespan
+            min=timespan[0], max=timespan[1], continuous_update=False, value=timespan
         )
         self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
 
