@@ -21,41 +21,49 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         super().__init__(state=state)
 
         self.yearly_topic_weights: pd.DataFrame = None
-
+        slider_opts = {
+            'continuous_update': False,
+            'layout': dict(width='140px'),
+            'readout': False,
+            'handle_color': 'lightblue',
+        }
         timespan: tuple[int, int] = self.inferred_topics.timespan
+        yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
 
         self._text: w.HTML = w.HTML()
 
         weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
 
-        self._aggregate: w.Dropdown = w.Dropdown(
-            description='Aggregate', options=weighings, value='true_average_weight', layout=dict(width="200px")
-        )
+        self._aggregate: w.Dropdown = w.Dropdown(options=weighings, value='true_average_weight')
 
+        self._year_range_label: w.HTML = w.HTML("Years")
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            min=timespan[0], max=timespan[1], continuous_update=False, value=timespan
+            min=timespan[0], max=timespan[1], value=yearspan, **slider_opts
         )
-        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01)
+        self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
+        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, **slider_opts)
 
         self._output_format: w.Dropdown = w.Dropdown(
-            description='Format',
-            options=['Chart', 'Table', 'xlsx', 'csv', 'clipboard', 'pandas'],
-            value='Chart',
-            layout=dict(width="200px"),
+            options=['Chart', 'Table', 'xlsx', 'csv', 'clipboard', 'pandas'], value='Chart'
         )
         self._output: w.Output = w.Output()
         self._compute_handler: Callable[[Any], None] = self.update_handler
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.VBox = w.HBox()
+        self._aggregate.layout.width = '140px'
+        self._auto_compute.layout.width = "80px"
+        self._output_format.layout.width = '140px'
 
     def setup(self, **kwargs) -> "TopicTrendsGUI":
         super().setup(**kwargs)
 
         self.topic_id = (0, self.inferred_n_topics - 1)
+        self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
+        self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe(value=True, handler=self.update_handler)
         return self
 
-    def observe(self, value: bool, **kwargs) -> TopicTrendsGUI:  # pylint: disable=unused-argument
+    def observe(self, value: bool, **kwargs) -> TopicTrendsGUI:  # pylint: disable=unused-argument, arguments-differ
         wu.register_observer(self._topic_id, handler=self.topic_changed, value=value)
         wu.register_observer(self._aggregate, handler=self.display_handler, value=value)
         wu.register_observer(self._output_format, handler=self.display_handler, value=value)
@@ -69,9 +77,9 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                         w.VBox(
                             [
                                 w.HBox([self._next_prev_layout]),
-                                w.HTML("<b>Year range</b>"),
+                                self._year_range_label,
                                 self._year_range,
-                                w.HTML("<b>Threshold</b>"),
+                                self._threshold_label,
                                 self._threshold,
                             ]
                         ),
@@ -80,10 +88,12 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                     + [
                         w.VBox(
                             [
+                                w.HTML("Aggregate"),
                                 self._aggregate,
-                                w.HBox([self._output_format]),
-                                self._alert,
+                                w.HTML("Format"),
+                                self._output_format,
                                 w.HBox([self._compute, self._auto_compute]),
+                                self._alert,
                             ]
                         ),
                     ]

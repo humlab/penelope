@@ -24,8 +24,14 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         super().__init__(state=state)
 
         # FIXME, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator if caching....
-
+        slider_opts = {
+            'continuous_update': False,
+            'layout': dict(width='140px'),
+            'readout': False,
+            'handle_color': 'lightblue',
+        }
         timespan: tuple[int, int] = self.inferred_topics.timespan
+        yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
 
         self.titles: pd.DataFrame = None
 
@@ -36,27 +42,18 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self._flip_axis: w.ToggleButton = w.ToggleButton(
             value=False, description='Flip', icon='', layout=dict(width="80px")
         )
-        self._aggregate: w.Dropdown = w.Dropdown(
-            description='Aggregate', options=weighings, value='max_weight', layout=dict(width="250px")
-        )
+        self._aggregate: w.Dropdown = w.Dropdown(options=weighings, value='max_weight', layout=dict(width="140px"))
+        self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
+        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, **slider_opts)
+        self._year_range_label: w.HTML = w.HTML("Years")
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            description='',
-            min=timespan[0],
-            max=timespan[1],
-            step=1,
-            value=(timespan[0], timespan[1] + 5),
-            continuous_update=False,
-        )
-        self._threshold: w.FloatSlider = w.FloatSlider(
-            min=0.01, max=1.0, value=0.05, step=0.01, continuous_update=False
+            min=timespan[0], max=timespan[1], step=1, value=yearspan, **slider_opts
         )
 
         self._output_format: w.Dropdown = w.Dropdown(
-            description='Output',
-            options=['Heatmap', 'Table'],
-            value='Heatmap',
-            layout=dict(width="180px"),
+            options=['Heatmap', 'Table'], value='Heatmap', layout=dict(width="140px")
         )
+        self._auto_compute.layout.width = "80px"
         self._output: w.Output = w.Output()
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.Box = None
@@ -65,11 +62,15 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         super().setup(**kwargs)
         self._compute_handler: Callable[[Any], None] = self.update_handler
         self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles(n_tokens=100)
+        self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
+        self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe(value=True, handler=self.update_handler)
         return self
 
-    def observe(self, value: bool, **kwargs) -> TopicTrendsOverviewGUI:  # pylint: disable=unused-argument
-        super().observe(value=value, handler=self.update_handler, **kwargs)
+    def observe(
+        self, value: bool, **kwargs
+    ) -> TopicTrendsOverviewGUI:  # pylint: disable=unused-argument,arguments-differ
+        super().observe(value=value, **kwargs)
         # value = value and self.auto_compute  # Never override autocompute
         wu.register_observer(self._aggregate, handler=self.update_handler, value=value)
         wu.register_observer(self._output_format, handler=self.update_handler, value=value)
@@ -85,9 +86,9 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     [
                         w.VBox(
                             [
-                                w.HTML("<b>Year range</b>"),
+                                self._year_range_label,
                                 self._year_range,
-                                w.HTML("<b>Threshold</b>"),
+                                self._threshold_label,
                                 self._threshold,
                             ]
                         ),
@@ -96,10 +97,11 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     + [
                         w.VBox(
                             [
-                                self._aggregate,
+                                w.HBox([w.HTML("Aggregate"), self._aggregate]),
+                                w.HTML("Output"),
                                 w.HBox([self._output_format, self._flip_axis]),
-                                self._alert,
                                 w.HBox([self._compute, self._auto_compute]),
+                                self._alert,
                             ]
                         ),
                     ]

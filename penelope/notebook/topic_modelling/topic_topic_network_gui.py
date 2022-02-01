@@ -27,20 +27,30 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
         super().__init__(state=state)
 
-        slider_opts = {'continuous_update': False, 'layout': dict(width='200px')}
+        slider_opts = {
+            'continuous_update': False,
+            'layout': dict(width='140px'),
+            'readout': False,
+            'handle_color': 'lightblue',
+        }
 
         self.network_data: pd.DataFrame = None
         self.topic_proportions: pd.DataFrame = None
         self.titles: pd.DataFrame = None
 
         timespan: tuple[int, int] = self.inferred_topics.timespan
+        yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
 
         self._text: w.HTML = wu.text_widget(TEXT_ID)
+        self._year_range_label: w.HTML = w.HTML("Years")
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            min=timespan[0], max=timespan[1], step=1, value=self.inferred_topics.startspan(5), **slider_opts
+            min=timespan[0], max=timespan[1], step=1, value=yearspan, **slider_opts
         )
+        self._scale_label: w.HTML = w.HTML("<b>Scale</b>")
         self._scale: w.FloatSlider = w.FloatSlider(min=0.0, max=1.0, step=0.01, value=0.1, **slider_opts)
+        self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
         self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.20, step=0.01, **slider_opts)
+        self._n_docs_label: w.HTML = w.HTML("<b>Documents in common</b>")
         self._n_docs: w.IntSlider = w.IntSlider(min=1, max=100, step=1, value=10, **slider_opts)
         self._network_layout: w.Dropdown = w.Dropdown(
             options=LAYOUT_OPTIONS, value='Fruchterman-Reingold', layout=dict(width='140px')
@@ -49,7 +59,9 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self._ignores: w.SelectMultiple = w.SelectMultiple(
             options=_ignore_options, value=[], rows=10, layout=dict(width='100px')
         )
+        self._node_range_label: w.HTML = w.HTML("<b>Node size</b>")
         self._node_range: w.IntRangeSlider = w.IntRangeSlider(min=10, max=100, step=1, value=(20, 60), **slider_opts)
+        self._edge_range_label: w.HTML = w.HTML("<b>Edge size</b>")
         self._edge_range: w.IntRangeSlider = w.IntRangeSlider(min=1, max=20, step=1, value=(2, 6), **slider_opts)
         self._output_format: w.Dropdown = w.Dropdown(
             description='', options=OUTPUT_OPTIONS, value='network', layout=dict(width='140px')
@@ -61,8 +73,14 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
     def setup(self, **kwargs) -> "TopicTopicGUI":
         super().setup(**kwargs)
         self._compute_handler: Callable[[Any], None] = self.update_handler
-        self.topic_proportions: pd.DataFrame = self.inferred_topics.calculator.topic_proportions()
+        self.topic_proportions: pd.DataFrame = self.inferred_topics.calculator.reset().topic_proportions()
         self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles()
+        self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
+        self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
+        self.observe_slider_update_label(self._n_docs, self._n_docs_label, "Common docs")
+        self.observe_slider_update_label(self._node_range, self._node_range_label, "Node size")
+        self.observe_slider_update_label(self._edge_range, self._edge_range_label, "Edge size")
+        self.observe_slider_update_label(self._scale, self._scale_label, "Scale")
         self.observe(value=True, handler=self.update_handler)
         return self
 
@@ -87,11 +105,11 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     [
                         w.VBox(
                             [
-                                w.HTML("<b>Year range</b>"),
+                                self._year_range_label,
                                 self._year_range,
-                                w.HTML("<b>Co-occurrence threshold</b>"),
+                                self._threshold_label,
                                 self._threshold,
-                                w.HTML("<b>Documents in common</b>"),
+                                self._n_docs_label,
                                 self._n_docs,
                             ]
                         ),
@@ -106,11 +124,11 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     + [
                         w.VBox(
                             [
-                                w.HTML("<b>Node size</b>"),
+                                self._node_range_label,
                                 self._node_range,
-                                w.HTML("<b>Edge size</b>"),
+                                self._edge_range_label,
                                 self._edge_range,
-                                w.HTML("<b>Scale</b>"),
+                                self._scale_label,
                                 self._scale,
                             ]
                         ),
