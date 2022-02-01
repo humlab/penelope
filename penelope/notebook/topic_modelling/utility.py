@@ -25,9 +25,10 @@ def table_widget(data: pd.DataFrame, **kwargs) -> None:
     if handler is not None:
 
         def row_clicked(args) -> None:
+            print(g.data.info())
             data_id: int = args.get('primary_key_row', None)
             if data_id is not None:
-                item: pd.Series = g.data.loc[data_id]
+                item: pd.Series = g.data.iloc[data_id]
                 handler(item, g)
 
         g.on_cell_click(row_clicked)
