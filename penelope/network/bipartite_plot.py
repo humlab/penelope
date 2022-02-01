@@ -1,15 +1,34 @@
-from typing import List
+from typing import Any, List
 
 import bokeh.models as bm
 import bokeh.plotting as bp
 import networkx as nx
 import pandas as pd
 
-from penelope.network import layout_source, metrics
+from penelope.network import layout_source, metrics, plot_utility
 from penelope.network.networkx import utility as network_utility
 from penelope.notebook import widgets_utils
 
 # pylint: disable=unused-argument, too-many-locals
+
+
+def plot_bipartite_dataframe(
+    data: pd.DataFrame,
+    layout_algorithm: str,
+    *,
+    scale: float,
+    titles: pd.DataFrame,
+    source_name: str,
+    target_name: str,
+    element_id: str,
+) -> None:
+    network: nx.Graph = network_utility.create_bipartite_network(
+        data[[target_name, source_name, 'weight']], target_name, source_name
+    )
+    args: dict[str, Any] = plot_utility.layout_args(layout_algorithm, network, scale)
+    layout: network_utility.NodesLayout = (plot_utility.layout_algorithms[layout_algorithm])(network, **args)
+    p = plot_bipartite_network(network, layout, scale=scale, titles=titles, element_id=element_id)
+    bp.show(p)
 
 
 def plot_bipartite_network(
