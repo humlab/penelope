@@ -148,7 +148,7 @@ class ComputeMixIn:
 
     def _mx_compute_handler_proxy(self, *args) -> None:
         if self._compute_handler:
-            self._compute_handler(args)
+            self._compute_handler(args)  # pylint: disable=not-callable
 
     @property
     def auto_compute(self) -> bool:

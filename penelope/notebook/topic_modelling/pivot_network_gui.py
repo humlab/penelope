@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Callable, Sequence
+from typing import Any, Callable
 
-import bokeh.plotting as bp
 import ipywidgets as w
-import numpy as np
 import pandas as pd
 from IPython.display import display
 
 import penelope.utility as pu
-from penelope.network import plot_utility
 from penelope.network.bipartite_plot import plot_bipartite_dataframe
-from penelope.network.networkx import utility as network_utility
 from penelope.notebook import mixins as ox
 from penelope.notebook import topic_modelling as ntm
 from penelope.notebook import widgets_utils as wu

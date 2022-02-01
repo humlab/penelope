@@ -1,6 +1,5 @@
 from unittest import mock
 
-from penelope import topic_modelling as tm
 from penelope.notebook.topic_modelling import TopicModelContainer, topic_trends_gui
 
 
@@ -9,8 +8,7 @@ def monkey_patch(*_, **__):
 
 
 def test_create_gui(state: TopicModelContainer):
-    calculator: mock.MagicMock = mock.MagicMock(spec=tm.prevelance.TopicPrevalenceOverTimeCalculator)
-    gui: topic_trends_gui.TopicTrendsGUI = topic_trends_gui.TopicTrendsGUI(state=state, calculator=calculator)
+    gui: topic_trends_gui.TopicTrendsGUI = topic_trends_gui.TopicTrendsGUI(state=state)
     assert gui is not None
 
     gui = gui.setup()
