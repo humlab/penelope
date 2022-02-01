@@ -1,6 +1,6 @@
 # type: ignore
 
-from .load_topic_model_gui import create_load_topic_model_gui
+from .load_topic_model_gui import LoadGUI, create_load_topic_model_gui
 from .mixins import AlertMixIn, NextPrevTopicMixIn, TopicsStateGui
 from .model_container import TopicModelContainer
 from .pivot_network_gui import PivotTopicNetworkGUI
