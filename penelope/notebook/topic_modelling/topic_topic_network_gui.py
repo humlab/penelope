@@ -21,6 +21,7 @@ OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV'
 
 # pylint: disable=too-many-instance-attributes
 
+# FIXME #153 [ENHANCEMENT] {topic-topic-network} Add table display of [top] documents on hover on edges
 
 class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer):
