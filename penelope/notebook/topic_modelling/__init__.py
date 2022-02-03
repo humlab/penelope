@@ -1,5 +1,6 @@
 # type: ignore
 
+from .edit_topic_labels_gui import EditTopicLabelsGUI
 from .load_topic_model_gui import LoadGUI, create_load_topic_model_gui
 from .mixins import AlertMixIn, NextPrevTopicMixIn, TopicsStateGui
 from .model_container import TopicModelContainer
@@ -21,4 +22,4 @@ from .topic_word_distribution_gui import display_gui as display_topic_word_distr
 from .topic_wordcloud_gui import WordcloudGUI
 from .topic_wordcloud_gui import display_gui as display_topic_wordcloud_gui
 from .topics_token_network_gui import create_gui as create_topics_token_network_gui
-from .utility import table_widget
+from .utility import TableWidget, table_widget

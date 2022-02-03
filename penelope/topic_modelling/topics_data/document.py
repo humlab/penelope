@@ -214,7 +214,12 @@ class DocumentTopicsCalculator:
         )
         return self
 
-    def to_topic_topic_network(self, n_docs: int, pivot_keys: list[str] | str = None) -> DocumentTopicsCalculator:
+    def to_topic_topic_network(
+        self,
+        n_docs: int,
+        pivot_keys: list[str] | str = None,
+        topic_labels: dict[int, str] = True,
+    ) -> DocumentTopicsCalculator:
 
         pivot_keys = pivot_keys or []
 
@@ -223,22 +228,26 @@ class DocumentTopicsCalculator:
         topic_product: pd.DataFrame = data.merge(data, left_index=True, right_index=True)
         topic_product = topic_product[(topic_product.topic_id_x < topic_product.topic_id_y)]
 
-        topic_topic: pd.DataFrame = topic_product.groupby(
+        network_data: pd.DataFrame = topic_product.groupby(
             pivot_keys + [topic_product.topic_id_x, topic_product.topic_id_y]
         ).agg(
             n_docs=('year_x', 'size')  # , weight_x=('weight_x', 'sum'), weight_y=('weight_y', 'sum')
         )
 
-        topic_topic.reset_index(inplace=True)
-        # topic_topic['weight'] = topic_topic.weight_x + topic_topic.weight_y
-        # topic_topic.drop(columns=['weight_x', 'weight_y'], inplace=True)
-        topic_topic.columns = pivot_keys + ['source', 'target', 'n_docs']  # , 'weight']
+        network_data.reset_index(inplace=True)
+        # network_data['weight'] = network_data.weight_x + network_data.weight_y
+        # network_data.drop(columns=['weight_x', 'weight_y'], inplace=True)
+        network_data.columns = pivot_keys + ['source', 'target', 'n_docs']  # , 'weight']
 
         # FIXME: Måste normalisera efter antal dokument!!!
         if n_docs > 1:
-            topic_topic = topic_topic[topic_topic.n_docs >= n_docs]
+            network_data = network_data[network_data.n_docs >= n_docs]
 
-        self.data = topic_topic
+        if topic_labels is not None:
+            network_data['source'] = network_data['source'].apply(topic_labels.get)
+            network_data['target'] = network_data['target'].apply(topic_labels.get)
+
+        self.data = network_data
 
         return self
 
@@ -250,6 +259,7 @@ class DocumentTopicsCalculator:
         pivot_key_map: dict[int, str],
         aggregate: str,
         threshold: float,
+        topic_labels: dict[int, str] = True,
     ) -> DocumentTopicsCalculator:
 
         data: pd.DataFrame = self.data  # .set_index('document_id')
@@ -267,6 +277,10 @@ class DocumentTopicsCalculator:
         network_data[pivot_key_name] = network_data[pivot_key_id].apply(pivot_key_map.get)
         network_data['weight'] = network_data[aggregate]
         network_data.drop(columns=['mean', 'max'], inplace=True)
+
+        if topic_labels is not None:
+            network_data['topic_id'] = network_data['topic_id'].apply(topic_labels.get)
+
         self.data = network_data
 
         return self

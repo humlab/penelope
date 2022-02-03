@@ -164,6 +164,7 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
                 pivot_key_map=self.picked_pivot_value_mapping,
                 aggregate=self.aggregate,
                 threshold=self.grouped_threshold,
+                topic_labels=self.topic_labels,
             )
             .value
         )

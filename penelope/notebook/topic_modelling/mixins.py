@@ -23,6 +23,12 @@ class TopicsStateGui:
     def inferred_n_topics(self) -> int:
         return self.inferred_topics.num_topics
 
+    @property
+    def topic_labels(self) -> dict[int, str]:
+        if 'label' in self.inferred_topics.topic_token_overview.columns:
+            return self.inferred_topics.topic_token_overview['label'].to_dict()
+        return None
+
 
 class NextPrevTopicMixIn:
     def __init__(self, **kwargs) -> None:

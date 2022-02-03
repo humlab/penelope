@@ -67,6 +67,7 @@ class LoadGUI(mx.AlertMixIn):
 
         self.model_infos: List[dict] = tm.find_models(self.corpus_folder)
         self.model_names: List[str] = list(x["name"] for x in self.model_infos)
+        self.loaded_model_folder: str = None
 
     def setup(self) -> "LoadGUI":
         self._model_name.options = self.model_names
@@ -93,6 +94,7 @@ class LoadGUI(mx.AlertMixIn):
             self.warn(f"😡 {ex}")
 
     def load(self) -> None:
+        self.loaded_model_folder = jj(self.corpus_folder, self._model_name.value)
         load_model(
             corpus_folder=self.corpus_folder,
             state=self.state,

@@ -23,6 +23,7 @@ OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV'
 
 # FIXME #153 [ENHANCEMENT] {topic-topic-network} Add table display of [top] documents on hover on edges
 
+
 class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer):
 
@@ -156,19 +157,19 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
     def update(self) -> pd.DataFrame:
 
-        topic_topic: pd.DataFrame = (
+        network_data: pd.DataFrame = (
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
             .filter_by_topics(topic_ids=self.ignores, negate=True)
-            .to_topic_topic_network(self.n_docs)
+            .to_topic_topic_network(self.n_docs, topic_labels=self.topic_labels)
             .value
         )
 
-        if len(topic_topic) == 0:
+        if len(network_data) == 0:
             raise pu.EmptyDataError()
 
-        return topic_topic
+        return network_data
 
     def update_handler(self, *_):
 
