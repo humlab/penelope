@@ -23,6 +23,7 @@ CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
 # pylint: disable=too-many-public-methods)
 
+
 def smart_read(filename: str, **kwargs) -> pd.DataFrame:
     if isfile(pu.replace_extension(filename, "feather")):
         return pd.read_feather(filename)
