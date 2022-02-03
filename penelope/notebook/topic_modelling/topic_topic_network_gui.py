@@ -162,10 +162,9 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
             .filter_by_topics(topic_ids=self.ignores, negate=True)
-            .to_topic_topic_network(self.n_docs, topic_labels=self.topic_labels)
+            .to_topic_topic_network(self.n_docs, topic_labels=None)
             .value
         )
-
         if len(network_data) == 0:
             raise pu.EmptyDataError()
 
