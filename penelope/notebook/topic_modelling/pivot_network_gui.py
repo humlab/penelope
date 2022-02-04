@@ -9,10 +9,12 @@ from IPython.display import display
 
 import penelope.utility as pu
 from penelope.network.bipartite_plot import plot_bipartite_dataframe
-from penelope.notebook import mixins as ox
-from penelope.notebook import topic_modelling as ntm
-from penelope.notebook import widgets_utils as wu
-from penelope.notebook.topic_modelling import mixins as mx
+
+from .. import grid_utility as gu
+from .. import mixins as ox
+from .. import topic_modelling as ntm
+from .. import widgets_utils as wu
+from . import mixins as mx
 
 LAYOUT_OPTIONS = ['Circular', 'Kamada-Kawai', 'Fruchterman-Reingold']
 OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV': 'CSV', 'Clipboard': 'clipboard'}
@@ -190,14 +192,26 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
     def display_handler(self, *_):
 
         self._output.clear_output()
+
         with self._output:
 
             if self.network_data is None:
+
                 self.alert("😡 No data, please change filters..")
-            elif self.output_format in ('xlsx', 'csv', 'clipboard'):
-                pu.ts_store(data=self.network_data, extension=self.output_format, basename='heatmap_weights')
-            elif self.output_format == "table":
-                g = ntm.table_widget(self.network_data)
+
+            elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
+
+                data: pd.DataFrame = self.network_data
+
+                if self.output_format == "gephi":
+                    data = data[['topic_id', self.picked_pivot_name, 'weight']]
+                    data.columns = ['Source', 'Target', 'Weight']
+
+                if self.output_format != "table":
+                    pu.ts_store(data=data, extension=self.output_format, basename='heatmap_weights')
+
+                g = gu.table_widget(data)
+
                 display(g)
             else:
 

@@ -10,10 +10,10 @@ import penelope.topic_modelling as tm
 import penelope.utility as pu
 from penelope.notebook import widgets_utils as wu
 
+from .. import grid_utility as gu
 from . import mixins as mx
 from . import topic_trends_gui_utility as gui_utils
 from .model_container import TopicModelContainer
-from .utility import table_widget
 
 
 class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
@@ -151,7 +151,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                     with pd.option_context("display.max_rows", None, "display.max_columns", None):
                         display(self.yearly_topic_weights)
                 elif self.output_format == "table":
-                    g = table_widget(self.yearly_topic_weights, handler=self.click_handler)
+                    g = gu.table_widget(self.yearly_topic_weights, handler=self.click_handler)
                     display(g)
                 else:
                     self.topic_changed()

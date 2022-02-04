@@ -8,14 +8,15 @@ import numpy as np
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from loguru import logger
-from perspective import PerspectiveWidget
 
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
-from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
+
+from .. import grid_utility as gu
+from ..utility import create_js_download
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
@@ -38,7 +39,7 @@ CURRENT_BUNDLE = None
 class PerspectiveTableView:
     def __init__(self, data: pd.DataFrame = None):
         data = data if data is not None else empty_data()
-        self.widget: PerspectiveWidget = PerspectiveWidget(data, client=True)
+        self.widget: gu.TableWidget = gu.table_widget(data)
         self.container = self.widget
 
     def update(self, data: pd.DataFrame) -> None:

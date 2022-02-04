@@ -4,9 +4,6 @@
 
 import logging
 
-# import panel as pn
-# pn.extension()
-
 logging.getLogger("matplotlib").setLevel(level=logging.ERROR)
 
 from .interface import ITrendDisplayer  # noqa: E402

@@ -7,12 +7,12 @@ import pandas as pd
 from IPython.display import display
 
 import penelope.utility as pu
-from penelope.notebook import widgets_utils as wu
 
+from .. import grid_utility as gu
+from .. import widgets_utils as wu
 from . import mixins as mx
-from .model_container import TopicModelContainer
+from . import model_container as mc
 from .topic_topic_network_gui_utility import display_topic_topic_network
-from .utility import table_widget
 
 # bokeh.plotting.output_notebook()
 TEXT_ID = 'nx_topic_topic'
@@ -25,7 +25,7 @@ OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV'
 
 
 class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
-    def __init__(self, state: TopicModelContainer):
+    def __init__(self, state: mc.TopicModelContainer):
 
         super().__init__(state=state)
 
@@ -193,7 +193,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             elif self.output_format in ('xlsx', 'csv', 'clipboard'):
                 pu.ts_store(data=self.network_data, extension=self.output_format, basename='heatmap_weights')
             elif self.output_format == "table":
-                g = table_widget(self.network_data)
+                g = gu.table_widget(self.network_data)
                 display(g)
             else:
 
@@ -236,7 +236,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return self._threshold.value
 
 
-def display_gui(state: TopicModelContainer) -> TopicModelContainer:
+def display_gui(state: mc.TopicModelContainer) -> mc.TopicModelContainer:
     gui: TopicTopicGUI = TopicTopicGUI(state=state).setup()
     display(gui.layout())
     gui.update_handler()

@@ -4,9 +4,9 @@ import ipywidgets as w
 import pandas as pd
 from ipydatagrid import TextRenderer
 
+from .. import grid_utility as nu
 from . import mixins as mx
 from . import model_container as mc
-from . import utility as nu
 
 
 class EditTopicLabelsGUI(mx.AlertMixIn, mx.TopicsStateGui):

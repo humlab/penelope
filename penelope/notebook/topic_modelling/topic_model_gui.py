@@ -13,8 +13,8 @@ from loguru import logger
 import penelope.topic_modelling as tm
 import penelope.vendor.gensim as gensim_utility
 import penelope.vendor.textacy as textacy_utility
-from penelope.notebook.topic_modelling.mixins import TopicsStateGui
 
+from .mixins import TopicsStateGui
 from .model_container import TopicModelContainer
 
 gensim_logger = logging.getLogger('gensim')

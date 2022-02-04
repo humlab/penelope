@@ -1,7 +1,7 @@
 import penelope.common.goodness_of_fit as gof
 
+from .. import grid_utility as gu
 from .. import utility as notebook_utility
-from ..ipyaggrid_utility import display_grid
 from .interface import TrendsData
 
 
@@ -26,9 +26,9 @@ class GoFsGUI:
             return self
         gof_data: gof.GofData = trends_data.gof_data
         self.tab_gof = (
-            self.tab_gof.display_fx_result(0, display_grid, gof_data.goodness_of_fit)
+            self.tab_gof.display_fx_result(0, gu.table_widget, gof_data.goodness_of_fit)
             .display_fx_result(
-                1, display_grid, gof_data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
+                1, gu.table_widget, gof_data.most_deviating_overview[['l2_norm_token', 'l2_norm', 'abs_l2_norm']]
             )
             .display_fx_result(2, gof.plot_metrics, gof_data.goodness_of_fit, plot=False, lazy=True)
             .display_fx_result(

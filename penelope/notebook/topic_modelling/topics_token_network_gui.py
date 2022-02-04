@@ -11,7 +11,7 @@ from penelope import topic_modelling, utility
 from penelope.plot import get_color_palette
 from penelope.utility.filename_fields import FilenameFieldSpecs
 
-from ..ipyaggrid_utility import display_grid
+from .. import grid_utility as gu
 
 view = widgets.Output()
 
@@ -323,20 +323,18 @@ def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
         css_style = css_styles(topics_tokens.topic_id.unique(), opts.custom_styles)
         network.set_style(css_style)
         display(network)
-        return
 
-    if opts.output_format == "table":
-        g = display_grid(topics_tokens)
+    if opts.output_format.lower() in ('table', 'xlsx', 'csv', 'clipboard', 'gephi'):
+
+        if opts.output_format == "gephi":
+            topics_tokens = topics_tokens[['topic', 'token', 'weight']]
+            topics_tokens.columns = ['Source', 'Target', 'Weight']
+
+        if opts.output_format != "table":
+            utility.ts_store(data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network')
+
+        g = gu.table_widget(topics_tokens)
         display(g)
-
-    if opts.output_format == "gephi":
-        topics_tokens = topics_tokens[['topic', 'token', 'weight']]
-        topics_tokens.columns = ['Source', 'Target', 'Weight']
-        g = display_grid(topics_tokens)
-        display(g)
-
-    if opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-        utility.ts_store(data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network')
 
 
 # pylint: disable=too-many-instance-attributes

@@ -8,9 +8,9 @@ from IPython.display import display
 from ipywidgets import Dropdown, HBox, IntSlider, Output, VBox  # type: ignore
 
 from penelope import utility
-from penelope.notebook.topic_modelling import mixins as mx
 
-from .model_container import TopicModelContainer
+from . import mixins as mx
+from . import model_container as mc
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -82,7 +82,7 @@ OUTPUT_OPTIONS = ['Chart', 'XLSX', 'CSV', 'Clipboard', 'Table']
 
 
 class TopicWordDistributionGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
-    def __init__(self, state: TopicModelContainer):
+    def __init__(self, state: mc.TopicModelContainer):
 
         super().__init__(state=state)
 
@@ -139,7 +139,7 @@ class TopicWordDistributionGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
         return self._output_format.value
 
 
-def display_gui(state: TopicModelContainer) -> None:
+def display_gui(state: mc.TopicModelContainer) -> None:
     gui = TopicWordDistributionGUI(state).setup()
     display(gui.layout())
     gui.update_handler()

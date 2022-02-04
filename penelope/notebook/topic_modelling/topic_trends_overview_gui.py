@@ -10,17 +10,17 @@ from penelope import topic_modelling as tm
 from penelope import utility as pu
 from penelope.notebook import widgets_utils as wu
 
+from .. import grid_utility as gu
 from .. import widgets_utils
 from . import mixins as mx
-from .model_container import TopicModelContainer
+from . import model_container as mc
 from .topic_trends_overview_gui_utility import display_heatmap
-from .utility import table_widget
 
 TEXT_ID = 'topic_relevance'
 
 
 class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
-    def __init__(self, state: TopicModelContainer):
+    def __init__(self, state: mc.TopicModelContainer):
         super().__init__(state=state)
 
         # FIXME, calculator: tm.MemoizedTopicPrevalenceOverTimeCalculator if caching....
@@ -138,7 +138,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                 elif self.output_format in ('xlsx', 'csv', 'clipboard'):
                     pu.ts_store(data=weights, extension=self.output_format, basename='heatmap_weights')
                 elif self.output_format == "table":
-                    g = table_widget(weights)
+                    g = gu.table_widget(weights)
                     display(g)
                 else:
                     display_heatmap(
@@ -176,7 +176,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return self._aggregate.value
 
 
-def display_gui(state: TopicModelContainer) -> TopicTrendsOverviewGUI:
+def display_gui(state: mc.TopicModelContainer) -> TopicTrendsOverviewGUI:
     gui: TopicTrendsOverviewGUI = TopicTrendsOverviewGUI(state=state).setup()
     display(gui.layout())
     gui.update_handler()

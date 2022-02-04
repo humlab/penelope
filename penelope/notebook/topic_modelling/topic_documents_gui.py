@@ -9,9 +9,9 @@ from IPython.display import display
 from penelope import utility as pu
 from penelope.notebook import widgets_utils as wu
 
+from ..grid_utility import TableWidget, table_widget
 from . import mixins as mx
 from .model_container import TopicModelContainer
-from .utility import TableWidget, table_widget
 
 
 # FIXME use ComputeMixIn
