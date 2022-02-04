@@ -36,20 +36,34 @@ def empty_data():
 CURRENT_BUNDLE = None
 
 
-class PerspectiveTableView:
+# class PerspectiveTableView:
+#     def __init__(self, data: pd.DataFrame = None):
+#         data = data if data is not None else empty_data()
+#         self.widget: gu.TableWidget = gu.table_widget(data)
+#         self.container = self.widget
+
+#     def update(self, data: pd.DataFrame) -> None:
+#         self.widget.replace(data=data)
+
+
+class DataGridView:
     def __init__(self, data: pd.DataFrame = None):
         data = data if data is not None else empty_data()
-        self.widget: gu.TableWidget = gu.table_widget(data)
-        self.container = self.widget
+        self.container: Output = Output()
+        self.widget: gu.TableWidget = None
 
     def update(self, data: pd.DataFrame) -> None:
-        self.widget.replace(data=data)
+        self.container.clear_output()
+        self.data = data
+        with self.container:
+            self.widget = gu.table_widget(self.data)
+            IPython_display.display(self.widget)
 
 
 class PandasTableView:
-    def __init__(self, data=None):  # pylint: disable=unused-argument
-        self.container = Output(layout=Layout(width='600px', height='600px', overflow_y='auto'))
-        self.data = data
+    def __init__(self, data: pd.DataFrame = None):  # pylint: disable=unused-argument
+        self.container: Output = Output(layout=Layout(width='600px', height='600px', overflow_y='auto'))
+        self.data: pd.DataFrame = data
         self.style_dict = [
             dict(
                 selector="thead th",
@@ -81,7 +95,7 @@ class PandasTableView:
                 IPython_display.display(self.data)  # (HTML(self.data.style.render()))
 
 
-TableViewerClass = PerspectiveTableView
+TableViewerClass = DataGridView
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
