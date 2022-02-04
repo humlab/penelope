@@ -269,7 +269,8 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         self.document_index['year'] = self.document_index['year'].astype(np.int16)
         self.document_index['n_tokens'] = self.document_index['n_tokens'].astype(np.int32)
         self.document_index['n_raw_tokens'] = self.document_index['n_raw_tokens'].astype(np.int32)
-        self.document_index['document_id'] = self.document_index['document_id'].astype(np.int32)
+        if 'document_id' in self.document_index.columns:
+            self.document_index['document_id'] = self.document_index['document_id'].astype(np.int32)
         for column in set(pu.PD_PoS_tag_groups.index.to_list()).intersection(self.document_index.columns):
             self.document_index[column] = self.document_index[column].astype(np.int32)
 
@@ -293,7 +294,8 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         """document_index"""
         remove_columns = set(pu.PD_PoS_tag_groups.index.to_list()) | {'filename', 'year2', 'number'}
         self.document_index.drop(columns=list(remove_columns.intersection(self.document_index.columns)), inplace=True)
-        self.document_index.set_index('document_id', drop=True, inplace=True)
+        if 'document_id' in self.document_index.columns:
+            self.document_index.set_index('document_id', drop=True, inplace=True)
 
         """dictionary"""
         if 'dfs' in self.dictionary.columns:
