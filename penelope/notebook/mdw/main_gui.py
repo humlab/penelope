@@ -12,7 +12,7 @@ view_display, view_gui = Output(), Output()
 
 @view_display.capture(clear_output=True)
 def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw):  # pylint: disable=unused-argument
-    g = gu.display_grid(df_mdw)
+    g = gu.table_widget(df_mdw)
     ipy_display.display(g)
 
 
