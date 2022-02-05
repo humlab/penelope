@@ -26,7 +26,7 @@ class EditTopicLabelsGUI(mx.AlertMixIn, mx.TopicsStateGui):
             handler=self.click_handler,
             editable=True,
         )
-        self._grid.layout.height = "300px"
+        self._grid.layout.height = "400px"
         self._grid.layout.width = "300px"
         self._grid.base_column_size = 207
         self._grid.auto_fit_params = {"area": "body"}
@@ -35,6 +35,7 @@ class EditTopicLabelsGUI(mx.AlertMixIn, mx.TopicsStateGui):
             "label": TextRenderer(text_color="blue", background_color="white"),
         }
         self._text.layout.width = "600px"
+        self._text.layout.height = "400px"
         self._grid.on_cell_change(self.on_cell_changed)
         self._save.on_click(self.save)
         return self
