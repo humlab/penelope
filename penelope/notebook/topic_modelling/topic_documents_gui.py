@@ -120,7 +120,7 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
 
     def setup(self, **kwargs) -> "BrowseTopicDocumentsGUI":  # pylint: disable=arguments-differ
         super().setup(**kwargs)
-        self.topic_id = (0, self.inferred_n_topics - 1)
+        self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
         self._topic_id.observe(self.update_handler, names='value')
         self._threshold.observe(self.update_handler, names='value')
         self._max_count.observe(self.update_handler, names='value')

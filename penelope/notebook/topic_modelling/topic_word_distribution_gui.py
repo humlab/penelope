@@ -97,14 +97,14 @@ class TopicWordDistributionGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
         super().setup(**kwargs)
         self._n_words.observe(self.update_handler, 'value')
         self._output_format.observe(self.update_handler, 'value')
-        self.topic_id = (0, self.inferred_n_topics - 1)
+        self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
         return self
 
     def update_handler(self, *_):
 
         if self.n_topics != self.inferred_n_topics:
             self.n_topics = self.inferred_n_topics
-            self.topic_id = (0, self.inferred_n_topics - 1)
+            self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
 
         self.buzy(True)
         top_tokens: pd.DataFrame = self.inferred_topics.get_topic_top_tokens(
@@ -125,7 +125,7 @@ class TopicWordDistributionGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
     def layout(self) -> VBox:
         return VBox(
             [
-                HBox([self._prev_topic_id, self._next_topic_id, self._topic_id, self._n_words, self._output_format]),
+                HBox([ self._next_prev_layout, self._n_words, self._output_format]),
                 self._output,
             ]
         )

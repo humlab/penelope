@@ -336,6 +336,12 @@ class InferredTopicsData(tt.TopicTokensMixIn):
                 else:
                     logger.info(f"{k}: {v}")
 
+    @property
+    def topic_labels(self) -> dict:
+        if 'label' not in self.topic_token_overview.columns:
+            return {}
+        return self.topic_token_overview['label'].to_dict()
+
 
 def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
     """Add count columns `n_tokens` and `n_rws_tokens" if missing and other/renamed column exists."""

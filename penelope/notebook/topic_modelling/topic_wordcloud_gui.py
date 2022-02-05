@@ -69,7 +69,7 @@ class WordcloudGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsStateGui):
 
         if self.n_topics != self.inferred_n_topics:
             self.n_topics = self.inferred_n_topics
-            self.topic_id = (0, self.inferred_n_topics - 1)
+            self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
 
         try:
             self.alert("⌛Computing...")

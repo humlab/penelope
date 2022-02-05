@@ -35,7 +35,7 @@ class NextPrevTopicMixIn:
 
         # self._topic_id: w.IntSlider = w.IntSlider(min=0, max=199, step=1, value=0, continuous_update=False, description_width='initial')
         self._prev_topic_id: w.Button = w.Button(description="<<", layout=dict(button_style='Success', width="40px"))
-        self._topic_id: w.Dropdown = w.Dropdown(options=[(str(i), i) for i in range(0, 200)], layout=dict(width="80px"))
+        self._topic_id: w.Dropdown = w.Dropdown(options=[], layout=dict(width="80px"))
         self._next_topic_id: w.Button = w.Button(description=">>", layout=dict(button_style='Success', width="40px"))
         self._next_prev_layout: w.HBox = w.HBox([self._prev_topic_id, self._topic_id, self._next_topic_id])
         self._prev_topic_id.style.button_color = 'lightgreen'
@@ -63,7 +63,8 @@ class NextPrevTopicMixIn:
         self._next_topic_id.on_click(self.goto_next)
 
         if hasattr(self, "inferred_topics"):
-            self.topic_id = (0, getattr(self, "inferred_topics").n_topics - 1)
+            inferred_topics: tm.InferredTopicsData = getattr(self, "inferred_topics")
+            self.topic_id = (0, inferred_topics.n_topics - 1, inferred_topics.topic_labels)
 
         return self
 
@@ -74,13 +75,15 @@ class NextPrevTopicMixIn:
     @topic_id.setter
     def topic_id(self, value: tuple | int) -> None:
         """Set current topic ID. If tuple (value, max) is given then both value and max are set"""
+        id2label = (getattr(self, "inferred_topics").topic_labels if hasattr(self, "inferred_topics") else {}).get
         if isinstance(value, tuple):
             if isinstance(self._topic_id, w.IntSlider):
                 self._topic_id.value = value[0]
                 self._topic_id.max = value[1]
             elif isinstance(self._topic_id, w.Dropdown):
+                id2label = (value[2] if len(value) > 2 else {}).get
                 self._topic_id.value = None
-                self._topic_id.options = [(str(i), i) for i in range(0, value[1])]
+                self._topic_id.options = [(id2label(i, str(i)), i) for i in range(0, value[1])]
                 self._topic_id.value = value[0]
 
         else:

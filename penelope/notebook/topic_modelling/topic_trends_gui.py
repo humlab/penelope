@@ -57,7 +57,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
     def setup(self, **kwargs) -> "TopicTrendsGUI":
         super().setup(**kwargs)
 
-        self.topic_id = (0, self.inferred_n_topics - 1)
+        self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
         self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
         self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe(value=True, handler=self.update_handler)
