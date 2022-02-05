@@ -15,8 +15,6 @@ from ... import grid_utility as gu
 from ... import utility as nu
 from .interface import ITrendDisplayer
 
-TABLE = None
-DATA = None
 # pylint: disable=too-many-instance-attributes
 
 
@@ -55,7 +53,7 @@ class TopTokensDisplayer(ITrendDisplayer):
             layout=Layout(width='100px'),
         )
         self.category_name = "time_period"
-        self._table: gu.TableWidget = None
+        self._table: gu.DataGridOutput = None
         self._output: Output = None
 
     def keyness_widget(self) -> Dropdown:
@@ -85,7 +83,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
 
-        self._table = gu.table_widget(self.data) if not self.simple_display else None
+        self._table = gu.DataGridOutput() if not self.simple_display else None
         self._output = Output() if self.simple_display else None
 
         self.start_observe()
@@ -123,9 +121,6 @@ class TopTokensDisplayer(ITrendDisplayer):
         return self
 
     def load(self, *_):
-        global TABLE, DATA
-        TABLE = self._table
-        DATA = self.data
         try:
             self.set_buzy(True, "⌛ Loading data...")
 
