@@ -14,8 +14,11 @@ from . import mixins as mx
 from .model_container import TopicModelContainer
 
 
-# FIXME use ComputeMixIn
+# FIXME #157 Strange weights are displayed for certain topics (integer value)
 class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
+
+    WIDGET_HEIGHT: str = '450px'
+
     def __init__(self, state: TopicModelContainer | dict):
         super().__init__(state=state)
         slider_opts = {
@@ -101,7 +104,8 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.update()
 
                 if data is not None:
-                    self._table_widget = table_widget(data, handler=self.click_handler)
+                    self._table_widget: TableWidget = table_widget(data, handler=self.click_handler)
+                    self._table_widget.layout.height = self.WIDGET_HEIGHT
                     display(self._table_widget)
 
                 self.alert("✅")
