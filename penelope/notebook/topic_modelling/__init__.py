@@ -5,8 +5,11 @@ from .load_topic_model_gui import LoadGUI, create_load_topic_model_gui
 from .mixins import AlertMixIn, NextPrevTopicMixIn, TopicsStateGui
 from .model_container import TopicModelContainer
 from .pivot_network_gui import PivotTopicNetworkGUI
-from .topic_document_network_gui import PlotMode
-from .topic_document_network_gui import display_gui as display_topic_document_network_gui
+from .topic_document_network_gui import (
+    DefaultTopicDocumentNetworkGui,
+    FocusTopicDocumentNetworkGui,
+    TopicDocumentNetworkGui,
+)
 from .topic_documents_gui import BrowseTopicDocumentsGUI, FindTopicDocumentsGUI
 from .topic_titles_gui import display_gui as display_topic_titles_gui
 from .topic_topic_network_gui import TopicTopicGUI
