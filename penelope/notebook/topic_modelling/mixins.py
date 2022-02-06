@@ -29,6 +29,11 @@ class TopicsStateGui:
             return self.inferred_topics.topic_token_overview['label'].to_dict()
         return None
 
+    def topic_id_options(self) -> list[tuple[str, int]]:
+        fx: Callable[[int], str] = self.inferred_topics.topic_labels.get
+        options = [(fx(i, f'Topic #{i}'), i) for i in range(0, self.inferred_n_topics)]
+        return options
+
 
 class NextPrevTopicMixIn:
     def __init__(self, **kwargs) -> None:
