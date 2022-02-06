@@ -56,15 +56,15 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         self._network_layout: w.Dropdown = w.Dropdown(
             options=LAYOUT_OPTIONS, value='Fruchterman-Reingold', layout=dict(width='140px')
         )
-        self._topic_ids: w.SelectMultiple = w.SelectMultiple(
-            description="", options=self.topic_id_options(), value=[], rows=8, layout={'width': '180px'}
-        )
         self._output_format: w.Dropdown = w.Dropdown(
             description='', options=OUTPUT_OPTIONS, value='network', layout=dict(width='140px')
         )
         self._output: w.Output = w.Output()
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.Box = w.VBox()
+        self._topic_ids: w.SelectMultiple = w.SelectMultiple(
+            options=self.topic_id_options(), value=[], rows=8, layout=dict(width='180px')
+        )
 
     def topic_id_options(self) -> list[tuple[str, int]]:
         return [("", None)] + super().topic_id_options()
@@ -75,13 +75,11 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         self._compute_handler: Callable[[Any], None] = self.update_handler
         self.topic_proportions: pd.DataFrame = self.inferred_topics.calculator.reset().topic_proportions()
         self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles()
-
         self._threshold.value = default_threshold or self.default_threshold
 
         self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
         self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe_slider_update_label(self._scale, self._scale_label, "Scale")
-
         self.observe(value=True, handler=self.update_handler)
         self.inferred_topics.calculator.reset()
         return self
@@ -144,17 +142,17 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         return self._extra_placeholder
 
     def compute(self) -> pd.DataFrame:
-        network_data: pd.DataFrame = (
+
+        return (
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
             .filter_by_topics(topic_ids=self.topic_ids, negate=True)
-        )
-        return network_data
+        ).value
 
     def update(self) -> pd.DataFrame:
 
-        network_data: pd.DataFrame = self.compute().value
+        network_data: pd.DataFrame = self.compute()
         network_data["weight"] = pu.clamp_values(list(network_data["weight"]), (0.1, 2.0))
         di: pd.DataFrame = self.inferred_topics.document_index.set_index('document_id')[["document_name"]]
         network_data = network_data.set_index('document_id').merge(di, left_index=True, right_index=True)
@@ -201,7 +199,6 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
 
                 g: gu.TableWidget = gu.table_widget(data)
                 display(g)
-
             else:
                 nx.plot_highlighted_bipartite_dataframe(
                     network_data=self.network_data,
@@ -259,13 +256,12 @@ class FocusTopicDocumentNetworkGui(TopicDocumentNetworkGui):
         self.default_threshold: float = 0.1
 
     def compute(self) -> pd.DataFrame:
-        network_data: pd.DataFrame = (
+        return (
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
             .filter_by_focus_topics(topic_ids=self.topic_ids)
-        )
-        return network_data
+        ).value
 
     @property
     def highlight_ids(self) -> list[str]:
