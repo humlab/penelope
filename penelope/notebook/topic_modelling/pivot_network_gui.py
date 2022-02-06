@@ -7,7 +7,7 @@ import ipywidgets as w
 import pandas as pd
 from IPython.display import display
 
-import penelope.utility as pu
+from penelope import utility as pu
 from penelope.network.bipartite_plot import plot_bipartite_dataframe
 
 from .. import grid_utility as gu
@@ -37,7 +37,7 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         self.text_id: str = f"{str(uuid.uuid4())[:6]}"
         self.network_data: pd.DataFrame = None
         self.topic_proportions: pd.DataFrame = None
-        self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles()
+        self.titles: pd.DataFrame = None
 
         timespan: tuple[int, int] = self.inferred_topics.timespan
         yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
@@ -50,15 +50,18 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         self._scale_label: w.HTML = w.HTML("Scale")
         self._scale: w.FloatSlider = w.FloatSlider(min=0.0, max=1.0, step=0.01, value=0.1, **slider_opts)
         self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
-        self._threshold = w.FloatSlider(min=0.0, max=1.0, step=0.01, value=0.05, **slider_opts)
-        self._grouped_threshold_label: w.HTML = w.HTML("<b>Threshold (p)</b>")
-        self._grouped_threshold = w.FloatSlider(min=0.0, max=1.0, step=0.01, value=0.10, **slider_opts)
+        self._threshold: w.FloatSlider = w.FloatSlider(min=0.0, max=1.0, step=0.01, value=0.10, **slider_opts)
         self._network_layout: w.Dropdown = w.Dropdown(
             options=LAYOUT_OPTIONS, value='Fruchterman-Reingold', layout=dict(width='140px')
         )
-        _ignore_options = [('', None)] + [('Topic #' + str(i), i) for i in range(0, self.inferred_n_topics)]
+        self._grouped_threshold_label: w.HTML = w.HTML("<b>Threshold (p)</b>")
+        self._grouped_threshold = w.FloatSlider(min=0.0, max=1.0, step=0.01, value=0.10, **slider_opts)
         self._ignores: w.SelectMultiple = w.SelectMultiple(
-            options=_ignore_options, value=[], rows=13, layout=dict(width='120px'), style={'background': '#c9c9c9'}
+            options=[('', None)] + self.topic_id_options(),
+            value=[],
+            rows=13,
+            layout=dict(width='120px'),
+            style={'background': '#c9c9c9'},
         )
         self._aggregate: w.Dropdown = w.Dropdown(
             description='Aggregate', options=['mean', 'max'], value='mean', layout=dict(width="200px")
@@ -72,9 +75,11 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
 
     def setup(self, **kwargs) -> "PivotTopicNetworkGUI":
         super().setup(**kwargs)
+
         self._compute_handler: Callable[[Any], None] = self.update_handler
         self.topic_proportions: pd.DataFrame = self.inferred_topics.calculator.reset().topic_proportions()
         self.titles: pd.DataFrame = self.inferred_topics.get_topic_titles()
+
         self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
         self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe_slider_update_label(self._grouped_threshold, self._grouped_threshold_label, "Threshold (g)")
@@ -217,17 +222,13 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
 
                 plot_bipartite_dataframe(
                     data=self.network_data,
-                    layout_algorithm=self._network_layout.value,
-                    scale=self._scale.value,
+                    network_layout=self.network_layout,
                     titles=self.titles,
+                    scale=self.scale,
                     source_name="topic_id",
                     target_name=self.picked_pivot_name,
                     element_id=self.text_id,
                 )
-
-    @property
-    def aggregate(self) -> str:
-        return self._aggregate.value
 
     @property
     def threshold(self) -> str:
@@ -239,17 +240,29 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         return pu.PropertyValueMaskingOpts(year=self.years).update(super().filter_opts)
 
     @property
-    def grouped_threshold(self) -> str:
-        """Threshold for grouped (aggregated) pivot-topic weights"""
-        return self._grouped_threshold.value
-
-    @property
     def years(self) -> tuple[int, int]:
         return self._year_range.value
 
     @property
+    def network_layout(self) -> str:
+        return self._network_layout.value
+
+    @property
+    def scale(self) -> float:
+        return self._scale.value
+
+    @property
     def output_format(self) -> str:
         return self._output_format.value.lower()
+
+    @property
+    def aggregate(self) -> str:
+        return self._aggregate.value
+
+    @property
+    def grouped_threshold(self) -> str:
+        """Threshold for grouped (aggregated) pivot-topic weights"""
+        return self._grouped_threshold.value
 
     @property
     def ignores(self) -> list[int]:
