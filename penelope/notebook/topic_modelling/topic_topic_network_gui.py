@@ -224,6 +224,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     pu.ts_store(data=data, extension=self.output_format, basename='heatmap_weights')
 
                 g: gu.TableWidget = gu.table_widget(data)
+                display(g)
 
             else:
 
