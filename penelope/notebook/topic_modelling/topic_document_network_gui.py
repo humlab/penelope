@@ -16,11 +16,12 @@ from penelope import topic_modelling as tm
 from penelope import utility as pu
 from penelope.network.bipartite_plot import plot_bipartite_network
 from penelope.network.networkx import utility as network_utility
-from penelope.notebook import topic_modelling as ntm
 
-from .. import widgets_utils
+from .. import grid_utility as gu
+from .. import widgets_utils as wu
+from . import mixins as mx
+from . import model_container as mc
 from .model_container import TopicModelContainer
-from .topic_document_network_utility import display_document_topics_as_grid
 
 NETWORK_LAYOUT_ALGORITHMS = ["Circular", "Kamada-Kawai", "Fruchterman-Reingold"]
 
@@ -72,10 +73,11 @@ def display_document_topic_network(opts: ComputeOpts):
         )
 
         bokeh.plotting.show(p)
+
     elif opts.output_format.lower() in ('xlsx', 'csv', 'clipboard'):
         pu.ts_store(data=df_network, extension=opts.output_format.lower(), basename='topic_topic_network')
     else:
-        g = display_document_topics_as_grid(df_network)
+        g = gu.table_widget(df_network)
         display(g)
 
 
@@ -107,8 +109,8 @@ def compile_network_data(opts: ComputeOpts) -> pd.DataFrame:
     return data
 
 
-class TopicDocumentNetworkGui(ntm.TopicsStateGui):
-    def __init__(self, state: ntm.TopicModelContainer, plot_mode: PlotMode):
+class TopicDocumentNetworkGui(mx.TopicsStateGui):
+    def __init__(self, state: mc.TopicModelContainer, plot_mode: PlotMode):
         super().__init__(state=state)
 
         self.plot_mode: PlotMode = plot_mode
@@ -150,7 +152,7 @@ class TopicDocumentNetworkGui(ntm.TopicsStateGui):
         self.period.min, self.period.max = self.inferred_topics.year_period
         self.period.value = (self.period.min, self.period.min + 5)
 
-        self.text = widgets_utils.text_widget(f"ID_{self.plot_mode.name}")
+        self.text = wu.text_widget(f"ID_{self.plot_mode.name}")
         self.button.on_click(self.update_handler)
 
         return self

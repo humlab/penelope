@@ -45,7 +45,7 @@ def test_compile_data(state: TopicModelContainer):
 
 
 @pytest.mark.parametrize('plot_mode', [tdn_gui.PlotMode.Default, tdn_gui.PlotMode.FocusTopics])
-@mock.patch('penelope.notebook.topic_modelling.topic_document_network_utility.display_document_topics_as_grid')
+@mock.patch('penelope.notebook.grid_utility.table_widget')
 @mock.patch('bokeh.plotting.show')  # , monkey_patch)
 def test_display_document_topic_network(
     mock_show: mock.Mock, mock_display: mock.Mock, plot_mode, state: TopicModelContainer

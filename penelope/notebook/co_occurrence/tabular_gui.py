@@ -8,14 +8,15 @@ import numpy as np
 import pandas as pd
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, Text, ToggleButton, VBox
 from loguru import logger
-from perspective import PerspectiveWidget
 
 from penelope.co_occurrence import Bundle, CoOccurrenceHelper, store_co_occurrences
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import Token2Id, VectorizedCorpus
-from penelope.notebook.utility import create_js_download
 from penelope.utility import path_add_timestamp
+
+from .. import grid_utility as gu
+from ..utility import create_js_download
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
@@ -35,20 +36,34 @@ def empty_data():
 CURRENT_BUNDLE = None
 
 
-class PerspectiveTableView:
+# class PerspectiveTableView:
+#     def __init__(self, data: pd.DataFrame = None):
+#         data = data if data is not None else empty_data()
+#         self.widget: gu.TableWidget = gu.table_widget(data)
+#         self.container = self.widget
+
+#     def update(self, data: pd.DataFrame) -> None:
+#         self.widget.replace(data=data)
+
+
+class DataGridView:
     def __init__(self, data: pd.DataFrame = None):
         data = data if data is not None else empty_data()
-        self.widget: PerspectiveWidget = PerspectiveWidget(data, client=True)
-        self.container = self.widget
+        self.container: Output = Output()
+        self.widget: gu.TableWidget = None
 
     def update(self, data: pd.DataFrame) -> None:
-        self.widget.replace(data=data)
+        self.container.clear_output()
+        self.data = data
+        with self.container:
+            self.widget = gu.table_widget(self.data)
+            IPython_display.display(self.widget)
 
 
 class PandasTableView:
-    def __init__(self, data=None):  # pylint: disable=unused-argument
-        self.container = Output(layout=Layout(width='600px', height='600px', overflow_y='auto'))
-        self.data = data
+    def __init__(self, data: pd.DataFrame = None):  # pylint: disable=unused-argument
+        self.container: Output = Output(layout=Layout(width='600px', height='600px', overflow_y='auto'))
+        self.data: pd.DataFrame = data
         self.style_dict = [
             dict(
                 selector="thead th",
@@ -80,7 +95,7 @@ class PandasTableView:
                 IPython_display.display(self.data)  # (HTML(self.data.style.render()))
 
 
-TableViewerClass = PerspectiveTableView
+TableViewerClass = DataGridView
 
 
 class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors

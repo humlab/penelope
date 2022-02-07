@@ -8,8 +8,8 @@ import networkx as nx
 import pandas as pd
 
 from penelope.network import layout_source, metrics, plot_utility
-from penelope.network.networkx import utility as network_utility
-from penelope.notebook import widgets_utils
+from penelope.network.networkx import utility as nu
+from penelope.notebook import widgets_utils as wu
 
 # pylint: disable=unused-argument, too-many-locals
 
@@ -24,18 +24,18 @@ def plot_bipartite_dataframe(
     target_name: str,
     element_id: str,
 ) -> None:
-    network: nx.Graph = network_utility.create_bipartite_network(
+    network: nx.Graph = nu.create_bipartite_network(
         data[[target_name, source_name, 'weight']], target_name, source_name
     )
     args: dict[str, Any] = plot_utility.layout_args(layout_algorithm, network, scale)
-    layout: network_utility.NodesLayout = (plot_utility.layout_algorithms[layout_algorithm])(network, **args)
+    layout: nu.NodesLayout = (plot_utility.layout_algorithms[layout_algorithm])(network, **args)
     p = plot_bipartite_network(network, layout, scale=scale, titles=titles, element_id=element_id)
     bp.show(p)
 
 
 def plot_bipartite_network(
     network: nx.Graph,
-    layout_data: network_utility.NodesLayout,
+    layout_data: nu.NodesLayout,
     scale: float = 1.0,
     titles: pd.DataFrame = None,
     highlight_topic_ids=None,
@@ -46,7 +46,7 @@ def plot_bipartite_network(
     """Plot a bipartite network. Return bokeh.Figure"""
     tools: str = 'pan,wheel_zoom,box_zoom,reset,hover,save'
 
-    source_nodes, target_nodes = network_utility.get_bipartite_node_set(network, bipartite=0)
+    source_nodes, target_nodes = nu.get_bipartite_node_set(network, bipartite=0)
 
     color_map: dict = (
         {x: 'brown' if x in highlight_topic_ids else 'skyblue' for x in target_nodes}
@@ -86,7 +86,7 @@ def plot_bipartite_network(
         bm.HoverTool(
             renderers=[r_targets],
             tooltips=None,
-            callback=widgets_utils.glyph_hover_callback2(
+            callback=wu.glyph_hover_callback2(
                 glyph_source=target_source,
                 glyph_id='node_id',
                 text_ids=titles.index,

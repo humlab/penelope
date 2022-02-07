@@ -6,9 +6,9 @@ import penelope.plot as plot_utility
 import penelope.utility as utility
 from penelope import topic_modelling as tm
 
+from .. import grid_utility as gu
 from . import mixins as mx
-from .model_container import TopicModelContainer
-from .utility import table_widget
+from . import model_container as mc
 
 PLOT_OPTS = {'max_font_size': 100, 'background_color': 'white', 'width': 1200, 'height': 600}
 OUTPUT_OPTIONS = ['Wordcloud', 'Table', 'CSV', 'XLSX', 'Clipboard']
@@ -35,14 +35,14 @@ def display_wordcloud(
         )
     else:
         top_tokens: pd.DataFrame = inferred_topics.get_topic_top_tokens(topic_id=topic_id, n_tokens=n_words)
-        g = table_widget(top_tokens)
+        g = gu.table_widget(top_tokens)
         display(g)
         if output_format.lower() in ('xlsx', 'csv', 'clipboard'):
             utility.ts_store(data=top_tokens, extension=output_format.lower(), basename='topic_top_tokens')
 
 
 class WordcloudGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsStateGui):
-    def __init__(self, state: TopicModelContainer):
+    def __init__(self, state: mc.TopicModelContainer):
 
         super().__init__(state=state)
 
@@ -96,7 +96,7 @@ class WordcloudGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsStateGui):
         )
 
 
-def display_gui(state: TopicModelContainer):
+def display_gui(state: mc.TopicModelContainer):
 
     gui: WordcloudGUI = WordcloudGUI(state).setup()
     display(gui.layout())

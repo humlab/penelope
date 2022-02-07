@@ -15,15 +15,15 @@ from bokeh.models import (
     PrintfTickFormatter,
 )
 from IPython.display import display
+from loguru import logger
 
-import penelope.utility as utility
+from penelope import utility as pu
 
-from .. import ipyaggrid_utility, widgets_utils
+from .. import grid_utility as gu
+from .. import widgets_utils as wu
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
-
-logger = utility.get_logger()
 
 COLORS = ['#ffffff', '#f7fcf5', '#e5f5e0', '#c7e9c0', '#a1d99b', '#74c476', '#41ab5d', '#238b45', '#006d2c', '#00441b']
 HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_location="above", plot_width=1200)
@@ -49,7 +49,7 @@ def to_categories(values: pd.Series) -> List[str]:
 
     categories: Sequence[int] = values.unique()
 
-    if all(utility.isint(x) for x in categories):
+    if all(pu.isint(x) for x in categories):
         return [str(x) for x in sorted([int(y) for y in categories])]
 
     return sorted(list(categories))
@@ -111,7 +111,7 @@ def plot_topic_relevance_by_year(
 
     text_source: ColumnDataSource = ColumnDataSource(dict(text_id=titles.index.tolist(), text=titles.tolist()))
 
-    code: str = widgets_utils.display_text_on_hover_js_code(
+    code: str = wu.display_text_on_hover_js_code(
         element_id=element_id, id_name='topic_id', text_name='text', glyph_name='glyph', glyph_data='glyph_data'
     )
     callback: CustomJS = CustomJS(args={'glyph': cr.data_source, 'glyph_data': text_source}, code=code)
@@ -155,9 +155,9 @@ def display_heatmap(
             bokeh.plotting.show(p)
 
         elif output_format.lower() in ('xlsx', 'csv', 'clipboard'):
-            utility.ts_store(data=weights, extension=output_format.lower(), basename='heatmap_weights')
+            pu.ts_store(data=weights, extension=output_format.lower(), basename='heatmap_weights')
         else:
-            g = ipyaggrid_utility.display_grid(weights)
+            g = gu.table_widget(weights)
             display(g)
 
     except Exception as ex:

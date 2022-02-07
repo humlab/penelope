@@ -13,7 +13,7 @@ from penelope.pipeline import checkpoint as cp
 from penelope.pipeline import interfaces, tasks
 from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
 
-from ..ipyaggrid_utility import display_grid
+from .. import grid_utility as gu
 from ..utility import CLEAR_OUTPUT, OutputsTabExt
 from .plot import plot_multiline, plot_stacked_bar
 
@@ -96,7 +96,7 @@ class TokenCountsGUI:
             plot_lines = lambda: plot_multiline(df=data.set_index(self.grouping), smooth=self.smooth)
             plot_bars = lambda: plot_stacked_bar(df=data.set_index(self.grouping))
 
-            self._tab.display_content(0, what=display_grid(data), clear=True)
+            self._tab.display_content(0, what=gu.table_widget(data), clear=True)
             self._tab.display_content(1, what=plot_lines, clear=True)
             self._tab.display_content(2, what=plot_bars, clear=True)
 

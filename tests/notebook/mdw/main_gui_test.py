@@ -20,7 +20,7 @@ def test_create_main_gui():
 
 
 @patch('IPython.display.display', monkey_patch)
-@patch('penelope.notebook.ipyaggrid_utility.display_grid', monkey_patch)
+@patch('penelope.notebook.grid_utility.table_widget', monkey_patch)
 def test_display_mdw():
     corpus = MagicMock(spec=dtm.VectorizedCorpus)
     df_mdw = MagicMock(spec=pd.DataFrame)

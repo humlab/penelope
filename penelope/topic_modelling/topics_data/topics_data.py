@@ -5,7 +5,7 @@ import pickle
 import sys
 import types
 from functools import cached_property
-from os import path as pp
+from os.path import isfile
 from os.path import join as jj
 from typing import List, Tuple
 
@@ -21,9 +21,11 @@ from .document import DocumentTopicsCalculator
 
 CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
+# pylint: disable=too-many-public-methods)
+
 
 def smart_read(filename: str, **kwargs) -> pd.DataFrame:
-    if pp.isfile(pu.replace_extension(filename, "feather")):
+    if isfile(pu.replace_extension(filename, "feather")):
         return pd.read_feather(filename)
     return pd.read_csv(filename, **kwargs)
 
@@ -165,8 +167,9 @@ class InferredTopicsData(tt.TopicTokensMixIn):
     def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
         data: InferredTopicsData = None
+        csv_opts: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
-        if pp.isfile(jj(folder, 'documents.feather')):
+        if isfile(jj(folder, 'documents.feather')):
             data: InferredTopicsData = InferredTopicsData(
                 dictionary=pd.read_feather(jj(folder, "dictionary.feather")).set_index('token_id', drop=True),
                 document_index=pd.read_feather(jj(folder, "documents.feather"))
@@ -178,8 +181,7 @@ class InferredTopicsData(tt.TopicTokensMixIn):
                     'topic_id', drop=True
                 ),
             )
-        elif pp.isfile(jj(folder, 'documents.zip')):
-            csv_opts: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
+        elif isfile(jj(folder, 'documents.zip')):
             data: InferredTopicsData = InferredTopicsData(
                 dictionary=pd.read_csv(jj(folder, 'dictionary.zip'), **csv_opts),
                 document_index=pc.load_document_index(
@@ -190,7 +192,7 @@ class InferredTopicsData(tt.TopicTokensMixIn):
                 document_topic_weights=pd.read_csv(jj(folder, 'document_topic_weights.zip'), **csv_opts),
             )
 
-        elif pp.isfile(jj(folder, "inferred_topics.pickle")):
+        elif isfile(jj(folder, "inferred_topics.pickle")):
 
             with open(jj(folder, "inferred_topics.pickle"), 'rb') as f:
                 pickled_data: types.SimpleNamespace = pickle.load(f)
@@ -208,14 +210,13 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         else:
             raise FileNotFoundError(f"no model data found in {folder}")
 
-        assert "year" in data.document_index.columns
-
         # HACK: Handle renamed column:
         data.document_index = fix_renamed_columns(data.document_index)
+        assert "year" in data.document_index.columns
 
-        # data.log_usage(total=True)
+        data.topic_token_overview = data.load_topic_labels(folder, **csv_opts)
+
         data.slim_types()
-        # data.log_usage(total=True)
 
         if slim:
             data.slimmer()
@@ -224,6 +225,34 @@ class InferredTopicsData(tt.TopicTokensMixIn):
             data.log_usage(total=True)
 
         return data
+
+    def load_topic_labels(self, folder: str, **csv_opts: dict) -> pd.DataFrame:
+
+        tto: pd.DataFrame = self.topic_token_overview
+        if isfile(jj(folder, "topic_token_overview_label.csv")):
+            labeled_tto: pd.DataFrame = pd.read_csv(jj(folder, 'topic_token_overview_label.csv'), **csv_opts)
+            if self.is_satisfied_topic_token_overview(labeled_tto):
+                # logger.info(f"labeled file loaded from: {folder}")
+                tto = labeled_tto
+
+        if 'label' not in tto.columns:
+            tto['label'] = tto.index.astype(str)
+
+        return tto
+
+    def is_satisfied_topic_token_overview(self, labeled_overview: pd.DataFrame) -> bool:
+        try:
+            overview: pd.DataFrame = self.topic_token_overview
+            if len(labeled_overview) != len(overview):
+                raise ValueError(f"length not {len(overview)} as expected")
+            if 'label' not in labeled_overview.columns:
+                raise ValueError("label column is missing")
+            if (labeled_overview.index != overview.index).any():
+                raise ValueError("index (topic_id) mismatch")
+        except ValueError as ex:
+            logger.warning(f"skipping labeled file: {ex}")
+            return False
+        return True
 
     @staticmethod
     def load_token2id(folder: str) -> pc.Token2Id:
@@ -240,7 +269,8 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         self.document_index['year'] = self.document_index['year'].astype(np.int16)
         self.document_index['n_tokens'] = self.document_index['n_tokens'].astype(np.int32)
         self.document_index['n_raw_tokens'] = self.document_index['n_raw_tokens'].astype(np.int32)
-        self.document_index['document_id'] = self.document_index['document_id'].astype(np.int32)
+        if 'document_id' in self.document_index.columns:
+            self.document_index['document_id'] = self.document_index['document_id'].astype(np.int32)
         for column in set(pu.PD_PoS_tag_groups.index.to_list()).intersection(self.document_index.columns):
             self.document_index[column] = self.document_index[column].astype(np.int32)
 
@@ -264,10 +294,12 @@ class InferredTopicsData(tt.TopicTokensMixIn):
         """document_index"""
         remove_columns = set(pu.PD_PoS_tag_groups.index.to_list()) | {'filename', 'year2', 'number'}
         self.document_index.drop(columns=list(remove_columns.intersection(self.document_index.columns)), inplace=True)
-        self.document_index.set_index('document_id', drop=True, inplace=True)
+        if 'document_id' in self.document_index.columns:
+            self.document_index.set_index('document_id', drop=True, inplace=True)
 
         """dictionary"""
-        self.dictionary.drop(columns='dfs', inplace=True)
+        if 'dfs' in self.dictionary.columns:
+            self.dictionary.drop(columns='dfs', inplace=True, errors='ignore')
 
         """topic_token_weights"""
         if 'token_id' not in self.topic_token_weights.columns:

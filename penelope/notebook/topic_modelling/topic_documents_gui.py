@@ -9,9 +9,9 @@ from IPython.display import display
 from penelope import utility as pu
 from penelope.notebook import widgets_utils as wu
 
+from ..grid_utility import TableWidget, table_widget
 from . import mixins as mx
 from .model_container import TopicModelContainer
-from .utility import table_widget
 
 
 # FIXME use ComputeMixIn
@@ -40,6 +40,7 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._content_placeholder: w.Box = None
         self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
         self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
+        self._table_widget: TableWidget = None
         self.click_handler: Callable[[pd.Series, Any], None] = None
 
     def setup(self, **kwargs) -> "TopicDocumentsGUI":  # pylint: disable=arguments-differ,unused-argument
@@ -100,8 +101,8 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.update()
 
                 if data is not None:
-                    g = table_widget(data, handler=self.click_handler)
-                    display(g)
+                    self._table_widget = table_widget(data, handler=self.click_handler)
+                    display(self._table_widget)
 
                 self.alert("✅")
             except Exception as ex:

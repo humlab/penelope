@@ -5,14 +5,14 @@ import IPython.display
 import pandas as pd
 from IPython.display import display
 from ipywidgets import HTML, Button, Dropdown, GridBox, HBox, Layout, Output, VBox
-from perspective import PerspectiveWidget
 
 from penelope.co_occurrence.bundle import Bundle
 from penelope.co_occurrence.keyness import ComputeKeynessOpts
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.utility import create_js_download
 
+from ... import grid_utility as gu
+from ... import utility as nu
 from .interface import ITrendDisplayer
 
 TABLE = None
@@ -55,7 +55,7 @@ class TopTokensDisplayer(ITrendDisplayer):
             layout=Layout(width='100px'),
         )
         self.category_name = "time_period"
-        self._table: PerspectiveWidget = None
+        self._table: gu.TableWidget = None
         self._output: Output = None
 
     def keyness_widget(self) -> Dropdown:
@@ -85,7 +85,7 @@ class TopTokensDisplayer(ITrendDisplayer):
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
 
-        self._table = PerspectiveWidget(self.data, client=True) if not self.simple_display else None
+        self._table = gu.table_widget(self.data) if not self.simple_display else None
         self._output = Output() if self.simple_display else None
 
         self.start_observe()
@@ -164,7 +164,7 @@ class TopTokensDisplayer(ITrendDisplayer):
     def download(self, *_):
         with contextlib.suppress(Exception):
             with self._download_output:
-                js_download = create_js_download(self.data, index=True)
+                js_download = nu.create_js_download(self.data, index=True)
                 if js_download is not None:
                     IPython.display.display(js_download)
 

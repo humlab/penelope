@@ -2,7 +2,7 @@ import IPython.display as ipy_display
 from ipywidgets import Output, VBox
 
 from penelope.corpus import dtm
-from penelope.notebook import ipyaggrid_utility
+from penelope.notebook import grid_utility as gu
 from penelope.notebook.dtm import load_dtm_gui
 
 from .mdw_gui import create_mdw_gui
@@ -12,7 +12,7 @@ view_display, view_gui = Output(), Output()
 
 @view_display.capture(clear_output=True)
 def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw):  # pylint: disable=unused-argument
-    g = ipyaggrid_utility.display_grid(df_mdw)
+    g = gu.table_widget(df_mdw)
     ipy_display.display(g)
 
 
