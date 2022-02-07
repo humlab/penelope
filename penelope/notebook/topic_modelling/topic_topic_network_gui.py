@@ -217,7 +217,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.network_data
 
                 if self.output_format == "gephi":
-                    data = data[['topic_id', self.picked_pivot_name, 'weight']]
+                    data = data[['topic_id', "title", 'weight']]
                     data.columns = ['Source', 'Target', 'Weight']
 
                 if self.output_format != "table":
