@@ -26,7 +26,10 @@
         "titleBar.activeBackground": "#4e673c",
         "titleBar.activeForeground": "#e7e7e7",
         "titleBar.inactiveBackground": "#4e673c99",
-        "titleBar.inactiveForeground": "#e7e7e799"
+        "titleBar.inactiveForeground": "#e7e7e799",
+        "sash.hoverBorder": "#66874f",
+        "statusBarItem.remoteBackground": "#4e673c",
+        "statusBarItem.remoteForeground": "#e7e7e7"
     },
     "cSpell.words": [
         "alphanum",

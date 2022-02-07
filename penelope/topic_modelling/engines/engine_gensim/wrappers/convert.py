@@ -9,17 +9,30 @@ from smart_open import open as smart_open
 from tqdm import tqdm
 
 from penelope import corpus as pc
+from penelope import topic_modelling as tm
 
 
-def convert_topic_tokens(folder: str, source_filename: str = "topicwordweights.txt.gz") -> pd.DataFrame:
+def probe_filenames(folder: str, filenames: list[str]) -> str | None:
+    for filename in filenames:
+        if isfile(jj(folder, filename)):
+            return jj(folder, filename)
+    return None
+
+
+def convert_topic_tokens(folder: str, source_filename: str = None) -> pd.DataFrame:
 
     mallet_folder: str = jj(folder, "mallet")
 
     target_filename = jj(folder, 'topic_token_weights.zip')
 
-    source_filename: str = jj(mallet_folder, source_filename)
+    if isfile(target_filename):
+        return
 
-    id2token: dict[int, str] = pd.read_json(jj(mallet_folder, "topic_model_id2token.json.gz"), typ="series")
+    source_filename: str = source_filename or probe_filenames(
+        mallet_folder, ["topicwordweights.txt.gz", "topicwordweights.txt", "topicwordweights.zip"]
+    )
+
+    id2token: dict[int, str] = pd.read_json(jj(folder, "topic_model_id2token.json.gz"), typ="series")
     token2id: dict[str, int] = {v: k for k, v in id2token.items()}
 
     ttw: pd.DataFrame = pd.read_csv(
@@ -43,7 +56,7 @@ def convert_topic_tokens(folder: str, source_filename: str = "topicwordweights.t
 
     ttw = ttw[['topic_id', 'token_id', 'weight']].reset_index(drop=True)
 
-    ttw.to_feather(jj(folder, "topic_token_weights.feather"))
+    # ttw.to_feather(jj(folder, "topic_token_weights.feather"))
 
     ttw.to_csv(
         target_filename,
@@ -55,44 +68,54 @@ def convert_topic_tokens(folder: str, source_filename: str = "topicwordweights.t
 
 
 def convert_overview(folder: str) -> None:
-    target_name: str = jj(folder, 'topic_token_overview.zip')
-    source_name: str = jj(folder, "mallet", "topickeys.txt")
-    df: pd.DataFrame = pd.read_csv(source_name, sep='\t', names=['topic_id', 'alpha', 'tokens']).set_index('topic_id')
+
+    target_filename: str = jj(folder, 'topic_token_overview.zip')
+    if isfile(target_filename):
+        return
+
+    source_filename: str = probe_filenames(jj(folder, "mallet"), ["topickeys.txt.gz", "topickeys.txt", "topickeys.zip"])
+
+    df: pd.DataFrame = pd.read_csv(source_filename, sep='\t', names=['topic_id', 'alpha', 'tokens']).set_index(
+        'topic_id'
+    )
     df.to_csv(
-        target_name,
+        target_filename,
         sep='\t',
         compression=dict(method='zip', archive_name="topic_token_overview.csv"),
         header=True,
     )
+    # df.to_feather(jj(folder, 'topic_token_overview.feather'))
 
 
-def convert_document_topics(
-    folder: str, source_filename: str = "doctopics.txt.infer.gz", normalize: bool = True, epsilon: float = 0.005
-) -> pd.DataFrame:
-    """Converts a 2.0.8+ MALLET doc-topics file into data frame stored in FEATHER format."""
-    mallet_folder: str = jj(folder, "mallet")
-    target_filename: str = jj(folder, 'document_topic_weights.zip')
-
-    if isfile(target_filename):
-        return
-
-    source_filename: str = jj(mallet_folder, source_filename)
+def doctopics_to_dataframe(source_filename: str, normalize: bool = False, epsilon: float = 0.005) -> pd.DataFrame:
 
     ds, ts, ws = [], [], []
+
     with smart_open(source_filename, mode='rt') as fp:
+
         for row in tqdm(fp, mininterval=1.0):
+
             if row[0] == '#':
                 continue
-            values: list[float] = np.array(list(float(x) for x in row.split('\t')))
+
+            values: list[float] = np.array(list(float(x) for x in row.strip().split('\t')))
+
             document_id: int = int(values[0])
-            topic_weights: np.ndarray = values[2:]
-            token_ids: np.ndarray = np.argwhere(topic_weights >= epsilon).T[0]
-            weights: np.ndarray = topic_weights[token_ids]
+            topic_ids: np.ndarray = values[2::2]
+            weights: np.ndarray = values[3::2]
+
+            keep_ids: np.ndarray = np.argwhere(weights >= epsilon).T[0]
+
+            topic_ids: np.ndarray = topic_ids[keep_ids].astype(int)
+            weights: np.ndarray = weights[keep_ids]
+
             if normalize and len(weights) > 0:
                 weights /= weights.sum()
-            ds.append((document_id, len(token_ids)))
-            ts.append(token_ids)
-            ws.append(topic_weights[token_ids])
+
+            ds.append((document_id, len(topic_ids)))
+            ts.append(topic_ids)
+            ws.append(weights)
+
     dtw: pd.DataFrame = pd.DataFrame(
         data={
             'document_id': (t for tx in ([d] * n for d, n in ds) for t in tx),
@@ -102,6 +125,32 @@ def convert_document_topics(
     )
     dtw['topic_id'] = dtw.topic_id.astype(np.int16)
     dtw['document_id'] = dtw.document_id.astype(np.int32)
+    return dtw
+
+
+def convert_document_topics(
+    folder: str, source_filename: str = None, normalize: bool = True, epsilon: float = 0.005
+) -> pd.DataFrame:
+    """Converts a 2.0.8+ MALLET doc-topics file into data frame stored in FEATHER format."""
+    mallet_folder: str = jj(folder, "mallet")
+    target_filename: str = jj(folder, 'document_topic_weights.zip')
+
+    if isfile(target_filename):
+        return
+
+    source_filename: str = source_filename or probe_filenames(
+        mallet_folder,
+        [
+            "doctopics.txt.infer.gz",
+            "doctopics.txt.infer.zip",
+            "doctopics.txt.infer",
+            "doctopics.txt.gz",
+            "doctopics.txt.zip",
+            "doctopics.zip",
+            "doctopics.txt",
+        ],
+    )
+    dtw: pd.DataFrame = doctopics_to_dataframe(source_filename, normalize, epsilon)
 
     dtw.to_feather(jj(mallet_folder, "doctopics.feather"))
 
@@ -116,7 +165,7 @@ def convert_document_topics(
         header=True,
     )
 
-    dtw.to_feather(jj(folder, 'document_topic_weights.feather'))
+    # dtw.to_feather(jj(folder, 'document_topic_weights.feather'))
 
 
 def explode_pickle(folder: str) -> None:
@@ -161,3 +210,11 @@ def convert_dictionary(folder: str) -> None:
     dictionary.to_csv(
         target_filename, sep='\t', compression=dict(method='zip', archive_name="dictionary.csv"), header=True
     )
+
+
+def to_feather(folder: str):
+
+    explode_pickle(folder)
+
+    data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=folder, slim=True)
+    data._store_feather(folder)  # pylint: disable=protected-access
