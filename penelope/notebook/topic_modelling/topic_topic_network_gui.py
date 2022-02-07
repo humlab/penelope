@@ -96,7 +96,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self._exclude_or_include_handler()
         return self
 
-    def _exclude_or_include_handler(self,* _) -> None:
+    def _exclude_or_include_handler(self, *_) -> None:
         self._exclude_or_include.description = "Exclude" if self.exclude_mode else "Include"
         self.topics_ids_header = f"<b>{self._exclude_or_include.description} topics</b>"
 
@@ -178,7 +178,6 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             .threshold(threshold=self.threshold)
             .filter_by_topics(topic_ids=self.topic_ids, negate=self.exclude_mode)
             .to_topic_topic_network(self.n_docs, topic_labels=None)
-
         ).value
 
     def update(self) -> pd.DataFrame:
@@ -239,7 +238,6 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     topic_proportions=self.topic_proportions,
                 )
 
-
     @property
     def threshold(self) -> float:
         """Threshodl for topic's weight in document"""
@@ -247,7 +245,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
     @property
     def filter_opts(self) -> pu.PropertyValueMaskingOpts:
-        return pu.PropertyValueMaskingOpts(year=self.years) #.update(super().filter_opts)
+        return pu.PropertyValueMaskingOpts(year=self.years)  # .update(super().filter_opts)
 
     @property
     def years(self) -> tuple[int, int]:

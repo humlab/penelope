@@ -93,7 +93,7 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         self._exclude_or_include_handler()
         return self
 
-    def _exclude_or_include_handler(self,* _) -> None:
+    def _exclude_or_include_handler(self, *_) -> None:
         self._exclude_or_include.description = "Exclude" if self.exclude_mode else "Include"
         self.topics_ids_header = f"<b>{self._exclude_or_include.description} topics</b>"
 
