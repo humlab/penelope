@@ -163,6 +163,10 @@ class DocumentTopicsCalculator:
         self.data = filter_by_threshold(self.data, threshold=threshold)
         return self
 
+    def head(self, n: int) -> "DocumentTopicsCalculator":
+        self.data = self.data.head(n)
+        return self
+
     def filter_by_n_top(self, n_top: int) -> "DocumentTopicsCalculator":
         self.data = filter_by_n_top(self.data, n_top=n_top)
         return self
