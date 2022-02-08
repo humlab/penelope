@@ -20,7 +20,7 @@ from .prevelance import (
     compute_yearly_topic_weights,
 )
 from .token import TopicTokensMixIn, get_topic_title, get_topic_title2, get_topic_titles, top_topic_token_weights
-from .topics_data import InferredTopicsData
+from .topics_data import InferredTopicsData, PickleUtility
 
 YEARLY_AVERAGE_COMPUTE_METHODS = [
     {'key': 'max_weight', 'description': 'Max value', 'tooltip': 'Use maximum value over documents'},

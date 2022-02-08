@@ -15,6 +15,7 @@ from .topics_data import (
     DocumentTopicsCalculator,
     InferredTopicsData,
     MemoizedTopicPrevalenceOverTimeCalculator,
+    PickleUtility,
     TopicPrevalenceOverTimeCalculator,
     compute_topic_proportions,
     compute_yearly_topic_weights,
