@@ -87,11 +87,11 @@ from .pandas_utils import (
     pandas_to_csv_zip,
     rename_columns,
     set_default_options,
+    set_index,
     size_of,
     try_split_column,
     ts_store,
     unstack_data,
-    set_index,
 )
 from .paths import find_ancestor_folder, find_data_folder, find_resources_folder, find_root_folder
 from .pos_tags import (

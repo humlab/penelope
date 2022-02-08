@@ -507,6 +507,7 @@ def as_slim_types(df: pd.DataFrame, columns: List[str], dtype: np.dtype) -> pd.D
             df[column] = df[column].fillna(0).astype(dtype)
     return df
 
+
 def set_index(df: pd.DataFrame, columns: str | list[str], drop: bool = True, axis_name: str = None) -> pd.DataFrame:
     """Set index if columns exist, otherwise skip (assuming columns already are index)"""
     columns: list[str] = [columns] if isinstance(columns, str) else columns

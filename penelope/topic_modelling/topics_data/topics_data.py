@@ -6,7 +6,7 @@ import types
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
-from typing import Callable, List, Tuple, Protocol
+from typing import Callable, List, Protocol, Tuple
 
 import numpy as np
 import pandas as pd
@@ -21,6 +21,7 @@ from .document import DocumentTopicsCalculator
 CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
 # pylint: disable=too-many-public-methods,access-member-before-definition,attribute-defined-outside-init
+
 
 def smart_load(filename: str, feather_pipe: Callable[[pd.DataFrame], pd.DataFrame] = None, **kwargs) -> pd.DataFrame:
     feather_filename: str = pu.replace_extension(filename, "feather")
@@ -42,6 +43,7 @@ class TopicDataProtocol(Protocol):
     document_topic_weights: pd.DataFrame
     topic_token_overview: pd.DataFrame
     calculator = DocumentTopicsCalculator
+
 
 class MemoryUsageMixIn:
     def memory_usage(self: TopicDataProtocol, total: bool = True) -> dict:
@@ -259,9 +261,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             document_index=document_index,
             topic_token_weights=smart_load(jj(folder, 'topic_token_weights.zip')),
             document_topic_weights=smart_load(jj(folder, 'document_topic_weights.zip')),
-            topic_token_overview=smart_load(
-                jj(folder, 'topic_token_overview.zip'), pu.set_index, columns='topic_id'
-            ),
+            topic_token_overview=smart_load(jj(folder, 'topic_token_overview.zip'), pu.set_index, columns='topic_id'),
         )
 
         # HACK: Handle renamed column:
