@@ -154,8 +154,12 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
 
         network_data: pd.DataFrame = self.compute()
         network_data["weight"] = pu.clamp_values(list(network_data["weight"]), (0.1, 2.0))
-        di: pd.DataFrame = self.inferred_topics.document_index.set_index('document_id')[["document_name"]]
-        network_data = network_data.set_index('document_id').merge(di, left_index=True, right_index=True)
+        di: pd.DataFrame = self.inferred_topics.document_index.pipe(pu.set_index, columns='document_id')[
+            ["document_name"]
+        ]
+        network_data = network_data.pipe(pu.set_index, columns='document_id').merge(
+            di, left_index=True, right_index=True
+        )
         network_data["title"] = network_data["document_name"]
 
         if len(network_data) == 0:
