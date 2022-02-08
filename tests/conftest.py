@@ -1,8 +1,5 @@
 # type: ignore
 
-import os
-import shutil
-
 import pytest
 from spacy.language import Language
 
