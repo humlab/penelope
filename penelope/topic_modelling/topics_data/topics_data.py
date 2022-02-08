@@ -6,7 +6,7 @@ import types
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
-from typing import Callable, List, Protocol, Tuple
+from typing import Callable, List, Tuple
 
 import numpy as np
 import pandas as pd
