@@ -506,3 +506,13 @@ def as_slim_types(df: pd.DataFrame, columns: List[str], dtype: np.dtype) -> pd.D
         if column in df.columns:
             df[column] = df[column].fillna(0).astype(dtype)
     return df
+
+def set_index(df: pd.DataFrame, columns: str | list[str], drop: bool = True, axis_name: str = None) -> pd.DataFrame:
+    """Set index if columns exist, otherwise skip (assuming columns already are index)"""
+    columns: list[str] = [columns] if isinstance(columns, str) else columns
+    if any(column not in df.columns for column in columns):
+        return df
+    df = df.set_index(columns, drop=drop)
+    if axis_name:
+        df = df.rename_axis(axis_name)
+    return df

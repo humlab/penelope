@@ -91,6 +91,7 @@ from .pandas_utils import (
     try_split_column,
     ts_store,
     unstack_data,
+    set_index,
 )
 from .paths import find_ancestor_folder, find_data_folder, find_resources_folder, find_root_folder
 from .pos_tags import (
