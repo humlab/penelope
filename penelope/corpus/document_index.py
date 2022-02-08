@@ -33,7 +33,7 @@ T = TypeVar("T", int, str)
 
 DOCUMENT_INDEX_COUNT_COLUMNS = ["n_raw_tokens", "n_tokens"] + PD_PoS_tag_groups.index.tolist()
 
-DocumentIndex = pd.core.api.DataFrame
+DocumentIndex = pd.DataFrame
 
 # pylint: disable=too-many-public-methods
 
