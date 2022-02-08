@@ -26,4 +26,4 @@ to_lower: false
 train_corpus_folder: null
 trained_model_folder: null
 update_every: 1
-workers: 1
+workers: 4
