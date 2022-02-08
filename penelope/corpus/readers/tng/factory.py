@@ -8,7 +8,7 @@ from ..interfaces import TextReaderOpts
 from .reader import CorpusReader
 from .sources import ZipSource
 
-TaggedFrame = pd.core.api.DataFrame
+TaggedFrame = pd.DataFrame
 
 
 def create_sparv_xml_corpus_reader(

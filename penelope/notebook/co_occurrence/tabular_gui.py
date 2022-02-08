@@ -51,6 +51,7 @@ class DataGridView:
         data = data if data is not None else empty_data()
         self.container: Output = Output()
         self.widget: gu.TableWidget = None
+        self.data: pd.DataFrame = data
 
     def update(self, data: pd.DataFrame) -> None:
         self.container.clear_output()

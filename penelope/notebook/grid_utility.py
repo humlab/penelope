@@ -40,7 +40,7 @@ def table_widget(data: pd.DataFrame, **kwargs) -> None:
         selection_mode="row",
         auto_fit_columns=True,
         auto_fit_params={"area": "body"},
-        grid_style={'background_color': '#f2f2f2', 'grid_line_color': '#f2f2f2'},
+        grid_style={'background_color': '#f9f9f9', 'grid_line_color': '#f9f9f9'},
         # header_visibility='column',
         editable=False,
     )
@@ -62,6 +62,7 @@ def table_widget(data: pd.DataFrame, **kwargs) -> None:
 
 class DataGridOutput(w.Output):
     def __init__(self):
+        super().__init__()
         self.widget: TableWidget = None
         self.data: pd.DataFrame = None
 
@@ -75,7 +76,7 @@ class DataGridOutput(w.Output):
             display(self.widget)
 
     def load(self, data: pd.DataFrame) -> None:
-        self.display(data)
+        self.update(data)
 
     def clear(self) -> None:
         self.widget = None

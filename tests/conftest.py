@@ -1,8 +1,5 @@
 # type: ignore
 
-import os
-import shutil
-
 import pytest
 from spacy.language import Language
 
@@ -39,13 +36,13 @@ def df_doc(en_nlp) -> Language:
 #     """
 
 
-def pytest_sessionstart(session):  # pylint: disable=unused-argument
-    """
-    Called after the Session object has been created and
-    before performing collection and entering the run test loop.
-    """
-    shutil.rmtree('./tests/output', ignore_errors=True)
-    os.makedirs('./tests/output', exist_ok=True)
+# def pytest_sessionstart(session):  # pylint: disable=unused-argument
+#     """
+#     Called after the Session object has been created and
+#     before performing collection and entering the run test loop.
+#     """
+#     shutil.rmtree('./tests/output', ignore_errors=True)
+#     os.makedirs('./tests/output', exist_ok=True)
 
 
 # def pytest_sessionfinish(session, exitstatus):

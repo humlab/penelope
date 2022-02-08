@@ -125,7 +125,7 @@ class TopicWordDistributionGUI(mx.NextPrevTopicMixIn, mx.TopicsStateGui):
     def layout(self) -> VBox:
         return VBox(
             [
-                HBox([ self._next_prev_layout, self._n_words, self._output_format]),
+                HBox([self._next_prev_layout, self._n_words, self._output_format]),
                 self._output,
             ]
         )

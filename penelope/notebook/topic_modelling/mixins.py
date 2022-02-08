@@ -29,6 +29,11 @@ class TopicsStateGui:
             return self.inferred_topics.topic_token_overview['label'].to_dict()
         return None
 
+    def topic_id_options(self) -> list[tuple[str, int]]:
+        fx: Callable[[int], str] = self.inferred_topics.topic_labels.get
+        options = [(fx(i, f'Topic #{i}'), i) for i in range(0, self.inferred_n_topics)]
+        return options
+
 
 class NextPrevTopicMixIn:
     def __init__(self, **kwargs) -> None:
@@ -163,3 +168,48 @@ class ComputeMixIn:
     @property
     def auto_compute(self) -> bool:
         return self._compute_handler is not None and self._auto_compute.value
+
+
+# class UtilityMixIn:
+
+#     def __init__(self, **kwargs) -> None:
+#         super().__init__(**kwargs)
+#         slider_opts = {
+#             'continuous_update': False,
+#             'layout': dict(width='140px'),
+#             'readout': False,
+#             'handle_color': 'lightblue',
+#         }
+#         timespan: tuple[int, int] = self.inferred_topics.year_period
+#         yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
+#         self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
+#         self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, **slider_opts)
+#         self._year_range_label: w.HTML = w.HTML("Years")
+#         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
+#             min=timespan[0], max=timespan[1], step=1, value=yearspan, **slider_opts
+#         )
+
+#     @property
+#     def threshold(self) -> float:
+#         return self._threshold.value
+
+#     @property
+#     def years(self) -> tuple[int, int]:
+#         return self._year_range.value
+
+
+#     @property
+#     def filter_opts(self) -> pu.PropertyValueMaskingOpts:
+#         opts: dict=dict(year=self.years)
+#         if hasattr(super(), "filter_opts"):
+#             opts.update(getattr(super(), "filter_opts"))
+#         return pu.PropertyValueMaskingOpts(**opts)
+
+
+#     def observe(self, value: bool, **kwargs) -> "TopicDocumentsGUI":
+#         if hasattr(super(), "observe"):
+#             getattr(super(), "observe")(value=value, handler=self.update_handler, **kwargs)
+
+#         wu.register_observer(self._threshold, handler=self.update_handler, value=value)
+#         wu.register_observer(self._year_range, handler=self.update_handler, value=value)
+#         return self

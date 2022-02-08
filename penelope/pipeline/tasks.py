@@ -645,7 +645,7 @@ class AssertOnPayload(ITask):
 
 def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
-    if isinstance(content, pd.core.api.DataFrame):
+    if isinstance(content, pd.DataFrame):
         return content.to_csv(sep='\t')
 
     if isinstance(content, list):

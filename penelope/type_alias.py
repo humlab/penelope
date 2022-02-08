@@ -10,7 +10,7 @@ FilenameTokensTuples = Iterable[FilenameTokensTuple]
 DocumentIndex = pd.DataFrame
 IntOrStr = Union[int, str]
 
-TaggedFrame = pd.core.api.DataFrame
+TaggedFrame = pd.DataFrame
 Token = Union[int, str]
 
 DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]

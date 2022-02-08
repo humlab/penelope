@@ -10,7 +10,7 @@ PHRASE_PAD: str = "(*)"
 
 
 def detect_phrases(
-    target_series: pd.core.api.Series,
+    target_series: pd.Series,
     phrases: PhraseSubstitutions,
     ignore_case: str = False,
 ) -> List[Tuple[int, str, int]]:
@@ -18,7 +18,7 @@ def detect_phrases(
 
     Args:
         phrases (List[List[str]]): [description]
-        doc (pd.core.api.DataFrame): [description]
+        doc (pd.DataFrame): [description]
         target (str): [description]
     """
 
