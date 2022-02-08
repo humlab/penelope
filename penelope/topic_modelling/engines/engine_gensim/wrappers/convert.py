@@ -26,7 +26,7 @@ def convert_topic_tokens(folder: str, source_filename: str = None) -> pd.DataFra
     target_filename = jj(folder, 'topic_token_weights.zip')
 
     if isfile(target_filename):
-        return
+        return None
 
     source_filename: str = source_filename or probe_filenames(
         mallet_folder, ["topicwordweights.txt.gz", "topicwordweights.txt", "topicwordweights.zip"]

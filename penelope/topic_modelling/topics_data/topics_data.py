@@ -20,7 +20,7 @@ from .document import DocumentTopicsCalculator
 
 CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
-# pylint: disable=too-many-public-methods,access-member-before-definition,attribute-defined-outside-init
+# pylint: disable=too-many-public-methods,access-member-before-definition,attribute-defined-outside-init,no-member
 
 
 def smart_load(filename: str, feather_pipe: Callable[[pd.DataFrame], pd.DataFrame] = None, **kwargs) -> pd.DataFrame:
@@ -36,17 +36,8 @@ def smart_load(filename: str, feather_pipe: Callable[[pd.DataFrame], pd.DataFram
     return data
 
 
-class TopicDataProtocol(Protocol):
-    dictionary: pd.DataFrame
-    document_index: pd.DataFrame
-    topic_token_weights: pd.DataFrame
-    document_topic_weights: pd.DataFrame
-    topic_token_overview: pd.DataFrame
-    calculator = DocumentTopicsCalculator
-
-
 class MemoryUsageMixIn:
-    def memory_usage(self: TopicDataProtocol, total: bool = True) -> dict:
+    def memory_usage(self, total: bool = True) -> dict:
         return {
             "document_index": pu.size_of(self.document_index, unit='MB', total=total),
             "dictionary": pu.size_of(self.dictionary, unit='MB', total=total),
@@ -55,7 +46,7 @@ class MemoryUsageMixIn:
             "document_topic_weights": pu.size_of(self.document_topic_weights, unit='MB', total=total),
         }
 
-    def log_usage(self: TopicDataProtocol, total: bool = False, verbose: bool = True) -> None:
+    def log_usage(self, total: bool = False, verbose: bool = True) -> None:
         usage: dict = self.memory_usage(total=total)
         if not verbose and total:
             sw: str = ', '.join([f"{k}: {v}" for k, v in usage.items()])
@@ -70,7 +61,7 @@ class MemoryUsageMixIn:
 
 
 class SlimItMixIn:
-    def slim_types(self: TopicDataProtocol) -> InferredTopicsData:
+    def slim_types(self) -> InferredTopicsData:
 
         """document_index"""
         self.document_index['year'] = self.document_index['year'].astype(np.int16)
@@ -98,7 +89,7 @@ class SlimItMixIn:
 
         return self
 
-    def slimmer(self: TopicDataProtocol) -> InferredTopicsData:
+    def slimmer(self) -> InferredTopicsData:
 
         """document_index"""
         remove_columns = set(pu.PD_PoS_tag_groups.index.to_list()) | {'filename', 'year2', 'number'}
