@@ -67,7 +67,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self._exclude_or_include: w.ToggleButton = w.ToggleButton(
             value=True, description='Exclude', icon='', layout=dict(width="120px")
         )
-        self.topics_ids_header: str = ""
+        self._topics_ids_header: w.HTML = w.HTML("<b>Topics</b>")
         self._n_docs_label: w.HTML = w.HTML("<b>Documents in common</b>")
         self._n_docs: w.IntSlider = w.IntSlider(min=1, max=100, step=1, value=10, **slider_opts)
         self._node_range_label: w.HTML = w.HTML("<b>Node size</b>")
@@ -98,7 +98,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
     def _exclude_or_include_handler(self, *_) -> None:
         self._exclude_or_include.description = "Exclude" if self.exclude_mode else "Include"
-        self.topics_ids_header = f"<b>{self._exclude_or_include.description} topics</b>"
+        self._topics_ids_header.value = f"<b>{self._exclude_or_include.description} topics</b>"
 
     def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=unused-argument,arguments-differ
         wu.register_observer(self._threshold, handler=self.update_handler, value=value)
@@ -132,7 +132,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                         ),
                         w.VBox(
                             [
-                                w.HTML(self.topics_ids_header),
+                                self._topics_ids_header,
                                 self._topic_ids,
                                 self._exclude_or_include,
                             ]
