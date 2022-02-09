@@ -15,6 +15,7 @@ from .utils import frequent_document_words, infrequent_words
 
 # FIXME: PoS-padding (dummy marker) not fully implemented
 
+
 def to_terms_list(
     doc: Doc,
     *,
