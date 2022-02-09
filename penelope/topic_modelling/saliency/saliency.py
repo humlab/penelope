@@ -1,11 +1,19 @@
+from __future__ import annotations
+
 import collections
 import math
-from typing import List
-
-from gensim.matutils import Sparse2Corpus
-from gensim.models.ldamulticore import LdaMulticore
+from typing import TYPE_CHECKING, Any, List
 
 from penelope.utility import normalize_array
+
+if TYPE_CHECKING:
+    try:
+        from gensim.matutils import Sparse2Corpus
+        from gensim.models.ldamulticore import LdaMulticore
+    except ImportError:
+        Sparse2Corpus = Any
+        LdaMulticore = Any
+
 
 # source: https://github.com/baali/TopicModellingExperiments
 
