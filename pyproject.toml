@@ -47,7 +47,6 @@ textacy = "*"
 toml = "^0.10.2"
 tqdm = "^4.62.3"
 wordcloud = "*"
-itertoolz = "^0.5"
 ipydatagrid = "^1.1.8"
 
 [tool.poetry.dev-dependencies]

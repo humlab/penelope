@@ -4,18 +4,16 @@ import os
 from dataclasses import asdict, dataclass
 from typing import Any, Callable, Collection, Iterable, List, Literal, Mapping, Optional, Sequence, Union
 
-import itertoolz
 from loguru import logger
 from spacy.tokens import Doc, Token
 from textacy.extract.basics import words
 
-import penelope.utility as utility
+from penelope import utility as pu
 from penelope.corpus import TokensTransformOpts
 
 from .utils import frequent_document_words, infrequent_words
 
 # FIXME: PoS-padding (dummy marker) not fully implemented
-
 
 def to_terms_list(
     doc: Doc,
@@ -48,7 +46,7 @@ def to_terms_list(
 
     if min_freq > 1:
         terms = list(tokens)
-        frequency: dict = itertoolz.frequencies(terms)
+        frequency: dict = pu.frequencies(terms)
         terms = (t for t in terms if frequency[t] >= min_freq)
 
     return terms
@@ -180,7 +178,7 @@ class PoSFilter:
         self.include_pos = include_pos
         self.exclude_pos = exclude_pos
 
-        universal_tags = utility.PoS_TAGS_SCHEMES.Universal.tags
+        universal_tags = pu.PoS_TAGS_SCHEMES.Universal.tags
 
         assert all(x in universal_tags for x in (self.include_pos or []))
         assert all(x in universal_tags for x in (self.exclude_pos or []))
@@ -223,7 +221,7 @@ class SubstitutionTask:
                 raise FileNotFoundError(f"terms substitions file {self.filename} not found")
 
             self.subst_map.update(
-                utility.load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
+                pu.load_term_substitutions(self.filename, default_term='_mask_', delim=';', vocab=self.vocab)
             )
 
         return pipeline

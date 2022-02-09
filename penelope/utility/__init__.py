@@ -133,6 +133,7 @@ from .utils import (
     filter_kwargs,
     flatten,
     fn_name,
+    frequencies,
     get_func_args,
     get_logger,
     get_smiley,

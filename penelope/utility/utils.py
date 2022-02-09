@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import copy
 import datetime
@@ -12,6 +14,7 @@ import platform
 import re
 import time
 import uuid
+from collections import defaultdict
 from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number
@@ -36,6 +39,13 @@ def fn_name(default=None):
         return inspect.stack()[1][3]
     except Exception:
         return default or str(uuid.uuid1())
+
+
+def frequencies(items: list[str]) -> dict:
+    d: dict = defaultdict(int)
+    for item in items:
+        d[item] += 1
+    return dict(d)
 
 
 def get_logger(
