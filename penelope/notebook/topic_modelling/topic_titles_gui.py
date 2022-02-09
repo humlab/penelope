@@ -1,7 +1,6 @@
 import abc
 
 import pandas as pd
-from ipysheet import from_dataframe
 from IPython.core.display import Javascript
 from IPython.display import display as IPython_display
 from ipywidgets import Button, HBox, IntSlider, Output, Text, VBox  # type: ignore
@@ -96,26 +95,6 @@ class PandasTopicTitlesGUI(TopicTitlesGUI):
         super().display(topics=topics)
         # pd.options.display.max_colwidth = None
         pd.set_option('colheader_justify', 'left')
-        return self
-
-
-class EditTopicTitlesGUI(PandasTopicTitlesGUI):  # pylint: disable=too-many-instance-attributes
-    def __init__(self):
-        super().__init__()
-        self.save_button: Button = Button(description="Save")
-        self.sheet = None
-
-    def reduce_topics(self):
-        ...
-
-    def update(self, *_):
-        ...
-        # IPython_display(self.sheet)
-
-    def display(self, topics: pd.DataFrame) -> "TopicTitlesGUI":
-        super().display(topics)
-        self.sheet = from_dataframe(self.topics)
-        IPython_display(self.sheet)
         return self
 
 
