@@ -13,6 +13,7 @@ import os
 import platform
 import re
 import time
+import unicodedata
 import uuid
 from collections import defaultdict
 from dataclasses import is_dataclass
@@ -21,7 +22,6 @@ from numbers import Number
 from random import randrange
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
 
-import gensim.utils
 import numpy as np
 import pandas as pd
 import scipy
@@ -77,10 +77,6 @@ def getLogger(name: str = '', level=logging.INFO):
 
 
 logger = getLogger(__name__)
-
-lazy_flatten = gensim.utils.lazy_flatten
-iter_windows = gensim.utils.iter_windows
-deprecated = gensim.utils.deprecated
 
 
 def to_text(data: Union[str, Iterable[str]]):
@@ -340,6 +336,12 @@ def uniquify(sequence: Iterable[T]) -> List[T]:
 
 def sort_chained(x, f):
     return list(x).sort(key=f) or x
+
+
+def strip_accents(text: str) -> str:
+    """https://stackoverflow.com/a/44433664/12383895"""
+    text: str = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
+    return str(text)
 
 
 def ls_sorted(path: str) -> List[str]:
