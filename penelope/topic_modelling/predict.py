@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Mapping
 
-import gensim.corpora as corpora
 import numpy as np
 import pandas as pd
 from gensim.matutils import Sparse2Corpus
@@ -39,7 +38,7 @@ def predict_topics(
     topic_model: Any,
     *,
     corpus: Sparse2Corpus | pc.VectorizedCorpus,
-    id2token: corpora.Dictionary | dict | pc.Token2Id,
+    id2token: Mapping[int,str] | dict | pc.Token2Id,
     document_index: pc.DocumentIndex = None,
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
