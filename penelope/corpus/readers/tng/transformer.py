@@ -1,42 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import IntEnum, unique
 from typing import Callable, List, TypeVar, Union
 
-import ftfy
-import textacy.preprocessing as preprocessing
-
-
-@dataclass
-class ITextTransform:
-    transform: Callable = None
-    name: str = None
-    enabled: bool = None
-
-
-class TEXT_TRANSFORMS:
-    fix_hyphenation = preprocessing.normalize.hyphenated_words
-    fix_unicode = preprocessing.normalize.unicode
-    fix_whitespaces = preprocessing.normalize.whitespace
-    fix_accents = preprocessing.remove.accents
-    fix_currency_symbols = preprocessing.replace.currency_symbols
-    fix_ftfy_text = ftfy.fix_text
-
-
-@unique
-class KnownTransformType(IntEnum):
-    fix_hyphenation = 1
-    fix_unicode = 2
-    fix_whitespaces = 3
-    fix_accents = 4
-    fix_currency_symbols = 5
-    fix_ftfy_text = 6
-
-    @property
-    def transform(self):
-        return getattr(TEXT_TRANSFORMS, self.name)
-
+from ...transforms import KnownTransformType
 
 TransformTypeArg = Union[KnownTransformType, List[KnownTransformType], str, List[str], Callable[[str], str]]
 
@@ -124,34 +90,3 @@ class TextTransformer:
             data = ft.transform(data)
 
         return data
-
-    # def fix_hyphenation(self) -> TextTransformer:
-    #     return self.add(KnownTransformType.fix_hyphenation)
-
-    # def fix_unicode(self) -> TextTransformer:
-    #     return self.add(KnownTransformType.fix_unicode)
-
-    # def fix_whitespaces(self) -> TextTransformer:
-    #     return self.add(KnownTransformType.fix_whitespaces)
-
-    # def fix_ftfy(self) -> TextTransformer:
-    #     return self.add(KnownTransformType.fix_ftfy_text)
-
-    # def fix_accents(self) -> TextTransformer:
-    #     return self.add(KnownTransformType.fix_accents)
-
-    # def add(self, ys: TransformTypeArg) -> TextTransformer:
-    #     self.transform_opts += ys
-    #     return self
-
-    # def remove(self, ys: TransformTypeArg) -> TextTransformOpts:
-    #     self.transform_opts -= ys
-    #     return self
-
-    # def __add__(self, ys: TransformTypeArg) -> TextTransformOpts:
-    #     self.add(ys)
-    #     return self
-
-    # def __sub__(self, ys: TransformTypeArg) -> TextTransformOpts:
-    #     self.remove(ys)
-    #     return self

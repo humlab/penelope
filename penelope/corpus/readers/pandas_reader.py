@@ -3,6 +3,7 @@ import pandas as pd
 from penelope.vendor.nltk import word_tokenize
 
 from . import tng
+from ..transforms import KnownTransformType
 
 
 class PandasCorpusReader(tng.CorpusReader):
@@ -12,9 +13,9 @@ class PandasCorpusReader(tng.CorpusReader):
             .clear()
             .add(
                 [
-                    tng.KnownTransformType.fix_unicode,
-                    tng.KnownTransformType.fix_whitespaces,
-                    tng.KnownTransformType.fix_hyphenation,
+                    KnownTransformType.fix_unicode,
+                    KnownTransformType.fix_whitespaces,
+                    KnownTransformType.fix_hyphenation,
                 ]
             )
         )

@@ -165,7 +165,6 @@ from .utils import (
     slim_title,
     sort_chained,
     split,
-    strip_accents,
     take,
     timecall,
     timestamp,

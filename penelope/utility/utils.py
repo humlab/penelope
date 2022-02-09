@@ -13,7 +13,6 @@ import os
 import platform
 import re
 import time
-import unicodedata
 import uuid
 from collections import defaultdict
 from dataclasses import is_dataclass
@@ -336,12 +335,6 @@ def uniquify(sequence: Iterable[T]) -> List[T]:
 
 def sort_chained(x, f):
     return list(x).sort(key=f) or x
-
-
-def strip_accents(text: str) -> str:
-    """https://stackoverflow.com/a/44433664/12383895"""
-    text: str = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
-    return str(text)
 
 
 def ls_sorted(path: str) -> List[str]:

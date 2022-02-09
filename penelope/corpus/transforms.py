@@ -1,11 +1,24 @@
 import logging
 import re
 import string
+import unicodedata
+from enum import IntEnum, unique
 from typing import Callable, Iterable, Set, Union
 
+import ftfy
 import nltk
 
 import penelope.vendor.nltk as nltk_utility
+
+try:
+    from textacy.preprocessing.normalize import unicode as normalize_unicode
+    from textacy.preprocessing.normalize import whitespace as normalize_whitespace
+    from textacy.preprocessing.replace import currency_symbols as replace_currency_symbols
+except ImportError:
+    normalize_unicode = ftfy.fix_encoding
+    normalize_whitespace = lambda s: " ".join(s.split())
+    replace_currency_symbols = lambda s: s
+
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
@@ -91,6 +104,35 @@ def remove_symbols() -> TokensTransformerFunction:
     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
 
 
+def strip_accents(text: str) -> str:
+    """https://stackoverflow.com/a/44433664/12383895"""
+    text: str = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
+    return str(text)
+
+
 # @deprecated
 # def remove_accents() -> TokensTransformerFunction:
 #     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
+
+
+class TEXT_TRANSFORMS:
+    fix_hyphenation = remove_hyphens
+    fix_unicode = normalize_unicode
+    fix_whitespaces = normalize_whitespace
+    fix_accents = strip_accents
+    fix_currency_symbols = replace_currency_symbols
+    fix_ftfy_text = ftfy.fix_text
+
+
+@unique
+class KnownTransformType(IntEnum):
+    fix_hyphenation = 1
+    fix_unicode = 2
+    fix_whitespaces = 3
+    fix_accents = 4
+    fix_currency_symbols = 5
+    fix_ftfy_text = 6
+
+    @property
+    def transform(self):
+        return getattr(TEXT_TRANSFORMS, self.name)
