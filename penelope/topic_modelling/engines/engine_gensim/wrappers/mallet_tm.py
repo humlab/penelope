@@ -1,8 +1,7 @@
 import os
 import re
-from typing import Iterable, Tuple
+from typing import Iterable, Mapping, Tuple
 
-from gensim.corpora.dictionary import Dictionary
 from gensim.utils import check_output
 from loguru import logger
 
@@ -18,7 +17,7 @@ class MalletTopicModel(wrappers.LdaMallet):
     """
 
     def __init__(
-        self, corpus: Iterable[Iterable[Tuple[int, int]]], id2word: Dictionary, default_mallet_home: str = None, **args
+        self, corpus: Iterable[Iterable[Tuple[int, int]]], id2word: Mapping[int, str], default_mallet_home: str = None, **args
     ):
 
         args: dict = inspect_filter_args(super().__init__, args)
