@@ -17,7 +17,11 @@ class MalletTopicModel(wrappers.LdaMallet):
     """
 
     def __init__(
-        self, corpus: Iterable[Iterable[Tuple[int, int]]], id2word: Mapping[int, str], default_mallet_home: str = None, **args
+        self,
+        corpus: Iterable[Iterable[Tuple[int, int]]],
+        id2word: Mapping[int, str],
+        default_mallet_home: str = None,
+        **args,
     ):
 
         args: dict = inspect_filter_args(super().__init__, args)

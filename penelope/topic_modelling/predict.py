@@ -38,7 +38,7 @@ def predict_topics(
     topic_model: Any,
     *,
     corpus: Sparse2Corpus | pc.VectorizedCorpus,
-    id2token: Mapping[int,str] | dict | pc.Token2Id,
+    id2token: Mapping[int, str] | dict | pc.Token2Id,
     document_index: pc.DocumentIndex = None,
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
