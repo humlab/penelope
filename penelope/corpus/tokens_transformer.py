@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
-from textacy.preprocessing import remove as textacy_remove
+from penelope import utility as pu
 
 from . import transforms
 from .token2id import Token2Id
@@ -186,7 +186,7 @@ class TokensTransformerMixin:
         return self.add(transforms.remove_stopwords(language_or_stopwords, extra_stopwords))
 
     def remove_accents(self) -> TokensTransformer:
-        return self.add(textacy_remove.accents)
+        return self.add(pu.strip_accents)
 
     def only_any_alphanumeric(self) -> TokensTransformer:
         return self.add(transforms.only_any_alphanumeric())
