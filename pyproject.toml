@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.6.7"
+version = "0.6.8"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
@@ -19,7 +19,6 @@ repository = "https://github.com/humlab/penelope"
 
 [tool.poetry.dependencies]
 bokeh = "*"
-click = "*"
 ftfy = "*"
 ipycytoscape = "*"
 ipydatagrid = "^1.1.8"
@@ -36,8 +35,6 @@ numpy = "*"
 openpyxl = "^3.0.5"
 pandas = "*"
 python = "==3.8.*"
-python-louvain = "^0.14"
-PyYAML = "^5.3.1"
 requests = "^2.24.0"
 scipy = "*"
 toml = "^0.10.2"
@@ -48,6 +45,9 @@ spacy = {version = "*", optional = true}
 pyarrow = {version = "*", optional = true}
 textacy = {version = "*", optional = true}
 wordcloud = {version = "*", optional = true}
+PyYAML = {version = "*", optional = true}
+python-louvain = {version = "*", optional = true}
+click = {version = "*", optional = true}
 
 [tool.poetry.extras]
 full = [
@@ -56,6 +56,9 @@ full = [
   "spacy",
   "gensim",
   "wordcloud",
+  "PyYAML",
+  "click",
+  "python-louvain",
 ]
 
 [tool.poetry.dev-dependencies]
