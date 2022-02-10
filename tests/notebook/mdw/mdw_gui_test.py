@@ -11,7 +11,7 @@ def monkey_patch(*_, **__):
 
 
 @patch('IPython.display.display', monkey_patch)
-@patch('penelope.vendor.textacy.mdw_modified.compute_most_discriminating_terms', monkey_patch)
+@patch('penelope.vendor.textacy_api.mdw.compute_most_discriminating_terms', monkey_patch)
 def test_default_compute_callback():
     corpus = MagicMock(spec=dtm.VectorizedCorpus)
     gui = MagicMock(spec=mdw_gui.MDW_GUI)

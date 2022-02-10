@@ -1,9 +1,7 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-import spacy
-from spacy.tokens import Doc
-
+from penelope.vendor import spacy_api
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
 from penelope.pipeline.spacy.tasks import SetSpacyModel, SpacyDocToTaggedFrame, ToSpacyDoc, ToSpacyDocToTaggedFrame
 from penelope.utility.pos_tags import PoS_Tag_Schemes
@@ -14,7 +12,7 @@ SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at m
 
 
 @pytest.fixture
-def looking_back(en_nlp) -> Doc:
+def looking_back(en_nlp) -> spacy_api.Doc:
     return en_nlp(SAMPLE_TEXT)
 
 
@@ -38,7 +36,7 @@ def test_payload():
 
 
 def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
-    return MagicMock(spec=spacy.language.Language, return_value=MagicMock(spec=spacy.tokens.Doc))
+    return MagicMock(spec=spacy_api.Language, return_value=MagicMock(spec=spacy_api.Doc))
 
 
 def patch_spacy_pipeline(payload: PipelinePayload):

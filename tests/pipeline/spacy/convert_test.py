@@ -2,7 +2,7 @@ from typing import List
 
 import pandas as pd
 import pytest
-from spacy.tokens import Doc, Token
+from penelope.vendor.spacy_api import Doc, Token
 
 from penelope.pipeline.spacy.convert import (
     filter_tokens_by_attribute_values,

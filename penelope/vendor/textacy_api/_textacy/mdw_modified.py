@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+import operator
+from typing import TYPE_CHECKING, List, Sequence
+
+import numpy as np
+import pandas as pd
+import scipy.sparse as sp
+from memoization import cached
+from textacy.representations import get_doc_freqs
+
 # This file is a modified version of textacy vsm.most_discriminating_terms
 # Oríginal source: https://github.com/chartbeat-labs/textacy/blob/master/textacy/ke/utils.py
 # License: MIT https://github.com/chartbeat-labs/textacy/blob/master/LICENSE.txt
@@ -13,21 +24,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import operator
-from typing import List, Sequence
 
-import numpy as np
-import pandas as pd
-import scipy.sparse as sp
-from memoization import cached
-from textacy import representations
-
-from penelope.corpus import IVectorizedCorpus
-from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
-
-logger = logging.getLogger("")
-logger.setLevel(logging.INFO)
+if TYPE_CHECKING:
+    from penelope.corpus import IVectorizedCorpus
+    from penelope.corpus.dtm.interface import IVectorizedCorpusProtocol
 
 # pylint: disable=too-many-locals
 
@@ -141,12 +141,12 @@ def most_discriminating_terms(dtm: sp.csr_matrix, id2term, bool_array_grp1, *, m
     # get doc freqs for all terms in grp1 documents
     dtm_grp1 = dtm[bool_array_grp1, :]
     n_docs_grp1 = dtm_grp1.shape[0]  # Number of docs in R
-    doc_freqs_grp1 = representations.get_doc_freqs(dtm_grp1)
+    doc_freqs_grp1 = get_doc_freqs(dtm_grp1)
 
     # get doc freqs for all terms in grp2 documents
     dtm_grp2 = dtm[bool_array_grp2, :]
     n_docs_grp2 = dtm_grp2.shape[0]  # Number of docs in S
-    doc_freqs_grp2 = representations.get_doc_freqs(dtm_grp2)
+    doc_freqs_grp2 = get_doc_freqs(dtm_grp2)
 
     # get terms that occur in a larger fraction of grp1 docs than grp2 docs
     term_ids_grp1 = np.where(doc_freqs_grp1 / n_docs_grp1 > doc_freqs_grp2 / n_docs_grp2)[0]

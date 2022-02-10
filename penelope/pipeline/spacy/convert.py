@@ -1,15 +1,15 @@
-from typing import Any, Dict, Iterable, List, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Union
 
 import pandas as pd
-import spacy
-from spacy.language import Language
-from spacy.tokens import Doc, Token
 
 from penelope.type_alias import TaggedFrame
-from penelope.vendor.spacy import prepend_spacy_path
+from penelope.vendor import spacy_api
 
 
-def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: dict) -> Iterable[Token]:
+
+def filter_tokens_by_attribute_values(spacy_doc: spacy_api.Doc, attribute_value_filters: dict) -> Iterable[spacy_api.Token]:
     """Filters out tokens based on given attribute value (dict[attribute, bool])
         Whitespaces are always removed from the returned result.
     Args:
@@ -44,7 +44,7 @@ def filter_tokens_by_attribute_values(spacy_doc: Doc, attribute_value_filters: d
 
 def spacy_doc_to_tagged_frame(
     *,
-    spacy_doc: Doc,
+    spacy_doc: spacy_api.Doc,
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
 ) -> TaggedFrame:
@@ -62,9 +62,9 @@ def text_to_tagged_frame(
     document: str,
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
-    nlp: Language,
+    nlp: spacy_api.Language,
 ) -> TaggedFrame:
-    """Loads a single text into a spacy doc and returns a data frame with given token attributes columns
+    """Loads a single text into a spaCy doc and returns a data frame with given token attributes columns
     Whitespace tokens are removed."""
     return spacy_doc_to_tagged_frame(
         spacy_doc=nlp(document),
@@ -77,7 +77,7 @@ def texts_to_tagged_frames(
     stream: Iterable[str],
     attributes: List[str],
     attribute_value_filters: Dict[str, Any],
-    language: Union[Language, str] = "en_core_web_md",
+    language: Union[spacy_api.Language, str] = "en_core_web_md",
 ) -> Iterable[TaggedFrame]:
     """[summary]
 
@@ -110,9 +110,9 @@ def texts_to_tagged_frames(
     """
 
     """Add SPACY_DATA environment variable if defined"""
-    name: Union[str, Language] = prepend_spacy_path(language)
+    name: Union[str, spacy_api.Language] = spacy_api.prepend_spacy_path(language)
 
-    nlp: Language = spacy.load(name, disable=_get_disables(attributes)) if isinstance(language, str) else language
+    nlp: spacy_api.Language = spacy_api.load(name, disable=_get_disables(attributes)) if isinstance(language, str) else language
 
     for document in stream:
         yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)

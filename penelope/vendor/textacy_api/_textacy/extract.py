@@ -2,16 +2,19 @@ from __future__ import annotations
 
 import os
 from dataclasses import asdict, dataclass
-from typing import Any, Callable, Collection, Iterable, List, Literal, Mapping, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Collection, Iterable, List, Literal, Mapping, Optional, Sequence, Union
 
 from loguru import logger
 from spacy.tokens import Doc, Token
 from textacy.extract.basics import words
 
 from penelope import utility as pu
-from penelope.corpus import TokensTransformOpts
 
 from .utils import frequent_document_words, infrequent_words
+
+if TYPE_CHECKING:
+    from penelope.corpus import TokensTransformOpts
+
 
 # FIXME: PoS-padding (dummy marker) not fully implemented
 

@@ -1,16 +1,14 @@
 import collections
 from typing import Mapping, Sequence, Union
 
-import textacy
 from spacy.language import Language
+from textacy.corpus import Corpus
 
-from penelope.vendor.spacy import prepend_spacy_path
-
-from ..spacy import token_count_by
+from ...spacy_api.utility import prepend_spacy_path, token_count_by
 
 
 def infrequent_words(
-    corpus: textacy.Corpus,
+    corpus: Corpus,
     normalize: str = 'lemma',
     weighting: str = 'count',
     threshold: int = 0,
@@ -28,7 +26,7 @@ def infrequent_words(
 
 
 def frequent_document_words(
-    corpus: textacy.Corpus,
+    corpus: Corpus,
     normalize="lemma",
     weighting="freq",
     dfs_threshold=80,
@@ -43,7 +41,7 @@ def frequent_document_words(
 
 
 def get_most_frequent_words(
-    corpus: textacy.Corpus,
+    corpus: Corpus,
     n_top: int,
     normalize: str = 'lemma',
     include_pos: Sequence[str] = None,
@@ -63,7 +61,7 @@ def get_most_frequent_words(
     return token_counter.most_common(n_top)
 
 
-def load_corpus(filename: str, lang: Union[str, Language]) -> textacy.Corpus:
+def load_corpus(filename: str, lang: Union[str, Language]) -> Corpus:
     lang: Union[str, Language] = prepend_spacy_path(lang)
-    corpus = textacy.Corpus.load(lang, filename)
+    corpus = Corpus.load(lang, filename)
     return corpus

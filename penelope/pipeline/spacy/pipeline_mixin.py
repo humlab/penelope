@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Union
 from . import tasks
 
 if TYPE_CHECKING:
-    from spacy.language import Language
+    from penelope.vendor.spacy_api import Language
 
     from ..pipelines import CorpusPipeline
 

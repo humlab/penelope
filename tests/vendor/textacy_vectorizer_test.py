@@ -1,13 +1,12 @@
 import numpy as np
 import pytest
-import textacy
 
-import penelope.vendor.textacy as textacy_utility
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
+from penelope.vendor import textacy_api
 
 
 @pytest.fixture(scope="module")
-def mary_had_a_little_lamb_corpus(en_nlp) -> textacy.Corpus:
+def mary_had_a_little_lamb_corpus(en_nlp) -> textacy_api.Corpus:
     """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py """
     texts = [
         "Mary had a little lamb. Its fleece was white as snow.",
@@ -19,12 +18,12 @@ def mary_had_a_little_lamb_corpus(en_nlp) -> textacy.Corpus:
         "Why does the lamb love Mary so? The eager children cry.",
         "Mary loves the lamb, you know, the teacher did reply.",
     ]
-    corpus = textacy.Corpus(en_nlp, data=texts)
+    corpus = textacy_api.Corpus(en_nlp, data=texts)
     return corpus
 
 
 @pytest.mark.long_running
-def test_vectorizer(mary_had_a_little_lamb_corpus: textacy.Corpus):  # pylint: disable=redefined-outer-name
+def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylint: disable=redefined-outer-name
 
     expected_dtm = np.matrix(
         [
@@ -39,11 +38,11 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy.Corpus):  # pylint: d
         ]
     )
 
-    opts: textacy_utility.ExtractPipeline.ExtractOpts = textacy_utility.ExtractPipeline.ExtractOpts(
+    opts: textacy_api.ExtractPipeline.ExtractOpts = textacy_api.ExtractPipeline.ExtractOpts(
         include_pos=('NOUN', 'PROPN'), filter_nums=True, filter_punct=True
     )
     terms = (
-        textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma', extract_opts=opts)
+        textacy_api.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma', extract_opts=opts)
         .remove_stopwords(extra_stopwords=[])
         # .ingest(filter_nums=True, filter_punct=True)
         .min_character_filter(2)

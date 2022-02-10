@@ -3,16 +3,16 @@ from __future__ import annotations
 from typing import Iterable
 
 import scipy.sparse as sp
-import textacy.tm as tm  # type: ignore
 
 from penelope.corpus.dtm.corpus import VectorizedCorpus
 from penelope.utility import deprecated
+from penelope.vendor import textacy_api
 
 # pylint: disable=unused-argument
 
 
 @deprecated
-def scikit_predict(model: tm.TopicModel, dtm: sp.spmatrix, top_n: int = 10009):
+def scikit_predict(model: textacy_api.TopicModel, dtm: sp.spmatrix, top_n: int = 10009):
     """scikit-learn, Corpus must be a DTM (e.g. Gensim sparse corpus).  Returns a matrice.
 
     BOW => Natrice
