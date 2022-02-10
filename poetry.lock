@@ -1822,7 +1822,7 @@ name = "smart-open"
 version = "5.2.1"
 description = "Utils for streaming large files (S3, HDFS, GCS, Azure Blob Storage, gzip, bz2...)"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.6,<4.0"
 
 [package.extras]
@@ -2390,7 +2390,7 @@ full = ["pyarrow", "textacy", "spacy", "gensim", "wordcloud", "PyYAML", "click",
 [metadata]
 lock-version = "1.1"
 python-versions = "==3.8.*"
-content-hash = "180fa994800b922c027901835f2a5f896a83884311436e83893a8c2eda29b51d"
+content-hash = "899f758225009b4c91d86c2e03e468369843eaa50fa1c540e27bc0afe22774f5"
 
 [metadata.files]
 alabaster = [

@@ -48,6 +48,7 @@ wordcloud = {version = "*", optional = true}
 PyYAML = {version = "*", optional = true}
 python-louvain = {version = "*", optional = true}
 click = {version = "*", optional = true}
+smart-open = "^5.2.1"
 
 [tool.poetry.extras]
 full = [
