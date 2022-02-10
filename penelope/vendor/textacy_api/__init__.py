@@ -8,13 +8,12 @@ import ftfy
 try:
 
     from textacy.corpus import Corpus
-    from textacy.tm import TopicModel
-
     from textacy.preprocessing.normalize import unicode as normalize_unicode
     from textacy.preprocessing.normalize import whitespace as normalize_whitespace
     from textacy.preprocessing.replace import currency_symbols as replace_currency_symbols
     from textacy.representations.matrix_utils import filter_terms_by_df
     from textacy.representations.vectorizers import Vectorizer
+    from textacy.tm import TopicModel
 
     __textacy_installed: bool = True
 
@@ -43,13 +42,13 @@ except ImportError:
         def transform(self, *_, **__):
             raise ModuleNotFoundError()
 
-
     normalize_unicode = ftfy.fix_encoding
     normalize_whitespace = lambda s: " ".join(s.split())
     replace_currency_symbols = lambda s: s
 
     def filter_terms_by_df(*_, **__):
         return tuple()
+
 
 try:
     from ._textacy import mdw_modified as mdw
@@ -59,7 +58,6 @@ except ImportError:
 
 
 try:
-    from ._textacy.utils import get_most_frequent_words, load_corpus  # frequent_document_words,  infrequent_words
     from ._textacy.extract import (
         ExtractPipeline,
         FrequentWordsFilter,
@@ -68,6 +66,7 @@ try:
         PredicateFilter,
         StopwordFilter,
     )
+    from ._textacy.utils import get_most_frequent_words, load_corpus  # frequent_document_words,  infrequent_words
 except ImportError:
     ...
 

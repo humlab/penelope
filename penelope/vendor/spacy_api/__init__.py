@@ -4,6 +4,7 @@ try:
     from spacy import load
     from spacy.language import Language
     from spacy.tokens import Doc, Token
+
     __spacy_installed: bool = True
 except ImportError:
     __spacy_installed: bool = False
