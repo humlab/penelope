@@ -161,7 +161,7 @@ name = "blis"
 version = "0.7.5"
 description = "The Blis BLAS-like linear algebra library, as a self-contained C-extension."
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -204,7 +204,7 @@ name = "cachetools"
 version = "5.0.0"
 description = "Extensible memoizing collections and decorators"
 category = "main"
-optional = false
+optional = true
 python-versions = "~=3.7"
 
 [[package]]
@@ -212,7 +212,7 @@ name = "catalogue"
 version = "2.0.6"
 description = "Super lightweight function registries for your library"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [[package]]
@@ -299,7 +299,7 @@ name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [[package]]
@@ -307,7 +307,7 @@ name = "cymem"
 version = "2.0.6"
 description = "Manage calls to calloc/free through Cython"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -315,7 +315,7 @@ name = "cytoolz"
 version = "0.11.2"
 description = "Cython implementation of Toolz: High performance functional utilities"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.5"
 
 [package.dependencies]
@@ -472,7 +472,7 @@ name = "fonttools"
 version = "4.29.1"
 description = "Tools to manipulate font files"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [package.extras]
@@ -490,17 +490,14 @@ woff = ["zopfli (>=0.1.4)", "brotlicffi (>=0.8.0)", "brotli (>=1.0.1)"]
 
 [[package]]
 name = "ftfy"
-version = "6.0.3"
-description = "Fixes some problems with Unicode text after the fact"
+version = "6.1.1"
+description = "Fixes mojibake and other problems with Unicode, after the fact"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7,<4"
 
 [package.dependencies]
-wcwidth = "*"
-
-[package.extras]
-docs = ["furo", "sphinx"]
+wcwidth = ">=0.2.5"
 
 [[package]]
 name = "gast"
@@ -515,7 +512,7 @@ name = "gensim"
 version = "4.1.2"
 description = "Python framework for fast Vector Space Modelling"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -531,7 +528,7 @@ test-win = ["pytest", "mock", "cython", "testfixtures", "Morfessor (>=2.0.2a4)",
 
 [[package]]
 name = "identify"
-version = "2.4.8"
+version = "2.4.9"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -745,7 +742,7 @@ name = "jellyfish"
 version = "0.9.0"
 description = "a library for doing approximate and phonetic matching of strings."
 category = "main"
-optional = false
+optional = true
 python-versions = ">3.6"
 
 [[package]]
@@ -856,7 +853,7 @@ name = "kiwisolver"
 version = "1.3.2"
 description = "A fast implementation of the Cassowary constraint solver"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [[package]]
@@ -864,7 +861,7 @@ name = "langcodes"
 version = "3.3.0"
 description = "Tools for labeling human languages with IETF language tags"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.extras]
@@ -920,7 +917,7 @@ name = "matplotlib"
 version = "3.5.1"
 description = "Python plotting package"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [package.dependencies]
@@ -1001,7 +998,7 @@ name = "murmurhash"
 version = "1.0.6"
 description = "Cython bindings for MurmurHash"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -1049,7 +1046,7 @@ test = ["ipython", "ipykernel", "ipywidgets (<8.0.0)", "pytest (>=4.1)", "pytest
 
 [[package]]
 name = "nbconvert"
-version = "6.4.1"
+version = "6.4.2"
 description = "Converting Jupyter Notebooks"
 category = "main"
 optional = false
@@ -1071,11 +1068,11 @@ testpath = "*"
 traitlets = ">=5.0"
 
 [package.extras]
-all = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pyppeteer (==0.2.6)", "tornado (>=4.0)", "sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "ipython"]
+all = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pyppeteer (>=1,<1.1)", "tornado (>=4.0)", "sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "ipython"]
 docs = ["sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "ipython"]
 serve = ["tornado (>=4.0)"]
-test = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pyppeteer (==0.2.6)"]
-webpdf = ["pyppeteer (==0.2.6)"]
+test = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pyppeteer (>=1,<1.1)"]
+webpdf = ["pyppeteer (>=1,<1.1)"]
 
 [[package]]
 name = "nbformat"
@@ -1120,11 +1117,11 @@ test = ["pytest (>=6.2)", "pytest-cov (>=2.12)", "codecov (>=2.1)"]
 
 [[package]]
 name = "nltk"
-version = "3.6.7"
+version = "3.7"
 description = "Natural Language Toolkit"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 click = "*"
@@ -1133,7 +1130,7 @@ regex = ">=2021.8.3"
 tqdm = "*"
 
 [package.extras]
-all = ["matplotlib", "numpy", "pyparsing", "python-crfsuite", "requests", "scikit-learn", "scipy", "twython"]
+all = ["numpy", "pyparsing", "scipy", "matplotlib", "twython", "requests", "scikit-learn", "python-crfsuite"]
 corenlp = ["requests"]
 machine_learning = ["numpy", "python-crfsuite", "scikit-learn", "scipy"]
 plot = ["matplotlib"]
@@ -1261,7 +1258,7 @@ name = "pathy"
 version = "0.6.1"
 description = "pathlib.Path subclasses for local and cloud bucket storage"
 category = "main"
-optional = false
+optional = true
 python-versions = ">= 3.6"
 
 [package.dependencies]
@@ -1315,7 +1312,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "platformdirs"
-version = "2.4.1"
+version = "2.5.0"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
@@ -1358,7 +1355,7 @@ name = "preshed"
 version = "3.0.6"
 description = "Cython hash table that trusts the keys are pre-hashed"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -1444,7 +1441,7 @@ name = "pyarrow"
 version = "7.0.0"
 description = "Python library for Apache Arrow"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [package.dependencies]
@@ -1471,7 +1468,7 @@ name = "pydantic"
 version = "1.8.2"
 description = "Data validation and settings management using python 3.6 type hinting"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6.1"
 
 [package.dependencies]
@@ -1549,7 +1546,7 @@ name = "pyphen"
 version = "0.12.0"
 description = "Pure Python module to hyphenate text"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [package.extras]
@@ -1687,7 +1684,7 @@ python-versions = "*"
 
 [[package]]
 name = "pywinpty"
-version = "1.1.6"
+version = "2.0.2"
 description = "Pseudo terminal support for Windows from Python."
 category = "main"
 optional = false
@@ -1757,7 +1754,7 @@ name = "scikit-learn"
 version = "1.0.2"
 description = "A set of python modules for machine learning and data mining"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [package.dependencies]
@@ -1801,7 +1798,7 @@ name = "setuptools-scm"
 version = "6.4.2"
 description = "the blessed package to manage your versions by scm tags"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -1821,22 +1818,11 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
-name = "sklearn"
-version = "0.0"
-description = "A set of python modules for machine learning and data mining"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-scikit-learn = "*"
-
-[[package]]
 name = "smart-open"
 version = "5.2.1"
 description = "Utils for streaming large files (S3, HDFS, GCS, Azure Blob Storage, gzip, bz2...)"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6,<4.0"
 
 [package.extras]
@@ -1861,7 +1847,7 @@ name = "spacy"
 version = "3.2.1"
 description = "Industrial-strength Natural Language Processing (NLP) in Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -1912,7 +1898,7 @@ name = "spacy-legacy"
 version = "3.0.8"
 description = "Legacy registered functions for spaCy backwards compatibility"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [[package]]
@@ -1920,7 +1906,7 @@ name = "spacy-loggers"
 version = "1.0.1"
 description = "Logging utilities for SpaCy"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -2041,7 +2027,7 @@ name = "srsly"
 version = "2.4.2"
 description = "Modern high-performance serialization utilities for Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -2095,7 +2081,7 @@ name = "textacy"
 version = "0.12.0"
 description = "NLP, before and after spaCy"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.8"
 
 [package.dependencies]
@@ -2125,7 +2111,7 @@ name = "thinc"
 version = "8.0.13"
 description = "A refreshing functional take on deep learning, compatible with your favorite libraries"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -2163,7 +2149,7 @@ name = "threadpoolctl"
 version = "3.1.0"
 description = "threadpoolctl"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [[package]]
@@ -2195,7 +2181,7 @@ name = "toolz"
 version = "0.11.2"
 description = "List processing tools and functional utilities"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.5"
 
 [[package]]
@@ -2260,7 +2246,7 @@ name = "typer"
 version = "0.4.0"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -2316,7 +2302,7 @@ name = "wasabi"
 version = "0.9.0"
 description = "A lightweight console printing and formatting toolkit"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -2362,7 +2348,7 @@ name = "wordcloud"
 version = "1.8.1"
 description = "A little word cloud generator"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -2398,10 +2384,13 @@ python-versions = ">=3.7"
 docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
+[extras]
+full = ["pyarrow", "textacy", "spacy", "gensim", "wordcloud"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "==3.8.*"
-content-hash = "543a3ab4a7b8f2cf1d3c882211cb3ed80d6bdb7cba2043b953ae892ab04a3850"
+content-hash = "f2643abf6e2911a541e9adfdce9bb6c4e903349a70d39d4e2930eb9848d068c0"
 
 [metadata.files]
 alabaster = [
@@ -2747,7 +2736,8 @@ fonttools = [
     {file = "fonttools-4.29.1.zip", hash = "sha256:2b18a172120e32128a80efee04cff487d5d140fe7d817deb648b2eee023a40e4"},
 ]
 ftfy = [
-    {file = "ftfy-6.0.3.tar.gz", hash = "sha256:ba71121a9c8d7790d3e833c6c1021143f3e5c4118293ec3afb5d43ed9ca8e72b"},
+    {file = "ftfy-6.1.1-py3-none-any.whl", hash = "sha256:0ffd33fce16b54cccaec78d6ec73d95ad370e5df5a25255c8966a6147bd667ca"},
+    {file = "ftfy-6.1.1.tar.gz", hash = "sha256:bfc2019f84fcd851419152320a6375604a0f1459c281b5b199b2cd0d2e727f8f"},
 ]
 gast = [
     {file = "gast-0.4.0-py3-none-any.whl", hash = "sha256:b7adcdd5adbebf1adf17378da5ba3f543684dbec47b1cda1f3997e573cd542c4"},
@@ -2773,8 +2763,8 @@ gensim = [
     {file = "gensim-4.1.2.tar.gz", hash = "sha256:1932c257de4eccbb64cc40d46e8577a25f5f47b94b96019a969fb36150f11d15"},
 ]
 identify = [
-    {file = "identify-2.4.8-py2.py3-none-any.whl", hash = "sha256:a55bdd671b6063eb837af938c250ec00bba6e610454265133b0d2db7ae718d0f"},
-    {file = "identify-2.4.8.tar.gz", hash = "sha256:97e839c1779f07011b84c92af183e1883d9745d532d83412cca1ca76d3808c1c"},
+    {file = "identify-2.4.9-py2.py3-none-any.whl", hash = "sha256:bff7c4959d68510bc28b99d664b6a623e36c6eadc933f89a4e0a9ddff9b4fee4"},
+    {file = "identify-2.4.9.tar.gz", hash = "sha256:e926ae3b3dc142b6a7a9c65433eb14ccac751b724ee255f7c2ed3b5970d764fb"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
@@ -3210,8 +3200,8 @@ nbclient = [
     {file = "nbclient-0.5.10.tar.gz", hash = "sha256:b5fdea88d6fa52ca38de6c2361401cfe7aaa7cd24c74effc5e489cec04d79088"},
 ]
 nbconvert = [
-    {file = "nbconvert-6.4.1-py3-none-any.whl", hash = "sha256:fe93bc42485c54c5a49a2324c834aca1ff315f320a535bed3e3c4e085d3eebe3"},
-    {file = "nbconvert-6.4.1.tar.gz", hash = "sha256:7dce3f977c2f9651841a3c49b5b7314c742f24dd118b99e51b8eec13c504f555"},
+    {file = "nbconvert-6.4.2-py3-none-any.whl", hash = "sha256:7b006ae9979af56200e7fa3db39d9d12c99e811e8843b05dbe518e5b754bcb2e"},
+    {file = "nbconvert-6.4.2.tar.gz", hash = "sha256:eb2803db18f6facce6bf3b01b684fe47907994bd156d15eaccdf011e3d7f8164"},
 ]
 nbformat = [
     {file = "nbformat-5.1.3-py3-none-any.whl", hash = "sha256:eb8447edd7127d043361bc17f2f5a807626bc8e878c7709a1c647abda28a9171"},
@@ -3226,8 +3216,8 @@ networkx = [
     {file = "networkx-2.6.3.tar.gz", hash = "sha256:c0946ed31d71f1b732b5aaa6da5a0388a345019af232ce2f49c766e2d6795c51"},
 ]
 nltk = [
-    {file = "nltk-3.6.7-py3-none-any.whl", hash = "sha256:22e97be5d6c784d93a52d17860515cc50c5cfcc620b1f5c3747765041255a01e"},
-    {file = "nltk-3.6.7.zip", hash = "sha256:51bf1aef5304740a708be7c8e683f7798f03dc5c7a7e7feb758be9e95f4585e3"},
+    {file = "nltk-3.7-py3-none-any.whl", hash = "sha256:ba3de02490308b248f9b94c8bc1ac0683e9aa2ec49ee78536d8667afb5e3eec8"},
+    {file = "nltk-3.7.zip", hash = "sha256:d6507d6460cec76d70afea4242a226a7542f85c669177b9c7f562b7cf1b05502"},
 ]
 nodeenv = [
     {file = "nodeenv-1.6.0-py2.py3-none-any.whl", hash = "sha256:621e6b7076565ddcacd2db0294c0381e01fd28945ab36bcf00f41c5daf63bef7"},
@@ -3355,8 +3345,8 @@ pillow = [
     {file = "Pillow-9.0.1.tar.gz", hash = "sha256:6c8bc8238a7dfdaf7a75f5ec5a663f4173f8c367e5a39f87e720495e1eed75fa"},
 ]
 platformdirs = [
-    {file = "platformdirs-2.4.1-py3-none-any.whl", hash = "sha256:1d7385c7db91728b83efd0ca99a5afb296cab9d0ed8313a45ed8ba17967ecfca"},
-    {file = "platformdirs-2.4.1.tar.gz", hash = "sha256:440633ddfebcc36264232365d7840a970e75e1018d15b4327d11f91909045fda"},
+    {file = "platformdirs-2.5.0-py3-none-any.whl", hash = "sha256:30671902352e97b1eafd74ade8e4a694782bd3471685e78c32d0fdfd3aa7e7bb"},
+    {file = "platformdirs-2.5.0.tar.gz", hash = "sha256:8ec11dfba28ecc0715eb5fb0147a87b1bf325f349f3da9aab2cd6b50b96b692b"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
@@ -3644,12 +3634,11 @@ pywin32 = [
     {file = "pywin32-303-cp39-cp39-win_amd64.whl", hash = "sha256:79cbb862c11b9af19bcb682891c1b91942ec2ff7de8151e2aea2e175899cda34"},
 ]
 pywinpty = [
-    {file = "pywinpty-1.1.6-cp310-none-win_amd64.whl", hash = "sha256:5f526f21b569b5610a61e3b6126259c76da979399598e5154498582df3736ade"},
-    {file = "pywinpty-1.1.6-cp36-none-win_amd64.whl", hash = "sha256:7576e14f42b31fa98b62d24ded79754d2ea4625570c016b38eb347ce158a30f2"},
-    {file = "pywinpty-1.1.6-cp37-none-win_amd64.whl", hash = "sha256:979ffdb9bdbe23db3f46fc7285fd6dbb86b80c12325a50582b211b3894072354"},
-    {file = "pywinpty-1.1.6-cp38-none-win_amd64.whl", hash = "sha256:2308b1fc77545427610a705799d4ead5e7f00874af3fb148a03e202437456a7e"},
-    {file = "pywinpty-1.1.6-cp39-none-win_amd64.whl", hash = "sha256:c703bf569a98ab7844b9daf37e88ab86f31862754ef6910a8b3824993a525c72"},
-    {file = "pywinpty-1.1.6.tar.gz", hash = "sha256:8808f07350c709119cc4464144d6e749637f98e15acc1e5d3c37db1953d2eebc"},
+    {file = "pywinpty-2.0.2-cp310-none-win_amd64.whl", hash = "sha256:4b421379b407bf2f52a64a4c58f61deffe623b5add02d871acb290b771bb6227"},
+    {file = "pywinpty-2.0.2-cp37-none-win_amd64.whl", hash = "sha256:238b75fc456a6bc558761a89c9e6b3c8f2f54d79db03ae28997a68313c24b2ca"},
+    {file = "pywinpty-2.0.2-cp38-none-win_amd64.whl", hash = "sha256:344858a0b956fdc64a547d5e1980b0257b47f5433ed7cb89bf7b6268cb280c6c"},
+    {file = "pywinpty-2.0.2-cp39-none-win_amd64.whl", hash = "sha256:a4a066eaf2e30944d3028d946883ceb7883a499b53c4b89ca2d54bd7a4210550"},
+    {file = "pywinpty-2.0.2.tar.gz", hash = "sha256:20ec117183f79642eff555ce0dd1823f942618d65813fb6122d14b6e34b5d05a"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
@@ -3875,9 +3864,6 @@ setuptools-scm = [
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
-]
-sklearn = [
-    {file = "sklearn-0.0.tar.gz", hash = "sha256:e23001573aa194b834122d2b9562459bf5ae494a2d59ca6b8aa22c85a44c0e31"},
 ]
 smart-open = [
     {file = "smart_open-5.2.1-py3-none-any.whl", hash = "sha256:71d14489da58b60ce12fc3ecb823facc59a8b23cd1b58edb97175640350d3a62"},

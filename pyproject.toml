@@ -21,8 +21,8 @@ repository = "https://github.com/humlab/penelope"
 bokeh = "*"
 click = "*"
 ftfy = "*"
-gensim = "*"
 ipycytoscape = "*"
+ipydatagrid = "^1.1.8"
 ipyfilechooser = "*"
 ipywidgets = "*"
 jupyter_bokeh = "*"
@@ -35,19 +35,28 @@ nltk = "^3.5"
 numpy = "*"
 openpyxl = "^3.0.5"
 pandas = "*"
-pyarrow = "*"
 python = "==3.8.*"
 python-louvain = "^0.14"
 PyYAML = "^5.3.1"
 requests = "^2.24.0"
 scipy = "*"
-sklearn = "*"
-spacy = "*"
-textacy = "*"
 toml = "^0.10.2"
 tqdm = "^4.62.3"
-wordcloud = "*"
-ipydatagrid = "^1.1.8"
+
+gensim = {version = "*", optional = true}
+spacy = {version = "*", optional = true}
+pyarrow = {version = "*", optional = true}
+textacy = {version = "*", optional = true}
+wordcloud = {version = "*", optional = true}
+
+[tool.poetry.extras]
+full = [
+  "pyarrow",
+  "textacy",
+  "spacy",
+  "gensim",
+  "wordcloud",
+]
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
