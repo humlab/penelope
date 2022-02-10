@@ -10,7 +10,6 @@ from .. import interfaces
 from ..tasks import DefaultResolveMixIn, ToTaggedFrame
 from . import convert
 
-
 DEFAULT_SPACY_DISABLES = ['vectors', 'textcat', 'dep', 'ner']
 
 

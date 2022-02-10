@@ -8,8 +8,9 @@ from penelope.type_alias import TaggedFrame
 from penelope.vendor import spacy_api
 
 
-
-def filter_tokens_by_attribute_values(spacy_doc: spacy_api.Doc, attribute_value_filters: dict) -> Iterable[spacy_api.Token]:
+def filter_tokens_by_attribute_values(
+    spacy_doc: spacy_api.Doc, attribute_value_filters: dict
+) -> Iterable[spacy_api.Token]:
     """Filters out tokens based on given attribute value (dict[attribute, bool])
         Whitespaces are always removed from the returned result.
     Args:
@@ -112,7 +113,9 @@ def texts_to_tagged_frames(
     """Add SPACY_DATA environment variable if defined"""
     name: Union[str, spacy_api.Language] = spacy_api.prepend_spacy_path(language)
 
-    nlp: spacy_api.Language = spacy_api.load(name, disable=_get_disables(attributes)) if isinstance(language, str) else language
+    nlp: spacy_api.Language = (
+        spacy_api.load(name, disable=_get_disables(attributes)) if isinstance(language, str) else language
+    )
 
     for document in stream:
         yield text_to_tagged_frame(document, attributes, attribute_value_filters, nlp)

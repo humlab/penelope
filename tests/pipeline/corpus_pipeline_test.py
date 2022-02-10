@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
-from penelope.vendor import spacy_api
+
 import penelope.pipeline.spacy.tasks as spacy_tasks
 import penelope.pipeline.tasks as tasks
 from penelope.corpus import load_document_index
@@ -21,6 +21,7 @@ from penelope.pipeline import (
     PipelinePayload,
 )
 from penelope.pipeline.interfaces import ITask
+from penelope.vendor import spacy_api
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 from tests.utils import TEST_DATA_FOLDER
 

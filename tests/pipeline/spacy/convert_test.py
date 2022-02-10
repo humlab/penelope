@@ -2,7 +2,6 @@ from typing import List
 
 import pandas as pd
 import pytest
-from penelope.vendor.spacy_api import Doc, Token
 
 from penelope.pipeline.spacy.convert import (
     filter_tokens_by_attribute_values,
@@ -10,6 +9,7 @@ from penelope.pipeline.spacy.convert import (
     text_to_tagged_frame,
     texts_to_tagged_frames,
 )
+from penelope.vendor.spacy_api import Doc, Token
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
 

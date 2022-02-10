@@ -2,12 +2,12 @@ from unittest.mock import Mock
 
 import pandas as pd
 import pytest
-from penelope.vendor import spacy_api
 
 import penelope.pipeline.spacy.convert as convert
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
+from penelope.vendor import spacy_api
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 
 from ..fixtures import MARY_TEST_CORPUS

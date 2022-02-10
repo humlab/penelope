@@ -10,7 +10,7 @@ from ..dtm.pipelines import wildcard_to_DTM_pipeline
 
 if TYPE_CHECKING:
     from penelope.co_occurrence import ContextOpts
-    from penelope.corpus import TextTransformOpts, TokensTransformOpts, VectorizeOpts, ExtractTaggedTokensOpts
+    from penelope.corpus import ExtractTaggedTokensOpts, TextTransformOpts, TokensTransformOpts, VectorizeOpts
 
     # from ..checkpoint.interface import CheckpointOpts
     from ..config import CorpusConfig
