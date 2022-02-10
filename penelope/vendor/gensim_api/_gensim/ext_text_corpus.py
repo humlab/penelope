@@ -1,13 +1,9 @@
-import logging
 from typing import Any, AnyStr, Callable, Iterable, List, Tuple
 
 import pandas as pd
 from gensim.corpora.textcorpus import TextCorpus
 
-from penelope.corpus import DocumentIndex
 from penelope.utility import streamify_any_source
-
-logger = logging.getLogger(__name__)
 
 
 # pylint: disable=abstract-method
@@ -24,7 +20,7 @@ class ExtTextCorpus(TextCorpus):
     ):
         self.stream: Iterable[Tuple[str, AnyStr]] = stream
         self.filenames: List[str] = None
-        self.document_index: DocumentIndex = None
+        self.document_index: pd.DataFrame = None
         self.length: int = None
 
         # if 'filenames' in content_iterator.__dict__:
@@ -74,7 +70,7 @@ class ExtTextCorpus(TextCorpus):
             document_infos.append({'document_name': filename})
 
         self.length = len(document_infos)
-        self.document_index: DocumentIndex = pd.DataFrame(document_infos)
+        self.document_index: pd.DataFrame = pd.DataFrame(document_infos)
         self.filenames: List[str] = list(self.document_index.document_name.values)
 
     def get_texts(self):

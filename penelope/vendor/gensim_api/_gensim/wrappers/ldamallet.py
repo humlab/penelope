@@ -54,10 +54,15 @@ import zipfile
 from itertools import chain
 
 import numpy
-from gensim import matutils, utils
-from gensim.models import basemodel
-from gensim.models.ldamodel import LdaModel
-from gensim.utils import check_output, revdict
+
+try:
+    import gensim.matutils as matutils
+    import gensim.models.basemodel as basemodel
+    import gensim.utils as utils
+    from gensim.models.ldamodel import LdaModel
+    from gensim.utils import check_output, revdict
+except ImportError:
+    raise TypeError("Gensim package not avaliable")  # pylint: disable=raise-missing-from
 
 logger = logging.getLogger(__name__)
 

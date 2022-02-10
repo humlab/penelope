@@ -1,17 +1,18 @@
 from typing import Any, Dict
 
-from gensim.models.coherencemodel import CoherenceModel
 from loguru import logger
 
-import penelope.vendor.gensim as gensim_utility
+from penelope.vendor import gensim_api
 
 from . import options
 
 
 def compute_score(id2word, model, corpus) -> float:
     try:
-        dictionary = gensim_utility.from_id2token_to_dictionary(id2word)
-        coherence_model = CoherenceModel(model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass')
+        dictionary = gensim_api.from_id2token_to_dictionary(id2word)
+        coherence_model = gensim_api.CoherenceModel(
+            model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
+        )
         return coherence_model.get_coherence()
     except Exception as ex:
         logger.error(ex)
@@ -30,7 +31,7 @@ def compute_scores(
 
     metrics = []
 
-    dictionary = gensim_utility.from_id2token_to_dictionary(id2word)
+    dictionary = gensim_api.from_id2token_to_dictionary(id2word)
 
     for num_topics in range(start, stop, step):
 
@@ -38,7 +39,9 @@ def compute_scores(
 
         model = engine_spec.engine(**engine_spec.get_options(corpus=corpus, id2word=id2word, engine_args=engine_args))
 
-        coherence_score = CoherenceModel(model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass')
+        coherence_score = gensim_api.CoherenceModel(
+            model=model, corpus=corpus, dictionary=dictionary, coherence='u_mass'
+        )
 
         perplexity_score = 2 ** model.log_perplexity(corpus, len(corpus))
 

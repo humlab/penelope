@@ -2,20 +2,15 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Union
 
-import gensim.models as models
-from gensim.matutils import Sparse2Corpus
-
 import penelope.utility as utility
-import penelope.vendor.gensim.wrappers as wrappers
 from penelope.corpus.dtm.corpus import VectorizedCorpus
-
-from .wrappers.mallet_tm import MalletTopicModel
+from penelope.vendor import gensim_api
 
 # pylint: disable=unused-argument
 
 
 @utility.deprecated
-def gensim_lsi_predict(model: models.LsiModel, corpus: Any, scaled=False, chunk_size=512, **kwargs):
+def gensim_lsi_predict(model: gensim_api.LsiModel, corpus: Any, scaled=False, chunk_size=512, **kwargs):
     """Predict using Gensim LsiModel. Corpus must be in BoW format i.e. List[List[(token_id, count)]
     BOW => Iterable
     """
@@ -25,7 +20,7 @@ def gensim_lsi_predict(model: models.LsiModel, corpus: Any, scaled=False, chunk_
 
 
 def gensim_lda_predict(
-    model: models.LdaModel | models.LdaMulticore, corpus: Any, minimum_probability: float = 0.0
+    model: gensim_api.LdaModel | gensim_api.LdaMulticore, corpus: Any, minimum_probability: float = 0.0
 ) -> Iterable:
     """Predict using Gensim LdaModel. Corpus must be in BoW format i.e. List[List[(token_id, count)]
     BOW => Iterable
@@ -35,14 +30,14 @@ def gensim_lda_predict(
     return data_iter
 
 
-def mallet_lda_predict(model: wrappers.LdaMallet, corpus: Any, minimum_probability: float = 0.005) -> Iterable:
+def mallet_lda_predict(model: gensim_api.LdaMallet, corpus: Any, minimum_probability: float = 0.005) -> Iterable:
     # data_iter = enumerate(model.load_document_topics())
     model.topic_threshold = minimum_probability
     data_iter = enumerate(model[corpus])
     return data_iter
 
 
-SupportedModels = Union[models.LdaModel, models.LdaMulticore, MalletTopicModel, models.LsiModel]
+SupportedModels = Union[gensim_api.LdaModel, gensim_api.LdaMulticore, gensim_api.MalletTopicModel, gensim_api.LsiModel]
 
 
 def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.005, **kwargs) -> Iterable:
@@ -50,21 +45,23 @@ def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.
     if not isinstance(
         model,
         (
-            models.LdaMulticore,
-            models.LdaModel,
-            models.LsiModel,
-            MalletTopicModel,
-            wrappers.LdaMallet,
+            gensim_api.LdaMulticore,
+            gensim_api.LdaModel,
+            gensim_api.LsiModel,
+            gensim_api.MalletTopicModel,
+            gensim_api.LdaMallet,
         ),
     ):
         raise ValueError(f"Gensim model {type(model)} is not supported")
 
     if isinstance(corpus, VectorizedCorpus):
-        corpus = Sparse2Corpus(corpus.data, documents_columns=False)
+        corpus = gensim_api.Sparse2Corpus(corpus.data, documents_columns=False)
 
-    if isinstance(model, (models.LdaMulticore, models.LdaModel)):
+    if isinstance(model, (gensim_api.LdaMulticore, gensim_api.LdaModel)):
         data_iter = gensim_lda_predict(model, corpus, minimum_probability=minimum_probability)
-    elif isinstance(model, (MalletTopicModel, wrappers.LdaMallet)) or hasattr(model, 'load_document_topics'):
+    elif isinstance(model, (gensim_api.MalletTopicModel, gensim_api.LdaMallet)) or hasattr(
+        model, 'load_document_topics'
+    ):
         data_iter = mallet_lda_predict(model, corpus, minimum_probability=minimum_probability)
     elif hasattr(model, '__getitem__'):
         data_iter = ((document_id, model[corpus[document_id]]) for document_id in range(0, len(corpus)))

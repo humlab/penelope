@@ -5,13 +5,14 @@ from typing import Iterable, Mapping, Tuple
 from gensim.utils import check_output
 from loguru import logger
 
-import penelope.vendor.gensim.wrappers as wrappers
 from penelope.utility import inspect_filter_args
 
+from .ldamallet import LdaMallet
 
-class MalletTopicModel(wrappers.LdaMallet):
+
+class MalletTopicModel(LdaMallet):
     """Python wrapper for LDA using `MALLET <http://mallet.cs.umass.edu/>`_.
-    This is a derived file of gensim.models.wrappers.LdaMallet
+    This is a derived file of gensim.models.gensim_api.LdaMallet
     The following has been added:
        - Use of --topic-word-weights-file has been added
     """

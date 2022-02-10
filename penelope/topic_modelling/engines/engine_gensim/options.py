@@ -2,11 +2,9 @@ import contextlib
 import os
 from typing import Literal, Mapping
 
-import gensim.models as models
-from gensim.matutils import Sparse2Corpus
+from penelope.vendor.gensim_api import MalletTopicModel, Sparse2Corpus, STTMTopicModel, models
 
 from ..interface import EngineSpec
-from .wrappers import MalletTopicModel, STTMTopicModel
 
 DEFAULT_WORK_FOLDER = './tmp/'
 

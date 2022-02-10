@@ -6,8 +6,6 @@ import scipy.sparse as sp
 from gensim.corpora.dictionary import Dictionary
 from gensim.matutils import Sparse2Corpus, corpus2csc
 
-from penelope.corpus.token2id import id2token2token2id
-
 
 def _id2token2token2id(id2token: Mapping[int, str]) -> dict:
     if id2token is None:
@@ -60,4 +58,4 @@ def from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
 
 def from_id2token_to_dictionary(id2token: dict) -> Dictionary:
     """Creates a `Dictionary` from a id2token dict."""
-    return from_token2id_to_dictionary(id2token2token2id(id2token))
+    return from_token2id_to_dictionary(_id2token2token2id(id2token))
