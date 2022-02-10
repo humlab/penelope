@@ -6,13 +6,13 @@ from os.path import join as jj
 from typing import Any, Iterable, List, Literal, Mapping, Protocol
 
 import pandas as pd
-from gensim.matutils import Sparse2Corpus
 from loguru import logger
 
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
 from penelope.corpus.token2id import id2token2token2id
 from penelope.utility import write_json
+from penelope.vendor.gensim_api import Sparse2Corpus
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn

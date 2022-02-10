@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from penelope.topic_modelling.engines.engine_gensim.wrappers.convert import (
+from penelope.vendor.mallet_api.convert import (
     convert_dictionary,
     convert_document_index,
     convert_document_topics,

@@ -1,12 +1,11 @@
 # type: ignore
 
 import pytest
-from spacy.language import Language
 
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.pipeline.spacy import convert
 from penelope.topic_modelling import InferredTopicsData
-from penelope.vendor.spacy.utility import load_model
+from penelope.vendor.spacy_api import Language, load_model
 from tests.utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
 
 from .fixtures import MARY_TEST_CORPUS

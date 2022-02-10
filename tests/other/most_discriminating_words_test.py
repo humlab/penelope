@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer
 
-import penelope.vendor.textacy.mdw_modified as mdw
+from penelope.vendor import textacy_api
 
 flatten = lambda l: [x for ws in l for x in ws]
 
@@ -34,7 +34,7 @@ def test_modified_most_discriminating_terms():
     bag_term_matrix = vectorizer.fit_transform(corpus)
     token2id = vectorizer.vocabulary_
     id2token = {v: k for k, v in token2id.items()}
-    observed = mdw.most_discriminating_terms(
+    observed = textacy_api.mdw.most_discriminating_terms(
         bag_term_matrix, id2token, [True] * len(doc1) + [False] * len(doc2), top_n_terms=2
     )
     assert expected == observed

@@ -11,8 +11,7 @@ from IPython.display import display
 from loguru import logger
 
 import penelope.topic_modelling as tm
-import penelope.vendor.gensim as gensim_utility
-import penelope.vendor.textacy as textacy_utility
+from penelope.vendor import gensim_api, textacy_api
 
 from .mixins import TopicsStateGui
 from .model_container import TopicModelContainer
@@ -288,7 +287,7 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
                 selected = set(self.corpus_widgets.stop_words.value)
                 frequent_words = [
                     x[0]
-                    for x in textacy_utility.get_most_frequent_words(
+                    for x in textacy_api.get_most_frequent_words(
                         corpus,
                         100,
                         normalize=self.corpus_widgets.normalize.value,
@@ -315,7 +314,7 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
         gui = self.corpus_widgets
 
         pipeline = (
-            textacy_utility.ExtractPipeline(corpus, target=gui.normalize.value)
+            textacy_api.ExtractPipeline(corpus, target=gui.normalize.value)
             .ingest(
                 as_strings=True,
                 include_pos=gui.include_pos.value,
@@ -426,7 +425,7 @@ class PreparedCorpusUserInterface(ComputeTopicModelUserInterface):
 
     def get_corpus_terms(self, _):
         filepath = self.corpus_widgets.filepath.value
-        self.corpus = gensim_utility.SimpleExtTextCorpus(filepath)
+        self.corpus = gensim_api.SimpleExtTextCorpus(filepath)
         doc_terms = [list(terms) for terms in self.corpus.get_texts()]
         self.document_index = self.fn_doc_index(self.corpus)
         return doc_terms

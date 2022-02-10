@@ -5,7 +5,7 @@ import pandas as pd
 from ipywidgets import Button, HBox, IntRangeSlider, IntSlider, Layout, VBox
 
 from penelope.corpus import dtm
-from penelope.vendor.textacy import mdw_modified
+from penelope.vendor.textacy_api import mdw
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ def default_compute_callback(corpus: dtm.VectorizedCorpus, args: MDW_GUI):
     group1_indices = corpus.document_index[corpus.document_index.year.between(*args.period1)].index
     group2_indices = corpus.document_index[corpus.document_index.year.between(*args.period2)].index
 
-    df_dtm = mdw_modified.compute_most_discriminating_terms(
+    df_dtm = mdw.compute_most_discriminating_terms(
         corpus,
         group1_indices=group1_indices,
         group2_indices=group2_indices,

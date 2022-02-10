@@ -4,7 +4,7 @@ import uuid
 
 import pandas as pd
 
-from penelope.topic_modelling.engines.engine_gensim.wrappers.convert import doctopics_to_dataframe
+from penelope.vendor import mallet_api
 
 DOCTOPICS_SAMPLE: str = """#doc name topic proportion ...
 0	0	324	0.12262526333466872	74	0.10506107068300177	290	0.07608652371948554	335	0.07313325744105728	104	0.07277324807034467	97	0.06897874713517153	458	0.062347804624217705	139	0.04659284191910738	91	0.04284124909300346	146	0.03783012943055252
@@ -26,7 +26,9 @@ def test_convert_doctopics():
     with open(source_filename, "w") as fp:
         fp.write(DOCTOPICS_SAMPLE)
 
-    df: pd.DataFrame = doctopics_to_dataframe(source_filename=source_filename, normalize=False, epsilon=0.005)
+    df: pd.DataFrame = mallet_api.doctopics_to_dataframe(
+        source_filename=source_filename, normalize=False, epsilon=0.005
+    )
     assert df is not None
 
     df = df.set_index(['document_id', 'topic_id'])
@@ -37,4 +39,4 @@ def test_convert_doctopics():
     assert len(df.loc[1]) == 9
     assert df.loc[5, 292].weight == 0.018300312069896102
 
-    df: pd.DataFrame = doctopics_to_dataframe(source_filename=source_filename, normalize=True, epsilon=0.005)
+    df: pd.DataFrame = mallet_api.doctopics_to_dataframe(source_filename=source_filename, normalize=True, epsilon=0.005)

@@ -4,9 +4,10 @@ from typing import Any, Iterable, Mapping, Tuple
 
 import pandas as pd
 import scipy.sparse as sp
-from gensim.matutils import Sparse2Corpus
 from more_itertools import peekable
-from textacy.representations.vectorizers import Vectorizer
+
+from penelope.vendor.gensim_api import Sparse2Corpus
+from penelope.vendor.textacy_api import Vectorizer
 
 from ..token2id import id2token2token2id
 from ..tokenized_corpus import TokenizedCorpus
@@ -18,7 +19,7 @@ from .vectorizer import CorpusVectorizer, DocumentTermsStream, VectorizeOpts
     USES sklearn.feature_extraction.text.CountVectorizer
 
 2. engine_gensim.convert.TranslateCorpus -> Sparse2Corpus, Dictionary
-    gensim.Dictionary.doc2bow, corpus2csc
+    Dictionary.doc2bow, corpus2csc
 
 2. textacy.Vectorizer -> sp.csr_matrix, id_to_term
     Has lots of options! Easy to translate to VectorizedCorpus

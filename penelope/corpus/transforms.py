@@ -9,16 +9,7 @@ import ftfy
 import nltk
 
 import penelope.vendor.nltk as nltk_utility
-
-try:
-    from textacy.preprocessing.normalize import unicode as normalize_unicode
-    from textacy.preprocessing.normalize import whitespace as normalize_whitespace
-    from textacy.preprocessing.replace import currency_symbols as replace_currency_symbols
-except ImportError:
-    normalize_unicode = ftfy.fix_encoding
-    normalize_whitespace = lambda s: " ".join(s.split())
-    replace_currency_symbols = lambda s: s
-
+from penelope.vendor.textacy_api import normalize_unicode, normalize_whitespace, replace_currency_symbols
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 

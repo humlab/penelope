@@ -55,7 +55,7 @@ def test_transformer():
     transformer.transform_opts.clear()
     transformer.transform_opts += tt.KnownTransformType.fix_hyphenation
     result = transformer.transform("mål-\nvakt")
-    assert result == "målvakt"
+    assert result.strip() == "målvakt"
 
     transformer.transform_opts.clear()
     transformer.transform_opts += tt.KnownTransformType.fix_whitespaces

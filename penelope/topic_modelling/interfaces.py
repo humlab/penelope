@@ -10,11 +10,11 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union
 
 import pandas as pd
 import scipy.sparse as sp
-from gensim.matutils import Sparse2Corpus
 from tqdm.auto import tqdm
 
 from penelope import corpus as pc
 from penelope import utility
+from penelope.vendor.gensim_api import Sparse2Corpus
 
 from .topics_data import InferredTopicsData
 

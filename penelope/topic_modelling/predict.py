@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, Any, Mapping
 
 import numpy as np
 import pandas as pd
-from gensim.matutils import Sparse2Corpus
 
 from penelope import corpus as pc
 from penelope.corpus import dtm
+from penelope.vendor.gensim_api import Sparse2Corpus
 
 from .engines import get_engine_by_model_type
 from .topics_data import InferredTopicsData

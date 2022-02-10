@@ -6,9 +6,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
-import spacy.language
-import spacy.tokens
-
+from penelope.vendor import spacy_api
 import penelope.pipeline.spacy.tasks as spacy_tasks
 import penelope.pipeline.tasks as tasks
 from penelope.corpus import load_document_index
@@ -72,7 +70,7 @@ def fake_data_frame_stream(n: int = 1):
 
 
 def fake_spacy_doc_stream(n: int = 1):
-    dummy = MagicMock(spec=spacy.tokens.Doc)
+    dummy = MagicMock(spec=spacy_api.Doc)
     for i in range(1, n + 1):
         yield DocumentPayload(
             filename=f'dummy_{i}.txt',
@@ -94,8 +92,8 @@ def fake_token_stream(n: int = 1):
 
 
 def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
-    mock_doc = Mock(spec=spacy.tokens.Doc)
-    m = MagicMock(spec=spacy.language.Language)
+    mock_doc = Mock(spec=spacy_api.Doc)
+    m = MagicMock(spec=spacy_api.Language)
     m.return_value = mock_doc
     return m
 
@@ -118,7 +116,7 @@ def checkpoint_opts() -> CheckpointOpts:
 
 
 def patch_spacy_doc(*x, **y):  # pylint: disable=unused-argument
-    m = MagicMock(spec=spacy.tokens.Doc)
+    m = MagicMock(spec=spacy_api.Doc)
     return m
 
 

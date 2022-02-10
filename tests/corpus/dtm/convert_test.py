@@ -3,12 +3,12 @@ from typing import Iterable, Tuple
 import pandas as pd
 import pytest
 import scipy.sparse as sp
-from gensim.matutils import Sparse2Corpus, corpus2csc
 from pytest import fixture
 
 from penelope import corpus as pc
 from penelope.corpus.dtm import convert
 from penelope.corpus.readers import tng
+from penelope.vendor.gensim_api import Sparse2Corpus, corpus2csc
 
 # pylint: disable=redefined-outer-name
 

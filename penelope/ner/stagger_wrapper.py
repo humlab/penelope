@@ -22,7 +22,7 @@ import datetime
 import logging
 import os
 
-from gensim.utils import check_output
+from penelope.vendor.gensim_api import check_output
 
 logger = logging.getLogger(__name__)
 

@@ -4,9 +4,9 @@ from typing import List, Mapping, Sequence, Tuple, Union
 
 import numpy as np
 import scipy.sparse as sp
-import textacy
-import textacy.representations
 from loguru import logger
+
+from penelope.vendor import textacy_api
 
 from ..token2id import id2token2token2id
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
@@ -93,7 +93,7 @@ class SliceMixIn:
             [description], by default None
         """
 
-        bag_term_matrix, token2id = textacy.representations.matrix_utils.filter_terms_by_df(
+        bag_term_matrix, token2id = textacy_api.filter_terms_by_df(
             self.bag_term_matrix, self.token2id, max_df=max_df, min_df=min_df, max_n_terms=max_n_terms
         )
         overridden_term_frequency = (
