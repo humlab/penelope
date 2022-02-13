@@ -66,15 +66,16 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylin
     assert v_corpus is not None
 
     assert {
-        'mary': 4,
+        'mary': 5,
         'lamb': 3,
         'fleece': 2,
-        'snow': 7,
-        'school': 6,
+        'snow': 8,
+        'school': 7,
         'day': 1,
-        'rule': 5,
+        'rule': 6,
         'child': 0,
-        'teacher': 8,
+        'teacher': 9,
+        'love': 4,
     } == v_corpus.token2id
 
     assert (expected_dtm == v_corpus.data.todense()).all()
