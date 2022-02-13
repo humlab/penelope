@@ -9,12 +9,16 @@ from os.path import join as jj
 from typing import Callable, Iterable, Literal, Mapping, Union
 
 import requests
-import spacy
 from loguru import logger
-from spacy import attrs
-from spacy.cli.download import download
-from spacy.language import Language
-from spacy.tokens import Doc, Token
+
+try:
+    import spacy
+    from spacy import attrs
+    from spacy.cli.download import download
+    from spacy.language import Language
+    from spacy.tokens import Doc, Token
+except ImportError:
+    ...
 
 SPACY_DATA = os.environ.get("SPACY_DATA", "")
 
@@ -86,6 +90,7 @@ def load_model(
         try:
             nlp: Language = spacy.load(name_or_nlp, **args)
         except OSError:
+            logger.info(f"not found: {name_or_nlp}, downloading...")
             download(name_or_nlp)
             nlp: Language = spacy.load(name_or_nlp, **args)
 

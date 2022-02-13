@@ -3,8 +3,12 @@ from __future__ import annotations
 from typing import Any, Iterable, Mapping, Tuple
 
 import scipy.sparse as sp
-from gensim.corpora.dictionary import Dictionary
-from gensim.matutils import Sparse2Corpus, corpus2csc
+
+try:
+    from gensim.corpora.dictionary import Dictionary
+    from gensim.matutils import Sparse2Corpus, corpus2csc
+except ImportError:
+    ...
 
 
 def _id2token2token2id(id2token: Mapping[int, str]) -> dict:

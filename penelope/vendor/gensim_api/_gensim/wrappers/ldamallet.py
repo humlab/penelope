@@ -62,7 +62,7 @@ try:
     from gensim.models.ldamodel import LdaModel
     from gensim.utils import check_output, revdict
 except ImportError:
-    raise TypeError("Gensim package not avaliable")  # pylint: disable=raise-missing-from
+    ...
 
 logger = logging.getLogger(__name__)
 

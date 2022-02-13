@@ -1,10 +1,13 @@
 import collections
 from typing import Mapping, Sequence, Union
 
-from spacy.language import Language
-from textacy.corpus import Corpus
-
 from ...spacy_api.utility import prepend_spacy_path, token_count_by
+
+try:
+    from spacy.language import Language
+    from textacy.corpus import Corpus
+except ImportError:
+    ...
 
 
 def infrequent_words(

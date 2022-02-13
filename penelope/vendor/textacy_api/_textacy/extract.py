@@ -5,12 +5,17 @@ from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Callable, Collection, Iterable, List, Literal, Mapping, Optional, Sequence, Union
 
 from loguru import logger
-from spacy.tokens import Doc, Token
-from textacy.extract.basics import words
 
 from penelope import utility as pu
 
 from .utils import frequent_document_words, infrequent_words
+
+try:
+    from spacy.tokens import Doc, Token
+    from textacy.extract.basics import words
+except ImportError:
+    ...
+
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts

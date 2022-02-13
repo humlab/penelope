@@ -21,7 +21,7 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
         self.in_content_type = interfaces.ContentType.ANY
         self.out_content_type = interfaces.ContentType.ANY
 
-    name_or_nlp: Union[str, Language] = None
+    name_or_nlp: Union[str, spacy_api.Language] = None
 
     disable: List[str] = None
     exclude: List[str] = None
@@ -30,7 +30,7 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
 
     def setup(self):
         self.disable = DEFAULT_SPACY_DISABLES if self.disable is None else self.disable
-        self.name_or_nlp: Language = spacy_api.load_model(
+        self.name_or_nlp: spacy_api.Language = spacy_api.load_model(
             name_or_nlp=self.name_or_nlp,
             disable=self.disable,
             exclude=self.exclude,

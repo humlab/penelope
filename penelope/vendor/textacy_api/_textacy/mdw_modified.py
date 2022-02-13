@@ -7,7 +7,11 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from memoization import cached
-from textacy.representations import get_doc_freqs
+
+try:
+    from textacy.representations import get_doc_freqs
+except ImportError:
+    ...
 
 # This file is a modified version of textacy vsm.most_discriminating_terms
 # Oríginal source: https://github.com/chartbeat-labs/textacy/blob/master/textacy/ke/utils.py

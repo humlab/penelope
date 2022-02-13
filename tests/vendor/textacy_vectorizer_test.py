@@ -4,6 +4,13 @@ import pytest
 from penelope.corpus import CorpusVectorizer, VectorizedCorpus
 from penelope.vendor import textacy_api
 
+try:
+    import textacy  # pylint: disable=unused-import
+
+    _extacy_exists: bool = True
+except ImportError:
+    _extacy_exists: bool = False
+
 
 @pytest.fixture(scope="module")
 def mary_had_a_little_lamb_corpus(en_nlp) -> textacy_api.Corpus:
@@ -23,6 +30,7 @@ def mary_had_a_little_lamb_corpus(en_nlp) -> textacy_api.Corpus:
 
 
 @pytest.mark.long_running
+@pytest.mark.skipif(not _extacy_exists, reason="textaCy not avaliable")
 def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylint: disable=redefined-outer-name
 
     expected_dtm = np.matrix(

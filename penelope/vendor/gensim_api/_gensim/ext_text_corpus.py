@@ -1,9 +1,13 @@
 from typing import Any, AnyStr, Callable, Iterable, List, Tuple
 
 import pandas as pd
-from gensim.corpora.textcorpus import TextCorpus
 
 from penelope.utility import streamify_any_source
+
+try:
+    from gensim.corpora.textcorpus import TextCorpus
+except ImportError:
+    ...
 
 
 # pylint: disable=abstract-method

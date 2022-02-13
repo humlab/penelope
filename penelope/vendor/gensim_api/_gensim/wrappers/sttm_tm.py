@@ -26,10 +26,15 @@ from itertools import chain
 
 import numpy
 import scipy
-from gensim import matutils, utils
-from gensim.models import basemodel
-from gensim.utils import check_output
 from smart_open import smart_open
+
+try:
+    from gensim import matutils, utils
+    from gensim.models import basemodel
+    from gensim.utils import check_output
+except ImportError:
+    ...
+
 
 logger = logging.getLogger(__name__)
 
