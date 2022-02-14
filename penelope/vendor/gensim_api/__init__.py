@@ -27,8 +27,8 @@ except (ImportError, NameError):
 try:
     from ._gensim.ext_text_corpus import ExtTextCorpus, SimpleExtTextCorpus
 except (ImportError, NameError):
-     ExtTextCorpus = None
-     SimpleExtTextCorpus = None
+    ExtTextCorpus = None
+    SimpleExtTextCorpus = None
 
 try:
     from ._gensim.utils import (
