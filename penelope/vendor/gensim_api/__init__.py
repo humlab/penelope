@@ -16,14 +16,14 @@ try:
     from ._gensim.wrappers import LdaMallet
 
     __has_gensim: bool = True
-except ImportError:
+except (ImportError, NameError):
     __has_gensim: bool = False
     logger.info("gensim not included in current installment")
 
 # from ._gensim.ext_mm_corpus import ExtMmCorpus
 try:
     from ._gensim.ext_text_corpus import ExtTextCorpus, SimpleExtTextCorpus
-except ImportError:
+except (ImportError, NameError):
     ...
 
 try:
@@ -33,12 +33,12 @@ try:
         from_stream_of_tokens_to_sparse2corpus,
         from_token2id_to_dictionary,
     )
-except ImportError:
+except (ImportError, NameError):
     ...
 
 try:
     from ._gensim.wrappers import MalletTopicModel, STTMTopicModel
-except ImportError:
+except (ImportError, NameError):
     ...
 
 try:
@@ -47,7 +47,7 @@ try:
     from gensim.corpora.dictionary import Dictionary
     from gensim.corpora.textcorpus import TextCorpus
 
-except ImportError:
+except (ImportError, NameError):
 
     MmCorpus = object
     TextCorpus = object
@@ -60,7 +60,7 @@ except ImportError:
 
 try:
     from gensim.matutils import Sparse2Corpus, corpus2csc
-except ImportError:
+except (ImportError, NameError):
 
     class Sparse2Corpus:
         def __init__(self, sparse, documents_columns=True):
@@ -84,5 +84,5 @@ except ImportError:
 
 try:
     from gensim.utils import check_output
-except ImportError:
+except (ImportError, NameError):
     from subprocess import check_output

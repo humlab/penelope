@@ -17,7 +17,7 @@ try:
 
     __textacy_installed: bool = True
 
-except ImportError:
+except (ImportError, NameError):
 
     __textacy_installed: bool = False
 
@@ -53,7 +53,7 @@ except ImportError:
 try:
     from ._textacy import mdw_modified as mdw
     from ._textacy.mdw_modified import compute_most_discriminating_terms
-except ImportError:
+except (ImportError, NameError):
     ...
 
 
@@ -67,12 +67,12 @@ try:
         StopwordFilter,
     )
     from ._textacy.utils import get_most_frequent_words, load_corpus  # frequent_document_words,  infrequent_words
-except ImportError:
+except (ImportError, NameError):
     ...
 
 # try:
 #     from textacy.extract.basics import words
-# except ImportError:
+# except (ImportError, NameError):
 
 #     def words(*_, **__):
 #         return []
