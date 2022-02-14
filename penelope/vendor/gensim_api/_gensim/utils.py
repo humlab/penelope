@@ -2,13 +2,37 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Mapping, Tuple
 
+import numpy as np
 import scipy.sparse as sp
 
 try:
     from gensim.corpora.dictionary import Dictionary
     from gensim.matutils import Sparse2Corpus, corpus2csc
 except ImportError:
-    ...
+
+    class Dictionary(dict):
+        @staticmethod
+        def from_corpus(corpus, id2word=None):  # pylint: disable=unused-argument
+            raise ModuleNotFoundError()
+
+    class Sparse2Corpus:
+        def __init__(self, sparse, documents_columns=True):
+            self.sparse = sparse.tocsc() if documents_columns else sparse.tocsr().T
+
+        def __iter__(self):
+            for indprev, indnow in zip(self.sparse.indptr, self.sparse.indptr[1:]):
+                yield list(zip(self.sparse.indices[indprev:indnow], self.sparse.data[indprev:indnow]))
+
+        def __len__(self):
+            return self.sparse.shape[1]
+
+        def __getitem__(self, document_index):
+            indprev = self.sparse.indptr[document_index]
+            indnow = self.sparse.indptr[document_index + 1]
+            return list(zip(self.sparse.indices[indprev:indnow], self.sparse.data[indprev:indnow]))
+
+    def corpus2csc(corpus, num_terms=None, dtype=np.float64, num_docs=None, num_nnz=None, printprogress=0):
+        return None
 
 
 def _id2token2token2id(id2token: Mapping[int, str]) -> dict:
@@ -26,7 +50,7 @@ GensimBowCorpus = Iterable[Iterable[Tuple[int, float]]]
 def from_stream_of_tokens_to_sparse2corpus(source: Any, vocabulary: Dictionary | dict) -> Sparse2Corpus:
 
     if not hasattr(vocabulary, 'doc2bow'):
-        vocabulary: Dictionary = from_token2id_to_dictionary(vocabulary)
+        vocabulary: Dictionary = _from_token2id_to_dictionary(vocabulary)
 
     bow_corpus: GensimBowCorpus = [vocabulary.doc2bow(tokens) for _, tokens in source]
     csc_matrix: sp.csc_matrix = corpus2csc(
@@ -49,7 +73,7 @@ def from_stream_of_tokens_to_dictionary(source: Any, id2token: dict) -> Dictiona
     return vocabulary
 
 
-def from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
+def _from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
 
     if isinstance(token2id, Dictionary):
         return token2id
@@ -62,4 +86,4 @@ def from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
 
 def from_id2token_to_dictionary(id2token: dict) -> Dictionary:
     """Creates a `Dictionary` from a id2token dict."""
-    return from_token2id_to_dictionary(_id2token2token2id(id2token))
+    return _from_token2id_to_dictionary(_id2token2token2id(id2token))

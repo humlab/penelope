@@ -5,9 +5,25 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple, Type, get_args
 from ... import interfaces
 from ..interface import ITopicModelEngine
 from . import predict, train
-from .options import SUPPORTED_ENGINES
-from .predict import SupportedModels
-from .utility import malletmodel2ldamodel
+
+try:
+    from .options import SUPPORTED_ENGINES
+except:  # pylint: disable=bare-except
+    SUPPORTED_ENGINES = {}
+
+try:
+    from .predict import SupportedModels
+except:  # pylint: disable=bare-except
+    SupportedModels = object
+
+try:
+    from .utility import malletmodel2ldamodel
+except:  # pylint: disable=bare-except
+
+    def malletmodel2ldamodel(
+        mallet_model: Any, gamma_threshold: float = 0.001, iterations: int = 50  # pylint: disable=unused-argument
+    ):
+        return None
 
 
 def is_supported(model: Any) -> bool:

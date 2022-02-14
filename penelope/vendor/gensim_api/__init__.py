@@ -7,7 +7,6 @@ import numpy as np
 from loguru import logger
 
 try:
-    import gensim.models as models
     from gensim.models import CoherenceModel
     from gensim.models.ldamodel import LdaModel
     from gensim.models.ldamulticore import LdaMulticore
@@ -31,7 +30,6 @@ try:
         from_id2token_to_dictionary,
         from_stream_of_tokens_to_dictionary,
         from_stream_of_tokens_to_sparse2corpus,
-        from_token2id_to_dictionary,
     )
 except (ImportError, NameError):
     ...
@@ -44,7 +42,6 @@ except (ImportError, NameError):
 try:
 
     from gensim.corpora import MmCorpus
-    from gensim.corpora.dictionary import Dictionary
     from gensim.corpora.textcorpus import TextCorpus
 
 except (ImportError, NameError):
@@ -52,35 +49,10 @@ except (ImportError, NameError):
     MmCorpus = object
     TextCorpus = object
 
-    class Dictionary(dict):
-        @staticmethod
-        def from_corpus(corpus, id2word=None):
-            raise ModuleNotFoundError()
-
-
 try:
-    from gensim.matutils import Sparse2Corpus, corpus2csc
+    from _gensim import Dictionary, Sparse2Corpus, corpus2csc
 except (ImportError, NameError):
-
-    class Sparse2Corpus:
-        def __init__(self, sparse, documents_columns=True):
-            self.sparse = sparse.tocsc() if documents_columns else sparse.tocsr().T
-
-        def __iter__(self):
-            for indprev, indnow in zip(self.sparse.indptr, self.sparse.indptr[1:]):
-                yield list(zip(self.sparse.indices[indprev:indnow], self.sparse.data[indprev:indnow]))
-
-        def __len__(self):
-            return self.sparse.shape[1]
-
-        def __getitem__(self, document_index):
-            indprev = self.sparse.indptr[document_index]
-            indnow = self.sparse.indptr[document_index + 1]
-            return list(zip(self.sparse.indices[indprev:indnow], self.sparse.data[indprev:indnow]))
-
-    def corpus2csc(corpus, num_terms=None, dtype=np.float64, num_docs=None, num_nnz=None, printprogress=0):
-        raise ModuleNotFoundError("gensim not included in package")
-
+    ...
 
 try:
     from gensim.utils import check_output
