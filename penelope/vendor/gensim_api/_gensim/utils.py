@@ -8,7 +8,7 @@ import scipy.sparse as sp
 try:
     from gensim.corpora.dictionary import Dictionary
     from gensim.matutils import Sparse2Corpus, corpus2csc
-except ImportError:
+except (ImportError, NameError):
 
     class Dictionary(dict):
         @staticmethod
@@ -16,6 +16,9 @@ except ImportError:
             raise ModuleNotFoundError()
 
     class Sparse2Corpus:
+        # Copyright (C) 2010 Radim Rehurek <radimrehurek@seznam.cz>
+        # Licensed under the GNU LGPL v2.1 - http://www.gnu.org/licenses/lgpl.html
+        # Modified code;
         def __init__(self, sparse, documents_columns=True):
             self.sparse = sparse.tocsc() if documents_columns else sparse.tocsr().T
 
@@ -32,6 +35,9 @@ except ImportError:
             return list(zip(self.sparse.indices[indprev:indnow], self.sparse.data[indprev:indnow]))
 
     def corpus2csc(corpus, num_terms=None, dtype=np.float64, num_docs=None, num_nnz=None, printprogress=0):
+        # Copyright (C) 2010 Radim Rehurek <radimrehurek@seznam.cz>
+        # Licensed under the GNU LGPL v2.1 - http://www.gnu.org/licenses/lgpl.html
+        # (code removed)
         return None
 
 

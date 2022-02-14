@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 from loguru import logger
 
 try:
@@ -18,12 +17,18 @@ try:
 except (ImportError, NameError):
     __has_gensim: bool = False
     logger.info("gensim not included in current installment")
+    CoherenceModel = None
+    LdaModel = None
+    LdaMulticore = None
+    LsiModel = None
+    LdaMallet = None
 
 # from ._gensim.ext_mm_corpus import ExtMmCorpus
 try:
     from ._gensim.ext_text_corpus import ExtTextCorpus, SimpleExtTextCorpus
 except (ImportError, NameError):
-    ...
+     ExtTextCorpus = None
+     SimpleExtTextCorpus = None
 
 try:
     from ._gensim.utils import (
@@ -32,12 +37,15 @@ try:
         from_stream_of_tokens_to_sparse2corpus,
     )
 except (ImportError, NameError):
-    ...
+    from_id2token_to_dictionary = None
+    from_stream_of_tokens_to_dictionary = None
+    from_stream_of_tokens_to_sparse2corpus = None
 
 try:
     from ._gensim.wrappers import MalletTopicModel, STTMTopicModel
 except (ImportError, NameError):
-    ...
+    MalletTopicModel = None
+    STTMTopicModel = None
 
 try:
 
@@ -52,7 +60,9 @@ except (ImportError, NameError):
 try:
     from _gensim import Dictionary, Sparse2Corpus, corpus2csc
 except (ImportError, NameError):
-    ...
+    Dictionary = None
+    Sparse2Corpus = None
+    corpus2csc = None
 
 try:
     from gensim.utils import check_output

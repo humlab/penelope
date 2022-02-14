@@ -6,9 +6,12 @@ from penelope.utility import streamify_any_source
 
 try:
     from gensim.corpora.textcorpus import TextCorpus
+    has_gensim: bool = True
 except ImportError:
-    ...
-
+    has_gensim: bool = False
+    class TextCorpus:
+        def __init__(self, *args, **kwargs) -> None:  # pylint: disable=unused-argument
+            pass
 
 # pylint: disable=abstract-method
 class ExtTextCorpus(TextCorpus):
