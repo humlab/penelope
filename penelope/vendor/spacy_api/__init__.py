@@ -1,15 +1,25 @@
 # type: ignore
+# pylint: disable=unused-argument, unused-import
 
 try:
-    from spacy import load
-    from spacy.language import Language
-    from spacy.tokens import Doc, Token
+    import spacy
 
-    __spacy_installed: bool = True
+    SPACY_INSTALLED: bool = True
 except (ImportError, NameError):
-    __spacy_installed: bool = False
-
+    SPACY_INSTALLED: bool = False
+    ...
 try:
-    from .utility import SPACY_DATA, load_model, load_model_by_parts, prepend_path, prepend_spacy_path, token_count_by
+    from ._spacy import (
+        SPACY_DATA,
+        Doc,
+        Language,
+        Token,
+        load,
+        load_model,
+        load_model_by_parts,
+        prepend_path,
+        prepend_spacy_path,
+        token_count_by,
+    )
 except (ImportError, NameError):
     ...

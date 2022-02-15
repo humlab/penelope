@@ -22,6 +22,7 @@ def looking_back(en_nlp) -> Doc:
 
 
 def test_filter_tokens_by_attribute_values(looking_back: Doc):  # pylint: disable=unused-argument
+    pytest.importorskip("spacy")
 
     words = SAMPLE_TEXT.replace('.', ' .').split()
 
@@ -49,6 +50,7 @@ def assert_test_xyz_to_tagged_frame(tagged_frame: pd.DataFrame):
 
 
 def test_spacy_doc_to_tagged_frame(looking_back: Doc):
+    pytest.importorskip("spacy")
     tagged_frame = spacy_doc_to_tagged_frame(
         spacy_doc=looking_back,
         attributes=['text', 'pos_', 'lemma_'],

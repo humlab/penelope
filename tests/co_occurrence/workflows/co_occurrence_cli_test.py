@@ -2,7 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-from penelope.scripts.co_occurrence import process_co_ocurrence
+try:
+    from penelope.scripts.co_occurrence import process_co_ocurrence
+except (ImportError, NameError):
+    ...
 
 
 def monkey_patch(*_, **__):

@@ -11,16 +11,18 @@ from penelope import utility as pu
 from .utils import frequent_document_words, infrequent_words
 
 try:
-    from spacy.tokens import Doc, Token
     from textacy.extract.basics import words
+
+    from ...spacy_api import Doc, Token
 except ImportError:
-    ...
+    words = pu.DummyFunction
 
 
 if TYPE_CHECKING:
     from penelope.corpus import TokensTransformOpts
 
 
+# FIXME: Deprecate this module, use pipeline instead, spacy => TaggedFrame
 # FIXME: PoS-padding (dummy marker) not fully implemented
 
 

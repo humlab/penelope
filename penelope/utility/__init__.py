@@ -106,7 +106,9 @@ from .pos_tags import (
 from .streamify_source import list_any_source, streamify_any_source, streamify_folder_source, streamify_zip_source
 from .utils import (
     LOG_FORMAT,
+    DummyClass,
     DummyContext,
+    DummyFunction,
     ListOfDicts,
     assert_is_strictly_increasing,
     better_flatten,
@@ -116,6 +118,7 @@ from .utils import (
     complete_value_range,
     create_class,
     create_dataclass_instance_from_kwargs,
+    create_dummy_function,
     create_instance,
     dataframe_to_tuples,
     deep_clone,

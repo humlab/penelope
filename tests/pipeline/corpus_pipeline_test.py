@@ -130,8 +130,10 @@ def patch_spacy_pipeline(task):
     return pipeline
 
 
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, patch_spacy_load, reason="spaCy not installed")
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
+    pytest.importorskip("spacy")
     pipeline = CorpusPipeline(config=fake_config())
     _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, name_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
@@ -339,6 +341,8 @@ def test_tokens_to_text_when_text_instream_succeeds():
     assert next_payload.content_type == ContentType.TEXT
 
 
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
+@patch('spacy.load', patch_spacy_load)
 @pytest.mark.long_running
 def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 

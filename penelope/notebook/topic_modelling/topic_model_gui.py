@@ -11,7 +11,8 @@ from IPython.display import display
 from loguru import logger
 
 import penelope.topic_modelling as tm
-from penelope.vendor import gensim_api, textacy_api
+from penelope.vendor import textacy_api
+from penelope.vendor.gensim_api import corpora as gensim_corpora
 
 from .mixins import TopicsStateGui
 from .model_container import TopicModelContainer
@@ -425,7 +426,7 @@ class PreparedCorpusUserInterface(ComputeTopicModelUserInterface):
 
     def get_corpus_terms(self, _):
         filepath = self.corpus_widgets.filepath.value
-        self.corpus = gensim_api.SimpleExtTextCorpus(filepath)
+        self.corpus = gensim_corpora.SimpleExtTextCorpus(filepath)
         doc_terms = [list(terms) for terms in self.corpus.get_texts()]
         self.document_index = self.fn_doc_index(self.corpus)
         return doc_terms

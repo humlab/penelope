@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import functools
 import os
 import shutil
@@ -9,7 +11,6 @@ import pytest
 
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
-from penelope.scripts.tm.train_legacy import main
 from penelope.topic_modelling.engines import get_engine_by_model_type
 from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES, convert
 from penelope.topic_modelling.engines.interface import ITopicModelEngine
@@ -17,6 +18,15 @@ from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
 from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
+
+# pylint: disable=ungrouped-imports
+
+
+try:
+    from penelope.scripts.tm.train_legacy import main
+except (ImportError, NameError):
+    ...
+
 
 jj = os.path.join
 
@@ -68,6 +78,7 @@ def test_tranströmers_corpus():
 
 
 def test_create_train_corpus():
+    pytest.importorskip("gensim")
     train_corpus: tm.TrainingCorpus = create_train_corpus()
     assert isinstance(train_corpus.document_index, pd.DataFrame)
     assert len(train_corpus.corpus) == len(train_corpus.document_index)
@@ -78,6 +89,7 @@ def test_create_train_corpus():
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_model(method):
+    pytest.importorskip("gensim")
 
     _, inferred_model = create_model_data(method)
 
@@ -96,6 +108,7 @@ def test_load_inferred_model_fixture():
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_compressed_inferred_model(method):
+    pytest.importorskip("gensim")
 
     _, inferred_model = create_model_data(method)
     target_name = f"{uuid.uuid1()}"
@@ -110,6 +123,7 @@ def test_store_compressed_inferred_model(method):
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_store_uncompressed_inferred_model(method):
+    pytest.importorskip("gensim")
 
     train_corpus, inferred_model = create_model_data(method)
     target_name = f"{uuid.uuid1()}"
@@ -126,6 +140,7 @@ def test_store_uncompressed_inferred_model(method):
 
 @pytest.mark.parametrize("engine_key", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model(engine_key):
+    pytest.importorskip("gensim")
 
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
@@ -145,6 +160,7 @@ def test_load_inferred_model(engine_key):
 
 
 def test_load_trained_corpus():
+    pytest.importorskip("gensim")
 
     target_name = f"{uuid.uuid1()}"
     target_folder = os.path.join(OUTPUT_FOLDER, target_name)
@@ -166,6 +182,7 @@ def test_load_trained_corpus():
 
 @pytest.mark.parametrize("engine_key", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(engine_key):
+    pytest.importorskip("gensim")
 
     target_name: str = f"{uuid.uuid1()}"
     target_folder: str = os.path.join(OUTPUT_FOLDER, target_name)
@@ -183,6 +200,7 @@ def test_load_inferred_model_when_stored_corpus_is_false_has_no_trained_corpus(e
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
+    pytest.importorskip("gensim")
 
     target_name = f"{uuid.uuid1()}"
     target_folder = jj(OUTPUT_FOLDER, target_name)
@@ -204,6 +222,7 @@ def test_load_inferred_model_when_lazy_does_not_load_model_or_corpus(method):
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_infer_topics_data(method):
+    pytest.importorskip("gensim")
 
     minimum_probability: float = 0.001
     n_tokens: int = 5
@@ -235,6 +254,7 @@ def test_infer_topics_data(method):
 
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_run_cli(method):
+    pytest.importorskip("gensim")
 
     kwargs = {
         'target_name': f"{uuid.uuid1()}",

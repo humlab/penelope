@@ -546,6 +546,25 @@ class DummyContext:
         pass
 
 
+class DummyClass(dict):
+    def __init__(self, *args, **kwargs) -> None:  # pylint: disable=unused-argument
+        super().__init__()
+
+    def __getattribute__(self, __name: str) -> Any:
+        return DummyClass()
+
+
+def DummyFunction(*args, **kwargs):  # pylint: disable=unused-argument
+    return None
+
+
+def create_dummy_function(return_value: Any) -> Any:
+    def dummy_function(*args, **kwargs):  # pylint: disable=unused-argument
+        return return_value
+
+    return dummy_function
+
+
 def create_class(class_or_function_path: str) -> Union[Callable, Type]:
     try:
         module_path, cls_or_function_name = class_or_function_path.rsplit('.', 1)

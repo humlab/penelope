@@ -15,11 +15,13 @@ from .fixtures import MARY_TEST_CORPUS
 
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
+    pytest.importorskip("spacy")
     return load_model(name_or_nlp="en_core_web_sm", disable="ner")
 
 
 @pytest.fixture(scope="session")
 def df_doc(en_nlp) -> Language:
+    pytest.importorskip("spacy")
     attributes = ["text", "lemma_", "pos_", "is_space", "is_punct", "is_digit", "is_alpha", "is_stop"]
     doc = convert.text_to_tagged_frame(
         MARY_TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp

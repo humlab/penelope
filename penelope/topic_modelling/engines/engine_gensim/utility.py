@@ -1,10 +1,10 @@
 import numpy as np
 
-from penelope.vendor import gensim_api
+from penelope.vendor.gensim_api import models as gensim_models
 
 
 # NOTE gensim 4.0: wrappers.ldamallet.LdaMallet is deprecated/removed in Gensim 4.0
-def malletmodel2ldamodel(mallet_model: gensim_api.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50):
+def malletmodel2ldamodel(mallet_model: gensim_models.LdaMallet, gamma_threshold: float = 0.001, iterations: int = 50):
     """Convert :class:`~gensim.models.wrappers.ldamallet.LdaMallet` to :class:`~gensim.models.ldamodel.LdaModel`.
     This works by copying the training model weights (alpha, beta...) from a trained mallet model into the gensim model.
     Parameters
@@ -20,7 +20,7 @@ def malletmodel2ldamodel(mallet_model: gensim_api.LdaMallet, gamma_threshold: fl
     :class:`~gensim.models.ldamodel.LdaModel`
         Gensim native LDA.
     """
-    model_gensim: gensim_api.LdaModel = gensim_api.LdaModel(
+    model_gensim: gensim_models.LdaModel = gensim_models.LdaModel(
         id2word=mallet_model.id2word,
         num_topics=mallet_model.num_topics,
         alpha=mallet_model.alpha,

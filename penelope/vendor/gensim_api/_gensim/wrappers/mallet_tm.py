@@ -2,12 +2,16 @@ import os
 import re
 from typing import Iterable, Mapping, Tuple
 
-from gensim.utils import check_output
 from loguru import logger
 
 from penelope.utility import inspect_filter_args
 
 from .ldamallet import LdaMallet
+
+try:
+    from gensim.utils import check_output
+except ImportError:
+    ...
 
 
 class MalletTopicModel(LdaMallet):

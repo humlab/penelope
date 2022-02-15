@@ -1,3 +1,21 @@
+"""This file is a modified version of textacy vsm.most_discriminating_terms
+Oríginal source: https://github.com/chartbeat-labs/textacy/blob/master/textacy/ke/utils.py
+License: MIT https://github.com/chartbeat-labs/textacy/blob/master/LICENSE.txt
+
+Copyright 2016 Chartbeat, Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+(code modified)
+"""
+
 from __future__ import annotations
 
 import operator
@@ -13,20 +31,24 @@ try:
 except ImportError:
     ...
 
-# This file is a modified version of textacy vsm.most_discriminating_terms
-# Oríginal source: https://github.com/chartbeat-labs/textacy/blob/master/textacy/ke/utils.py
-# License: MIT https://github.com/chartbeat-labs/textacy/blob/master/LICENSE.txt
-#
-# Copyright 2016 Chartbeat, Inc.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#   http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+    def get_doc_freqs(doc_term_matrix: sp.csr_matrix) -> np.ndarray:
+        """Copyright 2016 Chartbeat, Inc.
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License."""
+        if doc_term_matrix.nnz == 0:
+            raise ValueError("`doc_term_matrix` must have at least 1 non-zero entry")
+        _, n_terms = doc_term_matrix.shape
+        return np.bincount(doc_term_matrix.indices, minlength=n_terms)
 
 
 if TYPE_CHECKING:
@@ -210,12 +232,9 @@ def F(n):
 
 def compute_likelihoods(term_ids, nr_RS, aRS, nr_SS, aSS, NRS, NSS, id2term):
     """
-
                                   Γ(nr_RS + αRS) × Γ(nr_SS + αSS)       Γ(NRS − nr_RS + αRS) × Γ(NSS − nr_SS + αSS)
     p(y1, ...yn|αRS, αSS, r)  ∝          -----------------          ×               -----------------
                                    Γ(nr_RS + nr_SS + αRS + αSS)          Γ(NRS − nr_RS + NSS − nr_SS + αRS + αSS)
-
-
     """
 
     terms_likelihoods = {}

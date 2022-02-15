@@ -6,7 +6,7 @@ import pandas as pd
 import scipy.sparse as sp
 from more_itertools import peekable
 
-from penelope.vendor.gensim_api import Sparse2Corpus
+from penelope.vendor.gensim_api import corpora as gensim_corpora
 from penelope.vendor.textacy_api import Vectorizer
 
 from ..token2id import id2token2token2id
@@ -30,7 +30,7 @@ Returns:
 
 
 def from_sparse2corpus(
-    source: Sparse2Corpus, *, token2id: Mapping[str, int], document_index: pd.DataFrame
+    source: gensim_corpora.Sparse2Corpus, *, token2id: Mapping[str, int], document_index: pd.DataFrame
 ) -> VectorizedCorpus:
     corpus: VectorizedCorpus = VectorizedCorpus(
         bag_term_matrix=source.sparse.tocsr().T, token2id=token2id, document_index=document_index
@@ -40,7 +40,7 @@ def from_sparse2corpus(
 
 def to_sparse2corpus(corpus: VectorizedCorpus):
 
-    return Sparse2Corpus(corpus.data, documents_columns=False)
+    return gensim_corpora.Sparse2Corpus(corpus.data, documents_columns=False)
 
 
 def from_spmatrix(
@@ -59,6 +59,7 @@ def from_tokenized_corpus(
     return corpus
 
 
+# FIXME: Create a non-textaCy dependent implementation
 def from_stream_of_tokens(
     source: Iterable[Iterable[str]],
     *,
@@ -137,7 +138,7 @@ class TranslateCorpus:
             return from_spmatrix(source, token2id=token2id, document_index=document_index)
 
         # if type(source).__name__.endswith('Sparse2Corpus'):
-        if isinstance(source, Sparse2Corpus):
+        if isinstance(source, gensim_corpora.Sparse2Corpus):
             return from_sparse2corpus(source, token2id=token2id, document_index=document_index)
 
         if isinstance(source, TokenizedCorpus):

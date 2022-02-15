@@ -5,7 +5,7 @@ import pandas as pd
 from ipywidgets import Button, HBox, IntRangeSlider, IntSlider, Layout, VBox
 
 from penelope.corpus import dtm
-from penelope.vendor.textacy_api import mdw
+from penelope.vendor import textacy_api as mdw
 
 logger = logging.getLogger(__name__)
 

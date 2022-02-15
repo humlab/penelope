@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 import collections
 from typing import Mapping, Sequence, Union
 
-from ...spacy_api.utility import prepend_spacy_path, token_count_by
+from penelope.utility import DummyClass
+
+from ...spacy_api import Language, prepend_spacy_path, token_count_by
 
 try:
-    from spacy.language import Language
-    from textacy.corpus import Corpus
+    from textacy import corpus as textacy_corpus
 except ImportError:
-    ...
+    textacy_corpus = DummyClass()
 
 
 def infrequent_words(
-    corpus: Corpus,
+    corpus: textacy_corpus.Corpus,
     normalize: str = 'lemma',
     weighting: str = 'count',
     threshold: int = 0,
@@ -29,11 +32,11 @@ def infrequent_words(
 
 
 def frequent_document_words(
-    corpus: Corpus,
-    normalize="lemma",
-    weighting="freq",
-    dfs_threshold=80,
-    as_strings=True,
+    corpus: textacy_corpus.Corpus,
+    normalize: str = "lemma",
+    weighting: str = "freq",
+    dfs_threshold: int = 80,
+    as_strings: bool = True,
 ):
     """Returns set of words that occurrs freuently in many documents, candidate stopwords"""
     document_freqs = corpus.word_doc_counts(
@@ -44,7 +47,7 @@ def frequent_document_words(
 
 
 def get_most_frequent_words(
-    corpus: Corpus,
+    corpus: textacy_corpus.Corpus,
     n_top: int,
     normalize: str = 'lemma',
     include_pos: Sequence[str] = None,
@@ -64,7 +67,7 @@ def get_most_frequent_words(
     return token_counter.most_common(n_top)
 
 
-def load_corpus(filename: str, lang: Union[str, Language]) -> Corpus:
+def load_corpus(filename: str, lang: Union[str, Language]) -> textacy_corpus.Corpus:
     lang: Union[str, Language] = prepend_spacy_path(lang)
-    corpus = Corpus.load(lang, filename)
+    corpus = textacy_corpus.Corpus.load(lang, filename)
     return corpus

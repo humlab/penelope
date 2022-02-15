@@ -14,6 +14,7 @@ from penelope import corpus as corpora
 from penelope import pipeline, utility
 from penelope.pipeline import tasks
 from penelope.pipeline.spacy import pipelines as spacy_pipeline
+from penelope.vendor import spacy_api
 from penelope.workflows.interface import ComputeOpts
 from tests.utils import OUTPUT_FOLDER, inline_code
 
@@ -81,6 +82,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: pipeline
     assert pipe.payload.document_lookup('RECOMMENDATION_0201_049455_2017.txt')['unesco_id'] == 49455
 
 
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.CorpusConfig):
 
@@ -298,6 +300,7 @@ def test_pipeline_text_to_dtm_succeeds(config: pipeline.CorpusConfig):
 
 
 # pylint: disable=too-many-locals
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
 
@@ -359,6 +362,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
         p.exhaust()
 
 
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_workflow_to_dtm(config: pipeline.CorpusConfig):
 

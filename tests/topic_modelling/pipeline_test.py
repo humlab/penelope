@@ -10,6 +10,7 @@ from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, Documen
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
 from penelope.topic_modelling.utility import find_models
+from penelope.vendor import gensim_api
 from tests.fixtures import TranströmerCorpus
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
@@ -61,6 +62,7 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
     return payload
 
 
+@pytest.mark.skipif(not gensim_api.GENSIM_INSTALLED, reason="Gensim not installed")
 @pytest.mark.long_running
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_predict_topics(method: str):
@@ -111,6 +113,7 @@ def test_predict_topics(method: str):
     assert 'method' in model_info['options']
 
 
+@pytest.mark.skipif(not gensim_api.GENSIM_INSTALLED, reason="Gensim not installed")
 @pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_topic_model_task_with_token_stream_and_document_index(method):

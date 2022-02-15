@@ -14,7 +14,7 @@ from tqdm.auto import tqdm
 
 from penelope import corpus as pc
 from penelope import utility
-from penelope.vendor.gensim_api import Sparse2Corpus
+from penelope.vendor.gensim_api import corpora
 
 from .topics_data import InferredTopicsData
 
@@ -33,7 +33,7 @@ AnyCorpus = Union[
     Iterable[Tuple[str, Iterable[str]]],
     sp.spmatrix,
     pc.VectorizedCorpus,
-    Sparse2Corpus,
+    corpora.Sparse2Corpus,
     pc.TokenizedCorpus,
 ]
 
@@ -85,7 +85,7 @@ class TrainingCorpus:
         os.makedirs(folder, exist_ok=True)
         if isinstance(self.corpus, pc.VectorizedCorpus):
             corpus: pc.VectorizedCorpus = self.corpus
-        elif isinstance(self.corpus, Sparse2Corpus):
+        elif isinstance(self.corpus, corpora.Sparse2Corpus):
             corpus: pc.VectorizedCorpus = pc.VectorizedCorpus(
                 bag_term_matrix=self.corpus.sparse.tocsr().T,
                 token2id=self.token2id,
@@ -106,7 +106,7 @@ class TrainingCorpus:
     def document_token_counts(self):
         if isinstance(self.corpus, pc.VectorizedCorpus):
             return self.corpus.document_token_counts
-        if isinstance(self.corpus, Sparse2Corpus):
+        if isinstance(self.corpus, corpora.Sparse2Corpus):
             return self.corpus.sparse.sum(axis=0).A1
         return ValueError(f"expected sparse corpus, found {type(self.corpus)}")
 

@@ -3,9 +3,13 @@ import sys
 from os.path import dirname, isdir, isfile
 from typing import Any, Callable, Optional
 
-import click
-
 from penelope import pipeline, utility
+
+try:
+    import click
+except ImportError:
+    ...
+
 
 CLI_LOG_PATH = './logs'
 

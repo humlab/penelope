@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
-from penelope.vendor import gensim_api
+from penelope.vendor.gensim_api import corpora as gensim_corpora
 
 
 def probe_filenames(folder: str, filenames: list[str]) -> str | None:
@@ -232,39 +232,39 @@ class Id2TokenMissingError(NotImplementedError):
 class TranslateCorpus:
     def translate(
         self, source: Any, *, id2token: Mapping[int, str] = None
-    ) -> Tuple[gensim_api.Sparse2Corpus, gensim_api.Dictionary]:
+    ) -> Tuple[gensim_corpora.Sparse2Corpus, gensim_corpora.Dictionary]:
 
         """Gensim doc says:
         "corpus : iterable of list of (int, float), optional
         Stream of document vectors or sparse matrix of shape (`num_documents`, `num_terms`).
         If you have a CSC in-memory matrix, you can convert it to a
-        streamed corpus with the help of gensim.matutils.gensim_api.Sparse2Corpus.
+        streamed corpus with the help of gensim.matutils.gensim_corpora.Sparse2Corpus.
         If not given, the model is left untrained ...."
         """
-        vocabulary: Union[gensim_api.Dictionary, Mapping[str, int]] = None
-        corpus: gensim_api.Sparse2Corpus = None
+        vocabulary: Union[gensim_corpora.Dictionary, Mapping[str, int]] = None
+        corpus: gensim_corpora.Sparse2Corpus = None
 
-        if isinstance(source, gensim_api.Sparse2Corpus):
+        if isinstance(source, gensim_corpora.Sparse2Corpus):
             corpus = source
         elif isinstance(source, pc.VectorizedCorpus):
-            corpus = gensim_api.Sparse2Corpus(source.data, documents_columns=False)
+            corpus = gensim_corpora.Sparse2Corpus(source.data, documents_columns=False)
         elif sp.issparse(source):
-            corpus = gensim_api.Sparse2Corpus(source, documents_columns=False)
+            corpus = gensim_corpora.Sparse2Corpus(source, documents_columns=False)
         else:
             """Assumes stream of (document, tokens)"""
             vocabulary = (
-                gensim_api.from_stream_of_tokens_to_dictionary(source, id2token)
+                gensim_corpora.from_stream_of_tokens_to_dictionary(source, id2token)
                 if id2token is None
                 else pc.id2token2token2id(id2token)
             )
-            corpus = gensim_api.from_stream_of_tokens_to_sparse2corpus(source, vocabulary)
+            corpus = gensim_corpora.from_stream_of_tokens_to_sparse2corpus(source, vocabulary)
 
         if vocabulary is None:
             """Build from corpus, `id2token` must be supplied"""
             if id2token is None:
                 raise Id2TokenMissingError()
             vocabulary: dict = (
-                gensim_api.Dictionary.from_corpus(pc.csr2bow(corpus.sparse), id2word=id2token)
+                gensim_corpora.Dictionary.from_corpus(pc.csr2bow(corpus.sparse), id2word=id2token)
                 if id2token is None
                 else pc.id2token2token2id(id2token)
             )

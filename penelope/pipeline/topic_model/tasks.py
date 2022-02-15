@@ -12,7 +12,7 @@ from penelope import corpus as pc
 from penelope import topic_modelling as tm
 from penelope.corpus.token2id import id2token2token2id
 from penelope.utility import write_json
-from penelope.vendor.gensim_api import Sparse2Corpus
+from penelope.vendor.gensim_api import corpora
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn
@@ -63,7 +63,7 @@ class TopicModelMixin:
         *,
         inferred_model: tm.InferredModel,
         id2token: dict,
-        corpus: Sparse2Corpus | pc.VectorizedCorpus,
+        corpus: corpora.Sparse2Corpus | pc.VectorizedCorpus,
         document_index: pd.DataFrame,
         target_folder: str,
         n_tokens: int,
@@ -88,7 +88,7 @@ class TopicModelMixin:
         Returns:
             tm.InferredTopicsData: [description]
         """
-        if not isinstance(corpus, (pc.VectorizedCorpus, Sparse2Corpus)):
+        if not isinstance(corpus, (pc.VectorizedCorpus, corpora.Sparse2Corpus)):
             # raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict (use sparse instead)")
             corpus = self.instream_to_vectorized_corpus(token2id=id2token2token2id(id2token))
 

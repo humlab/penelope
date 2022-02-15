@@ -11,24 +11,36 @@ from typing import Callable, Iterable, Literal, Mapping, Union
 import requests
 from loguru import logger
 
+from penelope import utility as pu
+
+Language = pu.DummyClass
+Doc = pu.DummyClass
+Token = pu.DummyClass
+load = pu.DummyFunction
+compile_prefix_regex = pu.create_dummy_function("")
+compile_suffix_regex = pu.create_dummy_function("")
+Tokenizer = pu.DummyClass
+Vocab = pu.DummyClass
+
 try:
-    import spacy
-    from spacy import attrs
+    from spacy import attrs, load
     from spacy.cli.download import download
-    from spacy.language import Language
+    from spacy.language import Language, Vocab
+    from spacy.tokenizer import Tokenizer
     from spacy.tokens import Doc, Token
+    from spacy.util import compile_prefix_regex, compile_suffix_regex
 except ImportError:
     ...
 
 SPACY_DATA = os.environ.get("SPACY_DATA", "")
 
 
-def keep_hyphen_tokenizer(nlp: Language) -> spacy.tokenizer.Tokenizer:
+def keep_hyphen_tokenizer(nlp: Language) -> Tokenizer:
     infix_re = re.compile(r'''[.\,\?\:\;\...\‘\’\`\“\”\"\'~]''')
-    prefix_re = spacy.util.compile_prefix_regex(nlp.Defaults.prefixes)
-    suffix_re = spacy.util.compile_suffix_regex(nlp.Defaults.suffixes)
+    prefix_re = compile_prefix_regex(nlp.Defaults.prefixes)
+    suffix_re = compile_suffix_regex(nlp.Defaults.suffixes)
 
-    return spacy.tokenizer.Tokenizer(
+    return Tokenizer(
         nlp.vocab,
         prefix_search=prefix_re.search,
         suffix_search=suffix_re.search,
@@ -71,7 +83,7 @@ def remove_whitespace_entities(doc: Doc) -> Doc:
 def load_model(
     *,
     name_or_nlp: str | Language,
-    vocab: Union[spacy.Vocab, bool] = True,
+    vocab: Union[Vocab, bool] = True,
     disable: Iterable[str] = None,
     exclude: Iterable[str] = None,
     keep_hyphens: bool = False,
@@ -88,15 +100,15 @@ def load_model(
 
     if isinstance(name_or_nlp, str):
         try:
-            nlp: Language = spacy.load(name_or_nlp, **args)
+            nlp: Language = load(name_or_nlp, **args)
         except OSError:
             logger.info(f"not found: {name_or_nlp}, downloading...")
             download(name_or_nlp)
-            nlp: Language = spacy.load(name_or_nlp, **args)
+            nlp: Language = load(name_or_nlp, **args)
 
             # try:
             #     name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
-            #     nlp: Language = spacy.load(name, **args)
+            #     nlp: Language = load(name, **args)
             # except OSError:
             #     ...
 
@@ -112,7 +124,7 @@ def load_model_by_parts(
     model_type: str = 'core',
     model_source: str = 'web',
     model_size: str = 'sm',
-    vocab: Union[spacy.Vocab, bool] = True,
+    vocab: Union[Vocab, bool] = True,
     disable: Iterable[str] = None,
     exclude: Iterable[str] = None,
     keep_hyphens: bool = False,

@@ -7,7 +7,7 @@ import pandas as pd
 
 from penelope import corpus as pc
 from penelope.corpus import dtm
-from penelope.vendor.gensim_api import Sparse2Corpus
+from penelope.vendor.gensim_api import corpora as gensim_corpora
 
 from .engines import get_engine_by_model_type
 from .topics_data import InferredTopicsData
@@ -37,7 +37,7 @@ def to_dataframe(document_index: pd.DataFrame, data: DocumentTopicsWeightsIter) 
 def predict_topics(
     topic_model: Any,
     *,
-    corpus: Sparse2Corpus | pc.VectorizedCorpus,
+    corpus: gensim_corpora.Sparse2Corpus | pc.VectorizedCorpus,
     id2token: Mapping[int, str] | dict | pc.Token2Id,
     document_index: pc.DocumentIndex = None,
     n_tokens: int = 200,

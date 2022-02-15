@@ -1,4 +1,3 @@
-import logging
 import re
 import string
 import unicodedata
@@ -9,9 +8,7 @@ import ftfy
 import nltk
 
 import penelope.vendor.nltk as nltk_utility
-from penelope.vendor.textacy_api import normalize_unicode, normalize_whitespace, replace_currency_symbols
-
-logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
+from penelope.vendor.textacy_api import normalize_whitespace
 
 ALPHABETIC_LOWER_CHARS = string.ascii_lowercase + "åäöéàáâãäåæèéêëîïñôöùûÿ"
 ALPHABETIC_CHARS = set(ALPHABETIC_LOWER_CHARS + ALPHABETIC_LOWER_CHARS.upper())
@@ -19,6 +16,13 @@ SYMBOLS_CHARS = set("'\\¢£¥§©®°±øæç•›€™").union(set('!"#$%&\'
 ACCENT_CHARS = set('\'`')
 SYMBOLS_TRANSLATION = dict.fromkeys(map(ord, SYMBOLS_CHARS), None)
 default_tokenizer = nltk.word_tokenize
+
+DEFAULT_HYPHEN_REGEXP = r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b'
+RE_HYPHEN_REGEXP: re.Pattern = re.compile(DEFAULT_HYPHEN_REGEXP, re.UNICODE)
+
+CURRENCY_SYMBOLS = ''.join(chr(i) for i in range(0xFFFF) if unicodedata.category(chr(i)) == 'Sc')
+RE_CURRENCY_SYMBOLS: re.Pattern = re.compile(rf"[{CURRENCY_SYMBOLS}]")
+
 
 # pylint: disable=W0601,E0602
 
@@ -38,12 +42,8 @@ def remove_empty_filter():
     return lambda t: (x for x in t if x != '')
 
 
-DEFAULT_HYPHEN_REGEXP = r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b'
-COMPILED_HYPHEN_REGEXP = re.compile(DEFAULT_HYPHEN_REGEXP, re.UNICODE)
-
-
 def remove_hyphens(text: str) -> str:
-    result = re.sub(COMPILED_HYPHEN_REGEXP, r"\1\2\n", text)
+    result = RE_HYPHEN_REGEXP.sub(r"\1\2\n", text)
     return result
 
 
@@ -108,11 +108,12 @@ def strip_accents(text: str) -> str:
 
 class TEXT_TRANSFORMS:
     fix_hyphenation = remove_hyphens
-    fix_unicode = normalize_unicode
+    fix_unicode = lambda text: unicodedata.normalize("NFC", text)
     fix_whitespaces = normalize_whitespace
     fix_accents = strip_accents
-    fix_currency_symbols = replace_currency_symbols
+    fix_currency_symbols = lambda text: RE_CURRENCY_SYMBOLS.sub("__cur__", text)
     fix_ftfy_text = ftfy.fix_text
+    fix_encoding = ftfy.fix_encoding
 
 
 @unique
@@ -123,6 +124,7 @@ class KnownTransformType(IntEnum):
     fix_accents = 4
     fix_currency_symbols = 5
     fix_ftfy_text = 6
+    fix_ftfy_fix_encoding = 7
 
     @property
     def transform(self):

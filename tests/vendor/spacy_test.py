@@ -35,6 +35,7 @@ ATTRIBUTES = [
 
 
 def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
+    pytest.importorskip("spacy")
 
     attributes = ["lemma_", "pos_"]
 
@@ -81,6 +82,7 @@ def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
 
 
 def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filtersucceeds(en_nlp):
+    pytest.importorskip("spacy")
 
     attributes = ["lemma_", "pos_"]
 
@@ -124,6 +126,7 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
 
 @pytest.mark.long_runnung
 def test_annotate_documents_with_lemma_and_pos_strings_succeeds(en_nlp):
+    pytest.importorskip("spacy")
 
     attributes = ["i", "text", "lemma_", "pos_"]
 
@@ -187,6 +190,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds(en_nlp):
 
 
 def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc: pd.DataFrame):
+    pytest.importorskip("spacy")
     df_doc = df_doc.copy()
 
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, **SPACY_TAGGED_COLUMNS, filter_opts=dict(is_punct=None))
@@ -210,6 +214,7 @@ def test_extract_tokens_when_punct_filter_is_disabled_succeeds(df_doc: pd.DataFr
 
 
 def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc: pd.DataFrame):
+    pytest.importorskip("spacy")
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False,
@@ -222,6 +227,7 @@ def test_extract_tokens_when_lemma_lacks_underscore_succeeds(df_doc: pd.DataFram
 
 
 def test_extract_tokens_target_text_succeeds(df_doc: pd.DataFrame):
+    pytest.importorskip("spacy")
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(lemmatize=False, **SPACY_TAGGED_COLUMNS, filter_opts=dict(is_punct=False))
 
@@ -230,6 +236,7 @@ def test_extract_tokens_target_text_succeeds(df_doc: pd.DataFrame):
 
 
 def test_extract_tokens_lemma_no_stops_succeeds(df_doc: pd.DataFrame):
+    pytest.importorskip("spacy")
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True, **SPACY_TAGGED_COLUMNS, filter_opts=dict(is_stop=False, is_punct=False)
@@ -240,6 +247,7 @@ def test_extract_tokens_lemma_no_stops_succeeds(df_doc: pd.DataFrame):
 
 
 def test_extract_tokens_pos_propn_succeeds(df_doc: pd.DataFrame):
+    pytest.importorskip("spacy")
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
@@ -254,6 +262,7 @@ def test_extract_tokens_pos_propn_succeeds(df_doc: pd.DataFrame):
 
 
 def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc: pd.DataFrame):
+    pytest.importorskip("spacy")
     df_doc = df_doc.copy()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False,
@@ -292,6 +301,7 @@ def test_spacy_pipeline_load_text_resolves():
 
 
 def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
+    pytest.importorskip("spacy")
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=source).put2(pos_column="pos_"))
@@ -303,6 +313,7 @@ def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
+    pytest.importorskip("spacy")
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts)
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
@@ -322,6 +333,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nlp):
+    pytest.importorskip("spacy")
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
@@ -386,6 +398,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
 
 
 def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(en_nlp):
+    pytest.importorskip("spacy")
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
@@ -425,6 +438,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
 
 
 def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
+    pytest.importorskip("spacy")
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
