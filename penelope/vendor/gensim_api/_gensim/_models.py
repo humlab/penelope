@@ -44,7 +44,8 @@ try:
     from gensim.models import CoherenceModel
     from gensim.models.ldamodel import LdaModel
     from gensim.models.ldamulticore import LdaMulticore
-    from gensim.models.lsimodel import LdaSeqModel, LsiModel
+    from gensim.models.ldaseqmodel import LdaSeqModel
+    from gensim.models.lsimodel import LsiModel
 
     from .wrappers import LdaMallet, MalletTopicModel, STTMTopicModel
 
