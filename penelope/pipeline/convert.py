@@ -207,7 +207,7 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
     Otherwise replace token with `GLOBAL_TF_THRESHOLD_MASK_TOKEN`
 
     Alternativ implementation:
-        1. Compress Token2Id (removed low frequency words)
+        1. Compress Token2Id (remove low frequency words)
         2. Remove or mask tokens not in compressed token2id
     """
 
