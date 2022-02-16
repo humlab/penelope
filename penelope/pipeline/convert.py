@@ -232,6 +232,9 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
         """Filter out low frequency terms"""
         tagged_frame = tagged_frame[~low_frequency_mask]
 
+    if 'token_count' in tagged_frame:
+        tagged_frame.drop(columns='token_count', inplace=True, errors="ignore")
+
     return tagged_frame
 
 
