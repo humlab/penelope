@@ -177,8 +177,8 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
     token2id: Token2Id,
     extract_opts: ExtractTaggedTokensOpts,
     passthroughs: Set[str] = None,
-) -> Iterable[str]:
-    """Filter tagged frame `doc` based on `extract_opts`.
+) -> pd.DataFrame:
+    """Filter tagged frame `tagged_frame` based on `extract_opts`.
     Return tagged frame with columns `token` and `pos`.
     Columns `token` is lemmatized word or source word depending on `extract_opts.lemmatize`.
 
@@ -188,7 +188,7 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
         token2id (Token2Id, optional): Vocabulary.
 
     Returns:
-        Iterable[str]: Sequence of extracted tokens
+        pd.DataFrame: Filtered tagged frame
     """
 
     is_numeric_frame: bool = is_encoded_tagged_frame(tagged_frame)
