@@ -172,7 +172,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return self._extra_placeholder
 
     def compute(self) -> pd.DataFrame:
-        return pd.DataFrame(
+        return (
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
