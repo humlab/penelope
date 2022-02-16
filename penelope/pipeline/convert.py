@@ -215,11 +215,11 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
     cg = token2id.tf.get
 
     if not is_numeric_frame:
-        tagged_frame['token_count'] = tagged_frame[target_column].apply(tg).apply(cg)
+        tagged_frame['_tf_'] = tagged_frame[target_column].apply(tg).apply(cg)
     else:
-        tagged_frame['token_count'] = tagged_frame[target_column].apply(cg)
+        tagged_frame['_tf_'] = tagged_frame[target_column].apply(cg)
 
-    low_frequency_mask = tagged_frame.token_count.fillna(0) < extract_opts.global_tf_threshold
+    low_frequency_mask = tagged_frame['_tf_'].fillna(0) < extract_opts.global_tf_threshold
 
     if passthroughs:
         low_frequency_mask &= ~tagged_frame[target_column].isin(passthroughs)
@@ -232,8 +232,8 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
         """Filter out low frequency terms"""
         tagged_frame = tagged_frame[~low_frequency_mask]
 
-    if 'token_count' in tagged_frame:
-        tagged_frame.drop(columns='token_count', inplace=True, errors="ignore")
+    if '_tf_' in tagged_frame:
+        tagged_frame.drop(columns='_tf_', inplace=True, errors="ignore")
 
     return tagged_frame
 
