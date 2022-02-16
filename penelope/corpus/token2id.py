@@ -188,7 +188,11 @@ class Token2Id(MutableMapping):
 
     def close(self, fallback: int = None) -> "Token2Id":
         self._data.default_factory = None
-        self._fallback_token = fallback
+        if isinstance(self._data, defaultdict):
+            self._data = dict(self._data)
+        if isinstance(self._tf, defaultdict):
+            self._tf = dict(self._tf)
+        self._fallback_token = fallback or self._fallback_token
         self._is_open = False
         self.__getitem__ = self.__optimized__getitem__()
         return self
