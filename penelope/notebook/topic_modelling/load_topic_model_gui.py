@@ -5,12 +5,14 @@ from os.path import join as jj
 from typing import Any, List, Optional
 
 import ipywidgets as w
+import pandas as pd
+from IPython.display import display
 
 from penelope import pipeline
 from penelope import topic_modelling as tm
 
 from . import mixins as mx
-from . import topic_titles_gui
+from . import topic_titles_gui as tt_ui
 from .model_container import TopicModelContainer
 
 
@@ -22,6 +24,7 @@ def load_model(
     corpus_config: pipeline.CorpusConfig = None,
     model_infos: list[dict[str, Any]] = None,
     slim: bool = False,
+    n_tokens: int = 500,
 ):
 
     model_infos = model_infos or tm.find_models(corpus_folder)
@@ -34,7 +37,8 @@ def load_model(
 
     state.update(trained_model=trained_model, inferred_topics=inferred_topics, train_corpus_folder=model_info["folder"])
 
-    topics = inferred_topics.topic_token_overview
+    topics: pd.DataFrame = inferred_topics.topic_token_overview
+    topics['tokens'] = inferred_topics.get_topic_titles(n_tokens=n_tokens)
 
     with suppress(BaseException):
         topic_proportions = inferred_topics.calculator.topic_proportions()
@@ -44,7 +48,7 @@ def load_model(
     if topics is None:
         raise ValueError("bug-check: No topic_token_overview in loaded model!")
 
-    topic_titles_gui.display_gui(topics, topic_titles_gui.PandasTopicTitlesGUI)
+    display(tt_ui.PandasTopicTitlesGUI(topics, n_tokens=n_tokens).setup().layout())
 
 
 class LoadGUI(mx.AlertMixIn):
@@ -62,7 +66,7 @@ class LoadGUI(mx.AlertMixIn):
         self.slim: bool = slim
         self._model_name: w.Dropdown = w.Dropdown(description="Model", options=[], layout=dict(width="40%"))
 
-        self._load: w.Button = w.Button(description="Load", button_style="Success", layout=dict(width="80px"))
+        self._load: w.Button = w.Button(description="Load", button_style="Success", layout=dict(width="100px"))
         self._output: w.Output = w.Output()
 
         self.model_infos: List[dict] = tm.find_models(self.corpus_folder)

@@ -1,9 +1,9 @@
 import abc
 
+import ipywidgets as w
 import pandas as pd
 from IPython.core.display import Javascript
 from IPython.display import display as IPython_display
-from ipywidgets import Button, HBox, IntSlider, Output, Text, VBox  # type: ignore
 
 from penelope.topic_modelling import filter_topic_tokens_overview
 
@@ -11,58 +11,80 @@ from ..utility import create_js_download
 
 pd.options.mode.chained_assignment = None
 
-
 class TopicTitlesGUI(abc.ABC):
-    def __init__(self):
+    def __init__(self, topics: pd.DataFrame, n_tokens: int = 500):
 
-        self.topics: pd.DataFrame = None
+        self.n_tokens: int = n_tokens
+        self.topics: pd.DataFrame = topics
         self.reduced_topics: pd.DataFrame = None
 
-        self.count_slider: IntSlider = IntSlider(
-            description="Tokens",
-            min=25,
-            max=200,
-            value=50,
-            continuous_update=False,
+        self._count_slider: w.IntSlider = w.IntSlider(
+            description="Tokens", min=1, max=n_tokens, value=50, continuous_update=False, layout=dict(width="40%")
         )
-        self.search_text: Text = Text(description="Find")
-        self.download_button: Button = Button(description="Download")
-        self.output: Output = Output()
+        self._search_text: w.Text = w.Text(
+            description="Find", placeholder="(enter at least three characters", layout=dict(width="40%")
+        )
+        self._download_button: w.Button = w.Button(description="Download", layout=dict(width='100px'))
+        self._prune_tokens: w.ToggleButton = w.ToggleButton(
+            description="Prune", icon="check", value=True, layout=dict(width='100px')
+        )
+        self._output: w.Output = w.Output()
         self.js_download: Javascript = None
 
+    def setup(self) -> "TopicTitlesGUI":
+        self._count_slider.observe(self._update, "value")
+        self._search_text.observe(self._update, "value")
+        self._prune_tokens.observe(self._update, "value")
+        self._download_button.on_click(self.download)
+        self._prune_tokens.observe(self._toggle_state_changed, 'value')
+        self._toggle_state_changed(dict(owner=self._prune_tokens))
+        return self
+
+    def _toggle_state_changed(self, event):
+        event['owner'].icon = 'check' if event['owner'].value else ''
+
     def layout(self):
-        return VBox((HBox((self.count_slider, self.search_text, self.download_button)), self.output))
+        return w.VBox(
+            (
+                w.HBox(
+                    (
+                        self._count_slider,
+                        self._download_button,
+                    )
+                ),
+                w.HBox(
+                    (
+                        self._search_text,
+                        self._prune_tokens,
+                    )
+                ),
+                self._output,
+            )
+        )
 
     def download(self, *_):
-        with self.output:
+        with self._output:
             js_download = create_js_download(self.reduced_topics, index=True)
             if js_download is not None:
                 IPython_display(js_download)
 
     def _update(self, *_):
-        self.output.clear_output()
-        with self.output:
-            self.reduce_topics()
-            self.update()
+        self._output.clear_output()
+        with self._output:
+            if len(self._search_text.value) > 2:
+                self.reduce_topics()
+                self.update()
 
     def reduce_topics(self):
         self.reduced_topics = filter_topic_tokens_overview(
-            self.topics, search_text=self.search_text.value, n_top=self.count_slider.value
+            self.topics,
+            search_text=self._search_text.value,
+            n_top=self._count_slider.value,
+            truncate_tokens=self._prune_tokens.value,
         )
 
     def update(self) -> None:
         IPython_display(self.reduced_topics)
-
-    def display(self, topics: pd.DataFrame) -> "TopicTitlesGUI":
-
-        self.topics = topics
-        self.count_slider.observe(self._update, "value")
-        self.search_text.observe(self._update, "value")
-        self.download_button.on_click(self.download)
-
-        IPython_display(self.layout())
-
-        return self
 
 
 class PandasTopicTitlesGUI(TopicTitlesGUI):
@@ -91,12 +113,7 @@ class PandasTopicTitlesGUI(TopicTitlesGUI):
         styled_reduced_topics = self.reduced_topics.style.set_table_styles(self.PANDAS_TABLE_STYLE)
         IPython_display(styled_reduced_topics)
 
-    def display(self, topics: pd.DataFrame) -> "TopicTitlesGUI":
-        super().display(topics=topics)
-        # pd.options.display.max_colwidth = None
+    def setup(self) -> "TopicTitlesGUI":
+        super().setup()
         pd.set_option('colheader_justify', 'left')
         return self
-
-
-def display_gui(topics: pd.DataFrame, displayer_cls: type = PandasTopicTitlesGUI):
-    _ = displayer_cls().display(topics=topics)
