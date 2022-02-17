@@ -84,7 +84,6 @@ recommonmark = "==0.*,>=0.7.1"
 Sphinx = "==3.*,>=3.5.1"
 tomlkit = "^0.7.2"
 yapf = "==0.*,>=0.30.0"
-pre-commit = "^2.15.0"
 
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.dtm.vectorize:main"
