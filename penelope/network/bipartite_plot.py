@@ -4,12 +4,13 @@ from typing import Any, List, Sequence
 
 import bokeh.models as bm
 import bokeh.plotting as bp
-import networkx as nx
 import pandas as pd
 
-from penelope.network import layout_source, metrics, plot_utility
-from penelope.network.networkx import utility as nu
 from penelope.notebook import widgets_utils as wu
+
+from . import layout_source, metrics, plot_utility
+from .networkx import utility as nu
+from .networkx.networkx_api import nx
 
 # pylint: disable=unused-argument, too-many-locals
 

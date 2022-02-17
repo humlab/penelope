@@ -2,15 +2,14 @@ from typing import Any, Callable, Dict, Sequence, Tuple, Union
 
 import bokeh.models as bm
 import bokeh.palettes
-import networkx as nx
 import pandas as pd
 from bokeh.plotting import figure
 
-import penelope.notebook.widgets_utils as widgets_utils
-from penelope.network import layout_source
-from penelope.network.networkx import utility as network_utility
+from penelope.notebook import widgets_utils as wu
 
-from . import metrics
+from . import layout_source, metrics
+from .networkx import utility as nu
+from .networkx.networkx_api import nx
 
 # pylint: disable=too-many-arguments, unnecessary-lambda
 
@@ -33,7 +32,7 @@ def _layout_args(layout_algorithm: str, network: nx.Graph, scale: float, weight_
 
     if layout_algorithm == 'Shell':
         if nx.is_bipartite(network):
-            nodes, other_nodes = network_utility.get_bipartite_node_set(network, bipartite=0)
+            nodes, other_nodes = nu.get_bipartite_node_set(network, bipartite=0)
             args = dict(nlist=[nodes, other_nodes])
 
     if layout_algorithm == 'Fruchterman-Reingold':
@@ -140,7 +139,7 @@ def _plot_network(
         bokeh.models.HoverTool(
             renderers=[r_nodes],
             tooltips=None,
-            callback=widgets_utils.glyph_hover_callback2(
+            callback=wu.glyph_hover_callback2(
                 nodes_source, 'node_id', text_ids=node_description.index, text=node_description, element_id=element_id
             ),
         )

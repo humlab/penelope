@@ -1,10 +1,11 @@
 import types
 
-import networkx as nx
 from IPython.display import Image
 from loguru import logger
 
 from penelope.utility import deprecated
+
+from .networkx_api import nx
 
 try:
     import pydotplus  # pylint: disable=import-error

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Tuple
 
-import networkx as nx
+from .networkx.networkx_api import nx
 
 
 def noop(**_):

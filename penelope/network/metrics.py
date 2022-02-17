@@ -1,6 +1,6 @@
 from typing import List
 
-import networkx as nx
+from .networkx.networkx_api import nx
 
 try:
     import community as community_louvain
