@@ -10,7 +10,7 @@ classifiers = [
     'Topic :: Software Development',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
 ]
 license = "Apache-2.0"
 readme = "README.md"
@@ -34,7 +34,7 @@ nltk = "^3.5"
 numpy = "*"
 openpyxl = "^3.0.5"
 pandas = "*"
-python = "==3.8.*"
+python = "==3.9.*"
 requests = "^2.24.0"
 scipy = "*"
 toml = "^0.10.2"
