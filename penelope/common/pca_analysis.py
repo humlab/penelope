@@ -1,7 +1,11 @@
 import itertools
 
 import bokeh
-from sklearn.decomposition import PCA
+
+try:
+    from sklearn.decomposition import PCA
+except ImportError:
+    ...
 
 
 def compute(data, n_components=2):

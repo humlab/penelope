@@ -1,6 +1,10 @@
-from sklearn.feature_extraction.text import CountVectorizer
-
 from penelope.vendor import textacy_api
+
+try:
+    from sklearn.feature_extraction.text import CountVectorizer
+except ImportError:
+    ...
+
 
 flatten = lambda l: [x for ws in l for x in ws]
 

@@ -7,7 +7,6 @@ from typing import List
 
 import pandas as pd
 import pytest
-from sklearn.feature_extraction.text import CountVectorizer
 
 import penelope.workflows.vectorize.dtm as workflow
 from penelope import corpus as corpora
@@ -17,6 +16,12 @@ from penelope.pipeline.spacy import pipelines as spacy_pipeline
 from penelope.vendor import spacy_api
 from penelope.workflows.interface import ComputeOpts
 from tests.utils import OUTPUT_FOLDER, inline_code
+
+try:
+    from sklearn.feature_extraction.text import CountVectorizer
+except ImportError:
+    ...
+
 
 CORPUS_FOLDER = './tests/test_data'
 

@@ -11,6 +11,7 @@ from ..utility import create_js_download
 
 pd.options.mode.chained_assignment = None
 
+
 class TopicTitlesGUI(abc.ABC):
     def __init__(self, topics: pd.DataFrame, n_tokens: int = 500):
 

@@ -9,12 +9,10 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, 
 import numpy as np
 import pandas as pd
 import scipy
-import sklearn.preprocessing
 from loguru import logger
 
 # pylint: disable=logging-format-interpolation, too-many-public-methods, too-many-ancestors
 from scipy.sparse import SparseEfficiencyWarning, lil_matrix
-from sklearn.feature_extraction.text import TfidfTransformer
 
 from penelope import utility
 
@@ -25,6 +23,13 @@ from .slice import SliceMixIn
 from .stats import StatsMixIn
 from .store import StoreMixIn
 from .ttm import CoOccurrenceMixIn
+
+try:
+    import sklearn.preprocessing
+    from sklearn.feature_extraction.text import TfidfTransformer
+except ImportError:
+    ...
+
 
 warnings.simplefilter('ignore', SparseEfficiencyWarning)
 

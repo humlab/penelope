@@ -1,7 +1,12 @@
 from typing import Tuple
 
-import matplotlib.pyplot as plt
 import pandas as pd
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    ...
+
 
 # pylint: disable=unused-argument
 

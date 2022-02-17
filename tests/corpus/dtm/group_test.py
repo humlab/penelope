@@ -1,13 +1,17 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.feature_extraction.text import CountVectorizer
 
 from penelope.co_occurrence import Bundle
 from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 
 from ...utils import create_bundle, create_vectorized_corpus
+
+try:
+    from sklearn.feature_extraction.text import CountVectorizer
+except ImportError:
+    ...
 
 #  # pylint: disable=redefined-outer-name
 
