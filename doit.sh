@@ -2,7 +2,7 @@
 
 set -e
 
-CORPUS_FOLDER=/data/westac/data
+CORPUS_FOLDER=/data/westac
 TARGET_FOLDER=/data/westac/shared
 
 CORPUS_FILENAME=riksdagens-protokoll.1920-2019.sparv4.csv.zip
@@ -10,7 +10,7 @@ CONFIG_FILENAME='./doit.yml'
 #CORPUS_FILENAME=riksdagens-protokoll.1920-2019.test.sparv4.csv.zip
 #CONFIG_FILENAME='./tests/test_data/riksdagens-protokoll.yml'
 
-RUN_OPTS="--tf-threshold 10 --tf-threshold-mask  --lemmatize --to-lowercase --partition-key year --enable-checkpoint"
+RUN_OPTS="--tf-threshold 10 --tf-threshold-mask  --lemmatize --to-lower --partition-key year --enable-checkpoint"
 # --force-checkpoint
 
 run()
@@ -38,8 +38,8 @@ CONCEPTS="$*"
 for concept in $CONCEPTS ; do
 
     run $concept "VB" "PASSTHROUGH" 1
-    #run $concept "JJ" "PASSTHROUGH" 1
+    run $concept "JJ" "PASSTHROUGH" 1
     #run $concept "NN|PM" "PASSTHROUGH" 5
-    #run $concept "NN|PM" "PASSTHROUGH" 10
+    run $concept "NN|PM" "PASSTHROUGH" 10
 
 done
