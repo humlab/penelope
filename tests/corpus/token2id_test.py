@@ -56,7 +56,7 @@ def test_replace():
 
 
 def test_token2id_insert_into_closed_vocabulary_with_fallback_succeeds():
-    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close(fallback=GLOBAL_TF_THRESHOLD_MASK_TOKEN)
+    token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close(fallback_id=GLOBAL_TF_THRESHOLD_MASK_TOKEN)
     assert token2id['word_that_dont_exists'] == token2id[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 
 
@@ -111,8 +111,8 @@ def test_token2id_inplace_compress_with_threshold_and_no_keeps():
     assert dict(token2id_compressed.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
     assert dict(token2id_compressed.tf) == {0: 3, 1: 2, 2: 2, 3: 3}
     assert translation == {0: 0, 1: 1, 5: 2}
-    assert token2id.fallback_token is None
-    assert token2id_compressed.fallback_token is not None
+    assert token2id.fallback_token_id is None
+    assert token2id_compressed.fallback_token_id is not None
     assert token2id_compressed["roger"] == token2id_compressed[GLOBAL_TF_THRESHOLD_MASK_TOKEN]
     assert "roger" not in token2id_compressed
 
