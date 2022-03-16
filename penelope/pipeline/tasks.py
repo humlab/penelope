@@ -738,7 +738,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
             """We don't need translation since vocab hasn't been used yet"""
             _ = self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
 
-        if self.close:
+        if self.token2id.is_open and self.close:
             self.token2id.close()
 
         return self
