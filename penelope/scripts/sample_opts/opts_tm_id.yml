@@ -18,6 +18,7 @@ alpha: asymmetric
 chunk_size: 10000
 engine: gensim_lda-multicore
 max_iter: 4000
+num_top_words: 500
 minimum_probability: 0.03
 n_tokens: 200
 n_topics: 500

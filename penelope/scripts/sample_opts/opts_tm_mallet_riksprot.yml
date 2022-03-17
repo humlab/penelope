@@ -1,7 +1,7 @@
 alpha: asymmetric
 chunk_size: 10000
-config_filename: /data/westac/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/corpus.yml
-corpus_source: /data/westac/tagged-speech-corpus.v0.3.0.id.lemma.no-stopwords.lowercase.feather/
+config_filename: /data/riksdagen_corpus_data/tagged_frames_v0.4.0_speeches.feather/corpus.yml
+corpus_source: /data/riksdagen_corpus_data/tagged_frames_v0.4.0_speeches.feather
 engine: gensim_mallet-lda
 filename_pattern: null
 lemmatize: true
@@ -19,10 +19,10 @@ store_compressed: true
 store_corpus: true
 target_folder: ./data
 target_mode: both
-target_name: tm_1920-2020_500-TF5-MP0.02.500000.lemma.mallet
+target_name: tm_v040.1920-2020_500-TF5-MP0.02.500000.lemma.mallet
 tf_threshold: 5
 to_lower: false
 train_corpus_folder: null
 trained_model_folder: null
 update_every: 1
-workers: 4
+workers: 16

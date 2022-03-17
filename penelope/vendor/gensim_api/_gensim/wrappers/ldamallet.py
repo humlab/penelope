@@ -84,15 +84,16 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         self,
         mallet_path,
         corpus=None,
-        num_topics=100,
-        alpha=50,
-        id2word=None,
-        workers=4,
-        prefix=None,
-        optimize_interval=0,
-        iterations=1000,
-        topic_threshold=0.005,
-        random_seed=0,
+        num_topics: int=100,
+        alpha: float=50,
+        id2word: dict=None,
+        workers: int=4,
+        prefix: str=None,
+        optimize_interval: int=0,
+        iterations: int=1000,
+        topic_threshold: float=0.005,
+        random_seed: int=0,
+        num_top_words: int=500,
     ):
         """
 
@@ -143,6 +144,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         self.workers = workers
         self.optimize_interval = optimize_interval
         self.iterations = iterations
+        self.num_top_words = num_top_words
         self.random_seed = random_seed
         if corpus is not None:
             self.train(corpus)
@@ -421,7 +423,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         self.convert_input(corpus, infer=False)
         cmd = (
             self.mallet_path + ' train-topics --input %s --num-topics %s  --alpha %s --optimize-interval %s '
-            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s '
+            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --num-top-words %s '
             '--num-iterations %s --inferencer-filename %s --doc-topics-threshold %s  --random-seed %s'
         )
 
@@ -434,6 +436,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             self.fstate(),
             self.fdoctopics(),
             self.ftopickeys(),
+            self.num_top_words,
             self.iterations,
             self.finferencer(),
             self.topic_threshold,
