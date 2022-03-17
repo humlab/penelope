@@ -62,7 +62,7 @@ class MalletTopicModel(LdaMallet):
 
         cmd = (
             self.mallet_path + ' train-topics --input %s --num-topics %s  --alpha %s --optimize-interval %s '
-            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --topic-word-weights-file %s '
+            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --num-top-words %s --topic-word-weights-file %s '
             '--num-iterations %s --inferencer-filename %s --doc-topics-threshold %s  --random-seed %s'
         )
 
@@ -75,6 +75,7 @@ class MalletTopicModel(LdaMallet):
             self.fstate(),
             self.fdoctopics(),
             self.ftopickeys(),
+            self.num_top_words,
             self.ftopicwordweights(),
             self.iterations,
             self.finferencer(),
