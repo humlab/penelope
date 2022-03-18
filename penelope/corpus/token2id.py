@@ -193,7 +193,12 @@ class Token2Id(MutableMapping):
         return self
 
     def open(self) -> "Token2Id":
+
+        if not isinstance(self._data, defaultdict):
+            self._data = defaultdict(int, self._data)
+
         self._data.default_factory = self._data.__len__
+
         self._id2token = None
         self._is_open = True
         self.__getitem__ = self.__optimized__getitem__()
