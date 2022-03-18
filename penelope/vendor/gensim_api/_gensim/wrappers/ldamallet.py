@@ -82,18 +82,18 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
 
     def __init__(
         self,
-        mallet_path,
+        mallet_path: str,
         corpus=None,
-        num_topics: int=100,
-        alpha: float=50,
-        id2word: dict=None,
-        workers: int=4,
-        prefix: str=None,
-        optimize_interval: int=0,
-        iterations: int=1000,
-        topic_threshold: float=0.005,
-        random_seed: int=0,
-        num_top_words: int=500,
+        num_topics: int = 100,
+        alpha: float = 50,
+        id2word: dict = None,
+        workers: int = 4,
+        prefix: str = None,
+        optimize_interval: int = 0,
+        iterations: int = 1000,
+        topic_threshold: float = 0.005,
+        random_seed: int = 0,
+        num_top_words: int = 500,
     ):
         """
 
@@ -640,7 +640,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
                 return '2.0.8RC3'
         except Exception:
 
-            xml_path = direc_path.split("bin")[0]
+            xml_path = 'bin'.join(direc_path.split("bin")[:-1])
             try:
                 doc = et.parse(xml_path + "pom.xml").getroot()
                 namespace = doc.tag[: doc.tag.index('}') + 1]
@@ -671,61 +671,33 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             LDA vectors for document.
 
         """
-        mallet_version = self.get_version(self.mallet_path)
+        mallet_version = self.get_version(self.mallet_path) or ""
+        if mallet_version.startswith("2.0.7"):
+            raise RuntimeError("MALLET vesion 2.0.7 not supported, please upgrade")
+
+        every_second_int_and_float: bool = None
+
         with utils.open(fname, 'rb') as fin:
+
             for lineno, line in enumerate(fin):
                 if lineno == 0 and line.startswith(b"#doc "):
-                    continue  # skip the header line if it exists
+                    continue
 
                 parts = line.split()[2:]  # skip "doc" and "source" columns
 
-                # the MALLET doctopic format changed in 2.0.8 to exclude the id,
-                # this handles the file differently dependent on the pattern
-                if len(parts) == 2 * self.num_topics:
+                if every_second_int_and_float is None:
+                    every_second_int_and_float = not any('.' in str(x) for x in parts[0::2]) and all(
+                        '.' in str(x) for x in parts[1::2]
+                    )
+
+                if every_second_int_and_float or (len(parts) == 2 * self.num_topics):
                     doc = [
                         (int(id_), float(weight)) for id_, weight in zip(*[iter(parts)] * 2) if abs(float(weight)) > eps
                     ]
-                elif len(parts) == self.num_topics and mallet_version != '2.0.7':
+                elif len(parts) == self.num_topics:
                     doc = [(id_, float(weight)) for id_, weight in enumerate(parts) if abs(float(weight)) > eps]
                 else:
-                    if mallet_version == "2.0.7":
-                        """
-
-                        1   1   0   1.0780612802674239  30.005575655428533364   2   0.005575655428533364
-                        2   2   0   0.9184413079632608  40.009062076892971008   3   0.009062076892971008
-                        In the above example there is a mix of the above if and elif statement.
-                        There are neither `2*num_topics` nor `num_topics` elements.
-                        It has 2 formats 40.009062076892971008 and 0   1.0780612802674239
-                        which cannot be handled by above if elif.
-                        Also, there are some topics are missing(meaning that the topic is not there)
-                        which is another reason why the above if elif fails even when the `mallet`
-                        produces the right results
-
-                        """
-                        count = 0
-                        doc = []
-                        if len(parts) > 0:
-                            while count < len(parts):
-                                """
-                                if section is to deal with formats of type 2 0.034
-                                so if count reaches index of 2 and since int(2) == float(2) so if block is executed
-                                now  there is one extra element afer 2, so count + 1 access should not give an error
-
-                                else section handles  formats of type 20.034
-                                now count is there on index of 20.034 since float(20.034) != int(20.034) so else block
-                                is executed
-
-                                """
-                                if float(parts[count]) == int(parts[count]):
-                                    if float(parts[count + 1]) > eps:
-                                        doc.append((int(parts[count]), float(parts[count + 1])))
-                                    count += 2
-                                else:
-                                    if float(parts[count]) - int(parts[count]) > eps:
-                                        doc.append((int(parts[count]) % 10, float(parts[count]) - int(parts[count])))
-                                    count += 1
-                    else:
-                        raise RuntimeError("invalid doc topics format at line %i in %s" % (lineno + 1, fname))
+                    raise RuntimeError("invalid doc topics format at line %i in %s" % (lineno + 1, fname))
 
                 if renorm:
                     # explicitly normalize weights to sum up to 1.0, just to be sure...
