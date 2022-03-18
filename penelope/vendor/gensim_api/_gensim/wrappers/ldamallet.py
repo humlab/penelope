@@ -1,3 +1,4 @@
+from __future__ import annotations
 # type: ignore
 # pylint: disable=unused-variable, too-many-arguments, consider-using-with, no-else-return, too-many-nested-blocks, redundant-u-string-prefix
 
@@ -149,7 +150,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         if corpus is not None:
             self.train(corpus)
 
-    def finferencer(self):
+    def inferencer_filename(self):
         """Get path to inferencer.mallet file.
 
         Returns
@@ -160,7 +161,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + 'inferencer.mallet'
 
-    def ftopickeys(self):
+    def topic_keys_filename(self):
         """Get path to topic keys text file.
 
         Returns
@@ -171,7 +172,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + 'topickeys.txt'
 
-    def fstate(self):
+    def mallet_state_filename(self):
         """Get path to temporary file.
 
         Returns
@@ -182,7 +183,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + 'state.mallet.gz'
 
-    def fdoctopics(self):
+    def document_topics_filename(self):
         """Get path to document topic text file.
 
         Returns
@@ -193,7 +194,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + 'doctopics.txt'
 
-    def fcorpustxt(self):
+    def text_corpus_filename(self):
         """Get path to corpus text file.
 
         Returns
@@ -204,7 +205,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + 'corpus.txt'
 
-    def fcorpusmallet(self):
+    def mallet_corpus_filename(self):
         """Get path to corpus.mallet file.
 
         Returns
@@ -215,7 +216,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + 'corpus.mallet'
 
-    def fwordweights(self):
+    def word_weights_filename(self):
         """Get path to word weight file.
 
         Returns
@@ -262,8 +263,8 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
 
         """
         if serialize_corpus:
-            logger.info("serializing temporary corpus to %s", self.fcorpustxt())
-            with utils.open(self.fcorpustxt(), 'wb') as fout:
+            logger.info("serializing temporary corpus to %s", self.text_corpus_filename())
+            with utils.open(self.text_corpus_filename(), 'wb') as fout:
                 self.corpus2mallet(corpus, fout)
 
         # convert the text file above into MALLET's internal format
@@ -272,10 +273,10 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             "--remove-stopwords --token-regex \"\\S+\" --input %s --output %s"
         )
         if infer:
-            cmd += ' --use-pipe-from ' + self.fcorpusmallet()
-            cmd = cmd % (self.fcorpustxt(), self.fcorpusmallet() + '.infer')
+            cmd += ' --use-pipe-from ' + self.mallet_corpus_filename()
+            cmd = cmd % (self.text_corpus_filename(), self.mallet_corpus_filename() + '.infer')
         else:
-            cmd = cmd % (self.fcorpustxt(), self.fcorpusmallet())
+            cmd = cmd % (self.text_corpus_filename(), self.mallet_corpus_filename())
         logger.info("converting temporary corpus to MALLET format with %s", cmd)
         check_output(args=cmd, shell=True)
 
@@ -428,17 +429,17 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         )
 
         cmd = cmd % (
-            self.fcorpusmallet(),
+            self.mallet_corpus_filename(),
             self.num_topics,
             self.alpha,
             self.optimize_interval,
             self.workers,
-            self.fstate(),
-            self.fdoctopics(),
-            self.ftopickeys(),
+            self.mallet_state_filename(),
+            self.document_topics_filename(),
+            self.topic_keys_filename(),
             self.num_top_words,
             self.iterations,
-            self.finferencer(),
+            self.inferencer_filename(),
             self.topic_threshold,
             str(self.random_seed),
         )
@@ -480,20 +481,20 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             '--output-doc-topics %s --num-iterations %s --doc-topics-threshold %s --random-seed %s'
         )
         cmd = cmd % (
-            self.fcorpusmallet() + '.infer',
-            self.finferencer(),
-            self.fdoctopics() + '.infer',
+            self.mallet_corpus_filename() + '.infer',
+            self.inferencer_filename(),
+            self.document_topics_filename() + '.infer',
             iterations,
             self.topic_threshold,
             str(self.random_seed),
         )
         logger.info("inferring topics with MALLET LDA '%s'", cmd)
         check_output(args=cmd, shell=True)
-        result = list(self.read_doctopics(self.fdoctopics() + '.infer'))
+        result = list(self.read_doctopics(self.document_topics_filename() + '.infer'))
         return result if is_corpus else result[0]
 
     def load_word_topics(self):
-        """Load words X topics matrix from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.fstate` file.
+        """Load words X topics matrix from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.mallet_state_filename` file.
 
         Returns
         -------
@@ -501,19 +502,19 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             Matrix words X topics.
 
         """
-        logger.info("loading assigned topics from %s", self.fstate())
+        logger.info("loading assigned topics from %s", self.mallet_state_filename())
         word_topics = numpy.zeros((self.num_topics, self.num_terms), dtype=numpy.float64)
         if hasattr(self.id2word, 'token2id'):
             word2id = self.id2word.token2id
         else:
             word2id = revdict(self.id2word)
 
-        with utils.open(self.fstate(), 'rb') as fin:
-            _ = next(fin)  # header
-            self.alpha = numpy.fromiter(next(fin).split()[2:], dtype=float)
+        with utils.open(self.mallet_state_filename(), 'rb') as fp:
+            _ = next(fp)  # header
+            self.alpha = numpy.fromiter(next(fp).split()[2:], dtype=float)
             assert len(self.alpha) == self.num_topics, "mismatch between MALLET vs. requested topics"
-            _ = next(fin)  # noqa:F841 beta
-            for lineno, line in enumerate(fin):
+            _ = next(fp)  # noqa:F841 beta
+            for lineno, line in enumerate(fp):
                 line = utils.to_unicode(line)
                 doc, source, pos, typeindex, token, topic = line.split(" ")
                 if token not in word2id:
@@ -523,7 +524,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         return word_topics
 
     def load_document_topics(self):
-        """Load document topics from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.fdoctopics` file.
+        """Load document topics from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.document_topics_filename` file.
         Shortcut for :meth:`gensim.models.wrappers.ldamallet.LdaMallet.read_doctopics`.
 
         Returns
@@ -532,7 +533,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             Sequence of LDA vectors for documents.
 
         """
-        return self.read_doctopics(self.fdoctopics())
+        return self.read_doctopics(self.document_topics_filename())
 
     def get_topics(self):
         """Get topics X words matrix.
@@ -546,7 +547,9 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         topics = self.word_topics
         return topics / topics.sum(axis=1)[:, None]
 
-    def show_topics(self, num_topics=10, num_words=10, log=False, formatted=True):
+    def show_topics(
+        self, num_topics: int = 10, num_words: int = 10, log: bool = False, formatted: bool = True
+    ) -> list[tuple[int,str]] | list[tuple[int, list[str, float]]]:
         """Get the `num_words` most probable words for `num_topics` number of topics.
 
         Parameters

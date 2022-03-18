@@ -128,7 +128,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         if corpus is not None:
             self.train(corpus)
 
-    def ftopickeys(self):
+    def topic_keys_filename(self):
         """Get path to topic keys text file.
 
         Returns
@@ -139,7 +139,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + self.name + '.phi'
 
-    def fdoctopics(self):
+    def document_topics_filename(self):
         """Get path to document topic text file.
 
         Returns
@@ -150,7 +150,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + self.name + '.theta'
 
-    def fcorpustxt(self):
+    def text_corpus_filename(self):
         """Get path to corpus text file.
 
         Returns
@@ -183,7 +183,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         """
         return self.prefix + self.name + '.topWords'
 
-    def fwordweights(self):
+    def word_weights_filename(self):
         """Get path to word weight file.
 
         Returns
@@ -224,8 +224,8 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         corpus : iterable of iterable of (int, int)
             Collection of texts in BoW format.
         """
-        logger.info("serializing temporary corpus to %s", self.fcorpustxt())
-        with smart_open(self.fcorpustxt(), 'wb') as fout:
+        logger.info("serializing temporary corpus to %s", self.text_corpus_filename())
+        with smart_open(self.text_corpus_filename(), 'wb') as fout:
             self.corpus2sttm(corpus, fout)
 
     def train(self, corpus):
@@ -244,7 +244,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
             self.java_opts,
             self.sstm_jar_path,
             self.model,
-            self.fcorpustxt(),
+            self.text_corpus_filename(),
             self.num_topics,
             self.alpha[0],
             self.beta,
@@ -266,7 +266,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         raise ValueError('infer-topics for new, unseen documents not implemented (or even possible?)')
 
     def load_word_topics(self):
-        """Load words X topics matrix from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.fstate` file.
+        """Load words X topics matrix from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.mallet_state_filename` file.
 
         Returns
         -------
@@ -274,14 +274,14 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
             Matrix words X topics.
 
         """
-        logger.info("loading assigned topics from %s", self.ftopickeys())
+        logger.info("loading assigned topics from %s", self.topic_keys_filename())
 
-        # with open(self.ftopickeys(), 'r') as f:
+        # with open(self.topic_keys_filename(), 'r') as f:
         #    text = f.read().replace(' \n', '\n')
         # word_topics = np.loadtxt(io.StringIO(text), delimiter=' ', dtype=numpy.float64)
 
         word_topics = numpy.loadtxt(
-            self.ftopickeys(), delimiter=' ', usecols=range(0, self.num_terms), dtype=numpy.float64
+            self.topic_keys_filename(), delimiter=' ', usecols=range(0, self.num_terms), dtype=numpy.float64
         )
 
         assert word_topics.shape == (self.num_topics, self.num_terms)
@@ -289,7 +289,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         return word_topics
 
     def load_document_topics(self):
-        """Load document topics from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.fdoctopics` file.
+        """Load document topics from :meth:`gensim.models.wrappers.ldamallet.LdaMallet.document_topics_filename` file.
         Shortcut for :meth:`gensim.models.wrappers.ldamallet.LdaMallet.read_doctopics`.
 
         Returns
@@ -298,7 +298,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
             Sequence of LDA vectors for documents.
 
         """
-        return self.read_doctopics(self.fdoctopics())
+        return self.read_doctopics(self.document_topics_filename())
 
     def get_topics(self):
         """Get topics X words matrix.

@@ -60,25 +60,25 @@ class MalletTopicModel(LdaMallet):
         """
         use_existing_corpus: bool = kwargs.get('use_existing_corpus', False)
 
-        if os.path.isfile(self.fcorpusmallet()) and use_existing_corpus:
+        if os.path.isfile(self.mallet_corpus_filename()) and use_existing_corpus:
             logger.warning("using EXISTING corpus.mallet!")
         else:
             self.convert_input(corpus, infer=False)
 
         cmd: str = (
             f"{self.mallet_path} train-topics "
-            f"--input {self.fcorpusmallet()} "
+            f"--input {self.mallet_corpus_filename()} "
             f"--num-topics {self.num_topics} "
             f"--alpha {self.alpha} "
             f"--optimize-interval {self.optimize_interval} "
             f"--num-threads {self.workers} "
-            f"--output-state {self.fstate()} "
-            f"--output-doc-topics {self.fdoctopics()} "
-            f"--output-topic-keys {self.ftopickeys()} "
+            f"--output-state {self.mallet_state_filename()} "
+            f"--output-doc-topics {self.document_topics_filename()} "
+            f"--output-topic-keys {self.topic_keys_filename()} "
             f"--num-top-words {self.num_top_words} "
             f"--diagnostics-file {self.diagnostics_filename()} "
             f"--num-iterations {self.iterations} "
-            f"--inferencer-filename {self.finferencer()} "
+            f"--inferencer-filename {self.inferencer_filename()} "
             f"--doc-topics-threshold {self.topic_threshold} "
             f"--random-seed {str(self.random_seed)} "
         )
