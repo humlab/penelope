@@ -297,7 +297,7 @@ class DtmModel(utils.SaveLoad):
         """
         return self.prefix + 'train_out/' + 'initial-lda-ss.dat'
 
-    def fcorpustxt(self):
+    def text_corpus_filename(self):
         """Get path to temporary file.
 
         Returns
@@ -342,9 +342,9 @@ class DtmModel(utils.SaveLoad):
             Sequence of timestamps.
 
         """
-        logger.info("serializing temporary corpus to %s", self.fcorpustxt())
+        logger.info("serializing temporary corpus to %s", self.text_corpus_filename())
         # write out the corpus in a file format that DTM understands:
-        corpora.BleiCorpus.save_corpus(self.fcorpustxt(), corpus)
+        corpora.BleiCorpus.save_corpus(self.text_corpus_filename(), corpus)
 
         with utils.open(self.ftimeslices(), 'wb') as fout:
             fout.write(utils.to_utf8(str(len(self.time_slices)) + "\n"))
