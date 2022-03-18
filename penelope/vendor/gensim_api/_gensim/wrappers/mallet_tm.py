@@ -1,7 +1,9 @@
 import os
 import re
+from functools import cached_property
 from typing import Iterable, Mapping, Tuple
 
+import pandas as pd
 from loguru import logger
 
 from penelope.utility import inspect_filter_args
@@ -43,8 +45,11 @@ class MalletTopicModel(LdaMallet):
 
         super().__init__(mallet_path, corpus=corpus, id2word=id2word, **args)
 
-    def ftopicwordweights(self) -> str:
-        return self.prefix + 'topicwordweights.txt'
+    # def ftopicwordweights(self) -> str:
+    #     return self.prefix + 'topicwordweights.txt'
+
+    def diagnostics_filename(self) -> str:
+        return self.prefix + 'diagnostics.xml'
 
     def train(self, corpus: Iterable[Iterable[Tuple[int, int]]], **kwargs):
         """Train Mallet LDA.
@@ -60,51 +65,29 @@ class MalletTopicModel(LdaMallet):
         else:
             self.convert_input(corpus, infer=False)
 
-        cmd = (
-            self.mallet_path + ' train-topics --input %s --num-topics %s  --alpha %s --optimize-interval %s '
-            '--num-threads %s --output-state %s --output-doc-topics %s --output-topic-keys %s --num-top-words %s --topic-word-weights-file %s '
-            '--num-iterations %s --inferencer-filename %s --doc-topics-threshold %s  --random-seed %s'
+        cmd: str = (
+            f"{self.mallet_path} train-topics "
+            f"--input {self.fcorpusmallet()} "
+            f"--num-topics {self.num_topics} "
+            f"--alpha {self.alpha} "
+            f"--optimize-interval {self.optimize_interval} "
+            f"--num-threads {self.workers} "
+            f"--output-state {self.fstate()} "
+            f"--output-doc-topics {self.fdoctopics()} "
+            f"--output-topic-keys {self.ftopickeys()} "
+            f"--num-top-words {self.num_top_words} "
+            f"--diagnostics-file {self.diagnostics_filename()} "
+            f"--num-iterations {self.iterations} "
+            f"--inferencer-filename {self.finferencer()} "
+            f"--doc-topics-threshold {self.topic_threshold} "
+            f"--random-seed {str(self.random_seed)} "
         )
 
-        cmd = cmd % (
-            self.fcorpusmallet(),
-            self.num_topics,
-            self.alpha,
-            self.optimize_interval,
-            self.workers,
-            self.fstate(),
-            self.fdoctopics(),
-            self.ftopickeys(),
-            self.num_top_words,
-            self.ftopicwordweights(),
-            self.iterations,
-            self.finferencer(),
-            self.topic_threshold,
-            str(self.random_seed),
-        )
-
-        # cmd: str = (
-        #     f"{self.mallet_path} train-topics "
-        #     f"--input {self.fcorpusmallet()} "
-        #     f"--num-topics {self.num_topics} "
-        #     f"--alpha {self.alpha} "
-        #     f"--optimize-interval {self.optimize_interval} "
-        #     f"--num-threads {self.workers} "
-        #     f"--output-state {self.fstate()} "
-        #     f"--output-doc-topics {self.fdoctopics()} "
-        #     f"--output-topic-keys {self.ftopickeys()} "
-        #     f"--num-top-words {self.num_top_words} "
-        #     f"--topic-word-weights-file {self.ftopicwordweights()} "
-        #     f"--num-iterations {self.iterations} "
-        #     f"--inferencer-filename {self.finferencer()} "
-        #     f"--doc-topics-threshold {self.topic_threshold} "
-        #     f"--random-seed {str(self.random_seed)} "
-        # )
+        # f"--topic-word-weights-file {self.ftopicwordweights()} "
 
         logger.info(f"training MALLET LDA with {cmd}")
         check_output(args=cmd, shell=True)
         self.word_topics = self.load_word_topics()
-
         self.wordtopics = self.word_topics
 
     def xlog_perplexity(self, content: str) -> float:
@@ -118,3 +101,13 @@ class MalletTopicModel(LdaMallet):
                 perplexity = float(matches[-1])
         finally:
             return perplexity  # pylint: disable=lost-exception
+
+    @cached_property
+    def diagnostics(self) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """Loads MALLET topic/word diagnostics data into dataframes
+        See: https://mallet.cs.umass.edu/diagnostics.php
+        """
+        topics: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//topic")
+        words: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//word")
+
+        return topics, words
