@@ -83,7 +83,25 @@ class MalletTopicModel(LdaMallet):
             str(self.random_seed),
         )
 
-        logger.info("training MALLET LDA with %s", cmd)
+        # cmd: str = (
+        #     f"{self.mallet_path} train-topics "
+        #     f"--input {self.fcorpusmallet()} "
+        #     f"--num-topics {self.num_topics} "
+        #     f"--alpha {self.alpha} "
+        #     f"--optimize-interval {self.optimize_interval} "
+        #     f"--num-threads {self.workers} "
+        #     f"--output-state {self.fstate()} "
+        #     f"--output-doc-topics {self.fdoctopics()} "
+        #     f"--output-topic-keys {self.ftopickeys()} "
+        #     f"--num-top-words {self.num_top_words} "
+        #     f"--topic-word-weights-file {self.ftopicwordweights()} "
+        #     f"--num-iterations {self.iterations} "
+        #     f"--inferencer-filename {self.finferencer()} "
+        #     f"--doc-topics-threshold {self.topic_threshold} "
+        #     f"--random-seed {str(self.random_seed)} "
+        # )
+
+        logger.info(f"training MALLET LDA with {cmd}")
         check_output(args=cmd, shell=True)
         self.word_topics = self.load_word_topics()
 
