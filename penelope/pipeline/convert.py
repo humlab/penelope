@@ -212,28 +212,34 @@ def filter_tagged_frame_by_term_frequency(  # pylint: disable=too-many-arguments
     """
 
     tg = token2id.get
+
+    mask_token_id: int = tg(GLOBAL_TF_THRESHOLD_MASK_TOKEN)
+    mask_token: str | int = mask_token_id if is_numeric_frame else GLOBAL_TF_THRESHOLD_MASK_TOKEN
+
+    """Set low TF to 0"""
+    mask_token_id_tf: int = token2id.tf.get(mask_token_id, 0)
+    token2id.tf[mask_token_id] = 0
+
     cg = token2id.tf.get
 
-    if not is_numeric_frame:
-        tagged_frame['_tf_'] = tagged_frame[target_column].apply(tg).apply(cg)
-    else:
-        tagged_frame['_tf_'] = tagged_frame[target_column].apply(cg)
+    low_frequency_mask: pd.Series = (
+        tagged_frame[target_column].apply(tg).apply(cg)
+        if not is_numeric_frame
+        else tagged_frame[target_column].apply(cg)
+    ).fillna(0) < extract_opts.global_tf_threshold
 
-    low_frequency_mask = tagged_frame['_tf_'].fillna(0) < extract_opts.global_tf_threshold
+    """Reset low TF count"""
+    token2id.tf[mask_token_id] = mask_token_id_tf
 
     if passthroughs:
         low_frequency_mask &= ~tagged_frame[target_column].isin(passthroughs)
 
     if extract_opts.global_tf_threshold_mask:
         """Mask low frequency terms"""
-        mask_token = tg(GLOBAL_TF_THRESHOLD_MASK_TOKEN) if is_numeric_frame else GLOBAL_TF_THRESHOLD_MASK_TOKEN
         tagged_frame[target_column] = tagged_frame[target_column].where(~low_frequency_mask, mask_token)
     else:
         """Filter out low frequency terms"""
         tagged_frame = tagged_frame[~low_frequency_mask]
-
-    if '_tf_' in tagged_frame:
-        tagged_frame.drop(columns='_tf_', inplace=True, errors="ignore")
 
     return tagged_frame
 
