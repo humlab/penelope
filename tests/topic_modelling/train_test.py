@@ -283,3 +283,79 @@ def test_run_cli(method):
     assert inferred_topic_data is not None
 
     shutil.rmtree(target_folder)
+
+
+DIAGNOSTICS_XML: str = """<?xml version="1.0" encoding="UTF-8"?>
+<model>
+<topic id='0' tokens='31.0000' document_entropy='1.3643' word-length='6.5000' coherence='-139.3440' uniform_dist='1.6239' corpus_dist='1.4102' eff_num_words='18.1321' token-doc-diff='0.0462' rank_1_docs='0.4000' allocation_ratio='0.0000' allocation_count='0.0000' exclusivity='0.9754'>
+<word rank='1' count='5' prob='0.16129' cumulative='0.16129' docs='1' word-length='4.0000' coherence='0.0000' uniform_dist='0.4724' corpus_dist='0.2275' token-doc-diff='0.0368' exclusivity='0.9942'>valv</word>
+<word rank='2' count='2' prob='0.06452' cumulative='0.22581' docs='2' word-length='6.0000' coherence='-4.6151' uniform_dist='0.1299' corpus_dist='0.0910' token-doc-diff='0.0019' exclusivity='0.9856'>träden</word>
+<word rank='3' count='1' prob='0.03226' cumulative='0.25806' docs='1' word-length='4.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>kust</word>
+<word rank='4' count='1' prob='0.03226' cumulative='0.29032' docs='1' word-length='8.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>sommarns</word>
+<word rank='5' count='1' prob='0.03226' cumulative='0.32258' docs='1' word-length='6.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>frihet</word>
+<word rank='6' count='1' prob='0.03226' cumulative='0.35484' docs='1' word-length='4.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>året</word>
+<word rank='7' count='1' prob='0.03226' cumulative='0.38710' docs='1' word-length='13.0000' coherence='-5.3033' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>fladdermössen</word>
+<word rank='8' count='1' prob='0.03226' cumulative='0.41935' docs='1' word-length='9.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>sköldarna</word>
+<word rank='9' count='1' prob='0.03226' cumulative='0.45161' docs='1' word-length='8.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>gångstig</word>
+<word rank='10' count='1' prob='0.03226' cumulative='0.48387' docs='1' word-length='3.0000' coherence='-4.6151' uniform_dist='0.0426' corpus_dist='0.0455' token-doc-diff='0.0009' exclusivity='0.9718'>öde</word>
+</topic>
+<topic id='1' tokens='30.0000' document_entropy='1.3649' word-length='8.9000' coherence='-121.5717' uniform_dist='1.3986' corpus_dist='1.4430' eff_num_words='28.1250' token-doc-diff='0.0000' rank_1_docs='0.0000' allocation_ratio='0.0000' allocation_count='0.0000' exclusivity='0.9743'>
+<word rank='1' count='2' prob='0.06667' cumulative='0.06667' docs='2' word-length='3.0000' coherence='0.0000' uniform_dist='0.1364' corpus_dist='0.0962' token-doc-diff='0.0000' exclusivity='0.9862'>men</word>
+<word rank='2' count='1' prob='0.03333' cumulative='0.10000' docs='1' word-length='19.0000' coherence='-0.6882' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>barrskogsbränningen</word>
+<word rank='3' count='1' prob='0.03333' cumulative='0.13333' docs='1' word-length='7.0000' coherence='-0.6882' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>bergets</word>
+<word rank='4' count='1' prob='0.03333' cumulative='0.16667' docs='1' word-length='4.0000' coherence='-0.6882' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>vind</word>
+<word rank='5' count='1' prob='0.03333' cumulative='0.20000' docs='1' word-length='9.0000' coherence='-0.6882' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>stövlarna</word>
+<word rank='6' count='1' prob='0.03333' cumulative='0.23333' docs='1' word-length='5.0000' coherence='-5.3033' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>havet</word>
+<word rank='7' count='1' prob='0.03333' cumulative='0.26667' docs='1' word-length='12.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>flygvingarna</word>
+<word rank='8' count='1' prob='0.03333' cumulative='0.30000' docs='1' word-length='19.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>kommunikationsnätet</word>
+<word rank='9' count='1' prob='0.03333' cumulative='0.33333' docs='1' word-length='6.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>Stegen</word>
+<word rank='10' count='1' prob='0.03333' cumulative='0.36667' docs='1' word-length='5.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0000' exclusivity='0.9730'>sidan</word>
+</topic>
+<topic id='2' tokens='30.0000' document_entropy='1.4067' word-length='7.3000' coherence='-143.2709' uniform_dist='1.4910' corpus_dist='1.4430' eff_num_words='25.0000' token-doc-diff='0.0108' rank_1_docs='0.2000' allocation_ratio='0.0000' allocation_count='0.0000' exclusivity='0.9769'>
+<word rank='1' count='2' prob='0.06667' cumulative='0.06667' docs='1' word-length='13.0000' coherence='0.0000' uniform_dist='0.1364' corpus_dist='0.0962' token-doc-diff='0.0041' exclusivity='0.9862'>grundstenarna</word>
+<word rank='2' count='2' prob='0.06667' cumulative='0.13333' docs='1' word-length='6.0000' coherence='0.0000' uniform_dist='0.1364' corpus_dist='0.0962' token-doc-diff='0.0041' exclusivity='0.9862'>skugga</word>
+<word rank='3' count='2' prob='0.06667' cumulative='0.20000' docs='2' word-length='5.0000' coherence='0.0000' uniform_dist='0.1364' corpus_dist='0.0962' token-doc-diff='0.0006' exclusivity='0.9862'>solen</word>
+<word rank='4' count='1' prob='0.03333' cumulative='0.23333' docs='1' word-length='9.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>ögonblick</word>
+<word rank='5' count='1' prob='0.03333' cumulative='0.26667' docs='1' word-length='7.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>trädens</word>
+<word rank='6' count='1' prob='0.03333' cumulative='0.30000' docs='1' word-length='6.0000' coherence='-4.6151' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>dyning</word>
+<word rank='7' count='1' prob='0.03333' cumulative='0.33333' docs='1' word-length='7.0000' coherence='-5.3033' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>stjärna</word>
+<word rank='8' count='1' prob='0.03333' cumulative='0.36667' docs='1' word-length='6.0000' coherence='-5.3033' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>Vraken</word>
+<word rank='9' count='1' prob='0.03333' cumulative='0.40000' docs='1' word-length='6.0000' coherence='-5.3033' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>Jorden</word>
+<word rank='10' count='1' prob='0.03333' cumulative='0.43333' docs='1' word-length='8.0000' coherence='-5.3033' uniform_dist='0.0451' corpus_dist='0.0481' token-doc-diff='0.0003' exclusivity='0.9730'>stranden</word>
+</topic>
+<topic id='3' tokens='36.0000' document_entropy='1.4169' word-length='5.5000' coherence='-131.6923' uniform_dist='1.2471' corpus_dist='1.2607' eff_num_words='32.4000' token-doc-diff='0.0000' rank_1_docs='0.4000' allocation_ratio='0.0000' allocation_count='0.0000' exclusivity='0.9694'>
+<word rank='1' count='2' prob='0.05556' cumulative='0.05556' docs='2' word-length='6.0000' coherence='0.0000' uniform_dist='0.1035' corpus_dist='0.0700' token-doc-diff='0.0000' exclusivity='0.9827'>ljuset</word>
+<word rank='2' count='2' prob='0.05556' cumulative='0.11111' docs='2' word-length='2.0000' coherence='-0.6882' uniform_dist='0.1035' corpus_dist='0.0700' token-doc-diff='0.0000' exclusivity='0.9827'>nu</word>
+<word rank='3' count='1' prob='0.02778' cumulative='0.13889' docs='1' word-length='6.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>toppar</word>
+<word rank='4' count='1' prob='0.02778' cumulative='0.16667' docs='1' word-length='3.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>fot</word>
+<word rank='5' count='1' prob='0.02778' cumulative='0.19444' docs='1' word-length='6.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>mörker</word>
+<word rank='6' count='1' prob='0.02778' cumulative='0.22222' docs='1' word-length='6.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>betsel</word>
+<word rank='7' count='1' prob='0.02778' cumulative='0.25000' docs='1' word-length='8.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>stillhet</word>
+<word rank='8' count='1' prob='0.02778' cumulative='0.27778' docs='1' word-length='5.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>punkt</word>
+<word rank='9' count='1' prob='0.02778' cumulative='0.30556' docs='1' word-length='7.0000' coherence='-5.3033' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>vrakens</word>
+<word rank='10' count='1' prob='0.02778' cumulative='0.33333' docs='1' word-length='6.0000' coherence='-4.6151' uniform_dist='0.0325' corpus_dist='0.0350' token-doc-diff='0.0000' exclusivity='0.9661'>expert</word>
+</topic>
+</model>
+"""
+
+
+def test_parse_diagnostics():
+
+    topics: pd.DataFrame = pd.read_xml(DIAGNOSTICS_XML, xpath=".//topic")
+    words: pd.DataFrame = pd.read_xml(DIAGNOSTICS_XML, xpath=".//word")
+
+    # diags: untangle.Element = untangle.parse(DIAGNOSTICS_XML)
+    # topics: pd.DataFrame = pd.DataFrame([t.attributes for t in diags.model.topic]).set_index('id')
+    # words: pd.DataFrame = pd.DataFrame(
+    #     [
+    #         {
+    #             **{'topic_id': t['id']},
+    #             **w.attributes,
+    #         }
+    #         for t in diags.model.topic
+    #         for w in t.word
+    #     ]
+    # )
+
+    assert words is not None
+    assert topics is not None
