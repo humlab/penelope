@@ -93,7 +93,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         iterations: int = 1000,
         topic_threshold: float = 0.005,
         random_seed: int = 0,
-        num_top_words: int = 500,
+        num_top_words: int = 1000,
     ):
         """
 
