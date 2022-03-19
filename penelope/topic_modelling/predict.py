@@ -83,6 +83,9 @@ def predict_topics(
         else engine.get_topic_token_overview(topic_token_weights, n_tokens=n_tokens)
     )
 
+    topic_diagnostics: pd.DataFrame = kwargs.get('topic_diagnostics', engine.topic_diagnostics)
+    topic_token_diagnostics: pd.DataFrame = kwargs.get('topic_token_diagnostics', engine.topic_token_diagnostics)
+
     document_index: pd.DataFrame = pc.update_document_index_token_counts_by_corpus(document_index, vectorized_corpus)
 
     topics_data: InferredTopicsData = InferredTopicsData(
@@ -91,7 +94,7 @@ def predict_topics(
         topic_token_overview=topic_token_overview,
         document_index=document_index,
         document_topic_weights=to_dataframe(document_index, document_topic_weights),
-        topic_diagnostics=engine.get_topic_diagnostics(),
-        token_diagnostics=engine.get_topic_token_diagnostics(),
+        topic_diagnostics=topic_diagnostics,
+        token_diagnostics=topic_token_diagnostics,
     )
     return topics_data
