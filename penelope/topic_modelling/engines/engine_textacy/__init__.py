@@ -1,6 +1,6 @@
 # type: ignore
 
-from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Type, get_args
+from typing import Any, Iterable, Sequence, Type, get_args
 
 from ... import interfaces
 from ..interface import ITopicModelEngine
@@ -27,14 +27,16 @@ class TopicModelEngine(ITopicModelEngine):
     def n_topics(self) -> int:
         return self.model.n_topics
 
-    def topics_tokens(self, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[float, str]]:
+    def get_topic_token_weights_data(self, n_tokens: int = 200, id2term: dict = None, **_) -> list[tuple[str, float]]:
         if not hasattr(self.model, 'top_topic_terms'):
             raise ValueError(f"{type(self.model)} has no top_topic_terms attribute")
 
         data = self.model.top_topic_terms(id2term, topics=-1, top_n=n_tokens, weights=True)
         return data
 
-    def topic_tokens(self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[str, float]]:
+    def top_topic_tokens(
+        self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_
+    ) -> list[tuple[str, float]]:
         """Return `n_tokens` top tokens from topic `topic_id`"""
 
         if not is_supported(self.model):
@@ -51,8 +53,8 @@ class TopicModelEngine(ITopicModelEngine):
     def train(
         train_corpus: interfaces.TrainingCorpus,
         method: str,
-        engine_args: Mapping[str, Any],
-        **kwargs: Mapping[str, Any],
+        engine_args: dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> interfaces.InferredModel:
         return train.train(train_corpus=train_corpus, method=method, engine_args=engine_args, **kwargs)
 
