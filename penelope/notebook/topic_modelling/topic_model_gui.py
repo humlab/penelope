@@ -60,7 +60,7 @@ def get_topics_unstacked(
 ) -> pd.DataFrame:
     """Returns the top `n_tokens` tokens for each topic. The token's column index is in ascending probability"""
 
-    engine: types.ModuleType = tm.get_engine_by_model_type(model)
+    engine: tm.ITopicModelEngine = tm.get_engine_by_model_type(model)
     n_topics: int = engine.n_topics()
 
     topic_ids: List[int] = topic_ids or range(n_topics)
@@ -69,7 +69,7 @@ def get_topics_unstacked(
         {
             'Topic#{:02d}'.format(topic_id + 1): [
                 word[0]
-                for word in engine.topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
+                for word in engine.top_topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
             ]
             for topic_id in topic_ids
         }

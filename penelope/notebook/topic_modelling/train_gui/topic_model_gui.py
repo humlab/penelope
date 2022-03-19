@@ -72,7 +72,7 @@
 #         {
 #             'Topic#{:02d}'.format(topic_id + 1): [
 #                 word[0]
-#                 for word in engine.topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
+#                 for word in engine.top_topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
 #             ]
 #             for topic_id in topic_ids
 #         }

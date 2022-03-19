@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Sequence, Tuple, Type
+from functools import cached_property
+from typing import TYPE_CHECKING, Any, Iterable, Sequence, Type
 
 import numpy as np
 import pandas as pd
 
 from penelope.corpus import Token2Id
+from penelope.type_alias import TokenWeights
 
 if TYPE_CHECKING:
     from ..interfaces import InferredModel, TrainingCorpus
@@ -17,7 +19,12 @@ class EngineSpec:
         self.key: str = key
         self.engine: Type[Any] = engine
 
-    def get_options(self, corpus: Any, id2word: dict, engine_args: dict) -> dict:  # pylint: disable=unused-argument
+    def get_options(
+        self,
+        corpus: Any, # pylint: disable=unused-argument
+        id2word: dict[int, str], # pylint: disable=unused-argument
+        engine_args: dict, # pylint: disable=unused-argument
+    ) -> dict:
         return dict()
 
     @property
@@ -52,17 +59,21 @@ class ITopicModelEngine(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def topics_tokens(self, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[float, str]]:
+    def get_topic_token_weights_data(
+        self, n_tokens: int = 200, id2term: dict = None, **_
+    ) -> list[tuple[int, list[tuple[str, float]]]]:
         ...
 
     @abc.abstractmethod
-    def topic_tokens(self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_) -> List[Tuple[str, float]]:
+    def top_topic_tokens(
+        self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_
+    ) -> list[tuple[int, TokenWeights]]:
         ...
 
     @staticmethod
     @abc.abstractmethod
     def train(
-        train_corpus: "TrainingCorpus", method: str, engine_args: Dict[str, Any], **kwargs: Dict[str, Any]
+        train_corpus: "TrainingCorpus", method: str, engine_args: dict[str, Any], **kwargs: dict[str, Any]
     ) -> "InferredModel":
         ...
 
@@ -74,9 +85,10 @@ class ITopicModelEngine(abc.ABC):
         self, vocabulary: Any, n_tokens: int = 200, minimum_probability: float = 0.000001
     ) -> pd.DataFrame:
         """Compile document topic weights. Return DataFrame."""
-
         id2token: dict = Token2Id.any_to_id2token(vocabulary)
-        topic_data = self.topics_tokens(n_tokens=n_tokens, id2term=id2token)
+        topic_data: list[tuple[int, TokenWeights]] = self.get_topic_token_weights_data(
+            n_tokens=n_tokens, id2term=id2token
+        )
 
         topic_token_weights: pd.DataFrame = pd.DataFrame(
             [
@@ -102,7 +114,7 @@ class ITopicModelEngine(abc.ABC):
         There must be a better way of doing this...
         """
 
-        alpha: List[float] = self.model.alpha if 'alpha' in self.model.__dict__ else None
+        alpha: list[float] = self.model.alpha if 'alpha' in self.model.__dict__ else None
 
         overview = (
             topic_token_weights.groupby('topic_id')
@@ -121,12 +133,14 @@ class ITopicModelEngine(abc.ABC):
 
         return overview
 
-    def get_topic_diagnostics(self) -> pd.DataFrame:
+    @cached_property
+    def topic_diagnostics(self) -> pd.DataFrame:
         if hasattr(self.model, 'load_topic_diagnostics'):
             return self.model.load_topic_diagnostics()
         return None
 
-    def get_topic_token_diagnostics(self) -> pd.DataFrame:
+    @cached_property
+    def topic_token_diagnostics(self) -> pd.DataFrame:
         if hasattr(self.model, 'load_topic_token_diagnostics'):
             return self.model.load_topic_token_diagnostics()
         return None
