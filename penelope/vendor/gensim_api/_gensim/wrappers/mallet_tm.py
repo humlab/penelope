@@ -1,8 +1,9 @@
 import os
 import re
-from functools import cached_property
+import xml.etree.cElementTree as ET
 from typing import Iterable, Mapping, Tuple
 
+import numpy as np
 import pandas as pd
 from loguru import logger
 
@@ -102,12 +103,81 @@ class MalletTopicModel(LdaMallet):
         finally:
             return perplexity  # pylint: disable=lost-exception
 
-    @cached_property
-    def diagnostics(self) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Loads MALLET topic/word diagnostics data into dataframes
+    def load_topic_diagnostics(self) -> pd.DataFrame:
+        """Loads MALLET topic diagnostics item into dataframe
         See: https://mallet.cs.umass.edu/diagnostics.php
         """
-        topics: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//topic")
-        words: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//word")
+        try:
 
-        return topics, words
+            topics: pd.DataFrame = (
+                pd.read_xml(self.diagnostics_filename(), xpath=".//topic")
+                .rename(columns={'id': 'topic_id'})
+                .set_index('topic_id')
+            )
+
+            return topics
+
+        except Exception as ex:
+            logger.error(f"load_topic_diagnostics: {ex}")
+            return None
+
+    def load_topic_token_diagnostics(self) -> pd.DataFrame:
+        return MalletTopicModel.load_topic_token_diagnostics2(self.diagnostics_filename())
+
+    @staticmethod
+    def load_topic_token_diagnostics2(source: str) -> pd.DataFrame:
+        """Loads MALLET word diagnostics item into dataframe
+        See: https://mallet.cs.umass.edu/diagnostics.php
+        """
+        try:
+
+            # words: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//word")
+            dtypes: dict = {
+                'rank': np.int,
+                'count': np.int,
+                'prob': np.float64,
+                'cumulative': np.float64,
+                'docs': int,
+                'word-length': np.float64,
+                'coherence': np.float64,
+                'uniform_dist': np.float64,
+                'corpus_dist': np.float64,
+                'token-doc-diff': np.float64,
+                'exclusivity': np.float64,
+                'topic_id': np.int16,
+                'token': str,
+            }
+
+            words: pd.DataFrame = pd.DataFrame(data=[x for x in MalletTopicModel.parse_diagnostics_words(source)])
+
+            for k, t in dtypes.items():
+                if k in words.columns:
+                    words[k] = words[k].astype(t)
+
+            return words
+
+        except Exception as ex:
+            logger.error(f"load_topic_token_diagnostics: {ex}")
+            return None
+
+    @staticmethod
+    def parse_diagnostics_words(source: str) -> Iterable:
+
+        context = ET.iterparse(source, events=("start", "end"))
+
+        topic_id: int = None
+
+        for event, elem in context:
+
+            tag = elem.tag.rpartition('}')[2]
+
+            if event == 'start' and tag == 'topic':
+                topic_id = int(elem.attrib.get('id'))
+
+            if event == 'start' and tag == 'word':
+                item = dict(elem.attrib)
+                item['topic_id'] = int(topic_id)
+                item['token'] = elem.text
+                yield item
+
+            elem.clear()

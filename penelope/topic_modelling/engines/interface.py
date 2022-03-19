@@ -104,13 +104,29 @@ class ITopicModelEngine(abc.ABC):
 
         alpha: List[float] = self.model.alpha if 'alpha' in self.model.__dict__ else None
 
-        df = (
+        overview = (
             topic_token_weights.groupby('topic_id')
             .apply(lambda x: sorted(list(zip(x["token"], x["weight"])), key=lambda z: z[1], reverse=True))
             .apply(lambda x: ' '.join([z[0] for z in x][:n_tokens]))
             .reset_index()
         )
-        df.columns = ['topic_id', 'tokens']
-        df['alpha'] = df.topic_id.apply(lambda topic_id: alpha[topic_id]) if alpha is not None else 0.0
+        overview.columns = ['topic_id', 'tokens']
+        overview['alpha'] = overview.topic_id.apply(lambda topic_id: alpha[topic_id]) if alpha is not None else 0.0
+        overview = overview.set_index('topic_id')
 
-        return df.set_index('topic_id')
+        topic_diagnostics = self.get_topic_diagnostics()
+
+        if topic_diagnostics is not None:
+            overview = overview.merge(topic_diagnostics, left_index=True, right_index=True, how='left')
+
+        return overview
+
+    def get_topic_diagnostics(self) -> pd.DataFrame:
+        if hasattr(self.model, 'load_topic_diagnostics'):
+            return self.model.load_topic_diagnostics()
+        return None
+
+    def get_topic_token_diagnostics(self) -> pd.DataFrame:
+        if hasattr(self.model, 'load_topic_token_diagnostics'):
+            return self.model.load_topic_token_diagnostics()
+        return None

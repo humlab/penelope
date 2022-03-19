@@ -1,6 +1,7 @@
 # flake8: noqa
 
 import functools
+import io
 import os
 import shutil
 import uuid
@@ -14,6 +15,7 @@ from penelope import topic_modelling as tm
 from penelope.topic_modelling.engines import get_engine_by_model_type
 from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES, convert
 from penelope.topic_modelling.engines.interface import ITopicModelEngine
+from penelope.vendor.gensim_api._gensim.wrappers.mallet_tm import MalletTopicModel
 from tests.fixtures import TranströmerCorpus
 from tests.utils import OUTPUT_FOLDER
 
@@ -359,3 +361,18 @@ def test_parse_diagnostics():
 
     assert words is not None
     assert topics is not None
+
+
+def test_sax_parse():
+
+    x = [x for x in MalletTopicModel.parse_diagnostics_words(io.StringIO(DIAGNOSTICS_XML))]
+    assert x
+    assert x[0]['token'] == 'valv'
+    assert x[0]['topic_id'] == 0
+
+    assert x[-1]['token'] == 'expert'
+    assert x[-1]['topic_id'] == 3
+
+    df = MalletTopicModel.load_topic_token_diagnostics2(io.StringIO(DIAGNOSTICS_XML))
+
+    assert df is not None

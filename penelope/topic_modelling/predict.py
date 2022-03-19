@@ -91,5 +91,7 @@ def predict_topics(
         topic_token_overview=topic_token_overview,
         document_index=document_index,
         document_topic_weights=to_dataframe(document_index, document_topic_weights),
+        topic_diagnostics=engine.get_topic_diagnostics(),
+        token_diagnostics=engine.get_topic_token_diagnostics(),
     )
     return topics_data
