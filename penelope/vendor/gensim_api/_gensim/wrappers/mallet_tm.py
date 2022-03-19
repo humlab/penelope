@@ -111,7 +111,12 @@ class MalletTopicModel(LdaMallet):
 
             topics: pd.DataFrame = (
                 pd.read_xml(self.diagnostics_filename(), xpath=".//topic")
-                .rename(columns={'id': 'topic_id'})
+                .rename(
+                    columns={
+                        'id': 'topic_id',
+                        'tokens': 'n_tokens',
+                    }
+                )
                 .set_index('topic_id')
             )
 
