@@ -1,6 +1,8 @@
 # type: ignore
 
-from typing import Any, Dict, Iterable, List, Sequence, Tuple, Type, get_args
+from typing import Any, Iterable, Sequence, Type, get_args
+
+import pandas as pd
 
 from ... import interfaces
 from ..interface import ITopicModelEngine
@@ -17,7 +19,7 @@ except:  # pylint: disable=bare-except
     SupportedModels = object
 
 try:
-    from .utility import malletmodel2ldamodel
+    from .utility import diagnostics_to_topic_token_weights_data, malletmodel2ldamodel
 except:  # pylint: disable=bare-except
 
     def malletmodel2ldamodel(
@@ -52,21 +54,24 @@ class TopicModelEngine(ITopicModelEngine):
 
         raise ValueError(f"{type(self.model)} is not supported")
 
-    def topics_tokens(
-        self, n_tokens: int = 200, id2term: dict = None, **_  # pylint: disable=unused-argument
-    ) -> List[Tuple[float, str]]:
+    def get_topic_token_weights_data(
+        self, n_tokens: int = 200, id2term: dict[int, str] = None, **kwargs  # pylint: disable=unused-argument
+    ) -> list[tuple[int, tuple[str, float]]]:
 
         if not is_supported(self.model):
             raise ValueError(f"{type(self.model)} is not supported")
+
+        if kwargs.get('use_diagnostics', True) and self.topic_token_diagnostics is not None:
+            return diagnostics_to_topic_token_weights_data(self.topic_token_diagnostics, n_tokens)
 
         if not hasattr(self.model, 'show_topics'):
             raise ValueError(f"{type(self.model)} has no show_topics attribute")
 
         return self.model.show_topics(num_topics=-1, num_words=n_tokens, formatted=False)
 
-    def topic_tokens(
+    def top_topic_tokens(
         self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_  # pylint: disable=unused-argument
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """Return `n_tokens` top tokens from topic `topic_id`"""
 
         if not is_supported(self.model):
@@ -76,7 +81,7 @@ class TopicModelEngine(ITopicModelEngine):
 
     @staticmethod
     def train(
-        train_corpus: interfaces.TrainingCorpus, method: str, engine_args: Dict[str, Any], **kwargs: Dict[str, Any]
+        train_corpus: interfaces.TrainingCorpus, method: str, engine_args: dict[str, Any], **kwargs: dict[str, Any]
     ) -> interfaces.InferredModel:
         return train.train(train_corpus=train_corpus, method=method, engine_args=engine_args, **kwargs)
 
