@@ -14,6 +14,7 @@ from penelope import corpus as pc
 from penelope import topic_modelling as tm
 from penelope.topic_modelling.engines import get_engine_by_model_type
 from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES, convert
+from penelope.topic_modelling.engines.engine_gensim.utility import diagnostics_to_topic_token_weights_data
 from penelope.topic_modelling.engines.interface import ITopicModelEngine
 from penelope.vendor.gensim_api._gensim.wrappers.mallet_tm import MalletTopicModel
 from tests.fixtures import TranströmerCorpus
@@ -373,6 +374,21 @@ def test_sax_parse():
     assert x[-1]['token'] == 'expert'
     assert x[-1]['topic_id'] == 3
 
-    df = MalletTopicModel.load_topic_token_diagnostics2(io.StringIO(DIAGNOSTICS_XML))
 
-    assert df is not None
+def test_diagnostics_to_topic_token_weights_data():
+
+    topic_token_diagnostics = MalletTopicModel.load_topic_token_diagnostics2(io.StringIO(DIAGNOSTICS_XML))
+
+    assert topic_token_diagnostics is not None
+    data = diagnostics_to_topic_token_weights_data(topic_token_diagnostics, n_tokens=10)
+    assert data is not None
+    assert len(data) == 4
+    assert [x[0] for x in data] == [0, 1, 2, 3]
+
+    topic_id, token_weights = data[0]
+    assert topic_id == 0
+    assert (token_weights[0], token_weights[-1]) == (('valv', 0.16129), ('öde', 0.03226))
+
+    topic_id, token_weights = data[3]
+    assert topic_id == 3
+    assert (token_weights[0], token_weights[-1]) == (('ljuset', 0.05556), ('expert', 0.02778))
