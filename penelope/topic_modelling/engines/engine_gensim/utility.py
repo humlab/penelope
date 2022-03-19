@@ -1,6 +1,18 @@
 import numpy as np
+import pandas as pd
 
 from penelope.vendor.gensim_api import models as gensim_models
+
+
+def diagnostics_to_topic_token_weights_data(
+    topic_token_diagnostics: pd.DataFrame, n_tokens: int = 200
+) -> list[tuple[int, tuple[str, float]]]:
+    """Convert dataframe with MALLET tokens diagnostics data to list if (topic-id, list of (token,weight))"""
+    ttd: pd.DataFrame = topic_token_diagnostics
+    ttd = ttd[(ttd['rank'] <= n_tokens)]
+    ttw: pd.Series = ttd.groupby('topic_id')[['token', 'prob']].apply(lambda x: list(zip(x.token, x.prob)))
+    data = list(zip(ttw.index, ttw))
+    return data
 
 
 # NOTE gensim 4.0: wrappers.ldamallet.LdaMallet is deprecated/removed in Gensim 4.0
