@@ -21,9 +21,9 @@ class EngineSpec:
 
     def get_options(
         self,
-        corpus: Any, # pylint: disable=unused-argument
-        id2word: dict[int, str], # pylint: disable=unused-argument
-        engine_args: dict, # pylint: disable=unused-argument
+        corpus: Any,  # pylint: disable=unused-argument
+        id2word: dict[int, str],  # pylint: disable=unused-argument
+        engine_args: dict,  # pylint: disable=unused-argument
     ) -> dict:
         return dict()
 
