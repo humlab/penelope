@@ -1,4 +1,16 @@
 from __future__ import annotations
+
+import logging
+import os
+import random
+import tempfile
+import warnings
+import xml.etree.ElementTree as et
+import zipfile
+from itertools import chain
+
+import numpy
+
 # type: ignore
 # pylint: disable=unused-variable, too-many-arguments, consider-using-with, no-else-return, too-many-nested-blocks, redundant-u-string-prefix
 
@@ -45,16 +57,7 @@ Examples
 """
 
 
-import logging
-import os
-import random
-import tempfile
-import warnings
-import xml.etree.ElementTree as et
-import zipfile
-from itertools import chain
 
-import numpy
 
 try:
     import gensim.matutils as matutils
@@ -549,7 +552,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
 
     def show_topics(
         self, num_topics: int = 10, num_words: int = 10, log: bool = False, formatted: bool = True
-    ) -> list[tuple[int,str]] | list[tuple[int, list[str, float]]]:
+    ) -> list[tuple[int, str]] | list[tuple[int, list[str, float]]]:
         """Get the `num_words` most probable words for `num_topics` number of topics.
 
         Parameters
