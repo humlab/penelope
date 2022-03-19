@@ -23,7 +23,9 @@ CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 # pylint: disable=too-many-public-methods,access-member-before-definition,attribute-defined-outside-init,no-member
 
 
-def smart_load(filename: str, feather_pipe: Callable[[pd.DataFrame], pd.DataFrame] = None, **kwargs) -> pd.DataFrame:
+def smart_load(
+    filename: str, *, missing_ok: bool = False, feather_pipe: Callable[[pd.DataFrame], pd.DataFrame] = None, **kwargs
+) -> pd.DataFrame:
     feather_filename: str = pu.replace_extension(filename, "feather")
     if isfile(feather_filename):
         data: pd.DataFrame = pd.read_feather(feather_filename)
@@ -32,6 +34,8 @@ def smart_load(filename: str, feather_pipe: Callable[[pd.DataFrame], pd.DataFram
     elif isfile(filename):
         data = pd.read_csv(filename, **CSV_OPTS)
     else:
+        if missing_ok:
+            return None
         raise FileNotFoundError(f"{filename}")
     return data
 
@@ -60,32 +64,35 @@ class MemoryUsageMixIn:
                     logger.info(f"{k}: {v}")
 
 
+DTYPES: dict = {
+    'year': np.int16,
+    'n_tokens': np.int32,
+    'n_raw_tokens': np.int32,
+    'document_id': np.int32,
+    'topic_id': np.int16,
+    'token_id': np.int32,
+    'weight': np.float32,
+    'label': str,
+}
+
+
 class SlimItMixIn:
+    def slim_dataframe(self, df: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
+        if df is not None:
+            columns: set[str] = set(dtypes.keys()).intersection(set(df.columns))
+            for column in columns:
+                df[column] = df[column].astype(dtypes[column])
+        return df
+
     def slim_types(self) -> InferredTopicsData:
 
-        """document_index"""
-        self.document_index['year'] = self.document_index['year'].astype(np.int16)
-        self.document_index['n_tokens'] = self.document_index['n_tokens'].astype(np.int32)
-        self.document_index['n_raw_tokens'] = self.document_index['n_raw_tokens'].astype(np.int32)
-        if 'document_id' in self.document_index.columns:
-            self.document_index['document_id'] = self.document_index['document_id'].astype(np.int32)
+        self.slim_dataframe(self.document_index, dtypes=DTYPES)
+        self.slim_dataframe(self.topic_token_weights, dtypes=DTYPES)
+        self.slim_dataframe(self.document_topic_weights, dtypes=DTYPES)
+        self.slim_dataframe(self.topic_token_overview, dtypes=DTYPES)
+
         for column in set(pu.PD_PoS_tag_groups.index.to_list()).intersection(self.document_index.columns):
             self.document_index[column] = self.document_index[column].astype(np.int32)
-
-        """dictionary"""
-
-        """topic_token_weights"""
-        self.topic_token_weights['topic_id'] = self.topic_token_weights['topic_id'].astype(np.int16)
-        self.topic_token_weights['token_id'] = self.topic_token_weights['token_id'].astype(np.int32)
-        self.topic_token_weights['weight'] = self.topic_token_weights['weight'].astype(np.float32)
-
-        """document_topic_weights"""
-        self.document_topic_weights['document_id'] = self.document_topic_weights['document_id'].astype(np.int32)
-        self.document_topic_weights['topic_id'] = self.document_topic_weights['topic_id'].astype(np.int16)
-        self.document_topic_weights['weight'] = self.document_topic_weights['weight'].astype(np.float32)
-        self.document_topic_weights['year'] = self.document_topic_weights['year'].astype(np.int16)
-
-        self.topic_token_overview['label'] = self.topic_token_overview['label'].astype(str)
 
         return self
 
@@ -128,6 +135,8 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         topic_token_overview: pd.DataFrame,
         document_index: pd.DataFrame,
         document_topic_weights: pd.DataFrame,
+        topic_diagnostics: pd.DataFrame,
+        token_diagnostics: pd.DataFrame,
     ):
         """Container for predicted topics data."""
         super().__init__()
@@ -139,6 +148,8 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             document_topic_weights, 'year'
         )
         self.topic_token_overview: pd.DataFrame = topic_token_overview
+        self.topic_diagnostics: pd.DataFrame = topic_diagnostics
+        self.token_diagnostics: pd.DataFrame = token_diagnostics
         self.calculator = DocumentTopicsCalculator(self)
 
         if 'token' not in self.topic_token_weights.columns:
@@ -210,9 +221,13 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             (self.topic_token_weights, 'topic_token_weights.csv'),
             (self.topic_token_overview, 'topic_token_overview.csv'),
             (self.document_topic_weights, 'document_topic_weights.csv'),
+            (self.topic_diagnostics, 'topic_diagnostics.csv'),
+            (self.token_diagnostics, 'token_diagnostics.csv'),
         ]
 
         for (df, name) in data:
+            if df is None:
+                continue
             archive_name = jj(target_folder, pu.replace_extension(name, ".zip"))
             pu.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
@@ -225,6 +240,11 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             jj(target_folder, "document_topic_weights.feather")
         )
         self.topic_token_overview.reset_index().to_feather(jj(target_folder, "topic_token_overview.feather"))
+
+        if self.topic_diagnostics is not None:
+            self.topic_diagnostics.reset_index().to_feather(jj(target_folder, "topic_diagnostics.feather"))
+        if self.token_diagnostics is not None:
+            self.token_diagnostics.reset_index(drop=True).to_feather(jj(target_folder, "token_diagnostics.feather"))
 
     @staticmethod
     def load(
@@ -248,11 +268,17 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         )
 
         data: InferredTopicsData = InferredTopicsData(
-            dictionary=smart_load(jj(folder, 'dictionary.zip'), pu.set_index, columns='token_id'),
+            dictionary=smart_load(jj(folder, 'dictionary.zip'), feather_pipe=pu.set_index, columns='token_id'),
             document_index=document_index,
             topic_token_weights=smart_load(jj(folder, 'topic_token_weights.zip')),
             document_topic_weights=smart_load(jj(folder, 'document_topic_weights.zip')),
-            topic_token_overview=smart_load(jj(folder, 'topic_token_overview.zip'), pu.set_index, columns='topic_id'),
+            topic_token_overview=smart_load(
+                jj(folder, 'topic_token_overview.zip'), feather_pipe=pu.set_index, columns='topic_id'
+            ),
+            topic_diagnostics=smart_load(
+                jj(folder, 'topic_diagnostics.zip'), missing_ok=True, feather_pipe=pu.set_index, columns='topic_id'
+            ),
+            token_diagnostics=smart_load(jj(folder, 'token_diagnostics.zip'), missing_ok=True),
         )
 
         # HACK: Handle renamed column:
@@ -298,7 +324,9 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
 
     @staticmethod
     def load_token2id(folder: str) -> pc.Token2Id:
-        dictionary: pd.DataFrame = smart_load(jj(folder, 'dictionary.zip'), pu.set_index, columns='token_id')
+        dictionary: pd.DataFrame = smart_load(
+            jj(folder, 'dictionary.zip'), feather_pipe=pu.set_index, columns='token_id'
+        )
         token2id: pc.Token2Id = pc.Token2Id(data={t: i for (t, i) in zip(dictionary.token, dictionary.index)})
         return token2id
 
@@ -341,6 +369,8 @@ class PickleUtility:
             topic_token_weights=pickled_data.topic_token_weights,
             topic_token_overview=pickled_data.topic_token_overview,
             document_topic_weights=pickled_data.document_topic_weights,
+            topic_diagnostics=None,
+            token_diagnostics=None,
         )
         return data
 
