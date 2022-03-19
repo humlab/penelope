@@ -3,6 +3,11 @@ from typing import Callable, Iterable, Iterator, List, Mapping, Optional, Tuple,
 import pandas as pd
 import scipy.sparse as sp
 
+TokenWeights = list[tuple[str, float]]
+
+StrBoW = list[tuple[str, float]]
+IntBoW = list[tuple[int, float]]
+
 PartitionKeys = Union[str, List[str], Callable]
 FilenameTokensTuple = Tuple[str, Iterable[str]]
 FilenameTokensTuples = Iterable[FilenameTokensTuple]
