@@ -23,6 +23,7 @@ import os
 import random
 import tempfile
 from itertools import chain
+from typing import Iterable
 
 import numpy
 import scipy
@@ -34,7 +35,6 @@ try:
     from gensim.utils import check_output
 except ImportError:
     ...
-
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
 
         """
         self.avaliable_models = AVALIABLE_MODELS
-        self.sstm_jar_path = sstm_jar_path
+        self.sstm_jar_path: str = sstm_jar_path
         self.model = model.upper()
         if self.model not in self.avaliable_models:
             raise ValueError("unknown model")
@@ -110,91 +110,49 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         if self.num_terms == 0:
             raise ValueError("empty collection (no terms)")
 
-        self.num_topics = num_topics
+        self.num_topics: int = num_topics
 
-        self.alpha = [alpha] * num_topics
-        self.beta = beta
+        self.alpha: list[float] = [alpha] * num_topics
+        self.beta: float = beta
 
         if prefix is None:
             rand_prefix = hex(random.randint(0, 0xFFFFFF))[2:] + '_'
             prefix = os.path.join(tempfile.gettempdir(), rand_prefix)
 
-        self.prefix = prefix
-        self.name = name
-        self.twords = twords
-        self.iterations = iterations
-        self.sstep = sstep
+        self.prefix: str = prefix
+        self.name: str = name
+        self.twords: int = twords
+        self.iterations: int = iterations
+        self.sstep: int = sstep
 
         if corpus is not None:
             self.train(corpus)
 
     def topic_keys_filename(self):
-        """Get path to topic keys text file.
-
-        Returns
-        -------
-        str
-            Path to topic keys text file.
-
-        """
+        """Get path to topic keys text file. """
         return self.prefix + self.name + '.phi'
 
     def document_topics_filename(self):
-        """Get path to document topic text file.
-
-        Returns
-        -------
-        str
-            Path to document topic text file.
-
-        """
+        """Get path to document topic text file. """
         return self.prefix + self.name + '.theta'
 
     def text_corpus_filename(self):
-        """Get path to corpus text file.
-
-        Returns
-        -------
-        str
-            Path to corpus text file.
-
-        """
+        """Get path to corpus text file. """
         return self.prefix + self.name + '.corpus'
 
     def fvocabulary(self):
-        """Get path to vocabulary text file.
-
-        Returns
-        -------
-        str
-            Path to vocabulary text file.
-
-        """
+        """Get path to vocabulary text file. """
         return self.prefix + self.name + '.vocabulary'
 
     def ftopwords(self):
-        """Get path to topwords text file.
-
-        Returns
-        -------
-        str
-            Path to topwords text file.
-
-        """
+        """Get path to topwords text file."""
         return self.prefix + self.name + '.topWords'
 
     def word_weights_filename(self):
-        """Get path to word weight file.
-
-        Returns
-        -------
-        str
-            Path to word weight file.
-
-        """
+        """Get path to word weight file."""
         return self.prefix + 'wordweights.txt'
 
-    def corpus2sttm(self, corpus, file_like):
+    def corpus2sttm(self, corpus: Iterable[tuple[int, int]], file_like):
         """Convert `corpus` to STTM format and write it to `file_like` descriptor.
 
         Format ::
@@ -216,7 +174,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
                 tokens = chain.from_iterable([str(tokenid)] * int(cnt) for tokenid, cnt in doc)
             file_like.write(utils.to_utf8("{}\n".format(' '.join(tokens))))
 
-    def convert_input(self, corpus):
+    def convert_input(self, corpus: Iterable[tuple[int, int]]):
         """Convert corpus to SSTM format and save it to a temporary text file.
 
         Parameters
@@ -228,7 +186,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         with smart_open(self.text_corpus_filename(), 'wb') as fout:
             self.corpus2sttm(corpus, fout)
 
-    def train(self, corpus):
+    def train(self, corpus: Iterable[tuple[int, int]]):
         """Train STTM model.
 
         Parameters
@@ -312,64 +270,25 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         topics = self.word_topics
         return topics / topics.sum(axis=1)[:, None]
 
-    def show_topics(self, num_topics=10, num_words=10, log=False, formatted=True):
-        """Get the `num_words` most probable words for `num_topics` number of topics.
-
-        Parameters
-        ----------
-        num_topics : int, optional
-            Number of topics to return, set `-1` to get all topics.
-        num_words : int, optional
-            Number of words.
-        log : bool, optional
-            If True - write topic with logging too, used for debug proposes.
-        formatted : bool, optional
-            If `True` - return the topics as a list of strings, otherwise as lists of (weight, word) pairs.
-
-        Returns
-        -------
-        list of str
-            Topics as a list of strings (if formatted=True) **OR**
-        list of (float, str)
-            Topics as list of (weight, word) pairs (if formatted=False)
-
-        """
+    def show_topics(self, num_topics: int = 10, num_words: int = 10):
+        """Get the `num_words` most probable words for `num_topics` number of topics."""
         if num_topics < 0 or num_topics >= self.num_topics:
-            num_topics = self.num_topics
+            num_topics: int = self.num_topics
             chosen_topics = range(num_topics)
         else:
-            num_topics = min(num_topics, self.num_topics)
+            num_topics: int = min(num_topics, self.num_topics)
             # add a little random jitter, to randomize results around the same alpha
             sort_alpha = self.alpha + 0.0001 * numpy.random.rand(len(self.alpha))
             sorted_topics = list(matutils.argsort(sort_alpha))
             chosen_topics = sorted_topics[: num_topics // 2] + sorted_topics[-num_topics // 2 :]
         shown = []
         for i in chosen_topics:
-            if formatted:
-                topic = self.print_topic(i, topn=num_words)
-            else:
-                topic = self.show_topic(i, topn=num_words)
+            topic: list[tuple] = self.show_topic(i, topn=num_words)
             shown.append((i, topic))
-            if log:
-                logger.info("topic #%i (%.3f): %s", i, self.alpha[i], topic)
         return shown
 
     def show_topic(self, topicid, topn=10):
-        """Get `num_words` most probable words for the given `topicid`.
-
-        Parameters
-        ----------
-        topicid : int
-            Id of topic.
-        topn : int, optional
-            Top number of topics that you'll receive.
-
-        Returns
-        -------
-        list of (str, float)
-            Sequence of probable words, as a list of `(word, word_probability)` for `topicid` topic.
-
-        """
+        """Get `num_words` most probable words for the given `topicid`. """
 
         if self.word_topics is None:
             logger.warning("Run train or load_word_topics before showing topics.")

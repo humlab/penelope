@@ -56,9 +56,6 @@ Examples
 
 """
 
-
-
-
 try:
     import gensim.matutils as matutils
     import gensim.models.basemodel as basemodel
@@ -128,106 +125,57 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             Random seed to ensure consistent results, if 0 - use system clock.
 
         """
-        self.mallet_path = mallet_path
-        self.id2word = id2word
+        self.mallet_path: str = mallet_path
+        self.id2word: dict[int, str] = id2word
         if self.id2word is None:
             logger.warning("no word id mapping provided; initializing from corpus, assuming identity")
             self.id2word = utils.dict_from_corpus(corpus)
             self.num_terms = len(self.id2word)
         else:
-            self.num_terms = 0 if not self.id2word else 1 + max(self.id2word.keys())
+            self.num_terms: int = 0 if not self.id2word else 1 + max(self.id2word.keys())
         if self.num_terms == 0:
             raise ValueError("cannot compute LDA over an empty collection (no terms)")
-        self.num_topics = num_topics
-        self.topic_threshold = topic_threshold
-        self.alpha = alpha
+        self.num_topics: int = num_topics
+        self.topic_threshold: float = topic_threshold
+        self.alpha: float = alpha
         if prefix is None:
             rand_prefix = hex(random.randint(0, 0xFFFFFF))[2:] + '_'
             prefix = os.path.join(tempfile.gettempdir(), rand_prefix)
-        self.prefix = prefix
-        self.workers = workers
-        self.optimize_interval = optimize_interval
-        self.iterations = iterations
-        self.num_top_words = num_top_words
-        self.random_seed = random_seed
+        self.prefix: str = prefix
+        self.workers: int = workers
+        self.optimize_interval: int = optimize_interval
+        self.iterations: int = iterations
+        self.num_top_words: int = num_top_words
+        self.random_seed: int = random_seed
         if corpus is not None:
             self.train(corpus)
 
     def inferencer_filename(self):
-        """Get path to inferencer.mallet file.
-
-        Returns
-        -------
-        str
-            Path to inferencer.mallet file.
-
-        """
+        """Get path to inferencer.mallet file."""
         return self.prefix + 'inferencer.mallet'
 
     def topic_keys_filename(self):
-        """Get path to topic keys text file.
-
-        Returns
-        -------
-        str
-            Path to topic keys text file.
-
-        """
+        """Get path to topic keys text file."""
         return self.prefix + 'topickeys.txt'
 
     def mallet_state_filename(self):
-        """Get path to temporary file.
-
-        Returns
-        -------
-        str
-            Path to file.
-
-        """
+        """Get path to temporary file."""
         return self.prefix + 'state.mallet.gz'
 
     def document_topics_filename(self):
-        """Get path to document topic text file.
-
-        Returns
-        -------
-        str
-            Path to document topic text file.
-
-        """
+        """Get path to document topic text file."""
         return self.prefix + 'doctopics.txt'
 
     def text_corpus_filename(self):
-        """Get path to corpus text file.
-
-        Returns
-        -------
-        str
-            Path to corpus text file.
-
-        """
+        """Get path to corpus text file."""
         return self.prefix + 'corpus.txt'
 
     def mallet_corpus_filename(self):
-        """Get path to corpus.mallet file.
-
-        Returns
-        -------
-        str
-            Path to corpus.mallet file.
-
-        """
+        """Get path to corpus.mallet file."""
         return self.prefix + 'corpus.mallet'
 
     def word_weights_filename(self):
-        """Get path to word weight file.
-
-        Returns
-        -------
-        str
-            Path to word weight file.
-
-        """
+        """Get path to word weight file."""
         return self.prefix + 'wordweights.txt'
 
     def corpus2mallet(self, corpus, file_like):
@@ -551,8 +499,8 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         return topics / topics.sum(axis=1)[:, None]
 
     def show_topics(
-        self, num_topics: int = 10, num_words: int = 10, log: bool = False, formatted: bool = True
-    ) -> list[tuple[int, str]] | list[tuple[int, list[str, float]]]:
+        self, num_topics: int = 10, num_words: int = 10, log: bool = False
+    ) -> list[tuple[int, list[str, float]]]:
         """Get the `num_words` most probable words for `num_topics` number of topics.
 
         Parameters
@@ -563,15 +511,11 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             Number of words.
         log : bool, optional
             If True - write topic with logging too, used for debug proposes.
-        formatted : bool, optional
-            If `True` - return the topics as a list of strings, otherwise as lists of (weight, word) pairs.
 
         Returns
         -------
-        list of str
-            Topics as a list of strings (if formatted=True) **OR**
         list of (float, str)
-            Topics as list of (weight, word) pairs (if formatted=False)
+            Topics as list of (weight, word) pairs
 
         """
         if num_topics < 0 or num_topics >= self.num_topics:
@@ -585,10 +529,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             chosen_topics = sorted_topics[: num_topics // 2] + sorted_topics[-num_topics // 2 :]
         shown = []
         for i in chosen_topics:
-            if formatted:
-                topic = self.print_topic(i, topn=num_words)
-            else:
-                topic = self.show_topic(i, topn=num_words)
+            topic = self.show_topic(i, topn=num_words)
             shown.append((i, topic))
             if log:
                 logger.info("topic #%i (%.3f): %s", i, self.alpha[i], topic)
@@ -624,29 +565,17 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         beststr = [(self.id2word[idx], topic[idx]) for idx in bestn]
         return beststr
 
-    def get_version(self, direc_path):
-        """ "Get the version of Mallet.
-
-        Parameters
-        ----------
-        direc_path : str
-            Path to mallet archive.
-
-        Returns
-        -------
-        str
-            Version of mallet.
-
-        """
+    def get_version(self, mallet_folder: str) -> str:
+        """ Get the version of Mallet. """
         try:
-            archive = zipfile.ZipFile(direc_path, 'r')
+            archive = zipfile.ZipFile(mallet_folder, 'r')
             if u'cc/mallet/regression/' not in archive.namelist():
                 return '2.0.7'
             else:
                 return '2.0.8RC3'
         except Exception:
 
-            xml_path = 'bin'.join(direc_path.split("bin")[:-1])
+            xml_path = 'bin'.join(mallet_folder.split("bin")[:-1])
             try:
                 doc = et.parse(xml_path + "pom.xml").getroot()
                 namespace = doc.tag[: doc.tag.index('}') + 1]
