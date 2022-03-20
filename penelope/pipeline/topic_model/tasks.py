@@ -361,6 +361,8 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
             default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>",
         )
 
+        # FIXME: Fix ambiguity between self.target_folder/self.target_name and engine_args['work_folder]
+        # self.target_name is never used??
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,
             content=dict(
