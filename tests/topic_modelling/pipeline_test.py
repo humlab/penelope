@@ -14,17 +14,10 @@ from penelope.vendor import gensim_api
 from tests.fixtures import TranströmerCorpus
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
-from . import utility
-
 # pylint: disable=redefined-outer-name
 
 
-# @pytest.fixture(scope='module')
-# def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
-#     return utility.ssi_topic_model_payload(config, en_nlp)
-
-
-def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
+def tranströmer_topic_model_payload(method: str, target_folder: str, target_name: str) -> DocumentPayload:
     transform_opts: TokensTransformOpts = TokensTransformOpts()
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True,
@@ -34,9 +27,16 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
         lemma_column='baseform',
         pos_column='pos',
     )
+    default_engine_args: dict = {
+        'n_topics': 4,
+        'passes': 1,
+        'random_seed': 42,
+        'workers': 1,
+        'max_iter': 100,
+        'work_folder': os.path.join(target_folder, target_name),
+    }
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
     corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
-    target_name: str = f'{uuid.uuid1()}'
     p: CorpusPipeline = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
@@ -48,10 +48,10 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
         .to_dtm(VectorizeOpts(already_tokenized=True))
         .to_topic_model(
             target_mode='both',
-            target_folder="./tests/output",
+            target_folder=target_folder,
             target_name=target_name,
             engine=method,
-            engine_args=utility.DEFAULT_ENGINE_ARGS,
+            engine_args=default_engine_args,
             store_corpus=True,
             store_compressed=True,
         )
@@ -67,18 +67,22 @@ def tranströmer_topic_model_payload(method: str) -> DocumentPayload:
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_predict_topics(method: str):
 
-    minimum_probability: float = 0.001
-    n_tokens: int = 100
-
-    payload: DocumentPayload = tranströmer_topic_model_payload(method=method)
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    """Train a model that will be used in prediction"""
 
     target_folder: str = './tests/output'
-    target_name: str = f'{uuid.uuid1()}'
-
+    train_target_name: str = f'train_{str(uuid.uuid1())[:8]}'
+    payload: DocumentPayload = tranströmer_topic_model_payload(
+        method=method, target_folder=target_folder, target_name=train_target_name
+    )
     model_folder: str = os.path.join(payload.content.get("target_folder"), payload.content.get("target_name"))
 
+    """Predict using trained model"""
+
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
+    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    minimum_probability: float = 0.001
+    n_tokens: int = 100
+    predict_target_name: str = f'predict_{str(uuid.uuid1())[:8]}'
     transform_opts = TokensTransformOpts()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
@@ -99,7 +103,7 @@ def test_predict_topics(method: str):
         .predict_topics(
             model_folder=model_folder,
             target_folder=target_folder,
-            target_name=target_name,
+            target_name=predict_target_name,
             minimum_probability=minimum_probability,
             n_tokens=n_tokens,
         )
@@ -108,8 +112,8 @@ def test_predict_topics(method: str):
     assert payload is not None
 
     model_infos = find_models('./tests/output')
-    assert any(m['name'] == target_name for m in model_infos)
-    model_info = next(m for m in model_infos if m['name'] == target_name)
+    assert any(m['name'] == predict_target_name for m in model_infos)
+    model_info = next(m for m in model_infos if m['name'] == predict_target_name)
     assert 'method' in model_info['options']
 
 
@@ -118,9 +122,17 @@ def test_predict_topics(method: str):
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_topic_model_task_with_token_stream_and_document_index(method):
 
-    target_name: str = f'{uuid.uuid1()}'
+    target_folder: str = './tests/output'
+    target_name: str = f'{str(uuid.uuid1())[:8]}'
     corpus = TranströmerCorpus()
-
+    default_engine_args: dict = {
+        'n_topics': 4,
+        'passes': 1,
+        'random_seed': 42,
+        'workers': 1,
+        'max_iter': 100,
+        'work_folder': os.path.join(target_folder, target_name),
+    }
     payload_stream = lambda: [
         DocumentPayload(content_type=ContentType.TOKENS, filename=filename, content=tokens)
         for filename, tokens in corpus
@@ -149,7 +161,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
         target_folder="./tests/output",
         target_name=target_name,
         engine=method,
-        engine_args=utility.DEFAULT_ENGINE_ARGS,
+        engine_args=default_engine_args,
         store_corpus=True,
         store_compressed=True,
     )

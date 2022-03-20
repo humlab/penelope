@@ -3,15 +3,6 @@ import uuid
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
 
-DEFAULT_ENGINE_ARGS = {
-    'n_topics': 4,
-    'passes': 1,
-    'random_seed': 42,
-    'workers': 1,
-    'max_iter': 100,
-    'work_folder': './tests/output/',
-}
-
 
 def ssi_corpus_config() -> CorpusConfig:
     config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
@@ -31,6 +22,15 @@ def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
         **config.pipeline_payload.tagged_columns_names,
         filter_opts=dict(is_punct=False),
     )
+    target_name: str = {str(uuid.uuid4())[:8]}
+    default_engine_args: dict = {
+        'n_topics': 4,
+        'passes': 1,
+        'random_seed': 42,
+        'workers': 1,
+        'max_iter': 100,
+        'work_folder': f'./tests/output/{target_name}',
+    }
     transform_opts = None
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
@@ -44,7 +44,7 @@ def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
             target_folder="./tests/output",
             target_name=target_name,
             engine="gensim_lda-multicore",
-            engine_args=DEFAULT_ENGINE_ARGS,
+            engine_args=default_engine_args,
             store_corpus=True,
             store_compressed=True,
         )
