@@ -40,6 +40,10 @@ def load_model(
     topics: pd.DataFrame = inferred_topics.topic_token_overview
     topics['tokens'] = inferred_topics.get_topic_titles(n_tokens=n_tokens)
 
+    columns_to_show: list[str] = [column for column in ['tokens', 'alpha', 'coherence'] if column in topics.columns]
+
+    topics = topics[columns_to_show]
+
     with suppress(BaseException):
         topic_proportions = inferred_topics.calculator.topic_proportions()
         if topic_proportions is not None:

@@ -284,6 +284,7 @@ class PivotKeys:
 
     @cached_property
     def key_id2key_name(self) -> dict:
+        """Translates e.g. `gender_id` to `gender`."""
         return revdict(self.key_name2key_id)
 
     @property
