@@ -201,7 +201,7 @@ def main(
         store_corpus=store_corpus,
         store_compressed=store_compressed,
         # transform_opts=transform_opts,
-    ).value()
+    )
 
     logger.info(f"workflow completed: model {value.get('target_name')} stored in {value.get('target_folder')}")
 
