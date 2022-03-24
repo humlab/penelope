@@ -73,7 +73,7 @@ pygments==2.11.2; python_version >= "3.8"
 pyparsing==3.0.7; python_version >= "3.7"
 pyrsistent==0.18.1; python_version >= "3.7"
 python-dateutil==2.8.2; python_full_version >= "3.6.1" and python_version >= "3.8"
-pytz==2021.3; python_version >= "3.8"
+pytz==2022.1; python_version >= "3.8"
 pywin32==303; sys_platform == "win32" and platform_python_implementation != "PyPy" and python_version >= "3.7" and python_full_version >= "3.6.1"
 pywinpty==2.0.5; os_name == "nt" and python_version >= "3.7"
 pyyaml==6.0; python_version >= "3.6"
@@ -91,7 +91,7 @@ terminado==0.13.3; python_version >= "3.7"
 testpath==0.6.0; python_version >= "3.7"
 toml==0.10.2; (python_version >= "2.6" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0")
 tornado==6.1; python_full_version >= "3.6.1" and python_version >= "3.7"
-tqdm==4.63.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
+tqdm==4.63.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
 traitlets==5.1.1; python_full_version >= "3.7.0" and python_version >= "3.8"
 traittypes==0.2.1; python_version >= "3.6"
 typing-extensions==4.1.1; python_version >= "3.7"
