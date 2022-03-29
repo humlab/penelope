@@ -59,7 +59,7 @@ class PivotKeysMixIn:
         self._multi_pivot_keys_picker: w.SelectMultiple = w.SelectMultiple(
             options=['None'] + list(self.pivot_keys.text_names),
             value=['None'],
-            rows=5,
+            rows=6,
             layout=dict(width='100px'),
         )
         self._filter_keys: w.SelectMultiple = w.SelectMultiple(
