@@ -47,7 +47,7 @@ textacy = {version = "*", optional = true}
 wordcloud = {version = "*", optional = true}
 PyYAML = {version = "*", optional = true}
 python-louvain = {version = "*", optional = true}
-click = {version = "*", optional = true}
+click = {version = "8.0.4", optional = true}
 smart-open = "^5.2.1"
 
 [tool.poetry.extras]
