@@ -196,7 +196,6 @@ class DocumentTopicsCalculator:
         return self
 
     def filter_by_focus_topics(self, topic_ids: Sequence[int]) -> "DocumentTopicsCalculator":
-        # FIXME: How to use pivot keys???
         if topic_ids:
             df_focus: pd.DataFrame = self.data[self.data.topic_id.isin(topic_ids)].set_index("document_id")
             df_others: pd.DataFrame = self.data[~self.data.topic_id.isin(topic_ids)].set_index("document_id")

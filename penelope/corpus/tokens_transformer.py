@@ -228,7 +228,6 @@ class TokensTransformerMixin:
             )
 
 
-# TODO: Refactor to make it more extendable
 class TokensTransformer(TokensTransformerMixin, TokensTransformerBase):
     """Transforms applied on tokenized text"""
 

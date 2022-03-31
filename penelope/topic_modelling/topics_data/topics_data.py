@@ -121,8 +121,6 @@ class SlimItMixIn:
         if 'token' in self.topic_token_weights:
             self.topic_token_weights.drop(columns='token', inplace=True)
 
-        # FIXME #149 Varför är weights `topic_token_weights` så stora tal???
-
         """document_topic_weights"""
 
         return self

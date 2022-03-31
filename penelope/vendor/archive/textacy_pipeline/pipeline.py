@@ -88,7 +88,6 @@
 
 # class CreateTask(ITask):
 #     def execute(self, pipeline: TextacyCorpusPipeline, stream: ICorpusReader):
-#         # FIXME: move to caller: stream = ZipTextIterator(pipeline.filename, reader_opts=pipeline.reader_opts)
 #         extra_metadata = faster_to_dict_records(pipeline.document_index)
 #         # extra_metadata = pipeline.document_index.to_dict('records')
 #         pipeline.corpus = self.create_corpus(stream, pipeline.nlp, extra_metadata=extra_metadata)

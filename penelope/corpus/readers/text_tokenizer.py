@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 FilenameFilterSpec = Union[Callable, Sequence[str]]
 
-# TODO: Consider removing inheritence and instead use a TextReader as source?
-# TODO: Move TextTransformOpts into this class?
-
 
 class TextTokenizer(TextReader):
     """Reads a text corpus from `source` and applies given transforms.

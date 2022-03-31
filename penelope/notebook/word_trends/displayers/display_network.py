@@ -11,7 +11,6 @@ from .display_table import UnnestedExplodeTableDisplayer
 
 # pylint: disable=too-many-instance-attributes
 
-# TODO #80 Co-occurrence network
 DEFAULT_LAYOUT_ARGUMENTS = {
     'cola': {'maxSimulationTime': 10000},
     'springy': {'stiffness': 400, 'repulsion': 400, 'damping': 0.5},

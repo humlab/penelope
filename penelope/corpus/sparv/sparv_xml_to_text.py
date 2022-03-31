@@ -23,7 +23,6 @@ def snuttify(token):
     return "'{}'".format(token)
 
 
-# FIXME Implement pos_paddings
 class SparvXml2Text:
     def __init__(
         self,

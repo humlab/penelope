@@ -13,7 +13,6 @@ def corpus_config():
 
     config = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
 
-    # FIXME: Reduce test data size
     config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
     config.pipeline_payload.document_index_source = None
 

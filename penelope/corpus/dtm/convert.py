@@ -59,7 +59,6 @@ def from_tokenized_corpus(
     return corpus
 
 
-# FIXME: Create a non-textaCy dependent implementation
 def from_stream_of_tokens(
     source: Iterable[Iterable[str]],
     *,
