@@ -15,6 +15,10 @@ def find_models(path: str) -> dict:
     return models
 
 
+def find_model(path: str, model_name: str) -> dict:
+    return next((x for x in find_models(path) if x["name"] == model_name), None)
+
+
 def find_inferred_topics_folders(folder: str) -> List[str]:
     """Return inferred data in sub-folders to `folder`"""
     filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
