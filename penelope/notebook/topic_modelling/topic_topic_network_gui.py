@@ -177,7 +177,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
             .filter_by_topics(topic_ids=self.topic_ids, negate=self.exclude_mode)
-            .to_topic_topic_network(self.n_docs, topic_labels=None)
+            .to_topic_topic_network(self.n_docs, topic_labels=self.topic_labels)
         ).value
 
     def update(self) -> pd.DataFrame:
@@ -194,7 +194,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self.alert("⌛ Computing...")
         try:
             self.network_data = self.update()
-            self.alert("✅")
+            self.alert(f"✅ {len(self.network_data)} records found.")
         except pu.EmptyDataError:
             self.network_data = None
         except Exception as ex:
@@ -204,40 +204,45 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
     def display_handler(self, *_):
 
-        self._output.clear_output()
+        try:
 
-        with self._output:
+            self._output.clear_output()
 
-            if self.network_data is None:
+            with self._output:
 
-                self.alert("😡 No data, please change filters..")
+                if self.network_data is None:
 
-            elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
+                    self.alert("😡 No data, please change filters..")
 
-                data: pd.DataFrame = self.network_data
+                elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
 
-                if self.output_format == "gephi":
-                    data = data[['topic_id', "title", 'weight']]
-                    data.columns = ['Source', 'Target', 'Weight']
+                    data: pd.DataFrame = self.network_data
 
-                if self.output_format != "table":
-                    pu.ts_store(data=data, extension=self.output_format, basename='heatmap_weights')
+                    if self.output_format == "gephi":
+                        data = data[['topic_id', "title", 'weight']]
+                        data.columns = ['Source', 'Target', 'Weight']
 
-                g: gu.TableWidget = gu.table_widget(data)
-                display(g)
+                    if self.output_format != "table":
+                        pu.ts_store(data=data, extension=self.output_format, basename='heatmap_weights')
 
-            else:
+                    g: gu.TableWidget = gu.table_widget(data)
+                    display(g)
 
-                display_topic_topic_network(
-                    data=self.network_data,
-                    layout=self._network_layout.value,
-                    titles=self.titles,
-                    scale=self._scale.value,
-                    element_id=self.text_id,
-                    node_range=self._node_range.value,
-                    edge_range=self._edge_range.value,
-                    topic_proportions=self.topic_proportions,
-                )
+                else:
+
+                    display_topic_topic_network(
+                        data=self.network_data,
+                        layout=self._network_layout.value,
+                        titles=self.titles,
+                        scale=self._scale.value,
+                        element_id=self.text_id,
+                        node_range=self._node_range.value,
+                        edge_range=self._edge_range.value,
+                        topic_proportions=self.topic_proportions,
+                    )
+
+        except Exception as ex:
+            self.warn(f"😡 {ex}")
 
     @property
     def threshold(self) -> float:
