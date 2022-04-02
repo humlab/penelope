@@ -124,7 +124,7 @@ def _plot_network(
             nodes_size = node_proportions
         else:
             nodes_size = 'size'
-            nodes_weight = project_values_to_range([node_proportions[n] for n in sub_network.nodes], *node_range)
+            nodes_weight = project_values_to_range([node_proportions[int(n)] for n in sub_network.nodes], *node_range)
             nodes_source.add(nodes_weight, nodes_size)
 
     node_opts = extend(dict(color='green', alpha=1.0), node_opts or {})
