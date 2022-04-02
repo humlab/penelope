@@ -162,6 +162,9 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         )
         network_data["title"] = network_data["document_name"]
 
+        if self.topic_labels is not None:
+            network_data['topic_id'] = network_data['topic_id'].apply(self.topic_labels.get)
+
         if len(network_data) == 0:
             raise pu.EmptyDataError()
 
@@ -264,7 +267,10 @@ class FocusTopicDocumentNetworkGui(TopicDocumentNetworkGui):
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
-            .filter_by_focus_topics(topic_ids=self.topic_ids)
+            .filter_by_focus_topics(
+                topic_ids=self.topic_ids,
+                topic_labels=self.topic_labels,
+            )
         ).value
 
     @property
