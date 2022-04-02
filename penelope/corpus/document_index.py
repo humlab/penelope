@@ -723,17 +723,23 @@ def overload_by_document_index_properties(
         return df
 
     if 'document_id' not in df.columns:
+        logger.warning(f"overload: document_id not found in target.")
         return df
 
     if isinstance(column_names, str):
         column_names = [column_names]
 
-    column_names = ['document_id'] + [c for c in column_names if c not in df.columns and c in document_index.columns]
+    overload_columns: list[str] = [c for c in column_names if c not in df.columns and c in document_index.columns]
 
-    if len(column_names) == 1:
+    if len(overload_columns) == 0:
+        logger.warning(f"overload: none of {', '.join(column_names)} found in document index.")
         return df
 
-    overload_data: pd.DataFrame = document_index[column_names].set_index('document_id')
+    overload_data: pd.DataFrame = (
+        document_index.set_index('document_id')[overload_columns]
+        if 'document_id' in document_index.columns
+        else document_index[overload_columns]
+    )
 
     df = df.merge(overload_data, how='inner', left_on='document_id', right_index=True)
 
