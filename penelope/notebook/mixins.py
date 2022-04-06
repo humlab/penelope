@@ -181,6 +181,13 @@ class PivotKeysMixIn:
         finally:
             self.prevent_event = False
 
+    def display_trigger_ctrls(self) -> list[w.Widget]:
+        return (
+            [self._unstack_tabular, self._filter_keys]
+            if self.pivot_keys.has_pivot_keys
+            else [self._multi_pivot_keys_picker]
+        )
+
     def observe(self, value: bool, *, handler: Callable[[Any], None], **kwargs) -> None:
 
         if handler is None:
@@ -188,13 +195,7 @@ class PivotKeysMixIn:
 
         self._display_event_handler = handler
 
-        display_trigger_ctrls: List[Any] = (
-            [self._unstack_tabular, self._filter_keys, self._unstack_tabular]
-            if self.pivot_keys.has_pivot_keys
-            else [self._multi_pivot_keys_picker]
-        )
-
-        for ctrl in display_trigger_ctrls:
+        for ctrl in self.display_trigger_ctrls():
             register_observer(ctrl, handler=handler, value=value)
 
         if hasattr(super(), "observe"):
