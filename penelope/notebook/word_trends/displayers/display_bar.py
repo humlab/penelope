@@ -6,9 +6,8 @@ import bokeh.plotting as bp
 import pandas as pd
 from bokeh.io import show
 
-from ...utility import generate_colors
+from ...utility import generate_colors, generate_temporal_ticks
 from .interface import ITrendDisplayer
-from .utils import generate_temporal_ticks
 
 
 class BarDisplayer(ITrendDisplayer):

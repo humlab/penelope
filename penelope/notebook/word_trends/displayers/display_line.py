@@ -7,10 +7,9 @@ import ipywidgets
 import pandas as pd
 from bokeh.io import push_notebook
 
-from penelope.notebook.utility import generate_colors
+from penelope.notebook.utility import generate_colors, generate_temporal_ticks
 
 from .interface import ITrendDisplayer
-from .utils import generate_temporal_ticks
 
 
 class LineDisplayer(ITrendDisplayer):

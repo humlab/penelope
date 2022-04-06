@@ -10,7 +10,7 @@ import pandas as pd
 import scipy
 from bokeh.plotting import Figure, figure
 
-from penelope.notebook.word_trends.displayers.utils import generate_temporal_ticks
+from penelope.notebook.utility import generate_temporal_ticks
 from penelope.utility import take
 
 DEFAULT_FIGOPTS: dict = dict(plot_width=1000, plot_height=600)
