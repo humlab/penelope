@@ -23,15 +23,22 @@ from .token import TopicTokensMixIn, get_topic_title, get_topic_title2, get_topi
 from .topics_data import InferredTopicsData, PickleUtility
 
 YEARLY_AVERAGE_COMPUTE_METHODS = [
-    {'key': 'max_weight', 'description': 'Max value', 'tooltip': 'Use maximum value over documents'},
+    {
+        'key': 'max_weight',
+        'description': 'Max value',
+        'short_description': 'Max value',
+        'tooltip': 'Use maximum value over documents',
+    },
     {
         'key': 'average_weight',
         'description': 'Average of document-topic weights filtered by threshold',
+        'short_description': 'Average above threshold',
         'tooltip': 'Use average of document where topic is returned by engine (Gensim skips weights less than 1%), above 0 or above given threshold',
     },
     {
         'key': 'true_average_weight',
         'description': 'Average of all documents, even those where weight is 0',
+        'short_description': 'Average of all weights',
         'tooltip': 'Use average of all document weights even those where topic weight is 0',
     },
 ]
