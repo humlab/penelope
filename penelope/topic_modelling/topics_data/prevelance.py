@@ -263,7 +263,7 @@ def compute_yearly_topic_weights(
 AggregateKeys = Literal['top_n_weight', 'average_weight', 'true_average_weight']
 AggregateKeyValues = get_args(AggregateKeys)
 
-#@not_used
+# @not_used
 def compute_specified_yearly_topic_weights(
     dtw: pd.DataFrame,
     *,
