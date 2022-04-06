@@ -16,27 +16,54 @@ def test_compute_topic_yearly_means(state: TopicModelContainer):
     document_topic_weights: pd.DataFrame = inferred_topics.document_topic_weights
     document_index: pd.DataFrame = inferred_topics.document_index
 
-    topic_yearly_mean_weights: pd.DataFrame = prevelance.compute_yearly_topic_weights(
-        document_topic_weights, document_index=document_index
-    )
-    assert len(topic_yearly_mean_weights) == 8
+    ytw: pd.DataFrame = prevelance.compute_yearly_topic_weights(document_topic_weights, document_index=document_index)
+    assert len(ytw) == 8
 
     assert (
         document_topic_weights.groupby(['year', 'topic_id'])['weight'].mean()
-        == topic_yearly_mean_weights.groupby(['year', 'topic_id']).sum().average_weight
+        == ytw.groupby(['year', 'topic_id']).sum().avg_weight
     ).all()
 
-    assert topic_yearly_mean_weights is not None
+    assert ytw is not None
 
-    assert (topic_yearly_mean_weights[topic_yearly_mean_weights.year == 2019].n_documents == 3).all()
-    assert (topic_yearly_mean_weights[topic_yearly_mean_weights.year == 2020].n_documents == 2).all()
+    assert (ytw[ytw.year == 2019].n_documents == 3).all()
+    assert (ytw[ytw.year == 2020].n_documents == 2).all()
 
-    topic_yearly_mean_weights: pd.DataFrame = prevelance.compute_yearly_topic_weights(
+    ytw: pd.DataFrame = prevelance.compute_yearly_topic_weights(
         document_topic_weights, document_index=document_index, threshold=0.20
     )
 
-    assert topic_yearly_mean_weights is not None
+    assert ytw is not None
 
+    ytw1: pd.DataFrame = prevelance.compute_yearly_topic_weights(document_topic_weights, document_index=document_index)
+    ytw1.columns = sorted(ytw1.columns)
+    ytw2: pd.DataFrame = prevelance.compute_specified_yearly_topic_weights(
+        document_topic_weights, document_index=document_index, drop_stats=False,
+    )
+    ytw2.columns = sorted(ytw2.columns)
+    assert ytw1.equals(ytw2)
+    assert set(ytw2.columns) == {
+        'avg_weight',
+        'average_weight',
+        'max_weight',
+        'n_documents',
+        'n_topic_documents',
+        'sum_weight',
+        'topic_id',
+        'true_average_weight',
+        'year',
+    }
+
+    ytw2: pd.DataFrame = prevelance.compute_specified_yearly_topic_weights(
+        document_topic_weights, aggregate_keys='average_weight', document_index=document_index, drop_stats=True,
+    )
+    assert set(ytw2.columns) == {
+        'average_weight',
+        'n_documents',
+        'n_topic_documents',
+        'topic_id',
+        'year',
+    }
 
 @pytest.fixture
 def simple_test_data():
@@ -92,10 +119,10 @@ def test_compute_prevelance_parts(simple_test_data):
 
     document_index, dtw = simple_test_data
 
-    yearly_weights: pd.DataFrame = prevelance._compute_yearly_topic_weights(dtw)
+    yearly_weights: pd.DataFrame = prevelance._compute_yearly_topic_weights_statistics(dtw)
 
     assert len(yearly_weights) == 8
-    assert yearly_weights.columns.tolist() == ['max_weight', 'sum_weight', 'average_weight', 'n_topic_documents']
+    assert set(yearly_weights.columns.tolist()) == {'max_weight', 'sum_weight', 'avg_weight', 'n_topic_documents', 'average_weight'}
     assert yearly_weights.sort_index().average_weight.round(2).tolist() == [
         0.32,
         0.12,
