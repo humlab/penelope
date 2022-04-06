@@ -267,10 +267,7 @@ class FocusTopicDocumentNetworkGui(TopicDocumentNetworkGui):
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
             .threshold(threshold=self.threshold)
-            .filter_by_focus_topics(
-                topic_ids=self.topic_ids,
-                topic_labels=self.topic_labels,
-            )
+            .filter_by_focus_topics(topic_ids=self.topic_ids)
         ).value
 
     @property

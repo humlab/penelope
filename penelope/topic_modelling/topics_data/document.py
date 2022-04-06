@@ -217,12 +217,15 @@ class DocumentTopicsCalculator:
         data: pd.DataFrame = compute_topic_proportions(self.data, self.document_index)
         return data
 
-    def yearly_topic_weights(self, result_threshold: float, n_top_relevance: int) -> "DocumentTopicsCalculator":
+    def yearly_topic_weights(
+        self, result_threshold: float, n_top_relevance: int, topic_ids: None | int | list[int]
+    ) -> "DocumentTopicsCalculator":
         self.data = prevelance.compute_yearly_topic_weights(
             self.data,
             document_index=self.document_index,
             threshold=result_threshold or 0,
             n_top_relevance=n_top_relevance,
+            topic_ids=topic_ids,
         )
         return self
 
