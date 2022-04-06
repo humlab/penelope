@@ -32,7 +32,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
 
         self._text: w.HTML = w.HTML()
 
-        weighings = [(x['description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
+        weighings = [(x['short_description'], x['key']) for x in tm.YEARLY_AVERAGE_COMPUTE_METHODS]
 
         self._aggregate: w.Dropdown = w.Dropdown(options=weighings, value='true_average_weight')
 
@@ -47,12 +47,16 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
             options=['Chart', 'Table', 'xlsx', 'csv', 'clipboard', 'pandas'], value='Chart'
         )
         self._output: w.Output = w.Output()
-        self._compute_handler: Callable[[Any], None] = self.update_handler
+        self._compute_handler: Callable[[Any], None] = self._compute_handler_callback
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.VBox = w.HBox()
         self._aggregate.layout.width = '140px'
         self._auto_compute.layout.width = "80px"
         self._output_format.layout.width = '140px'
+
+    def _compute_handler_callback(self, *args, **kwargs) -> None:
+        """level of indirection to allow override of update_handler"""
+        self.update_handler(*args, **kwargs)
 
     def setup(self, **kwargs) -> "TopicTrendsGUI":
         super().setup(**kwargs)
@@ -124,7 +128,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         )
         return yearly_weights
 
-    def update_handler(self, *_):
+    def update_handler(self, *args, **kwargs):  # pylint: disable=unused-argument
 
         self.alert("⌛ Computing...")
         try:
