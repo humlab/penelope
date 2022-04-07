@@ -7,6 +7,7 @@ from penelope.notebook.topic_modelling.topic_topic_network_gui import TopicTopic
 
 # pylint: disable=protected-access
 
+
 @patch('bokeh.plotting.show', lambda *_, **__: None)
 def test_create_gui(state: TopicModelContainer):
     gui: TopicTopicGUI = TopicTopicGUI(state)
