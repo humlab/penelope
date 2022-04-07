@@ -25,14 +25,22 @@ class TopicsStateGui:
 
     @property
     def topic_labels(self) -> dict[int, str]:
-        if 'label' in self.inferred_topics.topic_token_overview.columns:
-            return self.inferred_topics.topic_token_overview['label'].to_dict()
-        return None
+        return self.inferred_topics.topic_labels
+
+    @property
+    def topic_label(self, topic_id: int) -> dict[int, str]:
+        return self.topic_labels.get(topic_id, f"#{topic_id}")
 
     def topic_id_options(self) -> list[tuple[str, int]]:
         fx: Callable[[int], str] = self.inferred_topics.topic_labels.get
         options = [(fx(i, f'Topic #{i}'), i) for i in range(0, self.inferred_n_topics)]
         return options
+
+    @property
+    def topic_label(self) -> dict[int, str]:
+        if 'label' in self.inferred_topics.topic_token_overview.columns:
+            return self.inferred_topics.topic_token_overview['label'].to_dict()
+        return None
 
 
 class NextPrevTopicMixIn:

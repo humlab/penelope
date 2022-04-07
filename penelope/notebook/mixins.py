@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import contextlib
+import typing as t
 from collections import defaultdict
-from typing import Any, Callable, List, Mapping, Set, Tuple, Union
 
 import ipywidgets as w
 import pandas as pd
@@ -13,8 +13,8 @@ from penelope import utility as pu
 from . import utility as nu
 from .widgets_utils import register_observer
 
-PivotKeySpec = Mapping[str, Union[str, Mapping[str, int]]]
-PivotKeySpecArg = Union[List[PivotKeySpec], Mapping[str, List[PivotKeySpec]]]
+PivotKeySpec = dict[str, t.Union[str, dict[str, int]]]
+PivotKeySpecArg = t.Union[list[PivotKeySpec], dict[str, list[PivotKeySpec]]]
 
 
 class DownloadMixIn:
@@ -41,7 +41,7 @@ class PivotKeysMixIn:
 
         super().__init__(**kwargs)
 
-        self._display_event_handler: Callable[[Any], None] = None
+        self._display_event_handler: t.Callable[[t.Any], None] = None
 
         self.pivot_keys: pu.PivotKeys = (
             pivot_key_specs if isinstance(pivot_key_specs, pu.PivotKeys) else pu.PivotKeys(pivot_key_specs)
@@ -73,12 +73,12 @@ class PivotKeysMixIn:
         self.prevent_event: bool = False
 
     @property
-    def filter_key_values(self) -> List[str]:
+    def filter_key_values(self) -> list[str]:
         """Avaliable filter key values"""
         return self._filter_keys.options
 
     @property
-    def filter_key_selected_values(self) -> List[str]:
+    def filter_key_selected_values(self) -> list[str]:
         """Avaliable filter key values"""
         return self._filter_keys.value
 
@@ -117,12 +117,12 @@ class PivotKeysMixIn:
         return self.pivot_keys.key_value_id2name(self.picked_pivot_name)
 
     @property
-    def pivot_keys_text_names(self) -> List[str]:
+    def pivot_keys_text_names(self) -> list[str]:
         """Return column names for selected the pivot keys"""
         return [x for x in self._multi_pivot_keys_picker.value if x != 'None']
 
     @property
-    def pivot_keys_id_names(self) -> List[str]:
+    def pivot_keys_id_names(self) -> list[str]:
         """Return ID column names for selected pivot key"""
         return [self.pivot_keys.key_name2key_id.get(x) for x in self.pivot_keys_text_names]
 
@@ -130,7 +130,7 @@ class PivotKeysMixIn:
     def filter_opts(self) -> pu.PropertyValueMaskingOpts:
         """Returns user's filter selections as a name-to-values mapping."""
         key_values = defaultdict(list)
-        value_tuples: Tuple[str, str] = [x.split(': ') for x in self._filter_keys.value]
+        value_tuples: tuple[str, str] = [x.split(': ') for x in self._filter_keys.value]
         for k, v in value_tuples:
             key_values[k].append(v)
         filter_opts = self.pivot_keys.create_filter_key_values_dict(key_values, decode=True)
@@ -156,15 +156,15 @@ class PivotKeysMixIn:
 
             self.prevent_event = True
 
-            old_keys: Set[str] = set(change['old']) - set(('None',))
-            new_keys: Set[str] = set(change['new']) - set(('None',))
+            old_keys: set[str] = set(change['old']) - set(('None',))
+            new_keys: set[str] = set(change['new']) - set(('None',))
 
-            add_options: Set[str] = set(self.pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
-            del_options: Set[str] = set(self.pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
+            add_options: set[str] = set(self.pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
+            del_options: set[str] = set(self.pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
 
-            ctrl_options: Set[str] = (set(self._filter_keys.options) - del_options) | add_options
-            current_values: Set[str] = set(self._filter_keys.value)
-            ctrl_values: Set[str] = (current_values - del_options) | (
+            ctrl_options: set[str] = (set(self._filter_keys.options) - del_options) | add_options
+            current_values: set[str] = set(self._filter_keys.value)
+            ctrl_values: set[str] = (current_values - del_options) | (
                 add_options if self.autoselect_key_values else set()
             )
 
@@ -188,7 +188,7 @@ class PivotKeysMixIn:
             else [self._multi_pivot_keys_picker]
         )
 
-    def observe(self, value: bool, *, handler: Callable[[Any], None], **kwargs) -> None:
+    def observe(self, value: bool, *, handler: t.Callable[[t.Any], None], **kwargs) -> None:
 
         if handler is None:
             return
@@ -221,3 +221,79 @@ class PivotKeysMixIn:
                 w.VBox([w.HTML("<b>Value</b>"), self._filter_keys]),
             ]
         )
+
+
+class MultiLinePivotKeysMixIn(PivotKeysMixIn):
+    def __init__(self, pivot_key_specs: t.Any = None, **kwargs):
+        super().__init__(pivot_key_specs, **kwargs)
+        self._line_name: w.Text = w.Text(description="", layout=dict(width='80px'))
+        self._add_line: w.Button = w.Button(description="➕")
+        self._del_line: w.Button = w.Button(description="➖")
+        self._lines: w.Dropdown = w.Dropdown()
+
+    def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
+        width: str = kwargs.get('width', '120px')
+        self._filter_keys.rows = kwargs.get('rows', 12)
+        self._filter_keys.layout = kwargs.get('layout', dict(width=width))
+        # self._single_pivot_key_picker.layout = kwargs.get('layout', dict(width=width))
+        return w.VBox(
+            [
+                w.HBox([self._lines, self._del_line]),
+                self._filter_keys,
+                w.HBox([w.HTML("Add line:"), self._line_name, self._add_line]),
+            ]
+        )
+
+    def display_trigger_ctrls(self) -> list[w.Widget]:
+        return []
+
+    def setup(self, **kwargs) -> "PivotKeysMixIn":
+        if hasattr(super(), 'setup'):
+            getattr(super(), 'setup')(**kwargs)
+        self._add_line.on_click(self._add_line_callback)
+        self._del_line.on_click(self._del_line_callback)
+        self._lines.observe(self.line_selected, type='change')
+        return self
+
+    def _add_line_callback(self, *_):
+        self.add_line(name=self.line_name, values=self.filter_key_selected_values)
+        self._line_name.value = ""
+        self._filter_keys.value = []
+
+    def add_line(self, name: str, values: list[str]):
+        if not name:
+            self.alert("😡 you must give the line a name")
+            return
+        if not values:
+            self.alert("😡 please select value(s) that define the line")
+            return
+        self._lines.options = list(self._lines.options or []) + [(name, values)]
+        self.alert(f"✅ {name} added!")
+
+    def _del_line_callback(self, *_):
+        if not self._lines.options:
+            self.alert("😡 no lines to delete")
+            return
+        if not self._lines.value:
+            self.alert("😡 please select line to delete")
+        options = list(self._lines.options)
+        name = options[self._lines.index][0]
+        del options[self._lines.index]
+        self._lines.value = None
+        self._lines.options = options
+        self.alert(f"✅ {name} deleted")
+        if options:
+            self._lines.index = 0
+
+    def line_selected(self, *_):
+        if self._lines.value:
+            self._line_name.value = self._lines.options[self._lines.index][0]
+            self._filter_keys.value = self._lines.options[self._lines.index][1]
+
+    @property
+    def line_name(self) -> str:
+        return self._line_name.value
+
+    @property
+    def lines(self) -> list:
+        return self._lines.options or []
