@@ -334,7 +334,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         token2id: pc.Token2Id = pc.Token2Id(data={t: i for (t, i) in zip(dictionary.token, dictionary.index)})
         return token2id
 
-    @property
+    @cached_property
     def topic_labels(self) -> dict:
         if 'label' not in self.topic_token_overview.columns:
             return {}
