@@ -7,7 +7,7 @@ import pytest
 from penelope import pipeline
 from penelope.pipeline.sparv import pipelines
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name,non-ascii-name
 
 
 def fake_config() -> pipeline.CorpusConfig:

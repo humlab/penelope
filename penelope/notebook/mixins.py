@@ -18,6 +18,7 @@ PivotKeySpecArg = t.Union[list[PivotKeySpec], dict[str, list[PivotKeySpec]]]
 
 # pylint: disable=no-member
 
+
 class DownloadMixIn:
     def __init__(self) -> None:
         super().__init__()
@@ -203,6 +204,9 @@ class PivotKeysMixIn:
             getattr(super(), "observe")(value=value, handler=handler, **kwargs)
 
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
+        if not self.pivot_keys.has_pivot_keys:
+            return w.VBox()
+
         width: str = kwargs.get('width', '100px')
         self._filter_keys.rows = kwargs.get('rows', 12)
         self._filter_keys.layout = kwargs.get('layout', dict(width='120px'))

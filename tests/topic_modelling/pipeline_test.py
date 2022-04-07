@@ -11,10 +11,10 @@ from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
 from penelope.topic_modelling.utility import find_models
 from penelope.vendor import gensim_api
-from tests.fixtures import TranströmerCorpus
+from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name, non-ascii-name
 
 
 def tranströmer_topic_model_payload(method: str, target_folder: str, target_name: str) -> DocumentPayload:

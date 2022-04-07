@@ -18,6 +18,8 @@ from penelope.corpus import (
 from penelope.corpus.readers import TextReaderOpts, tng
 from penelope.utility import extract_filenames_metadata, flatten
 
+# pylint: disable=non-ascii-name
+
 
 class SimpleTestCorpus:
     def __init__(self, filename: str, reader_opts: TextReaderOpts):

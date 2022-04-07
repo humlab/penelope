@@ -17,12 +17,12 @@ from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES, co
 from penelope.topic_modelling.engines.engine_gensim.utility import diagnostics_to_topic_token_weights_data
 from penelope.topic_modelling.engines.interface import ITopicModelEngine
 from penelope.vendor.gensim_api._gensim.wrappers.mallet_tm import MalletTopicModel
-from tests.fixtures import TranströmerCorpus
+from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
 from tests.utils import OUTPUT_FOLDER
 
 from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
 
-# pylint: disable=ungrouped-imports
+# pylint: disable=ungrouped-imports,non-ascii-name,protected-access,redefined-outer-name
 
 
 try:
@@ -32,8 +32,6 @@ except (ImportError, NameError):
 
 
 jj = os.path.join
-
-# pylint: disable=protected-access,redefined-outer-name)
 
 
 def create_train_corpus() -> tm.TrainingCorpus:

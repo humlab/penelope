@@ -15,6 +15,8 @@ from ..utils import OUTPUT_FOLDER
 
 jj = os.path.join
 
+# pylint: disable=non-ascii-name
+
 
 def create_keyness_test_bundle(
     data: Any, *, concept: str = 'd', ignore_padding=True, context_width: int = 1, processes: int = 2

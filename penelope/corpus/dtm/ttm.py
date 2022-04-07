@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 
 
 class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
-
     @property
     def window_counts(self) -> Optional[TokenWindowCountMatrix]:
         ...

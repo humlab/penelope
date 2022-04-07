@@ -19,7 +19,6 @@ def slice_corpus() -> VectorizedCorpus:
 
 
 def test_slice_by_indices():
-    ...
 
     make_corpus: Callable[[], VectorizedCorpus] = lambda: create_abc_corpus(
         [
@@ -74,7 +73,7 @@ def test_normalize_with_keep_magnitude():
 
 
 def test_slice_by_indices2():
-    ...
+
     # self: IVectorizedCorpusProtocol, n_top: int, sort_indices: bool=False, override: bool=False) -> np.ndarray:
     corpus: VectorizedCorpus = create_abc_corpus(
         [
@@ -243,7 +242,7 @@ def test_compress():
 
 
 def test_nlargest():
-    ...
+
     # self: IVectorizedCorpusProtocol, n_top: int, sort_indices: bool=False, override: bool=False) -> np.ndarray:
     corpus: VectorizedCorpus = create_abc_corpus(
         [
