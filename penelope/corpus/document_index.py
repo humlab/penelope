@@ -729,10 +729,12 @@ def overload_by_document_index_properties(
     if isinstance(column_names, str):
         column_names = [column_names]
 
-    overload_columns: list[str] = [c for c in column_names if c not in df.columns and c in document_index.columns]
+    missing_columns: list[str] = [c for c in column_names if c not in df.columns and c not in document_index.columns]
+    if len(missing_columns) > 0:
+        logger.warning(f"overload: none of {', '.join(missing_columns)} found in document index.")
 
+    overload_columns: list[str] = [c for c in column_names if c not in df.columns and c in document_index.columns]
     if len(overload_columns) == 0:
-        logger.warning(f"overload: none of {', '.join(column_names)} found in document index.")
         return df
 
     overload_data: pd.DataFrame = (
