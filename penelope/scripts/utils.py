@@ -10,6 +10,7 @@ try:
 except ImportError:
     click = object()
 
+# pylint: disable=no-member
 
 CLI_LOG_PATH = './logs'
 

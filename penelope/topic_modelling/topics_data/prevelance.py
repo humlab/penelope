@@ -149,7 +149,7 @@ def _compute_average_yearly_topic_weights_above_threshold(
 
 def _compute_yearly_topic_weights_statistics(
     dtw: pd.DataFrame,
-    topic_ids: None | int | list[int],
+    topic_ids: None | int | list[int] = None,
 ) -> pd.DataFrame:
     """Setup all topic-year combinations, aggregate max, sum, average & count."""
 

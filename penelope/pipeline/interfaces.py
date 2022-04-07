@@ -213,7 +213,6 @@ class PipelinePayload:
 
     def extend(self, _: DocumentPayload):
         """Add properties of `other` to self. Used when combining two pipelines"""
-        ...
 
     def extend_document_index(self, other_index: DocumentIndex) -> "PipelinePayload":
         if self.effective_document_index is None:

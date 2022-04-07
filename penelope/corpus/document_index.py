@@ -723,7 +723,7 @@ def overload_by_document_index_properties(
         return df
 
     if 'document_id' not in df.columns:
-        logger.warning(f"overload: document_id not found in target.")
+        logger.warning("overload: `document_id` not found in target.")
         return df
 
     if isinstance(column_names, str):

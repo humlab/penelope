@@ -29,7 +29,6 @@ from memoization import cached
 try:
     from textacy.representations import get_doc_freqs
 except ImportError:
-    ...
 
     def get_doc_freqs(doc_term_matrix: sp.csr_matrix) -> np.ndarray:
         """Copyright 2016 Chartbeat, Inc.

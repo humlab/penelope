@@ -354,7 +354,6 @@ def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
 
 # FXIME: Reprecate pickled stora
 class PickleUtility:
-    ...
 
     @staticmethod
     def load(folder: str) -> InferredTopicsData:

@@ -16,6 +16,7 @@ from .widgets_utils import register_observer
 PivotKeySpec = dict[str, t.Union[str, dict[str, int]]]
 PivotKeySpecArg = t.Union[list[PivotKeySpec], dict[str, list[PivotKeySpec]]]
 
+# pylint: disable=no-member
 
 class DownloadMixIn:
     def __init__(self) -> None:

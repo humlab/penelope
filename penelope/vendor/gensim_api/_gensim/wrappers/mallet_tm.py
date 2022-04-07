@@ -1,6 +1,6 @@
 import os
 import re
-import xml.etree.cElementTree as ET
+import xml.etree.ElementTree as ET
 from typing import Iterable, Mapping, Tuple
 
 import numpy as np

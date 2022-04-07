@@ -239,7 +239,6 @@ class IVectorizedCorpus(abc.ABC):
 
 
 class IVectorizedCorpusProtocol(Protocol):
-    ...
 
     @staticmethod
     def create(

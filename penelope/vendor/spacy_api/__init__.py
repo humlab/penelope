@@ -7,7 +7,6 @@ try:
     SPACY_INSTALLED: bool = True
 except (ImportError, NameError):
     SPACY_INSTALLED: bool = False
-    ...
 try:
     from ._spacy import (
         SPACY_DATA,

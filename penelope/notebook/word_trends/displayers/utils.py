@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import pandas as pd
 
 # from bokeh.models.widgets.tables import NumberFormatter, StringFormatter
