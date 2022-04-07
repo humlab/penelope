@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Sequence, Tuple, Union
+import typing as t
 
 import bokeh.models as bm
 import bokeh.palettes
@@ -26,7 +26,9 @@ layout_algorithms = {
 }
 
 
-def _layout_args(layout_algorithm: str, network: nx.Graph, scale: float, weight_name: str = 'weight') -> Dict[str, Any]:
+def _layout_args(
+    layout_algorithm: str, network: nx.Graph, scale: float, weight_name: str = 'weight'
+) -> dict[str, t.Any]:
 
     args = None
 
@@ -48,7 +50,7 @@ def _layout_args(layout_algorithm: str, network: nx.Graph, scale: float, weight_
     return args
 
 
-def _get_layout_algorithm(layout_algorithm: str) -> Callable:
+def _get_layout_algorithm(layout_algorithm: str) -> t.Callable:
     if layout_algorithm not in layout_algorithms:
         raise Exception("Unknown algorithm {}".format(layout_algorithm))
     return layout_algorithms.get(layout_algorithm, None)
@@ -64,7 +66,7 @@ def project_to_range(value: float, low: float, high: float) -> float:
     return low + (high - low) * value
 
 
-def project_values_to_range(values: Sequence[float], low: float, high: float) -> Sequence[float]:
+def project_values_to_range(values: t.Sequence[float], low: float, high: float) -> t.Sequence[float]:
     w_max = max(values)
     return [low + (high - low) * (x / w_max) for x in values]
 
@@ -75,16 +77,16 @@ def _plot_network(
     scale: float = 1.0,
     threshold: float = 0.0,
     node_description: pd.Series = None,
-    node_proportions: Union[int, str] = None,
+    node_proportions: t.Union[int, str] = None,
     weight_name: str = 'weight',
     weight_scale: float = 5.0,
     normalize_weights: bool = True,
     node_opts=None,
     line_opts=None,
     element_id: str = 'nx_id3',
-    figsize: Tuple[int, int] = (900, 900),
-    node_range: Tuple[int, int] = (20, 60),
-    edge_range: Tuple[int, int] = (1.0, 5.0),
+    figsize: tuple[int, int] = (900, 900),
+    node_range: tuple[int, int] = (20, 60),
+    edge_range: tuple[int, int] = (1.0, 5.0),
 ):
     if threshold > 0:
 
@@ -151,7 +153,8 @@ def _plot_network(
 
     r_nodes.glyph.fill_color = 'lightgreen'  # 'community_color'
 
-    nodes_source.data['name'] = [str(x) for x in nodes_source.data['name']]  # pylint: disable=unsubscriptable-object
+    nodes_source.data.update(name=[str(x) for x in nodes_source.data.get('name')])
+
     p.add_layout(
         bm.LabelSet(source=nodes_source, text_align='center', text_baseline='middle', text_color='black', **text_opts)
     )
@@ -159,11 +162,11 @@ def _plot_network(
     return p
 
 
-def layout_args(layout_algorithm: str, network: nx.Graph, scale: float) -> Dict[str, Any]:
+def layout_args(layout_algorithm: str, network: nx.Graph, scale: float) -> dict[str, t.Any]:
     return _layout_args(layout_algorithm, network, scale)
 
 
-def get_layout_algorithm(layout_algorithm: str) -> Callable:
+def get_layout_algorithm(layout_algorithm: str) -> t.Callable:
     return _get_layout_algorithm(layout_algorithm)
 
 
@@ -171,5 +174,4 @@ def project_series_to_range(series: pd.Series, low: float, high: float) -> pd.Se
     return _project_series_to_range(series, low, high)
 
 
-plot_network = _plot_network
 plot_network = _plot_network
