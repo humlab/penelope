@@ -174,6 +174,7 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
             .threshold(self.threshold)
             .filter_by_document_keys(**self.filter_opts.opts)
             .filter_by_n_top(self.max_count)
+            .overload("document_name,n_raw_tokens,n_tokens")
             .value
         )
         return data
@@ -254,6 +255,7 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
             .threshold(self.threshold)
             .filter_by_document_keys(**self.filter_opts.opts)
             .filter_by_n_top(self.max_count)
+            .overload("document_name,n_raw_tokens,n_tokens")
             .value
         )
         return data
