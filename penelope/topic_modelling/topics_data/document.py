@@ -218,7 +218,10 @@ class DocumentTopicsCalculator:
         return data
 
     def yearly_topic_weights(
-        self, result_threshold: float, n_top_relevance: int, topic_ids: None | int | list[int]
+        self,
+        result_threshold: float,
+        n_top_relevance: int,
+        topic_ids: None | int | list[int] = None,
     ) -> "DocumentTopicsCalculator":
         self.data = prevelance.compute_yearly_topic_weights(
             self.data,
