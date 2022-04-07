@@ -31,7 +31,7 @@ def display_topic_trends(
 
     figopts: dict = {**default_figopts, **figopts}
 
-    p: bp.Figure = bp.figure(**figopts)
+    p: bp.Figure = bp.figure(**figopts, sizing_mode='scale_width')
 
     _ = p.vbar(x=xs, top=ys, width=0.5, fill_color="#b3de69")
 

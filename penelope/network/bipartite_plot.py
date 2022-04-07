@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence
+from typing import Any, Sequence
 
 import bokeh.models as bm
 import bokeh.plotting as bp
@@ -91,12 +91,17 @@ def plot_bipartite_network(
         network, layout_data, scale=6.0, normalize=False
     )
 
-    edges_alphas: List[float] = metrics.compute_alpha_vector(lines_source.data['weights'])
+    edges_alphas: [float] = metrics.compute_alpha_vector(lines_source.data['weights'])
 
     lines_source.add(edges_alphas, 'alphas')
 
     p: bp.Figure = bp.figure(
-        plot_width=plot_width, plot_height=plot_height, x_axis_type=None, y_axis_type=None, tools=tools
+        plot_width=plot_width,
+        plot_height=plot_height,
+        sizing_mode='scale_width',
+        x_axis_type=None,
+        y_axis_type=None,
+        tools=tools,
     )
 
     _ = p.multi_line(

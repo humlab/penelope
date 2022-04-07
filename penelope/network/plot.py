@@ -119,7 +119,9 @@ def plot(  # pylint: disable=W0102
     node_opts = pu.extend(DFLT_NODE_OPTS, node_opts or {})
     line_opts = pu.extend(DFLT_EDGE_OPTS, line_opts or {})
 
-    p = figure(plot_width=figsize[0], plot_height=figsize[1], tools=tools or TOOLS, **figkwargs)
+    p = figure(
+        plot_width=figsize[0], plot_height=figsize[1], sizing_mode='scale_width', tools=tools or TOOLS, **figkwargs
+    )
 
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None

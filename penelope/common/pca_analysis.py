@@ -1,4 +1,5 @@
 import itertools
+import typing as t
 
 import bokeh
 
@@ -8,7 +9,7 @@ except ImportError:
     ...
 
 
-def compute(data, n_components=2):
+def compute(data: t.Any, n_components: int = 2):
     pca = PCA(n_components=n_components)
     X_pca = pca.fit_transform(data)
     return X_pca
@@ -17,13 +18,13 @@ def compute(data, n_components=2):
 def plot(X_pca, clusters=None):
 
     if clusters is not None:
-        palette = itertools.cycle(bokeh.palettes.Colorblind8)
-        cmap = {x: next(palette) for x in set(clusters)}
+        palette: t.Iterable[str] = itertools.cycle(bokeh.palettes.Colorblind8)
+        cmap: dict = {x: next(palette) for x in set(clusters)}
         colors = [cmap[x] for x in clusters]
     else:
         colors = 'navy'
 
-    p = bokeh.plotting.figure(plot_width=600, plot_height=600)
+    p = bokeh.plotting.figure(plot_width=600, plot_height=600, sizing_mode='scale_width')
 
     # p.legend(loc="best", shadow=False, scatterpoints=1)
 

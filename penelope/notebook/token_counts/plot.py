@@ -43,7 +43,7 @@ def plot_stacked_bar(df: pd.DataFrame, **figopts):
     data_source: dict = dict(category=[str(x) for x in df.index], **{column: df[column] for column in columns})
     colors: Iterable[str] = generate_colors(len(columns), DEFAULT_PALETTE)
 
-    p: Figure = figure(x_range=data_source['category'], **figopts)
+    p: Figure = figure(x_range=data_source['category'], **figopts, sizing_mode='scale_width')
 
     p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
 
@@ -90,7 +90,7 @@ def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> Figu
 
     data_source: dict = to_multiline_data_source(data=df, smoother=None)
 
-    p: Figure = figure(**(figopts or {}))
+    p: Figure = figure(**(figopts or {}), sizing_mode='scale_width')
 
     p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
     p.y_range.start = 0
