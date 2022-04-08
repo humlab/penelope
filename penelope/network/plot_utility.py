@@ -11,7 +11,7 @@ from . import layout_source, metrics
 from .networkx import utility as nu
 from .networkx.networkx_api import nx
 
-# pylint: disable=too-many-arguments, unnecessary-lambda
+# pylint: disable=too-many-arguments,unnecessary-lambda,unsubscriptable-object,unsupported-assignment-operation
 
 
 if 'extend' not in globals():
@@ -113,9 +113,9 @@ def _plot_network(
         project_range=edge_range,
     )
 
-    nodes_source = layout_source.create_nodes_data_source(sub_network, layout)
+    nodes_source: bm.ColumnDataSource = layout_source.create_nodes_data_source(sub_network, layout)
     nodes_community = metrics.compute_partition(sub_network)
-    community_colors = metrics.partition_colors(nodes_community, bokeh.palettes.Category20[20])
+    community_colors: list[str] = metrics.partition_colors(nodes_community, bokeh.palettes.Category20[20])
 
     nodes_source.add(nodes_community, 'community')
     nodes_source.add(community_colors, 'community_color')
@@ -153,7 +153,8 @@ def _plot_network(
 
     r_nodes.glyph.fill_color = 'lightgreen'  # 'community_color'
 
-    nodes_source.data.update(name=[str(x) for x in nodes_source.data.get('name')])
+    # nodes_source.add([str(x) for x in nodes_source.data['name']], 'name')
+    nodes_source.data['name'] = [str(x) for x in nodes_source.data['name']]  # pylint: disable=unsubscriptable-object
 
     p.add_layout(
         bm.LabelSet(source=nodes_source, text_align='center', text_baseline='middle', text_color='black', **text_opts)
