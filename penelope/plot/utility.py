@@ -1,26 +1,23 @@
 from __future__ import annotations
 
+import bokeh.models as bm
+import bokeh.plotting as bp
 import numpy as np
 import pandas as pd
-from bokeh.io import show
-from bokeh.models import FuncTickFormatter
-from bokeh.plotting import figure
 from scipy.interpolate import PchipInterpolator
 
 from penelope.notebook.utility import generate_colors, generate_temporal_ticks
 
 
 def pchip_interpolate_frame(
-    df: pd.DataFrame,
-    step: float = 0.1,
-    columns: list[str] = None,
+    df: pd.DataFrame, step: float = 0.1, columns: list[str] = None, category_name: str = 'category'
 ) -> pd.DataFrame:
     """Smoothes `columns` in `df` using  Scipy PchipInterpolator."""
 
     xs: np.ndarray = np.arange(df.index.min(), df.index.max() + step, step)
     columns = columns if columns is not None else df.columns
     data: dict = {column: PchipInterpolator(df.index, df[column])(xs) for column in columns}
-    data['category'] = xs
+    data[category_name] = xs
     return pd.DataFrame(data)
 
 
@@ -45,7 +42,7 @@ def plot_multiple_value_series(
     category_series = [str(x) for x in data[category_name]] * len(columns)
     value_series = [data[name].values for name in columns]
 
-    p = figure(x_range=category_series[0], **fig_opts)
+    p = bp.figure(x_range=category_series[0], **fig_opts)
 
     if kind == 'vbar_stack':
         plot_opts = {**dict(width=0.2), **plot_opts}
@@ -53,19 +50,7 @@ def plot_multiple_value_series(
     else:
         p.multi_line(xs=[data.year] * len(columns), ys=value_series, **plot_opts)
 
-    show(p)
-
-
-def pchip_interpolate_frame2(
-    df: pd.DataFrame, step: float = 0.1, columns: list[str] = None, category_column: str = 'year'
-) -> pd.DataFrame:
-    """Smoothes `columns` in `df` using  Scipy PchipInterpolator."""
-
-    xs: np.ndarray = np.arange(df.index.min(), df.index.max() + step, step)
-    columns = columns if columns is not None else df.columns
-    data: dict = {column: PchipInterpolator(df.index, df[column])(xs) for column in columns}
-    data[category_column] = xs
-    return pd.DataFrame(data)
+    bp.show(p)
 
 
 def plot_multiple_value_series2(
@@ -87,7 +72,7 @@ def plot_multiple_value_series2(
     plot_opts = plot_opts or {}
 
     if smooth and 'line' in kind.lower():
-        data = pchip_interpolate_frame(data.set_index(category_name))
+        data = pchip_interpolate_frame(data.set_index(category_name), category_name=category_name)
 
     columns = columns or [x for x in data.columns if x != category_name]
     category_series = [[x for x in data[category_name].values]] * len(columns)
@@ -96,7 +81,7 @@ def plot_multiple_value_series2(
     if kind.lower() == 'bar':
         fig_opts['x_range'] = data[category_name].astype(str)
 
-    p = figure(**fig_opts)
+    p = bp.figure(**fig_opts)
     p.xaxis.major_label_orientation = 1
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
@@ -109,7 +94,7 @@ def plot_multiple_value_series2(
     if kind.lower() == 'bar':
         offset = data[category_name].min() % n_tick
         data[category_name] = data[category_name].astype(str)
-        p.axis.formatter = FuncTickFormatter(
+        p.axis.formatter = bm.FuncTickFormatter(
             code=f"""
             return ((index == 0) || ((index - {offset}) % {n_tick} == 0)) ? tick : "";
         """
@@ -123,4 +108,4 @@ def plot_multiple_value_series2(
     p.legend.location = "top_right"
     p.legend.orientation = "vertical"
 
-    show(p)
+    bp.show(p)
