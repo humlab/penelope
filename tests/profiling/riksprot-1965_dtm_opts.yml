@@ -1,8 +1,3 @@
-config_filename: /home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965/corpus.yml
-corpus_source: /home/roger/source/welfare-state-analytics/pyriksprot/data/tagged-speech-corpus-id-1965
-output_folder: ./tests/output/
-output_tag: dtm_1965
-filename_pattern: "**/prot-*.feather"
 phrase: null
 phrase_file: null
 create_subfolder: true
