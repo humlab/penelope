@@ -1,0 +1,24 @@
+append_pos: false
+config_filename: ./opts/riksprot.yml
+corpus_source: /home/roger/source/welfare-state-analytics/pyriksprot/tests/test_data/source/main/tagged_frames_speeches.feather/
+create_subfolder: true
+deserialize_processes: 1
+filename_pattern: "**/prot-*.feather"
+keep_numerals: true
+keep_symbols: true
+lemmatize: true
+max_tokens: 2000000
+max_word_length: null
+min_word_length: 2
+output_folder: ./data
+output_tag: dtm_test.5files
+phrase_file: null
+phrase: null
+pos_excludes: null
+pos_includes: null
+pos_paddings: null
+remove_stopwords: null
+tf_threshold_mask: true
+tf_threshold: 2
+to_lower: false
+

@@ -1,0 +1,56 @@
+corpus_name: riksdagens-protokoll
+corpus_pattern: '*'
+corpus_type: 3
+language: swedish
+checkpoint_opts:
+    content_type_code: 1
+    sep: "\t"
+    quoting: 3
+    document_index_name: null
+    document_index_sep: null
+    text_column: token
+    lemma_column: lemma
+    pos_column: pos
+    extra_columns: []
+    custom_serializer_classname:
+    deserialize_processes: 1
+    deserialize_chunksize: 4
+    index_column: null
+pipelines:
+  topic_modeling_pipeline:
+    class_name: 'penelope.pipeline.topic_model.pipelines.from_id_tagged_frame_pipeline'
+    options:
+      id_to_token: false
+      file_pattern: '**/prot-*.feather'
+      tagged_column: lemma_id
+  tagged_frame_pipeline:
+    class_name: penelope.pipeline.topic_model.pipelines.load_id_tagged_frame_pipeline
+    options:
+      id_to_token: true
+      file_pattern: '**/prot-*.feather'
+pipeline_payload:
+  source: null
+  document_index_source: document_index.feather
+  document_index_sep: "\t"
+  filenames: null
+  memory_store:
+    lang: se
+    tagger: Sparv
+    sparv_version: 4
+    text_column: token
+    lemma_column: lemma
+    pos_column: pos
+  pos_schema_name: SUC
+filter_opts:
+text_reader_opts:
+  as_binary: false
+  filename_fields:
+   - "year:prot\\_(\\d{4}).*"
+   - "year2:prot_\\d{4}(\\d{2})__*"
+   - "number:prot_\\d+[afk_]{0,4}__(\\d+).*"
+  filename_filter: null
+  filename_pattern: '**/prot-*.feather'
+  index_field: null
+  sep: "\t"
+  quoting: 3
+
