@@ -63,7 +63,7 @@ def test_get_file_when_fix_hyphenation_is_true_removes_hyphens():
     filename = 'dikt_2019_03_test.txt'
     reader = create_text_reader(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename])
     result = next(reader)
-    expected = 'Nordlig storm. Det är den i den tid när rönnbärsklasar mognar. Vaken i mörkret hör man\nstjärnbilderna stampa i sina spiltor\nhögt över trädet'
+    expected = 'Nordlig storm. Det är den i den tid när rönnbärsklasar\nmognar. Vaken i mörkret hör man\nstjärnbilderna stampa i sina spiltor\nhögt över trädet'
     assert filename == result[0]
     assert expected == result[1]
 
@@ -75,7 +75,7 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
         filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename]
     )
     result = next(reader)
-    expected = 'Nordlig storm. Det är den i den tid när rönnbärsklasar mognar. Vaken i mörkret hör man\nstjärnbilderna stampa i sina spiltor\nhögt över trädet'
+    expected = 'Nordlig storm. Det är den i den tid när rönnbärsklasar\nmognar. Vaken i mörkret hör man\nstjärnbilderna stampa i sina spiltor\nhögt över trädet'
     assert filename == result[0]
     assert expected == result[1]
     assert reader.metadata[0]['year'] > 0

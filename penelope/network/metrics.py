@@ -1,7 +1,11 @@
 from typing import List
 
-import community as community_louvain
-import networkx as nx
+from .networkx.networkx_api import nx
+
+try:
+    import community as community_louvain
+except ImportError:
+    ...
 
 DISTANCE_METRICS = {
     # 'Mahalanobis': 'mahalanobis',

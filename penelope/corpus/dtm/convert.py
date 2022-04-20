@@ -4,9 +4,10 @@ from typing import Any, Iterable, Mapping, Tuple
 
 import pandas as pd
 import scipy.sparse as sp
-from gensim.matutils import Sparse2Corpus
 from more_itertools import peekable
-from textacy.representations.vectorizers import Vectorizer
+
+from penelope.vendor.gensim_api import corpora as gensim_corpora
+from penelope.vendor.textacy_api import Vectorizer
 
 from ..token2id import id2token2token2id
 from ..tokenized_corpus import TokenizedCorpus
@@ -18,7 +19,7 @@ from .vectorizer import CorpusVectorizer, DocumentTermsStream, VectorizeOpts
     USES sklearn.feature_extraction.text.CountVectorizer
 
 2. engine_gensim.convert.TranslateCorpus -> Sparse2Corpus, Dictionary
-    gensim.Dictionary.doc2bow, corpus2csc
+    Dictionary.doc2bow, corpus2csc
 
 2. textacy.Vectorizer -> sp.csr_matrix, id_to_term
     Has lots of options! Easy to translate to VectorizedCorpus
@@ -29,7 +30,7 @@ Returns:
 
 
 def from_sparse2corpus(
-    source: Sparse2Corpus, *, token2id: Mapping[str, int], document_index: pd.DataFrame
+    source: gensim_corpora.Sparse2Corpus, *, token2id: Mapping[str, int], document_index: pd.DataFrame
 ) -> VectorizedCorpus:
     corpus: VectorizedCorpus = VectorizedCorpus(
         bag_term_matrix=source.sparse.tocsr().T, token2id=token2id, document_index=document_index
@@ -39,7 +40,7 @@ def from_sparse2corpus(
 
 def to_sparse2corpus(corpus: VectorizedCorpus):
 
-    return Sparse2Corpus(corpus.data, documents_columns=False)
+    return gensim_corpora.Sparse2Corpus(corpus.data, documents_columns=False)
 
 
 def from_spmatrix(
@@ -136,7 +137,7 @@ class TranslateCorpus:
             return from_spmatrix(source, token2id=token2id, document_index=document_index)
 
         # if type(source).__name__.endswith('Sparse2Corpus'):
-        if isinstance(source, Sparse2Corpus):
+        if isinstance(source, gensim_corpora.Sparse2Corpus):
             return from_sparse2corpus(source, token2id=token2id, document_index=document_index)
 
         if isinstance(source, TokenizedCorpus):

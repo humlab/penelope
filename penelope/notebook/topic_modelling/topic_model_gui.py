@@ -11,8 +11,8 @@ from IPython.display import display
 from loguru import logger
 
 import penelope.topic_modelling as tm
-import penelope.vendor.gensim as gensim_utility
-import penelope.vendor.textacy as textacy_utility
+from penelope.vendor import textacy_api
+from penelope.vendor.gensim_api import corpora as gensim_corpora
 
 from .mixins import TopicsStateGui
 from .model_container import TopicModelContainer
@@ -60,7 +60,7 @@ def get_topics_unstacked(
 ) -> pd.DataFrame:
     """Returns the top `n_tokens` tokens for each topic. The token's column index is in ascending probability"""
 
-    engine: types.ModuleType = tm.get_engine_by_model_type(model)
+    engine: tm.ITopicModelEngine = tm.get_engine_by_model_type(model)
     n_topics: int = engine.n_topics()
 
     topic_ids: List[int] = topic_ids or range(n_topics)
@@ -69,7 +69,7 @@ def get_topics_unstacked(
         {
             'Topic#{:02d}'.format(topic_id + 1): [
                 word[0]
-                for word in engine.topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
+                for word in engine.top_topic_tokens(model=model, topic_id=topic_id, n_tokens=n_tokens, id2term=id2term)
             ]
             for topic_id in topic_ids
         }
@@ -288,7 +288,7 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
                 selected = set(self.corpus_widgets.stop_words.value)
                 frequent_words = [
                     x[0]
-                    for x in textacy_utility.get_most_frequent_words(
+                    for x in textacy_api.get_most_frequent_words(
                         corpus,
                         100,
                         normalize=self.corpus_widgets.normalize.value,
@@ -315,7 +315,7 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
         gui = self.corpus_widgets
 
         pipeline = (
-            textacy_utility.ExtractPipeline(corpus, target=gui.normalize.value)
+            textacy_api.ExtractPipeline(corpus, target=gui.normalize.value)
             .ingest(
                 as_strings=True,
                 include_pos=gui.include_pos.value,
@@ -426,7 +426,7 @@ class PreparedCorpusUserInterface(ComputeTopicModelUserInterface):
 
     def get_corpus_terms(self, _):
         filepath = self.corpus_widgets.filepath.value
-        self.corpus = gensim_utility.SimpleExtTextCorpus(filepath)
+        self.corpus = gensim_corpora.SimpleExtTextCorpus(filepath)
         doc_terms = [list(terms) for terms in self.corpus.get_texts()]
         self.document_index = self.fn_doc_index(self.corpus)
         return doc_terms

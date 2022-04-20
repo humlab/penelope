@@ -3,10 +3,11 @@ import bokeh.palettes
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 
-import penelope.network.layout as network_layout
-import penelope.network.networkx.utility as networkx_utility
-import penelope.notebook.widgets_utils as widgets_utils
-import penelope.utility as utility
+from penelope import utility as pu
+from penelope.notebook import widgets_utils as wu
+
+from . import layout as nl
+from .networkx import utility as nu
 
 # pylint: disable=too-many-arguments
 
@@ -48,7 +49,7 @@ def setup_node_size(nodes, node_size, node_size_range):
         node_size = node_size_range[0]
 
     if node_size in nodes.keys() and node_size_range is not None:
-        nodes['clamped_size'] = utility.clamp_values(nodes[node_size], node_size_range)
+        nodes['clamped_size'] = pu.clamp_values(nodes[node_size], node_size_range)
         node_size = 'clamped_size'
 
     return node_size
@@ -85,9 +86,9 @@ def plot(  # pylint: disable=W0102
     **figkwargs,
 ):
     if threshold > 0:
-        network = networkx_utility.get_sub_network(network, threshold)
+        network = nu.get_sub_network(network, threshold)
 
-    edges = networkx_utility.get_positioned_edges(network, layout)
+    edges = nu.get_positioned_edges(network, layout)
 
     if normalize_weights and 'weight' in edges.keys():
         max_weight = max(edges['weight'])
@@ -98,11 +99,11 @@ def plot(  # pylint: disable=W0102
 
     # edges = dict(source=u, target=v, xs=xs, ys=ys, weights=weights)
 
-    nodes = networkx_utility.get_positioned_nodes(network, layout)
+    nodes = nu.get_positioned_nodes(network, layout)
 
     # node_size = setup_node_size(nodes, node_size, node_size_range)
     if node_size in nodes.keys() and node_size_range is not None:
-        nodes['clamped_size'] = utility.clamp_values(nodes[node_size], node_size_range)
+        nodes['clamped_size'] = pu.clamp_values(nodes[node_size], node_size_range)
         node_size = 'clamped_size'
 
     label_y_offset = 'y_offset' if node_size in nodes.keys() else node_size + 8
@@ -115,10 +116,12 @@ def plot(  # pylint: disable=W0102
     edges_source: ColumnDataSource = ColumnDataSource(edges)
     nodes_source: ColumnDataSource = ColumnDataSource(nodes)
 
-    node_opts = utility.extend(DFLT_NODE_OPTS, node_opts or {})
-    line_opts = utility.extend(DFLT_EDGE_OPTS, line_opts or {})
+    node_opts = pu.extend(DFLT_NODE_OPTS, node_opts or {})
+    line_opts = pu.extend(DFLT_EDGE_OPTS, line_opts or {})
 
-    p = figure(plot_width=figsize[0], plot_height=figsize[1], tools=tools or TOOLS, **figkwargs)
+    p = figure(
+        plot_width=figsize[0], plot_height=figsize[1], sizing_mode='scale_width', tools=tools or TOOLS, **figkwargs
+    )
 
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
@@ -139,9 +142,7 @@ def plot(  # pylint: disable=W0102
             bokeh.models.HoverTool(
                 renderers=[r_nodes],
                 tooltips=None,
-                callback=widgets_utils.glyph_hover_callback(
-                    nodes_source, 'node_id', text_source, element_id=element_id
-                ),
+                callback=wu.glyph_hover_callback(nodes_source, 'node_id', text_source, element_id=element_id),
             )
         )
 
@@ -164,9 +165,9 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
     edges_source = ColumnDataSource(edges)
     nodes_source = ColumnDataSource(nodes)
 
-    node_opts = utility.extend(DFLT_NODE_OPTS, plot_opts.get('node_opts', {}))
-    line_opts = utility.extend(DFLT_EDGE_OPTS, plot_opts.get('line_opts', {}))
-    fig_opts = utility.extend(DFLT_FIG_OPTS, fig_opts or {})
+    node_opts = pu.extend(DFLT_NODE_OPTS, plot_opts.get('node_opts', {}))
+    line_opts = pu.extend(DFLT_EDGE_OPTS, plot_opts.get('line_opts', {}))
+    fig_opts = pu.extend(DFLT_FIG_OPTS, fig_opts or {})
 
     node_size = plot_opts.get('node_size', 1)
 
@@ -176,7 +177,7 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
     p.ygrid.grid_line_color = None
 
     if 'line_color' in edges.keys():
-        line_opts = utility.extend(line_opts, {'line_color': 'line_color', 'alpha': 1.0})
+        line_opts = pu.extend(line_opts, {'line_color': 'line_color', 'alpha': 1.0})
 
     _ = p.multi_line(
         xs='xs', ys='ys', line_width='weight', source=edges_source, **line_opts
@@ -196,7 +197,7 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
             bokeh.models.HoverTool(
                 renderers=[r_nodes],
                 tooltips=None,
-                callback=widgets_utils.glyph_hover_callback(
+                callback=wu.glyph_hover_callback(
                     nodes_source, 'node_id', text_source=text_source, element_id=element_id
                 ),
             )
@@ -220,14 +221,14 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
 
 def plot_df(df, source='source', target='target', weight='weight', layout_opts=None, plot_opts=None, fig_opts=None):
 
-    # print([ x.key for x in network_layout.layout_setups])
+    # print([ x.key for x in nl.layout_setups])
 
-    g = networkx_utility.df_to_nx(df, source=source, target=target, bipartite=False, weight=weight)
+    g = nu.df_to_nx(df, source=source, target=target, bipartite=False, weight=weight)
 
-    layout, _ = network_layout.layout_network(g, layout_opts['algorithm'], **layout_opts['args'])
+    layout, _ = nl.layout_network(g, layout_opts['algorithm'], **layout_opts['args'])
 
-    edges = networkx_utility.get_positioned_edges_as_dict(g, layout)
-    nodes = networkx_utility.get_positioned_nodes(g, layout)
+    edges = nu.get_positioned_edges_as_dict(g, layout)
+    nodes = nu.get_positioned_nodes(g, layout)
 
     plot_data = plot_network(nodes=nodes, edges=edges, plot_opts=plot_opts, fig_opts=fig_opts)
 

@@ -2,7 +2,6 @@ from typing import List
 
 import pandas as pd
 import pytest
-from spacy.tokens import Doc, Token
 
 from penelope.pipeline.spacy.convert import (
     filter_tokens_by_attribute_values,
@@ -10,6 +9,7 @@ from penelope.pipeline.spacy.convert import (
     text_to_tagged_frame,
     texts_to_tagged_frames,
 )
+from penelope.vendor.spacy_api import Doc, Token
 
 SAMPLE_TEXT = "Looking back. Looking back to see if someone is looking back at me."
 
@@ -22,6 +22,7 @@ def looking_back(en_nlp) -> Doc:
 
 
 def test_filter_tokens_by_attribute_values(looking_back: Doc):  # pylint: disable=unused-argument
+    pytest.importorskip("spacy")
 
     words = SAMPLE_TEXT.replace('.', ' .').split()
 
@@ -49,6 +50,7 @@ def assert_test_xyz_to_tagged_frame(tagged_frame: pd.DataFrame):
 
 
 def test_spacy_doc_to_tagged_frame(looking_back: Doc):
+    pytest.importorskip("spacy")
     tagged_frame = spacy_doc_to_tagged_frame(
         spacy_doc=looking_back,
         attributes=['text', 'pos_', 'lemma_'],

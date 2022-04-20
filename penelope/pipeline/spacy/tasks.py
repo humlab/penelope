@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 
-from spacy.language import Language
-
 from penelope.type_alias import TaggedFrame
-from penelope.vendor.spacy import load_model
+from penelope.vendor import spacy_api
 
 from .. import interfaces
 from ..tasks import DefaultResolveMixIn, ToTaggedFrame
@@ -21,7 +21,7 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
         self.in_content_type = interfaces.ContentType.ANY
         self.out_content_type = interfaces.ContentType.ANY
 
-    name_or_nlp: Union[str, Language] = None
+    name_or_nlp: Union[str, spacy_api.Language] = None
 
     disable: List[str] = None
     exclude: List[str] = None
@@ -30,7 +30,7 @@ class SetSpacyModel(DefaultResolveMixIn, interfaces.ITask):
 
     def setup(self):
         self.disable = DEFAULT_SPACY_DISABLES if self.disable is None else self.disable
-        self.name_or_nlp: Language = load_model(
+        self.name_or_nlp: spacy_api.Language = spacy_api.load_model(
             name_or_nlp=self.name_or_nlp,
             disable=self.disable,
             exclude=self.exclude,
@@ -53,9 +53,9 @@ class ToSpacyDoc(interfaces.ITask):
 
     def process_payload(self, payload: interfaces.DocumentPayload) -> interfaces.DocumentPayload:
         disable = self.disable or DEFAULT_SPACY_DISABLES
-        nlp: Language = self.pipeline.get("spacy_nlp")
+        nlp: spacy_api.Language = self.pipeline.get("spacy_nlp")
         if nlp is None:
-            raise interfaces.PipelineError("spacy.Language model not set (task SetSpacyModel)")
+            raise interfaces.PipelineError("spaCy.Language model not set (task SetSpacyModel)")
         content = self._get_content_as_text(payload)
         spacy_doc = nlp(content, disable=disable)
         return payload.update(self.out_content_type, spacy_doc)

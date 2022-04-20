@@ -85,7 +85,7 @@ def plot_topic_relevance_by_year(
         figopts['y_range'] = y_range
         figopts['plot_height'] = max(len(y_range) * line_height, 600)
 
-    p = bokeh.plotting.figure(**figopts)
+    p = bokeh.plotting.figure(**figopts, sizing_mode='scale_width')
 
     cr = p.rect(
         x=xs,

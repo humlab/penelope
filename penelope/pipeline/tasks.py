@@ -645,7 +645,7 @@ class AssertOnPayload(ITask):
 
 def somewhat_generic_serializer(content: Any) -> Optional[str]:
 
-    if isinstance(content, pd.core.api.DataFrame):
+    if isinstance(content, pd.DataFrame):
         return content.to_csv(sep='\t')
 
     if isinstance(content, list):
@@ -738,7 +738,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
             """We don't need translation since vocab hasn't been used yet"""
             _ = self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
 
-        if self.close:
+        if self.token2id.is_open and self.close:
             self.token2id.close()
 
         return self

@@ -7,10 +7,9 @@ import ipywidgets
 import pandas as pd
 from bokeh.io import push_notebook
 
-from penelope.notebook.utility import generate_colors
+from penelope.notebook.utility import generate_colors, generate_temporal_ticks
 
 from .interface import ITrendDisplayer
-from .utils import generate_temporal_ticks
 
 
 class LineDisplayer(ITrendDisplayer):
@@ -30,7 +29,7 @@ class LineDisplayer(ITrendDisplayer):
 
     def figure(self, *, data_source: bm.ColumnDataSource, x_ticks: Sequence[int] = None):
 
-        p = bp.figure(plot_width=self.width, plot_height=self.height)
+        p = bp.figure(plot_width=self.width, plot_height=self.height, sizing_mode='scale_width')
 
         p.y_range.start = 0
         p.yaxis.axis_label = 'Frequency'

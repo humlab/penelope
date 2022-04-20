@@ -150,8 +150,8 @@ class DocumentTopicsCalculator:
         self.data = self.data.copy()
         return self
 
-    def reset(self) -> "DocumentTopicsCalculator":
-        self.data: pd.DataFrame = self.inferred_topics.document_topic_weights
+    def reset(self, data: pd.DataFrame = None) -> "DocumentTopicsCalculator":
+        self.data: pd.DataFrame = data if data is not None else self.inferred_topics.document_topic_weights
         return self
 
     def overload(self, includes: str = None, ignores: str = None) -> "DocumentTopicsCalculator":
@@ -161,6 +161,10 @@ class DocumentTopicsCalculator:
 
     def threshold(self, threshold: float = 0.01) -> "DocumentTopicsCalculator":
         self.data = filter_by_threshold(self.data, threshold=threshold)
+        return self
+
+    def head(self, n: int) -> "DocumentTopicsCalculator":
+        self.data = self.data.head(n)
         return self
 
     def filter_by_n_top(self, n_top: int) -> "DocumentTopicsCalculator":
@@ -191,6 +195,14 @@ class DocumentTopicsCalculator:
             self.data = self.data[(mask if not negate else ~mask)]
         return self
 
+    def filter_by_focus_topics(self, topic_ids: Sequence[int]) -> "DocumentTopicsCalculator":
+        if topic_ids:
+            df_focus: pd.DataFrame = self.data[self.data.topic_id.isin(topic_ids)].set_index("document_id")
+            df_others: pd.DataFrame = self.data[~self.data.topic_id.isin(topic_ids)].set_index("document_id")
+            df_others = df_others[df_others.index.isin(df_focus.index)]
+            self.data: pd.DataFrame = df_focus.append(df_others).reset_index()
+        return self
+
     def filter_by_text(self, search_text: str, n_top: int) -> "DocumentTopicsCalculator":
         self.data = filter_by_text(
             self.data,
@@ -205,12 +217,18 @@ class DocumentTopicsCalculator:
         data: pd.DataFrame = compute_topic_proportions(self.data, self.document_index)
         return data
 
-    def yearly_topic_weights(self, result_threshold: float, n_top_relevance: int) -> "DocumentTopicsCalculator":
+    def yearly_topic_weights(
+        self,
+        result_threshold: float,
+        n_top_relevance: int,
+        topic_ids: None | int | list[int] = None,
+    ) -> "DocumentTopicsCalculator":
         self.data = prevelance.compute_yearly_topic_weights(
             self.data,
             document_index=self.document_index,
             threshold=result_threshold or 0,
             n_top_relevance=n_top_relevance,
+            topic_ids=topic_ids,
         )
         return self
 

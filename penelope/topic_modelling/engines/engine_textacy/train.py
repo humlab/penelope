@@ -1,10 +1,9 @@
 from typing import Any, Dict
 
-import textacy
-
 from penelope import corpus as pc
 from penelope.corpus.dtm import convert
 from penelope.utility import deprecated
+from penelope.vendor import textacy_api
 
 from ...interfaces import InferredModel, TrainingCorpus
 
@@ -48,7 +47,7 @@ def train(
         vectorize_opts=pc.VectorizeOpts().update(**kwargs),
     )
 
-    model = textacy.tm.TopicModel(method.split('_')[1], **engine_args)
+    model = textacy_api.TopicModel(method.split('_')[1], **engine_args)
 
     model.fit(corpus.data)
 

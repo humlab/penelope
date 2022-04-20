@@ -6,9 +6,8 @@ import bokeh.plotting as bp
 import pandas as pd
 from bokeh.io import show
 
-from ...utility import generate_colors
+from ...utility import generate_colors, generate_temporal_ticks
 from .interface import ITrendDisplayer
-from .utils import generate_temporal_ticks
 
 
 class BarDisplayer(ITrendDisplayer):
@@ -52,7 +51,7 @@ class BarDisplayer(ITrendDisplayer):
         colors: Iterable[str] = iter(generate_colors(len(value_fields)))
         source = bm.ColumnDataSource(data=plot_data)
 
-        p: bp.Figure = bp.figure(plot_height=self.height, plot_width=self.width, title="TF")
+        p: bp.Figure = bp.figure(plot_height=self.height, plot_width=self.width, sizing_mode='scale_width', title="TF")
 
         offset: float = -0.25
         v: List[bm.GlyphRenderer] = []

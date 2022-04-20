@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Mapping
 
-import gensim.corpora as corpora
 import numpy as np
 import pandas as pd
-from gensim.matutils import Sparse2Corpus
 
 from penelope import corpus as pc
 from penelope.corpus import dtm
+from penelope.vendor.gensim_api import corpora as gensim_corpora
 
 from .engines import get_engine_by_model_type
 from .topics_data import InferredTopicsData
@@ -38,8 +37,8 @@ def to_dataframe(document_index: pd.DataFrame, data: DocumentTopicsWeightsIter) 
 def predict_topics(
     topic_model: Any,
     *,
-    corpus: Sparse2Corpus | pc.VectorizedCorpus,
-    id2token: corpora.Dictionary | dict | pc.Token2Id,
+    corpus: gensim_corpora.Sparse2Corpus | pc.VectorizedCorpus,
+    id2token: Mapping[int, str] | dict | pc.Token2Id,
     document_index: pc.DocumentIndex = None,
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
@@ -84,6 +83,9 @@ def predict_topics(
         else engine.get_topic_token_overview(topic_token_weights, n_tokens=n_tokens)
     )
 
+    topic_diagnostics: pd.DataFrame = kwargs.get('topic_diagnostics', engine.topic_diagnostics)
+    topic_token_diagnostics: pd.DataFrame = kwargs.get('topic_token_diagnostics', engine.topic_token_diagnostics)
+
     document_index: pd.DataFrame = pc.update_document_index_token_counts_by_corpus(document_index, vectorized_corpus)
 
     topics_data: InferredTopicsData = InferredTopicsData(
@@ -92,5 +94,7 @@ def predict_topics(
         topic_token_overview=topic_token_overview,
         document_index=document_index,
         document_topic_weights=to_dataframe(document_index, document_topic_weights),
+        topic_diagnostics=topic_diagnostics,
+        token_diagnostics=topic_token_diagnostics,
     )
     return topics_data

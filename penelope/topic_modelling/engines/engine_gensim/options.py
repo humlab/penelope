@@ -2,11 +2,10 @@ import contextlib
 import os
 from typing import Literal, Mapping
 
-import gensim.models as models
-from gensim.matutils import Sparse2Corpus
+from penelope.vendor.gensim_api import corpora as gensim_corpora
+from penelope.vendor.gensim_api import models as gensim_models
 
 from ..interface import EngineSpec
-from .wrappers import MalletTopicModel, STTMTopicModel
 
 DEFAULT_WORK_FOLDER = './tmp/'
 
@@ -29,9 +28,9 @@ def get_float(d: dict, key: str, default: None) -> float:
 
 class MalletEngineSpec(EngineSpec):
     def __init__(self):
-        super().__init__("gensim_mallet-lda", MalletTopicModel)
+        super().__init__("gensim_mallet-lda", gensim_models.MalletTopicModel)
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+    def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         work_folder: str = f"{engine_args.get('work_folder', DEFAULT_WORK_FOLDER).rstrip('/')}/mallet/"
         os.makedirs(work_folder, exist_ok=True)
         return dict(
@@ -45,15 +44,16 @@ class MalletEngineSpec(EngineSpec):
             optimize_interval=get_int(engine_args, 'optimize_interval', 10),
             topic_threshold=get_float(engine_args, 'minimum_probability', 0.005),
             random_seed=get_int(engine_args, 'random_seed', 0),
+            num_top_words=get_int(engine_args, 'num_top_words', 500),
             # 'alpha': int(kwargs.get('alpha', 20))
         )
 
 
 class LdaEngineSpec(EngineSpec):
     def __init__(self):
-        super().__init__("gensim_lda", models.LdaModel)
+        super().__init__("gensim_lda", gensim_models.LdaModel)
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+    def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         return dict(
             # distributed=False, chunksize=2000, passes=1, update_every=1, alpha='symmetric', eta=None, decay=0.5, offset=1.0, eval_every=10, iterations=50, gamma_threshold=0.001, minimum_probability=0.01, random_state=None, ns_conf=None, minimum_phi_value=0.01, per_word_topics=False, callbacks=None, dtype=<class 'numpy.float32'>)¶
             corpus=corpus,
@@ -71,8 +71,8 @@ class LdaEngineSpec(EngineSpec):
             # offset=1.0,
             # dtype=np.float64
             # callbacks=[
-            #    models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
-            #    models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
+            #    gensim_models.callbacks.PerplexityMetric(corpus=corpus, logger='visdom'),
+            #    gensim_models.callbacks.ConvergenceMetric(distance='jaccard', num_words=100, logger='shell')
             # ]
         )
 
@@ -80,7 +80,7 @@ class LdaEngineSpec(EngineSpec):
 class LdaMulticoreEngineSpec(EngineSpec):
 
     """
-    See Gensim documentation: https://radimrehurek.com/gensim/models/ldamulticore.html#gensim.models.ldamulticore.LdaMulticore
+    See Gensim documentation: https://radimrehurek.com/gensim/gensim_models/ldamulticore.html#gensim.gensim_models.ldamulticore.LdaMulticore
 
         alpha               = 'symmetric'
         batch               = False
@@ -179,9 +179,9 @@ class LdaMulticoreEngineSpec(EngineSpec):
     """
 
     def __init__(self):
-        super().__init__("gensim_lda-multicore", models.LdaMulticore)
+        super().__init__("gensim_lda-multicore", gensim_models.LdaMulticore)
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+    def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         # https://stackoverflow.com/questions/65014553/how-to-tune-the-parameters-for-gensim-ldamulticore-in-python
         opts: dict = dict(
             corpus=corpus,
@@ -203,9 +203,9 @@ class LdaMulticoreEngineSpec(EngineSpec):
 
 class LsiEngineSpec(EngineSpec):
     def __init__(self):
-        super().__init__("gensim_lsi", models.LsiModel)
+        super().__init__("gensim_lsi", gensim_models.LsiModel)
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+    def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         return dict(
             corpus=corpus,
             id2word=id2word,
@@ -217,13 +217,13 @@ class LsiEngineSpec(EngineSpec):
 
 class STTMEngineSpec(EngineSpec):
     def __init__(self, sub_key: Literal['lda', 'btm', 'ptm', 'satm', 'dmm', 'watm']):
-        super().__init__(f"gensim_sttm-{sub_key}", STTMTopicModel)
+        super().__init__(f"gensim_sttm-{sub_key}", gensim_models.STTMTopicModel)
 
     @property
     def sttm_type(self) -> str:
         return self.algorithm[5:]
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+    def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         work_folder: str = f"{engine_args.get('work_folder', DEFAULT_WORK_FOLDER).rstrip('/')}/sttm/"
         return dict(
             sstm_jar_path='./lib/STTM.jar',
@@ -238,26 +238,26 @@ class STTMEngineSpec(EngineSpec):
         )
 
 
-class HDPEngineSpec(EngineSpec):
-    def __init__(self):
-        super().__init__("gensim_hdp", models.HdpModel)
+# class HDPEngineSpec(EngineSpec):
+#     def __init__(self):
+#         super().__init__("gensim_hdp", gensim_models.HdpModel)
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
-        return {
-            'corpus': corpus,
-            'T': engine_args.get('n_topics', 0),
-            'id2word': id2word,
-            # 'iterations': kwargs.get('max_iter', 0),
-            # 'passes': kwargs.get('passes', 20),
-            # 'alpha': 'symmetric'
-        }
+#     def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+#         return {
+#             'corpus': corpus,
+#             'T': engine_args.get('n_topics', 0),
+#             'id2word': id2word,
+#             # 'iterations': kwargs.get('max_iter', 0),
+#             # 'passes': kwargs.get('passes', 20),
+#             # 'alpha': 'symmetric'
+#         }
 
 
 class DTMEngineSpec(EngineSpec):
     def __init__(self):
-        super().__init__("gensim_dtm", models.LdaSeqModel)
+        super().__init__("gensim_dtm", gensim_models.LdaSeqModel)
 
-    def get_options(self, corpus: Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
+    def get_options(self, corpus: gensim_corpora.Sparse2Corpus, id2word: dict, engine_args: dict) -> dict:
         return {
             'corpus': corpus,
             'num_topics': engine_args.get('n_topics', 0),
@@ -291,7 +291,7 @@ SUPPORTED_ENGINES: Mapping[EngineKey, EngineSpec] = {
     'gensim_lda-multicore': LdaMulticoreEngineSpec(),  # 'LDA-MULTICORE', 'LDA_MULTICORE', 'MULTICORE'
     'gensim_lda': LdaEngineSpec(),
     'gensim_lsi': LsiEngineSpec(),
-    'gensim_hdp': HDPEngineSpec(),
+    # 'gensim_hdp': HDPEngineSpec(),
     'gensim_dtm': DTMEngineSpec(),
     'gensim_sttm-lda': STTMEngineSpec(sub_key='lda'),
     'gensim_sttm-btm': STTMEngineSpec(sub_key='btm'),

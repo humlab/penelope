@@ -7,6 +7,7 @@ from .engines import (
     get_engine_cls_by_method_name,
     get_engine_module_by_method_name,
 )
+from .engines.interface import ITopicModelEngine
 from .interfaces import InferredModel, TrainingCorpus
 from .predict import predict_topics
 from .topics_data import (
@@ -15,6 +16,7 @@ from .topics_data import (
     DocumentTopicsCalculator,
     InferredTopicsData,
     MemoizedTopicPrevalenceOverTimeCalculator,
+    PickleUtility,
     TopicPrevalenceOverTimeCalculator,
     compute_topic_proportions,
     compute_yearly_topic_weights,

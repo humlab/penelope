@@ -16,11 +16,12 @@ TEST_DATA_FOLDER = './tests/test_data'
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
+# pylint: disable=non-ascii-name
+# pylint: disable=too-many-arguments
+
 TEST_CORPUS_FILENAME = os.path.join(TEST_DATA_FOLDER, 'test_corpus.zip')
 TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = os.path.join(TEST_DATA_FOLDER, 'tranströmer_corpus_export.sparv4.csv.zip')
 PERSISTED_INFERRED_MODEL_SOURCE_FOLDER: str = './tests/test_data/tranströmer_inferred_model'
-
-# pylint: disable=too-many-arguments
 
 
 if __file__ in globals():

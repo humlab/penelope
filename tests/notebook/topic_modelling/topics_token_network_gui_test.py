@@ -210,14 +210,14 @@ data_str = """\ttopic\ttoken\tweight\ttopic_id\tposition
 
 
 def test_create_network_5():
-    topic_tokens = pd.read_csv(io.StringIO(data_str), sep='\t', index_col=0)
-    assert topic_tokens is not None
-    w = ttn_gui.create_network(topic_tokens)
+    data: pd.DataFrame = pd.read_csv(io.StringIO(data_str), sep='\t', index_col=0)
+    assert data is not None
+    w = ttn_gui.create_network(data)
     assert w is not None
 
     w.set_layout(name="cola", animate=False, maxSimulationTime=20000)
 
-    g = ttn_gui.create_networkx(topic_tokens)
+    g = ttn_gui.create_networkx(data)
 
     assert g is not None
     assert w is not None

@@ -1,9 +1,8 @@
-import networkx as nx
-
-from penelope.network.networkx.utility import get_bipartite_node_set
 from penelope.utility import extend_single
 
 from ..interface import LayoutAlgorithm
+from .networkx_api import nx
+from .utility import get_bipartite_node_set
 
 
 def nx_kamada_kawai_layout(G, **kwargs):  # pylint: disable=unused-argument
@@ -12,7 +11,7 @@ def nx_kamada_kawai_layout(G, **kwargs):  # pylint: disable=unused-argument
     return layout, None
 
 
-def nx_spring_layout(G, **kwargs):
+def nx_spring_layout(G: nx.Graph, **kwargs):
     k = kwargs.get('K', 0.1)
     args = dict(weight='weight', scale=1.0, k=k)
     args = extend_single(args, kwargs, 'iterations')

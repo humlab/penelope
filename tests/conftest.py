@@ -1,15 +1,11 @@
 # type: ignore
 
-import os
-import shutil
-
 import pytest
-from spacy.language import Language
 
 from penelope.notebook.topic_modelling import TopicModelContainer
 from penelope.pipeline.spacy import convert
 from penelope.topic_modelling import InferredTopicsData
-from penelope.vendor.spacy.utility import load_model
+from penelope.vendor.spacy_api import Language, load_model
 from tests.utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
 
 from .fixtures import MARY_TEST_CORPUS
@@ -19,11 +15,13 @@ from .fixtures import MARY_TEST_CORPUS
 
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
+    pytest.importorskip("spacy")
     return load_model(name_or_nlp="en_core_web_sm", disable="ner")
 
 
 @pytest.fixture(scope="session")
 def df_doc(en_nlp) -> Language:
+    pytest.importorskip("spacy")
     attributes = ["text", "lemma_", "pos_", "is_space", "is_punct", "is_digit", "is_alpha", "is_stop"]
     doc = convert.text_to_tagged_frame(
         MARY_TEST_CORPUS[0][1], attributes=attributes, attribute_value_filters=None, nlp=en_nlp
@@ -39,13 +37,13 @@ def df_doc(en_nlp) -> Language:
 #     """
 
 
-def pytest_sessionstart(session):  # pylint: disable=unused-argument
-    """
-    Called after the Session object has been created and
-    before performing collection and entering the run test loop.
-    """
-    shutil.rmtree('./tests/output', ignore_errors=True)
-    os.makedirs('./tests/output', exist_ok=True)
+# def pytest_sessionstart(session):  # pylint: disable=unused-argument
+#     """
+#     Called after the Session object has been created and
+#     before performing collection and entering the run test loop.
+#     """
+#     shutil.rmtree('./tests/output', ignore_errors=True)
+#     os.makedirs('./tests/output', exist_ok=True)
 
 
 # def pytest_sessionfinish(session, exitstatus):

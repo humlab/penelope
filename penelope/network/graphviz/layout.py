@@ -1,6 +1,5 @@
-import networkx as nx
-
 from ..interface import LayoutAlgorithm
+from ..networkx.networkx_api import nx
 
 engines = ['neato', 'dot', 'circo', 'fdp', 'sfdp']
 

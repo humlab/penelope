@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import collections
 import math
-from typing import List
-
-from gensim.matutils import Sparse2Corpus
-from gensim.models.ldamulticore import LdaMulticore
+from typing import TYPE_CHECKING, List
 
 from penelope.utility import normalize_array
+
+if TYPE_CHECKING:
+    from penelope.vendor.gensim_api import Sparse2Corpus, models
+
 
 # source: https://github.com/baali/TopicModellingExperiments
 
 
-def compute_topic_metrics(ldamodel: LdaMulticore, dictionary: dict, n_words=1000):
+def compute_topic_metrics(ldamodel: models.LdaMulticore, dictionary: dict, n_words=1000):
     """Returns weights for top n_words words in all topics"""
     if n_words is None:
         # Set to 0.1 % of total number of terms
@@ -33,7 +36,7 @@ def compute_term_frequency(corpus: Sparse2Corpus) -> collections.Counter:
     return term_freq
 
 
-def compute_term_info(ldamodel: LdaMulticore, dictionary: dict, corpus: Sparse2Corpus) -> List[dict]:
+def compute_term_info(ldamodel: models.LdaMulticore, dictionary: dict, corpus: Sparse2Corpus) -> List[dict]:
     """Iterate over the list of terms. Compute frequency, distinctiveness, saliency."""
     topic_info = compute_topic_metrics(ldamodel, dictionary)
     topic_marginal = normalize_array([d['weight'] for d in topic_info])

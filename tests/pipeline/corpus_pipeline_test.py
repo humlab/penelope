@@ -6,8 +6,6 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pandas as pd
 import pytest
-import spacy.language
-import spacy.tokens
 
 import penelope.pipeline.spacy.tasks as spacy_tasks
 import penelope.pipeline.tasks as tasks
@@ -23,6 +21,7 @@ from penelope.pipeline import (
     PipelinePayload,
 )
 from penelope.pipeline.interfaces import ITask
+from penelope.vendor import spacy_api
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 from tests.utils import TEST_DATA_FOLDER
 
@@ -72,7 +71,7 @@ def fake_data_frame_stream(n: int = 1):
 
 
 def fake_spacy_doc_stream(n: int = 1):
-    dummy = MagicMock(spec=spacy.tokens.Doc)
+    dummy = MagicMock(spec=spacy_api.Doc)
     for i in range(1, n + 1):
         yield DocumentPayload(
             filename=f'dummy_{i}.txt',
@@ -94,8 +93,8 @@ def fake_token_stream(n: int = 1):
 
 
 def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
-    mock_doc = Mock(spec=spacy.tokens.Doc)
-    m = MagicMock(spec=spacy.language.Language)
+    mock_doc = Mock(spec=spacy_api.Doc)
+    m = MagicMock(spec=spacy_api.Language)
     m.return_value = mock_doc
     return m
 
@@ -118,7 +117,7 @@ def checkpoint_opts() -> CheckpointOpts:
 
 
 def patch_spacy_doc(*x, **y):  # pylint: disable=unused-argument
-    m = MagicMock(spec=spacy.tokens.Doc)
+    m = MagicMock(spec=spacy_api.Doc)
     return m
 
 
@@ -131,8 +130,10 @@ def patch_spacy_pipeline(task):
     return pipeline
 
 
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, patch_spacy_load, reason="spaCy not installed")
 @patch('spacy.load', patch_spacy_load)
 def test_set_spacy_model_setup_succeeds():
+    pytest.importorskip("spacy")
     pipeline = CorpusPipeline(config=fake_config())
     _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, name_or_nlp="en_core_web_sm").setup()
     assert pipeline.get("spacy_nlp", None) is not None
@@ -340,6 +341,8 @@ def test_tokens_to_text_when_text_instream_succeeds():
     assert next_payload.content_type == ContentType.TEXT
 
 
+@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
+@patch('spacy.load', patch_spacy_load)
 @pytest.mark.long_running
 def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 

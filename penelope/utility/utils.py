@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import copy
 import datetime
@@ -12,13 +14,13 @@ import platform
 import re
 import time
 import uuid
+from collections import defaultdict
 from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number
 from random import randrange
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
 
-import gensim.utils
 import numpy as np
 import pandas as pd
 import scipy
@@ -36,6 +38,13 @@ def fn_name(default=None):
         return inspect.stack()[1][3]
     except Exception:
         return default or str(uuid.uuid1())
+
+
+def frequencies(items: list[str]) -> dict:
+    d: dict = defaultdict(int)
+    for item in items:
+        d[item] += 1
+    return dict(d)
 
 
 def get_logger(
@@ -67,10 +76,6 @@ def getLogger(name: str = '', level=logging.INFO):
 
 
 logger = getLogger(__name__)
-
-lazy_flatten = gensim.utils.lazy_flatten
-iter_windows = gensim.utils.iter_windows
-deprecated = gensim.utils.deprecated
 
 
 def to_text(data: Union[str, Iterable[str]]):
@@ -539,6 +544,25 @@ class DummyContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
+
+
+class DummyClass(dict):
+    def __init__(self, *args, **kwargs) -> None:  # pylint: disable=unused-argument
+        super().__init__()
+
+    def __getattribute__(self, __name: str) -> Any:
+        return DummyClass()
+
+
+def DummyFunction(*args, **kwargs):  # pylint: disable=unused-argument
+    return None
+
+
+def create_dummy_function(return_value: Any) -> Any:
+    def dummy_function(*args, **kwargs):  # pylint: disable=unused-argument
+        return return_value
+
+    return dummy_function
 
 
 def create_class(class_or_function_path: str) -> Union[Callable, Type]:

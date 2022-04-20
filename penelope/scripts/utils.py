@@ -3,9 +3,14 @@ import sys
 from os.path import dirname, isdir, isfile
 from typing import Any, Callable, Optional
 
-import click
-
 from penelope import pipeline, utility
+
+try:
+    import click
+except ImportError:
+    click = object()
+
+# pylint: disable=no-member
 
 CLI_LOG_PATH = './logs'
 
@@ -44,6 +49,7 @@ CLI_OPTIONS = {
     '--keep-symbols/--no-keep-symbols': dict(help='Keep symbols', default=True, is_flag=True),
     '--lemmatize/--no-lemmatize': dict(help='Use word baseforms', is_flag=True, default=True),
     '--max-iter': dict(help='Max number of iterations.', default=None, type=click.INT),
+    '--num-top-words': dict(help='Number of word per topic to collect after estimation.', default=500, type=click.INT),
     '--max-tokens': dict(help='Only consider the `max-tokens` most frequent tokens', default=None, type=click.INT),
     '--max-word-length': dict(help='Max length of words to keep', default=None, type=click.IntRange(10, 99)),
     '--min-word-length': dict(help='Min length of words to keep', default=1, type=click.IntRange(1, 99)),

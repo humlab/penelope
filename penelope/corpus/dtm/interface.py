@@ -239,8 +239,6 @@ class IVectorizedCorpus(abc.ABC):
 
 
 class IVectorizedCorpusProtocol(Protocol):
-    ...
-
     @staticmethod
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,

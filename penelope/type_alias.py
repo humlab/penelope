@@ -3,6 +3,11 @@ from typing import Callable, Iterable, Iterator, List, Mapping, Optional, Tuple,
 import pandas as pd
 import scipy.sparse as sp
 
+TokenWeights = list[tuple[str, float]]
+
+StrBoW = list[tuple[str, float]]
+IntBoW = list[tuple[int, float]]
+
 PartitionKeys = Union[str, List[str], Callable]
 FilenameTokensTuple = Tuple[str, Iterable[str]]
 FilenameTokensTuples = Iterable[FilenameTokensTuple]
@@ -10,7 +15,7 @@ FilenameTokensTuples = Iterable[FilenameTokensTuple]
 DocumentIndex = pd.DataFrame
 IntOrStr = Union[int, str]
 
-TaggedFrame = pd.core.api.DataFrame
+TaggedFrame = pd.DataFrame
 Token = Union[int, str]
 
 DocumentTermsStream = Iterable[Tuple[str, Iterable[str]]]

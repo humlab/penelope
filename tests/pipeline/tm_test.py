@@ -7,6 +7,7 @@ from penelope import corpus as pc
 from penelope import pipeline as pp
 from penelope import topic_modelling as tm
 from penelope import utility
+from penelope.vendor.gensim_api import GENSIM_INSTALLED
 
 
 def noun_pipeline(id_to_token: bool) -> pp.CorpusPipeline:
@@ -71,6 +72,7 @@ def test_load_id_tagged_frame_pipeline_convert_to_dtm():
     assert corpus.shape == (5, 10)
 
 
+@pytest.mark.skipif(not GENSIM_INSTALLED, reason="Gensim not installed")
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_id_tagged_frame_pipeline_convert_to_topic_model(method):
 

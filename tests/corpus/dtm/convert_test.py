@@ -3,12 +3,14 @@ from typing import Iterable, Tuple
 import pandas as pd
 import pytest
 import scipy.sparse as sp
-from gensim.matutils import Sparse2Corpus, corpus2csc
 from pytest import fixture
 
 from penelope import corpus as pc
 from penelope.corpus.dtm import convert
 from penelope.corpus.readers import tng
+from penelope.vendor.gensim_api import GENSIM_INSTALLED
+from penelope.vendor.gensim_api import corpora as gensim_corpora
+from penelope.vendor.textacy_api import TEXTACY_INSTALLED
 
 # pylint: disable=redefined-outer-name
 
@@ -51,7 +53,7 @@ def document_index() -> pd.DataFrame:
 
 @fixture
 def sparse() -> sp.spmatrix:
-    return corpus2csc(SIMPLE_BOW)
+    return gensim_corpora.corpus2csc(SIMPLE_BOW)
 
 
 @fixture
@@ -71,15 +73,17 @@ def test_id2token2token2id():
     assert pc.id2token2token2id(pc.Token2Id({1: 'a', 2: 'b'})) == {'a': 1, 'b': 2}
 
 
+@pytest.mark.skipif(not GENSIM_INSTALLED, reason="Gensim not installed")
 def test_from_sparse2corpus(document_index, sparse, token2id):
 
-    source: Sparse2Corpus = Sparse2Corpus(sparse, documents_columns=True)
+    source: gensim_corpora.Sparse2Corpus = gensim_corpora.Sparse2Corpus(sparse, documents_columns=True)
     corpus: pc.VectorizedCorpus = convert.from_sparse2corpus(
         source=source, token2id=token2id, document_index=document_index
     )
     assert corpus is not None
 
 
+@pytest.mark.skipif(not GENSIM_INSTALLED, reason="Gensim not installed")
 def test_from_spmatrix(document_index, sparse, token2id):
     source: sp.spmatrix = sparse.tocsr().T
     corpus: pc.VectorizedCorpus = convert.from_spmatrix(source=source, token2id=token2id, document_index=document_index)
@@ -100,6 +104,7 @@ def test_from_tokenized_corpus(document_index):
     assert corpus.data.astype(int).todense().tolist() == EXPECTED_DENSE_VALUES
 
 
+@pytest.mark.skipif(not TEXTACY_INSTALLED, reason="Textacy not installed")
 def test_from_stream_of_tokens(document_index, token2id):
     source: Iterable[Iterable[str]] = [x[1] for x in SIMPLE_CORPUS_ABC_5DOCS]
     vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=True)

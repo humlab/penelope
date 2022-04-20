@@ -2,12 +2,11 @@ import math
 from numbers import Number
 from typing import Any, Dict, List, Tuple
 
-import networkx as nx
-
 from .graphtool.layout import layout_setups as gt_layout_setups
 from .graphviz.layout import layout_setups as gv_layout_setups
 from .interface import LayoutAlgorithm
 from .networkx.layout import layout_setups as nx_layout_setups
+from .networkx.networkx_api import nx
 
 layout_setups: List[LayoutAlgorithm] = nx_layout_setups + gv_layout_setups + gt_layout_setups
 

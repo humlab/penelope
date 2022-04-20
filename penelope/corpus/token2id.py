@@ -42,7 +42,7 @@ class Token2Id(MutableMapping):
         self._tf: dict = None
         self._is_open = True
         self._id2token: dict = None
-        self._fallback_token: str = fallback_token
+        self._fallback_token_id: str = fallback_token
         self._payload: dict = dict(**kwargs)
 
         self.replace(data=data or defaultdict(), tf=tf)
@@ -52,8 +52,8 @@ class Token2Id(MutableMapping):
 
     def __getitem__(self, key):
         if not self._is_open:
-            if self._fallback_token:
-                return self._data.get(key, self._fallback_token)
+            if self._fallback_token_id:
+                return self._data.get(key, self._fallback_token_id)
         return self._data[key]
 
     def __optimized__getitem__(self) -> Callable[[str], int]:
@@ -61,10 +61,10 @@ class Token2Id(MutableMapping):
         data = self._data
         if self._is_open:
             return lambda w: data[w]
-        fallback_token = self._fallback_token
-        if fallback_token is None:
+        fallback_token_id = self._fallback_token_id
+        if fallback_token_id is None:
             return lambda w: data[w]
-        return lambda key: data.get(key, fallback_token)
+        return lambda key: data.get(key, fallback_token_id)
 
     def __setitem__(self, key: str, value):
         if self._id2token:
@@ -97,10 +97,6 @@ class Token2Id(MutableMapping):
     @property
     def magic_token_ids(self) -> List[str]:
         return [self[w] for w in MAGIC_TOKENS if w in self._data]
-
-    # @data.setter
-    # def data(self, value: Any) -> None:
-    #     self.replace(value)
 
     def replace(self, *, data: Any, tf: dict = None) -> "Token2Id":
         """Replace current data with `data`"""
@@ -178,23 +174,31 @@ class Token2Id(MutableMapping):
         return self._is_open
 
     @property
-    def fallback_token(self) -> str:
-        return self._fallback_token
+    def fallback_token_id(self) -> int:
+        return self._fallback_token_id
 
-    @fallback_token.setter
-    def fallback_token(self, value: str) -> None:
-        self._fallback_token = value
+    @fallback_token_id.setter
+    def fallback_token_id(self, value: int) -> None:
+        self._fallback_token_id = value
         self.__getitem__ = self.__optimized__getitem__()
 
-    def close(self, fallback: int = None) -> "Token2Id":
-        self._data.default_factory = None
-        self._fallback_token = fallback
+    def close(self, fallback_id: int = None) -> "Token2Id":
+        if isinstance(self._data, defaultdict):
+            self._data = dict(self._data)
+        if isinstance(self._tf, defaultdict):
+            self._tf = dict(self._tf)
+        self._fallback_token_id = fallback_id if fallback_id is not None else self._fallback_token_id
         self._is_open = False
         self.__getitem__ = self.__optimized__getitem__()
         return self
 
     def open(self) -> "Token2Id":
+
+        if not isinstance(self._data, defaultdict):
+            self._data = defaultdict(int, self._data)
+
         self._data.default_factory = self._data.__len__
+
         self._id2token = None
         self._is_open = True
         self.__getitem__ = self.__optimized__getitem__()
@@ -337,9 +341,9 @@ class Token2Id(MutableMapping):
         ids_translation = {k: v[0] for k, v in translation.items()}
         if inplace:
             self.replace(data=new_data, tf=new_tf)
-            return self.close(fallback=mask_id), ids_translation
+            return self.close(fallback_id=mask_id), ids_translation
 
-        token2id: Token2Id = Token2Id(data=new_data, tf=new_tf).close(fallback=mask_id)
+        token2id: Token2Id = Token2Id(data=new_data, tf=new_tf).close(fallback_id=mask_id)
 
         return token2id, ids_translation
 
@@ -371,7 +375,7 @@ class Token2Id(MutableMapping):
         if inplace:
             return self.replace(data=data, tf=tf)
 
-        token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token).sync_state(self.is_open)
+        token2id = Token2Id(data=data, tf=tf, fallback_token=self.fallback_token_id).sync_state(self.is_open)
 
         return token2id
 

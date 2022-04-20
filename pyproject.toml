@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.6.3"
+version = "0.7.9"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
@@ -10,7 +10,7 @@ classifiers = [
     'Topic :: Software Development',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
 ]
 license = "Apache-2.0"
 readme = "README.md"
@@ -19,10 +19,9 @@ repository = "https://github.com/humlab/penelope"
 
 [tool.poetry.dependencies]
 bokeh = "*"
-click = "*"
 ftfy = "*"
-gensim = "*"
 ipycytoscape = "*"
+ipydatagrid = "^1.1.8"
 ipyfilechooser = "*"
 ipywidgets = "*"
 jupyter_bokeh = "*"
@@ -35,27 +34,38 @@ nltk = "^3.5"
 numpy = "*"
 openpyxl = "^3.0.5"
 pandas = "*"
-pyarrow = "*"
-python = "==3.8.*"
-python-louvain = "^0.14"
-PyYAML = "^5.3.1"
+python = "==3.9.*"
 requests = "^2.24.0"
 scipy = "*"
-sklearn = "*"
-spacy = "*"
-textacy = "*"
 toml = "^0.10.2"
 tqdm = "^4.62.3"
-wordcloud = "*"
-itertoolz = "^0.5"
-ipysheet = "*"
-ipydatagrid = "^1.1.8"
+
+gensim = {version = "*", optional = true}
+spacy = {version = "*", optional = true}
+pyarrow = {version = "*", optional = true}
+textacy = {version = "*", optional = true}
+wordcloud = {version = "*", optional = true}
+PyYAML = {version = "*", optional = true}
+python-louvain = {version = "*", optional = true}
+click = {version = "8.0.4", optional = true}
+smart-open = "^5.2.1"
+
+[tool.poetry.extras]
+full = [
+  "pyarrow",
+  "textacy",
+  "spacy",
+  "gensim",
+  "wordcloud",
+  "PyYAML",
+  "click",
+  "python-louvain",
+]
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
 coverage = "==5.*,>=5.3.0"
 flake8 = "==3.*,>=3.8.4"
-flake8-black = "==0.*,>=0.2.1"
 flake8-pytest-style = "==1.*,>=1.3.0"
 isort = "==5.*,>=5.5.4"
 memory-profiler = "^0.58.0"
@@ -73,7 +83,6 @@ recommonmark = "==0.*,>=0.7.1"
 Sphinx = "==3.*,>=3.5.1"
 tomlkit = "^0.7.2"
 yapf = "==0.*,>=0.30.0"
-pre-commit = "^2.15.0"
 
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.dtm.vectorize:main"

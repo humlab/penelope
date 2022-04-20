@@ -1,14 +1,10 @@
-from gensim.utils import deprecated
-
-from penelope.utility import getLogger
+from penelope.utility import deprecated
 
 from .. import utility as notebook_utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .gofs_gui import GoFsGUI
 from .interface import TrendsData
 from .trends_gui import TrendsGUI
-
-logger = getLogger("penelope")
 
 
 @deprecated

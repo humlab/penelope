@@ -4,8 +4,6 @@
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
-    "python.pythonPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/python",
-    "python.sortImports.path": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.8/bin/isort",
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestArgs": [
         "tests"

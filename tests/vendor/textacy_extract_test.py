@@ -1,8 +1,6 @@
 import pytest
-import textacy
-from textacy import Corpus
 
-import penelope.vendor.textacy as textacy_utility
+from penelope.vendor import textacy_api
 
 
 # pylint: disable=redefined-outer-name
@@ -19,15 +17,15 @@ def mary_had_a_little_lamb_corpus(en_nlp):
         "Why does the lamb love Mary so? The eager children cry.",
         "Mary loves the lamb, you know, the teacher did reply.",
     ]
-    corpus = Corpus(en_nlp, data=texts)
+    corpus = textacy_api.Corpus(en_nlp, data=texts)
     return corpus
 
 
 @pytest.mark.long_running
-def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: textacy.Corpus):
+def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: textacy_api.Corpus):
 
     terms = (
-        textacy_utility.ExtractPipeline(corpus=mary_had_a_little_lamb_corpus, target='lemma')
+        textacy_api.ExtractPipeline(corpus=mary_had_a_little_lamb_corpus, target='lemma')
         .pos(
             include_pos=(
                 'NOUN',
@@ -43,12 +41,10 @@ def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: te
 
 
 @pytest.mark.long_running
-def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: textacy.Corpus):
+def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: textacy_api.Corpus):
 
     terms = (
-        textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
-        .pos(include_pos=('ADJ',))
-        .process()
+        textacy_api.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma').pos(include_pos=('ADJ',)).process()
     )
 
     terms = [d for d in terms]
@@ -56,10 +52,10 @@ def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: text
 
 
 @pytest.mark.long_running
-def test_pos_extract_when_a_more_complexed_filter(mary_had_a_little_lamb_corpus: textacy.Corpus):
+def test_pos_extract_when_a_more_complexed_filter(mary_had_a_little_lamb_corpus: textacy_api.Corpus):
 
     terms = (
-        textacy_utility.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
+        textacy_api.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
         .pos(include_pos=('NOUN', 'PROPN'))
         .remove_stopwords(extra_stopwords=[])
         .ingest(filter_nums=True, filter_punct=True)

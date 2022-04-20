@@ -26,7 +26,6 @@ class CorruptCheckpointError(Exception):
 
 def read_document_index(archive_filename: str) -> pd.DataFrame:
     try:
-        # FIXME: #123 Remove Parla-CLARIN fields
         with zipfile.ZipFile(archive_filename, mode="r") as fp:
             csv_str: str = fp.read(DOCUMENT_INDEX_FILENAME).decode("utf-8")
             df: pd.DataFrame = pd.read_csv(

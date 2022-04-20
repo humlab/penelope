@@ -3,8 +3,10 @@ from __future__ import annotations
 from typing import Callable, Union
 
 import ipydatagrid as dg
+import ipywidgets as w
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
+from IPython.display import display
 
 TableWidget = dg.DataGrid
 
@@ -29,7 +31,7 @@ def display_grid(data: Union[dict, pd.DataFrame], **opts) -> DataGrid:
     return grid
 
 
-def table_widget(data: pd.DataFrame, **kwargs) -> None:
+def table_widget(data: pd.DataFrame, **kwargs) -> dg.DataGrid:
 
     """If handler is passed, then create wrapper handler that passes row as argument"""
     handler: Callable[[pd.Series], None] = kwargs.pop('handler', None)
@@ -38,7 +40,7 @@ def table_widget(data: pd.DataFrame, **kwargs) -> None:
         selection_mode="row",
         auto_fit_columns=True,
         auto_fit_params={"area": "body"},
-        grid_style={'background_color': '#dcdcdc', 'grid_line_color': '#dcdcdc'},
+        grid_style={'background_color': '#f9f9f9', 'grid_line_color': '#f9f9f9'},
         # header_visibility='column',
         editable=False,
     )
@@ -56,3 +58,26 @@ def table_widget(data: pd.DataFrame, **kwargs) -> None:
         g.on_cell_click(row_clicked)
 
     return g
+
+
+class DataGridOutput(w.Output):
+    def __init__(self):
+        super().__init__()
+        self.widget: TableWidget = None
+        self.data: pd.DataFrame = None
+
+    def update(self, data: pd.DataFrame) -> None:
+        self.clear()
+        self.data = data
+        if self.data is None:
+            return
+        self.widget = table_widget(self.data)
+        with self:
+            display(self.widget)
+
+    def load(self, data: pd.DataFrame) -> None:
+        self.update(data)
+
+    def clear(self) -> None:
+        self.widget = None
+        self.clear_output()

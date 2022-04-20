@@ -14,7 +14,6 @@ from penelope.workflows.tm.predict import compute as workflow
 
 @click.command()
 @click.argument('config-filename', required=True)
-# FIXME Rename to trained-model-folder?
 @click.argument('trained-model-folder', required=True)
 # @click.argument('model-name', required=True)
 @click.argument('target-folder', required=True)

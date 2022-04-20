@@ -1,8 +1,8 @@
 from typing import Tuple
 
 import bokeh.models as bm
-import networkx as nx
 
+from .networkx.networkx_api import nx
 from .networkx.utility import NodesLayout, layout_edges
 
 

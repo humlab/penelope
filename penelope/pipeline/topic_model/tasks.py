@@ -6,13 +6,13 @@ from os.path import join as jj
 from typing import Any, Iterable, List, Literal, Mapping, Protocol
 
 import pandas as pd
-from gensim.matutils import Sparse2Corpus
 from loguru import logger
 
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
 from penelope.corpus.token2id import id2token2token2id
 from penelope.utility import write_json
+from penelope.vendor.gensim_api import corpora
 
 from ..interfaces import ContentType, DocumentPayload, ITask
 from ..tasks_mixin import DefaultResolveMixIn
@@ -63,7 +63,7 @@ class TopicModelMixin:
         *,
         inferred_model: tm.InferredModel,
         id2token: dict,
-        corpus: Sparse2Corpus | pc.VectorizedCorpus,
+        corpus: corpora.Sparse2Corpus | pc.VectorizedCorpus,
         document_index: pd.DataFrame,
         target_folder: str,
         n_tokens: int,
@@ -88,7 +88,7 @@ class TopicModelMixin:
         Returns:
             tm.InferredTopicsData: [description]
         """
-        if not isinstance(corpus, (pc.VectorizedCorpus, Sparse2Corpus)):
+        if not isinstance(corpus, (pc.VectorizedCorpus, corpora.Sparse2Corpus)):
             # raise ValueError(f"predict: corpus type {type(corpus)} not supported in predict (use sparse instead)")
             corpus = self.instream_to_vectorized_corpus(token2id=id2token2token2id(id2token))
 
@@ -361,6 +361,8 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
             default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>",
         )
 
+        # FIXME: Fix ambiguity between self.target_folder/self.target_name and engine_args['work_folder]
+        # self.target_name is never used??
         payload: DocumentPayload = DocumentPayload(
             ContentType.TOPIC_MODEL,
             content=dict(

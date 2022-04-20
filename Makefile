@@ -60,8 +60,8 @@ output-dir:
 retest:
 	@poetry run pytest --durations=0 --last-failed tests
 
-init: tools
-	@poetry install
+install: tools
+	@poetry install --no-root --extras=full # --remove-untracked
 
 info:
 	@poetry run python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
@@ -279,7 +279,7 @@ reinstall-numpy-scipy:
 stubs:
 	@stubgen penelope/corpus/dtm/vectorized_corpus.py --output ./typings
 
-.PHONY: help check init version
+.PHONY: help check install version
 .PHONY: lint flake8 pylint pylint_by_file yapf black isort tidy pylint_diff_only
 .PHONY: test retest test-coverage pytest
 .PHONY: ready build tag bump.patch release fast-release

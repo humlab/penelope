@@ -3,11 +3,11 @@ from typing import Any, Callable, List
 
 import ipycytoscape
 import ipywidgets as widgets  # type: ignore
-import networkx as nx
 import pandas as pd
 from IPython.display import display
 
 from penelope import topic_modelling, utility
+from penelope.network.networkx.networkx_api import nx
 from penelope.plot import get_color_palette
 from penelope.utility.filename_fields import FilenameFieldSpecs
 

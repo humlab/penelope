@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any, Sequence
 
 import bokeh.models as bm
 import bokeh.plotting as bp
-import networkx as nx
 import pandas as pd
 
-from penelope.network import layout_source, metrics, plot_utility
-from penelope.network.networkx import utility as nu
 from penelope.notebook import widgets_utils as wu
+
+from . import layout_source, metrics, plot_utility
+from .networkx import utility as nu
+from .networkx.networkx_api import nx
 
 # pylint: disable=unused-argument, too-many-locals
 
 
 def plot_bipartite_dataframe(
     data: pd.DataFrame,
-    layout_algorithm: str,
+    network_layout: str,
     *,
     scale: float,
     titles: pd.DataFrame,
@@ -27,9 +28,34 @@ def plot_bipartite_dataframe(
     network: nx.Graph = nu.create_bipartite_network(
         data[[target_name, source_name, 'weight']], target_name, source_name
     )
-    args: dict[str, Any] = plot_utility.layout_args(layout_algorithm, network, scale)
-    layout: nu.NodesLayout = (plot_utility.layout_algorithms[layout_algorithm])(network, **args)
+    args: dict[str, Any] = plot_utility.layout_args(network_layout, network, scale)
+    layout: nu.NodesLayout = (plot_utility.layout_algorithms[network_layout])(network, **args)
     p = plot_bipartite_network(network, layout, scale=scale, titles=titles, element_id=element_id)
+    bp.show(p)
+
+
+def plot_highlighted_bipartite_dataframe(
+    network_data: pd.DataFrame,
+    network_layout: str,
+    highlight_topic_ids: Sequence[int],
+    titles: pd.DataFrame,
+    scale: float,
+    source_name: str,
+    target_name: str,
+    element_id: str,
+):
+    network: nx.Graph = nu.create_bipartite_network(network_data, source_name, target_name)
+    args = plot_utility.layout_args(network_layout, network, scale)
+    layout_data = (plot_utility.layout_algorithms[network_layout])(network, **args)
+    p = plot_bipartite_network(
+        network,
+        layout_data,
+        scale=scale,
+        titles=titles,
+        highlight_topic_ids=highlight_topic_ids,
+        element_id=element_id,
+    )
+
     bp.show(p)
 
 
@@ -65,12 +91,17 @@ def plot_bipartite_network(
         network, layout_data, scale=6.0, normalize=False
     )
 
-    edges_alphas: List[float] = metrics.compute_alpha_vector(lines_source.data['weights'])
+    edges_alphas: [float] = metrics.compute_alpha_vector(lines_source.data['weights'])
 
     lines_source.add(edges_alphas, 'alphas')
 
     p: bp.Figure = bp.figure(
-        plot_width=plot_width, plot_height=plot_height, x_axis_type=None, y_axis_type=None, tools=tools
+        plot_width=plot_width,
+        plot_height=plot_height,
+        sizing_mode='scale_width',
+        x_axis_type=None,
+        y_axis_type=None,
+        tools=tools,
     )
 
     _ = p.multi_line(

@@ -14,8 +14,11 @@ from . import mixins as mx
 from .model_container import TopicModelContainer
 
 
-# FIXME use ComputeMixIn
+# FIXME #157 Strange weights are displayed for certain topics (integer value)
 class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
+
+    WIDGET_HEIGHT: str = '450px'
+
     def __init__(self, state: TopicModelContainer | dict):
         super().__init__(state=state)
         slider_opts = {
@@ -101,7 +104,8 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.update()
 
                 if data is not None:
-                    self._table_widget = table_widget(data, handler=self.click_handler)
+                    self._table_widget: TableWidget = table_widget(data, handler=self.click_handler)
+                    self._table_widget.layout.height = self.WIDGET_HEIGHT
                     display(self._table_widget)
 
                 self.alert("✅")
@@ -120,7 +124,7 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
 
     def setup(self, **kwargs) -> "BrowseTopicDocumentsGUI":  # pylint: disable=arguments-differ
         super().setup(**kwargs)
-        self.topic_id = (0, self.inferred_n_topics - 1)
+        self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
         self._topic_id.observe(self.update_handler, names='value')
         self._threshold.observe(self.update_handler, names='value')
         self._max_count.observe(self.update_handler, names='value')
@@ -170,6 +174,7 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
             .threshold(self.threshold)
             .filter_by_document_keys(**self.filter_opts.opts)
             .filter_by_n_top(self.max_count)
+            .overload("document_name,n_raw_tokens,n_tokens")
             .value
         )
         return data
@@ -250,6 +255,7 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
             .threshold(self.threshold)
             .filter_by_document_keys(**self.filter_opts.opts)
             .filter_by_n_top(self.max_count)
+            .overload("document_name,n_raw_tokens,n_tokens")
             .value
         )
         return data

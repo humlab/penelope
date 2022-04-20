@@ -3,17 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional
 
-import ftfy
-import textacy.preprocessing as preprocessing
-
-
-class TEXT_TRANSFORMS:
-    fix_hyphenation = preprocessing.normalize.hyphenated_words
-    fix_unicode = preprocessing.normalize.unicode
-    fix_whitespaces = preprocessing.normalize.whitespace
-    fix_accents = preprocessing.remove.accents
-    fix_currency_symbols = preprocessing.replace.currency_symbols
-    fix_ftfy_text = ftfy.fix_text
+from ..transforms import TEXT_TRANSFORMS
 
 
 @dataclass

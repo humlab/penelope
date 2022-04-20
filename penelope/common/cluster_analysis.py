@@ -6,12 +6,16 @@ from typing import Dict, Iterable, List, Set, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-import sklearn
-import sklearn.cluster
 from scipy.cluster.hierarchy import linkage
 
 import penelope.common.goodness_of_fit as gof
 from penelope.corpus import VectorizedCorpus
+
+try:
+    import sklearn
+    import sklearn.cluster
+except ImportError:
+    ...
 
 
 @dataclass

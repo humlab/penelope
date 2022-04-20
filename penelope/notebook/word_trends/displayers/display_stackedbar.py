@@ -36,7 +36,9 @@ class StackedBarDisplayer(ITrendDisplayer):
         tokens: List[str] = [t for t in plot_data.keys() if t != temporal_key]
         colors: List[str] = generate_colors(len(tokens))
 
-        p: bp.Figure = bp.figure(x_range=temporal_values, height=self.height, width=self.width, title="TF")
+        p: bp.Figure = bp.figure(
+            x_range=temporal_values, height=self.height, width=self.width, sizing_mode='scale_width', title="TF"
+        )
 
         p.vbar_stack(tokens, x=temporal_key, width=0.9, color=colors, source=source, legend_label=tokens)
 
