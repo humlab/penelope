@@ -844,3 +844,19 @@ class Split(ITask):
 
 class Reduce(ITask):
     ...
+
+
+@dataclass
+class Take(DefaultResolveMixIn, ITask):
+    n_count: int = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+
+        for i, payload in enumerate(self.create_instream()):
+            if i >= self.n_count:
+                break
+            yield payload
