@@ -72,7 +72,7 @@ class TokensTransformOpts:
             if token2id is None:
                 raise ValueError("mask(id): vocabulary is missing")
 
-            tokens = tokens.map(token2id.id2token)
+            tokens = tokens.apply(token2id.id2token.get)
 
         if self.min_len > 1:
             mask &= tokens.str.len() >= self.min_len
