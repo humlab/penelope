@@ -80,10 +80,13 @@ class ToIdTaggedFrame(Vocabulary):
         if self.ingest_vocab_type == IngestVocabType.Incremental:
             self.token2id.ingest(tagged_frame[token_column])  # type: ignore
 
+        fg = self.token2id.data.get
+        pg = pos_schema.pos_to_id.get
+
         id_tagged_frame: pd.DataFrame = pd.DataFrame(
             data=dict(
-                token_id=tagged_frame[token_column].map(self.token2id).astype(np.int32),
-                pos_id=tagged_frame[pos_column].map(pos_schema.pos_to_id).astype(np.int8),
+                token_id=tagged_frame[token_column].apply(fg).astype(np.int32),
+                pos_id=tagged_frame[pos_column].apply(pg).astype(np.int8),
             )
         )
         return payload.update(ContentType.TAGGED_ID_FRAME, id_tagged_frame)
