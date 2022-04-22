@@ -153,10 +153,6 @@ flake8:
 isort:
 	@poetry run isort --profile black --float-to-top --line-length 120 --py 38 $(SOURCE_FOLDERS)
 
-yapf: clean
-	@poetry run yapf --version
-	@poetry run yapf --in-place --recursive $(SOURCE_FOLDERS)
-
 black: clean
 	@poetry run black --version
 	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
