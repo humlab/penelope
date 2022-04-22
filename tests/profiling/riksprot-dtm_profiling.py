@@ -125,7 +125,6 @@ def main():
     # profiler = cProfile.Profile()
     # profiler.enable()
 
-
     assert args.is_satisfied()
 
     corpus_source = args.corpus_source
