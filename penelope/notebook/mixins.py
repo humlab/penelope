@@ -9,6 +9,7 @@ import pandas as pd
 from IPython.display import display as ipydisplay
 
 from penelope import utility as pu
+from penelope.plot.colors import get_color_palette
 
 from . import utility as nu
 from .widgets_utils import register_observer
@@ -227,25 +228,48 @@ class PivotKeysMixIn:
             ]
         )
 
-
 class MultiLinePivotKeysMixIn(PivotKeysMixIn):
-    def __init__(self, pivot_key_specs: t.Any = None, **kwargs):
+    def __init__(self, pivot_key_specs: t.Any = None, color_presets: dict[str, str] = None, **kwargs):
         super().__init__(pivot_key_specs, **kwargs)
-        self._line_name: w.Text = w.Text(description="", layout=dict(width='80px'))
-        self._add_line: w.Button = w.Button(description="➕")
-        self._del_line: w.Button = w.Button(description="➖")
+        self._line_name: w.Text = w.Text(description="", placeholder="(name)", layout=dict(width='80px'))
+        self._add_line: w.Button = w.Button(description="\u2714")
+        self._del_line: w.Button = w.Button(description="\u2718")
         self._lines: w.Dropdown = w.Dropdown()
 
+        self._color_presets = color_presets
+        self._color_palette: str = get_color_palette()
+        self._next_color: w.Button = w.Button(description="\u2B6E")
+        self._line_color: w.ColorPicker = w.ColorPicker(concise=True, description="", value=next(self._color_palette))
+        self._line_color_preset_picker: w.Dropdown = w.Dropdown(description="", value=None)
+
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
+
         width: str = kwargs.get('width', '120px')
+
         self._filter_keys.rows = kwargs.get('rows', 12)
-        self._filter_keys.layout = kwargs.get('layout', dict(width=width))
+        self._filter_keys.layout = kwargs.get("layout", dict(width=width))
+        self._line_color.layout = dict(width='32px')
+        self._next_color.layout = dict(width='32px')
+
+        if isinstance(self._color_presets, dict):
+            self._line_color_preset_picker.layout = dict(width='45px')
+            self._line_color_preset_picker.options = list(self._color_presets.items())
+            self._line_color_preset_picker.value = None
+
         # self._single_pivot_key_picker.layout = kwargs.get('layout', dict(width=width))
         return w.VBox(
             [
                 w.HBox([self._lines, self._del_line]),
                 self._filter_keys,
-                w.HBox([w.HTML("Add line:"), self._line_name, self._add_line]),
+                w.HBox(
+                    [
+                        w.HTML("Color "),
+                        self._line_color,
+                        self._next_color,
+                        self._line_color_preset_picker,
+                    ]
+                ),
+                w.HBox([w.HTML("Legend "), self._line_name, self._add_line]),
             ]
         )
 
@@ -257,48 +281,70 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
             getattr(super(), 'setup')(**kwargs)
         self._add_line.on_click(self._add_line_callback)
         self._del_line.on_click(self._del_line_callback)
-        self._lines.observe(self.line_selected, type='change')
+        self._next_color.on_click(self._next_color_callback)
+        self._line_color_preset_picker.observe(self._set_color_by_preset)
+        self._lines.observe(self._line_selected_callback, type='change')
         return self
 
-    def _add_line_callback(self, *_):
-        self.add_line(name=self.line_name, values=self.filter_key_selected_values)
-        self._line_name.value = ""
-        self._filter_keys.value = []
+    def _set_color_by_preset(self, *_):
 
-    def add_line(self, name: str, values: list[str]):
+        if self._line_color_preset_picker.value:
+            self._line_color.value = self._line_color_preset_picker.value
+            self._line_color_preset_picker.value = None
+
+    def _next_color_callback(self, *_):
+        self._line_color.value = next(self._color_palette)
+
+    def _add_line_callback(self, *_):
+        self.add_line(name=self.line_name, color=self.line_color, values=self.filter_key_selected_values)
+        self._show_line(name="", color=next(self._color_palette), values=[])
+
+    def add_line(self, name: str, color: str, values: list[str]):
         if not name:
             self.alert("😡 you must give the line a name")
             return
         if not values:
             self.alert("😡 please select value(s) that define the line")
             return
-        self._lines.options = list(self._lines.options or []) + [(name, values)]
+        self._lines.options = list(self._lines.options or []) + [(name, (name, color, values))]
         self.alert(f"✅ {name} added!")
 
     def _del_line_callback(self, *_):
+
         if not self._lines.options:
             self.alert("😡 no lines to delete")
             return
+
         if not self._lines.value:
             self.alert("😡 please select line to delete")
+
         options = list(self._lines.options)
         name = options[self._lines.index][0]
         del options[self._lines.index]
         self._lines.value = None
         self._lines.options = options
         self.alert(f"✅ {name} deleted")
+
         if options:
             self._lines.index = 0
 
-    def line_selected(self, *_):
+    def _line_selected_callback(self, *_):
         if self._lines.value:
-            self._line_name.value = self._lines.options[self._lines.index][0]
-            self._filter_keys.value = self._lines.options[self._lines.index][1]
+            self._show_line(*self._lines.options[self._lines.index][1])
+
+    def _show_line(self, name: str, color: str, values: list[str]):
+        self._line_name.value = name
+        self._line_color.value = color
+        self._filter_keys.value = values
 
     @property
     def line_name(self) -> str:
         return self._line_name.value
 
     @property
-    def lines(self) -> list:
-        return self._lines.options or []
+    def line_color(self) -> str:
+        return self._line_color.value
+
+    @property
+    def lines(self) -> list[tuple[str, str, str]]:
+        return [x[1] for x in self._lines.options or []]
