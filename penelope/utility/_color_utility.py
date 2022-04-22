@@ -49,7 +49,7 @@ class ColorGradient:
 
     @staticmethod
     def rand_hex_color(num=1):
-        ''' Generate random hex colors, default is one, returning a string. If num is greater than 1, an array of strings is returned. '''
+        '''Generate random hex colors, default is one, returning a string. If num is greater than 1, an array of strings is returned.'''
         colors = [
             ColorGradient.RGB_to_hex([random.random() * 255, random.random() * 255, random.random() * 255])
             for _ in range(num)

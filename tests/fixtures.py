@@ -590,7 +590,6 @@ def simple_corpus_with_pivot_keys():
                 'document_name': [f'doc_{y}_{i}' for i, y in enumerate(range(0, 5))],
                 'filename': [f'doc_{y}_{i}.txt' for i, y in enumerate(range(0, 5))],
             },
-            dtype=np.int16,
         ),
     )
     return corpus

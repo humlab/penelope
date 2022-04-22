@@ -131,7 +131,7 @@ class ToCoOccurrenceDTM(ITask):
         return payload
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-        """Processes stream of payloads. Overridable. """
+        """Processes stream of payloads. Overridable."""
         # stream: Iterable[Tuple] = self.prepare_task_stream(
         #     token2id=self.pipeline.payload.token2id,
         #     context_opts=self.context_opts,

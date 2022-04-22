@@ -71,7 +71,7 @@ class PipelineShortcutMixIn:
         n_tokens: int = 200,
         minimum_probability: float = 0.001,
     ) -> pipelines.CorpusPipeline:
-        """ TOKENS => TOPIC MODEL """
+        """TOKENS => TOPIC MODEL"""
         return self.to_topic_model(
             train_corpus_folder=None,
             trained_model_folder=model_folder,

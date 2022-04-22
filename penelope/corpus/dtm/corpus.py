@@ -114,7 +114,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
     @property
     def T(self) -> scipy.sparse.csr_matrix:
-        """Returns transpose of BoW matrix """
+        """Returns transpose of BoW matrix"""
         return self._bag_term_matrix.T
 
     @property
@@ -151,7 +151,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
     @property
     def data(self) -> scipy.sparse.csr_matrix:
-        """Returns BoW matrix """
+        """Returns BoW matrix"""
         return self._bag_term_matrix
 
     @property
@@ -160,17 +160,17 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
     @property
     def n_docs(self) -> int:
-        """Returns number of documents """
+        """Returns number of documents"""
         return self._bag_term_matrix.shape[0]
 
     @property
     def n_tokens(self) -> int:
-        """Returns number of types (unique words) """
+        """Returns number of types (unique words)"""
         return self._bag_term_matrix.shape[1]
 
     @property
     def document_index(self) -> DocumentIndex:
-        """Returns number document index (part of interface) """
+        """Returns number document index (part of interface)"""
         return self._document_index
 
     def replace_document_index(self, value: DocumentIndex) -> None:
@@ -407,7 +407,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return term_term_matrix
 
     def find_matching_words(self, word_or_regexp: Set[str], n_max_count: int, descending: bool = False) -> List[str]:
-        """Returns words in corpus that matches candidate tokens """
+        """Returns words in corpus that matches candidate tokens"""
         words = self.pick_n_top_words(
             find_matching_words_in_vocabulary(self.token2id, word_or_regexp),
             n_max_count,
@@ -418,7 +418,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     def find_matching_words_indices(
         self, word_or_regexp: List[str], n_max_count: int, descending: bool = False
     ) -> List[int]:
-        """Returns `tokens´ indices` in corpus that matches candidate tokens """
+        """Returns `tokens´ indices` in corpus that matches candidate tokens"""
 
         # FIXME: Use https://github.com/WojciechMula/pyahocorasick to search for words
 

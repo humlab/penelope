@@ -16,7 +16,7 @@ class StatsMixIn:
         n: int = 1000,
         indices: Sequence[int] = None,
     ) -> Sequence[Tuple[str, Number]]:
-        """Returns the top n words in a subset of the self sorted according to occurrence. """
+        """Returns the top n words in a subset of the self sorted according to occurrence."""
 
         sum_of_token_counts: np.ndarray = (self.data if indices is None else self.data[indices, :]).sum(axis=0).A1
 

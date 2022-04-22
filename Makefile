@@ -153,10 +153,6 @@ flake8:
 isort:
 	@poetry run isort --profile black --float-to-top --line-length 120 --py 38 $(SOURCE_FOLDERS)
 
-yapf: clean
-	@poetry run yapf --version
-	@poetry run yapf --in-place --recursive $(SOURCE_FOLDERS)
-
 black: clean
 	@poetry run black --version
 	@poetry run black --line-length 120 --target-version py38 --skip-string-normalization $(SOURCE_FOLDERS)
@@ -223,11 +219,11 @@ profile-load-riksprot-parlaclarin-pyinstrument: make-profile-reports
 profile-load-riksprot-parlaclarin-cprofile: make-profile-reports
 	@PYTHONPATH=. python -m cProfile ./tests/profiling/riksprot-parlaclarin.py &> ./profile-reports/$(RUN_TIMESTAMP)_riksprot-parlaclarin-cprofile.txt
 
-profile-parlaclarin-1961-pyinstrument: make-profile-reports
-	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-pyinstrument.html ./tests/profiling/profile-parlaclarin-1961-pyinstrument.py
+profile-riksprot-1965-pyinstrument: make-profile-reports
+	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_profile-riksprot-1965-pyinstrument.html ./tests/profiling/riksprot-1965_dtm_pyinstrument.py
 
-profile-parlaclarin-1961-cprofile: make-profile-reports
-	@PYTHONPATH=. python -m cProfile ./tests/profiling/profile-parlaclarin-1961-cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_profile-parlaclarin-1961-cprofile.txt
+profile-riksprot-1965-cprofile: make-profile-reports
+	@PYTHONPATH=. python -m cProfile ./tests/profiling/riksprot-1965_dtm_cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_profile-riksprot-1965-cprofile.txt
 
 profile-topic_model-tagged-id-frame-pyinstrument: make-profile-reports
 	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_topic_model-tagged-id-frame-pyinstrument.html ./tests/profiling/profile-topic_model-tagged-id-frame.py

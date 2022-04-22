@@ -29,8 +29,8 @@ pipelines:
       id_to_token: true
       file_pattern: '**/prot-*.feather'
 pipeline_payload:
-  source:  /data/westac/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather
-  document_index_source:  /data/westac/riksdagen_corpus_data/tagged-speech-1961-corpus.lemma.no-stopwords.lowercase.feather/document_index.feather
+  source: null
+  document_index_source: /home/roger/source/welfare-state-analytics/pyriksprot/tests/test_data/source/main/tagged_frames_speeches.feather/document_index.feather
   document_index_sep: "\t"
   filenames: null
   memory_store:
@@ -41,6 +41,7 @@ pipeline_payload:
     lemma_column: lemma
     pos_column: pos
   pos_schema_name: SUC
+filter_opts:
 text_reader_opts:
   as_binary: false
   filename_fields:

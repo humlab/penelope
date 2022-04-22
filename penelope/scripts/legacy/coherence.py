@@ -64,7 +64,7 @@ def main(
     workers: int,
     work_folder: str,
 ):
-    """ runner """
+    """runner"""
     raise NotImplementedError("This script is specific to political case - needs to be adapted to other use cases")
     # if engine not in [y for x, y in ENGINE_OPTIONS]:
     #     logging.error("Unknown method {}".format(engine))

@@ -149,10 +149,13 @@ def create_encoded_tagged_frame(
     pos_column: str,
 ) -> pd.DataFrame:
 
+    fg = token2id.data.get
+    pg = pos_schema.pos_to_id.get
+
     id_tagged_frame: pd.DataFrame = pd.DataFrame(
         data=dict(
-            token_id=tagged_frame[target_column].map(token2id).astype(np.int32),
-            pos_id=tagged_frame[pos_column].map(pos_schema.pos_to_id).astype(np.int8),
+            token_id=tagged_frame[target_column].apply(fg).astype(np.int32),
+            pos_id=tagged_frame[pos_column].apply(pg).astype(np.int8),
         )
     )
 

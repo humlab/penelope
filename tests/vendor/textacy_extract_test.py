@@ -6,7 +6,7 @@ from penelope.vendor import textacy_api
 # pylint: disable=redefined-outer-name
 @pytest.fixture(scope="module")
 def mary_had_a_little_lamb_corpus(en_nlp):
-    """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py """
+    """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py"""
     texts = [
         "Mary had a little lamb. Its fleece was white as snow.",
         "Everywhere that Mary went the lamb was sure to go.",

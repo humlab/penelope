@@ -110,7 +110,7 @@ class TextReader(ICorpusReader):
         return _document_index
 
     def preprocess(self, content: str) -> str:
-        """Process of source text that happens before any tokenization e.g. XML to text transform """
+        """Process of source text that happens before any tokenization e.g. XML to text transform"""
         return content
 
     def apply_filter(self, filename_filter: FilenameFilterSpec):

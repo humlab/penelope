@@ -78,6 +78,7 @@ def plot_multiple_value_series2(
     fig_opts: dict = None,
     plot_opts: dict = None,
     palette: str | list[str] = "Category10",
+    colors: list[str] = None,
     n_tick: int = 5,
 ):
     fig_opts = {
@@ -104,7 +105,7 @@ def plot_multiple_value_series2(
     p.y_range.start = 0
     p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
 
-    colors: list[str] = generate_colors(len(columns), palette=palette)
+    colors: list[str] = colors or generate_colors(len(columns), palette=palette)
 
     if kind.lower() == 'bar':
         offset = data[category_name].min() % n_tick

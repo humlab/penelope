@@ -200,7 +200,7 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
 @dataclass
 class SaveTaggedCSV(Checkpoint):
-    """Stores sequence of tagged data frame to archive and optionally to FEATHER files. """
+    """Stores sequence of tagged data frame to archive and optionally to FEATHER files."""
 
     filename: str = None
     checkpoint_opts: cp.CheckpointOpts = None
@@ -218,7 +218,7 @@ class SaveTaggedCSV(Checkpoint):
 
 @dataclass
 class LoadTaggedCSV(PoSCountMixIn, ITask):
-    """Load Pandas data frames from folder (CSV, feather), ZIP archive. """
+    """Load Pandas data frames from folder (CSV, feather), ZIP archive."""
 
     filename: str = None
     checkpoint_opts: Optional[cp.CheckpointOpts] = None
@@ -283,7 +283,7 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
 
 @dataclass
 class CheckpointFeather(DefaultResolveMixIn, ITask):
-    """Creates a feather checkpoint. """
+    """Creates a feather checkpoint."""
 
     folder: str = None
     force: bool = field(default=False)
@@ -309,7 +309,7 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
 
 @dataclass
 class WriteFeather(ITask):
-    """Stores sequence of tagged data frame documents to archive. """
+    """Stores sequence of tagged data frame documents to archive."""
 
     folder: str = None
     force: bool = False
@@ -332,7 +332,7 @@ class WriteFeather(ITask):
 
 @dataclass
 class ReadFeather(DefaultResolveMixIn, ITask):
-    """Stores sequence of tagged data frame documents to archive. """
+    """Stores sequence of tagged data frame documents to archive."""
 
     folder: str = None
 
@@ -352,7 +352,7 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
 @dataclass
 class LoadTaggedXML(PoSCountMixIn, ITask):
-    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames."""
 
     filename: str = None
     reader_opts: TextReaderOpts = None
@@ -462,7 +462,7 @@ class ToTaggedFrame(PoSCountMixIn, ITask):
 
 @dataclass
 class FilterTaggedFrame(TokenCountMixIn, ITask):
-    """Filters and transforms tagged frame (can be numeric or text). """
+    """Filters and transforms tagged frame (can be numeric or text)."""
 
     extract_opts: ExtractTaggedTokensOpts = None
     pos_schema: utility.PoS_Tag_Scheme = None
@@ -494,7 +494,7 @@ class FilterTaggedFrame(TokenCountMixIn, ITask):
 
 @dataclass
 class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
-    """Extracts text from payload.content based on annotations etc. """
+    """Extracts text from payload.content based on annotations etc."""
 
     extract_opts: ExtractTaggedTokensOpts | str = None
     normalize_column_names: bool = True
@@ -532,7 +532,7 @@ class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformToken
 
 @dataclass
 class TapStream(ITask):
-    """Taps content into zink. """
+    """Taps content into zink."""
 
     target: str = None
     tag: str = None
@@ -610,7 +610,7 @@ class AssertOnExitError(PipelineError):
 
 @dataclass
 class AssertOnExit(DefaultResolveMixIn, ITask):
-    """Test utility task: asserts payload content equals expected values """
+    """Test utility task: asserts payload content equals expected values"""
 
     exit_test: Callable[[Any, Any], bool] = None
     exit_test_args: Sequence[Any] = field(default_factory=list)
@@ -625,7 +625,7 @@ class AssertOnExit(DefaultResolveMixIn, ITask):
 
 @dataclass
 class AssertOnPayload(ITask):
-    """Test utility task: asserts payload content equals expected values """
+    """Test utility task: asserts payload content equals expected values"""
 
     payload_test: Callable[[Any, DocumentPayload, Any], bool] = None
     payload_test_args: Sequence[Any] = field(default_factory=list)
@@ -810,7 +810,7 @@ class WildcardTask(ITask):
 
 @dataclass
 class LoadTokenizedCorpus(TokenCountMixIn, DefaultResolveMixIn, ITask):
-    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames. """
+    """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames."""
 
     corpus: ITokenizedCorpus = None
 
@@ -844,3 +844,19 @@ class Split(ITask):
 
 class Reduce(ITask):
     ...
+
+
+@dataclass
+class Take(DefaultResolveMixIn, ITask):
+    n_count: int = None
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+
+        for i, payload in enumerate(self.create_instream()):
+            if i >= self.n_count:
+                break
+            yield payload

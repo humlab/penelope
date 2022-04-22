@@ -129,19 +129,19 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
             self.train(corpus)
 
     def topic_keys_filename(self):
-        """Get path to topic keys text file. """
+        """Get path to topic keys text file."""
         return self.prefix + self.name + '.phi'
 
     def document_topics_filename(self):
-        """Get path to document topic text file. """
+        """Get path to document topic text file."""
         return self.prefix + self.name + '.theta'
 
     def text_corpus_filename(self):
-        """Get path to corpus text file. """
+        """Get path to corpus text file."""
         return self.prefix + self.name + '.corpus'
 
     def fvocabulary(self):
-        """Get path to vocabulary text file. """
+        """Get path to vocabulary text file."""
         return self.prefix + self.name + '.vocabulary'
 
     def ftopwords(self):
@@ -288,7 +288,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
         return shown
 
     def show_topic(self, topicid, topn=10):
-        """Get `num_words` most probable words for the given `topicid`. """
+        """Get `num_words` most probable words for the given `topicid`."""
 
         if self.word_topics is None:
             logger.warning("Run train or load_word_topics before showing topics.")

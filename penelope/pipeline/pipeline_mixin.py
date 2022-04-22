@@ -50,7 +50,7 @@ class PipelineShortcutMixIn:
         checkpoint_opts: CheckpointOpts,
         extra_reader_opts: TextReaderOpts = None,
     ) -> pipelines.CorpusPipeline:
-        """ _ => DATAFRAME """
+        """_ => DATAFRAME"""
         return self.add(
             tasks.LoadTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts, extra_reader_opts=extra_reader_opts)
         )
@@ -61,7 +61,7 @@ class PipelineShortcutMixIn:
         file_pattern: str = '**/*.feather',  # NOTE: document_index.feather must be excluded
         id_to_token: bool = False,
     ) -> pipelines.CorpusPipeline:
-        """ _ => DATAFRAME """
+        """_ => DATAFRAME"""
         return self.add(
             tagged_frame.LoadIdTaggedFrame(corpus_source=folder, file_pattern=file_pattern, id_to_token=id_to_token)
         )
@@ -70,20 +70,20 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline,
         ingest_vocab_type: str = tagged_frame.IngestVocabType.Incremental,
     ) -> pipelines.CorpusPipeline:
-        """ _ => DATAFRAME """
+        """_ => DATAFRAME"""
         return self.add(tagged_frame.ToIdTaggedFrame(ingest_vocab_type=ingest_vocab_type))
 
     def store_id_tagged_frame(
         self: pipelines.CorpusPipeline,
         folder: str,
     ) -> pipelines.CorpusPipeline:
-        """ _ => DATAFRAME """
+        """_ => DATAFRAME"""
         return self.add(tagged_frame.StoreIdTaggedFrame(folder=folder))
 
     def load_tagged_xml(
         self: pipelines.CorpusPipeline, filename: str, options: TextReaderOpts
     ) -> pipelines.CorpusPipeline:
-        """ SparvXML => DATAFRAME """
+        """SparvXML => DATAFRAME"""
         return self.add(tasks.LoadTaggedXML(filename=filename, reader_opts=options))
 
     def checkpoint(
@@ -92,7 +92,7 @@ class PipelineShortcutMixIn:
         checkpoint_opts: CheckpointOpts = None,
         force_checkpoint: bool = False,
     ) -> pipelines.CorpusPipeline:
-        """ [DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH """
+        """[DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH"""
         return self.add(
             tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts, force_checkpoint=force_checkpoint)
         )
@@ -102,11 +102,11 @@ class PipelineShortcutMixIn:
         folder: str,
         force: bool = False,
     ) -> pipelines.CorpusPipeline:
-        """ [DATAFRAME] => [CHECKPOINT] => PASSTHROUGH """
+        """[DATAFRAME] => [CHECKPOINT] => PASSTHROUGH"""
         return self.add(tasks.CheckpointFeather(folder=folder, force=force))
 
     def tokens_to_text(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
-        """ [TOKEN] => TEXT """
+        """[TOKEN] => TEXT"""
         return self.add(tasks.TokensToText())
 
     def text_to_tokens(
@@ -116,7 +116,7 @@ class PipelineShortcutMixIn:
         transform_opts: TokensTransformOpts = None,
         transformer: TokensTransformer = None,
     ) -> pipelines.CorpusPipeline:
-        """ TOKEN => TOKENS """
+        """TOKEN => TOKENS"""
         return self.add(
             tasks.TextToTokens(
                 text_transform_opts=text_transform_opts,
@@ -128,7 +128,7 @@ class PipelineShortcutMixIn:
     def tokens_transform(
         self, *, transform_opts: TokensTransformOpts, transformer: TokensTransformer = None
     ) -> pipelines.CorpusPipeline:
-        """ TOKEN => TOKENS """
+        """TOKEN => TOKENS"""
         if transform_opts or transformer:
             return self.add(tasks.TokensTransform(transform_opts=transform_opts, transformer=transformer))
         return self
@@ -230,3 +230,10 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline, exit_test: Callable[[Any], bool], *exit_test_args: Any
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.AssertOnExit(exit_test=exit_test, *exit_test_args))
+
+    def take(
+        self: pipelines.CorpusPipeline,
+        *,
+        n_count: int,
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.Take(n_count=n_count))

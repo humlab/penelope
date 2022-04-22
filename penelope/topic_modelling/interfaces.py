@@ -143,7 +143,7 @@ class TrainingCorpus:
 
 
 class InferredModel:
-    """A container for the trained topic model """
+    """A container for the trained topic model"""
 
     OPTIONS_FILENAME: str = "model_options.json"
     ID2TOKEN_FILENAME: str = "topic_model_id2token.json.gz"
