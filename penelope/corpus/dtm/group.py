@@ -373,7 +373,7 @@ def fill_temporal_gaps_in_group_document_index(
         .append(other=missing_documents, ignore_index=True)
         .fillna(0)
     )
-    df = df.append(other=df2)
+    df = pd.concat([df, df2])
     df.sort_values(by=[temporal_key] + pivot_keys, inplace=True, ascending=True)
     df.reset_index(inplace=True, drop=True)
     df['document_id'] = df.index

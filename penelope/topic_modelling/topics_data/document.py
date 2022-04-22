@@ -36,7 +36,7 @@ def overload(
 
     exclude_columns: Set[str] = set(dtw.columns.tolist()) | set((ignores or '').split(','))
     include_columns: Set[str] = set(includes.split(',') if includes else di.columns)
-    overload_columns: List[str] = (include_columns - exclude_columns).intersection(set(di.columns))
+    overload_columns: List[str] = list((include_columns - exclude_columns).intersection(set(di.columns)))
 
     odtw: pd.DataFrame = dtw.merge(
         di[overload_columns],

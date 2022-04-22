@@ -27,7 +27,7 @@ def load_tagged_frame(
     )
     if checkpoint_opts.lower_lemma:
         tagged_frame[checkpoint_opts.lemma_column] = pd.Series(
-            [x.lower() for x in tagged_frame[checkpoint_opts.lemma_column]]
+            [x.lower() for x in tagged_frame[checkpoint_opts.lemma_column]], dtype=object
         )
     return tagged_frame
 

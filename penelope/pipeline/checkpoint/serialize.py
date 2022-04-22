@@ -52,7 +52,7 @@ class CsvContentSerializer(IContentSerializer):
         if any(x not in data.columns for x in options.columns):
             raise ValueError(f"missing columns: {', '.join([x for x in options.columns if x not in data.columns])}")
         if options.lower_lemma:
-            data[options.lemma_column] = pd.Series([x.lower() for x in data[options.lemma_column]])
+            data[options.lemma_column] = pd.Series([x.lower() for x in data[options.lemma_column]], dtype=object)
         return data[options.columns]
 
     def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
