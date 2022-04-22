@@ -13,7 +13,7 @@ from .tokenized_corpus import ReiterableTerms
 
 
 class SimpleTextLinesCorpus(ITokenizedCorpus):
-    """Corpus that reads a document-per-line text file """
+    """Corpus that reads a document-per-line text file"""
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         index_field: str = None,
         sep: str = ' # ',
     ):
-        """Simple corpus for document per line data  """
+        """Simple corpus for document per line data"""
         with open(filename, 'r') as f:
             lines = f.readlines()
 

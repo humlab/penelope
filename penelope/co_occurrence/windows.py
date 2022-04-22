@@ -113,7 +113,7 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
 
     if not context_opts.concept:
 
-        """ Co-occurrence without concept words """
+        """Co-occurrence without concept words"""
 
         for token in padded_tokens:
 
@@ -126,7 +126,7 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
 
     else:
 
-        """ Co-occurrence with concept words """
+        """Co-occurrence with concept words"""
 
         for token in padded_tokens:
 
@@ -134,7 +134,7 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
 
             if window[context_opts.context_width] in context_opts.concept:
 
-                """ Context window """
+                """Context window"""
                 concept_window = list(window)
 
                 if context_opts.ignore_concept:

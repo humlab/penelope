@@ -20,5 +20,5 @@ class PipelineShortcutMixIn:
         vectorize_opts: pc.VectorizeOpts = None,
         tagged_column: str = None,
     ) -> pipelines.CorpusPipeline:
-        """ (filename, TEXT => DTM) """
+        """(filename, TEXT => DTM)"""
         return self.add(tasks.ToDTM(vectorize_opts=vectorize_opts or pc.VectorizeOpts(), tagged_column=tagged_column))

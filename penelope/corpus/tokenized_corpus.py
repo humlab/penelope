@@ -118,7 +118,7 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
     @property
     def id_terms(self) -> Iterator[Iterator[int]]:
-        """Yields document as a token ID stream """
+        """Yields document as a token ID stream"""
         t2id = self.token2id
         for tokens in self.terms:
             yield (t2id[token] for token in tokens)

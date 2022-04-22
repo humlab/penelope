@@ -186,7 +186,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
 
     @property
     def topic_ids(self) -> List[int]:
-        """Returns unique topic ids """
+        """Returns unique topic ids"""
         return list(self.document_topic_weights.topic_id.unique())
 
     @cached_property
@@ -208,7 +208,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         return pc.Token2Id(data=self.term2id)
 
     def store(self, target_folder: str, pickled: bool = False, feather: bool = True):
-        """Stores topics data in `target_folder` either as pickled file or individual zipped files """
+        """Stores topics data in `target_folder` either as pickled file or individual zipped files"""
         os.makedirs(target_folder, exist_ok=True)
         if pickled:
             PickleUtility.store(self, target_folder=target_folder)

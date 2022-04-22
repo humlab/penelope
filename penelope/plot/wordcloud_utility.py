@@ -20,7 +20,7 @@ try:
         figsize: Tuple[float, float] = (14, 14 / 1.618),
         **kwargs,
     ):
-        """Plots a wordcloud using the `wordcloud` Python package """
+        """Plots a wordcloud using the `wordcloud` Python package"""
         token_weights = dict({tuple(x) for x in df[[token, weight]].values})
         image = wordcloud.WordCloud(**kwargs)
         image.fit_words(token_weights)
@@ -28,7 +28,6 @@ try:
         plt.imshow(image, interpolation='bilinear')
         plt.axis("off")
         plt.show()
-
 
 except ImportError:
 

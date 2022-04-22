@@ -68,7 +68,7 @@ class CoOccurrenceMixIn:
 
     @property
     def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[TokenWindowCountMatrix]:
-        """ Token window count statistics collected during co-occurrence computation"""
+        """Token window count statistics collected during co-occurrence computation"""
         matrix: TokenWindowCountMatrix = self.payload.get("window_counts")
         return matrix
 
@@ -78,7 +78,7 @@ class CoOccurrenceMixIn:
 
     @property
     def vocabs_mapping(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[VocabularyMapping]:
-        """ Translation between single word and word pair vocabularies"""
+        """Translation between single word and word pair vocabularies"""
         return self.payload.get("vocabs_mapping")
 
     @vocabs_mapping.setter

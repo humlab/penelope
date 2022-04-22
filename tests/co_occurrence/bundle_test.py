@@ -274,7 +274,7 @@ def test_step_by_step_compress_with_simple_corpus():
     """Update token count and token2id"""
 
     def _token_ids_to_keep(kept_pair_ids: Set[int]) -> List[int]:
-        """Returns sorted token IDs that given co-occurrence pair IDs corresponds to """
+        """Returns sorted token IDs that given co-occurrence pair IDs corresponds to"""
         token_ids_in_kept_pairs: Set[int] = set(
             flatten((k for k, pair_id in bundle.token_ids_2_pair_id.items() if pair_id in kept_pair_ids))
         )

@@ -172,21 +172,21 @@ def test_group_by_year_mean_bag_term_matrix_to_year_term_matrix(corpus):
 
 
 def test_group_by_category_aggregates_bag_term_matrix_to_category_term_matrix(corpus):
-    """ A more generic version of group_by_year (not used for now) """
+    """A more generic version of group_by_year (not used for now)"""
     grouped_corpus: VectorizedCorpus = corpus.group_by_pivot_column(pivot_column_name='year')
     expected_ytm = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
 
 def test_group_by_category_sums_bag_term_matrix_to_category_term_matrix(corpus):
-    """ A more generic version of group_by_year (not used for now) """
+    """A more generic version of group_by_year (not used for now)"""
     grouped_corpus = corpus.group_by_pivot_column(pivot_column_name='year')
     expected_ytm = np.array([[4, 3, 7, 1], [6, 7, 4, 2]])
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
 
 def test_group_by_category_means_bag_term_matrix_to_category_term_matrix(corpus):
-    """ A more generic version of group_by_year (not used for now) """
+    """A more generic version of group_by_year (not used for now)"""
 
     grouped_corpus = corpus.group_by_pivot_column(pivot_column_name='year', aggregate='sum')
     expected_ytm = [np.array([4.0, 3.0, 7.0, 1.0]), np.array([6.0, 7.0, 4.0, 2.0])]

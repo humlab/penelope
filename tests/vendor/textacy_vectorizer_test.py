@@ -14,7 +14,7 @@ except ImportError:
 
 @pytest.fixture(scope="module")
 def mary_had_a_little_lamb_corpus(en_nlp) -> textacy_api.Corpus:
-    """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py """
+    """Source: https://github.com/chartbeat-labs/textacy/blob/master/tests/test_vsm.py"""
     texts = [
         "Mary had a little lamb. Its fleece was white as snow.",
         "Everywhere that Mary went the lamb was sure to go.",

@@ -93,7 +93,7 @@ def main(
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
 ):
-    """ runner """
+    """runner"""
 
     if corpus_source is None and corpus_folder is None:
         click.echo("usage: either corpus-folder or corpus filename must be specified")

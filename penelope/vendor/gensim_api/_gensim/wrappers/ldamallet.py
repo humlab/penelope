@@ -566,7 +566,7 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         return beststr
 
     def get_version(self, mallet_folder: str) -> str:
-        """ Get the version of Mallet. """
+        """Get the version of Mallet."""
         try:
             archive = zipfile.ZipFile(mallet_folder, 'r')
             if u'cc/mallet/regression/' not in archive.namelist():

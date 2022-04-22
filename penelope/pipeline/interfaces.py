@@ -308,7 +308,7 @@ class ITask(abc.ABC):
             self.exit_hook()
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-        """Creates stream of payloads. Overridable. """
+        """Creates stream of payloads. Overridable."""
 
         if self.prior is None:
             raise PipelineError("No prior task found. Have you loaded a corpus source?")
@@ -316,11 +316,11 @@ class ITask(abc.ABC):
         return self.prior.outstream()
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-        """Processes stream of payloads. Overridable. """
+        """Processes stream of payloads. Overridable."""
         return (self.process(payload) for payload in self.create_instream())
 
     def outstream(self, **kwargs) -> Iterable[DocumentPayload]:
-        """Returns stream of payloads. Non-overridable! """
+        """Returns stream of payloads. Non-overridable!"""
 
         self.enter()
 

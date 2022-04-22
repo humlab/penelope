@@ -28,7 +28,7 @@ class TopTokensDisplayer(ITrendDisplayer):
         self._keyness: Dropdown = self.keyness_widget()
         self._placeholder: VBox = VBox()
         self._top_count: Dropdown = Dropdown(
-            options=[10 ** i for i in range(0, 7)],
+            options=[10**i for i in range(0, 7)],
             value=100,
             placeholder='Record count limit',
             layout=Layout(width='auto'),

@@ -80,7 +80,7 @@ class CheckpointData:
             self.document_index = self.document_index[self.document_index.filename.isin(self.filenames)]
 
     def _sync_filenames(self, verbose: bool = True) -> None:
-        """Syncs sort order for archive filenames and filenames in document index """
+        """Syncs sort order for archive filenames and filenames in document index"""
 
         if self.document_index is None:
             return

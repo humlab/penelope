@@ -80,7 +80,7 @@ class CorpusVectorizer:
         document_index: Union[Callable[[], DocumentIndex], DocumentIndex] = None,
         vectorize_opts: VectorizeOpts,
     ) -> VectorizedCorpus:
-        """Same as `fit_transform` but with a parameter object """
+        """Same as `fit_transform` but with a parameter object"""
         return self.fit_transform(corpus, vocabulary=vocabulary, document_index=document_index, **vectorize_opts.props)
 
     def fit_transform(

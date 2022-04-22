@@ -67,12 +67,15 @@ class CoOccurrenceHelper:
         if len(missing_columns) > 0:
             raise f"BugCheck: expected {','.join(missing_columns)} to be corpus' document index."
 
-        series: pd.Series = data.value / pd.merge(
-            data[pivot_keys],
-            self.corpus.document_index.groupby(pivot_keys)[normalize_key].sum(),
-            left_on=pivot_keys,
-            right_index=True,
-        )[normalize_key]
+        series: pd.Series = (
+            data.value
+            / pd.merge(
+                data[pivot_keys],
+                self.corpus.document_index.groupby(pivot_keys)[normalize_key].sum(),
+                left_on=pivot_keys,
+                right_index=True,
+            )[normalize_key]
+        )
 
         return series
 
@@ -119,7 +122,7 @@ class CoOccurrenceHelper:
             data['value_n_t'] = self._normalize(data, pivot_keys=document_pivot_keys, normalize_key=normalize_key)
 
         if target_pivot_key not in data.columns:
-            """ Only handles single keys!"""
+            """Only handles single keys!"""
             assert document_pivot_keys[0] in data.columns
             data[target_pivot_key] = data[document_pivot_keys[0]]
 

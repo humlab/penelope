@@ -45,7 +45,7 @@ def _setup_glyph_coloring(_, color_high=0.3):
 
 
 def to_categories(values: pd.Series) -> List[str]:
-    """Make unique and sorted string categories. """
+    """Make unique and sorted string categories."""
 
     categories: Sequence[int] = values.unique()
 
@@ -129,7 +129,7 @@ def display_heatmap(
     aggregate: str = None,
     output_format: str = None,
 ):
-    ''' Display aggregate value grouped by year  '''
+    '''Display aggregate value grouped by year'''
     try:
 
         weights['weight'] = weights[aggregate]

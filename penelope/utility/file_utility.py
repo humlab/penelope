@@ -125,7 +125,7 @@ def unpickle_compressed_from_file(filename: str):
 
 
 def pickle_to_file(filename: str, thing: Any):
-    """Pickles a thing to disk """
+    """Pickles a thing to disk"""
     if filename.endswith('.pbz2'):
         pickle_compressed_to_file(filename, thing)
     else:

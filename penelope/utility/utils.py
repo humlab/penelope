@@ -257,7 +257,7 @@ def dict_subset(d: Mapping, keys: Sequence[str]) -> Mapping:
 
 
 def dict_split(d: Mapping, fn: Callable[[Mapping, str], bool]) -> Mapping:
-    """Splits a dictionary into two parts based on predicate """
+    """Splits a dictionary into two parts based on predicate"""
     true_keys = {k for k in d.keys() if fn(d, k)}
     return {k: d[k] for k in true_keys}, {k: d[k] for k in set(d.keys()) - true_keys}
 
@@ -328,7 +328,7 @@ def list_to_unique_list_with_preserved_order(seq):
 
 
 def uniquify(sequence: Iterable[T]) -> List[T]:
-    """ Removes duplicates from a list whilst still preserving order """
+    """Removes duplicates from a list whilst still preserving order"""
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
 
@@ -464,7 +464,7 @@ def now_timestamp() -> str:
 
 
 def timestamp(format_string: str = None) -> str:
-    """ Add timestamp to string that must contain exacly one placeholder """
+    """Add timestamp to string that must contain exacly one placeholder"""
     tz = now_timestamp()
     return tz if format_string is None else format_string.format(tz)
 

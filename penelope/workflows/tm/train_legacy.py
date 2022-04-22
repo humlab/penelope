@@ -22,7 +22,7 @@ def compute(
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
 ):
-    """ runner """
+    """runner"""
 
     tokens_reader = TextTokenizer(
         source=corpus_source,

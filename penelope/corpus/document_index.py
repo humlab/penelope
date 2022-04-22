@@ -124,7 +124,7 @@ class DocumentIndexHelper:
         return self
 
     def add_attributes(self, other: DocumentIndex) -> "DocumentIndexHelper":
-        """ Adds other's document meta data (must have a document_id) """
+        """Adds other's document meta data (must have a document_id)"""
         self._document_index = self._document_index.merge(
             other, how='inner', left_on='document_id', right_on='document_id'
         )
@@ -684,7 +684,7 @@ def update_document_index_by_dicts_or_tuples(
     dtype=None,
     default: Any = 0,
 ) -> pd.DataFrame:
-    """Update di columns with values given as list of tuples. Inplace update. Create columns that don't exist. """
+    """Update di columns with values given as list of tuples. Inplace update. Create columns that don't exist."""
     di_data: pd.DataFrame = pd.DataFrame.from_records(data, columns=columns).set_index('document_name')
     new_cols: List[str] = [k for k in di_data.columns if k not in document_index.columns]
     if len(new_cols) > 0:
