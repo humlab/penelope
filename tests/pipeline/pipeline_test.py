@@ -229,7 +229,7 @@ def test_pipeline_take_succeeds(config: pipeline.CorpusConfig):
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=None)
         .tokens_to_text()
-        .take(2)
+        .take2(2)
     )
 
     assert len(take_payloads) == 2

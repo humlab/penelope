@@ -230,3 +230,10 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline, exit_test: Callable[[Any], bool], *exit_test_args: Any
     ) -> pipelines.CorpusPipeline:
         return self.add(tasks.AssertOnExit(exit_test=exit_test, *exit_test_args))
+
+    def take(
+        self: pipelines.CorpusPipeline,
+        *,
+        n_count: int,
+    ) -> pipelines.CorpusPipeline:
+        return self.add(tasks.Take(n_count=n_count))
