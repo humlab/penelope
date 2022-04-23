@@ -85,7 +85,7 @@ class CreateMaskError(Exception):
 
 
 def size_of(df: pd.DataFrame, unit: Literal['bytes', 'kB', 'MB', 'GB'], total: bool = False) -> int | dict:
-    d: dict = {x: 1024**i for i, x in enumerate(['bytes', 'kB', 'MB', 'GB'])}
+    d: dict = {x: 1024 ** i for i, x in enumerate(['bytes', 'kB', 'MB', 'GB'])}
     sizes: pd.Series = df.memory_usage(index=True, deep=True)
     return (
         f"{sizes.sum()/d[unit]:.1f} {unit}"

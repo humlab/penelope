@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Optional, Sequence
-from penelope.workflows.vectorize.dtm import store_corpus_bundle
 
 import penelope.workflows.vectorize.dtm_id as workflow
 from penelope import corpus as pc
@@ -9,6 +8,7 @@ from penelope import pipeline as pp
 from penelope import utility
 from penelope.pipeline.phrases import parse_phrases
 from penelope.utility.pos_tags import pos_tags_to_str
+from penelope.workflows.vectorize.dtm import store_corpus_bundle
 
 # import cProfile
 # import pstats

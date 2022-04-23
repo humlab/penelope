@@ -1,6 +1,6 @@
 from __future__ import annotations
-from ctypes import ArgumentError
 
+from ctypes import ArgumentError
 from typing import Literal
 
 from penelope.corpus.dtm.vectorizer import VectorizeOpts

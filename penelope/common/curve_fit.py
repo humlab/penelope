@@ -31,7 +31,7 @@ def sigmoid(x, x0, k):
 
 
 def quadratic(x, a, b, c):
-    return a * x**2 + b * x + c
+    return a * x ** 2 + b * x + c
 
 
 def zipf_mandelbrot(x, a, b, c):

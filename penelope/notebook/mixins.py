@@ -228,6 +228,7 @@ class PivotKeysMixIn:
             ]
         )
 
+
 class MultiLinePivotKeysMixIn(PivotKeysMixIn):
     def __init__(self, pivot_key_specs: t.Any = None, color_presets: dict[str, str] = None, **kwargs):
         super().__init__(pivot_key_specs, **kwargs)
