@@ -33,7 +33,7 @@ def id_tagged_frame_to_DTM_pipeline(
     corpus_config: CorpusConfig,
     corpus_source: str = None,
     id_to_token: bool = False,
-    file_pattern: str = '**/prot-*.feather',
+    file_pattern: str = None,
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
     vectorize_opts: VectorizeOpts = None,
@@ -42,6 +42,10 @@ def id_tagged_frame_to_DTM_pipeline(
 
         if corpus_source is None:
             corpus_source = corpus_config.pipeline_payload.source
+
+        file_pattern = file_pattern or corpus_config.get_pipeline_opts_value("tagged_frame_pipeline", "file_pattern")
+        if file_pattern is None:
+            raise ValueError("file pattern not supplied and not in pipeline opts (corpus config)")
 
         extract_opts.set_numeric_names()
         vectorize_opts.min_df = extract_opts.global_tf_threshold
