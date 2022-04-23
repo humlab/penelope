@@ -65,6 +65,9 @@ class CorpusConfig:
             return cfg.get('options', {})
         return {}
 
+    def get_pipeline_opts_value(self, pipeline_key: str, key: str, default_value: Any = None) -> Any:
+        return self.get_pipeline_opts(pipeline_key=pipeline_key).get(key, default_value)
+
     def get_pipeline_cls(self, pipeline_key: str) -> CorpusPipeline:
         """Returns a pipeline class by key from `pipelines` section"""
         if pipeline_key not in self.pipelines:
