@@ -67,12 +67,15 @@ class CoOccurrenceHelper:
         if len(missing_columns) > 0:
             raise f"BugCheck: expected {','.join(missing_columns)} to be corpus' document index."
 
-        series: pd.Series = data.value / pd.merge(
-            data[pivot_keys],
-            self.corpus.document_index.groupby(pivot_keys)[normalize_key].sum(),
-            left_on=pivot_keys,
-            right_index=True,
-        )[normalize_key]
+        series: pd.Series = (
+            data.value
+            / pd.merge(
+                data[pivot_keys],
+                self.corpus.document_index.groupby(pivot_keys)[normalize_key].sum(),
+                left_on=pivot_keys,
+                right_index=True,
+            )[normalize_key]
+        )
 
         return series
 
