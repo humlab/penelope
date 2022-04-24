@@ -294,6 +294,10 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
                 n_tokens=self.n_tokens,
                 minimum_probability=self.minimum_probability,
             )
+
+            if self.pipeline and self.pipeline.config:
+                self.pipeline.config.dump(jj(self.target_subfolder, "corpus.yml"))
+
             logger.info("prediction done")
 
         payload: DocumentPayload = DocumentPayload(
