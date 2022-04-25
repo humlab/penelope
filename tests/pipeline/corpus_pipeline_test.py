@@ -393,7 +393,7 @@ def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts)
         pos_schema_name="Universal",
         memory_store={'spacy_model': "en_core_web_sm", 'nlp': None, 'lang': 'en,'},
     )
-    config = MagicMock(spec=CorpusConfig, payload=pipeline_payload)
+    config = MagicMock(spec=CorpusConfig, pipeline_payload=pipeline_payload)
     pipeline = (
         CorpusPipeline(config=config)
         .checkpoint(

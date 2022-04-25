@@ -39,7 +39,8 @@ def test_dump_and_load_of_corpus_config_succeeds(corpus_config: CorpusConfig):
     corpus_config.dump(dump_filename)
     deserialized_config = CorpusConfig.load(dump_filename)
 
-    assert json.dumps(corpus_config, default=vars) == json.dumps(deserialized_config, default=vars)
+    # assert json.dumps(corpus_config, default=vars) == json.dumps(deserialized_config, default=vars)
+    assert corpus_config.props == deserialized_config.props
 
 
 def test_find_config(corpus_config: CorpusConfig):

@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 
 jj = os.path.join
 
+# pylint: disable=too-many-arguments
+
 
 def create_pipeline_factory(
     class_or_function_name: str,
@@ -107,7 +109,7 @@ class CorpusConfig:
             text_transform_opts=self.text_transform_opts.props if self.text_transform_opts else None,
             pipeline_payload=self.pipeline_payload.props,
             pipelines=self.pipelines,
-            pos_schema_name=self.pipeline_payload.pos_schema_name,
+            # pos_schema_name=self.pipeline_payload.pos_schema_name,
             language=self.language,
         )
 

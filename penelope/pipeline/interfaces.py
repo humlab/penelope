@@ -143,6 +143,7 @@ class PipelinePayload:
             if isinstance(self.document_index_source, str)
             else 'object',
             pos_schema_name=self.pos_schema_name,
+            memory_store=self.memory_store,
         )
 
     def get(self, key: str, default=None):
