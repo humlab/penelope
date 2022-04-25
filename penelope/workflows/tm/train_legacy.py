@@ -70,7 +70,7 @@ def compute(
 
     """Store a reconstructed corpus config in target folder"""
     with contextlib.suppress(Exception):
-        pp.CorpusConfig(
+        pp.CorpusConfig.create(
             corpus_name=target_name,
             corpus_type=pp.CorpusType.Text,
             corpus_pattern=None,

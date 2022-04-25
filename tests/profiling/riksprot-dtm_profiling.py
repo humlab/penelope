@@ -12,7 +12,7 @@ from penelope.workflows.vectorize.dtm import store_corpus_bundle
 
 # import cProfile
 # import pstats
-
+# pylint: disable=too-many-arguments
 
 OPTIONS_FILENAME = "tests/profiling/riksprot-1965_dtm_opts.yml"
 

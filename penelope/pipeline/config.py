@@ -6,13 +6,14 @@ import json
 import os
 import pathlib
 import uuid
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Type, Union
+from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 
 import yaml
 
 from penelope.corpus import TextReaderOpts, TextTransformOpts
 from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema, strip_extensions
+from penelope.utility.filename_utils import replace_extension
 
 from . import checkpoint, interfaces
 
@@ -44,15 +45,15 @@ class CorpusType(enum.IntEnum):
 @dataclass
 class CorpusConfig:
 
-    corpus_name: str = None
-    corpus_type: CorpusType = CorpusType.Undefined
-    corpus_pattern: str = field(default="*.zip")
-    checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None
-    text_reader_opts: TextReaderOpts = None
-    text_transform_opts: TextTransformOpts = None
-    pipelines: dict = None
-    pipeline_payload: interfaces.PipelinePayload = None
-    language: str = field(default="english")
+    corpus_name: str
+    corpus_type: CorpusType
+    corpus_pattern: str
+    checkpoint_opts: Optional[checkpoint.CheckpointOpts]
+    text_reader_opts: TextReaderOpts
+    text_transform_opts: TextTransformOpts
+    pipelines: dict
+    pipeline_payload: interfaces.PipelinePayload
+    language: str
 
     def pipeline_key_exists(self, pipeline_key: str) -> bool:
         return pipeline_key in self.pipelines
@@ -96,28 +97,37 @@ class CorpusConfig:
         return get_pos_schema(self.pipeline_payload.pos_schema_name)
 
     @property
-    def props(self) -> Dict[str, Any]:
+    def props(self) -> dict[str, Any]:
         return dict(
             corpus_name=self.corpus_name,
             corpus_type=int(self.corpus_type),
-            text_reader_opts=self.text_reader_opts.props if self.text_reader_opts else None,
+            corpus_pattern=self.corpus_pattern,
+            checkpoint_opts=asdict(self.checkpoint_opts) if self.checkpoint_opts else None,
+            text_reader_opts=asdict(self.text_reader_opts) if self.text_reader_opts else None,
             text_transform_opts=self.text_transform_opts.props if self.text_transform_opts else None,
             pipeline_payload=self.pipeline_payload.props,
+            pipelines=self.pipelines,
             pos_schema_name=self.pipeline_payload.pos_schema_name,
+            language=self.language,
         )
 
     def dump(self, path: str):
         """Serializes and writes a CorpusConfig to `path`"""
         with open(path, "w") as fp:
             if path.endswith("json"):
-                json.dump(self, fp, default=vars, indent=4)
+                json.dump(self, fp, default=vars, indent=4, allow_nan=True)
             if path.endswith('yaml') or path.endswith('yml'):
                 yaml.dump(
-                    json.loads(json.dumps(self, default=vars)), fp, indent=4, default_flow_style=False, sort_keys=False
+                    # json.loads(json.dumps(self, default=vars)),
+                    self.props,
+                    fp,
+                    indent=4,
+                    default_flow_style=False,
+                    sort_keys=False,
                 )
 
     @staticmethod
-    def list(folder: str) -> List[str]:
+    def list(folder: str) -> list[str]:
         """Return YAML filenames in given `folder`"""
         filenames = sorted(
             glob.glob(jj(folder, '**', '*.yml'), recursive=True) + glob.glob(jj(folder, '**', '*.yaml'), recursive=True)
@@ -163,7 +173,7 @@ class CorpusConfig:
             'pipelines', {}
         )  # CorpusConfig.dict_to_pipeline_config(config_dict.get('pipelines', {}))
 
-        deserialized_config: CorpusConfig = CorpusConfig(**config_dict)
+        deserialized_config: CorpusConfig = CorpusConfig.create(**config_dict)
         deserialized_config.corpus_type = CorpusType(deserialized_config.corpus_type)
 
         return deserialized_config
@@ -178,8 +188,8 @@ class CorpusConfig:
             raise FileNotFoundError(folder)
 
         for extension in ['', '.yml', '.yaml', '.json']:
-            try_name: str = f"{filename}{extension}"
-            candidates: List[pathlib.Path] = list(pathlib.Path(folder).rglob(try_name))
+            try_name: str = filename if not extension else replace_extension(filename, extension=extension)
+            candidates: list[pathlib.Path] = list(pathlib.Path(folder).rglob(try_name))
             try:
                 for candidate in candidates:
                     config = CorpusConfig.load(str(candidate))
@@ -195,7 +205,7 @@ class CorpusConfig:
 
     @staticmethod
     def tokenized_corpus_config(language: str = "swedish") -> CorpusConfig:
-        config: CorpusConfig = CorpusConfig(
+        config: CorpusConfig = CorpusConfig.create(
             corpus_name=uuid.uuid1(),
             corpus_type=CorpusType.Tokenized,
             corpus_pattern=None,
@@ -225,3 +235,28 @@ class CorpusConfig:
         if self.pipeline_payload.source is None:
             return False
         return os.path.isfile(self.pipeline_payload.source)
+
+    @staticmethod
+    def create(
+        corpus_name: str = None,
+        corpus_type: CorpusType = CorpusType.Undefined,
+        corpus_pattern: str = "*.zip",
+        checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None,
+        text_reader_opts: TextReaderOpts = None,
+        text_transform_opts: TextTransformOpts = None,
+        pipelines: dict = None,
+        pipeline_payload: interfaces.PipelinePayload = None,
+        language: str = "english",
+    ) -> CorpusConfig:
+
+        return CorpusConfig(
+            corpus_name=corpus_name,
+            corpus_type=corpus_type,
+            corpus_pattern=corpus_pattern,
+            checkpoint_opts=checkpoint_opts,
+            text_reader_opts=text_reader_opts,
+            text_transform_opts=text_transform_opts,
+            pipelines=pipelines,
+            pipeline_payload=pipeline_payload,
+            language=language,
+        )
