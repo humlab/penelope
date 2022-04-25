@@ -115,6 +115,8 @@ class CorpusConfig:
 
     def dump(self, path: str):
         """Serializes and writes a CorpusConfig to `path`"""
+        memory_store: dict = self.pipeline_payload.memory_store
+        self.pipeline_payload.memory_store = None
         with open(path, "w") as fp:
             if path.endswith("json"):
                 json.dump(self, fp, default=vars, indent=4, allow_nan=True)
@@ -127,6 +129,7 @@ class CorpusConfig:
                     default_flow_style=False,
                     sort_keys=False,
                 )
+        self.pipeline_payload.memory_store = memory_store
 
     @staticmethod
     def list(folder: str) -> list[str]:
