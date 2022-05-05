@@ -4,6 +4,7 @@ import glob
 import os
 from dataclasses import dataclass, field
 from enum import IntEnum
+from fnmatch import fnmatch
 from functools import cached_property
 from os.path import join as jj
 from typing import Iterable, List, Mapping
@@ -175,6 +176,13 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
 
             loaded_frame: pd.DataFrame = self.load_tagged_frame(filename)
 
+            loaded_frame_columns = loaded_frame_columns or set(loaded_frame.columns)
+
+            if loaded_frame_columns != set(loaded_frame.columns):
+                raise ValueError(
+                    f"columns in tagged frames {filename} differs from previous frame (is correct file pattern set?)"
+                )
+
             if self.id_to_token:
 
                 if 'token_id' in loaded_frame.columns:
@@ -187,7 +195,7 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
 
                 loaded_frame.drop(columns=['token_id', 'pos_id', 'lemma_id'], inplace=True, errors='ignore')
 
-            if 'document_id' not in (loaded_frame_columns or (loaded_frame_columns := set(loaded_frame.columns))):
+            if 'document_id' not in loaded_frame_columns:
 
                 payload: DocumentPayload = DocumentPayload(
                     content_type=self.out_content_type, content=loaded_frame, filename=strip_paths(filename)
@@ -214,12 +222,13 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
 
     @cached_property
     def corpus_filenames(self) -> List[str]:
-        magic_names: List[str] = ['token2id.feather', 'document_index.feather']
+        magic_names: List[str] = ['token2id*feather', 'document_index*feather']
         match_iter: Iterable[str] = (
             filename
             for filename in glob.iglob(jj(self.corpus_source, self.file_pattern), recursive=True)
-            if not any(filename.endswith(m) for m in magic_names)
+            if not any(fnmatch(strip_paths(filename), m) for m in magic_names)
         )
+
         filenames: List[str] = sorted(match_iter)
 
         logger.info(f"found {len(filenames)} matching `{self.file_pattern}` in {self.corpus_source}")

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ctypes import ArgumentError
 from typing import Literal
 
 from penelope.corpus.dtm.vectorizer import VectorizeOpts
@@ -20,6 +21,11 @@ def load_id_tagged_frame_pipeline(
     """Loads a tagged data frame"""
 
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
+
+    file_pattern = file_pattern or corpus_config.get_pipeline_opts_value("tagged_frame_pipeline", "file_pattern")
+
+    if file_pattern is None:
+        raise ArgumentError("file pattern not supplied and not in pipeline opts (corpus config)")
 
     p: pipelines.CorpusPipeline = pipelines.CorpusPipeline(config=corpus_config).load_id_tagged_frame(
         folder=corpus_source,

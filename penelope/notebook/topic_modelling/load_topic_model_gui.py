@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from contextlib import suppress
 from os.path import join as jj
-from typing import Any, List, Optional
+from typing import Any, List
 
 import ipywidgets as w
 import pandas as pd
 from IPython.display import display
+from loguru import logger
 
-from penelope import pipeline
+from penelope import pipeline as pp
 from penelope import topic_modelling as tm
 
 from . import mixins as mx
@@ -21,7 +22,6 @@ def load_model(
     corpus_folder: str,
     state: TopicModelContainer,
     model_name: str,
-    corpus_config: pipeline.CorpusConfig = None,
     model_infos: list[dict[str, Any]] = None,
     slim: bool = False,
     n_tokens: int = 500,
@@ -29,8 +29,14 @@ def load_model(
 
     model_infos = model_infos or tm.find_models(corpus_folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
+
+    corpus_config: pp.CorpusConfig = pp.CorpusConfig.find("corpus.yml", corpus_folder)
     filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
     trained_model: tm.InferredModel = tm.InferredModel.load(model_info["folder"], lazy=True)
+
+    if corpus_config is None:
+        logger.warning("no corpus config found in model folder")
+
     inferred_topics: tm.InferredTopicsData = tm.InferredTopicsData.load(
         folder=jj(corpus_folder, model_info["name"]), filename_fields=filename_fields, slim=slim
     )
@@ -60,13 +66,11 @@ class LoadGUI(mx.AlertMixIn):
         self,
         corpus_folder: str,
         state: TopicModelContainer,
-        corpus_config: pipeline.CorpusConfig | None = None,
         slim: bool = False,
     ):
         super().__init__()
         self.corpus_folder: str = corpus_folder
         self.state: TopicModelContainer = state
-        self.corpus_config: Optional[pipeline.CorpusConfig] = corpus_config
         self.slim: bool = slim
         self._model_name: w.Dropdown = w.Dropdown(description="Model", options=[], layout=dict(width="40%"))
 
@@ -107,24 +111,6 @@ class LoadGUI(mx.AlertMixIn):
             corpus_folder=self.corpus_folder,
             state=self.state,
             model_name=self._model_name.value,
-            corpus_config=self.corpus_config,
             model_infos=self.model_infos,
             slim=self.slim,
         )
-
-
-def create_load_topic_model_gui(
-    corpus_folder: str,
-    state: TopicModelContainer,
-    corpus_config: Optional[pipeline.CorpusConfig] = None,
-    slim: bool = False,
-) -> LoadGUI:
-
-    gui: LoadGUI = LoadGUI(
-        corpus_folder=corpus_folder,
-        state=state,
-        corpus_config=corpus_config,
-        slim=slim,
-    ).setup()
-
-    return gui

@@ -325,12 +325,12 @@ def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
         display(network)
 
     if opts.output_format.lower() in ('table', 'xlsx', 'csv', 'clipboard', 'gephi'):
-
+        # FIXME #162 [BUG] Exception is raised when using Gephi as output format
         if opts.output_format == "gephi":
             topics_tokens = topics_tokens[['topic', 'token', 'weight']]
             topics_tokens.columns = ['Source', 'Target', 'Weight']
-
-        if opts.output_format != "table":
+            utility.ts_store(data=topics_tokens, extension="csv", basename='topics_token_network_gephi')
+        elif opts.output_format != "table":
             utility.ts_store(data=topics_tokens, extension=opts.output_format.lower(), basename='topics_token_network')
 
         g = gu.table_widget(topics_tokens)

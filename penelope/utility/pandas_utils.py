@@ -478,15 +478,24 @@ def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> 
     return data
 
 
-def ts_store(data: pd.DataFrame, *, extension: Literal['csv', 'xlsx', 'clipboard'], basename: str):
+def ts_store(
+    data: pd.DataFrame,
+    *,
+    extension: Literal['csv', 'tsv', 'gephi', 'txt', 'json', 'xlsx', 'clipboard'],
+    basename: str,
+    sep: str = '\t',
+):
 
     filename = f"{now_timestamp()}_{basename}.{extension}"
+
     if extension == 'xlsx':
         data.to_excel(filename)
-    elif extension == 'csv':
-        data.to_csv(filename, sep='\t')
+    elif extension in ('csv', 'tsv', 'gephi', 'txt'):
+        data.to_csv(filename, sep=sep)
+    elif extension in ('json'):
+        data.to_json(filename)
     elif extension == 'clipboard':
-        data.to_clipboard(sep='\t')
+        data.to_clipboard(sep=sep)
         filename = "clipboard"
     else:
         raise ValueError(f"unknown extension: {extension}")

@@ -74,7 +74,7 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
         context_width=2, concept={}, ignore_concept=False, ignore_padding=False, processes=None
     )
     tokenized_corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
-    config: CorpusConfig = CorpusConfig(
+    config: CorpusConfig = CorpusConfig.create(
         corpus_name=uuid.uuid1(),
         corpus_type=CorpusType.Tokenized,
         corpus_pattern=None,
