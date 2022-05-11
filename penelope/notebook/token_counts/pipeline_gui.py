@@ -9,6 +9,7 @@ from loguru import logger
 
 from penelope import pipeline
 from penelope.corpus import DocumentIndex
+from penelope.corpus.document_index import DocumentIndexHelper
 from penelope.pipeline import checkpoint as cp
 from penelope.pipeline import interfaces, tasks
 from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
@@ -214,10 +215,8 @@ def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFra
 
     return None
 
-
-@DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
-def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
-
+def load_by_pipeline(corpus_config: pipeline.CorpusConfig):
+    """FIXME: This does not handle all cases"""
     if not corpus_config.pipeline_payload.source:
         logger.info("corpus filename is undefined. please check configuration")
         return None
@@ -242,6 +241,20 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
         p.exhaust()
         document_index: DocumentIndex = p.payload.document_index
 
+    return document_index
+
+@DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
+def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
+
+    if corpus_config.pipeline_payload.document_index_source is not None:
+        document_index: pd.DataFrame = DocumentIndexHelper.load(
+            filename=corpus_config.pipeline_payload.document_index_source,
+            sep=corpus_config.pipeline_payload.document_index_sep or ';'
+        ).document_index
+
+    else:
+        document_index: pd.DataFrame = load_by_pipeline(corpus_config)
+
     if 'n_raw_tokens' not in document_index.columns:
         raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")
 
@@ -249,8 +262,6 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
     document_index['decade'] = document_index.year - document_index.year % 10
 
     document_index = document_index.rename(columns={"n_raw_tokens": "#Tokens"}).fillna(0)
-
-    # strip away irrelevant columns
 
     pos_schema: PoS_Tag_Scheme = corpus_config.pos_schema
 
