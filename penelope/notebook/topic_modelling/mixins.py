@@ -10,6 +10,10 @@ from .. import widgets_utils as wu
 from . import model_container as mc
 
 
+class EmptyDataError(Exception):
+    ...
+
+
 class TopicsStateGui:
     def __init__(self, state: mc.TopicModelContainer) -> None:
         super().__init__()
@@ -89,8 +93,7 @@ class NextPrevTopicMixIn:
             elif isinstance(self._topic_id, w.Dropdown):
                 id2label = (value[2] if len(value) > 2 else {}).get
                 self._topic_id.value = None
-                # FIXME: #166 [NextPrevTopicMixIn] Last topic is not shown in dropdown
-                self._topic_id.options = [(id2label(i, str(i)), i) for i in range(0, value[1]+1)]
+                self._topic_id.options = [(id2label(i, str(i)), i) for i in range(0, value[1] + 1)]
                 self._topic_id.value = value[0]
 
         else:
