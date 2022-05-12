@@ -2,7 +2,7 @@ import abc
 
 import ipywidgets as w
 import pandas as pd
-from IPython.core.display import Javascript
+from IPython.display import Javascript
 from IPython.display import display as IPython_display
 
 from penelope.topic_modelling import filter_topic_tokens_overview

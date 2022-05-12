@@ -13,7 +13,7 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
             },
-
+            "redirectOutput": true
         }
     ]
 }
