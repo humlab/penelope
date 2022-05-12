@@ -636,5 +636,5 @@ def get_smiley() -> str:
     return "😪"
 
 
-def dictify(o: Any) -> dict:
-    return json.loads(json.dumps(o, default=lambda _: "<not serializable"))
+def dictify(o: Any, default_value: Any = "<not serializable>") -> dict:
+    return json.loads(json.dumps(o, default=lambda _: default_value))
