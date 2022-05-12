@@ -215,6 +215,7 @@ def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFra
 
     return None
 
+
 def load_by_pipeline(corpus_config: pipeline.CorpusConfig):
     """FIXME: This does not handle all cases"""
     if not corpus_config.pipeline_payload.source:
@@ -243,13 +244,14 @@ def load_by_pipeline(corpus_config: pipeline.CorpusConfig):
 
     return document_index
 
+
 @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
 def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
 
     if corpus_config.pipeline_payload.document_index_source is not None:
         document_index: pd.DataFrame = DocumentIndexHelper.load(
             filename=corpus_config.pipeline_payload.document_index_source,
-            sep=corpus_config.pipeline_payload.document_index_sep or ';'
+            sep=corpus_config.pipeline_payload.document_index_sep or ';',
         ).document_index
 
     else:
