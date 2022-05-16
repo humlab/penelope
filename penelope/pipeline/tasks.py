@@ -695,7 +695,7 @@ class TokensToText(ITask):
 
 
 @dataclass
-class Vocabulary(DefaultResolveMixIn, ITask):
+class Vocabulary(ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
@@ -706,6 +706,7 @@ class Vocabulary(DefaultResolveMixIn, ITask):
     close: bool = True
     tf_threshold: int = None
     tf_keeps: Container[Union[int, str]] = field(default_factory=set)
+    translation: dict[int, int] = field(default=None, init=False)
 
     target: str = field(init=False, default="")
 
@@ -732,18 +733,20 @@ class Vocabulary(DefaultResolveMixIn, ITask):
 
         total: int = len(self.document_index.index) if self.document_index is not None else None
         for payload in self.prior.outstream(total=total, desc="Vocab"):
-            self.token2id.ingest_stream([self.tokens_stream(payload)])
+            self.token2id.ingest_stream([self._payload_to_token_stream(payload)])
 
         if self.tf_threshold and self.tf_threshold > 1:
             """We don't need translation since vocab hasn't been used yet"""
-            _ = self.token2id.compress(tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps)
+            _, self.translation = self.token2id.compress(
+                tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps
+            )
 
         if self.token2id.is_open and self.close:
             self.token2id.close()
 
         return self
 
-    def tokens_stream(self, payload: DocumentPayload) -> Iterable[str]:
+    def _payload_to_token_stream(self, payload: DocumentPayload) -> Iterable[str]:
 
         if payload.content_type == ContentType.TOKENS:
             return payload.content
@@ -761,6 +764,30 @@ class Vocabulary(DefaultResolveMixIn, ITask):
         if token_type == Vocabulary.TokenType.Lemma:
             return self.pipeline.payload.memory_store.get("lemma_column")
         return self.pipeline.payload.memory_store.get("text_column")
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+
+        if self.token2id.fallback_token_id is not None:
+
+            """Token2Id is compressed, we need to replace all tokens not in token2id with fallback-token"""
+
+            vocab = self.token2id.data
+            fallback_token: str = self.token2id.fallback_token
+            tokens: list[str] = (
+                payload.content if payload.content_type == ContentType.TOKENS else payload.content[self.target]
+            )
+            translated_tokens: list[str] = [x if x in vocab else fallback_token for x in tokens]
+
+            if payload.content_type == ContentType.TOKENS:
+                return payload.update(self.out_content_type, translated_tokens)
+
+            if payload.content_type == ContentType.TAGGED_FRAME:
+                payload.content[self.target] = translated_tokens
+                return payload
+
+            raise ValueError(f"content type {payload.content_type} not supported")
+
+        return payload
 
 
 @dataclass

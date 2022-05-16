@@ -8,20 +8,23 @@ from penelope.pipeline.phrases import parse_phrases
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 
-
 # pylint: disable=too-many-arguments, unused-argument
+
 
 def process_co_ocurrence():
     concept: list[str] = ["sverige"]
-    corpus_config: str = "tests/bugs/riksdagens-protokoll.yml"
-    input_filename: str = "/data/westac/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip"
+    # corpus_config: str = "tests/bugs/riksdagens-protokoll.yml"
+    # input_filename: str = "/data/westac/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip"
+
+    corpus_config: str = "tests/test_data/tranströmer.yml"
+    input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
 
     append_pos: bool = False
     compute_chunk_size: int = 10
     compute_processes: int = None
     context_width: int = 1
     create_subfolder: bool = True
-    deserialize_processes: int = 4
+    deserialize_processes: int = 1
     enable_checkpoint: bool = True
     filename_pattern: str = None
     force_checkpoint: bool = False
@@ -38,10 +41,10 @@ def process_co_ocurrence():
     phrase: list[str] = []
     phrase_file: str = None
     pos_excludes: str = ''
-    pos_includes: str = ''
+    pos_includes: str = 'VB'
     pos_paddings: str = "PASSTHROUGH"
     remove_stopwords: bool = None
-    tf_threshold: int = 10
+    tf_threshold: int = 2
     tf_threshold_mask: bool = True
     to_lower: bool = True
 

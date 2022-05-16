@@ -30,7 +30,9 @@ DEBUG_TRACE: bool = False
 if DEBUG_TRACE:
     logger.remove()
     logger.add(sys.stdout, format="{message}", level="INFO", enqueue=True)
-    logger.add("co_occurrence_trace.py", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True)
+    logger.add(
+        "co_occurrence_trace.log", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True
+    )
 
 
 @dataclass

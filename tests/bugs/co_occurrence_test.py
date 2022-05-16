@@ -61,8 +61,8 @@ def test_bug():
         extract_opts=corpora.ExtractTaggedTokensOpts(
             pos_includes='',
             pos_excludes='',
-            #pos_excludes='MAD|MID|PAD',
-            #pos_paddings='AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|PC|PL|PN|PP|PS|RG|RO|SN|UO|VB',
+            # pos_excludes='MAD|MID|PAD',
+            # pos_paddings='AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|PC|PL|PN|PP|PS|RG|RO|SN|UO|VB',
             pos_paddings='PASSTHROUGH',
             lemmatize=True,
             append_pos=False,
@@ -89,7 +89,7 @@ def test_bug():
             partition_keys=['year'],
             processes=4,
             chunksize=10,
-            ignore_padding=True
+            ignore_padding=True,
         ),
         enable_checkpoint=True,
         force_checkpoint=False,
@@ -100,6 +100,7 @@ def test_bug():
         corpus_config=corpus_config,
         tagged_corpus_source=jj(OUTPUT_FOLDER, 'test.zip'),
     )
+
 
 if __name__ == '__main__':
     test_bug()

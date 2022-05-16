@@ -39,7 +39,7 @@ def test_task_vocabulary_token2id():
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)
 
     expected_tokens = tagged_frame.baseform.str.lower().tolist()
-    assert expected_tokens == [x for x in task.tokens_stream(payload)]
+    assert expected_tokens == [x for x in task._payload_to_token_stream(payload)]
 
 
 def test_CheckpointFeather_write_document_index():
