@@ -80,8 +80,12 @@ class ToCoOccurrenceDTM(ITask):
     def enter(self):
         super().enter()
 
-        if not self.pipeline.find("Vocabulary", type(self)):
+        vocab_task: ITask = self.pipeline.find("Vocabulary", stop_cls=type(self))
+
+        if not vocab_task:
             raise PipelineError(f"{type(self).__name__}: requires preceeding Vocabulary task")
+
+        vocab_task.build()
 
         if self.pipeline.payload.token2id is None:
             raise PipelineError(f"{type(self).__name__} requires a vocabulary!")
