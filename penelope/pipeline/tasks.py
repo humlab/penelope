@@ -707,7 +707,7 @@ class Vocabulary(ITask):
     tf_threshold: int = None
     tf_keeps: Container[Union[int, str]] = field(default_factory=set)
     translation: dict[int, int] = field(default=None, init=False)
-
+    is_built: bool = field(default=False, init=False)
     target: str = field(init=False, default="")
 
     def __post_init__(self):
@@ -726,7 +726,10 @@ class Vocabulary(ITask):
         self.pipeline.payload.token2id = self.token2id
         return self
 
-    def enter(self):
+    def build(self) -> None:
+
+        if self.is_built:
+            return
 
         self.token2id.ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
@@ -744,6 +747,12 @@ class Vocabulary(ITask):
         if self.token2id.is_open and self.close:
             self.token2id.close()
 
+        self.is_built = True
+
+    def enter(self):
+        super().enter()
+        if not self.is_built:
+            self.build()
         return self
 
     def _payload_to_token_stream(self, payload: DocumentPayload) -> Iterable[str]:
@@ -768,7 +777,6 @@ class Vocabulary(ITask):
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
 
         if self.token2id.fallback_token_id is not None:
-
             """Token2Id is compressed, we need to replace all tokens not in token2id with fallback-token"""
 
             vocab = self.token2id.data
@@ -777,12 +785,17 @@ class Vocabulary(ITask):
                 payload.content if payload.content_type == ContentType.TOKENS else payload.content[self.target]
             )
             translated_tokens: list[str] = [x if x in vocab else fallback_token for x in tokens]
+            n_translated: int = len([x for x in translated_tokens if x == fallback_token])
+            logger.info(f"masked {n_translated} tokens")
+
+            assert not any(x not in self.token2id for x in translated_tokens)
 
             if payload.content_type == ContentType.TOKENS:
                 return payload.update(self.out_content_type, translated_tokens)
 
             if payload.content_type == ContentType.TAGGED_FRAME:
                 payload.content[self.target] = translated_tokens
+                # payload.content.loc[~payload.content[self.target].str.isin(vocab), self.target] = fallback_token
                 return payload
 
             raise ValueError(f"content type {payload.content_type} not supported")
