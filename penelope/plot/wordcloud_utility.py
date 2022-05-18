@@ -29,7 +29,6 @@ try:
         plt.axis("off")
         plt.show()
 
-
 except ImportError:
 
     def plot_wordcloud(

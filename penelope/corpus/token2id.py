@@ -5,12 +5,10 @@ import zipfile
 from collections import defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from functools import cached_property
 from typing import Any, Callable, Container, Iterable, Iterator, List, Mapping, Optional, Set, Tuple, Union
 
 import pandas as pd
 from loguru import logger
-from numpy import str_
 
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.utility import path_add_suffix, pickle_to_file, replace_extension, strip_paths, unpickle_from_file

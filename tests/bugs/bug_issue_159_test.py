@@ -77,7 +77,7 @@ def test_simple():
 
 
 @pytest.mark.skip(reason="Bug fixed")
-def test_tranströmer():
+def test_tranströmer(): # pylint: disable=non-ascii-name
 
     config_filename = "tests/test_data/tranströmer.yml"
     input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
