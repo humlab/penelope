@@ -9,11 +9,11 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal",
+            "console": "internalConsole",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
             },
-            "redirectOutput": true
+            "redirectOutput": true,
         }
     ]
 }
