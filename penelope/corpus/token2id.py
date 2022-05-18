@@ -184,6 +184,7 @@ class Token2Id(MutableMapping):
         self._fallback_token_id = value
         self.__getitem__ = self.__optimized__getitem__()
 
+    @property
     def fallback_token(self) -> str | None:
         if self._fallback_token_id is None:
             return None

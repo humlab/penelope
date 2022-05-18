@@ -169,7 +169,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         )
         self.concepts: Set[str] = set(self.bundle.context_opts.concept or [])
         self._largest: Dropdown = Dropdown(
-            options=[10**i for i in range(0, 7)],
+            options=[10 ** i for i in range(0, 7)],
             value=10000,
             layout=Layout(width='auto'),
         )
