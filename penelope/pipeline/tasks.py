@@ -785,10 +785,12 @@ class Vocabulary(ITask):
                 payload.content if payload.content_type == ContentType.TOKENS else payload.content[self.target]
             )
             translated_tokens: list[str] = [x if x in vocab else fallback_token for x in tokens]
-            n_translated: int = len([x for x in translated_tokens if x == fallback_token])
-            logger.info(f"masked {n_translated} tokens")
 
-            assert not any(x not in self.token2id for x in translated_tokens)
+            # n_translated: int = len([x for x in translated_tokens if x == fallback_token])
+            # logger.info(f"masked {n_translated} tokens")
+
+            # if any(x not in self.token2id for x in translated_tokens):
+            #    raise ValueError("[BugCheck: See issue #159")
 
             if payload.content_type == ContentType.TOKENS:
                 return payload.update(self.out_content_type, translated_tokens)
