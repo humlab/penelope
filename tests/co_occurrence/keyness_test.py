@@ -223,17 +223,17 @@ def test_step_by_step_tfidf_keyness_transform():
     """Expected result (see test_compute_ttm_alternative_method above)"""
     expected_result = {
         '*/a': 3,
-        '*/b': 2,
         'a/b': 2,
-        'a/c': 4,
+        '*/b': 2,
+        '*/c': 1,
         'b/c': 3,
-        'd/c': 8,
+        'a/c': 4,
+        'c/d': 8,
+        '*/e': 3,
         'd/e': 5,
         'c/e': 6,
-        '*/c': 1,
-        '*/e': 3,
-        'a/e': 1,
         '*/d': 3,
+        'a/e': 1,
         'b/e': 3,
     }
     fg = corpus.id2token.get
@@ -244,11 +244,11 @@ def test_step_by_step_tfidf_keyness_transform():
 
     zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
     assert zero_out_indices.tolist() == [1, 2, 3, 11]
-    assert corpus.term_frequency.tolist() == [3, 0, 0, 0, 8, 3, 4, 3, 6, 5, 3, 0, 3]
+    assert corpus.term_frequency.tolist() == [3, 0, 0, 0, 3, 4, 8, 3, 5, 6, 3, 0, 3]
 
-    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 8, 0, 0, 1, 2, 5, 3, 0, 0]
+    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 0, 0, 8, 1, 5, 2, 3, 0, 0]
     concept_corpus.zero_out_by_indices(zero_out_indices)
-    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 8, 0, 0, 1, 2, 5, 3, 0, 0]
+    assert concept_corpus.term_frequency.tolist() == [0, 0, 0, 0, 0, 0, 8, 1, 5, 2, 3, 0, 0]
 
     """ STEP: Compute corpus keyness for both corpora
         @filename: penelope/co_occurrence/keyness.py:23, compute_corpus_keyness
@@ -260,9 +260,9 @@ def test_step_by_step_tfidf_keyness_transform():
                 corpus.data.todense()
                 == np.matrix(
                     [
-                        [1, 0, 0, 0, 5, 3, 1, 1, 2, 1, 0, 0, 0],
-                        [2, 0, 0, 0, 3, 0, 3, 0, 4, 1, 2, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 1, 0, 3],
+                        [1, 0, 0, 0, 3, 1, 5, 1, 1, 2, 0, 0, 0],
+                        [2, 0, 0, 0, 0, 3, 3, 0, 1, 4, 2, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 1, 0, 3],
                     ],
                     dtype=np.int32,
                 )

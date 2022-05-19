@@ -13,7 +13,7 @@ from loguru import logger
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
 from penelope.utility import path_add_suffix, pickle_to_file, replace_extension, strip_paths, unpickle_from_file
 
-MAGIC_TOKENS = {"*", GLOBAL_TF_THRESHOLD_MASK_TOKEN}
+MAGIC_TOKENS = ["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 
 # pylint: disable=too-many-public-methods
 

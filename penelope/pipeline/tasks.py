@@ -732,7 +732,7 @@ class Vocabulary(ITask):
             return
 
         self.token2id.ingest(self.token2id.magic_tokens)
-        self.tf_keeps |= self.token2id.magic_tokens
+        self.tf_keeps |= set(self.token2id.magic_tokens)
 
         if extra_tokens:
             self.token2id.ingest(extra_tokens)

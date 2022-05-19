@@ -37,7 +37,7 @@ def tokens_to_ttm(args) -> dict:
             vocab_size,
         ) = args
 
-        if max(token_ids) >= vocab_size:
+        if token_ids and max(token_ids) >= vocab_size:
             raise ValueError("invalid vocab: see issue #159")
 
         windows: Iterable[Iterable[int]] = generate_windows(
