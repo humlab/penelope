@@ -2,7 +2,7 @@ import sys
 from dataclasses import dataclass
 from functools import cached_property
 from pprint import pformat as pf
-from typing import Any, Iterable, Mapping, Tuple
+from typing import Any, Iterable, Mapping, Protocol, Tuple
 
 from loguru import logger
 
@@ -33,6 +33,11 @@ if DEBUG_TRACE:
     logger.add(
         "co_occurrence_trace.log", rotation=None, format="{message}", serialize=False, level="INFO", enqueue=True
     )
+
+
+class IVocabulary(Protocol):
+    def build(self, extra_tokens: list[str] = None) -> None:
+        ...
 
 
 @dataclass
@@ -80,18 +85,15 @@ class ToCoOccurrenceDTM(ITask):
     def enter(self):
         super().enter()
 
-        vocab_task: ITask = self.pipeline.find("Vocabulary", stop_cls=type(self))
+        vocab_task: IVocabulary = self.pipeline.find("Vocabulary", stop_cls=type(self))
 
         if not vocab_task:
             raise PipelineError(f"{type(self).__name__}: requires preceeding Vocabulary task")
 
-        vocab_task.build()
+        vocab_task.build(extra_tokens=[self.context_opts.pad])
 
         if self.pipeline.payload.token2id is None:
             raise PipelineError(f"{type(self).__name__} requires a vocabulary!")
-
-        if self.context_opts.pad not in self.pipeline.payload.token2id:
-            _ = self.pipeline.payload.token2id[self.context_opts.pad]
 
     def _process_payload(self, payload: DocumentPayload) -> Any:
 

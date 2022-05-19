@@ -726,7 +726,7 @@ class Vocabulary(ITask):
         self.pipeline.payload.token2id = self.token2id
         return self
 
-    def build(self) -> None:
+    def build(self, extra_tokens: list[str] = None) -> None:
 
         if self.is_built:
             return
@@ -734,12 +734,14 @@ class Vocabulary(ITask):
         self.token2id.ingest(self.token2id.magic_tokens)
         self.tf_keeps |= self.token2id.magic_tokens
 
+        if extra_tokens:
+            self.token2id.ingest(extra_tokens)
+
         total: int = len(self.document_index.index) if self.document_index is not None else None
         for payload in self.prior.outstream(total=total, desc="Vocab"):
             self.token2id.ingest_stream([self._payload_to_token_stream(payload)])
 
         if self.tf_threshold and self.tf_threshold > 1:
-            """We don't need translation since vocab hasn't been used yet"""
             _, self.translation = self.token2id.compress(
                 tf_threshold=self.tf_threshold, inplace=True, keeps=self.tf_keeps
             )

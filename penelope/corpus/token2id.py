@@ -5,7 +5,7 @@ import zipfile
 from collections import defaultdict
 from collections.abc import MutableMapping
 from fnmatch import fnmatch
-from typing import Any, Callable, Container, Iterable, Iterator, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Container, Iterable, Iterator, Mapping, Optional, Union
 
 import pandas as pd
 from loguru import logger
@@ -91,11 +91,11 @@ class Token2Id(MutableMapping):
         return self._tf
 
     @property
-    def magic_tokens(self) -> List[str]:
+    def magic_tokens(self) -> set[str]:
         return MAGIC_TOKENS
 
     @property
-    def magic_token_ids(self) -> List[str]:
+    def magic_token_ids(self) -> list[str]:
         return [self[w] for w in MAGIC_TOKENS if w in self._data]
 
     def replace(self, *, data: Any, tf: dict = None) -> "Token2Id":
@@ -270,13 +270,13 @@ class Token2Id(MutableMapping):
         tf_filename: str = path_add_suffix(filename, "_tf", new_extension=".pbz2")
         pickle_to_file(tf_filename, self._tf)
 
-    def to_ids(self, tokens: List[str]) -> List[int]:
+    def to_ids(self, tokens: list[str]) -> list[int]:
         return [self._data[w] for w in tokens]
 
-    def to_id_set(self, tokens: Iterable[str]) -> Set[int]:
+    def to_id_set(self, tokens: Iterable[str]) -> set[int]:
         return {self._data[w] for w in tokens}
 
-    def find(self, what: Union[List[str], str]):
+    def find(self, what: Union[list[str], str]):
 
         if not what:
             return []
@@ -299,7 +299,7 @@ class Token2Id(MutableMapping):
 
     def compress(
         self, *, tf_threshold: int = 1, inplace=False, keeps: Container[Union[int, str]] = None
-    ) -> Tuple["Token2Id", Mapping[int, int]]:
+    ) -> tuple["Token2Id", Mapping[int, int]]:
         """Returns a compressed version of corpus, with ID translation, where tokens below threshold are removed"""
 
         if tf_threshold <= 1:
@@ -354,7 +354,7 @@ class Token2Id(MutableMapping):
         return token2id, ids_translation
 
     # @deprecated
-    # def clip(self, keep_ids: List[int], inplace: bool = True) -> "Token2Id":
+    # def clip(self, keep_ids: list[int], inplace: bool = True) -> "Token2Id":
     #     """Removes tokens not found in `keep_ids` """
     #     keep_ids = set(keep_ids)
     #     dg, tg = self.id2token.get, self._tf.get

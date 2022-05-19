@@ -82,7 +82,8 @@ def test_step_by_step_compress_with_simple_corpus():
     )
 
     token2id = dict(bundle.token2id.data)
-    assert token2id == {'*': 0, 'd': 1, '__low-tf__': 2, 'a': 3, 'b': 4, 'c': 5, 'e': 6}
+    # assert token2id == {'*': 0, 'd': 1, '__low-tf__': 2, 'a': 3, 'b': 4, 'c': 5, 'e': 6}
+    assert token2id == {'__low-tf__': 0, '*': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
 
     windows = [
         [
@@ -147,9 +148,14 @@ def test_step_by_step_compress_with_simple_corpus():
             co_occurrence_dtm
             == np.matrix(
                 [
-                    [0, 0, 0, 0, 5, 0, 0, 0, 1, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0],
+                    # [0, 0, 0, 0, 5, 0, 0, 0, 1, 1, 0, 0, 0],
+                    # [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 0, 0],
+                    # [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1, 0, 0],
+
+                    [0, 0, 0, 0, 0, 0, 5, 0, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 2, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 1, 0, 0]
+
                 ],
                 dtype=np.int32,
             )
@@ -163,7 +169,7 @@ def test_step_by_step_compress_with_simple_corpus():
     # assert co_occurrence_dtm_frame is not None
     """
         print(co_occurrence_dtm_frame)
-
+        OLD
                              *              *    *    *    *
          0    1    2    3    4    5    6    7    8    9   10   11   12
         */a  a/b  */b  */c  d/c  b/c  a/c  */e  c/e  d/e  */d  a/e  b/e
@@ -173,7 +179,14 @@ def test_step_by_step_compress_with_simple_corpus():
     2    0    0    0    0    0    0    0    1    0    3    1    0    0
         --------------------------------------------------------------
   SUM    0    0    0    0    8    0    0    1    2    5    3    0    0
-
+'
+        NEW
+         0    1    2    3    4    5    6    7    8    9   10   11   12
+        */a  a/b  */b  */c  b/c  a/c  c/d  */e  d/e  c/e  */d  a/e  b/e
+        --------------------------------------------------------------
+    0    0    0    0    0    0    0    5    0    1    1    0    0    0
+    1    0    0    0    0    0    0    3    0    1    1    2    0    0
+    2    0    0    0    0    0    0    0    1    3    0    1    0    0
 
     """
 
