@@ -171,6 +171,7 @@ class MalletTopicModel(LdaMallet):
         context = ET.iterparse(source, events=("start", "end"))
 
         topic_id: int = None
+        item: dict = {}
 
         for event, elem in context:
 
@@ -179,10 +180,13 @@ class MalletTopicModel(LdaMallet):
             if event == 'start' and tag == 'topic':
                 topic_id = int(elem.attrib.get('id'))
 
-            if event == 'start' and tag == 'word':
-                item = dict(elem.attrib)
-                item['topic_id'] = int(topic_id)
-                item['token'] = elem.text
-                yield item
+            if tag == 'word':
 
-            elem.clear()
+                if event == 'end':
+                    item = dict(elem.attrib)
+                    item['topic_id'] = int(topic_id)
+                    item['token'] = elem.text
+                    yield item
+
+            if event == 'end':
+                elem.clear()
