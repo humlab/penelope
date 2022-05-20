@@ -85,8 +85,6 @@ class SlimItMixIn:
         return df
 
     def slim_types(self) -> InferredTopicsData:
-        # FIXME: #165 None token_id/token encountered in self.topic_token_weights
-        """Bug check:"""
         nan_token_ids: int = len(self.topic_token_weights[self.topic_token_weights.token_id.isna()])
         if nan_token_ids > 0:
             logger.warning(f"{nan_token_ids} NaN encountered in topic_token_weights.token_id")

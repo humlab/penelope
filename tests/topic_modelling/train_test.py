@@ -390,14 +390,3 @@ def test_diagnostics_to_topic_token_weights_data():
     topic_id, token_weights = data[3]
     assert topic_id == 3
     assert (token_weights[0], token_weights[-1]) == (('ljuset', 0.05556), ('expert', 0.02778))
-
-
-def test_diagnostics_to_topic_token_weights_data_bug_check():
-
-    filename: str = '/data/westac/blm/mallet/100/mallet/diagnostics.xml'
-
-    ttd: pd.DataFrame = MalletTopicModel.load_topic_token_diagnostics2(filename)
-
-    assert ttd is not None
-
-    ttd.to_csv("diagnostics_original_modified.csv", sep='\t')
