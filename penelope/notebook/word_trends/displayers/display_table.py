@@ -1,15 +1,14 @@
 import IPython.display as ip
+import ipywidgets as w
 import pandas as pd
 
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
+from penelope.notebook import grid_utility as gu
 from penelope.notebook.utility import create_js_download
 from penelope.utility import try_split_column
-from penelope.notebook import grid_utility as gu
 
 # from ...ipyaggrid_utility import display_grid
 from .interface import ITrendDisplayer
-
-import ipywidgets as w
 
 
 class TableDisplayer(ITrendDisplayer):
