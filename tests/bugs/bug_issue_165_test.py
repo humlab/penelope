@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from penelope.vendor.gensim_api._gensim.wrappers.mallet_tm import MalletTopicModel
 
 
