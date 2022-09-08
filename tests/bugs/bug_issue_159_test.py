@@ -226,6 +226,7 @@ def test_bug():
     )
 
 
+@pytest.mark.skip(reason="Bug fixed")
 def test_process_co_ocurrence():
     concept: list[str] = ["sverige"]
     corpus_config: str = "tests/bugs/riksdagens-protokoll.yml"
