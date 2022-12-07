@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Type, Union
 
 from tqdm.auto import tqdm
 
@@ -105,6 +105,12 @@ class PipelineError(Exception):
     pass
 
 
+def nullify(data: Any, ok_types: Type | list[Type]):
+    if not isinstance(data, ok_types):
+        return None
+    return data
+
+
 @dataclass
 class PipelinePayload:
 
@@ -136,14 +142,17 @@ class PipelinePayload:
         return self.effective_document_index
 
     @property
+    def _memory_store_props(self) -> dict[str, Any] | None:
+        data = dictify(self.memory_store, default_value=None)
+        return data
+
+    @property
     def props(self) -> Dict[str, Any]:
         return dict(
-            source=self.source if isinstance(self.source, str) else 'object',
-            document_index_source=self.document_index_source
-            if isinstance(self.document_index_source, str)
-            else 'object',
+            source=nullify(self.source, str),
+            document_index_source=nullify(self.document_index_source, str),
             pos_schema_name=self.pos_schema_name,
-            memory_store=self.memory_store,
+            memory_store=self._memory_store_props,
         )
 
     def get(self, key: str, default=None):

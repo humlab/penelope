@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.7.11"
+version = "0.7.14"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
@@ -85,9 +85,11 @@ tomlkit = "*"
 
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.dtm.vectorize:main"
-tm-train = "penelope.scripts.tm.train:click_main"
-tm-train-id = "penelope.scripts.tm.train_id:click_main"
+vectorize-id = "penelope.scripts.dtm.vectorize_id:main"
 tm-predict = "penelope.scripts.tm.predict:click_main"
+tm-train-id = "penelope.scripts.tm.train_id:click_main"
+tm-train-legacy = "penelope.scripts.tm.train_legacy:click_main"
+tm-train = "penelope.scripts.tm.train:click_main"
 co-occurrence = "penelope.scripts.co_occurrence:main"
 pos-tag = "penelope.scripts.pos_tag:main"
 

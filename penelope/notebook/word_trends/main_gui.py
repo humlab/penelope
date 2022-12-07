@@ -24,14 +24,10 @@ LAST_CORPUS = None
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
-def loaded_callback(
-    corpus: VectorizedCorpus,
-    corpus_folder: str,
-    corpus_tag: str,
-):
+def loaded_callback(corpus: VectorizedCorpus, n_top: int = 25000):
     global LAST_CORPUS
     LAST_CORPUS = corpus
-    trends_data: TrendsData = TrendsData(corpus=corpus, n_top=25000)
+    trends_data: TrendsData = TrendsData(corpus=corpus, n_top=n_top)
 
     # gui: GofTrendsGUI = GofTrendsGUI(
     #     gofs_gui=GoFsGUI().setup(),
@@ -52,7 +48,7 @@ def computed_callback(
     if opts.dry_run:
         return
 
-    loaded_callback(corpus=corpus, corpus_folder=opts.target_folder, corpus_tag=opts.corpus_tag)
+    loaded_callback(corpus=corpus)
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)

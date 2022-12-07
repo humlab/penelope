@@ -1,9 +1,10 @@
-from typing import Sequence
-
-import IPython.display
+import IPython.display as ip
+import ipywidgets as w
 import pandas as pd
 
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
+from penelope.notebook import grid_utility as gu
+from penelope.notebook.utility import create_js_download
 from penelope.utility import try_split_column
 
 # from ...ipyaggrid_utility import display_grid
@@ -15,25 +16,32 @@ class TableDisplayer(ITrendDisplayer):
 
     def __init__(self, name: str = "Table", **opts):
         super().__init__(name=name, **opts)
+        self._download_button: w.Button = w.Button(description="Download", layout=dict(width='100px'))
+        self._download_button.on_click(self.download)
+        self.data: pd.DataFrame = None
 
     def setup(self, *_, **__):
         return
 
     def create_data_frame(self, plot_data: dict, category_name: str) -> pd.DataFrame:
-        df = pd.DataFrame(data=plot_data)
+        df: pd.DataFrame = pd.DataFrame(data=plot_data)
         df = df[[category_name] + [x for x in df.columns if x != category_name]]
         return df
 
-    def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:  # pylint: disable=unused-argument
+    def plot(self, *, data: list[pd.DataFrame], temporal_key: str, **_) -> None:  # pylint: disable=unused-argument
 
         with self.output:
+            ip.display(self._download_button)
             with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-                # g = display_grid(data[-1])
-                # IPython.display.display(g)
-                IPython.display.display(data[-1])
-                print("Note: data is plotted using a simplified table view (development)")
-                # datagrid = ipydatagrid.DataGrid(data[-1], selection_mode="cell")
-                # IPython.display.display(datagrid)
+                widget: gu.TableWidget = gu.table_widget(data[-1])
+                ip.display(widget)
+            self.data = data[-1]
+
+    def download(self, *_):
+        with self.output:
+            js_download: ip.Javascript = create_js_download(self.data, index=True)
+            if js_download is not None:
+                ip.display(js_download)
 
 
 class UnnestedTableDisplayer(TableDisplayer):

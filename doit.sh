@@ -23,7 +23,7 @@ run()
     basename="NEW_${concept_word}_w${context_width}_${pos_includes//|}_${pos_paddings//|}_LEMMA_KEEPSTOPS"
     mkdir -p  ${TARGET_FOLDER}/$basename
 
-    command="poetry run co_occurrence $RUN_OPTS --pos-includes "$pos_includes" --pos-paddings "$pos_paddings" --context-width $context_width --concept $concept_word \
+    command="poetry run python penelope/scripts/co_occurrence.py $RUN_OPTS --pos-includes "$pos_includes" --pos-paddings "$pos_paddings" --context-width $context_width --concept $concept_word \
          ${CONFIG_FILENAME} \
          ${CORPUS_FOLDER}/${CORPUS_FILENAME} \
          ${TARGET_FOLDER}/${basename}/${basename}"
@@ -37,9 +37,9 @@ CONCEPTS="$*"
 
 for concept in $CONCEPTS ; do
 
-    run $concept "VB" "PASSTHROUGH" 1
+    #run $concept "VB" "PASSTHROUGH" 1
     run $concept "JJ" "PASSTHROUGH" 1
-    #run $concept "NN|PM" "PASSTHROUGH" 5
+    run $concept "NN|PM" "PASSTHROUGH" 5
     run $concept "NN|PM" "PASSTHROUGH" 10
 
 done
