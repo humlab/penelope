@@ -308,7 +308,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         if isinstance(self.concepts, Iterable):
             return set(self.concepts)
 
-        return {self.concepts}
+        return set(self.concepts)
 
     @property
     def show_concept(self) -> bool:

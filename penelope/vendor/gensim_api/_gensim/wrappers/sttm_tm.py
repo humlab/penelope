@@ -330,7 +330,7 @@ class STTMTopicModel(utils.SaveLoad, basemodel.BaseTopicModel):
             row = m.getrow(i)
             values = list(zip(row.indices, row.data))
             if renorm:
-                total_weight = sum([w for _, w in values])
+                total_weight = sum(w for _, w in values)
                 if total_weight != 0:
                     values = [(i, w / total_weight) for (i, w) in values]
             yield values
