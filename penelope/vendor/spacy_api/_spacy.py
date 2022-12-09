@@ -163,7 +163,7 @@ def download_model(
 
         url: str = f'https://github.com/explosion/spacy-models/releases/download/{model_name}/{model_name}.tar.gz'
 
-        r = requests.get(url, allow_redirects=True)
+        r = requests.get(url, allow_redirects=True, timeout=600)
 
         os.makedirs(folder, exist_ok=True)
 
