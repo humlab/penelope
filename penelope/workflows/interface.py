@@ -91,12 +91,10 @@ class ComputeOpts:
     def command_line_options(self) -> Mapping[str, str]:
 
         options = {}
-
+        # FIXME: #170 Generated co-occurrence CLI command has wrong options
         if self.context_opts:
 
             options['--context-width'] = self.context_opts.context_width
-            if self.context_opts.ignore_concept:
-                options['--no-concept'] = True
 
             if len(self.context_opts.concept or []) > 0:
                 options['--concept'] = self.context_opts.concept
@@ -137,8 +135,8 @@ class ComputeOpts:
         if self.extract_opts.append_pos:
             options['--append-pos'] = True
 
-        options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
-        options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
+        options[f'--{"" if self.transform_opts.keep_symbols else "no-" }keep-symbols'] = True
+        options[f'--{"" if self.transform_opts.keep_numerals else "no-" }keep-numerals'] = True
 
         if self.transform_opts.min_len > 1:
             options['--min-word-length'] = self.transform_opts.min_len
