@@ -16,7 +16,7 @@ CLI_LOG_PATH = './logs'
 
 CLI_OPTIONS = {
     '--alpha': dict(help='Prior belief of topic probability. symmetric/asymmetric/auto', default='asymmetric'),
-    '--append-pos': dict(help='Append PoS to tokems', default=False, is_flag=True),
+    '--append-pos': dict(help='Append PoS to tokens', default=False, is_flag=True),
     '--compute-chunk-size': dict(help='Compute process chunk size', default=10, type=click.INT),
     '--compute-processes': dict(help='Number of compute processes', default=None, type=click.INT),
     '--concept': dict(help='Concept', default=None, multiple=True, type=click.STRING),
