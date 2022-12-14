@@ -45,7 +45,7 @@ def compute_co_occurrence_callback(
         LAST_CONFIG = corpus_config
 
         if args.dry_run:
-            print(args.command_line("co_occurrence"))
+            print(args.command_line("co-occurrence"))
             return None
 
         bundle: co_occurrence.Bundle = workflow.compute(
