@@ -25,7 +25,9 @@ CLI_OPTIONS = {
         default=None,
         type=click.INT,
     ),
-    '--corpus-source': dict(help='Corpus filename/folder (overrides config)', default=None),
+    '--corpus-config': dict(help='Corpus config filename/folder', default=None),
+    '--input-filename': dict(help='Corpus filename/folder (overrides config if specified)', default=None),
+    '--output-filename': dict(help='Output filename (overrides config if specified)', default=None),
     '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)'),
     '--create-subfolder': dict(
         help='Create subfolder in target folder named `target_name`', default=True, is_flag=True
