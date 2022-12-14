@@ -67,7 +67,7 @@ def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
         'PROPN',
         'AUX',
         'ADV',
-        'ADJ',
+        'ADV',
         'ADP',
         'NOUN',
         'CCONJ',
@@ -112,7 +112,7 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
         'PROPN',
         'AUX',
         'ADV',
-        'ADJ',
+        'ADV',
         'ADP',
         'NOUN',
         'CCONJ',
@@ -175,7 +175,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds(en_nlp):
         'PROPN',
         'AUX',
         'ADV',
-        'ADJ',
+        'ADV',
         'ADP',
         'NOUN',
         'CCONJ',
@@ -347,7 +347,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
-        pos_paddings='|ADJ|',
+        pos_paddings='ADJ',
         **SPACY_TAGGED_COLUMNS,
         filter_opts=dict(is_punct=False),
     )
@@ -365,7 +365,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     payloads = [x.content for x in pipeline.resolve()]
 
     assert payloads == [
-        ['*', 'sea', 'ocean', 'life'],
+        ['sea', 'ocean', 'life'],
         ['atmosphere', 'blow'],
         ['*', 'activity', 'surface', 'cease'],
         ['*', 'planet'],
