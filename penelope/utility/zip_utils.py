@@ -42,17 +42,17 @@ def list_filenames(
 
 
 @zipfile_or_filename(mode='r')
-def read_file_content(*, zip_or_filename: zipfile.ZipFile, filename: str, as_binary=False) -> AnyStr:
+def read_file_content(*, zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool=False) -> AnyStr:
     return zip_or_filename.read(filename) if as_binary else zip_or_filename.read(filename).decode(encoding='utf-8')
 
 
 @zipfile_or_filename(mode='r')
-def read_file_content2(zip_or_filename: zipfile.ZipFile, filename: str, as_binary=False) -> Tuple[str, AnyStr]:
+def read_file_content2(zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool=False) -> Tuple[str, AnyStr]:
     data: AnyStr = read_file_content(zip_or_filename=zip_or_filename, filename=filename, as_binary=as_binary)
     return (os.path.basename(filename), data)
 
 
-@zipfile_or_filename(mode='w', compresslevel=zipfile.ZIP_DEFLATED)
+@zipfile_or_filename(mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=8)
 def store(*, zip_or_filename: zipfile.ZipFile, stream: Iterable[Tuple[str, Union[str, Iterable[str]]]]):
     """Stores token stream to archive
     Args:
@@ -61,7 +61,7 @@ def store(*, zip_or_filename: zipfile.ZipFile, stream: Iterable[Tuple[str, Union
     """
     for (filename, document) in stream:
         data: str = document if isinstance(document, str) else ' '.join(document)
-        zip_or_filename.writestr(filename, data, compresslevel=zipfile.ZIP_DEFLATED)
+        zip_or_filename.writestr(filename, data)
 
 
 def compress(path: str, remove: bool = True):

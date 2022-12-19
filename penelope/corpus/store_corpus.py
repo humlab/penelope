@@ -28,14 +28,14 @@ def store_tokenized_corpus_as_archive(tokenized_docs, target_filename):
     process_count = 0
 
     # TODO: Enable store of all documents line-by-line in a single file
-    with zipfile.ZipFile(target_filename, "w") as zf:
+    with zipfile.ZipFile(target_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
 
         for document_id, filename, chunk_index, tokens in tokenized_docs:
 
             text = ' '.join([t.replace(' ', '_') for t in tokens])
             store_name = path_add_sequence(filename, chunk_index, 4)
 
-            zf.writestr(store_name, text, zipfile.ZIP_DEFLATED)
+            zf.writestr(store_name, text, compress_type=zipfile.ZIP_DEFLATED)
 
             file_stats.append((document_id, filename, chunk_index, len(tokens)))
 
