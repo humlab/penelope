@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from .corpus import VectorizedCorpus
 
-# pylint: disable=no-member, unused-argumen
+# pylint: disable=no-member, unused-argument
 
 
 class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
