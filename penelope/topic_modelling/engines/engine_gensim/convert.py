@@ -38,7 +38,7 @@ def convert_topic_tokens(folder: str, source_filename: str = None) -> pd.DataFra
     )
 
     id2token: dict[int, str] = pd.read_json(jj(folder, "topic_model_id2token.json.gz"), typ="series")
-    token2id: dict[str, int] = {v: k for k, v in id2token.items()}
+    token2id: dict[str, int] = {v: k for k, v in id2token.items()}  # pylint: disable=no-member
 
     ttw: pd.DataFrame = pd.read_csv(
         source_filename,
@@ -210,7 +210,9 @@ def convert_dictionary(folder: str) -> None:
 
     token2id: pd.Series = pd.read_json(source_filename, typ='series')
 
-    dictionary = pd.DataFrame(data=dict(token_id=token2id, token=token2id.index, dfs=0)).set_index('token_id')
+    dictionary = pd.DataFrame(
+        data=dict(token_id=token2id, token=token2id.index, dfs=0)  # pylint: disable=no-member
+    ).set_index('token_id')
 
     dictionary.to_csv(
         target_filename, sep='\t', compression=dict(method='zip', archive_name="dictionary.csv"), header=True

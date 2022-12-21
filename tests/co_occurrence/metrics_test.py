@@ -14,7 +14,7 @@ from penelope.common.keyness import (
 from penelope.corpus import VectorizedCorpus
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name, unsubscriptable-object)
 
 
 @pytest.fixture(scope="module")

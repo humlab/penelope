@@ -1,5 +1,4 @@
 import unittest.mock as mock
-from typing import Any
 
 import ipywidgets
 

@@ -545,9 +545,9 @@ class TapStream(ITask):
 
     def enter(self):
         logger.info(f"Tapping stream to {self.target}")
-        self.zink = zipfile.ZipFile(
+        self.zink = zipfile.ZipFile(  # pylint: disable=consider-using-with
             self.target, "w", compression=zipfile.ZIP_DEFLATED
-        )  # pylint: disable=consider-using-with
+        )
 
     def exit(self):
         self.zink.close()

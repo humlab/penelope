@@ -11,7 +11,7 @@ from penelope.corpus import generate_token2id
 logger = utility.getLogger('corpus_text_analysis')
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, unsubscriptable-object
 class HyperspaceAnalogueToLanguageVectorizer:
     def __init__(self, tokens_stream: Iterable[Iterable[str]] = None, token2id: Mapping[str, int] = None):
         """

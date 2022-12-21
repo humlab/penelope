@@ -10,6 +10,8 @@ from tests.utils import create_tokens_reader
 
 unittest.main(argv=['first-arg-is-ignored'], exit=False)
 
+# pylint: disable=unsupported-assignment-operation, unsubscriptable-object
+
 
 class Test_ChiSquare(unittest.TestCase):
     def setUp(self):

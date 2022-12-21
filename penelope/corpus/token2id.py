@@ -15,7 +15,7 @@ from penelope.utility import path_add_suffix, pickle_to_file, replace_extension,
 
 MAGIC_TOKENS = ["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods, unsubscriptable-object
 
 
 class ClosedVocabularyError(Exception):
