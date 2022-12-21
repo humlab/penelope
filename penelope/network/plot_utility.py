@@ -133,7 +133,7 @@ def _plot_network(
     line_opts = extend(dict(color='black', alpha=0.4), line_opts or {})
 
     p = figure(
-        plot_width=figsize[0], plot_height=figsize[1], sizing_mode='scale_width', x_axis_type=None, y_axis_type=None
+        width=figsize[0], height=figsize[1], sizing_mode='scale_width', x_axis_type=None, y_axis_type=None
     )
 
     _ = p.multi_line('xs', 'ys', line_width='weights', level='underlay', source=lines_source, **line_opts)

@@ -29,7 +29,7 @@ class LineDisplayer(ITrendDisplayer):
 
     def figure(self, *, data_source: bm.ColumnDataSource, x_ticks: Sequence[int] = None):
 
-        p = bp.figure(plot_width=self.width, plot_height=self.height, sizing_mode='scale_width')
+        p = bp.figure(width=self.width, height=self.height, sizing_mode='scale_width')
 
         p.y_range.start = 0
         p.yaxis.axis_label = 'Frequency'

@@ -111,7 +111,7 @@ class TopicWordDistributionGUI(mx.AlertMixIn, mx.NextPrevTopicMixIn, mx.TopicsSt
             if self.output_format.lower() == 'chart':
                 top_tokens: pd.DataFrame = self.data.assign(xs=self.data.index, ys=self.data.weight)
                 p = plot_topic_word_distribution(
-                    top_tokens, plot_width=1200, plot_height=500, title='', tools='box_zoom,wheel_zoom,pan,reset'
+                    top_tokens, width=1200, height=500, title='', tools='box_zoom,wheel_zoom,pan,reset'
                 )
                 bokeh.plotting.show(p)
             else:

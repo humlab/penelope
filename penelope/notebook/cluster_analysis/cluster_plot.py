@@ -91,8 +91,8 @@ def create_cluster_plot(
 
     p: bp.figure = bp.figure(
         title=title,
-        plot_width=kwargs.get('plot_width', 900),
-        plot_height=kwargs.get('plot_height', 600),
+        width=kwargs.get('width', 900),
+        height=kwargs.get('height', 600),
         output_backend="webgl",
     )
 
@@ -146,7 +146,7 @@ def render_cluster_plot(figure: bp.figure):
 
 def plot_clusters_count(source: bm.ColumnDataSource):
 
-    figure_opts = dict(plot_width=500, plot_height=600, title="Cluster token count")
+    figure_opts = dict(width=500, height=600, title="Cluster token count")
 
     hover_opts = dict(tooltips='@legend: @count words', show_arrow=False, line_policy='next')
 
@@ -179,7 +179,7 @@ def plot_clusters_count(source: bm.ColumnDataSource):
 
 def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict = None) -> Any:
 
-    figure_opts = dict(plot_width=600, plot_height=620, title="Cluster mean trends (pchip spline)")
+    figure_opts = dict(width=600, height=620, title="Cluster mean trends (pchip spline)")
     hover_opts = dict(tooltips=[('Cluster', '@legend')], show_arrow=False, line_policy='next')
 
     line_opts = dict(

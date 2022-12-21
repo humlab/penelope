@@ -13,7 +13,7 @@ from bokeh.plotting import figure
 from penelope.notebook.utility import generate_temporal_ticks
 from penelope.utility import take
 
-DEFAULT_FIGOPTS: dict = dict(plot_width=1000, plot_height=600)
+DEFAULT_FIGOPTS: dict = dict(width=1000, height=600)
 DEFAULT_PALETTE = bokeh.palettes.Category10[10]
 
 

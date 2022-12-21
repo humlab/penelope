@@ -21,8 +21,8 @@ def display_topic_trends(
     ys: pd.Series = weight_over_time[value_column]
 
     default_figopts: dict = dict(
-        plot_width=1000,
-        plot_height=400,
+        width=1000,
+        height=400,
         title='',
         toolbar_location="right",
         x_range=list(map(str, range(year_range[0], year_range[1] + 1))),

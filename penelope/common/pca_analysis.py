@@ -24,7 +24,7 @@ def plot(X_pca, clusters=None):
     else:
         colors = 'navy'
 
-    p = bokeh.plotting.figure(plot_width=600, plot_height=600, sizing_mode='scale_width')
+    p = bokeh.plotting.figure(width=600, height=600, sizing_mode='scale_width')
 
     # p.legend(loc="best", shadow=False, scatterpoints=1)
 

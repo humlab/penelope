@@ -111,8 +111,8 @@ SmootherFunction = Callable[[Any, Any], Tuple[Any, Any]]
 #     p = bokeh.plotting.figure(
 #         x_range=years,
 #         y_range=(0, max_value),
-#         plot_height=400,
-#         plot_width=1000,
+#         height=400,
+#         width=1000,
 #         title="Word frequecy by year",
 #     )
 
@@ -159,10 +159,10 @@ SmootherFunction = Callable[[Any, Any], Tuple[Any, Any]]
 
 
 # def yearly_token_distributions_multiline_plot(
-#     data_source, *, x_ticks=None, plot_width: int = 1000, plot_height: int = 800, **_
+#     data_source, *, x_ticks=None, width: int = 1000, height: int = 800, **_
 # ):
 
-#     p = bokeh.plotting.figure(plot_width=plot_width, plot_height=plot_height)
+#     p = bokeh.plotting.figure(width=width, height=height)
 #     p.y_range.start = 0
 #     p.yaxis.axis_label = "Frequency"
 #     p.toolbar.autohide = True
@@ -220,7 +220,7 @@ def yearly_token_distribution_single_line_plot(
     if plot is None:
 
         p: figure = bokeh.plotting.figure(
-            plot_width=kwargs.get('plot_width', 400), plot_height=kwargs.get('plot_height', 200)
+            width=kwargs.get('width', 400), height=kwargs.get('height', 200)
         )
         p.y_range.start = 0
         # p.y_range.end = 0.5
@@ -313,8 +313,8 @@ def yearly_token_distribution_multiple_line_plot(
                 plot=p if n_columns is None else None,
                 title=x_corpus.id2token[token_id].upper(),
                 color=next(colors),
-                plot_width=width if n_columns is None else max(int(width / n_columns), 400),
-                plot_height=height if n_columns is None else max(int(height / n_columns), 300),
+                width=width if n_columns is None else max(int(width / n_columns), 400),
+                height=height if n_columns is None else max(int(height / n_columns), 300),
                 ticker_labels=xs if n_columns is None else None,
                 smoothers=smoothers,
             )
