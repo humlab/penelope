@@ -21,7 +21,8 @@ min_word_length: 1
 only_alphabetic: true
 only_any_alphanumeric: false
 # output_filename: ./data/inidun/ssi/SSI_culture_w7_ft1_nvadj_nolemma/SSI_culture_w7_ft1_nvadj_nolemma_co-occurrence.csv.zip
-partition_key: !!python/tuple []
+partition_key: !!python/tuple
+- year
 phrase: !!python/tuple []
 phrase_file: null
 pos_excludes: '|PUNCT|EOL|SPACE|'

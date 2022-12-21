@@ -1,18 +1,15 @@
 append_pos: false
 compute_chunk_size: 10
 compute_processes: null
-concept: !!python/tuple
-- culture
-context_width: 3
-corpus_config: /home/roger/source/penelope/opts/inidun/configs/ssi_nonregional.yml
+corpus_config: ./courier_page.yml
 create_subfolder: true
-deserialize_processes: 0
+deserialize_processes: 4
 enable_checkpoint: true
 filename_pattern: null
 force_checkpoint: false
 ignore_concept: true
 ignore_padding: true
-input_filename: /data/inidun/ssi/ssi_nonregional/legal_instrument_corpus_nonregional.zip
+input_filename: /data/inidun/courier/courier_issue_only_article_pages_20210921.zip
 keep_numerals: false
 keep_symbols: false
 lemmatize: false
@@ -20,8 +17,8 @@ max_word_length: null
 min_word_length: 1
 only_alphabetic: true
 only_any_alphanumeric: false
-output_filename: ./data/inidun/ssi/SSI_culture_w7_ft1_nvadj_nolemma/SSI_culture_w7_ft1_nvadj_nolemma_co-occurrence.csv.zip
-partition_key: !!python/tuple []
+partition_key: !!python/tuple
+- year
 phrase: !!python/tuple []
 phrase_file: null
 pos_excludes: '|PUNCT|EOL|SPACE|'
