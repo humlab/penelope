@@ -86,7 +86,7 @@ def compute_hal_cwr_score(
         SparseMatrix: [description]
     """
 
-    nw_xy = (nw_xy if inplace else nw_xy.copy()).astype(np.float)
+    nw_xy = (nw_xy if inplace else nw_xy.copy()).astype(np.float64)
 
     reverse_mapping = {v: k for k, v in vocabs_mapping.items()}
 
@@ -102,7 +102,7 @@ def compute_hal_cwr_score(
 
     return nw_xy
 
-    # # nw_xy = (nw_xy if inplace else nw_xy.copy()).astype(np.float)
+    # # nw_xy = (nw_xy if inplace else nw_xy.copy()).astype(np.float64)
 
     # reverse_mapping = {v: k for k, v in vocabs_mapping.items()}
 

@@ -257,26 +257,26 @@ def test_group_by_time_period_aggregates_n_documents():
 
 
 def test_assert_is_strictly_increasing():
-    assert_is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int))
+    assert_is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32))
     with pytest.raises(ValueError):
-        assert_is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int))
+        assert_is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int32))
     with pytest.raises(ValueError):
         assert_is_strictly_increasing(pd.Series(['a', 'b', 'c']))
 
 
 def test_is_strictly_increasing():
-    assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=1)
-    assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=1, start_value=0, sort_values=False)
-    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=2, start_value=0, sort_values=False)
-    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int), by_value=1, start_value=1, sort_values=False)
-    assert not is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int), by_value=1, start_value=0, sort_values=False)
-    assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int), by_value=1, start_value=1, sort_values=False)
-    assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int), by_value=1, start_value=None, sort_values=False)
+    assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=1)
+    assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=1, start_value=0, sort_values=False)
+    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=2, start_value=0, sort_values=False)
+    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=1, start_value=1, sort_values=False)
+    assert not is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=0, sort_values=False)
+    assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=1, sort_values=False)
+    assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=None, sort_values=False)
     assert not is_strictly_increasing(
-        pd.Series([3, 2, 1], dtype=np.int), by_value=1, start_value=None, sort_values=False
+        pd.Series([3, 2, 1], dtype=np.int32), by_value=1, start_value=None, sort_values=False
     )
-    assert is_strictly_increasing(pd.Series([3, 2, 1], dtype=np.int), by_value=1, start_value=None, sort_values=True)
-    assert is_strictly_increasing(pd.Series([0, 10, 20], dtype=np.int), by_value=10, start_value=0, sort_values=True)
+    assert is_strictly_increasing(pd.Series([3, 2, 1], dtype=np.int32), by_value=1, start_value=None, sort_values=True)
+    assert is_strictly_increasing(pd.Series([0, 10, 20], dtype=np.int32), by_value=10, start_value=0, sort_values=True)
 
-    assert not is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int))
+    assert not is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int32))
     assert not is_strictly_increasing(pd.Series(['a', 'b', 'c']))

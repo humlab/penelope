@@ -92,8 +92,8 @@ def test_compute_hal_score_by_co_occurrence_matrix_burgess_litmus():
 
 def test_HAL_cwr_corpus(bundle: Bundle):
     corpus: VectorizedCorpus = bundle.corpus
-    nw_x = corpus.window_counts.document_term_window_counts  # .todense().astype(np.float)
-    nw_xy = corpus.data  # .copy().astype(np.float)
+    nw_x = corpus.window_counts.document_term_window_counts  # .todense().astype(np.float64)
+    nw_xy = corpus.data  # .copy().astype(np.float64)
     nw_cwr: scipy.sparse.spmatrix = compute_hal_cwr_score(nw_xy, nw_x, corpus.vocabs_mapping)
 
     assert nw_cwr is not None
