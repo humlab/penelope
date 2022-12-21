@@ -16,7 +16,7 @@ CLI_LOG_PATH = './logs'
 
 CLI_OPTIONS = {
     '--alpha': dict(help='Prior belief of topic probability. symmetric/asymmetric/auto', default='asymmetric'),
-    '--append-pos': dict(help='Append PoS to tokems', default=False, is_flag=True),
+    '--append-pos': dict(help='Append PoS to tokens', default=False, is_flag=True),
     '--compute-chunk-size': dict(help='Compute process chunk size', default=10, type=click.INT),
     '--compute-processes': dict(help='Number of compute processes', default=None, type=click.INT),
     '--concept': dict(help='Concept', default=None, multiple=True, type=click.STRING),
@@ -25,7 +25,9 @@ CLI_OPTIONS = {
         default=None,
         type=click.INT,
     ),
-    '--corpus-source': dict(help='Corpus filename/folder (overrides config)', default=None),
+    '--corpus-config': dict(help='Corpus config filename/folder', default=None),
+    '--input-filename': dict(help='Corpus filename/folder (overrides config if specified)', default=None),
+    '--output-filename': dict(help='Output filename (overrides config if specified)', default=None),
     '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)'),
     '--create-subfolder': dict(
         help='Create subfolder in target folder named `target_name`', default=True, is_flag=True

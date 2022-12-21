@@ -91,12 +91,10 @@ class ComputeOpts:
     def command_line_options(self) -> Mapping[str, str]:
 
         options = {}
-
+        # FIXME: #170 Generated co-occurrence CLI command has wrong options
         if self.context_opts:
 
             options['--context-width'] = self.context_opts.context_width
-            if self.context_opts.ignore_concept:
-                options['--no-concept'] = True
 
             if len(self.context_opts.concept or []) > 0:
                 options['--concept'] = self.context_opts.concept
@@ -137,8 +135,8 @@ class ComputeOpts:
         if self.extract_opts.append_pos:
             options['--append-pos'] = True
 
-        options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
-        options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
+        options[f'--{"" if self.transform_opts.keep_symbols else "no-" }keep-symbols'] = True
+        options[f'--{"" if self.transform_opts.keep_numerals else "no-" }keep-numerals'] = True
 
         if self.transform_opts.min_len > 1:
             options['--min-word-length'] = self.transform_opts.min_len
@@ -195,7 +193,7 @@ class ComputeOpts:
         config_filename: str = "doit.yml"
         target_filename: str = to_filename(folder=self.target_folder, tag=self.corpus_tag)
         command: str = (
-            f"{script} {' '.join(options)} {config_filename} {self.corpus_source} {target_filename} {self.corpus_tag}"
+            f"{script} {' '.join(options)} {config_filename} {self.corpus_source} {target_filename}"
         )
 
         return command

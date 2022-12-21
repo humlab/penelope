@@ -190,8 +190,8 @@ class TransformOptsMixIn:
         if self.transform_opts.to_lower:
             options['--to-lower'] = True
 
-        options[f'--{"" if self.transform_opts.keep_symbols else "no" }keep-symbols'] = True
-        options[f'--{"" if self.transform_opts.keep_numerals else "no" }keep-numerals'] = True
+        options[f'--{"" if self.transform_opts.keep_symbols else "no-" }keep-symbols'] = True
+        options[f'--{"" if self.transform_opts.keep_numerals else "no-" }keep-numerals'] = True
 
         if self.transform_opts.min_len > 1:
             options['--min-word-length'] = self.transform_opts.min_len
@@ -313,6 +313,7 @@ class ContextOptsMixIn:
             # if len(self.context_opts.partition_keys or []) > 0:
             #     options['--partition-key'] = self.context_opts.partition_keys
 
+            # FIXME This could be an array of concepts?
             if self.context_opts.ignore_concept:
                 options['--ignore-concept'] = self.context_opts.ignore_concept
 

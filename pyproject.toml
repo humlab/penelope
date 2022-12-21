@@ -62,7 +62,7 @@ full = [
   "python-louvain",
 ]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "*"
 coverage = "*"
 flake8 = "*"
@@ -90,7 +90,7 @@ tm-predict = "penelope.scripts.tm.predict:click_main"
 tm-train-id = "penelope.scripts.tm.train_id:click_main"
 tm-train-legacy = "penelope.scripts.tm.train_legacy:click_main"
 tm-train = "penelope.scripts.tm.train:click_main"
-co-occurrence = "penelope.scripts.co_occurrence:main"
+co-occurrence =  {callable = "penelope.scripts.co_occurrence:main", extras=["full"]}
 pos-tag = "penelope.scripts.pos_tag:main"
 
 [tool.pytest.ini_options]
@@ -192,3 +192,6 @@ sort = "Name"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+#[tool.poetry.build]
+#generate-setup-file = true

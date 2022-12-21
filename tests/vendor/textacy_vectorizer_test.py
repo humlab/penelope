@@ -35,14 +35,14 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylin
 
     expected_dtm = np.matrix(
         [
-            [0, 0, 1, 1, 0, 1, 0, 0, 1, 0],
-            [0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0, 0, 1, 0],
+            [0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
             [0, 1, 0, 0, 0, 0, 1, 1, 0, 0],
             [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 1, 1, 0, 0, 0, 1],
         ]
     )
 
@@ -66,7 +66,7 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylin
     assert v_corpus is not None
 
     assert {
-        'mary': 5,
+        'mary': 4,
         'lamb': 3,
         'fleece': 2,
         'snow': 8,
@@ -75,7 +75,7 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylin
         'rule': 6,
         'child': 0,
         'teacher': 9,
-        'love': 4,
+        'reply': 5,
     } == v_corpus.token2id
 
     assert (expected_dtm == v_corpus.data.todense()).all()
