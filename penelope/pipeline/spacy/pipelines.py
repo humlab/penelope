@@ -113,7 +113,7 @@ def spaCy_co_occurrence_pipeline(
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
     context_opts: ContextOpts = None,
-    global_threshold_count: int = None,
+    tf_threshold: int = None,
     tagged_corpus_source: str = None,
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
@@ -128,6 +128,6 @@ def spaCy_co_occurrence_pipeline(
         context_opts=context_opts,
         transform_opts=transform_opts,
         extract_opts=extract_opts,
-        global_tf_threshold=global_threshold_count,
+        tf_threshold=tf_threshold,
     )
     return p

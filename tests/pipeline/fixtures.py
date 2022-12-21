@@ -176,7 +176,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
         transform_opts=args.transform_opts,
         extract_opts=args.extract_opts,
         context_opts=args.context_opts,
-        global_threshold_count=args.tf_threshold,
+        tf_threshold=args.tf_threshold,
         tagged_corpus_source=tagged_corpus_source,
     ).value()
 

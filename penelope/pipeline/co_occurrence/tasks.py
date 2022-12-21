@@ -214,8 +214,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
     """
 
     context_opts: ContextOpts = None
-    global_threshold_count: int = 1
-    compress: bool = False
+    tf_threshold: int = 1
 
     def __post_init__(self):
         self.in_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
@@ -224,7 +223,7 @@ class ToCorpusCoOccurrenceDTM(ITask):
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("context_opts", self.context_opts)
-        self.pipeline.put("global_threshold_count", self.global_threshold_count)
+        self.pipeline.put("tf_threshold", self.tf_threshold)
         return self
 
     def process_stream(self) -> Iterable[DocumentPayload]:
@@ -280,8 +279,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
             vocabs_mapping=token_ids_2_pair_id,
         )
 
-        if self.compress:
-            bundle.compress()
+        if self.tf_threshold > 0:
+            bundle.compress(tf_threshold=self.tf_threshold)
 
         payload: DocumentPayload = DocumentPayload(content=bundle)
 

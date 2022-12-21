@@ -109,7 +109,7 @@ def create_simple_bundle_by_pipeline(
         .load_corpus(data)
         .vocabulary(lemmatize=False)
         .to_document_co_occurrence(context_opts=context_opts)
-        .to_corpus_co_occurrence(context_opts=context_opts, global_threshold_count=1, compress=compress)
+        .to_corpus_co_occurrence(context_opts=context_opts, tf_threshold=1, compress=compress)
         .single()
         .content
     )

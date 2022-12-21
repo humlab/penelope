@@ -16,7 +16,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     extract_opts: ExtractTaggedTokensOpts = None,
     transform_opts: TokensTransformOpts = None,
     context_opts: ContextOpts = None,
-    global_tf_threshold: int = None,
+    tf_threshold: int = None,
     **kwargs,  # pylint: disable=unused-argument
 ) -> CorpusPipeline:
 
@@ -39,7 +39,7 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
         # .tqdm(desc="Processing documents")
         .to_corpus_co_occurrence(
             context_opts=context_opts,
-            global_threshold_count=global_tf_threshold,
+            tf_threshold=tf_threshold,
         )
     )
 

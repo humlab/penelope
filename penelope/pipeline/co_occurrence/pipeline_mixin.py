@@ -25,14 +25,12 @@ class PipelineShortcutMixIn:
         self: pipelines.CorpusPipeline,
         *,
         context_opts: ContextOpts = None,
-        global_threshold_count: int = 1,
-        compress: bool = False,
+        tf_threshold: int = 1,
     ) -> pipelines.CorpusPipeline:
         """TOKENS => CO_OCCURRENCE_DTM_CORPUS"""
         return self.add(
             tasks.ToCorpusCoOccurrenceDTM(
                 context_opts=context_opts,
-                global_threshold_count=global_threshold_count,
-                compress=compress,
+                tf_threshold=tf_threshold,
             )
         )

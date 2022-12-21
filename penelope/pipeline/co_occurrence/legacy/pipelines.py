@@ -11,7 +11,7 @@
 #     transform_opts: TokensTransformOpts = None,
 #     extract_opts: ExtractTaggedTokensOpts = None,
 #     context_opts: ContextOpts = None,
-#     global_threshold_count: int = None,
+#     tf_threshold: int = None,
 # ) -> pipelines.CorpusPipeline:
 #     """Computes generic partitioned co-occurrence"""
 #     try:
@@ -26,7 +26,7 @@
 #             .to_corpus_co_occurrence(
 #                 context_opts=context_opts,
 #                 transform_opts=transform_opts,
-#                 global_threshold_count=global_threshold_count,
+#                 tf_threshold=tf_threshold,
 #             )
 #         )
 

@@ -24,7 +24,7 @@
 #     token2id: Token2Id,
 #     document_index: DocumentIndex,
 #     context_opts: ContextOpts,
-#     global_threshold_count: int,
+#     tf_threshold: int,
 #     ingest_tokens: bool = True,
 # ) -> Bundle:
 #     """Note: This function is currently ONLY used in test cases!"""
@@ -40,8 +40,8 @@
 #     if 'n_raw_tokens' not in document_index.columns:
 #         raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no such column")
 
-#     if not isinstance(global_threshold_count, int) or global_threshold_count < 1:
-#         global_threshold_count = 1
+#     if not isinstance(tf_threshold, int) or tf_threshold < 1:
+#         tf_threshold = 1
 
 #     if not isinstance(token2id, Token2Id):
 #         token2id = Token2Id(data=token2id)
@@ -88,9 +88,9 @@
 #         ['document_id', 'w1_id', 'w2_id', 'value']
 #     ]
 
-#     if len(co_occurrences) > 0 and global_threshold_count > 1:
+#     if len(co_occurrences) > 0 and tf_threshold > 1:
 #         co_occurrences = co_occurrences[
-#             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= global_threshold_count
+#             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= tf_threshold
 #         ]
 
 #     return Bundle(

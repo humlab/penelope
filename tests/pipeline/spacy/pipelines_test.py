@@ -53,7 +53,7 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
         context_width=4,
         partition_keys=['document_id'],
     )
-    global_threshold_count: int = 1
+    tf_threshold: int = 1
 
     value: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
         corpus_config=config,
@@ -61,7 +61,7 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
         transform_opts=transform_opts,
         context_opts=context_opts,
         extract_opts=extract_opts,
-        global_threshold_count=global_threshold_count,
+        tf_threshold=tf_threshold,
         tagged_corpus_source=tagged_corpus_source,
     ).value()
 
@@ -101,7 +101,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
         context_opts=co_occurrence.ContextOpts(
             context_width=4, ignore_concept=True, partition_keys=['document_id'], processes=None
         ),
-        global_threshold_count=1,
+        tf_threshold=1,
         tagged_corpus_source=tagged_corpus_source,
     ).value()
 
