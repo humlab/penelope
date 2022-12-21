@@ -68,8 +68,8 @@ def plot_bipartite_network(
     element_id: str = 'nx_id1',
     plot_width: int = 1000,
     plot_height: int = 600,
-) -> bp.Figure:
-    """Plot a bipartite network. Return bokeh.Figure"""
+) -> bp.figure:
+    """Plot a bipartite network. Return bokeh.figure"""
     tools: str = 'pan,wheel_zoom,box_zoom,reset,hover,save'
 
     source_nodes, target_nodes = nu.get_bipartite_node_set(network, bipartite=0)
@@ -95,7 +95,7 @@ def plot_bipartite_network(
 
     lines_source.add(edges_alphas, 'alphas')
 
-    p: bp.Figure = bp.figure(
+    p: bp.figure = bp.figure(
         plot_width=plot_width,
         plot_height=plot_height,
         sizing_mode='scale_width',

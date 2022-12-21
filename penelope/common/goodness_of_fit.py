@@ -247,7 +247,7 @@ def compile_most_deviating_words(df: pd.DataFrame, n_top: int = 500) -> pd.DataF
 
 def plot_metric_histogram(df_gof: pd.DataFrame, metric: str = 'l2_norm', bins: int = 100):
 
-    p: bp.Figure = bp.figure(plot_width=300, plot_height=300)
+    p: bp.figure = bp.figure(plot_width=300, plot_height=300)
 
     hist, edges = np.histogram(df_gof[metric].fillna(0), bins=bins)
     p.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], alpha=0.4)
@@ -300,7 +300,7 @@ def plot_slopes(
 
     color_mapper = bm.LinearColorMapper(palette='Magma256', low=min(data['k']), high=max(data['k']))
 
-    p: bp.Figure = bp.figure(plot_height=plot_height, plot_width=plot_width, tools='pan,wheel_zoom,box_zoom,reset')
+    p: bp.figure = bp.figure(plot_height=plot_height, plot_width=plot_width, tools='pan,wheel_zoom,box_zoom,reset')
     p.multi_line(
         xs='xs',
         ys='ys',
