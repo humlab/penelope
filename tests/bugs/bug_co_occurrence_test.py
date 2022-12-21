@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from penelope import co_occurrence
@@ -16,7 +17,6 @@ TEST_BUNDLE: str = "/data/inidun/courier/co_occurrence/courier_issue_by_article_
 #     filename = co_occurrence.to_filename(folder=folder, tag=tag)
 #     bundle: co_occurrence.Bundle = co_occurrence.Bundle.load(filename, compute_frame=False)
 #     return bundle
-
 
 
 # @pytest.fixture(scope="module")

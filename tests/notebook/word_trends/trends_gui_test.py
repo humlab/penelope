@@ -1,16 +1,18 @@
-from typing import Any
 import unittest.mock as mock
+from typing import Any
 
 import ipywidgets
 
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends import ITrendDisplayer, TrendsData, TrendsGUI
 
+
 def mocked_displayer_ctor(**_):
     m = mock.MagicMock(ITrendDisplayer)
     m.name = "apa"
     m.titles = "apa"
     return m
+
 
 def test_TrendsGUI_setup():
     gui = TrendsGUI().setup(displayers=[mocked_displayer_ctor])

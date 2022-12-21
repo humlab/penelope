@@ -42,12 +42,12 @@ def list_filenames(
 
 
 @zipfile_or_filename(mode='r')
-def read_file_content(*, zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool=False) -> AnyStr:
+def read_file_content(*, zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool = False) -> AnyStr:
     return zip_or_filename.read(filename) if as_binary else zip_or_filename.read(filename).decode(encoding='utf-8')
 
 
 @zipfile_or_filename(mode='r')
-def read_file_content2(zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool=False) -> Tuple[str, AnyStr]:
+def read_file_content2(zip_or_filename: zipfile.ZipFile, filename: str, as_binary: bool = False) -> Tuple[str, AnyStr]:
     data: AnyStr = read_file_content(zip_or_filename=zip_or_filename, filename=filename, as_binary=as_binary)
     return (os.path.basename(filename), data)
 

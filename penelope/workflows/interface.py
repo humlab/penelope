@@ -192,8 +192,6 @@ class ComputeOpts:
 
         config_filename: str = "doit.yml"
         target_filename: str = to_filename(folder=self.target_folder, tag=self.corpus_tag)
-        command: str = (
-            f"{script} {' '.join(options)} {config_filename} {self.corpus_source} {target_filename}"
-        )
+        command: str = f"{script} {' '.join(options)} {config_filename} {self.corpus_source} {target_filename}"
 
         return command

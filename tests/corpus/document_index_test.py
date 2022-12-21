@@ -267,9 +267,15 @@ def test_assert_is_strictly_increasing():
 def test_is_strictly_increasing():
     assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=1)
     assert is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=1, start_value=0, sort_values=False)
-    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=2, start_value=0, sort_values=False)
-    assert not is_strictly_increasing(pd.Series([0, 1, 2], dtype=np.int32), by_value=1, start_value=1, sort_values=False)
-    assert not is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=0, sort_values=False)
+    assert not is_strictly_increasing(
+        pd.Series([0, 1, 2], dtype=np.int32), by_value=2, start_value=0, sort_values=False
+    )
+    assert not is_strictly_increasing(
+        pd.Series([0, 1, 2], dtype=np.int32), by_value=1, start_value=1, sort_values=False
+    )
+    assert not is_strictly_increasing(
+        pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=0, sort_values=False
+    )
     assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=1, sort_values=False)
     assert is_strictly_increasing(pd.Series([1, 2, 3], dtype=np.int32), by_value=1, start_value=None, sort_values=False)
     assert not is_strictly_increasing(
