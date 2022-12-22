@@ -190,7 +190,7 @@ show_missing = true
 sort = "Name"
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry>=1.0.0"]
 build-backend = "poetry.masonry.api"
 
 #[tool.poetry.build]
