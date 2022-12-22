@@ -67,7 +67,6 @@ def test_simple():
         .to_corpus_co_occurrence(
             context_opts=context_opts,
             tf_threshold=tf_threshold,
-            compress=False,
         )
         .single()
         .content
