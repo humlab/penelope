@@ -193,11 +193,32 @@ def store_vocabs_mapping(vocabs_mapping: Optional[Mapping[Tuple[int, int], int]]
 
 
 def load_vocabs_mapping(folder: str, tag: str) -> Optional[Mapping[Tuple[int, int], int]]:
-    filename = to_filename(folder=folder, tag=tag, postfix=VOCABULARY_MAPPING_POSTFIX)
+    # def _store_cached(vocabs_mapping: dict, filename: str):
+
+    #     with contextlib.suppress(Exception):
+    #         df: pd.DataFrame = pd.DataFrame(data={'key': vocabs_mapping.keys(), 'value': vocabs_mapping.values()})
+    #         df.to_feather(replace_extension(filename, "feather"))
+
+    # def _load_cached(filename: str) -> None | dict:
+
+    #     with contextlib.suppress(Exception):
+    #         feather_filename: str = replace_extension(filename, "feather")
+    #         if os.path.isfile(feather_filename):
+    #             df: pd.DataFrame = pd.read_feather(feather_filename)
+    #             return dict(zip(df.key.apply(tuple), df.value))
+
+    #     return None
+
+    filename: str = to_filename(folder=folder, tag=tag, postfix=VOCABULARY_MAPPING_POSTFIX)
     if os.path.isfile(filename):
+        # vm: dict = _load_cached(filename)
+        # if vm:
+        #     return vm
         with open(filename, 'rb') as fp:
             vocabs_mapping: Mapping[Tuple[int, int], int] = pickle.load(fp)
+            # _store_cached(vocabs_mapping, filename)
             return vocabs_mapping
+
     return None
 
 
@@ -228,43 +249,40 @@ def create_options_bundle(
 
 
 @dataclass
-class TokenWindowCountMatrix:
+class WindowCountDTM:
+    """Document Term Matrix that containing window counts for each token in each document"""
 
-    """Document-level token window counts"""
-
-    document_term_window_counts: scipy.sparse.spmatrix = None
+    dtm_wc: scipy.sparse.spmatrix = None
 
     # @property
     # def total_term_window_counts(self):
     #     """Corpus-wide tokens' window counts"""
-    #     return self.document_term_window_counts.sum(axis=0).A1
+    #     return self.dtm_wc.sum(axis=0).A1
 
-    def slice(self, keep_token_ids: List(int), inplace=True) -> TokenWindowCountMatrix:
+    def slice(self, keep_token_ids: List(int), inplace=True) -> WindowCountDTM:
 
-        if len(keep_token_ids) == self.document_term_window_counts.shape[1]:
+        if len(keep_token_ids) == self.dtm_wc.shape[1]:
             return self
 
-        matrix: scipy.sparse.spmatrix = self.document_term_window_counts[:, keep_token_ids]
+        matrix: scipy.sparse.spmatrix = self.dtm_wc[:, keep_token_ids]
 
         if inplace:
-            self.document_term_window_counts = matrix
+            self.dtm_wc = matrix
             return self
 
-        return TokenWindowCountMatrix(document_term_window_counts=matrix)
+        return WindowCountDTM(dtm_wc=matrix)
 
     def store(self, folder: str, tag: str, compressed: bool = True) -> None:
         """Stores documents' (rows) token (column) window counts matrix"""
         filename = to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
         if compressed:
-            assert scipy.sparse.issparse(self.document_term_window_counts)
-            scipy.sparse.save_npz(
-                replace_extension(filename, '.npz'), self.document_term_window_counts, compressed=True
-            )
+            assert scipy.sparse.issparse(self.dtm_wc)
+            scipy.sparse.save_npz(replace_extension(filename, '.npz'), self.dtm_wc, compressed=True)
         else:
-            np.save(replace_extension(filename, '.npy'), self.document_term_window_counts, allow_pickle=True)
+            np.save(replace_extension(filename, '.npy'), self.dtm_wc, allow_pickle=True)
 
     @staticmethod
-    def load(folder: str, tag: str) -> "TokenWindowCountMatrix":
+    def load(folder: str, tag: str) -> "WindowCountDTM":
         """Loads documents' (rows) token (column) window counts matrix"""
         matrix: scipy.sparse.spmatrix = None
         filename = to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
@@ -274,11 +292,11 @@ class TokenWindowCountMatrix:
         if os.path.isfile(replace_extension(filename, '.npy')):
             matrix = np.load(replace_extension(filename, '.npy'), allow_pickle=True).item()
 
-        return TokenWindowCountMatrix(document_term_window_counts=matrix)
+        return WindowCountDTM(dtm_wc=matrix)
 
     @property
     def corpus_term_window_counts0(self):
-        return self.document_term_window_counts.sum(axis=0).A1
+        return self.dtm_wc.sum(axis=0).A1
 
 
 def store(bundle: "Bundle"):
@@ -328,13 +346,13 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = load_vocabs_mapping(folder=folder, tag=tag)
 
     corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag).remember(
-        window_counts=TokenWindowCountMatrix.load(folder, tag), vocabs_mapping=vocabs_mapping
+        window_counts=WindowCountDTM.load(folder, tag), vocabs_mapping=vocabs_mapping
     )
 
     concept_corpus: VectorizedCorpus = load_corpus(folder=folder, tag=tag + "_concept")
     if concept_corpus:
         concept_corpus.remember(
-            window_counts=TokenWindowCountMatrix.load(folder=folder, tag=tag + "_concept"),
+            window_counts=WindowCountDTM.load(folder=folder, tag=tag + "_concept"),
             vocabs_mapping=vocabs_mapping,
         )
 

@@ -10,7 +10,7 @@ from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
-    TokenWindowCountMatrix,
+    WindowCountDTM,
     VectorizedTTM,
     VectorizeType,
     windows_to_ttm,
@@ -263,12 +263,12 @@ class ToCorpusCoOccurrenceDTM(ITask):
         self.translate_id_pair_to_token(pair2id, token2id)
 
         concept_corpus: VectorizedCorpus = (
-            concept_builder.corpus.remember(window_counts=self.get_window_counts(concept_builder))
+            concept_builder.corpus.remember(window_counts=self.get_window_count_dtm(concept_builder))
             if concept_builder
             else None
         )
 
-        corpus: VectorizedCorpus = normal_builder.corpus.remember(window_counts=self.get_window_counts(normal_builder))
+        corpus: VectorizedCorpus = normal_builder.corpus.remember(window_counts=self.get_window_count_dtm(normal_builder))
 
         bundle: Bundle = Bundle(
             corpus=corpus,
@@ -292,8 +292,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
         sg = _single_without_sep.get
         pair2id.replace(data={sj([sg(w1_id), sg(w2_id)]): pair_id for (w1_id, w2_id), pair_id in pair2id.data.items()})
 
-    def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountMatrix:
-        return builder.compile_window_count_matrix() if builder is not None else None
+    def get_window_count_dtm(self, builder: CoOccurrenceCorpusBuilder) -> WindowCountDTM:
+        return builder.compile_window_count_dtm() if builder is not None else None
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None
