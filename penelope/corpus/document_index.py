@@ -178,30 +178,14 @@ class DocumentIndexHelper:
         Returns:
             [type]: [description]
         """
+        di_cols = self._document_index.columns
+        count_columns: list[str] = [c for c in DOCUMENT_INDEX_COUNT_COLUMNS if c in di_cols]
 
         if extra_grouping_columns:
             raise NotImplementedError("Use of extra_grouping_columns is NOT implemented")
 
-        if pivot_column_name not in self._document_index.columns:
+        if pivot_column_name not in di_cols:
             raise DocumentIndexError(f"fatal: document index has no {pivot_column_name} column")
-
-        """
-        Create `agg` dict that sums up all count variables (and span of years per group)
-        Adds or updates n_documents column. Sums up `n_documents` if it exists, other counts distinct `document_id`
-        """
-        count_aggregates = {
-            **{
-                count_column: 'sum'
-                for count_column in DOCUMENT_INDEX_COUNT_COLUMNS
-                if count_column in self._document_index.columns
-            },
-            **({} if pivot_column_name == 'year' else {'year': ['min', 'max', 'size']}),
-            **(
-                {'document_id': 'nunique'}
-                if "n_documents" not in self._document_index.columns
-                else {'n_documents': 'sum'}
-            ),
-        }
 
         transform = lambda df: (
             df[pivot_column_name]
@@ -213,14 +197,28 @@ class DocumentIndexHelper:
             else None
         )
 
-        document_index: DocumentIndex = (
-            self._document_index.assign(**{target_column_name: transform})
-            .groupby([target_column_name])
-            .agg(count_aggregates)
-        )
+        """
+        Create `agg` dict that sums up all count variables (and span of years per group)
+        Adds or updates n_documents column. Sums up `n_documents` if it exists, other counts distinct `document_id`
+        """
+        count_aggregates = {
+            **{count_column: 'sum' for count_column in count_columns},
+            **({} if pivot_column_name == 'year' else {'year': ['min', 'max', 'size']}),
+            **(
+                {'n_documents': 'sum'}
+                if "n_documents" in di_cols
+                else {'document_id': 'nunique'}
+                if "document_id" in di_cols
+                else {}
+            ),
+        }
+
+        g = self._document_index.assign(**{target_column_name: transform}).groupby([target_column_name])
+
+        document_index: DocumentIndex = g.agg(count_aggregates)
 
         # Reset column index to a single level
-        document_index.columns = [col if isinstance(col, str) else '_'.join(col) for col in document_index.columns]
+        document_index.columns = self._flattened_column_names(document_index)
 
         document_index = document_index.rename(
             columns={
@@ -231,6 +229,10 @@ class DocumentIndexHelper:
                 'year_size': 'n_years',
             }
         )
+
+        if 'n_documents' not in document_index.columns:
+            if self._document_index.index.name == 'document_id':
+                document_index['n_documents'] = g.size()
 
         # Set new index `index_values` as new index if specified, or else index
         if index_values is None:
@@ -272,6 +274,9 @@ class DocumentIndexHelper:
         document_index = document_index.set_index('document_name', drop=False).rename_axis('')
 
         return DocumentIndexHelper(document_index)
+
+    def _flattened_column_names(self, document_index: pd.DataFrame) -> list[str]:
+        return [col if isinstance(col, str) else '_'.join(col) for col in document_index.columns]
 
     def group_by_time_period(
         self,
