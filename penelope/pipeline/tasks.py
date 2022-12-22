@@ -545,7 +545,9 @@ class TapStream(ITask):
 
     def enter(self):
         logger.info(f"Tapping stream to {self.target}")
-        self.zink = zipfile.ZipFile(self.target, "w")  # pylint: disable=consider-using-with
+        self.zink = zipfile.ZipFile(  # pylint: disable=consider-using-with
+            self.target, "w", compression=zipfile.ZIP_DEFLATED
+        )
 
     def exit(self):
         self.zink.close()
@@ -699,6 +701,7 @@ class Vocabulary(ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
+        LowerText = 3
 
     token2id: Token2Id = None
     token_type: Optional[TokenType] = None
@@ -767,7 +770,7 @@ class Vocabulary(ITask):
 
         return (
             (x.lower() for x in payload.content[self.target])
-            if self.token_type == Vocabulary.TokenType.Lemma
+            if self.token_type in (Vocabulary.TokenType.Lemma, Vocabulary.TokenType.LowerText)
             else payload.content[self.target]
         )
 

@@ -6,7 +6,7 @@ except ImportError:
     ...
 
 
-flatten = lambda l: [x for ws in l for x in ws]
+flatten = lambda data: [x for ws in data for x in ws]
 
 
 def test_modified_most_discriminating_terms():

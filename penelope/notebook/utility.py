@@ -74,7 +74,7 @@ class OutputsTabExt(widgets.Tab):
 
     def selective_plot(self, what: Any):
         that = what() if callable(what) else what
-        if isinstance(that, bokeh.plotting.Figure):
+        if isinstance(that, bokeh.plotting.figure):
             bokeh.plotting.show(that)
         else:
             ipython_display(that)

@@ -1,0 +1,22 @@
+# target_name: courier_page_20210921_200_LEMMA_LOWER
+# corpus_source: null
+# corpus_folder: null
+target_folder: ./data
+lemmatize: true
+# pos_includes:
+# pos_excludes:
+to_lower: true
+# remove_stopwords: null
+min_word_length: 2
+# max_word_length: null
+# keep_symbols: false
+# keep_numerals: false
+only_any_alphanumeric: true
+# only_alphabetic: false
+force_checkpoint: false
+
+# config_filename:
+# model_folder:
+# target_name:
+# options_filename:
+# enable_checkpoint:

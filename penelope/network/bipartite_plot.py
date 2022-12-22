@@ -66,10 +66,10 @@ def plot_bipartite_network(
     titles: pd.DataFrame = None,
     highlight_topic_ids=None,
     element_id: str = 'nx_id1',
-    plot_width: int = 1000,
-    plot_height: int = 600,
-) -> bp.Figure:
-    """Plot a bipartite network. Return bokeh.Figure"""
+    width: int = 1000,
+    height: int = 600,
+) -> bp.figure:
+    """Plot a bipartite network. Return bokeh.figure"""
     tools: str = 'pan,wheel_zoom,box_zoom,reset,hover,save'
 
     source_nodes, target_nodes = nu.get_bipartite_node_set(network, bipartite=0)
@@ -91,13 +91,13 @@ def plot_bipartite_network(
         network, layout_data, scale=6.0, normalize=False
     )
 
-    edges_alphas: [float] = metrics.compute_alpha_vector(lines_source.data['weights'])
+    edges_alphas: list[float] = metrics.compute_alpha_vector(lines_source.data['weights'])
 
     lines_source.add(edges_alphas, 'alphas')
 
-    p: bp.Figure = bp.figure(
-        plot_width=plot_width,
-        plot_height=plot_height,
+    p: bp.figure = bp.figure(
+        width=width,
+        height=height,
         sizing_mode='scale_width',
         x_axis_type=None,
         y_axis_type=None,

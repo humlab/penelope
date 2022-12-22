@@ -22,7 +22,7 @@ def compute_topic_metrics(ldamodel: models.LdaMulticore, dictionary: dict, n_wor
     topic_info = []
 
     for index in range(ldamodel.num_topics):
-        topic_weight = sum([prob_score for _, prob_score in ldamodel.show_topic(index, topn=n_words)])
+        topic_weight = sum(prob_score for _, prob_score in ldamodel.show_topic(index, topn=n_words))
         topic_info.append({'topic': ldamodel.show_topic(index, topn=n_words), 'weight': topic_weight})
 
     return topic_info

@@ -26,7 +26,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 COLORS = ['#ffffff', '#f7fcf5', '#e5f5e0', '#c7e9c0', '#a1d99b', '#74c476', '#41ab5d', '#238b45', '#006d2c', '#00441b']
-HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_location="above", plot_width=1200)
+HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_location="above", width=1200)
 
 
 def _setup_glyph_coloring(_, color_high=0.3):
@@ -83,7 +83,7 @@ def plot_topic_relevance_by_year(
 
     if y_range is not None:
         figopts['y_range'] = y_range
-        figopts['plot_height'] = max(len(y_range) * line_height, 600)
+        figopts['height'] = max(len(y_range) * line_height, 600)
 
     p = bokeh.plotting.figure(**figopts, sizing_mode='scale_width')
 

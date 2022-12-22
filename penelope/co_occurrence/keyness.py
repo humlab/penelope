@@ -64,7 +64,6 @@ def compute_weighed_corpus_keyness(
         corpus (VectorizedCorpus): [description]
         concept_corpus (VectorizedCorpus): [description]
         token2id (Token2Id): [description]
-        vocabs_mapping (VocabularyMapping): Mapping between single/pair vocabs
         opts (KeynessOpts): Compute opts
 
     Raises:

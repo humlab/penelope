@@ -7,5 +7,5 @@ def test_load_gui(state):
 
     layout = gui.layout()
     assert layout is not None
-
+    gui._model_name.value = gui._model_name.options[0]  # pylint: disable=protected-access
     gui.load()

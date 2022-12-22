@@ -126,7 +126,7 @@ def test_token2id_compress_with_threshold_and_keeps_adds_masked_magic_token_with
     assert mask_token not in token2id
     assert mask_token in token2id_compressed
 
-    sum_of_masked_tokens = sum([v for k, v in EXPECTED_COUNTS2.items() if k not in token2id_compressed])
+    sum_of_masked_tokens = sum(v for k, v in EXPECTED_COUNTS2.items() if k not in token2id_compressed)
 
     assert token2id_compressed.tf[token2id_compressed[mask_token]] == sum_of_masked_tokens
 

@@ -11,6 +11,8 @@ from tqdm import tqdm
 from penelope import corpus as pc
 from penelope import topic_modelling as tm
 
+# pylint: disable=no-member
+
 
 def probe_filenames(folder: str, filenames: list[str]) -> str | None:
     for filename in filenames:

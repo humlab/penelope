@@ -7,7 +7,7 @@
 #     ContextOpts,
 #     CoOccurrenceError,
 #     DocumentWindowsVectorizer,
-#     TokenWindowCountMatrix,
+#     WindowCountDTM,
 #     term_term_matrix_to_co_occurrences,
 # )
 # from penelope.co_occurrence.vectorize import VectorizedTTM, VectorizeType
@@ -87,7 +87,7 @@
 #     """
 
 #     context_opts: ContextOpts = None
-#     global_threshold_count: int = 1
+#     tf_threshold: int = 1
 
 #     def __post_init__(self):
 #         self.in_content_type = ContentType.TOKENS
@@ -108,9 +108,9 @@
 
 #         token2id: Token2Id = self.pipeline.payload.token2id
 
-#         if len(co_occurrences) > 0 and self.global_threshold_count > 1:
+#         if len(co_occurrences) > 0 and self.tf_threshold > 1:
 #             co_occurrences = co_occurrences[
-#                 co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= self.global_threshold_count
+#                 co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= self.tf_threshold
 #             ]
 
 #         if self.document_index is None:
@@ -128,7 +128,7 @@
 
 #         yield DocumentPayload(
 #             content=Bundle(
-#                 corpus=corpus.remember(window_counts=TokenWindowCountMatrix()),
+#                 corpus=corpus.remember(window_counts=WindowCountDTM()),
 #                 co_occurrences=co_occurrences,
 #                 token2id=token2id,
 #                 document_index=self.document_index,

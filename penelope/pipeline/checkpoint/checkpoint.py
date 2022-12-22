@@ -107,6 +107,7 @@ def store_archive(
     document_index: DocumentIndex,
     payload_stream: Iterator[DocumentPayload],
     token2id: Token2Id = None,
+    compresslevel: int = 8,
 ) -> Iterable[DocumentPayload]:
     """Store payload stream as a compressed ZIP archive"""
     target_folder: bool = dirname(target_filename)
@@ -114,7 +115,9 @@ def store_archive(
 
     os.makedirs(target_folder, exist_ok=True)
 
-    with zipfile.ZipFile(target_filename, mode="w", compresslevel=zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(
+        target_filename, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=compresslevel
+    ) as zf:
 
         zf.writestr(CHECKPOINT_OPTS_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
 

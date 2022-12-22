@@ -10,9 +10,9 @@ from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
-    TokenWindowCountMatrix,
     VectorizedTTM,
     VectorizeType,
+    WindowCountDTM,
     windows_to_ttm,
 )
 from penelope.co_occurrence.windows import generate_windows
@@ -214,8 +214,6 @@ class ToCorpusCoOccurrenceDTM(ITask):
     """
 
     context_opts: ContextOpts = None
-    global_threshold_count: int = 1
-    compress: bool = False
 
     def __post_init__(self):
         self.in_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
@@ -224,7 +222,6 @@ class ToCorpusCoOccurrenceDTM(ITask):
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("context_opts", self.context_opts)
-        self.pipeline.put("global_threshold_count", self.global_threshold_count)
         return self
 
     def process_stream(self) -> Iterable[DocumentPayload]:
@@ -264,12 +261,14 @@ class ToCorpusCoOccurrenceDTM(ITask):
         self.translate_id_pair_to_token(pair2id, token2id)
 
         concept_corpus: VectorizedCorpus = (
-            concept_builder.corpus.remember(window_counts=self.get_window_counts(concept_builder))
+            concept_builder.corpus.remember(window_counts=self.get_window_count_dtm(concept_builder))
             if concept_builder
             else None
         )
 
-        corpus: VectorizedCorpus = normal_builder.corpus.remember(window_counts=self.get_window_counts(normal_builder))
+        corpus: VectorizedCorpus = normal_builder.corpus.remember(
+            window_counts=self.get_window_count_dtm(normal_builder)
+        )
 
         bundle: Bundle = Bundle(
             corpus=corpus,
@@ -280,8 +279,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
             vocabs_mapping=token_ids_2_pair_id,
         )
 
-        if self.compress:
-            bundle.compress()
+        if self.context_opts.windows_threshold > 0:
+            bundle.compress(tf_threshold=self.context_opts.windows_threshold)
 
         payload: DocumentPayload = DocumentPayload(content=bundle)
 
@@ -293,8 +292,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
         sg = _single_without_sep.get
         pair2id.replace(data={sj([sg(w1_id), sg(w2_id)]): pair_id for (w1_id, w2_id), pair_id in pair2id.data.items()})
 
-    def get_window_counts(self, builder: CoOccurrenceCorpusBuilder) -> TokenWindowCountMatrix:
-        return builder.compile_window_count_matrix() if builder is not None else None
+    def get_window_count_dtm(self, builder: CoOccurrenceCorpusBuilder) -> WindowCountDTM:
+        return builder.compile_window_count_dtm() if builder is not None else None
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return None

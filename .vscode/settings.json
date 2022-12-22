@@ -27,7 +27,8 @@
         "titleBar.inactiveForeground": "#e7e7e799",
         "sash.hoverBorder": "#66874f",
         "statusBarItem.remoteBackground": "#4e673c",
-        "statusBarItem.remoteForeground": "#e7e7e7"
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "commandCenter.border": "#e7e7e799"
     },
     "cSpell.words": [
         "alphanum",
@@ -52,5 +53,6 @@
         "Vectorize",
         "Vectorizer",
         "zink"
-    ]
+    ],
+    "sqltools.detectNodeRuntime": false
 }

@@ -119,7 +119,7 @@ def tokens_to_ttm_stream(
             concept_ids=concept_ids,
             ignore_ids=ignore_ids,
         )
-        if processes is None:
+        if not processes:
 
             for arg in args:
                 item: dict = tokens_to_ttm(arg)

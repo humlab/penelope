@@ -14,7 +14,7 @@ from .networkx import utility as nu
 TOOLS = "pan,wheel_zoom,box_zoom,reset,previewsave"
 
 DFLT_PALETTE = bokeh.palettes.Set3[12]
-DFLT_FIG_OPTS = dict(plot_height=900, plot_width=900, tools=TOOLS)
+DFLT_FIG_OPTS = dict(height=900, width=900, tools=TOOLS)
 
 DFLT_NODE_OPTS = dict(color='green', level='overlay', alpha=1.0)
 
@@ -119,9 +119,7 @@ def plot(  # pylint: disable=W0102
     node_opts = pu.extend(DFLT_NODE_OPTS, node_opts or {})
     line_opts = pu.extend(DFLT_EDGE_OPTS, line_opts or {})
 
-    p = figure(
-        plot_width=figsize[0], plot_height=figsize[1], sizing_mode='scale_width', tools=tools or TOOLS, **figkwargs
-    )
+    p = figure(width=figsize[0], height=figsize[1], sizing_mode='scale_width', tools=tools or TOOLS, **figkwargs)
 
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None

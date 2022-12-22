@@ -21,7 +21,6 @@ def test_simple():
     input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
     corpus_config: pp.CorpusConfig = pp.CorpusConfig.load(config_filename)  # .folders(DATA_FOLDER)
 
-    tf_threshold: int = 2
     context_opts = ContextOpts(
         chunksize=10,
         concept=set(['träd']),
@@ -66,8 +65,6 @@ def test_simple():
         )
         .to_corpus_co_occurrence(
             context_opts=context_opts,
-            global_threshold_count=tf_threshold,
-            compress=False,
         )
         .single()
         .content
@@ -128,8 +125,6 @@ def test_tranströmer():  # pylint: disable=non-ascii-name
         )
         .to_corpus_co_occurrence(
             context_opts=context_opts,
-            global_threshold_count=tf_threshold,
-            compress=False,
         )
         .single()
         .content
@@ -226,6 +221,7 @@ def test_bug():
     )
 
 
+@pytest.mark.skip(reason="Bug fixed")
 def test_process_co_ocurrence():
     concept: list[str] = ["sverige"]
     corpus_config: str = "tests/bugs/riksdagens-protokoll.yml"

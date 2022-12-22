@@ -8,12 +8,12 @@ import bokeh.plotting
 import numpy as np
 import pandas as pd
 import scipy
-from bokeh.plotting import Figure, figure
+from bokeh.plotting import figure
 
 from penelope.notebook.utility import generate_temporal_ticks
 from penelope.utility import take
 
-DEFAULT_FIGOPTS: dict = dict(plot_width=1000, plot_height=600)
+DEFAULT_FIGOPTS: dict = dict(width=1000, height=600)
 DEFAULT_PALETTE = bokeh.palettes.Category10[10]
 
 
@@ -43,7 +43,7 @@ def plot_stacked_bar(df: pd.DataFrame, **figopts):
     data_source: dict = dict(category=[str(x) for x in df.index], **{column: df[column] for column in columns})
     colors: Iterable[str] = generate_colors(len(columns), DEFAULT_PALETTE)
 
-    p: Figure = figure(x_range=data_source['category'], **figopts, sizing_mode='scale_width')
+    p: figure = figure(x_range=data_source['category'], **figopts, sizing_mode='scale_width')
 
     p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
 
@@ -78,7 +78,7 @@ def to_multiline_data_source(data: pd.DataFrame, smoother: Callable = None) -> d
     return data_source
 
 
-def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> Figure:
+def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> figure:
 
     x_ticks: Sequence[int] = None
 
@@ -90,7 +90,7 @@ def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> Figu
 
     data_source: dict = to_multiline_data_source(data=df, smoother=None)
 
-    p: Figure = figure(**(figopts or {}), sizing_mode='scale_width')
+    p: figure = figure(**(figopts or {}), sizing_mode='scale_width')
 
     p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
     p.y_range.start = 0

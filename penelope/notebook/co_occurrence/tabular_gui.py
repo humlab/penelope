@@ -25,10 +25,10 @@ DISPLAY_COLUMNS = ['time_period', 'w1', 'w2', 'value']
 def empty_data():
     return pd.DataFrame(
         data={
-            'time_period': pd.Series(data=[], dtype=np.int),
+            'time_period': pd.Series(data=[], dtype=np.int32),
             'w1': pd.Series(data=[], dtype=str),
             'w2': pd.Series(data=[], dtype=str),
-            'value': pd.Series(data=[], dtype=np.float),
+            'value': pd.Series(data=[], dtype=np.float32),
         }
     )
 
@@ -308,7 +308,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         if isinstance(self.concepts, Iterable):
             return set(self.concepts)
 
-        return {self.concepts}
+        return set(self.concepts)
 
     @property
     def show_concept(self) -> bool:

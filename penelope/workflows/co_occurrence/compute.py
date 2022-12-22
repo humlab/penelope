@@ -52,7 +52,6 @@ def compute(
                 transform_opts=args.transform_opts,
                 extract_opts=args.extract_opts,
                 context_opts=args.context_opts,
-                global_tf_threshold=args.tf_threshold,
             )
         )
 

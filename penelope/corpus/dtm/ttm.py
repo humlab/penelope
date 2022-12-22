@@ -14,21 +14,21 @@ from ..token2id import Token2Id
 from .interface import IVectorizedCorpusProtocol
 
 if TYPE_CHECKING:
-    from penelope.co_occurrence import TokenWindowCountMatrix
+    from penelope.co_occurrence import WindowCountDTM
     from penelope.co_occurrence.keyness import ComputeKeynessOpts
 
     from .corpus import VectorizedCorpus
 
-# pylint: disable=no-member
+# pylint: disable=no-member, unused-argument
 
 
 class ICoOccurrenceVectorizedCorpusProtocol(IVectorizedCorpusProtocol):
     @property
-    def window_counts(self) -> Optional[TokenWindowCountMatrix]:
+    def window_counts(self) -> Optional[WindowCountDTM]:
         ...
 
     @window_counts.setter
-    def window_counts(self, value: TokenWindowCountMatrix) -> None:
+    def window_counts(self, value: WindowCountDTM) -> None:
         ...
 
     @property
@@ -67,13 +67,13 @@ class CoOccurrenceMixIn:
         return self.token2id
 
     @property
-    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[TokenWindowCountMatrix]:
+    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol) -> Optional[WindowCountDTM]:
         """Token window count statistics collected during co-occurrence computation"""
-        matrix: TokenWindowCountMatrix = self.payload.get("window_counts")
+        matrix: WindowCountDTM = self.payload.get("window_counts")
         return matrix
 
     @window_counts.setter
-    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol, value: TokenWindowCountMatrix) -> None:
+    def window_counts(self: ICoOccurrenceVectorizedCorpusProtocol, value: WindowCountDTM) -> None:
         self.remember(window_counts=value)
 
     @property
@@ -203,7 +203,7 @@ class CoOccurrenceMixIn:
         if self.vocabs_mapping is None:
             raise ValueError("to_HAL_cwr_keyness: payload `vocabs_mapping` cannot be empty!")
 
-        document_window_counts: scipy.sparse.spmatrix = self.window_counts.document_term_window_counts
+        document_window_counts: scipy.sparse.spmatrix = self.window_counts.dtm_wc
 
         nw_x = document_window_counts
         nw_xy = self.data

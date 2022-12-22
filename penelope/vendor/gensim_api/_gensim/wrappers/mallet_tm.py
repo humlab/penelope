@@ -138,8 +138,8 @@ class MalletTopicModel(LdaMallet):
 
             # words: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//word")
             dtypes: dict = {
-                'rank': np.int,
-                'count': np.int,
+                'rank': np.int32,
+                'count': np.int64,
                 'prob': np.float64,
                 'cumulative': np.float64,
                 'docs': int,

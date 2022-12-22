@@ -21,8 +21,8 @@ def display_topic_trends(
     ys: pd.Series = weight_over_time[value_column]
 
     default_figopts: dict = dict(
-        plot_width=1000,
-        plot_height=400,
+        width=1000,
+        height=400,
         title='',
         toolbar_location="right",
         x_range=list(map(str, range(year_range[0], year_range[1] + 1))),
@@ -31,7 +31,7 @@ def display_topic_trends(
 
     figopts: dict = {**default_figopts, **figopts}
 
-    p: bp.Figure = bp.figure(**figopts, sizing_mode='scale_width')
+    p: bp.figure = bp.figure(**figopts, sizing_mode='scale_width')
 
     _ = p.vbar(x=xs, top=ys, width=0.5, fill_color="#b3de69")
 

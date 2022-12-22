@@ -7,7 +7,7 @@ import scipy
 import scipy.sparse as sp
 from loguru import logger
 
-from penelope.co_occurrence import TokenWindowCountMatrix, VectorizedTTM, VectorizeType
+from penelope.co_occurrence import VectorizedTTM, VectorizeType, WindowCountDTM
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.type_alias import DocumentIndex
@@ -103,11 +103,9 @@ class CoOccurrenceCorpusBuilder:
 
         return corpus
 
-    def compile_window_count_matrix(self) -> TokenWindowCountMatrix:
-        window_count_matrix: sp.spmatrix = sp.coo_matrix(
-            (self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col))
-        ).tocsr()
-        matrix: TokenWindowCountMatrix = TokenWindowCountMatrix(document_term_window_counts=window_count_matrix)
+    def compile_window_count_dtm(self) -> WindowCountDTM:
+        dtm_wc: sp.spmatrix = sp.coo_matrix((self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col))).tocsr()
+        matrix: WindowCountDTM = WindowCountDTM(dtm_wc=dtm_wc)
         return matrix
 
     def ingest_pairs(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":

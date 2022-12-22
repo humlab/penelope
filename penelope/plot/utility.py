@@ -32,7 +32,7 @@ def plot_multiple_value_series(
     plot_opts: dict = None,
 ):
     fig_opts = {
-        **dict(plot_height=250, sizing_mode='scale_width', title=title, toolbar_location=None, tools=""),
+        **dict(height=250, sizing_mode='scale_width', title=title, toolbar_location=None, tools=""),
         **(dict(title=title) if title else {}),
         **(fig_opts or {}),
     }
@@ -67,7 +67,7 @@ def plot_multiple_value_series2(
     n_tick: int = 5,
 ):
     fig_opts = {
-        **dict(plot_height=400, plot_width=1000, sizing_mode='scale_both'),
+        **dict(height=400, width=1000, sizing_mode='scale_both'),
         **(fig_opts or {}),
     }  # , x_axis_type=None
     plot_opts = plot_opts or {}

@@ -12,7 +12,7 @@
 # from .bundle import Bundle
 # from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 # from .interface import ContextOpts, CoOccurrenceError
-# from .persistence import TokenWindowCountMatrix
+# from .persistence import WindowCountDTM
 # from .vectorize import windows_to_ttm, VectorizedTTM, VectorizeType
 # from .windows import generate_windows
 
@@ -24,7 +24,7 @@
 #     token2id: Token2Id,
 #     document_index: DocumentIndex,
 #     context_opts: ContextOpts,
-#     global_threshold_count: int,
+#     tf_threshold: int,
 #     ingest_tokens: bool = True,
 # ) -> Bundle:
 #     """Note: This function is currently ONLY used in test cases!"""
@@ -40,8 +40,8 @@
 #     if 'n_raw_tokens' not in document_index.columns:
 #         raise CoOccurrenceError("expected `document_index.n_raw_tokens`, but found no such column")
 
-#     if not isinstance(global_threshold_count, int) or global_threshold_count < 1:
-#         global_threshold_count = 1
+#     if not isinstance(tf_threshold, int) or tf_threshold < 1:
+#         tf_threshold = 1
 
 #     if not isinstance(token2id, Token2Id):
 #         token2id = Token2Id(data=token2id)
@@ -82,23 +82,23 @@
 #         computed_window_counts[document_id] = ttm.term_window_counts
 
 #     shape = (len(computed_window_counts), len(token2id))
-#     window_counts_matrix = to_token_window_counts_matrix(computed_window_counts, shape)
+#     dtm_wc = to_token_window_counts_matrix(computed_window_counts, shape)
 
 #     co_occurrences: pd.DataFrame = pd.concat(computed_data_frames, ignore_index=True)[
 #         ['document_id', 'w1_id', 'w2_id', 'value']
 #     ]
 
-#     if len(co_occurrences) > 0 and global_threshold_count > 1:
+#     if len(co_occurrences) > 0 and tf_threshold > 1:
 #         co_occurrences = co_occurrences[
-#             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= global_threshold_count
+#             co_occurrences.groupby(["w1_id", "w2_id"])['value'].transform('sum') >= tf_threshold
 #         ]
 
 #     return Bundle(
 #         co_occurrences=co_occurrences,
 #         token2id=token2id,
 #         document_index=document_index,
-#         window_counts=TokenWindowCountMatrix(
-#             document_term_window_counts=window_counts_matrix,
+#         window_counts=WindowCountDTM(
+#             dtm_wc=dtm_wc,
 #         ),
 #     )
 

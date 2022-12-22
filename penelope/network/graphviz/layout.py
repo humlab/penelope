@@ -34,6 +34,6 @@ LAYOUT_SETUP_MAP = {x.key: x for x in layout_setups}
 
 
 def normalize_layout(layout):
-    max_xy = max([max(x, y) for x, y in layout.values()])
+    max_xy = max(max(x, y) for x, y in layout.values())
     layout = {n: (layout[n][0] / max_xy, layout[n][1] / max_xy) for n in layout.keys()}
     return layout

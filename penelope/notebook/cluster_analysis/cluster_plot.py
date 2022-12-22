@@ -76,7 +76,7 @@ def noop(x=None, p=None, max=None):  # pylint: disable=redefined-builtin, unused
 # pylint: disable=too-many-locals
 def create_cluster_plot(
     x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, tick=noop, **kwargs
-) -> bp.Figure:
+) -> bp.figure:
 
     # palette = itertools.cycle(bokeh.palettes.Category20[20])
     assert n_cluster <= token_clusters.cluster.max()
@@ -89,10 +89,10 @@ def create_cluster_plot(
 
     title: str = kwargs.get('title', 'Cluster #{}'.format(n_cluster))
 
-    p: bp.Figure = bp.figure(
+    p: bp.figure = bp.figure(
         title=title,
-        plot_width=kwargs.get('plot_width', 900),
-        plot_height=kwargs.get('plot_height', 600),
+        width=kwargs.get('width', 900),
+        height=kwargs.get('height', 600),
         output_backend="webgl",
     )
 
@@ -140,13 +140,13 @@ def create_cluster_plot(
     return p
 
 
-def render_cluster_plot(figure: bp.Figure):
+def render_cluster_plot(figure: bp.figure):
     bp.show(figure)
 
 
 def plot_clusters_count(source: bm.ColumnDataSource):
 
-    figure_opts = dict(plot_width=500, plot_height=600, title="Cluster token count")
+    figure_opts = dict(width=500, height=600, title="Cluster token count")
 
     hover_opts = dict(tooltips='@legend: @count words', show_arrow=False, line_policy='next')
 
@@ -177,9 +177,9 @@ def plot_clusters_count(source: bm.ColumnDataSource):
     return p
 
 
-def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict = None) -> bm.Box:
+def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict = None) -> Any:
 
-    figure_opts = dict(plot_width=600, plot_height=620, title="Cluster mean trends (pchip spline)")
+    figure_opts = dict(width=600, height=620, title="Cluster mean trends (pchip spline)")
     hover_opts = dict(tooltips=[('Cluster', '@legend')], show_arrow=False, line_policy='next')
 
     line_opts = dict(
@@ -191,7 +191,7 @@ def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict =
         hover_line_alpha=1.0,
     )
 
-    p: bp.Figure = bp.figure(tools=[bm.HoverTool(**hover_opts), bm.TapTool()], **figure_opts)
+    p: bp.figure = bp.figure(tools=[bm.HoverTool(**hover_opts), bm.TapTool()], **figure_opts)
 
     p.xaxis.major_label_orientation = 1
     p.xgrid.grid_line_color = None
@@ -218,12 +218,12 @@ def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict =
 
         multi_select.js_on_change('value', callback)
 
-        p: bm.Box = bokeh.layouts.row(p, multi_select)
+        p: Any = bokeh.layouts.row(p, multi_select)
 
     return p
 
 
-def render_clusters_mean_plot(figure: bm.Box):
+def render_clusters_mean_plot(figure: Any):
     bp.show(figure)
 
 

@@ -51,7 +51,7 @@ class BarDisplayer(ITrendDisplayer):
         colors: Iterable[str] = iter(generate_colors(len(value_fields)))
         source = bm.ColumnDataSource(data=plot_data)
 
-        p: bp.Figure = bp.figure(plot_height=self.height, plot_width=self.width, sizing_mode='scale_width', title="TF")
+        p: bp.figure = bp.figure(height=self.height, width=self.width, sizing_mode='scale_width', title="TF")
 
         offset: float = -0.25
         v: List[bm.GlyphRenderer] = []

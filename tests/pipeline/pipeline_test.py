@@ -181,11 +181,11 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
         .exhaust()
     )
 
-    assert len(pipe.payload.token2id) == 1478
-    assert 'Cultural' in pipe.payload.token2id
+    assert len(pipe.payload.token2id) == 1343
+    assert 'cultural' in pipe.payload.token2id
     assert 'wars' in pipe.payload.token2id
 
-    assert pipe.payload.token2id.tf[pipe.payload.token2id['the']] == 704
+    assert pipe.payload.token2id.tf[pipe.payload.token2id['the']] == 797
 
 
 @pytest.mark.long_running

@@ -16,7 +16,7 @@ class LineDisplayer(ITrendDisplayer):
     def __init__(self, name: str = "Line", **opts):
         super().__init__(name=name, **opts)
 
-        self.chart: bp.Figure = None
+        self.chart: bp.figure = None
         self.handle: Any = None
         self.data_source: bm.ColumnDataSource = None
         self.year_tick: int = 5
@@ -29,7 +29,7 @@ class LineDisplayer(ITrendDisplayer):
 
     def figure(self, *, data_source: bm.ColumnDataSource, x_ticks: Sequence[int] = None):
 
-        p = bp.figure(plot_width=self.width, plot_height=self.height, sizing_mode='scale_width')
+        p = bp.figure(width=self.width, height=self.height, sizing_mode='scale_width')
 
         p.y_range.start = 0
         p.yaxis.axis_label = 'Frequency'

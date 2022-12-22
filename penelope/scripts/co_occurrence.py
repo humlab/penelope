@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional, Sequence
 
 from loguru import logger
@@ -22,13 +23,17 @@ except ImportError:
 
 
 @click.command()
-@click.argument('corpus_config', type=click.STRING)
-@click.argument('input_filename', type=click.STRING)
-@click.argument('output_filename', type=click.STRING)
+# @click.argument('corpus_config', type=click.STRING)
+# @click.argument('input_filename', type=click.STRING)
+# @click.argument('output_filename', type=click.STRING)
 @option2('--options-filename')
+@option2('--corpus-config')
+@option2('--input-filename')
+@option2('--output-filename')
 @option2('--filename-pattern')
 @option2('--concept')
 @option2('--ignore-padding')
+@option2('--windows-threshold')
 @option2('--ignore-concept')
 @option2('--context-width')
 @option2('--compute-processes')
@@ -62,6 +67,7 @@ def main(
     filename_pattern: str = None,
     concept: List[str] = None,
     ignore_concept: bool = False,
+    windows_threshold: int = 1,
     ignore_padding: bool = False,
     context_width: int = None,
     compute_processes: int = None,
@@ -89,9 +95,16 @@ def main(
     force_checkpoint: bool = False,
     deserialize_processes: int = 4,
 ):
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    try:
+        arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
 
-    process_co_ocurrence(**arguments)
+        process_co_ocurrence(**arguments)
+    except MissingOptionError as ex:
+        print(ex)
+
+
+class MissingOptionError(Exception):
+    ...
 
 
 def process_co_ocurrence(
@@ -103,6 +116,7 @@ def process_co_ocurrence(
     ignore_concept: bool = False,
     ignore_padding: bool = False,
     context_width: int = None,
+    windows_threshold: int = 1,
     compute_processes: int = None,
     compute_chunk_size: int = 10,
     partition_key: Sequence[str] = None,
@@ -128,8 +142,14 @@ def process_co_ocurrence(
     force_checkpoint: bool = False,
     deserialize_processes: int = 4,
 ):
-
     try:
+
+        if not output_filename:
+            raise MissingOptionError("Output filename not specified")
+
+        if not corpus_config:
+            raise MissingOptionError("Corpus configuration YAML file not specified")
+
         output_folder, output_tag = to_folder_and_tag(output_filename)
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)
@@ -145,6 +165,11 @@ def process_co_ocurrence(
 
         if filename_pattern is not None:
             text_reader_opts.filename_pattern = filename_pattern
+
+        if not input_filename:
+            input_filename = corpus_config.pipeline_payload.source
+
+        corpus_config.folders(os.path.dirname(input_filename), 'replace')
 
         corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
 
@@ -194,6 +219,7 @@ def process_co_ocurrence(
                 partition_keys=partition_key,
                 processes=compute_processes,
                 chunksize=compute_chunk_size,
+                windows_threshold=windows_threshold,
             ),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,
@@ -203,6 +229,8 @@ def process_co_ocurrence(
 
         logger.info('Done!')
 
+    except MissingOptionError:
+        raise
     except Exception as ex:  # pylint: disable=try-except-raise, unused-variable
         logger.exception(ex)
         click.echo(ex)
@@ -212,3 +240,12 @@ def process_co_ocurrence(
 
 if __name__ == '__main__':
     main()  # pylint: disable=no-value-for-parameter
+
+    # from click.testing import CliRunner
+
+    # runner = CliRunner()
+    # result = runner.invoke(
+    #     main,
+    #     ['--options-filename', 'opts/inidun/opts/20221213_co-occurrence.yml'],
+    # )
+    # print(result.output)

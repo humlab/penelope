@@ -11,7 +11,7 @@ from penelope.vendor import textacy_api
 from ..token2id import id2token2token2id
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
-# pylint: disable=no-member, attribute-defined-outside-init, access-member-before-definition
+# pylint: disable=no-member, attribute-defined-outside-init, access-member-before-definition, unused-argument
 
 
 class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
