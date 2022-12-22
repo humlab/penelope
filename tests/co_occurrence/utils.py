@@ -93,7 +93,6 @@ def create_simple_bundle_by_pipeline(
     context_opts: ContextOpts,
     tag: str = "TERRA",
     folder: str = None,
-    compress: bool = False,
 ):
     folder = folder or OUTPUT_FOLDER
     if folder.startswith('./tests') and folder != OUTPUT_FOLDER:
@@ -109,7 +108,7 @@ def create_simple_bundle_by_pipeline(
         .load_corpus(data)
         .vocabulary(lemmatize=False)
         .to_document_co_occurrence(context_opts=context_opts)
-        .to_corpus_co_occurrence(context_opts=context_opts, tf_threshold=1, compress=compress)
+        .to_corpus_co_occurrence(context_opts=context_opts, tf_threshold=1)
         .single()
         .content
     )
