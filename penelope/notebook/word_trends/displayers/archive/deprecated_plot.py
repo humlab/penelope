@@ -219,9 +219,7 @@ def yearly_token_distribution_single_line_plot(
     """
     if plot is None:
 
-        p: figure = bokeh.plotting.figure(
-            width=kwargs.get('width', 400), height=kwargs.get('height', 200)
-        )
+        p: figure = bokeh.plotting.figure(width=kwargs.get('width', 400), height=kwargs.get('height', 200))
         p.y_range.start = 0
         # p.y_range.end = 0.5
         # p.title.text = title.upper()
