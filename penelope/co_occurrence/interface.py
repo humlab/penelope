@@ -31,6 +31,7 @@ class ContextOpts:
     min_window_size: int = 1
     processes: int = 6
     chunksize: int = 4
+    windows_threshold: int = 1
 
     @property
     def props(self):
@@ -42,6 +43,7 @@ class ContextOpts:
             ignore_padding=self.ignore_padding,
             partition_keys=self.partition_keys,
             min_window_size=self.min_window_size,
+            tf_threshold=self.windows_threshold,
         )
 
     @classmethod

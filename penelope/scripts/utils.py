@@ -99,6 +99,9 @@ CLI_OPTIONS = {
     '--tf-threshold': dict(
         help='Globoal TF threshold filter (words below filtered out)', default=1, type=click.IntRange(1, 99)
     ),
+     '--windows-threshold': dict(
+        help='Globoal common windows count threshold (word-pairs below are filtered out)', default=1, type=click.IntRange(1, 99)
+    ),
     '--to-lower/--no-to-lower': dict(help='Lowercase words', default=True, is_flag=True),
     '--train-corpus-folder': dict(help='Use train corpus in folder if exists', default=None, type=click.STRING),
     '--update-every': dict(

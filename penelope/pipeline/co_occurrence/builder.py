@@ -7,7 +7,7 @@ import scipy
 import scipy.sparse as sp
 from loguru import logger
 
-from penelope.co_occurrence import WindowCountDTM, VectorizedTTM, VectorizeType
+from penelope.co_occurrence import VectorizedTTM, VectorizeType, WindowCountDTM
 from penelope.corpus import Token2Id, VectorizedCorpus
 from penelope.corpus.dtm import WORD_PAIR_DELIMITER
 from penelope.type_alias import DocumentIndex

@@ -29,6 +29,7 @@ except ImportError:
 @option2('--filename-pattern')
 @option2('--concept')
 @option2('--ignore-padding')
+@option2('--windows-threshold')
 @option2('--ignore-concept')
 @option2('--context-width')
 @option2('--compute-processes')
@@ -62,6 +63,7 @@ def main(
     filename_pattern: str = None,
     concept: List[str] = None,
     ignore_concept: bool = False,
+    windows_threshold: int = 1,
     ignore_padding: bool = False,
     context_width: int = None,
     compute_processes: int = None,
@@ -103,6 +105,7 @@ def process_co_ocurrence(
     ignore_concept: bool = False,
     ignore_padding: bool = False,
     context_width: int = None,
+    windows_threshold: int = 1,
     compute_processes: int = None,
     compute_chunk_size: int = 10,
     partition_key: Sequence[str] = None,
@@ -194,6 +197,7 @@ def process_co_ocurrence(
                 partition_keys=partition_key,
                 processes=compute_processes,
                 chunksize=compute_chunk_size,
+                windows_threshold=windows_threshold,
             ),
             enable_checkpoint=enable_checkpoint,
             force_checkpoint=force_checkpoint,

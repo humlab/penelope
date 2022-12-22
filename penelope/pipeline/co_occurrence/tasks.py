@@ -10,9 +10,9 @@ from penelope.co_occurrence import (
     Bundle,
     ContextOpts,
     CoOccurrenceError,
-    WindowCountDTM,
     VectorizedTTM,
     VectorizeType,
+    WindowCountDTM,
     windows_to_ttm,
 )
 from penelope.co_occurrence.windows import generate_windows
@@ -214,7 +214,6 @@ class ToCorpusCoOccurrenceDTM(ITask):
     """
 
     context_opts: ContextOpts = None
-    tf_threshold: int = 1
 
     def __post_init__(self):
         self.in_content_type = ContentType.CO_OCCURRENCE_DTM_DOCUMENT
@@ -268,7 +267,9 @@ class ToCorpusCoOccurrenceDTM(ITask):
             else None
         )
 
-        corpus: VectorizedCorpus = normal_builder.corpus.remember(window_counts=self.get_window_count_dtm(normal_builder))
+        corpus: VectorizedCorpus = normal_builder.corpus.remember(
+            window_counts=self.get_window_count_dtm(normal_builder)
+        )
 
         bundle: Bundle = Bundle(
             corpus=corpus,
@@ -279,8 +280,8 @@ class ToCorpusCoOccurrenceDTM(ITask):
             vocabs_mapping=token_ids_2_pair_id,
         )
 
-        if self.tf_threshold > 0:
-            bundle.compress(tf_threshold=self.tf_threshold)
+        if self.context_opts.windows_threshold > 0:
+            bundle.compress(tf_threshold=self.context_opts.windows_threshold)
 
         payload: DocumentPayload = DocumentPayload(content=bundle)
 
