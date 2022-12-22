@@ -203,7 +203,7 @@ class CoOccurrenceMixIn:
         if self.vocabs_mapping is None:
             raise ValueError("to_HAL_cwr_keyness: payload `vocabs_mapping` cannot be empty!")
 
-        document_window_counts: scipy.sparse.spmatrix = self.window_counts.document_term_window_counts
+        document_window_counts: scipy.sparse.spmatrix = self.window_counts.dtm_wc
 
         nw_x = document_window_counts
         nw_xy = self.data

@@ -82,7 +82,7 @@
 #         computed_window_counts[document_id] = ttm.term_window_counts
 
 #     shape = (len(computed_window_counts), len(token2id))
-#     window_counts_matrix = to_token_window_counts_matrix(computed_window_counts, shape)
+#     dtm_wc = to_token_window_counts_matrix(computed_window_counts, shape)
 
 #     co_occurrences: pd.DataFrame = pd.concat(computed_data_frames, ignore_index=True)[
 #         ['document_id', 'w1_id', 'w2_id', 'value']
@@ -98,7 +98,7 @@
 #         token2id=token2id,
 #         document_index=document_index,
 #         window_counts=TokenWindowCountMatrix(
-#             document_term_window_counts=window_counts_matrix,
+#             dtm_wc=dtm_wc,
 #         ),
 #     )
 

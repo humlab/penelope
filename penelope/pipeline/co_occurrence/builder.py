@@ -104,10 +104,8 @@ class CoOccurrenceCorpusBuilder:
         return corpus
 
     def compile_window_count_matrix(self) -> TokenWindowCountMatrix:
-        window_count_matrix: sp.spmatrix = sp.coo_matrix(
-            (self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col))
-        ).tocsr()
-        matrix: TokenWindowCountMatrix = TokenWindowCountMatrix(document_term_window_counts=window_count_matrix)
+        dtm_wc: sp.spmatrix = sp.coo_matrix((self.dtw_counts_data, (self.dtw_counts_row, self.dtw_counts_col))).tocsr()
+        matrix: TokenWindowCountMatrix = TokenWindowCountMatrix(dtm_wc=dtm_wc)
         return matrix
 
     def ingest_pairs(self, payload: CoOccurrencePayload) -> "CoOccurrenceCorpusBuilder":
