@@ -153,20 +153,28 @@ class PipelineShortcutMixIn:
         tf_threshold: int = None,
         tf_keeps: Container[Union[int, str]] = None,
         close: bool = True,
+        to_lower: bool = True,
     ) -> pipelines.CorpusPipeline:
 
-        token_type: tasks.Vocabulary.TokenType = (
-            tasks.Vocabulary.TokenType.Lemma if lemmatize else tasks.Vocabulary.TokenType.Text
-        )
         return self.add(
             tasks.Vocabulary(
-                token_type=token_type,
+                token_type= self.encode_token_type(lemmatize, to_lower),
                 progress=progress,
                 tf_threshold=tf_threshold,
                 tf_keeps=tf_keeps,
                 close=close,
             )
         )
+
+    def encode_token_type(self, lemmatize, to_lower):
+
+        if lemmatize:
+            return tasks.Vocabulary.TokenType.Lemma
+
+        if to_lower:
+            return tasks.Vocabulary.TokenType.LowerText
+
+        return tasks.Vocabulary.TokenType.Text
 
     def filter_tagged_frame(
         self: pipelines.CorpusPipeline,

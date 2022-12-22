@@ -36,6 +36,13 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
             22,
         ),
+        (
+            tasks.Vocabulary.TokenType.LowerText,
+            IngestVocabType.Incremental,
+            'Inne i den väldiga Några ljuslågor fladdrade .',
+            ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
+            22,
+        ),
     ],
 )
 def test_id_tagged_frame_process_payload(

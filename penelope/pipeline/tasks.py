@@ -701,6 +701,7 @@ class Vocabulary(ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
+        LowerText = 3
 
     token2id: Token2Id = None
     token_type: Optional[TokenType] = None
@@ -769,7 +770,7 @@ class Vocabulary(ITask):
 
         return (
             (x.lower() for x in payload.content[self.target])
-            if self.token_type == Vocabulary.TokenType.Lemma
+            if self.token_type in (Vocabulary.TokenType.Lemma, Vocabulary.TokenType.LowerText)
             else payload.content[self.target]
         )
 
