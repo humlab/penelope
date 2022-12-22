@@ -21,7 +21,6 @@ def test_simple():
     input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
     corpus_config: pp.CorpusConfig = pp.CorpusConfig.load(config_filename)  # .folders(DATA_FOLDER)
 
-    tf_threshold: int = 2
     context_opts = ContextOpts(
         chunksize=10,
         concept=set(['träd']),
