@@ -34,9 +34,7 @@ def test_compress_bundle():
         concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False, windows_threshold=0
     )
 
-    bundle: Bundle = create_simple_bundle_by_pipeline(
-        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts
-    )
+    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts)
 
     assert bundle.token2id.data == {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
     assert (
