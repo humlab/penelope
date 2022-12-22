@@ -12,7 +12,7 @@
 # from .bundle import Bundle
 # from .convert import term_term_matrix_to_co_occurrences, to_token_window_counts_matrix
 # from .interface import ContextOpts, CoOccurrenceError
-# from .persistence import TokenWindowCountMatrix
+# from .persistence import WindowCountDTM
 # from .vectorize import windows_to_ttm, VectorizedTTM, VectorizeType
 # from .windows import generate_windows
 
@@ -97,7 +97,7 @@
 #         co_occurrences=co_occurrences,
 #         token2id=token2id,
 #         document_index=document_index,
-#         window_counts=TokenWindowCountMatrix(
+#         window_counts=WindowCountDTM(
 #             dtm_wc=dtm_wc,
 #         ),
 #     )

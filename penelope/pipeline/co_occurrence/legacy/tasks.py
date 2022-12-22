@@ -7,7 +7,7 @@
 #     ContextOpts,
 #     CoOccurrenceError,
 #     DocumentWindowsVectorizer,
-#     TokenWindowCountMatrix,
+#     WindowCountDTM,
 #     term_term_matrix_to_co_occurrences,
 # )
 # from penelope.co_occurrence.vectorize import VectorizedTTM, VectorizeType
@@ -128,7 +128,7 @@
 
 #         yield DocumentPayload(
 #             content=Bundle(
-#                 corpus=corpus.remember(window_counts=TokenWindowCountMatrix()),
+#                 corpus=corpus.remember(window_counts=WindowCountDTM()),
 #                 co_occurrences=co_occurrences,
 #                 token2id=token2id,
 #                 document_index=self.document_index,
