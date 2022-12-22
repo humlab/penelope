@@ -181,7 +181,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
         .exhaust()
     )
 
-    assert len(pipe.payload.token2id) == 1478
+    assert len(pipe.payload.token2id) == 1343
     assert 'Cultural' in pipe.payload.token2id
     assert 'wars' in pipe.payload.token2id
 
