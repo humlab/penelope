@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from penelope.co_occurrence import Bundle, ContextOpts, TokenWindowCountMatrix
+from penelope.co_occurrence import Bundle, ContextOpts, WindowCountDTM
 from penelope.co_occurrence.windows import generate_windows
 from penelope.corpus.dtm.corpus import VectorizedCorpus
 from penelope.utility.utils import flatten
@@ -28,20 +28,20 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 # pylint: disable=protected-access,too-many-statements
 
 
-def test_compress_corpus():
+def test_compress_bundle():
 
     context_opts: ContextOpts = ContextOpts(
         concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False
     )
 
     bundle: Bundle = create_simple_bundle_by_pipeline(
-        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, compress=False
+        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, tf_threshold=0
     )
-    concept_corpus: VectorizedCorpus = bundle.concept_corpus
 
+    assert bundle.token2id.data == {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
     assert (
         (
-            concept_corpus.data.todense()
+            bundle.concept_corpus.data.todense()
             == np.matrix(
                 [
                     [0, 0, 0, 0, 0, 0, 5, 0, 1, 1, 0, 0, 0],
@@ -54,8 +54,128 @@ def test_compress_corpus():
         .all()
         .all()
     )
+    assert (
+        (
+            bundle.corpus.data.todense()
+            == np.matrix(
+                [
+                    [1, 2, 1, 1, 3, 1, 5, 1, 1, 2, 0, 0, 0],
+                    [2, 0, 0, 0, 0, 3, 3, 0, 1, 4, 2, 1, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 2, 3, 0, 1, 0, 3],
+                ],
+                dtype=np.int32,
+            )
+        )
+        .all()
+        .all()
+    )
+    assert len(bundle.co_occurrences) == 22
+    assert bundle.co_occurrences.loc[10].to_dict() == {
+        'document_id': 1,
+        'token_id': 0,
+        'value': 2,
+        'time_period': 2019,
+        'w1_id': 0,
+        'w2_id': 2,
+    }
 
-    _, ids_translation, keep_ids = concept_corpus.compress(tf_threshold=1, extra_keep_ids=[1], inplace=True)
+    assert bundle.token_ids_2_pair_id == {
+        (0, 2): 0,
+        (2, 3): 1,
+        (0, 3): 2,
+        (0, 4): 3,
+        (3, 4): 4,
+        (2, 4): 5,
+        (4, 5): 6,
+        (0, 6): 7,
+        (5, 6): 8,
+        (4, 6): 9,
+        (0, 5): 10,
+        (2, 6): 11,
+        (3, 6): 12,
+    }
+
+    assert bundle.corpus.token2id == bundle.concept_corpus.token2id
+
+    bundle.compress(tf_threshold=1)
+
+    assert bundle.token2id.data == {'*': 0, '__low-tf__': 1, 'c': 2, 'd': 3, 'e': 4}
+    assert bundle.corpus.token2id == {'c/d': 0, '*/e': 1, 'd/e': 2, 'c/e': 3, '*/d': 4}
+    assert bundle.concept_corpus.token2id == bundle.corpus.token2id
+
+    assert (
+        (
+            bundle.concept_corpus.data.todense()
+            == np.matrix(
+                [
+                    [5, 0, 1, 1, 0],
+                    [3, 0, 1, 1, 2],
+                    [0, 1, 3, 0, 1],
+                ],
+                dtype=np.int32,
+            )
+        )
+        .all()
+        .all()
+    )
+    assert (
+        (
+            bundle.corpus.data.todense()
+            == np.matrix(
+                [
+                    [5, 1, 1, 2, 0],
+                    [3, 0, 1, 4, 2],
+                    [0, 2, 3, 0, 1],
+                ],
+                dtype=np.int32,
+            )
+        )
+        .all()
+        .all()
+    )
+    assert (
+        (
+            bundle.corpus.window_counts.dtm_wc.todense()
+            == np.matrix(
+                [
+                    [2, 0, 6, 3, 2],
+                    [2, 0, 5, 3, 3],
+                    [2, 0, 0, 2, 4],
+                ],
+                dtype=np.int32,
+            )
+        )
+        .all()
+        .all()
+    )
+    assert (
+        (
+            bundle.concept_corpus.window_counts.dtm_wc.todense()
+            == np.matrix(
+                [
+                    [0, 0, 3, 3, 1],
+                    [1, 0, 2, 3, 1],
+                    [1, 0, 0, 2, 2],
+                ],
+                dtype=np.int32,
+            )
+        )
+        .all()
+        .all()
+    )
+
+
+def test_compress_corpus():
+
+    context_opts: ContextOpts = ContextOpts(
+        concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False
+    )
+
+    bundle: Bundle = create_simple_bundle_by_pipeline(
+        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, tf_threshold=0
+    )
+
+    _, ids_translation, keep_ids = bundle.concept_corpus.compress(tf_threshold=1, extra_keep_ids=[1], inplace=True)
 
     assert (
         (
@@ -77,9 +197,7 @@ def test_step_by_step_compress_with_simple_corpus():
 
     context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1, ignore_padding=False)
 
-    bundle: Bundle = create_simple_bundle_by_pipeline(
-        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, compress=False
-    )
+    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts)
 
     token2id = dict(bundle.token2id.data)
     assert token2id == {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
@@ -293,7 +411,7 @@ def test_step_by_step_compress_with_simple_corpus():
 
     assert (
         (
-            corpus.window_counts.document_term_window_counts.todense()
+            corpus.window_counts.dtm_wc.todense()
             == np.matrix(
                 [
                     # *  -  a  b  c  d  e
@@ -311,14 +429,14 @@ def test_step_by_step_compress_with_simple_corpus():
     corpus.window_counts.slice(kept_token_ids, inplace=True)
 
     """Nothing is changed since all original tokens are kepts"""
-    assert corpus.window_counts.document_term_window_counts.shape == (3, 7)
+    assert corpus.window_counts.dtm_wc.shape == (3, 7)
 
     """Simulate removed token `b` """
-    wc: TokenWindowCountMatrix = corpus.window_counts.slice([x for x in kept_token_ids if x != 3], inplace=False)
+    wc: WindowCountDTM = corpus.window_counts.slice([x for x in kept_token_ids if x != 3], inplace=False)
 
     assert (
         (
-            wc.document_term_window_counts.todense()
+            wc.dtm_wc.todense()
             == np.matrix(
                 [
                     [2, 0, 2, 6, 3, 2],
@@ -332,12 +450,12 @@ def test_step_by_step_compress_with_simple_corpus():
         .all()
     )
 
-    wc: TokenWindowCountMatrix = corpus.window_counts
+    wc: WindowCountDTM = corpus.window_counts
 
-    wc: TokenWindowCountMatrix = concept_corpus.window_counts
+    wc: WindowCountDTM = concept_corpus.window_counts
     assert (
         (
-            wc.slice(kept_token_ids, inplace=False).document_term_window_counts.todense()
+            wc.slice(kept_token_ids, inplace=False).dtm_wc.todense()
             == np.matrix(
                 [
                     [0, 0, 0, 0, 3, 3, 1],
