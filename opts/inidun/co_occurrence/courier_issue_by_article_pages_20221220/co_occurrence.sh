@@ -28,14 +28,14 @@ function run()
 # # 7) concept "civilizations", ignore concept, adjectives, nouns, verbs, w5,  ft10, nolemma, only alpha:
 # # 8) concept "civilizations", ignore concept, adjectives, nouns, verbs, w11, ft10, nolemma, only alpha:
 
-# run "culture"       2 10
-# run "culture"       5 10
-# run "cultures"      2 10
-# run "cultures"      5 10
-# run "civilization"  2 10
-# run "civilization"  5 10
-run "civilizations" 2 10
-run "civilizations" 5 10
+run "culture"       2 10
+run "culture"       5 10
+run "cultures"      2 10
+run "cultures"      5 10
+run "civilization"  2 10
+run "civilization"  5 10
+# run "civilizations" 2 10
+# run "civilizations" 5 10
 
 
 # # Courier corpus (page)
