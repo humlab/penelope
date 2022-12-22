@@ -31,11 +31,11 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 def test_compress_bundle():
 
     context_opts: ContextOpts = ContextOpts(
-        concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False
+        concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False, windows_threshold=0
     )
 
     bundle: Bundle = create_simple_bundle_by_pipeline(
-        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, tf_threshold=0
+        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts
     )
 
     assert bundle.token2id.data == {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
@@ -168,18 +168,16 @@ def test_compress_bundle():
 def test_compress_corpus():
 
     context_opts: ContextOpts = ContextOpts(
-        concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False
+        concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False, windows_threshold=0
     )
 
-    bundle: Bundle = create_simple_bundle_by_pipeline(
-        data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts, tf_threshold=0
-    )
+    bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts)
 
     _, ids_translation, keep_ids = bundle.concept_corpus.compress(tf_threshold=1, extra_keep_ids=[1], inplace=True)
 
     assert (
         (
-            concept_corpus.data.todense()
+            bundle.concept_corpus.data.todense()
             == np.matrix(
                 [[0, 5, 0, 1, 1, 0], [0, 3, 0, 1, 1, 2], [0, 0, 1, 3, 0, 1]],
                 dtype=np.int32,
@@ -195,7 +193,9 @@ def test_compress_corpus():
 @pytest.mark.long_running
 def test_step_by_step_compress_with_simple_corpus():
 
-    context_opts: ContextOpts = ContextOpts(concept={'d'}, ignore_concept=False, context_width=1, ignore_padding=False)
+    context_opts: ContextOpts = ContextOpts(
+        concept={'d'}, ignore_concept=False, context_width=1, ignore_padding=False, windows_threshold=0
+    )
 
     bundle: Bundle = create_simple_bundle_by_pipeline(data=SIMPLE_CORPUS_ABCDE_3DOCS, context_opts=context_opts)
 

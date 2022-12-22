@@ -222,7 +222,6 @@ class ToCorpusCoOccurrenceDTM(ITask):
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("context_opts", self.context_opts)
-        self.pipeline.put("tf_threshold", self.tf_threshold)
         return self
 
     def process_stream(self) -> Iterable[DocumentPayload]:

@@ -174,6 +174,7 @@ def test_tasks_pool_tokens_to_ttm():
         ignore_padding=False,
         context_width=1,
         processes=None,
+        windows_threshold=0,
     )
     token2id[context_opts.pad] = len(token2id)
     concept_ids = {token2id[x] for x in context_opts.concept}

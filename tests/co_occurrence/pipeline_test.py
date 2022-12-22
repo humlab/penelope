@@ -30,7 +30,7 @@ def test_pipeline_to_co_occurrence_ingest_prohobited_if_vocabulary_exists():
             .load_corpus(tokenized_corpus)
             .vocabulary(lemmatize=False)
             .to_document_co_occurrence(context_opts=CONTEXT_OPTS)
-            .to_corpus_co_occurrence(context_opts=CONTEXT_OPTS, tf_threshold=1)
+            .to_corpus_co_occurrence(context_opts=CONTEXT_OPTS)
             .single()
             .content
         )
@@ -47,7 +47,7 @@ def test_pipeline_to_co_occurrence_can_create_new_vocabulary():
         .load_corpus(tokenized_corpus)
         .vocabulary(lemmatize=False)
         .to_document_co_occurrence(context_opts=CONTEXT_OPTS)
-        .to_corpus_co_occurrence(context_opts=CONTEXT_OPTS, tf_threshold=1)
+        .to_corpus_co_occurrence(context_opts=CONTEXT_OPTS)
         .single()
         .content
     )
@@ -165,7 +165,7 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
         .assert_on_exit(exit_test=verify_expected_vocabulary)
         .to_document_co_occurrence(context_opts=context_opts)
         .assert_on_payload(payload_test=verify_co_occurrence_document_TTM_payload)
-        .to_corpus_co_occurrence(context_opts=context_opts, tf_threshold=1)
+        .to_corpus_co_occurrence(context_opts=context_opts)
         .single()
         .content
     )

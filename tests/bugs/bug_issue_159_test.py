@@ -66,7 +66,6 @@ def test_simple():
         )
         .to_corpus_co_occurrence(
             context_opts=context_opts,
-            tf_threshold=tf_threshold,
         )
         .single()
         .content
@@ -127,7 +126,6 @@ def test_tranströmer():  # pylint: disable=non-ascii-name
         )
         .to_corpus_co_occurrence(
             context_opts=context_opts,
-            tf_threshold=tf_threshold,
         )
         .single()
         .content

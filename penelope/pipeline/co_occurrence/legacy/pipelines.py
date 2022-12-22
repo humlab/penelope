@@ -26,7 +26,6 @@
 #             .to_corpus_co_occurrence(
 #                 context_opts=context_opts,
 #                 transform_opts=transform_opts,
-#                 tf_threshold=tf_threshold,
 #             )
 #         )
 

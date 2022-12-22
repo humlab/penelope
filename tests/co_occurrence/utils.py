@@ -27,6 +27,7 @@ def create_keyness_test_bundle(
         ignore_padding=ignore_padding,
         context_width=context_width,
         processes=processes,
+        windows_threshold=0,
     )
     bundle: Bundle = create_simple_bundle_by_pipeline(data=data, context_opts=context_opts)
     return bundle
@@ -93,7 +94,6 @@ def create_simple_bundle_by_pipeline(
     context_opts: ContextOpts,
     tag: str = "TERRA",
     folder: str = None,
-    tf_threshold: int = 0,
 ):
     folder = folder or OUTPUT_FOLDER
     if folder.startswith('./tests') and folder != OUTPUT_FOLDER:
@@ -109,7 +109,7 @@ def create_simple_bundle_by_pipeline(
         .load_corpus(data)
         .vocabulary(lemmatize=False)
         .to_document_co_occurrence(context_opts=context_opts)
-        .to_corpus_co_occurrence(context_opts=context_opts, tf_threshold=tf_threshold)
+        .to_corpus_co_occurrence(context_opts=context_opts)
         .single()
         .content
     )
