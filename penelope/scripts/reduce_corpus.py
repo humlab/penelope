@@ -1,21 +1,25 @@
 import zipfile
+
 import click
 import pandas as pd
+
 import penelope.corpus.readers as pr
 import penelope.pipeline as pp
+
 
 @click.command()
 @click.argument('source_filename', type=click.STRING)
 @click.argument('config_filename', type=click.STRING)
 @click.argument('target_filename', type=click.STRING)
-@click.option('--reduce-key', type=click.STRING, default = 'year')
+@click.option('--reduce-key', type=click.STRING, default='year')
 def reduce_corpus(source_filename: str, config_filename: str, target_filename: str, reduce_key: str = 'year'):
     reduce_by_key(source_filename, config_filename, target_filename, reduce_key)
+
 
 def reduce_by_key(source_filename: str, config_filename: str, target_filename: str, reduce_key: str):
 
     corpus_config: pp.CorpusConfig = pp.CorpusConfig.load(config_filename)
-    reader_opts  = corpus_config.text_reader_opts
+    reader_opts = corpus_config.text_reader_opts
     reader: pr.TextReader = pr.TextReader(source_filename, reader_opts=reader_opts)
     di: pd.DataFrame = reader.document_index
 
@@ -41,7 +45,7 @@ def reduce_by_key(source_filename: str, config_filename: str, target_filename: s
 
             document_filename: str = f"{document_name}.txt"
 
-            document_str: str = '\n'.join(t for _,t in key_reader)
+            document_str: str = '\n'.join(t for _, t in key_reader)
 
             di_str += f"{i}\t{document_filename}\t{document_name}\t{key}\t{len(document_str.split())}\n"
 
@@ -49,9 +53,9 @@ def reduce_by_key(source_filename: str, config_filename: str, target_filename: s
 
         zf.writestr("document_index.csv", data=di_str)
 
-if __name__ == "__main__":
-    reduce_corpus()
 
+if __name__ == "__main__":
+    reduce_corpus()  # pylint: disable=no-value-for-parameter
 
     # from click.testing import CliRunner
 

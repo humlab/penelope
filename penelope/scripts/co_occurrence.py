@@ -1,5 +1,4 @@
 import os
-
 from typing import List, Optional, Sequence
 
 from loguru import logger
@@ -103,8 +102,10 @@ def main(
     except MissingOptionError as ex:
         print(ex)
 
+
 class MissingOptionError(Exception):
     ...
+
 
 def process_co_ocurrence(
     corpus_config: str = None,

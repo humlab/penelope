@@ -158,7 +158,7 @@ class PipelineShortcutMixIn:
 
         return self.add(
             tasks.Vocabulary(
-                token_type= self.encode_token_type(lemmatize, to_lower),
+                token_type=self.encode_token_type(lemmatize, to_lower),
                 progress=progress,
                 tf_threshold=tf_threshold,
                 tf_keeps=tf_keeps,
