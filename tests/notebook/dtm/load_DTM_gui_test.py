@@ -1,6 +1,6 @@
-from unittest import mock
+# from unittest import mock
 
-from penelope.corpus import VectorizedCorpus, load_corpus
+# from penelope.corpus import VectorizedCorpus, load_corpus
 from penelope.notebook.dtm import LoadGUI, create_load_gui
 
 # pylint: disable=protected-access
@@ -30,6 +30,7 @@ def test_create_gui():
         corpus_folder='./tests/test_data',
         loaded_callback=dummy_callback,
     )
+    assert gui is not None
 
 
 # def test_gui_load_bug():
