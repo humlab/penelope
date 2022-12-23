@@ -194,7 +194,7 @@ class BundleTrendsData(TrendsDataBase):
                 tf_threshold=self.tf_threshold,
                 keyness_source=self.keyness_source,
                 keyness=opts.keyness,
-                pivot_column_name=self.category_column,
+                pivot_column_name=opts.temporal_key,
                 normalize=opts.normalize,
                 fill_gaps=opts.fill_gaps,
             )
