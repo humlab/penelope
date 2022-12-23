@@ -43,11 +43,8 @@ class LoadGUI:
     def _load_handler(self, _):
         try:
 
-            if not self.corpus_filename or not os.path.isfile(self.corpus_filename):
+            if not self.is_dtm_corpus(self.corpus_filename):
                 self.warn("👎 Please select a valid corpus file 👎")
-                return
-
-            if self._load_button.disabled:
                 return
 
             self.warn('Please wait')
@@ -69,6 +66,13 @@ class LoadGUI:
             self._load_button.disabled = False
             self._load_button.description = "Load"
 
+    def is_dtm_corpus(self, filename: str) -> bool:
+        if not filename or not os.path.isfile(self.corpus_filename):
+            return False
+        if not os.path.splitext(filename)[1] in [".pickle", ".npz"]:
+            return False
+        return True
+
     def file_select_callback(self, _: ipyfilechooser.FileChooser):
         self._load_button.disabled = False
         self.alert('✔')
@@ -77,7 +81,7 @@ class LoadGUI:
         self._corpus_filename: ipyfilechooser.FileChooser = ipyfilechooser.FileChooser(
             path=self.default_corpus_folder or default_data_folder(),
             filter_pattern=self.filename_pattern,
-            title='<b>Corpus file (*vectorizer_data.pickle)</b>',
+            title=f'<b>Corpus file ({self.filename_pattern} pickle or npz)</b>',
             show_hidden=False,
             select_default=True,
             use_dir_icons=True,
@@ -121,7 +125,7 @@ def create_load_gui(
     loaded_callback: Callable[[VectorizedCorpus, str, str], None],
 ):
 
-    filename_pattern = '*_vectorizer_data.pickle'
+    filename_pattern = '*_vector_data.npz'
 
     # @view.capture(clear_output=True)
     def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:

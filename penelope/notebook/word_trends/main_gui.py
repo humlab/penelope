@@ -57,7 +57,7 @@ def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.Corpus
     LAST_ARGS = args
     LAST_CORPUS_CONFIG = corpus_config
     if args.dry_run:
-        print(args.command_line("vectorize_corpus"))
+        print(args.command_line("PYTHONPATH=. python ./penelope/scripts/dtm/vectorize.py"))
         return None
     corpus: VectorizedCorpus = workflow.compute(args=args, corpus_config=corpus_config)
     return corpus
