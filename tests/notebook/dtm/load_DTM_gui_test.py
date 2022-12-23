@@ -32,39 +32,37 @@ def test_create_gui():
     )
 
 
+# def test_gui_load_bug():
 
+#     source_filename = (
+#         "/data/inidun/courier/word_trends/Courier_allpos_nolemma_tf1/Courier_allpos_nolemma_tf1_vector_data.npz"
+#     )
 
-def test_gui_load_bug():
+#     def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:
 
-    source_filename = (
-        "/data/inidun/courier/word_trends/Courier_allpos_nolemma_tf1/Courier_allpos_nolemma_tf1_vector_data.npz"
-    )
+#         corpus: VectorizedCorpus = load_corpus(
+#             folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
+#         )
 
-    def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:
+#         return corpus
 
-        corpus: VectorizedCorpus = load_corpus(
-            folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
-        )
+#     loaded_corpus_callback = mock.MagicMock()
 
-        return corpus
+#     with mock.patch('penelope.notebook.dtm.LoadGUI.corpus_filename', new_callable=mock.PropertyMock) as mocked_method:
+#         mocked_method.return_value = source_filename
 
-    loaded_corpus_callback = mock.MagicMock()
+#         gui = LoadGUI(
+#             default_corpus_folder='/data/inidun/courier/word_trends',
+#             filename_pattern='*_vector_data.npz',
+#             load_callback=load_corpus_callback,
+#             done_callback=loaded_corpus_callback,
+#         )
 
-    with mock.patch('penelope.notebook.dtm.LoadGUI.corpus_filename', new_callable=mock.PropertyMock) as mocked_method:
-        mocked_method.return_value = source_filename
+#         gui.setup()
+#         gui.layout()
 
-        gui = LoadGUI(
-            default_corpus_folder='/data/inidun/courier/word_trends',
-            filename_pattern='*_vector_data.npz',
-            load_callback=load_corpus_callback,
-            done_callback=loaded_corpus_callback,
-        )
+#         assert gui.corpus_filename == source_filename
 
-        gui.setup()
-        gui.layout()
+#         gui._load_handler({})
 
-        assert gui.corpus_filename == source_filename
-
-        gui._load_handler({})
-
-        assert loaded_corpus_callback.called
+#         assert loaded_corpus_callback.called
