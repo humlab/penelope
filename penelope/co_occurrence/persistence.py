@@ -342,6 +342,9 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     else:
         folder, tag = to_folder_and_tag(filename)
 
+    if not os.path.isfile(filename):
+        raise FileNotFoundError(filename)
+
     options: dict = load_options(filename) or VectorizedCorpus.load_options(folder=folder, tag=tag)
     vocabs_mapping: Optional[Mapping[Tuple[int, int], int]] = load_vocabs_mapping(folder=folder, tag=tag)
 
