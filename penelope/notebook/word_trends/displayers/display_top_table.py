@@ -276,7 +276,7 @@ class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
         try:
             corpus: VectorizedCorpus = self.bundle.keyness_transform(
                 opts=ComputeKeynessOpts(
-                    period_pivot=self.temporal_key,
+                    temporal_pivot=self.temporal_key,
                     keyness=self.keyness,
                     keyness_source=self.keyness_source,
                     fill_gaps=False,

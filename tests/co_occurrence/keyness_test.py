@@ -274,14 +274,14 @@ def test_step_by_step_tfidf_keyness_transform():
 
         corpus = corpus.tf_idf()
         corpus = corpus.group_by_time_period_optimized(
-            time_period_specifier=opts.period_pivot,
+            time_period_specifier=opts.temporal_pivot,
             target_column_name=opts.pivot_column_name,
             fill_gaps=opts.fill_gaps,
         )
 
         concept_corpus = concept_corpus.tf_idf()
         concept_corpus = concept_corpus.group_by_time_period_optimized(
-            time_period_specifier=opts.period_pivot,
+            time_period_specifier=opts.temporal_pivot,
             target_column_name=opts.pivot_column_name,
             fill_gaps=opts.fill_gaps,
         )
@@ -341,7 +341,7 @@ def test_keyness_transform_corpus(tag: str, keyness_source: KeynessMetricSource,
     folder: str = f'./tests/test_data/{tag}'
     bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
     opts: ComputeKeynessOpts = ComputeKeynessOpts(
-        period_pivot="year",
+        temporal_pivot="year",
         keyness_source=keyness_source,
         keyness=keyness,
         tf_threshold=1,
@@ -364,7 +364,7 @@ def test_keyness_transform_corpus2(tag: str, keyness_source: KeynessMetricSource
     folder: str = f'./tests/test_data/{tag}'
     bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)
     opts: ComputeKeynessOpts = ComputeKeynessOpts(
-        period_pivot="year",
+        temporal_pivot="year",
         keyness_source=keyness_source,
         keyness=keyness,
         tf_threshold=10,

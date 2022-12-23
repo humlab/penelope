@@ -451,7 +451,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
     def compute_opts(self) -> ComputeKeynessOpts:
         return ComputeKeynessOpts(
-            period_pivot=self.pivot,
+            temporal_pivot=self.pivot,
             keyness_source=self.keyness_source,
             keyness=self.keyness,
             tf_threshold=self.global_threshold,

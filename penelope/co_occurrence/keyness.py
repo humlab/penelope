@@ -13,7 +13,7 @@ class ComputeKeynessOpts:
 
     keyness_source: KeynessMetricSource
     keyness: KeynessMetric
-    period_pivot: str
+    temporal_pivot: str
     pivot_column_name: str
     normalize: bool = False
     fill_gaps: bool = False
@@ -31,7 +31,7 @@ def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, t
         pass
 
     corpus = corpus.group_by_time_period_optimized(
-        time_period_specifier=opts.period_pivot,
+        time_period_specifier=opts.temporal_pivot,
         target_column_name=opts.pivot_column_name,
         fill_gaps=opts.fill_gaps,
     )
@@ -73,8 +73,8 @@ def compute_weighed_corpus_keyness(
         VectorizedCorpus: [description]
     """
 
-    if opts.period_pivot not in ["year", "lustrum", "decade"]:
-        raise ValueError(f"illegal time period {opts.period_pivot}")
+    if opts.temporal_pivot not in ["year", "lustrum", "decade"]:
+        raise ValueError(f"illegal time period {opts.temporal_pivot}")
 
     if opts.keyness_source in (KeynessMetricSource.Concept, KeynessMetricSource.Weighed):
         if concept_corpus is None:
