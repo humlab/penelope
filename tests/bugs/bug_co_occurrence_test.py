@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from penelope import co_occurrence
