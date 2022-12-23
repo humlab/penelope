@@ -39,7 +39,7 @@ class TrendsBaseGUI(abc.ABC):
         self.trends_data: TrendsData = None
         self.display_opts: dict = dict(width=1000, height=600)
         self._tab: w.Tab = w.Tab(layout={'width': '80%'})
-        self._picker: w.SelectMultiple = w.SelectMultiple(
+        self._words_picker: w.SelectMultiple = w.SelectMultiple(
             description="", options=[], value=[], rows=20, layout={'width': '180px'}
         )
         self._normalize: w.ToggleButton = w.ToggleButton(
@@ -55,12 +55,12 @@ class TrendsBaseGUI(abc.ABC):
         self._widgets_placeholder: w.VBox = w.VBox()
         self._header_placeholder: w.HBox = w.HBox()
         self._sidebar_placeholder: w.VBox = w.VBox(children=[])
-        self._sidebar_ctrls: List[w.CoreWidget] = [w.VBox([w.HTML("<b>Matched words</b>"), self._picker])]
+        self._sidebar_ctrls: List[w.CoreWidget] = [w.VBox([w.HTML("<b>Matched words</b>"), self._words_picker])]
         self._smooth: w.ToggleButton = w.ToggleButton(
             description="Smooth", icon='check', value=False, layout=BUTTON_LAYOUT
         )
         self._auto_compute: w.ToggleButton = w.ToggleButton(
-            description="auto", icon='check', value=True, layout=BUTTON_LAYOUT
+            description="auto", icon='', value=False, disabled=True, layout=BUTTON_LAYOUT
         )
         self._temporal_key: w.Dropdown = w.Dropdown(
             options=['year', 'lustrum', 'decade'],
@@ -70,7 +70,7 @@ class TrendsBaseGUI(abc.ABC):
             layout=w.Layout(width='75px'),
         )
         self._alert: w.HTML = w.HTML()
-        self._words: w.Textarea = w.Textarea(
+        self._words_to_find: w.Textarea = w.Textarea(
             description="",
             rows=1,
             value="",
@@ -78,7 +78,7 @@ class TrendsBaseGUI(abc.ABC):
             layout=w.Layout(width='740px'),
             continuous_update=False,
         )
-        self._top_count: w.BoundedIntText = w.BoundedIntText(
+        self._top_words_count: w.BoundedIntText = w.BoundedIntText(
             value=n_top_count,
             min=3,
             max=100000,
@@ -88,7 +88,7 @@ class TrendsBaseGUI(abc.ABC):
             layout={'width': '180px'},
         )
         self._compute: w.Button = w.Button(
-            description="Compute", button_style='success', disabled=True, layout=BUTTON_LAYOUT
+            description="Compute", button_style='success', disabled=False, layout=BUTTON_LAYOUT
         )
         self._displayers: Sequence[ITrendDisplayer] = []
 
@@ -142,10 +142,6 @@ class TrendsBaseGUI(abc.ABC):
             self.buzy(False)
 
     def display(self, *, trends_data: TrendsData):
-        # OMG WTF!???
-        # if self._picker is not None:
-        #     self._picker.values = []
-        #     self._picker.options = []
         self.plot(trends_data=trends_data)
 
     def extract(self) -> Sequence[pd.DataFrame]:  # pylint: disable=unused-argument
@@ -197,7 +193,6 @@ class TrendsBaseGUI(abc.ABC):
                     [
                         w.VBox([w.HTML("<b>Keyness</b>"), self._keyness]),
                         self._placeholder,
-                        w.VBox([w.HTML("<b>Top count</b>"), self._top_count]),
                         w.VBox([w.HTML("<b>Grouping</b>"), self._temporal_key]),
                         self._widgets_placeholder,
                         w.VBox([self._normalize, self._smooth]),
@@ -208,7 +203,10 @@ class TrendsBaseGUI(abc.ABC):
                 ),
                 w.HBox(
                     [
-                        w.VBox([w.HTML("<b>Words to find</b> (press <b>tab</b> to start search)"), self._words]),
+                        w.VBox(
+                            [w.HTML("<b>Words to find</b> (press <b>tab</b> to start search)"), self._words_to_find]
+                        ),
+                        w.VBox([w.HTML("<b>Top count</b>"), self._top_words_count]),
                     ],
                     layout={'width': '99%'},
                 ),
@@ -234,18 +232,18 @@ class TrendsBaseGUI(abc.ABC):
         self._compute.disabled = value
         self._smooth.disabled = value
         self._normalize.disabled = value
-        self._words.disabled = value
+        self._words_to_find.disabled = value
         self._keyness.disabled = value
 
     def observe(self, value: bool, **kwargs):  # pylint: disable=unused-argument
         """Register or unregisters widget event handlers"""
         if hasattr(super(), "observe"):
             getattr(super(), "observe")(value=value, **kwargs)
-        wu.register_observer(self._words, handler=self._update_picker_handler, value=value, names='value')
+        wu.register_observer(self._words_to_find, handler=self._update_picker_handler, value=value, names='value')
         wu.register_observer(self._tab, handler=self._plot_handler, value=value, names='selected_index')
-        wu.register_observer(self._picker, handler=self._plot_handler, value=value, names='value')
+        wu.register_observer(self._words_picker, handler=self._plot_handler, value=value, names='value')
         wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=value, names='value')
-        for ctrl in [self._smooth, self._normalize, self._keyness, self._top_count, self._temporal_key]:
+        for ctrl in [self._smooth, self._normalize, self._keyness, self._temporal_key]:
             wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
 
     def _transform_handler(self, *_):
@@ -258,20 +256,22 @@ class TrendsBaseGUI(abc.ABC):
         self.plot()
 
     def _update_picker_handler(self, *_):
+        self.update_picker()
 
+    def update_picker(self):
         self.observe(False)
         _words = self.trends_data.find_words(self.options)
-        _values = [w for w in self._picker.value if w in _words]
+        _values = [w for w in self._words_picker.value if w in _words]
 
-        self._picker.value = []
-        self._picker.options = _words
-        self._picker.value = _values
+        self._words_picker.value = []
+        self._words_picker.options = _words
+        self._words_picker.value = _values
 
         if len(_words) == 0:
             self.alert("😫 Found no matching words!")
         else:
             self.alert(
-                f"✔ Displaying {len(_words)} matching tokens. {'' if len(_words) < self.top_count else ' (result truncated)'}"
+                f"✔ Displaying {len(_words)} matching tokens. {'' if len(_words) < self.top_words_count else ' (result truncated)'}"
             )
         self.observe(True)
 
@@ -304,11 +304,11 @@ class TrendsBaseGUI(abc.ABC):
 
     @property
     def words_or_regexp(self):
-        return ' '.join(self._words.value.split()).split()
+        return ' '.join(self._words_to_find.value.split()).split()
 
     @property
     def picked_words(self) -> Sequence[int]:
-        return self._picker.value
+        return self._words_picker.value
 
     @property
     def picked_indices(self) -> Sequence[int]:
@@ -334,8 +334,8 @@ class TrendsBaseGUI(abc.ABC):
         return self._temporal_key.value
 
     @property
-    def top_count(self) -> int:
-        return self._top_count.value
+    def top_words_count(self) -> int:
+        return self._top_words_count.value
 
     @property
     def options(self) -> TrendsComputeOpts:
@@ -344,7 +344,7 @@ class TrendsBaseGUI(abc.ABC):
             smooth=self.smooth,
             keyness=self.keyness,
             temporal_key=self.temporal_key,
-            top_count=self.top_count,
+            top_count=self.top_words_count,
             words=self.words_or_regexp,
             descending=True,
         )

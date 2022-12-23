@@ -190,11 +190,11 @@ class BundleTrendsData(TrendsDataBase):
 
         transformed_corpus: pc.VectorizedCorpus = self.bundle.keyness_transform(
             opts=ComputeKeynessOpts(
-                period_pivot=opts.temporal_key,
+                temporal_pivot=opts.temporal_key,
                 tf_threshold=self.tf_threshold,
                 keyness_source=self.keyness_source,
                 keyness=opts.keyness,
-                pivot_column_name=self.category_column,
+                pivot_column_name=opts.temporal_key,
                 normalize=opts.normalize,
                 fill_gaps=opts.fill_gaps,
             )

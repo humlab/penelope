@@ -12,8 +12,8 @@ from penelope import utility as pu
 from ..document_index import (
     KNOWN_TIME_PERIODS,
     DocumentIndexHelper,
-    TimePeriodSpecifier,
-    create_time_period_categorizer,
+    TemporalKeySpecifier,
+    create_temporal_key_categorizer,
 )
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol, VectorizedCorpusError
 
@@ -102,19 +102,19 @@ class GroupByMixIn:
         )
         return corpus
 
-    def group_by_time_period(
+    def group_by_temporal_key(
         self: IVectorizedCorpusProtocol,
         *,
-        time_period_specifier: TimePeriodSpecifier,
+        temporal_key_specifier: TemporalKeySpecifier,
         aggregate: str = 'sum',
         fill_gaps: bool = False,
         target_column_name: str = 'time_period',
     ) -> IVectorizedCorpus:
-        """Groups corpus and index by new column create accordning to `time_period_specifier`.
+        """Groups corpus and index by new column create accordning to `temporal_key_specifier`.
 
         Args:
             self (IVectorizedCorpusProtocol): Vectorized corpus
-            time_period_specifier (TimePeriodSpecifier): Specifies construction of pivot_column (categorizer)
+            temporal_key_specifier (TimePeriodSpecifier): Specifies construction of pivot_column (categorizer)
             aggregate (str, optional): Aggregate function. Defaults to 'sum'.
             fill_gaps (bool, optional): Defaults to False.
 
@@ -122,7 +122,7 @@ class GroupByMixIn:
             IVectorizedCorpus: [description]
         """
 
-        if time_period_specifier == 'year':
+        if temporal_key_specifier == 'year':
             return self.group_by_year(
                 aggregate=aggregate,
                 fill_gaps=fill_gaps,
@@ -130,37 +130,37 @@ class GroupByMixIn:
             )
 
         self.document_index[target_column_name] = self.document_index.year.apply(
-            create_time_period_categorizer(time_period_specifier)
+            create_temporal_key_categorizer(temporal_key_specifier)
         )
 
         corpus = self.group_by_pivot_column(
             pivot_column_name=target_column_name,
             aggregate=aggregate,
             fill_gaps=fill_gaps,
-            fill_steps=KNOWN_TIME_PERIODS.get(time_period_specifier, 1),
+            fill_steps=KNOWN_TIME_PERIODS.get(temporal_key_specifier, 1),
             target_column_name=target_column_name,
         )
 
         return corpus
 
-    def group_by_time_period_optimized(
+    def group_by_temporal_key_optimized(
         self: IVectorizedCorpusProtocol,
-        time_period_specifier: Union[str, dict],
+        temporal_key_specifier: Union[str, dict],
         aggregate: str = 'sum',
         fill_gaps: bool = False,
         target_column_name: str = 'time_period',
     ) -> IVectorizedCorpus:
-        """Groups corpus by specified time_period_specifier.
+        """Groups corpus by specified temporal_key_specifier.
         Uses scipy sparse lil format during construction.
         Args:
-            time_period_specifier (Union[str, dict]): [description]
+            temporal_key_specifier (Union[str, dict]): [description]
             aggregate (str, optional): [description]. Defaults to 'sum'.
 
         Returns:
             IVectorizedCorpus: grouped corpus
         """
 
-        if time_period_specifier == 'year':
+        if temporal_key_specifier == 'year':
             return self.group_by_year(
                 aggregate=aggregate,
                 fill_gaps=fill_gaps,
@@ -168,10 +168,10 @@ class GroupByMixIn:
             )
 
         if fill_gaps:
-            raise NotImplementedError("group_by_time_period_optimized: fill gaps when specifier not year")
+            raise NotImplementedError("group_by_temporal_key_optimized: fill gaps when specifier not year")
 
-        document_index, category_indices = DocumentIndexHelper(self.document_index).group_by_time_period(
-            time_period_specifier=time_period_specifier,
+        document_index, category_indices = DocumentIndexHelper(self.document_index).group_by_temporal_key(
+            temporal_key_specifier=temporal_key_specifier,
             target_column_name=target_column_name,
         )
 
@@ -282,7 +282,7 @@ class GroupByMixIn:
         fdi: pd.DataFrame = di if not pivot_keys or len(filter_opts or []) == 0 else di[filter_opts.mask(di)]
 
         if temporal_key not in fdi.columns:
-            fdi[temporal_key] = fdi['year'].apply(create_time_period_categorizer(temporal_key))
+            fdi[temporal_key] = fdi['year'].apply(create_temporal_key_categorizer(temporal_key))
 
         aggs: dict = _document_index_aggregates(fdi, [temporal_key] + pivot_keys)
 

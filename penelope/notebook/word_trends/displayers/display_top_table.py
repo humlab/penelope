@@ -93,8 +93,8 @@ class TopTokensDisplayer(ITrendDisplayer):
     def transform(self) -> VectorizedCorpus:
         self.set_buzy(True, "⌛ Preparing data...")
         try:
-            corpus = self.corpus.group_by_time_period(
-                time_period_specifier=self.temporal_key, target_column_name=self.category_name
+            corpus = self.corpus.group_by_temporal_key(
+                temporal_key_specifier=self.temporal_key, target_column_name=self.category_name
             )
             self.set_buzy(False, "✔")
         except Exception as ex:
@@ -276,7 +276,7 @@ class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
         try:
             corpus: VectorizedCorpus = self.bundle.keyness_transform(
                 opts=ComputeKeynessOpts(
-                    period_pivot=self.temporal_key,
+                    temporal_pivot=self.temporal_key,
                     keyness=self.keyness,
                     keyness_source=self.keyness_source,
                     fill_gaps=False,

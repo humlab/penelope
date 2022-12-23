@@ -24,7 +24,7 @@ def compute():
         keyness=KeynessMetric.LLR,
         tf_threshold=1,
         pivot_column_name="time_period",
-        period_pivot="decade",
+        temporal_pivot="decade",
         fill_gaps=False,
         normalize=False,
     )

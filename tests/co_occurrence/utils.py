@@ -39,7 +39,7 @@ def create_keyness_opts(
 ) -> ComputeKeynessOpts:
     keyness_source: KeynessMetricSource = KeynessMetricSource.Weighed
     opts: ComputeKeynessOpts = ComputeKeynessOpts(
-        period_pivot="year",
+        temporal_pivot="year",
         keyness_source=keyness_source,
         keyness=keyness,
         tf_threshold=tf_threshold,
