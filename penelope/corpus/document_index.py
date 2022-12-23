@@ -18,7 +18,7 @@ from penelope.utility import (
     list_of_dicts_to_dict_of_lists,
     probe_extension,
     strip_path_and_extension,
-    strip_paths
+    strip_paths,
 )
 
 if TYPE_CHECKING:
