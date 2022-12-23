@@ -93,8 +93,8 @@ class TopTokensDisplayer(ITrendDisplayer):
     def transform(self) -> VectorizedCorpus:
         self.set_buzy(True, "⌛ Preparing data...")
         try:
-            corpus = self.corpus.group_by_time_period(
-                time_period_specifier=self.temporal_key, target_column_name=self.category_name
+            corpus = self.corpus.group_by_temporal_key(
+                temporal_key_specifier=self.temporal_key, target_column_name=self.category_name
             )
             self.set_buzy(False, "✔")
         except Exception as ex:

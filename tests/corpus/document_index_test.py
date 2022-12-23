@@ -239,16 +239,16 @@ tran_2029_02_test.txt;2029;2;tran_2029_02_test;8;Nemolus;12
 def test_group_by_time_period_aggregates_n_documents():
 
     index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX3), sep=';')
-    yearly_document_index, _ = DocumentIndexHelper(index).group_by_time_period(
-        time_period_specifier='year', source_column_name='year'
+    yearly_document_index, _ = DocumentIndexHelper(index).group_by_temporal_key(
+        temporal_key_specifier='year', source_column_name='year'
     )
 
     assert yearly_document_index.time_period.tolist() == [2009, 2019, 2024, 2029]
     assert yearly_document_index.time_period.tolist() == [2009, 2019, 2024, 2029]
     assert yearly_document_index.n_documents.tolist() == [2, 3, 2, 2]
 
-    decade_document_index, _ = DocumentIndexHelper(yearly_document_index).group_by_time_period(
-        time_period_specifier='decade', source_column_name='time_period'
+    decade_document_index, _ = DocumentIndexHelper(yearly_document_index).group_by_temporal_key(
+        temporal_key_specifier='decade', source_column_name='time_period'
     )
 
     assert decade_document_index.time_period.tolist() == [2000, 2010, 2020]

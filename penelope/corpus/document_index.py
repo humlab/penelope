@@ -18,7 +18,7 @@ from penelope.utility import (
     list_of_dicts_to_dict_of_lists,
     probe_extension,
     strip_path_and_extension,
-    strip_paths,
+    strip_paths
 )
 
 if TYPE_CHECKING:
@@ -278,23 +278,23 @@ class DocumentIndexHelper:
     def _flattened_column_names(self, document_index: pd.DataFrame) -> list[str]:
         return [col if isinstance(col, str) else '_'.join(col) for col in document_index.columns]
 
-    def group_by_time_period(
+    def group_by_temporal_key(
         self,
         *,
-        time_period_specifier: Union[str, dict, Callable[[Any], Any]],
+        temporal_key_specifier: Union[str, dict, Callable[[Any], Any]],
         source_column_name: str = 'year',
         target_column_name: str = 'time_period',
         index_values: Union[str, List[T]] = None,
     ) -> Tuple[pd.DataFrame, dict]:
-        """Special case of of above, groups by 'year' based on `time_period_specifier`
+        """Special case of of above, groups by 'year' based on `temporal_key_specifier`
 
-            time_period_specifier specifies transform of source_column_name to target_column_name prior to grouping:
+            temporal_key_specifier specifies transform of source_column_name to target_column_name prior to grouping:
                - If Callable then it is applied on source_column_name
                - If literal 'decade' or 'lustrum' then source column is assumed to be a year
 
 
         Args:
-            time_period_specifier (Union[str, dict, Callable[[Any], Any]]): Group category specifier
+            temporal_key_specifier (Union[str, dict, Callable[[Any], Any]]): Group category specifier
             target_column_name (str, optional): Category column name. Defaults to 'time_period'.
 
         Returns:
@@ -304,8 +304,8 @@ class DocumentIndexHelper:
         """Add new column `target_column_name`"""
         self._document_index[target_column_name] = (
             self._document_index[source_column_name]
-            if time_period_specifier == source_column_name
-            else self._document_index.year.apply(create_time_period_categorizer(time_period_specifier))
+            if temporal_key_specifier == source_column_name
+            else self._document_index.year.apply(create_temporal_key_categorizer(temporal_key_specifier))
         )
 
         """Store indices for documents in each group"""
@@ -385,7 +385,7 @@ class DocumentIndexHelper:
 
 KNOWN_TIME_PERIODS: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
 
-TimePeriodSpecifier = Union[str, dict, Callable[[Any], Any]]
+TemporalKeySpecifier = Union[str, dict, Callable[[Any], Any]]
 
 
 def get_document_id(document_index: DocumentIndex, document_name: str) -> int:
@@ -393,21 +393,21 @@ def get_document_id(document_index: DocumentIndex, document_name: str) -> int:
     return document_id
 
 
-def create_time_period_categorizer(time_period_specifier: TimePeriodSpecifier) -> Callable[[Any], Any]:
+def create_temporal_key_categorizer(temporal_key_specifier: TemporalKeySpecifier) -> Callable[[Any], Any]:
 
-    if callable(time_period_specifier):
-        return time_period_specifier
+    if callable(temporal_key_specifier):
+        return temporal_key_specifier
 
-    if isinstance(time_period_specifier, str):
+    if isinstance(temporal_key_specifier, str):
 
-        if time_period_specifier not in KNOWN_TIME_PERIODS:
-            raise ValueError(f"{time_period_specifier} is not a known period specifier")
+        if temporal_key_specifier not in KNOWN_TIME_PERIODS:
+            raise ValueError(f"{temporal_key_specifier} is not a known period specifier")
 
-        categorizer = lambda y: y - int(y % KNOWN_TIME_PERIODS[time_period_specifier])
+        categorizer = lambda y: y - int(y % KNOWN_TIME_PERIODS[temporal_key_specifier])
 
     else:
 
-        year_group_mapping = dict_of_key_values_inverted_to_dict_of_value_key(time_period_specifier)
+        year_group_mapping = dict_of_key_values_inverted_to_dict_of_value_key(temporal_key_specifier)
 
         categorizer = lambda x: year_group_mapping.get(x, np.nan)
 

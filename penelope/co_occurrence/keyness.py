@@ -30,8 +30,8 @@ def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, t
     elif opts.keyness == KeynessMetric.TF:
         pass
 
-    corpus = corpus.group_by_time_period_optimized(
-        time_period_specifier=opts.temporal_pivot,
+    corpus = corpus.group_by_temporal_key_optimized(
+        temporal_key_specifier=opts.temporal_pivot,
         target_column_name=opts.pivot_column_name,
         fill_gaps=opts.fill_gaps,
     )

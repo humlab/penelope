@@ -21,8 +21,8 @@ def create_bundle() -> Bundle:
 
 
 def create_helper(bundle: Bundle, period_specifier: str, pivot_key: str):
-    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier=period_specifier,
+    corpus: VectorizedCorpus = bundle.corpus.group_by_temporal_key_optimized(
+        temporal_key_specifier=period_specifier,
         target_column_name=pivot_key,
     )
 

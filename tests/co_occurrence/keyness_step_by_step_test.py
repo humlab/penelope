@@ -43,8 +43,8 @@ def test_step_by_step_llr_compute_corpus_keyness_alternative():
 
         with inline_code(source=keyness.compute_corpus_keyness):
 
-            corpus = corpus.group_by_time_period_optimized(
-                time_period_specifier=opts.temporal_pivot,
+            corpus = corpus.group_by_temporal_key_optimized(
+                temporal_key_specifier=opts.temporal_pivot,
                 target_column_name=pivot_key,
                 fill_gaps=opts.fill_gaps,
                 aggregate='sum',
@@ -116,8 +116,8 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
 
         with inline_code(source=keyness.compute_corpus_keyness):
 
-            corpus = corpus.group_by_time_period_optimized(
-                time_period_specifier=opts.temporal_pivot,
+            corpus = corpus.group_by_temporal_key_optimized(
+                temporal_key_specifier=opts.temporal_pivot,
                 target_column_name=pivot_key,
                 fill_gaps=opts.fill_gaps,
                 aggregate='sum',
@@ -207,8 +207,8 @@ def test_to_keyness():
     corpus: VectorizedCorpus = bundle.corpus
     token2id: Token2Id = bundle.token2id
 
-    corpus = corpus.group_by_time_period_optimized(
-        time_period_specifier=opts.temporal_pivot,
+    corpus = corpus.group_by_temporal_key_optimized(
+        temporal_key_specifier=opts.temporal_pivot,
         target_column_name=opts.pivot_column_name,
         fill_gaps=opts.fill_gaps,
         aggregate='sum',

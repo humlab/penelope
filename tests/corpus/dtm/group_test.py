@@ -29,8 +29,8 @@ def bundle() -> Bundle:
 def test_categorize_document_index(bundle: Bundle):
     corpus: VectorizedCorpus = bundle.corpus
     document_index: pd.DataFrame = bundle.corpus.document_index
-    document_index, category_indices = DocumentIndexHelper(document_index).group_by_time_period(
-        time_period_specifier='year',
+    document_index, category_indices = DocumentIndexHelper(document_index).group_by_temporal_key(
+        temporal_key_specifier='year',
     )
     assert category_indices == corpus.document_index.groupby("year").apply(lambda x: x.index.tolist()).to_dict()
     assert document_index is not None
@@ -38,8 +38,8 @@ def test_categorize_document_index(bundle: Bundle):
 
 def test_group_corpus_by_document_index(bundle: Bundle):
     category_column: str = 'category'
-    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier='year', aggregate='sum', target_column_name=category_column
+    corpus: VectorizedCorpus = bundle.corpus.group_by_temporal_key_optimized(
+        temporal_key_specifier='year', aggregate='sum', target_column_name=category_column
     )
 
     assert corpus is not None
@@ -47,16 +47,16 @@ def test_group_corpus_by_document_index(bundle: Bundle):
     assert len(corpus.document_index) == 5
     assert set(corpus.document_index.category.tolist()) == set([1945, 1958, 1978, 1997, 2017])
 
-    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier='lustrum', aggregate='sum', target_column_name=category_column
+    corpus: VectorizedCorpus = bundle.corpus.group_by_temporal_key_optimized(
+        temporal_key_specifier='lustrum', aggregate='sum', target_column_name=category_column
     )
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
     assert len(corpus.document_index) == 5
     assert set(corpus.document_index.category.tolist()) == set([1945, 1955, 1975, 1995, 2015])
 
-    corpus: VectorizedCorpus = bundle.corpus.group_by_time_period_optimized(
-        time_period_specifier='decade', aggregate='sum', target_column_name=category_column
+    corpus: VectorizedCorpus = bundle.corpus.group_by_temporal_key_optimized(
+        temporal_key_specifier='decade', aggregate='sum', target_column_name=category_column
     )
     assert corpus is not None
     assert corpus.data.shape[0] == len(corpus.document_index)
@@ -83,19 +83,19 @@ def test_group_by_year_category_aggregates_DTM_to_PTM():
     )
     corpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
 
-    grouped_corpus = corpus.group_by_time_period(time_period_specifier='year')
+    grouped_corpus = corpus.group_by_temporal_key(temporal_key_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_time_period(time_period_specifier='lustrum')
+    grouped_corpus = corpus.group_by_temporal_key(temporal_key_specifier='lustrum')
     expected_ytm = [[2, 1, 4, 1], [4, 5, 5, 0], [4, 4, 2, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_time_period(time_period_specifier='decade')
+    grouped_corpus = corpus.group_by_temporal_key(temporal_key_specifier='decade')
     expected_ytm = [[2, 1, 4, 1], [8, 9, 7, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_time_period(time_period_specifier='year', fill_gaps=True)
+    grouped_corpus = corpus.group_by_temporal_key(temporal_key_specifier='year', fill_gaps=True)
     expected_ytm = np.matrix(
         [
             [2, 1, 4, 1],
@@ -127,19 +127,19 @@ def test_group_by_time_period_aggregates_DTM_to_PTM():
     )
     corpus = VectorizedCorpus(bag_term_matrix, token2id=token2id, document_index=document_index)
 
-    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year')
+    grouped_corpus = corpus.group_by_temporal_key_optimized(temporal_key_specifier='year')
     expected_ytm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [4, 4, 2, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='lustrum')
+    grouped_corpus = corpus.group_by_temporal_key_optimized(temporal_key_specifier='lustrum')
     expected_ytm = [[2, 1, 4, 1], [4, 5, 5, 0], [4, 4, 2, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='decade')
+    grouped_corpus = corpus.group_by_temporal_key_optimized(temporal_key_specifier='decade')
     expected_ytm = [[2, 1, 4, 1], [8, 9, 7, 2]]
     assert np.allclose(expected_ytm, grouped_corpus.bag_term_matrix.todense())
 
-    grouped_corpus = corpus.group_by_time_period_optimized(time_period_specifier='year', fill_gaps=True)
+    grouped_corpus = corpus.group_by_temporal_key_optimized(temporal_key_specifier='year', fill_gaps=True)
     expected_ytm = np.matrix(
         [
             [2, 1, 4, 1],
