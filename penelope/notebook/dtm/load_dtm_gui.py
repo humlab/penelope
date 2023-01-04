@@ -39,6 +39,9 @@ class LoadGUI:
             disabled=True,
         )
 
+    def load(self):
+        self._load_handler({})
+
     @debug_view.capture(clear_output=True)
     def _load_handler(self, _):
         try:
