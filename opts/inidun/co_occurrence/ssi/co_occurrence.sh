@@ -1,8 +1,8 @@
 #!/bin/bash
 
 default_opts="./run-opts.yml"
-target_folder="./data/co_occurrence"
-tag_prefix="SSI"
+target_folder="./data"
+tag_prefix="SSI_nonregional"
 tag_suffix="nvadj_nolemma"
 
 function run()

@@ -12,7 +12,7 @@ filename_pattern: null
 force_checkpoint: false
 ignore_concept: true
 ignore_padding: true
-input_filename: /data/inidun/ssi/ssi_nonregional/legal_instrument_corpus_nonregional.zip
+input_filename: /data/inidun/ssi/corpus/legal_instrument_corpus_nonregional.zip
 keep_numerals: false
 keep_symbols: false
 lemmatize: false
@@ -20,7 +20,6 @@ max_word_length: null
 min_word_length: 1
 only_alphabetic: true
 only_any_alphanumeric: false
-# output_filename: ./data/inidun/ssi/SSI_culture_w7_ft1_nvadj_nolemma/SSI_culture_w7_ft1_nvadj_nolemma_co-occurrence.csv.zip
 partition_key: !!python/tuple
 - year
 phrase: !!python/tuple []
