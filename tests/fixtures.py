@@ -569,8 +569,8 @@ fladdrade	VB	|fladdra omkring:10|
 """
 
 
-def simple_corpus_with_pivot_keys():
-    corpus = VectorizedCorpus(
+def simple_corpus_with_pivot_keys() -> VectorizedCorpus:
+    corpus: VectorizedCorpus = VectorizedCorpus(
         bag_term_matrix=np.array(
             [
                 [2, 1, 4, 1],
