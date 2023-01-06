@@ -10,6 +10,7 @@ from loguru import logger
 
 from penelope import corpus as pc
 from penelope import utility as pu
+from penelope.plot import plot_multiline, plot_stacked_bar
 
 from ..mixins import DownloadMixIn, PivotKeysMixIn, PivotKeySpec
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
@@ -311,8 +312,8 @@ class BaseTokenCountGUI(DownloadMixIn):
 
             plot_data: pd.DataFrame = plot_data.set_index(self.temporal_key)
 
-            fx_lines = lambda: pp.plot_multiline(df=plot_data, smooth=False)  # FIXME: Fix Smooth!!
-            fx_bar = lambda: pp.plot_stacked_bar(df=plot_data)
+            fx_lines = lambda: plot_multiline(df=plot_data, smooth=False)  # FIXME: Fix Smooth!!
+            fx_bar = lambda: plot_stacked_bar(df=plot_data)
 
             # FIXME: Add option to plot several graphs?
             self._tab.display_content(0, what=table_data, clear=True)
