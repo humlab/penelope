@@ -106,7 +106,7 @@ def prepare_document_index(document_index: str, keep_columns: List[str]) -> pd.D
     return document_index
 
 
-class BaseDTMGUI(DownloadMixIn):
+class BaseTokenCountGUI(DownloadMixIn):
     """GUI component that displays token counts"""
 
     def __init__(self, *, default_folder: str, **defaults):
@@ -144,7 +144,7 @@ class BaseDTMGUI(DownloadMixIn):
         self._widgets_placeholder: HBox = HBox(children=[])
         self._sidebar_placeholder: HBox = HBox(children=[])
 
-    def setup(self, **kwargs) -> "BaseDTMGUI":
+    def setup(self, **kwargs) -> "BaseTokenCountGUI":
         self.observe(False)
         self._source_folder: FileChooserExt2 = FileChooserExt2(
             path=self.default_folder,
@@ -161,7 +161,7 @@ class BaseDTMGUI(DownloadMixIn):
             self._load()
         return self
 
-    def reset(self) -> "BaseDTMGUI":
+    def reset(self) -> "BaseTokenCountGUI":
         self.observe(False)
         self.document_index = None
         self.data = None
@@ -257,7 +257,7 @@ class BaseDTMGUI(DownloadMixIn):
             self.observe(True)
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def display(self) -> "BaseDTMGUI":
+    def display(self) -> "BaseTokenCountGUI":
         try:
             data: pd.DataFrame = self.compute()
             if self.document_index is None:
@@ -269,7 +269,7 @@ class BaseDTMGUI(DownloadMixIn):
         return self
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def load(self, source: Union[str, pd.DataFrame]) -> "BaseDTMGUI":
+    def load(self, source: Union[str, pd.DataFrame]) -> "BaseTokenCountGUI":
         self.document_index = (
             source if isinstance(source, pd.DataFrame) else pc.VectorizedCorpus.load_document_index(source)
         )
@@ -279,7 +279,7 @@ class BaseDTMGUI(DownloadMixIn):
         return self.PoS_tag_groups.index.tolist()
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def prepare(self) -> "BaseDTMGUI":
+    def prepare(self) -> "BaseTokenCountGUI":
         self.document_index = prepare_document_index(self.document_index, keep_columns=self.keep_columns())
         return self
 
@@ -334,7 +334,7 @@ class BaseDTMGUI(DownloadMixIn):
 
 
 # pylint: disable= useless-super-delegation
-class BasicDTMGUI(PivotKeysMixIn, BaseDTMGUI):
+class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
     def __init__(self, pivot_key_specs: List[PivotKeySpec] | Mapping[str, List[PivotKeySpec]] = None, **kwargs):
         super().__init__(pivot_key_specs, **kwargs)
 

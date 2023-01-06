@@ -220,3 +220,22 @@ def test_find_word_indices():
 
 def test_find_words():
     pass
+
+
+def test_trends_data_smooth():
+
+    corpus: VectorizedCorpus = simple_corpus_with_pivot_keys()
+    trends_data: TrendsData = TrendsData(corpus=corpus)
+    opts = dict(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')
+    token_id: int = trends_data.corpus.token2id['a']
+
+    trends_data.transform(TrendsComputeOpts(**opts, smooth=False))
+
+    trends: pd.DataFrame = trends_data.extract([token_id])
+
+    assert trends['a'].tolist() == [2, 2, 2, 4]
+
+    trends_data.transform(TrendsComputeOpts(**opts, smooth=True))
+    trends: pd.DataFrame = trends_data.extract([token_id])
+
+    assert trends['a'].tolist() == [2, 2, 2, 4]
