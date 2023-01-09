@@ -83,6 +83,8 @@ recommonmark = "*"
 Sphinx = "*"
 tomlkit = "*"
 
+[tool.poetry_bumpversion.file."penelope/__init__.py"]
+
 [tool.poetry.scripts]
 vectorize = "penelope.scripts.dtm.vectorize:main"
 vectorize-id = "penelope.scripts.dtm.vectorize_id:main"
