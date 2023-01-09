@@ -15,7 +15,6 @@ from penelope.plot import plot_multiline, plot_stacked_bar
 from ..mixins import DownloadMixIn, PivotKeysMixIn, PivotKeySpec
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
 from ..widgets_utils import register_observer
-from . import plot as pp
 
 TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
 

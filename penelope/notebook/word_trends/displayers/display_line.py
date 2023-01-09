@@ -7,7 +7,7 @@ import ipywidgets
 import pandas as pd
 from bokeh.io import push_notebook
 
-from penelope.notebook.utility import generate_colors, generate_temporal_ticks
+from penelope.plot.utility import generate_colors, generate_temporal_ticks
 
 from .interface import ITrendDisplayer
 

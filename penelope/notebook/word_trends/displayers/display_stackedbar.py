@@ -6,7 +6,8 @@ import bokeh.plotting as bp
 import pandas as pd
 from bokeh.io import show
 
-from ...utility import generate_colors
+from penelope.plot.utility import generate_colors
+
 from .interface import ITrendDisplayer
 
 
@@ -45,7 +46,6 @@ class StackedBarDisplayer(ITrendDisplayer):
         p.y_range.start = 0
         p.x_range.range_padding = 0.02
         p.xaxis.major_label_orientation = math.pi / 4
-        # p.xaxis.ticker = generate_temporal_ticks(plot_data[temporal_key])
         p.xgrid.grid_line_color = None
         # p.ygrid.grid_line_color = None
         p.axis.minor_tick_line_color = None
@@ -53,6 +53,7 @@ class StackedBarDisplayer(ITrendDisplayer):
         p.legend.location = "top_right"
         p.legend.orientation = "vertical"
         p.legend.background_fill_alpha = 0.0
+
         # p.xaxis.ticker = generate_temporal_ticks(plot_data[temporal_key])
 
         with self.output:

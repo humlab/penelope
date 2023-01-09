@@ -12,9 +12,9 @@ from penelope.corpus import DocumentIndex
 from penelope.corpus.document_index import DocumentIndexHelper
 from penelope.pipeline import checkpoint as cp
 from penelope.pipeline import interfaces, tasks
-from penelope.plot import plot_multiline, plot_stacked_bar
-from penelope.utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
 
+from ...plot import plot_multiline, plot_stacked_bar
+from ...utility import PoS_Tag_Scheme, path_add_suffix, strip_path_and_extension
 from .. import grid_utility as gu
 from ..utility import CLEAR_OUTPUT, OutputsTabExt
 

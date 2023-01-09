@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import itertools
 import math
+from itertools import cycle, islice
 from typing import Callable, Iterable, List, Sequence
 
 import bokeh
@@ -9,17 +9,42 @@ import bokeh.models as bm
 import bokeh.plotting as bp
 import numpy as np
 import pandas as pd
+from bokeh.palettes import all_palettes
 from scipy.interpolate import PchipInterpolator
-
-from penelope.notebook.utility import generate_colors, generate_temporal_ticks
-from penelope.utility import take
 
 DEFAULT_FIGOPTS: dict = dict(width=1000, height=600)
 DEFAULT_PALETTE = bokeh.palettes.Category10[10]
 
 
-def generate_colors(n: int, palette: Sequence[str]) -> Iterable[str]:
-    return take(n, itertools.cycle(palette))
+def high_bound(categories: list[int], n_tick: int) -> tuple[int, int]:
+    return (lambda x: x if x % n_tick == 0 else x + (n_tick - x % n_tick))(int(max(categories)))
+
+
+def low_bound(categories: list[int], n_tick: int) -> int:
+    return (lambda x: x - (x % n_tick))(int(min(categories)))
+
+
+def generate_colors(n: int, palette: Iterable[str] | str = 'Category20', palette_id: int = None) -> Iterable[str]:
+
+    if not isinstance(palette, str):
+        # return take(n, cycle(palette))
+        return list(islice(cycle(palette), n))
+
+    if palette in all_palettes:
+        palette_id: int = palette_id if palette_id is not None else max(all_palettes[palette].keys())
+        return list(islice(cycle(all_palettes[palette][palette_id]), n))
+
+    raise ValueError(f"unknown palette {palette}")
+
+
+def generate_temporal_ticks(categories: list[int], n_tick: int = 5) -> list[int]:
+    """Gets ticks every n_tick years if category is year
+    Returns all categories if all values are either, lustrum and decade"""
+
+    if all(int(x) % 5 in (0, 5) for x in categories):
+        return categories
+
+    return list(range(low_bound(categories, n_tick), high_bound(categories, n_tick) + 1, n_tick))
 
 
 def pchip_interpolate_frame(
