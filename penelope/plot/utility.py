@@ -65,38 +65,6 @@ def plot_multiple_value_series(
     data: pd.DataFrame,
     category_name: str,
     columns: list[str] = None,
-    title: str = None,
-    fig_opts: dict = None,
-    plot_opts: dict = None,
-):
-    fig_opts = {
-        **dict(height=250, sizing_mode='scale_width', title=title, toolbar_location=None, tools=""),
-        **(dict(title=title) if title else {}),
-        **(fig_opts or {}),
-    }
-    plot_opts = plot_opts or {}
-
-    columns = columns or [x for x in data.columns if x != category_name]
-    category_series = [str(x) for x in data[category_name]] * len(columns)
-    value_series = [data[name].values for name in columns]
-
-    p = bp.figure(x_range=category_series[0], **fig_opts)
-
-    if kind == 'vbar_stack':
-        plot_opts = {**dict(width=0.2), **plot_opts}
-        p.vbar_stack(columns, x=category_name, source=data, **plot_opts)
-    else:
-        p.multi_line(xs=[data.year] * len(columns), ys=value_series, **plot_opts)
-
-    bp.show(p)
-
-
-def plot_multiple_value_series2(
-    *,
-    kind: str,
-    data: pd.DataFrame,
-    category_name: str,
-    columns: list[str] = None,
     smooth: bool = True,
     fig_opts: dict = None,
     plot_opts: dict = None,
