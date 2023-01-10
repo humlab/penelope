@@ -92,7 +92,7 @@ tools:
 
 bump.patch: requirements.txt
 	@poetry version patch
-	@git add pyproject.toml requirements.txt
+	@git add pyproject.toml requirements.txt penelope/__init__.py
 	@git commit -m "Bump version patch"
 	@git push
 
