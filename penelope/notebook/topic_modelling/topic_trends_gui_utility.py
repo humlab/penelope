@@ -17,7 +17,7 @@ def display_topic_trends(
     **figopts,
 ):
 
-    xs: pd.Series = weight_over_time[category_column].astype(np.str)
+    xs: pd.Series = weight_over_time[category_column].astype(str)
     ys: pd.Series = weight_over_time[value_column]
 
     default_figopts: dict = dict(
