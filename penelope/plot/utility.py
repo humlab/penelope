@@ -110,7 +110,7 @@ def plot_multiple_value_series(
     else:
         p.xaxis.ticker = generate_temporal_ticks(category_series[0])
         line_source = dict(xs=category_series, ys=value_series, color=colors, legend=columns)
-        p.multi_line(xs='xs', ys='ys', color='color', legend='legend', source=line_source, line_width=1, **plot_opts)
+        p.multi_line(xs='xs', ys='ys', color='color', legend_field='legend', source=line_source, line_width=1, **plot_opts)
 
     p.legend.location = "top_right"
     p.legend.orientation = "vertical"
