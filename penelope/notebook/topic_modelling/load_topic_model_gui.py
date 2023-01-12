@@ -19,26 +19,31 @@ from .model_container import TopicModelContainer
 
 def load_model(
     *,
-    corpus_folder: str,
+    folder: str,
     state: TopicModelContainer,
     model_name: str,
     model_infos: list[dict[str, Any]] = None,
     slim: bool = False,
     n_tokens: int = 500,
+    corpus_config: pp.CorpusConfig = None
 ):
 
-    model_infos = model_infos or tm.find_models(corpus_folder)
+    model_infos = model_infos or tm.find_models(folder)
     model_info = next(x for x in model_infos if x["name"] == model_name)
 
-    corpus_config: pp.CorpusConfig = pp.CorpusConfig.find("corpus.yml", corpus_folder)
+    if corpus_config is None:
+        try:
+            corpus_config: pp.CorpusConfig = pp.CorpusConfig.find("corpus.yml", model_info["folder"])
+        except FileNotFoundError:
+            logger.error(f"corpus.yml not found in model folder! Please copy config file to {model_info['folder']}.")
+            return
+
+
     filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
     trained_model: tm.InferredModel = tm.InferredModel.load(model_info["folder"], lazy=True)
 
-    if corpus_config is None:
-        logger.warning("no corpus config found in model folder")
-
     inferred_topics: tm.InferredTopicsData = tm.InferredTopicsData.load(
-        folder=jj(corpus_folder, model_info["name"]), filename_fields=filename_fields, slim=slim
+        folder=jj(folder, model_info["name"]), filename_fields=filename_fields, slim=slim
     )
 
     state.update(trained_model=trained_model, inferred_topics=inferred_topics, train_corpus_folder=model_info["folder"])
@@ -64,12 +69,12 @@ def load_model(
 class LoadGUI(mx.AlertMixIn):
     def __init__(
         self,
-        corpus_folder: str,
+        data_folder: str,
         state: TopicModelContainer,
         slim: bool = False,
     ):
         super().__init__()
-        self.corpus_folder: str = corpus_folder
+        self.data_folder: str = data_folder
         self.state: TopicModelContainer = state
         self.slim: bool = slim
         self._model_name: w.Dropdown = w.Dropdown(description="Model", options=[], layout=dict(width="40%"))
@@ -77,7 +82,7 @@ class LoadGUI(mx.AlertMixIn):
         self._load: w.Button = w.Button(description="Load", button_style="Success", layout=dict(width="100px"))
         self._output: w.Output = w.Output()
 
-        self.model_infos: List[dict] = tm.find_models(self.corpus_folder)
+        self.model_infos: List[dict] = tm.find_models(self.data_folder)
         self.model_names: List[str] = list(x["name"] for x in self.model_infos)
         self.loaded_model_folder: str = None
 
@@ -106,9 +111,9 @@ class LoadGUI(mx.AlertMixIn):
             self.warn(f"😡 {ex}")
 
     def load(self) -> None:
-        self.loaded_model_folder = jj(self.corpus_folder, self._model_name.value)
+        self.loaded_model_folder = jj(self.data_folder, self._model_name.value)
         load_model(
-            corpus_folder=self.corpus_folder,
+            folder=self.data_folder,
             state=self.state,
             model_name=self._model_name.value,
             model_infos=self.model_infos,
