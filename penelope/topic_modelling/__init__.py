@@ -28,4 +28,4 @@ from .topics_data import (
     top_topic_token_weights,
 )
 from .train import train_model
-from .utility import find_inferred_topics_folders, find_models
+from .utility import ModelFolder, find_inferred_topics_folders, find_models

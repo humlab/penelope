@@ -1,26 +1,48 @@
 import glob
-import os
-from typing import List
+from dataclasses import dataclass
+from os.path import join, split
 
 from penelope import utility as pu
 
 
-def find_models(path: str) -> dict:
-    """Return subfolders containing a computed topic model in specified path"""
-    folders = [os.path.split(x)[0] for x in glob.glob(os.path.join(path, "**", "model_options.json"), recursive=True)]
+def _find_model_options_files(path: str) -> list[str]:
+    return glob.glob(join(path, "**", "model_options.json"))
+
+
+def _find_model_folders(path: str) -> list[str]:
+    return [split(x)[0] for x in _find_model_options_files(path)]
+
+
+@dataclass
+class ModelFolder:
+
+    folder: str
+    name: str
+    options: dict
+
+    def to_dict(self):
+        return {
+            'folder': self.folder,
+            'name': self.name,
+            'options': self.options,
+        }
+
+
+def find_models(path: str) -> list[ModelFolder]:
+    """Return subfolders to path that contain a computed topic model"""
     models = [
-        {'folder': x, 'name': os.path.split(x)[1], 'options': pu.read_json(os.path.join(x, "model_options.json"))}
-        for x in folders
+        ModelFolder(
+            folder=folder,
+            name=split(folder)[1],
+            options=pu.read_json(join(folder, "model_options.json")),
+        )
+        for folder in _find_model_folders(path)
     ]
     return models
 
 
-def find_model(path: str, model_name: str) -> dict:
-    return next((x for x in find_models(path) if x["name"] == model_name), None)
-
-
-def find_inferred_topics_folders(folder: str) -> List[str]:
+def find_inferred_topics_folders(folder: str) -> list[str]:
     """Return inferred data in sub-folders to `folder`"""
-    filenames = glob.glob(os.path.join(folder, "**/*document_topic_weights.zip"), recursive=True)
-    folders = [os.path.split(filename)[0] for filename in filenames]
+    filenames = glob.glob(join(folder, "**/*document_topic_weights.zip"), recursive=True)
+    folders = [split(filename)[0] for filename in filenames]
     return folders

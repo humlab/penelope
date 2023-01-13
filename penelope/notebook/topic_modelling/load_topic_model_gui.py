@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from os.path import join as jj
-from typing import Any, List
+from typing import Any
 
 import ipywidgets as w
 import pandas as pd
@@ -17,36 +17,25 @@ from . import topic_titles_gui as tt_ui
 from .model_container import TopicModelContainer
 
 
-def load_model(
-    *,
-    folder: str,
-    state: TopicModelContainer,
-    model_name: str,
-    model_infos: list[dict[str, Any]] = None,
-    slim: bool = False,
-    n_tokens: int = 500,
-    corpus_config: pp.CorpusConfig = None
-):
-
-    model_infos = model_infos or tm.find_models(folder)
-    model_info = next(x for x in model_infos if x["name"] == model_name)
-
-    if corpus_config is None:
-        try:
-            corpus_config: pp.CorpusConfig = pp.CorpusConfig.find("corpus.yml", model_info["folder"])
-        except FileNotFoundError:
-            logger.error(f"corpus.yml not found in model folder! Please copy config file to {model_info['folder']}.")
-            return
+def _get_filename_fields(folder: str) -> Any:
+    try:
+        corpus_configs: list[pp.CorpusConfig] = pp.CorpusConfig.find_all(folder)
+        if len(corpus_configs) > 0:
+            return corpus_configs[0].text_reader_opts.filename_fields
+    except FileNotFoundError:
+        logger.warning(f"corpus.yml not found in model folder! Please copy config file to {folder}.")
+    return None
 
 
-    filename_fields = corpus_config.text_reader_opts.filename_fields if corpus_config else None
-    trained_model: tm.InferredModel = tm.InferredModel.load(model_info["folder"], lazy=True)
+def load_model(*, state: TopicModelContainer, model_info: tm.ModelFolder, slim: bool = False, n_tokens: int = 500):
+
+    trained_model: tm.InferredModel = tm.InferredModel.load(model_info.folder, lazy=True)
 
     inferred_topics: tm.InferredTopicsData = tm.InferredTopicsData.load(
-        folder=jj(folder, model_info["name"]), filename_fields=filename_fields, slim=slim
+        folder=model_info.folder, filename_fields=_get_filename_fields(model_info.folder), slim=slim
     )
 
-    state.update(trained_model=trained_model, inferred_topics=inferred_topics, train_corpus_folder=model_info["folder"])
+    state.update(trained_model=trained_model, inferred_topics=inferred_topics, train_corpus_folder=model_info.folder)
 
     topics: pd.DataFrame = inferred_topics.topic_token_overview
     topics['tokens'] = inferred_topics.get_topic_titles(n_tokens=n_tokens)
@@ -82,12 +71,10 @@ class LoadGUI(mx.AlertMixIn):
         self._load: w.Button = w.Button(description="Load", button_style="Success", layout=dict(width="100px"))
         self._output: w.Output = w.Output()
 
-        self.model_infos: List[dict] = tm.find_models(self.data_folder)
-        self.model_names: List[str] = list(x["name"] for x in self.model_infos)
-        self.loaded_model_folder: str = None
+        self.model_infos: list[tm.ModelFolder] = tm.find_models(self.data_folder)
 
     def setup(self) -> "LoadGUI":
-        self._model_name.options = self.model_names
+        self._model_name.options = [x.name for x in self.model_infos]
         self._load.on_click(self.load_handler)
         return self
 
@@ -97,7 +84,7 @@ class LoadGUI(mx.AlertMixIn):
 
     def load_handler(self, *_):
         try:
-            if self._model_name.value is None:
+            if self.model_name is None:
                 self.alert("🙃 Please specify which model to load.")
                 return
             self._output.clear_output()
@@ -111,11 +98,17 @@ class LoadGUI(mx.AlertMixIn):
             self.warn(f"😡 {ex}")
 
     def load(self) -> None:
-        self.loaded_model_folder = jj(self.data_folder, self._model_name.value)
         load_model(
             folder=self.data_folder,
             state=self.state,
-            model_name=self._model_name.value,
-            model_infos=self.model_infos,
+            model_info=self.model_info,
             slim=self.slim,
         )
+
+    @property
+    def model_info(self) -> tm.ModelFolder | None:
+        return next((m for m in self.model_infos if m.name == self.model_name), None)
+
+    @property
+    def model_name(self) -> str | None:
+        return self._model_name.value

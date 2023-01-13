@@ -50,6 +50,15 @@ def test_find_config(corpus_config: CorpusConfig):
     assert json.dumps(c, default=vars) == json.dumps(corpus_config, default=vars)
 
 
+def test_find_all_configs():
+
+    configs: list[CorpusConfig] = CorpusConfig.find_all('./tests/test_data')
+
+    assert len(configs) > 0
+
+    assert any(x for x in configs if x.corpus_name == "tranströmer")
+
+
 def test_text_transform_opts(corpus_config: CorpusConfig):
 
     assert corpus_config.text_transform_opts is not None

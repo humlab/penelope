@@ -9,7 +9,7 @@ from penelope.corpus.dtm.vectorizer import VectorizeOpts
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
-from penelope.topic_modelling.utility import find_models
+from penelope.topic_modelling.utility import ModelFolder, find_models
 from penelope.vendor import gensim_api
 from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
@@ -112,9 +112,9 @@ def test_predict_topics(method: str):
     assert payload is not None
 
     model_infos = find_models('./tests/output')
-    assert any(m['name'] == predict_target_name for m in model_infos)
-    model_info = next(m for m in model_infos if m['name'] == predict_target_name)
-    assert 'method' in model_info['options']
+    assert any(m.name == predict_target_name for m in model_infos)
+    model_info: ModelFolder = next(m for m in model_infos if m.name == predict_target_name)
+    assert 'method' in model_info.options
 
 
 @pytest.mark.skipif(not gensim_api.GENSIM_INSTALLED, reason="Gensim not installed")
@@ -124,7 +124,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
 
     target_folder: str = './tests/output'
     target_name: str = f'{str(uuid.uuid1())[:8]}'
-    corpus = TranströmerCorpus()
+    corpus: TranströmerCorpus = TranströmerCorpus()
     default_engine_args: dict = {
         'n_topics': 4,
         'passes': 1,
@@ -176,4 +176,4 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
     assert isinstance(payload.content, dict)
 
     output_models = find_models('./tests/output')
-    assert any(m['name'] == target_name for m in output_models)
+    assert any(m.name == target_name for m in output_models)
