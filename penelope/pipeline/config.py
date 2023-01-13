@@ -214,7 +214,7 @@ class CorpusConfig:
         if not os.path.isdir(folder):
             return configs
 
-        candidates: list[str] = glob.glob(jj(folder, f"*.yml")) + glob.glob(jj(folder, f"*.yaml"))
+        candidates: list[str] = glob.glob(jj(folder, "*.yml")) + glob.glob(jj(folder, "*.yaml"))
 
         for candidate in candidates:
             with contextlib.suppress(Exception):

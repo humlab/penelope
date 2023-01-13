@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from os.path import join as jj
 from typing import Any
 
 import ipywidgets as w
