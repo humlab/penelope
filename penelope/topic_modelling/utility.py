@@ -6,7 +6,7 @@ from penelope import utility as pu
 
 
 def _find_model_options_files(path: str) -> list[str]:
-    return glob.glob(join(path, "**", "model_options.json"))
+    return glob.glob(join(path, "**", "model_options.json"), recursive=True)
 
 
 def _find_model_folders(path: str) -> list[str]:
