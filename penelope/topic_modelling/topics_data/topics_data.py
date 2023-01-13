@@ -77,26 +77,37 @@ DTYPES: dict = {
 
 
 class SlimItMixIn:
+    def remove_series_nan(self, series: pd.Series) -> pd.Series:
+        if series.isnull().values.any():
+            logger.warning(f"slim_types: {sum(series.isnull())} NaN found in {series.name}")
+            return series.fillna(0)
+        return series
+
+    def slim_series(self, series: pd.Series, dtype: np.dtype) -> pd.Series:
+        try:
+            return series.astype(dtype)
+        except (ValueError, pd.errors.IntCastingNaNError):
+            if np.issubdtype(dtype, np.integer):
+                return pd.to_numeric(series, errors='coerce').fillna(0).astype(dtype)
+            raise
+
     def slim_dataframe(self, df: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
         if df is not None:
             columns: set[str] = set(dtypes.keys()).intersection(set(df.columns))
             for column in columns:
-                df[column] = df[column].astype(dtypes[column])
+                df[column] = self.slim_series(df[column], dtypes[column])
         return df
 
     def slim_types(self) -> InferredTopicsData:
-        nan_token_ids: int = len(self.topic_token_weights[self.topic_token_weights.token_id.isna()])
-        if nan_token_ids > 0:
-            logger.warning(f"{nan_token_ids} NaN encountered in topic_token_weights.token_id")
-            self.topic_token_weights['token_id'] = self.topic_token_weights['token_id'].fillna(0)
 
-        self.slim_dataframe(self.document_index, dtypes=DTYPES)
+        self.topic_token_weights['token_id'] = self.remove_series_nan(self.topic_token_weights.token_id)
+
+        pos_dtypes: dict = {x: np.int32 for x in pu.PD_PoS_tag_groups.index.to_list()}
+
+        self.slim_dataframe(self.document_index, dtypes={**DTYPES, **pos_dtypes})
         self.slim_dataframe(self.topic_token_weights, dtypes=DTYPES)
         self.slim_dataframe(self.document_topic_weights, dtypes=DTYPES)
         self.slim_dataframe(self.topic_token_overview, dtypes=DTYPES)
-
-        for column in set(pu.PD_PoS_tag_groups.index.to_list()).intersection(self.document_index.columns):
-            self.document_index[column] = self.document_index[column].astype(np.int32)
 
         return self
 
