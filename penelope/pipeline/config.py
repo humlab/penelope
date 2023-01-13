@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import enum
 import glob
 import json
@@ -203,6 +204,24 @@ class CorpusConfig:
             except:  # pylint: disable=bare-except
                 pass
         raise FileNotFoundError(filename)
+
+    @staticmethod
+    def find_all(folder: str) -> list["CorpusConfig"]:
+        """Finds all corpus configs in `folder`"""
+
+        configs: list[CorpusConfig] = []
+
+        if not os.path.isdir(folder):
+            return configs
+
+        candidates: list[str] = glob.glob(jj(folder, f"*.yml")) + glob.glob(jj(folder, f"*.yaml"))
+
+        for candidate in candidates:
+            with contextlib.suppress(Exception):
+                config = CorpusConfig.load(candidate)
+                configs.append(config)
+
+        return configs
 
     def folders(self, path: str, method: Literal['join', 'replace'] = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""
