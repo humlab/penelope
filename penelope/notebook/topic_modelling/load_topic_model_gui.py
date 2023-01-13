@@ -98,12 +98,7 @@ class LoadGUI(mx.AlertMixIn):
             self.warn(f"😡 {ex}")
 
     def load(self) -> None:
-        load_model(
-            folder=self.data_folder,
-            state=self.state,
-            model_info=self.model_info,
-            slim=self.slim,
-        )
+        load_model(state=self.state, model_info=self.model_info, slim=self.slim)
 
     @property
     def model_info(self) -> tm.ModelFolder | None:
