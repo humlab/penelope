@@ -207,7 +207,7 @@ def list_any_source(
 def _is_zipfile(source: str) -> bool:
     try:
         return isinstance(source, zipfile.ZipFile) or (isinstance(source, str) and isfile(source))
-    except:
+    except:  # pylint: disable=bare-except
         return False
 
 
