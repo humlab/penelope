@@ -103,7 +103,13 @@ from .pos_tags import (
     get_pos_schema,
     pos_tags_to_str,
 )
-from .streamify_source import list_any_source, streamify_any_source, streamify_folder_source, streamify_zip_source
+from .streamify_source import (
+    list_any_source,
+    read_text,
+    streamify_any_source,
+    streamify_folder_source,
+    streamify_zip_source,
+)
 from .utils import (
     LOG_FORMAT,
     DummyClass,

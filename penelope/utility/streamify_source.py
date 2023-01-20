@@ -1,34 +1,35 @@
 import fnmatch
 import glob
+import re
 import types
 import zipfile
 from multiprocessing import Pool
 from os.path import isdir, isfile, join
-from typing import Any, AnyStr, Callable, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, AnyStr, Callable, Iterable, Iterator, Optional, Union
 
 from . import zip_utils
-from .file_utility import read_textfile2
+from .file_utility import read_textfile, read_textfile2
 from .filename_utils import filename_satisfied_by, replace_paths
 
 
-def _read_file_in_zip(args: Tuple) -> Tuple[str, AnyStr]:
+def _read_file_in_zip(args: tuple) -> tuple[str, AnyStr]:
     return zip_utils.read_file_content2(zip_or_filename=args[0], filename=args[1], as_binary=args[2])
 
 
-def _read_file_in_folder(args: Tuple) -> Tuple[str, AnyStr]:
+def _read_file_in_folder(args: tuple) -> tuple[str, AnyStr]:
     return read_textfile2(filename=args[0], as_binary=args[1])
 
 
 def streamify_zip_source(
     *,
     path: zipfile.ZipFile,
-    filenames: List[str] = None,
+    filenames: list[str] = None,
     filename_pattern='*.*',
-    filename_filter: Union[List[str], Callable] = None,
+    filename_filter: Union[list[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
     n_chunksize: int = 5,
-) -> Iterator[Tuple[str, AnyStr]]:
+) -> Iterator[tuple[str, AnyStr]]:
 
     filenames = filenames or zip_utils.list_filenames(
         zip_or_filename=path, filename_pattern=filename_pattern, filename_filter=filename_filter
@@ -53,18 +54,18 @@ def streamify_zip_source(
 
 def streamify_folder_source(
     path: str,
-    filenames: Optional[List[str]] = None,
+    filenames: Optional[list[str]] = None,
     filename_pattern: str = "*.*",
-    filename_filter: Union[List[str], Callable] = None,
+    filename_filter: Union[list[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
     n_chunksize: int = 5,
-) -> Iterable[Tuple[str, AnyStr]]:
+) -> Iterable[tuple[str, AnyStr]]:
 
     if filenames is None:
         filenames = list_any_source(path, filename_pattern=filename_pattern, filename_filter=filename_filter)
 
-    filenames: List[str] = replace_paths(path, filenames)
+    filenames: list[str] = replace_paths(path, filenames)
 
     if n_processes == 1:
 
@@ -80,14 +81,14 @@ def streamify_folder_source(
 
 
 def streamify_any_source(  # pylint: disable=too-many-return-statements
-    source: Union[AnyStr, zipfile.ZipFile, List, Any],
-    filenames: List[str] = None,
+    source: Union[AnyStr, zipfile.ZipFile, list, Any],
+    filenames: list[str] = None,
     filename_pattern: str = '*.*',
-    filename_filter: Union[List[str], Callable] = None,
+    filename_filter: Union[list[str], Callable] = None,
     as_binary: bool = False,
     n_processes: int = 1,
     n_chunksize: int = 5,
-) -> Iterable[Tuple[str, AnyStr]]:
+) -> Iterable[tuple[str, AnyStr]]:
 
     filenames = filenames or list_any_source(source, filename_pattern=filename_pattern, filename_filter=filename_filter)
 
@@ -139,10 +140,10 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
 
 
 def list_any_source(
-    text_source: Union[str, zipfile.ZipFile, List],
+    text_source: Union[str, zipfile.ZipFile, list],
     filename_pattern: str = "*.txt",
     filename_filter=None,
-) -> List[str]:
+) -> list[str]:
     """Returns all filenames that matches `pattern` in archive
 
     Parameters
@@ -152,8 +153,8 @@ def list_any_source(
 
     Returns
     -------
-    List[str]
-        List of filenames
+    list[str]
+        list of filenames
     """
 
     filenames = None
@@ -201,3 +202,42 @@ def list_any_source(
         if filename_satisfied_by(filename, filename_filter)
         and (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]
+
+
+def _is_zipfile(source: str) -> bool:
+    try:
+        return isinstance(source, zipfile.ZipFile) or (isinstance(source, str) and isfile(source))
+    except:
+        return False
+
+
+DJANGO_URL_VALIDATOR = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$',
+    re.IGNORECASE,
+)
+
+
+def is_url(source: str) -> bool:
+
+    return isinstance(source, str) and bool(DJANGO_URL_VALIDATOR.search(source))
+
+
+def read_text(source: Any, filename: str) -> str:
+
+    if _is_zipfile(source):
+        _, data = zip_utils.read_file_content2(zip_or_filename=source, filename=filename, as_binary=False)
+        return data
+
+    if isinstance(source, str) and isdir(source) and isfile(join(source, filename)):
+
+        return read_textfile(join(source, filename))
+
+    # if is_url(source):
+    #     ...
+
+    raise FileNotFoundError(filename)
