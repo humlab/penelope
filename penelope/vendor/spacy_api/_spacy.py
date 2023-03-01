@@ -29,10 +29,9 @@ try:
     from spacy.tokenizer import Tokenizer
     from spacy.tokens import Doc, Token
     from spacy.util import compile_prefix_regex, compile_suffix_regex
+
 except ImportError:
     ...
-
-SPACY_DATA = os.environ.get("SPACY_DATA", "")
 
 
 def keep_hyphen_tokenizer(nlp: Language) -> Tokenizer:
@@ -67,7 +66,11 @@ def prepend_path(model: Union[Language, str], path: str) -> Union[Language, str]
 
 def prepend_spacy_path(model: Union[Language, str]) -> Union[Language, str]:
     """Prepends `model` with SPACY_DATA environment if set and model is a string"""
-    model: str = prepend_path(model, SPACY_DATA)
+
+    pu.load_cwd_dotenv()
+    spacy_data: str = os.environ.get("SPACY_DATA", "")
+    model: str = prepend_path(model, spacy_data)
+
     return model
 
 
