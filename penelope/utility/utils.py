@@ -21,6 +21,7 @@ from numbers import Number
 from random import randrange
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
 
+import dotenv
 import numpy as np
 import pandas as pd
 import scipy
@@ -31,6 +32,12 @@ V = TypeVar('V')
 U = TypeVar('U')
 
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
+
+
+def load_cwd_dotenv():
+    dotenv_path: str = os.path.join(os.getcwd(), '.env')
+    if os.path.isfile(dotenv_path):
+        dotenv.load_dotenv(dotenv_path=dotenv_path, override=True)
 
 
 def fn_name(default=None):
@@ -234,7 +241,6 @@ def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
     """
 
     try:
-
         return {k: args[k] for k in args.keys() if k in get_func_args(f)}
 
     except:  # pylint: disable=bare-except
@@ -273,7 +279,6 @@ def revdict(d: dict) -> dict:
 
 
 def dotget(d: dict, path: str, default: Any = None) -> Any:
-
     if path is None:
         return None
 
@@ -495,7 +500,6 @@ def assert_is_strictly_increasing(series: pd.Series):
 
 
 def is_strictly_increasing(series: pd.Series, by_value=1, start_value: int = 0, sort_values: bool = True):
-
     if len(series) == 0:
         return True
 
