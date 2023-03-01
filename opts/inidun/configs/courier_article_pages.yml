@@ -1,0 +1,51 @@
+corpus_name: courier_unesco
+corpus_pattern: '*.zip'
+corpus_type: 1
+language: english
+pipelines:
+  tagged_frame_pipeline: penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline
+checkpoint_opts:
+    content_type_code: 1
+    sep: "\t"
+    quoting: 3
+    document_index_name: null
+    document_index_sep: "\t"
+    text_column: text
+    lemma_column: lemma_
+    pos_column: pos_
+    extra_columns: []
+    custom_serializer_classname: null
+    deserialize_processes: 1
+    deserialize_chunksize: 4
+    feather_folder: /data/inidun/courier/corpus/courier_issue_only_article_pages_20210921.feather
+    index_column: null
+pipeline_payload:
+  source: /data/inidun/courier/corpus/courier_issue_only_article_pages_20210921.zip
+  document_index_source:
+  document_index_sep: ;
+  filenames: null
+  memory_store:
+    lang: en
+    lemma_column: lemma_
+    pos_column: pos_
+    spacy_model: en_core_web_sm
+    tagger: spaCy
+    text_column: text
+  pos_schema_name: Universal
+filter_opts:
+  data:
+    is_alpha: null
+    is_digit: null
+    is_punct: false
+    is_stop: false
+text_reader_opts:
+  as_binary: false
+  filename_fields:
+  - "year:_:0"
+  - "courier_id:_:1"
+  filename_filter: null
+  filename_pattern: '*.txt'
+  index_field: null
+  sep: "\t"
+  quoting: 3
+  dehyphen_expr: "\\b(\\w+)[-¬]\\s*\\r?\\n\\s*(\\w+)\\s*\\b"
