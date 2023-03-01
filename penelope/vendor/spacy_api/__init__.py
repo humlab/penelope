@@ -5,6 +5,17 @@ try:
     import spacy
 
     SPACY_INSTALLED: bool = True
+
+    def stub (*_, **__):
+        ...
+
+    load = stub
+    load_model = stub
+    load_model_by_parts = stub
+    prepend_path = stub
+    prepend_spacy_path = stub
+    token_count_by = stub
+
 except (ImportError, NameError):
     SPACY_INSTALLED: bool = False
 try:
