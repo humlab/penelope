@@ -577,11 +577,20 @@ def consolidate_document_index(document_index: DocumentIndex, reader_index: Docu
     """Returns a consolidated document index from an existing index, if exists,
     and the reader index."""
 
-    if document_index is not None:
-        columns = [x for x in reader_index.columns if x not in document_index.columns]
-        if len(columns) > 0:
-            document_index = document_index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
+    if document_index is None:
+        return reader_index
+
+    if reader_index is None:
         return document_index
+
+    if document_index is reader_index:
+        return document_index
+
+    columns = [x for x in reader_index.columns if x not in document_index.columns]
+
+    if len(columns) > 0:
+
+        return document_index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
 
     return reader_index
 
