@@ -99,6 +99,7 @@ def load_model(
     args: dict = skip_none_values(dict(vocab=vocab, disable=disable, exclude=exclude))
 
     if isinstance(name_or_nlp, Language):
+
         return name_or_nlp
 
     if isinstance(name_or_nlp, str):
@@ -114,6 +115,8 @@ def load_model(
             #     nlp: Language = load(name, **args)
             # except OSError:
             #     ...
+    else:
+        raise ValueError("Expected Language or model name")
 
     if keep_hyphens:
         nlp.tokenizer = keep_hyphen_tokenizer(nlp)
