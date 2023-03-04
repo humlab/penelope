@@ -6,8 +6,11 @@ try:
 
     SPACY_INSTALLED: bool = True
 
+except (ImportError, NameError):
+    SPACY_INSTALLED: bool = False
+
     def stub (*_, **__):
-        ...
+        raise ModuleNotFoundError("Spacy is not installed")
 
     load = stub
     load_model = stub
@@ -16,8 +19,6 @@ try:
     prepend_spacy_path = stub
     token_count_by = stub
 
-except (ImportError, NameError):
-    SPACY_INSTALLED: bool = False
 try:
     from ._spacy import (
         SPACY_DATA,
