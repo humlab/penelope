@@ -8,16 +8,15 @@ import zipfile
 from contextlib import suppress
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Callable, Container, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Callable, Container, Iterable, List, Optional, Sequence, Union
 
 import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
 from penelope import utility
-from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, TokensTransformOpts, default_tokenizer
+from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, default_tokenizer
 from penelope.corpus.readers import (
-    ExtractTaggedTokensOpts,
     TextReader,
     TextReaderOpts,
     TextSource,
@@ -27,14 +26,12 @@ from penelope.corpus.readers import (
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
 
 from . import checkpoint as cp
-from . import convert
-from .interfaces import ContentType, DocumentPayload, DocumentTagger, ITask, PipelineError
+from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
 from .tasks_mixin import (
     DefaultResolveMixIn,
     PoSCountMixIn,
     TokenCountMixIn,
     TransformTokensMixIn,
-    VocabularyIngestMixIn,
 )
 
 
@@ -72,7 +69,16 @@ class LoadText(DefaultResolveMixIn, ITask):
             transform_opts=self.transform_opts,
         )
 
-        self.pipeline.payload.set_reader_index(self.text_reader.document_index)
+        """Try to fetch document index from source (e.g. it might exeist in compressed archive)"""
+        di = (
+            self.text_reader.try_load_document_index(
+                filename=self.pipeline.payload.document_index_source, sep=self.pipeline.payload.document_index_sep
+            )
+            if self.text_reader.filename_exists(self.pipeline.payload.document_index_source)
+            else None
+        )
+
+        self.pipeline.payload.set_reader_index(self.text_reader.document_index, di)
         self.pipeline.payload.metadata = self.text_reader.metadata
 
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
@@ -92,7 +98,6 @@ class LoadText(DefaultResolveMixIn, ITask):
 
 @dataclass
 class Tqdm(ITask):
-
     tbar = None
     desc: str = None
 
@@ -122,7 +127,6 @@ class Passthrough(DefaultResolveMixIn, ITask):
 
 @dataclass
 class Project(ITask):
-
     project: Callable[[DocumentPayload], Any] = None
 
     def __post_init__(self):
@@ -231,7 +235,6 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def enter(self):
-
         if self.checkpoint_opts.feather_folder:
             os.makedirs(self.checkpoint_opts.feather_folder, exist_ok=True)
 
@@ -259,7 +262,6 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
         return self
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-
         if self.stop_at_index:
             logger.info(f"LoadTaggedCSV: will stop at index {self.stop_at_index}")
             return itertools.islice(self.checkpoint_data.create_stream(), 0, self.stop_at_index, 1)
@@ -406,7 +408,6 @@ class TextToTokens(TransformTokensMixIn, ITask):
         return self
 
     def __post_init__(self):
-
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
         self.out_content_type = ContentType.TOKENS
         self.tokenize = self.tokenize or default_tokenizer
@@ -425,107 +426,6 @@ class TextToTokens(TransformTokensMixIn, ITask):
             tokens = self.tokenize(payload.content)
 
         tokens = self.transform(tokens)
-
-        return payload.update(self.out_content_type, tokens)
-
-
-@dataclass
-class ToTaggedFrame(PoSCountMixIn, ITask):
-
-    attributes: List[str] = None
-    attribute_value_filters: Dict[str, Any] = None
-    tagger: DocumentTagger = None
-
-    def setup(self) -> ITask:
-        self.pipeline.put("tagged_attributes", self.attributes)
-        return self
-
-    def __post_init__(self):
-        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
-        self.out_content_type = ContentType.TAGGED_FRAME
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
-        payload.update(
-            self.out_content_type,
-            self.tagger(
-                payload=payload,
-                attributes=self.attributes,
-                attribute_value_filters=self.attribute_value_filters,
-            ),
-        )
-
-        self.register_pos_counts(payload)
-
-        return payload
-
-
-@dataclass
-class FilterTaggedFrame(TokenCountMixIn, ITask):
-    """Filters and transforms tagged frame (can be numeric or text)."""
-
-    extract_opts: ExtractTaggedTokensOpts = None
-    pos_schema: utility.PoS_Tag_Scheme = None
-    transform_opts: TokensTransformOpts = None
-    normalize_column_names: bool = False
-
-    def __post_init__(self):
-        self.in_content_type = [ContentType.TAGGED_ID_FRAME, ContentType.TAGGED_FRAME]
-        self.out_content_type = ContentType.PASSTHROUGH
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
-        if self.extract_opts is None and self.transform_opts is None:
-            return payload
-
-        tagged_frame: pd.DataFrame = convert.filter_tagged_frame(
-            tagged_frame=payload.content,
-            extract_opts=self.extract_opts,
-            token2id=self.pipeline.payload.token2id,
-            pos_schema=self.pos_schema,
-            transform_opts=self.transform_opts,
-            normalize_column_names=self.normalize_column_names,
-        )
-
-        self.register_token_count(payload.document_name, len(tagged_frame))
-
-        return payload.update(self.out_content_type, tagged_frame)
-
-
-@dataclass
-class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
-    """Extracts text from payload.content based on annotations etc."""
-
-    extract_opts: ExtractTaggedTokensOpts | str = None
-    normalize_column_names: bool = True
-
-    def __post_init__(self):
-        self.in_content_type = ContentType.TAGGED_FRAME
-        self.out_content_type = ContentType.TOKENS
-
-    def setup(self) -> ITask:
-        super().setup()
-        self.pipeline.put("extract_opts", self.extract_opts)
-        self.pipeline.put("transform_opts", self.transform_opts)
-        return self
-
-    def enter(self) -> ITask:  # pylint: disable=useless-super-delegation
-        super().enter()
-
-    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
-        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
-            doc=payload.content,
-            extract_opts=self.extract_opts,
-            transform_opts=self.transform_opts,
-            token2id=self.pipeline.payload.token2id,
-            pos_schema=self.pipeline.payload.pos_schema,
-        )
-
-        tokens = list(tokens)
-
-        if self.ingest_tokens:
-            self.ingest(tokens)
 
         return payload.update(self.out_content_type, tokens)
 
@@ -553,7 +453,6 @@ class TapStream(ITask):
         self.zink.close()
 
     def store(self, payload: DocumentPayload) -> DocumentPayload:
-
         with suppress(Exception):
             content: str = somewhat_generic_serializer(payload.content)
             if content is not None:
@@ -646,7 +545,6 @@ class AssertOnPayload(ITask):
 
 
 def somewhat_generic_serializer(content: Any) -> Optional[str]:
-
     if isinstance(content, pd.DataFrame):
         return content.to_csv(sep='\t')
 
@@ -730,7 +628,6 @@ class Vocabulary(ITask):
         return self
 
     def build(self, extra_tokens: list[str] = None) -> None:
-
         if self.is_built:
             return
 
@@ -761,7 +658,6 @@ class Vocabulary(ITask):
         return self
 
     def _payload_to_token_stream(self, payload: DocumentPayload) -> Iterable[str]:
-
         if payload.content_type == ContentType.TOKENS:
             return payload.content
 
@@ -780,7 +676,6 @@ class Vocabulary(ITask):
         return self.pipeline.payload.memory_store.get("text_column")
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
         if self.token2id.fallback_token_id is not None:
             """Token2Id is compressed, we need to replace all tokens not in token2id with fallback-token"""
 
@@ -824,7 +719,6 @@ class ChunkTokens(ITask):
         self.out_content_type = ContentType.TOKENS
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-
         for payload in self.create_instream():
             tokens = payload.content
             if len(payload.content) < self.chunk_size:
@@ -902,7 +796,6 @@ class Take(DefaultResolveMixIn, ITask):
         self.out_content_type = ContentType.PASSTHROUGH
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-
         for i, payload in enumerate(self.create_instream()):
             if i >= self.n_count:
                 break
