@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import os
+from io import StringIO
 from typing import Any, AnyStr, Dict, Iterable, List, Sequence, Tuple
 
 from penelope.utility import (
     extract_filenames_metadata,
     filename_satisfied_by,
     list_any_source,
+    read_text,
     streamify_any_source,
     strip_paths,
 )
 
-from ..document_index import DocumentIndex, metadata_to_document_index
+from ..document_index import DocumentIndex, DocumentIndexHelper, metadata_to_document_index
 from .interfaces import FilenameFilterSpec, ICorpusReader, TextReaderOpts, TextSource
 from .text_transformer import TextTransformer, TextTransformOpts
 
@@ -77,7 +81,6 @@ class TextReader(ICorpusReader):
         )
 
     def _get_filenames(self) -> List[str]:
-
         if self.reader_opts.filename_filter is None:
             return self._all_filenames
 
@@ -88,7 +91,6 @@ class TextReader(ICorpusReader):
         ]
 
     def _get_metadata(self, filenames) -> Sequence[Dict[str, Any]]:
-
         if self.reader_opts.filename_filter is None:
             return self._all_metadata
 
@@ -108,6 +110,29 @@ class TextReader(ICorpusReader):
             self.metadata, document_id_field=self.reader_opts.index_field
         )
         return _document_index
+
+    def filename_exists(self, filename: str) -> bool:
+        try:
+            filenames: list[str] = list_any_source(self._source, filename_pattern="*.*", filename_filter=[filename])
+            return len(filenames) > 0
+        except:  # pylint: disable=bare-except
+            return False
+
+    def try_load_document_index(self, filename: str, sep: str) -> DocumentIndex:
+        if filename is None:
+            return None
+
+        if not isinstance(filename, str):
+            return None
+
+        if not self.filename_exists(filename):
+            return None
+
+        di_str: str = read_text(self._source, filename)
+
+        di: DocumentIndex = DocumentIndexHelper.load(StringIO(di_str), sep=sep).document_index
+
+        return di
 
     def preprocess(self, content: str) -> str:
         """Process of source text that happens before any tokenization e.g. XML to text transform"""
