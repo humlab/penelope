@@ -40,7 +40,6 @@ class DocumentSegmenter:
 
 class ChunkSegmenter:
     def __init__(self, content, chunk_size=500):
-
         assert chunk_size > 0
 
         self.content = content
@@ -66,7 +65,6 @@ class SegmentedTextCorpus(TokenizedCorpus):
         *,
         transform_opts: TokensTransformOpts = None,
     ):
-
         if segment_strategy not in ['sentence', 'chunk', 'document']:
             raise AssertionError('Attribute segment_strategy must be specified for text corpus')
 
@@ -84,7 +82,6 @@ class SegmentedTextCorpus(TokenizedCorpus):
         self.stats = []
 
     def get_segmenter(self, content):
-
         return (self.strategies[self.segment_strategy])(content, self.segment_size)
 
     @property
@@ -92,7 +89,6 @@ class SegmentedTextCorpus(TokenizedCorpus):
         return (x[1] for x in self)
 
     def _create_iterator(self):
-
         stats = []
 
         for filename, content in self.reader:

@@ -43,7 +43,6 @@ def matrix_filename(tag: str, folder: str, extension: str = '') -> str:
 
 
 def load_metadata(*, tag: str, folder: str) -> dict:
-
     pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
     if os.path.isfile(pickle_filename):
         with open(pickle_filename, 'rb') as f:
@@ -51,7 +50,6 @@ def load_metadata(*, tag: str, folder: str) -> dict:
         return data
 
     if os.path.isfile(jj(folder, f"{tag}_document_index.csv.gz")):
-
         document_index: pd.DataFrame = pd.read_csv(
             jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip", index_col=0
         )
@@ -75,14 +73,12 @@ def load_metadata(*, tag: str, folder: str) -> dict:
 
 
 def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files', **data) -> None:
-
     if isinstance(data.get('token2id'), defaultdict):
         data['token2id'] = dict(
             data.get('token2id'),
         )
 
     if mode.startswith('bundle'):
-
         pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
         with open(pickle_filename, 'wb') as f:
             pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
@@ -90,7 +86,6 @@ def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 
         return
 
     if mode.startswith('files'):
-
         data.get('document_index').to_csv(jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip")
 
         with gzip.open(jj(folder, f"{tag}_token2id.json.gz"), 'w') as fp:  # 4. fewer bytes (i.e. gzip)

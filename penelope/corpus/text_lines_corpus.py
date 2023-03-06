@@ -41,7 +41,6 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
         fields_data = {k: v for k, v in data.items() if k != 'text'}
 
         if filename_fields is not None:
-
             filename_data = extract_filenames_metadata(filenames=self._filenames, filename_fields=filename_fields)
             fields_data = {**fields_data, **list_of_dicts_to_dict_of_lists(filename_data)}
 

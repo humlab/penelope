@@ -14,7 +14,6 @@ TaggedFrame = pd.DataFrame
 def create_sparv_xml_corpus_reader(
     source_path: str, reader_opts: TextReaderOpts, sparv_version: int = 4, content_type: str = 'pandas'
 ) -> CorpusReader:
-
     if not reader_opts.as_binary:
         raise ValueError("misconfiguration: XML files must be read in binary mode")
 

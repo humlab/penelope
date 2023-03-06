@@ -48,7 +48,6 @@ def isiterable(x: Any) -> bool:
 
 
 def check_tokens_stream(head: Any) -> None:
-
     if not isinstance(head, tuple):
         raise ValueError(f"expected str ✕ text/tokens, found {type(head)}")
 
@@ -135,7 +134,6 @@ class CorpusVectorizer:
                 vocabulary = corpus.token2id
 
         if already_tokenized:
-
             heads, corpus = more_itertools.spy(corpus, n=1)
 
             if heads:
@@ -191,7 +189,6 @@ def resolve_document_index(
     document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
     seen_document_names: List[str],
 ) -> DocumentIndex:
-
     if document_index is None:
         for attr in ['documents', 'document_index']:
             if hasattr(source, attr) and getattr(source, attr) is not None:
@@ -208,9 +205,7 @@ def _set_strictly_increasing_index_by_seen_documents(
     document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
     seen_document_names: List[str],
 ) -> DocumentIndex:
-
     if document_index is None:
-
         # logger.warning("vectorizer: no corpus document index supplied: generating from seen filenames")
         seen_document_index: DocumentIndex = pd.DataFrame(
             {

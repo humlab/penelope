@@ -104,7 +104,6 @@ class LegacyCoOccurrenceMixIn:
 
     @deprecated
     def _to_co_occurrence_matrix(self, co_occurrences: pd.DataFrame, pivot_key: str) -> scipy.sparse.spmatrix:
-
         """Map pivot_key value to document id (document index is already grouped)"""
         pg: Callable = {v: k for k, v in self.document_index[pivot_key].to_dict().items()}.get
 

@@ -78,7 +78,6 @@ def options_filename(folder: str, tag: str) -> str:
 
 
 def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: dict) -> None:
-
     if corpus is None:
         return
 
@@ -89,7 +88,6 @@ def store_corpus(*, corpus: VectorizedCorpus, folder: str, tag: str, options: di
 
 
 def load_corpus(*, folder: str, tag: str) -> VectorizedCorpus:
-
     return (
         VectorizedCorpus.load(folder=folder, tag=tag) if VectorizedCorpus.dump_exists(folder=folder, tag=tag) else None
     )
@@ -123,7 +121,6 @@ def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
 
     """ Read FEATHER if exists """
     if os.path.isfile(feather_filename):
-
         df: pd.DataFrame = pd.read_feather(feather_filename)
         if 'index' in df.columns:
             df.drop(columns='index', inplace=True)
@@ -132,7 +129,6 @@ def load_co_occurrences(filename: str) -> CoOccurrenceDataFrame:
 
     """ Read CSV if exists """
     if os.path.isfile(filename):
-
         co_occurrences: pd.DataFrame = pd.read_csv(filename, sep='\t', header=0, decimal=',', index_col=0, engine='c')
 
         with contextlib.suppress(Exception):
@@ -260,7 +256,6 @@ class WindowCountDTM:
     #     return self.dtm_wc.sum(axis=0).A1
 
     def slice(self, keep_token_ids: List(int), inplace=True) -> WindowCountDTM:
-
         if len(keep_token_ids) == self.dtm_wc.shape[1]:
             return self
 
@@ -300,7 +295,6 @@ class WindowCountDTM:
 
 
 def store(bundle: "Bundle"):
-
     if not (bundle.tag and bundle.folder):
         raise CoOccurrenceError("store failed (folder and/or tag not specfied)")
 

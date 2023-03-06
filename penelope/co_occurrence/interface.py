@@ -21,7 +21,6 @@ class PartitionKeyNotUniqueKey(ValueError):
 
 @dataclass
 class ContextOpts:
-
     context_width: int = 2
     concept: Set[Token] = field(default_factory=set)
     ignore_concept: bool = False
@@ -48,7 +47,6 @@ class ContextOpts:
 
     @classmethod
     def from_kwargs(cls, **kwargs):
-
         instance: ContextOpts = create_dataclass_instance_from_kwargs(cls, **kwargs)
 
         return instance

@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments, super-with-arguments, too-many-instance-attributes
 
+
 # FIXME: Implement pos_paddings
 class SparvXmlReader(TextTokenizer):
     def __init__(

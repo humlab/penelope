@@ -24,7 +24,6 @@ class CoOccurrenceHelper:
         pivot_keys: Union[str, List[str]] = None,
         co_occurrences: pd.DataFrame = None,
     ):
-
         self.corpus: VectorizedCorpus = corpus
         self.source_token2id: Token2Id = source_token2id
         self.corpus_pivot_keys: List[str] = [pivot_keys] if isinstance(pivot_keys, str) else pivot_keys
@@ -38,7 +37,6 @@ class CoOccurrenceHelper:
         self.reset()
 
     def reset(self) -> "CoOccurrenceHelper":
-
         self.data: pd.DataFrame = self.co_occurrences  # .copy()
         self.data_pivot_keys = self.corpus_pivot_keys
 
@@ -51,7 +49,6 @@ class CoOccurrenceHelper:
     def normalize(
         self, pivot_keys: Union[str, List[str]], taget_name='value_n_t', normalize_key: str = 'n_raw_tokens'
     ) -> "CoOccurrenceHelper":
-
         self.data[taget_name] = self._normalize(self.data, pivot_keys=pivot_keys, normalize_key=normalize_key)
 
         return self
@@ -132,7 +129,6 @@ class CoOccurrenceHelper:
         return self
 
     def decode(self) -> "CoOccurrenceHelper":
-
         self.data = decode_tokens(
             self.data,
             self.source_token2id.id2token,
@@ -142,7 +138,6 @@ class CoOccurrenceHelper:
         return self
 
     def trunk_by_global_count(self, threshold: int) -> "CoOccurrenceHelper":
-
         if len(self.data) == 0:
             return self
 
@@ -156,7 +151,6 @@ class CoOccurrenceHelper:
         return self
 
     def match(self, match_tokens: List[str]) -> "CoOccurrenceHelper":
-
         if len(self.data) == 0:
             return self
 
@@ -171,7 +165,6 @@ class CoOccurrenceHelper:
         return self
 
     def exclude(self, excludes: Union[IntOrStr, List[IntOrStr]]) -> "CoOccurrenceHelper":
-
         if len(self.data) == 0:
             return self
 
@@ -196,7 +189,6 @@ class CoOccurrenceHelper:
     """ Unchained functions/properties follows """
 
     def rank(self, n_top: int = 10, column: str = 'value') -> "CoOccurrenceHelper":
-
         if len(self.data) == 0:
             return self
 
@@ -213,7 +205,6 @@ class CoOccurrenceHelper:
         return self
 
     def largest(self, n_top: int = 10, column: str = 'value') -> "CoOccurrenceHelper":
-
         if len(self.data) == 0:
             return self
 
@@ -229,7 +220,6 @@ class CoOccurrenceHelper:
         return self
 
     def head(self, n_head: int) -> "CoOccurrenceHelper":
-
         if len(self.data) == 0:
             return self
 
@@ -278,7 +268,6 @@ def decode_tokens(
     coo_id2token: Mapping[int, str],
     copy: bool = True,
 ) -> pd.DataFrame:
-
     if 'w1' in co_occurrences.columns and 'token' in co_occurrences.columns:
         return co_occurrences
 

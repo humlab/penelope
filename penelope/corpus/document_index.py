@@ -40,7 +40,6 @@ DocumentIndex = pd.DataFrame
 
 class DocumentIndexHelper:
     def __init__(self, document_index: Union[DocumentIndex, List[dict], str], **kwargs):
-
         if not isinstance(document_index, (DocumentIndex, list, str)):
             raise DocumentIndexError("expected document index data but found None")
 
@@ -74,7 +73,6 @@ class DocumentIndexHelper:
 
     @staticmethod
     def from_filenames(filenames: List[str], filename_fields: FilenameFieldSpecs) -> "DocumentIndexHelper":
-
         if filename_fields is None:
             return None
 
@@ -89,7 +87,6 @@ class DocumentIndexHelper:
 
     @staticmethod
     def from_filenames2(filenames: List[str], reader_opts: TextReaderOpts) -> Optional[DocumentIndex]:
-
         if not reader_opts or reader_opts.filename_fields is None:
             return None
 
@@ -236,7 +233,6 @@ class DocumentIndexHelper:
 
         # Set new index `index_values` as new index if specified, or else index
         if index_values is None:
-
             # Use existing index values (results from group by)
             index_values = document_index.index
 
@@ -394,19 +390,16 @@ def get_document_id(document_index: DocumentIndex, document_name: str) -> int:
 
 
 def create_temporal_key_categorizer(temporal_key_specifier: TemporalKeySpecifier) -> Callable[[Any], Any]:
-
     if callable(temporal_key_specifier):
         return temporal_key_specifier
 
     if isinstance(temporal_key_specifier, str):
-
         if temporal_key_specifier not in KNOWN_TIME_PERIODS:
             raise ValueError(f"{temporal_key_specifier} is not a known period specifier")
 
         categorizer = lambda y: y - int(y % KNOWN_TIME_PERIODS[temporal_key_specifier])
 
     else:
-
         year_group_mapping = dict_of_key_values_inverted_to_dict_of_value_key(temporal_key_specifier)
 
         categorizer = lambda x: year_group_mapping.get(x, np.nan)
@@ -536,7 +529,6 @@ def document_index_upgrade(document_index: DocumentIndex) -> DocumentIndex:
         document_index['document_name'] = document_index.filename.apply(strip_path_and_extension)
 
     if document_index.index.dtype == np.dtype('int64'):
-
         if 'document_id' not in document_index.columns:
             document_index['document_id'] = document_index.index
 
@@ -589,7 +581,6 @@ def consolidate_document_index(document_index: DocumentIndex, reader_index: Docu
     columns = [x for x in reader_index.columns if x not in document_index.columns]
 
     if len(columns) > 0:
-
         return document_index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
 
     return reader_index
@@ -601,7 +592,6 @@ def update_document_index_token_counts(
     """Updates or adds fields `n_raw_tokens` and `n_tokens` to document index from collected during a corpus read pass
     Only updates values that don't already exist in the document index"""
     try:
-
         strip_ext = lambda filename: os.path.splitext(filename)[0]
 
         df_counts: pd.DataFrame = pd.DataFrame(data=doc_token_counts, columns=['filename', 'n_raw_tokens', 'n_tokens'])
@@ -635,7 +625,6 @@ def update_document_index_token_counts_by_corpus(document_index: pd.DataFrame, c
     n_tokens: Sequence[int] = None
 
     try:
-
         if hasattr(corpus, 'sparse'):
             # Gensim Sparse2Corpus
             n_tokens = corpus.sparse.sum(axis=0).A1
@@ -652,7 +641,6 @@ def update_document_index_token_counts_by_corpus(document_index: pd.DataFrame, c
         logger.exception(ex)
 
     if n_tokens is not None:
-
         document_index['n_tokens'] = n_tokens
 
         if 'n_raw_tokens' not in document_index.columns:

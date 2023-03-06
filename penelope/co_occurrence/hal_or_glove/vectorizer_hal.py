@@ -34,7 +34,6 @@ class HyperspaceAnalogueToLanguageVectorizer:
 
     @corpus.setter
     def corpus(self, value: Iterable[Iterable[str]]):
-
         self._corpus = value
         self.term_count = sum(map(len, value or []))
 
@@ -73,11 +72,9 @@ class HyperspaceAnalogueToLanguageVectorizer:
         nw_x: np.ndarray = np.zeros(len(self.token2id), dtype=np.uint32)
 
         for terms in corpus:
-
             id_terms = (self.token2id[t] for t in terms)
 
             for win in self.sliding_window(id_terms, size):
-
                 # logger.info([ self.id2token[x] if x is not None else None for x in win])
 
                 if win[0] is None:
@@ -88,7 +85,6 @@ class HyperspaceAnalogueToLanguageVectorizer:
                         nw_x[x] += 1
 
                 for i in range(1, size + 1):
-
                     if win[i] is None:
                         continue
 

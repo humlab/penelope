@@ -112,11 +112,9 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
     window = collections.deque((next(padded_tokens, None) for _ in range(0, n_window - 1)), maxlen=n_window)
 
     if not context_opts.concept:
-
         """Co-occurrence without concept words"""
 
         for token in padded_tokens:
-
             window.append(token)
 
             next_window = [w for w in window if w != pad] if context_opts.ignore_padding else list(window)
@@ -125,15 +123,12 @@ def tokens_to_windows_(*, tokens: Iterable[Token], context_opts: ContextOpts) ->
                 yield next_window
 
     else:
-
         """Co-occurrence with concept words"""
 
         for token in padded_tokens:
-
             window.append(token)
 
             if window[context_opts.context_width] in context_opts.concept:
-
                 """Context window"""
                 concept_window = list(window)
 

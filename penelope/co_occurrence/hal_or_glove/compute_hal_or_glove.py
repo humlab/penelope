@@ -14,6 +14,7 @@ from .vectorizer_hal import HyperspaceAnalogueToLanguageVectorizer
 
 logger = utility.getLogger('penelope')
 
+
 # pylint: disable=
 class CoOccurrenceError(ValueError):
     ...
@@ -77,7 +78,6 @@ def compute_hal_or_glove_co_occurrences(
         # token2id = generate_token2id(doc_terms)
 
     def get_bucket_key(item: Tuple[str, Iterable[str]]) -> int:
-
         if not isinstance(item, tuple):
             raise CoOccurrenceError(f"expected stream of (name,tokens) tuples found {type(item)}")
 
@@ -93,7 +93,6 @@ def compute_hal_or_glove_co_occurrences(
 
     metadata = []
     for i, key in tqdm(enumerate(keys), position=0, leave=True):
-
         key_stream: FilenameTokensTuple = key_streams[key]
         keyed_document_index = document_index[document_index[partition_column] == key]
 

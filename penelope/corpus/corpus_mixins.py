@@ -8,7 +8,6 @@ from penelope.type_alias import PartitionKeys
 
 class PartitionMixIn:
     def partition_documents(self, by: PartitionKeys) -> Dict[Any, List[str]]:
-
         if 'document_name' not in self.document_index.columns:
             raise ValueError("`document_name` columns missing")
 

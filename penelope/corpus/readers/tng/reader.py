@@ -32,7 +32,6 @@ class CorpusReader(ICorpusReader):
         preprocess: Callable[[str], str] = None,
         tokenizer: Callable[[str], Iterator[str]] = None,
     ):
-
         self.source: ISource = source
         self.reader_opts: TextReaderOpts = reader_opts.copy() if reader_opts is not None else TextReaderOpts()
         self.transformer: TextTransformer = transformer
@@ -73,7 +72,6 @@ class CorpusReader(ICorpusReader):
         return index
 
     def item(self, name: str) -> StoreItemPair:
-
         name = self.filenames[name] if isinstance(name, int) else name
 
         data = self.source.read(
