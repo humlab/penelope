@@ -36,7 +36,6 @@ EXPECTED_DENSE_VALUES = [[1, 1, 2], [2, 1, 0], [1, 1, 0], [1, 0, 2], [1, 2, 1]]
 
 @fixture
 def document_index() -> pd.DataFrame:
-
     document_names = [f'd_0{i}' for i in range(1, 6)]
     document_ids = [0, 1, 2, 3, 4]
     di = pd.DataFrame(
@@ -75,7 +74,6 @@ def test_id2token2token2id():
 
 @pytest.mark.skipif(not GENSIM_INSTALLED, reason="Gensim not installed")
 def test_from_sparse2corpus(document_index, sparse, token2id):
-
     source: gensim_corpora.Sparse2Corpus = gensim_corpora.Sparse2Corpus(sparse, documents_columns=True)
     corpus: pc.VectorizedCorpus = convert.from_sparse2corpus(
         source=source, token2id=token2id, document_index=document_index
@@ -128,7 +126,6 @@ def test_from_stream_of_filename_tokens(document_index, token2id):
 
 
 def test_from_stream_of_text(document_index, token2id):
-
     source: Iterable[Tuple[str, Iterable[str]]] = [(x[0], ' '.join(x[1])) for x in SIMPLE_CORPUS_ABC_5DOCS]
     vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(already_tokenized=False)
     corpus: pc.VectorizedCorpus = convert.from_stream_of_text(
@@ -140,5 +137,4 @@ def test_from_stream_of_text(document_index, token2id):
 
 
 def test_translate():
-
     ...

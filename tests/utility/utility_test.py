@@ -8,7 +8,6 @@ from penelope import utility
 
 
 def test_utils():
-
     assert utility.remove_snake_case('x_y') == 'X Y'
 
     assert utility.isint("1")
@@ -37,7 +36,6 @@ def test_utils():
     ],
 )
 def test_lists_of_dicts_merged_by_key_when_results_are_expected(lst1, lst2, key, expected):
-
     result = utility.lists_of_dicts_merged_by_key(lst1, lst2, key=key)
     assert expected == result
 
@@ -49,7 +47,6 @@ def test_lists_of_dicts_merged_by_key_when_results_are_expected(lst1, lst2, key,
     ],
 )
 def test_lists_of_dicts_merged_by_key_when_exception_is_expected(lst1, lst2, key):
-
     with pytest.raises(ValueError):
         _ = utility.lists_of_dicts_merged_by_key(lst1, lst2, key=key)
 
@@ -81,7 +78,6 @@ def test_dict_of_key_values_to_dict_of_value_key():
 
 
 def test_normalize_sparse_matrix_by_vector():
-
     data = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [0, 0, 0, 0]])
     csr = scipy.sparse.csr_matrix(data)
     normalized_matrix = utility.normalize_sparse_matrix_by_vector(csr)
@@ -90,7 +86,6 @@ def test_normalize_sparse_matrix_by_vector():
 
 
 def test_multiple_replace():
-
     tokens = [chr(ord('a') + i) for i in range(0, 10)]
     tokens_str = ' '.join(tokens)
 
@@ -111,7 +106,6 @@ def test_multiple_replace():
 
 
 def test_csr2bow():
-
     A = np.array(
         [
             [0, 0, 0, 0],

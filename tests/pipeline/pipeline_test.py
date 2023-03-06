@@ -29,7 +29,6 @@ CORPUS_FOLDER = './tests/test_data'
 
 
 def fake_config() -> pipeline.CorpusConfig:
-
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
@@ -44,7 +43,6 @@ def config():
 
 
 def test_corpus_config_set_folder(config: pipeline.CorpusConfig):
-
     current_source = config.pipeline_payload.source
     config.pipeline_payload.folders(CORPUS_FOLDER)
 
@@ -52,7 +50,6 @@ def test_corpus_config_set_folder(config: pipeline.CorpusConfig):
 
 
 def test_load_text_returns_payload_with_expected_document_index(config: pipeline.CorpusConfig):
-
     transform_opts = corpora.TextTransformOpts()
 
     pipe = pipeline.CorpusPipeline(config=config).load_text(
@@ -90,7 +87,6 @@ def test_load_text_returns_payload_with_expected_document_index(config: pipeline
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     transform_opts = corpora.TextTransformOpts()
@@ -113,7 +109,6 @@ def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.Co
 
 
 def test_pipeline_can_load_pos_tagged_checkpoint(config: pipeline.CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     pipe = pipeline.CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False)
@@ -127,7 +122,6 @@ def test_pipeline_can_load_pos_tagged_checkpoint(config: pipeline.CorpusConfig):
 
 @pytest.mark.long_running
 def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
@@ -155,7 +149,6 @@ def test_pipeline_tagged_frame_to_tokens_succeeds(config: pipeline.CorpusConfig)
 
 @pytest.mark.long_running
 def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     pipe: pipeline.CorpusPipeline = (
@@ -190,7 +183,6 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
 
 @pytest.mark.long_running
 def test_pipeline_tagged_frame_to_text_succeeds(config: pipeline.CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
@@ -236,7 +228,6 @@ def test_pipeline_take_succeeds(config: pipeline.CorpusConfig):
 
 
 def test_pipeline_tagged_frame_to_tuple_succeeds(config: pipeline.CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
 
     extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
@@ -268,7 +259,6 @@ def test_pipeline_find_task(config: pipeline.CorpusConfig):
 
 
 def test_pipeline_text_to_dtm_succeeds(config: pipeline.CorpusConfig):
-
     target_tag: str = uuid.uuid1()
 
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'checkpoint_pos_tagged_test.zip')
@@ -308,7 +298,6 @@ def test_pipeline_text_to_dtm_succeeds(config: pipeline.CorpusConfig):
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
-
     corpus_tag: str = uuid.uuid1()
     target_folder: str = "./tests/output"
     corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip'
@@ -343,7 +332,6 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
         force_checkpoint=True,
     )
     with inline_code(spacy_pipeline.to_tagged_frame_pipeline):
-
         tagged_frame_filename: str = tagged_corpus_source or utility.path_add_suffix(
             config.pipeline_payload.source, '_pos_csv'
         )
@@ -370,7 +358,6 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_workflow_to_dtm(config: pipeline.CorpusConfig):
-
     args: ComputeOpts = ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
         corpus_source='./tests/test_data/legal_instrument_five_docs_test.zip',
@@ -451,7 +438,6 @@ def sample_corpus() -> corpora.VectorizedCorpus:
 
 
 def test_slice_py_regular_expressions():
-
     pattern = re.compile("^.*tion$")
 
     corpus: corpora.VectorizedCorpus = sample_corpus()

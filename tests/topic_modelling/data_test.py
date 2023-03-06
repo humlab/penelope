@@ -64,7 +64,6 @@ def test_load(topics_data: tm.InferredTopicsData, feather: bool):
 
 
 def test_load_topics_data(topics_data: tm.InferredTopicsData):
-
     assert topics_data is not None
     assert isinstance(topics_data.document_index, pd.DataFrame)
     assert isinstance(topics_data.dictionary, pd.DataFrame)
@@ -81,7 +80,6 @@ def test_load_topics_data(topics_data: tm.InferredTopicsData):
 
 @pytest.mark.parametrize('format', ['zip', 'feather'])
 def test_store_inferred_topics_data_as_zipped_files(topics_data: tm.InferredTopicsData, format: str):
-
     target_folder: str = jj(OUTPUT_FOLDER, f"{str(uuid.uuid1())[:6]}")
 
     topics_data.store(target_folder, pickled=False, feather=format == 'feather')

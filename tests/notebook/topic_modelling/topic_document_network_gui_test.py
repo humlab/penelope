@@ -14,7 +14,6 @@ def monkey_patch(*_, **__):
 
 
 def test_create_gui(state: TopicModelContainer):
-
     ui: tdn_gui.TopicDocumentNetworkGui = tdn_gui.TopicDocumentNetworkGui(pivot_key_specs={}, state=state).setup()
     assert isinstance(ui, tdn_gui.TopicDocumentNetworkGui)
 
@@ -23,7 +22,6 @@ def test_create_gui(state: TopicModelContainer):
 
 
 def test_compile_data(state: TopicModelContainer):
-
     ui: tdn_gui.TopicDocumentNetworkGui = tdn_gui.TopicDocumentNetworkGui(pivot_key_specs={}, state=state).setup()
     ui._threshold.value = 0.5
     ui._year_range.value = (1900, 2100)

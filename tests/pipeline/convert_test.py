@@ -92,7 +92,6 @@ def tagged_frame():
 
 
 def test_filter_tagged_frame(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS
     )
@@ -148,7 +147,6 @@ def create_encoded_tagged_frame(
     target_column: str,
     pos_column: str,
 ) -> pd.DataFrame:
-
     fg = token2id.data.get
     pg = pos_schema.pos_to_id.get
 
@@ -163,7 +161,6 @@ def create_encoded_tagged_frame(
 
 
 def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
-
     pos_schema: pos_tags.PoS_Tag_Scheme = pos_tags.PoS_Tag_Schemes.SUC
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts().set_numeric_names()
     """TEXT (NON-LEMMATIZED)"""
@@ -256,7 +253,6 @@ def test_encoded_filter_tagged_frame(tagged_frame: pd.DataFrame):
 
 # @pytest.mark.parametrize("extract_opts,expected", [(dict(lemmatize=False, pos_includes=None, pos_excludes=None),[])])
 def test_tagged_frame_to_tokens_pos_and_lemma(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS
     )
@@ -303,7 +299,6 @@ def test_tagged_frame_to_tokens_pos_and_lemma(tagged_frame: pd.DataFrame):
 
 
 def test_tagged_frame_to_tokens_with_passthrough(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False,
         pos_includes='VB',
@@ -316,7 +311,6 @@ def test_tagged_frame_to_tokens_with_passthrough(tagged_frame: pd.DataFrame):
 
 
 def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False,
         pos_includes='VB',
@@ -330,7 +324,6 @@ def test_tagged_frame_to_tokens_with_passthrough_and_blocks(tagged_frame: pd.Dat
 
 
 def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFrame):
-
     tagged_frame: pd.DataFrame = tagged_frame.copy()
 
     expected_counts: dict = {
@@ -386,7 +379,6 @@ def test_tagged_frame_to_tokens_with_global_tf_threshold(tagged_frame: pd.DataFr
 
 
 def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(lemmatize=True, pos_includes=None, pos_excludes=None, **SPARV_TAGGED_COLUMNS)
 
     """ Alternative #1: tagged_frame_to_tokens does the filtering """
@@ -414,7 +406,6 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_threshold_tf_mask(tagged_f
 
 
 def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes=None,
@@ -449,7 +440,6 @@ def test_tagged_frame_to_tokens_with_tf_threshold_and_not_threshold_tf_mask(tagg
 
 
 def test_tagged_frame_to_tokens_replace_pos(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes="NN", pos_excludes='MID|MAD|PAD', pos_paddings="VB", **SPARV_TAGGED_COLUMNS
     )
@@ -473,7 +463,6 @@ def test_tagged_frame_to_tokens_replace_pos(tagged_frame: pd.DataFrame):
 
 
 def test_tagged_frame_to_tokens_detect_phrases(tagged_frame: pd.DataFrame):
-
     expected_tokens = tagged_frame.baseform[:4].tolist() + ['romansk_kyrka'] + tagged_frame.baseform[6:].tolist()
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True, pos_includes=None, phrases=[["romansk", "kyrka"]], **SPARV_TAGGED_COLUMNS
@@ -483,7 +472,6 @@ def test_tagged_frame_to_tokens_detect_phrases(tagged_frame: pd.DataFrame):
 
 
 def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame):
-
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=False, pos_includes='VB', pos_excludes=None, append_pos=True, **SPARV_TAGGED_COLUMNS
     )
@@ -503,7 +491,6 @@ def test_tagged_frame_to_tokens_with_append_pos_true(tagged_frame: pd.DataFrame)
 
 
 def test_detect_phrases(tagged_frame: pd.DataFrame):
-
     found_phrases = detect_phrases(tagged_frame["baseform"], phrases=[], ignore_case=True)
     assert not found_phrases
 
@@ -535,7 +522,6 @@ def test_merge_phrases_with_a_single_phrase():
 
 
 def test_parse_phrases():
-
     phrases_in_file_format: str = (
         "trazan_apansson; Trazan Apansson\nvery_good_gummisnodd;Very Good Gummisnodd\nkalle kula;Kalle Kula"
     )
@@ -551,7 +537,6 @@ def test_parse_phrases():
 
 
 def test_to_tagged_frame_SUC_pos_with_phrase_detection():
-
     os.makedirs('./tests/output', exist_ok=True)
     data_str: str = """token	pos	baseform
 Herr	NN	|herr|
@@ -587,7 +572,6 @@ utskotten	NN	|utskott|
 
 
 def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> List[str]:
-
     tokens = tagged_frame_to_tokens(
         tagged_frame,
         extract_opts=ExtractTaggedTokensOpts(lemmatize=False, **SPARV_TAGGED_COLUMNS),
@@ -597,7 +581,6 @@ def transform_frame(tagged_frame: str, transform_opts: TokensTransformOpts) -> L
 
 
 def test_to_tagged_frame_to_tokens_with_transform_opts():
-
     os.makedirs('./tests/output', exist_ok=True)
     data_str: str = """token	pos	baseform
 Herr	NN	|herr|
@@ -666,7 +649,6 @@ utskotten	NN	|utskott|
 
 
 def test_tagged_frame_to_token_counts(tagged_frame: TaggedFrame):
-
     pos_schema: pos_tags.PoS_Tag_Scheme = pos_tags.PoS_Tag_Schemes.SUC
     pos_column: str = "pos"
 

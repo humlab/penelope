@@ -43,7 +43,6 @@ def test_extract_to_tsv():
 @pytest.mark.long_running
 @pytest.mark.skip("deprecated Sparv v3")
 def test_xml_to_csv_corpus_reader():
-
     source_path = './tests/test_data/sou_test_sparv3_xml.zip'
     parser = sparv.SparvXml2CSV(delimiter="\t", version=3)
     source = tng.ZipSource(source_path=source_path)
@@ -79,7 +78,6 @@ def test_xml_to_csv_corpus_reader():
 
 
 def test_create_sparv_xml_corpus_reader():
-
     filename = './tests/test_data/sou_sparv3_3files_xml.zip'
     reader_opts = TextReaderOpts(filename_pattern='*.xml', as_binary=True, sep='\t')
     reader = tng.create_sparv_xml_corpus_reader(

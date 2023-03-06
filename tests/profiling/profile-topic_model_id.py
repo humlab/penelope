@@ -7,7 +7,6 @@ from penelope.utility import update_dict_from_yaml
 
 
 def debug_main():
-
     # data_path: str = join(abspath(join(dirname(__file__), '..')), 'test_data', 'tagged_id_frame_feather')
 
     # data_path: str = '/data/westac/riksdagen_corpus_data/tagged-speech-corpus.v0.3.0.id.1965'

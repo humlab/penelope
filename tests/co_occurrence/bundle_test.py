@@ -29,7 +29,6 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 
 
 def test_compress_bundle():
-
     context_opts: ContextOpts = ContextOpts(
         concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False, windows_threshold=0
     )
@@ -164,7 +163,6 @@ def test_compress_bundle():
 
 
 def test_compress_corpus():
-
     context_opts: ContextOpts = ContextOpts(
         concept={'d'}, ignore_concept=False, context_width=1, processes=None, ignore_padding=False, windows_threshold=0
     )
@@ -190,7 +188,6 @@ def test_compress_corpus():
 
 @pytest.mark.long_running
 def test_step_by_step_compress_with_simple_corpus():
-
     context_opts: ContextOpts = ContextOpts(
         concept={'d'}, ignore_concept=False, context_width=1, ignore_padding=False, windows_threshold=0
     )

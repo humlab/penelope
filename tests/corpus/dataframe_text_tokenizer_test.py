@@ -58,7 +58,6 @@ class Test_PandasCorpusReader(unittest.TestCase):
         )
 
     def test_reader_with_given_year(self):
-
         df = self.create_triple_meta_dataframe()
 
         expected_indices = [3, 4, 5, 9, 10, 11]

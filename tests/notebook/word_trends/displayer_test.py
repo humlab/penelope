@@ -128,7 +128,6 @@ def trends_data(bundle) -> BundleTrendsData:
 @mock.patch('bokeh.plotting.show', lambda *_, **__: None)
 @mock.patch('bokeh.io.push_notebook', lambda *_, **__: None)
 def test_displayer_compile_and_display(displayer_cls, normalize: bool, temporal_key: str, fill_gaps: bool):
-
     # corpus: VectorizedCorpus = bundle.corpus.group_by_year(target_column_name='category')
     pivot_keys = []
     trends_data: TrendsData = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=100)
@@ -146,7 +145,6 @@ def test_displayer_compile_and_display(displayer_cls, normalize: bool, temporal_
 
 
 def test_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
-
     displayer: ITrendDisplayer = TopTokensDisplayer(corpus=bundle.corpus)
     displayer.setup()
 
@@ -156,7 +154,6 @@ def test_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
 
 
 def test_co_occurrence_top_tokens_displayer_compile_and_display(bundle: co_occurrence.Bundle):
-
     displayer: ITrendDisplayer = CoOccurrenceTopTokensDisplayer(bundle=bundle)
     displayer.setup()
 
@@ -166,7 +163,6 @@ def test_co_occurrence_top_tokens_displayer_compile_and_display(bundle: co_occur
 
 
 def test_network():
-
     data_str = """;year;token;count;w1;w2
 0;1920;riksdag/ledamot;18;riksdag;ledamot
 1;1930;riksdag/ledamot;22;riksdag;ledamot

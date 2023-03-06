@@ -49,14 +49,12 @@ def helper(bundle: Bundle) -> CoOccurrenceHelper:
 
 
 def test_co_occurrence_helper_reset(helper: CoOccurrenceHelper):
-
     helper.reset()
 
     assert (helper.data == helper.co_occurrences).all().all()
 
 
 def test_co_occurrence_helper_decode(helper: CoOccurrenceHelper):
-
     helper.co_occurrences.drop(columns=["w1", "w2", "token"], inplace=True, errors="ignore")
 
     helper.decode()
@@ -65,7 +63,6 @@ def test_co_occurrence_helper_decode(helper: CoOccurrenceHelper):
 
 
 def test_co_occurrence_helper_trunk_by_global_count(helper: CoOccurrenceHelper):
-
     helper.reset()
 
     before_count = len(helper.value)
@@ -83,7 +80,6 @@ def test_co_occurrence_helper_trunk_by_global_count(helper: CoOccurrenceHelper):
 
 
 def test_co_occurrence_helper_match(helper: CoOccurrenceHelper):
-
     helper.reset().match("nations").decode()
     assert all(helper.value.token.str.contains("nations"))
 
@@ -102,7 +98,6 @@ def test_co_occurrence_helper_rank(helper: CoOccurrenceHelper):
 
 
 def test_co_occurrence_helper_largest(helper: CoOccurrenceHelper):
-
     data: pd.DataFrame = helper.reset().largest(3).decode().value
     largest = set(data[data.time_period == 1997].token.tolist())
     assert largest == {'article/generation', 'ensure/generation', 'should/generation'}
@@ -115,7 +110,6 @@ def test_co_occurrence_helper_head(helper: CoOccurrenceHelper):
 
 @pytest.mark.skip("create_pair2id and to_word_pair_token is deprecated/not used")
 def test_create_co_occurrence_vocabulary():
-
     bundle: Bundle = create_bundle()
     co_occurrences: pd.DataFrame = bundle.co_occurrences
     co_occurrences = decode_tokens(co_occurrences, bundle.token2id.id2token, bundle.corpus.id2token)

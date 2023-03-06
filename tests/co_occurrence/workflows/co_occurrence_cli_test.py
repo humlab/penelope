@@ -16,7 +16,6 @@ def monkey_patch(*_, **__):
 @pytest.mark.long_running
 @patch('penelope.co_occurrence.persistence.store_co_occurrences', monkey_patch)
 def test_process_co_ocurrence():
-
     args: dict = dict(
         corpus_config="./tests/test_data/riksdagens-protokoll.yml",
         input_filename="./tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip",

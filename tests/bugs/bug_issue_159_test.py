@@ -16,7 +16,6 @@ from penelope.workflows.interface import ComputeOpts
 
 @pytest.mark.skip(reason="Bug fixed")
 def test_simple():
-
     config_filename = "tests/test_data/tranströmer.yml"
     input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
     corpus_config: pp.CorpusConfig = pp.CorpusConfig.load(config_filename)  # .folders(DATA_FOLDER)
@@ -75,7 +74,6 @@ def test_simple():
 
 @pytest.mark.skip(reason="Bug fixed")
 def test_tranströmer():  # pylint: disable=non-ascii-name
-
     config_filename = "tests/test_data/tranströmer.yml"
     input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
     corpus_config: pp.CorpusConfig = pp.CorpusConfig.load(config_filename)  # .folders(DATA_FOLDER)
@@ -135,7 +133,6 @@ def test_tranströmer():  # pylint: disable=non-ascii-name
 
 @pytest.mark.skip(reason="Bug fixed")
 def test_bug():
-
     config_filename = "tests/test_data/tranströmer.yml"
     input_filename: str = "tests/test_data/tranströmer_corpus_pos_csv.zip"
     output_folder = 'tests/output'

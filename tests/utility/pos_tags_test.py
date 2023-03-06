@@ -2,7 +2,6 @@ from penelope.utility import pos_tags
 
 
 def test_pos_tags():
-
     all_tags = set('AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|MAD|MID|NN|PAD|PC|PL|PM|PN|PP|PS|RG|RO|SN|UO|VB'.split('|'))
 
     suc_tags = pos_tags.PD_SUC_PoS_tags

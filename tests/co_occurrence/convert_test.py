@@ -15,7 +15,6 @@ jj = os.path.join
 
 
 def test_to_co_occurrence_matrix():
-
     text_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
 
     term_term_matrix1 = very_simple_term_term_matrix(text_corpus)
@@ -27,7 +26,6 @@ def test_to_co_occurrence_matrix():
 
 @pytest.mark.skip(reason="Deprecated co_occurrences_to_co_occurrence_corpus (or not tested)")
 def test_co_occurrences_to_co_occurrence_corpus():
-
     folder, tag = './tests/test_data/ABCDEFG_7DOCS_CONCEPT', "ABCDEFG_7DOCS_CONCEPT"
 
     co_occurrences: CoOccurrenceDataFrame = co_occurrence.load_co_occurrences(co_occurrence_filename(folder, tag))
@@ -53,7 +51,6 @@ def test_truncate_by_global_threshold():
 
 
 def test_term_term_matrix_to_co_occurrences_with_ignore_ids():
-
     text_corpus = very_simple_corpus(
         data=[
             ('tran_2019_01_test.txt', ['*', 'b', 'c', 'c']),
@@ -84,7 +81,6 @@ def test_term_term_matrix_to_co_occurrences_with_ignore_ids():
 
 
 def test_term_term_matrix_to_co_occurrences_with_no_ignore_ids():
-
     text_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     term_term_matrix: scipy.sparse.spmatrix = very_simple_term_term_matrix(text_corpus)
 

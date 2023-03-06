@@ -20,7 +20,6 @@ from tests.utils import OUTPUT_FOLDER
 
 
 def test_try_split_column():
-
     df = pd.DataFrame({'A': ['a', 'b', 'c']})
     df = try_split_column(df, 'A', '/', ['x', 'y'], False, 1)
     assert df.columns.to_list() == ['A']
@@ -51,7 +50,6 @@ def create_pandas_test_data():
 
 
 def test_pandas_to_csv_zip():
-
     filename = os.path.join(OUTPUT_FOLDER, "test_pandas_to_csv_zip.zip")
     data = create_pandas_test_data()
 
@@ -62,7 +60,6 @@ def test_pandas_to_csv_zip():
 
 
 def test_pandas_read_csv_zip():
-
     filename: str = os.path.join(OUTPUT_FOLDER, "test_pandas_to_csv_zip.zip")
     expected_data = create_pandas_test_data()
     pandas_to_csv_zip(filename, dfs=expected_data, extension='csv', sep='\t')
@@ -75,7 +72,6 @@ def test_pandas_read_csv_zip():
 
 
 def test_create_mask():
-
     df: pd.DataFrame = pd.DataFrame({'A': ['a', 'a', 'c', 'd'], 'B': [True, False, True, True], 'C': [1, 2, 3, 4]})
 
     mask: np.ndarray = create_mask(df, {})
@@ -154,7 +150,6 @@ def test_tagged_tokens_filter_mask_when_boolean_attribute_succeeds():
 
 
 def test_tagged_tokens_filter_apply_when_boolean_attribute_succeeds():
-
     doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], is_stop=[True, False, True]))
 
     new_doc = PropertyValueMaskingOpts(is_stop=True).apply(doc)
@@ -171,7 +166,6 @@ def test_tagged_tokens_filter_apply_when_boolean_attribute_succeeds():
 
 
 def test_tagged_tokens_filter_apply_when_list_attribute_succeeds():
-
     doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y']))
 
     new_doc = PropertyValueMaskingOpts(pos='X').apply(doc)
@@ -184,7 +178,6 @@ def test_tagged_tokens_filter_apply_when_list_attribute_succeeds():
 
 
 def test_tagged_tokens_filter_apply_unknown_attribute_is_ignored():
-
     doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y']))
 
     new_doc = PropertyValueMaskingOpts(kallekula='kurt').apply(doc)
@@ -193,7 +186,6 @@ def test_tagged_tokens_filter_apply_unknown_attribute_is_ignored():
 
 
 def test_tagged_tokens_filter_apply_when_unary_sign_operator_attribute_succeeds():
-
     doc = pd.DataFrame(data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y']))
 
     new_doc = PropertyValueMaskingOpts(pos=(True, ['X'])).apply(doc)
@@ -220,7 +212,6 @@ def test_tagged_tokens_filter_apply_when_unary_sign_operator_attribute_succeeds(
 
 
 def test_hot_attributes():
-
     doc = pd.DataFrame(
         data=dict(text=['a', 'b', 'c'], pos=['X', 'X', 'Y'], lemma=['a', 'b', 'c'], is_stop=[True, False, True])
     )
@@ -260,7 +251,6 @@ def pivot_keys() -> PivotKeys:
 
 
 def test_pivot_keys_create(pivot_keys: PivotKeys):
-
     assert len(pivot_keys) == 2
 
     assert pivot_keys.key_name2key_id == {'fågel': 'fågel_id', 'husdjur': 'husdjur_id'}
@@ -287,7 +277,6 @@ def test_pivot_keys_create(pivot_keys: PivotKeys):
 
 
 def test_pivot_keys_filter(pivot_keys: PivotKeys):
-
     opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(["fågel=kråka"], sep='=', decode=True)
 
     assert opts is not None
@@ -303,7 +292,6 @@ def test_pivot_keys_filter(pivot_keys: PivotKeys):
 
 
 def test_pivot_keys_filter_with_sequence(pivot_keys: PivotKeys):
-
     opts: PropertyValueMaskingOpts = pivot_keys.create_filter_by_str_sequence(
         ["husdjur=katt,hund"], sep='=', decode=False, vsep=None
     )

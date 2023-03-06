@@ -31,7 +31,6 @@ def ComputeOptsSpacyCSV(
     corpus_tag: str = 'MARS',
     corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
-
     return ComputeOpts(
         corpus_tag=corpus_tag,
         corpus_source=corpus_source,
@@ -105,7 +104,6 @@ def ComputeOptsSparvCSV(
     corpus_tag: str = 'TELLUS',
     corpus_source: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
-
     return ComputeOpts(
         corpus_tag=corpus_tag,
         corpus_source=corpus_source,

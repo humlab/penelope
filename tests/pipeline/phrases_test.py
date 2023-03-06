@@ -10,7 +10,6 @@ from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 @pytest.mark.skip("################# No implemented DONT FORGET #######################")
 def test_phrased_tagged_frame():
-
     os.makedirs('./tests/output', exist_ok=True)
 
     tagged_corpus_source: str = "./tests/test_data/tranströmer_corpus_export.sparv4.csv.zip"

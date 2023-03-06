@@ -15,7 +15,6 @@ jj = os.path.join
 
 
 def test_filename_to_folder_and_tag():
-
     filename = f'./tests/test_data/dummy/dummy{co_occurrence.FILENAME_POSTFIX}'
 
     folder, tag = co_occurrence.to_folder_and_tag(filename)
@@ -25,7 +24,6 @@ def test_filename_to_folder_and_tag():
 
 
 def test_folder_and_tag_to_filename():
-
     expected_filename: str = f'./tests/test_data/dummy/dummy{co_occurrence.FILENAME_POSTFIX}'
 
     folder, tag = './tests/test_data/dummy', 'dummy'
@@ -36,7 +34,6 @@ def test_folder_and_tag_to_filename():
 
 
 def test_load_co_occurrences():
-
     folder, tag = './tests/test_data/VENUS', 'VENUS'
 
     filename = co_occurrence.to_filename(folder=folder, tag=tag)
@@ -49,7 +46,6 @@ def test_load_co_occurrences():
 
 
 def test_load_options():
-
     folder, tag = './tests/test_data/VENUS', 'VENUS'
 
     filename: str = co_occurrence.to_filename(folder=folder, tag=tag)
@@ -60,7 +56,6 @@ def test_load_options():
 
 
 def test_store_co_occurrences():
-
     filename: str = f'VENUS{co_occurrence.FILENAME_POSTFIX}'
     target_folder: str = f'./tests/output/{uuid.uuid4()}'
 
@@ -82,7 +77,6 @@ def test_store_co_occurrences():
 
 
 def test_load_and_store_bundle():
-
     filename = co_occurrence.to_filename(folder='./tests/test_data/VENUS', tag='VENUS')
     target_folder: str = f'./tests/output/{uuid.uuid4()}'
 
@@ -107,7 +101,6 @@ def test_load_and_store_bundle():
 
 
 def test_compute_and_store_bundle():
-
     tag: str = f'{uuid.uuid4()}'
 
     target_folder: str = jj(OUTPUT_FOLDER, tag)

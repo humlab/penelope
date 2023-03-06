@@ -28,7 +28,6 @@ def test_setup_gui(
     method_key: str,
     metric: str,
 ):
-
     n_cluster_count: int = 3
     n_metric_top: int = 4
 

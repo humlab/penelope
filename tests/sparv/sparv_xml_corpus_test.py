@@ -16,7 +16,6 @@ SPARV3_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sou_test_sparv3_xml.zip'
 
 
 def test_reader_store_result():
-
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     expected_documents = [
@@ -36,7 +35,6 @@ def test_reader_store_result():
     )
 
     for i in range(0, len(expected_names)):
-
         content = zip_utils.read_file_content(
             zip_or_filename=target_filename, filename=expected_names[i], as_binary=False
         )
@@ -49,7 +47,6 @@ def test_reader_store_result():
 @pytest.mark.long_running
 @pytest.mark.skip("deprecated Sparv v3")
 def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds():
-
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     target_filename = os.path.join(OUTPUT_FOLDER, f'{uuid.uuid1()}.zip')

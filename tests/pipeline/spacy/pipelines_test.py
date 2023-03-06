@@ -32,7 +32,6 @@ def config(en_nlp) -> pipeline.CorpusConfig:
 
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
-
     os.makedirs('./tests/output', exist_ok=True)
     tagged_corpus_source: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
     target_filename = './tests/output/SSI-co-occurrence-JJVBNN-window-9.csv'
@@ -122,7 +121,6 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline3(config):
-
     corpus_source = './tests/test_data/legal_instrument_five_docs_test.zip'
     tagged_corpus_source = f'./tests/output/{uuid.uuid1()}_pos.csv.zip'
     args: ComputeOpts = ComputeOpts(

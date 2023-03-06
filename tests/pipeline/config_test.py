@@ -16,7 +16,6 @@ def corpus_config() -> CorpusConfig:
 
 
 def test_json_dumps_and_loads_of_corpus_config_succeeds(corpus_config: CorpusConfig):
-
     first_dump_str = json.dumps(corpus_config, default=vars)
     deserialized_config = json.loads(first_dump_str)
     second_dump_str = json.dumps(deserialized_config, default=vars)
@@ -25,7 +24,6 @@ def test_json_dumps_and_loads_of_corpus_config_succeeds(corpus_config: CorpusCon
 
 
 def test_yaml_dumps_and_loads_of_corpus_config_succeeds(corpus_config: CorpusConfig):
-
     json_dump_str = json.dumps(corpus_config, default=vars)
     yaml_dump_str = yaml.dump(json_dump_str)
 
@@ -33,7 +31,6 @@ def test_yaml_dumps_and_loads_of_corpus_config_succeeds(corpus_config: CorpusCon
 
 
 def test_dump_and_load_of_corpus_config_succeeds(corpus_config: CorpusConfig):
-
     os.makedirs('./tests/output', exist_ok=True)
     dump_filename = './tests/output/corpus_config_test.yml'
     corpus_config.dump(dump_filename)
@@ -44,14 +41,12 @@ def test_dump_and_load_of_corpus_config_succeeds(corpus_config: CorpusConfig):
 
 
 def test_find_config(corpus_config: CorpusConfig):
-
     c = CorpusConfig.find("SSI.yml", './tests/test_data')
 
     assert json.dumps(c, default=vars) == json.dumps(corpus_config, default=vars)
 
 
 def test_find_all_configs():
-
     configs: list[CorpusConfig] = CorpusConfig.find_all('./tests/test_data')
 
     assert len(configs) > 0
@@ -60,14 +55,12 @@ def test_find_all_configs():
 
 
 def test_text_transform_opts(corpus_config: CorpusConfig):
-
     assert corpus_config.text_transform_opts is not None
     assert corpus_config.text_transform_opts.fix_hyphenation
     assert corpus_config.text_transform_opts.fix_whitespaces
 
 
 def test_corpus_config_set_folders():
-
     payload = PipelinePayload(
         source="corpus.zip",
         document_index_source="document_index.csv",

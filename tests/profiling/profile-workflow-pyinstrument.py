@@ -10,5 +10,4 @@ sys.path.append('./tests/profiling')
 
 
 if __name__ == '__main__':
-
     workflow()

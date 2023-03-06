@@ -12,7 +12,6 @@ def transform_smoke_test():
 
 
 def test_normalize_characters():
-
     text = "räksmörgås‐‑⁃‒–—―−－⁻＋⁺⁄∕˜⁓∼∽∿〜～’՚Ꞌꞌ＇‘’‚‛“”„‟´″‴‵‶‷⁗RÄKSMÖRGÅS"
     normalized_text = normalize_characters(text)
     assert normalized_text == 'räksmörgås----------++//~~~~~~~\'\'\'\'\'\'\'\'\'""""`′′′′′′RÄKSMÖRGÅS'

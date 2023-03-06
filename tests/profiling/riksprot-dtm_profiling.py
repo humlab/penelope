@@ -42,7 +42,6 @@ def create_compute_opts(
     tf_threshold_mask: bool = False,
     deserialize_processes: int = 4,
 ):
-
     phrases: dict = parse_phrases(phrase_file, phrase)
 
     if pos_excludes is None:
@@ -103,7 +102,6 @@ def create_compute_opts(
 
 
 def main():
-
     # config_filename: str = 'tests/profiling/riksprot-1965_corpus_config.yml'
     config_filename: str = '/data/riksdagen_corpus_data/tagged_frames_v0.4.1_speeches.feather/corpus.yml'
     corpus_source: str = '/data/riksdagen_corpus_data/tagged_frames_v0.4.1_speeches.feather'
@@ -178,5 +176,4 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()

@@ -57,7 +57,6 @@ def test_GoFsGUI_display(tab):
 
 @patch('penelope.notebook.utility.OutputsTabExt')
 def test_GofTrendsGUI_layout(tab):
-
     gui = GofTrendsGUI(
         gofs_gui=Mock(spec=GoFsGUI),
         trends_gui=Mock(spec=TrendsGUI),

@@ -10,7 +10,6 @@ OUTPUT_FOLDER = './tests/output'
 
 
 def test_touch():
-
     filename = f'./tests/output/{uuid.uuid1()}'
     assert os.path.isfile(pu.touch(filename))
 
@@ -19,7 +18,6 @@ def test_touch():
 
 
 def test_probe_extension():
-
     filename = f'./tests/output/{uuid.uuid1()}.txt'
 
     assert pu.probe_extension(filename) is None
@@ -99,7 +97,6 @@ def test_strip_path():
 
 
 def test_filename_satisfied_by():
-
     assert pu.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern=None)
     assert pu.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern="*.txt")
     assert not pu.filename_satisfied_by("abc.txt", filename_filter=None, filename_pattern="*.csv")
@@ -126,7 +123,6 @@ def test_store():
 
 
 def test_read():
-
     source: str = "./tests/test_data/tranströmer_corpus.zip"
     document_name: str = "tran_2019_01_test.txt"
 

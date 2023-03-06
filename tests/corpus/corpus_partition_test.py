@@ -6,7 +6,6 @@ SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export
 
 
 def create_test_corpus() -> SparvTokenizedCsvCorpus:
-
     corpus = SparvTokenizedCsvCorpus(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
         reader_opts=TextReaderOpts(
@@ -19,7 +18,6 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
 
 
 def test_partition_documents():
-
     expected_groups = {
         2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
         2020: ['tran_2020_01_test', 'tran_2020_02_test'],
@@ -31,7 +29,6 @@ def test_partition_documents():
 
 
 def test_partition_groups_by_year_contains_year():
-
     expected_groups = {
         2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
     }
@@ -42,7 +39,6 @@ def test_partition_groups_by_year_contains_year():
 
 
 def test_corpus_apply_when_single_group_partition_filter_then_other_groups_are_filtered_out():
-
     expected_document_names = ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test']
 
     corpus: SparvTokenizedCsvCorpus = create_test_corpus()
@@ -63,7 +59,6 @@ def test_corpus_apply_when_single_group_partition_filter_then_other_groups_are_f
 
 
 def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_groups():
-
     expected_groups = {
         2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
         2020: ['tran_2020_01_test', 'tran_2020_02_test'],
@@ -230,7 +225,6 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
     partitions = corpus.partition_documents('year')
 
     for key in partitions:
-
         corpus.reader.apply_filter(partitions[key])
         assert expected_groups[key] == corpus.document_names
 

@@ -23,7 +23,6 @@ def mary_had_a_little_lamb_corpus(en_nlp):
 
 @pytest.mark.long_running
 def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: textacy_api.Corpus):
-
     terms = (
         textacy_api.ExtractPipeline(corpus=mary_had_a_little_lamb_corpus, target='lemma')
         .pos(
@@ -42,7 +41,6 @@ def test_pos_extract_when_pos_includes_is_noun(mary_had_a_little_lamb_corpus: te
 
 @pytest.mark.long_running
 def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: textacy_api.Corpus):
-
     terms = (
         textacy_api.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma').pos(include_pos=('ADJ',)).process()
     )
@@ -53,7 +51,6 @@ def test_pos_extract_when_pos_includes_is_jj(mary_had_a_little_lamb_corpus: text
 
 @pytest.mark.long_running
 def test_pos_extract_when_a_more_complexed_filter(mary_had_a_little_lamb_corpus: textacy_api.Corpus):
-
     terms = (
         textacy_api.ExtractPipeline(mary_had_a_little_lamb_corpus, target='lemma')
         .pos(include_pos=('NOUN', 'PROPN'))

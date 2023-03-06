@@ -37,7 +37,6 @@ def pos_schema() -> utility.PoS_Tag_Scheme:
 
 
 def test_PoSCountMixIn(document_index: pd.DataFrame, tagged_frame: pd.DataFrame, pos_schema: utility.PoS_Tag_Scheme):
-
     task = PoSCountMixIn()
 
     assert len(task.document_tfs) == 0
@@ -70,7 +69,6 @@ def test_PoSCountMixIn(document_index: pd.DataFrame, tagged_frame: pd.DataFrame,
 
 
 def test_PoSTokenMixIn(document_index: pd.DataFrame):
-
     task = TokenCountMixIn()
 
     assert len(task.token_counts) == 0

@@ -32,7 +32,6 @@ def noun_pipeline(id_to_token: bool) -> pp.CorpusPipeline:
 
 
 def noun_dtm_pipeline(min_tf: int = 1, max_tokens: int = None) -> pp.CorpusPipeline:
-
     vectorize_opts: pc.VectorizeOpts = pc.VectorizeOpts(
         already_tokenized=True, lowercase=False, min_tf=min_tf, max_tokens=max_tokens
     )
@@ -45,7 +44,6 @@ def noun_dtm_pipeline(min_tf: int = 1, max_tokens: int = None) -> pp.CorpusPipel
 
 
 def test_load_id_tagged_frame_pipeline():
-
     p: pp.CorpusPipeline = noun_pipeline(id_to_token=False)
     payloads = p.to_list()
 
@@ -64,7 +62,6 @@ def test_load_id_tagged_frame_pipeline_convert_ids_to_text():
 
 
 def test_load_id_tagged_frame_pipeline_convert_to_dtm():
-
     corpus: pc.VectorizedCorpus = noun_dtm_pipeline(min_tf=1, max_tokens=None).value()
     assert corpus.shape == (5, 116)
 
@@ -75,7 +72,6 @@ def test_load_id_tagged_frame_pipeline_convert_to_dtm():
 @pytest.mark.skipif(not GENSIM_INSTALLED, reason="Gensim not installed")
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_load_id_tagged_frame_pipeline_convert_to_topic_model(method):
-
     os.makedirs('./tests/output/tmp', exist_ok=True)
 
     target_name: str = 'KALLE'  # f'{str(uuid.uuid1())[:6]}'

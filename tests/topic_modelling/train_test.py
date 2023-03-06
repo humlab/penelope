@@ -46,7 +46,6 @@ def create_train_corpus() -> tm.TrainingCorpus:
 
 
 def _create_inferred_model(method: str, train_corpus: tm.TrainingCorpus) -> tm.InferredModel:
-
     inferred_model: tm.InferredModel = tm.train_model(
         train_corpus=train_corpus,
         method=method,
@@ -71,7 +70,6 @@ def create_model_data(method) -> Tuple[tm.TrainingCorpus, tm.InferredModel]:
 
 
 def test_tranströmers_corpus():
-
     corpus = TranströmerCorpus()
     for filename, tokens in corpus:
         assert len(filename) > 0
@@ -102,7 +100,6 @@ def test_infer_model(method):
 
 
 def test_load_inferred_model_fixture():
-
     inferred_model: tm.InferredModel = tm.InferredModel.load(PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
     assert inferred_model is not None
 
@@ -341,7 +338,6 @@ DIAGNOSTICS_XML: str = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 def test_parse_diagnostics():
-
     topics: pd.DataFrame = pd.read_xml(DIAGNOSTICS_XML, xpath=".//topic")
     words: pd.DataFrame = pd.read_xml(DIAGNOSTICS_XML, xpath=".//word")
 
@@ -363,7 +359,6 @@ def test_parse_diagnostics():
 
 
 def test_sax_parse():
-
     x = [x for x in MalletTopicModel.parse_diagnostics_words(io.StringIO(DIAGNOSTICS_XML))]
     assert x
     assert x[0]['token'] == 'valv'
@@ -374,7 +369,6 @@ def test_sax_parse():
 
 
 def test_diagnostics_to_topic_token_weights_data():
-
     topic_token_diagnostics = MalletTopicModel.load_topic_token_diagnostics2(io.StringIO(DIAGNOSTICS_XML))
 
     assert topic_token_diagnostics is not None

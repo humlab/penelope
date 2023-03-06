@@ -37,12 +37,10 @@ def test_step_by_step_llr_compute_corpus_keyness_alternative():
     pivot_key: str = opts.pivot_column_name
 
     with inline_code(source=keyness.compute_weighed_corpus_keyness):
-
         zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
         concept_corpus.zero_out_by_indices(zero_out_indices)
 
         with inline_code(source=keyness.compute_corpus_keyness):
-
             corpus = corpus.group_by_temporal_key_optimized(
                 temporal_key_specifier=opts.temporal_pivot,
                 target_column_name=pivot_key,
@@ -100,7 +98,6 @@ def test_step_by_step_llr_compute_corpus_keyness_alternative():
 
 
 def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
-
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
     opts: ComputeKeynessOpts = create_keyness_opts(keyness=KeynessMetric.LLR)
 
@@ -110,12 +107,10 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
     pivot_key: str = opts.pivot_column_name
 
     with inline_code(source=keyness.compute_weighed_corpus_keyness):
-
         zero_out_indices: Sequence[int] = corpus.zero_out_by_tf_threshold(3)
         concept_corpus.zero_out_by_indices(zero_out_indices)
 
         with inline_code(source=keyness.compute_corpus_keyness):
-
             corpus = corpus.group_by_temporal_key_optimized(
                 temporal_key_specifier=opts.temporal_pivot,
                 target_column_name=pivot_key,
@@ -125,9 +120,7 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
 
             """Current implementation"""
             with inline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrence_corpus):
-
                 with inline_code(source=ttm_legacy.LegacyCoOccurrenceMixIn.to_keyness_co_occurrences):
-
                     co_occurrences: pd.DataFrame = corpus.to_co_occurrences(token2id)
 
                     with inline_code(source=metrics.partitioned_significances):
@@ -189,7 +182,6 @@ def test_LEGACY_step_by_step_llr_compute_corpus_keyness():
 
 
 def test_dtm_to_ttm_stream():
-
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
     corpus: VectorizedCorpus = bundle.corpus
     token2id: Token2Id = bundle.token2id
@@ -200,7 +192,6 @@ def test_dtm_to_ttm_stream():
 
 
 def test_to_keyness():
-
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
     opts: ComputeKeynessOpts = create_keyness_opts(keyness=KeynessMetric.LLR)
 

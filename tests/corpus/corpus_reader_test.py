@@ -32,7 +32,6 @@ def test_zip_wrapper():
 
 
 def test_transformer():
-
     transform_opts = tt.TextTransformOpts().clear()
 
     transform_opts += tt.KnownTransformType.fix_accents
@@ -101,7 +100,6 @@ class TestSource(cr.ISource):
 
 
 def test_source_info(source_info: cr.SourceInfo):  # pylint: disable=redefined-outer-name
-
     assert source_info.to_stored_name('a_2000.txt') is None
     assert source_info.to_stored_name('a_2001.txt') == '/tmp/a_2001.txt'
 
@@ -115,7 +113,6 @@ def test_source_info(source_info: cr.SourceInfo):  # pylint: disable=redefined-o
 
 
 def test_source_get_info():
-
     source = TestSource(filenames=['/tmp/a_2001.txt', '/tmp/b_2001.txt', '/tmp/c_2002.txt', '/tmp/c_2002.csv'])
 
     info = source.get_info(opts=TextReaderOpts(filename_pattern='*.*'))
@@ -136,7 +133,6 @@ def test_sources():
     os.makedirs('./tests/output', exist_ok=True)
 
     def test_source(source):
-
         assert set(source.namelist()) == set(EXPECTED_TEXT_FILES + ['README.md'])
         assert set(source.namelist(pattern='*.txt')) == set(EXPECTED_TEXT_FILES)
         assert set(source.namelist(pattern='*.md')) == set(['README.md'])

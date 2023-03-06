@@ -71,7 +71,6 @@ def test_group_by_year_aggregates_bag_term_matrix_to_year_term_matrix(corpus):
 
 
 def test_group_by_year_category_aggregates_DTM_to_PTM():
-
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     document_index = pd.DataFrame(
@@ -115,7 +114,6 @@ def test_group_by_year_category_aggregates_DTM_to_PTM():
 
 
 def test_group_by_time_period_aggregates_DTM_to_PTM():
-
     bag_term_matrix = np.array([[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]])
     token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     document_index = pd.DataFrame(
@@ -198,7 +196,6 @@ def test_group_by_category_means_bag_term_matrix_to_category_term_matrix(corpus)
 
 
 def test_group_by_year_with_average():
-
     corpus = [
         "the house had a tiny little mouse",
         "the cat saw the mouse",

@@ -23,7 +23,6 @@ from penelope.utility import extract_filenames_metadata, flatten
 
 class SimpleTestCorpus:
     def __init__(self, filename: str, reader_opts: TextReaderOpts):
-
         filename_fields = reader_opts.filename_fields
         index_field = reader_opts.index_field
 
@@ -111,7 +110,6 @@ SAMPLE_WINDOW_STREAM = [
 
 
 def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
-
     reader = tng.CorpusReader(
         source=tng.InMemorySource(data),
         reader_opts=TextReaderOpts(filename_fields="year:_:1"),
@@ -125,14 +123,12 @@ def random_corpus(
     n_docs: int = 5, vocabulary: str = 'abcdefg', min_length: int = 4, max_length: int = 10, years: List[int] = None
 ) -> List[Tuple[str, List[str]]]:
     def random_tokens():
-
         return [random.choice(vocabulary) for _ in range(0, random.choice(range(min_length, max_length)))]
 
     return [(f'rand_{random.choice(years or [0])}_{i}.txt', random_tokens()) for i in range(1, n_docs + 1)]
 
 
 def very_simple_term_term_matrix(corpus: ITokenizedCorpus) -> scipy.sparse.spmatrix:
-
     term_term_matrix: scipy.sparse.spmatrix = (
         dtm.CorpusVectorizer()
         .fit_transform(corpus, already_tokenized=True, vocabulary=corpus.token2id)
@@ -142,7 +138,6 @@ def very_simple_term_term_matrix(corpus: ITokenizedCorpus) -> scipy.sparse.spmat
 
 
 def very_simple_co_occurrences(corpus: ITokenizedCorpus) -> pd.DataFrame:
-
     term_term_matrix: scipy.sparse.spmatrix = very_simple_term_term_matrix(corpus)
 
     co_occurrences: pd.DataFrame = term_term_matrix_to_co_occurrences(

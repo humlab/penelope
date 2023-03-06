@@ -11,7 +11,6 @@ from penelope.topic_modelling.interfaces import InferredTopicsData
 
 
 def test_compute_topic_yearly_means(state: TopicModelContainer):
-
     inferred_topics: InferredTopicsData = state["inferred_topics"]
     document_topic_weights: pd.DataFrame = inferred_topics.document_topic_weights
     document_index: pd.DataFrame = inferred_topics.document_index
@@ -73,7 +72,6 @@ def test_compute_topic_yearly_means(state: TopicModelContainer):
 
 @pytest.fixture
 def simple_test_data():
-
     data_str: str = """document_id;topic_id;weight;year
 0;0;0.74;2019
 0;1;0.01;2019
@@ -122,7 +120,6 @@ def test_n_top_prevelance_over_time(simple_test_data):
 
 
 def test_compute_prevelance_parts(simple_test_data):
-
     document_index, dtw = simple_test_data
 
     yearly_weights: pd.DataFrame = prevelance._compute_yearly_topic_weights_statistics(dtw)
@@ -179,7 +176,6 @@ def test_compute_prevelance_parts(simple_test_data):
 
 
 def test_create_gui(state: TopicModelContainer):
-
     inferred_topics: InferredTopicsData = state["inferred_topics"]
     calculator: prevelance.TopicPrevalenceOverTimeCalculator = prevelance.AverageTopicPrevalenceOverTimeCalculator()
 

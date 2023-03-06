@@ -38,7 +38,6 @@ def test_corpus_loaded_callback(corpus_fixture):
 
 
 def test_create_main_gui():
-
     gui = main_gui.create_main_gui(corpus_folder=TEST_DATA_FOLDER, loaded_callback=monkey_patch)
 
     assert isinstance(gui, VBox)
@@ -53,7 +52,6 @@ def test_display_mdw():
 
 
 def test_create_load_gui(corpus_fixture):
-
     corpus_folder = './tests/test_data'
 
     def display_patch(corpus: dtm.VectorizedCorpus):
@@ -65,7 +63,6 @@ def test_create_load_gui(corpus_fixture):
     with mock.patch(
         'penelope.notebook.dtm.LoadGUI.corpus_filename', new_callable=mock.PropertyMock
     ) as mocked_corpus_filename:
-
         mocked_corpus_filename.return_value = "./tests/"
 
         gui = dtm_ui.LoadGUI(

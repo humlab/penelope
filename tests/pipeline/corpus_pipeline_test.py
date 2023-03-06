@@ -184,7 +184,6 @@ def test_project_process_with_text_payload_succeeds():
 
 
 def test_to_content_process_with_text_payload_succeeds():
-
     task = tasks.ToContent(pipeline=Mock(spec=CorpusPipeline)).setup()
     current_payload = next(fake_text_stream(1))
     next_payload = task.process(current_payload)
@@ -345,7 +344,6 @@ def test_tokens_to_text_when_text_instream_succeeds():
 @patch('spacy.load', patch_spacy_load)
 @pytest.mark.long_running
 def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
-
     tagged_corpus_source = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
@@ -384,7 +382,6 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
 
 
 def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts):
-
     tagged_corpus_source = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pipeline_payload = PipelinePayload(
@@ -409,7 +406,6 @@ def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts)
 
 
 def test_load_primary_document_index():
-
     filename = './tests/test_data/legal_instrument_five_docs_test.csv'
     df = load_document_index(filename, sep=';')
 

@@ -29,7 +29,6 @@ def test_archive_filenames_when_filter_function_txt_returns_txt_files():
 
 
 def test_tokenize_corpus_with_list_source():
-
     source = readers.TextTokenizer(source=["a b c", "e f g"])
 
     assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [x for x in source]
@@ -152,7 +151,6 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 
 def test_reader_can_be_reiterated():
-
     reader: TextTokenizer = create_tokens_reader(filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True)
     for _ in range(0, 4):
         n_tokens = [len(x) for _, x in reader]

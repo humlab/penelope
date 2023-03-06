@@ -65,7 +65,6 @@ def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
 
 
 def test_term_frequency_are_absolute_word_of_entire_corpus():
-
     corpus = create_corpus()
     vectorizer = CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
@@ -159,7 +158,6 @@ def test_term_frequency_are_absolute_word_of_entire_corpus():
 
 
 def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
-
     corpus = TokenizedCorpus(
         reader=create_reader(),
         transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
@@ -181,7 +179,6 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 
 
 def test_from_token_ids_stream():
-
     tokenized_corpus: MockedProcessedCorpus = mock_corpus()
     token2id: dict = tokenized_corpus.token2id
     id2token: dict = {v: k for k, v in tokenized_corpus.token2id.items()}

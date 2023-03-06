@@ -19,7 +19,6 @@ def test_TrendsData_create():
 
 
 def test_TrendsData_update():
-
     data = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=10)
 
     assert isinstance(data.gof_data.goodness_of_fit, pd.DataFrame)
@@ -51,7 +50,6 @@ def test_trends_data_transform_normalize_fill_gaps_without_pivot_keys(
     expected_tf_sums: List[int | float],
     expected_shape: Tuple[int, int],
 ):
-
     trends_data: TrendsData = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
     corpus: VectorizedCorpus = trends_data.transform(
@@ -199,7 +197,6 @@ def test_trends_data_top_terms():
 @patch('penelope.common.goodness_of_fit.compile_most_deviating_words', lambda *_, **__: Mock(spec=pd.DataFrame))
 @patch('penelope.common.goodness_of_fit.get_most_deviating_words', lambda *_, **__: Mock(spec=pd.DataFrame))
 def test_group_by_year():
-
     corpus: VectorizedCorpus = Mock(spec=VectorizedCorpus)
     corpus = corpus.group_by_year()
 
@@ -223,7 +220,6 @@ def test_find_words():
 
 
 def test_trends_data_smooth():
-
     corpus: VectorizedCorpus = simple_corpus_with_pivot_keys()
     trends_data: TrendsData = TrendsData(corpus=corpus)
     opts = dict(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')

@@ -33,7 +33,6 @@ def test_GUI_setup_and_layout():  # pylint: disable=unused-argument
 
 
 def test_create_gui():
-
     gui: dtm.ComputeGUI = dtm.create_compute_gui(
         corpus_folder='./tests/test_data',
         data_folder='./tests/test_data',

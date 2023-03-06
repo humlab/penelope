@@ -10,7 +10,6 @@ from ..fixtures import SPARV_TAGGED_COLUMNS
 
 
 def test_sparv_csv_serializer():
-
     filename = 'tests/test_data/riksdagens-protokoll.test.sparv4.csv'
     with open(filename, "r") as fp:
         content: str = fp.read()
@@ -39,7 +38,6 @@ def test_sparv_csv_serializer():
 
 
 def test_sparv_csv_deserialize_lemma_form():
-
     tagged_frame_str: str = """token	pos	baseform
 # text
 RIKSDAGEN	NN	|riksdag|

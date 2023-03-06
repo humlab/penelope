@@ -50,7 +50,6 @@ def test_load_tagged_frame_checkpoint():
 
 
 def test_python_list_merge():
-
     tokens = [chr(ord('a') + i) for i in range(0, 10)]
 
     tokens[3:6] = ['_'.join(tokens[3:6])]

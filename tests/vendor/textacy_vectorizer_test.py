@@ -32,7 +32,6 @@ def mary_had_a_little_lamb_corpus(en_nlp) -> textacy_api.Corpus:
 @pytest.mark.long_running
 @pytest.mark.skipif(not _extacy_exists, reason="textaCy not avaliable")
 def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylint: disable=redefined-outer-name
-
     expected_dtm = np.matrix(
         [
             [0, 0, 1, 1, 1, 0, 0, 0, 1, 0],
