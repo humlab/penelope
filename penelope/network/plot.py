@@ -34,7 +34,6 @@ DFLT_LABEL_OPTS = dict(
 
 
 def get_palette(name):
-
     if name not in bokeh.palettes.all_palettes.keys():
         return bokeh.palettes.RdYlBu[11]
 
@@ -44,7 +43,6 @@ def get_palette(name):
 
 
 def setup_node_size(nodes, node_size, node_size_range):
-
     if node_size is None:
         node_size = node_size_range[0]
 
@@ -56,7 +54,6 @@ def setup_node_size(nodes, node_size, node_size_range):
 
 
 def adjust_node_label_offset(nodes, node_size, default_y_offset=5):
-
     label_x_offset = 0
     label_y_offset = 'y_offset' if node_size in nodes.keys() else node_size + default_y_offset
     if label_y_offset == 'y_offset':
@@ -159,7 +156,6 @@ def plot(  # pylint: disable=W0102
 
 
 def plot_network(nodes, edges, plot_opts, fig_opts=None):
-
     edges_source = ColumnDataSource(edges)
     nodes_source = ColumnDataSource(nodes)
 
@@ -218,7 +214,6 @@ def plot_network(nodes, edges, plot_opts, fig_opts=None):
 
 
 def plot_df(df, source='source', target='target', weight='weight', layout_opts=None, plot_opts=None, fig_opts=None):
-
     # print([ x.key for x in nl.layout_setups])
 
     g = nu.df_to_nx(df, source=source, target=target, bipartite=False, weight=weight)

@@ -44,7 +44,6 @@ SupportedModels = Union[
 
 
 def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.005, **kwargs) -> Iterable:
-
     if not isinstance(
         model,
         (
@@ -72,7 +71,7 @@ def predict(model: SupportedModels, corpus: Any, minimum_probability: float = 0.
         raise ValueError("unsupported or deprecated model")
 
     for document_id, topic_weights in data_iter:
-        for (topic_id, weight) in (
+        for topic_id, weight in (
             (topic_id, weight) for (topic_id, weight) in topic_weights if weight >= minimum_probability
         ):
             yield (document_id, topic_id, weight)

@@ -85,7 +85,6 @@ def df_to_nx(
     G = nx.Graph()
 
     if bipartite:
-
         source_nodes = set(df[source].values)
         target_nodes = set(df[target].values)
 
@@ -256,7 +255,6 @@ def get_positioned_edges_as_dict(network: nx.Graph, layout: NodesLayout, sort_at
 def get_positioned_nodes_as_dict(
     G: nx.Graph, layout: NodesLayout, node_size: str, node_size_range: Optional[Tuple[Number, Number]]
 ) -> dict:
-
     nodes = get_positioned_nodes(G, layout)
 
     if node_size in nodes.keys() and node_size_range is not None:

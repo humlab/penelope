@@ -57,9 +57,7 @@ class TrainingCorpus:
     corpus_options: dict = None
 
     def __post_init__(self):
-
         if isinstance(self.corpus, (pc.VectorizedCorpus, pc.TokenizedCorpus)):
-
             if not isinstance(self.token2id, pc.Token2Id):
                 self.token2id = pc.Token2Id(data=self.corpus.token2id)
 

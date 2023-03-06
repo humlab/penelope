@@ -17,7 +17,6 @@ def get_topic_titles(
     )
 
     if 'token' not in topic_token_weights.columns:
-
         if id2token is None:
             raise TypeError("get_topic_titles: either TTW must contain `token` or `id2token` must be supplied")
 

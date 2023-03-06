@@ -8,7 +8,6 @@ except ImportError:
 
 
 def plot(G_gt, layout_gt, n_range, palette, **kwargs):  # pylint: disable=unused-argument
-
     v_text = G_gt.vertex_properties['id']
     # v_degrees_p = G_gt.degree_property_map('out')
     # v_degrees_p.a = np.sqrt(v_degrees_p.a)+2

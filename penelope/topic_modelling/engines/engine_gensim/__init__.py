@@ -45,7 +45,6 @@ class TopicModelEngine(ITopicModelEngine):
         return get_args(SupportedModels)
 
     def n_topics(self) -> int:
-
         if hasattr(self.model, 'num_topics'):
             return self.model.num_topics
 
@@ -57,7 +56,6 @@ class TopicModelEngine(ITopicModelEngine):
     def get_topic_token_weights_data(
         self, n_tokens: int = 200, id2term: dict[int, str] = None, **kwargs  # pylint: disable=unused-argument
     ) -> list[tuple[int, tuple[str, float]]]:
-
         if not is_supported(self.model):
             raise ValueError(f"{type(self.model)} is not supported")
 

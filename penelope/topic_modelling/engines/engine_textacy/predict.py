@@ -31,11 +31,10 @@ SupportedModels = None
 def predict(
     model: SupportedModels, corpus: VectorizedCorpus, minimum_probability: float = 0.0, top_n: int = 100, **kwargs
 ) -> Iterable:
-
     data_iter = scikit_predict(model, corpus.bag_term_matrix, top_n)
 
     for document_id, topic_weights in data_iter:
-        for (topic_id, weight) in (
+        for topic_id, weight in (
             (topic_id, weight) for (topic_id, weight) in topic_weights if weight >= minimum_probability
         ):
             yield (document_id, topic_id, weight)

@@ -134,7 +134,6 @@ def compute_topic_proportions(dtw: pd.DataFrame, document_index: pd.DataFrame) -
 
 class DocumentTopicsCalculator:
     def __init__(self, inferred_topics: InferredTopicsData):
-
         self.inferred_topics: InferredTopicsData = inferred_topics
         self.data: pd.DataFrame = inferred_topics.document_topic_weights
 
@@ -238,7 +237,6 @@ class DocumentTopicsCalculator:
         pivot_keys: list[str] | str = None,
         topic_labels: dict[int, str] = True,
     ) -> DocumentTopicsCalculator:
-
         pivot_keys = pivot_keys or []
 
         data: pd.DataFrame = self.data.set_index('document_id')
@@ -279,7 +277,6 @@ class DocumentTopicsCalculator:
         threshold: float,
         topic_labels: dict[int, str] = True,
     ) -> DocumentTopicsCalculator:
-
         data: pd.DataFrame = self.data  # .set_index('document_id')
 
         network_data: pd.DataFrame = (

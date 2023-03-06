@@ -11,7 +11,6 @@ def train_model(
     engine_args: Optional[Mapping[str, Any]] = None,
     **kwargs,
 ) -> InferredModel:
-
     tfidf_weighing: bool = kwargs.get('tfidf_weighing', False)
     if engine_args.get('work_folder', False):
         os.makedirs(engine_args.get('work_folder'), exist_ok=True)

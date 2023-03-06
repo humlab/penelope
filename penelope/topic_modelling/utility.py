@@ -15,7 +15,6 @@ def _find_model_folders(path: str) -> list[str]:
 
 @dataclass
 class ModelFolder:
-
     folder: str
     name: str
     options: dict

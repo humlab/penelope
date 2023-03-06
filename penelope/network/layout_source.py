@@ -15,7 +15,6 @@ def create_edges_layout_data_source(
     project_range: Tuple[float, float] = None,
     discrete_divisor=None,
 ) -> bm.ColumnDataSource:
-
     _, _, weights, xs, ys = layout_edges(network, layout, weight=weight)
     if isinstance(discrete_divisor, int):
         weights = [max(1, x // discrete_divisor) for x in weights]
@@ -40,7 +39,6 @@ def create_edges_layout_data_source(
 def create_nodes_subset_data_source(
     network: nx.Graph, layout, node_list=None, color_map=None  # pylint: disable=unused-argument
 ) -> bm.ColumnDataSource:
-
     layout_items = layout.items() if node_list is None else [x for x in layout.items() if x[0] in node_list]
 
     nodes, nodes_coordinates = zip(*sorted(layout_items))
@@ -53,7 +51,6 @@ def create_nodes_subset_data_source(
 
 
 def create_nodes_data_source(network: nx.Graph, layout) -> bm.ColumnDataSource:  # pylint: disable=unused-argument
-
     nodes, nodes_coordinates = zip(*sorted([x for x in layout.items()]))
     nodes_xs, nodes_ys = list(zip(*nodes_coordinates))
     nodes_source = bm.ColumnDataSource(dict(x=nodes_xs, y=nodes_ys, name=nodes, node_id=nodes))

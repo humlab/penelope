@@ -31,7 +31,7 @@ def compute_topic_metrics(ldamodel: models.LdaMulticore, dictionary: dict, n_wor
 def compute_term_frequency(corpus: Sparse2Corpus) -> collections.Counter:
     term_freq: collections.Counter = collections.Counter()
     for doc in corpus:
-        for (term, freq) in doc:
+        for term, freq in doc:
             term_freq[term] += freq
     return term_freq
 
@@ -42,7 +42,7 @@ def compute_term_info(ldamodel: models.LdaMulticore, dictionary: dict, corpus: S
     topic_marginal = normalize_array([d['weight'] for d in topic_info])
     term_freq: collections.Counter = compute_term_frequency(corpus)
     term_info = []
-    for (tid, term) in dictionary.items():
+    for tid, term in dictionary.items():
         frequency = term_freq[tid]
         probs = []
         for index in range(ldamodel.num_topics):

@@ -29,13 +29,11 @@ def compute_scores(
     step: int = 10,
     engine_args: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
-
     metrics = []
 
     dictionary = gensim_corpora.from_id2token_to_dictionary(id2word)
 
     for num_topics in range(start, stop, step):
-
         engine_spec: options.EngineSpec = options.get_engine_specification(engine_key=engine_key)
 
         model = engine_spec.engine(**engine_spec.get_options(corpus=corpus, id2word=id2word, engine_args=engine_args))
