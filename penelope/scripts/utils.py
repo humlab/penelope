@@ -133,7 +133,6 @@ def consolidate_cli_arguments(*, arguments: dict, filename_key: str, log_args: b
 
 
 def log_arguments(args: dict, subdir: bool = False) -> None:
-
     cli_command: str = utility.strip_path_and_extension(sys.argv[0])
 
     log_dir: str = os.path.join(CLI_LOG_PATH, cli_command) if subdir else CLI_LOG_PATH

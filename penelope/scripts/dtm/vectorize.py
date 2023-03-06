@@ -107,7 +107,6 @@ def process(
     force_checkpoint: bool = False,
     deserialize_processes: int = 4,
 ):
-
     try:
         corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
         phrases = parse_phrases(phrase_file, phrase)

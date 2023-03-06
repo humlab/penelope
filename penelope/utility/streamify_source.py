@@ -30,20 +30,16 @@ def streamify_zip_source(
     n_processes: int = 1,
     n_chunksize: int = 5,
 ) -> Iterator[tuple[str, AnyStr]]:
-
     filenames = filenames or zip_utils.list_filenames(
         zip_or_filename=path, filename_pattern=filename_pattern, filename_filter=filename_filter
     )
 
     if n_processes == 1:
-
         with zipfile.ZipFile(path, 'r') as zf:
-
             for filename in filenames:
                 yield zip_utils.read_file_content2(zip_or_filename=zf, filename=filename, as_binary=as_binary)
 
     else:
-
         args: str = [(path, filename, as_binary) for filename in filenames]
 
         with Pool(processes=n_processes) as pool:
@@ -61,19 +57,16 @@ def streamify_folder_source(
     n_processes: int = 1,
     n_chunksize: int = 5,
 ) -> Iterable[tuple[str, AnyStr]]:
-
     if filenames is None:
         filenames = list_any_source(path, filename_pattern=filename_pattern, filename_filter=filename_filter)
 
     filenames: list[str] = replace_paths(path, filenames)
 
     if n_processes == 1:
-
         for filename in filenames:
             yield read_textfile2(filename, as_binary)
 
     else:
-
         with Pool(processes=n_processes) as executor:
             args = [(filename, as_binary) for filename in filenames]
             for data in executor.imap(_read_file_in_folder, args, chunksize=n_chunksize):
@@ -89,7 +82,6 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
     n_processes: int = 1,
     n_chunksize: int = 5,
 ) -> Iterable[tuple[str, AnyStr]]:
-
     filenames = filenames or list_any_source(source, filename_pattern=filename_pattern, filename_filter=filename_filter)
 
     if not isinstance(source, (str, zipfile.ZipFile)):
@@ -97,7 +89,6 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
             return source
 
     if isinstance(source, list):
-
         if len(source) == 0:
             return []
 
@@ -107,7 +98,6 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
         return ((f'document_{i+1}.txt', d) for i, d in enumerate(source))
 
     if zipfile.is_zipfile(source):
-
         return streamify_zip_source(
             path=source,
             filenames=filenames,
@@ -119,7 +109,6 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
         )
 
     if isinstance(source, str):
-
         if isdir(source):
             return streamify_folder_source(
                 path=source,
@@ -160,15 +149,11 @@ def list_any_source(
     filenames = None
 
     if isinstance(text_source, zipfile.ZipFile):
-
         filenames = text_source.namelist()
 
     elif isinstance(text_source, str):
-
         if isfile(text_source):
-
             if zipfile.is_zipfile(text_source):
-
                 with zipfile.ZipFile(text_source) as zf:
                     filenames = zf.namelist()
 
@@ -176,14 +161,12 @@ def list_any_source(
                 filenames = [text_source]
 
         elif isdir(text_source):
-
             filenames = glob.glob(join(text_source, filename_pattern))
 
     elif isinstance(text_source, types.GeneratorType):
         filenames = (x[0] for x in text_source)
 
     elif isinstance(text_source, list):
-
         if len(text_source) == 0:
             filenames = []
 
@@ -193,7 +176,6 @@ def list_any_source(
             filenames = [f'document_{i+1}.txt' for i in range(0, len(text_source))]
 
     if filenames is None:
-
         raise ValueError(f"Source '{text_source}' not found. Only folder or ZIP or file are valid arguments")
 
     return [
@@ -223,18 +205,15 @@ DJANGO_URL_VALIDATOR = re.compile(
 
 
 def is_url(source: str) -> bool:
-
     return isinstance(source, str) and bool(DJANGO_URL_VALIDATOR.search(source))
 
 
 def read_text(source: Any, filename: str) -> str:
-
     if _is_zipfile(source):
         _, data = zip_utils.read_file_content2(zip_or_filename=source, filename=filename, as_binary=False)
         return data
 
     if isinstance(source, str) and isdir(source) and isfile(join(source, filename)):
-
         return read_textfile(join(source, filename))
 
     # if is_url(source):

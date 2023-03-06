@@ -47,7 +47,6 @@ class CorpusType(enum.IntEnum):
 
 @dataclass
 class CorpusConfig:
-
     corpus_name: str
     corpus_type: CorpusType
     corpus_pattern: str
@@ -244,7 +243,6 @@ class CorpusConfig:
         return config
 
     def get_feather_folder(self, corpus_source: str | None) -> str | None:
-
         if self.checkpoint_opts.feather_folder is not None:
             return self.checkpoint_opts.feather_folder
 
@@ -273,7 +271,6 @@ class CorpusConfig:
         pipeline_payload: interfaces.PipelinePayload = None,
         language: str = "english",
     ) -> CorpusConfig:
-
         return CorpusConfig(
             corpus_name=corpus_name,
             corpus_type=corpus_type,

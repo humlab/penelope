@@ -39,7 +39,6 @@ class TopicModelMixinProtocol(Protocol):
 
 
 class TopicModelMixin:
-
     # FIXME: Consolidate this function with StremVectorizer()
     def instream_to_vectorized_corpus(self: TopicModelMixinProtocol, token2id: dict) -> pc.VectorizedCorpus:
         """Create a sparse corpus of instream terms. Return `pc.VectorizedCorpus`.
@@ -111,7 +110,6 @@ class TopicModelMixin:
         return topics_data
 
     def train(self: TopicModelMixinProtocol, train_corpus: tm.TrainingCorpus) -> tm.InferredModel:
-
         inferred_model: tm.InferredModel = tm.train_model(
             train_corpus=train_corpus, method=self.engine, engine_args=self.engine_args
         )
@@ -131,7 +129,6 @@ class TopicModelMixin:
         return inferred_model
 
     def ensure_target_path(self: TopicModelMixinProtocol):
-
         if self.target_folder is None or self.target_name is None:
             raise ValueError("expected target folder and target name, found None")
 
@@ -170,7 +167,6 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
     store_compressed: bool = True
 
     def __post_init__(self):
-
         self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
         self.out_content_type = ContentType.TOPIC_MODEL
 
@@ -180,11 +176,9 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         return self
 
     def instream_to_corpus(self, id2token: Mapping[int, str] | None) -> tm.TrainingCorpus:
-
         content_type: ContentType = self.resolved_prior_out_content_type()
 
         if self.train_corpus_folder:
-
             if tm.TrainingCorpus.exists(self.train_corpus_folder):
                 logger.info(
                     f"using existing corpus in folder {self.train_corpus_folder} for target mode {self.target_mode}"
@@ -210,7 +204,6 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
             return corpus
 
         if content_type == ContentType.VECTORIZED_CORPUS:
-
             logger.info("creating sparse corpus out of input stream...")
 
             payload: DocumentPayload = next(self.prior.outstream())
@@ -247,7 +240,6 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         raise ValueError("unable to resolve input corpus")
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-
         self.input_type_guard(self.resolved_prior_out_content_type())
 
         self.ensure_target_path()
@@ -268,16 +260,13 @@ class ToTopicModel(TopicModelMixin, DefaultResolveMixIn, ITask):
         predict_corpus: Any = None
 
         if self.target_mode in ['both', 'train']:
-
             train_corpus: tm.TrainingCorpus = self.instream_to_corpus(id2token=None)
             predict_corpus = train_corpus.corpus
 
             inferred_model: tm.InferredModel = self.train(train_corpus)
 
         if self.target_mode in ['both', 'predict']:
-
             if self.target_mode == 'predict':
-
                 logger.info("loading topic model...")
                 inferred_model = tm.InferredModel.load(self.trained_model_folder, lazy=False)
 
@@ -330,12 +319,10 @@ class PredictTopics(TopicModelMixin, DefaultResolveMixIn, ITask):
         return jj(self.model_folder, self.model_name)
 
     def __post_init__(self):
-
         self.in_content_type = [ContentType.TOKENS, ContentType.VECTORIZED_CORPUS]
         self.out_content_type = ContentType.TOPIC_MODEL
 
     def process_stream(self) -> Iterable[DocumentPayload]:
-
         self.ensure_target_path()
 
         trained_model: tm.InferredModel = tm.InferredModel.load(folder=self.model_subfolder, lazy=True)

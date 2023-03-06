@@ -37,9 +37,7 @@ class ComputeOpts(
 
 
 def compute(args: ComputeOpts, corpus_config: CorpusConfig) -> VectorizedCorpus:
-
     try:
-
         assert args.is_satisfied()
 
         args.extract_opts.global_tf_threshold = 1

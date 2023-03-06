@@ -27,7 +27,6 @@ ENGINE_OPTIONS = [
 
 
 def store_model(data, filename):
-
     data = types.SimpleNamespace(
         topic_model=data.topic_model,
         id2term=data.id2term,

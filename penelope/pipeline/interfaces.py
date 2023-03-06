@@ -428,7 +428,6 @@ DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFr
 
 
 class IDocumentTagger(abc.ABC):
-
     @abc.abstractmethod
     def tag(self, document: DocumentPayload) -> TaggedFrame:
         ...

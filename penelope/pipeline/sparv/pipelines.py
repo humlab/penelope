@@ -24,7 +24,6 @@ def to_tagged_frame_pipeline(
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
 
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
-
         task: ITask = tasks.LoadTaggedCSV(
             filename=corpus_source,
             checkpoint_opts=corpus_config.checkpoint_opts,

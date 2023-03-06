@@ -9,7 +9,6 @@ from . import vectorizer
 
 @dataclass
 class ToDTM(interfaces.ITask):
-
     vectorize_opts: pc.VectorizeOpts = None
     tagged_column: Optional[str] = field(default=None)
     tokenizer: Callable[[str], Iterable[str]] = field(default=None)
@@ -30,7 +29,6 @@ class ToDTM(interfaces.ITask):
         return self
 
     def process_stream(self) -> pc.VectorizedCorpus:
-
         content_type: interfaces.ContentType = self.resolved_prior_out_content_type()
 
         self.vectorize_opts.already_tokenized = True

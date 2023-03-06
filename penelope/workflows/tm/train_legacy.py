@@ -27,7 +27,6 @@ def compute(
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
 ):
-
     tokens_reader: TextTokenizer = TextTokenizer(
         source=corpus_source,
         transform_opts=text_transform_opts,
@@ -98,7 +97,6 @@ def compute2(
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
 ):
-
     if engine not in SUPPORTED_ENGINES:
         raise ValueError(f"Engine {engine} not supported or deprecated")
 

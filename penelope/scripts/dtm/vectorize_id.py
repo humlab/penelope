@@ -94,7 +94,6 @@ def process(
     tf_threshold_mask: bool = False,
     deserialize_processes: int = 4,
 ):
-
     try:
         corpus_config: CorpusConfig = CorpusConfig.load(config_filename).folders(corpus_source, method='replace')
         phrases: dict = parse_phrases(phrase_file, phrase)

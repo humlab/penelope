@@ -37,7 +37,6 @@ def to_terms_list(
     min_freq: int = 1,
     target: Literal['lemma', 'lower', 'text'] = 'lemma',
 ) -> Iterable[str]:
-
     tokens: Iterable[Token] = words(
         doc,
         filter_stops=filter_stops,
@@ -90,7 +89,6 @@ class ExtractPipeline:
         return self
 
     def process(self) -> Iterable[Iterable[str]]:
-
         output = self
 
         for task in self.tasks:
@@ -98,7 +96,6 @@ class ExtractPipeline:
                 output = task.setup(output)
 
         for doc in self.corpus:
-
             terms = to_terms_list(doc, **asdict(self.extract_opts))
 
             for task in self.tasks:
@@ -141,7 +138,6 @@ class ExtractPipeline:
         return self.add(PoSFilter(include_pos=include_pos, exclude_pos=exclude_pos))
 
     def ingest_transform_opts(self, transform_opts: TokensTransformOpts) -> ExtractPipeline:
-
         if not transform_opts.keep_numerals:
             self.ingest(filter_nums=True)
 
@@ -223,9 +219,7 @@ class SubstitutionTask:
         self.vocab = vocab
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-
         if self.filename is not None:
-
             self.subst_map = self.subst_map or {}
 
             if not os.path.isfile(self.filename):
@@ -258,7 +252,6 @@ class InfrequentWordsFilter(StopwordFilter):
         super().__init__(extra_stopwords=[])
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-
         _words = infrequent_words(
             pipeline.corpus,
             normalize=self.target,
@@ -279,7 +272,6 @@ class FrequentWordsFilter(StopwordFilter):
         super().__init__(extra_stopwords=[])
 
     def setup(self, pipeline: ExtractPipeline) -> ExtractPipeline:
-
         if self.max_doc_freq >= 100:
             logger.info("max document frequency filter ignored (value >= 100 not allowed")
             return pipeline

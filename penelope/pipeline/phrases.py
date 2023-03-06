@@ -39,12 +39,10 @@ def detect_phrases(
 
     found_phrases = []
     for replace_token, phrase in phrases.items():
-
         if len(phrase) < 2:
             continue
 
         for idx in target_series[target_series == phrase[0]].index:
-
             if (target_series[idx : idx + len(phrase)] == phrase).all():
                 found_phrases.append((idx, replace_token, len(phrase)))
 
@@ -68,7 +66,6 @@ def merge_phrases(
 
 
 def parse_phrases(phrase_file: str, phrases: List[str]):
-
     try:
         phrase_specification = {}
 

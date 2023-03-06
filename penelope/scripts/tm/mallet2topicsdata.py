@@ -21,7 +21,6 @@ Convert MALLET topic model result to InferredTopicsData
 @click.command()
 @click.argument('trained-model-folder', required=True)
 def main(trained_model_folder: str):
-
     convert_document_index(trained_model_folder)
     convert_dictionary(trained_model_folder)
     convert_overview(trained_model_folder)
@@ -31,7 +30,6 @@ def main(trained_model_folder: str):
 
 
 if __name__ == '__main__':
-
     main()  # pylint: disable=no-value-for-parameter
 
     from click.testing import CliRunner

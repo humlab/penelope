@@ -12,6 +12,7 @@ POS_TAGGED_FRAME_FILENAME_POSTFIX = '_pos_tagged_frame_csv.zip'
 jj = os.path.join
 dirname = os.path.dirname
 
+
 # pylint: disable=unused-argument
 def compute(
     args: interface.ComputeOpts,
@@ -21,7 +22,6 @@ def compute(
     """Creates and stores a concept co-occurrence bundle using specified options."""
 
     try:
-
         assert args.is_satisfied()
 
         target_filename = co_occurrence.to_filename(folder=args.target_folder, tag=args.corpus_tag)

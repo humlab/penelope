@@ -574,7 +574,6 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
             else:
                 return '2.0.8RC3'
         except Exception:
-
             xml_path = 'bin'.join(mallet_folder.split("bin")[:-1])
             try:
                 doc = et.parse(xml_path + "pom.xml").getroot()
@@ -613,7 +612,6 @@ class LdaMallet(utils.SaveLoad, basemodel.BaseTopicModel):
         every_second_int_and_float: bool = None
 
         with utils.open(fname, 'rb') as fin:
-
             for lineno, line in enumerate(fin):
                 if lineno == 0 and line.startswith(b"#doc "):
                     continue

@@ -22,7 +22,6 @@ FILE_PATTERN: str = "*.zip"
 
 @dataclass
 class CheckpointOpts:
-
     content_type_code: int = 0
 
     document_index_name: str = field(default=DOCUMENT_INDEX_FILENAME)

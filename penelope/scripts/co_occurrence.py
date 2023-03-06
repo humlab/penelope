@@ -143,7 +143,6 @@ def process_co_ocurrence(
     deserialize_processes: int = 4,
 ):
     try:
-
         if not output_filename:
             raise MissingOptionError("Output filename not specified")
 

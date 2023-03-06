@@ -68,7 +68,6 @@ def _create_mask(df: pd.DataFrame, name: str, value: Any, sign: bool = True) -> 
 
 
 def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
-
     v = np.repeat(True, len(df.index))
     for m in masks:
         v &= _create_mask(df, **m)
@@ -118,7 +117,6 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
         return mask
 
     for attr_name, attr_value in args.items():
-
         attr_sign = True
         attr_operator: Union[str, Callable] = None
 
@@ -129,7 +127,6 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
             continue
 
         if isinstance(attr_value, tuple):
-
             if len(attr_value) not in (2, 3):
                 raise CreateMaskError()
 
@@ -143,7 +140,6 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
                 # else assume numric range (between)
 
             if isinstance(attr_operator, str):
-
                 if not hasattr(operator, attr_operator):
                     raise ValueError(f"operator.{attr_operator} not found")
 
@@ -207,7 +203,6 @@ class PropertyValueMaskingOpts:
         return self.data
 
     def mask(self, doc: pd.DataFrame) -> np.ndarray:
-
         return create_mask(doc, self.data)
 
     def apply(self, doc: pd.DataFrame) -> pd.DataFrame:
@@ -311,7 +306,6 @@ class PivotKeys:
         return [f'{k}{sep}{v}' for k in names for v in self.key_value_name2id(k).keys()]
 
     def is_satisfied(self) -> bool:
-
         if self.pivot_keys is None:
             return True
 
@@ -430,7 +424,6 @@ def try_split_column(
     drop_source: bool = True,
     probe_size: int = 10,
 ) -> pd.DataFrame:
-
     if df is None or len(df) == 0 or source_name not in df.columns:
         return df
 
@@ -455,7 +448,7 @@ def pandas_to_csv_zip(
         dfs = [dfs]
 
     with zipfile.ZipFile(zip_filename, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for (df, filename) in dfs:
+        for df, filename in dfs:
             if not isinstance(df, pd.core.frame.DataFrame) or not isinstance(filename, str):
                 raise ValueError(
                     f"Expected Tuple[pd.DateFrame, filename: str], found Tuple[{type(df)}, {type(filename)}]"
@@ -466,7 +459,6 @@ def pandas_to_csv_zip(
 
 
 def pandas_read_csv_zip(zip_filename: str, pattern='*.csv', **read_csv_opts) -> Dict:
-
     data = dict()
     with zipfile.ZipFile(zip_filename, mode='r') as zf:
         for filename in zf.namelist():
@@ -485,7 +477,6 @@ def ts_store(
     basename: str,
     sep: str = '\t',
 ):
-
     filename = f"{now_timestamp()}_{basename}.{extension}"
 
     if extension == 'xlsx':

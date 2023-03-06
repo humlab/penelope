@@ -31,7 +31,6 @@ class MalletTopicModel(LdaMallet):
         default_mallet_home: str = None,
         **args,
     ):
-
         args: dict = inspect_filter_args(super().__init__, args)
 
         mallet_home: str = os.environ.get('MALLET_HOME', default_mallet_home)
@@ -92,7 +91,6 @@ class MalletTopicModel(LdaMallet):
         self.wordtopics = self.word_topics
 
     def xlog_perplexity(self, content: str) -> float:
-
         perplexity = None
         try:
             # content = open(filename).read()
@@ -108,7 +106,6 @@ class MalletTopicModel(LdaMallet):
         See: https://mallet.cs.umass.edu/diagnostics.php
         """
         try:
-
             topics: pd.DataFrame = (
                 pd.read_xml(self.diagnostics_filename(), xpath=".//topic")
                 .rename(
@@ -135,7 +132,6 @@ class MalletTopicModel(LdaMallet):
         See: https://mallet.cs.umass.edu/diagnostics.php
         """
         try:
-
             # words: pd.DataFrame = pd.read_xml(self.diagnostics_filename(), xpath=".//word")
             dtypes: dict = {
                 'rank': np.int32,
@@ -167,21 +163,18 @@ class MalletTopicModel(LdaMallet):
 
     @staticmethod
     def parse_diagnostics_words(source: str) -> Iterable:
-
         context = ET.iterparse(source, events=("start", "end"))
 
         topic_id: int = None
         item: dict = {}
 
         for event, elem in context:
-
             tag = elem.tag.rpartition('}')[2]
 
             if event == 'start' and tag == 'topic':
                 topic_id = int(elem.attrib.get('id'))
 
             if tag == 'word':
-
                 if event == 'end':
                     item = dict(elem.attrib)
                     item['topic_id'] = int(topic_id)

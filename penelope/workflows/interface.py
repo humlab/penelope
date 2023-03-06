@@ -17,7 +17,6 @@ class WorkflowException(Exception):
 
 @dataclass
 class ComputeOpts:
-
     corpus_type: CorpusType
     corpus_source: Optional[str]
     target_folder: Optional[str]
@@ -39,7 +38,6 @@ class ComputeOpts:
     dry_run: bool = field(init=False, default=False)
 
     def is_satisfied(self):
-
         if not self.corpus_source:
             raise ValueError("please specify corpus file")
 
@@ -56,7 +54,6 @@ class ComputeOpts:
             raise ValueError("please specify at least one filename field")
 
         if self.context_opts:
-
             # if len(self.context_opts.concept or []) == 0:
             #     raise ValueError("please specify at least one concept")
 
@@ -89,11 +86,9 @@ class ComputeOpts:
         return options
 
     def command_line_options(self) -> Mapping[str, str]:
-
         options = {}
         # FIXME: #170 Generated co-occurrence CLI command has wrong options
         if self.context_opts:
-
             options['--context-width'] = self.context_opts.context_width
 
             if len(self.context_opts.concept or []) > 0:
@@ -162,7 +157,6 @@ class ComputeOpts:
         return options
 
     def command_line(self, script: str) -> str:
-
         options: List[str] = []
 
         for key, value in self.command_line_options().items():

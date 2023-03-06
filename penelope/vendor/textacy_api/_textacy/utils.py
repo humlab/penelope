@@ -4,7 +4,6 @@ import collections
 from typing import TYPE_CHECKING, Mapping, Sequence, Union
 
 from penelope.utility import DummyClass
-
 from penelope.vendor.spacy_api import prepend_spacy_path, token_count_by
 
 if TYPE_CHECKING:

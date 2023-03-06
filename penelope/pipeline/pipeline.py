@@ -47,9 +47,7 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Find first task of class `task_cls`. Don't look beyond `stop_cls` if given."""
 
         for task in self.tasks:
-
             if isinstance(task_cls, str):
-
                 if type(task).__name__ == task_cls:
                     return task
 

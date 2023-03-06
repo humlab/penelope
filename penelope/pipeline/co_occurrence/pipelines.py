@@ -18,7 +18,6 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     context_opts: ContextOpts = None,
     **kwargs,  # pylint: disable=unused-argument
 ) -> CorpusPipeline:
-
     passthroughs: set = context_opts.get_concepts().union(extract_opts.get_passthrough_tokens())
     pipeline: pipelines.CorpusPipeline = (
         pipelines.wildcard()

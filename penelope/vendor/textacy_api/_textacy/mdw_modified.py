@@ -66,7 +66,6 @@ class MDWMixIn:
         top_n_terms: int = 25,
         max_n_terms: int = 1000,
     ) -> pd.DataFrame:
-
         return compute_most_discriminating_terms(
             self,
             group1_indices=group1_indices,
@@ -84,7 +83,6 @@ def compute_most_discriminating_terms(
     top_n_terms: int = 25,
     max_n_terms: int = 1000,
 ) -> pd.DataFrame:
-
     """Computes most discriminating words between corpus sub-groups defined by `groupX_indices`
 
     Args:

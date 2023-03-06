@@ -56,7 +56,6 @@ def from_tagged_frame_pipeline(
     force_checkpoint: bool = False,
     **_,
 ) -> pipelines.CorpusPipeline:
-
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
 
     p: pipelines.CorpusPipeline = (
@@ -106,7 +105,6 @@ def from_id_tagged_frame_pipeline(
     store_compressed: bool = True,
     **_,
 ) -> pipelines.CorpusPipeline:
-
     corpus_source: str = corpus_source or corpus_config.pipeline_payload.source
     vectorize_opts: VectorizeOpts = vectorize_opts or VectorizeOpts()
     vectorize_opts.update(already_tokenized=True, lowercase=False, min_tf=extract_opts.global_tf_threshold)

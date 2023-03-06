@@ -39,7 +39,6 @@ def id_tagged_frame_to_DTM_pipeline(
     vectorize_opts: VectorizeOpts = None,
 ) -> CorpusPipeline:
     try:
-
         if corpus_source is None:
             corpus_source = corpus_config.pipeline_payload.source
 

@@ -51,7 +51,6 @@ def click_main(
     store_compressed: bool = True,
     minimum_probability: float = 0.001,
 ):
-
     topic_modeling_opts = {
         k: v
         for k, v in {

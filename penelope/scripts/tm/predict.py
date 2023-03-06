@@ -103,7 +103,6 @@ def main(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ):
-
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
 
     transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(

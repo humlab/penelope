@@ -84,7 +84,7 @@ def read_excel(filename: str, sheet: str) -> pd.DataFrame:
 
 def save_excel(data: pd.DataFrame, filename: str):
     with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
-        for (df, name) in data:
+        for df, name in data:
             df.to_excel(writer, name, engine='xlsxwriter')
         writer.save()
 
@@ -93,7 +93,6 @@ def read_json(path: str, default: dict = None) -> Dict:
     """Reads JSON from file"""
 
     if not isfile(path):
-
         if default:
             return default
 
@@ -104,7 +103,6 @@ def read_json(path: str, default: dict = None) -> Dict:
 
 
 def write_json(path: str, data: Dict, default=None):
-
     if default is not None:
         if not callable(default):
             default = lambda _: default
@@ -188,7 +186,6 @@ def load_term_substitutions(
         }
 
     if vocab is not None:
-
         extras = {x.norm_: substitutions[x.lower_] for x in vocab if x.lower_ in substitutions}
         substitutions.update(extras)
 

@@ -59,7 +59,7 @@ def store(*, zip_or_filename: zipfile.ZipFile, stream: Iterable[Tuple[str, Union
         zf (zipfile.ZipFile): [description]
         stream (Iterable[Tuple[str, Iterable[str]]]): [description]
     """
-    for (filename, document) in stream:
+    for filename, document in stream:
         data: str = document if isinstance(document, str) else ' '.join(document)
         zip_or_filename.writestr(filename, data)
 
