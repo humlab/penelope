@@ -159,7 +159,6 @@ class BaseGUI:
         self.done_callback: Callable[[Any, interface.ComputeOpts], None] = None
 
     def layout(self, hide_input=False, hide_output=False) -> VBox:
-
         return VBox(
             (
                 []
@@ -233,14 +232,12 @@ class BaseGUI:
 
     # @view.capture(clear_output=True)
     def _compute_handler(self, sender: Button, *_):
-
         if self.compute_callback is None:
             raise ValueError("fatal: cannot compute (callback is not specified)")
 
         self._compute_button.disabled = True
         self._cli_button.disabled = True
         try:
-
             opts: interface.ComputeOpts = self.compute_opts
             opts.dry_run = sender.description == "CLI"
             result: Any = self.compute_callback(opts, self.corpus_config)
@@ -277,7 +274,6 @@ class BaseGUI:
         compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any],
         done_callback: Callable[[Any, interface.ComputeOpts], None],
     ) -> "BaseGUI":
-
         self._corpus_filename = notebook_utility.FileChooserExt2(
             path=self.default_corpus_path or home_data_folder(),
             filename=self.default_corpus_filename,
@@ -333,13 +329,11 @@ class BaseGUI:
         return self
 
     def update_config(self, __config: CorpusConfig) -> "BaseGUI":
-
         self._config = __config
         self.update_pos_schema({})
         return self
 
     def update_pos_schema(self, *_) -> "BaseGUI":
-
         pos_schema: utility.PoS_Tag_Scheme = self._config.pos_schema
 
         tags: Dict[str, str] = {f"{tag}/{description}": tag for tag, description in pos_schema.description.items()}
@@ -361,7 +355,6 @@ class BaseGUI:
 
     def pos_select_update(self, event):
         with contextlib.suppress(Exception):
-
             if event['name'] != 'value' or len(event['new']) < len(event['old']):
                 return
 
@@ -374,7 +367,6 @@ class BaseGUI:
 
     @property
     def transform_opts(self) -> TokensTransformOpts:
-
         opts = TokensTransformOpts(
             keep_numerals=True,
             keep_symbols=True,
@@ -399,7 +391,6 @@ class BaseGUI:
 
     @property
     def extract_opts(self) -> ExtractTaggedTokensOpts:
-
         # if ["PASSTHROUGH"] in self._pos_paddings.value:
         #    pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
         #    logger.info(f"PoS paddings expanded to: {pos_paddings}")

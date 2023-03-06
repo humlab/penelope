@@ -42,7 +42,6 @@ class TopicsStateGui:
 
 class NextPrevTopicMixIn:
     def __init__(self, **kwargs) -> None:
-
         # self._topic_id: w.IntSlider = w.IntSlider(min=0, max=199, step=1, value=0, continuous_update=False, description_width='initial')
         self._prev_topic_id: w.Button = w.Button(description="<<", layout=dict(button_style='Success', width="40px"))
         self._topic_id: w.Dropdown = w.Dropdown(options=[], layout=dict(width="80px"))
@@ -65,7 +64,6 @@ class NextPrevTopicMixIn:
         self._topic_id.value = (self._topic_id.value + 1) % self.__wc_max_topic_id
 
     def setup(self, **kwargs) -> "NextPrevTopicMixIn":
-
         if hasattr(super(), "setup"):
             getattr(super(), "setup")(**kwargs)
 

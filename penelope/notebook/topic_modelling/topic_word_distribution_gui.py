@@ -17,7 +17,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def plot_topic_word_distribution(tokens: pd.DataFrame, **args):
-
     source = bokeh.models.ColumnDataSource(tokens)
 
     p = bokeh.plotting.figure(toolbar_location="right", sizing_mode='scale_width', **args)
@@ -59,7 +58,6 @@ OUTPUT_OPTIONS = ['Chart', 'XLSX', 'CSV', 'Clipboard', 'Table']
 
 class TopicWordDistributionGUI(mx.AlertMixIn, mx.NextPrevTopicMixIn, mx.TopicsStateGui):
     def __init__(self, state: mc.TopicModelContainer):
-
         super().__init__(state=state)
         self.data: pd.DataFrame = None
         self.n_topics: int = self.inferred_n_topics
@@ -90,7 +88,6 @@ class TopicWordDistributionGUI(mx.AlertMixIn, mx.NextPrevTopicMixIn, mx.TopicsSt
         return data
 
     def update_handler(self, *_):
-
         if self.n_topics != self.inferred_n_topics:
             self.n_topics = self.inferred_n_topics
             self.topic_id = (0, self.inferred_n_topics - 1, self.inferred_topics.topic_labels)
@@ -101,7 +98,6 @@ class TopicWordDistributionGUI(mx.AlertMixIn, mx.NextPrevTopicMixIn, mx.TopicsSt
         self.buzy(False)
 
     def display_handler(self, *_):
-
         if len(self.data) == 0:
             self.alert("No data!")
             return

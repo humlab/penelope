@@ -22,13 +22,11 @@ class LineDisplayer(ITrendDisplayer):
         self.year_tick: int = 5
 
     def setup(self):
-
         self.output = ipywidgets.Output()
         self.data_source = bm.ColumnDataSource(dict(xs=[[0]], ys=[[0]], labels=[""], colors=['red']))
         self.chart = self.figure(data_source=self.data_source)
 
     def figure(self, *, data_source: bm.ColumnDataSource, x_ticks: Sequence[int] = None):
-
         p = bp.figure(width=self.width, height=self.height, sizing_mode='scale_width')
 
         p.y_range.start = 0
@@ -83,7 +81,6 @@ class LineDisplayer(ITrendDisplayer):
 
         xs_data, ys_data = [], []
         for token_column in unstacked_data.columns:
-
             # smoothers: List[Callable] = kwargs.get('smoothers', []) or []
 
             xs_j, ys_j = temporal_categories, unstacked_data[token_column]

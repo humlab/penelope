@@ -25,7 +25,6 @@ class LoadGUI:
         load_callback: Callable[[str, str], VectorizedCorpus] = None,
         done_callback: Callable[[VectorizedCorpus], None] = None,
     ):
-
         self.default_corpus_folder = default_corpus_folder
         self.filename_pattern = filename_pattern
         self.load_callback: Callable[[str, str], VectorizedCorpus] = load_callback
@@ -45,7 +44,6 @@ class LoadGUI:
     @debug_view.capture(clear_output=True)
     def _load_handler(self, _):
         try:
-
             if not self.is_dtm_corpus(self.corpus_filename):
                 self.warn("👎 Please select a valid corpus file 👎")
                 return
@@ -127,12 +125,10 @@ def create_load_gui(
     corpus_folder: str,
     loaded_callback: Callable[[VectorizedCorpus, str, str], None],
 ):
-
     filename_pattern = '*_vector_data.npz'
 
     # @view.capture(clear_output=True)
     def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:
-
         corpus: VectorizedCorpus = load_corpus(
             folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
         )

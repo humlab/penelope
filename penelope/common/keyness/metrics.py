@@ -391,7 +391,6 @@ def significance(
 def significance_matrix(
     TTM: sp.csc_matrix, metric: Union[Callable, KeynessMetric], normalize: bool = False
 ) -> sp.csc_matrix:
-
     weights, (ii, jj) = significance(TTM, metric, normalize)
 
     M: sp.spmatrix = sp.csc_matrix((weights, (ii, jj)), shape=TTM.shape, dtype=np.float64)

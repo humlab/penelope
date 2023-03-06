@@ -16,7 +16,6 @@ def compute(data: t.Any, n_components: int = 2):
 
 
 def plot(X_pca, clusters=None):
-
     if clusters is not None:
         palette: t.Iterable[str] = itertools.cycle(bokeh.palettes.Colorblind8)
         cmap: dict = {x: next(palette) for x in set(clusters)}

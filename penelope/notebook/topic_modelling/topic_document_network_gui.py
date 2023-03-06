@@ -142,7 +142,6 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         return self._extra_placeholder
 
     def compute(self) -> pd.DataFrame:
-
         return (
             self.inferred_topics.calculator.reset()
             .filter_by_keys(**self.filter_opts.opts)
@@ -151,7 +150,6 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         ).value
 
     def update(self) -> pd.DataFrame:
-
         network_data: pd.DataFrame = self.compute()
         network_data["weight"] = pu.clamp_values(list(network_data["weight"]), (0.1, 2.0))
         di: pd.DataFrame = self.inferred_topics.document_index.pipe(pu.set_index, columns='document_id')[
@@ -171,7 +169,6 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         return network_data
 
     def update_handler(self, *_):
-
         self.alert("⌛ Computing...")
         try:
             self.network_data = self.update()
@@ -184,17 +181,13 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         self.display_handler()
 
     def display_handler(self, *_):
-
         self._output.clear_output()
 
         with self._output:
-
             if self.network_data is None:
-
                 self.alert("😡 No data, please change filters..")
 
             elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
-
                 data: pd.DataFrame = self.network_data
 
                 if self.output_format == "gephi":

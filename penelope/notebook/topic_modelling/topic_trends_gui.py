@@ -129,7 +129,6 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         return yearly_weights
 
     def update_handler(self, *args, **kwargs):  # pylint: disable=unused-argument
-
         self.alert("⌛ Computing...")
         try:
             self.yearly_topic_weights = self.update()

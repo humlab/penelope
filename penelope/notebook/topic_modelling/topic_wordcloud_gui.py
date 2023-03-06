@@ -23,7 +23,6 @@ def display_wordcloud(
     n_words: int = 100,
     output_format: str = 'Wordcloud',
 ):
-
     tokens = inferred_topics.get_topic_title(topic_id, n_tokens=n_words)
 
     if len(tokens) == 0:
@@ -43,7 +42,6 @@ def display_wordcloud(
 
 class WordcloudGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsStateGui):
     def __init__(self, state: mc.TopicModelContainer):
-
         super().__init__(state=state)
 
         self.n_topics: int = self.inferred_n_topics
@@ -64,7 +62,6 @@ class WordcloudGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsStateGui):
         return self
 
     def update_handler(self, *_):
-
         self._topic_id.unobserve(self.update_handler, 'value')
 
         if self.n_topics != self.inferred_n_topics:
@@ -97,7 +94,6 @@ class WordcloudGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.TopicsStateGui):
 
 
 def display_gui(state: mc.TopicModelContainer):
-
     gui: WordcloudGUI = WordcloudGUI(state).setup()
     display(gui.layout())
     gui.update_handler()

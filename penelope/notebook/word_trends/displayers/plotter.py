@@ -50,7 +50,6 @@ def yearly_token_distribution_single_line_plot(
     figure
     """
     if plot is None:
-
         p: figure = bokeh.plotting.figure(
             width=kwargs.get('width', 400),
             height=kwargs.get('height', 200),
@@ -138,7 +137,6 @@ def yearly_token_distribution_multiple_line_plot(
 
     for token_id in indices:
         try:
-
             # ys = x_corpus.data[:, token_id]
             ys = x_corpus.data.getcol(token_id).A.ravel()
             p = yearly_token_distribution_single_line_plot(
@@ -155,11 +153,9 @@ def yearly_token_distribution_multiple_line_plot(
             plots.append(p)
 
         except Exception as ex:  # pylint: disable=bare-except
-
             logger.exception(ex)
 
     if n_columns is not None:
-
         p = bokeh.layouts.gridplot([plots[u : u + n_columns] for u in range(0, len(indices), n_columns)])
 
     return p

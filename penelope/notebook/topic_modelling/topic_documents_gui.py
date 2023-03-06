@@ -16,7 +16,6 @@ from .model_container import TopicModelContainer
 
 # FIXME #157 Strange weights are displayed for certain topics (integer value)
 class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
-
     WIDGET_HEIGHT: str = '450px'
 
     def __init__(self, state: TopicModelContainer | dict):
@@ -94,12 +93,10 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         return self
 
     def update_handler(self, *_):
-
         self._output.clear_output()
 
         with self._output:
             try:
-
                 self.alert("Computing...")
                 data: pd.DataFrame = self.update()
 
@@ -261,7 +258,6 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
         return data
 
     def update_handler(self, *_):
-
         if len(self.text) < 3:
             self.alert("Please enter a token with at least three chars.")
             return

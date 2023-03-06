@@ -10,7 +10,6 @@ from . import cluster_plot
 
 
 def create_filter_source(token_counts):
-
     # cluster_info = token_counts['token'].sort_values().to_dict()
     cluster_info = token_counts['token'].to_dict()
 
@@ -22,13 +21,11 @@ def create_filter_source(token_counts):
 
 class ClustersMeanPlot:
     def __init__(self):
-
         self.source = None
         self.figure = None
         self.smoothers = [cf.rolling_average_smoother('nearest', 3), cf.pchip_spline]
 
     def update(self, x_corpus, ys_matrix, token_counts=None, smoothers=None) -> "ClustersMeanPlot":
-
         filter_source = create_filter_source(token_counts)
 
         colors = itertools.cycle(bokeh.palettes.Category20[20])
@@ -58,7 +55,6 @@ class ClustersMeanPlot:
 # pylint: disable=too-many-locals, too-many-statements
 class ClustersCountPlot:
     def __init__(self):
-
         self.figure = None
         # self.source = bokeh.models.ColumnDataSource(dict(cluster=[1,2,3], count=[1,2,3]))
 
@@ -66,7 +62,6 @@ class ClustersCountPlot:
         #     self.handle = bokeh.plotting.show(self.figure, notebook_handle=True)
 
     def update(self, token_counts) -> "ClustersCountPlot":
-
         colors = itertools.cycle(bokeh.palettes.Category20[20])
 
         source = dict(

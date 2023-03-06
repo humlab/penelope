@@ -16,7 +16,6 @@ debug_view = Output(layout={"border": "1px solid black"})
 
 class LoadGUI:
     def __init__(self, default_path: str = None, default_filename: str = '', filename_pattern: str = None):
-
         self.default_path: str = default_path
         self.default_filename: str = default_filename
         self.filename_pattern: str = filename_pattern
@@ -31,7 +30,6 @@ class LoadGUI:
 
     # @view.capture(clear_output=True)
     def _load_handler(self, *_):
-
         if self.load_callback is None:
             return
 
@@ -70,7 +68,6 @@ class LoadGUI:
         load_callback: Callable[[str], None],
         loaded_callback: Callable[[co_occurrence.Bundle], None],
     ) -> "LoadGUI":  # pylint: disable=redefined-outer-name)
-
         self.filename_pattern = filename_pattern
 
         self._filename = FileChooserExt2(
@@ -125,7 +122,6 @@ def create_load_gui(
     filename_pattern: str = co_occurrence.FILENAME_PATTERN,
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> "LoadGUI":
-
     gui: LoadGUI = LoadGUI(default_path=data_folder).setup(
         filename_pattern=filename_pattern,
         load_callback=load_co_occurrence_bundle,

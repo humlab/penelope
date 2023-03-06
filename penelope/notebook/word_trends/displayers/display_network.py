@@ -61,7 +61,6 @@ DEFAULT_EDGE_STYLE = {
 
 
 def css_styles(categories: List[int], custom_styles: dict) -> dict:
-
     custom_styles = custom_styles or {}
     styles = [
         {
@@ -91,7 +90,6 @@ def css_styles(categories: List[int], custom_styles: dict) -> dict:
 
 
 def create_network(co_occurrences: pd.DataFrame, category_column_name: str) -> ipycytoscape.CytoscapeWidget:
-
     unique_tokens = co_occurrences['token'].unique().tolist()
     unique_categories = co_occurrences[category_column_name].unique().tolist()
 
@@ -220,7 +218,6 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
             self.network.relayout()
 
     def set_layout(self):
-
         self.alert("Layout: " + self.network_layout)
 
         if not self.network:

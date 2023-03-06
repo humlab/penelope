@@ -44,7 +44,6 @@ def computed_callback(
     corpus: VectorizedCorpus,
     opts: interface.ComputeOpts,
 ) -> None:
-
     if opts.dry_run:
         return
 
@@ -70,7 +69,6 @@ def create_to_dtm_gui(
     corpus_config: Union[pipeline.CorpusConfig, str],
     resources_folder: str = None,
 ) -> widgets.CoreWidget:
-
     resources_folder = resources_folder or corpus_folder
     config: pipeline.CorpusConfig = (
         pipeline.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)

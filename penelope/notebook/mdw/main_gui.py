@@ -23,6 +23,5 @@ def default_loaded_callback(corpus: dtm.VectorizedCorpus, done_callback=display_
 
 
 def create_main_gui(corpus_folder: str, loaded_callback=default_loaded_callback) -> VBox:
-
     gui = load_dtm_gui.create_load_gui(corpus_folder=corpus_folder, loaded_callback=loaded_callback)
     return VBox([gui.layout(), view_gui, view_display])

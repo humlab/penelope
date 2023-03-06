@@ -14,7 +14,6 @@ from penelope.common import keyness as pk
 
 @dataclass
 class TrendsComputeOpts:
-
     normalize: bool
     keyness: pk.KeynessMetric
 
@@ -120,7 +119,6 @@ class TrendsDataBase(abc.ABC):
         return top_terms
 
     def transform(self, opts: TrendsComputeOpts) -> "TrendsDataBase":
-
         if self._transformed_corpus is not None:
             if not self._compute_opts.invalidates_corpus(opts):
                 return self
@@ -154,7 +152,6 @@ class TrendsData(TrendsDataBase):
         super().__init__(corpus=corpus, n_top=n_top)
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
-
         corpus: pc.VectorizedCorpus = (
             self.corpus.tf_idf()
             if opts.keyness == pk.KeynessMetric.TF_IDF
@@ -187,7 +184,6 @@ class BundleTrendsData(TrendsDataBase):
         self.category_column: str = category_column
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
-
         transformed_corpus: pc.VectorizedCorpus = self.bundle.keyness_transform(
             opts=ComputeKeynessOpts(
                 temporal_pivot=opts.temporal_key,

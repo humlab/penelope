@@ -75,7 +75,6 @@ fit_polynomial4 = lambda xs, ys: fit_curve(polynomial4, xs, ys)
 
 
 def fit_curve_ravel(fx, xs, Y, step=0.1):
-
     assert len(Y.shape) == 2
 
     if xs is None:
@@ -107,7 +106,6 @@ def rolling_average_smoother(key, window_size):
 
 
 def boxplot_statistics(values):
-
     if len(values) == 0:
         return 0, 0, 0, 0, 0, np.empty(shape=(0, 0))
 

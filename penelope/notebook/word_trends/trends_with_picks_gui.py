@@ -13,7 +13,6 @@ from .interface import TrendsData
 
 class TokensSelector(abc.ABC):
     def __init__(self, tokens: pd.DataFrame, token_column='l2_norm_token', norms_columns=None):
-
         self.tokens = tokens
         self.token_column = token_column
         self.norms_columns = norms_columns or (
@@ -26,7 +25,6 @@ class TokensSelector(abc.ABC):
         self.display(tokens)
 
     def display(self, tokens: pd.DataFrame) -> "TokensSelector":
-
         if tokens is None:
             return self
 
@@ -96,7 +94,6 @@ class SelectMultipleTokensSelector(TokensSelector):
         self._token_to_index = {w: i for i, w in enumerate(self.tokens.index.tolist())}
 
     def _create_widget(self) -> SelectMultiple:
-
         _tokens = list(self.tokens.index)
         _layout = Layout(width="200px")
         self._tokens_widget = SelectMultiple(options=_tokens, value=[], rows=30)
@@ -121,15 +118,12 @@ class SelectMultipleTokensSelector(TokensSelector):
         self._tokens_widget.options = _options
 
     def get_selected_tokens(self) -> List[str]:
-
         return list(self._tokens_widget.value)
 
     def get_selected_indices(self) -> List[int]:
-
         return [self._token_to_index[w] for w in self._tokens_widget.value]
 
     def get_tokens_slice(self, start: int = 0, n: int = 0):
-
         return self._tokens_widget.options[start : start + n]
 
     def set_selected_indices(self, indices: List[int]):
@@ -171,7 +165,6 @@ class TrendsWithPickTokensGUI:
         self._output = Output(layout=Layout(width="80%"))
 
     def setup(self):
-
         self._page_size.observe(self._update, "value")
         self._split.observe(self.split_changed, "value")
         self._forward.on_click(self._stepper_clicked)
@@ -179,7 +172,6 @@ class TrendsWithPickTokensGUI:
         self.token_selector.on_selection_change_handler(self._update)
 
     def _stepper_clicked(self, b):
-
         _selected_indices = self.token_selector.get_selected_indices()
         _current_index = min(_selected_indices) if len(_selected_indices) > 0 else 0
 
@@ -234,7 +226,6 @@ class TrendsWithPickTokensGUI:
         token_sector_cls: TokensSelector = SelectMultipleTokensSelector,
         tokens_selected=None,
     ) -> "TrendsWithPickTokensGUI":
-
         gui = TrendsWithPickTokensGUI(
             token_selector=token_sector_cls(tokens),
             update_handler=lambda tokens, split: (tokens_selected or TrendsWithPickTokensGUI.default_tokens_plotter)(

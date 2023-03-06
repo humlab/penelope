@@ -67,7 +67,6 @@ DEFAULT_EDGE_STYLE = {
 
 
 def css_styles(topic_ids: List[int], custom_styles: dict) -> dict:
-
     custom_styles = custom_styles or {}
     styles = [
         {
@@ -97,7 +96,6 @@ def css_styles(topic_ids: List[int], custom_styles: dict) -> dict:
 
 
 def to_dict(topics_tokens: pd.DataFrame) -> dict:
-
     unique_topics = topics_tokens.groupby(['topic', 'topic_id']).size().reset_index()[['topic', 'topic_id']]
     unique_tokens = topics_tokens.groupby('token')['topic_id'].apply(list)
 
@@ -141,7 +139,6 @@ def to_dict(topics_tokens: pd.DataFrame) -> dict:
 
 
 def create_network(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
-
     unique_topics = topics_tokens.groupby(['topic', 'topic_id']).size().reset_index()[['topic', 'topic_id']]
     unique_tokens = topics_tokens.groupby('token')['topic_id'].apply(list)
     topic_nodes = [
@@ -213,7 +210,6 @@ def create_network3(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget
 
 
 def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
-
     unique_topics = topics_tokens.groupby(['topic', 'topic_id']).size().reset_index()[['topic', 'topic_id']]
     unique_tokens = topics_tokens.groupby('token')['topic_id'].apply(list)
 
@@ -262,7 +258,6 @@ def create_networkx(topics_tokens: pd.DataFrame) -> nx.Graph:
 
 class ViewModel:
     def __init__(self, filename_fields: FilenameFieldSpecs = None):
-
         self.filename_fields: FilenameFieldSpecs = filename_fields
 
         self.inferred_topics: topic_modelling.InferredTopicsData = None
@@ -273,7 +268,6 @@ class ViewModel:
         return self._top_topic_tokens
 
     def update(self, data: topic_modelling.InferredTopicsData = None) -> "ViewModel":
-
         if data is not None:
             self.inferred_topics = data
 
@@ -310,7 +304,6 @@ def default_loader(folder: str, filename_fields: Any = None) -> topic_modelling.
 
 @view.capture(clear_output=True)
 def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
-
     if opts.model.top_topic_tokens is None:
         return
 
@@ -340,7 +333,6 @@ def default_displayer(opts: "TopicsTokenNetworkGUI") -> None:
 # pylint: disable=too-many-instance-attributes
 class TopicsTokenNetworkGUI:
     def __init__(self, network: ipycytoscape.CytoscapeWidget = None, model: ViewModel = None):
-
         self.network: ipycytoscape.CytoscapeWidget = network
         self.model: ViewModel = model
 
@@ -418,7 +410,6 @@ class TopicsTokenNetworkGUI:
 
     @view.capture(clear_output=False)
     def _load_handler(self, *_):
-
         if self.loader is None:
             return
 

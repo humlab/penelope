@@ -35,7 +35,6 @@ class BarDisplayer(ITrendDisplayer):
     #     return pd.DataFrame(data=data)
 
     def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:
-
         unstacked_data: pd.DataFrame = data[-1]
 
         # ipydisplay(unstacked_data)

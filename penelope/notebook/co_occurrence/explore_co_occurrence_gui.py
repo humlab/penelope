@@ -31,7 +31,6 @@ class ExploreGUI:
         return self
 
     def display(self, trends_data: word_trends.BundleTrendsData) -> "ExploreGUI":
-
         try:
             self.trends_data = trends_data
 

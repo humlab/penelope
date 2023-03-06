@@ -31,14 +31,12 @@ class GoodnessOfFitComputeError(ValueError):
 
 @dataclass
 class GofData:
-
     goodness_of_fit: pd.DataFrame = None
     most_deviating_overview: pd.DataFrame = None
     most_deviating: pd.DataFrame = None
 
     @staticmethod
     def compute(corpus: VectorizedCorpus, n_top: int) -> "GofData":
-
         goodness_of_fit = compute_goddness_of_fits_to_uniform(corpus, None, verbose=True, metrics=['l2_norm', 'slope'])
         most_deviating_overview = compile_most_deviating_words(goodness_of_fit, n_top=n_top)
         most_deviating = get_most_deviating_words(
@@ -194,7 +192,6 @@ def compute_goddness_of_fits_to_uniform(
         df_gof = df_gof.nlargest(n_top_count, columns=["word_count"])
 
     if not verbose:
-
         if 'stats' in metrics:
             metrics.remove('stats')
 
@@ -237,7 +234,6 @@ def get_most_deviating_words(
 
 
 def compile_most_deviating_words(df: pd.DataFrame, n_top: int = 500) -> pd.DataFrame:
-
     computed_metrics = list(set(df.columns) - set(["token", "word_count"]))
     xf = df[["token", "word_count"]]
     for metric in computed_metrics:
@@ -246,7 +242,6 @@ def compile_most_deviating_words(df: pd.DataFrame, n_top: int = 500) -> pd.DataF
 
 
 def plot_metric_histogram(df_gof: pd.DataFrame, metric: str = 'l2_norm', bins: int = 100):
-
     p: bp.figure = bp.figure(width=300, height=300)
 
     hist, edges = np.histogram(df_gof[metric].fillna(0), bins=bins)
@@ -271,7 +266,6 @@ def plot_metrics(df_gof: pd.DataFrame, bins: int = 100):
 
 
 def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str):
-
     min_year = x_corpus.document_index.year.min()
     max_year = x_corpus.document_index.year.max()
     xs = np.arange(min_year, max_year + 1, 1)
@@ -293,7 +287,6 @@ def generate_slopes(x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, me
 def plot_slopes(
     x_corpus: VectorizedCorpus, most_deviating: pd.DataFrame, metric: str, height: int = 300, width: int = 300
 ) -> Dict:
-
     data = generate_slopes(x_corpus, most_deviating, metric)
 
     source = bm.ColumnDataSource(data)

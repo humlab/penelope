@@ -41,7 +41,6 @@ class PivotKeysMixIn:
     """Defines controls and event logics for pivot keys and filters for pivot key values."""
 
     def __init__(self, pivot_key_specs: PivotKeySpecArg = None, **kwargs):
-
         super().__init__(**kwargs)
 
         self._display_event_handler: t.Callable[[t.Any], None] = None
@@ -92,7 +91,6 @@ class PivotKeysMixIn:
         return self
 
     def reset(self) -> "PivotKeysMixIn":
-
         self.observe(value=False, handler=self._display_event_handler)
         self._multi_pivot_keys_picker.value = ['None']
         self._filter_keys.value = []
@@ -153,7 +151,6 @@ class PivotKeysMixIn:
     def pivot_key_handler(self, change: dict, *_):
         """Pivot key selection has changed"""
         try:
-
             if self.prevent_event:
                 return
 
@@ -192,7 +189,6 @@ class PivotKeysMixIn:
         )
 
     def observe(self, value: bool, *, handler: t.Callable[[t.Any], None], **kwargs) -> None:
-
         if handler is None:
             return
 
@@ -244,7 +240,6 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
         self._line_color_preset_picker: w.Dropdown = w.Dropdown(description="", value=None)
 
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
-
         width: str = kwargs.get('width', '120px')
 
         self._filter_keys.rows = kwargs.get('rows', 12)
@@ -288,7 +283,6 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
         return self
 
     def _set_color_by_preset(self, *_):
-
         if self._line_color_preset_picker.value:
             self._line_color.value = self._line_color_preset_picker.value
             self._line_color_preset_picker.value = None
@@ -311,7 +305,6 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
         self.alert(f"✅ {name} added!")
 
     def _del_line_callback(self, *_):
-
         if not self._lines.options:
             self.alert("😡 no lines to delete")
             return

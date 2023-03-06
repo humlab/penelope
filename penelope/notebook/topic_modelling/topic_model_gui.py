@@ -90,7 +90,6 @@ class ComputeTopicModelUserInterface(TopicsStateGui):
         self.minimum_probability: float = 0.001
 
     def prepare_widgets(self):
-
         gui = types.SimpleNamespace(
             apply_idf=widgets.ToggleButton(
                 value=False,
@@ -164,7 +163,6 @@ class ComputeTopicModelUserInterface(TopicsStateGui):
             self.model_widgets.spinner.layout.visibility = 'visible' if is_buzy else 'hidden'
 
         def compute_topic_model_handler(*_):
-
             self.model_widgets.output.clear_output()
 
             buzy(True)
@@ -172,9 +170,7 @@ class ComputeTopicModelUserInterface(TopicsStateGui):
             gensim_logger.setLevel(logging.INFO if self.model_widgets.show_trace.value else logging.WARNING)
 
             with self.model_widgets.output:
-
                 try:
-
                     name: str = str(uuid.uuid1())
 
                     # FIXME: Move code block out of GUI (to workflows)
@@ -240,7 +236,6 @@ class ComputeTopicModelUserInterface(TopicsStateGui):
 
         def method_change_handler(*_):
             with self.model_widgets.output:
-
                 self.model_widgets.compute.disabled = True
                 method = self.model_widgets.method.value
 
@@ -269,7 +264,6 @@ class ComputeTopicModelUserInterface(TopicsStateGui):
 
 class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
     def __init__(self, data_folder: str, state: TopicModelContainer, document_index: pd.DataFrame, **opts):
-
         super().__init__(data_folder, state, document_index, **opts)
 
         self.substitution_filename = self.opts.get('substitution_filename', None)
@@ -279,7 +273,6 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
         self.widget_boxes = self.corpus_widgets_boxes + self.widget_boxes
 
     def display(self, corpus=None):
-
         # assert hasattr(corpus, 'spacy_lang), 'Must be a textaCy corpus!'
 
         def pos_change_handler(*_):
@@ -311,7 +304,6 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
         return terms
 
     def _create_extract_pipeline(self, corpus):
-
         gui = self.corpus_widgets
 
         pipeline = (
@@ -333,7 +325,6 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
         return pipeline
 
     def prepare_textacy_widgets(self):
-
         item_layout = dict(
             display='flex',
             flex_flow='row',
@@ -406,7 +397,6 @@ class TextacyCorpusUserInterface(ComputeTopicModelUserInterface):
 
 class PreparedCorpusUserInterface(ComputeTopicModelUserInterface):
     def __init__(self, data_folder: str, state: TopicModelContainer, fn_doc_index, **opts):
-
         super().__init__(data_folder, state, document_index=None, **opts)
 
         self.corpus_widgets, self.corpus_widgets_boxes = self.prepare_source_widgets()
@@ -432,7 +422,6 @@ class PreparedCorpusUserInterface(ComputeTopicModelUserInterface):
         return doc_terms
 
     def display(self, _=None):  # pylint: disable=arguments-differ, unused-argument
-
         ComputeTopicModelUserInterface.display(self, None)
 
 

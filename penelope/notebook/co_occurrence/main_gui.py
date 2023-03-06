@@ -24,7 +24,6 @@ def create(
     filename_pattern: str = co_occurrence.FILENAME_PATTERN,
     loaded_callback: Callable[[co_occurrence.Bundle], None] = None,
 ) -> load_gui.LoadGUI:
-
     gui: load_gui.LoadGUI = load_gui.LoadGUI(default_path=data_folder).setup(
         filename_pattern=filename_pattern,
         load_callback=co_occurrence.Bundle.load,
@@ -66,7 +65,6 @@ class MainGUI:
         data_folder: str,
         resources_folder: str,
     ) -> widgets.VBox:
-
         self.bundle: co_occurrence.Bundle = None
         self.trends_data: BundleTrendsData = None
         self.config = (
@@ -92,7 +90,6 @@ class MainGUI:
         self.gui_explore: explore_gui.ExploreGUI = None
 
     def layout(self):
-
         accordion = widgets.Accordion(children=[self.gui_load.layout(), self.gui_compute.layout()])
 
         accordion.set_title(0, "LOAD AN EXISTING CO-OCCURRENCE COMPUTATION")
@@ -102,7 +99,6 @@ class MainGUI:
 
     @view.capture(clear_output=CLEAR_OUTPUT)
     def display_explorer(self, bundle: co_occurrence.Bundle, *_, **__):
-
         if bundle is None:
             return
 
