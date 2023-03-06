@@ -26,7 +26,6 @@ class PoSCountError(ValueError):
 
 @dataclass
 class TokenCountMixIn:
-
     token_counts: dict = field(init=False, default_factory=dict)
     enable_counts: bool = True
 
@@ -57,7 +56,6 @@ class TokenCountMixIn:
 
 @dataclass
 class PoSCountMixIn:
-
     pos_column: str = None
     document_tfs: Mapping[str, Tuple[Any, ...]] = field(init=False, default_factory=dict)
     enable_counts: bool = True
@@ -119,12 +117,10 @@ class PoSCountMixIn:
 
 @dataclass
 class TransformTokensMixIn:
-
     transform_opts: Optional[TokensTransformOpts] = None
     transformer: Optional[TokensTransformer] = None
 
     def setup_transform(self) -> interfaces.ITask:
-
         if self.transform_opts is None:
             return self
 
@@ -145,7 +141,6 @@ class TransformTokensMixIn:
 
 @dataclass
 class VocabularyIngestMixIn:
-
     token2id: Token2Id = None
     ingest_tokens: bool = False
 
@@ -159,6 +154,5 @@ class VocabularyIngestMixIn:
         self.token2id = self.pipeline.payload.token2id
 
     def ingest(self, tokens: List[str]):
-
         if self.ingest_tokens:
             self.token2id.ingest(tokens)
