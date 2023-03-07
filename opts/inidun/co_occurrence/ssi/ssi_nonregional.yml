@@ -28,9 +28,17 @@ pipeline_payload:
     lang: en
     lemma_column: lemma_
     pos_column: pos_
-    spacy_model: en_core_web_sm
-    tagger: spaCy
     text_column: text
+    tagger:
+      class_name: penelope.pipeline.spacy.SpacyTagger
+      options:
+        model_name: en_core_web_sm
+        disable: null
+        exclude: null
+        keep_hyphens: false
+        remove_whitespace_ents: false
+        attributes: [ text, lemma_, pos_, is_punct, is_stop ]
+        filters: null
   pos_schema_name: Universal
 filter_opts:
   data:
