@@ -9,7 +9,6 @@ from ..pipeline import CorpusConfig
 @click.argument('config-filename', type=click.STRING)
 @option2('--corpus-source', default=None)
 def main(config_filename: str = None, corpus_source: str = None):
-
     config: CorpusConfig = CorpusConfig.load(path=config_filename)
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
