@@ -10,7 +10,7 @@ from . import tagged_frame, tasks
 if TYPE_CHECKING:
     from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
 
-    from . import pipelines
+    from . import interfaces, pipelines
     from .checkpoint import CheckpointOpts
 
 # pylint: disable=too-many-public-methods, no-member
@@ -66,24 +66,31 @@ class PipelineShortcutMixIn:
             tagged_frame.LoadIdTaggedFrame(corpus_source=folder, file_pattern=file_pattern, id_to_token=id_to_token)
         )
 
+    def to_tagged_frame(
+        self: pipelines.CorpusPipeline,
+        tagger: interfaces.IDocumentTagger = None,
+    ) -> pipelines.CorpusPipeline:
+        """_ => DATAFRAME"""
+        return self.add(tagged_frame.ToTaggedFrame(tagger=tagger))
+
     def to_id_tagged_frame(
         self: pipelines.CorpusPipeline,
         ingest_vocab_type: str = tagged_frame.IngestVocabType.Incremental,
     ) -> pipelines.CorpusPipeline:
-        """_ => DATAFRAME"""
+        """TAGGED_FRAME => DATAFRAME"""
         return self.add(tagged_frame.ToIdTaggedFrame(ingest_vocab_type=ingest_vocab_type))
 
     def store_id_tagged_frame(
         self: pipelines.CorpusPipeline,
         folder: str,
     ) -> pipelines.CorpusPipeline:
-        """_ => DATAFRAME"""
+        """TAGGED_FRAME => TAGGED_FRAME"""
         return self.add(tagged_frame.StoreIdTaggedFrame(folder=folder))
 
     def load_tagged_xml(
         self: pipelines.CorpusPipeline, filename: str, options: TextReaderOpts
     ) -> pipelines.CorpusPipeline:
-        """SparvXML => DATAFRAME"""
+        """SparvXML => TAGGED_FRAME"""
         return self.add(tasks.LoadTaggedXML(filename=filename, reader_opts=options))
 
     def checkpoint(
@@ -155,7 +162,6 @@ class PipelineShortcutMixIn:
         close: bool = True,
         to_lower: bool = True,
     ) -> pipelines.CorpusPipeline:
-
         return self.add(
             tasks.Vocabulary(
                 token_type=self.encode_token_type(lemmatize, to_lower),
@@ -167,7 +173,6 @@ class PipelineShortcutMixIn:
         )
 
     def encode_token_type(self, lemmatize, to_lower):
-
         if lemmatize:
             return tasks.Vocabulary.TokenType.Lemma
 
@@ -183,7 +188,6 @@ class PipelineShortcutMixIn:
         transform_opts: TokensTransformOpts = None,
         normalize_column_names: bool = False,
     ) -> pipelines.CorpusPipeline:
-
         if (extract_opts is None or extract_opts.of_no_effect) and (
             transform_opts is None or transform_opts.of_no_effect
         ):
