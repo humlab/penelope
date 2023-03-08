@@ -39,7 +39,8 @@ disable=invalid-name,
         unspecified-encoding,
         use-dict-literal,
         unnecessary-lambda-assignment,
-        unnecessary-direct-lambda-call
+        unnecessary-direct-lambda-call,
+        nested-min-max
 
 
 [REPORTS]
@@ -92,4 +93,4 @@ min-public-methods=2
 
 [EXCEPTIONS]
 
-overgeneral-exceptions=BaseException
+overgeneral-exceptions=builtins.BaseException
