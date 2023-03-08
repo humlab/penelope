@@ -32,7 +32,7 @@ pipeline_payload:
     tagger:
       class_name: penelope.pipeline.spacy.SpacyTagger
       options:
-        model_name: en_core_web_sm
+        model: en_core_web_sm
         disable: null
         exclude: null
         keep_hyphens: false
