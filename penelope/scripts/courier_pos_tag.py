@@ -22,8 +22,8 @@ def remove_hyphens(text: str) -> str:
     return result
 
 
-# @click.command()
-# @click.argument('config-filename', type=click.STRING)
+@click.command()
+@click.argument('config-filename', type=click.STRING)
 # @click.option('fix-hypenation/no-fix-hypenation', help='Use word baseforms', is_flag=True, default=True)
 def main(config_filename: str = None):  # pylint: disable=redefined-outer-name
     load_cwd_dotenv()
@@ -50,6 +50,6 @@ def main(config_filename: str = None):  # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    config_filename = './opts/inidun/configs/courier_article_0_2_2.yml'
-
-    main(config_filename=config_filename)
+    # config_filename = './opts/inidun/configs/courier_article.yml'
+    # main(config_filename=config_filename)
+    main()
