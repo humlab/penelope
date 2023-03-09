@@ -3,7 +3,7 @@
 import pytest
 
 from penelope.notebook.topic_modelling import TopicModelContainer
-from penelope.pipeline.spacy import convert, SpacyTagger
+from penelope.pipeline.spacy import SpacyTagger, convert
 from penelope.topic_modelling import InferredTopicsData
 from penelope.vendor.spacy_api import Language, load_model
 from tests.utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER

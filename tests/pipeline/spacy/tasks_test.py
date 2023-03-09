@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, DocumentPayload, ITask, PipelinePayload
-from penelope.pipeline.spacy.tagger import SpacyTagger
-from penelope.pipeline.spacy import tasks
 from penelope.pipeline import tagged_frame as tagged_frame_tasks
+from penelope.pipeline.spacy import tasks
+from penelope.pipeline.spacy.tagger import SpacyTagger
 from penelope.utility.pos_tags import PoS_Tag_Schemes
 from penelope.vendor import spacy_api
 
@@ -59,7 +59,7 @@ def test_spacy_doc_to_tagged_frame(looking_back, test_payload, tagger):
     pytest.importorskip("spacy")
     payload = DocumentPayload(content_type=ContentType.SPACYDOC, filename='hello.txt', content=looking_back)
     prior = Mock(spec=ITask, outstream=lambda: [payload])
-    task =  tagged_frame_tasks.ToTaggedFrame(prior=prior, tagger=tagger)
+    task = tagged_frame_tasks.ToTaggedFrame(prior=prior, tagger=tagger)
     task.register_pos_counts = lambda p: p
     _ = patch_spacy_pipeline(test_payload).add([task]).setup()
     payload_next = task.process_payload(payload)

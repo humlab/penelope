@@ -13,8 +13,9 @@ from . import convert
 # [ 'tagger', 'parser', 'ner', 'entity_linker', 'entity_ruler', 'textcat', 'textcat_multilabel', 'lemmatizer',
 #   'trainable_lemmatizer', 'morphologizer', 'attribute_ruler', 'senter', 'sentencizer', 'tok2vec', 'transformer', ]
 
-DEFAULT_SPACY_DISABLES = [ 'textcat', 'parser' ]
-DEFAULT_SPACY_EXCLUDES = [ 'ner' ]
+DEFAULT_SPACY_DISABLES = ['textcat', 'parser']
+DEFAULT_SPACY_EXCLUDES = ['ner']
+
 
 @dataclass
 class SpacyTagger(interfaces.IDocumentTagger):
@@ -26,6 +27,7 @@ class SpacyTagger(interfaces.IDocumentTagger):
     Returns:
         _type_: _description_
     """
+
     model: Union[str, spacy_api.Language] = None
 
     disable: list[str] = None

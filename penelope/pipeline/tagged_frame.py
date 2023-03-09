@@ -257,7 +257,6 @@ class ToTaggedFrame(PoSCountMixIn, ITask):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.SPACYDOC]
         self.out_content_type = ContentType.TAGGED_FRAME
 
-
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         payload.update(self.out_content_type, self.tag(payload=payload))
 

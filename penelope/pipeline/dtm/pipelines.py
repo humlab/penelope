@@ -1,7 +1,7 @@
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 
-from ..config import CorpusConfig
 from .. import pipelines
+from ..config import CorpusConfig
 
 
 def wildcard_to_DTM_pipeline(
@@ -27,7 +27,6 @@ def wildcard_to_DTM_pipeline(
         return p
     except Exception as ex:
         raise ex
-
 
 
 def to_DTM_pipeline(  # pylint: disable=too-many-arguments
@@ -56,6 +55,7 @@ def to_DTM_pipeline(  # pylint: disable=too-many-arguments
 
     except Exception as ex:
         raise ex
+
 
 def id_tagged_frame_to_DTM_pipeline(
     corpus_config: CorpusConfig,

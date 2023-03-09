@@ -165,7 +165,6 @@ def test_passthrough_process_succeeds():
 
 
 def test_project_process_with_text_payload_succeeds():
-
     def project(p: DocumentPayload):
         p.content = "HELLO"
         return p
@@ -212,10 +211,7 @@ def patch_spacy_doc_to_tagged_frame(
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_spacy_doc_to_tagged_frame)
 def test_text_to_tagged_frame_with_text_payload_succeeds():
-    task = tagged_frame_tasks.ToTaggedFrame(
-        pipeline=Mock(spec=CorpusPipeline),
-        tagger=MagicMock(name='tagger')
-    ).setup()
+    task = tagged_frame_tasks.ToTaggedFrame(pipeline=Mock(spec=CorpusPipeline), tagger=MagicMock(name='tagger')).setup()
     task.register_pos_counts = MagicMock(name='register_pos_counts')
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)

@@ -7,12 +7,12 @@ from typing import List
 
 import pandas as pd
 import pytest
-from penelope.pipeline.interfaces import IDocumentTagger
 
 import penelope.workflows.vectorize.dtm as workflow
 from penelope import corpus as corpora
 from penelope import pipeline, utility
-from penelope.pipeline import tasks, pipelines
+from penelope.pipeline import pipelines, tasks
+from penelope.pipeline.interfaces import IDocumentTagger
 from penelope.pipeline.spacy import SpacyTagger
 from penelope.vendor import spacy_api
 from penelope.workflows.interface import ComputeOpts

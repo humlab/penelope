@@ -2,24 +2,22 @@
 # pylint: disable=unused-argument, unused-import
 
 try:
-
     SPACY_INSTALLED: bool = True
 
     from spacy.language import Language
     from spacy.tokens import Doc, Token
 
     from ._spacy import (
-        spacy_data_path,
         load,
         load_model,
         load_model_by_parts,
         prepend_path,
         prepend_spacy_path,
+        spacy_data_path,
         token_count_by,
     )
 
 except (ImportError, NameError):
-
     SPACY_INSTALLED: bool = False
 
     def stub(*_, **__):
