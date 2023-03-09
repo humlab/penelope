@@ -20,8 +20,6 @@ try:
 
 except (ImportError, NameError):
 
-    raise
-
     SPACY_INSTALLED: bool = False
 
     def stub(*_, **__):

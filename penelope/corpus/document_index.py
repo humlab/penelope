@@ -583,7 +583,7 @@ def consolidate_document_index(document_index: DocumentIndex, reader_index: Docu
     if len(columns) > 0:
         return document_index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
 
-    return reader_index
+    return document_index
 
 
 def update_document_index_token_counts(
