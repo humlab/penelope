@@ -1,7 +1,5 @@
 import uuid
 
-import pytest
-
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
 from penelope.pipeline.spacy import SpacyTagger

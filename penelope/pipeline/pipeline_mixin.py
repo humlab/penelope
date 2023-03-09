@@ -152,12 +152,8 @@ class PipelineShortcutMixIn:
     def project(
         self: pipelines.CorpusPipeline,
         project: Callable[[Any], Any],
-        project_in_type: interfaces.ContentType | list[interfaces.ContentType] = interfaces.ContentType.ANY,
-        project_out_type: interfaces.ContentType = interfaces.ContentType.PASSTHROUGH,
     ) -> pipelines.CorpusPipeline:
-        return self.add(
-            tasks.Project(project=project, project_in_type=project_in_type, project_out_type=project_out_type)
-        )
+        return self.add(tasks.Project(project=project))
 
     def vocabulary(
         self: pipelines.CorpusPipeline,
