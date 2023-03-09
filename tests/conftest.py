@@ -3,7 +3,7 @@
 import pytest
 
 from penelope.notebook.topic_modelling import TopicModelContainer
-from penelope.pipeline.spacy import convert
+from penelope.pipeline.spacy import convert, SpacyTagger
 from penelope.topic_modelling import InferredTopicsData
 from penelope.vendor.spacy_api import Language, load_model
 from tests.utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
@@ -16,7 +16,13 @@ from .fixtures import MARY_TEST_CORPUS
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
     pytest.importorskip("spacy")
-    return load_model(name_or_nlp="en_core_web_sm", disable="ner")
+    return load_model(model="en_core_web_sm", disable="ner")
+
+
+@pytest.fixture(scope="session")
+def tagger(en_nlp) -> SpacyTagger:
+    pytest.importorskip("spacy")
+    return SpacyTagger(model=en_nlp, attributes=['text', 'lemma_', 'pos_', 'is_punct'])
 
 
 @pytest.fixture(scope="session")

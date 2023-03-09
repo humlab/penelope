@@ -20,7 +20,9 @@ from penelope.pipeline import (
     DocumentPayload,
     PipelinePayload,
 )
+from penelope.pipeline import tagged_frame as tagged_frame_tasks
 from penelope.pipeline.interfaces import ITask
+from penelope.pipeline.spacy import SpacyTagger
 from penelope.vendor import spacy_api
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 from tests.utils import TEST_DATA_FOLDER
@@ -130,15 +132,6 @@ def patch_spacy_pipeline(task):
     return pipeline
 
 
-@pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, patch_spacy_load, reason="spaCy not installed")
-@patch('spacy.load', patch_spacy_load)
-def test_set_spacy_model_setup_succeeds():
-    pytest.importorskip("spacy")
-    pipeline = CorpusPipeline(config=fake_config())
-    _ = spacy_tasks.SetSpacyModel(pipeline=pipeline, name_or_nlp="en_core_web_sm").setup()
-    assert pipeline.get("spacy_nlp", None) is not None
-
-
 def test_load_text_when_source_is_list_of_filename_text_tuples_succeeds(
     reader_opts,
 ):  # pylint: disable=redefined-outer-name
@@ -172,6 +165,7 @@ def test_passthrough_process_succeeds():
 
 
 def test_project_process_with_text_payload_succeeds():
+
     def project(p: DocumentPayload):
         p.content = "HELLO"
         return p
@@ -190,15 +184,15 @@ def test_to_content_process_with_text_payload_succeeds():
     assert next_payload == TEST_CORPUS[0][1]
 
 
-def test_text_to_spacy_process_with_text_payload_succeeds():
-    task = spacy_tasks.ToSpacyDoc(pipeline=Mock(spec=CorpusPipeline)).setup()
+def test_text_to_spacy_process_with_text_payload_succeeds(tagger: SpacyTagger):
+    task = spacy_tasks.ToSpacyDoc(pipeline=Mock(spec=CorpusPipeline), tagger=tagger).setup()
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
     assert next_payload.content_type == ContentType.SPACYDOC
 
 
-def test_text_to_spacy_process_with_non_text_payload_fails():
-    task = spacy_tasks.ToSpacyDoc(pipeline=Mock(spec=CorpusPipeline)).setup()
+def test_text_to_spacy_process_with_non_text_payload_fails(tagger: SpacyTagger):
+    task = spacy_tasks.ToSpacyDoc(pipeline=Mock(spec=CorpusPipeline), tagger=tagger).setup()
     current_payload = next(fake_data_frame_stream(1))
     with pytest.raises(Exception) as _:
         _ = task.setup().process(current_payload)
@@ -218,26 +212,26 @@ def patch_spacy_doc_to_tagged_frame(
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_spacy_doc_to_tagged_frame)
 def test_text_to_tagged_frame_with_text_payload_succeeds():
-    task = spacy_tasks.ToSpacyDocToTaggedFrame(
+    task = tagged_frame_tasks.ToTaggedFrame(
         pipeline=Mock(spec=CorpusPipeline),
+        tagger=MagicMock(name='tagger')
     ).setup()
-    task.tagger = MagicMock(name='tagger')
     task.register_pos_counts = MagicMock(name='register_pos_counts')
     current_payload = next(fake_text_stream())
     next_payload = task.process(current_payload)
-    assert task.tagger.call_count == 1
+    assert task.tagger.tag.call_count == 1
     assert task.register_pos_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGED_FRAME
 
 
 @patch('penelope.pipeline.spacy.convert.spacy_doc_to_tagged_frame', patch_any_to_tagged_frame)
 def test_spacy_to_tagged_frame_with_doc_payload_succeeds():
-    task = spacy_tasks.SpacyDocToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
+    task = tagged_frame_tasks.ToTaggedFrame(pipeline=Mock(spec=CorpusPipeline)).setup()
     task.tagger = MagicMock(name='tagger')
     task.register_pos_counts = MagicMock(name='register_pos_counts')
     current_payload = next(fake_spacy_doc_stream())
     next_payload = task.process(current_payload)
-    assert task.tagger.call_count == 1
+    assert task.tagger.tag.call_count == 1
     assert task.register_pos_counts.call_count == 1
     assert next_payload.content_type == ContentType.TAGGED_FRAME
 
@@ -249,7 +243,7 @@ def patch_tagged_frame_to_tokens(*_, **__) -> Iterable[str]:
 @patch('penelope.pipeline.convert.tagged_frame_to_tokens', patch_tagged_frame_to_tokens)
 def test_tagged_frame_to_tokens_succeeds():
     pipeline = Mock(spec=CorpusPipeline, payload=Mock(spec=PipelinePayload, tagged_columns_names={}))
-    task = tasks.TaggedFrameToTokens(
+    task = tagged_frame_tasks.TaggedFrameToTokens(
         pipeline=pipeline,
         extract_opts=ExtractTaggedTokensOpts(
             lemmatize=True,
@@ -343,7 +337,7 @@ def test_tokens_to_text_when_text_instream_succeeds():
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @patch('spacy.load', patch_spacy_load)
 @pytest.mark.long_running
-def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
+def test_spacy_pipeline(checkpoint_opts: CheckpointOpts, tagger: SpacyTagger):
     tagged_corpus_source = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
@@ -365,11 +359,10 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts):
     config = Mock(spec=CorpusConfig, pipeline_payload=pipeline_payload)
     pipeline = (
         CorpusPipeline(config=config)
-        .set_spacy_model(pipeline_payload.memory_store['spacy_model'])
         .load_text(reader_opts=text_reader_opts, transform_opts=TextTransformOpts())
-        .text_to_spacy()
+        .text_to_spacy(tagger=tagger)
         .passthrough()
-        .spacy_to_pos_tagged_frame()
+        .to_tagged_frame()
         .checkpoint(tagged_corpus_source, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
         .to_content()
     )

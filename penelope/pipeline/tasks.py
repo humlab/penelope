@@ -16,23 +16,12 @@ from tqdm.auto import tqdm
 
 from penelope import utility
 from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, default_tokenizer
-from penelope.corpus.readers import (
-    TextReader,
-    TextReaderOpts,
-    TextSource,
-    TextTransformer,
-    TextTransformOpts,
-)
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformer, TextTransformOpts
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
 
 from . import checkpoint as cp
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
-from .tasks_mixin import (
-    DefaultResolveMixIn,
-    PoSCountMixIn,
-    TokenCountMixIn,
-    TransformTokensMixIn,
-)
+from .tasks_mixin import DefaultResolveMixIn, PoSCountMixIn, TokenCountMixIn, TransformTokensMixIn
 
 
 class EmptyCheckPointError(PipelineError):
@@ -127,6 +116,8 @@ class Passthrough(DefaultResolveMixIn, ITask):
 
 @dataclass
 class Project(ITask):
+    """Projects stream of payload using function `project`"""
+
     project: Callable[[DocumentPayload], Any] = None
 
     def __post_init__(self):
@@ -135,6 +126,22 @@ class Project(ITask):
 
     def process_payload(self, payload: DocumentPayload) -> Any:
         return self.project(payload)
+
+
+@dataclass
+class Transform(ITask):
+    """Transforms payload stream to a new payload outstream with `transform` function"""
+
+    transform: Callable[[DocumentPayload], DocumentPayload] = None
+    in_type: ContentType | list[ContentType] = ContentType.ANY
+    out_type: ContentType = ContentType.ANY
+
+    def __post_init__(self):
+        self.in_content_type = self.in_type
+        self.out_content_type = self.out_type
+
+    def process_payload(self, payload: DocumentPayload) -> Any:
+        return self.transform(payload)
 
 
 @dataclass
@@ -783,8 +790,31 @@ class Split(ITask):
     ...
 
 
+class Compute(ITask):
+    value: Any = None
+    compute: Callable[[DocumentPayload, Any], Any] = lambda _, v: v
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        self.value = self.compute(payload, self.value)
+        return payload
+
+
 class Reduce(ITask):
-    ...
+    value: Any = None
+    reducer: Callable[[DocumentPayload, Any], Any] = lambda _, v: v
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.ANY
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def process_stream(self) -> Iterable[DocumentPayload]:
+        for payload in self.create_instream():
+            self.value = self.reducer(payload, self.value)
+        yield DocumentPayload(content_type=self.out_content_type, content=self.value)
 
 
 @dataclass

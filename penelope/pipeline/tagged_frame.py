@@ -15,12 +15,20 @@ from loguru import logger
 from tqdm import tqdm
 
 from penelope import corpus as pc
-from penelope.utility import PoS_Tag_Scheme, replace_extension, strip_paths
+from penelope import utility as pu
+from penelope.corpus.readers import ExtractTaggedTokensOpts
 
-from .interfaces import ITask
+from . import convert
+from .interfaces import IDocumentTagger, ITask, PipelineError
 from .pipeline import ContentType, DocumentPayload
 from .tasks import Vocabulary
-from .tasks_mixin import DefaultResolveMixIn, PoSCountMixIn
+from .tasks_mixin import (
+    DefaultResolveMixIn,
+    PoSCountMixIn,
+    TokenCountMixIn,
+    TransformTokensMixIn,
+    VocabularyIngestMixIn,
+)
 
 
 class IngestVocabType(IntEnum):
@@ -42,16 +50,13 @@ class ToIdTaggedFrame(Vocabulary):
     ingest_vocab_type: str = field(default=IngestVocabType.Incremental)
 
     def __post_init__(self):
-
         super().__post_init__()
 
         self.in_content_type = ContentType.TAGGED_FRAME
         self.out_content_type = ContentType.TAGGED_ID_FRAME
 
     def setup(self) -> ITask:
-
         if self.ingest_vocab_type == IngestVocabType.Supplied:
-
             self.token2id = self.token2id or self.pipeline.payload.token2id
 
             if self.token2id is None or len(self.token2id) == 0:
@@ -63,7 +68,6 @@ class ToIdTaggedFrame(Vocabulary):
         return super().setup()
 
     def enter(self):
-
         if self.ingest_vocab_type == IngestVocabType.Prebuild:
             super().enter()
 
@@ -71,10 +75,9 @@ class ToIdTaggedFrame(Vocabulary):
             self.token2id.ingest(self.token2id.magic_tokens)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-
         tagged_frame: pd.DataFrame = payload.content
 
-        pos_schema: PoS_Tag_Scheme = self.pipeline.config.pipeline_payload.pos_schema
+        pos_schema: pu.PoS_Tag_Scheme = self.pipeline.config.pipeline_payload.pos_schema
         token_column: str = self.target
         pos_column: str = self.pipeline.get('pos_column', None)
 
@@ -116,7 +119,7 @@ class StoreIdTaggedFrame(ITask):
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         payload = super().process_payload(payload)
-        payload.content.to_feather(jj(self.folder, replace_extension(payload.filename, 'feather')))
+        payload.content.to_feather(jj(self.folder, pu.replace_extension(payload.filename, 'feather')))
         return payload
 
 
@@ -163,7 +166,6 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
         return self.document_index.set_index('document_id')['document_name'].to_dict()
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-
         fg = self.token2id.id2token.get
         dg = self.docid2name.get
         pg = self.pipeline.payload.pos_schema.id_to_pos.get
@@ -173,7 +175,6 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
         loaded_frame_columns: set = None
 
         for filename in tqdm(self.corpus_filenames, total=len(self.corpus_filenames)):
-
             loaded_frame: pd.DataFrame = self.load_tagged_frame(filename)
 
             loaded_frame_columns = loaded_frame_columns or set(loaded_frame.columns)
@@ -184,7 +185,6 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
                 )
 
             if self.id_to_token:
-
                 if 'token_id' in loaded_frame.columns:
                     loaded_frame[text_column] = loaded_frame.token_id.apply(fg)
 
@@ -196,18 +196,15 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
                 loaded_frame.drop(columns=['token_id', 'pos_id', 'lemma_id'], inplace=True, errors='ignore')
 
             if 'document_id' not in loaded_frame_columns:
-
                 payload: DocumentPayload = DocumentPayload(
-                    content_type=self.out_content_type, content=loaded_frame, filename=strip_paths(filename)
+                    content_type=self.out_content_type, content=loaded_frame, filename=pu.strip_paths(filename)
                 )
                 self.register_pos_counts(payload)
 
                 yield payload
 
             else:
-
                 for document_id, tagged_frame in loaded_frame.groupby('document_id'):
-
                     tagged_frame.reset_index(drop=True, inplace=True)
                     payload: DocumentPayload = DocumentPayload(
                         content_type=self.out_content_type, content=tagged_frame, filename=dg(document_id)
@@ -226,7 +223,7 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
         match_iter: Iterable[str] = (
             filename
             for filename in glob.iglob(jj(self.corpus_source, self.file_pattern), recursive=True)
-            if not any(fnmatch(strip_paths(filename), m) for m in magic_names)
+            if not any(fnmatch(pu.strip_paths(filename), m) for m in magic_names)
         )
 
         filenames: List[str] = sorted(match_iter)
@@ -237,3 +234,104 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
             raise FileNotFoundError("no files found in source")
 
         return filenames
+
+
+@dataclass
+class ToTaggedFrame(PoSCountMixIn, ITask):
+    tagger: IDocumentTagger = None
+
+    def setup(self) -> ITask:
+        super().setup()
+
+        if self.tagger is None:
+            self.tagger = self.pipeline.get("current_tagger")
+
+        if self.tagger is None:
+            raise PipelineError("tagger is not specified")
+
+        self.pipeline.put("current_tagger", self.tagger, overwrite=False)
+
+        return self
+
+    def __post_init__(self):
+        self.in_content_type = [ContentType.TEXT, ContentType.TOKENS, ContentType.SPACYDOC]
+        self.out_content_type = ContentType.TAGGED_FRAME
+
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        payload.update(self.out_content_type, self.tag(payload=payload))
+
+        self.register_pos_counts(payload)
+
+        return payload
+
+    def tag(self, payload: DocumentPayload) -> pd.DataFrame:
+        return self.tagger.tag(document=payload.content)
+
+
+@dataclass
+class FilterTaggedFrame(TokenCountMixIn, ITask):
+    """Filters and transforms tagged frame (can be numeric or text)."""
+
+    extract_opts: ExtractTaggedTokensOpts = None
+    pos_schema: pu.PoS_Tag_Scheme = None
+    transform_opts: pc.TokensTransformOpts = None
+    normalize_column_names: bool = False
+
+    def __post_init__(self):
+        self.in_content_type = [ContentType.TAGGED_ID_FRAME, ContentType.TAGGED_FRAME]
+        self.out_content_type = ContentType.PASSTHROUGH
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        if self.extract_opts is None and self.transform_opts is None:
+            return payload
+
+        tagged_frame: pd.DataFrame = convert.filter_tagged_frame(
+            tagged_frame=payload.content,
+            extract_opts=self.extract_opts,
+            token2id=self.pipeline.payload.token2id,
+            pos_schema=self.pos_schema,
+            transform_opts=self.transform_opts,
+            normalize_column_names=self.normalize_column_names,
+        )
+
+        self.register_token_count(payload.document_name, len(tagged_frame))
+
+        return payload.update(self.out_content_type, tagged_frame)
+
+
+@dataclass
+class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
+    """Extracts text from payload.content based on annotations etc."""
+
+    extract_opts: ExtractTaggedTokensOpts | str = None
+    normalize_column_names: bool = True
+
+    def __post_init__(self):
+        self.in_content_type = ContentType.TAGGED_FRAME
+        self.out_content_type = ContentType.TOKENS
+
+    def setup(self) -> ITask:
+        super().setup()
+        self.pipeline.put("extract_opts", self.extract_opts)
+        self.pipeline.put("transform_opts", self.transform_opts)
+        return self
+
+    def enter(self) -> ITask:  # pylint: disable=useless-super-delegation
+        super().enter()
+
+    def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
+        tokens: Iterable[str] = convert.tagged_frame_to_tokens(
+            doc=payload.content,
+            extract_opts=self.extract_opts,
+            transform_opts=self.transform_opts,
+            token2id=self.pipeline.payload.token2id,
+            pos_schema=self.pipeline.payload.pos_schema,
+        )
+
+        tokens = list(tokens)
+
+        if self.ingest_tokens:
+            self.ingest(tokens)
+
+        return payload.update(self.out_content_type, tokens)

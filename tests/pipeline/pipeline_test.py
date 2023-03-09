@@ -7,12 +7,13 @@ from typing import List
 
 import pandas as pd
 import pytest
+from penelope.pipeline.interfaces import IDocumentTagger
 
 import penelope.workflows.vectorize.dtm as workflow
 from penelope import corpus as corpora
 from penelope import pipeline, utility
-from penelope.pipeline import tasks
-from penelope.pipeline.spacy import pipelines as spacy_pipeline
+from penelope.pipeline import tasks, pipelines
+from penelope.pipeline.spacy import SpacyTagger
 from penelope.vendor import spacy_api
 from penelope.workflows.interface import ComputeOpts
 from tests.utils import OUTPUT_FOLDER, inline_code
@@ -86,7 +87,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: pipeline
 
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
-def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.CorpusConfig):
+def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.CorpusConfig, tagger: IDocumentTagger):
     tagged_corpus_source: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     transform_opts = corpora.TextTransformOpts()
@@ -96,11 +97,10 @@ def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.Co
 
     _ = (
         pipeline.CorpusPipeline(config=config)
-        .set_spacy_model(config.pipeline_payload.memory_store['spacy_model'])
         .load_text(reader_opts=config.text_reader_opts, transform_opts=transform_opts)
-        .text_to_spacy()
+        .text_to_spacy(tagger=tagger)
         .tqdm()
-        .spacy_to_pos_tagged_frame()
+        .to_tagged_frame()
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
     ).exhaust()
 
@@ -297,7 +297,7 @@ def test_pipeline_text_to_dtm_succeeds(config: pipeline.CorpusConfig):
 # pylint: disable=too-many-locals
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
-def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
+def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig, tagger: SpacyTagger):
     corpus_tag: str = uuid.uuid1()
     target_folder: str = "./tests/output"
     corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip'
@@ -331,21 +331,20 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig):
         enable_checkpoint=True,
         force_checkpoint=True,
     )
-    with inline_code(spacy_pipeline.to_tagged_frame_pipeline):
+    with inline_code(pipelines.to_tagged_frame_pipeline):
         tagged_frame_filename: str = tagged_corpus_source or utility.path_add_suffix(
             config.pipeline_payload.source, '_pos_csv'
         )
 
         p: pipeline.CorpusPipeline = (
             pipeline.CorpusPipeline(config=config)
-            .set_spacy_model(config.pipeline_payload.memory_store['spacy_model'])
             .load_text(
                 reader_opts=config.text_reader_opts,
                 transform_opts=None,
                 source=corpus_source,
             )
-            .text_to_spacy()
-            .spacy_to_pos_tagged_frame()
+            .text_to_spacy(tagger=tagger)
+            .to_tagged_frame()
             .checkpoint(filename=tagged_frame_filename, force_checkpoint=args.force_checkpoint)
         )
 
@@ -451,7 +450,7 @@ def test_slice_py_regular_expressions():
 
 
 def test_create_pipeline_by_string(config: pipeline.CorpusConfig):
-    cls_str = 'penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline'
+    cls_str = 'penelope.pipeline.pipelines.to_tagged_frame_pipeline'
     factory = pipeline.create_pipeline_factory(cls_str)
     assert factory is not None
     p: pipeline.CorpusPipeline = factory(corpus_config=config)

@@ -149,8 +149,15 @@ class PipelineShortcutMixIn:
     def passthrough(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:
         return self.add(tasks.Passthrough())
 
-    def project(self: pipelines.CorpusPipeline, project: Callable[[Any], Any]) -> pipelines.CorpusPipeline:
-        return self.add(tasks.Project(project=project))
+    def project(
+        self: pipelines.CorpusPipeline,
+        project: Callable[[Any], Any],
+        project_in_type: interfaces.ContentType | list[interfaces.ContentType] = interfaces.ContentType.ANY,
+        project_out_type: interfaces.ContentType = interfaces.ContentType.PASSTHROUGH,
+    ) -> pipelines.CorpusPipeline:
+        return self.add(
+            tasks.Project(project=project, project_in_type=project_in_type, project_out_type=project_out_type)
+        )
 
     def vocabulary(
         self: pipelines.CorpusPipeline,
@@ -194,7 +201,7 @@ class PipelineShortcutMixIn:
             return self
 
         return self.add(
-            tasks.FilterTaggedFrame(
+            tagged_frame.FilterTaggedFrame(
                 extract_opts=extract_opts,
                 pos_schema=pos_schema,
                 transform_opts=transform_opts,
@@ -209,7 +216,7 @@ class PipelineShortcutMixIn:
         transform_opts: Optional[TokensTransformOpts],
     ) -> pipelines.CorpusPipeline:
         return self.add(
-            tasks.TaggedFrameToTokens(
+            tagged_frame.TaggedFrameToTokens(
                 extract_opts=extract_opts,
                 transform_opts=transform_opts,
             )

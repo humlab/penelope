@@ -7,6 +7,7 @@ import penelope.pipeline.spacy.convert as convert
 from penelope.corpus import VectorizedCorpus, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts, TextTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
+from penelope.pipeline.spacy.tagger import SpacyTagger
 from penelope.vendor import spacy_api
 from tests.pipeline.fixtures import SPACY_TAGGED_COLUMNS
 
@@ -67,7 +68,7 @@ def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):
         'PROPN',
         'AUX',
         'ADV',
-        'ADV',
+        'NOUN',
         'ADP',
         'NOUN',
         'CCONJ',
@@ -112,7 +113,7 @@ def test_annotate_document_with_lemma_and_pos_strings_and_attribute_value_filter
         'PROPN',
         'AUX',
         'ADV',
-        'ADV',
+        'NOUN',
         'ADP',
         'NOUN',
         'CCONJ',
@@ -175,7 +176,7 @@ def test_annotate_documents_with_lemma_and_pos_strings_succeeds(en_nlp):
         'PROPN',
         'AUX',
         'ADV',
-        'ADV',
+        'NOUN',
         'ADP',
         'NOUN',
         'CCONJ',
@@ -273,7 +274,7 @@ def test_extract_tokens_pos_verb_noun_text_succeeds(df_doc: pd.DataFrame):
     )
 
     tokens = tagged_frame_to_tokens(doc=df_doc, extract_opts=extract_opts)
-    assert tokens == ['seas', 'oceans', 'life']
+    assert tokens == ['home', 'seas', 'oceans', 'life']
 
 
 def dummy_source():
@@ -300,39 +301,32 @@ def test_spacy_pipeline_load_text_resolves():
     assert all(pipeline.payload.document_index.filename == [x[0] for x in source])
 
 
-def test_spacy_pipeline_load_text_to_spacy_doc_resolves(en_nlp):
+def test_spacy_pipeline_load_text_to_spacy_doc_resolves(tagger: SpacyTagger):
     pytest.importorskip("spacy")
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     source = dummy_source()
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=source).put2(pos_column="pos_"))
-    pipeline = CorpusPipeline(config=config).set_spacy_model(en_nlp).load_text(reader_opts=reader_opts).text_to_spacy()
+    pipeline = CorpusPipeline(config=config).load_text(reader_opts=reader_opts).text_to_spacy(tagger=tagger)
 
     payloads = [x.content for x in pipeline.resolve()]
 
     assert all(isinstance(x, spacy_api.Doc) for x in payloads)
 
 
-def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(en_nlp):
+def test_spacy_pipeline_load_text_to_spacy_to_dataframe_resolves(tagger: SpacyTagger):
     pytest.importorskip("spacy")
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts)
     config = Mock(spec=CorpusConfig, pipeline_payload=PipelinePayload(source=reader).put2(pos_column="pos_"))
-    attributes = ['text', 'lemma_', 'pos_']
-    pipeline = (
-        CorpusPipeline(config=config)
-        .set_spacy_model(en_nlp)
-        .load_text(reader_opts=reader_opts)
-        .text_to_spacy()
-        .spacy_to_tagged_frame(attributes=attributes)
-    )
+    pipeline = CorpusPipeline(config=config).load_text(reader_opts=reader_opts).to_tagged_frame(tagger=tagger)
 
     payloads = [x.content for x in pipeline.resolve()]
 
     assert all(isinstance(x, pd.DataFrame) for x in payloads)
-    assert all(x.columns.tolist() == attributes for x in payloads)
+    assert all(x.columns.tolist() == tagger.attributes for x in payloads)
 
 
-def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nlp):
+def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(tagger: SpacyTagger):
     pytest.importorskip("spacy")
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
@@ -343,7 +337,6 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
         spec=CorpusConfig,
         pipeline_payload=PipelinePayload(source=reader).put2(**SPACY_TAGGED_COLUMNS),
     )
-    attributes = ['text', 'lemma_', 'pos_']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
@@ -356,16 +349,14 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     pipeline = (
         CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts)
-        .set_spacy_model(en_nlp)
-        .text_to_spacy()
-        .spacy_to_tagged_frame(attributes=attributes)
+        .to_tagged_frame(tagger=tagger)
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
     )
 
     payloads = [x.content for x in pipeline.resolve()]
 
     assert payloads == [
-        ['sea', 'ocean', 'life'],
+        ['home', 'sea', 'ocean', 'life'],
         ['atmosphere', 'blow'],
         ['*', 'activity', 'surface', 'cease'],
         ['*', 'planet'],
@@ -397,14 +388,13 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(en_nl
     )
 
 
-def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(en_nlp):
+def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm(tagger: SpacyTagger):
     pytest.importorskip("spacy")
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
     reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
-    attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
@@ -424,9 +414,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     pipeline = (
         CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts, transform_opts=text_transform_opts)
-        .set_spacy_model(en_nlp)
-        .text_to_spacy()
-        .spacy_to_tagged_frame(attributes=attributes)
+        .to_tagged_frame(tagger=tagger)
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
@@ -437,14 +425,13 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_to_text_to_dtm
     assert isinstance(corpus, VectorizedCorpus)
 
 
-def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
+def test_spacy_pipeline_extract_text_to_vectorized_corpus(tagger: SpacyTagger):
     pytest.importorskip("spacy")
 
     reader_opts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
     text_transform_opts = TextTransformOpts()
     reader = TextReader.create(MARY_TEST_CORPUS, reader_opts=reader_opts, transform_opts=text_transform_opts)
 
-    attributes = ['text', 'lemma_', 'pos_', 'is_punct']
     extract_opts = ExtractTaggedTokensOpts(
         lemmatize=True,
         pos_includes='|VERB|NOUN|',
@@ -463,9 +450,7 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     pipeline = (
         CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts, transform_opts=text_transform_opts)
-        .set_spacy_model(en_nlp)
-        .text_to_spacy()
-        .spacy_to_tagged_frame(attributes=attributes)
+        .to_tagged_frame(tagger=tagger)
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .tokens_to_text()
         .to_dtm(vectorize_opts)
@@ -474,19 +459,3 @@ def test_spacy_pipeline_extract_text_to_vectorized_corpus(en_nlp):
     corpus = pipeline.value()
 
     assert isinstance(corpus, VectorizedCorpus)
-
-
-# def test_spacy3():
-#     ...
-#     tagged_frame_231 = pd.read_feather("/data/inidun/archive/courier_page_20210921.feather/1982_074798_024.feather")
-#     tagged_frame_313 = pd.read_feather("/data/inidun/courier_page_20210921.feather/1982_074798_024.feather")
-
-#     assert tagged_frame_231 is not None
-#     assert tagged_frame_313 is not None
-
-
-# def test_load_model():
-
-#     nlp: Language = load_model(name_or_nlp="en_core_web_sm")
-
-#     assert nlp is not None

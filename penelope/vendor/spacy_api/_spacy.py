@@ -48,6 +48,11 @@ def keep_hyphen_tokenizer(nlp: Language) -> Tokenizer:
     )
 
 
+def spacy_data_path() -> str:
+    pu.load_cwd_dotenv()
+    return os.environ.get("SPACY_DATA", "")
+
+
 def prepend_path(model: Union[Language, str], path: str) -> Union[Language, str]:
     """Prepends `model` with `path` if it is an existing folder"""
     if not isinstance(model, (str, pathlib.Path)):
@@ -67,8 +72,7 @@ def prepend_path(model: Union[Language, str], path: str) -> Union[Language, str]
 def prepend_spacy_path(model: Union[Language, str]) -> Union[Language, str]:
     """Prepends `model` with SPACY_DATA environment if set and model is a string"""
 
-    pu.load_cwd_dotenv()
-    spacy_data: str = os.environ.get("SPACY_DATA", "")
+    spacy_data: str = spacy_data_path()
     model: str = prepend_path(model, spacy_data)
 
     return model
@@ -85,33 +89,31 @@ def remove_whitespace_entities(doc: Doc) -> Doc:
 
 def load_model(
     *,
-    name_or_nlp: str | Language,
+    model: str | Language,
     vocab: Union[Vocab, bool] = True,
     disable: Iterable[str] = None,
     exclude: Iterable[str] = None,
     keep_hyphens: bool = False,
     remove_whitespace_ents: bool = False,
 ) -> Language:
-
     if remove_whitespace_ents:
         Language.factories['remove_whitespace_entities'] = lambda _nlp, **_cfg: remove_whitespace_entities
 
     args: dict = skip_none_values(dict(vocab=vocab, disable=disable, exclude=exclude))
 
-    if isinstance(name_or_nlp, Language):
+    if isinstance(model, Language):
+        return model
 
-        return name_or_nlp
-
-    if isinstance(name_or_nlp, str):
+    if isinstance(model, str):
         try:
-            nlp: Language = load(name_or_nlp, **args)
+            nlp: Language = load(model, **args)
         except OSError:
-            logger.info(f"not found: {name_or_nlp}, downloading...")
-            download(name_or_nlp)
-            nlp: Language = load(name_or_nlp, **args)
+            logger.info(f"not found: {model}, downloading...")
+            download(model)
+            nlp: Language = load(model, **args)
 
             # try:
-            #     name: Union[str, Language] = prepend_spacy_path(name_or_nlp)
+            #     name: Union[str, Language] = prepend_spacy_path(model)
             #     nlp: Language = load(name, **args)
             # except OSError:
             #     ...
@@ -136,9 +138,9 @@ def load_model_by_parts(
     keep_hyphens: bool = False,
     remove_whitespace_ents: bool = False,
 ) -> str:
-    model_name: str = f'{lang}_{model_type}_{model_source}_{model_size}'
+    model: str = f'{lang}_{model_type}_{model_source}_{model_size}'
     return load_model(
-        name_or_nlp=model_name,
+        model=model,
         vocab=vocab,
         disable=disable,
         exclude=exclude,
@@ -147,8 +149,8 @@ def load_model_by_parts(
     )
 
 
-def download_model_by_name(*, model_name: str):
-    download(model_name)
+def download_model_by_name(*, model: str):
+    download(model)
 
 
 def download_model(
@@ -160,20 +162,18 @@ def download_model(
     version: str = '2.3.1',
     folder: str = '/tmp',
 ) -> str:
+    model: str = f'{lang}_{model_type}_{model_source}_{model_size}-{version}'
 
-    model_name: str = f'{lang}_{model_type}_{model_source}_{model_size}-{version}'
+    if not os.path.isdir(jj(folder, model)):
+        logger.info(f"Downloading spaCy model: {model}")
 
-    if not os.path.isdir(jj(folder, model_name)):
-
-        logger.info(f"Downloading spaCy model: {model_name}")
-
-        url: str = f'https://github.com/explosion/spacy-models/releases/download/{model_name}/{model_name}.tar.gz'
+        url: str = f'https://github.com/explosion/spacy-models/releases/download/{model}/{model}.tar.gz'
 
         r = requests.get(url, allow_redirects=True, timeout=600)
 
         os.makedirs(folder, exist_ok=True)
 
-        filename: str = jj(folder, f'{model_name}.tar.gz')
+        filename: str = jj(folder, f'{model}.tar.gz')
         with open(filename, 'wb') as fp:
             fp.write(r.content)
 
@@ -181,16 +181,16 @@ def download_model(
             tar.extractall(path=folder)
 
         """Move, and only keep, actual model directory"""
-        shutil.move(jj(folder, model_name), jj(folder, f'{model_name}.tmp'))
+        shutil.move(jj(folder, model), jj(folder, f'{model}.tmp'))
         shutil.move(
-            jj(folder, f'{model_name}.tmp', f'{lang}_{model_type}_{model_source}_{model_size}', model_name),
-            jj(folder, f'{model_name}'),
+            jj(folder, f'{model}.tmp', f'{lang}_{model_type}_{model_source}_{model_size}', model),
+            jj(folder, f'{model}'),
         )
 
-        shutil.rmtree(jj(folder, f'{model_name}.tmp'), ignore_errors=True)
+        shutil.rmtree(jj(folder, f'{model}.tmp'), ignore_errors=True)
         os.remove(filename)
 
-    return jj(folder, model_name)
+    return jj(folder, model)
 
 
 def token_count_by(

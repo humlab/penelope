@@ -120,7 +120,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
 
 @pytest.mark.long_running
-def test_spaCy_co_occurrence_pipeline3(config):
+def test_spaCy_co_occurrence_pipeline3(config: pipeline.CorpusConfig):
     corpus_source = './tests/test_data/legal_instrument_five_docs_test.zip'
     tagged_corpus_source = f'./tests/output/{uuid.uuid1()}_pos.csv.zip'
     args: ComputeOpts = ComputeOpts(
