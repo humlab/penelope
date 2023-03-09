@@ -3,7 +3,7 @@ corpus_pattern: '*.zip'
 corpus_type: 1
 language: english
 pipelines:
-  tagged_frame_pipeline: penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline
+  tagged_frame_pipeline: penelope.pipeline.pipelines.to_tagged_frame_pipeline
 checkpoint_opts:
     content_type_code: 1
     sep: "\t"

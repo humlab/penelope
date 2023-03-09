@@ -8,6 +8,7 @@ from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
 from .. import pipelines
 
 if TYPE_CHECKING:
+    from ..config import CorpusConfig
     from ..pipelines import CorpusPipeline
 
 
@@ -39,3 +40,30 @@ def wildcard_to_partition_by_document_co_occurrence_pipeline(
     )
 
     return pipeline
+
+
+# pylint: disable=too-many-arguments
+def to_co_occurrence_pipeline(
+    corpus_config: CorpusConfig,
+    corpus_source: str,
+    transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    context_opts: ContextOpts = None,
+    tf_threshold: int = None,
+    tagged_corpus_source: str = None,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
+) -> CorpusPipeline:
+    p: CorpusPipeline = pipelines.to_tagged_frame_pipeline(
+        corpus_config=corpus_config,
+        corpus_source=corpus_source,
+        tagged_corpus_source=tagged_corpus_source,
+        enable_checkpoint=enable_checkpoint,
+        force_checkpoint=force_checkpoint,
+    ) + wildcard_to_partition_by_document_co_occurrence_pipeline(
+        context_opts=context_opts,
+        transform_opts=transform_opts,
+        extract_opts=extract_opts,
+        tf_threshold=tf_threshold,
+    )
+    return p
