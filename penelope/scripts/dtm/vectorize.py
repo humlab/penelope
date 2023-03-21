@@ -14,13 +14,16 @@ from penelope.workflows import interface
 
 # pylint: disable=too-many-arguments, unused-argument
 
+@click.group()
+def main():
+    ...
+
 
 @click.command()
 @click.argument('corpus_config', type=click.STRING)
 @click.argument('input_filename', type=click.STRING)
 @click.argument('output_folder', type=click.STRING)
-@click.argument('output_tag')
-@option2('--options-filename')
+@click.argument('output_tag', type=click.STRING)
 @option2('--filename-pattern')
 @option2('--pos-includes')
 @option2('--pos-paddings')
@@ -43,7 +46,7 @@ from penelope.workflows import interface
 @option2('--enable-checkpoint/--no-enable-checkpoint')
 @option2('--force-checkpoint/--no-force-checkpoint')
 @option2('--deserialize-processes')
-def main(
+def to_dtm(
     options_filename: Optional[str] = None,
     corpus_config: Optional[str] = None,
     input_filename: Optional[str] = None,
@@ -77,6 +80,11 @@ def main(
 
     process(**arguments)
 
+@click.command()
+@click.argument('options_filename', type=click.STRING)
+def to_dtm_opts_file_only(options_filename: Optional[str] = None):
+    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    process(**arguments)
 
 def process(
     corpus_config: Optional[str] = None,
@@ -182,4 +190,6 @@ def process(
 
 
 if __name__ == "__main__":
+    main.add_command(to_dtm, "args")
+    main.add_command(to_dtm_opts_file_only, "opts-file")
     main()  # pylint: disable=no-value-for-parameter

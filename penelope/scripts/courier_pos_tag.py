@@ -7,12 +7,6 @@ from penelope.corpus import TextTransformOpts
 from penelope.pipeline import DEFAULT_TAGGED_FRAMES_FILENAME_SUFFIX, CorpusConfig, CorpusPipeline
 from penelope.utility import load_cwd_dotenv, path_add_suffix
 
-SPACY_TAGGED_COLUMNS: dict = dict(
-    text_column='text',
-    lemma_column='lemma_',
-    pos_column='pos_',
-)
-
 
 HYPHEN_REGEXP = re.compile(r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b', re.UNICODE)
 
@@ -24,7 +18,6 @@ def remove_hyphens(text: str) -> str:
 
 @click.command()
 @click.argument('config-filename', type=click.STRING)
-# @click.option('fix-hypenation/no-fix-hypenation', help='Use word baseforms', is_flag=True, default=True)
 def main(config_filename: str = None):  # pylint: disable=redefined-outer-name
     load_cwd_dotenv()
 
