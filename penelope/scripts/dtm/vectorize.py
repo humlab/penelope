@@ -20,7 +20,7 @@ def main():
 
 
 @click.command()
-@click.argument('corpus_config', type=click.STRING)
+@click.argument('config_filename', type=click.STRING)
 @click.argument('input_filename', type=click.STRING)
 @click.argument('output_folder', type=click.STRING)
 @click.argument('output_tag', type=click.STRING)
@@ -48,7 +48,7 @@ def main():
 @option2('--deserialize-processes')
 def to_dtm(
     options_filename: Optional[str] = None,
-    corpus_config: Optional[str] = None,
+    config_filename: Optional[str] = None,
     input_filename: Optional[str] = None,
     output_folder: Optional[str] = None,
     output_tag: Optional[str] = None,
@@ -87,7 +87,7 @@ def to_dtm_opts_file_only(options_filename: Optional[str] = None):
     process(**arguments)
 
 def process(
-    corpus_config: Optional[str] = None,
+    config_filename: Optional[str] = None,
     input_filename: Optional[str] = None,
     output_folder: Optional[str] = None,
     output_tag: Optional[str] = None,
@@ -116,26 +116,26 @@ def process(
     deserialize_processes: int = 4,
 ):
     try:
-        corpus_config: CorpusConfig = CorpusConfig.load(corpus_config)
+        config_filename: CorpusConfig = CorpusConfig.load(config_filename)
         phrases = parse_phrases(phrase_file, phrase)
 
         if pos_excludes is None:
-            pos_excludes = pos_tags_to_str(corpus_config.pos_schema.Delimiter)
+            pos_excludes = pos_tags_to_str(config_filename.pos_schema.Delimiter)
 
-        if pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
-            pos_paddings = pos_tags_to_str(corpus_config.pos_schema.all_types_except(pos_includes))
+        if pos_paddings and pos_paddings.upper() in ["FULL", "ALL", "PASSTHROUGH"]:
+            pos_paddings = pos_tags_to_str(config_filename.pos_schema.all_types_except(pos_includes))
             logger.info(f"PoS paddings expanded to: {pos_paddings}")
 
-        text_reader_opts: TextReaderOpts = corpus_config.text_reader_opts.copy()
+        text_reader_opts: TextReaderOpts = config_filename.text_reader_opts.copy()
 
         if filename_pattern is not None:
             text_reader_opts.filename_pattern = filename_pattern
 
-        corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
+        config_filename.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
 
-        tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
+        tagged_columns: dict = config_filename.pipeline_payload.tagged_columns_names
         args: interface.ComputeOpts = interface.ComputeOpts(
-            corpus_type=corpus_config.corpus_type,
+            corpus_type=config_filename.corpus_type,
             corpus_source=input_filename,
             target_folder=output_folder,
             corpus_tag=output_tag,
@@ -179,7 +179,7 @@ def process(
             force_checkpoint=force_checkpoint,
         )
 
-        workflow.compute(args=args, corpus_config=corpus_config)
+        workflow.compute(args=args, corpus_config=config_filename)
 
         logger.info('Done!')
 
