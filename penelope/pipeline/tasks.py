@@ -58,7 +58,7 @@ class LoadText(DefaultResolveMixIn, ITask):
             transform_opts=self.transform_opts,
         )
 
-        """Try to fetch document index from source (e.g. it might exeist in compressed archive)"""
+        """Try to fetch document index from source (e.g. it might exist in compressed archive)"""
         di = (
             self.text_reader.try_load_document_index(
                 filename=self.pipeline.payload.document_index_source, sep=self.pipeline.payload.document_index_sep
