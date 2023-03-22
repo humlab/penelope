@@ -17,11 +17,11 @@ checkpoint_opts:
     custom_serializer_classname: null
     deserialize_processes: 1
     deserialize_chunksize: 4
-    feather_folder: /data/inidun/courier/corpus/target/article_corpus.feather
+    feather_folder: /data/inidun/courier/corpus/v0.1.0/article_corpus.feather
     index_column: null
 pipeline_payload:
-  source: /data/inidun/courier/corpus/article_corpus.zip
-  document_index_source: document_index.csv
+  source: /data/inidun/courier/corpus/v0.1.0/article_corpus.zip
+  document_index_source: /data/inidun/courier/corpus/v0.1.0/document_index.csv
   document_index_sep: "\t"
   filenames: null
   memory_store:
