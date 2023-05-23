@@ -14,7 +14,7 @@
                 "PYTHONPATH": "${workspaceFolder}",
             },
             "redirectOutput": true,
-            "python": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.9/bin/python"
+            "python": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.11/bin/python"
         }
     ]
 }
