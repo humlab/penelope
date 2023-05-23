@@ -55,7 +55,6 @@ def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
 
 @DEBUG_VIEW.capture(clear_output=False)
 def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
-
     di: pd.DataFrame = document_index
 
     if opts.filter_opts is not None:
@@ -294,7 +293,6 @@ class BaseTokenCountGUI(DownloadMixIn):
             self.alert(ex)
 
     def prepare_plot_data(self, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-
         table_data: pd.DataFrame = self.plot_tabular(data, self.opts)
         plot_data: pd.DataFrame = data
 
@@ -302,7 +300,6 @@ class BaseTokenCountGUI(DownloadMixIn):
 
     @DEBUG_VIEW.capture(clear_output=False)
     def plot(self, data: pd.DataFrame) -> None:
-
         try:
             table_data, plot_data = self.prepare_plot_data(data=data)
 
@@ -342,7 +339,6 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
         return pu.unstack_data(data, [self.temporal_key] + self.pivot_keys_text_names)
 
     def prepare_plot_data(self, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-
         unstacked_data: pd.DataFrame = self.unstack_pivot_keys(data) if len(self.pivot_keys_text_names) > 0 else data
 
         table_data: pd.DataFrame = self.plot_tabular(unstacked_data if self.unstack_tabular else data, self.opts)

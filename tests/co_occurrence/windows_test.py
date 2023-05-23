@@ -30,7 +30,6 @@ def load_corpus_windows_fixture(filename: str):
 
 
 def test_tokens_to_windows():
-
     context_opts: ContextOpts = ContextOpts(
         concept=set(), context_width=1, ignore_padding=False, pad="*", min_window_size=0
     )
@@ -80,7 +79,6 @@ def test_tokens_to_windows():
 
 
 def test_windows_iterator():
-
     windows = [
         ['tran_2019_01_test.txt', 0, ['kroppen', 'Skäms', 'är', 'människa', 'öppnar']],
         ['tran_2019_01_test.txt', 1, ['valv', 'blir', 'är', 'skall', 'tårar']],
@@ -107,7 +105,6 @@ def test_windows_iterator():
 
 
 def test_co_occurrence_given_windows_and_vocabulary_succeeds():
-
     vocabulary = generate_token2id([x[2] for x in SAMPLE_WINDOW_STREAM])
 
     windows_corpus = WindowsCorpus(SAMPLE_WINDOW_STREAM, vocabulary=vocabulary)

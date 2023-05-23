@@ -33,7 +33,6 @@ class TokenCountsGUI:
         load_document_index_callback: Callable[[pipeline.CorpusConfig], DocumentIndex],
         load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig],
     ):
-
         self.compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame] = compute_callback
         self.load_document_index_callback: Callable[
             [pipeline.CorpusConfig], DocumentIndex
@@ -87,7 +86,6 @@ class TokenCountsGUI:
         )
 
     def _plot_counts(self, *_) -> None:
-
         try:
             if self.document_index is None:  # pragma: no cover
                 self.alert("Please load a corpus!")
@@ -110,7 +108,6 @@ class TokenCountsGUI:
             self.warn(str(ex))
 
     def setup(self, config_filenames: List[str]) -> "TokenCountsGUI":
-
         self._corpus_configs.options = {strip_path_and_extension(path): path for path in config_filenames}
         self._corpus_configs.value = None
 
@@ -130,7 +127,6 @@ class TokenCountsGUI:
 
     @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
     def display(self) -> "TokenCountsGUI":
-
         if self._corpus_configs.value is None:
             return self
 
@@ -143,7 +139,6 @@ class TokenCountsGUI:
         self.set_schema(corpus_config.pos_schema)
 
         try:
-
             self.document_index: DocumentIndex = self.load_document_index_callback(corpus_config)
 
             if isinstance(self.document_index, pd.DataFrame):
@@ -184,7 +179,6 @@ class TokenCountsGUI:
 
 @DEBUG_VIEW.capture(clear_output=False)
 def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex) -> pd.DataFrame:
-
     if len(args.categories or []) > 0:
         count_columns = list(args.categories)
     else:
@@ -202,7 +196,6 @@ def compute_token_count_data(args: TokenCountsGUI, document_index: DocumentIndex
 
 
 def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFrame:
-
     with contextlib.suppress(Exception):
         task: tasks.CheckpointFeather = pipe.find(tasks.CheckpointFeather)
         if task:
@@ -247,7 +240,6 @@ def load_by_pipeline(corpus_config: pipeline.CorpusConfig):
 
 @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
 def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
-
     if corpus_config.pipeline_payload.document_index_source is not None:
         document_index: pd.DataFrame = DocumentIndexHelper.load(
             filename=corpus_config.pipeline_payload.document_index_source,

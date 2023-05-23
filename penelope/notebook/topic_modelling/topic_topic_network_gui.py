@@ -181,7 +181,6 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         ).value
 
     def update(self) -> pd.DataFrame:
-
         network_data: pd.DataFrame = self.compute()
 
         if len(network_data) == 0:
@@ -190,7 +189,6 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return network_data
 
     def update_handler(self, *_):
-
         self.alert("⌛ Computing...")
         try:
             self.network_data = self.update()
@@ -203,19 +201,14 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         self.display_handler()
 
     def display_handler(self, *_):
-
         try:
-
             self._output.clear_output()
 
             with self._output:
-
                 if self.network_data is None:
-
                     self.alert("😡 No data, please change filters..")
 
                 elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
-
                     data: pd.DataFrame = self.network_data
 
                     if self.output_format == "gephi":
@@ -229,7 +222,6 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     display(g)
 
                 else:
-
                     display_topic_topic_network(
                         data=self.network_data,
                         layout=self._network_layout.value,

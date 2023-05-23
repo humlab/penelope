@@ -13,7 +13,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning, module='numpy.polynom
 
 
 def gof_by_l2_norm(matrix: scipy.sparse.spmatrix, axis: int = 1, scale: bool = True):
-
     """Computes L2 norm for rows (axis = 1) or columns (axis = 0).
 
     See stats.stackexchange.com/questions/25827/how-does-one-measure-the-non-uniformity-of-a-distribution
@@ -69,7 +68,6 @@ def fit_ordinary_least_square(ys, xs=None) -> Tuple[float, float, Any, Point, Po
 
 
 def fit_ordinary_least_square_ravel(Y, xs):
-
     if xs is None:
         xs = np.arange(Y.shape[0])
 
@@ -92,14 +90,12 @@ def fit_polynomial_ravel(Y, xs):
 
 
 def gof_chisquare_to_uniform(f_obs, axis=0):
-
     (chi2, p) = scipy.stats.chisquare(f_obs, axis=axis)
 
     return (chi2, p)
 
 
 def earth_mover_distance(vs, ws=None):
-
     if ws is None:
         ws = np.full(len(vs), vs.mean())
 
@@ -107,7 +103,6 @@ def earth_mover_distance(vs, ws=None):
 
 
 def entropy(pk, qk=None):
-
     if qk is None:
         qk = np.full(len(pk), pk.mean())
 

@@ -12,7 +12,6 @@ from penelope.utility import replace_extension, suffix_filename, timestamp_filen
 def store_options_to_json_file(
     input_filename, output_filename, transform_opts: TokensTransformOpts, sparv_extract_opts
 ):
-
     store_options = {
         'input': input_filename,
         'output': output_filename,

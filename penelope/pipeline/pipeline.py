@@ -47,9 +47,7 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Find first task of class `task_cls`. Don't look beyond `stop_cls` if given."""
 
         for task in self.tasks:
-
             if isinstance(task_cls, str):
-
                 if type(task).__name__ == task_cls:
                     return task
 
@@ -123,9 +121,10 @@ class CorpusPipelineBase(Generic[_T_self]):
         """Get as value from memory store"""
         return self.payload.get(key, default)
 
-    def put(self, key: str, value: Any):
+    def put(self, key: str, value: Any, *, overwrite: bool = False):
         """Puts a value to memory store"""
-        self.payload.put(key, value)
+        if self.get(key) is None or overwrite:
+            self.payload.put(key, value)
 
     def to_list(self) -> List[DocumentPayload]:
         """Resolves stream and returns all payloads in a list"""

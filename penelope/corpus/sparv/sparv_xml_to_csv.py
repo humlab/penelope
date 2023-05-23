@@ -33,7 +33,6 @@ XSLT_DOCUMENT = """<?xml version="1.0"?>
 
 class SparvXml2CSV:
     def __init__(self, delimiter: str = '\t', version: int = 4):
-
         args = (
             (
                 "token",

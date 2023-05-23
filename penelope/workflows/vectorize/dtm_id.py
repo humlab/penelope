@@ -36,10 +36,13 @@ class ComputeOpts(
         self.filename_pattern = data.get('filename_pattern')
 
 
-def compute(args: ComputeOpts, corpus_config: CorpusConfig) -> VectorizedCorpus:
-
+def compute(
+    args: ComputeOpts,
+    corpus_config: CorpusConfig,
+) -> VectorizedCorpus:
+    """Computes DTM from an ID tagged frame corpus.
+    Ignores any tagged_frame_pipeline specified in corpus config."""
     try:
-
         assert args.is_satisfied()
 
         args.extract_opts.global_tf_threshold = 1

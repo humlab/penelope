@@ -21,7 +21,6 @@ def compute(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ) -> dict:
-
     corpus_source: str = corpus_source or config.pipeline_payload.source
 
     if corpus_source is None:

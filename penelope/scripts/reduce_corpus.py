@@ -17,7 +17,6 @@ def reduce_corpus(source_filename: str, config_filename: str, target_filename: s
 
 
 def reduce_by_key(source_filename: str, config_filename: str, target_filename: str, reduce_key: str):
-
     corpus_config: pp.CorpusConfig = pp.CorpusConfig.load(config_filename)
     reader_opts = corpus_config.text_reader_opts
     reader: pr.TextReader = pr.TextReader(source_filename, reader_opts=reader_opts)
@@ -30,9 +29,7 @@ def reduce_by_key(source_filename: str, config_filename: str, target_filename: s
     di_str: str = f"document_id\tfilename\tdocument_name{reduce_key}\tn_raw_tokens\n"
 
     with zipfile.ZipFile(target_filename, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-
         for i, key in enumerate(reduce_keys):
-
             reader_opts.filename_filter = sorted(list(di[di[reduce_key] == key].filename))
             key_reader = pr.TextReader(source_filename, reader_opts=reader_opts)
 

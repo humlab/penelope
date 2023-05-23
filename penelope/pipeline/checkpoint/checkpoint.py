@@ -118,7 +118,6 @@ def store_archive(
     with zipfile.ZipFile(
         target_filename, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=compresslevel
     ) as zf:
-
         zf.writestr(CHECKPOINT_OPTS_FILENAME, json.dumps(asdict(checkpoint_opts)).encode('utf8'))
 
         for payload in payload_stream:
@@ -155,7 +154,6 @@ def load_archive(
     """
 
     with _CheckpointZipFile(source_name, mode="r", checkpoint_opts=checkpoint_opts) as zf:
-
         return CheckpointData(
             source_name=source_name,
             filenames=zf.document_filenames,
@@ -175,7 +173,6 @@ class _CheckpointZipFile(zipfile.ZipFile):
         checkpoint_opts: CheckpointOpts = None,
         document_index_name=DOCUMENT_INDEX_FILENAME,
     ) -> None:
-
         super().__init__(file, mode=mode, compresslevel=zipfile.ZIP_DEFLATED)
 
         self.checkpoint_opts: CheckpointOpts = checkpoint_opts or self._checkpoint_opts()

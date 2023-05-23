@@ -128,7 +128,6 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 
 def test_reader_can_be_reiterated():
-
     reader: TextReader = create_text_reader(filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True)
     for _ in range(0, 4):
         n_chars = [len(x) for _, x in reader]

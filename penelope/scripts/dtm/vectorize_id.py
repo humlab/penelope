@@ -15,10 +15,10 @@ from penelope.utility import pos_tags_to_str
 
 
 @click.command()
-@click.argument('config_filename', type=click.STRING, required=False)
-@click.argument('corpus_source', type=click.STRING, required=False)
-@click.argument('output_folder', type=click.STRING, required=False)
-@click.argument('output_tag', type=click.STRING, required=False)
+@option2('--config-filename')
+@option2('--corpus-source')
+@option2('--output-folder')
+@option2('--output-tag')
 @option2('--append-pos')
 @option2('--create-subfolder')
 @option2('--deserialize-processes')
@@ -65,11 +65,19 @@ def main(
     tf_threshold_mask: bool = False,
     deserialize_processes: int = 4,
 ):
+    """Creates a DTM from a corpus stored as a tagged ID frame.
+    Optional arguments are loaded from `options_filename` (if specified useing --options-filename) or specified as CLI arguments.
+    CLI arguments overrides options specified in a supplied options file.
+
+    This script is a specialized version of vectorize.py. The only difference is that the tagged frame id pipleine is hard-coded,
+    and pipeline specifications in the corpus config file are ignored.
+    """
     arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
     process(**arguments)
 
 
 def process(
+    *,
     config_filename: Optional[str] = None,
     corpus_source: Optional[str] = None,
     output_folder: Optional[str] = None,
@@ -94,7 +102,6 @@ def process(
     tf_threshold_mask: bool = False,
     deserialize_processes: int = 4,
 ):
-
     try:
         corpus_config: CorpusConfig = CorpusConfig.load(config_filename).folders(corpus_source, method='replace')
         phrases: dict = parse_phrases(phrase_file, phrase)

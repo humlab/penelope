@@ -21,13 +21,11 @@ except ImportError:
 
 
 try:
-
     import holoviews as hv
 
     def create_cluster_boxplot(
         x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, color: str
     ) -> hv.opts:
-
         xs = np.arange(x_corpus.document_index.year.min(), x_corpus.document_index.year.max() + 1, 1)
 
         token_ids = list(token_clusters[token_clusters.cluster == n_cluster].index)
@@ -55,7 +53,6 @@ try:
         return p
 
 except ImportError:
-
     # pylint: disable=unused-argument
     def render_cluster_boxplot(*_, **__) -> Any:
         return None
@@ -65,7 +62,6 @@ except ImportError:
 
 
 def default_palette(index: int) -> Iterable[str]:
-
     return nth(itertools.cycle(bokeh.palettes.Category20[20]), index)
 
 
@@ -77,7 +73,6 @@ def noop(x=None, p=None, max=None):  # pylint: disable=redefined-builtin, unused
 def create_cluster_plot(
     x_corpus: VectorizedCorpus, token_clusters: pd.DataFrame, n_cluster: int, tick=noop, **kwargs
 ) -> bp.figure:
-
     # palette = itertools.cycle(bokeh.palettes.Category20[20])
     assert n_cluster <= token_clusters.cluster.max()
 
@@ -118,7 +113,6 @@ def create_cluster_plot(
     p.line(xs=xsp, ys=ysp, line_width=0.5, color='blue', alpha=0.5, legend_label='poly3')
 
     if hasattr(token_clusters, 'centroids'):
-
         ys_cluster_center = token_clusters.centroids[n_cluster, :]
         p.line(xs=xs, ys=ys_cluster_center, line_width=2.0, color='black', legend_label='centroid')
 
@@ -145,7 +139,6 @@ def render_cluster_plot(figure: bp.figure):
 
 
 def plot_clusters_count(source: bm.ColumnDataSource):
-
     figure_opts = dict(width=500, height=600, title="Cluster token count")
 
     hover_opts = dict(tooltips='@legend: @count words', show_arrow=False, line_policy='next')
@@ -178,7 +171,6 @@ def plot_clusters_count(source: bm.ColumnDataSource):
 
 
 def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict = None) -> Any:
-
     figure_opts = dict(width=600, height=620, title="Cluster mean trends (pchip spline)")
     hover_opts = dict(tooltips=[('Cluster', '@legend')], show_arrow=False, line_policy='next')
 
@@ -206,7 +198,6 @@ def create_clusters_mean_plot(source: bm.ColumnDataSource, filter_source: dict =
     p.legend.click_policy = "hide"
 
     if filter_source is not None:
-
         callback: bm.CustomJS = _create_multiline_multiselect_callback(source)
 
         multi_select: bm.MultiSelect = bm.MultiSelect(
@@ -228,7 +219,6 @@ def render_clusters_mean_plot(figure: Any):
 
 
 def _create_multiline_multiselect_callback(source: bm.ColumnDataSource) -> bm.CustomJS:
-
     full_source = bm.ColumnDataSource(source.data)
 
     callback: bm.CustomJS = bm.CustomJS(
@@ -254,7 +244,6 @@ def render_dendogram(linkage_matrix):
 
 
 def plot_dendogram(linkage_matrix, labels):
-
     plt.figure(figsize=(16, 40))
 
     dendrogram(

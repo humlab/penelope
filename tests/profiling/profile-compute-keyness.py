@@ -12,7 +12,6 @@ def load_bundle(folder: str, tag: str):
 
 
 def compute():
-
     folder, tag = (
         '/path/to/data',
         'data-tag',

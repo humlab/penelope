@@ -20,7 +20,6 @@ def sparv_csv_export_small_text():
 
 
 def test_reader_when_no_transforms_returns_source_tokens():
-
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
@@ -38,7 +37,6 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
 
 def test_reader_when_only_nn_returns_only_nn():
-
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
@@ -56,7 +54,6 @@ def test_reader_when_only_nn_returns_only_nn():
 
 
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
-
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
@@ -74,7 +71,6 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
 
 def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
-
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
@@ -92,7 +88,6 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
 
 def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos():
-
     tokens_reader = readers.SparvCsvTokenizer(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
         reader_opts=TextReaderOpts(),
@@ -115,7 +110,6 @@ def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos()
 
 
 def test_reader_when_source_is_zipped_archive_succeeds():
-
     expected_documents = [
         ['rödräv', 'hunddjur', 'utbredning', 'halvklot'],
     ]
@@ -134,6 +128,5 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     )
 
     for i, (filename, tokens) in enumerate(tokens_reader):
-
         assert expected_documents[i] == list(tokens)
         assert expected_names[i] == filename

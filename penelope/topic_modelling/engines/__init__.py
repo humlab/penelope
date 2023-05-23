@@ -29,7 +29,6 @@ def get_engine_cls_by_method_name(method: str) -> Type[interface.ITopicModelEngi
 
 
 def get_engine_by_model_type(model: Any) -> interface.ITopicModelEngine:
-
     for _, engine in ENGINES.items():
         if engine.is_supported(model):
             return engine.TopicModelEngine(model)

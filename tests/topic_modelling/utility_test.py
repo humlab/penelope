@@ -12,7 +12,6 @@ from penelope.topic_modelling import (
 
 
 def test_filter_topic_tokens_overview(state: TopicModelContainer):
-
     format_string: str = '#{}#'
     topic_token_overview: pd.DataFrame = state["inferred_topics"].topic_token_overview
 
@@ -37,7 +36,6 @@ def test_filter_topic_tokens_overview(state: TopicModelContainer):
 
 @pytest.mark.parametrize('engine_key', ['gensim_lda-multicore', 'gensim_mallet-lda'])
 def test_get_engine_cls_by_method_name(engine_key: EngineKey):
-
     module = get_engine_module_by_method_name(engine_key)
     assert module is not None
 

@@ -8,7 +8,6 @@ from ..transforms import TEXT_TRANSFORMS
 
 @dataclass
 class TextTransformOpts:
-
     fix_whitespaces: bool = True
     fix_hyphenation: bool = True
     fix_ftfy_text: bool = True
@@ -68,7 +67,6 @@ class TextTransformer:
         return self
 
     def transform(self, text: str) -> str:
-
         for ft in self.transforms:
             text = ft(text)
 

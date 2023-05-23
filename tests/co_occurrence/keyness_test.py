@@ -31,7 +31,6 @@ SIMPLE_CORPUS_ABCDE_3DOCS = [
 
 
 def test_tasks_pool_tokens_to_ttm_step_by_step():
-
     # Arrange
     context_opts: ContextOpts = ContextOpts(
         concept={'d'},
@@ -109,7 +108,6 @@ def test_tasks_pool_tokens_to_ttm_step_by_step():
 
 
 def test_compute_ttm_alternative_method():
-
     corpus: TokenizedCorpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_3DOCS)
     corpus.token2id['*'] = (pad_id := len(corpus.token2id))
     id2token: dict = corpus.id2token
@@ -201,7 +199,6 @@ def test_tasks_pool_tokens_to_ttm():
 
 
 def test_keyness_transform_with_simple_corpus():
-
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS)
     opts: ComputeKeynessOpts = create_keyness_opts()
 
@@ -211,7 +208,6 @@ def test_keyness_transform_with_simple_corpus():
 
 
 def test_step_by_step_tfidf_keyness_transform():
-
     bundle: Bundle = create_keyness_test_bundle(data=SIMPLE_CORPUS_ABCDE_3DOCS, processes=None, ignore_padding=False)
     opts: ComputeKeynessOpts = create_keyness_opts()
 

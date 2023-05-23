@@ -42,7 +42,6 @@ PhraseSubstitutions = Union[Dict[str, List[str]], List[List[str]]]
 
 @dataclass
 class ExtractTaggedTokensOpts:
-
     lemmatize: Optional[bool] = None
 
     text_column: str = 'token'

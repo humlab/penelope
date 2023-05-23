@@ -61,7 +61,6 @@ class ContentType(IntEnum):
 
 @dataclass
 class DocumentPayload:
-
     content_type: ContentType = field(default=ContentType.NONE)
     filename: str = None
     content: Any = None
@@ -113,7 +112,6 @@ def nullify(data: Any, ok_types: Type | list[Type]):
 
 @dataclass
 class PipelinePayload:
-
     # source_folder: str = None
     source: TextSource = None
     document_index_source: Union[str, DocumentIndex] = None
@@ -173,14 +171,16 @@ class PipelinePayload:
         }
         return {**self.props, **opts, **extra_opts}
 
-    def set_reader_index(self, reader_index: DocumentIndex) -> "PipelinePayload":
-        if self.document_index is None:
-            self.effective_document_index = reader_index
-        else:
-            self.effective_document_index = consolidate_document_index(
-                document_index=self.document_index,
-                reader_index=reader_index,
-            )
+    def set_reader_index(self, reader_index: DocumentIndex, document_index: DocumentIndex = None) -> "PipelinePayload":
+        """If document index is supplied, set it as effective (if not set)"""
+        if self.effective_document_index is None:
+            if document_index is not None:
+                self.effective_document_index = document_index
+
+        self.effective_document_index = consolidate_document_index(
+            document_index=self.document_index if document_index is None else document_index,
+            reader_index=reader_index,
+        )
         return self
 
     def document_lookup(self, document_name: str) -> Dict[str, Any]:
@@ -188,7 +188,6 @@ class PipelinePayload:
 
     @cached_property
     def pos_schema(self) -> PoS_Tag_Scheme:
-
         pos_schema: PoS_Tag_Scheme = Known_PoS_Tag_Schemes.get(self.pos_schema_name, None)
         if pos_schema is None:
             raise PipelineError("expected PoS schema found None")
@@ -265,7 +264,6 @@ class ResetNotApplicableError(Exception):
 
 @dataclass
 class ITask(abc.ABC):
-
     pipeline: pipelines.CorpusPipeline = None
 
     in_content_type: Union[ContentType, Sequence[ContentType]] = field(init=False, default=None)
@@ -427,3 +425,9 @@ class DocumentContentStream(ReiterablePayloadStream):
 
 
 DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFrame]
+
+
+class IDocumentTagger(abc.ABC):
+    @abc.abstractmethod
+    def tag(self, document: DocumentPayload) -> TaggedFrame:
+        ...

@@ -50,7 +50,6 @@ class MDW_GUI:
         self.corpus: dtm.VectorizedCorpus = None
 
     def setup(self, corpus: dtm.VectorizedCorpus, compute_callback: Callable, done_callback: Callable) -> "MDW_GUI":
-
         low, high = corpus.document_index.year.min(), corpus.document_index.year.max()
 
         self._period1.min, self._period1.max = (low, high)
@@ -67,7 +66,6 @@ class MDW_GUI:
         return self
 
     def layout(self):
-
         _layout = VBox(
             [
                 HBox(
@@ -89,7 +87,6 @@ class MDW_GUI:
         return _layout
 
     def _compute_handler(self, *_):
-
         if self.compute_callback is None:
             return
 
@@ -124,7 +121,6 @@ class MDW_GUI:
 
 
 def default_compute_callback(corpus: dtm.VectorizedCorpus, args: MDW_GUI):
-
     group1_indices = corpus.document_index[corpus.document_index.year.between(*args.period1)].index
     group2_indices = corpus.document_index[corpus.document_index.year.between(*args.period2)].index
 
@@ -144,7 +140,6 @@ def create_mdw_gui(
     done_callback: Callable[[dtm.VectorizedCorpus, pd.DataFrame], None],
     compute_callback: Callable[[dtm.VectorizedCorpus, pd.DataFrame], None] = None,
 ) -> MDW_GUI:
-
     gui = MDW_GUI().setup(
         corpus=corpus,
         compute_callback=(compute_callback or default_compute_callback),

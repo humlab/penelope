@@ -67,7 +67,6 @@ ALL_IN_ONE_TRANSLATION = str.maketrans(
 
 
 def normalize_characters(text: str, groups: str = None) -> str:
-
     if groups is None:
         return text.translate(ALL_IN_ONE_TRANSLATION)
 

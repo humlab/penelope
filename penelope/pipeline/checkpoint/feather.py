@@ -13,7 +13,6 @@ FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
 
 
 def write_payload(folder: str, payload: DocumentPayload) -> DocumentPayload:
-
     filename: str = jj(folder, replace_extension(payload.filename, ".feather"))
 
     payload.content.reset_index(drop=True).to_feather(filename, compression="lz4")
@@ -48,7 +47,6 @@ def document_index_exists(folder: Optional[str]) -> bool:
 
 
 def read_document_index(folder: str) -> pd.DataFrame:
-
     filename = jj(folder, FEATHER_DOCUMENT_INDEX_NAME)
 
     if os.path.isfile(filename):
@@ -66,7 +64,6 @@ def drop_document_index(folder: str) -> None:
 
 
 def get_document_index(folder: str, document_index: pd.DataFrame) -> pd.DataFrame:
-
     if not document_index_exists(folder):
         return document_index
 
@@ -95,7 +92,6 @@ def is_invalidated_document_index(stored_document_index: pd.DataFrame, document_
 
 
 def write_document_index(folder: str, document_index: pd.DataFrame):
-
     if document_index is None:
         return
 
@@ -105,7 +101,6 @@ def write_document_index(folder: str, document_index: pd.DataFrame):
 
 
 def _sanitize_document_index(document_index: pd.DataFrame):
-
     if document_index is None:
         return
 

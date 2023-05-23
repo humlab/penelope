@@ -6,7 +6,6 @@ from penelope.utility import PropertyValueMaskingOpts
 
 
 def test_mask_punct_space_when_no_space():
-
     # data = doc.head().to_csv(sep='\t',header=True))
     data = """
 \ttext\tlemma_\tpos_\tis_space\tis_punct

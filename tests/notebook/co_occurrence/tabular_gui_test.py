@@ -17,7 +17,6 @@ def bundle():
 
 
 def test_table_gui_create(bundle):
-
     gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     assert gui is not None
@@ -30,7 +29,6 @@ def test_table_gui_create(bundle):
 
 @pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
 def test_table_gui_to_corpus(bundle, time_period):
-
     gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     gui.stop_observe()
@@ -63,7 +61,6 @@ def test_table_gui_to_corpus(bundle, time_period):
 
 @pytest.mark.parametrize("time_period", ["year", "lustrum", "decade"])
 def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
-
     gui: TabularCoOccurrenceGUI = TabularCoOccurrenceGUI(bundle=bundle)
 
     gui.stop_observe()
@@ -102,7 +99,6 @@ def test_table_gui_to_co_occurrences_filters_out_tokens(bundle, time_period):
     ],
 )
 def test_table_gui_debug_setup(tag: str, keyness: KeynessMetric):
-
     folder: str = f'./tests/test_data/{tag}'
 
     bundle: Bundle = Bundle.load(folder=folder, tag=tag, compute_frame=False)

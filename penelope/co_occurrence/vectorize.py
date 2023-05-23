@@ -53,7 +53,6 @@ def windows_to_ttm(
     ignore_ids: Set[int],
     vocab_size: int,
 ) -> Mapping[VectorizeType, VectorizedTTM]:
-
     if len(concept_ids) > 1:
         raise NotImplementedError("Multiple concepts disabled (performance")
 
@@ -114,7 +113,6 @@ class WindowsTermsCounter:
         self._indptr_append = self.indptr.append
 
     def update(self, token_counter: Counter):
-
         if None in token_counter.keys():
             raise ValueError("BugCheck: None in TokenCounter not allowed!")
 

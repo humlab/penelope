@@ -25,7 +25,6 @@ def low_bound(categories: list[int], n_tick: int) -> int:
 
 
 def generate_colors(n: int, palette: Iterable[str] | str = 'Category20', palette_id: int = None) -> Iterable[str]:
-
     if not isinstance(palette, str):
         # return take(n, cycle(palette))
         return list(islice(cycle(palette), n))
@@ -121,7 +120,6 @@ def plot_multiple_value_series(
 
 
 def plot_stacked_bar(df: pd.DataFrame, **figopts):
-
     figopts = {**DEFAULT_FIGOPTS, **(figopts or {})}
 
     columns: List[str] = df.columns.tolist()
@@ -165,7 +163,6 @@ def _to_multiline_data_source(data: pd.DataFrame, smoother: Callable = None) -> 
 
 
 def plot_multiline(*, df: pd.DataFrame, smooth: bool = False, **figopts) -> bp.figure:
-
     x_ticks: Sequence[int] = None
 
     figopts = {**DEFAULT_FIGOPTS, **(figopts or {})}

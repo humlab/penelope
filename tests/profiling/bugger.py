@@ -88,7 +88,6 @@ def debug_main(
     config: pipeline.CorpusConfig = load_config(config_filename, corpus_source)
 
     if passthrough_column is None:
-
         text_transform_opts: pc.TextTransformOpts = pc.TextTransformOpts()
 
         if fix_accents:

@@ -19,7 +19,6 @@ def tf_to_string(token2id: Token2Id) -> Mapping[str, int]:
 
 
 def test_token2id_ingest():
-
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM1)
 
     assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4}
@@ -43,7 +42,6 @@ def test_token2id_insert_into_closed_vocabulary_raises_error():
 
 
 def test_replace():
-
     tokens = ['a', 'a', 'b', 'c']
 
     ingested: Token2Id = Token2Id().ingest(tokens)
@@ -61,7 +59,6 @@ def test_token2id_insert_into_closed_vocabulary_with_fallback_succeeds():
 
 
 def test_token2id_find():
-
     token2id: Token2Id = Token2Id({'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4})
 
     assert set(token2id.find(what='adam')) == set([0])
@@ -71,7 +68,6 @@ def test_token2id_find():
 
 
 def test_token2id_store_and_load():
-
     os.makedirs('./tests/output', exist_ok=True)
 
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM1)
@@ -93,7 +89,6 @@ def test_token2id_store_and_load():
 
 
 def test_token2id_compress_with_no_threshold_and_no_keeps_returns_self():
-
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
 
     assert token2id.data == {'adam': 0, 'anton': 1, 'beatrice': 2, 'felicia': 3, 'niklas': 4, 'beata': 5}
@@ -105,7 +100,6 @@ def test_token2id_compress_with_no_threshold_and_no_keeps_returns_self():
 
 
 def test_token2id_inplace_compress_with_threshold_and_no_keeps():
-
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
     token2id_compressed, translation = token2id.compress(tf_threshold=2, inplace=False)
     assert dict(token2id_compressed.data) == {'adam': 0, 'anton': 1, 'beata': 2, GLOBAL_TF_THRESHOLD_MASK_TOKEN: 3}
@@ -118,7 +112,6 @@ def test_token2id_inplace_compress_with_threshold_and_no_keeps():
 
 
 def test_token2id_compress_with_threshold_and_keeps_adds_masked_magic_token_with_correct_sum():
-
     mask_token: str = GLOBAL_TF_THRESHOLD_MASK_TOKEN
     token2id: Token2Id = Token2Id().ingest(TEST_TOKENS_STREAM2).close()
     token2id_compressed, _ = token2id.compress(tf_threshold=2, keeps={4}, inplace=False)
@@ -173,7 +166,6 @@ def test_translation():
 
 
 def test_translate():
-
     data = {'*': 0, '__low-tf__': 1, 'a': 2, 'b': 3, 'c': 4, 'd': 5, 'e': 6}
     tf = {0: 1, 1: 1, 2: 5, 3: 2, 4: 5, 5: 2, 6: 4}
     ids_translation = {0: 0, 1: 1, 2: 2, 4: 3, 6: 4}

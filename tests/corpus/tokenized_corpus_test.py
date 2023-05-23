@@ -172,7 +172,6 @@ def test_n_tokens_when_exhausted_and_only_any_alphanumeric_is_true_returns_expec
 
 
 def test_corpus_can_be_reiterated():
-
     reader = create_tokens_reader(filename_fields=None, fix_whitespaces=True, fix_hyphenation=True)
 
     corpus = corpora.TokenizedCorpus(reader, transform_opts=TokensTransformOpts(only_any_alphanumeric=True))

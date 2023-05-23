@@ -33,7 +33,6 @@ class ComputeGUI:
 
     @view.capture(clear_output=True)
     def _compute_handler(self, _):
-
         if self.filepath.value is None:
             return
         self.button.disabled = True
@@ -56,7 +55,6 @@ class ComputeGUI:
         return self
 
     def layout(self):
-
         layout = VBox(
             [
                 HBox(
@@ -78,7 +76,6 @@ class ComputeGUI:
 
 
 def create_gui(data_folder, corpus_pattern='*.tokenized.zip', compute_handler: Callable = None):
-
     corpus_files = sorted(glob.glob(os.path.join(data_folder, corpus_pattern)))
 
     gui = ComputeGUI().setup(corpus_files=corpus_files, compute_handler=compute_handler)

@@ -138,7 +138,6 @@ def main(
     force_checkpoint: bool = False,
     passthrough_column: Optional[str] = None,
 ):
-
     if not config_filename or not os.path.isfile(config_filename):
         click.echo("error: config file not specified/found")
         raise sys.exit(1)
@@ -200,7 +199,6 @@ def main(
     )
 
     if passthrough_column is not None:
-
         extract_opts: str = passthrough_column
         text_transform_opts: pc.TextTransformOpts = None
         transform_opts: pc.TokensTransformOpts = None
@@ -243,5 +241,4 @@ def main(
 
 
 if __name__ == '__main__':
-
     click_main()

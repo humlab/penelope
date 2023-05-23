@@ -424,7 +424,6 @@ def group_DTM_by_indices_mapping(
     aggregate: str = 'sum',
     dtype: np.dtype = None,
 ):
-
     shape: Tuple[int, int] = (n_docs, dtm.shape[1])
 
     dtype: np.dtype = dtype or (np.int32 if np.issubdtype(dtm.dtype, np.integer) and aggregate == 'sum' else np.float64)
@@ -432,12 +431,10 @@ def group_DTM_by_indices_mapping(
     matrix: sp.lil_matrix = sp.lil_matrix(shape, dtype=dtype)
 
     if aggregate == 'mean':
-
         for document_id, indices in category_indices.items():
             if len(indices) > 0:
                 matrix[document_id, :] = dtm[indices, :].mean(axis=0)
     else:
-
         for document_id, indices in category_indices.items():
             if len(indices) > 0:
                 matrix[document_id, :] = dtm[indices, :].sum(axis=0)

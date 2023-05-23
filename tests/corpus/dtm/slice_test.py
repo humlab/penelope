@@ -19,7 +19,6 @@ def slice_corpus() -> VectorizedCorpus:
 
 
 def test_slice_by_indices():
-
     make_corpus: Callable[[], VectorizedCorpus] = lambda: create_abc_corpus(
         [
             [2, 1, 4, 1],
@@ -73,7 +72,6 @@ def test_normalize_with_keep_magnitude():
 
 
 def test_slice_by_indices2():
-
     # self: IVectorizedCorpusProtocol, n_top: int, sort_indices: bool=False, override: bool=False) -> np.ndarray:
     corpus: VectorizedCorpus = create_abc_corpus(
         [
@@ -107,7 +105,6 @@ def test_slice_by_indices2():
 
 
 def test_slice_by_tf(slice_corpus: VectorizedCorpus):
-
     corpus = slice_corpus.slice_by_tf(1)
     assert corpus.data.shape == slice_corpus.data.shape
     assert corpus.data.sum() == slice_corpus.data.sum()
@@ -123,7 +120,6 @@ def test_slice_by_tf(slice_corpus: VectorizedCorpus):
 
 
 def test_slice_by_tf_when_exists_tokens_below_count_returns_filtered_corpus(slice_corpus: VectorizedCorpus):
-
     # Act
     t_corpus: VectorizedCorpus = slice_corpus.slice_by_tf(6)
 
@@ -136,7 +132,6 @@ def test_slice_by_tf_when_exists_tokens_below_count_returns_filtered_corpus(slic
 
 
 def test_slice_by_tf_when_all_below_below_n_count_returns_empty_corpus(slice_corpus: VectorizedCorpus):
-
     t_corpus: VectorizedCorpus = slice_corpus.slice_by_tf(20)
 
     assert {} == t_corpus.token2id
@@ -145,7 +140,6 @@ def test_slice_by_tf_when_all_below_below_n_count_returns_empty_corpus(slice_cor
 
 
 def test_slice_by_tf_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus: VectorizedCorpus):
-
     t_corpus = slice_corpus.slice_by_tf(1)
 
     assert slice_corpus.token2id == t_corpus.token2id
@@ -154,7 +148,6 @@ def test_slice_by_tf_when_all_tokens_above_n_count_returns_same_corpus(slice_cor
 
 
 def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus: VectorizedCorpus):
-
     t_corpus = slice_corpus.slice_by_n_top(4)
 
     assert slice_corpus.token2id == t_corpus.token2id
@@ -163,7 +156,6 @@ def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_
 
 
 def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_counts(slice_corpus: VectorizedCorpus):
-
     t_corpus = slice_corpus.slice_by_n_top(2)
 
     expected_bag_term_matrix = np.array([[2, 4], [2, 3], [2, 2], [2, 1], [2, 1]])
@@ -178,7 +170,6 @@ def test_term_frequencies(slice_corpus: VectorizedCorpus):
 
 
 def test_compress():
-
     corpus: VectorizedCorpus = create_abc_corpus(
         [
             [2, 1, 4, 1],
@@ -242,7 +233,6 @@ def test_compress():
 
 
 def test_nlargest():
-
     # self: IVectorizedCorpusProtocol, n_top: int, sort_indices: bool=False, override: bool=False) -> np.ndarray:
     corpus: VectorizedCorpus = create_abc_corpus(
         [
@@ -265,7 +255,6 @@ def test_nlargest():
 
 
 def test_where_is_above_threshold_with_keeps():
-
     values = np.array([0, 0, 2, 5, 1, 8, 4, 0])
 
     indices = VectorizedCorpus.where_is_above_threshold_with_keeps(values, threshold=4)
@@ -279,7 +268,6 @@ def test_where_is_above_threshold_with_keeps():
 
 
 def test_translate_to_vocab():
-
     A: VectorizedCorpus = create_abc_corpus(
         [
             # 0 1  2  3  4  5  6  7

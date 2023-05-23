@@ -64,7 +64,6 @@ class TextTokenizer(TextReader):
             Filename and tokens
         """
         for chunkname, text in super().process(filename, content):
-
             tokens = self._tokenize(text)
 
             filename = f"{strip_path_and_extension(chunkname)}.txt"

@@ -10,7 +10,6 @@ def test_transform_smoke_test():
 
 
 def test_transform_load_stopwords():
-
     stopwords = load_stopwords("swedish")
 
     assert isinstance(stopwords, set)
@@ -23,7 +22,6 @@ def test_transform_load_stopwords():
 
 
 def test_remove_stopwords():
-
     stopwords = load_stopwords("swedish")
 
     xtra_stopwords = extended_stopwords("swedish")
@@ -33,6 +31,5 @@ def test_remove_stopwords():
 
 
 def test_get_stopwords():
-
     words = get_stopwords("swedish")
     assert len(words) > 0

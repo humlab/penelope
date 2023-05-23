@@ -3,7 +3,7 @@ corpus_pattern: '*.zip'
 corpus_type: 1
 language: english
 pipelines:
-  tagged_frame_pipeline: penelope.pipeline.spacy.pipelines.to_tagged_frame_pipeline
+  tagged_frame_pipeline: penelope.pipeline.pipelines.to_tagged_frame_pipeline
 checkpoint_opts:
     content_type_code: 1
     sep: "\t"
@@ -28,9 +28,17 @@ pipeline_payload:
     lang: en
     lemma_column: lemma_
     pos_column: pos_
-    spacy_model: en_core_web_sm
-    tagger: spaCy
     text_column: text
+    tagger:
+      class_name: penelope.pipeline.spacy.SpacyTagger
+      options:
+        model: en_core_web_sm
+        disable: null
+        exclude: null
+        keep_hyphens: false
+        remove_whitespace_ents: false
+        attributes: [ text, lemma_, pos_, is_punct, is_stop ]
+        filters: null
   pos_schema_name: Universal
 filter_opts:
   data:

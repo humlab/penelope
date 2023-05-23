@@ -6,7 +6,7 @@ from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.corpus import TokensTransformOpts, VectorizeOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from penelope.pipeline import CorpusConfig, CorpusType
-from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
+from penelope.pipeline.co_occurrence import to_co_occurrence_pipeline
 from penelope.workflows.interface import ComputeOpts
 from tests.co_occurrence.utils import create_simple_bundle_by_pipeline
 from tests.fixtures import SIMPLE_CORPUS_ABCDEFG_7DOCS
@@ -31,7 +31,6 @@ def ComputeOptsSpacyCSV(
     corpus_tag: str = 'MARS',
     corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
-
     return ComputeOpts(
         corpus_tag=corpus_tag,
         corpus_source=corpus_source,
@@ -105,7 +104,6 @@ def ComputeOptsSparvCSV(
     corpus_tag: str = 'TELLUS',
     corpus_source: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
-
     return ComputeOpts(
         corpus_tag=corpus_tag,
         corpus_source=corpus_source,
@@ -170,7 +168,7 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
 
     tagged_corpus_source: str = f"./tests/output/{str(uuid.uuid1())}_test_pos_csv.zip"
 
-    bundle: Bundle = spaCy_co_occurrence_pipeline(
+    bundle: Bundle = to_co_occurrence_pipeline(
         corpus_config=config,
         corpus_source=None,
         transform_opts=args.transform_opts,

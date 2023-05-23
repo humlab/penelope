@@ -6,7 +6,6 @@ SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export
 
 
 def test_tokenize_when_nn_lemmatized_lower_returns_correct_tokens():
-
     expected = [
         (
             'tran_2019_01_test.txt',
@@ -171,13 +170,11 @@ def test_tokenize_when_nn_lemmatized_lower_returns_correct_tokens():
     )
 
     for i, (filename, tokens) in enumerate(corpus):
-
         assert filename == expected[i][0]
         assert tokens == expected[i][1]
 
 
 def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
-
     expected = [
         (
             'tran_2019_01_test.txt',
@@ -294,6 +291,5 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
     )
 
     for i, (filename, tokens) in enumerate(corpus):
-
         assert filename == expected[i][0]
         assert tokens == expected[i][1]

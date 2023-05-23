@@ -16,7 +16,6 @@ logger = getLogger("penelope")
 
 class ZipSource(ISource):
     def __init__(self, source_path: str):
-
         self.source_path = source_path
 
         self.zipfile = None
@@ -95,7 +94,6 @@ class PandasSource(ISource):  # pylint: disable=too-many-instance-attributes, di
     """Text iterator that returns row-wise text documents from a Pandas DataFrame"""
 
     def __init__(self, data: pd.DataFrame, text_column='txt', filename_column='filename', **column_filters):
-
         self.data: pd.DataFrame = data
         self.text_column: str = text_column
         self.column_filters = None
@@ -125,7 +123,6 @@ class PandasSource(ISource):  # pylint: disable=too-many-instance-attributes, di
         return filename in self.filtered_data.index
 
     def get_info(self, opts: TextReaderOpts) -> SourceInfo:
-
         filenames = self.namelist(pattern=opts.filename_pattern)
         basenames = strip_paths(filenames)
         filename_metadata = extract_filenames_metadata(filenames=basenames, filename_fields=opts.filename_fields)

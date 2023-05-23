@@ -21,7 +21,6 @@ DOCTOPICS_SAMPLE: str = """#doc name topic proportion ...
 
 
 def test_convert_doctopics():
-
     source_filename: str = f"./tests/output/doctopics_{str(uuid.uuid4())[:6]}.txt"
     with open(source_filename, "w") as fp:
         fp.write(DOCTOPICS_SAMPLE)

@@ -39,7 +39,6 @@ def from_sparse2corpus(
 
 
 def to_sparse2corpus(corpus: VectorizedCorpus):
-
     return gensim_corpora.Sparse2Corpus(corpus.data, documents_columns=False)
 
 
@@ -66,7 +65,6 @@ def from_stream_of_tokens(
     document_index: pd.DataFrame,
     vectorize_opts: VectorizeOpts,
 ) -> VectorizedCorpus:
-
     vectorizer: Vectorizer = Vectorizer(
         min_df=vectorize_opts.min_df,
         max_df=vectorize_opts.max_df,

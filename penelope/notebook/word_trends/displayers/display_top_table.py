@@ -68,7 +68,6 @@ class TopTokensDisplayer(ITrendDisplayer):
         )
 
     def start_observe(self):
-
         with contextlib.suppress(Exception):
             self._download.on_click(self.download, remove=True)
 
@@ -82,7 +81,6 @@ class TopTokensDisplayer(ITrendDisplayer):
         return self
 
     def setup(self, *_, **__) -> "TopTokensDisplayer":
-
         self._table = gu.DataGridOutput() if not self.simple_display else None
         self._output = Output() if self.simple_display else None
 
@@ -164,7 +162,6 @@ class TopTokensDisplayer(ITrendDisplayer):
                     IPython.display.display(js_download)
 
     def set_buzy(self, is_buzy: bool = True, message: str = None):
-
         if message:
             self.alert(message)
 

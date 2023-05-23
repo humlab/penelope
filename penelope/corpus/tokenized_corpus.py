@@ -126,7 +126,6 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
 class ReiterableTerms:
     def __init__(self, corpus):
-
         self.corpus = corpus
         self.iterator = None
 

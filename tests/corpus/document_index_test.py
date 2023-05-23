@@ -81,7 +81,6 @@ def test_store():
 
 
 def test_load():
-
     index = load_document_index(filename=StringIO(TEST_FAULTY_DOCUMENT_INDEX), sep=';')
     assert isinstance(index, pd.DataFrame)
     assert len(index) == 5
@@ -179,7 +178,6 @@ def test_update_counts():
 
 
 def test_update_document_index_by_dicts():
-
     data: List[dict] = [{'document_name': 'a', 'x': 1, 'y': 2}]
     document_index = simple_index()
 
@@ -190,7 +188,6 @@ def test_update_document_index_by_dicts():
 
 
 def test_update_document_index_key_values():
-
     document_index = simple_index()
     data = [('a', 1, 2)]
     columns = ['document_name', 'x', 'y']
@@ -237,7 +234,6 @@ tran_2029_02_test.txt;2029;2;tran_2029_02_test;8;Nemolus;12
 
 
 def test_group_by_time_period_aggregates_n_documents():
-
     index: pd.DataFrame = load_document_index(filename=StringIO(TEST_DOCUMENT_INDEX3), sep=';')
     yearly_document_index, _ = DocumentIndexHelper(index).group_by_temporal_key(
         temporal_key_specifier='year', source_column_name='year'

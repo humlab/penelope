@@ -12,7 +12,6 @@ OUTPUT_FOLDER = './tests/output'
 
 
 def fake_config() -> CorpusConfig:
-
     corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
@@ -27,13 +26,11 @@ def config():
 
 
 def test_pipeline_can_can_be_saved_in_feather(config: CorpusConfig):
-
     tagged_corpus_source: str = os.path.join(CORPUS_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
 
     pipeline = CorpusPipeline(config=config).checkpoint(tagged_corpus_source, force_checkpoint=False)
 
     for payload in pipeline.resolve():
-
         tagged_frame: pd.DataFrame = payload.content
 
         filename = os.path.join(OUTPUT_FOLDER, replace_extension(payload.filename, ".feather"))

@@ -27,7 +27,6 @@ def _get_filename_fields(folder: str) -> Any:
 
 
 def load_model(*, state: TopicModelContainer, model_info: tm.ModelFolder, slim: bool = False, n_tokens: int = 500):
-
     trained_model: tm.InferredModel = tm.InferredModel.load(model_info.folder, lazy=True)
 
     inferred_topics: tm.InferredTopicsData = tm.InferredTopicsData.load(

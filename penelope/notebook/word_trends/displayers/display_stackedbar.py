@@ -20,7 +20,6 @@ class StackedBarDisplayer(ITrendDisplayer):
         return
 
     def plot(self, *, data: Sequence[pd.DataFrame], temporal_key: str, **_) -> None:
-
         unstacked_data: pd.DataFrame = data[-1]
 
         if temporal_key in unstacked_data.columns:

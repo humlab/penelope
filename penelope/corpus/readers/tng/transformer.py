@@ -82,7 +82,6 @@ class TextTransformer:
         self.transform_opts = transform_opts or TextTransformOpts()
 
     def transform(self, data: T) -> T:
-
         if isinstance(data, list):
             raise ValueError("text transforms cannot be applied on tokenized data!")
 

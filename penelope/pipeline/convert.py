@@ -69,7 +69,6 @@ def filter_tagged_frame(
     to_lower: bool = transform_opts and transform_opts.to_lower
 
     if is_numeric_frame:
-
         if token2id is None:
             raise Token2IdMissingError("filter_tagged_frame: cannot filter tagged id frame without vocabulary")
 
@@ -165,7 +164,6 @@ def filter_tagged_frame(
             )
 
     if not is_numeric_frame and normalize_column_names:
-
         filtered_data.rename(columns={target_column: 'token', pos_column: 'pos'}, inplace=True)
 
     return filtered_data
@@ -293,7 +291,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     token_pos_tuples = filtered_data[target_columns].itertuples(index=False, name=None)
 
     if len(pos_paddings) > 0:
-
         passthroughs: Set[str] = extract_opts.get_passthrough_tokens()
 
         if is_numeric_frame:
@@ -305,7 +302,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         )
 
     if extract_opts.append_pos:
-
         if is_numeric_frame:
             raise NotImplementedError("tagged_frame_to_tokens: PoS tag on encoded frame")
 

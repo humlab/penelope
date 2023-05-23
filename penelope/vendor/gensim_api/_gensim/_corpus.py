@@ -72,7 +72,6 @@ def corpus2csc(
 
 
 try:
-
     from gensim.corpora.dictionary import Dictionary
     from gensim.corpora.mmcorpus import MmCorpus
     from gensim.corpora.textcorpus import TextCorpus
@@ -81,6 +80,7 @@ try:
     has_gensim: bool = True
 except (ImportError, NameError):
     has_gensim: bool = False
+
 
 # pylint: disable=abstract-method
 class ExtTextCorpus(TextCorpus):
@@ -144,7 +144,6 @@ class ExtTextCorpus(TextCorpus):
             yield self.preprocess_text(document)
 
     def preprocess_text(self, text) -> List[str]:
-
         for character_filter in self.character_filters:
             text = character_filter(text)
 
@@ -164,7 +163,6 @@ class SimpleExtTextCorpus(ExtTextCorpus):
     """Reads content in stream and returns tokenized text. No other processing."""
 
     def __init__(self, source: Any, lowercase: bool = False, filename_filter=None):
-
         self.reader: Iterable[Tuple[str, AnyStr]] = streamify_any_source(source, filename_filter=filename_filter)
         self.filenames: List[str] = self.reader.filenames
         self.lowercase: bool = lowercase
@@ -172,7 +170,6 @@ class SimpleExtTextCorpus(ExtTextCorpus):
         super().__init__(self.reader)
 
     def default_token_filters(self) -> List[Callable]:
-
         token_filters = [
             (lambda tokens: [x.strip('_') for x in tokens]),
         ]
@@ -199,7 +196,6 @@ GensimBowCorpus = Iterable[Iterable[Tuple[int, float]]]
 
 
 def from_stream_of_tokens_to_sparse2corpus(source: Any, vocabulary: Dictionary | dict) -> Sparse2Corpus:
-
     if not hasattr(vocabulary, 'doc2bow'):
         vocabulary: Dictionary = _from_token2id_to_dictionary(vocabulary)
 
@@ -225,7 +221,6 @@ def from_stream_of_tokens_to_dictionary(source: Any, id2token: dict) -> Dictiona
 
 
 def _from_token2id_to_dictionary(token2id: Mapping[str, int]) -> Dictionary:
-
     if isinstance(token2id, Dictionary):
         return token2id
 

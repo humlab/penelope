@@ -138,7 +138,6 @@ class CoOccurrenceMixIn:
     def to_term_term_matrix_stream(
         self: IVectorizedCorpusProtocol, token2id: Token2Id
     ) -> Tuple[int, Iterable[scipy.sparse.spmatrix]]:
-
         # if USE_NUMBA:
         #     token2pairs: dict = {token_id: pair_ids for pair_ids, token_id in self.vocabs_mapping.items()}
         #     vocab_size: int = len(token2id)
@@ -224,7 +223,6 @@ class CoOccurrenceMixIn:
 
     @staticmethod
     def empty_data() -> pd.DataFrame:
-
         frame: pd.DataFrame = pd.DataFrame(
             data={
                 'document_id': pd.Series(data=[], dtype=np.int32),

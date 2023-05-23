@@ -19,7 +19,6 @@ def monkey_patch(*_, **__):
 
 @mock.patch('IPython.display.display', dummy_patch)
 def test_create_gui():
-
     corpus = mock.Mock(spec=dtm.VectorizedCorpus)
     df_gof = mock.Mock(spec=pd.DataFrame)
     container = cluster_analysis_gui.display_gui(corpus, df_gof)
@@ -47,7 +46,6 @@ def create_vectorized_corpus():
 @mock.patch('penelope.notebook.cluster_analysis.cluster_plot.render_clusters_mean_plot', monkey_patch)
 @mock.patch('penelope.notebook.cluster_analysis.cluster_plot.plot_dendogram', monkey_patch)
 def test_setup_gui():
-
     corpus = create_vectorized_corpus()
     df_gof = gof.compute_goddness_of_fits_to_uniform(corpus=corpus)
 

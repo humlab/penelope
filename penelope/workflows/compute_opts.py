@@ -21,7 +21,6 @@ def ingest(obj: any, data: dict, properties: List[str] = None):
 
 @dataclass
 class ComputeOptBase:
-
     corpus_type: CorpusType = CorpusType.Tokenized
     corpus_source: Optional[str] = None
     target_folder: Optional[str] = None
@@ -34,7 +33,6 @@ class ComputeOptBase:
     dry_run: bool = field(init=False, default=False)
 
     def is_satisfied(self):
-
         if not self.corpus_source:
             raise ValueError("please specify corpus source")
 
@@ -69,7 +67,6 @@ class ComputeOptBase:
 
 @dataclass
 class CheckpointOptsMixIn:
-
     enable_checkpoint: bool = field(init=True, default=True)
     force_checkpoint: bool = field(init=True, default=False)
 
@@ -83,7 +80,6 @@ class CheckpointOptsMixIn:
         return super().is_satisfied()
 
     def cli_options(self) -> Mapping[str, str]:
-
         options: Mapping[str, str] = {}
 
         if self.enable_checkpoint:
@@ -103,7 +99,6 @@ class CheckpointOptsMixIn:
 
 @dataclass
 class ReaderOptsMixIn:
-
     text_reader_opts: TextReaderOpts = None
 
     @property
@@ -116,7 +111,6 @@ class ReaderOptsMixIn:
         return super().is_satisfied()
 
     def cli_options(self) -> Mapping[str, str]:
-
         options: Mapping[str, str] = {}
 
         # if self.text_reader_opts.filename_fields:
@@ -133,7 +127,6 @@ class ReaderOptsMixIn:
 
 @dataclass
 class VectorizeOptsMixIn:
-
     vectorize_opts: VectorizeOpts = None
 
     @property
@@ -144,7 +137,6 @@ class VectorizeOptsMixIn:
         return super().is_satisfied()
 
     def cli_options(self) -> Mapping[str, str]:
-
         options: dict = {}
 
         if self.vectorize_opts.lowercase:
@@ -173,7 +165,6 @@ class VectorizeOptsMixIn:
 
 @dataclass
 class TransformOptsMixIn:
-
     transform_opts: TokensTransformOpts = None
 
     @property
@@ -184,7 +175,6 @@ class TransformOptsMixIn:
         return super().is_satisfied()
 
     def cli_options(self) -> Mapping[str, str]:
-
         options: dict = {}
 
         if self.transform_opts.to_lower:
@@ -218,7 +208,6 @@ class TransformOptsMixIn:
 
 @dataclass
 class ExtractTaggedTokensOptsMixIn:
-
     extract_opts: ExtractTaggedTokensOpts = None
     tf_threshold: Optional[int] = 1
     tf_threshold_mask: Optional[bool] = False
@@ -235,7 +224,6 @@ class ExtractTaggedTokensOptsMixIn:
         return super().is_satisfied()
 
     def cli_options(self) -> Mapping[str, str]:
-
         options: dict = {}
 
         if self.extract_opts.phrases and len(self.extract_opts.phrases) > 0:
@@ -274,7 +262,6 @@ class ExtractTaggedTokensOptsMixIn:
 
 @dataclass
 class ContextOptsMixIn:
-
     context_opts: Optional[ContextOpts] = None
 
     @property
@@ -282,9 +269,7 @@ class ContextOptsMixIn:
         return {**super().props, **dict(context_opts=self.context_opts.props)}
 
     def is_satisfied(self):
-
         if self.context_opts:
-
             # if len(self.context_opts.concept or []) == 0:
             #     raise ValueError("please specify at least one concept")
 
@@ -300,11 +285,9 @@ class ContextOptsMixIn:
         return super().is_satisfied()
 
     def cli_options(self) -> Mapping[str, str]:
-
         options = {}
 
         if self.context_opts:
-
             options['--context-width'] = self.context_opts.context_width
 
             if len(self.context_opts.concept or []) > 0:

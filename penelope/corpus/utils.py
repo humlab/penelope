@@ -9,7 +9,6 @@ from penelope.utility import flatten
 
 
 def generate_token2id(terms: Iterator[Iterator[str]], n_docs: int = None) -> dict:
-
     token2id = defaultdict()
     token2id.default_factory = token2id.__len__
     tokens_iter = tqdm(
@@ -45,7 +44,6 @@ def csr2bow(csr: sp.spmatrix) -> Iterable[List[Tuple[int, float]]]:
         csr = csr.tocsr()
 
     if sp.isspmatrix_csr(csr):
-
         data = csr.data
         indices = csr.indices
         indptr = csr.indptr

@@ -227,7 +227,6 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self.set_buzy(False)
 
     def set_buzy(self, is_buzy: bool = True, message: str = None):
-
         if message:
             self.alert(message)
 
@@ -242,7 +241,6 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self._largest.disabled = is_buzy
 
     def start_observe(self):
-
         self.stop_observe()
 
         self._compute.on_click(self._compute_handler)
@@ -255,9 +253,7 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         return self
 
     def stop_observe(self):
-
         with contextlib.suppress(Exception):
-
             self._show_concept.unobserve(self.update_co_occurrences, 'value')
             self._largest.unobserve(self.update_co_occurrences, 'value')
             self._token_filter.unobserve(self._filter_co_occurrences, 'value')
@@ -270,13 +266,11 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self._message.value = f"<span style='color: green; font-weight: bold;'>{message}</span>"
 
     def update_corpus(self, *_):
-
         self.set_buzy(True, "⌛ Computing...")
         self.corpus = self.to_corpus()
         self.set_buzy(False, "✔")
 
     def update_co_occurrences(self, *_) -> pd.DataFrame:
-
         self.set_buzy(True, "⌛ Preparing data...")
         self.co_occurrences = self.to_co_occurrences()
         self.set_buzy(False, "✔")
@@ -288,7 +282,6 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self.info(f"Data size: {len(self.co_occurrences)}")
 
     def _filter_co_occurrences(self, *_) -> pd.DataFrame:
-
         co_occurrences: pd.DataFrame = self.to_filtered_co_occurrences()
 
         self._table_view.update(co_occurrences[DISPLAY_COLUMNS])
@@ -301,7 +294,6 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
 
     @property
     def ignores(self) -> List[str]:
-
         if self.show_concept or not self.concepts:
             return set()
 
@@ -385,11 +377,9 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         self._button_bar.disabled = False
 
     def to_co_occurrences(self) -> pd.DataFrame:
-
         self.set_buzy(True, "⌛ Preparing co-occurrences...")
 
         try:
-
             if self.pivot_column_name not in self.corpus.document_index.columns:
                 raise ValueError(
                     f"expected '{self.pivot_column_name}' but not found in {', '.join(self.corpus.document_index.columns)}"
@@ -415,7 +405,6 @@ class TabularCoOccurrenceGUI(GridBox):  # pylint: disable=too-many-ancestors
         return co_occurrences
 
     def to_filtered_co_occurrences(self) -> pd.DataFrame:
-
         if not self.token_filter:
             return self.co_occurrences
 

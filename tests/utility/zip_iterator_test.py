@@ -7,7 +7,6 @@ from tests.utils import TEST_CORPUS_FILENAME
 
 
 def test_streamify_text_source_smoke_test():
-
     stream = readers.ZipTextIterator(
         TEST_CORPUS_FILENAME,
         reader_opts=readers.TextReaderOpts(filename_pattern="*.txt", filename_filter=None, as_binary=False),
@@ -24,7 +23,6 @@ def test_streamify_text_source_smoke_test():
 
 @pytest.mark.xfail
 def test_streamify_text_source_smoke_test_raises_exception():
-
     stream = readers.ZipTextIterator(
         TEST_CORPUS_FILENAME,
         reader_opts=readers.TextReaderOpts(filename_pattern="*.dat", filename_filter=None, as_binary=False),

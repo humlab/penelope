@@ -7,7 +7,7 @@ import json
 import os
 import pathlib
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 
 import yaml
@@ -15,6 +15,7 @@ import yaml
 from penelope.corpus import TextReaderOpts, TextTransformOpts
 from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema, strip_extensions
 from penelope.utility.filename_utils import replace_extension
+from penelope.utility.utils import dotget
 
 from . import checkpoint, interfaces
 
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 
 jj = os.path.join
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-public-methods
 
 
 def create_pipeline_factory(
@@ -47,7 +48,6 @@ class CorpusType(enum.IntEnum):
 
 @dataclass
 class CorpusConfig:
-
     corpus_name: str
     corpus_type: CorpusType
     corpus_pattern: str
@@ -57,6 +57,8 @@ class CorpusConfig:
     pipelines: dict
     pipeline_payload: interfaces.PipelinePayload
     language: str
+
+    _tagger: interfaces.IDocumentTagger = field(default=None, init=False)
 
     def pipeline_key_exists(self, pipeline_key: str) -> bool:
         return pipeline_key in self.pipelines
@@ -244,7 +246,6 @@ class CorpusConfig:
         return config
 
     def get_feather_folder(self, corpus_source: str | None) -> str | None:
-
         if self.checkpoint_opts.feather_folder is not None:
             return self.checkpoint_opts.feather_folder
 
@@ -273,7 +274,6 @@ class CorpusConfig:
         pipeline_payload: interfaces.PipelinePayload = None,
         language: str = "english",
     ) -> CorpusConfig:
-
         return CorpusConfig(
             corpus_name=corpus_name,
             corpus_type=corpus_type,
@@ -285,3 +285,24 @@ class CorpusConfig:
             pipeline_payload=pipeline_payload,
             language=language,
         )
+
+    @property
+    def tagger(self) -> interfaces.IDocumentTagger:
+        if self._tagger is None:
+            self._tagger = self.create_instance("tagger.class_name", "tagger.options")
+        return self._tagger
+
+    def create_instance(self, cls_dotpath: str, opts_dotpath: str) -> Any:
+        store: dict = self.pipeline_payload.memory_store
+        if not isinstance(store.get("tagger"), dict):
+            raise ValueError("No tagger specified not found in corpus config")
+
+        cls_name: str = dotget(store, cls_dotpath)
+
+        if cls_name is None:
+            raise ValueError(f"dot path not found in config: {cls_name}")
+
+        cls: Type[Any] = create_instance(cls_name)
+        opts: dict = dotget(store, opts_dotpath, default={})
+
+        return cls(**opts)

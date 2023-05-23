@@ -10,7 +10,6 @@ from ..corpus import Token2Id, VectorizedCorpus
 
 @dataclass
 class ComputeKeynessOpts:
-
     keyness_source: KeynessMetricSource
     keyness: KeynessMetric
     temporal_pivot: str
@@ -21,7 +20,6 @@ class ComputeKeynessOpts:
 
 
 def compute_corpus_keyness(corpus: VectorizedCorpus, opts: ComputeKeynessOpts, token2id: Token2Id) -> VectorizedCorpus:
-
     """Metrics computed on a document level"""
     if opts.keyness == KeynessMetric.TF_IDF:
         corpus = corpus.tf_idf()
@@ -105,7 +103,6 @@ def compute_weighed_corpus_keyness(
 
 
 def weigh_corpora(corpus: VectorizedCorpus, concept_corpus: VectorizedCorpus) -> VectorizedCorpus:
-
     if corpus.data.shape != concept_corpus.data.shape:
         raise ValueError("Corpus shapes doesn't match")
 

@@ -14,7 +14,6 @@ pd.options.mode.chained_assignment = None
 
 class TopicTitlesGUI(abc.ABC):
     def __init__(self, topics: pd.DataFrame, n_tokens: int = 500):
-
         self.n_tokens: int = n_tokens
         self.topics: pd.DataFrame = topics
         self.reduced_topics: pd.DataFrame = None
@@ -89,7 +88,6 @@ class TopicTitlesGUI(abc.ABC):
 
 
 class PandasTopicTitlesGUI(TopicTitlesGUI):
-
     PANDAS_TABLE_STYLE = [
         dict(
             selector="th",

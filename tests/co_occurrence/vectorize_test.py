@@ -10,7 +10,6 @@ from tests.fixtures import SIMPLE_CORPUS_ABCDE_5DOCS, very_simple_corpus
 
 
 def test_co_occurrence_matrix_of_corpus_returns_correct_result():
-
     expected_token2id = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}
     expected_matrix = np.matrix([[0, 6, 4, 3, 3], [0, 0, 2, 1, 4], [0, 0, 0, 2, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]])
 
@@ -25,7 +24,6 @@ def test_co_occurrence_matrix_of_corpus_returns_correct_result():
 
 
 def test_TTM_to_co_occurrence_DTM_using_LIL_matrix():
-
     source_corpus = very_simple_corpus(SIMPLE_CORPUS_ABCDE_5DOCS)
     token2id = Token2Id(source_corpus.token2id)
     document_index: DocumentIndex = source_corpus.document_index

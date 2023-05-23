@@ -25,10 +25,14 @@ CLI_OPTIONS = {
         default=None,
         type=click.INT,
     ),
-    '--corpus-config': dict(help='Corpus config filename/folder', default=None),
+    '--corpus-config': dict(help='Corpus config filename', default=None, type=click.STRING),
+    '--config-filename': dict(help='Corpus config filename', default=None, type=click.STRING),
     '--input-filename': dict(help='Corpus filename/folder (overrides config if specified)', default=None),
     '--output-filename': dict(help='Output filename (overrides config if specified)', default=None),
-    '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)'),
+    '--output-folder': dict(help='Output folder', default=None, type=click.STRING),
+    '--output-tag': dict(help='Output tag (file identifier)', default=None, type=click.STRING),
+    '--corpus-source': dict(help='Source corpus path (filename or folder)', type=click.STRING),
+    '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)', type=click.STRING),
     '--create-subfolder': dict(
         help='Create subfolder in target folder named `target_name`', default=True, is_flag=True
     ),
@@ -133,7 +137,6 @@ def consolidate_cli_arguments(*, arguments: dict, filename_key: str, log_args: b
 
 
 def log_arguments(args: dict, subdir: bool = False) -> None:
-
     cli_command: str = utility.strip_path_and_extension(sys.argv[0])
 
     log_dir: str = os.path.join(CLI_LOG_PATH, cli_command) if subdir else CLI_LOG_PATH

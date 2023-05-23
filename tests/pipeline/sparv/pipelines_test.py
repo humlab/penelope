@@ -11,7 +11,6 @@ from penelope.pipeline.sparv import pipelines
 
 
 def fake_config() -> pipeline.CorpusConfig:
-
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
 
     corpus_config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
@@ -26,7 +25,6 @@ def config():
 
 
 def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
-
     """Loads a tagged data frame"""
     p: pipeline.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
         corpus_config=config,

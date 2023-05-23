@@ -31,7 +31,6 @@ N_METRIC_TOP_WORDS = [10, 100, 250, 500, 1000, 2000, 5000, 10000, 20000]
 
 @dataclass
 class GUI_State:
-
     corpus_clusters: CorpusClusters = None
     corpus: VectorizedCorpus = None
     df_gof: pd.DataFrame = None
@@ -44,7 +43,6 @@ class GUI_State:
 
 class ClusterAnalysisGUI:
     def __init__(self, state: GUI_State, display_callback: Callable):
-
         self.state = state
         self.display_trends = display_callback
         self.n_cluster_count: IntSlider = IntSlider(
@@ -94,7 +92,6 @@ class ClusterAnalysisGUI:
             self.cluster_index.observe(self._plot_cluster, 'value')
 
     def layout(self) -> VBox:
-
         return VBox(
             [
                 HBox(
@@ -138,7 +135,6 @@ class ClusterAnalysisGUI:
         )
 
     def setup(self) -> "ClusterAnalysisGUI":
-
         self.forward.on_click(self.step_cluster)
         self.back.on_click(self.step_cluster)
         self.compute.on_click(self.compute_clicked)
@@ -163,7 +159,6 @@ class ClusterAnalysisGUI:
         self.cluster_index.value = self.cluster_index.options[next_index]
 
     def set_method(self, *_):
-
         wth, wnc = self.threshold, self.n_cluster_count
         if self.method_key.value == 'hca':
             wnc.min, wnc.max, wnc.value = 0, 0, 0
@@ -180,7 +175,6 @@ class ClusterAnalysisGUI:
         self.plot_clusters()
 
     def plot_words(self):
-
         tokens = self.state.get_cluster_tokens(self.cluster_index.value)
         if len(tokens) == 0:
             return
@@ -192,7 +186,6 @@ class ClusterAnalysisGUI:
         # plot_cluster()
 
     def plot_cluster(self):
-
         self.cluster_output.clear_output()
 
         if self.state.corpus_clusters is None:
@@ -201,7 +194,6 @@ class ClusterAnalysisGUI:
         token_clusters = self.state.corpus_clusters.token_clusters
 
         with self.cluster_output:
-
             out_table: Output = Output()
             out_chart: Output = Output()
 
@@ -226,7 +218,6 @@ class ClusterAnalysisGUI:
         self.plot_words()
 
     def plot_clusters(self):
-
         output_type = self.clusters_output_type.value
         token_clusters = self.state.corpus_clusters.token_clusters
         token_counts = token_clusters.groupby('cluster').count()
@@ -260,7 +251,6 @@ class ClusterAnalysisGUI:
         ClustersCountPlot().update(token_counts=token_counts).plot()
 
     def threshold_range_changed(self, *_):
-
         if self.threshold.disabled is True:
             return
 
@@ -277,7 +267,6 @@ class ClusterAnalysisGUI:
         self._plot_cluster()
 
     def compute_clicked(self, *_):
-
         self.lock(True)
 
         self.cluster_output.clear_output()
@@ -321,7 +310,6 @@ def display_trends(corpus: VectorizedCorpus, tokens: List[str], n_columns: int =
 
 
 def display_gui(corpus: VectorizedCorpus, df_gof: pd.DataFrame):
-
     state = GUI_State(corpus_clusters=None, corpus=corpus, df_gof=df_gof)
 
     DEBUG_CONTAINER['data'] = state

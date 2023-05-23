@@ -121,13 +121,11 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return yearly_weights
 
     def update_handler(self, *_):
-
         self.alert("⌛ Computing...")
         self._output.clear_output()
 
         try:
             with self._output:
-
                 try:
                     weights: pd.DataFrame = self.update()
                 except pu.EmptyDataError:

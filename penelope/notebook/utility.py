@@ -19,7 +19,6 @@ CLEAR_OUTPUT = True
 
 
 def create_js_download(df: pd.DataFrame, filename='results.csv', **to_csv_opts) -> Javascript:
-
     if df is None or len(df) == 0:
         return None
 
@@ -78,23 +77,17 @@ class OutputsTabExt(widgets.Tab):
             ipython_display(that)
 
     def display_content(self, i: int, what: Any, clear: bool = False, plot=True):
-
         try:
             if clear:
-
                 self.children[i].clear_output()
                 self.loaded[i] = False
 
             with self.children[i]:
-
                 if not self.loaded[i]:
-
                     if plot:
-
                         self.selective_plot(what)
 
                     elif callable(what):
-
                         what()
 
                     self.loaded[i] = True
@@ -105,7 +98,6 @@ class OutputsTabExt(widgets.Tab):
         return self
 
     def display_fx_result(self, i, fx, *args, clear=False, lazy=False, plot=True, **kwargs):
-
         self.loaded[i] = False
 
         if lazy:
@@ -116,7 +108,6 @@ class OutputsTabExt(widgets.Tab):
         return self
 
     def display_as_yaml(self, i: int, what: Any, clear: bool = False, width='800px', height='600px'):
-
         if what is None:
             logger.info(f"display_as_yaml: index {i} what is None")
             return self
@@ -168,7 +159,6 @@ def shorten_filechooser_label(fc: ipyfilechooser.FileChooser, max_length: int):
 
 
 class FileChooserExt(ipyfilechooser.FileChooser):
-
     label_max_length = 50
 
     _LBL_TEMPLATE = types.SimpleNamespace(

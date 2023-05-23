@@ -15,7 +15,6 @@ from .token2id import Token2Id
 
 @dataclass
 class TokensTransformOpts:
-
     to_lower: bool = False
     to_upper: bool = False
     only_alphabetic: bool = False
@@ -62,7 +61,6 @@ class TokensTransformOpts:
         return {k: v for k, v in self.__dict__.items() if k != 'props' and not k.startswith('_') and not callable(v)}
 
     def mask(self, tokens: pd.Series, token2id: Token2Id = None) -> np.ndarray:
-
         mask = np.repeat(True, len(tokens))
 
         if len(tokens) == 0:
@@ -142,7 +140,6 @@ class TokensTransformerBase:
         return self
 
     def transform(self, tokens: List[str]) -> List[str]:
-
         for ft in self.transforms:
             tokens = [x for x in ft(tokens)]
 
@@ -191,7 +188,6 @@ class TokensTransformerMixin:
         return self.add(transforms.only_any_alphanumeric())
 
     def ingest(self, opts: TokensTransformOpts):
-
         assert isinstance(opts, TokensTransformOpts)
         self.min_chars_filter(1)
 

@@ -56,7 +56,6 @@ class CsvContentSerializer(IContentSerializer):
         return data[options.columns]
 
     def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
-
         if not options.frequency_column:
             return {}
 
@@ -67,7 +66,6 @@ class CsvContentSerializer(IContentSerializer):
 
 
 def create_serializer(options: CheckpointOpts) -> "IContentSerializer":
-
     if options.custom_serializer:
         return options.custom_serializer()
 

@@ -32,7 +32,6 @@ def display_grid(data: Union[dict, pd.DataFrame], **opts) -> DataGrid:
 
 
 def table_widget(data: pd.DataFrame, **kwargs) -> dg.DataGrid:
-
     """If handler is passed, then create wrapper handler that passes row as argument"""
     handler: Callable[[pd.Series], None] = kwargs.pop('handler', None)
 

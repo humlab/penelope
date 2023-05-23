@@ -25,7 +25,6 @@ class ComputeGUI(BaseGUI):
         default_corpus_filename: str = '',
         default_data_folder: str = None,
     ):
-
         super().__init__(default_corpus_path, default_corpus_filename, default_data_folder)
 
         self._partition_key: widgets.Dropdown = widgets.Dropdown(
@@ -69,7 +68,6 @@ class ComputeGUI(BaseGUI):
         self._context_width_title = widgets.HTML("<b>Context distance</b>")
 
     def layout(self, hide_input=False, hide_output=False):
-
         placeholder: widgets.VBox = self.extra_placeholder
         extra_layout = widgets.HBox(
             [

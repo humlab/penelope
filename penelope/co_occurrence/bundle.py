@@ -142,7 +142,6 @@ class Bundle:
         return context_opts
 
     def store(self, *, folder: str = None, tag: str = None) -> "Bundle":
-
         if tag and folder:
             self.tag, self.folder = tag, folder
 
@@ -165,14 +164,12 @@ class Bundle:
         return bundle
 
     def remember_vocabs_mapping(self, force: bool = False) -> "Bundle":
-
         if self.token_ids_2_pair_id is None:
             self.token_ids_2_pair_id = CoOccurrenceVocabularyHelper.extract_pair2token2id_mapping(
                 self.corpus, self.token2id
             )
 
         for corpus in [self.corpus, self.concept_corpus]:
-
             if corpus is None:
                 continue
 

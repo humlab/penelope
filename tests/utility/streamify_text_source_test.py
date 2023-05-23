@@ -37,7 +37,6 @@ def test_streamify_any_source_smoke_test():
 
 
 def test_next_of_streamified_zipped_source_returns_document():
-
     folder: str = os.path.join('./tests/output', str(uuid.uuid1()))
     os.makedirs(folder)
 
@@ -59,7 +58,6 @@ def test_create_iterator():
 
 
 def test_list_filenames_when_source_is_a_filename():
-
     filenames = list_any_source(TEST_CORPUS_FILENAME, filename_pattern='*.txt', filename_filter=None)
     assert len(filenames) == 5
 

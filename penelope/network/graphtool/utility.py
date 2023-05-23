@@ -90,7 +90,6 @@ def nx2gt(nxG):
     # Add the edge properties second
     eprops = set()  # cache keys to only add properties once
     for src, dst, data in nxG.edges.data():
-
         # Go through all the edge properties if not seen and add them.
         for key, val in data.items():
             if key in eprops:
@@ -121,7 +120,6 @@ def nx2gt(nxG):
 
     # Add the edges
     for src, dst, data in nxG.edges.data():
-
         # Look up the vertex structs from our vertices mapping and add edge.
         e = gtG.add_edge(vertices[src], vertices[dst])
 

@@ -29,7 +29,6 @@ def replace_paths(folder: str, filenames: List[str]) -> List[str]:
 def filename_satisfied_by(
     filename: str, filename_filter: Union[List[str], Callable], filename_pattern: str = None
 ) -> bool:
-
     """Returns true if filename is satisfied by filename filter, and matches pattern"""
 
     if filename_pattern is not None:
@@ -48,15 +47,12 @@ def filename_satisfied_by(
             dict,
         ),
     ):
-
         # Try both with and without extension
         if filename not in filename_filter and strip_path_and_extension(filename) not in filename_filter:
             return False
 
     elif callable(filename_filter):
-
         if not filename_filter(filename):
-
             return False
 
     return True

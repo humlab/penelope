@@ -8,7 +8,6 @@ from tests.utils import TEST_CORPUS_FILENAME
 
 
 def test_text_tokenizer_interface():
-
     assert issubclass(readers.TextTokenizer, ICorpusReader)
 
     instance = readers.TextTokenizer(source=["a b c", "e f g"])
@@ -18,7 +17,6 @@ def test_text_tokenizer_interface():
 
 
 def test_pandas_reader_interface():
-
     assert issubclass(readers.PandasCorpusReader, ICorpusReader)
 
     source = pd.DataFrame(data={'filename': [], 'txt': []})
@@ -27,7 +25,6 @@ def test_pandas_reader_interface():
 
 
 def test_sparv_csv_tokenizer_interface():
-
     assert issubclass(readers.SparvCsvTokenizer, ICorpusReader)
 
     instance = readers.SparvCsvTokenizer(SPARV_CSV_EXPORT_FILENAME_SMALL, reader_opts=TextReaderOpts())
@@ -35,7 +32,6 @@ def test_sparv_csv_tokenizer_interface():
 
 
 def test_sparv_xml3_tokenizer_interface():
-
     assert issubclass(readers.Sparv3XmlReader, ICorpusReader)
 
     instance = readers.Sparv3XmlReader('./tests/test_data/sou_test_sparv3_xml.zip')
@@ -43,7 +39,6 @@ def test_sparv_xml3_tokenizer_interface():
 
 
 def test_sparv_xml_tokenizer_interface():
-
     assert issubclass(readers.SparvXmlReader, ICorpusReader)
 
     instance = readers.SparvXmlReader(SPARV_XML_EXPORT_FILENAME_SMALL)
@@ -51,7 +46,6 @@ def test_sparv_xml_tokenizer_interface():
 
 
 def test_zip_text_iterator_interface():
-
     assert issubclass(readers.ZipTextIterator, ICorpusReader)
     instance = readers.ZipTextIterator(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert isinstance(instance, ICorpusReader)

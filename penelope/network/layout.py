@@ -16,12 +16,10 @@ TPoint = Tuple[Number, Number]
 
 
 def layout_network(G: nx.Graph, layout_algorithm: str, **kwargs) -> Tuple[Any, Any]:
-
     return layouts[layout_algorithm].layout_network(G, layout_algorithm=layout_algorithm, **kwargs)
 
 
 def adjust_edge_endpoint(p: TPoint, q: TPoint, d: Number) -> TPoint:
-
     dx, dy = q[0] - p[0], q[1] - p[1]
     alpha = math.atan2(dy, dx)
     w = (q[0] - d * math.cos(alpha), q[1] - d * math.sin(alpha))
@@ -29,11 +27,9 @@ def adjust_edge_endpoint(p: TPoint, q: TPoint, d: Number) -> TPoint:
 
 
 def adjust_edge_lengths(edges, nodes):
-
     node2id: dict = {x: i for i, x in enumerate(nodes['name'])}
 
     for i in range(0, len(edges['xs'])):
-
         p1: TPoint = (edges['xs'][i][0], edges['ys'][i][0])
         p2: TPoint = (edges['xs'][i][1], edges['ys'][i][1])
 

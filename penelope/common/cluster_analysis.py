@@ -50,12 +50,10 @@ class CorpusClusters(abc.ABC):
         return self.token_clusters[self.token_clusters.cluster == label].index.tolist()
 
     def clusters_token_ids(self) -> Iterable[Tuple[str, List[int]]]:
-
         for label in self.cluster_labels:
             yield label, self.cluster_token_ids(label)
 
     def cluster_means(self) -> np.ndarray:
-
         cluster_means: np.ndarray = np.array(
             [self.corpus.data[:, token_ids].mean(axis=1) for _, token_ids in self.clusters_token_ids()]
         )
@@ -86,7 +84,6 @@ class CorpusClusters(abc.ABC):
 
 class HCACorpusClusters(CorpusClusters):
     def __init__(self, corpus: VectorizedCorpus, tokens: List[str], linkage_matrix, threshold: float = 0.5):
-
         super().__init__(corpus, tokens)
 
         self._threshold = 0.0
@@ -147,7 +144,6 @@ class HCACorpusClusters(CorpusClusters):
 
 class KMeansCorpusClusters(CorpusClusters):
     def __init__(self, corpus: VectorizedCorpus, tokens: List[str], kmean_result: KMeansResult):
-
         super().__init__(corpus, tokens)
 
         self.key = 'k_means'
@@ -162,7 +158,6 @@ class KMeansCorpusClusters(CorpusClusters):
         return token2cluster
 
     def creater_cluster_data_frame(self, token2cluster):
-
         df = pd.DataFrame({'token': list(token2cluster.keys()), 'cluster': list(token2cluster.values())})
 
         df['token_id'] = df.token.apply(lambda w: self.token2id[w])
@@ -244,7 +239,6 @@ def smooth_array(xs, ys, smoothers):
 
 
 def smooth_matrix(xs, ys_m, smoothers):
-
     return zip(*[smooth_array(xs, ys_m[:, i], smoothers) for i in range(0, ys_m.shape[1])])
 
 

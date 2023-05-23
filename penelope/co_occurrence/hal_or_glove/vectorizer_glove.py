@@ -13,7 +13,6 @@ except ModuleNotFoundError:
 # See http://www.foldl.me/2014/glove-python/
 class GloveVectorizer:
     def __init__(self, corpus=None, token2id=None):
-
         assert glove is not None, "Glove is not installed!"
 
         self.token2id = token2id
@@ -27,7 +26,6 @@ class GloveVectorizer:
 
     @corpus.setter
     def corpus(self, value):
-
         self._corpus = value
         self.term_count = sum(map(len, value or []))
 
@@ -44,7 +42,6 @@ class GloveVectorizer:
 
     # def fit(self, sentences, window=2, dictionary=None):
     def fit(self, corpus=None, size=2):  # , distance_metric=0, zero_out_diag=False):
-
         if corpus is not None:
             self.corpus = corpus
 

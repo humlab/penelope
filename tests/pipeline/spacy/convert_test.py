@@ -83,7 +83,6 @@ def test_texts_to_tagged_frames(en_nlp):
 
 
 def test_spaCy_pronoun_tagging(en_nlp):
-
     doc = "Your car is blue. Our bus is red. Their bus is green."
 
     spacy_doc = en_nlp(doc)

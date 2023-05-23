@@ -37,7 +37,6 @@ class Token2Id(MutableMapping):
     def __init__(
         self, data: Optional[Union[dict, defaultdict]] = None, tf: dict = None, fallback_token: str = None, **kwargs
     ):
-
         self._data: defaultdict = None
         self._tf: dict = None
         self._is_open = True
@@ -126,7 +125,6 @@ class Token2Id(MutableMapping):
         return self.payload.get(key)
 
     def ingest(self, tokens: Iterator[str]) -> "Token2Id":
-
         if not self._is_open:
             raise ClosedVocabularyError("cannot ingest into a closed vocabulary")
 
@@ -157,7 +155,6 @@ class Token2Id(MutableMapping):
         return self
 
     def _ingest_stream(self, tokens_stream: Iterator[Iterator[str]]) -> None:
-
         tf: defaultdict = self._tf
         data = self._data
 
@@ -199,7 +196,6 @@ class Token2Id(MutableMapping):
         return self
 
     def open(self) -> "Token2Id":
-
         if not isinstance(self._data, defaultdict):
             self._data = defaultdict(int, self._data)
 
@@ -277,7 +273,6 @@ class Token2Id(MutableMapping):
         return {self._data[w] for w in tokens}
 
     def find(self, what: Union[list[str], str]):
-
         if not what:
             return []
 

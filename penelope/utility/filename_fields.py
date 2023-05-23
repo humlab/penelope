@@ -23,7 +23,6 @@ def _parse_indexed_fields(filename_fields: List[str]):
     """
 
     def extract_field(data):
-
         if len(data) == 1:  # regexp
             return data[0]
 
@@ -35,7 +34,6 @@ def _parse_indexed_fields(filename_fields: List[str]):
         raise ValueError("to many parts in extract expression")
 
     try:
-
         filename_fields = {x[0]: extract_field(x[1:]) for x in [y.split(':') for y in filename_fields]}
 
         return filename_fields
@@ -67,7 +65,6 @@ def extract_filename_metadata(filename: str, filename_fields: FilenameFieldSpec)
     """
 
     def astype_int_or_str(v):
-
         return int(v) if v is not None and v.isnumeric() else v
 
     def regexp_extract(compiled_regexp, filename: str) -> str:
@@ -77,7 +74,6 @@ def extract_filename_metadata(filename: str, filename_fields: FilenameFieldSpec)
             return None
 
     def fxify(fx_or_re) -> Callable:
-
         if callable(fx_or_re):
             return fx_or_re
 

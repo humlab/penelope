@@ -77,7 +77,6 @@ def prepare_task_stream(
     concept_ids: Set[int],
     ignore_ids: Set[int],
 ) -> Iterable[Tuple]:
-
     fg = token2id.data.get
     # name_to_id: dict = document_index.document_id.to_dict()
     name_to_id: dict = {n: i for n, i in zip(document_index.index, document_index.document_id)}
@@ -108,9 +107,7 @@ def tokens_to_ttm_stream(
     processes: int = 4,
     chunk_size: int = 25,
 ) -> Iterable[dict]:
-
     try:
-
         args = prepare_task_stream(
             payload_stream=payload_stream,
             document_index=document_index,
@@ -120,13 +117,11 @@ def tokens_to_ttm_stream(
             ignore_ids=ignore_ids,
         )
         if not processes:
-
             for arg in args:
                 item: dict = tokens_to_ttm(arg)
                 yield item
 
         else:
-
             """Force preceeding task to initialize before we spawn processes"""
             args = peekable(args)
             _ = args.peek()

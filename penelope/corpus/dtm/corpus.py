@@ -74,7 +74,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         self._payload: dict = dict(**kwargs)
 
     def _ingest_document_index(self, document_index: DocumentIndex):
-
         if not np.issubdtype(document_index.index.dtype, np.number):
             logger.warning("VectorizedCorpus: supplied document index has not an integral index")
             document_index = document_index.set_index('document_id', drop=False).rename_axis('')
@@ -303,7 +302,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return corpus
 
     def normalize_by_raw_counts(self):
-
         if 'n_raw_tokens' not in self.document_index.columns:
             # logging.warning("Normalizing using DTM counts (not actual self counts)")
             # return self.normalize()
@@ -527,7 +525,6 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
 
 def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: Set[str]) -> Set[str]:
-
     words = {w for w in candidate_words if w in token2id}
 
     remaining_words = [w for w in candidate_words if w not in words and len(w) > 0]
@@ -535,7 +532,6 @@ def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: S
     word_exprs = [x for x in remaining_words if "*" in x or (x.startswith("|") and x.endswith("|"))]
 
     for expr in word_exprs:
-
         if expr.startswith("|") and expr.endswith("|"):
             pattern = re.compile(expr.strip('|'))  # "^.*tion$"
             words |= {x for x in token2id if x not in words and pattern.match(x)}

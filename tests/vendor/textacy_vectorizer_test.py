@@ -32,17 +32,16 @@ def mary_had_a_little_lamb_corpus(en_nlp) -> textacy_api.Corpus:
 @pytest.mark.long_running
 @pytest.mark.skipif(not _extacy_exists, reason="textaCy not avaliable")
 def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylint: disable=redefined-outer-name
-
     expected_dtm = np.matrix(
         [
-            [0, 0, 1, 1, 1, 0, 0, 0, 1, 0],
-            [0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 1, 1, 0, 0, 0, 1],
+            [0, 0, 1, 1, 1, 0, 0, 1, 0],
+            [0, 0, 0, 1, 1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 1, 1, 0, 0],
+            [1, 0, 0, 1, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 1, 1, 0, 0, 0, 0],
+            [0, 0, 0, 1, 1, 0, 0, 0, 1],
         ]
     )
 
@@ -69,13 +68,12 @@ def test_vectorizer(mary_had_a_little_lamb_corpus: textacy_api.Corpus):  # pylin
         'mary': 4,
         'lamb': 3,
         'fleece': 2,
-        'snow': 8,
-        'school': 7,
+        'snow': 7,
+        'school': 6,
         'day': 1,
-        'rule': 6,
+        'rule': 5,
         'child': 0,
-        'teacher': 9,
-        'reply': 5,
+        'teacher': 8,
     } == v_corpus.token2id
 
     assert (expected_dtm == v_corpus.data.todense()).all()

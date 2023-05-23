@@ -5,7 +5,6 @@ engines = ['neato', 'dot', 'circo', 'fdp', 'sfdp']
 
 
 def layout_network(G, layout_algorithm, **kwargs):
-
     setup = LAYOUT_SETUP_MAP[layout_algorithm]
 
     G.graph['K'] = kwargs.get('K', 0.1)

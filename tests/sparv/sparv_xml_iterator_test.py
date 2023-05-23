@@ -14,7 +14,6 @@ def sparv_xml_test_file():
 
 
 def test_reader_when_no_transforms_returns_source_tokens():
-
     expected = [
         'Rödräven',
         'är',
@@ -46,7 +45,6 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
 
 def test_reader_when_lemmatized_returns_tokens_in_baseform():
-
     expected = [
         'rödräv',
         'vara',
@@ -78,7 +76,6 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
 
 
 def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
-
     expected = [
         'rödräv',
         'vara',
@@ -111,7 +108,6 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
 
 
 def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
-
     expected = ['rödräv', 'hunddjur', 'utbredning', 'halvklot']
     expected_name = "sparv_xml_export_small.txt"
 
@@ -132,7 +128,6 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
 
 
 def test_reader_when_chunk_size_specified_returns_chunked_text():
-
     expected_documents = [['rödräv', 'hunddjur'], ['utbredning', 'halvklot']]
     expected_names = ["sparv_xml_export_small_001.txt", "sparv_xml_export_small_002.txt"]
 
@@ -143,13 +138,11 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
     )
 
     for i, (filename, tokens) in enumerate(reader):
-
         assert expected_documents[i] == list(tokens)
         assert expected_names[i] == filename
 
 
 def test_reader_when_source_is_zipped_archive_succeeds():
-
     expected_documents = [
         ['rödräv', 'hunddjur', 'utbredning', 'halvklot'],
         ['fjällräv', 'fjällvärld', 'liv', 'fjällräv', 'vinter', 'men', 'variant', 'år'],
@@ -163,7 +156,6 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     )
 
     for i, (filename, tokens) in enumerate(reader):
-
         assert expected_documents[i] == list(tokens)
         assert expected_names[i] == filename
 
@@ -171,7 +163,6 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 @pytest.mark.long_running
 @pytest.mark.skip("deprecated Sparv v3")
 def test_reader_when_source_is_sparv3_succeeds():
-
     sparv_zipped_xml_export_v3_filename = './tests/test_data/sou_test_sparv3_xml.zip'
 
     reader = readers.Sparv3XmlReader(
@@ -181,5 +172,4 @@ def test_reader_when_source_is_sparv3_succeeds():
     )
 
     for _, (_, tokens) in enumerate(reader):
-
         assert len(list(tokens)) > 0

@@ -2,6 +2,9 @@ import uuid
 
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, DocumentPayload
+from penelope.pipeline.spacy import SpacyTagger
+
+# pylint: disable=redefined-outer-name
 
 
 def ssi_corpus_config() -> CorpusConfig:
@@ -11,7 +14,7 @@ def ssi_corpus_config() -> CorpusConfig:
     return config
 
 
-def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
+def ssi_topic_model_payload(config: CorpusConfig, tagger: SpacyTagger) -> DocumentPayload:
     target_name: str = f'{uuid.uuid1()}'
     transform_opts: TokensTransformOpts = TokensTransformOpts()
     reader_opts: TextReaderOpts = TextReaderOpts(filename_pattern="*.txt", filename_fields="year:_:1")
@@ -35,9 +38,8 @@ def ssi_topic_model_payload(config: CorpusConfig, en_nlp) -> DocumentPayload:
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
         .load_text(reader_opts=reader_opts, transform_opts=TokensTransformOpts())
-        .set_spacy_model(en_nlp)
-        .text_to_spacy()
-        .spacy_to_tagged_frame(attributes=['text', 'lemma_', 'pos_'])
+        .text_to_spacy(tagger=tagger)
+        .to_tagged_frame()
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
         .to_topic_model(
             target_mode='both',

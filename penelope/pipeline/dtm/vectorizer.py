@@ -34,7 +34,6 @@ class StreamVectorizer:
         return corpus
 
     def vectorize_stream(self, content_type: interfaces.ContentType, payloads: Iterable[interfaces.DocumentPayload]):
-
         name2id: dict = self.document_index['document_id'].to_dict().get
 
         if content_type == interfaces.ContentType.TOKENS:

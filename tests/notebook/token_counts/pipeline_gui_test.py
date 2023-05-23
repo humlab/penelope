@@ -10,7 +10,6 @@ from penelope.pipeline import config as corpus_config
 
 
 def fake_config() -> corpus_config.CorpusConfig:
-
     config: corpus_config.CorpusConfig = corpus_config.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
 
     config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
@@ -31,7 +30,6 @@ def monkey_patch(*_, **__):
 @patch('penelope.notebook.token_counts.pipeline_gui.compute_token_count_data', monkey_patch)
 @patch('penelope.notebook.token_counts.pipeline_gui.load_document_index', monkey_patch)
 def test_create_token_count_gui_succeeds():
-
     corpus_folder: str = './tests/test_data'
     resources_folder: str = './tests/test_data'
 
@@ -41,7 +39,6 @@ def test_create_token_count_gui_succeeds():
 
 
 def test_create_token_count_gui_create_succeeds():
-
     load_corpus_config_callback_is_called = False
 
     def load_corpus_config_callback(*_) -> corpus_config.CorpusConfig:
@@ -69,7 +66,6 @@ def test_create_token_count_gui_create_succeeds():
 
 @pytest.mark.long_running
 def test_load_document_index(config: corpus_config.CorpusConfig):
-
     config.pipeline_payload.source = 'riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
     config.pipeline_payload.folders('./tests/test_data')
     config.checkpoint_opts.feather_folder = None

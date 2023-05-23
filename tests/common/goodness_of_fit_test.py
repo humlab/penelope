@@ -20,7 +20,6 @@ def create_vectorized_corpus():
 
 
 def test_ols_when_x_equals_y_k_equals_one():
-
     xs = [1, 2, 3, 4]
     ys = [1, 2, 3, 4]
     m, k, _, _, _ = distance_metrics.fit_ordinary_least_square(ys, xs)
@@ -41,7 +40,6 @@ def test_ols_when_x_equals_y_k_equals_expected():
 
 
 def test_gof_by_l2_norm():
-
     m = np.array(
         [
             [0.10, 0.11, 0.10, 0.09, 0.09, 0.11, 0.10, 0.10, 0.12, 0.08],
@@ -60,7 +58,6 @@ def test_gof_by_l2_norm():
 
 
 def test_fit_ordinary_least_square():
-
     Y = [1, 3, 4, 5, 2, 3, 4]
     X = list(range(1, 8))
     m, k, _, _, _ = distance_metrics.fit_ordinary_least_square(Y, X)
@@ -77,7 +74,6 @@ def test_fit_ordinary_least_square_to_horizontal_line():
 
 
 def test_fit_ordinary_least_square_to_3_14_x_plus_4():
-
     kp = 3.14
     mp = 4.0
 
@@ -91,7 +87,6 @@ def test_fit_ordinary_least_square_to_3_14_x_plus_4():
 
 
 def test_compute_goddness_of_fits_to_uniform():
-
     expected_columns = [
         'token',
         'word_count',
@@ -112,7 +107,6 @@ def test_compute_goddness_of_fits_to_uniform():
 
 
 def test_compute_goddness_of_fits_to_uniform_with_reduced_columns():
-
     metrics = ['l2_norm', 'slope']
     expected_columns = ['token', 'word_count'] + metrics
     corpus = create_vectorized_corpus()
@@ -124,7 +118,6 @@ def test_compute_goddness_of_fits_to_uniform_with_reduced_columns():
 
 
 def test_distance_metrics_fit_polynomial():
-
     expected_values = np.array(
         [
             [2.00000000e00, 2.00000000e00, 3.80000000e00, 4.00000000e-01],
@@ -142,7 +135,6 @@ def test_distance_metrics_fit_polynomial():
 
 
 def test_gof_by_polynomial():
-
     expected_values = np.array(
         [
             [2.00000000e00, 2.00000000e00, 3.80000000e00, 4.00000000e-01],
@@ -157,7 +149,6 @@ def test_gof_by_polynomial():
 
 
 def test_gof_get_skew():
-
     row = np.arange(0, 8)
     col = np.zeros(8)
     data = np.array([2, 8, 0, 4, 1, 9, 9, 0])
@@ -181,7 +172,6 @@ def create_single_column_sparse_csr_matrix(data):
 
 
 def test_get_gof_by_polynomial():
-
     data = [2, 8, 0, 4, 1, 9, 9, 0]
     expected_result = np.polyfit(np.arange(0, 8), data, 1)
     dtm = create_single_column_sparse_csr_matrix(data)
@@ -193,7 +183,6 @@ def test_get_gof_by_polynomial():
 
 
 def test_get_earth_mover_distance():
-
     data = [2, 8, 0, 4, 1, 9, 9, 0]
     expected_result = distance_metrics.earth_mover_distance(np.array(data))
     dtm = create_single_column_sparse_csr_matrix(data)
@@ -204,7 +193,6 @@ def test_get_earth_mover_distance():
 
 
 def test_get_entropy_to_uniform():
-
     data = [2, 8, 0, 4, 1, 9, 9, 0]
     expected_result = distance_metrics.entropy(np.array(data))
     dtm = create_single_column_sparse_csr_matrix(data)
@@ -215,7 +203,6 @@ def test_get_entropy_to_uniform():
 
 
 def test_get_kullback_leibler_divergence_to_uniform():
-
     data = [2, 8, 0, 4, 1, 9, 9, 0]
     expected_result = distance_metrics.kullback_leibler_divergence_to_uniform(np.array(data))
     dtm = create_single_column_sparse_csr_matrix(data)
@@ -226,7 +213,6 @@ def test_get_kullback_leibler_divergence_to_uniform():
 
 
 def test_get_gof_chisquare_to_uniform():
-
     data = [2, 8, 0, 4, 1, 9, 9, 0]
     expected_result = distance_metrics.gof_chisquare_to_uniform(np.array(data))
     dtm = create_single_column_sparse_csr_matrix(data)

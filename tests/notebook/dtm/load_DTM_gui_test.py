@@ -25,7 +25,6 @@ def test_gui_layout():
 
 
 def test_create_gui():
-
     gui = create_load_gui(
         corpus_folder='./tests/test_data',
         loaded_callback=dummy_callback,

@@ -112,7 +112,6 @@ class TrendsBaseGUI(abc.ABC):
 
     def transform(self):
         try:
-
             if self.trends_data is None:
                 self.alert("😮 Please load a corpus (no trends data) !")
                 return
@@ -152,7 +151,6 @@ class TrendsBaseGUI(abc.ABC):
 
     def plot(self, trends_data: TrendsData = None):
         try:
-
             if trends_data is not None:
                 self.trends_data = trends_data
 

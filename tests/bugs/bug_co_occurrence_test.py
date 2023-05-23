@@ -14,7 +14,6 @@ TEST_BUNDLE: str = "/data/inidun/courier/co_occurrence/courier_issue_by_article_
 
 @pytest.mark.skip(reason="Bug fixed")
 def test_load_bundle():
-
     folder, tag = TEST_BUNDLE, os.path.split(TEST_BUNDLE)[1]
     filename = co_occurrence.to_filename(folder=folder, tag=tag)
 

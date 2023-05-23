@@ -65,7 +65,6 @@ def test_n_docs(corpus: VectorizedCorpus):
 
 
 def test_bag_term_matrix_to_bag_term_docs(corpus: VectorizedCorpus):
-
     doc_ids = (
         0,
         1,
@@ -125,7 +124,6 @@ def test_id2token_is_reversed_token2id(corpus: VectorizedCorpus):
 
 
 def test_normalize_by_raw_counts():
-
     corpus: VectorizedCorpus = VectorizedCorpus(
         bag_term_matrix=np.array([[4, 3, 7, 1], [6, 7, 4, 2]]),
         token2id={'a': 0, 'b': 1, 'c': 2, 'd': 3},
@@ -153,7 +151,6 @@ def test_dump_and_store_of_corpus_with_empty_trailing_row() -> VectorizedCorpus:
 
 
 def test_find_matching_words_in_vocabulary():
-
     token2id = {"bengt": 0, "bertil": 1, "eva": 2, "julia": 3}
 
     assert find_matching_words_in_vocabulary(token2id, ["jens"]) == set()
@@ -228,7 +225,6 @@ def test_co_occurrence_matrix(corpus: VectorizedCorpus):
 
 
 def test_find_matching_words(corpus: VectorizedCorpus):
-
     corpus._token2id = {"bengt": 0, "bertil": 1, "eva": 2, "julia": 3}  # pylint: disable=protected-access
 
     assert set(corpus.find_matching_words(["jens"], 4)) == set()
@@ -240,7 +236,6 @@ def test_find_matching_words(corpus: VectorizedCorpus):
 
 
 def test_find_matching_indices(corpus: VectorizedCorpus):
-
     corpus._token2id = {"bengt": 0, "bertil": 1, "eva": 2, "julia": 3}  # pylint: disable=protected-access
 
     assert set(corpus.find_matching_words_indices(["jens"], 4)) == set()

@@ -29,7 +29,6 @@ layout_algorithms = {
 def _layout_args(
     layout_algorithm: str, network: nx.Graph, scale: float, weight_name: str = 'weight'
 ) -> dict[str, t.Any]:
-
     args = None
 
     if layout_algorithm == 'Shell':
@@ -89,7 +88,6 @@ def _plot_network(
     edge_range: tuple[int, int] = (1.0, 5.0),
 ):
     if threshold > 0:
-
         values = nx.get_edge_attributes(network, weight_name).values()
         max_weight = max(1.0, max(values))
 

@@ -16,7 +16,6 @@ class ICorpus(abc.ABC):
 
 
 class ITokenizedCorpus(ICorpus):
-
     __slots__ = ()
 
     @property

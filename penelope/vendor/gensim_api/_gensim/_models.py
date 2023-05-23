@@ -40,7 +40,6 @@ class MalletTopicModel(DummyClass):
 
 
 try:
-
     from gensim.models import CoherenceModel
     from gensim.models.ldamodel import LdaModel
     from gensim.models.ldamulticore import LdaMulticore

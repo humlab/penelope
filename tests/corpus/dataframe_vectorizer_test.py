@@ -172,7 +172,6 @@ class Test_DataFrameVectorize(unittest.TestCase):
         assert 0 == term_term_matrix.todense()[token2id['C'], token2id['F']]
 
     def test_to_dataframe_of_term_matrix_gives_expected_result(self):
-
         # Arrange
         reader = PandasCorpusReader(self.create_test_dataframe())
         corpus = TokenizedCorpus(

@@ -1,6 +1,7 @@
 import click
 
 from penelope.scripts.utils import option2
+from penelope.utility import load_cwd_dotenv
 
 from ..pipeline import CorpusConfig
 
@@ -9,7 +10,7 @@ from ..pipeline import CorpusConfig
 @click.argument('config-filename', type=click.STRING)
 @option2('--corpus-source', default=None)
 def main(config_filename: str = None, corpus_source: str = None):
-
+    load_cwd_dotenv()
     config: CorpusConfig = CorpusConfig.load(path=config_filename)
     corpus_source: str = corpus_source or config.pipeline_payload.source
 

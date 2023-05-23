@@ -68,7 +68,6 @@ def test_weights_reducer(state: TopicModelContainer):
 
 
 def test_filter_by_keys(state: TopicModelContainer):
-
     calculator: helper.DocumentTopicsCalculator = helper.DocumentTopicsCalculator(state["inferred_topics"])
     years = (2020, 2020)
     threshold: float = 0.01

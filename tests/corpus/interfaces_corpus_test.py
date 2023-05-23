@@ -34,7 +34,6 @@ def test_corpus_interface_subclassed():
 
 
 def test_tokenized_corpus_interface():
-
     assert issubclass(TokenizedCorpus, ITokenizedCorpus)
 
     source = readers.TextTokenizer(source=["a b c", "e f g"])
@@ -45,7 +44,6 @@ def test_tokenized_corpus_interface():
 
 
 def test_segmented_stokenized_corpus_interface():
-
     assert issubclass(SegmentedTextCorpus, ITokenizedCorpus)
 
     source = readers.TextTokenizer(source=["a b c", "e f g"])
@@ -54,7 +52,6 @@ def test_segmented_stokenized_corpus_interface():
 
 
 def test_sparv_xml_corpus_interface():
-
     assert issubclass(SparvTokenizedXmlCorpus, ITokenizedCorpus)
 
     instance = SparvTokenizedXmlCorpus(SPARV_XML_EXPORT_FILENAME_SMALL, version=4)
@@ -62,7 +59,6 @@ def test_sparv_xml_corpus_interface():
 
 
 def test_sparv3_xml_corpus_interface():
-
     assert issubclass(SparvTokenizedXmlCorpus, ITokenizedCorpus)
 
     instance = SparvTokenizedXmlCorpus('./tests/test_data/sou_test_sparv3_xml.zip', version=3)
@@ -70,7 +66,6 @@ def test_sparv3_xml_corpus_interface():
 
 
 def test_sparv3_csv_corpus_interface():
-
     assert issubclass(SparvTokenizedCsvCorpus, ITokenizedCorpus)
 
     instance = SparvTokenizedCsvCorpus('./tests/test_data/sparv_zipped_csv_export.zip')
@@ -78,7 +73,6 @@ def test_sparv3_csv_corpus_interface():
 
 
 def test_text_lines_corpus_interface():
-
     assert issubclass(SimpleTextLinesCorpus, ITokenizedCorpus)
 
     instance = SimpleTextLinesCorpus(

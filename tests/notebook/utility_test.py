@@ -14,7 +14,6 @@ def test_create_js_download():
 
 
 def test_output_tabs_ext():
-
     tab = OutputsTabExt(names=['A', 'B'])
     assert tab is not None
     assert len(tab.children) == 2

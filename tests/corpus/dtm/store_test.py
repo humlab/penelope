@@ -47,7 +47,6 @@ def vectorized_corpus(text_corpus: TokenizedCorpus) -> VectorizedCorpus:
 
 @pytest.mark.parametrize('mode', ['bundle', 'files'])
 def test_load_stored_metadata_simple(mode: str):
-
     tag: str = f'{uuid.uuid1()}'
     folder: str = jj(OUTPUT_FOLDER, tag)
 
@@ -82,7 +81,6 @@ def test_load_stored_metadata_simple(mode: str):
 
 @pytest.mark.parametrize('mode', ['bundle', 'files'])
 def test_load_stored_metadata(mode: str, vectorized_corpus: VectorizedCorpus):
-
     tag: str = f'{uuid.uuid1()}'
     folder: str = jj(OUTPUT_FOLDER, tag)
 
@@ -102,7 +100,6 @@ def test_load_stored_metadata(mode: str, vectorized_corpus: VectorizedCorpus):
 
 @pytest.mark.parametrize('mode', ['bundle', 'files'])
 def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
-
     tag: str = f'{str(uuid.uuid1())[:6]}'
     folder: str = jj(OUTPUT_FOLDER, tag)
 

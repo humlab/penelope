@@ -29,7 +29,6 @@ class TableDisplayer(ITrendDisplayer):
         return df
 
     def plot(self, *, data: list[pd.DataFrame], temporal_key: str, **_) -> None:  # pylint: disable=unused-argument
-
         with self.output:
             ip.display(self._download_button)
             with pd.option_context('display.max_rows', None, 'display.max_columns', None):

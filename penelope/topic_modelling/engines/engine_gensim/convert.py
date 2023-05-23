@@ -25,7 +25,6 @@ def probe_filenames(folder: str, filenames: list[str]) -> str | None:
 
 
 def convert_topic_tokens(folder: str, source_filename: str = None) -> pd.DataFrame:
-
     mallet_folder: str = jj(folder, "mallet")
 
     target_filename = jj(folder, 'topic_token_weights.zip')
@@ -73,7 +72,6 @@ def convert_topic_tokens(folder: str, source_filename: str = None) -> pd.DataFra
 
 
 def convert_overview(folder: str) -> None:
-
     target_filename: str = jj(folder, 'topic_token_overview.zip')
     if isfile(target_filename):
         return
@@ -93,13 +91,10 @@ def convert_overview(folder: str) -> None:
 
 
 def doctopics_to_dataframe(source_filename: str, normalize: bool = False, epsilon: float = 0.005) -> pd.DataFrame:
-
     ds, ts, ws = [], [], []
 
     with smart_open(source_filename, mode='rt') as fp:
-
         for row in tqdm(fp, mininterval=1.0):
-
             if row[0] == '#':
                 continue
 
@@ -182,7 +177,6 @@ def explode_pickle(folder: str) -> None:
 
 
 def convert_document_index(folder: str) -> None:
-
     target_filename: str = jj(folder, "documents.zip")
     source_filename: str = jj(folder, "train_document_index.csv.gz")
 
@@ -199,7 +193,6 @@ def convert_document_index(folder: str) -> None:
 
 
 def convert_dictionary(folder: str) -> None:
-
     target_filename: str = jj(folder, "dictionary.zip")
     source_filename: str = jj(folder, "train_token2id.json.gz")
 
@@ -220,7 +213,6 @@ def convert_dictionary(folder: str) -> None:
 
 
 def to_feather(folder: str):
-
     explode_pickle(folder)
 
     data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=folder, slim=True)
@@ -235,7 +227,6 @@ class TranslateCorpus:
     def translate(
         self, source: Any, *, id2token: Mapping[int, str] = None
     ) -> Tuple[gensim_corpora.Sparse2Corpus, gensim_corpora.Dictionary]:
-
         """Gensim doc says:
         "corpus : iterable of list of (int, float), optional
         Stream of document vectors or sparse matrix of shape (`num_documents`, `num_terms`).

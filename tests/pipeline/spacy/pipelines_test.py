@@ -8,7 +8,7 @@ import penelope.co_occurrence as co_occurrence
 import penelope.workflows.co_occurrence as workflow
 from penelope import corpus as corpora
 from penelope import pipeline, utility
-from penelope.pipeline.spacy.pipelines import spaCy_co_occurrence_pipeline
+from penelope.pipeline.co_occurrence import to_co_occurrence_pipeline
 from penelope.workflows.interface import ComputeOpts
 
 # pylint: disable=redefined-outer-name
@@ -32,7 +32,6 @@ def config(en_nlp) -> pipeline.CorpusConfig:
 
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
-
     os.makedirs('./tests/output', exist_ok=True)
     tagged_corpus_source: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
     target_filename = './tests/output/SSI-co-occurrence-JJVBNN-window-9.csv'
@@ -55,7 +54,7 @@ def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
     )
     tf_threshold: int = 1
 
-    value: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
+    value: co_occurrence.Bundle = to_co_occurrence_pipeline(
         corpus_config=config,
         corpus_source=config.pipeline_payload.source,
         transform_opts=transform_opts,
@@ -87,7 +86,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
     tagged_corpus_source: str = "./tests/output/co_occurrence_test_pos_csv.zip"
 
-    bundle: co_occurrence.Bundle = spaCy_co_occurrence_pipeline(
+    bundle: co_occurrence.Bundle = to_co_occurrence_pipeline(
         corpus_config=config,
         corpus_source=None,
         transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
@@ -121,8 +120,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
 
 @pytest.mark.long_running
-def test_spaCy_co_occurrence_pipeline3(config):
-
+def test_spaCy_co_occurrence_pipeline3(config: pipeline.CorpusConfig):
     corpus_source = './tests/test_data/legal_instrument_five_docs_test.zip'
     tagged_corpus_source = f'./tests/output/{uuid.uuid1()}_pos.csv.zip'
     args: ComputeOpts = ComputeOpts(

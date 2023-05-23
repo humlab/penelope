@@ -99,7 +99,6 @@ class SlimItMixIn:
         return df
 
     def slim_types(self) -> InferredTopicsData:
-
         self.topic_token_weights['token_id'] = self.remove_series_nan(self.topic_token_weights.token_id)
 
         pos_dtypes: dict = {x: np.int32 for x in pu.PD_PoS_tag_groups.index.to_list()}
@@ -112,7 +111,6 @@ class SlimItMixIn:
         return self
 
     def slimmer(self) -> InferredTopicsData:
-
         """document_index"""
         remove_columns = set(pu.PD_PoS_tag_groups.index.to_list()) | {'filename', 'year2', 'number'}
         self.document_index.drop(columns=list(remove_columns.intersection(self.document_index.columns)), inplace=True)
@@ -227,7 +225,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
                 self._store_feather(target_folder)
 
     def _store_csv(self, target_folder: str) -> None:
-
         data: list[tuple[pd.DataFrame, str]] = [
             (self.document_index.rename_axis(''), 'documents.csv'),
             (self.dictionary, 'dictionary.csv'),
@@ -238,14 +235,13 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             (self.token_diagnostics, 'token_diagnostics.csv'),
         ]
 
-        for (df, name) in data:
+        for df, name in data:
             if df is None:
                 continue
             archive_name = jj(target_folder, pu.replace_extension(name, ".zip"))
             pu.pandas_to_csv_zip(archive_name, (df, name), extension="csv", sep='\t')
 
     def _store_feather(self, target_folder: str) -> None:
-
         self.dictionary.reset_index().to_feather(jj(target_folder, "dictionary.feather"))
         self.document_index.reset_index(drop=True).to_feather(jj(target_folder, "documents.feather"))
         self.topic_token_weights.reset_index(drop=True).to_feather(jj(target_folder, "topic_token_weights.feather"))
@@ -308,7 +304,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         return data
 
     def load_topic_labels(self, folder: str, **csv_opts: dict) -> pd.DataFrame:
-
         tto: pd.DataFrame = self.topic_token_overview
         if isfile(jj(folder, "topic_token_overview_label.csv")):
             labeled_tto: pd.DataFrame = pd.read_csv(jj(folder, 'topic_token_overview_label.csv'), **csv_opts)
@@ -365,7 +360,6 @@ def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
 class PickleUtility:
     @staticmethod
     def load(folder: str) -> InferredTopicsData:
-
         if not isfile(jj(folder, "inferred_topics.pickle")):
             return None
 
@@ -403,7 +397,6 @@ class PickleUtility:
 
     @staticmethod
     def store(data: InferredTopicsData, target_folder: str) -> None:
-
         filename: str = jj(target_folder, "inferred_topics.pickle")
 
         c_data = types.SimpleNamespace(

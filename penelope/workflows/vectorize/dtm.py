@@ -14,9 +14,9 @@ def compute(
     corpus_config: CorpusConfig,
     tagged_frame_pipeline: pipeline.CorpusPipeline = None,
 ) -> VectorizedCorpus:
-
+    """Computes DTM from from stream reseived from a tagged frame pipeline.
+    Uses tagged_frame_pipeline argument or pipeline specified in corpus config."""
     try:
-
         assert args.is_satisfied()
 
         if tagged_frame_pipeline is None:
@@ -49,7 +49,6 @@ def compute(
 
 
 def store_corpus_bundle(corpus: VectorizedCorpus, args: interface.ComputeOpts):
-
     if VectorizedCorpus.dump_exists(tag=args.corpus_tag, folder=args.target_folder):
         VectorizedCorpus.remove(tag=args.corpus_tag, folder=args.target_folder)
 

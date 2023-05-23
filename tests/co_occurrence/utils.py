@@ -51,7 +51,6 @@ def create_keyness_opts(
 
 
 def create_tranströmer_to_tagged_frame_pipeline() -> CorpusPipeline:
-
     config_filename = './tests/test_data/tranströmer.yml'
     source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
     tagged_corpus_source = f'./tests/output/{uuid.uuid1()}.tagged_frame.zip'

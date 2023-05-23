@@ -50,7 +50,6 @@ STYLES = {
 
 @deprecated
 def plot(G: nx.Graph, **kwargs) -> Image:  # pylint: disable=unused-argument
-
     if not isinstance(pydotplus, types.ModuleType):
         return None
 

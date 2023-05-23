@@ -101,7 +101,6 @@ class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculato
             )
 
     def __init__(self, calculator: TopicPrevalenceOverTimeCalculator):
-
         self.calculator: TopicPrevalenceOverTimeCalculator = calculator or AverageTopicPrevalenceOverTimeCalculator()
         self.data: pd.DataFrame = None
         self.args: MemoizedTopicPrevalenceOverTimeCalculator.ArgsMemory = None
@@ -115,9 +114,7 @@ class MemoizedTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculato
         result_threshold: float = 0.0,
         n_top_relevance: int = None,
     ) -> pd.DataFrame:
-
         if not (self.args and self.args.validate(inferred_topics, filters, threshold, result_threshold)):
-
             self.data = self.calculator.compute(
                 inferred_topics=inferred_topics, filters=filters, threshold=threshold, result_threshold=result_threshold
             )
@@ -210,7 +207,6 @@ def _add_average_yearly_topic_weight_by_all_documents(yearly_weights: pd.DataFra
 def _add_top_n_topic_prevelance_weight(
     yearly_weights: pd.DataFrame, dtw: pd.DataFrame, n_top_relevance: int = None
 ) -> pd.DataFrame:
-
     if not n_top_relevance:
         return yearly_weights
 
@@ -262,6 +258,7 @@ def compute_yearly_topic_weights(
 
 AggregateKeys = Literal['top_n_weight', 'average_weight', 'true_average_weight']
 AggregateKeyValues = get_args(AggregateKeys)
+
 
 # @not_used
 def compute_specified_yearly_topic_weights(

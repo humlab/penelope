@@ -7,7 +7,6 @@ from penelope.corpus import Token2Id
 
 
 def test_interfaces_token2id_get():
-
     token2id = Token2Id()
 
     token_id = token2id['apa']
@@ -17,7 +16,6 @@ def test_interfaces_token2id_get():
 
 
 def test_interfaces_token2id_ingest():
-
     token2id = Token2Id()
 
     token2id.ingest(['apa', 'banan', 'soffa'])
@@ -28,7 +26,6 @@ def test_interfaces_token2id_ingest():
 
 
 def test_interfaces_token2id_close():
-
     token2id = Token2Id()
 
     token2id.ingest(['apa', 'banan', 'soffa'])
@@ -44,7 +41,6 @@ def test_interfaces_token2id_close():
 
 
 def test_interfaces_token2id_reverse():
-
     token2id: Token2Id = Token2Id()
 
     id2token = token2id.ingest(['apa', 'banan', 'soffa']).id2token

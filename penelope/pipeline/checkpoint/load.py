@@ -53,7 +53,6 @@ def load_feathered_tagged_frame(
 
 
 def get_checkpoint_loader(checkpoint_opts: CheckpointOpts) -> Callable:
-
     if checkpoint_opts.content_type == ContentType.TAGGED_FRAME:
         if checkpoint_opts.feather_folder:
             return load_feathered_tagged_frame
@@ -65,7 +64,6 @@ def get_checkpoint_loader(checkpoint_opts: CheckpointOpts) -> Callable:
 def load_payload(
     zip_or_filename: str, filename: str, checkpoint_opts: CheckpointOpts, serializer: IContentSerializer
 ) -> DocumentPayload:
-
     payload: DocumentPayload = DocumentPayload(
         content_type=checkpoint_opts.content_type,
         content=get_checkpoint_loader(checkpoint_opts)(
@@ -114,9 +112,7 @@ def load_payloads_multiprocess(
     filenames: List[str],
     ordered: bool = False,
 ) -> Iterable[DocumentPayload]:
-
     try:
-
         logger.trace(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
         if checkpoint_opts.feather_folder:
             logger.trace(f"Using feather checkpoint folder {checkpoint_opts.feather_folder}.")
@@ -128,7 +124,6 @@ def load_payloads_multiprocess(
         )
 
         with get_context("spawn").Pool(processes=checkpoint_opts.deserialize_processes) as executor:
-
             mapper = executor.imap_unordered if not ordered else executor.imap
             payloads_futures: Iterable[DocumentPayload] = mapper(
                 _multiprocess_load_task, args, chunksize=checkpoint_opts.deserialize_chunksize

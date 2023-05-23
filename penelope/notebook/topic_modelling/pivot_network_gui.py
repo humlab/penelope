@@ -179,7 +179,6 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         ).value
 
     def update(self) -> pd.DataFrame:
-
         network_data: pd.DataFrame = self.compute()
 
         if len(network_data) == 0:
@@ -188,7 +187,6 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         return network_data
 
     def update_handler(self, *_):
-
         self.alert("⌛ Computing...")
         try:
             self.network_data = self.update()
@@ -201,17 +199,13 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         self.display_handler()
 
     def display_handler(self, *_):
-
         self._output.clear_output()
 
         with self._output:
-
             if self.network_data is None:
-
                 self.alert("😡 No data, please change filters..")
 
             elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
-
                 data: pd.DataFrame = self.network_data
 
                 if self.output_format == "gephi":

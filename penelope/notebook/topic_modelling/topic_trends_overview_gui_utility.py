@@ -30,7 +30,6 @@ HEATMAP_FIGOPTS = dict(title="Topic heatmap", toolbar_location="right", x_axis_l
 
 
 def _setup_glyph_coloring(_, color_high=0.3):
-
     # colors = list(reversed(bokeh.palettes.Greens[9]))
 
     mapper = LinearColorMapper(palette=COLORS, low=0.0, high=color_high)
@@ -64,7 +63,6 @@ def plot_topic_relevance_by_year(
     element_id: str,
     **figopts,
 ):  # pylint: disable=too-many-arguments, too-many-locals
-
     line_height: int = 7
     if flip_axis:
         xs, ys = ys, xs
@@ -131,7 +129,6 @@ def display_heatmap(
 ):
     '''Display aggregate value grouped by year'''
     try:
-
         weights['weight'] = weights[aggregate]
         weights['year'] = weights.year.astype(str)
         weights['topic_id'] = weights.topic_id.astype(str)
@@ -141,7 +138,6 @@ def display_heatmap(
             return
 
         if output_format.lower() == 'heatmap':
-
             p = plot_topic_relevance_by_year(
                 weights,
                 xs='year',

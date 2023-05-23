@@ -5,7 +5,6 @@ OPTIONS_FILENAME = "tests/profiling/riksprot-1965_dtm_opts.yml"
 
 
 def run_workflow():
-
     arguments = utility.update_dict_from_yaml(
         OPTIONS_FILENAME,
         {
@@ -21,5 +20,4 @@ def run_workflow():
 
 
 if __name__ == '__main__':
-
     run_workflow()

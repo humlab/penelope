@@ -66,7 +66,6 @@ def tranströmer_topic_model_payload(method: str, target_folder: str, target_nam
 @pytest.mark.long_running
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_predict_topics(method: str):
-
     """Train a model that will be used in prediction"""
 
     target_folder: str = './tests/output'
@@ -121,7 +120,6 @@ def test_predict_topics(method: str):
 @pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_topic_model_task_with_token_stream_and_document_index(method):
-
     target_folder: str = './tests/output'
     target_name: str = f'{str(uuid.uuid1())[:8]}'
     corpus: TranströmerCorpus = TranströmerCorpus()

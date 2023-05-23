@@ -1,17 +1,17 @@
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts, VectorizeOpts
 
+from .. import pipelines
 from ..config import CorpusConfig
-from ..pipelines import CorpusPipeline, wildcard
 
 
 def wildcard_to_DTM_pipeline(
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
     vectorize_opts: VectorizeOpts = None,
-) -> CorpusPipeline:
+) -> pipelines.CorpusPipeline:
     try:
-        p: CorpusPipeline = (
-            wildcard()
+        p: pipelines.CorpusPipeline = (
+            pipelines.wildcard()
             .vocabulary(
                 lemmatize=extract_opts,
                 progress=True,
@@ -29,6 +29,34 @@ def wildcard_to_DTM_pipeline(
         raise ex
 
 
+def to_DTM_pipeline(  # pylint: disable=too-many-arguments
+    corpus_config: CorpusConfig,
+    extract_opts: ExtractTaggedTokensOpts = None,
+    transform_opts: TokensTransformOpts = None,
+    vectorize_opts: VectorizeOpts = None,
+    corpus_source: str = None,
+    tagged_corpus_source: str = None,
+    enable_checkpoint: bool = True,
+    force_checkpoint: bool = False,
+) -> pipelines.CorpusPipeline:
+    try:
+        p: pipelines.CorpusPipeline = pipelines.to_tagged_frame_pipeline(
+            corpus_config=corpus_config,
+            tagged_corpus_source=tagged_corpus_source,
+            corpus_source=corpus_source,
+            enable_checkpoint=enable_checkpoint,
+            force_checkpoint=force_checkpoint,
+        ) + wildcard_to_DTM_pipeline(
+            extract_opts=extract_opts,
+            transform_opts=transform_opts,
+            vectorize_opts=vectorize_opts,
+        )
+        return p
+
+    except Exception as ex:
+        raise ex
+
+
 def id_tagged_frame_to_DTM_pipeline(
     corpus_config: CorpusConfig,
     corpus_source: str = None,
@@ -37,9 +65,8 @@ def id_tagged_frame_to_DTM_pipeline(
     transform_opts: TokensTransformOpts = None,
     extract_opts: ExtractTaggedTokensOpts = None,
     vectorize_opts: VectorizeOpts = None,
-) -> CorpusPipeline:
+) -> pipelines.CorpusPipeline:
     try:
-
         if corpus_source is None:
             corpus_source = corpus_config.pipeline_payload.source
 
@@ -50,8 +77,8 @@ def id_tagged_frame_to_DTM_pipeline(
         extract_opts.set_numeric_names()
         vectorize_opts.min_df = extract_opts.global_tf_threshold
         extract_opts.global_tf_threshold = 1
-        p: CorpusPipeline = (
-            CorpusPipeline(config=corpus_config)
+        p: pipelines.CorpusPipeline = (
+            pipelines.CorpusPipeline(config=corpus_config)
             .load_id_tagged_frame(
                 folder=corpus_source,
                 id_to_token=id_to_token,
