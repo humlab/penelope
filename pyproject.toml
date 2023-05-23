@@ -83,6 +83,7 @@ pytest-xdist = "*"
 recommonmark = "*"
 Sphinx = "*"
 tomlkit = "*"
+urllib3 = "1.26.15"
 
 [tool.poetry_bumpversion.file."penelope/__init__.py"]
 
