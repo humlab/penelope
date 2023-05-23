@@ -161,7 +161,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
     assert pipe.payload.token2id is not None
     assert pipe.payload.token2id.tf is not None
     assert len(pipe.payload.token2id) == 1147
-    assert len(pipe.payload.token2id) == len(pipe.payload.token2id.tf) is not None
+    assert len(pipe.payload.token2id) == len(pipe.payload.token2id.tf)
     assert set(pipe.payload.token2id.data.keys()) == {x.lower() for x in pipe.payload.token2id.keys()}
     assert 'Cultural' not in pipe.payload.token2id
     assert 'wars' not in pipe.payload.token2id

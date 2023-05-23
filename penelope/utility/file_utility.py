@@ -86,7 +86,6 @@ def save_excel(data: pd.DataFrame, filename: str):
     with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
         for df, name in data:
             df.to_excel(writer, name, engine='xlsxwriter')
-        writer.save()
 
 
 def read_json(path: str, default: dict = None) -> Dict:

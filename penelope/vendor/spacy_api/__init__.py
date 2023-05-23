@@ -1,6 +1,8 @@
 # type: ignore
 # pylint: disable=unused-argument, unused-import
 
+from typing import Any
+
 try:
     SPACY_INSTALLED: bool = True
 
@@ -29,3 +31,4 @@ except (ImportError, NameError):
     prepend_path = stub
     prepend_spacy_path = stub
     token_count_by = stub
+    Language = Any
