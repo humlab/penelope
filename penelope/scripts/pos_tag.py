@@ -1,9 +1,9 @@
 import click
 
 from penelope.scripts.utils import option2
+from penelope.utility import load_cwd_dotenv
 
 from ..pipeline import CorpusConfig
-from penelope.utility import load_cwd_dotenv
 
 
 @click.command()
