@@ -41,7 +41,7 @@ def compute(
     corpus_config: CorpusConfig,
 ) -> VectorizedCorpus:
     """Computes DTM from an ID tagged frame corpus.
-    Ignores any tagged_frame_pipeline specified in corpus config. """
+    Ignores any tagged_frame_pipeline specified in corpus config."""
     try:
         assert args.is_satisfied()
 

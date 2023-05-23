@@ -14,6 +14,7 @@ from penelope.workflows import interface
 
 # pylint: disable=too-many-arguments, unused-argument
 
+
 @click.group()
 def main():
     ...
@@ -81,11 +82,13 @@ def to_dtm(
 
     process(**arguments)
 
+
 @click.command()
 @click.argument('options_filename', type=click.STRING)
 def to_dtm_opts_file_only(options_filename: Optional[str] = None):
     arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
     process(**arguments)
+
 
 def process(
     config_filename: Optional[str] = None,
