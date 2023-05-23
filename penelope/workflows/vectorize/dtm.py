@@ -14,6 +14,8 @@ def compute(
     corpus_config: CorpusConfig,
     tagged_frame_pipeline: pipeline.CorpusPipeline = None,
 ) -> VectorizedCorpus:
+    """Computes DTM from from stream reseived from a tagged frame pipeline.
+    Uses tagged_frame_pipeline argument or pipeline specified in corpus config. """
     try:
         assert args.is_satisfied()
 
