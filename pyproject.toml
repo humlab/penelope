@@ -10,7 +10,7 @@ classifiers = [
     'Topic :: Software Development',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.11',
 ]
 license = "Apache-2.0"
 readme = "README.md"
@@ -34,7 +34,7 @@ nltk = "^3.5"
 numpy = "*"
 openpyxl = "^3.0.5"
 pandas = "*"
-python = "==3.9.*"
+python = "==3.11.*"
 requests = "^2.24.0"
 scipy = "*"
 toml = "^0.10.2"
@@ -193,8 +193,8 @@ show_missing = true
 sort = "Name"
 
 [build-system]
-requires = ["poetry>=1.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 #[tool.poetry.build]
 #generate-setup-file = true
