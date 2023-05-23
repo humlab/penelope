@@ -25,12 +25,14 @@ CLI_OPTIONS = {
         default=None,
         type=click.INT,
     ),
-    '--corpus-config': dict(help='Corpus config filename', default=None),
+    '--corpus-config': dict(help='Corpus config filename', default=None, type=click.STRING),
+    '--config-filename': dict(help='Corpus config filename', default=None, type=click.STRING),
     '--input-filename': dict(help='Corpus filename/folder (overrides config if specified)', default=None),
     '--output-filename': dict(help='Output filename (overrides config if specified)', default=None),
-    '--output-folder': dict(help='Output folder', default=None),
-    '--output-tag': dict(help='Output tag (file identifier)', default=None),
-    '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)'),
+    '--output-folder': dict(help='Output folder', default=None, type=click.STRING),
+    '--output-tag': dict(help='Output tag (file identifier)', default=None, type=click.STRING),
+    '--corpus-source': dict(help='Source corpus path (filename or folder)', type=click.STRING),
+    '--corpus-folder': dict(help='Corpus folder (if vectorized corpus)', type=click.STRING),
     '--create-subfolder': dict(
         help='Create subfolder in target folder named `target_name`', default=True, is_flag=True
     ),
