@@ -7,7 +7,6 @@ from penelope.corpus import TextTransformOpts
 from penelope.pipeline import DEFAULT_TAGGED_FRAMES_FILENAME_SUFFIX, CorpusConfig, CorpusPipeline
 from penelope.utility import load_cwd_dotenv, path_add_suffix
 
-
 HYPHEN_REGEXP = re.compile(r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b', re.UNICODE)
 
 
