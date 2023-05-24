@@ -138,8 +138,8 @@ filterwarnings = [
 line-length = 120
 target-version = ["py311"]
 skip-string-normalization = true
-skip_magic_trailing_comma = true
-skip-magic-trailing-comma = true
+skip_magic_trailing_comma = false
+skip-magic-trailing-comma = false
 # include = '\.pyi?$'
 exclude = '''
 (

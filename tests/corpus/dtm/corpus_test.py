@@ -170,7 +170,6 @@ def test_get_word_vector(corpus: VectorizedCorpus):
 
 
 def test_filter():
-
     corpus: VectorizedCorpus = create_abc_corpus(
         dtm=[[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]],
         document_years=[2012, 2013, 2014, 2014, 2015],
@@ -180,6 +179,7 @@ def test_filter():
     assert filtered_corpus.shape == (2, 4)
     assert len(filtered_corpus.document_index) == 2
     assert len(filtered_corpus.document_index) == 2
+
 
 def test_pick_top_tf_map(corpus: VectorizedCorpus):
     assert corpus.pick_top_tf_map(2) == {'a': 10, 'c': 11}

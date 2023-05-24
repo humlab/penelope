@@ -258,12 +258,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         di = di.reset_index(drop=True)
         di['document_id'] = di.index
 
-        corpus = VectorizedCorpus(
-            bag_term_matrix=dtm,
-            token2id=self.token2id,
-            document_index=di,
-            **self.payload
-        )
+        corpus = VectorizedCorpus(bag_term_matrix=dtm, token2id=self.token2id, document_index=di, **self.payload)
 
         return corpus
 
