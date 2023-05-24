@@ -101,7 +101,7 @@ pos-tag = "penelope.scripts.pos_tag:main"
 minversion = "6.0"
 addopts = [
     "-rfE",
-    "--no-cov",
+    # "--no-cov",
     "--durations=0"
     # "-q",
     # "-s",
@@ -136,8 +136,10 @@ filterwarnings = [
 
 [tool.black]
 line-length = 120
-target-version = ["py38"]
+target-version = ["py311"]
 skip-string-normalization = true
+skip_magic_trailing_comma = true
+skip-magic-trailing-comma = true
 # include = '\.pyi?$'
 exclude = '''
 (
