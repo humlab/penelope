@@ -253,16 +253,12 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Filtered corpus.
         """
 
-        document_index = self.document_index[self.document_index.apply(px, axis=1)]
+        di: pd.DataFrame = self.document_index[self.document_index.apply(px, axis=1)]
+        dtm: Any = self._bag_term_matrix[di.index, :]
+        di = di.reset_index(drop=True)
+        di['document_id'] = di.index
 
-        indices = list(document_index.index)
-
-        corpus = VectorizedCorpus(
-            bag_term_matrix=self._bag_term_matrix[indices, :],
-            token2id=self.token2id,
-            document_index=document_index,
-            **self.payload,
-        )
+        corpus = VectorizedCorpus(bag_term_matrix=dtm, token2id=self.token2id, document_index=di, **self.payload)
 
         return corpus
 

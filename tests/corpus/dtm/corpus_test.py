@@ -11,7 +11,7 @@ from penelope.corpus import (
     VectorizedCorpus,
     find_matching_words_in_vocabulary,
 )
-from tests.utils import OUTPUT_FOLDER, create_tokens_reader, create_vectorized_corpus
+from tests.utils import OUTPUT_FOLDER, create_abc_corpus, create_tokens_reader, create_vectorized_corpus
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -169,8 +169,16 @@ def test_get_word_vector(corpus: VectorizedCorpus):
     assert corpus.get_word_vector('b').tolist() == [1, 2, 3, 4, 0]
 
 
-def test_filter(corpus: VectorizedCorpus):
-    assert len(corpus.filter(lambda x: x['year'] == 2013).document_index) == 2
+def test_filter():
+    corpus: VectorizedCorpus = create_abc_corpus(
+        dtm=[[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]],
+        document_years=[2012, 2013, 2014, 2014, 2015],
+    )
+
+    filtered_corpus: VectorizedCorpus = corpus.filter(lambda x: x['year'] == 2014)
+    assert filtered_corpus.shape == (2, 4)
+    assert len(filtered_corpus.document_index) == 2
+    assert len(filtered_corpus.document_index) == 2
 
 
 def test_pick_top_tf_map(corpus: VectorizedCorpus):
