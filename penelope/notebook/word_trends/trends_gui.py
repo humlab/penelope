@@ -36,7 +36,7 @@ class TrendsBaseGUI(abc.ABC):
 
     def __init__(self, n_top_count: int = 1000):
         super().__init__()
-        self.trends_data: TrendsService = None
+        self.trends_service: TrendsService = None
         self.display_opts: dict = dict(width=1000, height=600)
         self._tab: w.Tab = w.Tab(layout={'width': '80%'})
         self._words_picker: w.SelectMultiple = w.SelectMultiple(
@@ -112,18 +112,18 @@ class TrendsBaseGUI(abc.ABC):
 
     def transform(self):
         try:
-            if self.trends_data is None:
+            if self.trends_service is None:
                 self.alert("😮 Please load a corpus (no trends data) !")
                 return
 
-            if self.trends_data is None or self.trends_data.corpus is None:
+            if self.trends_service is None or self.trends_service.corpus is None:
                 self.alert("😥 Please load a corpus (no corpus in trends data) !")
                 return
 
             self.buzy(True)
 
             self.alert("⌛ Computing...")
-            self.trends_data.transform(self.options)
+            self.trends_service.transform(self.options)
             self.alert("✔")
 
             self.invalidate(False)
@@ -140,21 +140,21 @@ class TrendsBaseGUI(abc.ABC):
         finally:
             self.buzy(False)
 
-    def display(self, *, trends_data: TrendsService):
-        self.plot(trends_data=trends_data)
+    def display(self, *, trends_service: TrendsService):
+        self.plot(trends_service=trends_service)
 
     def extract(self) -> Sequence[pd.DataFrame]:  # pylint: disable=unused-argument
         self.alert("⌛ Extracting data...")
-        data: pd.DataFrame = self.trends_data.extract(indices=self.picked_indices)
+        data: pd.DataFrame = self.trends_service.extract(indices=self.picked_indices)
         self.alert("")
         return [data]
 
-    def plot(self, trends_data: TrendsService = None):
+    def plot(self, trends_service: TrendsService = None):
         try:
-            if trends_data is not None:
-                self.trends_data = trends_data
+            if trends_service is not None:
+                self.trends_service = trends_service
 
-            if self.trends_data is None or self.trends_data.transformed_corpus is None:
+            if self.trends_service is None or self.trends_service.transformed_corpus is None:
                 self.alert("🥱 (not computed)")
                 return
 
@@ -258,7 +258,7 @@ class TrendsBaseGUI(abc.ABC):
 
     def update_picker(self):
         self.observe(False)
-        _words = self.trends_data.find_words(self.options)
+        _words = self.trends_service.find_words(self.options)
         _values = [w for w in self._words_picker.value if w in _words]
 
         self._words_picker.value = []
@@ -310,9 +310,9 @@ class TrendsBaseGUI(abc.ABC):
 
     @property
     def picked_indices(self) -> Sequence[int]:
-        if self.trends_data is None or self.trends_data.transformed_corpus is None:
+        if self.trends_service is None or self.trends_service.transformed_corpus is None:
             return []
-        indices: List[int] = self.trends_data.transformed_corpus.token_indices(self.picked_words)
+        indices: List[int] = self.trends_service.transformed_corpus.token_indices(self.picked_words)
         return indices
 
     @property
@@ -357,7 +357,9 @@ class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
     def extract(self) -> Sequence[pd.DataFrame]:
         self.alert("⌛ Extracting data...")
         """Fetch trends data grouped by pivot keys (ie. stacked)"""
-        stacked_data: pd.DataFrame = self.trends_data.extract(indices=self.picked_indices, filter_opts=self.filter_opts)
+        stacked_data: pd.DataFrame = self.trends_service.extract(
+            indices=self.picked_indices, filter_opts=self.filter_opts
+        )
         """Decode integer/coded pivot keys"""
         stacked_data = self.pivot_keys.decode_pivot_keys(stacked_data, True)
 

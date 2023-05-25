@@ -50,8 +50,8 @@ def test_GoFsGUI_display(tab):
     gui = GoFsGUI(tab_gof=tab)
     gof_data = MagicMock(spec=GofData, most_deviating_overview=MagicMock(spec=pd.DataFrame))
     corpus = Mock(spec=VectorizedCorpus)
-    trends_data = MagicMock(spec=TrendsService, corpus=corpus, gof_data=gof_data, category_column="apa")
-    gui.display(trends_data=trends_data)
+    trends_service = MagicMock(spec=TrendsService, corpus=corpus, gof_data=gof_data, category_column="apa")
+    gui.display(trends_service=trends_service)
     assert gui.is_displayed
 
 
@@ -68,22 +68,22 @@ def test_GofTrendsGUI_layout(tab):
 
 
 def test_GofTrendsGUI_display():
-    trends_data = Mock(spec=TrendsService)
+    trends_service = Mock(spec=TrendsService)
     gofs_gui = Mock(spec=GoFsGUI)
     trends_gui = Mock(spec=TrendsGUI)
     gui = GofTrendsGUI(
         gofs_gui=gofs_gui,
         trends_gui=trends_gui,
     )
-    gui.display(trends_data)
+    gui.display(trends_service)
 
     assert gui.gofs_gui.display.call_count == 1
     assert gui.trends_gui.display.call_count == 1
 
 
-def test_update_plot():  # gui: TrendsGUI, trends_data: TrendsService):
+def test_update_plot():  # gui: TrendsGUI, trends_service: TrendsService):
     pass
 
 
-def test_create_gof_and_trends_gui():  # trends_data: TrendsService = None):
+def test_create_gof_and_trends_gui():  # trends_service: TrendsService = None):
     pass

@@ -27,7 +27,7 @@ LAST_CORPUS = None
 def loaded_callback(corpus: VectorizedCorpus, n_top: int = 25000):
     global LAST_CORPUS
     LAST_CORPUS = corpus
-    trends_data: TrendsService = TrendsService(corpus=corpus, n_top=n_top)
+    trends_service: TrendsService = TrendsService(corpus=corpus, n_top=n_top)
 
     # gui: GofTrendsGUI = GofTrendsGUI(
     #     gofs_gui=GoFsGUI().setup(),
@@ -36,7 +36,7 @@ def loaded_callback(corpus: VectorizedCorpus, n_top: int = 25000):
 
     gui: TrendsGUI = TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
     display(gui.layout())
-    gui.display(trends_data=trends_data)
+    gui.display(trends_service=trends_service)
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)

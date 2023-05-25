@@ -228,6 +228,7 @@ def test_find_words():
     words: list[str] = service.find_words(words=["c"], top_count=2)
     assert words == ['c']
 
+
 # pylint: disable=unsubscriptable-object
 
 

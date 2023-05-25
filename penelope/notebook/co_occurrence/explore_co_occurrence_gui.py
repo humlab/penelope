@@ -11,7 +11,7 @@ from ..co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 class ExploreGUI:
     def __init__(self, bundle: co_occurrence.Bundle):
         self.bundle: co_occurrence.Bundle = bundle
-        self.trends_data: word_trends.BundleTrendsService = None
+        self.trends_service: word_trends.BundleTrendsService = None
         self.tab_main: notebook_utility.OutputsTabExt = None
         self.trends_gui: word_trends.TrendsBaseGUI = None
         self.gofs_gui: word_trends.GoFsGUI = None
@@ -30,14 +30,14 @@ class ExploreGUI:
 
         return self
 
-    def display(self, trends_data: word_trends.BundleTrendsService) -> "ExploreGUI":
+    def display(self, trends_service: word_trends.BundleTrendsService) -> "ExploreGUI":
         try:
-            self.trends_data = trends_data
+            self.trends_service = trends_service
 
-            self.trends_gui.display(trends_data=trends_data)
+            self.trends_gui.display(trends_service=trends_service)
 
             if self.gofs_gui:
-                self.gofs_gui.display(trends_data=trends_data)
+                self.gofs_gui.display(trends_service=trends_service)
 
             self.tab_main.display_content(0, TabularCoOccurrenceGUI(bundle=self.bundle).setup(), clear=True)
             self.tab_main.display_as_yaml(2, self.bundle.compute_options, clear=True, width='800px', height='600px')
@@ -46,7 +46,7 @@ class ExploreGUI:
             self.tab_main.display_content(4, top_displayer.layout(), clear=True)
         except KeyError as ex:
             logger.error(
-                f"KeyError: {str(ex)}, columns in data: {' '.join(trends_data.transformed_corpus.document_index.columns)}"
+                f"KeyError: {str(ex)}, columns in data: {' '.join(trends_service.transformed_corpus.document_index.columns)}"
             )
             raise
 

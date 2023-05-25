@@ -200,8 +200,8 @@ class TrendsWithPickTokensGUI:
             ]
         )
 
-    def display(self, trends_data: TrendsService):
-        self.token_selector.display(trends_data.gof_data.most_deviating_overview)
+    def display(self, trends_service: TrendsService):
+        self.token_selector.display(trends_service.gof_data.most_deviating_overview)
 
     @property
     def page_size(self) -> int:

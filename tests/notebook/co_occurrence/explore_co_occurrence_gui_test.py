@@ -17,9 +17,9 @@ def bundle() -> co_occurrence.Bundle:
 
 
 @pytest.fixture(scope="module")
-def trends_data(bundle) -> BundleTrendsService:
-    trends_data: BundleTrendsService = BundleTrendsService(bundle=bundle)
-    return trends_data
+def trends_service(bundle) -> BundleTrendsService:
+    trends_service: BundleTrendsService = BundleTrendsService(bundle=bundle)
+    return trends_service
 
 
 def test_ExploreCoOccurrencesGUI_create_and_layout(bundle: co_occurrence.Bundle):
@@ -29,9 +29,9 @@ def test_ExploreCoOccurrencesGUI_create_and_layout(bundle: co_occurrence.Bundle)
 
 
 @pytest.mark.long_running
-def test_ExploreCoOccurrencesGUI_display(bundle: co_occurrence.Bundle, trends_data: BundleTrendsService):
+def test_ExploreCoOccurrencesGUI_display(bundle: co_occurrence.Bundle, trends_service: BundleTrendsService):
     gui: ExploreGUI = ExploreGUI(bundle=bundle).setup()
 
     _: notebook_utility.OutputsTabExt = gui.layout()
 
-    gui.display(trends_data)
+    gui.display(trends_service)

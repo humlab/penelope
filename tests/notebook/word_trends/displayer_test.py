@@ -109,9 +109,9 @@ def bundle() -> co_occurrence.Bundle:
 
 
 @pytest.fixture(scope="module")
-def trends_data(bundle) -> BundleTrendsService:
-    trends_data: BundleTrendsService = BundleTrendsService(bundle=bundle)
-    return trends_data
+def trends_service(bundle) -> BundleTrendsService:
+    trends_service: BundleTrendsService = BundleTrendsService(bundle=bundle)
+    return trends_service
 
 
 @pytest.mark.parametrize(
@@ -130,13 +130,13 @@ def trends_data(bundle) -> BundleTrendsService:
 def test_displayer_compile_and_display(displayer_cls, normalize: bool, temporal_key: str, fill_gaps: bool):
     # corpus: VectorizedCorpus = bundle.corpus.group_by_year(target_column_name='category')
     pivot_keys = []
-    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    trends_service: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
-    trends_data.transform(
+    trends_service.transform(
         TrendsComputeOpts(normalize=normalize, keyness=KeynessMetric.TF, temporal_key=temporal_key, fill_gaps=fill_gaps)
     )
 
-    stacked_data = trends_data.extract(indices=[0, 1], filter_opts=None)
+    stacked_data = trends_service.extract(indices=[0, 1], filter_opts=None)
     unstacked_data = unstack_data(stacked_data, pivot_keys=pivot_keys)
     data = [stacked_data, unstacked_data]
     displayer: ITrendDisplayer = displayer_cls()

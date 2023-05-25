@@ -66,7 +66,7 @@ class MainGUI:
         resources_folder: str,
     ) -> widgets.VBox:
         self.bundle: co_occurrence.Bundle = None
-        self.trends_data: BundleTrendsService = None
+        self.trends_service: BundleTrendsService = None
         self.config = (
             corpus_config
             if isinstance(corpus_config, pipeline.CorpusConfig)
@@ -103,7 +103,7 @@ class MainGUI:
             return
 
         self.bundle = bundle
-        self.trends_data = BundleTrendsService(bundle=bundle)
-        self.gui_explore = explore_gui.ExploreGUI(bundle=bundle).setup().display(trends_data=self.trends_data)
+        self.trends_service = BundleTrendsService(bundle=bundle)
+        self.gui_explore = explore_gui.ExploreGUI(bundle=bundle).setup().display(trends_service=self.trends_service)
 
         display(self.gui_explore.layout())

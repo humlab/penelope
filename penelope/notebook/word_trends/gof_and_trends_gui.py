@@ -28,6 +28,6 @@ class GofTrendsGUI:
         )
         return _layout
 
-    def display(self, trends_data: TrendsService):
-        self.gofs_gui.display(trends_data=trends_data)
-        self.trends_gui.display(trends_data=trends_data)
+    def display(self, trends_service: TrendsService):
+        self.gofs_gui.display(trends_service=trends_service)
+        self.trends_gui.display(trends_service=trends_service)

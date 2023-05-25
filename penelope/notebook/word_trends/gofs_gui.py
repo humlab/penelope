@@ -21,10 +21,10 @@ class GoFsGUI:
     def layout(self) -> notebook_utility.OutputsTabExt:
         return self.tab_gof
 
-    def display(self, trends_data: TrendsService) -> "GoFsGUI":
+    def display(self, trends_service: TrendsService) -> "GoFsGUI":
         if self.is_displayed:
             return self
-        gof_data: gof.GofData = trends_data.gof_data
+        gof_data: gof.GofData = trends_service.gof_data
         self.tab_gof = (
             self.tab_gof.display_fx_result(0, gu.table_widget, gof_data.goodness_of_fit)
             .display_fx_result(
@@ -34,7 +34,7 @@ class GoFsGUI:
             .display_fx_result(
                 3,
                 gof.plot_slopes,
-                trends_data.corpus,
+                trends_service.corpus,
                 gof_data.most_deviating,
                 "l2_norm",
                 600,

@@ -23,9 +23,9 @@ def test_load_bundle():
     gui_explore.setup()
     gui_explore.layout()
 
-    trends_data: BundleTrendsService = BundleTrendsService(bundle=bundle)
+    trends_service: BundleTrendsService = BundleTrendsService(bundle=bundle)
 
-    gui_explore.display(trends_data)
+    gui_explore.display(trends_service)
 
     # compute_opts: TrendsComputeOpts = TrendsComputeOpts(
     #     normalize=False,
@@ -74,7 +74,7 @@ def test_load_bundle():
     assert trends_gui._alert.value == '🙂'
 
     # More isolated:
-    # trends_gui.trends_data.transform(trends_gui.options)
+    # trends_gui.trends_service.transform(trends_gui.options)
 
 
 def set_options(trends_gui: CoOccurrenceTrendsGUI, opts: TrendsComputeOpts) -> CoOccurrenceTrendsGUI:

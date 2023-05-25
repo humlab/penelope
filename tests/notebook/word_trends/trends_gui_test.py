@@ -25,7 +25,7 @@ def test_TrendsGUI_layout():
 
 def test_TrendsGUI_display():
     corpus = mock.Mock(spec=VectorizedCorpus)
-    trends_data = mock.MagicMock(spec=TrendsService, corpus=corpus, category_column="apa")
+    trends_service = mock.MagicMock(spec=TrendsService, corpus=corpus, category_column="apa")
     gui = TrendsGUI().setup(displayers=[mocked_displayer_ctor])
-    gui.trends_data = trends_data
-    gui.display(trends_data=trends_data)
+    gui.trends_service = trends_service
+    gui.display(trends_service=trends_service)
