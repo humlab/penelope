@@ -5,7 +5,7 @@ import pandas as pd
 from penelope.common.goodness_of_fit import GofData
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import OutputsTabExt
-from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsService, TrendsGUI
+from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsGUI, TrendsService
 
 
 def trends_data_mock():

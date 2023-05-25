@@ -3,7 +3,7 @@ import unittest.mock as mock
 import ipywidgets
 
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.word_trends import ITrendDisplayer, TrendsService, TrendsGUI
+from penelope.notebook.word_trends import ITrendDisplayer, TrendsGUI, TrendsService
 
 
 def mocked_displayer_ctor(**_):
