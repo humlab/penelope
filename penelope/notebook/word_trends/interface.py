@@ -230,6 +230,7 @@ class TrendsServiceBase(abc.ABC):
         self._gof_data = None
         return self
 
+
 class TrendsService(TrendsServiceBase):
     def __init__(self, corpus: pc.VectorizedCorpus, n_top: int = 100000):
         super().__init__(corpus=corpus, n_top=n_top)
@@ -280,7 +281,8 @@ class BundleTrendsService(TrendsServiceBase):
         )
 
         return transformed_corpus
-    
+
+
 TrendsDataBase = TrendsServiceBase
 BundleTrendsData = BundleTrendsService
 TrendsData = TrendsService

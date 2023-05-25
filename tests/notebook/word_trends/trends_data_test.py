@@ -213,15 +213,16 @@ def test_find_word_indices():
         )
     )
     assert indices == [2]
-    indices = trends_data.find_word_indices(
-        words=["c"], top_count=2
-    )
+    indices = trends_data.find_word_indices(words=["c"], top_count=2)
     assert indices == [2]
+
 
 def test_find_words():
     pass
 
- # pylint: disable=unsubscriptable-object
+
+# pylint: disable=unsubscriptable-object
+
 
 def test_trends_data_smooth():
     corpus: VectorizedCorpus = simple_corpus_with_pivot_keys()
