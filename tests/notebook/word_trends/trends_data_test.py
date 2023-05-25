@@ -10,7 +10,7 @@ import pytest
 from penelope import utility as pu
 from penelope.common.keyness import KeynessMetric
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.word_trends import TrendsComputeOpts, TrendsData
+from penelope.notebook.word_trends import TrendsComputeOpts, TrendsService
 from tests.fixtures import simple_corpus_with_pivot_keys
 
 
@@ -19,7 +19,7 @@ def test_TrendsData_create():
 
 
 def test_TrendsData_update():
-    data = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=10)
+    data = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=10)
 
     assert isinstance(data.gof_data.goodness_of_fit, pd.DataFrame)
     assert isinstance(data.gof_data.most_deviating_overview, pd.DataFrame)
@@ -50,7 +50,7 @@ def test_trends_data_transform_normalize_fill_gaps_without_pivot_keys(
     expected_tf_sums: List[int | float],
     expected_shape: Tuple[int, int],
 ):
-    trends_data: TrendsData = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
     corpus: VectorizedCorpus = trends_data.transform(
         TrendsComputeOpts(normalize=normalize, keyness=KeynessMetric.TF, temporal_key=temporal_key, fill_gaps=fill_gaps)
@@ -89,7 +89,7 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
     expected_tf_sums: List[int | float],
     expected_shape: Tuple[int, int],
 ):
-    trends_data: TrendsData = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
     corpus: VectorizedCorpus = trends_data.transform(
         TrendsComputeOpts(
@@ -109,7 +109,7 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
 
 
 # def test_trends_data_tf_idf():
-#     trends_data: TrendsData = TrendsData().update(
+#     trends_data: TrendsService = TrendsService().update(
 #         corpus=simple_corpus_with_pivot_keys(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
 #     )
 #     corpus: VectorizedCorpus = trends_data.get_corpus(TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF_IDF, time_period='year'))
@@ -119,7 +119,7 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
 
 def test_trends_data_top_terms():
     temporal_key: str = 'year'
-    trends_data: TrendsData = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
     corpus = trends_data.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')
     ).transformed_corpus
@@ -200,28 +200,32 @@ def test_group_by_year():
     corpus: VectorizedCorpus = Mock(spec=VectorizedCorpus)
     corpus = corpus.group_by_year()
 
-    trends_data: TrendsData = TrendsData(corpus=corpus, n_top=100)
+    trends_data: TrendsService = TrendsService(corpus=corpus, n_top=100)
 
     assert trends_data is not None
 
 
 def test_find_word_indices():
-    trends_data = TrendsData(corpus=simple_corpus_with_pivot_keys())
+    trends_data = TrendsService(corpus=simple_corpus_with_pivot_keys())
     indices = trends_data.find_word_indices(
         TrendsComputeOpts(
             temporal_key='year', normalize=False, smooth=False, keyness=KeynessMetric.TF, words=["c"], top_count=2
         )
     )
     assert indices == [2]
-
+    indices = trends_data.find_word_indices(
+        words=["c"], top_count=2
+    )
+    assert indices == [2]
 
 def test_find_words():
     pass
 
+ # pylint: disable=unsubscriptable-object
 
 def test_trends_data_smooth():
     corpus: VectorizedCorpus = simple_corpus_with_pivot_keys()
-    trends_data: TrendsData = TrendsData(corpus=corpus)
+    trends_data: TrendsService = TrendsService(corpus=corpus)
     opts = dict(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')
     token_id: int = trends_data.corpus.token2id['a']
 
@@ -229,6 +233,9 @@ def test_trends_data_smooth():
 
     trends: pd.DataFrame = trends_data.extract([token_id])
 
+    assert trends['a'].tolist() == [2, 2, 2, 4]
+
+    trends: pd.DataFrame = trends_data.extract(['a'])
     assert trends['a'].tolist() == [2, 2, 2, 4]
 
     trends_data.transform(TrendsComputeOpts(**opts, smooth=True))

@@ -11,7 +11,7 @@ from penelope.workflows.vectorize import dtm as workflow
 from .. import dtm as dtm_gui
 from .. import utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
-from .interface import TrendsData
+from .interface import TrendsService
 from .trends_gui import TrendsGUI
 
 view = widgets.Output(layout={'border': '2px solid green'})
@@ -27,7 +27,7 @@ LAST_CORPUS = None
 def loaded_callback(corpus: VectorizedCorpus, n_top: int = 25000):
     global LAST_CORPUS
     LAST_CORPUS = corpus
-    trends_data: TrendsData = TrendsData(corpus=corpus, n_top=n_top)
+    trends_data: TrendsService = TrendsService(corpus=corpus, n_top=n_top)
 
     # gui: GofTrendsGUI = GofTrendsGUI(
     #     gofs_gui=GoFsGUI().setup(),

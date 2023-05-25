@@ -2,7 +2,7 @@ import penelope.common.goodness_of_fit as gof
 
 from .. import grid_utility as gu
 from .. import utility as notebook_utility
-from .interface import TrendsData
+from .interface import TrendsService
 
 
 class GoFsGUI:
@@ -21,7 +21,7 @@ class GoFsGUI:
     def layout(self) -> notebook_utility.OutputsTabExt:
         return self.tab_gof
 
-    def display(self, trends_data: TrendsData) -> "GoFsGUI":
+    def display(self, trends_data: TrendsService) -> "GoFsGUI":
         if self.is_displayed:
             return self
         gof_data: gof.GofData = trends_data.gof_data

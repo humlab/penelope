@@ -3,7 +3,7 @@ from penelope.utility import deprecated
 from .. import utility as notebook_utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .gofs_gui import GoFsGUI
-from .interface import TrendsData
+from .interface import TrendsService
 from .trends_gui import TrendsGUI
 
 
@@ -28,6 +28,6 @@ class GofTrendsGUI:
         )
         return _layout
 
-    def display(self, trends_data: TrendsData):
+    def display(self, trends_data: TrendsService):
         self.gofs_gui.display(trends_data=trends_data)
         self.trends_gui.display(trends_data=trends_data)

@@ -7,7 +7,7 @@ import pytest
 
 from penelope import co_occurrence
 from penelope.common.keyness.metrics import KeynessMetric
-from penelope.notebook.word_trends import BundleTrendsData
+from penelope.notebook.word_trends import BundleTrendsService
 from penelope.notebook.word_trends.displayers import (
     BarDisplayer,
     ITrendDisplayer,
@@ -20,7 +20,7 @@ from penelope.notebook.word_trends.displayers import (
     create_network,
 )
 from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
-from penelope.notebook.word_trends.interface import TrendsComputeOpts, TrendsData
+from penelope.notebook.word_trends.interface import TrendsComputeOpts, TrendsService
 from penelope.utility.pandas_utils import unstack_data
 from tests.fixtures import simple_corpus_with_pivot_keys
 
@@ -109,8 +109,8 @@ def bundle() -> co_occurrence.Bundle:
 
 
 @pytest.fixture(scope="module")
-def trends_data(bundle) -> BundleTrendsData:
-    trends_data: BundleTrendsData = BundleTrendsData(bundle=bundle)
+def trends_data(bundle) -> BundleTrendsService:
+    trends_data: BundleTrendsService = BundleTrendsService(bundle=bundle)
     return trends_data
 
 
@@ -130,7 +130,7 @@ def trends_data(bundle) -> BundleTrendsData:
 def test_displayer_compile_and_display(displayer_cls, normalize: bool, temporal_key: str, fill_gaps: bool):
     # corpus: VectorizedCorpus = bundle.corpus.group_by_year(target_column_name='category')
     pivot_keys = []
-    trends_data: TrendsData = TrendsData(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
     trends_data.transform(
         TrendsComputeOpts(normalize=normalize, keyness=KeynessMetric.TF, temporal_key=temporal_key, fill_gaps=fill_gaps)

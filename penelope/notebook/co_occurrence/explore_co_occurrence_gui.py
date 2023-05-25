@@ -11,7 +11,7 @@ from ..co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 class ExploreGUI:
     def __init__(self, bundle: co_occurrence.Bundle):
         self.bundle: co_occurrence.Bundle = bundle
-        self.trends_data: word_trends.BundleTrendsData = None
+        self.trends_data: word_trends.BundleTrendsService = None
         self.tab_main: notebook_utility.OutputsTabExt = None
         self.trends_gui: word_trends.TrendsBaseGUI = None
         self.gofs_gui: word_trends.GoFsGUI = None
@@ -30,7 +30,7 @@ class ExploreGUI:
 
         return self
 
-    def display(self, trends_data: word_trends.BundleTrendsData) -> "ExploreGUI":
+    def display(self, trends_data: word_trends.BundleTrendsService) -> "ExploreGUI":
         try:
             self.trends_data = trends_data
 

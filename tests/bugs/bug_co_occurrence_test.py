@@ -5,7 +5,7 @@ import pytest
 from penelope import co_occurrence
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.notebook.co_occurrence import ExploreGUI
-from penelope.notebook.word_trends import BundleTrendsData, CoOccurrenceTrendsGUI, TrendsComputeOpts
+from penelope.notebook.word_trends import BundleTrendsService, CoOccurrenceTrendsGUI, TrendsComputeOpts
 
 # pylint: disable=redefined-outer-name, protected-access
 
@@ -23,7 +23,7 @@ def test_load_bundle():
     gui_explore.setup()
     gui_explore.layout()
 
-    trends_data: BundleTrendsData = BundleTrendsData(bundle=bundle)
+    trends_data: BundleTrendsService = BundleTrendsService(bundle=bundle)
 
     gui_explore.display(trends_data)
 

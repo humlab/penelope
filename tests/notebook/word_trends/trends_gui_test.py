@@ -3,7 +3,7 @@ import unittest.mock as mock
 import ipywidgets
 
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.word_trends import ITrendDisplayer, TrendsData, TrendsGUI
+from penelope.notebook.word_trends import ITrendDisplayer, TrendsService, TrendsGUI
 
 
 def mocked_displayer_ctor(**_):
@@ -25,7 +25,7 @@ def test_TrendsGUI_layout():
 
 def test_TrendsGUI_display():
     corpus = mock.Mock(spec=VectorizedCorpus)
-    trends_data = mock.MagicMock(spec=TrendsData, corpus=corpus, category_column="apa")
+    trends_data = mock.MagicMock(spec=TrendsService, corpus=corpus, category_column="apa")
     gui = TrendsGUI().setup(displayers=[mocked_displayer_ctor])
     gui.trends_data = trends_data
     gui.display(trends_data=trends_data)

@@ -8,7 +8,7 @@ from ipywidgets import HTML, Button, HBox, IntSlider, Layout, Output, SelectMult
 from penelope.corpus import VectorizedCorpus
 
 from .displayers import plotter
-from .interface import TrendsData
+from .interface import TrendsService
 
 
 class TokensSelector(abc.ABC):
@@ -200,7 +200,7 @@ class TrendsWithPickTokensGUI:
             ]
         )
 
-    def display(self, trends_data: TrendsData):
+    def display(self, trends_data: TrendsService):
         self.token_selector.display(trends_data.gof_data.most_deviating_overview)
 
     @property

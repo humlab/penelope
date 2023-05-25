@@ -12,7 +12,7 @@ from penelope.notebook import mixins as mx
 from penelope.notebook import widgets_utils as wu
 
 from .displayers import ITrendDisplayer
-from .interface import TrendsComputeOpts, TrendsData
+from .interface import TrendsComputeOpts, TrendsService
 
 BUTTON_LAYOUT = w.Layout(width='120px')
 OUTPUT_LAYOUT = w.Layout(width='600px')
@@ -36,7 +36,7 @@ class TrendsBaseGUI(abc.ABC):
 
     def __init__(self, n_top_count: int = 1000):
         super().__init__()
-        self.trends_data: TrendsData = None
+        self.trends_data: TrendsService = None
         self.display_opts: dict = dict(width=1000, height=600)
         self._tab: w.Tab = w.Tab(layout={'width': '80%'})
         self._words_picker: w.SelectMultiple = w.SelectMultiple(
@@ -140,7 +140,7 @@ class TrendsBaseGUI(abc.ABC):
         finally:
             self.buzy(False)
 
-    def display(self, *, trends_data: TrendsData):
+    def display(self, *, trends_data: TrendsService):
         self.plot(trends_data=trends_data)
 
     def extract(self) -> Sequence[pd.DataFrame]:  # pylint: disable=unused-argument
@@ -149,7 +149,7 @@ class TrendsBaseGUI(abc.ABC):
         self.alert("")
         return [data]
 
-    def plot(self, trends_data: TrendsData = None):
+    def plot(self, trends_data: TrendsService = None):
         try:
             if trends_data is not None:
                 self.trends_data = trends_data

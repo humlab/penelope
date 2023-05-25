@@ -5,12 +5,12 @@ import pandas as pd
 from penelope.common.goodness_of_fit import GofData
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import OutputsTabExt
-from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsData, TrendsGUI
+from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsService, TrendsGUI
 
 
 def trends_data_mock():
     return Mock(
-        spec=TrendsData,
+        spec=TrendsService,
         **{
             'corpus': MagicMock(spec=VectorizedCorpus),
             'gof_data': MagicMock(
@@ -50,7 +50,7 @@ def test_GoFsGUI_display(tab):
     gui = GoFsGUI(tab_gof=tab)
     gof_data = MagicMock(spec=GofData, most_deviating_overview=MagicMock(spec=pd.DataFrame))
     corpus = Mock(spec=VectorizedCorpus)
-    trends_data = MagicMock(spec=TrendsData, corpus=corpus, gof_data=gof_data, category_column="apa")
+    trends_data = MagicMock(spec=TrendsService, corpus=corpus, gof_data=gof_data, category_column="apa")
     gui.display(trends_data=trends_data)
     assert gui.is_displayed
 
@@ -68,7 +68,7 @@ def test_GofTrendsGUI_layout(tab):
 
 
 def test_GofTrendsGUI_display():
-    trends_data = Mock(spec=TrendsData)
+    trends_data = Mock(spec=TrendsService)
     gofs_gui = Mock(spec=GoFsGUI)
     trends_gui = Mock(spec=TrendsGUI)
     gui = GofTrendsGUI(
@@ -81,9 +81,9 @@ def test_GofTrendsGUI_display():
     assert gui.trends_gui.display.call_count == 1
 
 
-def test_update_plot():  # gui: TrendsGUI, trends_data: TrendsData):
+def test_update_plot():  # gui: TrendsGUI, trends_data: TrendsService):
     pass
 
 
-def test_create_gof_and_trends_gui():  # trends_data: TrendsData = None):
+def test_create_gof_and_trends_gui():  # trends_data: TrendsService = None):
     pass

@@ -40,8 +40,8 @@ disable=invalid-name,
         use-dict-literal,
         unnecessary-lambda-assignment,
         unnecessary-direct-lambda-call,
-        nested-min-max
-
+        nested-min-max,
+        trailing-whitespace
 
 [REPORTS]
 output-format=text
