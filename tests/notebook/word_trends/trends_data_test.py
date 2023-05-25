@@ -43,7 +43,7 @@ def test_TrendsData_remember():
         ('lustrum', True, False, [1.0, 1.0, 1.0], (3, 4)),
     ],
 )
-def test_trends_data_transform_normalize_fill_gaps_without_pivot_keys(
+def test_trends_service_transform_normalize_fill_gaps_without_pivot_keys(
     temporal_key: str,
     normalize: bool,
     fill_gaps: bool,
@@ -80,7 +80,7 @@ Opts = pu.PropertyValueMaskingOpts
         ('decade', ['color_id'], Opts(), False, False, [8, 7, 7, 8, 4], (5, 4)),
     ],
 )
-def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
+def test_trends_service_transform_normalize_fill_gaps_with_pivot_keys(
     temporal_key: str,
     pivot_keys: List[str],
     filter_opts: pu.PropertyValueMaskingOpts,
@@ -108,7 +108,7 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
     assert set(corpus.document_index.columns).intersection(set(pivot_keys)) == set(pivot_keys)
 
 
-# def test_trends_data_tf_idf():
+# def test_trends_service_tf_idf():
 #     service: TrendsService = TrendsService().update(
 #         corpus=simple_corpus_with_pivot_keys(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
 #     )
@@ -117,7 +117,7 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
 #     # assert np.allclose(corpus.data.sum(axis=1).A1, np.array([1.0, 1.0]))
 
 
-def test_trends_data_top_terms():
+def test_trends_service_top_terms():
     temporal_key: str = 'year'
     service: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
     corpus = service.transform(
@@ -232,7 +232,7 @@ def test_find_words():
 # pylint: disable=unsubscriptable-object
 
 
-def test_trends_data_smooth():
+def test_trends_service_smooth():
     corpus: VectorizedCorpus = simple_corpus_with_pivot_keys()
     service: TrendsService = TrendsService(corpus=corpus)
     opts = dict(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')

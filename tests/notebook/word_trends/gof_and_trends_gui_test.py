@@ -8,7 +8,7 @@ from penelope.notebook.utility import OutputsTabExt
 from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsGUI, TrendsService
 
 
-def trends_data_mock():
+def trends_service_mock():
     return Mock(
         spec=TrendsService,
         **{
