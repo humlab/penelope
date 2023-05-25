@@ -50,9 +50,9 @@ def test_trends_data_transform_normalize_fill_gaps_without_pivot_keys(
     expected_tf_sums: List[int | float],
     expected_shape: Tuple[int, int],
 ):
-    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    service: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
-    corpus: VectorizedCorpus = trends_data.transform(
+    corpus: VectorizedCorpus = service.transform(
         TrendsComputeOpts(normalize=normalize, keyness=KeynessMetric.TF, temporal_key=temporal_key, fill_gaps=fill_gaps)
     ).transformed_corpus
 
@@ -89,9 +89,9 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
     expected_tf_sums: List[int | float],
     expected_shape: Tuple[int, int],
 ):
-    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    service: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
 
-    corpus: VectorizedCorpus = trends_data.transform(
+    corpus: VectorizedCorpus = service.transform(
         TrendsComputeOpts(
             normalize=normalize,
             keyness=KeynessMetric.TF,
@@ -109,18 +109,18 @@ def test_trends_data_transform_normalize_fill_gaps_with_pivot_keys(
 
 
 # def test_trends_data_tf_idf():
-#     trends_data: TrendsService = TrendsService().update(
+#     service: TrendsService = TrendsService().update(
 #         corpus=simple_corpus_with_pivot_keys(), corpus_folder='./tests/test_data', corpus_tag="dummy", n_top=100
 #     )
-#     corpus: VectorizedCorpus = trends_data.get_corpus(TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF_IDF, time_period='year'))
+#     corpus: VectorizedCorpus = service.get_corpus(TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF_IDF, time_period='year'))
 #     assert corpus.data.shape == (9, 4)
 #     # assert np.allclose(corpus.data.sum(axis=1).A1, np.array([1.0, 1.0]))
 
 
 def test_trends_data_top_terms():
     temporal_key: str = 'year'
-    trends_data: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
-    corpus = trends_data.transform(
+    service: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys(), n_top=100)
+    corpus = service.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')
     ).transformed_corpus
     assert temporal_key in corpus.document_index
@@ -154,7 +154,7 @@ def test_trends_data_top_terms():
     assert df['2009'].tolist() == ['c', 'a', 'b', 'd']
     assert df['2009/Count'].tolist() == [4, 2, 1, 1]
 
-    corpus = trends_data.transform(
+    corpus = service.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='lustrum')
     ).transformed_corpus
     df = corpus.get_top_terms(category_column='lustrum', n_top=n_top, kind='token')
@@ -163,7 +163,7 @@ def test_trends_data_top_terms():
     assert df['2005'].tolist() == ['c', 'a', 'b', 'd']
     assert df['2010'].tolist() == ['b', 'c', 'a', '*']
 
-    corpus = trends_data.transform(
+    corpus = service.transform(
         TrendsComputeOpts(normalize=False, keyness=KeynessMetric.TF, temporal_key='decade')
     ).transformed_corpus
     df = corpus.get_top_terms(category_column='decade', n_top=n_top, kind='token')
@@ -172,7 +172,7 @@ def test_trends_data_top_terms():
     assert df['2000'].tolist() == ['c', 'a', 'b', 'd']
     assert df['2010'].tolist() == ['b', 'a', 'c', 'd']
 
-    corpus = trends_data.transform(
+    corpus = service.transform(
         TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF, temporal_key='decade')
     ).transformed_corpus
     df = corpus.get_top_terms(category_column='decade', n_top=n_top, kind='token+count')
@@ -182,7 +182,7 @@ def test_trends_data_top_terms():
         df['2010/Count'].tolist(), [0.34615384615384615, 0.3076923076923077, 0.2692307692307693, 0.07692307692307693]
     )
 
-    corpus = trends_data.transform(
+    corpus = service.transform(
         TrendsComputeOpts(normalize=True, keyness=KeynessMetric.TF_IDF, temporal_key='decade')
     ).transformed_corpus
     df = corpus.get_top_terms(category_column='decade', n_top=n_top, kind='token+count')
@@ -200,46 +200,57 @@ def test_group_by_year():
     corpus: VectorizedCorpus = Mock(spec=VectorizedCorpus)
     corpus = corpus.group_by_year()
 
-    trends_data: TrendsService = TrendsService(corpus=corpus, n_top=100)
+    service: TrendsService = TrendsService(corpus=corpus, n_top=100)
 
-    assert trends_data is not None
+    assert service is not None
 
 
 def test_find_word_indices():
-    trends_data = TrendsService(corpus=simple_corpus_with_pivot_keys())
-    indices = trends_data.find_word_indices(
+    service = TrendsService(corpus=simple_corpus_with_pivot_keys())
+    indices = service.find_word_indices(
         TrendsComputeOpts(
             temporal_key='year', normalize=False, smooth=False, keyness=KeynessMetric.TF, words=["c"], top_count=2
         )
     )
     assert indices == [2]
-    indices = trends_data.find_word_indices(words=["c"], top_count=2)
+    indices = service.find_word_indices(words=["c"], top_count=2)
     assert indices == [2]
 
 
 def test_find_words():
-    pass
+    opts: TrendsComputeOpts = TrendsComputeOpts(
+        temporal_key='year', normalize=False, smooth=False, keyness=KeynessMetric.TF, words=["c"], top_count=2
+    )
+    service: TrendsService = TrendsService(corpus=simple_corpus_with_pivot_keys())
+    words: list[str] = service.find_words(opts=opts)
+    assert words == ['c']
 
+    words: list[str] = service.find_words(words=["c"], top_count=2)
+    assert words == ['c']
 
 # pylint: disable=unsubscriptable-object
 
 
 def test_trends_data_smooth():
     corpus: VectorizedCorpus = simple_corpus_with_pivot_keys()
-    trends_data: TrendsService = TrendsService(corpus=corpus)
+    service: TrendsService = TrendsService(corpus=corpus)
     opts = dict(normalize=False, keyness=KeynessMetric.TF, temporal_key='year')
-    token_id: int = trends_data.corpus.token2id['a']
+    token_id: int = service.corpus.token2id['a']
 
-    trends_data.transform(TrendsComputeOpts(**opts, smooth=False))
+    service.transform(TrendsComputeOpts(**opts, smooth=False))
 
-    trends: pd.DataFrame = trends_data.extract([token_id])
+    trends: pd.DataFrame = service.extract([token_id])
 
     assert trends['a'].tolist() == [2, 2, 2, 4]
 
-    trends: pd.DataFrame = trends_data.extract(['a'])
+    trends: pd.DataFrame = service.extract(['a'])
     assert trends['a'].tolist() == [2, 2, 2, 4]
 
-    trends_data.transform(TrendsComputeOpts(**opts, smooth=True))
-    trends: pd.DataFrame = trends_data.extract([token_id])
+    service.transform(TrendsComputeOpts(**opts, smooth=True))
+    trends: pd.DataFrame = service.extract([token_id])
+
+    assert trends['a'].tolist() == [2, 2, 2, 4]
+
+    trends: pd.DataFrame = service.extract(['a'])
 
     assert trends['a'].tolist() == [2, 2, 2, 4]
