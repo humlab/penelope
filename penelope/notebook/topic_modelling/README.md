@@ -4,7 +4,7 @@
 
 These files are defines the minimal data set needed for exploring a topic model using Westac's Topic Modelling Jupyter Notebook.
 
-Note that the "CSV files" in actuality are tab-separated files. Note that all CSV files can be stored (and should be for large corpora) be stored as `feather` files.
+Note that the "CSV files" in actuality are tab-separated files. Note that all CSV files can be stored (and should be for large corpora) be stored as [feather](https://arrow.apache.org/docs/python/feather.html) files.
 
 | File                   | Description                             | Type     |
 | ---------------------- | --------------------------------------- | -------- |
@@ -12,11 +12,17 @@ Note that the "CSV files" in actuality are tab-separated files. Note that all CS
 | documents              | Index of corpus' documents              | CSV, ZIP |
 | document_topic_weights | Topics' distribution over documents     | CSV, ZIP |
 | topic_token_weights    | Token's distribution over topics        | CSV, ZIP |
-| document_topic_weights | int                                     | CSV, ZIP |
+| topic_tokens_overview  | Topic token overview & topic labelling  | CSV, ZIP |
 
-If the bundle is created with `tm-predict@penelope` then the JSON file `model_options.json` is includes with run-time options.
+If the bundle is created with `tm-predict@penelope` then  run-time options are stored in JSON file `model_options.json`.
 
-# Dictionary
+
+See example bundle in [tests/test_data/tranströmer_inferred_model](https://github.com/humlab/penelope/tree/main/tests/test_data/transtr%C3%B6mer_inferred_model)
+
+
+tests/test_data/tranströmer_inferred_model
+
+### Dictionary
 
 File `dictionary.[csv,zip]` contains `token` to `token id` mapping.
 
@@ -28,7 +34,7 @@ File `dictionary.[csv,zip]` contains `token` to `token id` mapping.
 
 Note that `token_id` must be a strictly increasing unique integer for each `token`.
 
-# Documents
+### Documents
 
 File `documents.[csv,zip]` contains an index of all the documents. Note that `document_id` must be a strictly increasing unique integer.
 
@@ -51,7 +57,7 @@ Example:
 | tran_2020_01_test.txt | 2020 | 1              | 3           | tran_2020_01_test | Ostinato       | 33       |
 | tran_2020_02_test.txt | 2020 | 2              | 4           | tran_2020_02_test | Epilog         | 44       |
 
-# Document Topics Weights
+### Document Topics Weights
 
 File `document_topic_weights.[zip,csv]` contains topic distribution over documents.
 The data is in certain use cases overloaded with document's year.
@@ -88,7 +94,7 @@ Example:
 | 4           | 2        | 0.00506967818364501   | 2020 |
 | 4           | 3        | 0.005052865482866764  | 2020 |
 
-# Topic Token Weights
+### Topic Token Weights
 
 File `topic_token_weights.[zip,csv]` contains token distribution over topics.
 The data is in certain use cases overloaded with token in plain text.
@@ -124,9 +130,9 @@ Example:
 | 3        | 13       | 0.017621515318751335 |
 | 3        | 49       | 0.015297766774892807 |
 
-# Topics Overview
+### Topics Overview
 
-The `topic_tokens_overview'[zip,csv]` file gives the top `n` tokens for each topic. It can be reconstructed (apart from the `alpha` value) from data in the other files.
+The `topic_tokens_overview.[zip,csv]` file gives the top `n` tokens for each topic. It can be reconstructed (apart from the `alpha` value) from data in the other files.
 
 | Column   | Type  | Description                | Mandatory |
 | -------- | ----- | -------------------------- | --------- |
@@ -141,7 +147,7 @@ The `topic_tokens_overview'[zip,csv]` file gives the top `n` tokens for each top
 | 2        | som en är i och   | 0.25  |
 | 3        | de är i en som    | 0.25  |
 
-# Other Optional Files
+### Other Optional Files
 
 These files exists if the bundle hase been created with `penelope`. Some files
 
