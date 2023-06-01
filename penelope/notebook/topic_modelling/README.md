@@ -14,7 +14,13 @@ Note that the "CSV files" in actuality are tab-separated files. Note that all CS
 | topic_token_weights    | Token's distribution over topics        | CSV, ZIP |
 | document_topic_weights | int                                     | CSV, ZIP |
 
-If the bundle is created with `tm-predict@penelope` then the JSON file `model_options.json` is includes with run-time options.
+If the bundle is created with `tm-predict@penelope` then  run-time options are stored in JSON file `model_options.json`.
+
+
+See example bundle in [tests/test_data/tranströmer_inferred_model](tests/test_data/tranströmer_inferred_model)
+
+
+tests/test_data/tranströmer_inferred_model
 
 ### Dictionary
 
