@@ -4,7 +4,7 @@
 
 These files are defines the minimal data set needed for exploring a topic model using Westac's Topic Modelling Jupyter Notebook.
 
-Note that the "CSV files" in actuality are tab-separated files. Note that all CSV files can be stored (and should be for large corpora) be stored as `feather` files.
+Note that the "CSV files" in actuality are tab-separated files. Note that all CSV files can be stored (and should be for large corpora) be stored as [feather](https://arrow.apache.org/docs/python/feather.html) files.
 
 | File                   | Description                             | Type     |
 | ---------------------- | --------------------------------------- | -------- |
@@ -12,7 +12,7 @@ Note that the "CSV files" in actuality are tab-separated files. Note that all CS
 | documents              | Index of corpus' documents              | CSV, ZIP |
 | document_topic_weights | Topics' distribution over documents     | CSV, ZIP |
 | topic_token_weights    | Token's distribution over topics        | CSV, ZIP |
-| document_topic_weights | int                                     | CSV, ZIP |
+| topic_tokens_overview  | Topic token overview & topic labelling  | CSV, ZIP |
 
 If the bundle is created with `tm-predict@penelope` then  run-time options are stored in JSON file `model_options.json`.
 
@@ -132,7 +132,7 @@ Example:
 
 ### Topics Overview
 
-The `topic_tokens_overview'[zip,csv]` file gives the top `n` tokens for each topic. It can be reconstructed (apart from the `alpha` value) from data in the other files.
+The `topic_tokens_overview.[zip,csv]` file gives the top `n` tokens for each topic. It can be reconstructed (apart from the `alpha` value) from data in the other files.
 
 | Column   | Type  | Description                | Mandatory |
 | -------- | ----- | -------------------------- | --------- |
