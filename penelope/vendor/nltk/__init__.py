@@ -1,6 +1,6 @@
 # type: ignore
 
-from typing import Sequence, Set
+from typing import Callable, Iterable, Sequence, Set
 
 import nltk
 from nltk.tokenize import casual_tokenize, sent_tokenize, word_tokenize
@@ -44,3 +44,19 @@ def extended_stopwords(language: str = 'swedish', extra_stopwords: Set[str] = No
         STOPWORDS_CACHE[language] = _stopwords
 
     return STOPWORDS_CACHE.get(language, {})
+
+
+def load_stopwords(language_or_stopwords: str | Iterable[str] = 'swedish', extra_stopwords=None) -> set[str]:
+    stopwords = (
+        extended_stopwords(language_or_stopwords, extra_stopwords)
+        if isinstance(language_or_stopwords, str)
+        else set(language_or_stopwords or {}).union(set(extra_stopwords or {}))
+    )
+    return stopwords
+
+
+def remove_stopwords_factory(
+    language_or_stopwords: str | Iterable[str] = 'swedish', extra_stopwords: Iterable[str] = None
+) -> Callable[[Iterable[str]], Iterable[str]]:
+    stopwords = load_stopwords(language_or_stopwords, extra_stopwords)
+    return lambda tokens: (x for x in tokens if x not in stopwords)
