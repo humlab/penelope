@@ -1,6 +1,5 @@
 {
     "peacock.remoteColor": "#4e673c",
-    // "python.analysis.logLevel": "Trace",
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
@@ -30,29 +29,6 @@
         "statusBarItem.remoteForeground": "#e7e7e7",
         "commandCenter.border": "#e7e7e799"
     },
-    "cSpell.words": [
-        "alphanum",
-        "arange",
-        "astype",
-        "dtype",
-        "Inplace",
-        "ipywidgets",
-        "issubdtype",
-        "lemmatize",
-        "nunique",
-        "punct",
-        "scipy",
-        "sklearn",
-        "Sparv",
-        "spmatrix",
-        "tbar",
-        "tfidf",
-        "tolist",
-        "tqdm",
-        "unobserve",
-        "Vectorize",
-        "Vectorizer",
-        "zink"
-    ],
-    "sqltools.detectNodeRuntime": false
+    "sqltools.detectNodeRuntime": false,
+    "python.defaultInterpreterPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.11/bin/python",
 }
