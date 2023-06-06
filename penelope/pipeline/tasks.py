@@ -15,8 +15,8 @@ from loguru import logger
 from tqdm.auto import tqdm
 
 from penelope import utility
-from penelope.corpus import ITokenizedCorpus, Token2Id, TokensTransformer, default_tokenizer
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource, TextTransformer, TextTransformOpts
+from penelope.corpus import ITokenizedCorpus, TextTransformer, TextTransformOpts, Token2Id, default_tokenizer
+from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
 
 from . import checkpoint as cp
@@ -420,7 +420,7 @@ class TextToTokens(TransformTokensMixIn, ITask):
         self.tokenize = self.tokenize or default_tokenizer
 
         if self.text_transform_opts is not None:
-            self._text_transformer = TextTransformer(text_transform_opts=self.text_transform_opts)
+            self._text_transformer = TextTransformer(transform_opts=self.text_transform_opts)
 
         self.setup_transform()
 
@@ -579,14 +579,9 @@ class TokensTransform(TransformTokensMixIn, ITask):
     def __post_init__(self):
         self.in_content_type = ContentType.TOKENS
         self.out_content_type = ContentType.TOKENS
-        self.transformer = TokensTransformer(transform_opts=self.transform_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         return payload.update(self.out_content_type, self.transform(payload.content))
-
-    def add(self, transform: Callable[[List[str]], List[str]]) -> "TokensTransform":
-        self.transformer.add(transform)
-        return self
 
 
 @dataclass

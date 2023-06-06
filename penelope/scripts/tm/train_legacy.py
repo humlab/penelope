@@ -110,18 +110,15 @@ def main(
     os.makedirs(target_folder, exist_ok=True)
 
     transform_opts: TokensTransformOpts = TokensTransformOpts(
-        only_alphabetic=False,
-        only_any_alphanumeric=True,
-        to_lower=True,
-        min_len=2,
-        max_len=99,
-        remove_accents=False,
-        remove_stopwords=True,
-        stopwords=None,
-        extra_stopwords=None,
-        language="swedish",
-        keep_numerals=False,
-        keep_symbols=False,
+        transforms={
+            'only-any-alphanumeric': True,
+            'to-lower': True,
+            'min-chars': 2,
+            'max-chars': 99,
+            'remove-stopwords': "swedish",
+            'remove-numerals': True,
+            'remove-symbols': True,
+        }
     )
 
     reader_opts: TextReaderOpts = TextReaderOpts(
@@ -130,7 +127,7 @@ def main(
         filename_fields=filename_field,
     )
 
-    text_transform_opts: TextTransformOpts = TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
+    text_transform_opts: TextTransformOpts = TextTransformOpts(transforms="normalize-whitespace,dehyphen")
 
     _ = workflow.compute(
         target_name=target_name,

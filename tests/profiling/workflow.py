@@ -31,19 +31,11 @@ def run_workflow():
         target_folder=jj(OUTPUT_FOLDER, 'APA'),
         corpus_tag='APA',
         transform_opts=corpora.TokensTransformOpts(
-            to_lower=True,
-            to_upper=False,
-            min_len=1,
-            max_len=None,
-            remove_accents=False,
-            remove_stopwords=False,
-            stopwords=None,
-            extra_stopwords=None,
-            language='swedish',
-            keep_numerals=True,
-            keep_symbols=True,
-            only_alphabetic=False,
-            only_any_alphanumeric=False,
+            transforms={
+                'to-lower': True,
+                'remove-numerals': False,
+                'remove-symbols': False,
+            }
         ),
         text_reader_opts=corpora.TextReaderOpts(
             filename_pattern='*.csv',

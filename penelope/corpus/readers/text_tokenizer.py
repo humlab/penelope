@@ -4,8 +4,8 @@ from typing import Callable, Iterable, List, Sequence, Tuple, Union
 from penelope.utility import path_add_sequence, strip_path_and_extension
 from penelope.vendor.nltk import word_tokenize
 
+from ..transformer import TextTransformOpts
 from .text_reader import TextReader, TextReaderOpts, TextSource
-from .text_transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class TextTokenizer(TextReader):
             Filename and tokens
         """
         for chunkname, text in super().process(filename, content):
-            tokens = self._tokenize(text)
+            tokens = self._tokenize(text.strip())
 
             filename = f"{strip_path_and_extension(chunkname)}.txt"
 

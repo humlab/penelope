@@ -78,7 +78,7 @@ def compute(
             text_transform_opts=text_transform_opts,
             pipelines=None,
             pipeline_payload=pp.PipelinePayload(source=corpus_source),
-            language=transform_opts.language,
+            language=transform_opts.remove_stopwords,
         ).dump(jj(target_folder, "corpus.yml"))
 
     return dict(folder=target_folder, tag=target_name)
@@ -119,7 +119,7 @@ def compute2(
         filename_fields=filename_field,
     )
 
-    text_transform_opts: pc.TextTransformOpts = pc.TextTransformOpts(fix_whitespaces=False, fix_hyphenation=True)
+    text_transform_opts: pc.TextTransformOpts = pc.TextTransformOpts(transforms="dehyphen")
     transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts()
 
     return compute(

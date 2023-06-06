@@ -20,9 +20,7 @@ def remove_hyphens(text: str) -> str:
 def main(config_filename: str = None):  # pylint: disable=redefined-outer-name
     load_cwd_dotenv()
 
-    text_transform_opts = TextTransformOpts(
-        fix_hyphenation=True, fix_whitespaces=True, fix_accents=True, extra_transforms=[remove_hyphens]
-    )
+    transform_opts = TextTransformOpts(transforms="normalize-whitespaces,strip-accents", extras=[remove_hyphens])
 
     config: CorpusConfig = CorpusConfig.load(path=config_filename)
 
@@ -32,7 +30,7 @@ def main(config_filename: str = None):  # pylint: disable=redefined-outer-name
 
     pipeline = (
         CorpusPipeline(config=config)
-        .load_text(reader_opts=config.text_reader_opts, transform_opts=text_transform_opts)
+        .load_text(reader_opts=config.text_reader_opts, transform_opts=transform_opts)
         .to_tagged_frame(tagger=config.tagger)
         .checkpoint(filename=tagged_corpus_source)
         .checkpoint_feather(folder=config.checkpoint_opts.feather_folder, force=True)

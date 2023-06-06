@@ -43,7 +43,6 @@
 #         disables: str = "ner,",
 #         force: bool = False,
 #         reader_opts: TextReaderOpts,
-#         # FIXME: Move to caller; transformer = TextTransformer().fix_hyphenation().fix_unicode().fix_whitespaces().fix_ftfy()
 #         transformer: TextTransformer,
 #     ):
 

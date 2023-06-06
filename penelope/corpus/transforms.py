@@ -1,13 +1,14 @@
+import functools
 import re
 import string
 import unicodedata
-from enum import IntEnum, unique
-from typing import Callable, Iterable, Set, Union
+from typing import Any, Callable, Iterable
 
 import ftfy
 import nltk
 
 import penelope.vendor.nltk as nltk_utility
+from penelope.common.tokenize import default_tokenize as _sparv_tokenize
 from penelope.vendor.textacy_api import normalize_whitespace
 
 # pylint: disable=W0601,E0602
@@ -19,8 +20,7 @@ ACCENT_CHARS = set('\'`')
 SYMBOLS_TRANSLATION = dict.fromkeys(map(ord, SYMBOLS_CHARS), None)
 default_tokenizer = nltk.word_tokenize
 
-DEFAULT_HYPHEN_REGEXP = r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b'
-RE_HYPHEN_REGEXP: re.Pattern = re.compile(DEFAULT_HYPHEN_REGEXP, re.UNICODE)
+RE_HYPHEN_REGEXP: re.Pattern = re.compile(r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b', re.UNICODE)
 
 CURRENCY_SYMBOLS = ''.join(chr(i) for i in range(0xFFFF) if unicodedata.category(chr(i)) == 'Sc')
 RE_CURRENCY_SYMBOLS: re.Pattern = re.compile(rf"[{CURRENCY_SYMBOLS}]")
@@ -55,7 +55,7 @@ SPECIAL_CHARS = {
 #     *list(map(''.join, zip(*[(v[1:], v[0] * (len(v) - 1)) for _, v in SPECIAL_CHARS.items()])))
 # )
 
-"""Cretae translations that maps characters to first character in each string"""
+"""Create translations that maps characters to first character in each string"""
 SPECIAL_CHARS_GROUP_TRANSLATIONS = {k: str.maketrans(v[1:], v[0] * (len(v) - 1)) for k, v in SPECIAL_CHARS.items()}
 
 ALL_IN_ONE_TRANSLATION = str.maketrans(
@@ -76,106 +76,235 @@ def normalize_characters(text: str, groups: str = None) -> str:
     return text
 
 
-TokensTransformerFunction = Callable[[Iterable[str]], Iterable[str]]
+Transform = Callable[..., Any]
+TokensTransform = Callable[[Iterable[str]], Iterable[str]]
+TextTransform = Callable[[str], str]
 
 
-def load_stopwords(language_or_stopwords: Union[str, Iterable[str]] = 'swedish', extra_stopwords=None) -> Set[str]:
-    stopwords = (
-        nltk_utility.extended_stopwords(language_or_stopwords, extra_stopwords)
-        if isinstance(language_or_stopwords, str)
-        else set(language_or_stopwords or {}).union(set(extra_stopwords or {}))
-    )
-    return stopwords
+class TransformRegistry:
+    _items: dict[str, Any] = {}
+    _aliases: dict[str, str] = {}
+
+    @classmethod
+    def add(cls, fn: Any, key: str = None) -> Transform:
+        """Add transform function"""
+        if key is None:
+            key = fn.__name__
+        keys = [k.strip() for k in key.replace('_', '-').split(',')]
+        cls._items[keys[0]] = fn
+        if len(keys) > 1:
+            for k in keys[1:]:
+                if k in cls._items:
+                    continue
+                cls._aliases[k] = keys[0]
+        return fn
+
+    @classmethod
+    def get(cls, key: str) -> Transform:
+        """Get transform function by key"""
+        key = key.replace('_', '-').strip()
+
+        if key in cls._items:
+            return cls._items.get(key)
+
+        if key in cls._aliases:
+            return cls._items.get(cls._aliases[key])
+
+        if '?' in key:
+            """Transform has arguments"""
+            return cls.add(fn=cls.partial_to_total(key), key=key)
+
+        raise ValueError(f"preprocessor {key} is not registered")
+
+    @classmethod
+    def partial_to_total(cls, key: str) -> Transform:
+        """Transform functions needs or accepts extra with arguments
+        Examples:
+            'min-chars?chars=2' => kwargs = {'chars': '2'}
+            'min-chars?2'       => args = '2'
+            'any-option?[2,3]'  => args = '[2,3]'
+
+        """
+        key = key.replace('_', '-')
+        pkey, args = key.split('?')
+
+        if '[' in args:
+            """args is a list"""
+            args = [x.strip() for x in args.lstrip('[').rstrip(']').split(',')]
+            return lambda x: cls.get(pkey)(x, *args)  # pylint: disable=unnecessary-lambda
+
+        if '=' in args:
+            kwargs = {k: v for k, v in [x.split('=') for x in args.split('&')]}
+            return lambda x: cls.get(pkey)(x, **kwargs)  # pylint: disable=unnecessary-lambda
+
+        return lambda x: cls.get(pkey)(x, args)
+
+    @classmethod
+    def gets(cls, *keys: tuple[str]) -> list[Transform]:
+        return [cls.get(k) for key in keys for k in key.split(',')]
+
+    @classmethod
+    def getfx(cls, *keys: tuple[str], extras: list = None) -> Transform:
+        fxs: list[Callable[..., Any]] = [cls.get(k) for key in keys for k in key.split(',') if k ]
+        if extras:
+            fxs.extend(extras)
+        if not fxs:
+            return lambda x: x
+        return functools.reduce(lambda f, g: lambda x: f(g(x)), reversed(fxs))
+
+    @classmethod
+    def register(cls, key: str = None, kind: str = None, **args):
+        def decorator(fn):
+            if kind == "function":
+                fn = fn(**args)
+            cls.add(fn, key)
+            return fn
+
+        return decorator
+
+    @classmethod
+    def is_registered(cls, key: str):
+        try:
+            return cls.get(key) is not None
+        except ValueError:
+            return False
+
+    @classmethod
+    def __getitem__(cls, key: str) -> Transform:
+        return cls.get(key)
+
+    @classmethod
+    def __contains__(cls, key: str) -> bool:
+        return cls.is_registered(key)
 
 
-def remove_empty_filter():
-    return lambda t: (x for x in t if x != '')
+class TextTransformRegistry(TransformRegistry):
+    _items: dict[str, Any] = {
+        'normalize-whitespace': normalize_whitespace,
+        'ftfy-fix-text': ftfy.fix_text,
+        'ftfy-fix-encoding': ftfy.fix_encoding,
+        'to-upper': str.upper,
+        'to-lower': str.lower,
+    }
+    _aliases: dict[str, str] = {
+        'fix-whitespaces': 'normalize-whitespace',
+        'normalize-whitespaces': 'normalize-whitespace',
+        'fix-text': 'ftfy-fix-text',
+        'fix-encoding': 'ftfy-fix-encoding',
+    }
 
 
-def remove_hyphens(text: str) -> str:
+class TokensTransformRegistry(TransformRegistry):
+    _items: dict[str, Any] = {}
+    _aliases: dict[str, str] = {}
+
+
+@TextTransformRegistry.register(key='dehyphen,fix-hyphenation')
+def dehyphen(text: str) -> str:
     result = RE_HYPHEN_REGEXP.sub(r"\1\2\n", text)
     return result
 
 
-def remove_hyphens_fx(text: str, hyphen_regexp: str = DEFAULT_HYPHEN_REGEXP) -> Callable[[str], str]:
-    expr = re.compile(hyphen_regexp, re.UNICODE)
-    return lambda t: re.sub(expr, r"\1\2\n", text)
+@TextTransformRegistry.register(key="dedent")
+def dedent(text: str) -> str:
+    """Remove whitespaces before and after newlines"""
+    return '\n'.join(map(str.strip, text.split('\n')))
 
 
-def has_alpha_filter() -> TokensTransformerFunction:
-    return lambda tokens: (x for x in tokens if any(map(lambda x: x.isalpha(), x)))
-
-
-def only_any_alphanumeric() -> TokensTransformerFunction:
-    return lambda tokens: (t for t in tokens if any(c.isalnum() for c in t))
-
-
-def only_alphabetic_filter() -> TokensTransformerFunction:
-    return lambda tokens: (x for x in tokens if any(c in x for c in ALPHABETIC_CHARS))
-
-
-def remove_stopwords(
-    language_or_stopwords: Union[str, Iterable[str]] = 'swedish', extra_stopwords: Iterable[str] = None
-) -> TokensTransformerFunction:
-    stopwords = load_stopwords(language_or_stopwords, extra_stopwords)
-    return lambda tokens: (x for x in tokens if x not in stopwords)  # pylint: disable=W0601,E0602
-
-
-def min_chars_filter(n_chars: int = 3) -> TokensTransformerFunction:
-    return lambda tokens: (x for x in tokens if len(x) >= n_chars)
-
-
-def max_chars_filter(n_chars: int = 3):
-    return lambda tokens: (x for x in tokens if len(x) <= n_chars)
-
-
-def lower_transform() -> TokensTransformerFunction:
-    return lambda tokens: map(lambda y: y.lower(), tokens)
-
-
-def upper_transform() -> TokensTransformerFunction:
-    return lambda tokens: map(lambda y: y.upper(), tokens)
-
-
-def remove_numerals() -> TokensTransformerFunction:
-    return lambda tokens: (x for x in tokens if not x.isnumeric())
-
-
-def remove_symbols() -> TokensTransformerFunction:
-    return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
-
-
+@TextTransformRegistry.register(key="strip-accents,fix-accents,remove-accents")
 def strip_accents(text: str) -> str:
     """https://stackoverflow.com/a/44433664/12383895"""
     text: str = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
     return str(text)
 
 
-# @deprecated
-# def remove_accents() -> TokensTransformerFunction:
-#     return lambda tokens: (x.translate(SYMBOLS_TRANSLATION) for x in tokens)
+@TextTransformRegistry.register(key="normalize-unicode")
+def normalize_unicode(text: str) -> str:
+    return unicodedata.normalize("NFC", text)
 
 
-class TEXT_TRANSFORMS:
-    fix_hyphenation = remove_hyphens
-    fix_unicode = lambda text: unicodedata.normalize("NFC", text)
-    fix_whitespaces = normalize_whitespace
-    fix_accents = strip_accents
-    fix_currency_symbols = lambda text: RE_CURRENCY_SYMBOLS.sub("__cur__", text)
-    fix_ftfy_text = ftfy.fix_text
-    fix_encoding = ftfy.fix_encoding
+@TextTransformRegistry.register(key='sparv-tokenize')
+def sparv_tokenize(text: str) -> list[str]:
+    return _sparv_tokenize(text)
 
 
-@unique
-class KnownTransformType(IntEnum):
-    fix_hyphenation = 1
-    fix_unicode = 2
-    fix_whitespaces = 3
-    fix_accents = 4
-    fix_currency_symbols = 5
-    fix_ftfy_text = 6
-    fix_ftfy_fix_encoding = 7
+@TextTransformRegistry.register(key="replace-currency-symbols")
+def replace_currency_symbols(text: str, marker: str = "__cur__") -> str:
+    return RE_CURRENCY_SYMBOLS.sub(marker, text)
 
-    @property
-    def transform(self):
-        return getattr(TEXT_TRANSFORMS, self.name)
+
+@TokensTransformRegistry.register(key="has-alphabetic")
+def has_alphabetic(tokens: Iterable[str]) -> Iterable[str]:
+    return (x for x in tokens if any(map(lambda x: x.isalpha(), x)))
+
+
+@TokensTransformRegistry.register(key="only-any-alphanumeric")
+def only_any_alphanumeric(tokens: Iterable[str]) -> Iterable[str]:
+    return (t for t in tokens if any(c.isalnum() for c in t))
+
+
+@TokensTransformRegistry.register(key="only-alphabetic")
+def only_alphabetic(tokens: Iterable[str]) -> Iterable[str]:
+    return (x for x in tokens if any(c in x for c in ALPHABETIC_CHARS))
+
+
+@TokensTransformRegistry.register(key="remove-english-stopwords", kind="function")
+def remove_stopwords_english() -> TokensTransform:
+    return nltk_utility.remove_stopwords_factory(language_or_stopwords='english')
+
+
+@TokensTransformRegistry.register(key="remove-swedish-stopwords", kind="function")
+def remove_stopwords_swedish() -> TokensTransform:
+    return nltk_utility.remove_stopwords_factory(language_or_stopwords='swedish')
+
+
+@TokensTransformRegistry.register(key="remove-stopwords")
+def remove_stopwords(tokens: Iterable[str], language: str = 'swedish') -> Iterable[str]:
+    return (x for x in tokens if x not in nltk_utility.load_stopwords(language))
+
+
+def min_chars_factory(n_chars: int = 3) -> TokensTransform:
+    return lambda tokens: (x for x in tokens if len(x) >= n_chars)
+
+
+@TokensTransformRegistry.register(key="min-chars,min-len")
+def min_chars(tokens: Iterable[str], chars: int = 3) -> Iterable[str]:
+    return (x for x in tokens if len(x) >= int(chars))
+
+
+@TokensTransformRegistry.register(key="max-chars,max-len")
+def max_chars(tokens: Iterable[str], chars: int = 3) -> Iterable[str]:
+    return (x for x in tokens if len(x) <= int(chars))
+
+
+def max_chars_factory(chars: int = 3) -> TokensTransform:
+    return lambda tokens: (x for x in tokens if len(x) <= int(chars))
+
+
+@TokensTransformRegistry.register(key="to-lower")
+def to_lower(tokens: Iterable[str]) -> Iterable[str]:
+    return map(str.lower, tokens)
+
+
+@TokensTransformRegistry.register(key="to-upper")
+def to_upper(tokens: Iterable[str]) -> Iterable[str]:
+    """Upper case"""
+    return map(str.upper, tokens)
+
+
+@TokensTransformRegistry.register(key="remove-numerals")
+def remove_numerals(tokens: Iterable[str]) -> Iterable[str]:
+    """Remove numerals"""
+    return (x for x in tokens if not x.isnumeric())
+
+
+@TokensTransformRegistry.register(key="remove-symbols")
+def remove_symbols(tokens: Iterable[str]) -> Iterable[str]:
+    """Remove symbols"""
+    return (t for t in (x.translate(SYMBOLS_TRANSLATION) for x in tokens) if t != '')
+
+
+@TokensTransformRegistry.register(key="remove-empty")
+def remove_empty(tokens: Iterable[str]) -> Iterable[str]:
+    """Remove empty tokens"""
+    return (x for x in tokens if x != '')

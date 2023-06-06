@@ -5,7 +5,7 @@ from typing import Any, List, Mapping, Optional, Set, Tuple
 import numpy as np
 import pandas as pd
 
-from penelope.corpus import Token2Id, TokensTransformer, TokensTransformOpts
+from penelope.corpus import Token2Id, TokensTransformOpts, Transform
 from penelope.corpus.document_index import update_document_index_by_dicts_or_tuples
 from penelope.utility import PoS_Tag_Scheme
 from penelope.utility.file_utility import write_json
@@ -118,25 +118,18 @@ class PoSCountMixIn:
 @dataclass
 class TransformTokensMixIn:
     transform_opts: Optional[TokensTransformOpts] = None
-    transformer: Optional[TokensTransformer] = None
+    gfx: Transform = None
 
     def setup_transform(self) -> interfaces.ITask:
         if self.transform_opts is None:
             return self
-
         self.pipeline.put("transform_opts", self.transform_opts)
-
-        if self.transformer is None:
-            self.transformer = TokensTransformer(transform_opts=self.transform_opts)
-        else:
-            self.transformer.ingest(self.transform_opts)
-
         return self
 
     def transform(self, tokens: List[str]) -> List[str]:
-        if self.transformer:
-            return self.transformer.transform(tokens)
-        return tokens
+        if self.gfx is None:
+            self.gfx = self.transform_opts.getfx()
+        return self.gfx(tokens)
 
 
 @dataclass

@@ -5,6 +5,7 @@ import scipy.sparse as sp
 
 from penelope import corpus as pc
 from penelope import utility
+from penelope.corpus.transformer import TransformProperty
 
 
 def test_utils():
@@ -119,3 +120,44 @@ def test_csr2bow():
     BOW = list(pc.csr2bow(M))
 
     assert BOW == [[], [(0, 5), (1, 8)], [(2, 3)], [(1, 6)]]
+
+
+def test_comma_str():
+    C = utility.CommaStr
+    assert C('a').add('a') == 'a' == C('a') + 'a'
+    assert C('').add('a') == 'a' == C('') + 'a'
+    assert C('a').add('b') == 'a,b' == C('a') + 'b'
+    assert C('a,b').add('c') == 'a,b,c' == C('a,b') + 'c'
+    assert C('a,b,c').add('b') == 'a,b,c' == C('a,b,c') + 'b'
+
+    assert C('a,b,c').remove('b') == 'a,c' == C('a,b,c') - 'b'
+    assert C('a,b,c').remove('a') == 'b,c' == C('a,b,c') - 'a'
+    assert C('a,b,c').remove('c') == 'a,b' == C('a,b,c') - 'c'
+    assert C('').remove('a') == '' == C('') - 'a'
+    assert C('a,b,c').remove('d') == 'a,b,c' == C('a,b,c') - 'd'
+    assert C('a,b,c').remove('a,b,c,d') == '' == C('a,b,c') - 'a,b,c,d'
+
+    assert C('a,b,c') & C('a,b,c') == 'a,b,c'
+    assert C('a,b,c') & C('a,b,d') == 'a,b'
+    assert C('a,b,c') | C('a,b,d') == 'a,b,c,d'
+
+    assert C('a,b,c').add('d').remove('d') == 'a,b,c' == C('a,b,c').add('d') - 'd'
+
+
+def test_remove_all():
+    C = utility.CommaStr
+    assert C('a?1,b,c').remove('a') == 'b,c'
+    assert C('a?1,b,c').remove('a?1') == 'b,c'
+    assert C('a,b,c').remove('a?1') == 'b,c'
+    assert C('a,a?1,a?b=2,b,c').remove('a?1') == 'b,c'
+    # == (C('a,b,c') - 'a?1')
+
+
+def test_find_keys():
+    C = utility.CommaStr
+    assert list(C('a,b,c').find_keys('a?1')) == ['a']
+    assert list(C('a,b,c').find_keys('a')) == ['a']
+    assert list(C('a?1,b,c').find_keys('a?1')) == ['a?1']
+    assert list(C('a?1,b,c').find_keys('a')) == ['a?1']
+    assert list(C('a?1,a?2,a,b,c').find_keys('a')) == ['a?1', 'a?2', 'a']
+

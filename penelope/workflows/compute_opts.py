@@ -180,8 +180,8 @@ class TransformOptsMixIn:
         if self.transform_opts.to_lower:
             options['--to-lower'] = True
 
-        options[f'--{"" if self.transform_opts.keep_symbols else "no-" }keep-symbols'] = True
-        options[f'--{"" if self.transform_opts.keep_numerals else "no-" }keep-numerals'] = True
+        options[f'--{"" if not self.transform_opts.remove_symbols else "no-" }keep-symbols'] = True
+        options[f'--{"" if not self.transform_opts.remove_numerals else "no-" }keep-numerals'] = True
 
         if self.transform_opts.min_len > 1:
             options['--min-word-length'] = self.transform_opts.min_len
@@ -190,7 +190,7 @@ class TransformOptsMixIn:
             options['--max-word-length'] = self.transform_opts.max_len
 
         if self.transform_opts.remove_stopwords:
-            options['--remove-stopwords'] = self.transform_opts.language
+            options['--remove-stopwords'] = self.transform_opts.remove_stopwords
 
         if self.transform_opts.only_alphabetic:
             options['--only-alphabetic'] = True

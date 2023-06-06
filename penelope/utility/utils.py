@@ -642,3 +642,59 @@ def get_smiley() -> str:
 
 def dictify(o: Any, default_value: Any = "<not serializable>") -> dict:
     return json.loads(json.dumps(o, default=lambda _: default_value))
+
+
+class CommaStr(str):
+    """A string that can be used to represent a comma separated list of strings"""
+
+    def add(self, x: str | CommaStr, allow_multiple: bool = False) -> CommaStr:
+        if not x:
+            return self
+        if not isinstance(x, CommaStr):
+            x = CommaStr(x)
+        if not self:
+            return x
+        if allow_multiple:
+            return self.__class__(f"{self},{x}")
+        for y in x.parts():
+            if y in self:
+                x = x.remove(y)
+        if not x:
+            return self
+        return self.__class__(f"{self},{x}")
+
+    def __contains__(self, x: str | CommaStr) -> bool:
+        return x in self.parts()
+
+    def remove(self, x: str) -> CommaStr:
+        if not x:
+            return self
+        if not isinstance(x, CommaStr):
+            x = CommaStr(x)
+        # Split into parts and find allkeys matching each part
+        keys: list[str] = [y for z in x.parts() for y in self.find_keys(z)]
+        return self.__class__(','.join(part for part in self.parts() if part not in keys))
+
+    def __add__(self, x: str | CommaStr) -> CommaStr:
+        return self.add(x)
+
+    def __sub__(self, x: str | CommaStr) -> CommaStr:
+        return self.remove(x)
+
+    def __and__(self, x: str | CommaStr) -> CommaStr:
+        return self.__class__(','.join(part for part in self.parts() if part in x.split(',')))
+
+    def __or__(self, x: str | CommaStr) -> CommaStr:
+        parts = self.split(',')
+        parts.extend(part for part in x.parts() if part not in parts)
+        return self.__class__(','.join(parts))
+
+    def parts(self) -> list[str]:
+        return self.split(',')
+
+    def find_keys(self, key: str) -> list[str]:
+        if '?' in key:
+            key: str = key.split('?')[0]
+        for part in self.parts():
+            if part == key or part.startswith(f"{key}?"):
+                yield part

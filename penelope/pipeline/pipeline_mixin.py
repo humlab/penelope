@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
-from penelope.corpus import ITokenizedCorpus, TokensTransformer, TokensTransformOpts
+from penelope.corpus import ITokenizedCorpus, TokensTransformOpts
 from penelope.utility import PoS_Tag_Scheme, deprecated
 
 from . import tagged_frame, tasks
@@ -121,23 +121,19 @@ class PipelineShortcutMixIn:
         *,
         text_transform_opts: TextTransformOpts,
         transform_opts: TokensTransformOpts = None,
-        transformer: TokensTransformer = None,
     ) -> pipelines.CorpusPipeline:
         """TOKEN => TOKENS"""
         return self.add(
             tasks.TextToTokens(
                 text_transform_opts=text_transform_opts,
                 transform_opts=transform_opts,
-                transformer=transformer,
             )
         )
 
-    def tokens_transform(
-        self, *, transform_opts: TokensTransformOpts, transformer: TokensTransformer = None
-    ) -> pipelines.CorpusPipeline:
+    def tokens_transform(self, *, transform_opts: TokensTransformOpts) -> pipelines.CorpusPipeline:
         """TOKEN => TOKENS"""
-        if transform_opts or transformer:
-            return self.add(tasks.TokensTransform(transform_opts=transform_opts, transformer=transformer))
+        if transform_opts:
+            return self.add(tasks.TokensTransform(transform_opts=transform_opts))
         return self
 
     def to_content(self: pipelines.CorpusPipeline) -> pipelines.CorpusPipeline:

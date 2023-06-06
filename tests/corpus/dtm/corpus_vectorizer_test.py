@@ -21,19 +21,14 @@ def mock_corpus() -> MockedProcessedCorpus:
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="normalize-whitespace,dehyphen")
     return reader
 
 
 def create_corpus():
     reader = create_reader()
     transform_opts = TokensTransformOpts(
-        only_any_alphanumeric=True,
-        to_lower=True,
-        remove_accents=False,
-        min_len=2,
-        max_len=None,
-        keep_numerals=False,
+        transforms={'only-any-alphanumeric': True, 'to-lower': True, 'min-chars': 2, 'remove-numerals': True}
     )
     corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
@@ -160,7 +155,7 @@ def test_term_frequency_are_absolute_word_of_entire_corpus():
 def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
     corpus = TokenizedCorpus(
         reader=create_reader(),
-        transform_opts=TokensTransformOpts(to_lower=True, min_len=10),
+        transform_opts=TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 10}),
     )
 
     vocabulary = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).token2id

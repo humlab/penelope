@@ -90,13 +90,13 @@ class SegmentedTextCorpus(TokenizedCorpus):
 
     def _create_iterator(self):
         stats = []
-
+        gfx = self.transform_opts.getfx()
         for filename, content in self.reader:
             total_token_count = 0
             token_count = 0
             for i, tokens in enumerate(self.get_segmenter(content)):
                 total_token_count += len(tokens)
-                tokens = self.transformer.transform(tokens)
+                tokens = gfx(tokens)
                 token_count += len(tokens)
                 if len(tokens) > 0:
                     yield f"{filename}#{i}", tokens

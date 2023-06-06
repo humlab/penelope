@@ -2,9 +2,9 @@
 import logging
 
 from ..sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
+from ..transformer import TextTransformOpts
 from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from .text_tokenizer import TextTokenizer
-from .text_transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class SparvXmlReader(TextTokenizer):
         super().__init__(
             source,
             reader_opts=reader_opts,
-            transform_opts=TextTransformOpts.empty(),
+            transform_opts=TextTransformOpts(transforms=""),
             tokenize=lambda x: x.split(self.delimiter),
             chunk_size=chunk_size,
         )

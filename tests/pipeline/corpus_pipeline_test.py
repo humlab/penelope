@@ -9,8 +9,7 @@ import pytest
 
 import penelope.pipeline.spacy.tasks as spacy_tasks
 import penelope.pipeline.tasks as tasks
-from penelope.corpus import load_document_index
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts, load_document_index
 from penelope.pipeline import (
     CheckpointData,
     CheckpointOpts,

@@ -10,9 +10,6 @@ from penelope.vendor import spacy_api
 from .. import interfaces
 from . import convert
 
-# [ 'tagger', 'parser', 'ner', 'entity_linker', 'entity_ruler', 'textcat', 'textcat_multilabel', 'lemmatizer',
-#   'trainable_lemmatizer', 'morphologizer', 'attribute_ruler', 'senter', 'sentencizer', 'tok2vec', 'transformer', ]
-
 DEFAULT_SPACY_DISABLES = ['textcat', 'parser']
 DEFAULT_SPACY_EXCLUDES = ['ner']
 

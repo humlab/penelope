@@ -56,8 +56,8 @@ def test_find_all_configs():
 
 def test_text_transform_opts(corpus_config: CorpusConfig):
     assert corpus_config.text_transform_opts is not None
-    assert corpus_config.text_transform_opts.fix_hyphenation
-    assert corpus_config.text_transform_opts.fix_whitespaces
+    assert corpus_config.text_transform_opts.transforms.find_keys('dehypen')
+    assert corpus_config.text_transform_opts.transforms.find_keys('normalize-whitespaces')
 
 
 def test_corpus_config_set_folders():
