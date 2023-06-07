@@ -20,7 +20,7 @@ class TransformProperty:
         self.negate: bool = negate
 
     def __set_name__(self, owner: "TransformOpts", name: str):
-        self.name: str = name.replace('_','-')  # pylint: disable=attribute-defined-outside-init
+        self.name: str = name.replace('_', '-')  # pylint: disable=attribute-defined-outside-init
 
     def __get__(self, obj: "TransformOpts", objtype: str = None) -> Any:  # pylint: disable=unused-argument
         name: str = self.alias or self.name

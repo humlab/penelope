@@ -184,6 +184,7 @@ def test_transform_opts_extras():
 
     assert fx('', extras=[to_apa])(['A', 'B', 'C']) == ['APA', 'APA', 'APA']
 
+
 def test_transform_opts_extras_stopwords():
     assert fx('', extra_stopwords=['A', 'B'])(['A', 'B', 'C']) == ['C']
 

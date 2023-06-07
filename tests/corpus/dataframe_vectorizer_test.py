@@ -1,4 +1,3 @@
-
 import pandas as pd
 
 from penelope.co_occurrence import term_term_matrix_to_co_occurrences
@@ -11,11 +10,13 @@ def create_test_dataframe():
     df = pd.DataFrame(data, columns=['year', 'txt'])
     return df
 
+
 def create_corpus():
     df = create_test_dataframe()
     reader = PandasCorpusReader(df)
     corpus = TokenizedCorpus(reader, transform_opts=TokensTransformOpts())
     return corpus
+
 
 def test_corpus_token_stream():
     df = create_test_dataframe()
@@ -32,6 +33,7 @@ def test_corpus_token_stream():
     ]
     assert expected == result
 
+
 def test_processed_corpus_token_stream():
     df = create_test_dataframe()
     reader = PandasCorpusReader(df)
@@ -47,6 +49,7 @@ def test_processed_corpus_token_stream():
     ]
     assert expected == result
 
+
 def create_simple_test_corpus(transform_opts: TokensTransformOpts):
     data = [
         (2000, 'Detta är en mening med 14 token, 3 siffror och 2 symboler.'),
@@ -56,6 +59,7 @@ def create_simple_test_corpus(transform_opts: TokensTransformOpts):
     reader = PandasCorpusReader(df)
     corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
+
 
 def test_tokenized_document_where_symbols_are_filtered_out():
     corpus = create_simple_test_corpus(
@@ -76,6 +80,7 @@ def test_tokenized_document_where_symbols_are_filtered_out():
     ]
     assert expected == result
 
+
 def test_tokenized_document_where_symbols_and_numerals_are_filtered_out():
     corpus = create_simple_test_corpus(
         transform_opts=TokensTransformOpts(
@@ -92,6 +97,7 @@ def test_tokenized_document_where_symbols_and_numerals_are_filtered_out():
         ('document_1.txt', ['Är', 'det', 'i', 'denna', 'mening', 'en', 'mening']),
     ]
     assert expected == result
+
 
 def test_tokenized_document_in_lowercase_where_symbols_and_numerals_and_one_letter_words_are_filtered_out():
     corpus = create_simple_test_corpus(
@@ -111,6 +117,7 @@ def test_tokenized_document_in_lowercase_where_symbols_and_numerals_and_one_lett
         ('document_1.txt', ['är', 'det', 'denna', 'mening', 'en', 'mening']),
     ]
     assert expected == result
+
 
 def test_tokenized_document_in_lowercase_where_symbols_and_numerals_and_one_letter_words_and_stopwords_are_filtered_out():
     stopwords = {'är', 'en', 'med', 'och', 'det', 'detta', 'denna'}
@@ -133,6 +140,7 @@ def test_tokenized_document_in_lowercase_where_symbols_and_numerals_and_one_lett
     ]
     assert expected == result
 
+
 def test_fit_transform_gives_document_term_matrix():
     # Arrange
     reader = PandasCorpusReader(create_test_dataframe())
@@ -149,6 +157,7 @@ def test_fit_transform_gives_document_term_matrix():
 
     assert 2 == term_term_matrix.todense()[token2id['A'], token2id['B']]
     assert 0 == term_term_matrix.todense()[token2id['C'], token2id['F']]
+
 
 def test_to_dataframe_of_term_matrix_gives_expected_result():
     # Arrange
@@ -167,6 +176,7 @@ def test_to_dataframe_of_term_matrix_gives_expected_result():
     assert 2 == int(co_occurrences[((co_occurrences.w1 == 'A') & (co_occurrences.w2 == 'B'))].value)
     assert 0 == len(co_occurrences[((co_occurrences.w1 == 'C') & (co_occurrences.w2 == 'F'))])
 
+
 def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted():
     corpus = create_simple_test_corpus(
         transform_opts=TokensTransformOpts(
@@ -179,6 +189,7 @@ def test_tokenized_document_token_counts_is_empty_if_enumerable_not_exhausted():
     )
     assert 'n_raw_tokens' not in corpus.document_index.columns
     assert 'n_tokens' not in corpus.document_index.columns
+
 
 def test_tokenized_document_token_counts_is_not_empty_if_enumerable_is_exhausted():
     # Note: Symbols are always removed by reader - hence "keep_symbols" filter has no effect

@@ -605,7 +605,7 @@ utskotten	NN	|utskott|
 
     transform_opts: TokensTransformOpts = TokensTransformOpts(transforms={'to-lower': True})
     assert transform_opts.to_lower
-    
+
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == [x.lower() for x in tagged_frame.token.tolist()]
 

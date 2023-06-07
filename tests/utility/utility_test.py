@@ -160,4 +160,3 @@ def test_find_keys():
     assert list(C('a?1,b,c').find_keys('a?1')) == ['a?1']
     assert list(C('a?1,b,c').find_keys('a')) == ['a?1']
     assert list(C('a?1,a?2,a,b,c').find_keys('a')) == ['a?1', 'a?2', 'a']
-

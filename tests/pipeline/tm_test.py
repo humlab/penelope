@@ -26,7 +26,9 @@ def noun_pipeline(id_to_token: bool) -> pp.CorpusPipeline:
     p: pp.CorpusPipeline = (
         pp.CorpusPipeline(config=corpus_config)
         .load_id_tagged_frame(folder=corpus_source, id_to_token=id_to_token, file_pattern=file_pattern)
-        .filter_tagged_frame(extract_opts=extract_opts, pos_schema=utility.PoS_Tag_Schemes.SUC, transform_opts=pc.TokensTransformOpts())
+        .filter_tagged_frame(
+            extract_opts=extract_opts, pos_schema=utility.PoS_Tag_Schemes.SUC, transform_opts=pc.TokensTransformOpts()
+        )
     )
     return p
 

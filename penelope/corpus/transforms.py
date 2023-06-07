@@ -145,7 +145,7 @@ class TransformRegistry:
 
     @classmethod
     def getfx(cls, *keys: tuple[str], extras: list = None) -> Transform:
-        fxs: list[Callable[..., Any]] = [cls.get(k) for key in keys for k in key.split(',') if k ]
+        fxs: list[Callable[..., Any]] = [cls.get(k) for key in keys for k in key.split(',') if k]
         if extras:
             fxs.extend(extras)
         if not fxs:
