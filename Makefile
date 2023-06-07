@@ -83,19 +83,28 @@ guard_clean_working_repository:
 		exit 65
 	fi
 
+.PHONY: version
 version:
 	@echo $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g")
 
+.PHONY: tools
 tools:
 	@pip install --upgrade pip --quiet
 	@pip install poetry --upgrade --quiet
 
-bump.patch: requirements.txt
-	@poetry version patch
+bump.patch: bump.version.patch sync.package.version
 	@git add pyproject.toml requirements.txt penelope/__init__.py
 	@git commit -m "Bump version patch"
 	@git push
 
+bump.version.patch:
+	@poetry version patch
+
+sync.package.version:
+	@sed -i 's/__version__ = .*/__version__ = $(shell awk '/^version = /{print $$NF}' pyproject.toml)/g' penelope/__init__.py
+
+
+.PHONY: tag
 tag:
 	@poetry build
 	@git push
@@ -106,6 +115,7 @@ tag:
 # 	-poetry run coverage --rcfile=.coveragerc run -m pytest
 # 	-poetry run coveralls
 
+.PHONY: pylint
 pylint:
 	@time poetry run pylint $(SOURCE_FOLDERS)
 	# @poetry run mypy --version
@@ -132,7 +142,6 @@ pylint_diff:
 # https://nerderati.com/speed-up-pylint-by-reducing-the-files-it-examines/
 # delta_files=`git diff --name-only --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
 # delta_files=`git diff --name-only --staged --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
-.ONESHELL: pylint_diff_only
 pylint_diff_only:
 	@delta_files=$$(git status --porcelain | awk '{print $$2}' | grep -E '\.py$$' | tr '\n' ' ')
 	@if [[ "$$delta_files" != "" ]]; then
