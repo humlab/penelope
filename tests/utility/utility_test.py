@@ -5,7 +5,6 @@ import scipy.sparse as sp
 
 from penelope import corpus as pc
 from penelope import utility
-from penelope.corpus.transformer import TransformProperty
 
 
 def test_utils():

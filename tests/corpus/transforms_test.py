@@ -151,7 +151,7 @@ def test_remove_stopwords():
 
     _fx: Callable[[str], Iterable[str]] = tr.TokensTransformRegistry.getfx("remove-stopwords?english")
     assert callable(_fx)
-    assert ['run', 'window'] == list(fx(['run', 'and', 'window', 'she', 'it']))
+    assert ['run', 'window'] == list(_fx(['run', 'and', 'window', 'she', 'it']))
 
 
 def test_get_stopwords():
@@ -159,7 +159,7 @@ def test_get_stopwords():
     assert len(words) > 0
 
 
-def fx(
+def cfx(
     transforms: str | CommaStr | dict[str, bool] = None,
     extras: list[Callable] = None,
     extra_stopwords: list[str] = None,
@@ -169,24 +169,24 @@ def fx(
 
 
 def test_transform_opts():
-    assert fx({'to-lower': True})(['A', 'B', 'C']) == ['a', 'b', 'c']
-    assert fx('to-lower')(['A', 'B', 'C']) == ['a', 'b', 'c']
-    assert fx('to-lower,to-upper')(['A', 'B', 'C']) == ['A', 'B', 'C']
-    assert fx('to-upper,to-lower')(['A', 'B', 'C']) == ['a', 'b', 'c']
-    assert not fx('to-upper,min-chars?2')(['A', 'B', 'C'])
-    assert fx('to-upper,min-chars?2')(['A', 'AB', 'BC', 'CD', 'E']) == ['AB', 'BC', 'CD']
-    assert fx('to-upper,min-chars?2,max-chars?2')(['A', 'AB', 'BC', 'XYZ', 'CD', 'E', 'ABC']) == ['AB', 'BC', 'CD']
+    assert cfx({'to-lower': True})(['A', 'B', 'C']) == ['a', 'b', 'c']
+    assert cfx('to-lower')(['A', 'B', 'C']) == ['a', 'b', 'c']
+    assert cfx('to-lower,to-upper')(['A', 'B', 'C']) == ['A', 'B', 'C']
+    assert cfx('to-upper,to-lower')(['A', 'B', 'C']) == ['a', 'b', 'c']
+    assert not cfx('to-upper,min-chars?2')(['A', 'B', 'C'])
+    assert cfx('to-upper,min-chars?2')(['A', 'AB', 'BC', 'CD', 'E']) == ['AB', 'BC', 'CD']
+    assert cfx('to-upper,min-chars?2,max-chars?2')(['A', 'AB', 'BC', 'XYZ', 'CD', 'E', 'ABC']) == ['AB', 'BC', 'CD']
 
 
 def test_transform_opts_extras():
     def to_apa(tokens: list[str]) -> list[str]:
         return ['APA' for _ in tokens]
 
-    assert fx('', extras=[to_apa])(['A', 'B', 'C']) == ['APA', 'APA', 'APA']
+    assert cfx('', extras=[to_apa])(['A', 'B', 'C']) == ['APA', 'APA', 'APA']
 
 
 def test_transform_opts_extras_stopwords():
-    assert fx('', extra_stopwords=['A', 'B'])(['A', 'B', 'C']) == ['C']
+    assert cfx('', extra_stopwords=['A', 'B'])(['A', 'B', 'C']) == ['C']
 
 
 def test_transform_property_descriptor():
