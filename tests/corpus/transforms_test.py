@@ -140,9 +140,9 @@ def test_transform_load_stopwords():
 def test_remove_stopwords():
     stopwords = load_stopwords("swedish")
 
-    xtra_stopwords = extended_stopwords("swedish")
+    extra_stopwords = extended_stopwords("swedish")
 
-    assert len(xtra_stopwords) == len(stopwords)
+    assert len(extra_stopwords) == len(stopwords)
     assert len(STOPWORDS_CACHE) > 0
 
     _fx: Callable[[str], Iterable[str]] = tr.TokensTransformRegistry.getfx("remove-stopwords?swedish")
