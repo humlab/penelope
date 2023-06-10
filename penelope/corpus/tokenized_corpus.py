@@ -8,7 +8,8 @@ from .corpus_mixins import PartitionMixIn
 from .document_index import DocumentIndex, metadata_to_document_index, update_document_index_token_counts
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
-from .tokens_transformer import TokensTransformer, TokensTransformOpts
+from .tokens_transformer import TokensTransformOpts
+from .transforms import Transform
 from .utils import generate_token2id
 
 
@@ -21,20 +22,17 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
         reader : ICorpusReader
             Corpus reader
         transform_opts : TokensTransformOpts
-            Passed to TokensTransformer and can be:
-                only_alphabetic: bool = False,
-                only_any_alphanumeric: bool = False,
-                to_lower: bool = False,
-                to_upper: bool = False,
-                min_len: int = None,
-                max_len: int = None,
-                remove_accents: bool = False,
-                remove_stopwords: bool = False,
-                stopwords: Any = None,
-                extra_stopwords: List[str] = None,
-                language: str = "swedish",
-                keep_numerals: bool = True,
-                keep_symbols: bool = True,
+            only_alphabetic: bool = False,
+            only_any_alphanumeric: bool = False,
+            to_lower: bool = False,
+            to_upper: bool = False,
+            min_len: int = None,
+            max_len: int = None,
+            remove_accents: bool = False,
+            remove_stopwords: str = None,
+            extra_stopwords: List[str] = None,
+            remove_numerals: bool = False
+            keep_symbols: bool = True,
         Raises
         ------
         TypeError
@@ -48,17 +46,16 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
 
         self.reader: ICorpusReader = reader
         self._document_index: DocumentIndex = metadata_to_document_index(reader.metadata)
-        self.transformer: TokensTransformer = TokensTransformer(
-            transform_opts=(transform_opts or TokensTransformOpts())
-        )
+        self.transform_opts: TokensTransformOpts = transform_opts or TokensTransformOpts()
         self.iterator: Iterable[Tuple[str, Iterable[str]]] = None
         self._token2id: Mapping[str, int] = None
 
     def _create_document_tokens_stream(self) -> Iterable[Tuple[str, Iterable[str]]]:
         token_counts: list[int] = []
+        gfx: Transform = self.transform_opts.getfx()
         for filename, tokens in self.reader:
             raw_tokens = [x for x in tokens]
-            cooked_tokens = [x for x in self.transformer.transform(raw_tokens)]
+            cooked_tokens = [x for x in gfx(raw_tokens)]
             token_counts.append((filename, len(raw_tokens), len(cooked_tokens)))
             yield filename, cooked_tokens
         self._document_index = update_document_index_token_counts(self._document_index, token_counts)

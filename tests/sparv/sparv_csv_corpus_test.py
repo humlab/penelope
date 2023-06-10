@@ -166,7 +166,7 @@ def test_tokenize_when_nn_lemmatized_lower_returns_correct_tokens():
         extract_opts=ExtractTaggedTokensOpts(
             pos_includes='|NN|', pos_paddings=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
         ),
-        transform_opts=TokensTransformOpts(to_lower=True),
+        transform_opts=TokensTransformOpts(transforms={'to-lower': True}),
     )
 
     for i, (filename, tokens) in enumerate(corpus):
@@ -286,7 +286,7 @@ def test_tokenize_when_vb_lemmatized_upper_returns_correct_tokens():
         reader_opts=TextReaderOpts(),
         chunk_size=None,
         transform_opts=TokensTransformOpts(
-            to_lower=True,
+            dict(to_lower=True),
         ),
     )
 

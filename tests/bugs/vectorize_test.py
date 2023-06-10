@@ -21,7 +21,7 @@ def test_workflow_to_dtm():
         corpus_source='/data/westac/riksdagen_corpus_data/riksprot_parlaclarin_basic_protocol_stanza.csv.zip',
         corpus_type=pipeline.CorpusType.SparvCSV,
         target_folder='./data',
-        transform_opts=corpora.TokensTransformOpts(to_lower=True, only_alphabetic=True),
+        transform_opts=corpora.TokensTransformOpts(transforms={'to-lower': True, 'only-alphabetic': True}),
         # text_reader_opts=corpora.TextReaderOpts(filename_pattern='*.csv', filename_fields=['year:_:1']),
         text_reader_opts=config.text_reader_opts,
         extract_opts=corpora.ExtractTaggedTokensOpts(

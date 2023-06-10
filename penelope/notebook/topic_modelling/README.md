@@ -2,7 +2,7 @@
 
 ### Overview
 
-These files are defines the minimal data set needed for exploring a topic model using Westac's Topic Modelling Jupyter Notebook.
+These files are defines the minimal data set needed for exploring a topic model using Westac's Topic Modelling Jupyter Notebook. See example test bundle in [tests/test_data/tranströmer_inferred_model](https://github.com/humlab/penelope/tree/main/tests/test_data/transtr%C3%B6mer_inferred_model).
 
 Note that the "CSV files" in actuality are tab-separated files. Note that all CSV files can be stored (and should be for large corpora) be stored as [feather](https://arrow.apache.org/docs/python/feather.html) files.
 
@@ -16,11 +16,6 @@ Note that the "CSV files" in actuality are tab-separated files. Note that all CS
 
 If the bundle is created with `tm-predict@penelope` then  run-time options are stored in JSON file `model_options.json`.
 
-
-See example bundle in [tests/test_data/tranströmer_inferred_model](https://github.com/humlab/penelope/tree/main/tests/test_data/transtr%C3%B6mer_inferred_model)
-
-
-tests/test_data/tranströmer_inferred_model
 
 ### Dictionary
 

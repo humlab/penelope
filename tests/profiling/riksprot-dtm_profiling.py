@@ -69,17 +69,14 @@ def create_compute_opts(
         persist=True,
         filename_pattern=filename_pattern,
         transform_opts=pc.TokensTransformOpts(
-            to_lower=to_lower,
-            to_upper=False,
-            min_len=min_word_length,
-            max_len=max_word_length,
-            remove_accents=False,
-            remove_stopwords=(remove_stopwords is not None),
-            stopwords=None,
-            extra_stopwords=None,
-            language=remove_stopwords,
-            keep_numerals=keep_numerals,
-            keep_symbols=keep_symbols,
+            {
+                'to-lower': to_lower,
+                'min-chars': min_word_length,
+                'max-chars': max_word_length,
+                'remove-stopwords': remove_stopwords,
+                'remove-numerals': not keep_numerals,
+                'remove-symbols': not keep_symbols,
+            }
         ),
         extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes=pos_includes,

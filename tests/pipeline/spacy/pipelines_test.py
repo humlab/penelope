@@ -89,7 +89,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
     bundle: co_occurrence.Bundle = to_co_occurrence_pipeline(
         corpus_config=config,
         corpus_source=None,
-        transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
+        transform_opts=corpora.TokensTransformOpts(transforms={'remove_stopwords': 'english', 'to-lower': True}),
         extract_opts=corpora.ExtractTaggedTokensOpts(
             lemmatize=True,
             pos_includes='|NOUN|PROPN|VERB|',
@@ -129,7 +129,7 @@ def test_spaCy_co_occurrence_pipeline3(config: pipeline.CorpusConfig):
         target_folder=f'./tests/output/{uuid.uuid1()}',
         corpus_type=pipeline.CorpusType.SpacyCSV,
         # pos_scheme: utility.PoS_Tag_Scheme = utility.PoS_Tag_Schemes.Universal
-        transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
+        transform_opts=corpora.TokensTransformOpts(transforms={'remove_stopwords': 'english', 'to-lower': True}),
         text_reader_opts=corpora.TextReaderOpts(filename_pattern='*.csv', filename_fields=['year:_:1']),
         extract_opts=corpora.ExtractTaggedTokensOpts(
             lemmatize=True,

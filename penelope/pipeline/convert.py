@@ -268,8 +268,6 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
         """If extracts_opts is a string: return column with what name"""
         if transform_opts is not None:
             raise ValueError("transform_opts must be None when passthrough is specified")
-        if transform_opts is not None:
-            raise ValueError("transform_opts must be None when passthrough is specified")
         return doc[passthrough_column].tolist()
 
     # if is_numeric_frame:

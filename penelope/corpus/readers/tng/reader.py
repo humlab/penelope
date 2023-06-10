@@ -3,10 +3,10 @@ from typing import Callable, Iterable, Iterator, List, Union
 from penelope.utility import getLogger
 
 from ...document_index import DocumentIndex, metadata_to_document_index
+from ...transformer import TextTransformer
 from ..interfaces import ICorpusReader, TextReaderOpts
 from .interfaces import ContentFilter, ISource, StoreItemPair
 from .sources import SourceInfo
-from .transformer import TextTransformer
 
 logger = getLogger("penelope")
 

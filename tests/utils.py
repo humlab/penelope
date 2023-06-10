@@ -95,8 +95,7 @@ def create_text_reader(
     index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
-    fix_hyphenation: bool = True,
-    fix_whitespaces: bool = False,
+    text_transforms: str = "normalize-whitespace,dehyphen",
 ) -> TextReader:
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
@@ -105,7 +104,7 @@ def create_text_reader(
         index_field=index_field,
         as_binary=as_binary,
     )
-    transform_opts = TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation)
+    transform_opts = TextTransformOpts(transforms=text_transforms)
     reader = TextReader(source=source_path, reader_opts=reader_opts, transform_opts=transform_opts)
     return reader
 
@@ -117,8 +116,7 @@ def create_tokens_reader(
     index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
-    fix_hyphenation: bool = True,
-    fix_whitespaces: bool = False,
+    text_transforms: str = "normalize-whitespace,dehyphen",
     chunk_size: int = None,
     tokenize: Callable = None,
 ) -> TextTokenizer:
@@ -129,7 +127,8 @@ def create_tokens_reader(
         index_field=index_field,
         as_binary=as_binary,
     )
-    transform_opts = TextTransformOpts(fix_whitespaces=fix_whitespaces, fix_hyphenation=fix_hyphenation)
+    transform_opts = TextTransformOpts(transforms=text_transforms)
+
     reader = TextTokenizer(
         source_path,
         reader_opts=reader_opts,

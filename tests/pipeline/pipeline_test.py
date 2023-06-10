@@ -309,7 +309,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig, tagger: Spa
         target_folder=target_folder,
         corpus_type=pipeline.CorpusType.SpacyCSV,
         # pos_scheme: PoS_Tag_Scheme = PoS_Tag_Schemes.Universal
-        transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
+        transform_opts=corpora.TokensTransformOpts(transforms={'remove_stopwords': 'english', 'to-lower': True}),
         text_reader_opts=corpora.TextReaderOpts(filename_pattern='*.csv', filename_fields=['year:_:1']),
         extract_opts=corpora.ExtractTaggedTokensOpts(
             lemmatize=True,
@@ -362,7 +362,7 @@ def test_workflow_to_dtm(config: pipeline.CorpusConfig):
         corpus_source='./tests/test_data/legal_instrument_five_docs_test.zip',
         corpus_type=pipeline.CorpusType.Text,
         target_folder='./tests/output/',
-        transform_opts=corpora.TokensTransformOpts(language='english', remove_stopwords=True, to_lower=True),
+        transform_opts=corpora.TokensTransformOpts(transforms={'remove_stopwords': 'english', 'to-lower': True}),
         text_reader_opts=corpora.TextReaderOpts(filename_pattern='*.csv', filename_fields=['year:_:1']),
         extract_opts=corpora.ExtractTaggedTokensOpts(
             lemmatize=True,

@@ -2,9 +2,9 @@
 import logging
 
 from ..sparv.sparv_csv_to_text import SparvCsvToText
+from ..transformer import TextTransformOpts
 from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from .text_tokenizer import TextTokenizer
-from .text_transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class SparvCsvTokenizer(TextTokenizer):
         super().__init__(
             source,
             reader_opts=reader_opts.copy(filename_pattern='*.csv'),
-            transform_opts=TextTransformOpts.empty(),
+            transform_opts=TextTransformOpts(transforms=""),
             tokenize=lambda x: x.split(),
             chunk_size=chunk_size,
         )

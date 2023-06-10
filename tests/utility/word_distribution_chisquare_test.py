@@ -19,18 +19,18 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_reader(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+        reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="normalize-whitespace,dehyphen")
         return reader
 
     def create_corpus(self):
         reader = self.create_reader()
         transform_opts = corpora.TokensTransformOpts(
-            only_any_alphanumeric=True,
-            to_lower=True,
-            remove_accents=False,
-            min_len=2,
-            max_len=None,
-            keep_numerals=False,
+            transforms={
+                'only-any-alphanumeric': True,
+                'to-lower': True,
+                'min-chars': 2,
+                'remove-numerals': True,
+            }
         )
         corpus = corpora.TokenizedCorpus(reader, transform_opts=transform_opts)
         return corpus

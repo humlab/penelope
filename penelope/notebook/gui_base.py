@@ -368,19 +368,16 @@ class BaseGUI:
     @property
     def transform_opts(self) -> TokensTransformOpts:
         opts = TokensTransformOpts(
-            keep_numerals=True,
-            keep_symbols=True,
-            language=self._config.language,
-            max_len=None,
-            min_len=1,
-            only_alphabetic=self._only_alphabetic.value,
-            only_any_alphanumeric=self._only_any_alphanumeric.value,
-            remove_accents=False,
-            remove_stopwords=self._remove_stopwords.value,
-            stopwords=None,
-            to_lower=self._to_lowercase.value,
-            to_upper=False,
+            transforms={
+                'min-chars': 1,
+                'only-alphabetic': self._only_alphabetic.value,
+                'only-any-alphanumeric': self._only_any_alphanumeric.value,
+                'to-lower': self._to_lowercase.value,
+            }
         )
+
+        if self._remove_stopwords.value:
+            opts.remove_stopwords = self._config.language
 
         if self._extra_stopwords.value.strip() != '':
             _words = [x for x in map(str.strip, self._extra_stopwords.value.strip().split()) if x != '']

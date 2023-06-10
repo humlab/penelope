@@ -85,20 +85,17 @@ def sparv_xml_extract_and_store(
     version : int
     extract_tokens_opts : ExtractTaggedTokensOpts, optional
     transform_opts : TokensTransformOpts, optional
-        Passed to TokensTransformer:
-            only_alphabetic: bool = False,
-            only_any_alphanumeric: bool = False,
-            to_lower: bool = False,
-            to_upper: bool = False,
-            min_len: int = None,
-            max_len: int = None,
-            remove_accents: bool = False,
-            remove_stopwords: bool = False,
-            stopwords: Any = None,
-            extra_stopwords: List[str] = None,
-            language: str = "swedish",
-            keep_numerals: bool = True,
-            keep_symbols: bool = True,
+        only_alphabetic: bool = False,
+        only_any_alphanumeric: bool = False,
+        to_lower: bool = False,
+        to_upper: bool = False,
+        min_len: int = None,
+        max_len: int = None,
+        remove_accents: bool = False,
+        remove_stopwords: str = None,
+        extra_stopwords: List[str] = None,
+        remove_numerals: bool = False,
+        remove_symbols: bool = False,
     reader_opts : TextReaderOpts
         Passed to source reader:
     chunk_size: int = None,
@@ -133,20 +130,17 @@ def sparv_csv_extract_and_store(
         [description]
     extract_opts : ExtractTaggedTokensOpts, optional
     transform_opts : TokensTransformOpts, optional
-        Passed to TokensTransformer:
-            only_alphabetic: bool = False,
-            only_any_alphanumeric: bool = False,
-            to_lower: bool = False,
-            to_upper: bool = False,
-            min_len: int = None,
-            max_len: int = None,
-            remove_accents: bool = False,
-            remove_stopwords: bool = False,
-            stopwords: Any = None,
-            extra_stopwords: List[str] = None,
-            language: str = "swedish",
-            keep_numerals: bool = True,
-            keep_symbols: bool = True,
+        only_alphabetic: bool = False,
+        only_any_alphanumeric: bool = False,
+        to_lower: bool = False,
+        to_upper: bool = False,
+        min_len: int = None,
+        max_len: int = None,
+        remove_accents: bool = False,
+        remove_stopwords: str = None,
+        extra_stopwords: List[str] = None,
+        remove_numerals: bool = False,
+        keep_symbols: bool = True,
     reader_opts : Dict[str, Any], optional
     """
     corpus = SparvTokenizedCsvCorpus(

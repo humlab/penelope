@@ -8,7 +8,7 @@ import pytest
 
 import penelope.corpus.readers.tng.reader as cr
 import penelope.corpus.readers.tng.sources as cs
-import penelope.corpus.readers.tng.transformer as tt
+import penelope.corpus.transformer as tt
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import streamify_zip_source, strip_path_and_extension, strip_paths, zip_utils
 from tests.utils import OUTPUT_FOLDER, TEST_CORPUS_FILENAME
@@ -32,32 +32,32 @@ def test_zip_wrapper():
 
 
 def test_transformer():
-    transform_opts = tt.TextTransformOpts().clear()
+    transform_opts = tt.TextTransformOpts(transforms="")
 
-    transform_opts += tt.KnownTransformType.fix_accents
-    assert transform_opts.opts == [tt.KnownTransformType.fix_accents]
+    transform_opts += "strip-accents"
+    assert transform_opts.transforms == "strip-accents"
 
-    transform_opts -= tt.KnownTransformType.fix_accents
-    assert transform_opts.opts == []
+    transform_opts -= "strip-accents"
+    assert transform_opts.transforms == ""
 
-    transform_opts = tt.TextTransformOpts().clear()
-    transform_opts += tt.KnownTransformType.fix_accents
+    transform_opts = tt.TextTransformOpts(transforms="")
+    transform_opts += "strip-accents"
 
     transformer = tt.TextTransformer(transform_opts=transform_opts)
     result = transformer.transform("Rågér")
     assert result == "Rager"
 
-    transformer.transform_opts -= tt.KnownTransformType.fix_accents
+    transformer.transform_opts -= "strip-accents"
     result = transformer.transform("Rågér")
     assert result == "Rågér"
 
     transformer.transform_opts.clear()
-    transformer.transform_opts += tt.KnownTransformType.fix_hyphenation
+    transformer.transform_opts += "dehyphen"
     result = transformer.transform("mål-\nvakt")
     assert result.strip() == "målvakt"
 
     transformer.transform_opts.clear()
-    transformer.transform_opts += tt.KnownTransformType.fix_whitespaces
+    transformer.transform_opts += "normalize-whitespace"
     result = transformer.transform("mål    vakt")
     assert result == "mål vakt"
 

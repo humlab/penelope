@@ -31,7 +31,7 @@ def test_reader_store_result():
         target_filename,
         version=4,
         extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
-        transform_opts=TokensTransformOpts(to_lower=True),
+        transform_opts=TokensTransformOpts({'to-lower': True}),
     )
 
     for i in range(0, len(expected_names)):
@@ -56,7 +56,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
         target_filename,
         version=3,
         extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=False),
-        transform_opts=TokensTransformOpts(to_lower=True, min_len=2, stopwords=['<text>']),
+        transform_opts=TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 2}, extra_stopwords=['<text>']),
     )
 
     expected_document_start = "utredningar justitiedepartementet förslag utlänningslag angående om- händertagande förläggning års gere ide to lm \rstatens utredningar förteckning betänkande förslag utlänningslag lag omhändertagande utlänning anstalt förläggning tryckort tryckorten bokstäverna fetstil begynnelse- bokstäverna departement"

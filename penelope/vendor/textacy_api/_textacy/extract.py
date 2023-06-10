@@ -138,10 +138,10 @@ class ExtractPipeline:
         return self.add(PoSFilter(include_pos=include_pos, exclude_pos=exclude_pos))
 
     def ingest_transform_opts(self, transform_opts: TokensTransformOpts) -> ExtractPipeline:
-        if not transform_opts.keep_numerals:
+        if transform_opts.remove_numerals:
             self.ingest(filter_nums=True)
 
-        if transform_opts.remove_stopwords:
+        if transform_opts.remove_stopwords or transform_opts.extra_stopwords:
             self.remove_stopwords(transform_opts.extra_stopwords)
 
         if transform_opts.min_len and transform_opts.min_len > 1:

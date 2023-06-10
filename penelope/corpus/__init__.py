@@ -29,7 +29,6 @@ from .dtm import (
 )
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers.interfaces import ExtractTaggedTokensOpts, FilenameFilterSpec, PhraseSubstitutions, TextReaderOpts
-from .readers.text_transformer import TextTransformOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
 from .sparv_corpus import (
     SparvTokenizedCsvCorpus,
@@ -41,20 +40,22 @@ from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
 from .token2id import ClosedVocabularyError, Token2Id, id2token2token2id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
-from .tokens_transformer import DEFAULT_TOKENS_TRANSFORM_OPTIONS, TokensTransformer, TokensTransformOpts
+from .tokens_transformer import TokensTransformOpts
+from .transformer import TextTransformer, TextTransformOpts
 from .transforms import (
+    Transform,
+    TransformRegistry,
     default_tokenizer,
-    has_alpha_filter,
-    lower_transform,
-    max_chars_filter,
-    min_chars_filter,
-    only_alphabetic_filter,
+    dehyphen,
+    has_alphabetic,
+    max_chars_factory,
+    min_chars_factory,
+    only_alphabetic,
     only_any_alphanumeric,
-    remove_empty_filter,
-    remove_hyphens,
+    remove_empty,
     remove_numerals,
-    remove_stopwords,
     remove_symbols,
-    upper_transform,
+    to_lower,
+    to_upper,
 )
 from .utils import bow2text, csr2bow, generate_token2id, term_frequency

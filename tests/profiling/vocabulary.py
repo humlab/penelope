@@ -20,44 +20,8 @@ def run_workflow():
     corpus_config.pipeline_payload.files(source=CORPUS_FILENAME, document_index_source=None)
     corpus_config.checkpoint_opts.deserialize_processes = 3
     corpus_config.checkpoint_opts.feather_folder = None
-    # transform_opts: corpora.TokensTransformOpts = corpora.TokensTransformOpts(
-    #     to_lower=True,
-    #     to_upper=False,
-    #     min_len=1,
-    #     max_len=None,
-    #     remove_accents=False,
-    #     remove_stopwords=False,
-    #     stopwords=None,
-    #     extra_stopwords=None,
-    #     language='swedish',
-    #     keep_numerals=True,
-    #     keep_symbols=True,
-    #     only_alphabetic=False,
-    #     only_any_alphanumeric=False,
-    # )
-    # extract_opts: corpora.ExtractTaggedTokensOpts = corpora.ExtractTaggedTokensOpts(
-    #     pos_includes='NN|PM',
-    #     pos_excludes='MAD|MID|PAD',
-    #     pos_paddings='AB|DT|HA|HD|HP|HS|IE|IN|JJ|KN|PC|PL|PN|PP|PS|RG|RO|SN|UO|VB',
-    #     lemmatize=True,
-    #     append_pos=False,
-    #     global_tf_threshold=1,
-    #     global_tf_threshold_mask=False,
-    #     **corpus_config.pipeline_payload.tagged_columns_names,
-    # )
 
     (
-        # CorpusPipeline(config=corpus_config).load_tagged_frame(
-        #     filename=CORPUS_FILENAME,
-        #     checkpoint_opts=corpus_config.checkpoint_opts,
-        #     extra_reader_opts=corpus_config.text_reader_opts,
-        # )
-        # pipelines.to_tagged_frame_pipeline(
-        #     corpus_config=corpus_config,
-        #     corpus_source=CORPUS_FILENAME,
-        #     enable_chekpoint=False,
-        #     force_chekpoint=False,
-        # )
         corpus_config.get_pipeline(
             "tagged_frame_pipeline",
             corpus_source=CORPUS_FILENAME,

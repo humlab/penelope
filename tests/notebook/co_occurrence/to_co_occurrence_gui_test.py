@@ -67,19 +67,11 @@ def test_generate_cli_opts():
         target_folder='./tests/output',
         corpus_tag='APA',
         transform_opts=TokensTransformOpts(
-            only_alphabetic=False,
-            only_any_alphanumeric=False,
-            to_lower=True,
-            to_upper=False,
-            min_len=1,
-            max_len=None,
-            remove_accents=False,
-            remove_stopwords=True,
-            stopwords=None,
+            transforms={
+                'to-lower': True,
+                'remove_stopwords': 'swedish',
+            },
             extra_stopwords=['örn'],
-            language='swedish',
-            keep_numerals=True,
-            keep_symbols=True,
         ),
         text_reader_opts=TextReaderOpts(
             filename_pattern='*.csv',

@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 
 import penelope.pipeline.spacy.convert as convert
-from penelope.corpus import VectorizedCorpus, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts, TextTransformOpts
+from penelope.corpus import TextTransformOpts, TokensTransformOpts, VectorizedCorpus, VectorizeOpts
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReader, TextReaderOpts
 from penelope.pipeline import CorpusConfig, CorpusPipeline, PipelinePayload, tagged_frame_to_tokens
 from penelope.pipeline.spacy.tagger import SpacyTagger
 from penelope.vendor import spacy_api
@@ -344,7 +344,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(tagge
         **SPACY_TAGGED_COLUMNS,
         filter_opts=dict(is_punct=False),
     )
-    transform_opts = None
+    transform_opts: TokensTransformOpts = None
 
     pipeline = (
         CorpusPipeline(config=config)
@@ -359,7 +359,7 @@ def test_spacy_pipeline_load_text_to_spacy_to_dataframe_to_tokens_resolves(tagge
         ['home', 'sea', 'ocean', 'life'],
         ['atmosphere', 'blow'],
         ['*', 'activity', 'surface', 'cease'],
-        ['*', 'planet'],
+        ['’', '*', 'planet'],  # "'" is not a verb or noun, but stems from it's i.e is which is a verb
         ['volcano', 'erupt', 'year'],
         ['eruption', 'occur', 'year', 'region', 'call'],
         ['know', '*', 'eruption'],

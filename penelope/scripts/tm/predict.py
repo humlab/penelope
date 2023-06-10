@@ -106,19 +106,16 @@ def main(
     config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(path=config_filename)
 
     transform_opts: penelope.TokensTransformOpts = penelope.TokensTransformOpts(
-        to_lower=to_lower,
-        to_upper=False,
-        min_len=min_word_length,
-        max_len=max_word_length,
-        remove_accents=False,
-        remove_stopwords=(remove_stopwords is not None),
-        stopwords=None,
-        extra_stopwords=None,
-        language=remove_stopwords,
-        keep_numerals=keep_numerals,
-        keep_symbols=keep_symbols,
-        only_alphabetic=only_alphabetic,
-        only_any_alphanumeric=only_any_alphanumeric,
+        transforms={
+            'to-lower': to_lower,
+            'min-chars': min_word_length,
+            'max-chars': max_word_length,
+            'remove-stopwords': remove_stopwords,
+            'remove-numerals': not keep_numerals,
+            'remove-symbols': not keep_symbols,
+            'only-alphabetic': only_alphabetic,
+            'only-any-alphanumeric': only_any_alphanumeric,
+        }
     )
 
     extract_opts = penelope.ExtractTaggedTokensOpts(

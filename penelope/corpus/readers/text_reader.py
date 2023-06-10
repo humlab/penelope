@@ -14,8 +14,8 @@ from penelope.utility import (
 )
 
 from ..document_index import DocumentIndex, DocumentIndexHelper, metadata_to_document_index
+from ..transformer import TextTransformer, TextTransformOpts
 from .interfaces import FilenameFilterSpec, ICorpusReader, TextReaderOpts, TextSource
-from .text_transformer import TextTransformer, TextTransformOpts
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 
@@ -45,9 +45,7 @@ class TextReader(ICorpusReader):
 
         self._source: TextSource = source
         self.reader_opts: TextReaderOpts = reader_opts.copy()
-        self.text_transformer: TextTransformer = TextTransformer(
-            text_transform_opts=transform_opts or TextTransformOpts()
-        )
+        self.text_transformer: TextTransformer = TextTransformer(transform_opts=transform_opts or TextTransformOpts())
 
         self._iterator = None
         self._all_filenames: List[str] = list_any_source(

@@ -91,32 +91,24 @@ def debug_main(
         text_transform_opts: pc.TextTransformOpts = pc.TextTransformOpts()
 
         if fix_accents:
-            text_transform_opts.fix_accents = True
+            text_transform_opts.add('strip-accents')
 
         if fix_hyphenation:
             """Replace default dehyphen function"""
-            # fix_hyphens: Callable[[str], str] = (
-            #     remove_hyphens_fx(config.text_reader_opts.dehyphen_expr)
-            #     if config.text_reader_opts.dehyphen_expr is not None
-            #     else remove_hyphens
-            # )
-            text_transform_opts.fix_hyphenation = False
-            text_transform_opts.extra_transforms.append(pc.remove_hyphens)
+            text_transform_opts.remove('dehyphen')
+            text_transform_opts.add(pc.dehyphen)
 
         transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts(
-            to_lower=to_lower,
-            to_upper=False,
-            min_len=min_word_length,
-            max_len=max_word_length,
-            remove_accents=False,
-            remove_stopwords=(remove_stopwords is not None),
-            stopwords=None,
-            extra_stopwords=None,
-            language=remove_stopwords,
-            keep_numerals=keep_numerals,
-            keep_symbols=keep_symbols,
-            only_alphabetic=only_alphabetic,
-            only_any_alphanumeric=only_any_alphanumeric,
+            transforms={
+                'to-lower': to_lower,
+                'min-len': min_word_length,
+                'max-len': max_word_length,
+                'remove-stopwords': remove_stopwords,
+                'remove-numerals': not keep_numerals,
+                'remove-symbols': not keep_symbols,
+                'only-alphabetic': only_alphabetic,
+                'only-any-alphanumeric': only_any_alphanumeric,
+            }
         )
 
         extract_opts = pc.ExtractTaggedTokensOpts(

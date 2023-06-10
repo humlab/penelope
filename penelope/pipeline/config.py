@@ -13,9 +13,15 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 import yaml
 
 from penelope.corpus import TextReaderOpts, TextTransformOpts
-from penelope.utility import PoS_Tag_Scheme, create_instance, get_pos_schema, strip_extensions
-from penelope.utility.filename_utils import replace_extension
-from penelope.utility.utils import dotget
+from penelope.utility import (
+    CommaStr,
+    PoS_Tag_Scheme,
+    create_instance,
+    dotget,
+    get_pos_schema,
+    replace_extension,
+    strip_extensions,
+)
 
 from . import checkpoint, interfaces
 
@@ -109,7 +115,7 @@ class CorpusConfig:
             corpus_pattern=self.corpus_pattern,
             checkpoint_opts=asdict(self.checkpoint_opts) if self.checkpoint_opts else None,
             text_reader_opts=asdict(self.text_reader_opts) if self.text_reader_opts else None,
-            text_transform_opts=self.text_transform_opts.props if self.text_transform_opts else None,
+            text_transform_opts=str(self.text_transform_opts.transforms) if self.text_transform_opts else None,
             pipeline_payload=self.pipeline_payload.props,
             pipelines=self.pipelines,
             # pos_schema_name=self.pipeline_payload.pos_schema_name,
@@ -163,6 +169,14 @@ class CorpusConfig:
         return deserialized_config
 
     @staticmethod
+    def decode_transform_opts(transform_opts: dict) -> TextTransformOpts:
+        if transform_opts is None:
+            return None
+        if isinstance(transform_opts, (str, CommaStr, dict)):
+            return TextTransformOpts(transforms=transform_opts)
+        return None
+
+    @staticmethod
     def dict_to_corpus_config(config_dict: dict) -> "CorpusConfig":
         """Maps a dict read from file to a CorpusConfig instance"""
 
@@ -173,8 +187,9 @@ class CorpusConfig:
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
 
-        if config_dict.get('text_transform_opts', None) is not None:
-            config_dict['text_transform_opts'] = TextTransformOpts(**config_dict['text_transform_opts'])
+        transform_opts: dict | str = config_dict.get('text_transform_opts', None)
+        if transform_opts is not None:
+            config_dict['text_transform_opts'] = CorpusConfig.decode_transform_opts(transform_opts)
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))

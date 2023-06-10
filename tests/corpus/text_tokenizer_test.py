@@ -36,7 +36,7 @@ def test_tokenize_corpus_with_list_source():
 
 def test_get_file_when_default_returns_unmodified_content():
     filename = 'dikt_2019_01_test.txt'
-    reader = create_tokens_reader(fix_whitespaces=False, fix_hyphenation=True, filename_filter=[filename])
+    reader = create_tokens_reader(text_transforms="dehyphen", filename_filter=[filename])
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -60,7 +60,7 @@ def test_metadata_has_filena():
 
 def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
     filename = 'dikt_2019_01_test.txt'
-    reader = create_tokens_reader(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename])
+    reader = create_tokens_reader(text_transforms="normalize-whitespace,dehyphen", filename_filter=[filename])
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -74,7 +74,7 @@ def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
 
 def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
     filename = 'dikt_2019_03_test.txt'
-    reader = create_tokens_reader(fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename])
+    reader = create_tokens_reader(text_transforms="normalize-whitespace,dehyphen", filename_filter=[filename])
     result = next(reader)
     expected = (
         "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
@@ -89,7 +89,7 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
     filename = 'dikt_2019_03_test.txt'
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
     reader = create_tokens_reader(
-        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True, filename_filter=[filename]
+        filename_fields=filename_fields, text_transforms="normalize-whitespace,dehyphen", filename_filter=[filename]
     )
     result = next(reader)
     expected = (
@@ -104,7 +104,7 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
 
 def test_get_index_when_extractor_passed_returns_metadata():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True)
+    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="normalize-whitespace,dehyphen")
     result = reader.metadata
     expected = [
         dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
@@ -122,7 +122,7 @@ def test_get_index_when_extractor_passed_returns_metadata():
 def test_get_index_when_extractor_passed_returns_metadata2():
     filename_fields = "year:_:1#serial_no:_:2"
     reader: TextTokenizer = create_tokens_reader(
-        filename_fields=filename_fields, fix_whitespaces=True, fix_hyphenation=True
+        filename_fields=filename_fields, text_transforms="normalize-whitespace,dehyphen"
     )
     result = reader.metadata
     expected = [
@@ -151,7 +151,9 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 
 def test_reader_can_be_reiterated():
-    reader: TextTokenizer = create_tokens_reader(filename_fields="year:_:1", fix_whitespaces=True, fix_hyphenation=True)
+    reader: TextTokenizer = create_tokens_reader(
+        filename_fields="year:_:1", text_transforms="normalize-whitespace,dehyphen"
+    )
     for _ in range(0, 4):
         n_tokens = [len(x) for _, x in reader]
         expected = [22, 16, 26, 45, 21]

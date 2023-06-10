@@ -56,13 +56,13 @@ def prepare_train_corpus(
 ):
     """Prepares the a training corpus from Sparv XML archive"""
     transform_opts: TokensTransformOpts = TokensTransformOpts(
-        to_lower=lower,
-        remove_stopwords=remove_stopwords is not None,
-        language=remove_stopwords,
-        min_len=min_word_length,
-        max_len=None,
-        keep_numerals=keep_numerals,
-        keep_symbols=keep_symbols,
+        {
+            'to-lower': lower,
+            'remove-stopwords': remove_stopwords,
+            'min-len': min_word_length,
+            'remove-numerals': not keep_numerals,
+            'remove-symbols': not keep_symbols,
+        }
     )
     extract_opts = ExtractTaggedTokensOpts(
         pos_includes=pos_includes,

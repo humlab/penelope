@@ -216,10 +216,7 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
         extract_opts=ExtractTaggedTokensOpts(
             lemmatize=True, pos_includes='|NN|', pos_paddings=None, **SPARV_TAGGED_COLUMNS
         ),
-        transform_opts=TokensTransformOpts(
-            min_len=2,
-            to_upper=True,
-        ),
+        transform_opts=TokensTransformOpts(transforms={'min-chars': 2, 'to_upper': True}),
     )
 
     partitions = corpus.partition_documents('year')

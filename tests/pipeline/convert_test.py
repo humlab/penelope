@@ -599,11 +599,13 @@ utskotten	NN	|utskott|
 """
     tagged_frame: pd.DataFrame = pd.read_csv(StringIO(data_str), sep='\t', index_col=None)
 
-    transform_opts: TokensTransformOpts() = None
+    transform_opts: TokensTransformOpts = None
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == tagged_frame.token.tolist()
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True)
+    transform_opts: TokensTransformOpts = TokensTransformOpts(transforms={'to-lower': True})
+    assert transform_opts.to_lower
+
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == [x.lower() for x in tagged_frame.token.tolist()]
 
@@ -611,11 +613,13 @@ utskotten	NN	|utskott|
     # tokens = transform_frame(tagged_frame, transform_opts)
     # assert tokens == [ x.upper() for x in tagged_frame.token.tolist()]
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, only_alphabetic=True)
+    transform_opts: TokensTransformOpts = TokensTransformOpts(transforms={'to-lower': True, 'only-alphabetic': True})
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == ['herr', 'talman', 'kammaren', 'måste', 'besluta', 'att', 'välja', 'suppleanter', 'i', 'utskotten']
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, only_any_alphanumeric=True)
+    transform_opts: TokensTransformOpts = TokensTransformOpts(
+        transforms={'to-lower': True, 'only-any-alphanumeric': True}
+    )
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == [
         'herr',
@@ -631,19 +635,23 @@ utskotten	NN	|utskott|
         'utskotten',
     ]
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, remove_stopwords=True, stopwords='swedish')
+    transform_opts: TokensTransformOpts = TokensTransformOpts(
+        transforms={'to-lower': True, 'remove_stopwords': 'swedish'}
+    )
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == ['herr', 'talman', '!', 'kammaren', 'besluta', 'välja', '10', 'suppleanter', 'utskotten', '.']
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, min_len=5)
+    transform_opts: TokensTransformOpts = TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 5})
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == [x.lower() for x in tagged_frame.token.tolist() if len(x) >= 5]
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, max_len=5)
+    transform_opts: TokensTransformOpts = TokensTransformOpts(transforms={'to-lower': True, 'max-chars': 5})
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == [x.lower() for x in tagged_frame.token.tolist() if len(x) <= 5]
 
-    transform_opts: TokensTransformOpts = TokensTransformOpts(to_lower=True, keep_numerals=False, keep_symbols=False)
+    transform_opts: TokensTransformOpts = TokensTransformOpts(
+        transforms={'to-lower': True, 'remove-numerals': True, 'remove-symbols': True}
+    )
     tokens = transform_frame(tagged_frame, transform_opts)
     assert tokens == ['herr', 'talman', 'kammaren', 'måste', 'besluta', 'att', 'välja', 'suppleanter', 'i', 'utskotten']
 
