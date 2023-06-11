@@ -153,7 +153,7 @@ class TransformOpts:
 
 class TextTransformOpts(TransformOpts):
     registry: tr.TransformRegistry = tr.TextTransformRegistry
-    DEFAULT_TRANSFORMS = CommaStr('normalize-whitespace,dehyphen')
+    DEFAULT_TRANSFORMS = CommaStr('dehyphen,normalize-whitespace')
 
 
 class TextTransformer:

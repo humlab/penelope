@@ -127,7 +127,7 @@ def main(
         filename_fields=filename_field,
     )
 
-    text_transform_opts: TextTransformOpts = TextTransformOpts(transforms="normalize-whitespace,dehyphen")
+    text_transform_opts: TextTransformOpts = TextTransformOpts(transforms="dehyphen,normalize-whitespace")
 
     _ = workflow.compute(
         target_name=target_name,

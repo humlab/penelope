@@ -95,7 +95,7 @@ def create_text_reader(
     index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
-    text_transforms: str = "normalize-whitespace,dehyphen",
+    text_transforms: str = "dehyphen,normalize-whitespace",
 ) -> TextReader:
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
@@ -116,7 +116,7 @@ def create_tokens_reader(
     index_field=None,
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
-    text_transforms: str = "normalize-whitespace,dehyphen",
+    text_transforms: str = "dehyphen,normalize-whitespace",
     chunk_size: int = None,
     tokenize: Callable = None,
 ) -> TextTokenizer:

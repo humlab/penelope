@@ -21,7 +21,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 @pytest.fixture
 def text_corpus() -> TokenizedCorpus:
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="normalize-whitespace,dehyphen")
+    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
     transform_opts = TokensTransformOpts(
         transforms={
             'only-any-alphanumeric': True,
