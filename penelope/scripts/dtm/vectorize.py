@@ -85,12 +85,12 @@ def to_dtm(
 
     log_arguments(args=arguments, log_dir=output_folder)
 
+
 @click.command()
 @click.argument('options_filename', type=click.STRING)
 def to_dtm_opts_file_only(options_filename: Optional[str] = None):
-
     arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
-    
+
     process(**arguments)
 
     with contextlib.suppress(Exception):

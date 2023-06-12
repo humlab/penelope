@@ -99,9 +99,10 @@ def click_main(
     arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
 
     main(**arguments)
-    
+
     with contextlib.suppress(Exception):
         log_arguments(args=arguments, log_dir=arguments.get('target_folder'))
+
 
 def main(
     config_filename: Optional[str] = None,

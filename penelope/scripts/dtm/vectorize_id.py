@@ -81,7 +81,7 @@ def main(
 
     with contextlib.suppress(Exception):
         log_arguments(arguments, arguments.get("output_folder"))
-    
+
 
 def process(
     *,

@@ -83,6 +83,7 @@ def click_main(
     with contextlib.suppress(Exception):
         log_arguments(args=arguments, log_dir=arguments.get('target_folder'))
 
+
 def main(
     corpus_source: str = None,
     config_filename: str = None,

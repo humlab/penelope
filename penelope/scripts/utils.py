@@ -146,7 +146,7 @@ def log_arguments(args: dict, log_dir: str = "./logs", sub_dir: bool = False) ->
 
     if not log_dir:
         return
-    
+
     cli_name: str = utility.strip_path_and_extension(sys.argv[0])
 
     if sub_dir:
