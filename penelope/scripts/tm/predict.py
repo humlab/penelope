@@ -1,3 +1,4 @@
+import contextlib
 import sys
 from os.path import isfile, join, split
 
@@ -6,7 +7,7 @@ from loguru import logger
 
 import penelope.corpus as penelope
 from penelope import pipeline
-from penelope.scripts.utils import consolidate_cli_arguments, option2
+from penelope.scripts.utils import consolidate_arguments, log_arguments, option2
 from penelope.workflows.tm.predict import compute as workflow
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -66,7 +67,7 @@ def click_main(
         click.echo("error: TARGET_NAME not specified")
         sys.exit(1)
 
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
 
     model_folder, model_name = split(trained_model_folder)
 
@@ -78,6 +79,9 @@ def click_main(
         sys.exit(1)
 
     main(**arguments)
+
+    with contextlib.suppress(Exception):
+        log_arguments(args=arguments, log_dir=arguments.get('target_folder'))
 
 
 def main(

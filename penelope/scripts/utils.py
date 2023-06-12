@@ -12,8 +12,6 @@ except ImportError:
 
 # pylint: disable=no-member
 
-CLI_LOG_PATH = './logs'
-
 CLI_OPTIONS = {
     '--alpha': dict(help='Prior belief of topic probability. symmetric/asymmetric/auto', default='asymmetric'),
     '--append-pos': dict(help='Append PoS to tokens', default=False, is_flag=True),
@@ -121,7 +119,14 @@ CLI_OPTIONS = {
 }
 
 
-def consolidate_cli_arguments(*, arguments: dict, filename_key: str, log_args: bool = True) -> dict:
+def consolidate_arguments(
+    *,
+    arguments: dict,
+    filename_key: str,
+    store_opts: bool = True,
+    log_dir: bool = './logs',
+    sub_dir: bool = False,
+) -> dict:
     """Updates `arguments` based on values found in file specified by `filename_key`.
     Values specified at the command line overrides values from options file."""
     options_filename: Optional[str] = arguments.get(filename_key)
@@ -130,22 +135,26 @@ def consolidate_cli_arguments(*, arguments: dict, filename_key: str, log_args: b
     cli_args: dict = passed_cli_arguments(arguments)
     arguments.update(cli_args)
 
-    if log_args:
-        log_arguments(arguments)
+    if store_opts:
+        log_arguments(arguments, log_dir=log_dir, sub_dir=sub_dir)
 
     return arguments
 
 
-def log_arguments(args: dict, subdir: bool = False) -> None:
-    cli_command: str = utility.strip_path_and_extension(sys.argv[0])
+def log_arguments(args: dict, log_dir: str = "./logs", sub_dir: bool = False) -> None:
+    """Store arguments in YAML file"""
 
-    log_dir: str = os.path.join(CLI_LOG_PATH, cli_command) if subdir else CLI_LOG_PATH
+    if not log_dir:
+        return
+
+    cli_name: str = utility.strip_path_and_extension(sys.argv[0])
+
+    if sub_dir:
+        log_dir = os.path.join(log_dir, cli_name)
 
     os.makedirs(log_dir, exist_ok=True)
 
-    log_name: str = utility.ts_data_path(log_dir, f"{cli_command}.yml")
-
-    utility.write_yaml(args, log_name)
+    utility.write_yaml(args, utility.ts_data_path(log_dir, f"{cli_name}.yml"))
 
 
 def passed_cli_arguments(args: dict) -> dict:

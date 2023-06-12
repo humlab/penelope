@@ -1,3 +1,4 @@
+import contextlib
 import os
 import sys
 from typing import Literal, Optional
@@ -6,7 +7,7 @@ import click
 
 from penelope import corpus as pc
 from penelope import pipeline
-from penelope.scripts.utils import consolidate_cli_arguments, load_config, option2, remove_none
+from penelope.scripts.utils import consolidate_arguments, load_config, log_arguments, option2, remove_none
 from penelope.topic_modelling.interfaces import InferredModel
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -43,6 +44,7 @@ from penelope.topic_modelling.interfaces import InferredModel
 @option2('--random-seed')
 @option2('--workers')
 @option2('--max-iter')
+@option2('--num-top-words')
 @option2('--chunk-size')
 @option2('--update-every')
 @option2('--minimum-probability')
@@ -76,6 +78,7 @@ def click_main(
     chunk_size: int = 2000,
     engine: str = "gensim_lda-multicore",
     max_iter: int = None,
+    num_top_words: int = None,
     minimum_probability: float = None,
     n_topics: int = 50,
     passes: int = None,
@@ -93,9 +96,12 @@ def click_main(
     force_checkpoint: bool = False,
     passthrough_column: Optional[str] = None,
 ):
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
 
     main(**arguments)
+
+    with contextlib.suppress(Exception):
+        log_arguments(args=arguments, log_dir=arguments.get('target_folder'))
 
 
 def main(
@@ -121,6 +127,7 @@ def main(
     chunk_size: int = 2000,
     engine: str = "gensim_lda-multicore",
     max_iter: int = None,
+    num_top_words: int = None,
     minimum_probability: float = None,
     n_topics: int = 50,
     passes: int = None,
@@ -199,6 +206,7 @@ def main(
             alpha=alpha,
             chunk_size=chunk_size,
             max_iter=max_iter,
+            num_top_words=num_top_words,
             minimum_probability=minimum_probability,
             n_topics=n_topics,
             passes=passes,

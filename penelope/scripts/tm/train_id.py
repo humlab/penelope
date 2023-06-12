@@ -1,3 +1,4 @@
+import contextlib
 import os
 import sys
 from typing import Literal, Optional
@@ -8,7 +9,7 @@ from loguru import logger
 import penelope.workflows.tm.train_id as workflow
 from penelope import corpus as pc
 from penelope import pipeline
-from penelope.scripts.utils import consolidate_cli_arguments, load_config, option2, remove_none
+from penelope.scripts.utils import consolidate_arguments, load_config, log_arguments, option2, remove_none
 from penelope.topic_modelling.interfaces import InferredModel
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -85,9 +86,12 @@ def click_main(
     store_corpus: bool = True,
     store_compressed: bool = True,
 ):
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
 
     main(**arguments)
+
+    with contextlib.suppress(Exception):
+        log_arguments(args=arguments, log_dir=arguments.get('target_folder'))
 
 
 def main(
