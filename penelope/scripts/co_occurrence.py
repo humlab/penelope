@@ -1,3 +1,4 @@
+import contextlib
 import os
 from typing import List, Optional, Sequence
 
@@ -9,7 +10,7 @@ from penelope.co_occurrence import ContextOpts, to_folder_and_tag
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import consolidate_cli_arguments, option2
+from penelope.scripts.utils import consolidate_arguments, log_arguments, option2
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 
@@ -96,9 +97,13 @@ def main(
     deserialize_processes: int = 4,
 ):
     try:
-        arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+        arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
 
         process_co_ocurrence(**arguments)
+
+        with contextlib.suppress(Exception):
+            log_arguments(args=arguments, log_dir=os.path.join(*to_folder_and_tag(arguments.get('output_filename'))))
+
     except MissingOptionError as ex:
         print(ex)
 

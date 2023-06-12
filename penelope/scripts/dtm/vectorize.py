@@ -1,3 +1,4 @@
+import contextlib
 import sys
 from typing import Optional, Sequence
 
@@ -8,7 +9,7 @@ import penelope.workflows.vectorize.dtm as workflow
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import consolidate_cli_arguments, option2
+from penelope.scripts.utils import consolidate_arguments, log_arguments, option2
 from penelope.utility import pos_tags_to_str
 from penelope.workflows import interface
 
@@ -78,16 +79,22 @@ def to_dtm(
     enable_checkpoint: bool = True,
     force_checkpoint: bool = False,
 ):
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
 
     process(**arguments)
 
+    log_arguments(args=arguments, log_dir=output_folder)
 
 @click.command()
 @click.argument('options_filename', type=click.STRING)
 def to_dtm_opts_file_only(options_filename: Optional[str] = None):
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+
+    arguments: dict = consolidate_arguments(arguments=locals(), filename_key='options_filename')
+    
     process(**arguments)
+
+    with contextlib.suppress(Exception):
+        log_arguments(args=arguments, log_dir=arguments.get('output_folder'))
 
 
 def process(

@@ -1,3 +1,4 @@
+import contextlib
 import sys
 from typing import Optional, Sequence
 
@@ -8,7 +9,7 @@ import penelope.workflows.vectorize.dtm_id as workflow
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig
 from penelope.pipeline.phrases import parse_phrases
-from penelope.scripts.utils import consolidate_cli_arguments, option2
+from penelope.scripts.utils import consolidate_arguments, log_arguments, option2
 from penelope.utility import pos_tags_to_str
 
 # pylint: disable=too-many-arguments, unused-argument, useless-super-delegation
@@ -72,9 +73,15 @@ def main(
     This script is a specialized version of vectorize.py. The only difference is that the tagged frame id pipleine is hard-coded,
     and pipeline specifications in the corpus config file are ignored.
     """
-    arguments: dict = consolidate_cli_arguments(arguments=locals(), filename_key='options_filename')
+    arguments: dict = consolidate_arguments(
+        arguments=locals(),
+        filename_key='options_filename',
+    )
     process(**arguments)
 
+    with contextlib.suppress(Exception):
+        log_arguments(arguments, arguments.get("output_folder"))
+    
 
 def process(
     *,
