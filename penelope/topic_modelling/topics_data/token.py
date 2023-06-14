@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Mapping, Protocol
 
 import pandas as pd
@@ -91,11 +92,18 @@ def filter_topic_tokens_overview(
     data: pd.DataFrame = pd.DataFrame(topic_tokens_overview)
 
     if search_text:
-        top_tokens = data.tokens.apply(lambda x: x.split(' ')[:n_top]).str.join(' ')
-        data = data[top_tokens.str.contains(search_text)]
-        data['tokens'] = (top_tokens if truncate_tokens else data.tokens).apply(
-            lambda x: x.replace(search_text, format_string.format(search_text))
-        )
+        top_n_tokens = data.tokens.apply(lambda x: x.split(' ')[:n_top]).str.join(' ')
+        # FIXME: Search is case insensitive
+        data = data[top_n_tokens.str.lower().str.contains(search_text.lower())]
+        if truncate_tokens:
+            """Truncate tokens in result to top_n_tokens"""
+            data['tokens'] = top_n_tokens.loc[data.index]
+        if len(data) > 0:
+            """Highlight search text in tokens"""
+            # FIXME: Search replaced text case insensitive
+            re_subst: re.Pattern = re.compile(re.escape(search_text), re.IGNORECASE)
+            replace_text: str = format_string.format(search_text)
+            data['tokens'] = data.tokens.apply(lambda x: re_subst.sub(replace_text, x))
 
     return data
 
