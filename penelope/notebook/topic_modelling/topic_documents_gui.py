@@ -7,10 +7,12 @@ import pandas as pd
 from IPython.display import display
 
 from penelope import utility as pu
+from penelope.common.render_text import TextRepository, RenderService
 from penelope.notebook import widgets_utils as wu
 
 from ..grid_utility import TableWidget, table_widget
 from . import mixins as mx
+from .. import mixins as nx
 from .model_container import TopicModelContainer
 
 
@@ -263,3 +265,57 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
             return
 
         super().update_handler()
+
+
+class WithPivotKeysText:
+    class BrowseTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, BrowseTopicDocumentsGUI):
+        def __init__(
+            self, text_repository: TextRepository, render_service: RenderService, state: TopicModelContainer | dict
+        ):
+            super().__init__(
+                text_repository=text_repository, render_service=render_service, pivot_key_specs={}, state=state
+            )
+
+            self._threshold.value = 0.20
+            self._year_range.value = (1990, 1992)
+            self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
+
+        def setup(self, **kwargs):  # pylint: disable=useless-super-delegation
+            return super().setup(**kwargs)
+
+        @property
+        def filter_opts(self) -> pu.PropertyValueMaskingOpts:
+            options: dict = super(BrowseTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
+            return options
+
+        # def update(self) -> pd.DataFrame:
+        #     _ = super().update()
+        #     """note: at this point dtw is equal to calculator.data"""
+        #     self.alert("preparing data, please wait...")
+        #     calculator: tx.DocumentTopicsCalculator = self.inferred_topics.calculator
+        #     data: pd.DataFrame = self.person_codecs.decode(
+        #         calculator.overload(includes="protocol_name,document_name,gender_id,party_id,person_id").value,
+        #         drop=True,
+        #     )
+        #     self.alert("Done!")
+        #     return data
+
+    class FindTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, FindTopicDocumentsGUI):
+        def __init__(
+            self, text_repository: TextRepository, render_service: RenderService, state: TopicModelContainer | dict
+        ):
+            super().__init__(
+                text_repository=text_repository, render_service=render_service, pivot_key_specs={}, state=state
+            )
+
+            self._threshold.value = 0.20
+            self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
+            self.alert("INIT")
+
+        def setup(self, **kwargs):  # pylint: disable=useless-super-delegation
+            return super().setup(**kwargs)
+
+        @property
+        def filter_opts(self) -> pu.PropertyValueMaskingOpts:
+            options: dict = super(FindTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
+            return options
