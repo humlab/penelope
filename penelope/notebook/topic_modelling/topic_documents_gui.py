@@ -7,12 +7,12 @@ import pandas as pd
 from IPython.display import display
 
 from penelope import utility as pu
-from penelope.common.render_text import TextRepository, RenderService
+from penelope.common.render_text import RenderService, TextRepository
 from penelope.notebook import widgets_utils as wu
 
+from .. import mixins as nx
 from ..grid_utility import TableWidget, table_widget
 from . import mixins as mx
-from .. import mixins as nx
 from .model_container import TopicModelContainer
 
 

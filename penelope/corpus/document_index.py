@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from io import StringIO
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, Union
+
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -16,9 +17,9 @@ from penelope.utility import (
     is_strictly_increasing,
     list_of_dicts_to_dict_of_lists,
     probe_extension,
+    read_file_content,
     strip_path_and_extension,
     strip_paths,
-    read_file_content,
 )
 
 if TYPE_CHECKING:

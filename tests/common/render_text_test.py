@@ -1,12 +1,11 @@
-import pandas as pd
-from penelope.corpus import load_document_index
 from os.path import splitext
-from penelope.common.render_text import DEFAULT_TEMPLATE, RenderService, TextRepository
 
-LINKS_REGISTRY = {
-    'PDF': lambda _: 'PDF',
-    'MD': lambda _: 'MD'
-}
+import pandas as pd
+
+from penelope.common.render_text import DEFAULT_TEMPLATE, RenderService, TextRepository
+from penelope.corpus import load_document_index
+
+LINKS_REGISTRY = {'PDF': lambda _: 'PDF', 'MD': lambda _: 'MD'}
 
 
 def test_text_repository():
@@ -56,7 +55,6 @@ def test_text_repository():
 
 
 def test_text_repository_trender_document():
-
     template = DEFAULT_TEMPLATE
     renderer: RenderService = RenderService(template, links_registry=LINKS_REGISTRY.items())
 

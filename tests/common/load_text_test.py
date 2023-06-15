@@ -1,13 +1,13 @@
 from os.path import join
 
 import pandas as pd
+
 from penelope import corpus as corpora
 from penelope import pipeline, utility
+from penelope.common.render_text import LemmaCorpusLoader, TextCorpusLoader, TokenizedCorpusLoader, ZipLoader
 from penelope.corpus import load_document_index
 from penelope.corpus.transforms import dehyphen
 from penelope.pipeline import tasks
-
-from penelope.common.render_text import LemmaCorpusLoader, TextCorpusLoader, TokenizedCorpusLoader, ZipLoader
 
 # FIXME: Create a test fixture for this
 TEST_CORPUS_FILENAME: str = '/data/inidun/courier/corpus/v0.2.0/article_corpus.zip'
@@ -113,6 +113,7 @@ def test_load_article_document_text():
     text = ZipLoader(source).load(article_name)
 
     assert text is not None
+
 
 def test_load_article_document_using_loader():
     source: str = TEST_CORPUS_FILENAME
