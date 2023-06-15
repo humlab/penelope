@@ -154,7 +154,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                     with pd.option_context("display.max_rows", None, "display.max_columns", None):
                         display(self.yearly_topic_weights)
                 elif self.output_format == "table":
-                    g = gu.table_widget(self.yearly_topic_weights, handler=self.click_handler)
+                    g = gu.table_widget(self.yearly_topic_weights, handler=self._table_click_handler)
                     display(g)
                 else:
                     self.topic_changed()
@@ -162,7 +162,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         except Exception as ex:
             self.warn(f"😡 {ex}")
 
-    def click_handler(self, item: pd.Series, _: Any) -> None:
+    def _table_click_handler(self, item: pd.Series, _: Any) -> None:
         self.alert(f"You clicked:  {item['year']} {item['topic_id']}")
 
     @property

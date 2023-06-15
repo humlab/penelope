@@ -43,7 +43,7 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
         self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
         self._table_widget: TableWidget = None
-        self.click_handler: Callable[[pd.Series, Any], None] = None
+        self._document_click_handler: Callable[[pd.Series, Any], None] = None
 
     def setup(self, **kwargs) -> "TopicDocumentsGUI":  # pylint: disable=arguments-differ,unused-argument
         self._compute.on_click(self.update_handler)
@@ -101,7 +101,7 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.update()
 
                 if data is not None:
-                    self._table_widget: TableWidget = table_widget(data, handler=self.click_handler)
+                    self._table_widget: TableWidget = table_widget(data, handler=self._document_click_handler)
                     self._table_widget.layout.height = self.WIDGET_HEIGHT
                     display(self._table_widget)
 
