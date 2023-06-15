@@ -9,6 +9,7 @@ import pandas as pd
 from IPython.display import display as ipydisplay
 
 from penelope import utility as pu
+from penelope.common.render_text import IRenderService, ITextRepository
 from penelope.plot.colors import get_color_palette
 
 from . import utility as nu
@@ -342,3 +343,44 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
     @property
     def lines(self) -> list[tuple[str, str, str]]:
         return [x[1] for x in self._lines.options or []]
+
+
+class TextRepositoryMixIn:
+    def __init__(self, text_repository: ITextRepository, render_service: IRenderService, **kwargs):
+        super().__init__(**kwargs)
+
+        self._text_repository: ITextRepository = text_repository
+        self._render_service: IRenderService = render_service
+        self._text_output: w.HTML = w.HTML(layout={'width': '48%', 'background-color': 'lightgreen'})
+        self._content_type: t.Literal['raw', 'text', 'html'] = 'html'
+
+        self._document_click_handler = self.on_row_click
+
+    @property
+    def text_output(self) -> w.HTML:
+        return self._text_output
+
+    @property
+    def render_service(self) -> IRenderService:
+        return self._render_service
+
+    @property
+    def text_repository(self) -> ITextRepository:
+        return self._text_repository
+
+    @property
+    def content_type(self) -> t.Literal['raw', 'text', 'html']:
+        return self._content_type
+
+    @content_type.setter
+    def content_type(self, value: t.Literal['raw', 'text', 'html']):
+        self._content_type = value
+
+    def on_row_click(self, item: pd.Series, g: t.Any):  # pylint: disable=unused-argument
+        try:
+            document_name: str = item.get('document_name')
+            data: dict = self._text_repository.get(document_name)
+            self._text_output.value = self._render_service.render(data, kind=self.content_type)
+
+        except Exception as ex:
+            self._text_output.value = str(ex)
