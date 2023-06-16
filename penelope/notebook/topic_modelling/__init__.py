@@ -10,7 +10,7 @@ from .topic_document_network_gui import (
     FocusTopicDocumentNetworkGui,
     TopicDocumentNetworkGui,
 )
-from .topic_documents_gui import BrowseTopicDocumentsGUI, FindTopicDocumentsGUI
+from .topic_documents_gui import BrowseTopicDocumentsGUI, FindTopicDocumentsGUI, WithPivotKeysText
 from .topic_titles_gui import PandasTopicTitlesGUI, TopicTitlesGUI
 from .topic_topic_network_gui import TopicTopicGUI
 from .topic_topic_network_gui import display_gui as display_topic_topic_network_gui

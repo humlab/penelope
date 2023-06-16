@@ -1,6 +1,6 @@
 import pandas as pd
 
-from penelope.notebook.topic_modelling import LoadGUI, TopicModelContainer, PandasTopicTitlesGUI
+from penelope.notebook.topic_modelling import LoadGUI, PandasTopicTitlesGUI, TopicModelContainer
 
 
 def test_load_gui(state):
