@@ -63,6 +63,7 @@ class CorpusConfig:
     pipelines: dict
     pipeline_payload: interfaces.PipelinePayload
     language: str
+    extra_opts: dict[str, Any] = field(default_factory=dict)
 
     _tagger: interfaces.IDocumentTagger = field(default=None, init=False)
 
@@ -120,6 +121,7 @@ class CorpusConfig:
             pipelines=self.pipelines,
             # pos_schema_name=self.pipeline_payload.pos_schema_name,
             language=self.language,
+            extra_opts=self.extra_opts,
         )
 
     def dump(self, path: str):
@@ -180,7 +182,10 @@ class CorpusConfig:
     def dict_to_corpus_config(config_dict: dict) -> "CorpusConfig":
         """Maps a dict read from file to a CorpusConfig instance"""
 
-        """Remove deprecated key"""
+        if 'corpus_name' not in config_dict:
+            raise ValueError("CorpusConfig load failed. Mandatory key 'corpus_name' is missing.")
+
+        """FIXME: Remove deprecated key"""
         if 'filter_opts' in config_dict:
             del config_dict['filter_opts']
 
@@ -193,9 +198,8 @@ class CorpusConfig:
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
-        config_dict['pipelines'] = config_dict.get(
-            'pipelines', {}
-        )  # CorpusConfig.dict_to_pipeline_config(config_dict.get('pipelines', {}))
+        config_dict['pipelines'] = config_dict.get('pipelines', {})
+        config_dict['extra_opts'] = config_dict.get('extra_opts', {})
 
         deserialized_config: CorpusConfig = CorpusConfig.create(**config_dict)
         deserialized_config.corpus_type = CorpusType(deserialized_config.corpus_type)
@@ -257,6 +261,7 @@ class CorpusConfig:
             pipelines=None,
             pipeline_payload=interfaces.PipelinePayload(),
             language=language,
+            extra_opts={},
         )
         return config
 
@@ -288,6 +293,7 @@ class CorpusConfig:
         pipelines: dict = None,
         pipeline_payload: interfaces.PipelinePayload = None,
         language: str = "english",
+        extra_opts: dict = None,
     ) -> CorpusConfig:
         return CorpusConfig(
             corpus_name=corpus_name,
@@ -299,6 +305,7 @@ class CorpusConfig:
             pipelines=pipelines,
             pipeline_payload=pipeline_payload,
             language=language,
+            extra_opts=extra_opts or {},
         )
 
     @property
