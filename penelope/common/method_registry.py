@@ -41,7 +41,7 @@ def download_url_to_file(url: str, target_name: str, force: bool = False) -> Non
     ensure_path(target_name)
 
     with open(target_name, 'w', encoding="utf-8") as fp:
-        data: str = requests.get(url, allow_redirects=True).content.decode("utf-8")
+        data: str = requests.get(url, allow_redirects=True, timeout=600).content.decode("utf-8")
         fp.write(data)
 
 
