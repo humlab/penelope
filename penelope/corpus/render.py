@@ -45,8 +45,9 @@ class IRenderService(abc.ABC):
 
 
 class Loader(abc.ABC):
-    def __init__(self, source: str):
+    def __init__(self, source: str, **opts):
         self.source: str = source
+        self.opts: dict = opts
 
     def load(self, document: str) -> str:  # pylint: disable=unused-argument
         return self._load_text(self.source, document)
@@ -78,23 +79,33 @@ class ZippedTextCorpusLoader(ZipLoader):
         return normalize_whitespace(self._load_text(self.source, replace_extension(document, '.txt')))
 
 
-class TokenizedCorpusLoader(ZipLoader):
+class TaggedCorpusLoader(ZipLoader):
+    def __init__(self, source: str, **opts):
+        super().__init__(source, **opts)
+        if not self.source.endswith('_pos_csv.zip'):
+            self.source: str = path_add_suffix(self.source, '_pos_csv')
+        self._type_column_name: str = 'text_column'
+        self._probe_column_names = ['token', 'text']
+
     def load(self, document: str) -> str:
-        source: str = path_add_suffix(self.source, '_pos_csv')
         tagged_frame: pd.DataFrame = pd.read_csv(
-            StringIO(self._load_text(source, replace_extension(document, '.txt'))),
+            StringIO(self._load_text(self.source, replace_extension(document, '.csv'))),
             sep='\t',
         )
         column: str = self.probe_column_name(tagged_frame)
         return tagged_frame[column].str.cat(sep=' ')
 
     def probe_column_name(self, tagged_frame):
-        return next((c for c in tagged_frame.columns if 'text' in c or 'token' in c), 'text')
+        if self._type_column_name in self.opts:
+            return self.opts.get(self._type_column_name)
+        return next((c for c in tagged_frame.columns if any(t in c for t in self._probe_column_names)), None)
 
 
-class LemmaCorpusLoader(TokenizedCorpusLoader):
-    def probe_column_name(self, tagged_frame):
-        return next((c for c in tagged_frame.columns if 'lemma' in c), 'lemma')
+class LemmaCorpusLoader(TaggedCorpusLoader):
+    def __init__(self, source: str, **opts):
+        super().__init__(source, **opts)
+        self._type_column_name: str = 'lemma_column'
+        self._probe_column_names = ['lemma', 'baseform']
 
 
 class TextRepository(ITextRepository):

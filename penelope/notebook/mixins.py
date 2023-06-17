@@ -9,7 +9,7 @@ import pandas as pd
 from IPython.display import display as ipydisplay
 
 from penelope import utility as pu
-from penelope.common.render_text import IRenderService, ITextRepository
+from penelope.corpus.render import IRenderService, ITextRepository
 from penelope.plot.colors import get_color_palette
 
 from . import utility as nu

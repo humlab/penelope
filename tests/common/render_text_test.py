@@ -2,7 +2,7 @@ from os.path import splitext
 
 import pandas as pd
 
-from penelope.common.render_text import DEFAULT_TEMPLATE, RenderService, TextRepository
+from penelope.corpus.render import DEFAULT_TEMPLATE, RenderService, TextRepository
 from penelope.corpus import load_document_index
 
 LINKS_REGISTRY = {'PDF': lambda _: 'PDF', 'MD': lambda _: 'MD'}
