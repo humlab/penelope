@@ -481,11 +481,11 @@ def load_document_index(
                 raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
             filename = probe_filename
 
-        if filename.endswith('zip'):
-            try:
-                filename = StringIO(read_file_content(zip_or_filename=filename, filename='document_index.csv'))
-            except KeyError:
-                ...
+            if filename.endswith('zip'):
+                try:
+                    filename = StringIO(read_file_content(zip_or_filename=filename, filename='document_index.csv'))
+                except KeyError:
+                    ...
 
         document_index: DocumentIndex = (
             filename
