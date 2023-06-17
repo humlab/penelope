@@ -10,7 +10,6 @@ from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, Documen
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
 from penelope.topic_modelling.utility import ModelFolder, find_models
-from penelope.vendor import gensim_api
 from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
@@ -62,11 +61,11 @@ def tranströmer_topic_model_payload(method: str, target_folder: str, target_nam
     return payload
 
 
-@pytest.mark.skipif(not gensim_api.GENSIM_INSTALLED, reason="Gensim not installed")
 @pytest.mark.long_running
 @pytest.mark.parametrize('method', ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_predict_topics(method: str):
     """Train a model that will be used in prediction"""
+    pytest.importorskip("gensim")
 
     target_folder: str = './tests/output'
     train_target_name: str = f'train_{str(uuid.uuid1())[:8]}'
@@ -116,10 +115,11 @@ def test_predict_topics(method: str):
     assert 'method' in model_info.options
 
 
-@pytest.mark.skipif(not gensim_api.GENSIM_INSTALLED, reason="Gensim not installed")
 @pytest.mark.long_running
 @pytest.mark.parametrize("method", ["gensim_lda-multicore", "gensim_mallet-lda"])
 def test_topic_model_task_with_token_stream_and_document_index(method):
+    pytest.importorskip("gensim")
+
     target_folder: str = './tests/output'
     target_name: str = f'{str(uuid.uuid1())[:8]}'
     corpus: TranströmerCorpus = TranströmerCorpus()
