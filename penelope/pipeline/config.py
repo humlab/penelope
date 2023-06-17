@@ -133,14 +133,7 @@ class CorpusConfig:
             if path.endswith("json"):
                 json.dump(self, fp, default=vars, indent=4, allow_nan=True)
             if path.endswith('yaml') or path.endswith('yml'):
-                yaml.dump(
-                    # json.loads(json.dumps(self, default=vars)),
-                    self.props,
-                    fp,
-                    indent=4,
-                    default_flow_style=False,
-                    sort_keys=False,
-                )
+                yaml.dump(self.props, fp, indent=2, default_flow_style=False, sort_keys=False)
         # self.pipeline_payload.memory_store = memory_store
 
     @staticmethod
