@@ -141,8 +141,8 @@ class PipelinePayload:
 
     @property
     def _memory_store_props(self) -> dict[str, Any] | None:
-        ignores: list[str] = ['text_reader_opts', 'checkpoint_opts']
-        memory_store: dict[str, Any] = {k: v for k, v in self.memory_store.items() if v not in ignores}
+        ignores: list[str] = ['text_reader_opts', 'checkpoint_opts', 'reader_opts']
+        memory_store: dict[str, Any] = {k: v for k, v in self.memory_store.items() if k not in ignores}
         data: dict = dictify(memory_store, default_value=None)
         return data
 
@@ -152,7 +152,7 @@ class PipelinePayload:
             source=nullify(self.source, str),
             document_index_source=nullify(self.document_index_source, str),
             document_index_sep=self.document_index_sep,
-            filename=self.filenames,
+            filenames=self.filenames,
             pos_schema_name=self.pos_schema_name,
             memory_store=self._memory_store_props,
         )
