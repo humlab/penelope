@@ -114,18 +114,18 @@ def nullify(data: Any, ok_types: Type | list[Type]):
 class PipelinePayload:
     # source_folder: str = None
     source: TextSource = None
-    document_index_source: Union[str, DocumentIndex] = None
+    document_index_source: str | DocumentIndex = None
     document_index_sep: str = '\t'
 
-    memory_store: Mapping[str, Any] = field(default_factory=dict)
+    memory_store: dict[str, Any] = field(default_factory=dict)
     pos_schema_name: str = field(default="Universal")
 
-    filenames: List[str] = None
-    metadata: List[Dict[str, Any]] = None
+    filenames: list[str] = None
+    metadata: list[dict[str, Any]] = None
     token2id: Token2Id = None
     effective_document_index: DocumentIndex = None
 
-    _document_index_lookup: Mapping[str, Dict[str, Any]] = None
+    _document_index_lookup: Mapping[str, dict[str, Any]] = None
 
     @property
     def document_index(self) -> DocumentIndex:
@@ -141,7 +141,9 @@ class PipelinePayload:
 
     @property
     def _memory_store_props(self) -> dict[str, Any] | None:
-        data = dictify(self.memory_store, default_value=None)
+        ignores: list[str] = ['text_reader_opts', 'checkpoint_opts']
+        memory_store: dict[str, Any] = {k: v for k, v in self.memory_store.items() if v not in ignores}
+        data: dict = dictify(memory_store, default_value=None)
         return data
 
     @property
@@ -149,6 +151,8 @@ class PipelinePayload:
         return dict(
             source=nullify(self.source, str),
             document_index_source=nullify(self.document_index_source, str),
+            document_index_sep=self.document_index_sep,
+            filename=self.filenames,
             pos_schema_name=self.pos_schema_name,
             memory_store=self._memory_store_props,
         )
