@@ -16,7 +16,7 @@ pipeline_payload:
     lemma_column: lemma
     pos_column: pos
   pos_schema_name: SUC
-  source: sou_sparv3_3files_xml.zip
+  source: tests/test_data/sparv_data/sou_sparv3_3files_xml.zip
 filter_opts:
 text_reader_opts:
   as_binary: false

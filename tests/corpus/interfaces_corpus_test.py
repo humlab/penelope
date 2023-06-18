@@ -61,14 +61,14 @@ def test_sparv_xml_corpus_interface():
 def test_sparv3_xml_corpus_interface():
     assert issubclass(SparvTokenizedXmlCorpus, ITokenizedCorpus)
 
-    instance = SparvTokenizedXmlCorpus('./tests/test_data/sou_test_sparv3_xml.zip', version=3)
+    instance = SparvTokenizedXmlCorpus('./tests/test_data/sparv_data/sou_test_sparv3_xml.zip', version=3)
     assert isinstance(instance, ITokenizedCorpus)
 
 
 def test_sparv3_csv_corpus_interface():
     assert issubclass(SparvTokenizedCsvCorpus, ITokenizedCorpus)
 
-    instance = SparvTokenizedCsvCorpus('./tests/test_data/sparv_zipped_csv_export.zip')
+    instance = SparvTokenizedCsvCorpus('./tests/test_data/sparv_data/sparv_zipped_csv_export.zip')
     assert isinstance(instance, ITokenizedCorpus)
 
 

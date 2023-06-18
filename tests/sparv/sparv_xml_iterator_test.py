@@ -3,9 +3,9 @@ import pytest
 import penelope.corpus.readers as readers
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 
-SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
-SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
-SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_zipped_xml_export.zip'
+SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_xml_export.xml'
+SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_data/sparv_xml_export_small.xml'
+SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_zipped_xml_export.zip'
 
 
 def sparv_xml_test_file():
@@ -163,7 +163,7 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 @pytest.mark.long_running
 @pytest.mark.skip("deprecated Sparv v3")
 def test_reader_when_source_is_sparv3_succeeds():
-    sparv_zipped_xml_export_v3_filename = './tests/test_data/sou_test_sparv3_xml.zip'
+    sparv_zipped_xml_export_v3_filename = './tests/test_data/sparv_data/sou_test_sparv3_xml.zip'
 
     reader = readers.Sparv3XmlReader(
         sparv_zipped_xml_export_v3_filename,
