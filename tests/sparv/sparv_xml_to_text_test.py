@@ -1,7 +1,7 @@
 import penelope.corpus.sparv.sparv_xml_to_text as sparv
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 
-SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export_small.xml'
+SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_xml_export_small.xml'
 
 
 def sparv_xml_test_file():
