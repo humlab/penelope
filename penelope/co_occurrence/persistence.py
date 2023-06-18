@@ -13,7 +13,7 @@ import scipy
 from loguru import logger
 
 from penelope.type_alias import CoOccurrenceDataFrame
-from penelope.utility import create_instance, read_json, replace_extension, right_chop, strip_path_and_extension
+from penelope.utility import create_class, read_json, replace_extension, right_chop, strip_path_and_extension
 
 from ..corpus import (
     DocumentIndex,
@@ -367,7 +367,7 @@ def load(filename: str = None, folder: str = None, tag: str = None, compute_fram
     if co_occurrences is None and compute_frame:
         co_occurrences = corpus.to_co_occurrences(token2id)
 
-    bundle_cls: Type["Bundle"] = create_instance('penelope.co_occurrence.bundle.Bundle')
+    bundle_cls: Type["Bundle"] = create_class('penelope.co_occurrence.bundle.Bundle')
     bundle: "Bundle" = bundle_cls(
         folder=folder,
         tag=tag,

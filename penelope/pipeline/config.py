@@ -13,10 +13,11 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 import yaml
 
 from penelope.corpus import TextReaderOpts, TextTransformOpts
+from penelope.corpus.render import RenderService
 from penelope.utility import (
     CommaStr,
     PoS_Tag_Scheme,
-    create_instance,
+    create_class,
     dotget,
     get_pos_schema,
     replace_extension,
@@ -37,7 +38,7 @@ def create_pipeline_factory(
     class_or_function_name: str,
 ) -> Union[Callable[[CorpusConfig], CorpusPipeline], Type[CorpusPipeline]]:
     """Returns a CorpusPipeline type (class or callable that return instance) by name"""
-    factory = create_instance(class_or_function_name)
+    factory = create_class(class_or_function_name)
     return factory
 
 
@@ -126,15 +127,12 @@ class CorpusConfig:
 
     def dump(self, path: str):
         """Serializes and writes a CorpusConfig to `path`"""
-        # memory_store: dict = self.pipeline_payload.memory_store
-        # self.pipeline_payload.memory_store = None
 
-        with open(path, "w") as fp:
+        with open(path, "w", encoding="utf-8") as fp:
             if path.endswith("json"):
                 json.dump(self, fp, default=vars, indent=4, allow_nan=True)
             if path.endswith('yaml') or path.endswith('yml'):
-                yaml.dump(self.props, fp, indent=2, default_flow_style=False, sort_keys=False)
-        # self.pipeline_payload.memory_store = memory_store
+                yaml.dump(self.props, fp, indent=2, default_flow_style=False, sort_keys=False, encoding='utf-8')
 
     @staticmethod
     def list(folder: str) -> list[str]:
@@ -317,7 +315,7 @@ class CorpusConfig:
         if cls_name is None:
             raise ValueError(f"dot path not found in config: {cls_name}")
 
-        cls: Type[Any] = create_instance(cls_name)
+        cls: Type[Any] = create_class(cls_name)
         opts: dict = dotget(store, opts_dotpath, default={})
 
         return cls(**opts)

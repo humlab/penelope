@@ -9,7 +9,7 @@ from typing import Callable, List, Optional, Union
 import pandas as pd
 
 from penelope.type_alias import SerializableContent
-from penelope.utility import create_instance, dictify, strip_path_and_extension
+from penelope.utility import create_class, dictify, strip_path_and_extension
 
 from ..interfaces import ContentType
 
@@ -72,7 +72,7 @@ class CheckpointOpts:
     def custom_serializer(self) -> type:
         if not self.custom_serializer_classname:
             return None
-        return create_instance(self.custom_serializer_classname)
+        return create_class(self.custom_serializer_classname)
 
     @property
     def columns(self) -> List[str]:

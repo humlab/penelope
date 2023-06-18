@@ -14,7 +14,7 @@ def test_sparv_csv_serializer():
     with open(filename, "r") as fp:
         content: str = fp.read()
 
-    serializer_cls: Type[sparv.SparvCsvSerializer] = utility.create_instance(
+    serializer_cls: Type[sparv.SparvCsvSerializer] = utility.create_class(
         'penelope.pipeline.sparv.SparvCsvSerializer'
     )
     serializer: sparv.SparvCsvSerializer = serializer_cls()
