@@ -6,7 +6,7 @@ import types
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
-from typing import Callable, List, Tuple
+from typing import TYPE_CHECKING, Callable, List, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -14,10 +14,13 @@ from loguru import logger
 
 from penelope import corpus as pc
 from penelope import utility as pu
-from penelope.pipeline import CorpusConfig
 
 from . import token as tt
 from .document import DocumentTopicsCalculator
+
+if TYPE_CHECKING:
+    from penelope.pipeline import CorpusConfig
+
 
 CSV_OPTS: dict = dict(sep='\t', header=0, index_col=0, na_filter=False)
 
@@ -314,7 +317,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
     @staticmethod
     def load_corpus_config(folder: str) -> CorpusConfig:
         """Load CorpusConfig if exists"""
-        corpus_configs: list[CorpusConfig] = CorpusConfig.find_all(folder=folder)
+        corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(folder=folder)
         corpus_config: CorpusConfig = corpus_configs[0] if len(corpus_configs) > 0 else None
 
         if corpus_config is None:
