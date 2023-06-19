@@ -14,6 +14,7 @@ from loguru import logger
 
 from penelope import corpus as pc
 from penelope import utility as pu
+from penelope.pipeline import CorpusConfig
 
 from . import token as tt
 from .document import DocumentTopicsCalculator
@@ -148,6 +149,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         document_topic_weights: pd.DataFrame,
         topic_diagnostics: pd.DataFrame,
         token_diagnostics: pd.DataFrame,
+        corpus_config: CorpusConfig = None,
     ):
         """Container for predicted topics data."""
         super().__init__()
@@ -162,9 +164,18 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         self.topic_diagnostics: pd.DataFrame = topic_diagnostics
         self.token_diagnostics: pd.DataFrame = token_diagnostics
         self.calculator = DocumentTopicsCalculator(self)
+        self.corpus_config: CorpusConfig = corpus_config
 
         if 'token' not in self.topic_token_weights.columns:
             self.topic_token_weights['token'] = self.topic_token_weights['token_id'].apply(self.id2term.get)
+
+    @property
+    def document_index_proper(self) -> pd.DataFrame:
+        return (
+            self.document_index.assign(document_id=self.document_index.index)
+            .set_index('document_name', drop=False)
+            .rename_axis('')
+        )
 
     @property
     def num_topics(self) -> int:
@@ -256,13 +267,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             self.token_diagnostics.reset_index(drop=True).to_feather(jj(target_folder, "token_diagnostics.feather"))
 
     @staticmethod
-    def load(
-        *,
-        folder: str,
-        filename_fields: pu.FilenameFieldSpecs = None,
-        slim: bool = False,
-        verbose: bool = False,
-    ):
+    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
 
         if not isfile(jj(folder, "topic_token_weights.zip")):
@@ -276,6 +281,8 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             ).set_index('document_id', drop=True)
         )
 
+        corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
+
         data: InferredTopicsData = InferredTopicsData(
             dictionary=smart_load(jj(folder, 'dictionary.zip'), feather_pipe=pu.set_index, columns='token_id'),
             document_index=document_index,
@@ -288,6 +295,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
                 jj(folder, 'topic_diagnostics.zip'), missing_ok=True, feather_pipe=pu.set_index, columns='topic_id'
             ),
             token_diagnostics=smart_load(jj(folder, 'token_diagnostics.zip'), missing_ok=True),
+            corpus_config=corpus_config,
         )
 
         # HACK: Handle renamed column:
@@ -302,6 +310,16 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         if verbose:
             data.log_usage(total=True)
         return data
+
+    @staticmethod
+    def load_corpus_config(folder: str) -> CorpusConfig:
+        """Load CorpusConfig if exists"""
+        corpus_configs: list[CorpusConfig] = CorpusConfig.find_all(folder=folder)
+        corpus_config: CorpusConfig = corpus_configs[0] if len(corpus_configs) > 0 else None
+
+        if corpus_config is None:
+            logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
+        return corpus_config
 
     def load_topic_labels(self, folder: str, **csv_opts: dict) -> pd.DataFrame:
         tto: pd.DataFrame = self.topic_token_overview
