@@ -104,6 +104,7 @@ from .pos_tags import (
     pos_tags_to_str,
 )
 from .streamify_source import (
+    get_document_by_any_source,
     list_any_source,
     read_text,
     streamify_any_source,
@@ -126,7 +127,6 @@ from .utils import (
     create_class,
     create_dataclass_instance_from_kwargs,
     create_dummy_function,
-    create_instance,
     dataframe_to_tuples,
     deep_clone,
     dict_of_key_values_inverted_to_dict_of_value_key,
