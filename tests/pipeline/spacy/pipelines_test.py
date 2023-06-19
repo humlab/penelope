@@ -15,10 +15,10 @@ from penelope.workflows.interface import ComputeOpts
 
 
 def fake_config() -> pipeline.CorpusConfig:
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI.yml')
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI/SSI.yml')
 
-    corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    corpus_config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
+    corpus_config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
 
     return corpus_config
 
@@ -33,7 +33,7 @@ def config(en_nlp) -> pipeline.CorpusConfig:
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline(config: pipeline.CorpusConfig):
     os.makedirs('./tests/output', exist_ok=True)
-    tagged_corpus_source: str = "./tests/test_data/legal_instrument_five_docs_test_pos_csv.zip"
+    tagged_corpus_source: str = "./tests/test_data/SSI/legal_instrument_five_docs_test_pos_csv.zip"
     target_filename = './tests/output/SSI-co-occurrence-JJVBNN-window-9.csv'
     if os.path.isfile(target_filename):
         os.remove(target_filename)
@@ -78,8 +78,8 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
     os.makedirs('./tests/output', exist_ok=True)
 
-    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
+    config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
     config.checkpoint_opts.feather_folder = f'tests/output/{uuid.uuid1()}'
     corpus_tag: str = 'VENUS'
     target_folder: str = f'./tests/output/{uuid.uuid1()}'
@@ -121,7 +121,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
 @pytest.mark.long_running
 def test_spaCy_co_occurrence_pipeline3(config: pipeline.CorpusConfig):
-    corpus_source = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
     tagged_corpus_source = f'./tests/output/{uuid.uuid1()}_pos.csv.zip'
     args: ComputeOpts = ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',

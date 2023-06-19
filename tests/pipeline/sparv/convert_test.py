@@ -10,7 +10,7 @@ from ..fixtures import SPARV_TAGGED_COLUMNS
 
 
 def test_sparv_csv_serializer():
-    filename = 'tests/test_data/riksdagens-protokoll.test.sparv4.csv'
+    filename = 'tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv'
     with open(filename, "r") as fp:
         content: str = fp.read()
 

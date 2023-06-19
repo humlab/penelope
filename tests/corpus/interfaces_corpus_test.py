@@ -76,7 +76,7 @@ def test_text_lines_corpus_interface():
     assert issubclass(SimpleTextLinesCorpus, ITokenizedCorpus)
 
     instance = SimpleTextLinesCorpus(
-        filename='./tests/test_data/tranströmer.txt',
+        filename='./tests/test_data/tranströmer/tranströmer.txt',
         fields={'filename': 0, 'title': 1, 'text': 2},
         filename_fields=["year:_:1", "year_serial_id:_:2"],
     )

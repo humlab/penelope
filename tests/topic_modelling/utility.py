@@ -8,9 +8,9 @@ from penelope.pipeline.spacy import SpacyTagger
 
 
 def ssi_corpus_config() -> CorpusConfig:
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
-    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI/SSI.yml')
+    config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
+    config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
     return config
 
 

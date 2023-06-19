@@ -5,13 +5,13 @@ import pandas as pd
 from penelope.corpus.render import DEFAULT_TEMPLATE, RenderService, TextRepository
 from penelope.corpus import load_document_index
 
-LINKS_REGISTRY = {'PDF': lambda _: 'PDF', 'MD': lambda _: 'MD'}
+LINKS_REGISTRY = {'PDF': 'PDF', 'MD': 'MD'}
 
 
 def test_text_repository():
-    document_index: pd.DataFrame = load_document_index('tests/test_data/tranströmer_corpus.csv', sep="\t")
+    document_index: pd.DataFrame = load_document_index('tests/test_data/tranströmer/tranströmer_corpus.csv', sep="\t")
     repository: TextRepository = TextRepository(
-        source='tests/test_data/tranströmer_corpus.zip',
+        source='tests/test_data/tranströmer/tranströmer_corpus.zip',
         document_index=document_index,
     )
 

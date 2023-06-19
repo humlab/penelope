@@ -29,7 +29,7 @@ SPACY_TAGGED_COLUMNS: dict = dict(
 def ComputeOptsSpacyCSV(
     *,
     corpus_tag: str = 'MARS',
-    corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip',
+    corpus_source: str = './tests/test_data/SSI/legal_instrument_five_docs_test.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
     return ComputeOpts(
         corpus_tag=corpus_tag,
@@ -88,7 +88,7 @@ def ComputeOptsSpacyCSV(
 def ComputeOptsSparvCSV(
     *,
     corpus_tag: str = 'TELLUS',
-    corpus_source: str = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip',
+    corpus_source: str = './tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip',
 ) -> ComputeOpts:  # pylint: disable=too-many-instance-attributes)
     return ComputeOpts(
         corpus_tag=corpus_tag,
@@ -170,10 +170,10 @@ def create_bundle_by_spaCy_pipeline(config: CorpusConfig, context_opts: ContextO
 def create_test_data_bundles():
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI/SSI.yml')
 
-    config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
+    config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
 
     tag: str = 'VENUS-CONCEPT'
     create_bundle_by_spaCy_pipeline(

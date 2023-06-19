@@ -18,8 +18,8 @@ checkpoint_opts:
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
-  source: ./tests/test_data/tranströmer_corpus.zip
-  document_index_source: ./tests/test_data/tranströmer_corpus.csv
+  source: ./tests/test_data/tranströmer/tranströmer_corpus.zip
+  document_index_source: ./tests/test_data/tranströmer/tranströmer_corpus.csv
   document_index_sep: "\t"
   filenames: null
   memory_store:
@@ -61,10 +61,10 @@ dependencies:
       class_name: penelope.corpus.render.TextRepository
       options:
         source: "config@text_loader"
-        document_index=: ./tests/test_data/tranströmer_corpus.csv
+        document_index=: ./tests/test_data/tranströmer/tranströmer_corpus.csv
         transforms: normalize-whitespace
     render_text:
-      template: ./tests/test_data/tranströmer_corpus.jinja
+      template: ./tests/test_data/tranströmer/tranströmer_corpus.jinja
       links:
         PDF: '<a href="https://foo.com/{{document_name}}.pdf" target="_blank">PDF</a>&nbsp;'
         MD: '<a href="https://foo.com/{{document_name}}.txt" target="_blank">MD</a>&nbsp;'
@@ -72,4 +72,4 @@ dependencies:
       source:
         class_name: penelope.corpus.render.ZippedTextCorpusLoader
         options:
-          source: ./tests/test_data/tranströmer_corpus.zip
+          source: ./tests/test_data/tranströmer/tranströmer_corpus.zip

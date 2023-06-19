@@ -36,7 +36,7 @@ def test_find_topic_documents_gui(state):
 
 def test_find_topic_documents(state: ntm.TopicModelContainer):
     text_repository: rt.ITextRepository = rt.TextRepository(
-        source='tests/test_data/tranströmer_corpus.zip',
+        source='tests/test_data/tranströmer/tranströmer_corpus.zip',
         document_index=state.inferred_topics.document_index_proper,
     )
 

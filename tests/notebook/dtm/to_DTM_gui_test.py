@@ -7,7 +7,7 @@ def dummy_callback(*_, **__):
 
 
 def dummy_config():
-    return CorpusConfig.load(path='./tests/test_data/SSI.yml')
+    return CorpusConfig.load(path='./tests/test_data/SSI/SSI.yml')
 
 
 def test_GUI_setup_and_layout():  # pylint: disable=unused-argument

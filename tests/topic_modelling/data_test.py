@@ -18,7 +18,7 @@ isfile = os.path.isfile
 
 @pytest.fixture
 def topics_data() -> tm.InferredTopicsData:
-    return tm.InferredTopicsData.load(folder='tests/test_data/tranströmer_inferred_model')
+    return tm.InferredTopicsData.load(folder='tests/test_data/tranströmer/tranströmer_inferred_model')
 
 
 def assert_equal(d1: tm.InferredTopicsData, d2: tm.InferredTopicsData) -> bool:
@@ -115,6 +115,6 @@ def test_store_inferred_topics_data_as_zipped_files(topics_data: tm.InferredTopi
 
 
 def test_load_token2id(topics_data: tm.InferredTopicsData):
-    token2id: pc.Token2Id = tm.InferredTopicsData.load_token2id('tests/test_data/tranströmer_inferred_model')
+    token2id: pc.Token2Id = tm.InferredTopicsData.load_token2id('tests/test_data/tranströmer/tranströmer_inferred_model')
 
     assert token2id.id2token == topics_data.id2token

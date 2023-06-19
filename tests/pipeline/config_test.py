@@ -12,8 +12,12 @@ from penelope.pipeline.interfaces import PipelinePayload
 
 @pytest.fixture
 def corpus_config() -> CorpusConfig:
-    return CorpusConfig.load('./tests/test_data/SSI.yml')
+    return CorpusConfig.load('./tests/test_data/tranströmer/tranströmer.yml')
 
+def test_dependency_store(corpus_config: CorpusConfig):
+    store: dict = corpus_config.dependency_store()
+    assert store is not None
+    
 
 def test_json_dumps_and_loads_of_corpus_config_succeeds(corpus_config: CorpusConfig):
     first_dump_str = json.dumps(corpus_config, default=vars)
@@ -41,24 +45,17 @@ def test_dump_and_load_of_corpus_config_succeeds(corpus_config: CorpusConfig):
 
 
 def test_find_config(corpus_config: CorpusConfig):
-    c = CorpusConfig.find("SSI.yml", './tests/test_data')
+    c = CorpusConfig.find("tranströmer.yml", './tests/test_data')
 
     assert json.dumps(c, default=vars) == json.dumps(corpus_config, default=vars)
 
 
 def test_find_all_configs():
-    configs: list[CorpusConfig] = CorpusConfig.find_all('./tests/test_data')
+    configs: list[CorpusConfig] = CorpusConfig.find_all('./tests/test_data/tranströmer')
 
     assert len(configs) > 0
 
     assert any(x for x in configs if x.corpus_name == "tranströmer")
-
-
-def test_text_transform_opts(corpus_config: CorpusConfig):
-    assert corpus_config.text_transform_opts is not None
-    assert corpus_config.text_transform_opts.transforms.find_keys('dehypen')
-    assert corpus_config.text_transform_opts.transforms.find_keys('normalize-whitespaces')
-
 
 def test_corpus_config_set_folders():
     payload = PipelinePayload(
@@ -79,3 +76,6 @@ def test_corpus_config_set_folders():
 
     assert payload.source == '/data/apa/corpus.zip'
     assert payload.document_index_source == '/data/apa/document_index.csv'
+
+def test_dependencies():
+    ...

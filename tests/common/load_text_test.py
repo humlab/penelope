@@ -43,7 +43,7 @@ TEST_DOCUMENT_INFO: dict = {
 def test_load_tagged_article_document_text():
     document_name: str = 'tran_2019_03_test'
 
-    source: str = 'tests/test_data/tranströmer_corpus.zip'
+    source: str = 'tests/test_data/tranströmer/tranströmer_corpus.zip'
 
     text = ZipLoader(source).load(f'{document_name}.txt')
     assert (text or '').startswith('Det finns mitt i skogen en oväntad glänta')

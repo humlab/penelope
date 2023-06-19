@@ -34,8 +34,8 @@ def tranströmer_topic_model_payload(method: str, target_folder: str, target_nam
         'max_iter': 100,
         'work_folder': os.path.join(target_folder, target_name),
     }
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer/tranströmer.yml')
+    corpus_source: str = './tests/test_data/tranströmer/tranströmer_corpus_pos_csv.zip'
     p: CorpusPipeline = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
@@ -76,8 +76,8 @@ def test_predict_topics(method: str):
 
     """Predict using trained model"""
 
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/tranströmer/tranströmer.yml')
+    corpus_source: str = './tests/test_data/tranströmer/tranströmer_corpus_pos_csv.zip'
     minimum_probability: float = 0.001
     n_tokens: int = 100
     predict_target_name: str = f'predict_{str(uuid.uuid1())[:8]}'

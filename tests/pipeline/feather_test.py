@@ -6,16 +6,16 @@ import pytest
 from penelope.pipeline import CorpusConfig, CorpusPipeline
 from penelope.utility import replace_extension
 
-CORPUS_FOLDER = './tests/test_data'
+CORPUS_FOLDER = './tests/test_data/SSI'
 OUTPUT_FOLDER = './tests/output'
 # pylint: disable=redefined-outer-name
 
 
 def fake_config() -> CorpusConfig:
-    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+    corpus_config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI/SSI.yml')
 
-    corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    corpus_config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
+    corpus_config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
 
     return corpus_config
 

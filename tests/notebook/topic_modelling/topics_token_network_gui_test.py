@@ -8,17 +8,18 @@ import pytest
 from penelope import topic_modelling as tm
 from penelope.notebook.topic_modelling import topics_token_network_gui as ttn_gui
 
-from .utility import load_inferred_topics_data
 
-INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer_inferred_model'
+INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer/tranströmer_inferred_model'
 
 # pylint: disable=protected-access, redefined-outer-name
 
 
 @pytest.fixture
 def inferred_topics_data() -> tm.InferredTopicsData:
-    return load_inferred_topics_data()
-
+    inferred_data: tm.InferredTopicsData = tm.InferredTopicsData.load(
+        folder=INFERRED_TOPICS_DATA_FOLDER, filename_fields="year:_:1"
+    )
+    return inferred_data
 
 @pytest.fixture
 def topics_tokens() -> pd.DataFrame:

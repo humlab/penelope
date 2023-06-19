@@ -11,7 +11,7 @@ from penelope.vendor.gensim_api import GENSIM_INSTALLED
 
 
 def noun_pipeline(id_to_token: bool) -> pp.CorpusPipeline:
-    corpus_source: str = './tests/test_data/tranströmer_id_tagged_frames'
+    corpus_source: str = './tests/test_data/tranströmer/tranströmer_id_tagged_frames'
     file_pattern: str = '**/tran_*.feather'
 
     config_filename: str = jj(corpus_source, 'corpus.yml')
