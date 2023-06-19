@@ -29,16 +29,6 @@ pipeline_payload:
     lemma_column: lemma_
     pos_column: pos_
     text_column: text
-    tagger:
-      class_name: penelope.pipeline.spacy.SpacyTagger
-      options:
-        model: en_core_web_sm
-        disable: null
-        exclude: null
-        keep_hyphens: false
-        remove_whitespace_ents: false
-        attributes: [ text, lemma_, pos_, is_punct, is_stop ]
-        filters: null
   pos_schema_name: Universal
 filter_opts:
   data:
@@ -57,6 +47,15 @@ text_reader_opts:
   index_field: null
   sep: "\t"
   quoting: 3
-text_transform_opts:
-  fix_hyphenation: true
-  fix_whitespaces: true
+text_transform_opts: "dehyphen,normalize-whitespace"
+dependencies:
+  tagger:
+    class_name: penelope.pipeline.spacy.SpacyTagger
+    options:
+      model: en_core_web_sm
+      disable: null
+      exclude: null
+      keep_hyphens: false
+      remove_whitespace_ents: false
+      attributes: [ text, lemma_, pos_, is_punct, is_stop ]
+      filters: null
