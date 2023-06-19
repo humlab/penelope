@@ -49,6 +49,7 @@ from .transforms import (
     has_alphabetic,
     max_chars_factory,
     min_chars_factory,
+    normalize_whitespace,
     only_alphabetic,
     only_any_alphanumeric,
     remove_empty,
