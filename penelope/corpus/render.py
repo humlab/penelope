@@ -162,7 +162,7 @@ class TextRepository(ITextRepository):
             }
 
 
-def _link_fx(template: str | Template) -> Callable[str, str]:
+def _link_fx(template: str | Template) -> Callable[[str], str]:
     if isinstance(template, str):
         template = Template(template)
     if isinstance(template, Template):
@@ -209,8 +209,10 @@ class RenderService(IRenderService):
 
         return document_info.get('text', '')
 
-    def _to_text(self, document_info: dict) -> str:
-        text: str = normalize_whitespace(document_info['text'])
+    def _to_text(self, document_info: str | dict) -> str:
+        text: str = (
+            document_info if isinstance(document_info, str) else document_info.get('text', '(no text to display)')
+        )
         return text
 
     def _to_html(self, document_info: dict) -> str:
