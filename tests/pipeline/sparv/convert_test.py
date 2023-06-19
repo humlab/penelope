@@ -14,9 +14,7 @@ def test_sparv_csv_serializer():
     with open(filename, "r") as fp:
         content: str = fp.read()
 
-    serializer_cls: Type[sparv.SparvCsvSerializer] = utility.create_class(
-        'penelope.pipeline.sparv.SparvCsvSerializer'
-    )
+    serializer_cls: Type[sparv.SparvCsvSerializer] = utility.create_class('penelope.pipeline.sparv.SparvCsvSerializer')
     serializer: sparv.SparvCsvSerializer = serializer_cls()
 
     options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False, **SPARV_TAGGED_COLUMNS)

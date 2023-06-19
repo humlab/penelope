@@ -11,9 +11,13 @@ from penelope.pipeline.sparv import pipelines
 
 
 def fake_config() -> pipeline.CorpusConfig:
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksdagens_protokoll/riksdagens-protokoll.yml')
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(
+        './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.yml'
+    )
 
-    corpus_config.pipeline_payload.source = './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv.zip'
+    corpus_config.pipeline_payload.source = (
+        './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv.zip'
+    )
     corpus_config.pipeline_payload.document_index_source = None
 
     return corpus_config

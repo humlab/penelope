@@ -2,8 +2,8 @@ from os.path import splitext
 
 import pandas as pd
 
-from penelope.corpus.render import DEFAULT_TEMPLATE, RenderService, TextRepository
 from penelope.corpus import load_document_index
+from penelope.corpus.render import DEFAULT_TEMPLATE, RenderService, TextRepository
 
 LINKS_REGISTRY = {'PDF': 'PDF', 'MD': 'MD'}
 

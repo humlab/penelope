@@ -8,7 +8,6 @@ import pytest
 from penelope import topic_modelling as tm
 from penelope.notebook.topic_modelling import topics_token_network_gui as ttn_gui
 
-
 INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer/tranströmer_inferred_model'
 
 # pylint: disable=protected-access, redefined-outer-name
@@ -20,6 +19,7 @@ def inferred_topics_data() -> tm.InferredTopicsData:
         folder=INFERRED_TOPICS_DATA_FOLDER, filename_fields="year:_:1"
     )
     return inferred_data
+
 
 @pytest.fixture
 def topics_tokens() -> pd.DataFrame:

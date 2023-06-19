@@ -1,8 +1,8 @@
 import pandas as pd
 
 from penelope import topic_modelling as tm
-from penelope.corpus import render as rt
 from penelope.corpus import load_document_index
+from penelope.corpus import render as rt
 from penelope.notebook import topic_modelling as ntm
 
 # pylint: disable=protected-access

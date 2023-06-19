@@ -81,7 +81,7 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
         pipelines=None,
         pipeline_payload=PipelinePayload(),
         language="swedish",
-        extra_opts={}
+        extra_opts={},
     )
 
     """Expected windows generated for corpus"""

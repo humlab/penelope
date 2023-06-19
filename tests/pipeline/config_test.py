@@ -14,10 +14,11 @@ from penelope.pipeline.interfaces import PipelinePayload
 def corpus_config() -> CorpusConfig:
     return CorpusConfig.load('./tests/test_data/tranströmer/tranströmer.yml')
 
+
 def test_dependency_store(corpus_config: CorpusConfig):
     store: dict = corpus_config.dependency_store()
     assert store is not None
-    
+
 
 def test_json_dumps_and_loads_of_corpus_config_succeeds(corpus_config: CorpusConfig):
     first_dump_str = json.dumps(corpus_config, default=vars)
@@ -57,6 +58,7 @@ def test_find_all_configs():
 
     assert any(x for x in configs if x.corpus_name == "tranströmer")
 
+
 def test_corpus_config_set_folders():
     payload = PipelinePayload(
         source="corpus.zip",
@@ -76,6 +78,7 @@ def test_corpus_config_set_folders():
 
     assert payload.source == '/data/apa/corpus.zip'
     assert payload.document_index_source == '/data/apa/document_index.csv'
+
 
 def test_dependencies():
     ...

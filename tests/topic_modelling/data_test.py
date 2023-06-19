@@ -115,6 +115,8 @@ def test_store_inferred_topics_data_as_zipped_files(topics_data: tm.InferredTopi
 
 
 def test_load_token2id(topics_data: tm.InferredTopicsData):
-    token2id: pc.Token2Id = tm.InferredTopicsData.load_token2id('tests/test_data/tranströmer/tranströmer_inferred_model')
+    token2id: pc.Token2Id = tm.InferredTopicsData.load_token2id(
+        'tests/test_data/tranströmer/tranströmer_inferred_model'
+    )
 
     assert token2id.id2token == topics_data.id2token
