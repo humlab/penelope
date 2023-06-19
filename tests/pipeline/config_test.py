@@ -109,7 +109,7 @@ TEST_YML_STR: str = """
       transforms: normalize-whitespace
     dependencies:
       document_index:
-        class_name: penelope.corpus.render.load_document_index
+        class_name: penelope.corpus.load_document_index
         options:
           filename: ./tests/test_data/tranströmer/tranströmer_corpus.csv
           sep: "\t"
@@ -152,7 +152,7 @@ def test_resolve_render_text():
     render_text = DependencyResolver.resolve_key('render_text', store)
     assert render_text is not None
 
-    document_info: dict = {'document_name': "apa"}
+    document_info: dict = {'document_name': "apa", 'text': "apa"}
     render_text.render(document_info, kind='text')
 
     assert document_info['text'] == 'apa'
