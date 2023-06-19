@@ -79,7 +79,7 @@ def compute(
             pipelines=None,
             pipeline_payload=pp.PipelinePayload(source=corpus_source),
             language=transform_opts.remove_stopwords,
-            extra_opts={}
+            extra_opts={},
         ).dump(jj(target_folder, "corpus.yml"))
 
     return dict(folder=target_folder, tag=target_name)
