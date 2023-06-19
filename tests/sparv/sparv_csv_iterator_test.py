@@ -4,9 +4,9 @@ import penelope.corpus.readers as readers
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
-SPARV_CSV_EXPORT_FILENAME = './tests/test_data/prot_197677__27.tsv'
-SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
-SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/sparv_zipped_csv_export.zip'
+SPARV_CSV_EXPORT_FILENAME = './tests/test_data/sparv_data/prot_197677__27.tsv'
+SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_data/sparv_csv_export_small.csv'
+SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_zipped_csv_export.zip'
 
 
 def sparv_csv_export_text():

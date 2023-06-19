@@ -14,7 +14,7 @@ from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 
 def test_task_vocabulary_token2id():
-    filename = 'tests/test_data/riksdagens-protokoll.test.sparv4.csv'
+    filename = 'tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv'
 
     with open(filename, "r") as fp:
         content: str = fp.read()

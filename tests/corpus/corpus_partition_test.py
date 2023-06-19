@@ -2,7 +2,7 @@ from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTokenizer
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
-SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
+SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip'
 
 
 def create_test_corpus() -> SparvTokenizedCsvCorpus:

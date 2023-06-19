@@ -24,16 +24,16 @@ except ImportError:
     ...
 
 
-CORPUS_FOLDER = './tests/test_data'
+CORPUS_FOLDER = './tests/test_data/SSI'
 
 # pylint: disable=redefined-outer-name
 
 
 def fake_config() -> pipeline.CorpusConfig:
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI.yml')
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/SSI/SSI.yml')
 
-    corpus_config.pipeline_payload.source = './tests/test_data/legal_instrument_five_docs_test.zip'
-    corpus_config.pipeline_payload.document_index_source = './tests/test_data/legal_instrument_five_docs_test.csv'
+    corpus_config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
+    corpus_config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
 
     return corpus_config
 
@@ -88,7 +88,7 @@ def test_load_text_returns_payload_with_expected_document_index(config: pipeline
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @pytest.mark.long_running
 def test_pipeline_load_text_tag_checkpoint_stores_checkpoint(config: pipeline.CorpusConfig, tagger: IDocumentTagger):
-    tagged_corpus_source: str = os.path.join(OUTPUT_FOLDER, 'legal_instrument_five_docs_test_pos_csv.zip')
+    tagged_corpus_source: str = os.path.join(OUTPUT_FOLDER, 'SSI/legal_instrument_five_docs_test_pos_csv.zip')
 
     transform_opts = corpora.TextTransformOpts()
 
@@ -300,7 +300,7 @@ def test_pipeline_text_to_dtm_succeeds(config: pipeline.CorpusConfig):
 def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig, tagger: SpacyTagger):
     corpus_tag: str = uuid.uuid1()
     target_folder: str = "./tests/output"
-    corpus_source: str = './tests/test_data/legal_instrument_five_docs_test.zip'
+    corpus_source: str = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
     tagged_corpus_source: str = f"./tests/output/{uuid.uuid1()}_pos_csv.zip"
 
     args: ComputeOpts = ComputeOpts(
@@ -359,7 +359,7 @@ def test_workflow_to_dtm_step_by_step(config: pipeline.CorpusConfig, tagger: Spa
 def test_workflow_to_dtm(config: pipeline.CorpusConfig):
     args: ComputeOpts = ComputeOpts(
         corpus_tag=f'{uuid.uuid1()}',
-        corpus_source='./tests/test_data/legal_instrument_five_docs_test.zip',
+        corpus_source='./tests/test_data/SSI/legal_instrument_five_docs_test.zip',
         corpus_type=pipeline.CorpusType.Text,
         target_folder='./tests/output/',
         transform_opts=corpora.TokensTransformOpts(transforms={'remove_stopwords': 'english', 'to-lower': True}),

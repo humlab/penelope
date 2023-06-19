@@ -17,6 +17,7 @@ from penelope.utility import (
     is_strictly_increasing,
     list_of_dicts_to_dict_of_lists,
     probe_extension,
+    read_file_content,
     strip_path_and_extension,
     strip_paths,
 )
@@ -455,7 +456,7 @@ def load_document_index(
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
-    probe_extensions: str = 'zip,csv,gz,feather,csv.gz,csv.zip',
+    probe_extensions: str = 'csv,csv.gz,csv.zip,zip,gz,feather',
     **read_csv_kwargs,
 ) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -479,6 +480,12 @@ def load_document_index(
             if (probe_filename := probe_extension(filename, extensions=probe_extensions)) is None:
                 raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
             filename = probe_filename
+
+            if filename.endswith('zip'):
+                try:
+                    filename = StringIO(read_file_content(zip_or_filename=filename, filename='document_index.csv'))
+                except KeyError:
+                    ...
 
         document_index: DocumentIndex = (
             filename

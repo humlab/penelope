@@ -23,7 +23,7 @@ EXPECTED_TEXT_FILES = [
 
 
 def test_zip_wrapper():
-    filename = './tests/test_data/legal_instrument_five_docs_test.zip'
+    filename = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
     with zipfile.ZipFile(filename, 'r') as zf:
         names = zf.namelist()
         names_zip = zip_utils.list_filenames(zip_or_filename=zf)

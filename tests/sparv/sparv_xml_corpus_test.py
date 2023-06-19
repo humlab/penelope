@@ -9,10 +9,10 @@ from penelope.corpus import TokensTransformOpts
 from penelope.corpus.readers import ExtractTaggedTokensOpts
 from tests.utils import OUTPUT_FOLDER
 
-SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_xml_export.xml'
-SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_xml_export_small.xml'
-SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_zipped_xml_export.zip'
-SPARV3_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sou_test_sparv3_xml.zip'
+SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_xml_export.xml'
+SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_data/sparv_xml_export_small.xml'
+SPARV_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_zipped_xml_export.zip'
+SPARV3_ZIPPED_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sou_test_sparv3_xml.zip'
 
 
 def test_reader_store_result():

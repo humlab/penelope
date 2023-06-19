@@ -71,7 +71,7 @@ def test_spacy_doc_to_tagged_frame(looking_back, test_payload, tagger):
 @patch('penelope.pipeline.spacy.convert.filter_tokens_by_attribute_values', lambda *_, **__: ['a'])
 def test_to_spacy_doc_to_tagged_frame(test_payload, tagger):
     payload = DocumentPayload(content_type=ContentType.TEXT, filename='hello.txt', content=SAMPLE_TEXT)
-    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI.yml')
+    config: CorpusConfig = CorpusConfig.load('./tests/test_data/SSI/SSI.yml')
     pipeline: CorpusPipeline = CorpusPipeline(config=config, tasks=[], payload=payload).setup()
     prior = MagicMock(spec=ITask, outstream=lambda: [payload])
     task = tagged_frame_tasks.ToTaggedFrame(pipeline=pipeline, prior=prior, tagger=tagger)

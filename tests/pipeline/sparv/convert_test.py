@@ -10,13 +10,11 @@ from ..fixtures import SPARV_TAGGED_COLUMNS
 
 
 def test_sparv_csv_serializer():
-    filename = 'tests/test_data/riksdagens-protokoll.test.sparv4.csv'
+    filename = 'tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv'
     with open(filename, "r") as fp:
         content: str = fp.read()
 
-    serializer_cls: Type[sparv.SparvCsvSerializer] = utility.create_instance(
-        'penelope.pipeline.sparv.SparvCsvSerializer'
-    )
+    serializer_cls: Type[sparv.SparvCsvSerializer] = utility.create_class('penelope.pipeline.sparv.SparvCsvSerializer')
     serializer: sparv.SparvCsvSerializer = serializer_cls()
 
     options: checkpoint.CheckpointOpts = checkpoint.CheckpointOpts(lower_lemma=False, **SPARV_TAGGED_COLUMNS)

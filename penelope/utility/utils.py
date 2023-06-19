@@ -575,10 +575,10 @@ def create_class(class_or_function_path: str) -> Union[Callable, Type]:
         module = import_module(module_path)
         return getattr(module, cls_or_function_name)
     except (ImportError, AttributeError, ValueError) as e:
-        raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
-
-
-create_instance = create_class
+        try:
+            return eval(class_or_function_path)  # pylint: disable=eval-used
+        except NameError:
+            raise ImportError(f"fatal: config error: unable to load {class_or_function_path}") from e
 
 
 def create_dataclass_instance_from_kwargs(cls: Type[U], **kwargs) -> U:

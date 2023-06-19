@@ -11,9 +11,13 @@ from penelope.pipeline.sparv import pipelines
 
 
 def fake_config() -> pipeline.CorpusConfig:
-    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
+    corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(
+        './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.yml'
+    )
 
-    corpus_config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
+    corpus_config.pipeline_payload.source = (
+        './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv.zip'
+    )
     corpus_config.pipeline_payload.document_index_source = None
 
     return corpus_config
@@ -41,8 +45,8 @@ def test_to_tagged_frame_pipeline(config: pipeline.CorpusConfig):
 
 @pytest.mark.long_running
 def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
-    config_filename = './tests/test_data/tranströmer.yml'
-    source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
+    config_filename = './tests/test_data/tranströmer/tranströmer.yml'
+    source_filename = './tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip'
     tagged_corpus_source = f'./tests/output/{inspect.currentframe().f_code.co_name}.tagged_frame.zip'
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename)
 
@@ -71,8 +75,8 @@ def test_to_tagged_frame_pipeline_checkpoint_tranströmer():
 
 @pytest.mark.long_running
 def test_to_tagged_frame_pipeline_checkpoint_adds_token_counts():
-    config_filename = './tests/test_data/tranströmer.yml'
-    source_filename = './tests/test_data/tranströmer_corpus_export.sparv4.csv.zip'
+    config_filename = './tests/test_data/tranströmer/tranströmer.yml'
+    source_filename = './tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip'
     corpus_config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(config_filename)
 
     corpus_config.pipeline_payload.source = source_filename

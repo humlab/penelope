@@ -394,7 +394,7 @@ def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts)
 
 
 def test_load_primary_document_index():
-    filename = './tests/test_data/legal_instrument_five_docs_test.csv'
+    filename = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
     df = load_document_index(filename, sep=';')
 
     assert df is not None

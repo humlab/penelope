@@ -23,7 +23,7 @@ class EditTopicLabelsGUI(mx.AlertMixIn, mx.TopicsStateGui):
             self.inferred_topics.topic_token_overview['label'] = default_labels
         self._grid = nu.table_widget(
             self.inferred_topics.topic_token_overview[['label']],
-            handler=self.click_handler,
+            handler=self._grid_click_handler,
             editable=True,
         )
         self._grid.layout.height = "400px"
@@ -53,7 +53,7 @@ class EditTopicLabelsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._save.disabled = False
         self._save.button_style = 'Success'
 
-    def click_handler(self, row: pd.Series, grid):  # pylint: disable=unused-argument
+    def _grid_click_handler(self, row: pd.Series, grid):  # pylint: disable=unused-argument
         self.alert(f"<b>Topic ID</b>: {row.name}")
         self._text.value = self.inferred_topics.get_topic_title2(row.name, n_tokens=200)
 

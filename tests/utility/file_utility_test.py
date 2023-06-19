@@ -123,7 +123,7 @@ def test_store():
 
 
 def test_read():
-    source: str = "./tests/test_data/tranströmer_corpus.zip"
+    source: str = "./tests/test_data//tranströmer/tranströmer_corpus.zip"
     document_name: str = "tran_2019_01_test.txt"
 
     apa = pu.read_file_content(zip_or_filename=source, filename=document_name)

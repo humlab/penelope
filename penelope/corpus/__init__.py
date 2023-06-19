@@ -36,7 +36,6 @@ from .sparv_corpus import (
     sparv_csv_extract_and_store,
     sparv_xml_extract_and_store,
 )
-from .store_corpus import store_tokenized_corpus_as_archive
 from .text_lines_corpus import SimpleTextLinesCorpus
 from .token2id import ClosedVocabularyError, Token2Id, id2token2token2id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
@@ -50,6 +49,7 @@ from .transforms import (
     has_alphabetic,
     max_chars_factory,
     min_chars_factory,
+    normalize_whitespace,
     only_alphabetic,
     only_any_alphanumeric,
     remove_empty,

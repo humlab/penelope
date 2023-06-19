@@ -119,9 +119,9 @@ def test_id_tagged_frame_process_payload(
 @pytest.mark.long_running
 @pytest.mark.skip(reason="only used to create test data")
 def test_store_id_tagged_frame():
-    config: pp.CorpusConfig = pp.CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    corpus_source: str = './tests/test_data/tranströmer_corpus_pos_csv.zip'
-    target_folder: str = './tests/test_data/tranströmer_id_tagged_frames'
+    config: pp.CorpusConfig = pp.CorpusConfig.load('./tests/test_data/tranströmer/tranströmer.yml')
+    corpus_source: str = './tests/test_data/tranströmer/tranströmer_corpus_pos_csv.zip'
+    target_folder: str = './tests/test_data/tranströmer/tranströmer_id_tagged_frames'
     _: pp.CorpusPipeline = (
         pp.CorpusPipeline(config=config)
         .load_tagged_frame(
@@ -135,8 +135,8 @@ def test_store_id_tagged_frame():
 
 
 def test_load_id_tagged_frame():
-    config: pp.CorpusConfig = pp.CorpusConfig.load('./tests/test_data/tranströmer.yml')
-    folder: str = './tests/test_data/tranströmer_id_tagged_frames'
+    config: pp.CorpusConfig = pp.CorpusConfig.load('./tests/test_data/tranströmer/tranströmer.yml')
+    folder: str = './tests/test_data/tranströmer/tranströmer_id_tagged_frames'
     p: pp.CorpusPipeline = pp.CorpusPipeline(config=config).load_id_tagged_frame(
         folder=folder,
         file_pattern='**/tran*.feather',

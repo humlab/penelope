@@ -73,6 +73,8 @@ class TransformOpts:
         self.extras: list[tr.Transform] = extras or []
 
     def ingest(self, transforms: str | CommaStr | dict[str, bool]) -> TransformOpts:
+        if not transforms:
+            return self
         if isinstance(transforms, CommaStr):
             self.add(transforms)
         elif isinstance(transforms, str):
@@ -143,12 +145,17 @@ class TransformOpts:
         return {x.split('?')[0]: x.split('?')[1] if '?' in x else True for x in self.transforms.parts()}
 
     def transform(self, data: T) -> T:
+        if self.no_effect():
+            return data
         return self.getfx()(data)
 
     def getfx(self) -> tr.Transform:
-        if not self.transforms and not self.extras:
+        if self.no_effect():
             return lambda x: x
         return self.registry.getfx(self.transforms, extras=self.extras)
+
+    def no_effect(self):
+        return not self.transforms and not self.extras
 
 
 class TextTransformOpts(TransformOpts):

@@ -10,9 +10,9 @@ from penelope.pipeline import tagged_frame, tasks
 
 @pytest.fixture
 def corpus_config():
-    config = pipeline.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
+    config = pipeline.CorpusConfig.load('./tests/test_data/riksdagens_protokoll/riksdagens-protokoll.yml')
 
-    config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.test.sparv4.csv.zip'
+    config.pipeline_payload.source = './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.test.sparv4.csv.zip'
     config.pipeline_payload.document_index_source = None
 
     return config

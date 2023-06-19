@@ -10,9 +10,13 @@ from penelope.pipeline import config as corpus_config
 
 
 def fake_config() -> corpus_config.CorpusConfig:
-    config: corpus_config.CorpusConfig = corpus_config.CorpusConfig.load('./tests/test_data/riksdagens-protokoll.yml')
+    config: corpus_config.CorpusConfig = corpus_config.CorpusConfig.load(
+        './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.yml'
+    )
 
-    config.pipeline_payload.source = './tests/test_data/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
+    config.pipeline_payload.source = (
+        './tests/test_data/riksdagens_protokoll/riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
+    )
     config.pipeline_payload.document_index_source = None
 
     return config
@@ -67,7 +71,7 @@ def test_create_token_count_gui_create_succeeds():
 @pytest.mark.long_running
 def test_load_document_index(config: corpus_config.CorpusConfig):
     config.pipeline_payload.source = 'riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
-    config.pipeline_payload.folders('./tests/test_data')
+    config.pipeline_payload.folders('./tests/test_data/riksdagens_protokoll')
     config.checkpoint_opts.feather_folder = None
 
     document_index: pd.DataFrame = pipeline_gui.load_document_index(config)

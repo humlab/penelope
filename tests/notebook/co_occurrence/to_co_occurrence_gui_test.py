@@ -11,7 +11,7 @@ from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 
 def dummy_config():
-    return CorpusConfig.load(path='./tests/test_data/SSI.yml')
+    return CorpusConfig.load(path='./tests/test_data/tranströmer/tranströmer.yml')
 
 
 @patch('penelope.notebook.utility.FileChooserExt2', Mock(spec=notebook_utility.FileChooserExt2))

@@ -2,7 +2,7 @@ from penelope.corpus.readers import ExtractTaggedTokensOpts
 from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
-SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_csv_export_small.csv'
+SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_data/sparv_csv_export_small.csv'
 
 
 def sparv_csv_export_small_text():

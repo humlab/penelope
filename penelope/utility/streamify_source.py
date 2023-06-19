@@ -128,6 +128,10 @@ def streamify_any_source(  # pylint: disable=too-many-return-statements
     raise FileNotFoundError(source)
 
 
+def get_document_by_any_source(source: Union[AnyStr, zipfile.ZipFile, list, Any], filename: str):
+    return next(streamify_any_source(source=source, filenames=[filename]), None)
+
+
 def list_any_source(
     text_source: Union[str, zipfile.ZipFile, list],
     filename_pattern: str = "*.txt",

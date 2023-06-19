@@ -7,8 +7,10 @@ import pandas as pd
 from IPython.display import display
 
 from penelope import utility as pu
+from penelope.corpus.render import RenderService, TextRepository
 from penelope.notebook import widgets_utils as wu
 
+from .. import mixins as nx
 from ..grid_utility import TableWidget, table_widget
 from . import mixins as mx
 from .model_container import TopicModelContainer
@@ -43,7 +45,7 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
         self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
         self._table_widget: TableWidget = None
-        self.click_handler: Callable[[pd.Series, Any], None] = None
+        self._document_click_handler: Callable[[pd.Series, Any], None] = None
 
     def setup(self, **kwargs) -> "TopicDocumentsGUI":  # pylint: disable=arguments-differ,unused-argument
         self._compute.on_click(self.update_handler)
@@ -101,7 +103,7 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
                 data: pd.DataFrame = self.update()
 
                 if data is not None:
-                    self._table_widget: TableWidget = table_widget(data, handler=self.click_handler)
+                    self._table_widget: TableWidget = table_widget(data, handler=self._document_click_handler)
                     self._table_widget.layout.height = self.WIDGET_HEIGHT
                     display(self._table_widget)
 
@@ -263,3 +265,57 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
             return
 
         super().update_handler()
+
+
+class WithPivotKeysText:
+    class BrowseTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, BrowseTopicDocumentsGUI):
+        def __init__(
+            self, text_repository: TextRepository, render_service: RenderService, state: TopicModelContainer | dict
+        ):
+            super().__init__(
+                text_repository=text_repository, render_service=render_service, pivot_key_specs={}, state=state
+            )
+
+            self._threshold.value = 0.20
+            self._year_range.value = (1990, 1992)
+            self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
+
+        def setup(self, **kwargs):  # pylint: disable=useless-super-delegation
+            return super().setup(**kwargs)
+
+        @property
+        def filter_opts(self) -> pu.PropertyValueMaskingOpts:
+            options: dict = super(BrowseTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
+            return options
+
+        # def update(self) -> pd.DataFrame:
+        #     _ = super().update()
+        #     """note: at this point dtw is equal to calculator.data"""
+        #     self.alert("preparing data, please wait...")
+        #     calculator: tx.DocumentTopicsCalculator = self.inferred_topics.calculator
+        #     data: pd.DataFrame = self.person_codecs.decode(
+        #         calculator.overload(includes="protocol_name,document_name,gender_id,party_id,person_id").value,
+        #         drop=True,
+        #     )
+        #     self.alert("Done!")
+        #     return data
+
+    class FindTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, FindTopicDocumentsGUI):
+        def __init__(
+            self, text_repository: TextRepository, render_service: RenderService, state: TopicModelContainer | dict
+        ):
+            super().__init__(
+                text_repository=text_repository, render_service=render_service, pivot_key_specs={}, state=state
+            )
+
+            self._threshold.value = 0.20
+            self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
+            self.alert("INIT")
+
+        def setup(self, **kwargs):  # pylint: disable=useless-super-delegation
+            return super().setup(**kwargs)
+
+        @property
+        def filter_opts(self) -> pu.PropertyValueMaskingOpts:
+            options: dict = super(FindTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
+            return options
