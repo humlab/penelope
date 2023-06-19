@@ -1,20 +1,20 @@
 corpus_name: tranströmer
-corpus_pattern: '*sparv4.csv.zip'
+corpus_pattern: "*sparv4.csv.zip"
 corpus_type: 3
 language: swedish
 checkpoint_opts:
-    content_type_code: 1
-    sep: "\t"
-    quoting: 3
-    document_index_name: null
-    document_index_sep: "\t"
-    text_column: token
-    lemma_column: baseform
-    pos_column: pos
-    custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
-    deserialize_processes: 2
-    deserialize_chunksize: 2
-    index_column: null
+  content_type_code: 1
+  sep: "\t"
+  quoting: 3
+  document_index_name: null
+  document_index_sep: "\t"
+  text_column: token
+  lemma_column: baseform
+  pos_column: pos
+  custom_serializer_classname: penelope.pipeline.sparv.convert.SparvCsvSerializer
+  deserialize_processes: 2
+  deserialize_chunksize: 2
+  index_column: null
 pipelines:
   tagged_frame_pipeline: penelope.pipeline.sparv.pipelines.to_tagged_frame_pipeline
 pipeline_payload:
@@ -24,11 +24,13 @@ pipeline_payload:
   filenames: null
   memory_store:
     lang: se
-    tagger: Sparv
     text_column: token
     lemma_column: baseform
     pos_column: pos
     sparv_version: 4
+    dummy_dependency:
+      class_name: list
+      options: ["apa"]
   pos_schema_name: SUC
 filter_opts:
   data:
@@ -39,37 +41,29 @@ filter_opts:
 text_reader_opts:
   as_binary: false
   filename_fields:
-   - "year:_:1"
-   - "number:_:2"
+    - "year:_:1"
+    - "number:_:2"
   filename_filter: null
-  filename_pattern: '*.csv'
+  filename_pattern: "*.csv"
   index_field: null
   sep: "\t"
   quoting: "\t"
 dependencies:
-    tagger:
-      class_name: penelope.pipeline.stanza.StanzaTagger
-      options:
-        # model: en_core_web_sm
-        # disable: null
-        # exclude: null
-        # keep_hyphens: false
-        # remove_whitespace_ents: false
-        # attributes: [text, lemma_, pos_, is_punct, is_stop]
-        # filters: null
-    text_repository:
-      class_name: penelope.corpus.render.TextRepository
-      options:
-        source: "config@text_loader"
-        document_index=: ./tests/test_data/tranströmer/tranströmer_corpus.csv
-        transforms: normalize-whitespace
-    render_text:
-      template: ./tests/test_data/tranströmer/tranströmer_corpus.jinja
-      links:
-        PDF: '<a href="https://foo.com/{{document_name}}.pdf" target="_blank">PDF</a>&nbsp;'
-        MD: '<a href="https://foo.com/{{document_name}}.txt" target="_blank">MD</a>&nbsp;'
-    text_loader:
-      source:
-        class_name: penelope.corpus.render.ZippedTextCorpusLoader
-        options:
-          source: ./tests/test_data/tranströmer/tranströmer_corpus.zip
+  tagger:
+    class_name: penelope.pipeline.stanza.StanzaTagger
+    options:
+  text_repository:
+    class_name: penelope.corpus.render.TextRepository
+    options:
+      source: "config@text_loader"
+      document_index: ./tests/test_data/tranströmer/tranströmer_corpus.csv
+      transforms: normalize-whitespace
+  render_text:
+    template: ./tests/test_data/tranströmer/tranströmer_corpus.jinja
+    links:
+      PDF: '<a href="https://foo.com/{{document_name}}.pdf" target="_blank">PDF</a>&nbsp;'
+      MD: '<a href="https://foo.com/{{document_name}}.txt" target="_blank">MD</a>&nbsp;'
+  text_loader:
+    class_name: penelope.corpus.render.ZippedTextCorpusLoader
+    options:
+      source: ./tests/test_data/tranströmer/tranströmer_corpus.zip

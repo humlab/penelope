@@ -13,16 +13,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 import yaml
 
 from penelope.corpus import TextReaderOpts, TextTransformOpts
-from penelope.corpus.render import RenderService
-from penelope.utility import (
-    CommaStr,
-    PoS_Tag_Scheme,
-    create_class,
-    dotget,
-    get_pos_schema,
-    replace_extension,
-    strip_extensions,
-)
+from penelope.utility import CommaStr, PoS_Tag_Scheme, create_class, get_pos_schema, replace_extension, strip_extensions
 
 from . import checkpoint, interfaces
 
@@ -65,6 +56,7 @@ class CorpusConfig:
     pipeline_payload: interfaces.PipelinePayload
     language: str
     extra_opts: dict[str, Any] = field(default_factory=dict)
+    dependencies: dict[str, Any] = field(default_factory=dict)
 
     _tagger: interfaces.IDocumentTagger = field(default=None, init=False)
 
@@ -120,9 +112,9 @@ class CorpusConfig:
             text_transform_opts=str(self.text_transform_opts.transforms) if self.text_transform_opts else None,
             pipeline_payload=self.pipeline_payload.props,
             pipelines=self.pipelines,
-            # pos_schema_name=self.pipeline_payload.pos_schema_name,
             language=self.language,
             extra_opts=self.extra_opts,
+            dependencies=self.dependencies,
         )
 
     def dump(self, path: str):
@@ -190,6 +182,7 @@ class CorpusConfig:
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
         config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
         config_dict['pipelines'] = config_dict.get('pipelines', {})
+        config_dict['dependencies'] = config_dict.get('dependencies', {})
         config_dict['extra_opts'] = config_dict.get('extra_opts', {})
 
         deserialized_config: CorpusConfig = CorpusConfig.create(**config_dict)
@@ -252,6 +245,7 @@ class CorpusConfig:
             pipelines=None,
             pipeline_payload=interfaces.PipelinePayload(),
             language=language,
+            dependencies={},
             extra_opts={},
         )
         return config
@@ -284,6 +278,7 @@ class CorpusConfig:
         pipelines: dict = None,
         pipeline_payload: interfaces.PipelinePayload = None,
         language: str = "english",
+        dependencies: dict = None,
         extra_opts: dict = None,
     ) -> CorpusConfig:
         return CorpusConfig(
@@ -296,26 +291,65 @@ class CorpusConfig:
             pipelines=pipelines,
             pipeline_payload=pipeline_payload,
             language=language,
+            dependencies=dependencies or {},
             extra_opts=extra_opts or {},
         )
 
-    @property
-    def tagger(self) -> interfaces.IDocumentTagger:
-        if self._tagger is None:
-            self._tagger = self.create_instance("tagger.class_name", "tagger.options")
-        return self._tagger
+    def resolve_dependency(self, key: str, **kwargs) -> Any:
+        """Returns a dependency by key"""
+        return DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
 
-    def create_instance(self, cls_dotpath: str, opts_dotpath: str) -> Any:
-        store: dict = self.pipeline_payload.memory_store
-        if not isinstance(store.get("tagger"), dict):
-            raise ValueError("No tagger specified not found in corpus config")
+    def dependency_store(self) -> dict:
+        store: dict = {}
+        store |= self.dependencies or {}
+        for k, v in (self.pipeline_payload.memory_store or {}).items():
+            if not isinstance(v, dict):
+                continue
+            if 'class_name' in v:
+                store[k] = v
+        return store
 
-        cls_name: str = dotget(store, cls_dotpath)
 
-        if cls_name is None:
-            raise ValueError(f"dot path not found in config: {cls_name}")
+class DependencyResolver:
+    @classmethod
+    def resolve_key(cls, key: str, store: dict, **kwargs) -> Any:
+        """Returns a dependency by key
+        Store is a dictionary of dependencies in the form of:
+        key#1: <dependency key>
+            class_name: <class name>
+            options: <dict of options>
+            dependencies: <dict of key-specific dependencies>
+        key#2: ...
+        """
 
-        cls: Type[Any] = create_class(cls_name)
-        opts: dict = dotget(store, opts_dotpath, default={})
+        dependency: dict = (store or {}).get(key)
 
-        return cls(**opts)
+        if not dependency:
+            raise ValueError(f"Missing dependency in config: {key}")
+
+        class_name: str = dependency.get('class_name')
+
+        if not class_name:
+            raise ValueError(f"Missing class name in config: {key}")
+
+        options: dict = dependency.get('options', {})
+
+        arguments: list = dependency.get('arguments', [])
+        if not isinstance(arguments, list):
+            arguments = [arguments]
+
+        local_store: dict = dict(dependency.get('dependencies', {}))
+
+        cls.resolve_arguments(options, ('config@', store), ('local@', local_store))
+
+        return create_class(class_name)(*arguments, **options, **kwargs)
+
+    @classmethod
+    def resolve_arguments(cls, options: dict[str, Any], *stores: list[tuple[str, dict]]):
+        for key, value in options.items():
+            if not isinstance(value, str):
+                continue
+            for prefix, store in stores:
+                if value.startswith(prefix):
+                    options[key] = cls.resolve_key(value.lstrip(prefix), store)
+                    break

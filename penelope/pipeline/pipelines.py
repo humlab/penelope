@@ -88,7 +88,7 @@ def to_tagged_frame_pipeline(
                 transform_opts=text_transform_opts or corpus_config.text_transform_opts,
                 source=corpus_source,
             )
-            .to_tagged_frame(tagger=corpus_config.tagger)
+            .to_tagged_frame(tagger=corpus_config.resolve_dependency("tagger"))
             .checkpoint(filename=tagged_frame_filename, force_checkpoint=force_checkpoint)
         )
 
