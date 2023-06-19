@@ -5,7 +5,7 @@ import zipfile
 from functools import cached_property
 from io import StringIO
 from os.path import isfile, splitext
-from typing import Literal
+from typing import Callable, Literal
 
 import pandas as pd
 from jinja2 import Template
@@ -162,12 +162,20 @@ class TextRepository(ITextRepository):
             }
 
 
+def _link_fx(template: str | Template) -> Callable[str, str]:
+    if isinstance(template, str):
+        template = Template(template)
+    if isinstance(template, Template):
+        return template.render
+    raise ValueError(f"Invalid template: {template}")
+
+
 class RenderService(IRenderService):
     """Renders a document using a template"""
 
     def __init__(self, template: str | Template, links_registry: dict[str, callable] = None):
         self._template: dict[str, Template] = self._to_template(template)
-        self.links_registry: dict = links_registry or {}
+        self.links_registry: dict = {k: _link_fx(t) for k, t in (links_registry or {}).items()}
 
     @property
     def template(self) -> Template:
