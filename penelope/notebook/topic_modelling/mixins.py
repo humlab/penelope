@@ -5,6 +5,7 @@ from typing import Any, Callable
 import ipywidgets as w
 
 from penelope import topic_modelling as tm
+from penelope.pipeline import CorpusConfig
 
 from .. import widgets_utils as wu
 from . import model_container as mc
@@ -38,6 +39,13 @@ class TopicsStateGui:
         fx: Callable[[int], str] = self.inferred_topics.topic_labels.get
         options = [(fx(i, f'Topic #{i}'), i) for i in range(0, self.inferred_n_topics)]
         return options
+
+    @property
+    def corpus_config(self) -> CorpusConfig:
+        if self.inferred_topics:
+            if self.inferred_topics.corpus_config is not None:
+                return self.inferred_topics.corpus_config
+        return None
 
 
 class NextPrevTopicMixIn:

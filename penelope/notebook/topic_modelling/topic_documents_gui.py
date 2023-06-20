@@ -269,12 +269,8 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
 
 class WithPivotKeysText:
     class BrowseTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, BrowseTopicDocumentsGUI):
-        def __init__(
-            self, text_repository: TextRepository, render_service: RenderService, state: TopicModelContainer | dict
-        ):
-            super().__init__(
-                text_repository=text_repository, render_service=render_service, pivot_key_specs={}, state=state
-            )
+        def __init__(self, state: TopicModelContainer | dict):
+            super().__init__(pivot_key_specs={}, state=state)
 
             self._threshold.value = 0.20
             self._year_range.value = (1990, 1992)
@@ -287,18 +283,6 @@ class WithPivotKeysText:
         def filter_opts(self) -> pu.PropertyValueMaskingOpts:
             options: dict = super(BrowseTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
             return options
-
-        # def update(self) -> pd.DataFrame:
-        #     _ = super().update()
-        #     """note: at this point dtw is equal to calculator.data"""
-        #     self.alert("preparing data, please wait...")
-        #     calculator: tx.DocumentTopicsCalculator = self.inferred_topics.calculator
-        #     data: pd.DataFrame = self.person_codecs.decode(
-        #         calculator.overload(includes="protocol_name,document_name,gender_id,party_id,person_id").value,
-        #         drop=True,
-        #     )
-        #     self.alert("Done!")
-        #     return data
 
     class FindTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, FindTopicDocumentsGUI):
         def __init__(

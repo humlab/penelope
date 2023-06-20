@@ -10,6 +10,7 @@ from IPython.display import display as ipydisplay
 
 from penelope import utility as pu
 from penelope.corpus.render import IRenderService, ITextRepository
+from penelope.pipeline.config import CorpusConfig, DependencyError
 from penelope.plot.colors import get_color_palette
 
 from . import utility as nu
@@ -346,11 +347,9 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
 
 
 class TextRepositoryMixIn:
-    def __init__(self, text_repository: ITextRepository, render_service: IRenderService, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self._text_repository: ITextRepository = text_repository
-        self._render_service: IRenderService = render_service
         self._text_output: w.HTML = w.HTML(layout={'width': '48%', 'background-color': 'lightgreen'})
         self._content_type: t.Literal['raw', 'text', 'html'] = 'html'
 
@@ -360,13 +359,23 @@ class TextRepositoryMixIn:
     def text_output(self) -> w.HTML:
         return self._text_output
 
-    @property
-    def render_service(self) -> IRenderService:
-        return self._render_service
+    def _resolve_key(self, key: str) -> t.Any:
+        corpus_config: CorpusConfig = getattr(self, 'corpus_config', None)
+        if corpus_config:
+            try:
+                return corpus_config.resolve_dependency(key)
+            except DependencyError as ex:
+                self.alert(str(ex))
+                raise ex
+        return None
 
     @property
-    def text_repository(self) -> ITextRepository:
-        return self._text_repository
+    def render_service(self) -> IRenderService:
+        return self._resolve_key('render_text')
+
+    @property
+    def text_repository(self) -> IRenderService:
+        return self._resolve_key('text_repository')
 
     @property
     def content_type(self) -> t.Literal['raw', 'text', 'html']:
@@ -379,8 +388,7 @@ class TextRepositoryMixIn:
     def on_row_click(self, item: pd.Series, g: t.Any):  # pylint: disable=unused-argument
         try:
             document_name: str = item.get('document_name')
-            data: dict = self._text_repository.get(document_name)
-            self._text_output.value = self._render_service.render(data, kind=self.content_type)
-
+            data: dict = self.text_repository.get(document_name)
+            self._text_output.value = self.render_service.render(data, kind=self.content_type)
         except Exception as ex:
             self._text_output.value = str(ex)

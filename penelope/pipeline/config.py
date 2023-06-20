@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import enum
+import functools
 import glob
 import json
 import os
@@ -31,6 +32,10 @@ def create_pipeline_factory(
     """Returns a CorpusPipeline type (class or callable that return instance) by name"""
     factory = create_class(class_or_function_name)
     return factory
+
+
+class DependencyError(Exception):
+    ...
 
 
 @enum.unique
@@ -295,9 +300,13 @@ class CorpusConfig:
             extra_opts=extra_opts or {},
         )
 
+    @functools.lru_cache(maxsize=128)
     def resolve_dependency(self, key: str, **kwargs) -> Any:
         """Returns a dependency by key"""
-        return DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
+        try:
+            return DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
+        except Exception as ex:
+            raise DependencyError(f"Dependency {key} not configured.") from ex
 
     def dependency_store(self) -> dict:
         store: dict = {}
