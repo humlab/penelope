@@ -351,6 +351,7 @@ class TextRepositoryMixIn:
         super().__init__(**kwargs)
 
         self._text_output: w.HTML = w.HTML(layout={'width': '48%', 'background-color': 'lightgreen'})
+        self._content_placeholder: w.VBox = self._text_output
         self._content_type: t.Literal['raw', 'text', 'html'] = 'html'
 
         self._document_click_handler = self.on_row_click
