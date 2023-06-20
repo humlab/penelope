@@ -63,7 +63,7 @@ class CorpusConfig:
     extra_opts: dict[str, Any] = field(default_factory=dict)
     dependencies: dict[str, Any] = field(default_factory=dict)
 
-    _tagger: interfaces.IDocumentTagger = field(default=None, init=False)
+    _key_container: dict[str, Any] = field(default_factory=dict, init=False)
 
     def pipeline_key_exists(self, pipeline_key: str) -> bool:
         return pipeline_key in self.pipelines
@@ -300,13 +300,14 @@ class CorpusConfig:
             extra_opts=extra_opts or {},
         )
 
-    @functools.lru_cache(maxsize=128)
     def resolve_dependency(self, key: str, **kwargs) -> Any:
         """Returns a dependency by key"""
         try:
-            return DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
+            if key not in self._key_container:
+                self._key_container[key] = DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
         except Exception as ex:
             raise DependencyError(f"Dependency {key} not configured.") from ex
+        return self._key_container[key]
 
     def dependency_store(self) -> dict:
         store: dict = {}

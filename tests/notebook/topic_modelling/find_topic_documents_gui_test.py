@@ -39,13 +39,7 @@ def test_find_topic_documents(state: ntm.TopicModelContainer):
         document_index=state.inferred_topics.document_index_proper,
     )
 
-    render_service: rt.IRenderService = rt.RenderService(template='{{text}}', links_registry={})
-
-    gui: ntm.WithPivotKeysText.FindTopicDocumentsGUI = ntm.WithPivotKeysText.FindTopicDocumentsGUI(
-        state=state,
-        text_repository=text_repository,
-        render_service=render_service,
-    )
+    gui: ntm.WithPivotKeysText.FindTopicDocumentsGUI = ntm.WithPivotKeysText.FindTopicDocumentsGUI(state=state)
     gui.setup()
 
     layout = gui.layout()
@@ -55,9 +49,16 @@ def test_find_topic_documents(state: ntm.TopicModelContainer):
 
     expected_text: str = text_repository.get_text(f'{document_name}.txt')
 
+    gui.content_type = 'text'
     gui.on_row_click(item={'document_name': document_name}, g=None)
 
     assert gui.text_output.value == expected_text
+
+    gui.content_type = 'html'
+    gui.on_row_click(item={'document_name': document_name}, g=None)
+
+    expected_html = 'tran_2019_03_test {\'PDF\': \'<a href="tran_2019_03_test.pdf">PDF</a>\', \'MD\': \'<a href="tran_2019_03_test.txt">MD</a>\'}'
+    assert gui.text_output.value == expected_html
 
     gui.render_service.template = '{{document_id}} {{document_name}}: {{text}}'
     gui.on_row_click(item={'document_name': document_name}, g=None)

@@ -285,12 +285,8 @@ class WithPivotKeysText:
             return options
 
     class FindTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, FindTopicDocumentsGUI):
-        def __init__(
-            self, text_repository: TextRepository, render_service: RenderService, state: TopicModelContainer | dict
-        ):
-            super().__init__(
-                text_repository=text_repository, render_service=render_service, pivot_key_specs={}, state=state
-            )
+        def __init__(self, state: TopicModelContainer | dict):
+            super().__init__(pivot_key_specs={}, state=state)
 
             self._threshold.value = 0.20
             self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
