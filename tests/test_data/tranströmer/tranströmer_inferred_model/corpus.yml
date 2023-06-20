@@ -1,6 +1,6 @@
 corpus_name: tranströmer
-corpus_pattern: "*sparv4.csv.zip"
 corpus_type: 3
+corpus_pattern: "*sparv4.csv.zip"
 language: swedish
 checkpoint_opts:
   content_type_code: 1
