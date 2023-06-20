@@ -374,7 +374,7 @@ class TextRepositoryMixIn:
         return self._resolve_key('render_text')
 
     @property
-    def text_repository(self) -> IRenderService:
+    def text_repository(self) -> ITextRepository:
         return self._resolve_key('text_repository')
 
     @property

@@ -7,7 +7,6 @@ import pandas as pd
 from IPython.display import display
 
 from penelope import utility as pu
-from penelope.corpus.render import RenderService, TextRepository
 from penelope.notebook import widgets_utils as wu
 
 from .. import mixins as nx
