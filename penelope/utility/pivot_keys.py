@@ -6,8 +6,7 @@ from typing import Callable
 import pandas as pd
 
 from .pandas_utils import PropertyValueMaskingOpts
-
-from .utils import revdict
+from .utils import clear_cached_properties, revdict
 
 PivotKeySpec = dict[str, str | dict[str, int]]
 
@@ -31,7 +30,7 @@ class PivotKeys:
 
     """
 
-    def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[str, PivotKeySpec]):
+    def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[str, PivotKeySpec] = None):
         self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys
 
     @property
@@ -40,15 +39,12 @@ class PivotKeys:
 
     @pivot_keys.setter
     def pivot_keys(self, pivot_keys):
+        clear_cached_properties(self)
         self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or []
         if isinstance(self.pivot_keys, list):
             """Changes mapping to a dict of dicts instead of a list of dicts"""
             self._pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else {}
         self.is_satisfied()
-
-        if self._pivot_keys:
-            if "key_name2key_id" in self.__dict__:
-                del self.__dict__["key_name2key_id"]
 
     def pivot_key(self, text_name: str) -> dict:
         return self.pivot_keys.get(text_name, {})
@@ -137,10 +133,9 @@ class PivotKeys:
 
         return opts
 
-    @property
+    @cached_property
     def single_key_options(self) -> dict:
-        single_key_options: dict = {v['text_name']: v['id_name'] for v in self.pivot_keys.values()}
-        return single_key_options
+        return {v['text_name']: v['id_name'] for v in self.pivot_keys.values()}
 
     def create_filter_key_values_dict(
         self, key_values: dict[str, list[str | int]], decode: bool = True
