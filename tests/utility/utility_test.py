@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import numpy as np
 import pytest
 import scipy
@@ -5,6 +7,35 @@ import scipy.sparse as sp
 
 from penelope import corpus as pc
 from penelope import utility
+
+
+def test_clear_cached_properties():
+    class Foo:
+        def __init__(self):
+            self._counter: int = 0
+
+        @property
+        def foo(self):
+            self._counter += 1
+            return self._counter
+
+        @cached_property
+        def bar(self):
+            self._counter += 1
+            return self._counter
+
+    foo: Foo = Foo()
+    assert foo.foo == 1
+    assert foo.bar == 2
+    assert foo.foo == 3
+    assert foo.bar == 2
+    assert foo.foo == 4
+
+    utility.clear_cached_properties(foo)
+
+    assert foo.foo == 5
+    assert foo.bar == 6
+    assert foo.bar == 6
 
 
 def test_utils():
