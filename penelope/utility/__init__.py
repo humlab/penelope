@@ -77,7 +77,6 @@ from .filename_utils import (
 )
 from .pandas_utils import (
     DataFrameFilenameTuple,
-    PivotKeys,
     PropertyValueMaskingOpts,
     as_slim_types,
     create_mask,
@@ -94,6 +93,7 @@ from .pandas_utils import (
     unstack_data,
 )
 from .paths import find_ancestor_folder, find_data_folder, find_resources_folder, find_root_folder
+from .pivot_keys import PivotKeys
 from .pos_tags import (
     Known_PoS_Tag_Schemes,
     PD_PoS_tag_groups,
