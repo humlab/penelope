@@ -34,6 +34,17 @@ U = TypeVar('U')
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
 
 
+def clear_cached_properties(instance: Any):
+    if not inspect.isclass(type(instance)):
+        return
+
+    for name, value in inspect.getmembers(type(instance)):
+        if not isinstance(value, functools.cached_property):
+            continue
+        if name in instance.__dict__:
+            del instance.__dict__[name]
+
+
 def load_cwd_dotenv():
     dotenv_path: str = os.path.join(os.getcwd(), '.env')
     if os.path.isfile(dotenv_path):

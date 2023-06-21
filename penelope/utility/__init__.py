@@ -123,6 +123,7 @@ from .utils import (
     chunks,
     clamp,
     clamp_values,
+    clear_cached_properties,
     complete_value_range,
     create_class,
     create_dataclass_instance_from_kwargs,
