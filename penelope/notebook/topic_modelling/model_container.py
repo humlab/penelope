@@ -70,7 +70,6 @@ class TopicModelContainer:
             folder=folder,
             trained_model=trained_model,
             train_corpus_folder=folder,
-            folder=folder,
         )
 
     @property
