@@ -7,6 +7,7 @@ from collections import defaultdict
 import ipywidgets as w
 import pandas as pd
 from IPython.display import display as ipydisplay
+from typing_extensions import deprecated
 
 from penelope import utility as pu
 from penelope.corpus.render import IRenderService, ITextRepository
@@ -16,8 +17,8 @@ from penelope.plot.colors import get_color_palette
 from . import utility as nu
 from .widgets_utils import register_observer
 
-PivotKeySpec = dict[str, t.Union[str, dict[str, int]]]
-PivotKeySpecArg = t.Union[list[PivotKeySpec], dict[str, list[PivotKeySpec]]]
+PivotKeySpec = dict[str, str | dict[str, int]]
+PivotKeySpecArg = list[PivotKeySpec] | dict[str, list[PivotKeySpec]]
 
 # pylint: disable=no-member
 
@@ -43,48 +44,69 @@ class PivotKeysMixIn:
     """Defines controls and event logics for pivot keys and filters for pivot key values."""
 
     def __init__(self, pivot_key_specs: PivotKeySpecArg = None, **kwargs):
+        self.prevent_event: bool = False
+
         super().__init__(**kwargs)
 
         self._display_event_handler: t.Callable[[t.Any], None] = None
 
-        self.pivot_keys: pu.PivotKeys = (
-            pivot_key_specs if isinstance(pivot_key_specs, pu.PivotKeys) else pu.PivotKeys(pivot_key_specs)
-        )
-
-        """Single-select"""
-        single_key_options: dict = {v['text_name']: v['id_name'] for v in self.pivot_keys.pivot_keys.values()}
-        self._single_pivot_key_picker: w.Dropdown = w.Dropdown(
-            options=single_key_options,
-            value=next(iter(single_key_options.values())) if single_key_options else None,
-            layout=dict(width='100px'),
-        )
-
-        """Multi-select"""
+        self._single_pivot_key_picker: w.Dropdown = w.Dropdown(options={}, value=None, layout=dict(width='100px'))
         self._multi_pivot_keys_picker: w.SelectMultiple = w.SelectMultiple(
-            options=['None'] + list(self.pivot_keys.text_names),
-            value=['None'],
-            rows=6,
-            layout=dict(width='100px'),
+            options=[], value=[], rows=6, layout=dict(width='100px')
         )
         self._filter_keys: w.SelectMultiple = w.SelectMultiple(
             options=[], value=[], rows=12, layout=dict(width='120px')
         )
 
+        self.pivot_keys: pu.PivotKeys = pivot_key_specs
+
         self._unstack_tabular: w.ToggleButton = w.ToggleButton(
             description="Unstack", icon='check', value=False, layout=dict(width='140px')
         )
+
+    @property
+    def pivot_keys(self) -> pu.PivotKeys:
+        return self._pivot_keys
+
+    def clamp(self, value: int, min_value: int, max_value: int) -> int:
+        return max(min(value, max_value), min_value)
+
+    @pivot_keys.setter
+    def pivot_keys(self, value: pu.PivotKeys | dict):
+        self._pivot_keys = value if isinstance(value, pu.PivotKeys) else pu.PivotKeys(value)
+
+        if value is None:
+            return
+
+        _prevent_event: bool = self.prevent_event
+        self.prevent_event = True
+
+        self._single_pivot_key_picker.value = None
+        self._single_pivot_key_picker.options = self.pivot_keys.single_key_options
+        self._single_pivot_key_picker.value = next(iter(self._single_pivot_key_picker.options.values()), None)
+
+        self._multi_pivot_keys_picker.value = []
+        self._multi_pivot_keys_picker.options = ['None'] + list(self.pivot_keys.text_names)
+        self._multi_pivot_keys_picker.value = ['None']
+        self._multi_pivot_keys_picker.rows = self.clamp(len(self._multi_pivot_keys_picker.options), 2, 6)
+
+        self._filter_keys.value = []
+        self._filter_keys.options = []
+
+        self._filter_keys.rows = self.clamp(len(self._filter_keys.options), 4, 12)
+
         self.autoselect_key_values: bool = False
-        self.prevent_event: bool = False
+        self.prevent_event = _prevent_event
+
+    # @property
+    # def _filter_key_options(self) -> list[str]:
+    #     """Avaliable filter key values"""
+    #     return self.filter_keys.options
 
     @property
-    def filter_key_values(self) -> list[str]:
-        """Avaliable filter key values"""
-        return self._filter_keys.options
-
-    @property
-    def filter_key_selected_values(self) -> list[str]:
-        """Avaliable filter key values"""
-        return self._filter_keys.value
+    def selected_filter_keys(self) -> list[str]:
+        """Selected filter key values"""
+        return self.filter_keys.value
 
     def setup(self, **kwargs) -> "PivotKeysMixIn":
         if hasattr(super(), 'setup'):
@@ -92,17 +114,20 @@ class PivotKeysMixIn:
         register_observer(self._multi_pivot_keys_picker, handler=self.pivot_key_handler, value=True)
         return self
 
+    @deprecated
     def reset(self) -> "PivotKeysMixIn":
         self.observe(value=False, handler=self._display_event_handler)
         self._multi_pivot_keys_picker.value = ['None']
         self._filter_keys.value = []
         self._unstack_tabular.value = False
-        self.observe(value=False, handler=self._display_event_handler)
+        self.observe(value=True, handler=self._display_event_handler)
 
         if hasattr(super(), 'reset'):
             super().reset()
 
         return self
+
+    # region Single pivot key picker (dropdown)
 
     @property
     def picked_pivot_id(self) -> str:
@@ -117,7 +142,9 @@ class PivotKeysMixIn:
     @property
     def picked_pivot_value_mapping(self) -> dict[int, str]:
         """Returns ID to VALUE-NAME mapping of picked pivot key (single picked dropdown)"""
-        return self.pivot_keys.key_value_id2name(self.picked_pivot_name)
+        return self._pivot_keys.key_value_id2name(self.picked_pivot_name)
+
+    # endregion
 
     @property
     def pivot_keys_text_names(self) -> list[str]:
@@ -161,8 +188,8 @@ class PivotKeysMixIn:
             old_keys: set[str] = set(change['old']) - set(('None',))
             new_keys: set[str] = set(change['new']) - set(('None',))
 
-            add_options: set[str] = set(self.pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
-            del_options: set[str] = set(self.pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
+            add_options: set[str] = set(self._pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
+            del_options: set[str] = set(self._pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
 
             ctrl_options: set[str] = (set(self._filter_keys.options) - del_options) | add_options
             current_values: set[str] = set(self._filter_keys.value)
@@ -194,20 +221,30 @@ class PivotKeysMixIn:
         if handler is None:
             return
 
-        self._display_event_handler = handler
+        def wrapper_handler(change: dict, *_):
+            prevent_event = self.prevent_event
+            if self.prevent_event:
+                return
+            try:
+                self._display_event_handler(change, *_)
+            finally:
+                self.prevent_event = prevent_event
+
+        self._display_event_handler = wrapper_handler
 
         for ctrl in self.display_trigger_ctrls():
-            register_observer(ctrl, handler=handler, value=value)
+            register_observer(ctrl, handler=wrapper_handler, value=value)
 
         if hasattr(super(), "observe"):
-            getattr(super(), "observe")(value=value, handler=handler, **kwargs)
+            getattr(super(), "observe")(value=value, handler=wrapper_handler, **kwargs)
 
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
-        if not self.pivot_keys.has_pivot_keys:
-            return w.VBox()
+        # if not self._pivot_keys.has_pivot_keys:
+        #     return w.VBox()
 
         width: str = kwargs.get('width', '100px')
-        self._filter_keys.rows = kwargs.get('rows', 12)
+        if kwargs.get('rows') is not None:
+            self._filter_keys.rows = kwargs.get('rows')
         self._filter_keys.layout = kwargs.get('layout', dict(width='120px'))
         self._multi_pivot_keys_picker.layout = kwargs.get('layout', dict(width=width))
         if vertical:
@@ -215,7 +252,6 @@ class PivotKeysMixIn:
                 [
                     w.HTML("<b>Filter by</b>"),
                     self._multi_pivot_keys_picker,
-                    # w.HTML("<b>Value</b>"),
                     self._filter_keys,
                 ]
             )
@@ -293,7 +329,7 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
         self._line_color.value = next(self._color_palette)
 
     def _add_line_callback(self, *_):
-        self.add_line(name=self.line_name, color=self.line_color, values=self.filter_key_selected_values)
+        self.add_line(name=self.line_name, color=self.line_color, values=self.selected_filter_keys)
         self._show_line(name="", color=next(self._color_palette), values=[])
 
     def add_line(self, name: str, color: str, values: list[str]):
