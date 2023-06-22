@@ -41,8 +41,8 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         self._output: w.Output = w.Output(layout={'width': '99%'})
         self._extra_placeholder: w.Box = None
         self._content_placeholder: w.Box = None
-        self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
-        self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
+        self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '80px'})
+        self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '80px'})
         self._table_widget: TableWidget = None
         self._document_click_handler: Callable[[pd.Series, Any], None] = None
 
@@ -138,7 +138,6 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
                     [
                         w.VBox(
                             [
-                                self._next_prev_layout,
                                 self._threshold_label,
                                 self._threshold,
                                 self._year_range_label,
@@ -146,25 +145,24 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
                             ]
                         ),
                     ]
-                    + ([self._extra_placeholder] if self._extra_placeholder is not None else [])
                     + [
                         w.VBox(
                             [
                                 self._max_count_label,
                                 self._max_count,
-                                self._auto_compute,
-                                self._compute,
-                                self._alert,
+                                self._next_prev_layout,
                             ]
                         )
                     ]
+                    + ([self._extra_placeholder] if self._extra_placeholder is not None else [])
                 ),
+                w.HBox([w.HTML("&nbsp;"), self._auto_compute, self._compute, self._alert]),
                 _output_container,
             ],
-            layout={'width': '60%'},
+            layout={'width': '50%'},
         )
         if self._content_placeholder is not None:
-            self._content_placeholder.layout.width = '40%'
+            self._content_placeholder.layout.width = '50%'
             _layout = w.HBox([_layout, self._content_placeholder], width='100%')
 
         return _layout
@@ -222,8 +220,8 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
                         ),
                     ]
                     + ([self._extra_placeholder] if self._extra_placeholder is not None else [])
-                    + [w.VBox([w.HTML("&nbsp;"), self._auto_compute, self._compute, self._alert])]
                 ),
+                w.HBox([w.HTML("&nbsp;"), self._auto_compute, self._compute, self._alert]),
                 self._output,
             ],
             layout={'width': '50%'},
@@ -254,6 +252,7 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
         return self._n_top_token.value
 
     def update(self) -> pd.DataFrame:
+        print(self.filter_opts.opts)
         data: pd.DataFrame = (
             self.inferred_topics.calculator.reset()
             .filter_by_text(search_text=self.text, n_top=self.n_top_token)
@@ -267,7 +266,7 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
 
     def update_handler(self, *_):
         if len(self.text) < 3:
-            self.alert("Please enter a token with at least three chars.")
+            self.alert("Please enter a token with at least three characters.")
             return
 
         super().update_handler()
@@ -275,33 +274,57 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
 
 class WithPivotKeysText:
     class BrowseTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, BrowseTopicDocumentsGUI):
-        def __init__(self, state: TopicModelContainer | dict):
-            super().__init__(pivot_key_specs={}, state=state)
+        def __init__(self, state: TopicModelContainer | dict, **opts):
+            super().__init__(pivot_key_specs=None, state=state)
+            self._opts = opts
 
-            self._threshold.value = 0.20
-            self._year_range.value = (1990, 1992)
-            self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
+            self._threshold.value = opts.get("threshold", 0.20)
+            self._year_range.value = opts.get("year_span", (1990, 1992))
+            self._extra_placeholder = self.default_pivot_keys_layout(
+                vertical=opts.get("vertical", False),
+                layout={'width': opts.get('width', '200px')},
+                rows=opts.get("rows", 8),
+            )
 
-        def setup(self, **kwargs):  # pylint: disable=useless-super-delegation
+        def setup(self, **kwargs):
+            if self.corpus_config and self.corpus_config.extra_opts.get("pivot_keys"):
+                self.pivot_keys = self.corpus_config.extra_opts.get("pivot_keys")
+
             return super().setup(**kwargs)
+
+        # def update(self) -> pd.DataFrame:
+        #     _ = super().update()
+        #     """note: at this point dtw is equal to calculator.data"""
+        #     self.alert("preparing data, please wait...")
+        #     calculator: tx.DocumentTopicsCalculator = self.inferred_topics.calculator
+        #     data: pd.DataFrame = self.person_codecs.decode(
+        #         calculator.overload(includes="protocol_name,document_name,gender_id,party_id,person_id").value,
+        #         drop=True,
+        #     )
+        #     self.alert("Done!")
+        #     return data
 
         @property
         def filter_opts(self) -> pu.PropertyValueMaskingOpts:
-            options: dict = super(BrowseTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
-            return options
+            return super().filter_opts
 
     class FindTopicDocumentsGUI(nx.TextRepositoryMixIn, nx.PivotKeysMixIn, FindTopicDocumentsGUI):
-        def __init__(self, state: TopicModelContainer | dict):
-            super().__init__(pivot_key_specs={}, state=state)
+        def __init__(self, state: TopicModelContainer | dict, **opts):
+            super().__init__(pivot_key_specs=None, state=state)
+            self._opts = opts
+            self._threshold.value = opts.get("threshold", 0.20)
+            self._extra_placeholder = self.default_pivot_keys_layout(
+                vertical=opts.get("vertical", False),
+                layout={'width': opts.get('width', '200px')},
+                rows=opts.get("rows", 8),
+            )
 
-            self._threshold.value = 0.20
-            self._extra_placeholder = self.default_pivot_keys_layout(layout={'width': '200px'}, rows=8)
-            self.alert("INIT")
+        def setup(self, **kwargs):
+            if self.corpus_config and self.corpus_config.extra_opts.get("pivot_keys"):
+                self.pivot_keys = self.corpus_config.extra_opts.get("pivot_keys")
 
-        def setup(self, **kwargs):  # pylint: disable=useless-super-delegation
             return super().setup(**kwargs)
 
         @property
         def filter_opts(self) -> pu.PropertyValueMaskingOpts:
-            options: dict = super(FindTopicDocumentsGUI, self).filter_opts  # pylint: disable=super-with-arguments
-            return options
+            return super().filter_opts
