@@ -1,6 +1,8 @@
 import pytest
 
-from penelope.utility import PivotKeys, PropertyValueMaskingOpts, clear_cached_properties
+from penelope.utility import PivotKeys, PropertyValueMaskingOpts
+
+# pylint: disable=redefined-outer-name
 
 PIVOT_KEYS: dict = {
     'fågel': {
