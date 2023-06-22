@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 
 import os
 import pickle
@@ -365,6 +366,23 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             return {}
         return self.topic_token_overview['label'].to_dict()
 
+
+    def get_topics_overview_with_score(self, n_tokens: int = 500):
+        topics: pd.DataFrame = self.topic_token_overview
+        topics['tokens'] = self.get_topic_titles(n_tokens=n_tokens)
+
+        columns_to_show: list[str] = [column for column in ['tokens', 'alpha', 'coherence'] if column in topics.columns]
+
+        topics = topics[columns_to_show]
+
+        with suppress(BaseException):
+            topic_proportions = self.calculator.topic_proportions()
+            if topic_proportions is not None:
+                topics['score'] = topic_proportions
+
+        if topics is None:
+            raise ValueError("bug-check: No topic_token_overview in loaded model!")
+        return topics
 
 def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
     """Add count columns `n_tokens` and `n_rws_tokens" if missing and other/renamed column exists."""
