@@ -10,32 +10,32 @@ from penelope import utility
 
 
 def test_clear_cached_properties():
-    class Foo:
+    class Sox:
         def __init__(self):
             self._counter: int = 0
 
         @property
-        def foo(self):
+        def fox(self):
             self._counter += 1
             return self._counter
 
         @cached_property
-        def bar(self):
+        def tsar(self):
             self._counter += 1
             return self._counter
 
-    foo: Foo = Foo()
-    assert foo.foo == 1
-    assert foo.bar == 2
-    assert foo.foo == 3
-    assert foo.bar == 2
-    assert foo.foo == 4
+    sox: Sox = Sox()
+    assert sox.fox == 1
+    assert sox.tsar == 2
+    assert sox.fox == 3
+    assert sox.tsar == 2
+    assert sox.fox == 4
 
-    utility.clear_cached_properties(foo)
+    utility.clear_cached_properties(sox)
 
-    assert foo.foo == 5
-    assert foo.bar == 6
-    assert foo.bar == 6
+    assert sox.fox == 5
+    assert sox.tsar == 6
+    assert sox.tsar == 6
 
 
 def test_utils():
