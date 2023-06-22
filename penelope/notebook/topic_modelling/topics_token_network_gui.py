@@ -1,5 +1,5 @@
 import os
-from typing import Any, Callable, List
+from typing import Callable, List
 
 import ipycytoscape
 import ipywidgets as widgets  # type: ignore
@@ -295,10 +295,10 @@ class ViewModel:
 
 
 @view.capture(clear_output=False)
-def default_loader(folder: str, filename_fields: Any = None) -> topic_modelling.InferredTopicsData:
+def default_loader(folder: str) -> topic_modelling.InferredTopicsData:
     if folder is None:
         return None
-    data = topic_modelling.InferredTopicsData.load(folder=folder, filename_fields=filename_fields)
+    data = topic_modelling.InferredTopicsData.load(folder=folder)
     return data
 
 

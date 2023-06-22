@@ -1,9 +1,9 @@
 from __future__ import annotations
-from contextlib import suppress
 
 import os
 import pickle
 import types
+from contextlib import suppress
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
@@ -15,6 +15,7 @@ from loguru import logger
 
 from penelope import corpus as pc
 from penelope import utility as pu
+from penelope.utility.filename_fields import FilenameFieldSpecs
 
 from . import token as tt
 from .document import DocumentTopicsCalculator
@@ -271,11 +272,15 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             self.token_diagnostics.reset_index(drop=True).to_feather(jj(target_folder, "token_diagnostics.feather"))
 
     @staticmethod
-    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False, verbose: bool = False):
+    def load(*, folder: str, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
 
         if not isfile(jj(folder, "topic_token_weights.zip")):
             return PickleUtility.explode(source=folder, target_folder=folder)
+
+        corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
+
+        filename_fields: FilenameFieldSpecs = corpus_config.text_reader_opts.filename_fields
 
         document_index: pd.DataFrame = (
             pd.read_feather(jj(folder, "documents.feather")).rename_axis('document_id')
@@ -284,8 +289,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
                 jj(folder, 'documents.zip'), filename_fields=filename_fields, **CSV_OPTS
             ).set_index('document_id', drop=True)
         )
-
-        corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
 
         data: InferredTopicsData = InferredTopicsData(
             dictionary=smart_load(jj(folder, 'dictionary.zip'), feather_pipe=pu.set_index, columns='token_id'),
@@ -366,7 +369,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             return {}
         return self.topic_token_overview['label'].to_dict()
 
-
     def get_topics_overview_with_score(self, n_tokens: int = 500):
         topics: pd.DataFrame = self.topic_token_overview
         topics['tokens'] = self.get_topic_titles(n_tokens=n_tokens)
@@ -383,6 +385,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         if topics is None:
             raise ValueError("bug-check: No topic_token_overview in loaded model!")
         return topics
+
 
 def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
     """Add count columns `n_tokens` and `n_rws_tokens" if missing and other/renamed column exists."""

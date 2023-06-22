@@ -15,9 +15,7 @@ INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer/tranströmer_infer
 
 @pytest.fixture
 def inferred_topics_data() -> tm.InferredTopicsData:
-    inferred_data: tm.InferredTopicsData = tm.InferredTopicsData.load(
-        folder=INFERRED_TOPICS_DATA_FOLDER, filename_fields="year:_:1"
-    )
+    inferred_data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=INFERRED_TOPICS_DATA_FOLDER)
     return inferred_data
 
 

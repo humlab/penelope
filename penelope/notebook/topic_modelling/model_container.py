@@ -55,7 +55,7 @@ class TopicModelContainer:
         train_corpus_folder: str | tm.TrainingCorpus | None = None,
     ) -> "TopicModelContainer":
         self._inferred_topics = inferred_topics
-        self._folder = folder
+        self._folder = folder or train_corpus_folder
         self._trained_model = trained_model
         self._train_corpus_folder = train_corpus_folder
         self.notify()
@@ -70,6 +70,7 @@ class TopicModelContainer:
             folder=folder,
             trained_model=trained_model,
             train_corpus_folder=folder,
+            folder=folder,
         )
 
     @property

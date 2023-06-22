@@ -42,7 +42,7 @@ text_reader_opts:
   as_binary: false
   filename_fields:
     - "year:_:1"
-    - "number:_:2"
+    - "year_serial_id:_:2"
   filename_filter: null
   filename_pattern: "*.csv"
   index_field: null

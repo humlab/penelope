@@ -213,7 +213,10 @@ class ComputeTopicModelUserInterface(TopicsStateGui):
                     inferred_topics.store(target_folder=target_folder, pickled=False)
 
                     self.state.update(
-                        trained_model=trained_model, inferred_topics=inferred_topics, train_corpus=train_corpus
+                        trained_model=trained_model,
+                        inferred_topics=inferred_topics,
+                        train_corpus=train_corpus,
+                        folder=target_folder,
                     )
 
                     topics: pd.DataFrame = get_topics_unstacked(

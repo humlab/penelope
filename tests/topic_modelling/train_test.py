@@ -275,7 +275,7 @@ def test_run_cli(method):
     assert os.path.isfile(jj(target_folder, 'model_options.json'))
 
     inferred_model: tm.InferredModel = tm.InferredModel.load(target_folder)
-    inferred_topic_data = tm.InferredTopicsData.load(folder=target_folder, filename_fields=None)
+    inferred_topic_data: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=target_folder)
 
     assert inferred_model is not None
     assert inferred_topic_data is not None
