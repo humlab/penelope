@@ -226,7 +226,7 @@ class PivotKeysMixIn:
             if self.prevent_event:
                 return
             try:
-                self._display_event_handler(change, *_)
+                handler(change, *_)
             finally:
                 self.prevent_event = prevent_event
 
