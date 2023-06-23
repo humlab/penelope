@@ -358,7 +358,7 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
         self._sidebar_placeholder.children = (
             list(self._sidebar_placeholder.children or [])
             + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Pivot by</b>"), self._filter_keys_picker])
-            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Filter by</b>"), self._filter_values])
+            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Filter by</b>"), self._filter_values_picker])
         )
         self._widgets_placeholder.children = list(self._widgets_placeholder.children or []) + (
             [self._unstack_tabular] if len(self.pivot_keys.text_names) > 0 else []
