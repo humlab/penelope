@@ -51,7 +51,7 @@ class PivotKeysMixIn:
         self._display_event_handler: t.Callable[[t.Any], None] = None
 
         self._single_pivot_key_picker: w.Dropdown = w.Dropdown(options={}, value=None, layout=dict(width='100px'))
-        self._multi_pivot_keys_picker: w.SelectMultiple = w.SelectMultiple(
+        self._filter_keys_picker: w.SelectMultiple = w.SelectMultiple(
             options=[], value=[], rows=6, layout=dict(width='100px')
         )
         self._filter_values: w.SelectMultiple = w.SelectMultiple(
@@ -85,10 +85,10 @@ class PivotKeysMixIn:
         self._single_pivot_key_picker.options = self.pivot_keys.single_key_options
         self._single_pivot_key_picker.value = next(iter(self._single_pivot_key_picker.options.values()), None)
 
-        self._multi_pivot_keys_picker.value = []
-        self._multi_pivot_keys_picker.options = ['None'] + list(self.pivot_keys.text_names)
-        self._multi_pivot_keys_picker.value = ['None']
-        self._multi_pivot_keys_picker.rows = self.clamp(len(self._multi_pivot_keys_picker.options), 2, 6)
+        self._filter_keys_picker.value = []
+        self._filter_keys_picker.options = ['None'] + list(self.pivot_keys.text_names)
+        self._filter_keys_picker.value = ['None']
+        self._filter_keys_picker.rows = self.clamp(len(self._filter_keys_picker.options), 2, 6)
 
         self._filter_values.value = []
         self._filter_values.options = []
@@ -111,13 +111,13 @@ class PivotKeysMixIn:
     def setup(self, **kwargs) -> "PivotKeysMixIn":
         if hasattr(super(), 'setup'):
             getattr(super(), 'setup')(**kwargs)
-        register_observer(self._multi_pivot_keys_picker, handler=self.pivot_key_handler, value=True)
+        register_observer(self._filter_keys_picker, handler=self.pivot_key_handler, value=True)
         return self
 
     @deprecated
     def reset(self) -> "PivotKeysMixIn":
         self.observe(value=False, handler=self._display_event_handler)
-        self._multi_pivot_keys_picker.value = ['None']
+        self._filter_keys_picker.value = ['None']
         self._filter_values.value = []
         self._unstack_tabular.value = False
         self.observe(value=True, handler=self._display_event_handler)
@@ -149,7 +149,7 @@ class PivotKeysMixIn:
     @property
     def pivot_keys_text_names(self) -> list[str]:
         """Return column names for selected the pivot keys"""
-        return [x for x in self._multi_pivot_keys_picker.value if x != 'None']
+        return [x for x in self._filter_keys_picker.value if x != 'None']
 
     @property
     def pivot_keys_id_names(self) -> list[str]:
@@ -214,7 +214,7 @@ class PivotKeysMixIn:
         return (
             [self._unstack_tabular, self._filter_values]
             if self.pivot_keys.has_pivot_keys
-            else [self._multi_pivot_keys_picker]
+            else [self._filter_keys_picker]
         )
 
     def observe(self, value: bool, *, handler: t.Callable[[t.Any], None], **kwargs) -> None:
@@ -246,18 +246,18 @@ class PivotKeysMixIn:
         if kwargs.get('rows') is not None:
             self._filter_values.rows = kwargs.get('rows')
         self._filter_values.layout = kwargs.get('layout', dict(width='120px'))
-        self._multi_pivot_keys_picker.layout = kwargs.get('layout', dict(width=width))
+        self._filter_keys_picker.layout = kwargs.get('layout', dict(width=width))
         if vertical:
             return w.VBox(
                 [
                     w.HTML("<b>Filter by</b>"),
-                    self._multi_pivot_keys_picker,
+                    self._filter_keys_picker,
                     self._filter_values,
                 ]
             )
         return w.HBox(
             [
-                w.VBox([w.HTML("<b>Filter by</b>"), self._multi_pivot_keys_picker]),
+                w.VBox([w.HTML("<b>Filter by</b>"), self._filter_keys_picker]),
                 w.VBox([w.HTML("<b>Value</b>"), self._filter_values]),
             ]
         )

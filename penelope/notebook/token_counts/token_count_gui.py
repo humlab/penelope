@@ -357,7 +357,7 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
     def layout(self) -> HBox:
         self._sidebar_placeholder.children = (
             list(self._sidebar_placeholder.children or [])
-            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Pivot by</b>"), self._multi_pivot_keys_picker])
+            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Pivot by</b>"), self._filter_keys_picker])
             + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Filter by</b>"), self._filter_values])
         )
         self._widgets_placeholder.children = list(self._widgets_placeholder.children or []) + (
