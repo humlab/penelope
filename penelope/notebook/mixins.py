@@ -58,11 +58,11 @@ class PivotKeysMixIn:
             options=[], value=[], rows=12, layout=dict(width='120px')
         )
 
-        self.pivot_keys: pu.PivotKeys = pivot_key_specs
-
         self._unstack_tabular: w.ToggleButton = w.ToggleButton(
             description="Unstack", icon='check', value=False, layout=dict(width='140px')
         )
+        
+        self.pivot_keys: pu.PivotKeys = pivot_key_specs
 
     @property
     def pivot_keys(self) -> pu.PivotKeys:
