@@ -190,7 +190,7 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
 
         self._n_top_token_label: w.HTML = w.HTML()
         self._n_top_token: w.IntSlider = w.IntSlider(min=3, max=200, value=3, readout=False)
-        self._find_text: w.Text = w.Text()
+        self._find_text: w.Text = w.Text(width = '140px')
         self._n_top_token.layout.width = '140px'
         self._find_text.layout.width = '160px'
         self.observe_slider_update_label(self._n_top_token, self._n_top_token_label, "Toplist threshold")
@@ -287,8 +287,8 @@ class WithPivotKeysText:
             )
 
         def setup(self, **kwargs):
-            if self.corpus_config and self.corpus_config.extra_opts.get("pivot_keys"):
-                self.pivot_keys = self.corpus_config.extra_opts.get("pivot_keys")
+            if self.config and self.config.pivot_keys:
+                self.pivot_keys = self.config.pivot_keys
 
             return super().setup(**kwargs)
 
@@ -320,8 +320,8 @@ class WithPivotKeysText:
             )
 
         def setup(self, **kwargs):
-            if self.corpus_config and self.corpus_config.extra_opts.get("pivot_keys"):
-                self.pivot_keys = self.corpus_config.extra_opts.get("pivot_keys")
+            if self.config and self.config.pivot_keys:
+                self.pivot_keys = self.config.pivot_keys
 
             return super().setup(**kwargs)
 

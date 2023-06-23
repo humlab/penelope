@@ -41,7 +41,7 @@ class TopicsStateGui:
         return options
 
     @property
-    def corpus_config(self) -> CorpusConfig:
+    def config(self) -> CorpusConfig:
         if self.inferred_topics:
             if self.inferred_topics.corpus_config is not None:
                 return self.inferred_topics.corpus_config
