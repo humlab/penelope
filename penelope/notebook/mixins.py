@@ -54,14 +54,14 @@ class PivotKeysMixIn:
         self._multi_pivot_keys_picker: w.SelectMultiple = w.SelectMultiple(
             options=[], value=[], rows=6, layout=dict(width='100px')
         )
-        self._filter_keys: w.SelectMultiple = w.SelectMultiple(
+        self._filter_values: w.SelectMultiple = w.SelectMultiple(
             options=[], value=[], rows=12, layout=dict(width='120px')
         )
 
         self._unstack_tabular: w.ToggleButton = w.ToggleButton(
             description="Unstack", icon='check', value=False, layout=dict(width='140px')
         )
-        
+
         self.pivot_keys: pu.PivotKeys = pivot_key_specs
 
     @property
@@ -90,10 +90,10 @@ class PivotKeysMixIn:
         self._multi_pivot_keys_picker.value = ['None']
         self._multi_pivot_keys_picker.rows = self.clamp(len(self._multi_pivot_keys_picker.options), 2, 6)
 
-        self._filter_keys.value = []
-        self._filter_keys.options = []
+        self._filter_values.value = []
+        self._filter_values.options = []
 
-        self._filter_keys.rows = self.clamp(len(self._filter_keys.options), 4, 12)
+        self._filter_values.rows = self.clamp(len(self._filter_values.options), 4, 12)
 
         self.autoselect_key_values: bool = False
         self.prevent_event = _prevent_event
@@ -104,9 +104,9 @@ class PivotKeysMixIn:
     #     return self.filter_keys.options
 
     @property
-    def selected_filter_keys(self) -> list[str]:
+    def selected_filter_values(self) -> list[str]:
         """Selected filter key values"""
-        return self.filter_keys.value
+        return self._filter_values.value
 
     def setup(self, **kwargs) -> "PivotKeysMixIn":
         if hasattr(super(), 'setup'):
@@ -118,7 +118,7 @@ class PivotKeysMixIn:
     def reset(self) -> "PivotKeysMixIn":
         self.observe(value=False, handler=self._display_event_handler)
         self._multi_pivot_keys_picker.value = ['None']
-        self._filter_keys.value = []
+        self._filter_values.value = []
         self._unstack_tabular.value = False
         self.observe(value=True, handler=self._display_event_handler)
 
@@ -160,7 +160,7 @@ class PivotKeysMixIn:
     def filter_opts(self) -> pu.PropertyValueMaskingOpts:
         """Returns user's filter selections as a name-to-values mapping."""
         key_values = defaultdict(list)
-        value_tuples: tuple[str, str] = [x.split(': ') for x in self._filter_keys.value]
+        value_tuples: tuple[str, str] = [x.split(': ') for x in self._filter_values.value]
         for k, v in value_tuples:
             key_values[k].append(v)
         filter_opts = self.pivot_keys.create_filter_key_values_dict(key_values, decode=True)
@@ -191,8 +191,8 @@ class PivotKeysMixIn:
             add_options: set[str] = set(self._pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
             del_options: set[str] = set(self._pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
 
-            ctrl_options: set[str] = (set(self._filter_keys.options) - del_options) | add_options
-            current_values: set[str] = set(self._filter_keys.value)
+            ctrl_options: set[str] = (set(self._filter_values.options) - del_options) | add_options
+            current_values: set[str] = set(self._filter_values.value)
             ctrl_values: set[str] = (current_values - del_options) | (
                 add_options if self.autoselect_key_values else set()
             )
@@ -200,19 +200,19 @@ class PivotKeysMixIn:
             values_changed: bool = ctrl_values != current_values
 
             if values_changed:
-                self._filter_keys.value = []
+                self._filter_values.value = []
 
-            self._filter_keys.options = sorted(list(ctrl_options))
+            self._filter_values.options = sorted(list(ctrl_options))
 
             if values_changed:
-                self._filter_keys.value = sorted(list(ctrl_values))
+                self._filter_values.value = sorted(list(ctrl_values))
 
         finally:
             self.prevent_event = False
 
     def display_trigger_ctrls(self) -> list[w.Widget]:
         return (
-            [self._unstack_tabular, self._filter_keys]
+            [self._unstack_tabular, self._filter_values]
             if self.pivot_keys.has_pivot_keys
             else [self._multi_pivot_keys_picker]
         )
@@ -244,21 +244,21 @@ class PivotKeysMixIn:
 
         width: str = kwargs.get('width', '100px')
         if kwargs.get('rows') is not None:
-            self._filter_keys.rows = kwargs.get('rows')
-        self._filter_keys.layout = kwargs.get('layout', dict(width='120px'))
+            self._filter_values.rows = kwargs.get('rows')
+        self._filter_values.layout = kwargs.get('layout', dict(width='120px'))
         self._multi_pivot_keys_picker.layout = kwargs.get('layout', dict(width=width))
         if vertical:
             return w.VBox(
                 [
                     w.HTML("<b>Filter by</b>"),
                     self._multi_pivot_keys_picker,
-                    self._filter_keys,
+                    self._filter_values,
                 ]
             )
         return w.HBox(
             [
                 w.VBox([w.HTML("<b>Filter by</b>"), self._multi_pivot_keys_picker]),
-                w.VBox([w.HTML("<b>Value</b>"), self._filter_keys]),
+                w.VBox([w.HTML("<b>Value</b>"), self._filter_values]),
             ]
         )
 
@@ -280,8 +280,8 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
         width: str = kwargs.get('width', '120px')
 
-        self._filter_keys.rows = kwargs.get('rows', 12)
-        self._filter_keys.layout = kwargs.get("layout", dict(width=width))
+        self._filter_values.rows = kwargs.get('rows', 12)
+        self._filter_values.layout = kwargs.get("layout", dict(width=width))
         self._line_color.layout = dict(width='32px')
         self._next_color.layout = dict(width='32px')
 
@@ -294,7 +294,7 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
         return w.VBox(
             [
                 w.HBox([self._lines, self._del_line]),
-                self._filter_keys,
+                self._filter_values,
                 w.HBox(
                     [
                         w.HTML("Color "),
@@ -329,7 +329,7 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
         self._line_color.value = next(self._color_palette)
 
     def _add_line_callback(self, *_):
-        self.add_line(name=self.line_name, color=self.line_color, values=self.selected_filter_keys)
+        self.add_line(name=self.line_name, color=self.line_color, values=self.selected_filter_values)
         self._show_line(name="", color=next(self._color_palette), values=[])
 
     def add_line(self, name: str, color: str, values: list[str]):
@@ -367,7 +367,7 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
     def _show_line(self, name: str, color: str, values: list[str]):
         self._line_name.value = name
         self._line_color.value = color
-        self._filter_keys.value = values
+        self._filter_values.value = values
 
     @property
     def line_name(self) -> str:

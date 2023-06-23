@@ -402,11 +402,11 @@ class TrendsGUI(mx.PivotKeysMixIn, TrendsBaseGUI):
         super().buzy(value)
         self._unstack_tabular.disabled = value
         self._multi_pivot_keys_picker.disabled = value
-        self._filter_keys.disabled = value
+        self._filter_values.disabled = value
 
     def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=arguments-differ
         super().observe(value=value, handler=self._display_handler, **kwargs)
-        for ctrl in [self._multi_pivot_keys_picker, self._filter_keys]:
+        for ctrl in [self._multi_pivot_keys_picker, self._filter_values]:
             wu.register_observer(ctrl, handler=self._invalidate_handler, value=value)
 
 
