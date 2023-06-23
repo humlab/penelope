@@ -318,6 +318,10 @@ class CorpusConfig:
                 store[k] = v
         return store
 
+    @property
+    def pivot_keys(self) -> Any:
+        return self.extra_opts.get("pivot_keys")
+
 
 class DependencyResolver:
     @classmethod
