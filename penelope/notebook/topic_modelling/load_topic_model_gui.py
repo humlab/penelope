@@ -1,27 +1,13 @@
 from __future__ import annotations
 
-from typing import Any
-
 import ipywidgets as w
 from IPython.display import display
-from loguru import logger
 
-from penelope import pipeline as pp
 from penelope import topic_modelling as tm
 
 from . import mixins as mx
 from . import topic_titles_gui as tt_ui
 from .model_container import TopicModelContainer
-
-
-def _get_filename_fields(folder: str) -> Any:
-    try:
-        corpus_configs: list[pp.CorpusConfig] = pp.CorpusConfig.find_all(folder)
-        if len(corpus_configs) > 0:
-            return corpus_configs[0].text_reader_opts.filename_fields
-    except FileNotFoundError:
-        logger.warning(f"corpus.yml not found in model folder! Please copy config file to {folder}.")
-    return None
 
 
 def _load_tm_handler(
