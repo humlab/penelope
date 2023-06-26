@@ -1,14 +1,21 @@
+import glob
 from collections import defaultdict
 from functools import cached_property
 from operator import methodcaller
+from os.path import isdir, isfile, join
 from typing import Callable
 
 import pandas as pd
+from loguru import logger
+
+from penelope.utility import read_yaml
 
 from .pandas_utils import PropertyValueMaskingOpts
-from .utils import clear_cached_properties, revdict
+from .utils import clear_cached_properties, dotcoalesce, revdict
 
 PivotKeySpec = dict[str, str | dict[str, int]]
+
+# pylint: disable=too-many-public-methods
 
 
 class PivotKeys:
@@ -30,15 +37,55 @@ class PivotKeys:
 
     """
 
-    def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[str, PivotKeySpec] = None):
+    def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec] = None):
         self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys
+
+    @staticmethod
+    def load(path: str) -> "PivotKeys":
+        """Loads pivot keys from any given file, or probe in folder for pivot keys"""
+        try:
+            if isinstance(path, dict):
+                return PivotKeys(pivot_keys=path)
+
+            if isinstance(path, str):
+                if isfile(path):
+                    data: dict = PivotKeys.try_load(path, default=data)
+                    if data is not None:
+                        return PivotKeys(pivot_keys=data)
+
+                if isdir(path):
+                    return PivotKeys.load_by_probe(path)
+
+        except FileNotFoundError:
+            ...
+        logger.warning(f"Pivot keys file not found: {path}")
+        return PivotKeys()
+
+    @staticmethod
+    def try_load(path: str, default: dict = None) -> "PivotKeys":
+        data: dict = read_yaml(path)
+        return dotcoalesce(data, 'extra_opts.pivot_keys', 'pivot_keys', default=default)
+
+    @staticmethod
+    def load_by_probe(folder: str) -> "PivotKeys":
+        """Probes folder for pivot keys"""
+
+        if isfile(join(folder, 'pivot_keys.yml')):
+            return PivotKeys.load(join(folder, 'pivot_keys.yml'))
+
+        for path in glob.glob(folder + '/*.y*ml'):
+            data: dict = PivotKeys.try_load(path, default=None)
+            if data is not None:
+                return PivotKeys(pivot_keys=data)
+
+        return PivotKeys()
 
     @property
     def pivot_keys(self) -> dict[str, PivotKeySpec]:
         return self._pivot_keys
 
     @pivot_keys.setter
-    def pivot_keys(self, pivot_keys):
+    def pivot_keys(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec]):
         clear_cached_properties(self)
         self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or []
         if isinstance(self.pivot_keys, list):
@@ -54,6 +101,16 @@ class PivotKeys:
 
     def __len__(self):
         return len(self.pivot_keys)
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if isinstance(other, dict):
+            return self._pivot_keys == other
+        if isinstance(other, PivotKeys):
+            """FIXME: Might need to do a deep comparison"""
+            return self._pivot_keys == other._pivot_keys
+        return False
 
     @cached_property
     def key_name2key_id(self) -> dict:
