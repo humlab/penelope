@@ -78,6 +78,9 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
         return [("", None)] + super().topic_id_options()
 
     def setup(self, **kwargs) -> "PivotTopicNetworkGUI":
+        if self.pivot_key_specs is None:
+            self.pivot_keys = self.state.inferred_topics.corpus_config.pivot_keys
+
         super().setup(**kwargs)
 
         self._compute_handler: Callable[[Any], None] = self.update_handler
