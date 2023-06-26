@@ -300,6 +300,13 @@ def dotget(d: dict, path: str, default: Any = None) -> Any:
     return d or default
 
 
+def dotcoalesce(d: dict, *paths: str, default: Any = None) -> Any:
+    for path in paths:
+        if (value := dotget(d, path)) is not None:
+            return value
+    return default
+
+
 def list_of_dicts_to_dict_of_lists(dl: List[Mapping[str, Any]]) -> Mapping[str, List[Any]]:
     dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists

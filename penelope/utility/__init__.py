@@ -136,6 +136,7 @@ from .utils import (
     dict_subset,
     dict_to_list_of_tuples,
     dictify,
+    dotcoalesce,
     dotget,
     extend,
     extend_single,
