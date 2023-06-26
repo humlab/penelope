@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import abc
+import zipfile
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from functools import cached_property
 from os.path import dirname, isdir, isfile, join
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Type, Union
-import zipfile
 
 from tqdm.auto import tqdm
 

@@ -14,13 +14,7 @@ def detect_phrases(
     phrases: PhraseSubstitutions,
     ignore_case: str = False,
 ) -> List[Tuple[int, str, int]]:
-    """Detects and updates phrases on document `doc`.
-
-    Args:
-        phrases (List[List[str]]): [description]
-        doc (pd.DataFrame): [description]
-        target (str): [description]
-    """
+    """Detects and updates phrases on document `target_series`."""
 
     if phrases is None:
         return []

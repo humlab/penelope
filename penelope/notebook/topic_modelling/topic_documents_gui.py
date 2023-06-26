@@ -190,7 +190,7 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
 
         self._n_top_token_label: w.HTML = w.HTML()
         self._n_top_token: w.IntSlider = w.IntSlider(min=3, max=200, value=3, readout=False)
-        self._find_text: w.Text = w.Text(width = '140px')
+        self._find_text: w.Text = w.Text(width='140px')
         self._n_top_token.layout.width = '140px'
         self._find_text.layout.width = '160px'
         self.observe_slider_update_label(self._n_top_token, self._n_top_token_label, "Toplist threshold")
