@@ -240,6 +240,9 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             if feather:
                 self._store_feather(target_folder)
 
+        if self.corpus_config is not None:
+            self.corpus_config.dump(jj(target_folder, "corpus.yml"))
+
     def _store_csv(self, target_folder: str) -> None:
         data: list[tuple[pd.DataFrame, str]] = [
             (self.document_index.rename_axis(''), 'documents.csv'),
@@ -322,11 +325,13 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
     def load_corpus_config(folder: str) -> CorpusConfig:
         """Load CorpusConfig if exists"""
         corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(folder=folder)
-        corpus_config: CorpusConfig = corpus_configs[0] if len(corpus_configs) > 0 else None
 
-        if corpus_config is None:
-            logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
-        return corpus_config
+        if len(corpus_configs) > 0:
+            return corpus_configs[0]
+
+        # raise FileNotFoundError(f"No CorpusConfig found in {folder}")
+        logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
+        return None
 
     def load_topic_labels(self, folder: str, **csv_opts: dict) -> pd.DataFrame:
         tto: pd.DataFrame = self.topic_token_overview
@@ -418,6 +423,7 @@ class PickleUtility:
             document_topic_weights=pickled_data.document_topic_weights,
             topic_diagnostics=None,
             token_diagnostics=None,
+            corpus_config=pickled_data.corpus_config if hasattr(pickled_data, 'corpus_config') else None,
         )
         return data
 
@@ -447,6 +453,7 @@ class PickleUtility:
             topic_token_weights=data.topic_token_weights,
             topic_token_overview=data.topic_token_overview,
             document_topic_weights=data.document_topic_weights,
+            corpus_config=data.corpus_config,
         )
         with open(filename, 'wb') as f:
             pickle.dump(c_data, f, pickle.HIGHEST_PROTOCOL)
