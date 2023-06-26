@@ -41,7 +41,7 @@ class PivotKeys:
         self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys
 
     @staticmethod
-    def load(path: str) -> "PivotKeys":
+    def load(path: str, default: dict = None) -> "PivotKeys":
         """Loads pivot keys from any given file, or probe in folder for pivot keys"""
         try:
             if isinstance(path, dict):
@@ -49,7 +49,7 @@ class PivotKeys:
 
             if isinstance(path, str):
                 if isfile(path):
-                    data: dict = PivotKeys.try_load(path, default=data)
+                    data: dict = PivotKeys.try_load(path, default=default)
                     if data is not None:
                         return PivotKeys(pivot_keys=data)
 
