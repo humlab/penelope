@@ -38,7 +38,7 @@ class PivotKeys:
     """
 
     def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec] = None):
-        self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys
+        self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or {}
 
     @staticmethod
     def load(path: str, default: dict = None) -> "PivotKeys":
@@ -93,11 +93,11 @@ class PivotKeys:
             self._pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else {}
         self.is_satisfied()
 
-    def pivot_key(self, text_name: str) -> dict:
+    def get(self, text_name: str) -> dict:
         return self.pivot_keys.get(text_name, {})
 
     def __getitem__(self, text_name: str) -> dict:
-        return self.pivot_key(text_name)
+        return self.get(text_name)
 
     def __len__(self):
         return len(self.pivot_keys)
@@ -135,7 +135,7 @@ class PivotKeys:
 
     def key_value_name2id(self, text_name: str) -> dict[str, int]:
         """Returns name/id mapping for given key's value range"""
-        return self.pivot_key(text_name)['values']
+        return self.get(text_name).get('values')
 
     def key_value_id2name(self, text_name: str) -> dict[int, str]:
         """Returns id/name mapping for given key's value range"""
