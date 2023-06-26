@@ -41,7 +41,7 @@ def test_pivot_keys_create(pivot_keys: PivotKeys):
     assert set(pivot_keys.id_names) == set({'fågel_id', 'husdjur_id'})
 
     assert pivot_keys.is_satisfied()
-    assert pivot_keys.pivot_key('fågel') == {
+    assert pivot_keys.get('fågel') == {
         'text_name': 'fågel',
         'id_name': 'fågel_id',
         'values': {
