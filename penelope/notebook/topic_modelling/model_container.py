@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional, Union
+from typing import Any, Callable, Literal
 
 import penelope.topic_modelling as tm
 
@@ -13,13 +13,23 @@ class TopicModelContainer:
     _singleton: "TopicModelContainer" = None
 
     def __init__(self):
+        self._folder: str = None
         self._trained_model: tm.InferredModel = None
         self._inferred_topics: tm.InferredTopicsData = None
-        self._train_corpus_folder: str = None
+        self._train_corpus_folder: str | tm.TrainingCorpus = None
+        self._folder: str = None
+        self._observers: dict[Any, Callable] = {}
+
+    def register(self, observer: Any, callback: Callable) -> None:
+        self._observers[observer] = callback
+
+    def notify(self) -> None:
+        for observer, callback in self._observers.items():
+            callback(self, observer)
 
     def __getitem__(
         self, key: Literal['topic_model', 'trained_model', 'topics_data', 'inferred_topics']
-    ) -> Union[tm.InferredModel, tm.InferredModel]:
+    ) -> tm.InferredModel | tm.InferredModel:
         if key == 'trained_model':
             return self.trained_model
         if key == 'topic_model':
@@ -39,15 +49,28 @@ class TopicModelContainer:
     def update(
         self,
         *,
-        trained_model: Optional[tm.InferredModel] = None,
-        inferred_topics: Optional[tm.InferredTopicsData] = None,
-        train_corpus_folder: Union[str, tm.TrainingCorpus] = None,
+        inferred_topics: tm.InferredTopicsData | None = None,
+        folder: str | None = None,
+        trained_model: tm.InferredModel | None = None,
+        train_corpus_folder: str | tm.TrainingCorpus | None = None,
     ) -> "TopicModelContainer":
-        self._trained_model = trained_model
         self._inferred_topics = inferred_topics
+        self._folder = folder or train_corpus_folder
+        self._trained_model = trained_model
         self._train_corpus_folder = train_corpus_folder
-
+        self.notify()
         return self
+
+    def load(self, *, folder: str, slim: bool = False, lazy: bool = True) -> None:
+        trained_model: tm.InferredModel = tm.InferredModel.load(folder, lazy=lazy)
+        inferred_topics: tm.InferredTopicsData = tm.InferredTopicsData.load(folder=folder, slim=slim)
+
+        self.update(
+            inferred_topics=inferred_topics,
+            folder=folder,
+            trained_model=trained_model,
+            train_corpus_folder=folder,
+        )
 
     @property
     def trained_model(self) -> tm.InferredModel:
@@ -65,4 +88,8 @@ class TopicModelContainer:
 
     @property
     def train_corpus_folder(self) -> str:
-        return self._train_corpus_folder
+        return self._folder
+
+    @property
+    def folder(self) -> str:
+        return self._folder

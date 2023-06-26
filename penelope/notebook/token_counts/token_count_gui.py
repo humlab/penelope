@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Tuple, Union
+from typing import Any, Callable
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
@@ -29,9 +29,9 @@ class ComputeOpts:
     document_index: pd.DataFrame
     normalize: bool
     smooth: bool
-    pos_groups: List[str]
+    pos_groups: list[str]
     temporal_key: str
-    pivot_keys_id_names: List[str] = None
+    pivot_keys_id_names: list[str] = None
     filter_opts: pu.PropertyValueMaskingOpts = None
     unstack_tabular: bool = None
 
@@ -60,9 +60,9 @@ def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
     if opts.filter_opts is not None:
         di = opts.filter_opts.apply(di)
 
-    pivot_keys: List[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
+    pivot_keys: list[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
 
-    count_columns: List[str] = (
+    count_columns: list[str] = (
         list(opts.pos_groups)
         if len(opts.pos_groups or []) > 0
         else [x for x in di.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys]
@@ -82,12 +82,12 @@ def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
 
 
 @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
-def prepare_document_index(document_index: str, keep_columns: List[str]) -> pd.DataFrame:
+def prepare_document_index(document_index: str, keep_columns: list[str]) -> pd.DataFrame:
     """Prepares document index by adding/renaming columns
 
     Args:
         source (str): document index source
-        columns (List[str]): PoS-groups column names
+        columns (list[str]): PoS-groups column names
     """
 
     if 'n_raw_tokens' not in document_index.columns:
@@ -190,7 +190,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         return self._temporal_key.value
 
     @property
-    def selected_pos_groups(self) -> List[str]:
+    def selected_pos_groups(self) -> list[str]:
         return self._pos_groups.value
 
     @property
@@ -243,10 +243,12 @@ class BaseTokenCountGUI(DownloadMixIn):
             ]
         )
 
-    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=unused-argument
-        display_trigger_ctrls: List[Any] = [self._pos_groups, self._normalize, self._smooth, self._temporal_key]
+    def observe(
+        self, value: bool, handler: Callable[[Any], Any] = None, **kwargs  # pylint: disable=unused-argument
+    ) -> None:
+        display_trigger_ctrls: list[Any] = [self._pos_groups, self._normalize, self._smooth, self._temporal_key]
         for ctrl in display_trigger_ctrls:
-            register_observer(ctrl, handler=self._display_handler, value=value)
+            register_observer(ctrl, handler=handler or self._display_handler, value=value)
 
     def _display_handler(self, _):
         self.observe(False)
@@ -268,13 +270,13 @@ class BaseTokenCountGUI(DownloadMixIn):
         return self
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def load(self, source: Union[str, pd.DataFrame]) -> "BaseTokenCountGUI":
+    def load(self, source: str | pd.DataFrame) -> "BaseTokenCountGUI":
         self.document_index = (
             source if isinstance(source, pd.DataFrame) else pc.VectorizedCorpus.load_document_index(source)
         )
         return self
 
-    def keep_columns(self) -> List[str]:
+    def keep_columns(self) -> list[str]:
         return self.PoS_tag_groups.index.tolist()
 
     @DEBUG_VIEW.capture(clear_output=False)
@@ -292,7 +294,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         except ValueError as ex:
             self.alert(ex)
 
-    def prepare_plot_data(self, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def prepare_plot_data(self, data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         table_data: pd.DataFrame = self.plot_tabular(data, self.opts)
         plot_data: pd.DataFrame = data
 
@@ -311,7 +313,6 @@ class BaseTokenCountGUI(DownloadMixIn):
             fx_lines = lambda: plot_multiline(df=plot_data, smooth=False)  # FIXME: Fix Smooth!!
             fx_bar = lambda: plot_stacked_bar(df=plot_data)
 
-            # FIXME: Add option to plot several graphs?
             self._tab.display_content(0, what=table_data, clear=True)
             self._tab.display_content(1, what=fx_lines, clear=True)
             self._tab.display_content(2, what=fx_bar, clear=True)
@@ -332,13 +333,13 @@ class BaseTokenCountGUI(DownloadMixIn):
 
 # pylint: disable= useless-super-delegation
 class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
-    def __init__(self, pivot_key_specs: List[PivotKeySpec] | Mapping[str, List[PivotKeySpec]] = None, **kwargs):
+    def __init__(self, pivot_key_specs: list[PivotKeySpec] | dict[str, list[PivotKeySpec]] = None, **kwargs):
         super().__init__(pivot_key_specs, **kwargs)
 
     def unstack_pivot_keys(self, data: pd.DataFrame) -> pd.DataFrame:
         return pu.unstack_data(data, [self.temporal_key] + self.pivot_keys_text_names)
 
-    def prepare_plot_data(self, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def prepare_plot_data(self, data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         unstacked_data: pd.DataFrame = self.unstack_pivot_keys(data) if len(self.pivot_keys_text_names) > 0 else data
 
         table_data: pd.DataFrame = self.plot_tabular(unstacked_data if self.unstack_tabular else data, self.opts)
@@ -357,8 +358,8 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
     def layout(self) -> HBox:
         self._sidebar_placeholder.children = (
             list(self._sidebar_placeholder.children or [])
-            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Pivot by</b>"), self._multi_pivot_keys_picker])
-            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Filter by</b>"), self._filter_keys])
+            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Pivot by</b>"), self._filter_keys_picker])
+            + ([] if not self.pivot_keys.has_pivot_keys else [HTML("<b>Filter by</b>"), self._filter_values_picker])
         )
         self._widgets_placeholder.children = list(self._widgets_placeholder.children or []) + (
             [self._unstack_tabular] if len(self.pivot_keys.text_names) > 0 else []
@@ -366,5 +367,18 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
 
         return super().layout()
 
-    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=arguments-differ
-        super().observe(value=value, handler=self._display_handler, **kwargs)
+    def setup(self, **kwargs) -> PivotKeysMixIn:
+        return super().setup(**kwargs)
+
+    def load(self, source: str | pd.DataFrame) -> BaseTokenCountGUI:
+        super().load(source)
+
+        if isinstance(source, str):
+            self.pivot_keys.load_by_probe(source)
+
+        return self
+
+    def observe(
+        self, value: bool, handler: Callable[[Any], None] = None, **kwargs
+    ) -> None:  # pylint: disable=arguments-differ
+        super().observe(value=value, handler=handler or self._display_handler, **kwargs)

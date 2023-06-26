@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import pickle
 import types
+from contextlib import suppress
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
@@ -14,6 +15,7 @@ from loguru import logger
 
 from penelope import corpus as pc
 from penelope import utility as pu
+from penelope.utility.filename_fields import FilenameFieldSpecs
 
 from . import token as tt
 from .document import DocumentTopicsCalculator
@@ -238,6 +240,9 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             if feather:
                 self._store_feather(target_folder)
 
+        if self.corpus_config is not None:
+            self.corpus_config.dump(jj(target_folder, "corpus.yml"))
+
     def _store_csv(self, target_folder: str) -> None:
         data: list[tuple[pd.DataFrame, str]] = [
             (self.document_index.rename_axis(''), 'documents.csv'),
@@ -270,11 +275,15 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             self.token_diagnostics.reset_index(drop=True).to_feather(jj(target_folder, "token_diagnostics.feather"))
 
     @staticmethod
-    def load(*, folder: str, filename_fields: pu.FilenameFieldSpecs = None, slim: bool = False, verbose: bool = False):
+    def load(*, folder: str, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
 
         if not isfile(jj(folder, "topic_token_weights.zip")):
             return PickleUtility.explode(source=folder, target_folder=folder)
+
+        corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
+
+        filename_fields: FilenameFieldSpecs = corpus_config.text_reader_opts.filename_fields
 
         document_index: pd.DataFrame = (
             pd.read_feather(jj(folder, "documents.feather")).rename_axis('document_id')
@@ -283,8 +292,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
                 jj(folder, 'documents.zip'), filename_fields=filename_fields, **CSV_OPTS
             ).set_index('document_id', drop=True)
         )
-
-        corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
 
         data: InferredTopicsData = InferredTopicsData(
             dictionary=smart_load(jj(folder, 'dictionary.zip'), feather_pipe=pu.set_index, columns='token_id'),
@@ -318,11 +325,13 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
     def load_corpus_config(folder: str) -> CorpusConfig:
         """Load CorpusConfig if exists"""
         corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(folder=folder)
-        corpus_config: CorpusConfig = corpus_configs[0] if len(corpus_configs) > 0 else None
 
-        if corpus_config is None:
-            logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
-        return corpus_config
+        if len(corpus_configs) > 0:
+            return corpus_configs[0]
+
+        # raise FileNotFoundError(f"No CorpusConfig found in {folder}")
+        logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
+        return None
 
     def load_topic_labels(self, folder: str, **csv_opts: dict) -> pd.DataFrame:
         tto: pd.DataFrame = self.topic_token_overview
@@ -365,6 +374,23 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             return {}
         return self.topic_token_overview['label'].to_dict()
 
+    def get_topics_overview_with_score(self, n_tokens: int = 500):
+        topics: pd.DataFrame = self.topic_token_overview
+        topics['tokens'] = self.get_topic_titles(n_tokens=n_tokens)
+
+        columns_to_show: list[str] = [column for column in ['tokens', 'alpha', 'coherence'] if column in topics.columns]
+
+        topics = topics[columns_to_show]
+
+        with suppress(BaseException):
+            topic_proportions = self.calculator.topic_proportions()
+            if topic_proportions is not None:
+                topics['score'] = topic_proportions
+
+        if topics is None:
+            raise ValueError("bug-check: No topic_token_overview in loaded model!")
+        return topics
+
 
 def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
     """Add count columns `n_tokens` and `n_rws_tokens" if missing and other/renamed column exists."""
@@ -397,6 +423,7 @@ class PickleUtility:
             document_topic_weights=pickled_data.document_topic_weights,
             topic_diagnostics=None,
             token_diagnostics=None,
+            corpus_config=pickled_data.corpus_config if hasattr(pickled_data, 'corpus_config') else None,
         )
         return data
 
@@ -426,6 +453,7 @@ class PickleUtility:
             topic_token_weights=data.topic_token_weights,
             topic_token_overview=data.topic_token_overview,
             document_topic_weights=data.document_topic_weights,
+            corpus_config=data.corpus_config,
         )
         with open(filename, 'wb') as f:
             pickle.dump(c_data, f, pickle.HIGHEST_PROTOCOL)

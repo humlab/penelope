@@ -1,3 +1,4 @@
+from os.path import dirname, isfile
 from typing import Union
 
 import ipywidgets as widgets
@@ -5,6 +6,7 @@ from IPython.display import display
 
 import penelope.pipeline as pipeline
 from penelope.corpus import VectorizedCorpus
+from penelope.utility import PivotKeys
 from penelope.workflows import interface
 from penelope.workflows.vectorize import dtm as workflow
 
@@ -16,45 +18,33 @@ from .trends_gui import TrendsGUI
 
 view = widgets.Output(layout={'border': '2px solid green'})
 
-LAST_ARGS = None
-LAST_CORPUS_CONFIG = None
-LAST_CORPUS = None
-
 # pylint: disable=unused-argument
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
-def loaded_callback(corpus: VectorizedCorpus, n_top: int = 25000):
-    global LAST_CORPUS
-    LAST_CORPUS = corpus
+def loaded_callback(corpus: VectorizedCorpus, folder: str, n_top: int = 25000):
     trends_service: TrendsService = TrendsService(corpus=corpus, n_top=n_top)
 
     # gui: GofTrendsGUI = GofTrendsGUI(
     #     gofs_gui=GoFsGUI().setup(),
     #     trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
     # )
-
-    gui: TrendsGUI = TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
+    pivot_keys: PivotKeys = PivotKeys.load(folder) if isfile(folder) else None
+    gui: TrendsGUI = TrendsGUI(pivot_key_specs=pivot_keys).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
     display(gui.layout())
     gui.display(trends_service=trends_service)
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
-def computed_callback(
-    corpus: VectorizedCorpus,
-    opts: interface.ComputeOpts,
-) -> None:
+def computed_callback(corpus: VectorizedCorpus, opts: interface.ComputeOpts) -> None:
     if opts.dry_run:
         return
 
-    loaded_callback(corpus=corpus)
+    loaded_callback(corpus=corpus, folder=dirname(opts.corpus_source))
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
 def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.CorpusConfig) -> VectorizedCorpus:
-    global LAST_ARGS, LAST_CORPUS_CONFIG
-    LAST_ARGS = args
-    LAST_CORPUS_CONFIG = corpus_config
     if args.dry_run:
         print(args.command_line("PYTHONPATH=. python ./penelope/scripts/dtm/vectorize.py"))
         return None

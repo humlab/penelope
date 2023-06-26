@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import abc
-import os
+import zipfile
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from functools import cached_property
+from os.path import dirname, isdir, isfile, join
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Type, Union
 
 from tqdm.auto import tqdm
@@ -242,7 +244,7 @@ class PipelinePayload:
         if method not in {"join", "replace"}:
             raise ValueError("only strategies `merge` or `replace` are allowed")
         if method == "join":
-            return os.path.join(new_path, old_path)
+            return join(new_path, old_path)
         return replace_path(old_path, new_path)
 
     def folders(self, path: str, method: Literal['join', 'replace'] = "replace") -> "PipelinePayload":
@@ -260,6 +262,19 @@ class PipelinePayload:
         self.source = source
         self.document_index_source = document_index_source
         return self
+
+    @property
+    def corpus_folder(self) -> str:
+        """Returns corpus folder if any of the sources is a folder"""
+        for path in [self.source, self.document_index_source]:
+            if isinstance(path, (str, Path)):
+                if isdir(path):
+                    return path
+                if isfile(path):
+                    return dirname(path)
+            if isinstance(path, zipfile.ZipFile):
+                return dirname(path.filename)
+        return None
 
 
 class ResetNotApplicableError(Exception):

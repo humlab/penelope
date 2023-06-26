@@ -67,10 +67,7 @@ def df_doc(en_nlp) -> Language:
 
 @pytest.fixture
 def inferred_topics_data() -> InferredTopicsData:
-    filename_fields = ["year:_:1", "year_serial_id:_:2"]
-    _inferred_topics_data = InferredTopicsData.load(
-        folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER, filename_fields=filename_fields
-    )
+    _inferred_topics_data = InferredTopicsData.load(folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER)
     return _inferred_topics_data
 
 
@@ -79,5 +76,6 @@ def state(inferred_topics_data: InferredTopicsData) -> TopicModelContainer:
     container: TopicModelContainer = TopicModelContainer().update(
         inferred_topics=inferred_topics_data,
         train_corpus_folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER,
+        folder=PERSISTED_INFERRED_MODEL_SOURCE_FOLDER,
     )
     return container

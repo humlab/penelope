@@ -34,6 +34,17 @@ U = TypeVar('U')
 LOG_FORMAT = "%(asctime)s : %(levelname)s : %(message)s"
 
 
+def clear_cached_properties(instance: Any):
+    if not inspect.isclass(type(instance)):
+        return
+
+    for name, value in inspect.getmembers(type(instance)):
+        if not isinstance(value, functools.cached_property):
+            continue
+        if name in instance.__dict__:
+            del instance.__dict__[name]
+
+
 def load_cwd_dotenv():
     dotenv_path: str = os.path.join(os.getcwd(), '.env')
     if os.path.isfile(dotenv_path):
@@ -287,6 +298,13 @@ def dotget(d: dict, path: str, default: Any = None) -> Any:
         if d is None:
             break
     return d or default
+
+
+def dotcoalesce(d: dict, *paths: str, default: Any = None) -> Any:
+    for path in paths:
+        if (value := dotget(d, path)) is not None:
+            return value
+    return default
 
 
 def list_of_dicts_to_dict_of_lists(dl: List[Mapping[str, Any]]) -> Mapping[str, List[Any]]:

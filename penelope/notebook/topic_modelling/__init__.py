@@ -14,7 +14,6 @@ from .topic_documents_gui import BrowseTopicDocumentsGUI, FindTopicDocumentsGUI,
 from .topic_titles_gui import PandasTopicTitlesGUI, TopicTitlesGUI
 from .topic_topic_network_gui import TopicTopicGUI
 from .topic_topic_network_gui import display_gui as display_topic_topic_network_gui
-from .topic_topic_network_gui_utility import display_topic_topic_network
 from .topic_trends_gui import TopicTrendsGUI
 from .topic_trends_gui import display_gui as display_topic_trends_gui
 from .topic_trends_overview_gui import TopicTrendsOverviewGUI

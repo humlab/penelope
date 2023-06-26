@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import numpy as np
 import pytest
 import scipy
@@ -5,6 +7,35 @@ import scipy.sparse as sp
 
 from penelope import corpus as pc
 from penelope import utility
+
+
+def test_clear_cached_properties():
+    class Sox:
+        def __init__(self):
+            self._counter: int = 0
+
+        @property
+        def fox(self):
+            self._counter += 1
+            return self._counter
+
+        @cached_property
+        def tsar(self):
+            self._counter += 1
+            return self._counter
+
+    sox: Sox = Sox()
+    assert sox.fox == 1
+    assert sox.tsar == 2
+    assert sox.fox == 3
+    assert sox.tsar == 2
+    assert sox.fox == 4
+
+    utility.clear_cached_properties(sox)
+
+    assert sox.fox == 5
+    assert sox.tsar == 6
+    assert sox.tsar == 6
 
 
 def test_utils():

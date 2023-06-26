@@ -1,19 +1,23 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 
+import bokeh
+import bokeh.plotting
 import ipywidgets as w
 import pandas as pd
 from IPython.display import display
+from loguru import logger
 
+import penelope.network.networkx.utility as network_utility
 from penelope import utility as pu
+from penelope.network import plot_utility
 
 from .. import grid_utility as gu
 from .. import topic_modelling as ntm
 from .. import widgets_utils as wu
 from . import mixins as mx
-from .topic_topic_network_gui_utility import display_topic_topic_network
 
 LAYOUT_OPTIONS = ['Circular', 'Kamada-Kawai', 'Fruchterman-Reingold']
 OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV': 'CSV', 'Clipboard': 'clipboard'}
@@ -21,6 +25,44 @@ OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV'
 # pylint: disable=too-many-instance-attributes
 
 # FIXME #153 [ENHANCEMENT] {topic-topic-network} Add table display of [top] documents on hover on edges
+
+
+# pylint: disable=too-many-arguments, too-many-locals
+def display_topic_topic_network(
+    data: pd.DataFrame,
+    layout: str = 'Fruchterman-Reingold',
+    scale: float = 1.0,
+    element_id: str = '',
+    titles=None,
+    topic_proportions=None,
+    node_range: Tuple[int, int] = (20, 60),
+    edge_range: Tuple[int, int] = (1, 10),
+):
+    if len(data) == 0:
+        logger.info('No data. Please change selections.')
+        return
+
+    network = network_utility.create_network(
+        data,
+        source_field='source',
+        target_field='target',
+        weight='n_docs',
+    )
+    p = plot_utility.plot_network(
+        network=network,
+        layout_algorithm=layout,
+        scale=scale,
+        threshold=0.0,
+        node_description=titles,
+        node_proportions=topic_proportions,
+        weight_scale=1.0,
+        normalize_weights=False,
+        element_id=element_id,
+        figsize=(1200, 800),
+        node_range=node_range,
+        edge_range=edge_range,
+    )
+    bokeh.plotting.show(p)
 
 
 class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
@@ -130,13 +172,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                                 self._n_docs,
                             ]
                         ),
-                        w.VBox(
-                            [
-                                self._topics_ids_header,
-                                self._topic_ids,
-                                self._exclude_or_include,
-                            ]
-                        ),
+                        w.VBox([self._topics_ids_header, self._topic_ids, self._exclude_or_include]),
                     ]
                     + ([extra_widgets] if extra_widgets else [])
                     + [
@@ -205,7 +241,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             self._output.clear_output()
 
             with self._output:
-                if self.network_data is None:
+                if self.network_data is None or len(self.network_data) == 0:
                     self.alert("😡 No data, please change filters..")
 
                 elif self.output_format in ('xlsx', 'csv', 'clipboard', 'table', 'gephi'):
