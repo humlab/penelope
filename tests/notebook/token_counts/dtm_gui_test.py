@@ -25,7 +25,7 @@ def test_create_gui():
     assert len(gui._pos_groups.options) > 0
     assert len(gui._temporal_key.options) > 0
 
-    gui.observe(False)
+    gui.observe(False, handler=None)
 
     gui._smooth.value = True
     assert gui.smooth

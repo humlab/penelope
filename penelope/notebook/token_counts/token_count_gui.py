@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
@@ -243,10 +243,12 @@ class BaseTokenCountGUI(DownloadMixIn):
             ]
         )
 
-    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=unused-argument
+    def observe(
+        self, value: bool, handler: Callable[[Any], Any] = None, **kwargs  # pylint: disable=unused-argument
+    ) -> None:
         display_trigger_ctrls: list[Any] = [self._pos_groups, self._normalize, self._smooth, self._temporal_key]
         for ctrl in display_trigger_ctrls:
-            register_observer(ctrl, handler=self._display_handler, value=value)
+            register_observer(ctrl, handler=handler or self._display_handler, value=value)
 
     def _display_handler(self, _):
         self.observe(False)
@@ -376,5 +378,7 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
 
         return self
 
-    def observe(self, value: bool, **kwargs) -> None:  # pylint: disable=arguments-differ
-        super().observe(value=value, handler=self._display_handler, **kwargs)
+    def observe(
+        self, value: bool, handler: Callable[[Any], None] = None, **kwargs
+    ) -> None:  # pylint: disable=arguments-differ
+        super().observe(value=value, handler=handler or self._display_handler, **kwargs)
