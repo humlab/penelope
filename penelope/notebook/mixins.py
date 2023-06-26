@@ -18,7 +18,7 @@ from . import utility as nu
 from .widgets_utils import register_observer
 
 PivotKeySpec = dict[str, str | dict[str, int]]
-PivotKeySpecArg = list[PivotKeySpec] | dict[str, list[PivotKeySpec]]
+PivotKeySpecArg = list[PivotKeySpec] | dict[str, list[PivotKeySpec]] | str
 
 # pylint: disable=no-member
 
@@ -62,6 +62,7 @@ class PivotKeysMixIn:
             description="Unstack", icon='check', value=False, layout=dict(width='140px')
         )
 
+        self.pivot_key_specs: PivotKeySpecArg = pivot_key_specs
         self.pivot_keys = pivot_key_specs
 
     @property
@@ -73,6 +74,10 @@ class PivotKeysMixIn:
 
     @pivot_keys.setter
     def pivot_keys(self, value: pu.PivotKeys | dict):
+        if isinstance(value, str):
+            if value.endswith('.yaml') or value.endswith('.yml'):
+                value: dict = pu.PivotKeys.load(value)
+
         self._pivot_keys = value if isinstance(value, pu.PivotKeys) else pu.PivotKeys(value)
 
         if value is None:
@@ -397,10 +402,10 @@ class TextRepositoryMixIn:
         return self._text_output
 
     def _resolve_key(self, key: str) -> t.Any:
-        corpus_config: CorpusConfig = getattr(self, 'corpus_config', None)
-        if corpus_config:
+        config: CorpusConfig = getattr(self, 'config', None)
+        if config:
             try:
-                return corpus_config.resolve_dependency(key)
+                return config.resolve_dependency(key)
             except DependencyError as ex:
                 self.alert(str(ex))
                 raise ex
