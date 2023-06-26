@@ -178,14 +178,14 @@ class HyperspaceAnalogueToLanguageVectorizer:
     ) -> pd.DataFrame:
         '''Return computed co-occurrence values'''
 
-        matrix: sp.csc_matrix = self.nw_xy
+        matrix = self.nw_xy
 
         if not direction_sensitive:
             matrix += matrix.T
             matrix[np.tril_indices(matrix.shape[0])] = 0
         else:
             if zero_diagonal:
-                matrix.fill_diagonal(0)
+                matrix.setdiag(0)
 
         coo_matrix: sp.coo_matrix = matrix.tocoo(copy=False)
 

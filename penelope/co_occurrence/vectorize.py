@@ -9,6 +9,7 @@ from typing import Any, Iterable, Iterator, Mapping, Optional, Set
 import numpy as np
 import scipy
 from loguru import logger
+from scipy.sparse import csr_matrix
 
 DEBUG_TRACE: bool = False
 if DEBUG_TRACE:
@@ -27,7 +28,7 @@ class VectorizeType(IntEnum):
 @dataclass
 class VectorizedTTM:
     vectorize_type: VectorizeType
-    term_term_matrix: scipy.sparse.spmatrix
+    term_term_matrix: csr_matrix
     term_window_counts: Mapping[int, int]
     document_id: int
 
@@ -126,12 +127,12 @@ class WindowsTermsCounter:
         self.indptr = np.asarray(self.indptr, dtype=np.int32)
         self.values = np.frombuffer(self.values, dtype=np.intc)
 
-        window_term_matrix: scipy.sparse.spmatrix = scipy.sparse.csr_matrix(
+        window_term_matrix: csr_matrix = csr_matrix(
             (self.values, self.jj, self.indptr), shape=(len(self.indptr) - 1, vocab_size), dtype=self.dtype
         )
         window_term_matrix.sort_indices()
 
-        term_term_matrix: scipy.sparse.spmatrix = scipy.sparse.triu(
+        term_term_matrix: csr_matrix = scipy.sparse.triu(
             np.dot(window_term_matrix.T, window_term_matrix),
             1,
         )
@@ -143,7 +144,7 @@ class WindowsTermsCounter:
             term_window_counts=term_window_counts,
         )
 
-    def _to_term_window_counter(self, window_term_matrix: scipy.sparse.spmatrix) -> Mapping[int, int]:
+    def _to_term_window_counter(self, window_term_matrix: csr_matrix) -> Mapping[int, int]:
         """Returns tuples (token_id, window count) for non-zero tokens in window_term_matrix"""
 
         window_counts: np.ndarray = (window_term_matrix != 0).sum(axis=0).A1

@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from loguru import logger
+from scipy.sparse import csr_matrix
 
 from penelope.type_alias import CoOccurrenceDataFrame
 from penelope.utility import create_class, read_json, replace_extension, right_chop, strip_path_and_extension
@@ -248,7 +249,7 @@ def create_options_bundle(
 class WindowCountDTM:
     """Document Term Matrix that containing window counts for each token in each document"""
 
-    dtm_wc: scipy.sparse.spmatrix = None
+    dtm_wc: csr_matrix = None
 
     # @property
     # def total_term_window_counts(self):
@@ -259,7 +260,7 @@ class WindowCountDTM:
         if len(keep_token_ids) == self.dtm_wc.shape[1]:
             return self
 
-        matrix: scipy.sparse.spmatrix = self.dtm_wc[:, keep_token_ids]
+        matrix: csr_matrix = self.dtm_wc[:, keep_token_ids]
 
         if inplace:
             self.dtm_wc = matrix
@@ -279,7 +280,7 @@ class WindowCountDTM:
     @staticmethod
     def load(folder: str, tag: str) -> "WindowCountDTM":
         """Loads documents' (rows) token (column) window counts matrix"""
-        matrix: scipy.sparse.spmatrix = None
+        matrix: csr_matrix = None
         filename = to_filename(folder=folder, tag=tag, postfix=DOCUMENT_COUNTS_POSTFIX)
         if os.path.isfile(replace_extension(filename, '.npz')):
             matrix = scipy.sparse.load_npz(replace_extension(filename, '.npz'))
