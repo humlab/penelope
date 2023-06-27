@@ -62,6 +62,7 @@ class PivotKeysMixIn:
             description="Unstack", icon='check', value=False, layout=dict(width='140px')
         )
 
+        self.clear_label: str = '(clear)'
         self.pivot_key_specs: PivotKeySpecArg = pivot_key_specs
         self.pivot_keys = pivot_key_specs
 
@@ -91,8 +92,8 @@ class PivotKeysMixIn:
         self._single_pivot_key_picker.value = next(iter(self._single_pivot_key_picker.options.values()), None)
 
         self._filter_keys_picker.value = []
-        self._filter_keys_picker.options = ['None'] + list(self.pivot_keys.text_names)
-        self._filter_keys_picker.value = ['None']
+        self._filter_keys_picker.options = [self.clear_label] + list(self.pivot_keys.text_names)
+        self._filter_keys_picker.value = [self.clear_label]
         self._filter_keys_picker.rows = self.clamp(len(self._filter_keys_picker.options), 2, 6)
 
         self._filter_values_picker.value = []
@@ -122,7 +123,7 @@ class PivotKeysMixIn:
     @deprecated
     def reset(self) -> "PivotKeysMixIn":
         self.observe(value=False, handler=self._display_event_handler)
-        self._filter_keys_picker.value = ['None']
+        self._filter_keys_picker.value = [self.clear_label]
         self._filter_values_picker.value = []
         self._unstack_tabular.value = False
         self.observe(value=True, handler=self._display_event_handler)
@@ -154,7 +155,7 @@ class PivotKeysMixIn:
     @property
     def pivot_keys_text_names(self) -> list[str]:
         """Return column names for selected the pivot keys"""
-        return [x for x in self._filter_keys_picker.value if x != 'None']
+        return [x for x in self._filter_keys_picker.value if x not in (self.clear_label, '')]
 
     @property
     def pivot_keys_id_names(self) -> list[str]:
@@ -190,8 +191,8 @@ class PivotKeysMixIn:
 
             self.prevent_event = True
 
-            old_keys: set[str] = set(change['old']) - set(('None',))
-            new_keys: set[str] = set(change['new']) - set(('None',))
+            old_keys: set[str] = set(change['old']) - set((self.clear_label,))
+            new_keys: set[str] = set(change['new']) - set((self.clear_label,))
 
             add_options: set[str] = set(self._pivot_keys.key_values_str(new_keys - old_keys, sep=': '))
             del_options: set[str] = set(self._pivot_keys.key_values_str(old_keys - new_keys, sep=': '))
@@ -246,25 +247,26 @@ class PivotKeysMixIn:
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
         # if not self._pivot_keys.has_pivot_keys:
         #     return w.VBox()
-
-        width: str = kwargs.get('width', '100px')
+        width: str = '200px'
         if kwargs.get('rows') is not None:
             self._filter_values_picker.rows = kwargs.get('rows')
-        self._filter_values_picker.layout = kwargs.get('layout', dict(width='120px'))
-        self._filter_keys_picker.layout = kwargs.get('layout', dict(width=width))
+        self._filter_values_picker.layout.width = '95%'
+        self._filter_keys_picker.layout.width = '95%'
         if vertical:
             return w.VBox(
                 [
                     w.HTML("<b>Filter by</b>"),
                     self._filter_keys_picker,
                     self._filter_values_picker,
-                ]
+                ],
+                layout=dict(width=width),
             )
         return w.HBox(
             [
-                w.VBox([w.HTML("<b>Filter by</b>"), self._filter_keys_picker]),
-                w.VBox([w.HTML("<b>Value</b>"), self._filter_values_picker]),
-            ]
+                w.VBox([w.HTML("<b>Filter by</b>"), self._filter_keys_picker], layout={'width': '95%'}),
+                w.VBox([w.HTML("<b>Value</b>"), self._filter_values_picker], layout={'width': '95%'}),
+            ],
+            layout=dict(width=width),
         )
 
 
@@ -391,8 +393,9 @@ class TextRepositoryMixIn:
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self._text_output: w.HTML = w.HTML(layout={'width': '48%', 'background-color': 'lightgreen'})
+        self._text_output: w.HTML = w.HTML(layout={'width': '50%', 'background-color': 'lightgreen'})
         self._content_placeholder: w.VBox = self._text_output
+
         self._content_type: t.Literal['raw', 'text', 'html'] = 'html'
 
         self._document_click_handler = self.on_row_click
