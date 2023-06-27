@@ -51,7 +51,6 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.VBox = w.HBox()
         self._aggregate.layout.width = '140px'
-        self._auto_compute.layout.width = "80px"
         self._output_format.layout.width = '140px'
 
     def _compute_handler_callback(self, *args, **kwargs) -> None:
@@ -68,7 +67,7 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
         return self
 
     def observe(self, value: bool, **kwargs) -> TopicTrendsGUI:  # pylint: disable=unused-argument, arguments-differ
-        wu.register_observer(self._topic_id, handler=self.topic_changed, value=value)
+        wu.register_observer(self._topic_id, handler=self.update_handler, value=value)
         wu.register_observer(self._aggregate, handler=self.display_handler, value=value)
         wu.register_observer(self._output_format, handler=self.display_handler, value=value)
         return self
@@ -80,7 +79,6 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                     [
                         w.VBox(
                             [
-                                w.HBox([self._next_prev_layout]),
                                 self._year_range_label,
                                 self._year_range,
                                 self._threshold_label,
@@ -92,11 +90,17 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                     + [
                         w.VBox(
                             [
-                                w.HTML("Aggregate"),
+                                w.HTML("<b>Aggregate</b>"),
                                 self._aggregate,
-                                w.HTML("Format"),
+                                w.HTML("<b>Format</b>"),
                                 self._output_format,
-                                w.HBox([self._compute, self._auto_compute]),
+                            ]
+                        ),
+                        w.VBox(
+                            [
+                                w.HTML("<b>&nbsp;</b>"),
+                                w.HBox([self._next_prev_layout]),
+                                self.compute_default_layout,
                                 self._alert,
                             ]
                         ),
@@ -105,16 +109,6 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                 self._output,
                 w.HBox([self._text] + ([self._content_placeholder] if self._content_placeholder is not None else [])),
             ]
-        )
-
-    def topic_changed(self, *_):
-        if len(self.yearly_topic_weights) == 0:
-            return
-        self._text.value = f'ID {self.topic_id}: {self.inferred_topics.get_topic_title(self.topic_id, n_tokens=200)}'
-        gui_utils.display_topic_trends(
-            weight_over_time=self.yearly_topic_weights[(self.yearly_topic_weights.topic_id == self.topic_id)],
-            year_range=self.years,
-            value_column=self.aggregate,
         )
 
     def update(self) -> pd.DataFrame:
@@ -143,6 +137,9 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
     def display_handler(self, *_):
         self._output.clear_output()
         try:
+            self._text.value = (
+                f'ID {self.topic_id}: {self.inferred_topics.get_topic_title(self.topic_id, n_tokens=200)}'
+            )
             with self._output:
                 if self.yearly_topic_weights is None:
                     self.alert("😡 No data, please change filters..")
@@ -157,7 +154,13 @@ class TopicTrendsGUI(mx.NextPrevTopicMixIn, mx.AlertMixIn, mx.ComputeMixIn, mx.T
                     g = gu.table_widget(self.yearly_topic_weights, handler=self._table_click_handler)
                     display(g)
                 else:
-                    self.topic_changed()
+                    gui_utils.display_topic_trends(
+                        weight_over_time=self.yearly_topic_weights[
+                            (self.yearly_topic_weights.topic_id == self.topic_id)
+                        ],
+                        year_range=self.years,
+                        value_column=self.aggregate,
+                    )
             self.alert("✅")
         except Exception as ex:
             self.warn(f"😡 {ex}")
