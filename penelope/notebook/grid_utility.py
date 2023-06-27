@@ -40,7 +40,7 @@ def table_widget(data: pd.DataFrame, **kwargs) -> dg.DataGrid:
         auto_fit_columns=True,
         auto_fit_params={"area": "body"},
         grid_style={'background_color': '#f9f9f9', 'grid_line_color': '#f9f9f9'},
-        # header_visibility='column',
+        header_visibility=kwargs.get('header_visibility', 'column'),
         editable=False,
     )
 
