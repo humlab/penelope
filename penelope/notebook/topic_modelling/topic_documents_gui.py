@@ -15,12 +15,20 @@ from . import mixins as mx
 from .model_container import TopicModelContainer
 
 
-# FIXME #157 Strange weights are displayed for certain topics (integer value)
-class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
-    WIDGET_HEIGHT: str = '450px'
+class NotLoadedError(Exception):
+    ...
 
+
+# FIXME #157 Strange weights are displayed for certain topics (integer value)
+class TopicDocumentsGUI(mx.ComputeMixIn, mx.AlertMixIn, mx.TopicsStateGui):
     def __init__(self, state: TopicModelContainer | dict):
+        if state.inferred_topics is None:
+            raise NotLoadedError("Topic model has not been loaded") from None
+
         super().__init__(state=state)
+
+        self.table_widget_height: str = '450px'
+
         slider_opts = {
             'continuous_update': False,
             'layout': dict(width='140px'),
@@ -31,38 +39,49 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
         yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
 
         self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
-        self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, **slider_opts)
+        self._threshold: w.FloatSlider = w.FloatSlider(
+            min=0.01,
+            max=1.0,
+            value=0.05,
+            step=0.01,
+            tooltop="Filter out documents if matching topic's threshold is lower than this value",
+            **slider_opts,
+        )
         self._max_count_label: w.HTML = w.HTML("<b>Max result count</b>")
-        self._max_count: w.IntSlider = w.IntSlider(min=1, max=50000, value=500, **slider_opts)
+        self._max_count: w.IntSlider = w.IntSlider(
+            min=1,
+            max=50000,
+            value=500,
+            tooltip="Maximum number of documents to display (sorted by weight descending)",
+            **slider_opts,
+        )
         self._year_range_label: w.HTML = w.HTML("Years")
         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-            min=timespan[0], max=timespan[1], step=1, value=yearspan, **slider_opts
+            min=timespan[0],
+            max=timespan[1],
+            step=1,
+            value=yearspan,
+            tooltip="Ignore documents outside this period.",
+            **slider_opts,
         )
-        self._output: w.Output = w.Output(layout={'width': '99%'})
+        self._output: w.Output = w.Output(layout={'width': '100%'})
         self._extra_placeholder: w.Box = None
         self._content_placeholder: w.Box = None
-        self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '80px'})
-        self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '80px'})
         self._table_widget: TableWidget = None
         self._document_click_handler: Callable[[pd.Series, Any], None] = None
 
     def setup(self, **kwargs) -> "TopicDocumentsGUI":  # pylint: disable=arguments-differ,unused-argument
-        self._compute.on_click(self.update_handler)
+        self._compute_handler = self.update_handler
+
+        super().setup(**kwargs)
+
         self.observe_slider_update_label(self._year_range, self._year_range_label, "Years")
         self.observe_slider_update_label(self._threshold, self._threshold_label, "Threshold")
         self.observe_slider_update_label(self._max_count, self._max_count_label, "Max result count")
-        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=True)
         return self
 
     def layout(self) -> w.Widget:
         return None
-
-    def _auto_compute_handler(self, *_):
-        self._auto_compute.icon = 'check' if self.auto_compute else ''
-        self._compute.disabled = self.auto_compute
-        self.observe(value=self.auto_compute, handler=self.update_handler)
-        if self.auto_compute:
-            self.update_handler()
 
     @property
     def threshold(self) -> float:
@@ -103,7 +122,7 @@ class TopicDocumentsGUI(mx.AlertMixIn, mx.TopicsStateGui):
 
                 if data is not None:
                     self._table_widget: TableWidget = table_widget(data, handler=self._document_click_handler)
-                    self._table_widget.layout.height = self.WIDGET_HEIGHT
+                    self._table_widget.layout.height = self.table_widget_height
                     display(self._table_widget)
 
                 self.alert("✅")
@@ -118,7 +137,7 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
     def __init__(self, state: TopicModelContainer | dict):
         super().__init__(state=state)
 
-        self._text: w.HTML = w.HTML()
+        self._text: w.HTML = w.HTML(layout={'width': '100%'})
 
     def setup(self, **kwargs) -> "BrowseTopicDocumentsGUI":  # pylint: disable=arguments-differ
         super().setup(**kwargs)
@@ -130,7 +149,16 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
         return self
 
     def layout(self) -> w.Widget:
-        _output_container = w.VBox([self._text, self._output])
+        self._output.layout.width = '95%'
+        _output: w.VBox = w.VBox([w.HTML("<h3>Documents:</h3><hr>", layout={'width': '95%'}), self._output])
+
+        _content = [self._output]
+        if self._content_placeholder is not None:
+            _content = [_output, self._content_placeholder]
+            self._content_placeholder.layout.width = '55%'
+            _output.layout.width = '45%'
+        else:
+            _output.layout.width = '100%'
 
         _layout = w.VBox(
             [
@@ -140,30 +168,33 @@ class BrowseTopicDocumentsGUI(mx.NextPrevTopicMixIn, TopicDocumentsGUI):
                             [
                                 self._threshold_label,
                                 self._threshold,
+                            ]
+                        ),
+                        w.VBox(
+                            [
                                 self._year_range_label,
                                 self._year_range,
+                                self._max_count_label,
+                                self._max_count,
                             ]
                         ),
                     ]
+                    + ([self._extra_placeholder] if self._extra_placeholder is not None else [])
                     + [
                         w.VBox(
                             [
-                                self._max_count_label,
-                                self._max_count,
+                                self._alert,
                                 self._next_prev_layout,
+                                self.compute_default_layout,
                             ]
                         )
                     ]
-                    + ([self._extra_placeholder] if self._extra_placeholder is not None else [])
                 ),
-                w.HBox([w.HTML("&nbsp;"), self._auto_compute, self._compute, self._alert]),
-                _output_container,
+                self._text,
+                w.HBox(_content, layout={'width': '100%'}),
             ],
-            layout={'width': '50%'},
+            layout={'width': '100%'},
         )
-        if self._content_placeholder is not None:
-            self._content_placeholder.layout.width = '50%'
-            _layout = w.HBox([_layout, self._content_placeholder], width='100%')
 
         return _layout
 
@@ -192,10 +223,21 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
         self._n_top_token: w.IntSlider = w.IntSlider(min=3, max=200, value=3, readout=False)
         self._find_text: w.Text = w.Text(width='140px')
         self._n_top_token.layout.width = '140px'
-        self._find_text.layout.width = '160px'
+        self._find_text.layout.width = '140px'
         self.observe_slider_update_label(self._n_top_token, self._n_top_token_label, "Toplist threshold")
 
     def layout(self) -> w.VBox:
+        self._output.layout.width = '95%'
+        _output: w.VBox = w.VBox([w.HTML("<h3>Documents:</h3><hr>", layout={'width': '95%'}), self._output])
+
+        _content = [self._output]
+        if self._content_placeholder is not None:
+            _content = [_output, self._content_placeholder]
+            self._content_placeholder.layout.width = '55%'
+            _output.layout.width = '45%'
+        else:
+            _output.layout.width = '100%'
+
         _layout = w.VBox(
             [
                 w.HBox(
@@ -206,29 +248,34 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
                                 self._threshold,
                                 self._n_top_token_label,
                                 self._n_top_token,
-                                self._max_count_label,
-                                self._max_count,
                             ]
                         ),
                         w.VBox(
                             [
                                 self._year_range_label,
                                 self._year_range,
-                                w.HTML("<b>Filter topics by token</b>"),
-                                self._find_text,
+                                self._max_count_label,
+                                self._max_count,
                             ]
                         ),
                     ]
                     + ([self._extra_placeholder] if self._extra_placeholder is not None else [])
+                    + [
+                        w.VBox(
+                            [
+                                w.HTML("<b>Filter topics by token</b>"),
+                                self._find_text,
+                                self.compute_default_layout,
+                                self._alert,
+                            ]
+                        ),
+                    ],
+                    layout={'width': '100%'},
                 ),
-                w.HBox([w.HTML("&nbsp;"), self._auto_compute, self._compute, self._alert]),
-                self._output,
+                w.HBox(_content, layout={'width': '100%'}),
             ],
-            layout={'width': '50%'},
+            layout={'width': '100%'},
         )
-        if self._content_placeholder is not None:
-            self._content_placeholder.layout.width = '50%'
-            _layout = w.HBox([_layout, self._content_placeholder], width='100%')
 
         return _layout
 
@@ -252,7 +299,6 @@ class FindTopicDocumentsGUI(TopicDocumentsGUI):
         return self._n_top_token.value
 
     def update(self) -> pd.DataFrame:
-        print(self.filter_opts.opts)
         data: pd.DataFrame = (
             self.inferred_topics.calculator.reset()
             .filter_by_text(search_text=self.text, n_top=self.n_top_token)
