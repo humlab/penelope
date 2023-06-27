@@ -26,7 +26,7 @@ OUTPUT_OPTIONS = {'Network': 'network', 'Table': 'table', 'Excel': 'XLSX', 'CSV'
 class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, ntm.TopicsStateGui):
     def __init__(self, pivot_key_specs: ox.PivotKeySpecArg, state: ntm.TopicModelContainer, **kwargs):
         super().__init__(pivot_key_specs, state=state, **kwargs)
-
+        self.opts: dict = kwargs
         slider_opts: dict = {
             'continuous_update': False,
             'layout': dict(width='140px'),
@@ -105,8 +105,6 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
                     [
                         w.VBox(
                             [
-                                w.HTML("<b>Pivot Key</b>"),
-                                self._single_pivot_key_picker,
                                 self._year_range_label,
                                 self._year_range,
                                 self._threshold_label,
@@ -119,7 +117,7 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
                                 self._topic_ids,
                             ]
                         ),
-                        self.default_pivot_keys_layout(vertical=True, rows=7, width='120px'),
+                        self.default_pivot_keys_layout(vertical=True, rows=7, width=self.opts.get('width', '140px')),
                     ]
                     + ([extra_widgets] if extra_widgets else [])
                     + [
