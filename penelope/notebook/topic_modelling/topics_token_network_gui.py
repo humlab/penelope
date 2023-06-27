@@ -422,7 +422,7 @@ class TopicsTokenNetworkGUI:
         self.alert('<b>Loading</b>...')
         self.lock(True)
 
-        data = self.loader(self.source_folder, filename_fields=self.model.filename_fields)
+        data = self.loader(self.source_folder)
 
         self.model.update(data=data)
 
