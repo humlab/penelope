@@ -51,12 +51,10 @@ class TopicsStateGui:
 class NextPrevTopicMixIn:
     def __init__(self, **kwargs) -> None:
         # self._topic_id: w.IntSlider = w.IntSlider(min=0, max=199, step=1, value=0, continuous_update=False, description_width='initial')
-        self._prev_topic_id: w.Button = w.Button(description="<<", layout=dict(button_style='Success', width="40px"))
+        self._prev_topic_id: w.Button = w.Button(description="◀", button_style='Success', layout=dict(width="40px"))
         self._topic_id: w.Dropdown = w.Dropdown(options=[], layout=dict(width="80px"))
-        self._next_topic_id: w.Button = w.Button(description=">>", layout=dict(button_style='Success', width="40px"))
+        self._next_topic_id: w.Button = w.Button(description="▶", button_style='Success', layout=dict(width="40px"))
         self._next_prev_layout: w.HBox = w.HBox([self._prev_topic_id, self._topic_id, self._next_topic_id])
-        self._prev_topic_id.style.button_color = 'lightgreen'
-        self._next_topic_id.style.button_color = 'lightgreen'
         super().__init__(**kwargs)
 
     @property
@@ -141,36 +139,37 @@ class AlertMixIn:
 
 class ComputeMixIn:
     def __init__(self, **kwargs) -> None:
-        self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '140px'})
-        self._auto_compute: w.ToggleButton = w.ToggleButton(description="auto", value=False, layout={'width': '140px'})
+        self._compute: w.Button = w.Button(description='Show!', button_style='Success', layout={'width': '85px'})
+        self._auto_compute: w.ToggleButton = w.ToggleButton(
+            description="", value=False, layout={'width': '35px'}, tooltip="Auto compute"
+        )
         self._compute_handler: Callable[[Any], None] = None
         super().__init__(**kwargs)
 
-    def update_handler(self, *_) -> None:  # pylint: disable=arguments-differ,unused-argument
-        ...
+    # def update_handler(self, *_) -> None:  # pylint: disable=arguments-differ,unused-argument
+    #     ...
 
-    def observe(self, value: bool, handler: Any, **_) -> None:  # pylint: disable=arguments-differ,unused-argument
-        ...
+    # def observe(self, value: bool, handler: Any, **_) -> None:  # pylint: disable=arguments-differ,unused-argument
+    #     ...
 
     def setup(self, **kwargs) -> ComputeMixIn:
         self._compute.on_click(self._mx_compute_handler_proxy)
         if hasattr(super(), "setup"):
             getattr(super(), "setup")(**kwargs)
-        if not self._compute_handler:
-            return self
-        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=False)
+        # if not self._compute_handler:
+        #     return self
+        wu.register_observer(self._auto_compute, handler=self._auto_compute_handler, value=True)
         return self
 
     def _auto_compute_handler(self, *_):
-        if self._compute_handler is not None:
-            self._auto_compute.icon = 'check' if self.auto_compute else ''
-            self._compute.disabled = self.auto_compute
-            self.observe(value=self.auto_compute, handler=self._compute_handler)
-            if self.auto_compute:
-                self._mx_compute_handler_proxy()  # pylint: disable=not-callable
-        else:
-            self._compute.disabled = True
-            self._auto_compute.disabled = True
+        # if self._compute_handler is None:
+        #     return
+        self._auto_compute.icon = 'check' if self.auto_compute else ''
+        self.alert("Auto compute is ON" if self.auto_compute else "Auto compute is OFF")
+        self._compute.disabled = self.auto_compute
+        # wu.register_observer(self._auto_compute, handler=self._compute_handler, value=self.auto_compute)
+        if self.auto_compute:
+            self._mx_compute_handler_proxy()  # pylint: disable=not-callable
 
     def _mx_compute_handler_proxy(self, *args) -> None:
         if self._compute_handler:
@@ -178,49 +177,8 @@ class ComputeMixIn:
 
     @property
     def auto_compute(self) -> bool:
-        return self._compute_handler is not None and self._auto_compute.value
+        return self._auto_compute.value
 
-
-# class UtilityMixIn:
-
-#     def __init__(self, **kwargs) -> None:
-#         super().__init__(**kwargs)
-#         slider_opts = {
-#             'continuous_update': False,
-#             'layout': dict(width='140px'),
-#             'readout': False,
-#             'handle_color': 'lightblue',
-#         }
-#         timespan: tuple[int, int] = self.inferred_topics.year_period
-#         yearspan: tuple[int, int] = self.inferred_topics.startspan(10)
-#         self._threshold_label: w.HTML = w.HTML("<b>Threshold</b>")
-#         self._threshold: w.FloatSlider = w.FloatSlider(min=0.01, max=1.0, value=0.05, step=0.01, **slider_opts)
-#         self._year_range_label: w.HTML = w.HTML("Years")
-#         self._year_range: w.IntRangeSlider = w.IntRangeSlider(
-#             min=timespan[0], max=timespan[1], step=1, value=yearspan, **slider_opts
-#         )
-
-#     @property
-#     def threshold(self) -> float:
-#         return self._threshold.value
-
-#     @property
-#     def years(self) -> tuple[int, int]:
-#         return self._year_range.value
-
-
-#     @property
-#     def filter_opts(self) -> pu.PropertyValueMaskingOpts:
-#         opts: dict=dict(year=self.years)
-#         if hasattr(super(), "filter_opts"):
-#             opts.update(getattr(super(), "filter_opts"))
-#         return pu.PropertyValueMaskingOpts(**opts)
-
-
-#     def observe(self, value: bool, **kwargs) -> "TopicDocumentsGUI":
-#         if hasattr(super(), "observe"):
-#             getattr(super(), "observe")(value=value, handler=self.update_handler, **kwargs)
-
-#         wu.register_observer(self._threshold, handler=self.update_handler, value=value)
-#         wu.register_observer(self._year_range, handler=self.update_handler, value=value)
-#         return self
+    @property
+    def compute_default_layout(self) -> w.HBox:
+        return w.HBox([self._auto_compute, self._compute])
