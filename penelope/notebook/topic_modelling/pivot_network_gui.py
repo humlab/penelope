@@ -116,6 +116,8 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
 
     def layout(self) -> w.VBox:
         extra_widgets: w.VBox = self.extra_widgets()
+        self._single_pivot_key_picker.layout.width = '140px'
+
         return w.VBox(
             [
                 w.HBox(
