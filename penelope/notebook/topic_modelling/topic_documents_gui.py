@@ -282,7 +282,7 @@ class WithPivotKeysText:
             self._year_range.value = opts.get("year_span", (1990, 1992))
             self._extra_placeholder = self.default_pivot_keys_layout(
                 vertical=opts.get("vertical", False),
-                layout={'width': opts.get('width', '200px')},
+                width=opts.get('width', '200px'),
                 rows=opts.get("rows", 8),
             )
 
@@ -291,18 +291,6 @@ class WithPivotKeysText:
                 self.pivot_keys = self.config.pivot_keys
 
             return super().setup(**kwargs)
-
-        # def update(self) -> pd.DataFrame:
-        #     _ = super().update()
-        #     """note: at this point dtw is equal to calculator.data"""
-        #     self.alert("preparing data, please wait...")
-        #     calculator: tx.DocumentTopicsCalculator = self.inferred_topics.calculator
-        #     data: pd.DataFrame = self.person_codecs.decode(
-        #         calculator.overload(includes="protocol_name,document_name,gender_id,party_id,person_id").value,
-        #         drop=True,
-        #     )
-        #     self.alert("Done!")
-        #     return data
 
         @property
         def filter_opts(self) -> pu.PropertyValueMaskingOpts:
