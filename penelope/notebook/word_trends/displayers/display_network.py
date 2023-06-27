@@ -94,14 +94,7 @@ def create_network(co_occurrences: pd.DataFrame, category_column_name: str) -> i
     unique_categories = co_occurrences[category_column_name].unique().tolist()
 
     token_nodes = [
-        ipycytoscape.Node(
-            data={
-                "id": token,
-                "label": token,
-                "node_type": "token",
-                "token_id": token,
-            }
-        )
+        ipycytoscape.Node(data={"id": token, "label": token, "node_type": "token", "token_id": token})
         for token in unique_tokens
     ]
     category_nodes = [
@@ -127,10 +120,7 @@ def create_network(co_occurrences: pd.DataFrame, category_column_name: str) -> i
         )
         for edge in co_occurrences[[category_column_name, 'token', 'count']].to_dict('records')
     ]
-    w = ipycytoscape.CytoscapeWidget(
-        layout={'height': '800px'},
-        pixelRatio=1.0,
-    )
+    w = ipycytoscape.CytoscapeWidget(layout={'height': '800px'}, pixelRatio=1.0)
     w.graph.add_nodes(category_nodes)
     w.graph.add_nodes(token_nodes)
     w.graph.add_edges(edges)
@@ -162,10 +152,7 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
             description="Continue", button_style='Info', layout=Layout(width='115px', background_color='blue')
         )
         self._animate: Checkbox = ToggleButton(
-            description="Animate",
-            icon='check',
-            value=True,
-            layout={'width': '115px'},
+            description="Animate", icon='check', value=True, layout={'width': '115px'}
         )
         self._curve_style = Dropdown(
             description='',
@@ -251,30 +238,10 @@ class NetworkDisplayer(UnnestedExplodeTableDisplayer):
             [
                 HBox(
                     [
-                        VBox(
-                            [
-                                HTML("<b>Layout</b>"),
-                                self._network_layout,
-                            ]
-                        ),
-                        VBox(
-                            [
-                                HTML("<b>Curve style</b>"),
-                                self._curve_style,
-                            ]
-                        ),
-                        VBox(
-                            [
-                                self._animate,
-                                self._relayout,
-                            ]
-                        ),
-                        VBox(
-                            [
-                                HTML("&nbsp;"),
-                                self._label,
-                            ]
-                        ),
+                        VBox([HTML("<b>Layout</b>"), self._network_layout]),
+                        VBox([HTML("<b>Curve style</b>"), self._curve_style]),
+                        VBox([self._animate, self._relayout]),
+                        VBox([HTML("&nbsp;"), self._label]),
                     ]
                 ),
                 self._view,
