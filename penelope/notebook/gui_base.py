@@ -1,20 +1,8 @@
 import contextlib
-import os
-from typing import Any, Callable, Dict, List
+from os.path import basename, dirname, join
+from typing import Any, Callable
 
-from ipywidgets import (
-    HTML,
-    Button,
-    Dropdown,
-    HBox,
-    IntSlider,
-    Layout,
-    SelectMultiple,
-    Text,
-    Textarea,
-    ToggleButton,
-    VBox,
-)
+import ipywidgets as w
 from loguru import logger
 
 import penelope.utility as utility
@@ -28,8 +16,8 @@ from . import utility as notebook_utility
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes, too-many-public-methods
 
-default_layout = Layout(width='200px')
-button_layout = Layout(width='140px')
+default_layout = w.Layout(width='200px')
+button_layout = w.Layout(width='140px')
 
 # view:Output = Output()
 
@@ -38,113 +26,142 @@ class BaseGUI:
     def __init__(
         self, default_corpus_path: str = None, default_corpus_filename: str = '', default_data_folder: str = None
     ):
-        self.default_corpus_path: str = default_corpus_path
-        self.default_corpus_filename: str = os.path.basename(default_corpus_filename or '')
-        self.default_data_folder: str = default_data_folder
 
         self._config: CorpusConfig = None
 
-        self._corpus_filename: notebook_utility.FileChooserExt2 = None
-        self._target_folder: notebook_utility.FileChooserExt2 = None
+        # self._config_chooser: notebook_utility.FileChooserExt2 = None
+        # self._corpus_filename: notebook_utility.FileChooserExt2 = None
+        # self._target_folder: notebook_utility.FileChooserExt2 = None
+        self._config_chooser: notebook_utility.FileChooserExt2 = notebook_utility.FileChooserExt2(
+            path=default_corpus_path or home_data_folder(),
+            # filename="config.yml",
+            filter_pattern="*.yml",
+            title='<b>Config file</b>',
+            select_default=True,
+            use_dir_icons=True,
+        )
+        self._config_chooser.refresh()
 
-        self._corpus_tag: Text = Text(
+        self._corpus_filename: notebook_utility.FileChooserExt2 = notebook_utility.FileChooserExt2(
+            path=default_corpus_path or home_data_folder(),
+            filename=basename(default_corpus_filename or ''),
+            filter_pattern="*.*",
+            title='<b>Source corpus file</b>',
+            show_hidden=False,
+            select_default=True,
+            use_dir_icons=True,
+            show_only_dirs=False,
+        )
+        self._corpus_filename.refresh()
+
+        self._target_folder: notebook_utility.FileChooserExt2 = notebook_utility.FileChooserExt2(
+            path=default_data_folder or home_data_folder(),
+            title='<b>Output folder</b>',
+            show_hidden=False,
+            select_default=True,
+            use_dir_icons=True,
+            show_only_dirs=True,
+        )
+        self._target_folder.refresh()
+
+        self._corpus_tag: w.Text = w.Text(
             value='',
             placeholder='Tag to prepend output files',
             description='',
             disabled=False,
             layout=default_layout,
         )
-        self._pos_includes: SelectMultiple = SelectMultiple(
+        self._pos_includes: w.SelectMultiple = w.SelectMultiple(
             options=[],
             value=[],
             rows=8,
             description='',
             disabled=False,
-            layout=Layout(width='160px'),
+            layout=w.Layout(width='160px'),
         )
-        self._pos_paddings: SelectMultiple = SelectMultiple(
+        self._pos_paddings: w.SelectMultiple = w.SelectMultiple(
             options=[],
             value=[],
             rows=8,
             description='',
             disabled=False,
-            layout=Layout(width='160px'),
+            layout=w.Layout(width='160px'),
         )
-        self._pos_excludes: SelectMultiple = SelectMultiple(
+        self._pos_excludes: w.SelectMultiple = w.SelectMultiple(
             options=[],
             value=[],
             rows=8,
             description='',
             disabled=False,
-            layout=Layout(width='160px'),
+            layout=w.Layout(width='160px'),
         )
-        self._filename_fields: Text = Text(
+        self._filename_fields: w.Text = w.Text(
             value="",
             placeholder='Fields to extract from filename (regex)',
             description='',
             disabled=True,
             layout=default_layout,
         )
-        self._create_subfolder: ToggleButton = ToggleButton(
+        self._create_subfolder: w.ToggleButton = w.ToggleButton(
             value=True, description='Create folder', icon='check', layout=button_layout
         )
-        self._ignore_checkpoints: ToggleButton = ToggleButton(
+        self._ignore_checkpoints: w.ToggleButton = w.ToggleButton(
             value=False, description='Force', icon='', layout=button_layout
         )
-        self._lemmatize: ToggleButton = ToggleButton(
+        self._lemmatize: w.ToggleButton = w.ToggleButton(
             value=True, description='Lemmatize', icon='check', layout=button_layout
         )
-        self._to_lowercase: ToggleButton = ToggleButton(
+        self._to_lowercase: w.ToggleButton = w.ToggleButton(
             value=True, description='To lower', icon='check', layout=button_layout
         )
-        self._remove_stopwords: ToggleButton = ToggleButton(
+        self._remove_stopwords: w.ToggleButton = w.ToggleButton(
             value=False, description='No stopwords', icon='', layout=button_layout
         )
-        self._only_alphabetic: ToggleButton = ToggleButton(
+        self._only_alphabetic: w.ToggleButton = w.ToggleButton(
             value=False, description='Only alpha', icon='', layout=button_layout
         )
-        self._only_any_alphanumeric: ToggleButton = ToggleButton(
+        self._only_any_alphanumeric: w.ToggleButton = w.ToggleButton(
             value=False, description='Only alphanum', icon='', layout=button_layout
         )
-        self._extra_stopwords: Textarea = Textarea(
+        self._extra_stopwords: w.Textarea = w.Textarea(
             value='',
             placeholder='Enter extra stop words',
             description='',
             disabled=False,
             rows=8,
-            layout=Layout(width='140px'),
+            layout=w.Layout(width='140px'),
         )
-        self._tf_threshold: IntSlider = IntSlider(
+        self._tf_threshold: w.IntSlider = w.IntSlider(
             description='', min=1, max=1000, step=1, value=10, layout=default_layout
         )
-        self._tf_threshold_mask: ToggleButton = ToggleButton(
+        self._tf_threshold_mask: w.ToggleButton = w.ToggleButton(
             value=False, description='Mask low-TF', icon='', layout=button_layout
         )
-        self._use_pos_groupings: ToggleButton = ToggleButton(
+        self._use_pos_groupings: w.ToggleButton = w.ToggleButton(
             value=True, description='PoS groups', icon='check', layout=button_layout
         )
 
-        self._append_pos_tag: ToggleButton = ToggleButton(
+        self._append_pos_tag: w.ToggleButton = w.ToggleButton(
             value=False, description='Append PoS', icon='', layout=button_layout
         )
-        self._phrases = Text(
+        self._phrases = w.Text(
             value='',
             placeholder='Enter phrases, use semicolon (;) as phrase delimiter',
             description='',
             disabled=False,
-            layout=Layout(width='480px'),
+            layout=w.Layout(width='480px'),
         )
 
-        self._compute_button: Button = Button(
+        self._compute_button: w.Button = w.Button(
             description='Compute!',
             button_style='Success',
             layout=button_layout,
         )
-        self._cli_button: Button = Button(description='CLI', button_style='Success', layout=button_layout)
-        self.extra_placeholder: HBox = HBox()
-        self.buttons_placeholder: VBox = VBox()
+        self._cli_button: w.Button = w.Button(description='CLI', button_style='Success', layout=button_layout)
+        self.extra_placeholder: w.HBox = w.HBox()
+        self.buttons_placeholder: w.VBox = w.VBox()
 
-        self._corpus_type: Dropdown = Dropdown(
+        self._corpus_type: w.Dropdown = w.Dropdown(
             description='',
             options={
                 'Text': CorpusType.Text,
@@ -155,47 +172,63 @@ class BaseGUI:
             layout=default_layout,
         )
 
+        self._alert: w.HTML = w.HTML("&nbsp;", layout={'width': '95%'})
+
         self.compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any] = None
         self.done_callback: Callable[[Any, interface.ComputeOpts], None] = None
 
-    def layout(self, hide_input=False, hide_output=False) -> VBox:
-        return VBox(
+    def alert(self, msg: str):
+        self._alert.value = f"<b>{msg}</b>"
+
+    def warn(self, msg: str):
+        self.alert(f"<span style='color: red'>{msg or '😐'}</span>")
+
+    def info(self, msg: str) -> None:
+        self.alert(f"<span style='color: green'>{msg or '😃'}</span>")
+
+    def layout(self, hide_input: bool = False, hide_output: bool = False) -> w.VBox:
+        return w.VBox(
             (
                 []
+                if hide_input or self._config_chooser is None
+                else [w.HBox([w.HTML("&nbsp;<p><b>Please select config file.</b>", layout={'width': '200px'}), self._config_chooser])]
+            )
+            + (
+                []
                 if hide_input
-                else [HBox([VBox([HTML("<b>Corpus type</b>"), self._corpus_type]), self._corpus_filename])]
+                else [w.HBox([w.VBox([w.HTML("<b>Corpus type</b>"), self._corpus_type]), self._corpus_filename])]
             )
             + (
                 []
                 if hide_output
                 else [
-                    HBox([VBox([HTML("<b>Output tag</b>"), self._corpus_tag]), self._target_folder]),
+                    w.HBox([w.VBox([w.HTML("<b>Output tag</b>"), self._corpus_tag]), self._target_folder]),
                 ]
             )
             + [
                 self.extra_placeholder,
-                HBox(
+                w.HBox(
                     [
-                        VBox([HTML("<b>Target PoS</b>"), self._pos_includes]),
-                        VBox([HTML("<b>Padding PoS</b>"), self._pos_paddings]),
-                        VBox([HTML("<b>Exclude PoS</b>"), self._pos_excludes]),
-                        VBox([HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
+                        w.VBox([w.HTML("<b>Target PoS</b>"), self._pos_includes]),
+                        w.VBox([w.HTML("<b>Padding PoS</b>"), self._pos_paddings]),
+                        w.VBox([w.HTML("<b>Exclude PoS</b>"), self._pos_excludes]),
+                        w.VBox([w.HTML("<b>Extra stopwords</b>"), self._extra_stopwords]),
                     ]
                 ),
-                HBox([VBox([HTML("<b>Phrases</b>"), self._phrases])]),
-                HBox(
+                w.HBox([w.VBox([w.HTML("<b>Phrases</b>"), self._phrases])]),
+                w.HBox(
                     [
-                        VBox(
+                        w.VBox(
                             [
-                                VBox([HTML("<b>Filename fields</b>"), self._filename_fields]),
-                                VBox([HTML("<b>Frequency threshold</b>"), self._tf_threshold]),
+                                w.VBox([w.HTML("<b>Filename fields</b>"), self._filename_fields]),
+                                w.VBox([w.HTML("<b>Frequency threshold</b>"), self._tf_threshold]),
                             ]
                         ),
-                        VBox(
+                        w.VBox(
                             [
-                                HBox(
+                                w.HBox(
                                     [
-                                        VBox(
+                                        w.VBox(
                                             [
                                                 self._use_pos_groupings,
                                                 self._lemmatize,
@@ -204,7 +237,7 @@ class BaseGUI:
                                             ]
                                         ),
                                         self.buttons_placeholder,
-                                        VBox(
+                                        w.VBox(
                                             [
                                                 self._append_pos_tag,
                                                 self._only_alphabetic,
@@ -212,7 +245,7 @@ class BaseGUI:
                                                 self._remove_stopwords,
                                             ]
                                         ),
-                                        VBox(
+                                        w.VBox(
                                             [
                                                 self._ignore_checkpoints,
                                                 self._create_subfolder,
@@ -226,12 +259,12 @@ class BaseGUI:
                         ),
                     ]
                 ),
-                # view,
+                self._alert,
             ]
         )
 
     # @view.capture(clear_output=True)
-    def _compute_handler(self, sender: Button, *_):
+    def _compute_handler(self, sender: w.Button, *_):
         if self.compute_callback is None:
             raise ValueError("fatal: cannot compute (callback is not specified)")
 
@@ -246,7 +279,7 @@ class BaseGUI:
                 self.done_callback(result, self.compute_opts)
 
         except (ValueError, FileNotFoundError) as ex:
-            print(ex)
+            self.warn(str(ex))
         except Exception as ex:
             logger.info(ex)
             raise
@@ -270,37 +303,15 @@ class BaseGUI:
     def setup(
         self,
         *,
-        config: CorpusConfig,
         compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any],
         done_callback: Callable[[Any, interface.ComputeOpts], None],
+        config: CorpusConfig = None,
     ) -> "BaseGUI":
-        self._corpus_filename = notebook_utility.FileChooserExt2(
-            path=self.default_corpus_path or home_data_folder(),
-            filename=self.default_corpus_filename,
-            filter_pattern=config.corpus_pattern,
-            title='<b>Source corpus file</b>',
-            show_hidden=False,
-            select_default=True,
-            use_dir_icons=True,
-            show_only_dirs=False,
-        )
-        self._corpus_filename.refresh()
+        self._config: CorpusConfig = config
 
-        self._target_folder = notebook_utility.FileChooserExt2(
-            path=self.default_data_folder or home_data_folder(),
-            title='<b>Output folder</b>',
-            show_hidden=False,
-            select_default=True,
-            use_dir_icons=True,
-            show_only_dirs=True,
-        )
-        self._target_folder.refresh()
-
-        self._corpus_type.value = config.corpus_type
         self._corpus_type.disabled = True
-        self._corpus_filename.filter_pattern = config.corpus_pattern
-        self._filename_fields.value = ';'.join(config.text_reader_opts.filename_fields)
         self._filename_fields.disabled = True
+        self._config_chooser.register_callback(self._config_chooser_changed)
 
         self._corpus_type.observe(self._corpus_type_changed, 'value')
         self._lemmatize.observe(self._toggle_state_changed, 'value')
@@ -322,24 +333,62 @@ class BaseGUI:
         self._pos_paddings.observe(self.pos_select_update, 'value')
         self._pos_excludes.observe(self.pos_select_update, 'value')
 
-        self.update_config(config)
+        self.update_config()
+
         self.compute_callback = compute_callback
         self.done_callback = done_callback
 
         return self
 
-    def update_config(self, __config: CorpusConfig) -> "BaseGUI":
-        self._config = __config
-        self.update_pos_schema({})
+    def _config_chooser_changed(self, *_):
+        self._config = CorpusConfig.load(self.config_filename)
+        if self._config is None:
+            self.warn(f"Cannot load config {basename(self.config_filename)}")
+        else:
+            self.info(f"👌 Config {basename(self.config_filename)} loaded!")
+            self.update_config()
+
+    def update_config(self) -> "BaseGUI":
+        if self._config is None:
+
+            self.warn("No config loaded!")
+
+            self._corpus_filename.filter_pattern = "*.*"
+            self._corpus_filename.refresh()
+
+            self._corpus_type.value = None
+            self._filename_fields.value = ''
+
+        else:
+            self._corpus_filename.filter_pattern = self._config.corpus_pattern
+
+            if self._config.corpus_source_exists() is not None:
+                self._corpus_filename.reset(
+                    path=dirname(self._config.pipeline_payload.source),
+                    filename=basename(self._config.pipeline_payload.source),
+                )
+
+            self._corpus_filename.refresh()
+
+            self._corpus_type.value = self._config.corpus_type
+            self._filename_fields.value = ';'.join(self._config.text_reader_opts.filename_fields)
+            self.update_pos_schema({})
+
         return self
 
     def update_pos_schema(self, *_) -> "BaseGUI":
-        pos_schema: utility.PoS_Tag_Scheme = self._config.pos_schema
-
-        tags: Dict[str, str] = {f"{tag}/{description}": tag for tag, description in pos_schema.description.items()}
-
         for _pos_widget in [self._pos_includes, self._pos_paddings, self._pos_excludes]:
             _pos_widget.value = []
+            _pos_widget.options = {}
+
+        if self._config is None:
+            return self
+
+        pos_schema: utility.PoS_Tag_Scheme = self._config.pos_schema
+
+        tags: dict[str, str] = {f"{tag}/{description}": tag for tag, description in pos_schema.description.items()}
+
+        for _pos_widget in [self._pos_includes, self._pos_paddings, self._pos_excludes]:
             _pos_widget.options = pos_schema.groups if self._use_pos_groupings.value else tags
 
         if self._use_pos_groupings.value:
@@ -433,8 +482,16 @@ class BaseGUI:
     @property
     def target_folder(self) -> str:
         if self._create_subfolder:
-            return os.path.join(self._target_folder.selected_path, self.corpus_tag)
+            return join(self._target_folder.selected_path, self.corpus_tag)
         return self._target_folder.selected_path
+
+    @property
+    def config_folder(self) -> str:
+        return self._config_chooser.selected_path
+
+    @property
+    def config_filename(self) -> str:
+        return self._config_chooser.selected
 
     @property
     def corpus_folder(self) -> str:
@@ -469,7 +526,7 @@ class BaseGUI:
         return self._config
 
     @property
-    def phrases(self) -> List[List[str]]:
+    def phrases(self) -> list[list[str]]:
         if not self._phrases.value.strip():
             return None
         _phrases = [phrase.split() for phrase in self._phrases.value.strip().split(';')]

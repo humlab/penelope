@@ -56,19 +56,21 @@ def create_to_dtm_gui(
     *,
     corpus_folder: str,
     data_folder: str,
-    corpus_config: Union[pipeline.CorpusConfig, str],
     resources_folder: str = None,
+    corpus_config: Union[pipeline.CorpusConfig, str] = None,
 ) -> widgets.CoreWidget:
     resources_folder = resources_folder or corpus_folder
     config: pipeline.CorpusConfig = (
-        pipeline.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
+        None
+        if corpus_config is None
+        else pipeline.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
         if isinstance(corpus_config, str)
         else corpus_config
     )
     gui_compute: dtm_gui.ComputeGUI = dtm_gui.create_compute_gui(
         corpus_folder=corpus_folder,
         data_folder=data_folder,
-        corpus_config=config,
+        config=config,
         compute_callback=compute_callback,
         done_callback=computed_callback,
     )

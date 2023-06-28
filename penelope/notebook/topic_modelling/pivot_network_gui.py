@@ -155,7 +155,7 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
                                 self._network_layout,
                             ]
                         ),
-                        w.VBox([self._auto_compute, self._compute, self._alert]),
+                        w.VBox([self.compute_default_layout, self._alert]),
                     ]
                 ),
                 self._output,

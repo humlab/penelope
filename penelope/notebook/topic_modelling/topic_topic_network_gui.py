@@ -192,8 +192,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                                 self._network_layout,
                                 w.HTML("<b>Output</b>"),
                                 self._output_format,
-                                self._auto_compute,
-                                self._compute,
+                                self.compute_default_layout,
                                 self._alert,
                             ]
                         ),

@@ -68,7 +68,8 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
         return self
 
     def observe(self, value: bool, **kwargs) -> TopicTrendsOverviewGUI:  # pylint: disable=arguments-differ
-        super().observe(value=value, **kwargs)
+        if hasattr(super(), 'observe'):
+            super().observe(value=value, **kwargs)
         # value = value and self.auto_compute  # Never override autocompute
         wu.register_observer(self._aggregate, handler=self.update_handler, value=value)
         wu.register_observer(self._output_format, handler=self.update_handler, value=value)
@@ -98,7 +99,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                                 w.HBox([w.HTML("Aggregate"), self._aggregate]),
                                 w.HTML("Output"),
                                 w.HBox([self._output_format, self._flip_axis]),
-                                w.HBox([self._compute, self._auto_compute]),
+                                self.compute_default_layout,
                                 self._alert,
                             ]
                         ),

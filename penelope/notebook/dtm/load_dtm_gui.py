@@ -23,7 +23,7 @@ class LoadGUI:
         default_corpus_folder: str,
         filename_pattern: str,
         load_callback: Callable[[str, str], VectorizedCorpus] = None,
-        done_callback: Callable[[VectorizedCorpus], None] = None,
+        done_callback: Callable[[VectorizedCorpus, str], None] = None,
     ):
         self.default_corpus_folder = default_corpus_folder
         self.filename_pattern = filename_pattern
@@ -56,7 +56,7 @@ class LoadGUI:
             self.info("⌛ Loading data...")
             corpus = self.load_callback(folder=folder, tag=tag)
             self.info("⌛ Preparing display...")
-            self.done_callback(corpus)
+            self.done_callback(corpus, folder=folder)
             self.info("✔")
 
         except (ValueError, FileNotFoundError, Exception) as ex:

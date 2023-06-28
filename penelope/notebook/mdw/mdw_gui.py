@@ -2,7 +2,7 @@ import logging
 from typing import Callable
 
 import pandas as pd
-from ipywidgets import Button, HBox, IntRangeSlider, IntSlider, Layout, VBox
+from ipywidgets import Button, HBox, HTML, IntRangeSlider, IntSlider, Layout, VBox
 
 from penelope.corpus import dtm
 from penelope.vendor import textacy_api as mdw
@@ -16,28 +16,30 @@ logger = logging.getLogger(__name__)
 class MDW_GUI:
     def __init__(self):
         self._top_n_terms: IntSlider = IntSlider(
-            description='#terms',
+            description='',
             min=10,
             max=1000,
             value=100,
             tooltip='The total number of most discriminating terms to return for each group',
+            layout={'width': '250px'},
         )
         self._max_n_terms: IntSlider = IntSlider(
-            description='#top',
+            description='',
             min=1,
             max=2000,
             value=2000,
             tooltip='Only consider terms whose document frequency is within the top # terms out of all terms',
+            layout={'width': '250px'},
         )
         self._period1: IntRangeSlider = IntRangeSlider(
-            description='Period',
+            description='',
             min=1900,
             max=2099,
             value=(2001, 2002),
             layout={'width': '250px'},
         )
         self._period2 = IntRangeSlider(
-            description='Period',
+            description='',
             min=1900,
             max=2099,
             value=(2001, 2002),
@@ -70,15 +72,23 @@ class MDW_GUI:
             [
                 HBox(
                     [
-                        VBox([self._period1, self._period2]),
                         VBox(
                             [
+                                HTML("<b>Period for first group</b>"),
+                                self._period1,
+                                HTML("<b>Period for second group</b>"),
+                                self._period2,
+                            ]
+                        ),
+                        VBox(
+                            [
+                                HTML("<b>Terms to display</b>"),
                                 self._top_n_terms,
+                                HTML("<b>Top TF threshold</b>"),
                                 self._max_n_terms,
                             ],
-                            layout=Layout(align_items='flex-end'),
                         ),
-                        VBox([self._compute]),
+                        VBox([HTML("&nbsp;<p/>&nbsp;<p/>&nbsp;<p/>"), self._compute]),
                     ]
                 ),
             ]
