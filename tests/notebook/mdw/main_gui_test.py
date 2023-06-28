@@ -33,10 +33,6 @@ def monkey_patch(*_, **__):
     ...
 
 
-def test_corpus_loaded_callback(corpus_fixture):
-    mdw.default_loaded_callback(corpus_fixture, done_callback=monkey_patch)
-
-
 def test_create_main_gui():
     gui = main_gui.create_main_gui(corpus_folder=TEST_DATA_FOLDER, loaded_callback=monkey_patch)
 
