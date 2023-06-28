@@ -51,12 +51,12 @@ def create_js_download(df: pd.DataFrame, filename='results.csv', **to_csv_opts) 
 
 
 class OutputsTabExt(widgets.Tab):
-    def __init__(self, names, **kwargs):
-        super().__init__(**kwargs)
-        self.children = [widgets.Output() for _ in range(0, len(names))]
+    def __init__(self, names: list[str], **kwargs):
+        children: list[widgets.Output] = [widgets.Output() for _ in range(0, len(names))]
+        super().__init__(children=children, titles=names, **kwargs)
         self.loaded = [False for _ in range(0, len(names))]
         self.updaters = [None for _ in range(0, len(names))]
-        _ = [self.set_title(i, name) for i, name in enumerate(names)]
+        # _ = [self.set_title(i, name) for i, name in enumerate(names)]
         self.observe(self.on_tab_clicked, names='selected_index')
 
     def on_tab_clicked(self, widget):
