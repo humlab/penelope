@@ -2,7 +2,7 @@ import logging
 from typing import Callable
 
 import pandas as pd
-from ipywidgets import HTML, Button, HBox, IntRangeSlider, IntSlider, Layout, VBox
+from ipywidgets import HTML, Button, HBox, IntRangeSlider, IntSlider, VBox
 
 from penelope.corpus import dtm
 from penelope.vendor import textacy_api as mdw
