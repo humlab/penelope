@@ -131,14 +131,6 @@ class CorpusConfig:
                 yaml.dump(self.props, fp, indent=2, default_flow_style=False, sort_keys=False, encoding='utf-8')
 
     @staticmethod
-    def list(folder: str) -> list[str]:
-        """Return YAML filenames in given `folder`"""
-        filenames = sorted(
-            glob.glob(jj(folder, '**', '*.yml'), recursive=True) + glob.glob(jj(folder, '**', '*.yaml'), recursive=True)
-        )
-        return filenames
-
-    @staticmethod
     def load(path: str, source: Optional[str] = None) -> "CorpusConfig":
         """Reads and deserializes a CorpusConfig from `path`"""
         with open(path, "r") as fp:
@@ -215,7 +207,7 @@ class CorpusConfig:
         raise FileNotFoundError(filename)
 
     @staticmethod
-    def find_all(folder: str) -> list["CorpusConfig"]:
+    def find_all(folder: str, recursive: bool = False) -> list["CorpusConfig"]:
         """Finds all corpus configs in `folder`"""
 
         configs: list[CorpusConfig] = []
@@ -223,14 +215,34 @@ class CorpusConfig:
         if not os.path.isdir(folder):
             return configs
 
-        candidates: list[str] = glob.glob(jj(folder, "*.yml")) + glob.glob(jj(folder, "*.yaml"))
-
-        for candidate in candidates:
-            with contextlib.suppress(Exception):
-                config = CorpusConfig.load(candidate)
-                configs.append(config)
+        for pattern in ["*.yml", "*.yaml"]:
+            candidates: list[str] = glob.glob(jj(folder, "**" if recursive else "", pattern), recursive=recursive)
+            for candidate in candidates:
+                with contextlib.suppress(Exception):
+                    config = CorpusConfig.load(candidate)
+                    configs.append(config)
 
         return configs
+
+    @staticmethod
+    def list_all(folder: str, recursive: bool = False, try_load: bool = False) -> list[str]:
+        """Return YAML filenames in given `folder`"""
+        filenames: list[str] = [
+            c
+            for pattern in ["*.yml", "*.yaml"]
+            for c in glob.glob(jj(folder, "**" if recursive else "", pattern), recursive=recursive)
+        ]
+        if try_load:
+            return [filename for filename in filenames if CorpusConfig.is_config(filename)]
+        return filenames
+
+    @staticmethod
+    def is_config(path: str) -> bool:
+        """Returns True if `path` can be loaded as a CorpusConfig"""
+        with contextlib.suppress(Exception):
+            CorpusConfig.load(path)
+            return True
+        return False
 
     def folders(self, path: str, method: Literal['join', 'replace'] = "join") -> "CorpusConfig":
         """Replaces (any) existing source path specification for corpus/index to `path`"""

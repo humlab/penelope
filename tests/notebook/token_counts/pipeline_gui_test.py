@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -34,38 +34,26 @@ def monkey_patch(*_, **__):
 @patch('penelope.notebook.token_counts.pipeline_gui.compute_token_count_data', monkey_patch)
 @patch('penelope.notebook.token_counts.pipeline_gui.load_document_index', monkey_patch)
 def test_create_token_count_gui_succeeds():
-    corpus_folder: str = './tests/test_data'
     resources_folder: str = './tests/test_data'
 
-    gui: pipeline_gui.TokenCountsGUI = pipeline_gui.create_token_count_gui(corpus_folder, resources_folder)
+    config_filenames = corpus_config.CorpusConfig.list_all(resources_folder, recursive=True, try_load=True)
+
+    gui: pipeline_gui.TokenCountsGUI = pipeline_gui.TokenCountsGUI()
+
+    gui = gui.setup(config_filenames=config_filenames)
 
     assert gui is not None
 
 
-def test_create_token_count_gui_create_succeeds():
-    load_corpus_config_callback_is_called = False
-
-    def load_corpus_config_callback(*_) -> corpus_config.CorpusConfig:
-        nonlocal load_corpus_config_callback_is_called
-        load_corpus_config_callback_is_called = True
-        return fake_config()
-
-    def load_document_index_callback(_: corpus_config.CorpusConfig) -> pd.DataFrame:
-        return MagicMock(spec=pd.DataFrame)
-
+@patch('penelope.notebook.token_counts.pipeline_gui.load_document_index', monkey_patch)
+def test_create_token_count_gui_display_succeeds():
     resources_folder: str = './tests/test_data'
-    gui: pipeline_gui.TokenCountsGUI = (
-        pipeline_gui.TokenCountsGUI(
-            compute_callback=monkey_patch,
-            load_document_index_callback=load_document_index_callback,
-            load_corpus_config_callback=load_corpus_config_callback,
-        )
-        .setup(corpus_config.CorpusConfig.list(resources_folder))
-        .display()
+    gui: pipeline_gui.TokenCountsGUI = pipeline_gui.TokenCountsGUI(compute_callback=monkey_patch).setup(
+        corpus_config.CorpusConfig.list_all(resources_folder)
     )
 
-    assert gui is not None
-    assert load_corpus_config_callback_is_called
+    assert gui.layout() is not None
+    assert gui.display() is not None
 
 
 @pytest.mark.long_running

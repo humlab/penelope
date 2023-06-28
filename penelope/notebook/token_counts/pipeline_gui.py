@@ -2,9 +2,9 @@ import contextlib
 import os
 from typing import Callable, List
 
+import bokeh.plotting as bp
 import ipywidgets as widgets
 import pandas as pd
-from bokeh.io import output_notebook
 from loguru import logger
 
 from penelope import pipeline
@@ -29,15 +29,11 @@ class TokenCountsGUI:
 
     def __init__(
         self,
-        compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame],
-        load_document_index_callback: Callable[[pipeline.CorpusConfig], DocumentIndex],
-        load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig],
+        compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame] = None,
     ):
-        self.compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame] = compute_callback
-        self.load_document_index_callback: Callable[
-            [pipeline.CorpusConfig], DocumentIndex
-        ] = load_document_index_callback
-        self.load_corpus_config_callback: Callable[[str], pipeline.CorpusConfig] = load_corpus_config_callback
+        self.compute_callback: Callable[["TokenCountsGUI", DocumentIndex], pd.DataFrame] = (
+            compute_callback or compute_token_count_data
+        )
 
         self.document_index: DocumentIndex = None
 
@@ -92,8 +88,14 @@ class TokenCountsGUI:
                 return
 
             data = self.compute_callback(self, self.document_index)
-            plot_lines = lambda: plot_multiline(df=data.set_index(self.grouping), smooth=self.smooth)
-            plot_bars = lambda: plot_stacked_bar(df=data.set_index(self.grouping))
+
+            def plot_lines():
+                p: bp.figure = plot_multiline(df=data.set_index(self.grouping), smooth=self.smooth)
+                bp.show(p)
+
+            def plot_bars():
+                p: bp.figure = plot_stacked_bar(df=data.set_index(self.grouping))
+                bp.show(p)
 
             self._tab.display_content(0, what=gu.table_widget(data), clear=True)
             self._tab.display_content(1, what=plot_lines, clear=True)
@@ -125,21 +127,25 @@ class TokenCountsGUI:
     def _display_handler(self, _):
         self.display()
 
+    @property
+    def config_filename(self) -> str:
+        return self._corpus_configs.value
+
     @DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
     def display(self) -> "TokenCountsGUI":
-        if self._corpus_configs.value is None:
+        if self.config_filename is None:
             return self
 
-        corpus_config: pipeline.CorpusConfig = self.load_corpus_config_callback(self._corpus_configs.value)
+        config: pipeline.CorpusConfig = pipeline.CorpusConfig.load(self.config_filename)
 
-        if not corpus_config.corpus_source_exists():
-            self.alert(f"Config {corpus_config.corpus_name} has no specified corpus.")
+        if not config.corpus_source_exists():
+            self.alert(f"Config {config.corpus_name} has no specified corpus.")
             return self
 
-        self.set_schema(corpus_config.pos_schema)
+        self.set_schema(config.pos_schema)
 
         try:
-            self.document_index: DocumentIndex = self.load_document_index_callback(corpus_config)
+            self.document_index: DocumentIndex = load_document_index(config)
 
             if isinstance(self.document_index, pd.DataFrame):
                 self._plot_counts()
@@ -266,22 +272,3 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
     document_index = document_index[columns]
 
     return document_index
-
-
-def create_token_count_gui(corpus_folder: str, resources_folder: str) -> TokenCountsGUI:
-    def load_corpus_config_callback(config_filename: str) -> pipeline.CorpusConfig:
-        return pipeline.CorpusConfig.load(config_filename).folders(corpus_folder)
-
-    output_notebook()
-
-    gui = (
-        TokenCountsGUI(
-            compute_callback=compute_token_count_data,
-            load_document_index_callback=load_document_index,
-            load_corpus_config_callback=load_corpus_config_callback,
-        )
-        .setup(pipeline.CorpusConfig.list(resources_folder))
-        .display()
-    )
-
-    return gui

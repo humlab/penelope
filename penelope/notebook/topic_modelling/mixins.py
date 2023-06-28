@@ -165,7 +165,6 @@ class ComputeMixIn:
         # if self._compute_handler is None:
         #     return
         self._auto_compute.icon = 'check' if self.auto_compute else ''
-        self.alert("Auto compute is ON" if self.auto_compute else "Auto compute is OFF")
         self._compute.disabled = self.auto_compute
         # wu.register_observer(self._auto_compute, handler=self._compute_handler, value=self.auto_compute)
         if self.auto_compute:
