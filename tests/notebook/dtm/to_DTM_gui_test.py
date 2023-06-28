@@ -36,7 +36,7 @@ def test_create_gui():
     gui: dtm.ComputeGUI = dtm.create_compute_gui(
         corpus_folder='./tests/test_data',
         data_folder='./tests/test_data',
-        corpus_config=dummy_config(),
+        config=dummy_config(),
         compute_callback=dummy_callback,
         done_callback=dummy_callback,
     )
