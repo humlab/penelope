@@ -26,7 +26,6 @@ class BaseGUI:
     def __init__(
         self, default_corpus_path: str = None, default_corpus_filename: str = '', default_data_folder: str = None
     ):
-
         self._config: CorpusConfig = None
 
         # self._config_chooser: notebook_utility.FileChooserExt2 = None
@@ -191,7 +190,14 @@ class BaseGUI:
             (
                 []
                 if hide_input or self._config_chooser is None
-                else [w.HBox([w.HTML("&nbsp;<p><b>Please select config file.</b>", layout={'width': '200px'}), self._config_chooser])]
+                else [
+                    w.HBox(
+                        [
+                            w.HTML("&nbsp;<p><b>Please select config file.</b>", layout={'width': '200px'}),
+                            self._config_chooser,
+                        ]
+                    )
+                ]
             )
             + (
                 []
@@ -350,7 +356,6 @@ class BaseGUI:
 
     def update_config(self) -> "BaseGUI":
         if self._config is None:
-
             self.warn("No config loaded!")
 
             self._corpus_filename.filter_pattern = "*.*"

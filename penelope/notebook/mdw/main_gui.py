@@ -17,7 +17,9 @@ def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw):  # pylint: disable=unused
 
 
 @view_gui.capture(clear_output=True)
-def default_loaded_callback(corpus: dtm.VectorizedCorpus, folder: str, done_callback=display_mdw):  # pylint: disable=unused-argument
+def default_loaded_callback(
+    corpus: dtm.VectorizedCorpus, folder: str, done_callback=display_mdw
+):  # pylint: disable=unused-argument
     mdw_gui = create_mdw_gui(corpus, done_callback=done_callback)
     ipy_display.display(mdw_gui.layout())
 
