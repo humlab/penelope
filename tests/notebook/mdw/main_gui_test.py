@@ -6,7 +6,6 @@ from ipywidgets import VBox
 
 from penelope.corpus import dtm
 from penelope.notebook import dtm as dtm_ui
-from penelope.notebook import mdw
 from penelope.notebook.mdw import main_gui
 from tests.utils import TEST_DATA_FOLDER
 
