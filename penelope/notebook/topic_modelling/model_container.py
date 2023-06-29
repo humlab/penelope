@@ -1,4 +1,4 @@
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Literal, Self
 
 import penelope.topic_modelling as tm
 
@@ -53,7 +53,7 @@ class TopicModelContainer:
         folder: str | None = None,
         trained_model: tm.InferredModel | None = None,
         train_corpus_folder: str | tm.TrainingCorpus | None = None,
-    ) -> "TopicModelContainer":
+    ) -> Self:
         self._inferred_topics = inferred_topics
         self._folder = folder or train_corpus_folder
         self._trained_model = trained_model
