@@ -248,14 +248,14 @@ def only_alphabetic(tokens: Iterable[str]) -> Iterable[str]:
     return (x for x in tokens if any(c in x for c in ALPHABETIC_CHARS))
 
 
-@TokensTransformRegistry.register(key="remove-english-stopwords", kind="function")
-def remove_stopwords_english() -> TokensTransform:
-    return nltk_utility.remove_stopwords_factory(language_or_stopwords='english')
+# @TokensTransformRegistry.register(key="remove-english-stopwords", kind="function")
+# def remove_stopwords_english() -> TokensTransform:
+#     return nltk_utility.remove_stopwords_factory(language_or_stopwords='english')
 
 
-@TokensTransformRegistry.register(key="remove-swedish-stopwords", kind="function")
-def remove_stopwords_swedish() -> TokensTransform:
-    return nltk_utility.remove_stopwords_factory(language_or_stopwords='swedish')
+# @TokensTransformRegistry.register(key="remove-swedish-stopwords", kind="function")
+# def remove_stopwords_swedish() -> TokensTransform:
+#     return nltk_utility.remove_stopwords_factory(language_or_stopwords='swedish')
 
 
 @TokensTransformRegistry.register(key="remove-stopwords")
