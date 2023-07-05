@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Self
 
 import pandas as pd
 from ipydatagrid import DataGrid, TextRenderer
@@ -143,7 +143,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         self._widgets_placeholder: HBox = HBox(children=[])
         self._sidebar_placeholder: HBox = HBox(children=[])
 
-    def setup(self, **kwargs) -> "BaseTokenCountGUI":
+    def setup(self, **kwargs) -> Self:
         self.observe(False)
         self._source_folder: FileChooserExt2 = FileChooserExt2(
             path=self.default_folder,
@@ -160,7 +160,7 @@ class BaseTokenCountGUI(DownloadMixIn):
             self._load()
         return self
 
-    def reset(self) -> "BaseTokenCountGUI":
+    def reset(self) -> Self:
         self.observe(False)
         self.document_index = None
         self.data = None
@@ -169,6 +169,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         self._temporal_key.value = self.defaults.get('temporal_key', 'decade')
         self._pos_groups.value = ['Total']
         self.observe(True)
+        return self
 
     def plot_tabular(self, df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
         return plot_tabular(df, opts)
@@ -258,7 +259,7 @@ class BaseTokenCountGUI(DownloadMixIn):
             self.observe(True)
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def display(self) -> "BaseTokenCountGUI":
+    def display(self) -> Self:
         try:
             data: pd.DataFrame = self.compute()
             if self.document_index is None:
@@ -270,7 +271,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         return self
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def load(self, source: str | pd.DataFrame) -> "BaseTokenCountGUI":
+    def load(self, source: str | pd.DataFrame) -> Self:
         self.document_index = (
             source if isinstance(source, pd.DataFrame) else pc.VectorizedCorpus.load_document_index(source)
         )
@@ -280,7 +281,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         return self.PoS_tag_groups.index.tolist()
 
     @DEBUG_VIEW.capture(clear_output=False)
-    def prepare(self) -> "BaseTokenCountGUI":
+    def prepare(self) -> Self:
         self.document_index = prepare_document_index(self.document_index, keep_columns=self.keep_columns())
         return self
 
@@ -367,10 +368,10 @@ class TokenCountGUI(PivotKeysMixIn, BaseTokenCountGUI):
 
         return super().layout()
 
-    def setup(self, **kwargs) -> PivotKeysMixIn:
+    def setup(self, **kwargs) -> Self:
         return super().setup(**kwargs)
 
-    def load(self, source: str | pd.DataFrame) -> BaseTokenCountGUI:
+    def load(self, source: str | pd.DataFrame) -> Self:
         super().load(source)
 
         if isinstance(source, str):

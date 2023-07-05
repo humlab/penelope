@@ -38,7 +38,7 @@ class PivotKeys:
     """
 
     def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec] = None):
-        self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or {}
+        self.pivot_keys: dict[str, PivotKeySpec] = pivot_keys or {}
 
     @staticmethod
     def load(path: str, default: dict = None) -> "PivotKeys":
@@ -87,7 +87,7 @@ class PivotKeys:
     @pivot_keys.setter
     def pivot_keys(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec]):
         clear_cached_properties(self)
-        self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or []
+        self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or {}
         if isinstance(self.pivot_keys, list):
             """Changes mapping to a dict of dicts instead of a list of dicts"""
             self._pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else {}

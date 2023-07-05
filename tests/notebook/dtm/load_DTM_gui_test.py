@@ -11,16 +11,12 @@ def dummy_callback(*_, **__):
 
 
 def test_gui_setup():
-    gui = LoadGUI(
-        default_corpus_folder='./tests/test_data', filename_pattern='*.*', load_callback=None, done_callback=None
-    )
+    gui = LoadGUI(folder='./tests/test_data', filename_pattern='*.*', load_callback=None, done_callback=None)
     assert gui.setup() is not None
 
 
 def test_gui_layout():
-    gui = LoadGUI(
-        default_corpus_folder='./tests/test_data', filename_pattern='*.*', load_callback=None, done_callback=None
-    )
+    gui = LoadGUI(folder='./tests/test_data', filename_pattern='*.*', load_callback=None, done_callback=None)
     assert gui.setup().layout() is not None
 
 
@@ -52,7 +48,7 @@ def test_create_gui():
 #         mocked_method.return_value = source_filename
 
 #         gui = LoadGUI(
-#             default_corpus_folder='/data/inidun/courier/word_trends',
+#             folder='/data/inidun/courier/word_trends',
 #             filename_pattern='*_vector_data.npz',
 #             load_callback=load_corpus_callback,
 #             done_callback=loaded_corpus_callback,

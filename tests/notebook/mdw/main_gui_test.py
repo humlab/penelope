@@ -61,10 +61,25 @@ def test_create_load_gui(corpus_fixture):
         mocked_corpus_filename.return_value = "./tests/"
 
         gui = dtm_ui.LoadGUI(
-            default_corpus_folder=corpus_folder,
+            folder=corpus_folder,
             filename_pattern="*.*",
             load_callback=load_corpus,
             done_callback=display_patch,
+            kind='chooser',
+        ).setup()
+
+        gui.is_dtm_corpus = mock.MagicMock(return_value=True)
+
+        gui.load()
+
+        assert gui._alert.value == "<span style='color=red'>✔</span>"
+
+        gui = dtm_ui.LoadGUI(
+            folder=corpus_folder,
+            filename_pattern="*.*",
+            load_callback=load_corpus,
+            done_callback=display_patch,
+            kind='picker',
         ).setup()
 
         gui.is_dtm_corpus = mock.MagicMock(return_value=True)
