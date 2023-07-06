@@ -5,7 +5,6 @@ from typing import Callable, Literal
 import ipyfilechooser
 from ipywidgets import HTML, Button, Dropdown, HBox, Layout, Output, VBox
 
-from penelope.corpus import VectorizedCorpus, load_corpus
 from penelope.utility import default_data_folder, getLogger, right_chop
 
 from ..utility import shorten_filechooser_label
@@ -18,33 +17,24 @@ logger = getLogger('penelope')
 debug_view = Output(layout={'border': '1px solid black'})
 
 
-def load_corpus_callback(folder: str, tag: str) -> VectorizedCorpus:
-    return load_corpus(folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False)
-
-
 class LoadGUI:
     def __init__(
         self,
         folder: str,
-        done_callback: Callable[[VectorizedCorpus, str], None] = None,
+        done_callback: Callable[[str, str], None] = None,
         kind: Literal['chooser', 'picker'] = 'chooser',
         filename_pattern: str = None,
     ):
         self.folder: str = folder
         self.kind: Literal['chooser', 'picker'] = kind
         self.filename_pattern: str = filename_pattern or '*_vector_data.npz'
-        self.load_corpus: Callable[[str, str], VectorizedCorpus] = load_corpus_callback
-        self.done_callback: Callable[[VectorizedCorpus], None] = done_callback
+        self.done_callback: Callable[[str, str], None] = done_callback
         self._corpus_filename: ipyfilechooser.FileChooser | Dropdown = None
         self._alert: HTML = HTML('.')
         self._load_button = Button(
             description='Load', button_style='Success', layout=Layout(width='115px'), disabled=True
         )
         self.extra_placeholder: HBox = None
-
-    def register(self, handler: Callable[[VectorizedCorpus], None], what: str = None):
-        self.done_callback = handler
-        return self
 
     def load(self):
         self._load_handler({})
@@ -56,15 +46,11 @@ class LoadGUI:
                 self.warn("👎 Please select a valid corpus file 👎")
                 return
 
-            self.warn('Please wait')
-            self._load_button.description = "Loading..."
             self._load_button.disabled = True
             folder, filename = split(self.corpus_filename)
             tag = right_chop(filename, self.filename_pattern[1:])
             self.info("⌛ Loading data...")
-            corpus = self.load_corpus(folder=folder, tag=tag)
-            self.info("⌛ Preparing display...")
-            self.done_callback(corpus, folder=folder)
+            self.done_callback(folder=folder, tag=tag)
             self.info("✔")
 
         except (ValueError, FileNotFoundError, Exception) as ex:
@@ -73,7 +59,6 @@ class LoadGUI:
         finally:
             self.warn('✔')
             self._load_button.disabled = False
-            self._load_button.description = "Load"
 
     def is_dtm_corpus(self, filename: str) -> bool:
         if not filename or not isfile(self.corpus_filename):

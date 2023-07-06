@@ -47,11 +47,11 @@ class MDW_GUI:
         )
 
         self._compute = Button(description='Compute', icon='', button_style='Success', layout={'width': '120px'})
-        self.compute_callback: Callable = None
+        self.compute_callback: Callable = default_compute_callback
         self.done_callback: Callable = None
         self.corpus: dtm.VectorizedCorpus = None
 
-    def setup(self, corpus: dtm.VectorizedCorpus, compute_callback: Callable, done_callback: Callable) -> "MDW_GUI":
+    def setup(self, corpus: dtm.VectorizedCorpus, done_callback: Callable) -> "MDW_GUI":
         low, high = corpus.document_index.year.min(), corpus.document_index.year.max()
 
         self._period1.min, self._period1.max = (low, high)
@@ -61,7 +61,6 @@ class MDW_GUI:
 
         self._compute.on_click(self._compute_handler)
 
-        self.compute_callback = compute_callback
         self.done_callback = done_callback
         self.corpus = corpus
 
@@ -143,17 +142,3 @@ def default_compute_callback(corpus: dtm.VectorizedCorpus, args: MDW_GUI):
     )
 
     return df_dtm
-
-
-def create_mdw_gui(
-    corpus: dtm.VectorizedCorpus,
-    done_callback: Callable[[dtm.VectorizedCorpus, pd.DataFrame], None],
-    compute_callback: Callable[[dtm.VectorizedCorpus, pd.DataFrame], None] = None,
-) -> MDW_GUI:
-    gui = MDW_GUI().setup(
-        corpus=corpus,
-        compute_callback=(compute_callback or default_compute_callback),
-        done_callback=done_callback,
-    )
-
-    return gui
