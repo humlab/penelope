@@ -1,5 +1,5 @@
 from glob import glob
-from os.path import isfile, join, split, splitext
+from os.path import basename, isfile, join, split, splitext
 from typing import Callable, Literal
 
 import ipyfilechooser
@@ -26,24 +26,25 @@ class LoadGUI:
     def __init__(
         self,
         folder: str,
-        filename_pattern: str,
-        load_callback: Callable[[str, str], VectorizedCorpus] = None,
         done_callback: Callable[[VectorizedCorpus, str], None] = None,
         kind: Literal['chooser', 'picker'] = 'chooser',
+        filename_pattern: str = None,
     ):
         self.folder: str = folder
         self.kind: Literal['chooser', 'picker'] = kind
-        self.filename_pattern: str = filename_pattern
-        self.load_callback: Callable[[str, str], VectorizedCorpus] = load_callback or load_corpus_callback
+        self.filename_pattern: str = filename_pattern or '*_vector_data.npz'
+        self.load_corpus: Callable[[str, str], VectorizedCorpus] = load_corpus_callback
         self.done_callback: Callable[[VectorizedCorpus], None] = done_callback
         self._corpus_filename: ipyfilechooser.FileChooser | Dropdown = None
         self._alert: HTML = HTML('.')
         self._load_button = Button(
-            description='Load',
-            button_style='Success',
-            layout=Layout(width='115px', background_color='blue'),
-            disabled=True,
+            description='Load', button_style='Success', layout=Layout(width='115px'), disabled=True
         )
+        self.extra_placeholder: HBox = None
+
+    def register(self, handler: Callable[[VectorizedCorpus], None], what: str = None):
+        self.done_callback = handler
+        return self
 
     def load(self):
         self._load_handler({})
@@ -61,7 +62,7 @@ class LoadGUI:
             folder, filename = split(self.corpus_filename)
             tag = right_chop(filename, self.filename_pattern[1:])
             self.info("⌛ Loading data...")
-            corpus = self.load_callback(folder=folder, tag=tag)
+            corpus = self.load_corpus(folder=folder, tag=tag)
             self.info("⌛ Preparing display...")
             self.done_callback(corpus, folder=folder)
             self.info("✔")
@@ -89,7 +90,7 @@ class LoadGUI:
         if self.kind == 'picker':
             filenames: list[str] = glob(join(self.folder, "**", self.filename_pattern), recursive=True)
             self._corpus_filename = Dropdown(
-                options=filenames,
+                options={basename(f): f for f in filenames},
                 description='Corpus file:',
                 disabled=False,
             )
@@ -110,17 +111,9 @@ class LoadGUI:
         return self
 
     def layout(self):
-        return VBox(
-            [
-                HBox(
-                    [
-                        VBox([self._corpus_filename]),
-                        VBox([self._alert, self._load_button]),
-                    ]
-                )
-                # view,
-            ]
-        )
+        ctrls = VBox([self._alert, self._load_button]) if self.kind == 'chooser' else [self._load_button, self._alert]
+        extras = [self.extra_placeholder] if self.extra_placeholder else []
+        return VBox([HBox([self._corpus_filename] + ctrls)] + extras)
 
     @property
     def corpus_filename(self):
@@ -136,20 +129,3 @@ class LoadGUI:
 
     def info(self, msg: str) -> None:
         self._alert.value = f"<span style='color: green; font-weight: bold;'>{msg or '😃'}</span>"
-
-
-def create_load_gui(
-    *,
-    corpus_folder: str,
-    loaded_callback: Callable[[VectorizedCorpus, str, str], None],
-):
-    filename_pattern = '*_vector_data.npz'
-
-    gui = LoadGUI(
-        folder=corpus_folder,
-        filename_pattern=filename_pattern,
-        load_callback=load_corpus_callback,
-        done_callback=loaded_callback,
-    ).setup()
-
-    return gui

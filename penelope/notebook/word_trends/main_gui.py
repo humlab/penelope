@@ -75,7 +75,7 @@ def create_to_dtm_gui(
         done_callback=computed_callback,
     )
 
-    gui_load: dtm_gui.LoadGUI = dtm_gui.create_load_gui(
+    gui_load: dtm_gui.LoadGUI = dtm_gui.LoadGUI(
         corpus_folder=data_folder,
         loaded_callback=loaded_callback,
     )
